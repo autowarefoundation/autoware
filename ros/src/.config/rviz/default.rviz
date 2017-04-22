@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Camera1/Visibility1
+        - /Points Raw1/Status1
         - /Vehicle Model1/Status1
         - /Local Waypoints1/Status1
         - /Vector Map CenterLines1/Namespaces1
@@ -32,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Points Map
 Visualization Manager:
   Class: ""
   Displays:
@@ -40,7 +41,7 @@ Visualization Manager:
       Cell Size: 1
       Class: rviz/Grid
       Color: 160; 160; 164
-      Enabled: true
+      Enabled: false
       Line Style:
         Line Width: 0.03
         Value: Lines
@@ -53,13 +54,17 @@ Visualization Manager:
       Plane: XY
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
-      Value: true
+      Value: false
     - Class: rviz/TF
       Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        base_link:
+          Value: true
         map:
+          Value: true
+        velodyne:
           Value: true
         world:
           Value: true
@@ -86,7 +91,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -103,7 +108,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /vector_map
@@ -221,7 +226,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 255
+      Max Intensity: 190
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Points Raw
@@ -231,7 +236,7 @@ Visualization Manager:
       Size (Pixels): 1
       Size (m): 0.01
       Style: Points
-      Topic: /points_raw
+      Topic: /filtered_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -248,7 +253,7 @@ Visualization Manager:
       Color: 255; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 255
@@ -265,13 +270,13 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: false
+      Enabled: true
       Head Length: 2
       Head Radius: 2
       Name: Control Pose
@@ -280,7 +285,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /control_pose
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
@@ -338,6 +343,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: Vehicle Model
       Robot Description: robot_description
       TF Prefix: ""
@@ -356,7 +366,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -373,7 +383,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /obj_car/obj_pose
@@ -424,11 +434,11 @@ Visualization Manager:
       update interval: 0.04
       width: 100
     - Class: jsk_rviz_plugin/BoundingBoxArray
-      Enabled: true
+      Enabled: false
       Name: Bounding Boxes
       Topic: /bounding_boxes
       Unreliable: false
-      Value: true
+      Value: false
       alpha: 0.8
       color: 25; 255; 0
       coloring: Auto
@@ -541,7 +551,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator1/curr_simu_pose_1
       Name: SimuCar1
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -549,7 +559,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator2/curr_simu_pose_2
       Name: SimuCar2
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -557,7 +567,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator3/curr_simu_pose_3
       Name: SimuCar3
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -565,7 +575,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator4/curr_simu_pose_4
       Name: SimuCar4
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -573,7 +583,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator5/curr_simu_pose_5
       Name: SimuCar5
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -581,7 +591,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator1/simu_local_trajectory_1
       Name: SimPath1
       Namespaces:
-        simu_car_path_1: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -589,7 +599,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator2/simu_local_trajectory_2
       Name: SimPath2
       Namespaces:
-        simu_car_path_2: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -597,7 +607,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator3/simu_local_trajectory_3
       Name: SimPath3
       Namespaces:
-        simu_car_path_3: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -605,7 +615,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator4/simu_local_trajectory_4
       Name: SimPath4
       Namespaces:
-        simu_car_path_4: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -613,7 +623,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator5/simu_local_trajectory_5
       Name: SimPath5
       Namespaces:
-        simu_car_path_5: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -645,7 +655,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator1/sim_beh_txt_1
       Name: SimBehavior1
       Namespaces:
-        sim_behavior_1: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -653,7 +663,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator2/sim_beh_txt_2
       Name: SimBehavior2
       Namespaces:
-        sim_behavior_2: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -661,7 +671,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator3/sim_beh_txt_3
       Name: SimBehavior3
       Namespaces:
-        sim_behavior_3: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -669,7 +679,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator4/sim_beh_txt_4
       Name: SimBehavior4
       Namespaces:
-        sim_behavior_4: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -677,7 +687,7 @@ Visualization Manager:
       Marker Topic: /OpenPlannerSimulator5/sim_beh_txt_5
       Name: SimBehavior5
       Namespaces:
-        sim_behavior_5: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -712,11 +722,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 14.3003
+      Scale: 17.6234
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
-      X: 13.7669
-      Y: 34.0359
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Camera:
