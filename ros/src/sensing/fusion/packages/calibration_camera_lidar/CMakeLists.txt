@@ -87,7 +87,7 @@ add_custom_target(selectionwidget_moc
 )
 
 ## Declare a cpp library
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 add_library(calibrationtoolkit
   CalibrationToolkit/calibrationtoolkit.cpp
   CalibrationToolkit/selectionwidget.cpp
@@ -137,7 +137,7 @@ include_directories(
 endif()
 
 ## 2D
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 add_executable(calibration_test
   nodes/calibration_test/chessboard.cpp
   nodes/calibration_test/trans.cpp
@@ -157,7 +157,7 @@ target_link_libraries(calibration_test
    ${catkin_LIBRARIES} ${OpenCV_LIBS} xml2)
 endif()
 ## 3D
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 add_executable(calibration_toolkit
   nodes/calibration_toolkit/main.cpp
   nodes/calibration_toolkit/mainwindow.cpp
