@@ -273,14 +273,9 @@ set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 if(EXISTS "${SSD_CAFFE_PATH}")
 
-#  INCLUDE_DIRECTORIES(
-#    ${SSD_CAFFE_PATH}/include
-#    nodes/ssd/include
-#  )
-
-IF(HDF5_FOUND)
-  INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
-ENDIF()
+  IF(HDF5_FOUND)
+    INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
+  ENDIF()
 
   ADD_EXECUTABLE(ssd_unc
     nodes/ssd/ssd_node.cpp
@@ -308,4 +303,105 @@ ENDIF()
   )
 else()
   message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")
+endif()
+
+###YOLO2####
+###########YOLO2 PATH#####################################
+set(YOLO2_PATH "$ENV{HOME}/darknet")
+##########################################################
+if(EXISTS "${YOLO2_PATH}")
+
+  set(YOLO2_USE_CUDNN 1)
+  set(YOLO2_USE_GPU 1)
+  
+  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+
+  cuda_add_library(yolo2lib_wa
+    ${YOLO2_PATH}/src/activation_kernels.cu
+    ${YOLO2_PATH}/src/activation_layer.c
+    ${YOLO2_PATH}/src/activations.c
+    ${YOLO2_PATH}/src/avgpool_layer.c
+    ${YOLO2_PATH}/src/avgpool_layer_kernels.cu
+    ${YOLO2_PATH}/src/batchnorm_layer.c
+    ${YOLO2_PATH}/src/blas.c
+    ${YOLO2_PATH}/src/blas_kernels.cu
+    ${YOLO2_PATH}/src/box.c
+    ${YOLO2_PATH}/src/col2im.c
+    ${YOLO2_PATH}/src/col2im_kernels.cu
+    ${YOLO2_PATH}/src/connected_layer.c
+    ${YOLO2_PATH}/src/convolutional_kernels.cu
+    ${YOLO2_PATH}/src/convolutional_layer.c
+    ${YOLO2_PATH}/src/cost_layer.c
+    ${YOLO2_PATH}/src/crnn_layer.c
+    ${YOLO2_PATH}/src/crop_layer.c
+    ${YOLO2_PATH}/src/crop_layer_kernels.cu
+    ${YOLO2_PATH}/src/cuda.c
+    ${YOLO2_PATH}/src/data.c
+    ${YOLO2_PATH}/src/detection_layer.c
+    ${YOLO2_PATH}/src/dropout_layer.c
+    ${YOLO2_PATH}/src/dropout_layer_kernels.cu
+    ${YOLO2_PATH}/src/gemm.c
+    ${YOLO2_PATH}/src/gru_layer.c
+    ${YOLO2_PATH}/src/im2col.c
+    ${YOLO2_PATH}/src/im2col_kernels.cu
+    ${YOLO2_PATH}/src/image.c
+    ${YOLO2_PATH}/src/layer.c
+    ${YOLO2_PATH}/src/list.c
+    ${YOLO2_PATH}/src/local_layer.c
+    ${YOLO2_PATH}/src/matrix.c
+    ${YOLO2_PATH}/src/maxpool_layer.c
+    ${YOLO2_PATH}/src/maxpool_layer_kernels.cu
+    ${YOLO2_PATH}/src/network.c
+    ${YOLO2_PATH}/src/network_kernels.cu
+    ${YOLO2_PATH}/src/normalization_layer.c
+    ${YOLO2_PATH}/src/option_list.c
+    ${YOLO2_PATH}/src/parser.c
+    ${YOLO2_PATH}/src/region_layer.c
+    ${YOLO2_PATH}/src/reorg_layer.c
+    ${YOLO2_PATH}/src/rnn_layer.c
+    ${YOLO2_PATH}/src/route_layer.c
+    ${YOLO2_PATH}/src/shortcut_layer.c
+    ${YOLO2_PATH}/src/softmax_layer.c
+    ${YOLO2_PATH}/src/tree.c
+    ${YOLO2_PATH}/src/utils.c
+
+    OPTIONS 
+    -DGPU=${YOLO2_USE_GPU}
+    -DCUDNN=${YOLO2_USE_CUDNN}
+  )
+
+  cuda_add_cublas_to_target(yolo2lib_wa)
+
+  target_include_directories(yolo2lib_wa PRIVATE
+    ${YOLO2_PATH}/src
+  )
+
+  target_link_libraries(yolo2lib_wa
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+  )
+
+  add_executable(yolo2_wa
+    nodes/yolo2/src/yolo2_node.cpp
+    nodes/yolo2/src/darknet/yolo2.cpp
+  )
+  target_include_directories(yolo2_wa PRIVATE
+    nodes/yolo2/include
+    ${YOLO2_PATH}/src
+  )
+
+  target_link_libraries(yolo2_wa
+    yolo2lib_wa
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+  )
+
+else()
+  message("'Darknet' was not found. 'yolo2_wa' will not be built.")
 endif()
