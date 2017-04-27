@@ -100,6 +100,9 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
+		
+
+
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
@@ -425,7 +428,7 @@ class MyFrame(rtmgr.MyFrame):
 		backup = os.path.expanduser('~/.toprc-autoware-backup')
 		self.toprc_setup(toprc, backup)
 
-		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.cpu_count()) ]
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(get_cpu_count())]
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
@@ -480,6 +483,7 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
+	
 
 	def __do_layout(self):
 		pass
@@ -702,6 +706,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
+	
+	
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -999,8 +1005,8 @@ class MyFrame(rtmgr.MyFrame):
 			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
-		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.cpu_count()) ]
-		cpus = [ i for i in range(psutil.cpu_count()) if cpu_chks[i] ]
+		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(get_cpu_count()) ]
+		cpus = [ i for i in range(get_cpu_count()) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
 
 		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
@@ -1010,15 +1016,15 @@ class MyFrame(rtmgr.MyFrame):
 			policy = d.get(self.param_value_get(pdic, prm, 'policy', 'FIFO'), SCHED_FIFO)
 			priority = self.param_value_get(pdic, prm, 'prio', 0)
 
-		procs = [ proc ] + proc.children(recursive=True)
+		procs = [ proc ] + get_proc_children(proc, r=True)
 		for proc in procs:
 			print 'pid={}'.format(proc.pid)
-			if proc.nice() != nice:
-				print 'nice {} -> {}'.format(proc.nice(), nice)
+			if get_proc_nice(proc) != nice:
+				print 'nice {} -> {}'.format(get_proc_nice(proc), nice)
 				if set_process_nice(proc, nice) is False:
 					print 'Err set_process_nice()'
-			if proc.cpu_affinity() != cpus:
-				print 'cpus {} -> {}'.format(proc.cpu_affinity(), cpus)
+			if get_proc_cpu_affinity(proc) != cpus:
+				print 'cpus {} -> {}'.format(get_proc_cpu_affinity(proc), cpus)
 				if set_process_cpu_affinity(proc, cpus) is False:
 					print 'Err set_process_cpu_affinity()'
 
@@ -1338,7 +1344,7 @@ class MyFrame(rtmgr.MyFrame):
 		mem_ibl.lmt_bar_prg = rate_mem
 
 		alerted = False
-		cpu_n = psutil.cpu_count()
+		cpu_n = get_cpu_count()
 
 		while not ev.wait(interval):
 			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
@@ -2036,6 +2042,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
+
 
 def gdic_dialog_type_chk(gdic, name):
 	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
@@ -2952,14 +2959,7 @@ def load_yaml(filename, def_ret=None):
 	return d
 
 def terminate_children(proc, sigint=False):
-    try:
-        for child in psutil.Process(proc.pid).children():
-            terminate_children(child, sigint)
-            terminate(child, sigint)
-
-    except AttributeError:
-        # fix for newer psutil
-        for child in psutil.Process(proc.pid).children():
+        for child in get_proc_children(proc):
             terminate_children(child, sigint)
             terminate(child, sigint)
 
@@ -3263,11 +3263,37 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
+	
+# psutil 3.x to 1.x backward compatibility
+def get_cpu_count():
+	try:
+		return psutil.NUM_CPUS
+	except AttributeError:
+		return psutil.cpu_count()
+
+def get_proc_children(proc, r=False):
+	try:
+		return proc.get_children(recursive=r)
+	except AttributeError:
+		return proc.children(recursive=r)
+
+def get_proc_nice(proc):
+	try:
+		return proc.get_nice()
+	except AttributeError:
+		return proc.nice()
+
+def get_proc_cpu_affinity(proc):
+	try:
+		return proc.get_cpu_affinity()
+	except AttributeError:
+		return proc.cpu_affinity()
 
 if __name__ == "__main__":
 	gettext.install("app")
 
 	app = MyApp(0)
 	app.MainLoop()
+
 
 # EOF
