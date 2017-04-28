@@ -62,7 +62,7 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
 ```
 
-**NOTE: Following packages cannnot use in kinetic.**
+**NOTE: Following packages are not supported in ROS Kinetic.**
 - gazebo
 - orb slam
 - dpm ocv
