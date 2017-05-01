@@ -38,16 +38,15 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <runtime_manager/ConfigCarKf.h>
-#include <cv_tracker/image_obj_ranged.h>
+#include <cv_tracker_msgs/image_obj_ranged.h>
 
-#include <cv_tracker/image_obj_tracked.h>
+#include <cv_tracker_msgs/image_obj_tracked.h>
 #include <std_msgs/Header.h>
 
 //TRACKING STUFF
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -60,6 +59,22 @@
 
 #define SSTR( x ) dynamic_cast< std::ostringstream & >( \
         ( std::ostringstream() << std::dec << x ) ).str()
+
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
+#include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
+
+struct ObjectDetection_
+{
+	//ObjectDetection_();
+	//ObjectDetection_(const cv::Rect& rect, float score, int classId=1);
+	cv::Rect rect;
+	float score;
+	int classID;
+};
 
 ros::Publisher image_objects;//ROS
 
@@ -77,7 +92,7 @@ static bool 		USE_ORB;
 
 static bool 		track_ready_;
 static bool 		detect_ready_;
-static cv_tracker::image_obj_tracked kf_objects_msg_;
+static cv_tracker_msgs::image_obj_tracked kf_objects_msg_;
 
 struct kstate
 {
@@ -88,7 +103,7 @@ struct kstate
 	unsigned int		id;//id of this tracked object
 	cv::Mat			image;//image containing the detected and tracked object
 	int			lifespan;//remaining lifespan before deprecate
-	cv::LatentSvmDetector::ObjectDetection obj;//currently not used
+	//ObjectDetection_ obj;//currently not used
 	cv::Scalar	color;
 	int		real_data;
 	//std::vector<KeyPoint> orbKeypoints;
@@ -102,7 +117,7 @@ struct kstate
 std::vector<kstate> 	_kstates;
 std::vector<bool> 	_active;
 std::vector<cv::Scalar>	_colors;
-std::vector<cv::LatentSvmDetector::ObjectDetection> _dpm_detections;
+std::vector<ObjectDetection_> _dpm_detections;
 
 std::string object_type;
 std::vector<float> _ranges;
@@ -143,7 +158,7 @@ void getRectFromPoints(std::vector< cv::Point2f > corners, cv::Rect& outBounding
 
 }
 
-bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
+/*bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingBox, unsigned int inMinMatches=2, float inKnnRatio=0.7)
 {
 	//vector of keypoints
 	std::vector< cv::KeyPoint > keypointsO;
@@ -230,7 +245,7 @@ bool orbMatch(cv::Mat& inImageScene, cv::Mat& inImageObj, cv::Rect& outBoundingB
 	}
 
 	return false;
-}
+}*/
 
 ///Returns true if an im1 is contained in im2 or viceversa
 bool crossCorr(cv::Mat im1, cv::Mat im2)
@@ -328,8 +343,8 @@ void posScaleToBbox(std::vector<kstate> kstates, std::vector<kstate>& trackedDet
 			tmp.max_height = kstates[i].max_height;
 
 			//fill in also LAtentSvm object
-			tmp.obj.rect = tmp.pos;
-			tmp.obj.score = tmp.score;
+			//tmp.obj.rect = tmp.pos;
+			//tmp.obj.score = tmp.score;
 
 			if (tmp.pos.x < 0)
 				tmp.pos.x = 0;
@@ -360,8 +375,8 @@ int getAvailableIndex(std::vector<kstate>& kstates)
 	return cur_size;
 }
 
-void initTracking(cv::LatentSvmDetector::ObjectDetection object, std::vector<kstate>& kstates,
-		  cv::LatentSvmDetector::ObjectDetection detection,
+void initTracking(ObjectDetection_ object, std::vector<kstate>& kstates,
+		  ObjectDetection_ detection,
 		  cv::Mat& image, std::vector<cv::Scalar> colors, float range)
 {
 	kstate new_state;
@@ -567,12 +582,12 @@ void ApplyNonMaximumSuppresion(std::vector< kstate >& in_source, float in_nms_th
 	in_source = filtered_detections;
 }
 
-void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections, int frameNumber,
+void doTracking(std::vector<ObjectDetection_>& detections, int frameNumber,
 		std::vector<kstate>& kstates, std::vector<bool>& active, cv::Mat& image,
 		std::vector<kstate>& trackedDetections, std::vector<cv::Scalar> & colors)
 {
-	std::vector<cv::LatentSvmDetector::ObjectDetection> objects;
-	//vector<LatentSvmDetector::ObjectDetection> tracked_objects;
+	std::vector<ObjectDetection_> objects;
+	//vector<LatentSvmDetector::ObjectDetection_> tracked_objects;
 	std::vector<bool> predict_indices;//this will correspond to kstates i
 	std::vector<bool> correct_indices;//this will correspond to kstates i
 	std::vector<int> correct_detection_indices;//this will correspond to kstates i, used to store the index of the corresponding object
@@ -620,10 +635,10 @@ void doTracking(std::vector<cv::LatentSvmDetector::ObjectDetection>& detections,
 				cv::Rect boundingbox;
 				bool matched = false;
 				//try to match with previous frame
-				if ( !USE_ORB )
+				//if ( !USE_ORB )
 					matched = ( !alreadyMatched(j, already_matched) && crossCorr(kstates[i].image, currentObjectROI));
-				else
-					matched = (!alreadyMatched(j, already_matched) && orbMatch(currentObjectROI, kstates[i].image, boundingbox, ORB_MIN_MATCHES, ORB_KNN_RATIO));
+				//else
+				//	matched = (!alreadyMatched(j, already_matched) && orbMatch(currentObjectROI, kstates[i].image, boundingbox, ORB_MIN_MATCHES, ORB_KNN_RATIO));
 
 				if(matched)
 				{
@@ -789,7 +804,7 @@ void publish_if_possible()
 	}
 }
 
-void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::LatentSvmDetector::ObjectDetection> detections,
+void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<ObjectDetection_> detections,
 			 std::vector<kstate>& kstates, std::vector<bool>& active,
 			 std::vector<cv::Scalar> colors, const sensor_msgs::Image& image_source)
 {
@@ -804,7 +819,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 
 	//ROS
 	int num = tracked_detections.size();
-	std::vector<cv_tracker::image_rect_ranged> rect_ranged_array;
+	std::vector<cv_tracker_msgs::image_rect_ranged> rect_ranged_array;
 	std::vector<int> real_data(num,0);
 	std::vector<int> obj_id(num, 0);
 	std::vector<int> lifespan(num, 0);
@@ -813,7 +828,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 	for (size_t i = 0; i < tracked_detections.size(); i++)
 	{
 		kstate od = tracked_detections[i];
-		cv_tracker::image_rect_ranged rect_ranged_;
+		cv_tracker_msgs::image_rect_ranged rect_ranged_;
 
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
@@ -835,7 +850,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<cv::Latent
 		//ENDROS
 	}
 	//more ros
-	cv_tracker::image_obj_tracked kf_objects_msg;
+	cv_tracker_msgs::image_obj_tracked kf_objects_msg;
 
 	kf_objects_msg.type = object_type;
 	kf_objects_msg.total_num = num;
@@ -867,12 +882,12 @@ void image_callback(const sensor_msgs::Image& image_source)
 	_counter++;
 }
 
-void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
+void detections_callback(cv_tracker_msgs::image_obj_ranged image_objects_msg)
 {
 	if(!detect_ready_)
 	{
 		unsigned int num = image_objects_msg.obj.size();
-		std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
+		std::vector<cv_tracker_msgs::image_rect_ranged> objects = image_objects_msg.obj;
 		object_type = image_objects_msg.type;
 		image_objects_header = image_objects_msg.header;
 		//points are X,Y,W,H and repeat for each instance
@@ -888,7 +903,9 @@ void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
 			tmp.y = objects.at(i).rect.y;
 			tmp.width = objects.at(i).rect.width;
 			tmp.height = objects.at(i).rect.height;
-			_dpm_detections.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+			ObjectDetection_ obj_tmp;
+			obj_tmp.rect = tmp; obj_tmp.score=0;
+			_dpm_detections.push_back(obj_tmp);
 			_ranges.push_back(objects.at(i).range);
 			_min_heights.push_back(objects.at(i).min_height);
 			_max_heights.push_back(objects.at(i).max_height);
@@ -945,10 +962,14 @@ int kf_main(int argc, char* argv[])
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	image_objects = n.advertise<cv_tracker::image_obj_tracked>("image_obj_tracked", 1);
+	image_objects = n.advertise<cv_tracker_msgs::image_obj_tracked>("image_obj_tracked", 1);
 
+#if (CV_MAJOR_VERSION == 3)
+	generateColors(_colors, 25);
+#else
 	cv::generateColors(_colors, 25);
 
+#endif
 	std::string image_topic;
 	std::string obj_topic;
 	if (private_nh.getParam("image_node", image_topic))

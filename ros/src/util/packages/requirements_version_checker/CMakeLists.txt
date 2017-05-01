@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(requirements_version_checker)
-
 execute_process(
   COMMAND rosversion -d
   OUTPUT_VARIABLE ROS_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if (NOT "${ROS_VERSION}" MATCHES "(indigo|jade)")
+if (NOT "${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 message(
   FATAL_ERROR
-  "You must need ROS indigo or jade(Your ROS version is '${ROS_VERSION}')"
+  "You must need ROS indigo or jade or kinetic(Your ROS version is '${ROS_VERSION}')"
 )
 endif()
 
@@ -20,9 +19,22 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+
+
 if ("${OPENCV_VERSION}" VERSION_LESS "2.4.8")
+execute_process(
+  COMMAND pkg-config --modversion opencv-3.2.0-dev
+  OUTPUT_VARIABLE KINETIC_OPENCV_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if (DEFINED KINETIC_OPENCV_VERSION)
+message(
+  STATUS
+  "${KINETIC_OPENCV_VERSION}")
+else()
 message(
   FATAL_ERROR
   "You must need OpenCV 2.4.8 or higher(Your version is '${OPENCV_VERSION})'"
 )
+endif()
 endif()

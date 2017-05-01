@@ -624,7 +624,7 @@ params :
       desc     : cpu_chks desc sample
       label    : CPU
       kind     : checkboxes
-      item_n   : psutil.NUM_CPUS
+      item_n   : get_cpu_count()
       v        : []
     - name     : nice
       desc     : nice desc sample

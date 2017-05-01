@@ -1,10 +1,16 @@
 cmake_minimum_required (VERSION 2.8.3)
 project (orb_localizer)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package (catkin REQUIRED
 	COMPONENTS
 		roscpp
-		tf 
+		tf
 		sensor_msgs
 		image_transport
 		cv_bridge
@@ -54,7 +60,7 @@ add_custom_target (orb_vocabulary ALL
 	[ ! -e ${orb_slam_vocabulary_file} ] && tar -zxf ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz --directory ${CATKIN_DEVEL_PREFIX}/share/${PROJECT_NAME} || return 0
 	DEPENDS Vocabulary/ORBvoc.txt.tar.gz
 )
-add_definitions ( 
+add_definitions (
 	-DORB_SLAM_VOCABULARY="${orb_slam_vocabulary_file}"
 )
 
@@ -78,18 +84,18 @@ include_directories (
 	# my own
 	include
 	${catkin_INCLUDE_DIRS}
-	
+
 # Important libraries
 	${OpenCV_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
 	${Boost_INCLUDE_DIRS}
 	${PYTHON_INCLUDE_DIR}
-	
+
 # Third parties
 	Thirdparty
 	Thirdparty/g2o
 	Thirdparty/Pangolin/include
-	
+
 )
 
 
@@ -148,7 +154,7 @@ add_executable (
 target_link_libraries (
 	orb_mapping
 		${ORB_BIN_LINKS}
-		${LINK_LIBRARIES}	
+		${LINK_LIBRARIES}
 )
 
 add_executable (
@@ -183,3 +189,4 @@ target_link_libraries (
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
 )
+endif()

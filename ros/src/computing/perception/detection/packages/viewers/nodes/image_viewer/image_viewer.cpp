@@ -33,14 +33,19 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
+#include "gencolors.cpp"
+#else
 #include <opencv2/contrib/contrib.hpp>
+#endif
 
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <cv_tracker/image_obj_tracked.h>
-#include <cv_tracker/image_obj.h>
+#include <cv_tracker_msgs/image_obj_tracked.h>
+#include <cv_tracker_msgs/image_obj.h>
 
 //DPM related
 static std::vector<cv::Rect> cars;		//objects detected
@@ -210,7 +215,7 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	_drawing = false;
 }
 
-static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
+static void image_obj_update_cb(const cv_tracker_msgs::image_obj& image_objs)
 {
 	if(_drawing)
 		return;
@@ -240,7 +245,7 @@ static void image_obj_update_cb(const cv_tracker::image_obj& image_objs)
 	}
 }
 
-static void image_obj_updater_cb_tracked(const cv_tracker::image_obj_tracked& image_objs_tracked_msg)
+static void image_obj_updater_cb_tracked(const cv_tracker_msgs::image_obj_tracked& image_objs_tracked_msg)
 {
 	if(_drawing)
 		return;
@@ -293,7 +298,11 @@ int main(int argc, char **argv)
 		image_topic_name = "/image_raw";
 	}
 
+#if (CV_MAJOR_VERSION == 3)
+	generateColors(_colors, 25);
+#else
 	cv::generateColors(_colors, 25);
+#endif
 
 	ros::Subscriber scriber = n.subscribe(image_topic_name, 1, image_viewer_callback);
 

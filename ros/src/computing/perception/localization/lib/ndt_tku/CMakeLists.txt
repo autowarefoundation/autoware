@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_tku)
 
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED)
 
 ###################################
@@ -33,3 +40,4 @@ add_library(ndt_tku src/algebra.cpp src/newton.cpp)
 #  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #  FILES_MATCHING PATTERN "*.hh"
 #)
+endif()

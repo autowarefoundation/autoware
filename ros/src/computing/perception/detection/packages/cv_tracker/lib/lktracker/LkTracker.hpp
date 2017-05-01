@@ -9,11 +9,25 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+#include <opencv2/core/version.hpp>
+#if (CV_MAJOR_VERSION == 3)
+#include "gencolors.cpp"
+#else
+#include <opencv2/contrib/contrib.hpp>
+#endif
+
+struct ObjectDetection
+{
+	//ObjectDetection();
+	//ObjectDetection(const cv::Rect& rect, float score, int classId=1);
+	cv::Rect rect;
+	float score;
+	int classID;
+};
 
 class LkTracker
 {
@@ -32,8 +46,8 @@ class LkTracker
 	cv::Size 				sub_pixel_window_size_;
 	cv::Size 				window_size_;
 
-	cv::LatentSvmDetector::ObjectDetection	matched_detection_;
-	cv::LatentSvmDetector::ObjectDetection	current_rect_;//stores the current tracked object
+	ObjectDetection	matched_detection_;
+	ObjectDetection	current_rect_;//stores the current tracked object
 
 	int 					current_centroid_x_;
 	int 					current_centroid_y_;
@@ -57,8 +71,8 @@ public:
 
 
 	LkTracker(int in_id, float in_min_height, float in_max_height, float in_range);
-	cv::Mat 								Track(cv::Mat image, cv::LatentSvmDetector::ObjectDetection in_detections, bool in_update);
-	cv::LatentSvmDetector::ObjectDetection	GetTrackedObject();
+	cv::Mat 								Track(cv::Mat image, ObjectDetection in_detections, bool in_update);
+	ObjectDetection	GetTrackedObject();
 	unsigned int							GetRemainingLifespan();
 	void 									NullifyLifespan();
 	unsigned long int						GetFrameCount();

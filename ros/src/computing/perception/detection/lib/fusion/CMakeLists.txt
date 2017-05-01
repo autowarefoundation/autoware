@@ -6,13 +6,14 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   scan2image
   points2image
+  cv_tracker_msgs
 )
 find_package(OpenCV REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES fusion
-  CATKIN_DEPENDS roscpp scan2image points2image
+  CATKIN_DEPENDS roscpp scan2image points2image cv_tracker_msgs
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -33,7 +34,7 @@ target_link_libraries(fusion
 )
 add_dependencies(fusion
   points2image_generate_messages_cpp
-  cv_tracker_generate_messages_cpp
+  cv_tracker_msgs_generate_messages_cpp
   scan2image_generate_messages_cpp
   )
 

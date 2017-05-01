@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(road_wizard)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
@@ -61,7 +66,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 ## Build ##
 ###########
-
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ### region_tlr ###
 add_executable(region_tlr
   nodes/region_tlr/region_tlr.cpp
@@ -71,6 +76,7 @@ add_executable(region_tlr
 
 target_link_libraries(region_tlr
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 add_dependencies(region_tlr
@@ -91,6 +97,7 @@ add_executable(feat_proj
 target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 add_dependencies(feat_proj
@@ -149,4 +156,6 @@ target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
+  ${OpenCV_LIBS}
   )
+endif()

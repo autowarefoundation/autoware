@@ -313,7 +313,7 @@ struct SNAV1Msg{
   double dRollRate; //[rad/s]
   double dPitchRate;
   double dYawRate;
-  double dXAccel; //[m/s^2]
+  double dXAccel; //[G]
   double dYAccel;
   double dZAccel;
   double dNVel;   //[m/s]
@@ -349,12 +349,14 @@ bool MsgToNav1(const unsigned char* data, SNAV1Msg &sMsg) {
 }
 
 void Nav1ToRosImu(const SNAV1Msg &rNav1, sensor_msgs::Imu &ImuData) {
+  const double gravityAccel = 9.80665;
+  
   ImuData.angular_velocity.x = rNav1.dRollRate;
   ImuData.angular_velocity.y = rNav1.dPitchRate;
   ImuData.angular_velocity.z = rNav1.dYawRate;
-  ImuData.linear_acceleration.x = rNav1.dXAccel;
-  ImuData.linear_acceleration.y = rNav1.dYAccel;
-  ImuData.linear_acceleration.z = rNav1.dZAccel;
+  ImuData.linear_acceleration.x = rNav1.dXAccel * gravityAccel;
+  ImuData.linear_acceleration.y = rNav1.dYAccel * gravityAccel;
+  ImuData.linear_acceleration.z = rNav1.dZAccel * gravityAccel;
   ImuData.orientation = tf::createQuaternionMsgFromRollPitchYaw(rNav1.dRollAngle, rNav1.dPitchAngle, rNav1.dYawAngle);
 }
 

@@ -22,7 +22,11 @@ LkTracker::LkTracker(int in_id, float in_min_height, float in_max_height, float 
 	previous_centroid_x_	= 0;
 	previous_centroid_y_	= 0;
 
+#if (CV_MAJOR_VERSION == 3)
+	generateColors(colors_, 2);
+#else
 	cv::generateColors(colors_, 2);
+#endif
 	lifespan_				= 45;
 	DEFAULT_LIFESPAN_		= 45;
 	object_id				= in_id;
@@ -31,7 +35,7 @@ LkTracker::LkTracker(int in_id, float in_min_height, float in_max_height, float 
 	max_height_ 			= in_max_height;
 	range_					= in_range;
 }
-cv::LatentSvmDetector::ObjectDetection LkTracker::GetTrackedObject()
+ObjectDetection LkTracker::GetTrackedObject()
 {
 	return current_rect_;
 }
@@ -53,7 +57,7 @@ void LkTracker::ArrowedLine(cv::Mat& in_image, cv::Point in_point1, cv::Point in
 	cv::line(in_image, p, in_point2, in_color, in_thickness, in_line_type, in_shift);
 }
 
-void OrbFeatures(cv::Mat in_image)
+/*void OrbFeatures(cv::Mat in_image)
 {
 	cv::OrbFeatureDetector orb(500);
 	std::vector< cv::KeyPoint > keypoints;
@@ -69,7 +73,7 @@ void OrbFeatures(cv::Mat in_image)
 	bow_trainer.add(descriptors);
 
 	cv::Mat vocabulary = bow_trainer.cluster();
-}
+}*/
 
 unsigned int	LkTracker::GetRemainingLifespan()
 {
@@ -86,15 +90,15 @@ unsigned long int LkTracker::GetFrameCount()
 	return frame_count_;
 }
 
-cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetection in_detection, bool in_update)
+cv::Mat LkTracker::Track(cv::Mat in_image, ObjectDetection in_detection, bool in_update)
 {
 	cv::Mat gray_image;
 	//cv::cvtColor(in_image, in_image, cv::COLOR_RGB2BGR);
 	cv::cvtColor(in_image, gray_image, cv::COLOR_BGR2GRAY);
 	cv::Mat mask(gray_image.size(), CV_8UC1);
-	cv::TickMeter timer;
+	//cv::TickMeter timer;
 
-	timer.start();
+	//timer.start();
 
 	if (in_update && in_detection.rect.width > 0)
 	{
@@ -130,7 +134,8 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 								0.04);				//harris detector free parameter
 		if (current_points_.size()<=0)
 		{
-			current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
+			ObjectDetection tmp_det; tmp_det.rect = cv::Rect(0,0,0,0); tmp_det.score=0;
+			current_rect_ = tmp_det;
 			return in_image;
 		}
 		cv::cornerSubPix(gray_image,
@@ -199,7 +204,9 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 	}
 	if (valid_points.size()<=2)
 	{
-		current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
+		ObjectDetection tmp_det; tmp_det.rect = cv::Rect(0,0,0,0); tmp_det.score=0;
+		current_rect_ = tmp_det;
+		
 		return in_image;
 	}
 	frame_count_++;
@@ -277,7 +284,8 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 		//std::cout << "TRACK STOPPED" << std::endl;
 		prev_points_.clear();
 		current_points_.clear();
-		current_rect_ = cv::LatentSvmDetector::ObjectDetection(cv::Rect(0,0,0,0),0,0);
+		ObjectDetection tmp_det; tmp_det.rect = cv::Rect(0,0,0,0); tmp_det.score=0;
+		current_rect_ = tmp_det;
 		return in_image;
 	}
 
@@ -308,7 +316,7 @@ cv::Mat LkTracker::Track(cv::Mat in_image, cv::LatentSvmDetector::ObjectDetectio
 		previous_centroid_y_ = current_centroid_y_;
 	}
 
-	timer.stop();
+	//timer.stop();
 
 	//std::cout << timer.getTimeMilli() << std::endl;
 

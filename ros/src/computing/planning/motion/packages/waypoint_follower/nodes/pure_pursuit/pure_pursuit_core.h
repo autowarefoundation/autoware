@@ -39,8 +39,8 @@
 
 // User defined includes
 #include "runtime_manager/ConfigWaypointFollower.h"
-#include "waypoint_follower/lane.h"
-#include "waypoint_follower/ControlCommandStamped.h"
+#include "waypoint_follower_msgs/lane.h"
+#include "waypoint_follower_msgs/ControlCommandStamped.h"
 #include "pure_pursuit_viz.h"
 #include "pure_pursuit.h"
 
@@ -101,7 +101,7 @@ private:
   void callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromWayPoints(const waypoint_follower::laneConstPtr &msg);
+  void callbackFromWayPoints(const waypoint_follower_msgs::laneConstPtr &msg);
 
   // initializer
   void initForROS();
