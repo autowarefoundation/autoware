@@ -157,40 +157,40 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 [![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading Map Data
-[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/mqdefault.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
 
 ### Localization with GNSS
-[![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/0.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
+[![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/mqdefault.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
 
 ### Localization without GNSS
-[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/0.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
+[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/mqdefault.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
 
 ### Mapping
-[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/0.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
+[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/mqdefault.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
 
 ### Detection with SSD
-[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/0.jpg)](https://youtu.be/EjamMJjkjBA)
+[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
 
 ### Detection with DPM
-[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/0.jpg)](https://youtu.be/P_BFQNbudlg)
+[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)
 
 ### Detection with Euclidean Clustering
-[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/0.jpg)](https://youtu.be/Tma2DKMxt4Y)
+[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/mqdefault.jpg)](https://youtu.be/Tma2DKMxt4Y)
 
 ### Traffic Light Recognition
-[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/0.jpg)](https://youtu.be/KmOdBms9r2w)
+[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/mqdefault.jpg)](https://youtu.be/KmOdBms9r2w)
 
 ### Planning with ROSBAG
-[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
+[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/mqdefault.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
 
 ### Planning with wf_simulator
-[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/0.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
+[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/mqdefault.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
 
 ### Planning with Hybrid State A*
-[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/0.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
+[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/mqdefault.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
 
 ### Calibration Toolkit
-[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/0.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
 ## Sample Data
 
