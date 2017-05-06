@@ -1,0 +1,51 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+The \b xsens_driver package provides \b mtnode.py, a generic ROS node publishing the data streamed by an XSens imu (MT, MTi, MTi-G...).
+
+\section topics Topics
+
+The ROS node is a wrapper around the \b mtdevice::MTDevice class. It can publish the
+following topics, depending on the configuration of the device:
+- \c /imu/data (<a
+  href="http://www.ros.org/doc/api/sensor_msgs/html/msg/Imu.html">sensor_msgs::Imu</a>):
+  orientation, angular velocity, linear acceleration,
+- \c /fix (<a
+  href="http://www.ros.org/doc/api/sensor_msgs/html/msg/NavSatFix.html">sensor_msgs::NavSatFix</a>):
+  longitude, latitude, altitude (from GPS only for MTi-G),
+- \c /fix_extended (<a
+  href="http://www.ros.org/doc/api/gps_common/html/msg/GPSFix.html">gps_common::GPSFix</a>):
+  more complete GPS information than \c /fix,
+- \c /velocity (<a
+  href="http://www.ros.org/doc/api/geometry_msgs/html/msg/TwistStamped.html">geometry_msgs::TwistStamped</a>): linear and angular velocity,
+- \c /magnetic (<a
+  href="http://www.ros.org/doc/api/geometry_msgs/html/msg/Vector3Stamped.html">geometry_msgs::Vector3Stamped</a>): direction of magnetic field,
+- \c /temperature (<a
+  href="http://www.ros.org/doc/api/std_msgs/html/msg/Float32.html">std_msgs::Float32</a>): temperature. 
+
+It also publishes <a href="http://www.ros.org/wiki/diagnostics">diagnostics</a>
+information.
+
+If the IMU is set to raw mode, the values in of the \c /imu/data, \c /velocity and \c
+/magnetic topics are the 16 bits output of the AD converters.
+
+The covariance information in the <a
+ href="http://www.ros.org/doc/api/sensor_msgs/html/msg/Imu.html">sensor_msgs::Imu</a>
+message are filled with default values from the MTx/MTi/MTi-G documentation but
+may not be exact; it also does not correspond to the covariance of the internal XKF.
+
+\section params Parameters
+
+The nodes can take the following parameters:
+- \a ~device (\c auto): the path of the device file to connect to the imu; \c
+  auto will look through all serial devices to find the first one.
+- \a ~baudrate (0): the baudrate of the IMU (unused for \c auto device); 0 will
+  try to auto-detect baudrate.
+- \a ~frame_id (\c /base_imu): the frame id of the IMU.
+
+\section dialout Permissions
+
+It might be necessary to add the user to the \c dialout group so that the node can communicate with the device.
+
+*/
