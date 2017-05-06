@@ -1,6 +1,6 @@
 # Autoware
 
-Integrated open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
+Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
 - 3D Localization
 - 3D Mapping
@@ -27,7 +27,7 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 
 Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
 
-See also Autoware/docs for the tips of Autoware development, including coding styles.
+See also Autoware/docs for the tips of Autoware development, including the coding style and branching model.
 
 ## License
 
@@ -105,15 +105,17 @@ The original repository is [here](https://github.com/CPFL/velodyne). If you chan
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
 
-GitFlow, git branching model, is used in the Autoware repository.
+GitFlow, the git branching model, is used in the Autoware repository.
 - When you adding new features, you can branch off your feature branch from `develop`.  
   you can use the following command.  
   `$ git checkout -b feature/[your_branch_name] develop`
-- When you find bugs in `master` branch, you can branch off your hotfix branch from `master`.  
+- When you find bugs in `master`, you can branch off your hotfix branch from `master`.  
   you can use the following command.  
   `$ git checkout -b hotfix/[your_branch_name] master`
 
-More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
+See [docs/en/branching_model.md](docs/en/branching_model.md)
+
+More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Main Packages
 
@@ -147,7 +149,7 @@ More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ## Demo Videos
 
 ### Public Road Demonstration
-[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/0.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
+[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/mqdefault.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
 
 ## Instruction Videos
 
