@@ -91,7 +91,8 @@ class XSensDriver(object):
 				message='No status information')
 		self.diag_msg.status = [self.stest_stat, self.xkf_stat, self.gps_stat]
 
-		self.imu_pub = rospy.Publisher('mti/sensor/imu', Imu, queue_size=10) #IMU message
+		# self.imu_pub = rospy.Publisher('mti/sensor/imu', Imu, queue_size=10) #IMU message
+		self.imu_pub = rospy.Publisher('imu_raw', Imu, queue_size=10) #IMU message
 		self.ss_pub = rospy.Publisher('mti/sensor/sample', sensorSample, queue_size=10) # sensorSample
 		self.mag_pub = rospy.Publisher('mti/sensor/magnetic', Vector3Stamped, queue_size=10) # magnetic
 		self.baro_pub = rospy.Publisher('mti/sensor/pressure', baroSample, queue_size=10) # baro
