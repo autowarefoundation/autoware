@@ -23,6 +23,12 @@ Integrated open-source software for urban autonomous driving, maintained by [Tie
 
 Autoware is protected by the BSD License. Please use it on at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
+## Manuals and Documents
+
+Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
+
+See also Autoware/docs for the tips of Autoware development, including coding styles.
+
 ## License
 
 * New BSD License
@@ -108,10 +114,6 @@ GitFlow, git branching model, is used in the Autoware repository.
   `$ git checkout -b hotfix/[your_branch_name] master`
 
 More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
-
-## Documents
-
-See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English documents will be added shortly.
 
 ## Main Packages
 
