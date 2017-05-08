@@ -88,9 +88,10 @@ subs :
       - name : Xsens MTi-300
         desc : Xsens MTi-300 desc sample
         probe:
-        run  :
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/mti300.sh"
         param: mti300
         gui  :
+          flags: [ kill_children ]
           baud : { flags: [ nl ] }
           mode : { flags: [ nl ] }
 
