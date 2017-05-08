@@ -78,8 +78,8 @@ subs :
   - name : IMU
     desc : IMU desc sample
     subs :
-      - name : Crossbow vg440
-        desc : Crossbow vg440 desc sample
+      - name : Memsic VG440
+        desc : Memsic VG440 desc sample
         probe:
         run  :
 
