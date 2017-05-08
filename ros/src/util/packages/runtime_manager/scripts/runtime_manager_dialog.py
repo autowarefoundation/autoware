@@ -1945,7 +1945,10 @@ class MyFrame(rtmgr.MyFrame):
 			if f == self.log_th:
 				err = subprocess.PIPE
 
-			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
+			shell = ( len(args) > 0 and args[0] == 'do_shell_exec' )
+			if shell:
+				args = ' '.join( args[1:] )
+			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err, shell=shell)
 			self.all_procs.append(proc)
 
 			if f == self.log_th:
