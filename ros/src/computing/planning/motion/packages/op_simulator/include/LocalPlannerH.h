@@ -145,6 +145,7 @@ private:
 	BehaviorState GenerateBehaviorState(const VehicleState& vehicleState);
 	void TransformPoint(const WayPoint& refPose, GPSPoint& p);
 	void AddAndTransformContourPoints(const DetectedObject& obj, std::vector<WayPoint>& contourPoints);
+	void UpdateVelocityDirectlyToTrajectory(const BehaviorState& beh, const VehicleState& CurrStatus, const double& dt);
 
 	bool NoWayTest(const double& min_distance, const int& iGlobalPathIndex);
 

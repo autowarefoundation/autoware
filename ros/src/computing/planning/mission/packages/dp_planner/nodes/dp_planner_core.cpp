@@ -1,5 +1,4 @@
 /*
- *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -70,7 +69,7 @@ PlannerX::PlannerX()
 	bWayPlannerPath = false;
 	bKmlMapLoaded = false;
 	m_bEnableTracking = true;
-	m_ObstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 6.0;
+	m_ObstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 5.0;
 	m_ObstacleTracking.m_MAX_TRACKS_AFTER_LOSING = 5;
 	m_ObstacleTracking.m_DT = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
@@ -96,7 +95,10 @@ PlannerX::PlannerX()
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
 
-	pub_LocalPath = nh.advertise<waypoint_follower::lane>("final_waypoints", 1,true);
+	pub_LocalPath = nh.advertise<waypoint_follower::lane>("final_waypoints", 100,true);
+	pub_LocalBasePath = nh.advertise<waypoint_follower::lane>("base_waypoints", 100,true);
+	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 100,true);
+
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
 	pub_GlobalPlanNodes = nh.advertise<geometry_msgs::PoseArray>("global_plan_nodes", 1);
 	pub_StartPoint = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("GlobalStartpose", 1);
@@ -111,6 +113,7 @@ PlannerX::PlannerX()
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 	pub_cluster_cloud = nh.advertise<sensor_msgs::PointCloud2>("simu_points_cluster",1);
+	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 100);
 
 
 	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&PlannerX::callbackGetInitPose, 		this);
@@ -183,8 +186,8 @@ PlannerX::PlannerX()
 PlannerX::~PlannerX()
 {
 #ifdef OPENPLANNER_ENABLE_LOGS
-	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName, "MainLog",
-			"time,Behavior State,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, iTrajectory, Stop Sign, Traffic Light, Min_Stop_Distance, follow_distance, follow_velocity, Velocity, Steering, X, Y, Z, heading,"
+	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::StatesLogFolderName, "MainLog",
+			"time,dt,Behavior State,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, iTrajectory, Stop Sign, Traffic Light, Min_Stop_Distance, follow_distance, follow_velocity, Velocity, Steering, X, Y, Z, heading,"
 			, m_LogData);
 #endif
 
@@ -391,27 +394,24 @@ void PlannerX::UpdatePlanningParams()
 
 	nh.getParam("/dp_planner/horizonDistance", params.horizonDistance);
 	nh.getParam("/dp_planner/minFollowingDistance", params.minFollowingDistance);
-	nh.getParam("/dp_planner/maxFollowingDistance", params.maxFollowingDistance);
 	nh.getParam("/dp_planner/minDistanceToAvoid", params.minDistanceToAvoid);
 	nh.getParam("/dp_planner/maxDistanceToAvoid", params.maxDistanceToAvoid);
 	nh.getParam("/dp_planner/speedProfileFactor", params.speedProfileFactor);
 
-	nh.getParam("/dp_planner/horizontalSafetyDistancel", params.horizontalSafetyDistancel);
+	nh.getParam("/dp_planner/horizontalSafetyDistance", params.horizontalSafetyDistancel);
 	nh.getParam("/dp_planner/verticalSafetyDistance", params.verticalSafetyDistance);
 
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
+	nh.getParam("/dp_planner/enabTrajectoryVelocities", params.enabTrajectoryVelocities);
 
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
 	nh.getParam("/dp_planner/enableOutsideControl", m_bEnableOutsideControl);
 
 	PlannerHNS::ControllerParams controlParams;
 	controlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01);
-//	m_ControlParams.SteeringDelay = 0.85;
-//	m_ControlParams.Steering_Gain.kD = 0.5;
-//	m_ControlParams.Steering_Gain.kP = 0.1;
-//	m_ControlParams.Steering_Gain.kI = 0.03;
 	controlParams.Velocity_Gain = PlannerHNS::PID_CONST(0.1, 0.005, 0.1);
-
+	nh.getParam("/dp_planner/steeringDelay", controlParams.SteeringDelay);
+	nh.getParam("/dp_planner/minPursuiteDistance", controlParams.minPursuiteDistance );
 
 	PlannerHNS::CAR_BASIC_INFO vehicleInfo;
 
@@ -420,6 +420,8 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/wheelBaseLength", vehicleInfo.wheel_base);
 	nh.getParam("/dp_planner/turningRadius", vehicleInfo.turning_radius);
 	nh.getParam("/dp_planner/maxSteerAngle", vehicleInfo.max_steer_angle);
+	vehicleInfo.max_speed_backword = params.maxSpeed;
+	vehicleInfo.min_speed_forward = params.minSpeed;
 
 	m_LocalPlanner.m_SimulationSteeringDelayFactor = controlParams.SimulationSteeringDelay;
 	m_LocalPlanner.Init(controlParams, params, vehicleInfo);
@@ -939,14 +941,40 @@ void PlannerX::PlannerMainLoop()
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 			visualization_msgs::Marker safety_box;
-			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBox, safety_box);
+			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBorder.points, safety_box);
 			pub_SafetyBorderRviz.publish(safety_box);
+
+			geometry_msgs::PoseArray sim_data;
+			geometry_msgs::Pose p_id, p_pose, p_box;
+
+
+			sim_data.header.frame_id = "map";
+			sim_data.header.stamp = ros::Time();
+
+			p_id.position.x = 0;
+
+			p_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a));
+			p_pose.position.x = m_LocalPlanner.state.pos.x;
+			p_pose.position.y = m_LocalPlanner.state.pos.y;
+			p_pose.position.z = m_LocalPlanner.state.pos.z;
+
+
+
+			p_box.position.x = m_LocalPlanner.m_CarInfo.width;
+			p_box.position.y = m_LocalPlanner.m_CarInfo.length;
+			p_box.position.z = 2.2;
+
+			sim_data.poses.push_back(p_id);
+			sim_data.poses.push_back(p_pose);
+			sim_data.poses.push_back(p_box);
+
+			pub_SimuBoxPose.publish(sim_data);
 
 			timespec log_t;
 			UtilityHNS::UtilityH::GetTickCount(log_t);
 			std::ostringstream dataLine;
 			std::ostringstream dataLineToOut;
-			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
+			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
 					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->m_pParams->rollOutNumber << "," <<
@@ -982,23 +1010,33 @@ void PlannerX::PlannerMainLoop()
 			sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		}
 
+
+		waypoint_follower::lane current_trajectory;
+		std_msgs::Int32 closest_waypoint;
+		PlannerHNS::RelativeInfo info;
+		PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_Path, m_LocalPlanner.state, info);
+		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, info.iBack, current_trajectory);
+		closest_waypoint.data = 1;
+		pub_ClosestIndex.publish(closest_waypoint);
+		pub_LocalBasePath.publish(current_trajectory);
+		pub_LocalPath.publish(current_trajectory);
+
+
 		if(m_CurrentBehavior.bNewPlan)
 		{
-			waypoint_follower::lane current_trajectory;
-			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, current_trajectory);
-			pub_LocalPath.publish(current_trajectory);
-
 			std::ostringstream str_out;
 			str_out << UtilityHNS::UtilityH::GetHomeDirectory();
 			str_out << UtilityHNS::DataRW::LoggingMainfolderName;
+			str_out << UtilityHNS::DataRW::PathLogFolderName;
 			str_out << "LocalPath_";
 			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
 
 			visualization_msgs::MarkerArray all_rollOuts;
-
 			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 		}
+
+
 
 		//Traffic Light Simulation Part
 		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 5)

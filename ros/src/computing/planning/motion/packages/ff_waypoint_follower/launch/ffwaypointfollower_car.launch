@@ -10,7 +10,7 @@
 	<arg name="maxSteerValue" 				default="660"  />
 	<arg name="minSteerValue" 				default="-660" />
 	<arg name="maxVelocity" 				default="3.0"  />
-	<arg name="minVelocity" 				default="0.2"  />
+	<arg name="minVelocity" 				default="0.0"  />
 		
 	<arg name="steeringDelay" 				default="1.2" />
 	<arg name="minPursuiteDistance" 		default="3.0"  />

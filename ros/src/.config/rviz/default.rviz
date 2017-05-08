@@ -76,7 +76,9 @@ Visualization Manager:
       Tree:
         world:
           map:
-            {}
+            base_link:
+              velodyne:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -226,7 +228,7 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 190
+      Max Intensity: 237
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: Points Raw
@@ -236,7 +238,7 @@ Visualization Manager:
       Size (Pixels): 1
       Size (m): 0.01
       Style: Points
-      Topic: /filtered_points
+      Topic: /points_raw
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -366,7 +368,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -383,7 +385,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /obj_car/obj_pose
@@ -457,25 +459,65 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Laserscan Costmap
       Topic: /ring_ogm
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /vector_map_center_lines_rviz
       Name: Vector Map CenterLines
       Namespaces:
-        {}
+        global_lane_waypoint_orientation_marker: true
+        stop_lines_rviz_1: true
+        stop_lines_rviz_10: true
+        stop_lines_rviz_11: true
+        stop_lines_rviz_12: true
+        stop_lines_rviz_13: true
+        stop_lines_rviz_14: true
+        stop_lines_rviz_15: true
+        stop_lines_rviz_16: true
+        stop_lines_rviz_17: true
+        stop_lines_rviz_18: true
+        stop_lines_rviz_19: true
+        stop_lines_rviz_2: true
+        stop_lines_rviz_20: true
+        stop_lines_rviz_21: true
+        stop_lines_rviz_22: true
+        stop_lines_rviz_23: true
+        stop_lines_rviz_24: true
+        stop_lines_rviz_25: true
+        stop_lines_rviz_26: true
+        stop_lines_rviz_27: true
+        stop_lines_rviz_28: true
+        stop_lines_rviz_29: true
+        stop_lines_rviz_3: true
+        stop_lines_rviz_30: true
+        stop_lines_rviz_31: true
+        stop_lines_rviz_32: true
+        stop_lines_rviz_33: true
+        stop_lines_rviz_34: true
+        stop_lines_rviz_35: true
+        stop_lines_rviz_36: true
+        stop_lines_rviz_37: true
+        stop_lines_rviz_4: true
+        stop_lines_rviz_5: true
+        stop_lines_rviz_6: true
+        stop_lines_rviz_7: true
+        stop_lines_rviz_8: true
+        stop_lines_rviz_9: true
+        vector_map_center_lines_rviz: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        {}
+        global_lane_array_marker: true
+        global_lane_waypoint_orientation_marker: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -483,7 +525,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -491,7 +533,10 @@ Visualization Manager:
       Marker Topic: /detected_polygons
       Name: Tracked Contours
       Namespaces:
-        {}
+        Polygon_Corners: true
+        Quarters_Lines: true
+        detected_polygons: true
+        detected_polygons_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -515,7 +560,7 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        {}
+        detected_polygons_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -531,7 +576,7 @@ Visualization Manager:
       Marker Topic: /safety_border
       Name: Safety Box
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -722,11 +767,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 17.6234
-      Target Frame: base_link
+      Scale: 9.30774
+      Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 0
-      Y: 0
+      X: 31.7578
+      Y: 0.410782
     Saved: ~
 Window Geometry:
   Camera:

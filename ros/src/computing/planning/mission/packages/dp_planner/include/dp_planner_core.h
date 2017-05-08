@@ -44,6 +44,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <std_msgs/Int8.h>
+#include <std_msgs/Int32.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
 
@@ -73,9 +74,9 @@ namespace PlannerXNS
 {
 
 #define _DATASET_GENERATION_BLOCK
-#define SIMU_OBSTACLE_WIDTH 0.8
+#define SIMU_OBSTACLE_WIDTH 1.5
 #define SIMU_OBSTACLE_HEIGHT 1
-#define SIMU_OBSTACLE_LENGTH 1.6
+#define SIMU_OBSTACLE_LENGTH 1.5
 
 enum SIGNAL_TYPE{SIMULATION_SIGNAL, ROBOT_SIGNAL};
 enum MAP_SOURCE_TYPE{MAP_AUTOWARE, MAP_FOLDER, MAP_KML_FILE};
@@ -158,6 +159,8 @@ protected:
 
 	//define publishers
 	ros::Publisher pub_LocalPath;
+	ros::Publisher pub_LocalBasePath;
+	ros::Publisher pub_ClosestIndex;
 	ros::Publisher pub_BehaviorState;
 	ros::Publisher pub_GlobalPlanNodes;
 	ros::Publisher pub_StartPoint;
@@ -172,6 +175,7 @@ protected:
 	ros::Publisher pub_BehaviorStateRviz;
 	ros::Publisher pub_SafetyBorderRviz;
 	ros::Publisher pub_cluster_cloud;
+	ros::Publisher pub_SimuBoxPose;
 
 	// define subscribers.
 	ros::Subscriber sub_initialpose			;

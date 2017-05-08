@@ -149,6 +149,7 @@ protected:
 	ros::Publisher pub_FollowPointRviz;
 	ros::Publisher pub_VehicleCommand;
 	ros::Publisher pub_ControlBoxOdom;
+	ros::Publisher pub_VelocityRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_initialpose;

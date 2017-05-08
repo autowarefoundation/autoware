@@ -110,8 +110,8 @@ public:
 	  min_steer_angle		= 0.42;
 	  length				= 4.3;
 	  width					= 1.82;
-	  max_acceleration		= 0.6;
-	  max_deceleration		= -1.0;
+	  max_acceleration		= 1.5; // m/s2
+	  max_deceleration		= -1.5; // 1/3 G
   }
 
   double CalcMaxSteeringAngle()

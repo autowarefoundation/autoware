@@ -49,7 +49,7 @@ public:
 	 * @param distance distance from initial relative point to follow point
 	 * @return point on trajectory
 	 */
-	static WayPoint GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance);
+	static WayPoint GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance, unsigned int& point_index);
 
 	/**
 	 * @brief Calculate the precise distance from projection of point p2 (relative) to projection of point 1 (relative)
@@ -84,7 +84,8 @@ public:
 	static void SmoothPath(std::vector<WayPoint>& path, double weight_data =0.25,double weight_smooth = 0.25,double tolerance = 0.01);
 	static double CalcCircle(const GPSPoint& pt1, const GPSPoint& pt2, const GPSPoint& pt3, GPSPoint& center);
 	static double CalcAngleAndCost(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
-	static double CalcAngleAndCostAndCurvatureAnd2D(std::vector<WayPoint>& path, const double& lastCost = 0, const bool& bSmooth = true );
+	//static double CalcAngleAndCostSimple(std::vector<WayPoint>& path, const double& lastCost = 0);
+	static double CalcAngleAndCostAndCurvatureAnd2D(std::vector<WayPoint>& path, const double& lastCost = 0);
 
 	static double GetAccurateDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 

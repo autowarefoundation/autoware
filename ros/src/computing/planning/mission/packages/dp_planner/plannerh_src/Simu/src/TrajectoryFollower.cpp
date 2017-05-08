@@ -121,7 +121,8 @@ bool TrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS::WayPoint
 
 	RelativeInfo info;
 	PlanningHelpers::GetRelativeInfo(path, state, info);
-	pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, follow_distance);
+	unsigned int point_index = 0;
+	pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, follow_distance, point_index);
 	prep = info.perp_point;
 	lateral_err = info.perp_distance;
 	m_iPrevWayPoint = info.iFront;
@@ -224,8 +225,8 @@ int TrajectoryFollower::VeclocityControllerUpdate(const double& dt, const Planne
 			deceleration_critical = (-CurrStatus.speed*CurrStatus.speed)/(2.0*CurrBehavior.stopDistance);
 
 		desiredVelocity = (deceleration_critical * dt) + CurrStatus.speed;
-		//desiredVelocity = (m_VehicleInfo.max_deceleration * dt) + CurrStatus.speed;
-		//desiredVelocity = 0;
+
+		//desiredVelocity = m_PerpendicularPoint.v;
 	}
 	else if(CurrBehavior.state == FORWARD_STATE || CurrBehavior.state == OBSTACLE_AVOIDANCE_STATE )
 	{

@@ -11,7 +11,7 @@
 #include "AlternativeVisualizer.h"
 
 using namespace  Graphics;
-#define USE_ALT_VISUALIZER 0
+#define USE_ALT_VISUALIZER 1
 
 int main(int argc, char** argv)
 {

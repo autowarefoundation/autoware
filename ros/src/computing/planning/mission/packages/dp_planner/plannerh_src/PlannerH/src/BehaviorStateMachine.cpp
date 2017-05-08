@@ -24,6 +24,7 @@ BehaviorStateMachine::BehaviorStateMachine(PlanningParams* pParams, PreCalculate
 	m_currentStopSignID		= -1;
 	m_currentTrafficLightID	= -1;
 	decisionMakingTime		= 0.0;
+	m_zero_velocity 		= 0.2;
 
 	if(!pPreCalcVal)
 		m_pCalculatedValues = new PreCalculatedConditions();
@@ -155,7 +156,7 @@ BehaviorStateMachine* TrafficLightStopState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 	}
 
-	else if(pCParams->bTrafficIsRed && pCParams->currentVelocity <= ZERO_VELOCITY)
+	else if(pCParams->bTrafficIsRed && pCParams->currentVelocity <= m_zero_velocity)
 			return FindBehaviorState(TRAFFIC_LIGHT_WAIT_STATE);
 	else
 		return FindBehaviorState(this->m_Behavior); // return and reset
@@ -174,7 +175,7 @@ BehaviorStateMachine* TrafficLightWaitState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 	}
 
-	else if(pCParams->currentVelocity > ZERO_VELOCITY)
+	else if(pCParams->currentVelocity > m_zero_velocity)
 		return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
 
 	else
@@ -191,7 +192,7 @@ BehaviorStateMachine* StopSignStopState::GetNextState()
 
 	//std::cout << "From Stop Beh D: " << pCParams->distanceToStop() << ", Prev LineID: " << pCParams->prevStopSignID << ", Curr SignID: " << pCParams->currentStopSignID << std::endl;
 
-	if(pCParams->currentVelocity < ZERO_VELOCITY)
+	if(pCParams->currentVelocity < m_zero_velocity)
 		return FindBehaviorState(STOP_SIGN_WAIT_STATE);
 
 	else

@@ -20,7 +20,7 @@ using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
 
-#define VectorMap "/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/"
+#define VectorMap "/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/"
 //#define kmlMap	"tsukuba_multy_2_11.kml"
 
 #define kmlMapPath	"/media/user/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/kml/ToyotaCityCustomInfo.kml"
@@ -274,15 +274,14 @@ PlannerTestDraw::PlannerTestDraw()
 	//m_PlanningParams.carTipMargin = 3.0;
 	//m_PlanningParams.rollInMargin = 12.0;
 	//m_PlanningParams.rollInSpeedFactor = 0.25;
-	m_PlanningParams.pathDensity = 0.25;
+	m_PlanningParams.pathDensity = 0.5;
 	m_PlanningParams.rollOutDensity = 0.25;
 	m_PlanningParams.rollOutNumber = 8;
 	m_PlanningParams.horizonDistance = 200;
 	m_PlanningParams.minFollowingDistance = 8.0;
-	m_PlanningParams.maxFollowingDistance = 1000.0;
 	m_PlanningParams.minDistanceToAvoid = 16.0;
 	m_PlanningParams.maxDistanceToAvoid = 6.0;
-	//m_PlanningParams.speedProfileFactor = 1.0;
+	m_PlanningParams.speedProfileFactor = 2.0;
 	m_PlanningParams.horizonDistance = 0.2;
 	m_PlanningParams.verticalSafetyDistance = 0.4;
 
@@ -1529,6 +1528,8 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 				bEmergencyStop = true;
 
 			pR->m_CurrentBehavior = pR->m_LocalPlanner.DoOneStep(dt, currTargetState, obj_list, 1, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
+
+			PlannerHNS::PlanningHelpers::WritePathToFile("/home/hatem/SimuLogs/Test", pR->m_LocalPlanner.m_Path);
 
 //			double d_slowDown = hypot(pR->m_SlowDown.pos.y - pR->m_LocalPlanner.state.pos.y, pR->m_SlowDown.pos.x - pR->m_LocalPlanner.state.pos.x);
 //			if(d_slowDown < 3)

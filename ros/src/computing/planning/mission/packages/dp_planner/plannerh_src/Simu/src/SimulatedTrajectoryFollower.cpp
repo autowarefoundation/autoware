@@ -78,7 +78,8 @@ bool SimulatedTrajectoryFollower::FindNextWayPoint(const std::vector<PlannerHNS:
 
 	RelativeInfo info;
 	PlanningHelpers::GetRelativeInfo(path, state, info);
-	pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, follow_distance);
+	unsigned int point_index = 0;
+	pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, follow_distance, point_index);
 	prep = info.perp_point;
 	lateral_err = info.perp_distance;
 	m_iPrevWayPoint = info.iFront;

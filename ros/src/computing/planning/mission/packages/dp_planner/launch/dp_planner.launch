@@ -1,39 +1,42 @@
 <!-- -->
 <launch>
-	<arg name="maxVelocity" 				default="3.0" />
+	<arg name="maxVelocity" 				default="6.0" />
 	<arg name="minVelocity" 				default="0.0" />
 	<arg name="velocityProfileFactor" 		default="1.0" />
 	<arg name="maxPlanningDistance" 		default="1000000.0" />
-	<arg name="maxLocalPlanDistance" 		default="40.0" />
-	<arg name="samplingTipMargin" 			default="2.0"  />
-	<arg name="samplingOutMargin" 			default="10.0" />
+	<arg name="maxLocalPlanDistance" 		default="60" />
+	<arg name="samplingTipMargin" 			default="4"  />
+	<arg name="samplingOutMargin" 			default="12" />
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.25" />
-	<arg name="rollOutDensity" 				default="0.5" />
-	<arg name="rollOutsNumber" 				default="4"    />
-	<arg name="horizonDistance" 			default="200"  />
+	<arg name="pathDensity" 				default="0.5" />
+	<arg name="rollOutDensity" 				default="0.25" />
+	<arg name="rollOutsNumber" 				default="14"    />
+	<arg name="horizonDistance" 			default="100"  />
 	
-	<arg name="minFollowingDistance" 		default="16.0"  />
-	<arg name="maxFollowingDistance" 		default="1000.0" /> <!-- Expired -->
-	<arg name="minDistanceToAvoid" 			default="16.0" />
-	<arg name="maxDistanceToAvoid" 			default="6.0"  />
-	<arg name="speedProfileFactor"			default="1.0"  />
+	<arg name="minFollowingDistance" 		default="30.0"  /> <!-- should be bigger than Distance to follow -->	
+	<arg name="minDistanceToAvoid" 			default="15.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
+	<arg name="maxDistanceToAvoid" 			default="2.0"  /> <!-- should be smaller than minDistanceToAvoid -->
+	<arg name="speedProfileFactor"			default="1"  />
 	
-	<arg name="horizontalSafetyDistancel"	default="0.3"  />
+	<arg name="horizontalSafetyDistance"	default="0.35"  />
 	<arg name="verticalSafetyDistance"		default="0.7"  />
 	
 	<arg name="enableSwerving" 				default="true"  />
 	<arg name="enableFollowing" 			default="true" />
 	<arg name="enableHeadingSmoothing" 		default="false" />
-	<arg name="enableTrafficLightBehavior" 	default="true" />
-	<arg name="enableStopSignBehavior" 		default="true" />	
+	<arg name="enableTrafficLightBehavior" 	default="false" />
+	<arg name="enableStopSignBehavior" 		default="false" />	
 	<arg name="enableLaneChange" 			default="false" />
+	<arg name="enabTrajectoryVelocities"	default="true" /> <!-- enable when using autoware's pure pursuit node-->
 	
 	<arg name="width" 						default="1.85"  />
 	<arg name="length" 						default="4.2"  />
 	<arg name="wheelBaseLength" 			default="2.7"  />
 	<arg name="turningRadius"				default="5.2"  />
 	<arg name="maxSteerAngle" 				default="0.5" />
+	
+	<arg name="steeringDelay" 				default="1.2" />
+	<arg name="minPursuiteDistance" 		default="3.0"  />
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
 	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->	
@@ -57,13 +60,12 @@
 		<param name="rollOutsNumber" 				value="$(arg rollOutsNumber)" />
 		<param name="horizonDistance" 				value="$(arg horizonDistance)" />
 		
-		<param name="minFollowingDistance" 			value="$(arg minFollowingDistance)" />
-		<param name="maxFollowingDistance" 			value="$(arg maxFollowingDistance)" />
+		<param name="minFollowingDistance" 			value="$(arg minFollowingDistance)" />		
 		<param name="minDistanceToAvoid" 			value="$(arg minDistanceToAvoid)" />
 		<param name="maxDistanceToAvoid" 			value="$(arg maxDistanceToAvoid)" />
 		<param name="speedProfileFactor"			value="$(arg speedProfileFactor)" />
 		
-		<param name="horizontalSafetyDistancel"		value="$(arg horizontalSafetyDistancel)" />
+		<param name="horizontalSafetyDistance"		value="$(arg horizontalSafetyDistance)" />
 		<param name="verticalSafetyDistance"		value="$(arg verticalSafetyDistance)" />
 		
 		<param name="enableSwerving" 				value="$(arg enableSwerving)" />
@@ -72,12 +74,16 @@
 		<param name="enableTrafficLightBehavior" 	value="$(arg enableTrafficLightBehavior)" />
 		<param name="enableStopSignBehavior" 		value="$(arg enableStopSignBehavior)" />		
 		<param name="enableLaneChange" 				value="$(arg enableLaneChange)" />
+		<param name="enabTrajectoryVelocities" 		value="$(arg enabTrajectoryVelocities)" />
 		
 		<param name="width" 						value="$(arg width)" />
 		<param name="length" 						value="$(arg length)" />
 		<param name="wheelBaseLength" 				value="$(arg wheelBaseLength)" />
 		<param name="turningRadius" 				value="$(arg turningRadius)" />
 		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
+		
+		<param name="steeringDelay" 				value="$(arg steeringDelay)" />
+		<param name="minPursuiteDistance" 			value="$(arg minPursuiteDistance)" />
 		
 		<param name="enableObjectTracking" 			value="$(arg enableObjectTracking)" />
 		<param name="enableOutsideControl" 			value="$(arg enableOutsideControl)" />

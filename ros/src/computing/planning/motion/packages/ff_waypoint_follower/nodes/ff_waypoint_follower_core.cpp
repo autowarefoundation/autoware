@@ -138,6 +138,7 @@ FFSteerControl::FFSteerControl()
 
 	pub_VehicleCommand			= nh.advertise<geometry_msgs::TwistStamped>("twist_cmd", 100);
 	pub_ControlBoxOdom			= nh.advertise<nav_msgs::Odometry>("ControlBoxOdom", 100);
+	pub_VelocityRviz 			= nh.advertise<std_msgs::Float32>("linear_velocity_viz", 10);
 
 	// define subscribers.
 	sub_initialpose 		= nh.subscribe("/initialpose", 		100, &FFSteerControl::callbackGetInitPose, 			this);
@@ -622,6 +623,11 @@ void FFSteerControl::PlannerMainLoop()
 			}
 
 			displayFollowingInfo(m_CurrentPos, m_PerpPoint, m_FollowPoint);
+
+			std_msgs::Float32 vel_rviz;
+			vel_rviz.data = m_CurrVehicleStatus.speed;
+			pub_VelocityRviz.publish(vel_rviz);
+
 		}
 
 		 if (m_CmdParams.iMapping == 1 && bNewCurrentPos == true)

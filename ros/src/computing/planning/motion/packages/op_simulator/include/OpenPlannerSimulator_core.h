@@ -116,7 +116,7 @@ protected:
 
 	ros::Publisher pub_SafetyBorderRviz;
 	ros::Publisher pub_SimuBoxPose;
-	ros::Publisher pub_SimuVelocity;
+	//ros::Publisher pub_SimuVelocity;
 	ros::Publisher pub_CurrPoseRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
 	ros::Publisher pub_BehaviorStateRviz;
@@ -147,6 +147,8 @@ public:
   void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
   		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
   		int& nOriginalPoints, int& nContourPoints);
+
+  PlannerHNS::WayPoint GetRealCenter(const PlannerHNS::WayPoint& currState);
 
   void visualizeBehaviors();
 };

@@ -2110,7 +2110,7 @@ void MappingHelpers::CreateKmlFromLocalizationPathFile(const std::string& pathFi
 	fileName << "_RoadNetwork.kml";
 	string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 
-	PlannerHNS::MappingHelpers::WriteKML("/home/user/SimuLogs/tsukuba_road_network_test.kml",kml_templateFilePath , roadMap);
+	PlannerHNS::MappingHelpers::WriteKML("/home/hatem/SimuLogs/YardKML.kml",kml_templateFilePath , roadMap);
 }
 
 } /* namespace PlannerHNS */

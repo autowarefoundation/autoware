@@ -50,11 +50,11 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
+void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
 		waypoint_follower::lane& trajectory)
 {
 	trajectory.waypoints.clear();
-	for(unsigned int i=0; i < path.size(); i++)
+	for(unsigned int i=iStart; i < path.size(); i++)
 	{
 		waypoint_follower::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
@@ -122,7 +122,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 		visualization_msgs::Marker& marker)
 {
-	if(safety_rect.size() != 4) return;
+	//if(safety_rect.size() != 4) return;
 
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
@@ -139,28 +139,47 @@ void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<Pl
 	lane_waypoint_marker.color.b = 0.0;
 	lane_waypoint_marker.color.a = 0.6;
 
-	geometry_msgs::Point p1, p2,p3,p4;
-	p1.x = safety_rect.at(0).x;
-	p1.y = safety_rect.at(0).y;
-	p1.z = safety_rect.at(0).z;
+	int id = 0;
+	for(unsigned int i = 0; i < safety_rect.size(); i++)
+	{
+		geometry_msgs::Point p;
+		p.x = safety_rect.at(i).x;
+		p.y = safety_rect.at(i).y;
+		p.z = safety_rect.at(i).z;
 
-	p2.x = safety_rect.at(1).x;
-	p2.y = safety_rect.at(1).y;
-	p2.z = safety_rect.at(1).z;
+		lane_waypoint_marker.points.push_back(p);
+	}
+	if(safety_rect.size() > 0)
+	{
+		geometry_msgs::Point p;
+		p.x = safety_rect.at(0).x;
+		p.y = safety_rect.at(0).y;
+		p.z = safety_rect.at(0).z;
+		lane_waypoint_marker.points.push_back(p);
+	}
 
-	p3.x = safety_rect.at(2).x;
-	p3.y = safety_rect.at(2).y;
-	p3.z = safety_rect.at(2).z;
-
-	p4.x = safety_rect.at(3).x;
-	p4.y = safety_rect.at(3).y;
-	p4.z = safety_rect.at(3).z;
-
-	lane_waypoint_marker.points.push_back(p1);
-	lane_waypoint_marker.points.push_back(p2);
-	lane_waypoint_marker.points.push_back(p3);
-	lane_waypoint_marker.points.push_back(p4);
-	lane_waypoint_marker.points.push_back(p1);
+//	geometry_msgs::Point p1, p2,p3,p4;
+//	p1.x = safety_rect.at(0).x;
+//	p1.y = safety_rect.at(0).y;
+//	p1.z = safety_rect.at(0).z;
+//
+//	p2.x = safety_rect.at(1).x;
+//	p2.y = safety_rect.at(1).y;
+//	p2.z = safety_rect.at(1).z;
+//
+//	p3.x = safety_rect.at(2).x;
+//	p3.y = safety_rect.at(2).y;
+//	p3.z = safety_rect.at(2).z;
+//
+//	p4.x = safety_rect.at(3).x;
+//	p4.y = safety_rect.at(3).y;
+//	p4.z = safety_rect.at(3).z;
+//
+//	lane_waypoint_marker.points.push_back(p1);
+//	lane_waypoint_marker.points.push_back(p2);
+//	lane_waypoint_marker.points.push_back(p3);
+//	lane_waypoint_marker.points.push_back(p4);
+//	lane_waypoint_marker.points.push_back(p1);
 
 	 marker = lane_waypoint_marker;
 
@@ -328,16 +347,31 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	quarters_marker.color.b = 0;
 	quarters_marker.frame_locked = false;
 
+	visualization_msgs::Marker direction_marker;
+	direction_marker.header.frame_id = "map";
+	direction_marker.header.stamp = ros::Time();
+	direction_marker.ns = "Object_Direction";
+	direction_marker.type = visualization_msgs::Marker::ARROW;
+	direction_marker.action = visualization_msgs::Marker::ADD;
+	direction_marker.scale.x = .9;
+	direction_marker.scale.y = .4;
+	direction_marker.scale.z = .4;
+	direction_marker.color.a = 0.8;
+	direction_marker.color.r = 0;
+	direction_marker.color.g = 1;
+	direction_marker.color.b = 0;
+	direction_marker.frame_locked = false;
 
-	 visualization_msgs::Marker velocity_marker;
+
+	visualization_msgs::Marker velocity_marker;
 	velocity_marker.header.frame_id = "map";
 	velocity_marker.header.stamp = ros::Time();
 	velocity_marker.ns = "detected_polygons_velocity";
 	velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	//velocity_marker.action = visualization_msgs::Marker::ADD;
-	//velocity_marker.scale.z = 0.2;
-	velocity_marker.scale.x = 0.5;
-	velocity_marker.scale.y = 0.5;
+	velocity_marker.scale.z = 0.9;
+	velocity_marker.scale.x = 0.9;
+	velocity_marker.scale.y = 0.9;
 	velocity_marker.color.a = 0.5;
 
 	velocity_marker.frame_locked = false;
@@ -408,7 +442,11 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 		//relative_p.y = 0.5;
 //		velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, point);
 		velocity_marker.pose.position = point;
-	  //velocity_marker.pose.position.z += 0.5;
+	    velocity_marker.pose.position.z += 0.5;
+
+	    direction_marker.id = i;
+	    direction_marker.pose.position = point;
+	    direction_marker.pose.position.z += 0.5;
 
 
 		for(unsigned int iq = 0; iq < 8; iq++)
@@ -418,8 +456,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 			quarters_marker.points.push_back(point);
 			geometry_msgs::Point point2 = point;
 			double a_q = UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a+(iq*M_PI_4));
-			point2.x += 1.5*cos(a_q);
-			point2.y += 1.5*sin(a_q);
+			point2.x += 1.0*cos(a_q);
+			point2.y += 1.0*sin(a_q);
 			quarters_marker.points.push_back(point2);
 
 			quartersIds++;
@@ -431,16 +469,16 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	  // double to string
 	  std::ostringstream str_out;
 	//  if(trackedObstacles.at(i).center.v > 0.75)
-	  str_out << "(" << speed << ")";
+	  str_out << "(" << trackedObstacles.at(i).id << " , " << speed << ")";
 //	  else
 //		  str_out << trackedObstacles.at(i).id;
 	  //std::string vel = str_out.str();
 	  velocity_marker.text = str_out.str();//vel.erase(vel.find_first_of(".") + 2);
-	  if(speed > 0.5)
-		  detectedPolygons.markers.push_back(velocity_marker);
+	  //if(speed > 0.5)
 
-
-		detectedPolygons.markers.push_back(lane_waypoint_marker);
+	  detectedPolygons.markers.push_back(velocity_marker);
+	  detectedPolygons.markers.push_back(lane_waypoint_marker);
+	  detectedPolygons.markers.push_back(direction_marker);
 
 	}
 }
@@ -594,21 +632,25 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 		obj.l = clusters.clusters.at(i).dimensions.x;
 		obj.h = clusters.clusters.at(i).dimensions.z;
 		obj.id = 0;
+		obj.distance_to_center = hypot(obj.center.pos.y-currState.pos.y, obj.center.pos.x-currState.pos.x);
 
 
 		PlannerHNS::GPSPoint relative_point;
 		relative_point = translationMat*obj.center.pos;
 		relative_point = rotationMat*relative_point;
 
-		double distance_x = fabs(relative_point.x);
+		double distance_x = fabs(relative_point.x - car_info.wheel_base/2.0);
 		double distance_y = fabs(relative_point.y);
 
-//		double size = (obj.w+obj.l)/2.0;
+		double size = (obj.w+obj.l)/2.0;
 //		if(size <= 0.25 || size >= 5 || distance_y > 20.0 || distance_x > 20.0)
 //			continue;
 
-//		if(distance_x <= car_info.length && distance_y <= car_info.width/1.5) // don't detect yourself
+//		if(distance_y > 10.0 || distance_x > 10.0)
 //			continue;
+
+		if(distance_x  <= car_info.length/1.5 && distance_y <= car_info.width/1.5) // don't detect yourself
+			continue;
 
 
 		nOrPoints += point_cloud.points.size();

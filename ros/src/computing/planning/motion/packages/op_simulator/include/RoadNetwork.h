@@ -695,6 +695,7 @@ public:
 	double w;
 	double l;
 	double h;
+	double distance_to_center;
 	DetectedObject()
 	{
 		id = 0;
@@ -702,6 +703,7 @@ public:
 		l = 0;
 		h = 0;
 		t = GENERAL_OBSTACLE;
+		distance_to_center = 0;
 	}
 
 };
@@ -720,10 +722,9 @@ public:
 	double 	rollOutDensity;
 	int 	rollOutNumber;
 	double 	horizonDistance;
-	double 	minFollowingDistance;
-	double 	maxFollowingDistance;
-	double 	minDistanceToAvoid;
-	double	maxDistanceToAvoid;
+	double 	minFollowingDistance; //should be bigger than Distance to follow
+	double 	minDistanceToAvoid; // should be smaller than minFollowingDistance and larger than maxDistanceToAvoid
+	double	maxDistanceToAvoid; // should be smaller than minDistanceToAvoid
 	double 	speedProfileFactor;
 	double 	smoothingDataWeight;
 	double 	smoothingSmoothWeight;
@@ -739,6 +740,8 @@ public:
 	bool 	enableTrafficLightBehavior;
 	bool 	enableStopSignBehavior;
 
+	bool 	enabTrajectoryVelocities;
+
 	PlanningParams()
 	{
 		maxSpeed 						= 3;
@@ -753,11 +756,10 @@ public:
 		rollOutNumber					= 4;
 		horizonDistance					= 120;
 		minFollowingDistance			= 35;
-		maxFollowingDistance			= 40;
 		minDistanceToAvoid				= 15;
 		maxDistanceToAvoid				= 5;
 		speedProfileFactor				= 1.0;
-		smoothingDataWeight				= 0.4;
+		smoothingDataWeight				= 0.45;
 		smoothingSmoothWeight			= 0.35;
 		smoothingToleranceError			= 0.1;
 
@@ -770,6 +772,7 @@ public:
 		enableTrafficLightBehavior		= false;
 		enableLaneChange 				= false;
 		enableStopSignBehavior			= false;
+		enabTrajectoryVelocities		= false;
 	}
 };
 
@@ -990,11 +993,12 @@ public:
 		str.precision(4);
 		str << "LaneIndex    : " << lane_index;
 		str << ", Index      : " << relative_index;
-		str << ", Total Cost : " << cost;
-		str << ", Distance   : " << closest_obj_distance;
-		str << ", Dist Cost  : " << closest_obj_cost;
+		str << ", TotalCost  : " << cost;
 		str << ", Priority   : " << priority_cost;
 		str << ", Transition : " << transition_cost;
+		str << ", Lateral    : " << lateral_cost;
+		str << ", LaneChange : " << lane_change_cost;
+		str << ", Blocked    : " << bBlocked;
 		str << "\n";
 		for (unsigned int i=0; i<lateral_costs.size(); i++ )
 		{

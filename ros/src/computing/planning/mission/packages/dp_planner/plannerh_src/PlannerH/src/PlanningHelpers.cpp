@@ -157,13 +157,15 @@ bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, c
 	return true;
 }
 
-WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance)
+WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance, unsigned int& point_index)
 {
 	WayPoint follow_point;
 
 	if(trajectory.size()==0) return follow_point;
 
 	//condition 1, if far behind the first point on the trajectory
+	int local_i = init_p.iFront;
+
 	if(init_p.iBack == 0 && init_p.iBack == init_p.iFront && init_p.from_back_distance > distance)
 	{
 		follow_point = trajectory.at(init_p.iFront);
@@ -180,7 +182,6 @@ WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>
 	else
 	{
 		double d = init_p.to_front_distance;
-		int local_i = init_p.iFront;
 		while(local_i < trajectory.size()-1 && d < distance)
 		{
 			local_i++;
@@ -193,6 +194,8 @@ WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>
 		follow_point.pos.x = follow_point.pos.x + d_part * cos(follow_point.pos.a);
 		follow_point.pos.y = follow_point.pos.y + d_part * sin(follow_point.pos.a);
 	}
+
+	point_index = local_i;
 
 	return follow_point;
 }
@@ -736,6 +739,33 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 	path = smoothPath_out;
 }
 
+//double PlanningHelpers::CalcAngleAndCostSimple(vector<WayPoint>& path, const double& lastCost)
+//{
+//	if(path.size() <= 2) return 0;
+//
+//	path[0].pos.a = atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
+//	path[0].cost = lastCost;
+//
+//	for(int j = 1; j < path.size()-1; j++)
+//	{
+//		path[j].pos.a 	= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
+//		path[j].cost 	= path[j-1].cost +  hypot(path[j-1].pos.y- path[j].pos.y, path[j-1].pos.x- path[j].pos.x);
+//	}
+//
+//	int j = (int)path.size()-1;
+//
+//	path[j].pos.a 	= path[j-1].pos.a;
+//	path[j].cost 	= path[j-1].cost + hypot(path[j-1].pos.y- path[j].pos.y, path[j-1].pos.x- path[j].pos.x);
+//
+//	for(int j = 0; j < path.size()-1; j++)
+//	{
+//		if(path.at(j).pos.x == path.at(j+1).pos.x && path.at(j).pos.y == path.at(j+1).pos.y)
+//			path.at(j).pos.a = path.at(j+1).pos.a;
+//	}
+//
+//	return path[j].cost;
+//}
+
 double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
 {
 	if(path.size() <= 2) return 0;
@@ -763,11 +793,10 @@ double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& l
 	return path[j].cost;
 }
 
-double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
+double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path, const double& lastCost)
 {
 	path[0].pos.a 	= atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
 	path[0].cost 	= lastCost;
-	//path[0].pos.z	= 0;
 
 	double k = 0;
 	GPSPoint center;
@@ -775,31 +804,22 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 	for(unsigned int j = 1; j < path.size()-1; j++)
 	{
 		k =  CalcCircle(path[j-1].pos,path[j].pos, path[j+1].pos, center);
-		if(k > 250 || isnan(k))
-			k = 250;
+		if(k > 150.0 || isnan(k))
+			k = 150.0;
 
-		if(k<1)
+		if(k<1.0)
 			path[j].cost = 0;
 		else
-			path[j].cost 	= (1.0 - 1.0/k)*10.0;
+			path[j].cost = 1.0-1.0/k;
 
 		path[j].pos.a 	= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
-		//path[j].cost 	= path[j-1].cost + distance2points(path[j-1].pos, path[j].pos);
-		//path[j].pos.z 	= 0;
 	}
 	unsigned int j = path.size()-1;
 
 	path[0].cost    = path[1].cost;
 	path[j].cost 	= path[j-1].cost;
 	path[j].pos.a 	= path[j-1].pos.a;
-	path[j].cost 	= path[j-1].cost ;//+ distance2points(path[j-1].pos, path[j].pos);
-	//path[j].pos.z 	= 0;
-
-	if(bSmooth)
-	{
-//		SmoothWayPointsDirections(path, 0.05, 0.45, 0.01);
-		SmoothCurvatureProfiles(path, 0.3, 0.4, 0.1);
-	}
+	path[j].cost 	= path[j-1].cost ;
 
 	return path[j].cost;
 }
@@ -811,31 +831,24 @@ double PlanningHelpers::CalcCircle(const GPSPoint& pt1, const GPSPoint& pt2, con
 	double yDelta_b= pt3.y - pt2.y;
 	double xDelta_b= pt3.x - pt2.x;
 
-	if (fabs(xDelta_a) <= 0.000000001 && fabs(yDelta_b) <= 0.000000001)
+	if (fabs(xDelta_a) <= 0.000000000001 && fabs(yDelta_b) <= 0.000000000001)
 	{
-
 		center.x= 0.5*(pt2.x + pt3.x);
 		center.y= 0.5*(pt1.y + pt2.y);
-
 		return distance2points(center,pt1);
-
 	}
 
-	 //IsPerpendicular() assure that xDelta(s) are not zero
-	double aSlope=yDelta_a/xDelta_a; //
+	double aSlope=yDelta_a/xDelta_a;
 	double bSlope=yDelta_b/xDelta_b;
-	if (fabs(aSlope-bSlope) <= 0.000000001)
+	if (fabs(aSlope-bSlope) <= 0.000000000001)
 	{
-		return -1;
+		return 100000;
 	}
 
-	// calc center
-	center.x= (aSlope*bSlope*(pt1.y - pt3.y) + bSlope*(pt1.x + pt2 .x)
-		- aSlope*(pt2.x+pt3.x) )/(2* (bSlope-aSlope) );
-	center.y = -1*(center.x - (pt1.x+pt2.x)/2)/aSlope +  (pt1.y+pt2.y)/2;
-	//center.z= pt1.m_z;
+	center.x= (aSlope*bSlope*(pt1.y - pt3.y) + bSlope*(pt1.x + pt2 .x) - aSlope*(pt2.x+pt3.x) )/(2.0* (bSlope-aSlope) );
+	center.y = -1.0*(center.x - (pt1.x+pt2.x)/2.0)/aSlope +  (pt1.y+pt2.y)/2.0;
 
-	return  distance2points(center,pt1);		// calc. radius
+	return  distance2points(center,pt1);
 }
 
 void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
@@ -1279,35 +1292,33 @@ void PlanningHelpers::SmoothWayPointsDirections(vector<WayPoint>& path_in, doubl
 
 void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor)
 {
+	FixPathDensity(path, 0.5);
+
 	CalcAngleAndCostAndCurvatureAnd2D(path);
+
+	SmoothCurvatureProfiles(path, 0.3, 0.49, 0.01);
 
 	for(unsigned int i = 0 ; i < path.size(); i++)
 	{
-		double k_ratio = path.at(i).cost;
+		double k_ratio = path.at(i).cost*10.0;
 
-		if(k_ratio <= 8)
-			path.at(i).v = 1.0*speedProfileFactor;
+		if(k_ratio >= 9.5)
+			path.at(i).v = max_speed;
 		else if(k_ratio <= 8.5)
-			path.at(i).v = 1.5*speedProfileFactor;
-		else if(k_ratio <= 9)
-			path.at(i).v = 2.0*speedProfileFactor;
-		else if(k_ratio <= 9.2)
-			path.at(i).v = 3.0*speedProfileFactor;
-		else if(k_ratio <= 9.4)
-			path.at(i).v = 4.0*speedProfileFactor;
-		else if(k_ratio < 9.6)
-			path.at(i).v = 7.0*speedProfileFactor;
-		else if(k_ratio < 9.8)
-			path.at(i).v = 10.0*speedProfileFactor;
-		else if(k_ratio < 9.9)
-			path.at(i).v = 13.0*speedProfileFactor;
+			path.at(i).v = 1.0*speedProfileFactor;
 		else
-			path.at(i).v = 15.0*speedProfileFactor;
+		{
+			k_ratio = k_ratio - 8.5;
+			path.at(i).v = (max_speed - 1.0) * k_ratio + 1.0;
+			path.at(i).v = path.at(i).v*speedProfileFactor;
+		}
 
-		if(path.at(i).v >= max_speed)
+		if(path.at(i).v > max_speed)
 			path.at(i).v = max_speed;
 
 	}
+
+	//SmoothSpeedProfiles(path, 0.15,0.45, 0.1);
 }
 
 WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,

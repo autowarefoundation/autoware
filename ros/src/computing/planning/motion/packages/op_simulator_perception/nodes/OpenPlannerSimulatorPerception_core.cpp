@@ -46,23 +46,25 @@ namespace OpenPlannerSimulatorPerceptionNS
 
 OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 {
-	nh.getParam("/OpenPlannerSimulatorPerception/simObjNumber" 			, m_DecParams.nSimuObjs);
-	nh.getParam("/OpenPlannerSimulatorPerception/GuassianErrorFactor" 	, m_DecParams.errFactor);
+	nh.getParam("/op_simulator_perception/simObjNumber" 			, m_DecParams.nSimuObjs);
+	nh.getParam("/op_simulator_perception/GuassianErrorFactor" 	, m_DecParams.errFactor);
 
 	pub_DetectedObjects 	= nh.advertise<lidar_tracker::CloudClusterArray>("cloud_clusters",1);
 
 	for(int i=1; i <= m_DecParams.nSimuObjs; i++)
 	{
 		std::ostringstream str_pose;
-		str_pose << "/OpenPlannerSimulator" << i << "/sim_box_pose_" << i;
+		str_pose << "/op_simulator" << i << "/sim_box_pose_" << i;
 		std::cout << "Subscribe to Topic : " <<  str_pose.str() <<  std::endl;
 
 		ros::Subscriber _sub;
-
 		_sub =  nh.subscribe(str_pose.str(), 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, 		this);
-
 		sub_objs.push_back(_sub);
 	}
+
+	ros::Subscriber _sub;
+	_sub =  nh.subscribe("/sim_box_pose_ego", 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, 		this);
+	sub_objs.push_back(_sub);
 
 	std::cout << "OpenPlannerSimulatorPerception initialized successfully " << std::endl;
 
@@ -74,7 +76,7 @@ OpenPlannerSimulatorPerception::~OpenPlannerSimulatorPerception()
 
 void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::PoseArray &msg)
 {
-	int obj_id = 0;
+	int obj_id = -1;
 	if(msg.poses.size() > 0 )
 	{
 		obj_id = msg.poses.at(0).position.x;
@@ -83,7 +85,7 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 
 //	ROS_INFO("Obj ID = %d", obj_id);
 
-	if(obj_id <= 0)
+	if(obj_id < 0)
 		return;
 
 	int index = -1;
@@ -96,7 +98,7 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 		}
 	}
 
-	lidar_tracker::CloudCluster c = GenerateSimulatedObstacleCluster(msg.poses.at(2).position.x, msg.poses.at(2).position.y, msg.poses.at(2).position.y, 50, msg.poses.at(1));
+	lidar_tracker::CloudCluster c = GenerateSimulatedObstacleCluster(msg.poses.at(2).position.y, msg.poses.at(2).position.x, msg.poses.at(2).position.y, 50, msg.poses.at(1));
 	c.id = obj_id;
 
 	if(index >= 0) // update existing
@@ -161,13 +163,14 @@ lidar_tracker::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObs
 void OpenPlannerSimulatorPerception::MainLoop()
 {
 
-	ros::Rate loop_rate(20);
+	ros::Rate loop_rate(15);
 
 	while (ros::ok())
 	{
 		ros::spinOnce();
 
-		pub_DetectedObjects.publish(m_ObjClustersArray);
+		if(m_ObjClustersArray.clusters.size()>0)
+			pub_DetectedObjects.publish(m_ObjClustersArray);
 
 		loop_rate.sleep();
 	}

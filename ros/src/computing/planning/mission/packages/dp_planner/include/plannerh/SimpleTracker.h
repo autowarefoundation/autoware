@@ -18,20 +18,25 @@
 namespace SimulationNS
 {
 
-#define DEBUG_TRACKER 0
+#define DEBUG_TRACKER 1
+#define NEVER_GORGET_TIME -1000
 
 class KFTrackV
 {
 private:
 	cv::KalmanFilter m_filter;
 	double prev_x, prev_y, prev_v, prev_a;
-	timespec m_Timer;
 	long m_id;
 	double dt;
 	int nStates;
 	int nMeasure;
+	int m_iLife;
 
 public:
+	int region_id;
+	double forget_time;
+	PlannerHNS::DetectedObject obj;
+
 	long GetTrackID()
 	{
 		return m_id;
@@ -39,18 +44,19 @@ public:
 
 	KFTrackV(double x, double y, double a, long id, double _dt)
 	{
+		region_id = -1;
+		forget_time = NEVER_GORGET_TIME; // this is very bad , dangerous
+		m_iLife = 0;
 		dt = _dt;
 		prev_x = x;
 		prev_y = y;
 		prev_v = 0;
 		prev_a = a;
-
 		nStates = 4;
 		nMeasure = 2;
 
-		UtilityHNS::UtilityH::GetTickCount(m_Timer);
-
 		m_id = id;
+
 		m_filter = cv::KalmanFilter(nStates,nMeasure);
 		m_filter.transitionMatrix = *(cv::Mat_<float>(nStates, nStates) << 1	,0	,dt	,0  ,
 																	   	   0	,1	,0	,dt	,
@@ -81,42 +87,95 @@ public:
 		measurement(1) = y;
 
 		prediction = m_filter.correct(measurement);
+
 		x_new = prediction.at<float>(0);
 		y_new = prediction.at<float>(1);
 		double vx  = prediction.at<float>(2);
 		double vy  = prediction.at<float>(3);
-		v = sqrt(vx*vx+vy*vy);
+
+		if(m_iLife > 2)
+		{
+			v = sqrt(vx*vx+vy*vy);
+			a_new = atan2(y_new - y, x_new - x);
+		}
+		else
+		{
+			v = 0;
+			a_new = a;
+		}
+
 		if(v < 0.1)
 			v = 0;
 
 		m_filter.predict();
 		m_filter.statePre.copyTo(m_filter.statePost);
 		m_filter.errorCovPre.copyTo(m_filter.errorCovPost);
-
-		a_new = a;
+		m_iLife++;
 	}
 	virtual ~KFTrackV(){}
+};
+
+class InterestCircle
+{
+public:
+	int id;
+	double radius;
+	double forget_time;
+	std::vector<KFTrackV*> pTrackers;
+	InterestCircle* pPrevCircle;
+	InterestCircle* pNextCircle;
+
+	InterestCircle(int _id)
+	{
+		id = _id;
+		radius = 0;
+		forget_time = NEVER_GORGET_TIME; // never forget
+		pPrevCircle = 0;
+		pNextCircle = 0;
+	}
+};
+
+class CostRecordSet
+{
+public:
+	int currobj;
+	int prevObj;
+	double cost;
+	CostRecordSet(int curr_id, int prev_id, double _cost)
+	{
+		currobj = curr_id;
+		prevObj = prev_id;
+		cost = _cost;
+	}
 };
 
 class SimpleTracker
 {
 public:
-	PlannerHNS::DetectedObject m_Car;
+	std::vector<InterestCircle*> m_InterestRegions;
 	std::vector<KFTrackV*> m_Tracks;
+	timespec m_TrackTimer;
 	long iTracksNumber;
 	PlannerHNS::WayPoint m_PrevState;
 	std::vector<PlannerHNS::DetectedObject> m_PrevDetectedObjects;
 	std::vector<PlannerHNS::DetectedObject> m_DetectedObjects;
 
 	void CreateTrack(PlannerHNS::DetectedObject& o);
+	void CreateTrackV2(PlannerHNS::DetectedObject& o);
 	KFTrackV* FindTrack(long index);
 	void Track(std::vector<PlannerHNS::DetectedObject>& objects_list);
+	void TrackV2();
 	void CoordinateTransform(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::DetectedObject& obj);
 	void CoordinateTransformPoint(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::GPSPoint& obj);
 	void AssociateObjects();
+	void InitializeInterestRegions(double horizon, double init_raduis, double init_time, std::vector<InterestCircle*>& regions);
+	void AssociateAndTrack();
+	void AssociateToRegions(KFTrackV& detectedObject);
+	void CleanOldTracks();
+
 	void DoOneStep(const PlannerHNS::WayPoint& currPose, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
-	SimpleTracker();
+	SimpleTracker(double horizon = 100);
 	virtual ~SimpleTracker();
 
 public:
@@ -124,6 +183,7 @@ public:
 	double m_MAX_ASSOCIATION_DISTANCE;
 	int m_MAX_TRACKS_AFTER_LOSING;
 	bool m_bUseCenterOnly;
+	double m_MaxKeepTime;
 };
 
 } /* namespace BehaviorsNS */

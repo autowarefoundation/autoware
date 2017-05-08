@@ -13,10 +13,6 @@
 
 namespace PlannerHNS
 {
-
-#define ZERO_VELOCITY 0.1
-
-
 class BehaviorStateMachine
 {
 public:
@@ -31,6 +27,7 @@ public:
 	int m_currentStopSignID	;
 	int m_currentTrafficLightID ;
 	double decisionMakingTime;
+	double m_zero_velocity;
 
 	PreCalculatedConditions* GetCalcParams()
 	{
@@ -47,6 +44,7 @@ public:
 		else
 			m_pParams = pParams;
 	}
+
 
 	PreCalculatedConditions* m_pCalculatedValues;
 	PlanningParams* m_pParams;

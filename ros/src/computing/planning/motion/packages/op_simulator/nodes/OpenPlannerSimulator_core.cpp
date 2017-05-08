@@ -120,7 +120,7 @@ OpenPlannerSimulator::OpenPlannerSimulator()
 
 	pub_CurrPoseRviz			= nh.advertise<visualization_msgs::Marker>(str_s1.str() , 100);
 	pub_SimuBoxPose				= nh.advertise<geometry_msgs::PoseArray>(str_s5.str(), 100);
-	pub_SimuVelocity			= nh.advertise<geometry_msgs::TwistStamped>(str_s3.str(), 100);
+	//pub_SimuVelocity			= nh.advertise<geometry_msgs::TwistStamped>(str_s3.str(), 100);
 	pub_SafetyBorderRviz  		= nh.advertise<visualization_msgs::Marker>(str_s4.str(), 1);
 	pub_LocalTrajectoriesRviz   = nh.advertise<visualization_msgs::MarkerArray>(str_s6.str(), 1);
 	pub_BehaviorStateRviz		= nh.advertise<visualization_msgs::Marker>(str_s2.str(), 1);
@@ -168,7 +168,6 @@ void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m
 	m_PlanningParams.horizonDistance = 100;
 	m_PlanningParams.horizontalSafetyDistancel = 0.3;
 	m_PlanningParams.maxDistanceToAvoid = 6;
-	m_PlanningParams.maxFollowingDistance = 1000;
 	m_PlanningParams.microPlanDistance = 50;
 	m_PlanningParams.minDistanceToAvoid = 16;
 	m_PlanningParams.minFollowingDistance = 16;
@@ -237,6 +236,26 @@ void OpenPlannerSimulator::callbackGetCloudClusters(const lidar_tracker::CloudCl
 	bNewClusters = true;
 }
 
+PlannerHNS::WayPoint OpenPlannerSimulator::GetRealCenter(const PlannerHNS::WayPoint& currState)
+{
+	PlannerHNS::WayPoint pose_center = currState;
+	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
+	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
+
+	PlannerHNS::Mat3 rotationMatInv(currState.pos.a);
+	PlannerHNS::Mat3 translationMatInv(currState.pos.x, currState.pos.y);
+
+	pose_center.pos = translationMat*pose_center.pos;
+	pose_center.pos = rotationMat*pose_center.pos;
+
+	pose_center.pos.x += m_CarInfo.wheel_base/3.0;
+
+	pose_center.pos = rotationMatInv*pose_center.pos;
+	pose_center.pos = translationMatInv*pose_center.pos;
+
+	return pose_center;
+}
+
 void OpenPlannerSimulator::displayFollowingInfo(const std::vector<PlannerHNS::GPSPoint>& safety_rect, PlannerHNS::WayPoint& curr_pose)
 {
   static visualization_msgs::Marker m1;
@@ -249,20 +268,7 @@ void OpenPlannerSimulator::displayFollowingInfo(const std::vector<PlannerHNS::GP
   m1.mesh_use_embedded_materials = true;
   m1.action = visualization_msgs::Marker::ADD;
 
-  PlannerHNS::WayPoint pose_center = curr_pose;
-  PlannerHNS::Mat3 rotationMat(-curr_pose.pos.a);
-  PlannerHNS::Mat3 translationMat(-curr_pose.pos.x, -curr_pose.pos.y);
-
-  PlannerHNS::Mat3 rotationMatInv(curr_pose.pos.a);
-  PlannerHNS::Mat3 translationMatInv(curr_pose.pos.x, curr_pose.pos.y);
-
-  pose_center.pos = translationMat*pose_center.pos;
-  pose_center.pos = rotationMat*pose_center.pos;
-
-  pose_center.pos.x += m_CarInfo.wheel_base/3.0;
-
-  pose_center.pos = rotationMatInv*pose_center.pos;
-  pose_center.pos = translationMatInv*pose_center.pos;
+  PlannerHNS::WayPoint pose_center = GetRealCenter(curr_pose);
 
   m1.pose.position.x = pose_center.pos.x;
   m1.pose.position.y = pose_center.pos.y;
@@ -291,34 +297,15 @@ void OpenPlannerSimulator::displayFollowingInfo(const std::vector<PlannerHNS::GP
   	lane_waypoint_marker.color.b = 0.0;
   	lane_waypoint_marker.color.a = 0.6;
 
-  	if(safety_rect.size() == 4)
+  	for(unsigned int i=0; i < safety_rect.size(); i ++)
   	{
-		geometry_msgs::Point p1, p2,p3,p4;
-		p1.x = safety_rect.at(0).x;
-		p1.y = safety_rect.at(0).y;
-		p1.z = safety_rect.at(0).z;
-
-		p2.x = safety_rect.at(1).x;
-		p2.y = safety_rect.at(1).y;
-		p2.z = safety_rect.at(1).z;
-
-		p3.x = safety_rect.at(2).x;
-		p3.y = safety_rect.at(2).y;
-		p3.z = safety_rect.at(2).z;
-
-		p4.x = safety_rect.at(3).x;
-		p4.y = safety_rect.at(3).y;
-		p4.z = safety_rect.at(3).z;
-
+  		geometry_msgs::Point p1;
+  		p1.x = safety_rect.at(i).x;
+		p1.y = safety_rect.at(i).y;
+		p1.z = safety_rect.at(i).z;
 		lane_waypoint_marker.points.push_back(p1);
-		lane_waypoint_marker.points.push_back(p2);
-		lane_waypoint_marker.points.push_back(p3);
-		lane_waypoint_marker.points.push_back(p4);
-		lane_waypoint_marker.points.push_back(p1);
-
-		pub_SafetyBorderRviz.publish(lane_waypoint_marker);
   	}
-
+  	pub_SafetyBorderRviz.publish(lane_waypoint_marker);
 
 }
 
@@ -585,7 +572,7 @@ void OpenPlannerSimulator::PlannerMainLoop()
 			//Path Following and Control
 			desiredStatus = m_PredControl.DoOneStep(dt, currBehavior, m_LocalPlanner.m_Path, m_LocalPlanner.state, currStatus, currBehavior.bNewPlan);
 
-			displayFollowingInfo(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBox, m_LocalPlanner.state);
+			displayFollowingInfo(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBorder.points, m_LocalPlanner.state);
 			visualizePath(m_LocalPlanner.m_Path);
 			visualizeBehaviors();
 
@@ -599,10 +586,12 @@ void OpenPlannerSimulator::PlannerMainLoop()
 
 			p_id.position.x = m_SimParams.id;
 
-			p_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a));
-			p_pose.position.x = m_LocalPlanner.state.pos.x;
-			p_pose.position.y = m_LocalPlanner.state.pos.y;
-			p_pose.position.z = m_LocalPlanner.state.pos.z;
+			PlannerHNS::WayPoint pose_center = GetRealCenter(m_LocalPlanner.state);
+
+			p_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(pose_center.pos.a));
+			p_pose.position.x = pose_center.pos.x;
+			p_pose.position.y = pose_center.pos.y;
+			p_pose.position.z = pose_center.pos.z;
 
 
 
