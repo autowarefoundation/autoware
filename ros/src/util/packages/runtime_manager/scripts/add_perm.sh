@@ -18,7 +18,7 @@ S="0$(stat -c %a $F)" # ex. "0666"
 
 if [ $(($S & $P)) -ne $(($P)) ]; then
   M=$(echo "obase=8; $(($S | $P))" | bc)
-  sudo chmod "0$M" $F
+  gksudo --message "Please input password for chmod $F" -- chmod "0$M" $F
 fi
 
 exit 0
