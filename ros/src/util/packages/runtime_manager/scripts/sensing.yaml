@@ -81,8 +81,10 @@ subs :
       - name : Memsic VG440
         desc : Memsic VG440 desc sample
         probe:
-        run  :
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/vg440.sh"
         param: vg440
+        gui  :
+          flags: [ kill_children ]
 
   - name : LIDARs
     desc : LIDARs desc sample
