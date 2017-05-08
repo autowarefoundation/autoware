@@ -85,6 +85,10 @@ subs :
         param: vg440
         gui  :
           flags: [ kill_children ]
+      - name : Xsens MTi-300
+        desc : Xsens MTi-300 desc sample
+        probe:
+        run  :
 
   - name : LIDARs
     desc : LIDARs desc sample
