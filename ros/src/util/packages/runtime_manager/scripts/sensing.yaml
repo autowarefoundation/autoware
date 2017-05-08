@@ -82,6 +82,7 @@ subs :
         desc : Memsic VG440 desc sample
         probe:
         run  :
+        param: vg440
 
   - name : LIDARs
     desc : LIDARs desc sample
@@ -497,6 +498,25 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name : vg440
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyUSB0
+      cmd_param :
+        delim     : ''
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '57600'
+      cmd_param :
+        delim     : ''
 
   - name : sel_cam_and_sync
     vars :
