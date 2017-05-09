@@ -344,8 +344,8 @@ bool MsgToNav1(const unsigned char* data, SNAV1Msg &sMsg) {
   sMsg.dLatitude = MKInt(data+28)*2.0*M_PI/(256*256);
   sMsg.dAltitude = MKShort(data+32)/4.0;
   sMsg.xRateTemp = MKShort(data+34)*200.0/(256*256);
-  sMsg.timeITOW			= (unsigned int)MKInt(data+36);
-  sMsg.BITStatus     = (unsigned short)MKShort(data+40);
+  sMsg.timeITOW = (unsigned int)MKInt(data+36);
+  sMsg.BITStatus = (unsigned short)MKShort(data+40);
 }
 
 void Nav1ToRosImu(const SNAV1Msg &rNav1, sensor_msgs::Imu &ImuData) {
@@ -438,8 +438,8 @@ int main(int argc, char **argv) {
   int nBaudRate;
 
   string sFrameDefault = "/vg440";
-  string sTopicDefault = "/imu_data";
-  string sPortDefault  = "/dev/ttyUSB0";
+  string sTopicDefault = "/imu_raw";
+  string sPortDefault = "/dev/ttyUSB0";
   int nBaudRateDefault = 57600;
   ros::init(argc, argv, "vg440_node");
   ros::NodeHandle n_private_("~");
