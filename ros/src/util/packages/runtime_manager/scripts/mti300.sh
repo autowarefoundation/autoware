@@ -18,8 +18,8 @@ ${DIR}/add_perm.sh 0666 ${PORT} || exit 1
 
 ARGS="port:=${PORT} baudrate:=${BAUD} mode:=${MODE} frequency:=${FREQ}"
 
-roslaunch runtime_manager mti300.launch ${ARGS} boot_device:=true
+roslaunch xsens_driver mti300.launch ${ARGS} boot_device:=true
 sleep ${WSEC}
-roslaunch runtime_manager mti300.launch ${ARGS} boot_device:=false
+roslaunch xsens_driver mti300.launch ${ARGS} boot_device:=false
 
 # EOF
