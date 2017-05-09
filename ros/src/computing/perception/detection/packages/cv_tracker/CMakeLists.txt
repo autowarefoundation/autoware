@@ -310,13 +310,13 @@ endif()
 set(YOLO2_PATH "$ENV{HOME}/darknet")
 ##########################################################
 if(EXISTS "${YOLO2_PATH}")
-
-  set(YOLO2_USE_CUDNN 1)
+  
+  set(YOLO2_USE_CUDNN 0)
   set(YOLO2_USE_GPU 1)
   
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
-  cuda_add_library(yolo2lib_wa
+  add_library(yolo2lib_wa
     ${YOLO2_PATH}/src/activation_kernels.cu
     ${YOLO2_PATH}/src/activation_layer.c
     ${YOLO2_PATH}/src/activations.c
@@ -365,15 +365,18 @@ if(EXISTS "${YOLO2_PATH}")
     ${YOLO2_PATH}/src/tree.c
     ${YOLO2_PATH}/src/utils.c
 
-    OPTIONS 
-    -DGPU=${YOLO2_USE_GPU}
-    -DCUDNN=${YOLO2_USE_CUDNN}
+#    OPTIONS 
+#    -DGPU=${YOLO2_USE_GPU}
+#    -DCUDNN=${YOLO2_USE_CUDNN}
   )
 
   cuda_add_cublas_to_target(yolo2lib_wa)
+  
+  target_compile_definitions(yolo2lib_wa PRIVATE -DGPU)
 
   target_include_directories(yolo2lib_wa PRIVATE
     ${YOLO2_PATH}/src
+    ${CUDA_INCLUDE_DIRS}
   )
 
   target_link_libraries(yolo2lib_wa
@@ -388,9 +391,11 @@ if(EXISTS "${YOLO2_PATH}")
     nodes/yolo2/src/yolo2_node.cpp
     nodes/yolo2/src/darknet/yolo2.cpp
   )
+  
   target_include_directories(yolo2_wa PRIVATE
     nodes/yolo2/include
     ${YOLO2_PATH}/src
+    ${CUDA_INCLUDE_DIRS}
   )
 
   target_link_libraries(yolo2_wa
@@ -401,6 +406,7 @@ if(EXISTS "${YOLO2_PATH}")
     ${CUDA_CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
   )
+
 
 else()
   message("'Darknet' was not found. 'yolo2_wa' will not be built.")
