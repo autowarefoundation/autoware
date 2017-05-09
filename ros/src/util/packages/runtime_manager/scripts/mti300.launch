@@ -4,10 +4,12 @@
   <arg name="baudrate" default="115200" />
   <arg name="mode" default="2" />
   <arg name="frequency" default="100" />
+  <arg name="boot_device" default="true" />
   
-  <node pkg="xsens_driver" type="mtdevice.py" name="mtdevice" args="-d $(arg port) -m $(arg mode) -f $(arg frequency)" />
+  <node pkg="xsens_driver" type="mtdevice.py" name="mtdevice"
+    args="-d $(arg port) -m $(arg mode) -f $(arg frequency)" if="$(arg boot_device)"/>
 
-  <node pkg="xsens_driver" type="mtnode.py" name="mtnode">
+  <node pkg="xsens_driver" type="mtnode.py" name="mtnode" unless=$(arg boot_device)>
     <param name="device" value="$(arg port)" />
     <param name="baudrate" value="$(arg baudrate)" />
   </node>

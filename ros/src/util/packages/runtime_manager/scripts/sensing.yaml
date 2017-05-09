@@ -94,6 +94,7 @@ subs :
           flags: [ kill_children ]
           baud : { flags: [ nl ] }
           mode : { flags: [ nl ] }
+          frequency: { flags: [ nl ] }
 
   - name : LIDARs
     desc : LIDARs desc sample
@@ -563,6 +564,13 @@ params :
       choices   : [ '1','5','10','20','40','50','80','100','200','400' ]
       choices_type : str
       v         : '100'
+      cmd_param :
+        delim     : ''
+    - name      : wait_sec
+      desc      : wait sec of booting between mtdevice and mtnode
+      label     : 'Wait sec:'
+      kind      : num
+      v         : 3
       cmd_param :
         delim     : ''
 
