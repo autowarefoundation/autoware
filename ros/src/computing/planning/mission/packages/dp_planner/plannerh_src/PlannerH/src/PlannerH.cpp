@@ -215,7 +215,7 @@ PlannerH::PlannerH()
 			PlanningHelpers::CalculateRollInTrajectories(carPos, speed, referenceSections.at(i), s_index, e_index, e_distances,
 					local_rollOutPaths, microPlanDistance, maxSpeed, carTipMargin, rollInMargin,
 						 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
-						 SmoothDataWeight, 0.45, SmoothTolerance, bHeadingSmooth, sampledPoints);
+						 0.45, 0.45, SmoothTolerance, bHeadingSmooth, sampledPoints);
 		}
 		else
 		{

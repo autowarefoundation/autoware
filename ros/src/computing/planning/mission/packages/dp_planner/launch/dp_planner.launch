@@ -1,12 +1,10 @@
 <!-- -->
 <launch>
 	<arg name="maxVelocity" 				default="6.0" />
-	<arg name="minVelocity" 				default="0.0" />
-	<arg name="velocityProfileFactor" 		default="1.0" />
-	<arg name="maxPlanningDistance" 		default="1000000.0" />
+	<arg name="minVelocity" 				default="0.0" />	
 	<arg name="maxLocalPlanDistance" 		default="60" />
-	<arg name="samplingTipMargin" 			default="4"  />
-	<arg name="samplingOutMargin" 			default="12" />
+	<arg name="samplingTipMargin" 			default="4"  /> 
+	<arg name="samplingOutMargin" 			default="12" /> 
 	<arg name="samplingSpeedFactor" 		default="0.25" />
 	<arg name="pathDensity" 				default="0.5" />
 	<arg name="rollOutDensity" 				default="0.25" />
@@ -48,9 +46,7 @@
 	<node pkg="dp_planner" type="dp_planner" name="dp_planner" output="screen">
 		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
 	    <param name="minVelocity" 					value="$(arg minVelocity)" />
-	    
-	    <param name="velocityProfileFactor" 		value="$(arg velocityProfileFactor)" />
-		<param name="maxPlanningDistance" 			value="$(arg maxPlanningDistance)" />
+	    	    		
 		<param name="maxLocalPlanDistance" 			value="$(arg maxLocalPlanDistance)" />
 		<param name="samplingTipMargin" 			value="$(arg samplingTipMargin)" />
 		<param name="samplingOutMargin" 			value="$(arg samplingOutMargin)" />

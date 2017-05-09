@@ -378,8 +378,6 @@ void PlannerX::UpdatePlanningParams()
 
 	nh.getParam("/dp_planner/maxVelocity", params.maxSpeed);
 	nh.getParam("/dp_planner/minVelocity", params.minSpeed);
-	nh.getParam("/dp_planner/velocityProfileFactor", params.speedProfileFactor);
-	nh.getParam("/dp_planner/maxPlanningDistance", params.planningDistance);
 	nh.getParam("/dp_planner/maxLocalPlanDistance", params.microPlanDistance);
 	nh.getParam("/dp_planner/samplingTipMargin", params.carTipMargin);
 	nh.getParam("/dp_planner/samplingOutMargin", params.rollInMargin);

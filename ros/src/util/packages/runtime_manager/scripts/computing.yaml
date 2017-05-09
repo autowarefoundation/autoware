@@ -2070,6 +2070,14 @@ params :
         delim    : ':='
   - name  : dp_planner
     vars  :
+    - name : enabTrajectoryVelocities
+      desc : Enable Use Pure Pursuit
+      label: Use Pure Pursuit
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : enableOutsideControl
       desc : Enable User Input Control  
       label: Enable user control
@@ -2168,30 +2176,30 @@ params :
     - name : minFollowingDistance
       desc : Distance to start follow Next Car 
       label: Follow Distance
-      min  : 1.0
-      max  : 30.0
-      v    : 10.0
-      cmd_param:
-        dash     : ''
-        delim    : ':='  
-    - name : maxFollowingDistance
-      desc : Distance to give up follow Next Car 
-      label: Unfollow Distance
-      min  : 2.0
-      max  : 40.0
-      v    : 13.0
+      min  : 10.0
+      max  : 50.0
+      v    : 30.0
       cmd_param:
         dash     : ''
         delim    : ':='  
     - name : minDistanceToAvoid
       desc : Avoidance and Following threshold Distance 
       label: Avoiding Distance
-      min  : 4.0
-      max  : 40.0
+      min  : 6.0
+      max  : 30.0
       v    : 15.0
       cmd_param:
         dash     : ''
         delim    : ':=' 
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance 
+      label: Avoidance Limit 
+      min  : 1.0
+      max  : 6.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='  
     - name : enableStopSignBehavior
       desc : Enable stop sign check  
       label: Enable Stop Sign Stop

@@ -166,17 +166,18 @@ void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m
 	m_PlanningParams.enableSwerving = false;
 	m_PlanningParams.enableTrafficLightBehavior = true;
 	m_PlanningParams.horizonDistance = 100;
-	m_PlanningParams.horizontalSafetyDistancel = 0.3;
-	m_PlanningParams.maxDistanceToAvoid = 6;
+	m_PlanningParams.horizontalSafetyDistancel = 0.1;
+	m_PlanningParams.verticalSafetyDistance = 0.8;
+	m_PlanningParams.maxDistanceToAvoid = 4;
 	m_PlanningParams.microPlanDistance = 50;
-	m_PlanningParams.minDistanceToAvoid = 16;
-	m_PlanningParams.minFollowingDistance = 16;
+	m_PlanningParams.minDistanceToAvoid = 10;
+	m_PlanningParams.minFollowingDistance = 20;
 	m_PlanningParams.pathDensity = 0.5;
 	m_PlanningParams.planningDistance = 1000;
 	m_PlanningParams.rollInMargin = 2;
 	m_PlanningParams.rollOutDensity = 0.5;
 	m_PlanningParams.rollOutNumber = 0;
-	m_PlanningParams.verticalSafetyDistance = 0.8;
+
 }
 
 OpenPlannerSimulator::~OpenPlannerSimulator()

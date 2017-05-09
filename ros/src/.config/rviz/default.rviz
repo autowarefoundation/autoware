@@ -76,9 +76,7 @@ Visualization Manager:
       Tree:
         world:
           map:
-            base_link:
-              velodyne:
-                {}
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -465,59 +463,19 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /vector_map_center_lines_rviz
       Name: Vector Map CenterLines
       Namespaces:
-        global_lane_waypoint_orientation_marker: true
-        stop_lines_rviz_1: true
-        stop_lines_rviz_10: true
-        stop_lines_rviz_11: true
-        stop_lines_rviz_12: true
-        stop_lines_rviz_13: true
-        stop_lines_rviz_14: true
-        stop_lines_rviz_15: true
-        stop_lines_rviz_16: true
-        stop_lines_rviz_17: true
-        stop_lines_rviz_18: true
-        stop_lines_rviz_19: true
-        stop_lines_rviz_2: true
-        stop_lines_rviz_20: true
-        stop_lines_rviz_21: true
-        stop_lines_rviz_22: true
-        stop_lines_rviz_23: true
-        stop_lines_rviz_24: true
-        stop_lines_rviz_25: true
-        stop_lines_rviz_26: true
-        stop_lines_rviz_27: true
-        stop_lines_rviz_28: true
-        stop_lines_rviz_29: true
-        stop_lines_rviz_3: true
-        stop_lines_rviz_30: true
-        stop_lines_rviz_31: true
-        stop_lines_rviz_32: true
-        stop_lines_rviz_33: true
-        stop_lines_rviz_34: true
-        stop_lines_rviz_35: true
-        stop_lines_rviz_36: true
-        stop_lines_rviz_37: true
-        stop_lines_rviz_4: true
-        stop_lines_rviz_5: true
-        stop_lines_rviz_6: true
-        stop_lines_rviz_7: true
-        stop_lines_rviz_8: true
-        stop_lines_rviz_9: true
-        vector_map_center_lines_rviz: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        global_lane_array_marker: true
-        global_lane_waypoint_orientation_marker: true
-        global_velocity_lane_1: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -525,7 +483,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -533,10 +491,7 @@ Visualization Manager:
       Marker Topic: /detected_polygons
       Name: Tracked Contours
       Namespaces:
-        Polygon_Corners: true
-        Quarters_Lines: true
-        detected_polygons: true
-        detected_polygons_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -560,7 +515,7 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        detected_polygons_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -576,7 +531,7 @@ Visualization Manager:
       Marker Topic: /safety_border
       Name: Safety Box
       Namespaces:
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -593,82 +548,82 @@ Visualization Manager:
       show coords: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator1/curr_simu_pose_1
+      Marker Topic: /op_simulator1/curr_simu_pose_1
       Name: SimuCar1
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator2/curr_simu_pose_2
+      Marker Topic: /op_simulator2/curr_simu_pose_2
       Name: SimuCar2
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator3/curr_simu_pose_3
+      Marker Topic: /op_simulator3/curr_simu_pose_3
       Name: SimuCar3
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator4/curr_simu_pose_4
+      Marker Topic: /op_simulator4/curr_simu_pose_4
       Name: SimuCar4
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator5/curr_simu_pose_5
+      Marker Topic: /op_simulator5/curr_simu_pose_5
       Name: SimuCar5
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator1/simu_local_trajectory_1
+      Marker Topic: /op_simulator1/simu_local_trajectory_1
       Name: SimPath1
       Namespaces:
-        {}
+        simu_car_path_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator2/simu_local_trajectory_2
+      Marker Topic: /op_simulator2/simu_local_trajectory_2
       Name: SimPath2
       Namespaces:
-        {}
+        simu_car_path_2: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator3/simu_local_trajectory_3
+      Marker Topic: /op_simulator3/simu_local_trajectory_3
       Name: SimPath3
       Namespaces:
-        {}
+        simu_car_path_3: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator4/simu_local_trajectory_4
+      Marker Topic: /op_simulator4/simu_local_trajectory_4
       Name: SimPath4
       Namespaces:
-        {}
+        simu_car_path_4: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator5/simu_local_trajectory_5
+      Marker Topic: /op_simulator5/simu_local_trajectory_5
       Name: SimPath5
       Namespaces:
-        {}
+        simu_car_path_5: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -697,18 +652,19 @@ Visualization Manager:
       Value: false
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator1/sim_beh_txt_1
+      Marker Topic: /op_simulator1/sim_beh_txt_1
       Name: SimBehavior1
       Namespaces:
-        {}
+        sim_behavior_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator2/sim_beh_txt_2
+      Marker Topic: /op_simulator2/sim_beh_txt_2
       Name: SimBehavior2
       Namespaces:
-        {}
+        sim_behavior_2: true
+        sim_behavior_3: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -721,18 +677,18 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator4/sim_beh_txt_4
+      Marker Topic: /op_simulator4/sim_beh_txt_4
       Name: SimBehavior4
       Namespaces:
-        {}
+        sim_behavior_4: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator5/sim_beh_txt_5
+      Marker Topic: /op_simulator5/sim_beh_txt_5
       Name: SimBehavior5
       Namespaces:
-        {}
+        sim_behavior_5: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -767,11 +723,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 9.30774
+      Scale: 12.9189
       Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 31.7578
-      Y: 0.410782
+      X: 12.3296
+      Y: 1.8651
     Saved: ~
 Window Geometry:
   Camera:
