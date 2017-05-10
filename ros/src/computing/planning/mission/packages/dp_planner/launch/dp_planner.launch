@@ -4,11 +4,11 @@
 	<arg name="minVelocity" 				default="0.0" />	
 	<arg name="maxLocalPlanDistance" 		default="60" />
 	<arg name="samplingTipMargin" 			default="4"  /> 
-	<arg name="samplingOutMargin" 			default="12" /> 
+	<arg name="samplingOutMargin" 			default="16" /> 
 	<arg name="samplingSpeedFactor" 		default="0.25" />
-	<arg name="pathDensity" 				default="0.5" />
-	<arg name="rollOutDensity" 				default="0.25" />
-	<arg name="rollOutsNumber" 				default="14"    />
+	<arg name="pathDensity" 				default="0.25" />
+	<arg name="rollOutDensity" 				default="0.5" />
+	<arg name="rollOutsNumber" 				default="8"    />
 	<arg name="horizonDistance" 			default="100"  />
 	
 	<arg name="minFollowingDistance" 		default="30.0"  /> <!-- should be bigger than Distance to follow -->	
@@ -16,7 +16,7 @@
 	<arg name="maxDistanceToAvoid" 			default="2.0"  /> <!-- should be smaller than minDistanceToAvoid -->
 	<arg name="speedProfileFactor"			default="1"  />
 	
-	<arg name="horizontalSafetyDistance"	default="0.35"  />
+	<arg name="horizontalSafetyDistance"	default="0.8"  />
 	<arg name="verticalSafetyDistance"		default="0.7"  />
 	
 	<arg name="enableSwerving" 				default="true"  />

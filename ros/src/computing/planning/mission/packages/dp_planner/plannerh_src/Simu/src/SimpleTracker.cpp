@@ -31,6 +31,7 @@ SimpleTracker::SimpleTracker(double horizon)
 	m_MAX_TRACKS_AFTER_LOSING = 10;
 	m_MaxKeepTime = 10; // seconds
 	m_bUseCenterOnly = true;
+	m_bFirstCall = true;
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
 
 	InitializeInterestRegions(horizon, 5, 5, m_InterestRegions);
@@ -181,6 +182,7 @@ void SimpleTracker::AssociateAndTrack()
 		else
 		{
 			curr_obj->id = m_Tracks.at(matching_matrix.at(i).prevObj)->obj.id;
+			curr_obj->center.pos.a = m_Tracks.at(matching_matrix.at(i).prevObj)->obj.center.pos.a;
 			m_Tracks.at(matching_matrix.at(i).prevObj)->obj = *curr_obj;
 			AssociateToRegions(*m_Tracks.at(matching_matrix.at(i).prevObj));
 			if(DEBUG_TRACKER)
@@ -203,7 +205,7 @@ void SimpleTracker::TrackV2()
 {
 	for(unsigned int i =0; i< m_Tracks.size(); i++)
 	{
-		m_Tracks.at(i)->UpdateTracking(m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
+		m_Tracks.at(i)->UpdateTracking(m_DT, m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
 				m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
 				m_Tracks.at(i)->obj.center.v);
 
@@ -230,10 +232,14 @@ void SimpleTracker::CleanOldTracks()
 
 void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<DetectedObject>& obj_list)
 {
-	m_DT = UtilityHNS::UtilityH::GetTimeDiffNow(m_TrackTimer);
+	if(!m_bFirstCall)
+		m_DT = UtilityHNS::UtilityH::GetTimeDiffNow(m_TrackTimer);
+	else
+		m_bFirstCall = false;
+
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
 
-	std::cout << " Tracking Time : " << m_DT << std::endl;
+	//std::cout << " Tracking Time : " << m_DT << std::endl;
 
 	m_DetectedObjects = obj_list;
 
@@ -340,7 +346,7 @@ void SimpleTracker::CreateTrack(DetectedObject& o)
 {
 	KFTrackV* pT = new KFTrackV(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id, m_DT);
 	o.id = pT->GetTrackID();
-	pT->UpdateTracking(o.center.pos.x, o.center.pos.y, o.center.pos.a,
+	pT->UpdateTracking(m_DT, o.center.pos.x, o.center.pos.y, o.center.pos.a,
 			o.center.pos.x, o.center.pos.y,o.center.pos.a, o.center.v);
 	m_Tracks.push_back(pT);
 }
@@ -365,7 +371,7 @@ void SimpleTracker::Track(std::vector<DetectedObject>& objects_list)
 			KFTrackV* pT = FindTrack(objects_list[i].id);
 			if(pT)
 			{
-				pT->UpdateTracking(objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
+				pT->UpdateTracking(m_DT, objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
 						objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
 						objects_list[i].center.v);
 				//std::cout << "Update Current Track " << objects_list[i].id << std::endl;

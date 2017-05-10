@@ -128,22 +128,16 @@ double UtilityH::GetCircularAngle(const double& prevContAngle, const double& pre
 {
 
 	double diff = currAngle - prevAngle;
-	if(diff > 2.0*M_PI)
+	if(diff > M_PI)
 		diff = diff - 2.0*M_PI;
-	if(diff < -2.0*M_PI)
+	if(diff < -M_PI)
 		diff = diff + 2.0*M_PI;
 
-	double c_ang = prevContAngle + diff;
-
-
-//	double delta = currAngle - prevAngle;
-//
-//	if(delta < -M_PI)
-//		delta += M_PI*2.0;
-//	else if (delta > M_PI)
-//		delta -= M_PI*2.0;
-//
-//	double c_ang =  prevAngle+delta;
+	double c_ang = 0;
+	if(prevContAngle == 0 || fabs(diff) < M_PI_2)
+		 c_ang = prevContAngle + diff;
+	else
+		c_ang = prevContAngle;
 
 	return c_ang;
 }

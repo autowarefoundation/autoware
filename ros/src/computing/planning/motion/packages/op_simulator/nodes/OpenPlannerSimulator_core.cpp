@@ -41,7 +41,7 @@ using namespace std;
 namespace OpenPlannerSimulatorNS
 {
 
-#define REPLANNING_DISTANCE 10
+#define REPLANNING_DISTANCE 20
 #define PLANNING_DISTANCE 50
 
 OpenPlannerSimulator::OpenPlannerSimulator()
@@ -77,6 +77,8 @@ OpenPlannerSimulator::OpenPlannerSimulator()
 	nh.getParam("baseColorR" 			, m_SimParams.modelColor.r);
 	nh.getParam("baseColorG" 			, m_SimParams.modelColor.g);
 	nh.getParam("baseColorB" 			, m_SimParams.modelColor.b);
+
+	nh.getParam("logFolder" 			, m_SimParams.logPath);
 
 	ReadParamFromLaunchFile(m_CarInfo, m_ControlParams);
 
@@ -174,7 +176,8 @@ void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m
 	m_PlanningParams.minFollowingDistance = 20;
 	m_PlanningParams.pathDensity = 0.5;
 	m_PlanningParams.planningDistance = 1000;
-	m_PlanningParams.rollInMargin = 2;
+	m_PlanningParams.carTipMargin = 2;
+	m_PlanningParams.rollInMargin = 10;
 	m_PlanningParams.rollOutDensity = 0.5;
 	m_PlanningParams.rollOutNumber = 0;
 
@@ -570,6 +573,7 @@ void OpenPlannerSimulator::PlannerMainLoop()
 			currStatus.steer = m_LocalPlanner.m_CurrentSteering;
 			currStatus.speed = m_LocalPlanner.m_CurrentVelocity;
 
+
 			//Path Following and Control
 			desiredStatus = m_PredControl.DoOneStep(dt, currBehavior, m_LocalPlanner.m_Path, m_LocalPlanner.state, currStatus, currBehavior.bNewPlan);
 
@@ -605,6 +609,14 @@ void OpenPlannerSimulator::PlannerMainLoop()
 			sim_data.poses.push_back(p_box);
 
 			pub_SimuBoxPose.publish(sim_data);
+
+			if(currBehavior.bNewPlan)
+			{
+				std::ostringstream str_out;
+				str_out << m_SimParams.logPath;
+				str_out << "LocalPath_";
+				PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(),  m_LocalPlanner.m_Path);
+			}
 		}
 
 		loop_rate.sleep();

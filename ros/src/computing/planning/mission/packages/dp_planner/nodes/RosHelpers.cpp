@@ -447,6 +447,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	    direction_marker.id = i;
 	    direction_marker.pose.position = point;
 	    direction_marker.pose.position.z += 0.5;
+	    direction_marker.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a));
 
 
 		for(unsigned int iq = 0; iq < 8; iq++)

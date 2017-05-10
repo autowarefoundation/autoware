@@ -215,7 +215,7 @@ PlannerH::PlannerH()
 			PlanningHelpers::CalculateRollInTrajectories(carPos, speed, referenceSections.at(i), s_index, e_index, e_distances,
 					local_rollOutPaths, microPlanDistance, maxSpeed, carTipMargin, rollInMargin,
 						 rollInSpeedFactor, pathDensity, rollOutDensity,rollOutNumber,
-						 0.45, 0.45, SmoothTolerance, bHeadingSmooth, sampledPoints);
+						 SmoothDataWeight, SmoothWeight, SmoothTolerance, bHeadingSmooth, sampledPoints);
 		}
 		else
 		{
@@ -234,7 +234,7 @@ PlannerH::PlannerH()
  		 RoadNetwork& map,
  		 std::vector<std::vector<WayPoint> >& paths)
   {
- 	PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestWaypointFromMap(start, map);
+ 	PlannerHNS::WayPoint* pStart = PlannerHNS::MappingHelpers::GetClosestBackWaypointFromMap(start, map);
 
  	if(!pStart)
  	{

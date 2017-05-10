@@ -62,6 +62,7 @@ public:
 	static Lane* GetClosestLaneFromMapDirectionBased(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
 	static std::vector<Lane*> GetClosestMultipleLanesFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);
 	static WayPoint* GetClosestWaypointFromMap(const WayPoint& pos, RoadNetwork& map);
+	static WayPoint* GetClosestBackWaypointFromMap(const WayPoint& pos, RoadNetwork& map);
 	static WayPoint GetFirstWaypoint(RoadNetwork& map);
 	static WayPoint* GetLastWaypoint(RoadNetwork& map);
 

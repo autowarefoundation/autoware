@@ -73,6 +73,7 @@ public:
 	std::string 	KmlMapPath;
 	std::string 	strID;
 	std::string 	meshPath;
+	std::string 	logPath;
 	MAP_SOURCE_TYPE	mapSource;
 	bool			bRandomStart;
 	PlannerHNS::WayPoint startPose;

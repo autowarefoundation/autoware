@@ -759,6 +759,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 			if(target_velocity > m_CarInfo.max_speed_forward)
 				target_velocity = m_CarInfo.max_speed_forward;
 
+
 			for(unsigned int i = 0; i < m_Path.size(); i++)
 				m_Path.at(i).v = target_velocity;
 		}
@@ -768,6 +769,9 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 				PlanningHelpers::GenerateRecommendedSpeed(m_Path, m_pCurrentBehaviorState->m_pParams->maxSpeed, m_pCurrentBehaviorState->m_pParams->speedProfileFactor);
 			else
 				PlanningHelpers::GenerateRecommendedSpeed(m_Path, m_pCurrentBehaviorState->m_pParams->maxSpeed*0.75, m_pCurrentBehaviorState->m_pParams->speedProfileFactor);
+
+
+			WayPoint pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(m_Path, info, beh.followDistance - critical_long_front_distance, point_index);
 
 			double inc = CurrStatus.speed;
 			int iRange = point_index - info.iBack;
@@ -789,7 +793,7 @@ bool LocalPlannerH::CalculateObstacleCosts(PlannerHNS::RoadNetwork& map, const P
 
 				 if(i < m_Path.size() && i >= 0)
 				 {
-					 //cout << target_velocity << ", " ;
+				//	 cout << target_velocity << ", " ;
 					 m_Path.at(i).v = target_velocity;
 				 }
 

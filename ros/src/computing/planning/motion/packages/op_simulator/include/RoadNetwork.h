@@ -760,8 +760,8 @@ public:
 		maxDistanceToAvoid				= 5;
 		speedProfileFactor				= 1.0;
 		smoothingDataWeight				= 0.45;
-		smoothingSmoothWeight			= 0.35;
-		smoothingToleranceError			= 0.1;
+		smoothingSmoothWeight			= 0.3;
+		smoothingToleranceError			= 0.05;
 
 		verticalSafetyDistance 			= 0.0;
 		horizontalSafetyDistancel		= 0.0;

@@ -18,8 +18,50 @@
 namespace SimulationNS
 {
 
-#define DEBUG_TRACKER 1
+#define DEBUG_TRACKER 0
 #define NEVER_GORGET_TIME -1000
+
+struct Kalman1dState
+{
+    double MovCov; //double q; //moving noise covariance
+    double MeasureCov; //double r; //measurement noise covariance
+    double x; //value
+    double p; //estimation error covariance
+    double k; //kalman gain
+};
+
+class  kalmanFilter1D
+{
+public:
+
+	Kalman1dState result;
+
+    kalmanFilter1D()
+	{
+
+	}
+    kalmanFilter1D(double MovCov, double MeasureCov, double p, double intial_value)
+    {
+        result.MovCov = MovCov;
+        result.MeasureCov = MeasureCov;
+        result.p = p;
+        result.x = intial_value;
+    }
+
+    Kalman1dState Update(double measurement)
+    {
+    	//prediction update
+		//omit x = x
+		result.p = result.p + result.MovCov;
+
+		//measurement update
+		result.k = result.p / (result.p + result.MeasureCov);
+		result.x = result.x + result.k * (measurement - result.x);
+		result.p = (1 - result.k) * result.p;
+
+		return result;
+    }
+};
 
 class KFTrackV
 {
@@ -31,11 +73,13 @@ private:
 	int nStates;
 	int nMeasure;
 	int m_iLife;
+	double circ_angle;
 
 public:
 	int region_id;
 	double forget_time;
 	PlannerHNS::DetectedObject obj;
+	kalmanFilter1D errorSmoother;
 
 	long GetTrackID()
 	{
@@ -44,6 +88,11 @@ public:
 
 	KFTrackV(double x, double y, double a, long id, double _dt)
 	{
+		circ_angle = 0;
+		errorSmoother.result.MovCov = 0.125;
+		errorSmoother.result.MeasureCov = 0.1;
+		errorSmoother.result.p = 1;
+		errorSmoother.result.x = 0;
 		region_id = -1;
 		forget_time = NEVER_GORGET_TIME; // this is very bad , dangerous
 		m_iLife = 0;
@@ -76,10 +125,19 @@ public:
 		cv::setIdentity(m_filter.errorCovPost, cv::Scalar::all(0.075));
 
 		m_filter.predict();
+
+		errorSmoother.Update(a);
 	}
 
-	void UpdateTracking(const double& x, const double& y, const double& a, double& x_new, double & y_new , double& a_new, double& v)
+	void UpdateTracking(double _dt, const double& x, const double& y, const double& a, double& x_new, double & y_new , double& a_new, double& v)
 	{
+		dt = _dt;
+		m_filter.transitionMatrix = *(cv::Mat_<float>(nStates, nStates) << 1	,0	,dt	,0  ,
+																			   	   0	,1	,0	,dt	,
+																			   	   0	,0	,1	,0	,
+																			   	   0	,0	,0	,1	);
+		double a_old = a;
+
 		cv::Mat_<float> measurement(nMeasure,1);
 		cv::Mat_<float> prediction(nStates,1);
 
@@ -96,7 +154,17 @@ public:
 		if(m_iLife > 2)
 		{
 			v = sqrt(vx*vx+vy*vy);
-			a_new = atan2(y_new - y, x_new - x);
+			double diff_y = y_new - prev_y;
+			double diff_x = x_new - prev_x;
+			if(hypot(diff_y, diff_x) > 0.5)
+			{
+				prev_y = y;
+				prev_x = x;
+				a_new = atan2(diff_y, diff_x);
+			}
+			else
+				a_new = a;
+
 		}
 		else
 		{
@@ -104,8 +172,17 @@ public:
 			a_new = a;
 		}
 
+		circ_angle = UtilityHNS::UtilityH::GetCircularAngle(circ_angle, UtilityHNS::UtilityH::FixNegativeAngle(a_old), UtilityHNS::UtilityH::FixNegativeAngle(a_new));
+
+		circ_angle =  errorSmoother.Update(circ_angle).x;
+
+		a_new = UtilityHNS::UtilityH::SplitPositiveAngle(circ_angle);
+
 		if(v < 0.1)
 			v = 0;
+
+		//std::cout << "Track: Old (" << x << ", " << y << "), New (" << x_new << ", " << y_new << ")" << std::endl;
+		//std::cout << "Track: " << m_id << ", A: " << a << ", A_new:(" << circ_angle << "," <<  a_new << ") , V" << v << ", dt: " << dt << ", forget_time: " << forget_time << std::endl;
 
 		m_filter.predict();
 		m_filter.statePre.copyTo(m_filter.statePost);
@@ -184,6 +261,7 @@ public:
 	int m_MAX_TRACKS_AFTER_LOSING;
 	bool m_bUseCenterOnly;
 	double m_MaxKeepTime;
+	bool m_bFirstCall;
 };
 
 } /* namespace BehaviorsNS */

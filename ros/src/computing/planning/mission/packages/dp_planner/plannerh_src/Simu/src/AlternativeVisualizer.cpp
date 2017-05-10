@@ -273,7 +273,7 @@ void AlternativeVisualizer::DrawGPSData()
 	for(unsigned int i = 0 ; i < gpsDataPathSmoothedKalman.size(); i++)
 	{
 		GPSPoint p = gpsDataPathSmoothedKalman.at(i).pos;
-		kf.UpdateTracking(p.x, p.y, p.a, p.x, p.y, p.a, gpsDataPathSmoothedKalman.at(i).v);
+		kf.UpdateTracking(0.1, p.x, p.y, p.a, p.x, p.y, p.a, gpsDataPathSmoothedKalman.at(i).v);
 		gpsDataPathSmoothedKalman.at(i).pos = p;
 	}
 

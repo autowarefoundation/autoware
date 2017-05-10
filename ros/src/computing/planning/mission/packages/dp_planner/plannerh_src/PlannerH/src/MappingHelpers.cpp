@@ -1288,6 +1288,30 @@ WayPoint* MappingHelpers::GetClosestWaypointFromMap(const WayPoint& pos, RoadNet
 	return &pLane->points.at(closest_index);
 }
 
+WayPoint* MappingHelpers::GetClosestBackWaypointFromMap(const WayPoint& pos, RoadNetwork& map)
+{
+	double distance_to_nearest_lane = 1;
+	Lane* pLane = 0;
+	while(distance_to_nearest_lane < 100 && pLane == 0)
+	{
+		pLane = GetClosestLaneFromMap(pos, map, distance_to_nearest_lane);
+		distance_to_nearest_lane += 1;
+	}
+
+	if(!pLane) return 0;
+
+	int closest_index = PlanningHelpers::GetClosestNextPointIndex(pLane->points, pos);
+
+	if(closest_index>2)
+		return &pLane->points.at(closest_index-3);
+	else if(closest_index>1)
+		return &pLane->points.at(closest_index-2);
+	else if(closest_index>0)
+		return &pLane->points.at(closest_index-1);
+	else
+		return &pLane->points.at(closest_index);
+}
+
 Lane* MappingHelpers::GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance)
 {
 	vector<pair<double, Lane*> > laneLinksList;

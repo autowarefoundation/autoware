@@ -418,7 +418,7 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/wheelBaseLength", vehicleInfo.wheel_base);
 	nh.getParam("/dp_planner/turningRadius", vehicleInfo.turning_radius);
 	nh.getParam("/dp_planner/maxSteerAngle", vehicleInfo.max_steer_angle);
-	vehicleInfo.max_speed_backword = params.maxSpeed;
+	vehicleInfo.max_speed_forward = params.maxSpeed;
 	vehicleInfo.min_speed_forward = params.minSpeed;
 
 	m_LocalPlanner.m_SimulationSteeringDelayFactor = controlParams.SimulationSteeringDelay;
@@ -1018,7 +1018,9 @@ void PlannerX::PlannerMainLoop()
 		pub_ClosestIndex.publish(closest_waypoint);
 		pub_LocalBasePath.publish(current_trajectory);
 		pub_LocalPath.publish(current_trajectory);
-
+		visualization_msgs::MarkerArray all_rollOuts;
+		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
+		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 
 		if(m_CurrentBehavior.bNewPlan)
 		{
@@ -1028,10 +1030,6 @@ void PlannerX::PlannerMainLoop()
 			str_out << UtilityHNS::DataRW::PathLogFolderName;
 			str_out << "LocalPath_";
 			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
-
-			visualization_msgs::MarkerArray all_rollOuts;
-			RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
-			pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 		}
 
 
