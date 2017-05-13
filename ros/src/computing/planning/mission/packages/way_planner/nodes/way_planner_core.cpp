@@ -125,7 +125,8 @@ if(m_params.bEnableHMI)
 //	}
 
 	sub_current_pose 		= nh.subscribe("/current_pose", 			100,	&way_planner_core::callbackGetCurrentPose, 		this);
-	sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
+	//sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
+	sub_can_info = nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCanInfo, 	this);
 	sub_nodes_list 			= nh.subscribe("/GlobalNodesList", 			1, 		&way_planner_core::callbackGetNodesList, 		this);
 
 	if(m_params.mapSource == MAP_AUTOWARE)
@@ -195,6 +196,13 @@ void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampe
 {
 	m_VehicleState.speed = msg->twist.linear.x;
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+}
+
+void way_planner_core::callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+{
+	m_VehicleState.speed = msg->speed/3.6;
+	m_VehicleState.steer = msg->angle * 0.45 / 660;
+	std::cout << "Can Info, Speed: "<< m_VehicleState.speed << ", Steering: " << m_VehicleState.steer  << std::endl;
 }
 
 void way_planner_core::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)

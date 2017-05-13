@@ -157,7 +157,10 @@ PlannerX::PlannerX()
 	if(bUseOdometry)
 		sub_robot_odom 		= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
 	else
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
+	{
+		//sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
+		sub_can_info = nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCanInfo, 	this);
+	}
 
 
 	sub_EmergencyStop 	= nh.subscribe("/emergency_stop_signal", 	100,	&PlannerX::callbackGetEmergencyStop, 	this);
@@ -669,6 +672,13 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 //		m_VehicleState.shift = AW_SHIFT_POS_RR;
 
 	//std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
+}
+
+void PlannerX::callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+{
+	m_VehicleState.speed = msg->speed/3.6;
+	m_VehicleState.steer = msg->angle * m_LocalPlanner.m_CarInfo.max_steer_angle / m_LocalPlanner.m_CarInfo.max_steer_value;
+	std::cout << "Can Info, Speed: "<< m_VehicleState.speed << ", Steering: " << m_VehicleState.steer  << std::endl;
 }
 
 void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)

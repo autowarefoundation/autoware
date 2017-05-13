@@ -60,6 +60,7 @@
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "waypoint_follower/LaneArray.h"
+#include "vehicle_socket/CanInfo.h"
 #include <visualization_msgs/MarkerArray.h>
 
 #include "MappingHelpers.h"
@@ -177,6 +178,7 @@ protected:
 	ros::Subscriber sub_map_nodes;
 	ros::Subscriber sup_stop_lines;
 	ros::Subscriber sub_dtlanes;
+	ros::Subscriber sub_can_info			;
 
 public:
 	way_planner_core();
@@ -192,6 +194,7 @@ private:
   void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
+  void callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
 
   void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
   void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);

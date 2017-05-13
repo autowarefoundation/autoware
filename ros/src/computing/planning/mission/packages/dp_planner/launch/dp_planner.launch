@@ -31,7 +31,7 @@
 	<arg name="length" 						default="4.2"  />
 	<arg name="wheelBaseLength" 			default="2.7"  />
 	<arg name="turningRadius"				default="5.2"  />
-	<arg name="maxSteerAngle" 				default="0.5" />
+	<arg name="maxSteerAngle" 				default="0.45" />
 	
 	<arg name="steeringDelay" 				default="1.2" />
 	<arg name="minPursuiteDistance" 		default="3.0"  />
