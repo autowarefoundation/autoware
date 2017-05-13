@@ -27,9 +27,9 @@ SimpleTracker::SimpleTracker(double horizon)
 {
 	iTracksNumber = 1;
 	m_DT = 0.1;
-	m_MAX_ASSOCIATION_DISTANCE = 2.0;
+	m_MAX_ASSOCIATION_DISTANCE = 3.0;
 	m_MAX_TRACKS_AFTER_LOSING = 10;
-	m_MaxKeepTime = 10; // seconds
+	m_MaxKeepTime = 15; // seconds
 	m_bUseCenterOnly = true;
 	m_bFirstCall = true;
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
@@ -64,8 +64,10 @@ void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis
 		{
 			pCir->radius = 5;
 			pCir->pPrevCircle = 0;
-			pCir->forget_time = NEVER_GORGET_TIME;
+			//pCir->forget_time = NEVER_GORGET_TIME;
+			pCir->forget_time = m_MaxKeepTime*2.0;
 			regions.push_back(pCir);
+			std::cout << "Region No: " << regions.size() << ", Radius: " << pCir->radius << ", F time: " << pCir->forget_time << std::endl;
 		}
 		else
 		{
@@ -77,11 +79,14 @@ void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis
 
 			regions.at(iPrev)->pNextCircle = pCir;
 			pCir->pPrevCircle = regions.at(iPrev);
-			pCir->forget_time = m_MaxKeepTime-iPrev;
-			if(pCir->forget_time < 0 )
-				pCir->forget_time = 0;
+			pCir->forget_time = m_MaxKeepTime-iPrev-2;
+			if(pCir->forget_time <= 0 )
+				pCir->forget_time = 0.2;
 			regions.push_back(pCir);
+
+			std::cout << "Region No: " << regions.size() << ", Radius: " << pCir->radius << ", F time: " << pCir->forget_time << std::endl;
 		}
+
 		distance = pCir->radius;
 	}
 }
@@ -95,7 +100,16 @@ void SimpleTracker::AssociateToRegions(KFTrackV& detectedObject)
 		{
 			detectedObject.region_id = m_InterestRegions.at(i)->id;
 			detectedObject.forget_time = m_InterestRegions.at(i)->forget_time;
+			//std::cout << "Associate Object: " << detectedObject.obj.id << ", With Region: " << detectedObject.region_id << ", And Time: " << detectedObject.forget_time << std::endl;
+			return;
 		}
+	}
+
+	if(m_InterestRegions.size() > 0)
+	{
+		detectedObject.region_id = m_InterestRegions.at(m_InterestRegions.size()-1)->id;
+		detectedObject.forget_time = m_InterestRegions.at(m_InterestRegions.size()-1)->forget_time;
+		//std::cout << "Associate Object: " << detectedObject.obj.id << ", With Region: " << detectedObject.region_id << ", And Time: " << detectedObject.forget_time << std::endl;
 	}
 }
 
@@ -209,21 +223,22 @@ void SimpleTracker::TrackV2()
 				m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
 				m_Tracks.at(i)->obj.center.v);
 
-		m_Tracks.at(i)->forget_time -= m_DT;
+		//std::cout<< "Obj ID: " << m_Tracks.at(i)->GetTrackID() << ", Remaining Time: " <<  m_Tracks.at(i)->forget_time  << std::endl;
 	}
 }
 
 void SimpleTracker::CleanOldTracks()
 {
 	m_DetectedObjects.clear();
-	for(int i =0; i< m_Tracks.size(); i++)
+	for(int i = 0; i< m_Tracks.size(); i++)
 	{
 		if(m_Tracks.at(i)->forget_time < 0 && m_Tracks.at(i)->forget_time > NEVER_GORGET_TIME)
 		{
+			delete m_Tracks.at(i);
 			m_Tracks.erase(m_Tracks.begin()+i);
 			i--;
 		}
-		else
+		else if(m_Tracks.at(i)->m_iLife > MIN_EVIDENCE_NUMBER)
 		{
 			m_DetectedObjects.push_back(m_Tracks.at(i)->obj);
 		}

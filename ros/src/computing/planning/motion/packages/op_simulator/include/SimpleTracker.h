@@ -20,6 +20,7 @@ namespace SimulationNS
 
 #define DEBUG_TRACKER 0
 #define NEVER_GORGET_TIME -1000
+#define MIN_EVIDENCE_NUMBER 3
 
 struct Kalman1dState
 {
@@ -72,12 +73,12 @@ private:
 	double dt;
 	int nStates;
 	int nMeasure;
-	int m_iLife;
 	double circ_angle;
 
 public:
 	int region_id;
 	double forget_time;
+	int m_iLife;
 	PlannerHNS::DetectedObject obj;
 	kalmanFilter1D errorSmoother;
 
@@ -187,6 +188,8 @@ public:
 		m_filter.predict();
 		m_filter.statePre.copyTo(m_filter.statePost);
 		m_filter.errorCovPre.copyTo(m_filter.errorCovPost);
+
+		forget_time -= dt;
 		m_iLife++;
 	}
 	virtual ~KFTrackV(){}

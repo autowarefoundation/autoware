@@ -72,10 +72,10 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	double smallestDistance = 9999999999;
 	double velo_of_next = 0;
 
-	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
+//	cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
 	for(unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++)
 	{
-		//cout << m_TrajectoryCosts.at(ic).ToString();
+//		cout << m_TrajectoryCosts.at(ic).ToString();
 		if(!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost)
 		{
 			smallestCost = m_TrajectoryCosts.at(ic).cost;
@@ -89,7 +89,7 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 		}
 	}
 
-//	cout << "----------------------------------------------------------------------------- " << endl;
+//	cout << "Smallest Distance: " <<  smallestDistance << "------------------------------------------------------------- " << endl;
 
 	//All is blocked !
 	if(smallestIndex == -1 && m_PrevCostIndex < (int)m_TrajectoryCosts.size())
@@ -223,7 +223,8 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 
 
 					trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
-					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/longitudinalDist;
+					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
+
 
 					if(longitudinalDist >= -critical_long_front_distance && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
 					{
@@ -250,10 +251,14 @@ void TrajectoryCosts::NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts)
 	for(unsigned int ic = 0; ic< trajectoryCosts.size(); ic++)
 	{
 		totalPriorities += trajectoryCosts.at(ic).priority_cost;
+		transitionCosts += trajectoryCosts.at(ic).transition_cost;
+	}
+
+	for(unsigned int ic = 0; ic< trajectoryCosts.size(); ic++)
+	{
 		totalChange += trajectoryCosts.at(ic).lane_change_cost;
 		totalLateralCosts += trajectoryCosts.at(ic).lateral_cost;
 		totalLongitudinalCosts += trajectoryCosts.at(ic).longitudinal_cost;
-		transitionCosts += trajectoryCosts.at(ic).transition_cost;
 	}
 
 	for(unsigned int ic = 0; ic< trajectoryCosts.size(); ic++)
@@ -262,6 +267,11 @@ void TrajectoryCosts::NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts)
 			trajectoryCosts.at(ic).priority_cost = trajectoryCosts.at(ic).priority_cost / totalPriorities;
 		else
 			trajectoryCosts.at(ic).priority_cost = 0;
+
+		if(transitionCosts != 0)
+			trajectoryCosts.at(ic).transition_cost = trajectoryCosts.at(ic).transition_cost / transitionCosts;
+		else
+			trajectoryCosts.at(ic).transition_cost = 0;
 
 		if(totalChange != 0)
 			trajectoryCosts.at(ic).lane_change_cost = trajectoryCosts.at(ic).lane_change_cost / totalChange;
@@ -278,17 +288,12 @@ void TrajectoryCosts::NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts)
 		else
 			trajectoryCosts.at(ic).longitudinal_cost = 0;
 
-		if(transitionCosts != 0)
-			trajectoryCosts.at(ic).transition_cost = trajectoryCosts.at(ic).transition_cost / transitionCosts;
-		else
-			trajectoryCosts.at(ic).transition_cost = 0;
-
 		trajectoryCosts.at(ic).cost = (
-				0.5*trajectoryCosts.at(ic).priority_cost +
+				trajectoryCosts.at(ic).priority_cost +
 				trajectoryCosts.at(ic).lane_change_cost +
 				trajectoryCosts.at(ic).lateral_cost +
 				trajectoryCosts.at(ic).longitudinal_cost +
-				0.25*trajectoryCosts.at(ic).transition_cost) / 5.0;
+				1.5*trajectoryCosts.at(ic).transition_cost) / 5.0;
 	}
 }
 

@@ -164,9 +164,9 @@ void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m
 	m_PlanningParams.enableFollowing = true;
 	m_PlanningParams.enableHeadingSmoothing = false;
 	m_PlanningParams.enableLaneChange = false;
-	m_PlanningParams.enableStopSignBehavior = true;
+	m_PlanningParams.enableStopSignBehavior = false;
 	m_PlanningParams.enableSwerving = false;
-	m_PlanningParams.enableTrafficLightBehavior = true;
+	m_PlanningParams.enableTrafficLightBehavior = false;
 	m_PlanningParams.horizonDistance = 100;
 	m_PlanningParams.horizontalSafetyDistancel = 0.1;
 	m_PlanningParams.verticalSafetyDistance = 0.8;

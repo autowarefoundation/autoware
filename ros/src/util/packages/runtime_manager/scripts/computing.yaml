@@ -2232,7 +2232,24 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.2
+      max : 2.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.5
+      max : 4.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : mapFileName
       desc : select kml map file if applicable 
       label: Map File

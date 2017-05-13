@@ -997,6 +997,7 @@ public:
 		str << ", Priority   : " << priority_cost;
 		str << ", Transition : " << transition_cost;
 		str << ", Lateral    : " << lateral_cost;
+		str << ", Longitu    : " << longitudinal_cost;
 		str << ", LaneChange : " << lane_change_cost;
 		str << ", Blocked    : " << bBlocked;
 		str << "\n";

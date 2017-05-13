@@ -64,6 +64,8 @@ Visualization Manager:
           Value: true
         map:
           Value: true
+        sim_base_link:
+          Value: true
         velodyne:
           Value: true
         world:
@@ -76,7 +78,8 @@ Visualization Manager:
       Tree:
         world:
           map:
-            {}
+            sim_base_link:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -314,7 +317,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        {}
+        next_target_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -322,7 +325,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        {}
+        trajectory_circle_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -475,7 +478,9 @@ Visualization Manager:
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        {}
+        global_lane_array_marker: true
+        global_lane_waypoint_orientation_marker: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -483,7 +488,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -491,7 +496,11 @@ Visualization Manager:
       Marker Topic: /detected_polygons
       Name: Tracked Contours
       Namespaces:
-        {}
+        Object_Direction: true
+        Polygon_Corners: true
+        Quarters_Lines: true
+        detected_polygons: true
+        detected_polygons_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -515,7 +524,7 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        {}
+        detected_polygons_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -531,7 +540,7 @@ Visualization Manager:
       Marker Topic: /safety_border
       Name: Safety Box
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -583,7 +592,7 @@ Visualization Manager:
       Marker Topic: /op_simulator5/curr_simu_pose_5
       Name: SimuCar5
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -623,7 +632,7 @@ Visualization Manager:
       Marker Topic: /op_simulator5/simu_local_trajectory_5
       Name: SimPath5
       Namespaces:
-        simu_car_path_5: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -664,15 +673,14 @@ Visualization Manager:
       Name: SimBehavior2
       Namespaces:
         sim_behavior_2: true
-        sim_behavior_3: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /OpenPlannerSimulator3/sim_beh_txt_3
+      Marker Topic: /op_simulator3/sim_beh_txt_3
       Name: SimBehavior3
       Namespaces:
-        {}
+        sim_behavior_3: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -688,7 +696,7 @@ Visualization Manager:
       Marker Topic: /op_simulator5/sim_beh_txt_5
       Name: SimBehavior5
       Namespaces:
-        sim_behavior_5: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -714,7 +722,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
+      Angle: 0.00500008
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -723,11 +731,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 12.9189
+      Scale: 11.8606
       Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 12.3296
-      Y: 1.8651
+      X: 4.39087
+      Y: 3.01324
     Saved: ~
 Window Geometry:
   Camera:

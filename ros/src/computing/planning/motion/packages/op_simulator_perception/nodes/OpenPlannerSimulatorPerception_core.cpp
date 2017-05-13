@@ -104,11 +104,13 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	if(index >= 0) // update existing
 	{
 		m_ObjClustersArray.clusters.at(index) = c;
+		m_keepTime.at(index).second = 10;
 	//	ROS_INFO("Update Obj ID = %d", c.id);
 	}
 	else
 	{
 		m_ObjClustersArray.clusters.push_back(c);
+		m_keepTime.push_back(make_pair(c.id, 10));
 	//	ROS_INFO("Insert Obj ID = %d", c.id);
 	}
 
@@ -171,6 +173,21 @@ void OpenPlannerSimulatorPerception::MainLoop()
 
 		if(m_ObjClustersArray.clusters.size()>0)
 			pub_DetectedObjects.publish(m_ObjClustersArray);
+
+		//clean old data
+		for(unsigned int i = 0 ; i < m_keepTime.size(); i++)
+		{
+			if(m_keepTime.at(i).second <= 0)
+			{
+				m_keepTime.erase(m_keepTime.begin()+i);
+				m_ObjClustersArray.clusters.erase(m_ObjClustersArray.clusters.begin()+i);
+				i--;
+			}
+			else
+				m_keepTime.at(i).second -= 1;
+		}
+
+		std::cout << "Number of Obstacles: (" << m_keepTime.size() << ", " << m_ObjClustersArray.clusters.size() << ") "<< std::endl;
 
 		loop_rate.sleep();
 	}

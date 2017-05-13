@@ -81,6 +81,7 @@ protected:
 	DetectionCommandParams m_DecParams;
 
 	lidar_tracker::CloudClusterArray m_ObjClustersArray;
+	std::vector<std::pair<int, double> > m_keepTime;
 
 	ros::Publisher pub_DetectedObjects;
 
