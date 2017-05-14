@@ -307,8 +307,8 @@ class XSensDriver(object):
 			imu_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			imu_msg.header.stamp.secs = secs
-			imu_msg.header.stamp.nsecs = nsecs	
+			#imu_msg.header.stamp.secs = secs
+			#imu_msg.header.stamp.nsecs = nsecs	
 			self.imu_pub.publish(imu_msg)
 		#if pub_gps:
 		#	xgps_msg.header = gps_msg.header = h
@@ -323,43 +323,43 @@ class XSensDriver(object):
 			ss_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			ss_msg.header.stamp.secs = secs
-			ss_msg.header.stamp.nsecs = nsecs	
+			#ss_msg.header.stamp.secs = secs
+			#ss_msg.header.stamp.nsecs = nsecs	
 			self.ss_pub.publish(ss_msg)
 		if pub_baro:
 			baro_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			baro_msg.header.stamp.secs = secs
-			baro_msg.header.stamp.nsecs = nsecs	
+			#baro_msg.header.stamp.secs = secs
+			#baro_msg.header.stamp.nsecs = nsecs	
 			self.baro_pub.publish(baro_msg)
 		if pub_gnssPvt:
 			gnssPvt_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			baro_msg.header.stamp.secs = secs
-			baro_msg.header.stamp.nsecs = nsecs	
+			#baro_msg.header.stamp.secs = secs
+			#baro_msg.header.stamp.nsecs = nsecs	
 			self.gnssPvt_pub.publish(gnssPvt_msg)										
 		if pub_ori:
 			ori_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			ori_msg.header.stamp.secs = secs
-			ori_msg.header.stamp.nsecs = nsecs	
+			#ori_msg.header.stamp.secs = secs
+			#ori_msg.header.stamp.nsecs = nsecs	
 			self.ori_pub.publish(ori_msg)
 		if pub_vel:
 			vel_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			vel_msg.header.stamp.secs = secs
-			vel_msg.header.stamp.nsecs = nsecs	
+			#vel_msg.header.stamp.secs = secs
+			#vel_msg.header.stamp.nsecs = nsecs	
 			self.vel_pub.publish(vel_msg)
 		if pub_pos:
 			pos_msg.header = h
 			#all time assignments (overwriting ROS time)
 			# Comment the two lines below if you need ROS time
-			pos_msg.header.stamp.secs = secs
-			pos_msg.header.stamp.nsecs = nsecs	
+			#pos_msg.header.stamp.secs = secs
+			#pos_msg.header.stamp.nsecs = nsecs	
 			self.pos_pub.publish(pos_msg)		
 			
 
