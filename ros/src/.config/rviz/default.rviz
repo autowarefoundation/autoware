@@ -33,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Points Map
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -60,26 +60,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        map:
-          Value: true
-        sim_base_link:
-          Value: true
-        velodyne:
-          Value: true
-        world:
-          Value: true
       Marker Scale: 5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          map:
-            sim_base_link:
-              {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -117,26 +104,7 @@ Visualization Manager:
       Marker Topic: /vector_map
       Name: Vector Map
       Namespaces:
-        cross_road: true
-        cross_walk: true
-        curb: true
-        curve_mirror: true
-        fence: true
-        guard_rail: true
-        gutter: true
-        rail_crossing: true
-        road_edge: true
-        road_mark: true
-        road_pole: true
-        road_sign: true
-        side_walk: true
-        signal: true
-        stop_line: true
-        street_light: true
-        utility_pole: true
-        wall: true
-        white_line: true
-        zebra_zone: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Image
@@ -317,7 +285,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Next Waypoint Mark
       Namespaces:
-        next_target_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -325,7 +293,7 @@ Visualization Manager:
       Marker Topic: /trajectory_circle_mark
       Name: PP Trajectory Mark
       Namespaces:
-        trajectory_circle_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -339,23 +307,18 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: Vehicle Model
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -478,9 +441,7 @@ Visualization Manager:
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        global_lane_array_marker: true
-        global_lane_waypoint_orientation_marker: true
-        global_velocity_lane_1: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -488,7 +449,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -496,11 +457,7 @@ Visualization Manager:
       Marker Topic: /detected_polygons
       Name: Tracked Contours
       Namespaces:
-        Object_Direction: true
-        Polygon_Corners: true
-        Quarters_Lines: true
-        detected_polygons: true
-        detected_polygons_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -524,7 +481,7 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        detected_polygons_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -540,7 +497,7 @@ Visualization Manager:
       Marker Topic: /safety_border
       Name: Safety Box
       Namespaces:
-        global_lane_array_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -556,85 +513,85 @@ Visualization Manager:
       only edge: false
       show coords: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator1/curr_simu_pose_1
       Name: SimuCar1
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator2/curr_simu_pose_2
       Name: SimuCar2
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator3/curr_simu_pose_3
       Name: SimuCar3
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator4/curr_simu_pose_4
       Name: SimuCar4
       Namespaces:
-        curr_simu_pose: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator5/curr_simu_pose_5
       Name: SimuCar5
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator1/simu_local_trajectory_1
       Name: SimPath1
       Namespaces:
-        simu_car_path_1: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator2/simu_local_trajectory_2
       Name: SimPath2
       Namespaces:
-        simu_car_path_2: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator3/simu_local_trajectory_3
       Name: SimPath3
       Namespaces:
-        simu_car_path_3: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator4/simu_local_trajectory_4
       Name: SimPath4
       Namespaces:
-        simu_car_path_4: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator5/simu_local_trajectory_5
       Name: SimPath5
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: false
       Marker Topic: /OpenPlannerSimulator1/safety_border_1
@@ -660,45 +617,45 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator1/sim_beh_txt_1
       Name: SimBehavior1
       Namespaces:
-        sim_behavior_1: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator2/sim_beh_txt_2
       Name: SimBehavior2
       Namespaces:
-        sim_behavior_2: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator3/sim_beh_txt_3
       Name: SimBehavior3
       Namespaces:
-        sim_behavior_3: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator4/sim_beh_txt_4
       Name: SimBehavior4
       Namespaces:
-        sim_behavior_4: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /op_simulator5/sim_beh_txt_5
       Name: SimBehavior5
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
