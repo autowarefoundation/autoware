@@ -28,6 +28,7 @@ find_package (OpenMP)
 find_package (Eigen3 REQUIRED)
 find_package (PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package (PythonLibs REQUIRED)
+find_package (X11 REQUIRED)
 
 
 add_message_files (
