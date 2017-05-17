@@ -405,9 +405,9 @@ class Final(InsideDesign):
                 self.selected_topic_dic[push] = dic[self.select]
                 if not((self.select == 5) or (self.select == 6)):
                     # cmd = "roslaunch velodyne_pointcloud 32e_points.launch"
-                    cmd = "roslaunch" + " ./src/dataprocess/scripts/" + dic[self.select] + " calibration:=%s" %self.file_path
+                    cmd = "roslaunch" + " dataprocess " + dic[self.select] + " calibration:=%s" %self.file_path
                 else:
-                    cmd = "roslaunch" + " ./src/dataprocess/scripts/" + dic[self.select]
+                    cmd = "roslaunch" + " dataprocess " + dic[self.select]
                 self.cmd_dic[push] = (cmd, None)
                 self.launch_kill_proc2(push, self.cmd_dic)
                 if push == self.objx:
@@ -3474,7 +3474,7 @@ class DetailDialog(wx.Dialog):
         panel = wx.Panel(self, wx.ID_ANY)
         layout = wx.BoxSizer(wx.VERTICAL)
 
-        self.filename = os.getcwd() + "/src/dataprocess/scripts/32db.yaml"
+        self.filename = os.getcwd() + "/src/util/packages/dataprocess/scripts/32db.yaml"
         self.tc2 = wx.TextCtrl(panel, wx.ID_ANY, self.filename, style=1024)
         self.tc2.SetMinSize((300, 29))
         self.Bind(wx.EVT_TEXT_ENTER, self.update_path, self.tc2)
