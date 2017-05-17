@@ -1,0 +1,98 @@
+Data_Processing:
+  budget: 20
+  cpu_chks:
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  nice: 0
+  period: 100
+  policy: !!python/unicode 'FIFO'
+  prio: 99
+  real_time: false
+Velodyne HDL-32e:
+  calibration: Please Set Caribration File
+  calibration1: Please Set Caribration File
+astar_navi:
+  use_back: false
+  waypoint_velocity_kmph: 5.0
+button_input11:
+  file: Please Set Calibration File
+play_rosbag_play:
+  confirm: 0
+  file: Please Set Bag File
+  rate: 9.0
+  repeat: false
+  start: 0
+point_cloud:
+  path_area_list: None
+  path_area_list_cmd_param: null
+  path_pcd: ''
+  scene_num: noupdate
+points_image:
+  camera_id: ''
+  sync: false
+pos_downloader:
+  db_host_name: db3.ertl.jp
+  db_port: 5678
+  now: false
+  show_my_pose: false
+  sshport: 22
+  sshprivatekey: ''
+  sshpubkey: ''
+  sshtunnelhost: localhost
+  username: ''
+sensing_qs:
+  file: ''
+setup_tf:
+  frame_id: /base_link
+  localizer_cmd_param: /velodyne
+  localizer_rosparam: velodyne
+  period_in_ms: 10
+  pitch: 0.0
+  roll: 0.0
+  x: 1.2
+  y: 0.0
+  yaw: 0.0
+  z: 2.0
+tf:
+  file: ''
+vector_map:
+  path_vec: ''
+vehicle_info:
+  info_path: ''
+vehicle_model:
+  model_path: ''
+velocity_set:
+  budget: 20
+  cpu_chks:
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  - true
+  deceleration: 1.05
+  deceleration_range: 1.7
+  detection_height_bottom: -1.5
+  detection_height_top: 0.1
+  detection_range: 1.3
+  nice: 0
+  others_distance: 15.8
+  period: 100
+  policy: !!python/unicode 'FIFO'
+  prio: 99
+  real_time: false
+  temporal_waypoints_size: 103.8
+  threshold_points: 15
+  use_crosswalk_detection: false
+  velocity_change_limit: 15.0
+virtual_scan_image:
+  camera_id: ''
+  sync: false
