@@ -30,9 +30,10 @@
 namespace ORB_SLAM2
 {
 
-LocalMapping::LocalMapping(Map *pMap, const float bMonocular):
+LocalMapping::LocalMapping(Map *pMap, const float bMonocular, const bool offlineMode):
     mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), mpMap(pMap),
-    mbAbortBA(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true)
+    mbAbortBA(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true),
+	offlineMapping (offlineMode)
 {
 }
 
@@ -126,8 +127,6 @@ void LocalMapping::Run()
 
 void LocalMapping::RunOnce()
 {
-    mbFinished = false;
-
 	// Check if there are keyframes in the queue
 	if(CheckNewKeyFrames())
 	{
@@ -148,7 +147,7 @@ void LocalMapping::RunOnce()
 
 		mbAbortBA = false;
 
-		if(!CheckNewKeyFrames() && !stopRequested())
+		if(!CheckNewKeyFrames())
 		{
 			// Local BA
 			if(mpMap->KeyFramesInMap()>2)
@@ -160,11 +159,6 @@ void LocalMapping::RunOnce()
 
 		mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
 	}
-
-	// Tracking will see that Local Mapping is busy
-	SetAcceptKeyFrames(true);
-
-    SetFinish();
 }
 
 

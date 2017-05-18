@@ -39,7 +39,7 @@
 #define HAVE_GLEW
 /* #undef GLEW_STATIC */
 
-#define HAVE_GLUT
+/* #undef HAVE_GLUT */
 /* #undef HAVE_FREEGLUT */
 /* #undef HAVE_APPLE_OPENGL_FRAMEWORK */
 /* #undef HAVE_MODIFIED_OSXGLUT */

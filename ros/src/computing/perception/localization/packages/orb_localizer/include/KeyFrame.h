@@ -31,6 +31,7 @@
 #include <mutex>
 #include <list>
 #include <map>
+#include <set>
 #include <boost/serialization/serialization.hpp>
 
 
@@ -76,6 +77,7 @@ public:
 
     // Bag of Words Representation
     void ComputeBoW();
+    void RecomputeBoW (ORBVocabulary *newvoc);
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);
@@ -213,6 +215,7 @@ public:
     int mnMaxY;
     cv::Mat mK;
 
+    void debug (const string &dirname="debug");
 
     // The following variables need to be accessed trough a mutex to be thread safe.
 protected:

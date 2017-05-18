@@ -25,6 +25,8 @@
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
 
+#include <Eigen/Geometry>
+
 #include"Viewer.h"
 #include"FrameDrawer.h"
 #include"Map.h"
@@ -39,6 +41,10 @@
 #include "System.h"
 
 #include <mutex>
+
+
+typedef Eigen::Transform<float,3,Eigen::Affine> Transform3;
+
 
 namespace ORB_SLAM2
 {
@@ -61,6 +67,8 @@ public:
     cv::Mat GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp);
     cv::Mat GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp);
     cv::Mat GrabImageMonocular(const cv::Mat &im, const double &timestamp);
+
+    Transform3 LocalizeImage (const cv::Mat &image, const double &timestamp);
 
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
@@ -160,7 +168,12 @@ protected:
     void UpdateLastFrame();
     bool TrackWithMotionModel();
 
-    bool Relocalization();
+    enum RelocalizationMode {
+    	SEARCH_DB = 1,
+		SEARCH_MAPPING = 2,
+		SEARCH_LOCAL_MAP = 3
+    };
+    bool Relocalization (RelocalizationMode=SEARCH_DB);
 
     void UpdateLocalMap();
     void UpdateLocalPoints();

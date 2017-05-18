@@ -21,6 +21,8 @@
 #include "KeyFrame.h"
 #include "KeyFrameDatabase.h"
 #include "DBoW2/BowVector.h"
+#include "Map.h"
+
 
 #include<mutex>
 
@@ -29,7 +31,7 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-KeyFrameDatabase::KeyFrameDatabase (const ORBVocabulary &voc):
+KeyFrameDatabase::KeyFrameDatabase (ORBVocabulary &voc):
     mpVoc(&voc)
 {
     mvInvertedFile.resize(voc.size());
@@ -195,6 +197,38 @@ vector<KeyFrame*> KeyFrameDatabase::DetectLoopCandidates(KeyFrame* pKF, float mi
     return vpLoopCandidates;
 }
 
+
+vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidatesSimple (Frame *F)
+{
+	vector<KeyFrame*> lKFsSharingWords;
+
+	for (auto &wId: F->mBowVec) {
+		list<KeyFrame*> &lKFs = mvInvertedFile[wId.first];
+		for (auto &kfp: lKFs) {
+			lKFsSharingWords.push_back (kfp);
+		}
+	}
+
+	if (lKFsSharingWords.empty())
+		return vector<KeyFrame*> ();
+
+	// XXX: Bad decision
+	float s = 0;
+	KeyFrame *kfchk = NULL;
+	for (auto kf: lKFsSharingWords) {
+		float si = mpVoc->score (kf->mBowVec, F->mBowVec);
+		if (si > s) {
+			s = si;
+			kfchk = kf;
+		}
+	}
+
+	vector<KeyFrame*> ret;
+	ret.push_back (kfchk);
+	return ret;
+}
+
+
 vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
 {
     list<KeyFrame*> lKFsSharingWords;
@@ -285,7 +319,7 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
             bestAccScore=accScore;
     }
 
-    // Return all those keyframes with a score higher than 0.75*bestScore
+    // Return all keyframes with a score higher than 0.75*bestScore
     float minScoreToRetain = 0.75f*bestAccScore;
     set<KeyFrame*> spAlreadyAddedKF;
     vector<KeyFrame*> vpRelocCandidates;
@@ -306,5 +340,21 @@ vector<KeyFrame*> KeyFrameDatabase::DetectRelocalizationCandidates(Frame *F)
 
     return vpRelocCandidates;
 }
+
+
+void KeyFrameDatabase::replaceVocabulary (ORBVocabulary *newvoc, Map *cmap)
+{
+	mpVoc = newvoc;
+	mvInvertedFile.clear ();
+
+	vector<KeyFrame*> kfList = cmap->GetAllKeyFrames();
+	mvInvertedFile.resize (kfList.size());
+
+	for (auto kf: kfList) {
+		this->add (kf);
+		kf->RecomputeBoW (newvoc);
+	}
+}
+
 
 } //namespace ORB_SLAM

@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from math import cos, sin, tan, exp
 from tf import transformations as trafo
+from boto.manage.cmdshell import start
+from scipy.constants.constants import point
 
 
 ndtFName = '/home/sujiwo/ORB_SLAM/Data/20151106-1/ndt.csv'
@@ -196,6 +198,39 @@ class Pose :
         self.qz = p.qz
         self.qw = p.qw
         
+    def measureErrorLatLon (self, groundTruth, timeTolerance=0.1, useZ=False):
+        def doMeasureDistance (p, q, useZ):
+            if useZ :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y, p.z-q.z], 2)
+            else :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y], 2)
+
+        errorLat = 0.0
+        errorLon = 0.0        
+        pMin, pMax = groundTruth.findNearPosesByTime (self, timeTolerance)
+        if pMax is None:
+            errorLat = doMeasureDistance(self, pMin, useZ)
+            errorLon = errorLat
+            return errorLat, errorLon
+        if pMin is None:
+            errorLat = doMeasureDistance(self, pMax, useZ)
+            errorLon = errorLat
+            return errorLat, errorLon
+        pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
+        if c>=0.0 and c<=1.0:
+            halfPoint = (pMin.coord() + pMax.coord()) / 2.0
+            errorLat = doMeasureDistance(pointChk, self, useZ)
+            errorLon = np.linalg.norm([halfPoint[0]-pointChk.x, halfPoint[1]-pointChk.y])
+        elif c<0.0:
+            errorLat = doMeasureDistance(pMin, self, useZ)
+            errorLon = doMeasureDistance(pMin, pointChk, useZ)
+        else:
+            errorLat = doMeasureDistance(pMax, self, useZ)
+            errorLon = doMeasureDistance(pMax, pointChk, useZ)
+        return errorLat, errorLon
+            
+        
+        
     def measureErrorLateral (self, groundTruth, timeTolerance=0.1, useZ=False):
         def doMeasureDistance (p, q, useZ):
             if useZ :
@@ -227,6 +262,30 @@ class Pose :
         else:
             return doMeasureDistance(pMax, self, useZ)
 #             return -4.0
+
+    def measureErrorLongitudinal (self, groundTruth, timeTolerance=0.1, useZ=False):
+        def doMeasureDistance (p, q, useZ):
+            if useZ :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y, p.z-q.z], 2)
+            else :
+                return np.linalg.norm ([p.x-q.x, p.y-q.y], 2)
+        
+        pMin, pMax = groundTruth.findNearPosesByTime (self, timeTolerance)
+        if pMax is None:
+            return doMeasureDistance(self, pMin, useZ)
+        if pMin is None:
+            return doMeasureDistance(self, pMax, useZ)
+        pointChk, c = ClosestPointInLine(pMin, pMax, self, True)
+        if c>=0.0 and c<=1.0:
+            # XXX: Take halfpoint for approximation of `true' groundtruth
+            halfPoint = (pMin.coord() + pMax.coord()) / 2.0
+            return np.linalg.norm([halfPoint[0]-pointChk.x, halfPoint[1]-pointChk.y])
+            #return doMeasureDistance(halfPoint, pointChk, useZ)
+        elif c<0.0:
+            return doMeasureDistance(pMin, pointChk, useZ)
+        else:
+            return doMeasureDistance(pMax, pointChk, useZ)
+        pass
 
 
 class PoseTable :
@@ -286,6 +345,24 @@ class PoseTable :
             dist = np.linalg.norm([cpose.x-ppose.x, cpose.y-ppose.y, cpose.z-ppose.z])
             totaldist += dist
         return totaldist
+    
+    def subsetByTime (self, startTimestamp, duration):
+        if startTimestamp < self.table[0].timestamp or startTimestamp > self.table[-1].timestamp:
+            raise KeyError("Invalid timestamp: outside table")
+        if startTimestamp+duration > self.table[-1].timestamp:
+            raise KeyError("Duration reaches the future")
+        subset = PoseTable()
+        for i in range(len(self.table)):
+            if self.table[i].timestamp >= startTimestamp:
+                break
+        while True:
+            p = self.table[i]
+            if startTimestamp + duration > p.timestamp:
+                subset.append(p)
+            else:
+                break
+            i += 1
+        return subset
         
     def lengths (self):
         dists = []
@@ -448,7 +525,7 @@ class PoseTable :
         return records
     
     @staticmethod
-    def loadFromBagFile (filename, sourceFrameName=None, targetFrameName=None) :
+    def loadFromTfBag (filename, sourceFrameName=None, targetFrameName=None) :
         bagsrc = rosbag.Bag(filename, mode='r')
         #topicInfo = bagsrc.get_type_and_topic_info('/tf')
         i = 0
@@ -482,8 +559,13 @@ class PoseTable :
                 continue
             if (msg._type != 'geometry_msgs/PoseStamped') :
                 continue
-            cpose = Pose(msgTimestamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 
+            cpose = Pose(msg.header.stamp.to_sec(), msg.pose.position.x, msg.pose.position.y, msg.pose.position.z, 
                 msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w)
+            cpose.msgTimestamp = msgTimestamp.to_sec()
+            
+            # Check for invalid values
+            if (cpose.x >= 1e10 or cpose.y>= 1e10 or cpose.z>=1e10) :
+                continue
             poseRecord.append(cpose)
         return poseRecord
         
@@ -577,7 +659,7 @@ class PoseTable :
 
     @staticmethod
     def compareLateralErrors (poseTblSource, groundTruth, tolerance=0.15, useZ=False):
-        i = 0
+        i = 1
         for pose in poseTblSource.table:
             try:
                 errMeas = pose.measureErrorLateral (groundTruth, tolerance, useZ)
@@ -587,7 +669,35 @@ class PoseTable :
                 pose.measuredError = -1.0
             i += 1
             print ("{} out of {}".format(i, len(poseTblSource)))
+            
+            
+    @staticmethod
+    def compareLongitudinalErrors (poseTblSource, groundTruth, tolerance=0.15, useZ=False):
+        i = 1
+        for pose in poseTblSource.table:
+            try:
+                errMeas = pose.measureErrorLongitudinal (groundTruth, tolerance, useZ)
+                pose.measuredError = errMeas
+#                 errorVect.append ([pose.timestamp, errMeas])
+            except KeyError as e:
+                pose.measuredError = -1.0
+            i += 1
+            print ("{} out of {}".format(i, len(poseTblSource)))
 
+    @staticmethod
+    def compareErrors (poseTblSource, groundTruth, tolerance=0.15, useZ=False):
+        i = 1
+        for pose in poseTblSource.table:
+            try:
+                pose.errorLateral, pose.errorLongitudinal = pose.measureErrorLatLon (groundTruth, tolerance, useZ)
+#                 errorVect.append ([pose.timestamp, errMeas])
+            except KeyError as e:
+                pose.errorLateral = -1.0
+                pose.errorLongitudinal = -1.0
+            i += 1
+            print ("{} out of {}".format(i, len(poseTblSource)))
+        
+        pass
 
     @staticmethod
     # XXX: Unfinished
@@ -660,7 +770,7 @@ class PoseTable :
         return blankDistFront + blankDistMid + blankDistRear
         
 
-    def saveToBag (self, bagFileName, parentFrame, childFrame, append=False):
+    def saveToTfBag (self, bagFileName, parentFrame, childFrame, append=False):
         from tf2_msgs.msg import TFMessage
         from std_msgs.msg import Header
         from geometry_msgs.msg import Transform, TransformStamped, Vector3, Quaternion
@@ -912,7 +1022,7 @@ def readMessage (bag, topic, timestamp):
 
 
 if __name__ == '__main__' :
-    poseBag = PoseTable.loadFromPoseStampedBag("/home/sujiwo/Tsukuba2016/data/nagoya/2016-11-18-14-34-25/pose.bag")
-    
+    poseBag = PoseTable.loadFromPoseStampedBag("/home/sujiwo/Tsukuba2016/data/tsukuba/2016-10-16-14-36-13/ground_truth.bag", '/filtered_ndt_current_pose')
+    subset3500 = poseBag.subsetByTime(poseBag[3500].timestamp, 300)
     pass
     

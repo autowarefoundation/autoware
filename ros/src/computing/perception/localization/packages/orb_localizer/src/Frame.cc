@@ -175,7 +175,8 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeSt
 Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
-	 mpReferenceKF(NULL)
+	 mpReferenceKF(NULL),
+	 image (imGray)
 {
     // Frame ID
     mnId=nNextId++;
@@ -682,7 +683,34 @@ cv::Mat Frame::UnprojectStereo(const int &i)
 
 void Frame::getDirectionVector (float &dirX, float &dirY, float &dirZ)
 {
-
+	cv::Mat orient = this->mTcw.t();
+	dirX = orient.at<float>(0,2);
+	dirY = orient.at<float>(1,2);
+	dirZ = orient.at<float>(2,2);
+	float norm = sqrtf(dirX*dirX + dirY*dirY + dirZ*dirZ);
+	dirX /= norm;
+	dirY /= norm;
+	dirZ /= norm;
 }
+
+
+const string frameDebugImage ("frame.jpg");
+
+void Frame::debug (const string &dirname)
+{
+	const string imageFilename = dirname + "/" + frameDebugImage ;
+
+	cv::Mat dbgImage = this->image.clone();
+	if (dbgImage.channels()<3)
+		cv::cvtColor (dbgImage, dbgImage, CV_GRAY2BGR);
+
+	const int size = 3;
+	for (int i=0; i<mvKeys.size(); i++) {
+		cv::circle (dbgImage, mvKeys[i].pt, size, cv::Scalar(0,255,0), -1);
+	}
+
+	cv::imwrite (imageFilename, dbgImage);
+}
+
 
 } //namespace ORB_SLAM

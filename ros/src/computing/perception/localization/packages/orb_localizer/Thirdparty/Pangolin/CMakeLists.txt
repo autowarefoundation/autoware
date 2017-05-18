@@ -4,7 +4,7 @@ set (LibName pangolin)
 
 find_package (OpenGL REQUIRED)
 find_package (GLEW REQUIRED)
-find_package (GLUT REQUIRED)
+#find_package (GLUT REQUIRED)
 
 
 SET (_UNIX_ 1)
@@ -53,11 +53,11 @@ append_glob (SOURCES ${SRCDIR}/display/*.cpp)
 append_glob (SOURCES ${SRCDIR}/handler/*.cpp)
 append_glob (SOURCES ${SRCDIR}/var/*.cpp)
 append_glob (SOURCES ${SRCDIR}/display/widgets/*.cpp)
-list (APPEND SOURCES ${SRCDIR}/display/device/display_glut.cpp)
+list (APPEND SOURCES ${SRCDIR}/display/device/display_x11.cpp)
 
-set (HAVE_GLUT 1)
+#set (HAVE_GLUT 1)
 set (HAVE_GLEW 1)
-message (STATUS "GLUT Enabled")
+#message (STATUS "GLUT Enabled")
 
 configure_file (
 	src/config.h.in

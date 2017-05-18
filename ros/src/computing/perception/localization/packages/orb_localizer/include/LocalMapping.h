@@ -40,7 +40,7 @@ class Map;
 class LocalMapping
 {
 public:
-    LocalMapping(Map* pMap, const float bMonocular);
+    LocalMapping(Map* pMap, const float bMonocular, const bool offlineMode=false);
 
     void SetLoopCloser(LoopClosing* pLoopCloser);
 
@@ -76,6 +76,8 @@ public:
     }
 
     std::mutex localMappingRunMutex;
+
+    const bool offlineMapping;
 
 protected:
 

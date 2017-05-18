@@ -189,6 +189,10 @@ public:
 
     static bool mbInitialComputations;
 
+    // the image itself. only useful for monocular
+    cv::Mat image;
+
+    void debug (const string &dirname="debug");
 
 private:
 

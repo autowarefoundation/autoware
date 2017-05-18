@@ -9,10 +9,10 @@
   <license>GPL</license>
   <depend>roscpp</depend>
   <depend>tf</depend>
-  <depend>image_transport</depend>
-  <depend>message_runtime</depend>
+  <depend>image_transport</depend><depend>message_runtime</depend>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend> message_generation </build_depend>
+  
   <export>
 
   </export>

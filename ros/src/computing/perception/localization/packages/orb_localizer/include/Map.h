@@ -35,6 +35,7 @@
 #include <pcl/octree/octree.h>
 #include <pcl/octree/impl/octree_search.hpp>
 
+#include <ORBVocabulary.h>
 
 namespace ORB_SLAM2
 {
@@ -42,6 +43,7 @@ namespace ORB_SLAM2
 class MapPoint;
 class KeyFrame;
 class KeyFrameDatabase;
+class Frame;
 
 
 /*
@@ -75,6 +77,8 @@ public:
 
     long unsigned int GetMaxKFid();
 
+    void extractVocabulary (ORBVocabulary *cvoc);
+
     void clear();
 
     std::vector<KeyFrame*> mvpKeyFrameOrigins;
@@ -102,9 +106,16 @@ public:
 			numOfReferencePoint;
 	};
 
-	KeyFrame* getNearestKeyFrame (const float &x, const float &y, const float &z, const float fdir_x, const float fdir_y, const float fdir_z);
+//	KeyFrame* getNearestKeyFrame (
+//		const float &x, const float &y, const float &z,
+//		const float fdir_x, const float fdir_y, const float fdir_z,
+//		vector<KeyFrame*> *kfSelectors=NULL);
+	KeyFrame* getNearestKeyFrame (
+		const Eigen::Vector3f &position,
+		const Eigen::Quaternionf &orientation,
+		vector<KeyFrame*> *kfSelectors);
+
 	KeyFrame* offsetKeyframe (KeyFrame* kfSrc, int offset);
-//	KeyFrame* offsetKeyframe (KeyFrame* kfSrc, float offset);
 
 	// These are used for augmented localization
 	std::vector<KeyFrame*> kfListSorted;
@@ -124,6 +135,8 @@ protected:
 
     pcl::PointCloud<KeyFramePt>::Ptr kfCloud;
     pcl::octree::OctreePointCloudSearch<KeyFramePt>::Ptr kfOctree;
+
+    KeyFrameDatabase *mKeyFrameDb;
 
 };
 
