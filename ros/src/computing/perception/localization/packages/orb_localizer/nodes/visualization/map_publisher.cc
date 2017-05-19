@@ -16,8 +16,10 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseArray.h>
+#include <tf/tf.h>
+#include "../common.h"
 
-#include "../__nodes/ImageGrabber.h"
+//#include "../__nodes/ImageGrabber.h"
 
 
 using namespace std;
@@ -156,43 +158,28 @@ protected:
 
 		for (KeyFrame *keyframe: keyFrameList) {
 
-			float qdir[4];
-
-			cv::Mat Tcw, Twc, ow,
-				p1w, p2w, p3w, p4w;
+			tf::Transform keyframePose;
 
 			if (pubMode==ORB_COORD) {
-				tf::Transform kfOrbPose = ImageGrabber::KeyFramePoseToTf(keyframe);
-				cv::Mat kfPose = ImageGrabber::tfToCv(kfOrbPose);
-				ow = kfPose.rowRange(0, 3).col(3);
-				qdir[0] = kfOrbPose.getRotation().x();
-				qdir[1] = kfOrbPose.getRotation().y();
-				qdir[2] = kfOrbPose.getRotation().z();
-				qdir[3] = kfOrbPose.getRotation().w();
+				keyframePose = KeyFramePoseToTf (keyframe);
 			}
 
 			else {
 				if (keyframe->extPosition.empty())
 					continue;
-				tf::Transform kfExtPose = ImageGrabber::getKeyFrameExtPose(keyframe);
-				cv::Mat extPose = ImageGrabber::tfToCv(kfExtPose);
-				ow = extPose.rowRange(0, 3).col(3);
-				qdir[0] = kfExtPose.getRotation().x();
-				qdir[1] = kfExtPose.getRotation().y();
-				qdir[2] = kfExtPose.getRotation().z();
-				qdir[3] = kfExtPose.getRotation().w();
+				keyframePose = getKeyFrameExtPose (keyframe);
 			}
 
 			geometry_msgs::Point kfCenter;
 			geometry_msgs::Quaternion kfDirection;
 
-			kfCenter.x = ow.at<float>(0);
-			kfCenter.y = ow.at<float>(1);
-			kfCenter.z = ow.at<float>(2);
-			kfDirection.x = qdir[0];
-			kfDirection.y = qdir[1];
-			kfDirection.z = qdir[2];
-			kfDirection.w = qdir[3];
+			kfCenter.x = keyframePose.getOrigin().x();
+			kfCenter.y = keyframePose.getOrigin().y();
+			kfCenter.z = keyframePose.getOrigin().z();
+			kfDirection.x = keyframePose.getRotation().x();
+			kfDirection.y = keyframePose.getRotation().x();
+			kfDirection.z = keyframePose.getRotation().x();
+			kfDirection.w = keyframePose.getRotation().x();
 
 			geometry_msgs::Pose kfPose;
 			kfPose.position = kfCenter;

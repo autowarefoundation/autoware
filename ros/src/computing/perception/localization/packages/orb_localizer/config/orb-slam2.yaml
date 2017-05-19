@@ -73,11 +73,11 @@ Viewer.ViewpointF: 500
 
 MapFileName: "/tmp/test.map"
 #Camera.topic: "/camera1/image_color"
-Camera.topic: "/camera/image_raw"
-Camera.compressed: 0
+#Camera.topic: "/camera/image_raw"
+#Camera.compressed: 0
 #Camera.ROS.ImageType: "color"
-ExternalReference.Mapping.frame1: "world"
-ExternalReference.Mapping.frame2: "velodyne"
+#ExternalReference.Mapping.frame1: "world"
+#ExternalReference.Mapping.frame2: "velodyne"
 Localization.frame1: "world"
 Localization.frame2: "camera"
 Localization.poseTopic: "/camera_pose"

@@ -134,18 +134,12 @@ Eigen::Matrix<double,3,3> Converter::toMatrix3d(const cv::Mat &cvMat3)
     return M;
 }
 
-std::vector<float> Converter::toQuaternion(const cv::Mat &M)
+Eigen::Quaterniond Converter::toQuaternion(const cv::Mat &M)
 {
     Eigen::Matrix<double,3,3> eigMat = toMatrix3d(M);
     Eigen::Quaterniond q(eigMat);
 
-    std::vector<float> v(4);
-    v[0] = q.x();
-    v[1] = q.y();
-    v[2] = q.z();
-    v[3] = q.w();
-
-    return v;
+    return q;
 }
 
 } //namespace ORB_SLAM
