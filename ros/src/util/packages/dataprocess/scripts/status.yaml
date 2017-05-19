@@ -1,0 +1,16 @@
+top_cmd_setting :
+  interval : 3
+  alert_level :
+    rate_per_cpu : 80
+    rate_per_cpu_yellow : 70
+    rate_cpu : 80
+    rate_mem : 80
+    rate_mem_yellow : 70
+
+#log_path : syslog
+
+gui_update_interval_ms : 10
+
+buttons :
+  system_monitor :
+    run   : gnome-system-monitor
