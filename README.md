@@ -206,7 +206,7 @@ See Autoware/docs. As of Aug 2015, we provide only Japanese documents. English d
 ## Contact
 
 Autoware Developers (<autoware@googlegroups.com>)
-
+Autoware Developers Slack Team (https://autoware.herokuapp.com/)
 To subscribe the Autoware Developers ML,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
 - If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
