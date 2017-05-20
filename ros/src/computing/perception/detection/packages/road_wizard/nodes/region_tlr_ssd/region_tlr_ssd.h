@@ -31,10 +31,10 @@ class RegionTlrSsdRosNode {
     /* current: */
     /* GREEN   , YELLOW    , RED    , UNDEFINED  */
     /* -------------------------------------------  */
-    {GREEN     , YELLOW    , YELLOW , GREEN}  ,  /* | previous = GREEN */
-    {UNDEFINED , YELLOW    , RED    , YELLOW} ,  /* | previous = YELLOW */
-    {GREEN     , RED       , RED    , RED}    ,  /* | previous = RED */
-    {GREEN     , YELLOW    , RED    , UNDEFINED} /* | previous = UNDEFINED */
+    {GREEN     , YELLOW    , YELLOW    , GREEN}  ,  /* | previous = GREEN */
+    {UNDEFINED , YELLOW    , RED       , YELLOW} ,  /* | previous = YELLOW */
+    {GREEN     , RED       , RED       , RED}    ,  /* | previous = RED */
+    {GREEN     , YELLOW    , RED       , UNDEFINED} /* | previous = UNDEFINED */
   };
 
 
