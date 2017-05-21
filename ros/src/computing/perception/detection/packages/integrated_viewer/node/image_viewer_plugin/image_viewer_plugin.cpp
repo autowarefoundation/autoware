@@ -21,6 +21,7 @@ namespace integrated_viewer
   const QString     ImageViewerPlugin::kImageDataType               = "sensor_msgs/Image";
   const QString     ImageViewerPlugin::kRectDataTypeBase            = "cv_tracker_msgs/image_obj";
   const QString     ImageViewerPlugin::kPointDataType               = "points2image/PointsImage";
+  const QString     ImageViewerPlugin::kLaneDataType                = "lane_detector/ImageLaneObjects";
   const QString     ImageViewerPlugin::kBlankTopic                  = "-----";
   const std::string ImageViewerPlugin::kRectDataTypeImageObjRanged  = "cv_tracker_msgs/image_obj_ranged";
   const std::string ImageViewerPlugin::kRectDataTypeImageObjTracked = "cv_tracker_msgs/image_obj_tracked";
@@ -38,6 +39,7 @@ namespace integrated_viewer
     image_obj_msg_ = NULL;
     image_obj_ranged_msg_ = NULL;
     image_obj_tracked_msg_ = NULL;
+    lane_msg_ = NULL;
 
     UpdateTopicList();
 
@@ -49,6 +51,7 @@ namespace integrated_viewer
     ui_.image_topic_combo_box_->installEventFilter(this);
     ui_.rect_topic_combo_box_->installEventFilter(this);
     ui_.point_topic_combo_box_->installEventFilter(this);
+    ui_.lane_topic_combo_box_->installEventFilter(this);
 
   } // ImageViewerPlugin::ImageViewerPlugin()
 
@@ -58,11 +61,13 @@ namespace integrated_viewer
     QStringList image_topic_list;
     QStringList rect_topic_list;
     QStringList point_topic_list;
+    QStringList lane_topic_list;
 
     // The topic name currently chosen
     QString image_topic_current = ui_.image_topic_combo_box_->currentText();
     QString rect_topic_current = ui_.rect_topic_combo_box_->currentText();
     QString point_topic_current = ui_.point_topic_combo_box_->currentText();
+    QString lane_topic_current = ui_.lane_topic_combo_box_->currentText();
 
     if (image_topic_current == "") {
       image_topic_current = kBlankTopic;
@@ -76,6 +81,10 @@ namespace integrated_viewer
       point_topic_current = kBlankTopic;
     }
 
+    if (lane_topic_current == "") {
+      lane_topic_current = kBlankTopic;
+    }
+
     // reset topic information list for detection result
     rect_topic_info_.clear();
 
@@ -83,6 +92,7 @@ namespace integrated_viewer
     image_topic_list << kBlankTopic;
     rect_topic_list  << kBlankTopic;
     point_topic_list << kBlankTopic;
+    lane_topic_list  << kBlankTopic;
 
     // Get all available topic 
     ros::master::V_TopicInfo master_topics;
@@ -114,26 +124,36 @@ namespace integrated_viewer
         point_topic_list << topic_name;
         continue;
       }
+
+      // Check whether this topic is lane
+      if (topic_type.contains(kLaneDataType) == true) {
+        lane_topic_list << topic_name;
+        continue;
+      }
     }
 
     // remove all list items from combo box
     ui_.image_topic_combo_box_->clear();
     ui_.rect_topic_combo_box_->clear();
     ui_.point_topic_combo_box_->clear();
+    ui_.lane_topic_combo_box_->clear();
 
     // set new items to combo box
     ui_.image_topic_combo_box_->addItems(image_topic_list);
     ui_.rect_topic_combo_box_->addItems(rect_topic_list);
     ui_.point_topic_combo_box_->addItems(point_topic_list);
-   
+    ui_.lane_topic_combo_box_->addItems(lane_topic_list);
+
     ui_.image_topic_combo_box_->insertSeparator(1);
     ui_.rect_topic_combo_box_->insertSeparator(1);
     ui_.point_topic_combo_box_->insertSeparator(1);
+    ui_.lane_topic_combo_box_->insertSeparator(1);
 
     // set last topic as current
     int image_topic_index = ui_.image_topic_combo_box_->findText(image_topic_current);
     int rect_topic_index = ui_.rect_topic_combo_box_->findText(rect_topic_current);
     int point_topic_index = ui_.point_topic_combo_box_->findText(point_topic_current);
+    int lane_topic_index = ui_.lane_topic_combo_box_->findText(lane_topic_current);
 
     if (image_topic_index != -1) {
       ui_.image_topic_combo_box_->setCurrentIndex(image_topic_index);
@@ -145,6 +165,10 @@ namespace integrated_viewer
 
     if (point_topic_index != -1) {
       ui_.point_topic_combo_box_->setCurrentIndex(point_topic_index);
+    }
+
+    if (lane_topic_index != -1) {
+      ui_.lane_topic_combo_box_->setCurrentIndex(lane_topic_index);
     }
 
   } // ImageViewerPlugin::UpdateTopicList()
@@ -270,6 +294,28 @@ namespace integrated_viewer
   } // ImageViewerPlugin::PointCallback()
 
 
+  // The behavior of combo box for detected lane
+  void ImageViewerPlugin::on_lane_topic_combo_box__activated(int index) {
+    // Extract selected topic name from combo box
+    std::string selected_topic = ui_.lane_topic_combo_box_->itemText(index).toStdString();
+    if (selected_topic == kBlankTopic.toStdString() || selected_topic == "") {
+      lane_sub_.shutdown();
+      lane_msg_ = NULL;
+      return;
+    }
+
+    // if selected topic is not blank or emtpy, start callback function
+    lane_sub_ = node_handle_.subscribe<lane_detector::ImageLaneObjects>(selected_topic,
+                                                                        1,
+                                                                        &ImageViewerPlugin::LaneCallback,
+                                                                        this);
+  }  // void ImageViewerPlugin::on_lane_topic_combo_box__activated()
+
+
+  void ImageViewerPlugin::LaneCallback(const lane_detector::ImageLaneObjects::ConstPtr& msg)  {
+    lane_msg_ = msg;
+  }
+
   void ImageViewerPlugin::ShowImageOnUi(void) {
     // Additional things will be drawn if shown image is not default one
     if (!default_image_shown_) {
@@ -280,6 +326,9 @@ namespace integrated_viewer
 
       // Draw points on the image
       points_drawer_.Draw(points_msg_, viewed_image_);
+
+      // Draw lane on the image
+      lane_drawer_.Draw(lane_msg_, viewed_image_);
     }
     // Convert cv::Mat to QPixmap to show modified image on the UI
     QPixmap view_on_ui = convert_image::CvMatToQPixmap(viewed_image_);

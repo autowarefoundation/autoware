@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   points2image
   rviz
   cv_tracker_msgs
+  lane_detector
   )
 
 set(CMAKE_CXX_FLAGS
@@ -83,6 +84,7 @@ set(SOURCE_FILES
   node/image_viewer_plugin/image_viewer_plugin.cpp
   node/image_viewer_plugin/draw_rects.cpp
   node/image_viewer_plugin/draw_points.cpp
+  node/image_viewer_plugin/draw_lane.cpp
   ${MOC_FILES}
   ${UI_HEADERS})
 
@@ -124,5 +126,6 @@ install(FILES rviz_plugin_description.xml
 add_dependencies(${PROJECT_NAME}
   runtime_manager_generate_messages_cpp
   cv_tracker_msgs_generate_messages_cpp
-  points2image_generate_messages_cpp)
+  points2image_generate_messages_cpp
+  lane_detector_generate_messages_cpp)
 #endif()
