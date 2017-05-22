@@ -840,8 +840,8 @@ int main(int argc, char** argv)
   ros::Subscriber param_sub = nh.subscribe("config/ndt_mapping", 10, param_callback);
   ros::Subscriber output_sub = nh.subscribe("config/ndt_mapping_output", 10, output_callback);
   ros::Subscriber points_sub = nh.subscribe("points_raw", 100000, points_callback);
-  ros::Subscriber odom_sub = nh.subscribe("odom_pose", 100000, odom_callback);
-  ros::Subscriber imu_sub = nh.subscribe("imu_raw", 100000, imu_callback);
+  ros::Subscriber odom_sub = nh.subscribe("/odom_pose", 100000, odom_callback);
+  ros::Subscriber imu_sub = nh.subscribe("/imu_raw", 100000, imu_callback);
 
   ros::spin();
 

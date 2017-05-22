@@ -609,12 +609,16 @@ static const double wrapToPmPi(double a_angle_rad)
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
+  std::cout << __func__ << std::endl;
+
   odom = *input;
   odom_calc(input->header.stamp);
 }
 
 static void imu_callback(const sensor_msgs::Imu::ConstPtr& input)
 {
+  std::cout << __func__ << std::endl;
+
   const ros::Time current_time = input->header.stamp;
   static ros::Time previous_time = current_time;
   const double diff_time =  (current_time - previous_time).toSec();
@@ -1242,8 +1246,6 @@ int main(int argc, char** argv)
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
 
-  _tf_x = _tf_y = _tf_z = _tf_roll = _tf_pitch = _tf_yaw = 0;
-
   if (nh.getParam("localizer", _localizer) == false)
   {
     std::cout << "localizer is not set." << std::endl;
@@ -1337,8 +1339,8 @@ int main(int argc, char** argv)
   ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
-  ros::Subscriber odom_sub = nh.subscribe("odom_pose", _queue_size*10, odom_callback);
-  ros::Subscriber imu_sub = nh.subscribe("imu_raw", _queue_size*10, imu_callback);
+  ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size*10, odom_callback);
+  ros::Subscriber imu_sub = nh.subscribe("/imu_raw", _queue_size*10, imu_callback);
 
   ros::spin();
 

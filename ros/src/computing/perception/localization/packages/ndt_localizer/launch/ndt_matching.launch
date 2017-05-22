@@ -3,8 +3,8 @@
 
   <!-- send table.xml to param server -->
   <arg name="use_gnss" default="1" />
-  <arg name="use_imu" default="false" />
-  <arg name="use_odom" default="false" />
+  <arg name="use_imu" default="true" />
+  <arg name="use_odom" default="true" />
   <arg name="queue_size" default="10" />
   <arg name="offset" default="linear" />
   <arg name="use_openmp" default="false" />
@@ -22,6 +22,7 @@
     <param name="get_height" value="$(arg get_height)" />
     <param name="use_local_transform" value="$(arg use_local_transform)" />
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+    <remap from="/imu_raw" to="/memsic/imu_filtered" />
   </node>
   
 </launch>
