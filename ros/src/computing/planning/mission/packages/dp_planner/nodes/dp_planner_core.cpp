@@ -452,6 +452,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	srand(t.tv_nsec);
 	double width = SIMU_OBSTACLE_WIDTH;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
 	double length = SIMU_OBSTACLE_LENGTH;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
+	double height = SIMU_OBSTACLE_HEIGHT;
 
 	geometry_msgs::PointStamped point;
 	point.point.x = msg->point.x+m_OriginPos.position.x;
@@ -459,7 +460,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	point.point.z = msg->point.z+m_OriginPos.position.z;
 
 	lidar_tracker::CloudClusterArray clusters_array;
-	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, 1.0, 50, point));
+	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, height, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
 	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);

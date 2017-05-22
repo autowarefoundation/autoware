@@ -338,9 +338,9 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	quarters_marker.ns = "Quarters_Lines";
 	quarters_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	quarters_marker.action = visualization_msgs::Marker::ADD;
-	quarters_marker.scale.x = .1;
-	quarters_marker.scale.y = .1;
-	//quarters_marker.scale.z = .1;
+	quarters_marker.scale.x = .03;
+	quarters_marker.scale.y = .03;
+	quarters_marker.scale.z = .03;
 	quarters_marker.color.a = 0.8;
 	quarters_marker.color.r = 0.6;
 	quarters_marker.color.g = 0.5;
@@ -457,8 +457,8 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 			quarters_marker.points.push_back(point);
 			geometry_msgs::Point point2 = point;
 			double a_q = UtilityHNS::UtilityH::SplitPositiveAngle(trackedObstacles.at(i).center.pos.a+(iq*M_PI_4));
-			point2.x += 1.0*cos(a_q);
-			point2.y += 1.0*sin(a_q);
+			point2.x += 2.0*cos(a_q);
+			point2.y += 1.5*sin(a_q);
 			quarters_marker.points.push_back(point2);
 
 			quartersIds++;
