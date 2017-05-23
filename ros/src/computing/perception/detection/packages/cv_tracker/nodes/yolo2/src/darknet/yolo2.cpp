@@ -18,11 +18,20 @@ extern "C"
 		#include "parser.h"
 		#include "region_layer.h"
 		#include "utils.h"
+		#include "image.h"
 	#define __cplusplus
 }
 
 namespace darknet
 {
+	uint32_t Yolo2Detector::get_network_height()
+	{
+		return darknet_network_.h;
+	}
+	uint32_t Yolo2Detector::get_network_width()
+	{
+		return darknet_network_.w;
+	}
 	void Yolo2Detector::load(std::string& in_model_file, std::string& in_trained_file, double in_min_confidence, double in_nms_threshold)
 	{
 		min_confidence_ = in_min_confidence;
@@ -55,7 +64,7 @@ namespace darknet
 
 	image Yolo2Detector::convert_image(const sensor_msgs::ImageConstPtr& msg)
 	{
-		if (msg->encoding != sensor_msgs::image_encodings::RGB8)
+		if (msg->encoding != sensor_msgs::image_encodings::BGR8)
 		{
 			ROS_ERROR("Unsupported encoding");
 			exit(-1);
@@ -79,7 +88,7 @@ namespace darknet
 
 		if (darknet_network_.w == width && darknet_network_.h == height)
 		{
-		return im;
+			return im;
 		}
 		image resized = resize_image(im, darknet_network_.w, darknet_network_.h);
 		free_image(im);
@@ -102,11 +111,12 @@ namespace darknet
 		int num_classes = output_layer.classes;
 		do_nms(darknet_boxes_.data(), darknet_box_scores_.data(), output_layer.w * output_layer.h * output_layer.n, num_classes, nms_threshold_);
 		std::vector< RectClassScore<float> > detections;
+
 		for (unsigned i = 0; i < darknet_box_scores_.size(); i++)
 		{
 			int class_id = max_index(darknet_box_scores_[i], num_classes);
 			float prob = darknet_box_scores_[i][class_id];
-			if (prob)
+			if (prob > 0.3)
 			{
 				RectClassScore<float> detection;
 				box b = darknet_boxes_[i];
@@ -117,6 +127,8 @@ namespace darknet
 				detection.h = b.h;
 				detection.score = prob;
 				detection.class_type = class_id;
+				//std::cout << "Box:"  <<detection.toString() << std::endl;
+
 				detections.push_back(detection);
 			}
 		}

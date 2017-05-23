@@ -316,7 +316,7 @@ if(EXISTS "${YOLO2_PATH}")
   
   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 
-  add_library(yolo2lib_wa
+  cuda_add_library(yolo2lib_wa
     ${YOLO2_PATH}/src/activation_kernels.cu
     ${YOLO2_PATH}/src/activation_layer.c
     ${YOLO2_PATH}/src/activations.c
@@ -365,14 +365,14 @@ if(EXISTS "${YOLO2_PATH}")
     ${YOLO2_PATH}/src/tree.c
     ${YOLO2_PATH}/src/utils.c
 
-#    OPTIONS 
-#    -DGPU=${YOLO2_USE_GPU}
+    OPTIONS 
+    -DGPU=${YOLO2_USE_GPU}
 #    -DCUDNN=${YOLO2_USE_CUDNN}
   )
 
   cuda_add_cublas_to_target(yolo2lib_wa)
   
-  target_compile_definitions(yolo2lib_wa PRIVATE -DGPU)
+  target_compile_definitions(yolo2lib_wa PUBLIC -DGPU)
 
   target_include_directories(yolo2lib_wa PRIVATE
     ${YOLO2_PATH}/src
@@ -387,10 +387,12 @@ if(EXISTS "${YOLO2_PATH}")
     ${CUDA_curand_LIBRARY}
   )
 
-  add_executable(yolo2_wa
+  cuda_add_executable(yolo2_wa
     nodes/yolo2/src/yolo2_node.cpp
     nodes/yolo2/src/darknet/yolo2.cpp
   )
+  
+  target_compile_definitions(yolo2_wa PUBLIC -DGPU)
   
   target_include_directories(yolo2_wa PRIVATE
     nodes/yolo2/include

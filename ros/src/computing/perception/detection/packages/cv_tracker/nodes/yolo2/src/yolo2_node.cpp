@@ -6,9 +6,15 @@
 
 #include <cv_tracker/image_obj.h>
 
+#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#include <cv_bridge/cv_bridge.h>
 
 #include <string>
 #include <vector>
+
+#include <math.h>
 
 #include <rect_class_score.h>
 
@@ -41,25 +47,26 @@ class Yolo2DetectorNode
 
 	float score_threshold_;
 	float nms_threshold_;
+	double image_ratio_;
 
 	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, cv_tracker::image_obj& out_message, std::string in_class)
 	{
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
 			if ( (in_objects[i].score > score_threshold_)
-				&& (	(in_class == "car" && (in_objects[i].class_type == Yolo2::CAR || in_objects[i].class_type == Yolo2::BUS))
+				/*&& (	(in_class == "car" && (in_objects[i].class_type == Yolo2::CAR || in_objects[i].class_type == Yolo2::BUS))
 						|| (in_class == "person" && (in_objects[i].class_type == Yolo2::PERSON || in_objects[i].class_type == Yolo2::BICYCLE))
-					)
+					)*/
 
 				)//check if the score is larger than minimum required
 			{
 				//std::cout << in_objects[i].toString() << std::endl;
 				cv_tracker::image_rect rect;
 
-				rect.x = in_objects[i].x;
-				rect.y = in_objects[i].y;
-				rect.width = in_objects[i].w;
-				rect.height = in_objects[i].h;
+				rect.x = in_objects[i].x * darknet_image.w;
+				rect.y = in_objects[i].y * darknet_image.h;
+				rect.width = in_objects[i].w * darknet_image.w;
+				rect.height = in_objects[i].h * darknet_image.h;
 				if (in_objects[i].x < 0)
 					rect.x = 0;
 				if (in_objects[i].y < 0)
@@ -71,20 +78,79 @@ class Yolo2DetectorNode
 
 				rect.score = in_objects[i].score;
 
+				std::cout << "x"<< rect.x<< "y" << rect.y << "w"<< rect.width << "h"<< rect.height<< "s" << rect.score << std::endl;
+
 				out_message.obj.push_back(rect);
 
 			}
 		}
 	}
 
+	image convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg)
+	{
+		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, "bgr8");//toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
+		cv::Mat mat_image = cv_image->image;
+
+		uint32_t network_input_width = yolo_detector_.get_network_width();
+		uint32_t network_input_height = yolo_detector_.get_network_height();
+
+		uint32_t height = msg->height,
+						width = msg->width;
+
+		IplImage ipl_image;
+		cv::Mat final_mat;
+
+		ROS_INFO("Before Network (%d,%d), Image (%d,%d)", network_input_width, network_input_height, width, height);
+		if (network_input_width!=width
+				|| network_input_height != height)
+		{
+			//final_mat = cv::Mat(network_input_width, network_input_height, CV_8UC3, cv::Scalar(0,0,0));
+			image_ratio_ = (double ) network_input_width /  (double)mat_image.cols;
+			std::cout << "Ratio:" << image_ratio_ << std::endl;
+
+			cv::resize(mat_image, final_mat, cv::Size(), image_ratio_, image_ratio_);
+			uint32_t top_bottom_border = abs(final_mat.rows-network_input_height)/2;
+			uint32_t left_right_border = abs(final_mat.cols-network_input_width)/2;
+			cv::copyMakeBorder(final_mat, final_mat, top_bottom_border, top_bottom_border, left_right_border, left_right_border, cv::BORDER_CONSTANT, cv::Scalar(0,0,0));
+		}
+		else
+			final_mat = mat_image;
+
+		ROS_INFO("After Network (%d,%d), Image (%d,%d)", network_input_width, network_input_height, final_mat.cols, final_mat.rows);
+
+		cv::imshow("cropped", final_mat);
+		cvWaitKey(10);
+
+		ipl_image = final_mat;
+
+		unsigned char *data = (unsigned char *)ipl_image.imageData;
+		int h = ipl_image.height;
+		int w = ipl_image.width;
+		int c = ipl_image.nChannels;
+		int step = ipl_image.widthStep;
+		int i, j, k;
+
+		image darknet_image = make_image(w, h, c);
+
+		for(i = 0; i < h; ++i){
+			for(k= 0; k < c; ++k){
+				for(j = 0; j < w; ++j){
+					darknet_image.data[k*w*h + i*w + j] = data[i*step + j*c + k]/255.;
+				}
+			}
+		}
+
+		return darknet_image;
+	}
+
 	void image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 	{
 		std::vector< RectClassScore<float> > detections;
-		darknet_image = yolo_detector_.convert_image(in_image_message);
+		//darknet_image = yolo_detector_.convert_image(in_image_message);
+
+		darknet_image = convert_ipl_to_image(in_image_message);
 
 		detections = yolo_detector_.detect(darknet_image.data);
-
-		free(darknet_image.data);
 
 		//Prepare Output message
 		cv_tracker::image_obj output_car_message;
@@ -100,6 +166,8 @@ class Yolo2DetectorNode
 
 		publisher_car_objects_.publish(output_car_message);
 		publisher_person_objects_.publish(output_person_message);
+
+		free(darknet_image.data);
 	}
 
 	void config_cb(const runtime_manager::ConfigSsd::ConstPtr& param)

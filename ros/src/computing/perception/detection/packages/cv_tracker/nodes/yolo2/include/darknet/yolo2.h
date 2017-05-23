@@ -34,6 +34,8 @@ namespace darknet
 			~Yolo2Detector();
 			image convert_image(const sensor_msgs::ImageConstPtr& in_image_msg);
 			std::vector< RectClassScore<float> > detect(float *in_data);
+			uint32_t get_network_width();
+			uint32_t get_network_height();
 
 
 	};
