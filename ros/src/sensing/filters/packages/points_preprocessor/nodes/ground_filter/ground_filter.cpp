@@ -70,7 +70,7 @@ GroundFilter::GroundFilter() : n("~")
 {
 
 	n.param<std::string>("point_topic", point_topic, "/points_raw");
-  	n.param("remove_floor",  floor_removal,  true);
+ 	n.param("remove_floor",  floor_removal,  true);
         n.param("sensor_model", sensor_model, 64);
         n.param("sensor_height", sensor_height, 1.72);
         n.param("max_slope", max_slope, 20.0);
