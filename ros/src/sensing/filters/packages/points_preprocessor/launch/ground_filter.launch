@@ -1,7 +1,7 @@
 <!-- Launch file for Ground Filter -->
 <launch>
 
-        <arg name="point_topic" default="/points_clipped" />
+        <arg name="point_topic" default="/points_raw" />
         <arg name="remove_floor" default="true" />
         <arg name="sensor_model" default="64" />
         <arg name="sensor_height" default="1.72" />

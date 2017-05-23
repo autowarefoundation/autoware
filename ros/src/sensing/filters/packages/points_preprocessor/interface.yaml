@@ -1,0 +1,3 @@
+- name: voxel_grid_filter
+  publish: [/points_lanes, /points_ground]
+  subscribe: [/points_raw]
