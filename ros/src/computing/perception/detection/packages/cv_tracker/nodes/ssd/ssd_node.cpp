@@ -30,7 +30,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-//#include <runtime_manager/ConfigRcnn.h>
+#include <runtime_manager/ConfigSsd.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_tracker/image_obj.h>
@@ -136,6 +136,11 @@ class RosSsdApp
 	}
 
 
+	void config_cb(const runtime_manager::ConfigSsd::ConstPtr& param)
+	{
+		score_threshold_ 	= param->score_threshold;
+	}
+
 public:
 	void Run()
 	{
@@ -208,8 +213,9 @@ public:
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
 
-		/*std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/ssd";
-		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);*/
+		std::string config_topic("/config");
+		config_topic += "/ssd";
+		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
 
 		ros::spin();
 		ROS_INFO("END Ssd");
