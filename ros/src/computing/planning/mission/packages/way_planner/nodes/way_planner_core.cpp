@@ -125,8 +125,17 @@ if(m_params.bEnableHMI)
 //	}
 
 	sub_current_pose 		= nh.subscribe("/current_pose", 			100,	&way_planner_core::callbackGetCurrentPose, 		this);
+
+	int bVelSource = 1;
+	nh.getParam("/dp_planner/enableOdometryStatus", bVelSource);
+	if(bVelSource == 0)
+		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&way_planner_core::callbackGetRobotOdom, 	this);
+	else if(bVelSource == 1)
+		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&way_planner_core::callbackGetVehicleStatus, 	this);
+	else if(bVelSource == 2)
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCanInfo, 	this);
+
 	//sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
-	sub_can_info = nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCanInfo, 	this);
 	sub_nodes_list 			= nh.subscribe("/GlobalNodesList", 			1, 		&way_planner_core::callbackGetNodesList, 		this);
 
 	if(m_params.mapSource == MAP_AUTOWARE)
@@ -190,6 +199,24 @@ void way_planner_core::callbackGetCurrentPose(const geometry_msgs::PoseStampedCo
 		m_GoalsPos.clear();
 		m_GoalsPos.push_back(m_CurrentPose);
 	}
+}
+
+void way_planner_core::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
+{
+	m_VehicleState.speed = msg->twist.twist.linear.x;
+	//m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+
+	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+//	if(msg->vector.z == 0x00)
+//		m_VehicleState.shift = AW_SHIFT_POS_BB;
+//	else if(msg->vector.z == 0x10)
+//		m_VehicleState.shift = AW_SHIFT_POS_DD;
+//	else if(msg->vector.z == 0x20)
+//		m_VehicleState.shift = AW_SHIFT_POS_NN;
+//	else if(msg->vector.z == 0x40)
+//		m_VehicleState.shift = AW_SHIFT_POS_RR;
+
+	//std::cout << "PlannerX: Read Odometry ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
 void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)

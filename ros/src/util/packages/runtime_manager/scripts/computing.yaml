@@ -2028,6 +2028,31 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : enableObjectTracking
+      desc : Enable Planner KF Tracker   
+      label: Enable Tracking
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density
@@ -2086,11 +2111,27 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : enableSimulation
-      desc : Enable Simulation  
-      label: Enable Simulation
+    - name : enableObjectTracking
+      desc : Enable Planner KF Tracker   
+      label: Enable Tracking
       kind : checkbox
       v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2221,14 +2262,6 @@ params :
       label: Enable Lane Change 
       kind : checkbox
       v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enableObjectTracking
-      desc : Enable Planner KF Tracker   
-      label: Enable Tracking
-      kind : checkbox
-      v    : True
       cmd_param:
         dash     : ''
         delim    : ':='

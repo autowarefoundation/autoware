@@ -52,6 +52,7 @@
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Odometry.h>
 
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -168,6 +169,7 @@ protected:
 	ros::Publisher pub_GoalPointRviz;
 	ros::Publisher pub_NodesListRviz;
 
+	ros::Subscriber sub_robot_odom			;
 	ros::Subscriber sub_start_pose;
 	ros::Subscriber sub_goal_pose;
 	ros::Subscriber sub_current_pose;
@@ -195,6 +197,7 @@ private:
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
+  void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 
   void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
   void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);

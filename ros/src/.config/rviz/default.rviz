@@ -189,11 +189,8 @@ Visualization Manager:
         SimPath4: true
         SimPath5: true
         SimuCar1: true
-        SimuCar1Box: true
         SimuCar2: true
-        SimuCar2Box: true
         SimuCar3: true
-        SimuCar3Box: true
         SimuCar4: true
         SimuCar5: true
         Simulated Following Point: true
@@ -620,30 +617,6 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /OpenPlannerSimulator1/safety_border_1
-      Name: SimuCar1Box
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /OpenPlannerSimulator2/safety_border_2
-      Name: SimuCar2Box
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
-    - Class: rviz/Marker
-      Enabled: false
-      Marker Topic: /OpenPlannerSimulator3/safety_border_3
-      Name: SimuCar3Box
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /op_simulator1/sim_beh_txt_1

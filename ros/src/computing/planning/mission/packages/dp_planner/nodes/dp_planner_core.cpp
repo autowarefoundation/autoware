@@ -152,15 +152,15 @@ PlannerX::PlannerX()
 	/**
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
-	bool bUseOdometry = false;
-	nh.getParam("/dp_planner/enableOdometryStatus", bUseOdometry);
-	if(bUseOdometry)
-		sub_robot_odom 		= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
-	else
-	{
-		//sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
-		sub_can_info = nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCanInfo, 	this);
-	}
+	int bVelSource = 1;
+	nh.getParam("/dp_planner/enableOdometryStatus", bVelSource);
+	if(bVelSource == 0)
+		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&PlannerX::callbackGetRobotOdom, 	this);
+	else if(bVelSource == 1)
+		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
+	else if(bVelSource == 2)
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCanInfo, 	this);
+
 
 
 	sub_EmergencyStop 	= nh.subscribe("/emergency_stop_signal", 	100,	&PlannerX::callbackGetEmergencyStop, 	this);
