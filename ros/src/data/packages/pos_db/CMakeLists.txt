@@ -4,7 +4,7 @@ project(pos_db)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
-  visualization_msgs
+  jsk_recognition_msgs
   tf
   cv_tracker
 )
