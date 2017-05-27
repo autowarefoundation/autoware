@@ -42,8 +42,10 @@ public:
     PlannerHNS::RoadNetwork m_RoadMap;
 	PlannerHNS::GridMap* m_pMap;
 	PlannerHNS::WayPoint m_start;
+	PlannerHNS::WayPoint m_goal;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawLanes;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawCenterLines;
+	std::vector<PlannerHNS::WayPoint> m_GeneratedPath;
 
 private:
 	void PrepareVectorMapForDrawing();

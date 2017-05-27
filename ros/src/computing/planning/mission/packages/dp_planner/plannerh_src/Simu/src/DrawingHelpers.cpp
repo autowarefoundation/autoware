@@ -340,7 +340,11 @@ void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_
 			localColor[1] = color[1] * (float)(i+20)*3/(float)size;
 			localColor[2] = color[2] * (float)(i+20)*3/(float)size;
 		}
-		glColor3f(localColor[0],localColor[1],localColor[2]);
+
+		if(p2.bDir == BACKWARD_DIR)
+			glColor3f(1,0, 0);
+		else
+			glColor3f(localColor[0],localColor[1],localColor[2]);
 
 		DrawLinePoygonFromCenterX(p1, z, p2, z, width, 0, prev_point);
 

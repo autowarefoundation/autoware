@@ -39,6 +39,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/OccupancyGrid.h>
 
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -70,6 +71,7 @@
 #include <cv.h>
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
+
 
 namespace PlannerXNS
 {
@@ -193,6 +195,8 @@ protected:
 	ros::Subscriber sub_AStarPath			;
 	ros::Subscriber sub_WayPlannerPaths		;
 
+	ros::Subscriber sub_CostMap				;
+
 	//vector map subscription
 	ros::Subscriber sub_map_points;
 	ros::Subscriber sub_map_lanes;
@@ -215,6 +219,8 @@ protected:
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);
 	void callbackGetAStarPath(const waypoint_follower::LaneArrayConstPtr& msg);
 	void callbackGetWayPlannerPath(const waypoint_follower::LaneArrayConstPtr& msg);
+	void callbackGetCostMap(const nav_msgs::OccupancyGrid& msg);
+
 
 	//Vector map callbacks
 	void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);

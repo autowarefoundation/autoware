@@ -16,7 +16,6 @@
 #include <algorithm>
 
 
-
 using namespace std;
 using namespace SimulationNS;
 using namespace UtilityHNS;
@@ -28,41 +27,21 @@ namespace Graphics
 
 AlternativeVisualizer::AlternativeVisualizer()
 {
-	std::vector<TrafficLight> trafficLights;
-	std::vector<GPSPoint> stopLines;
-
-//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/pose.csv", 50, 0.5, trafficLights, stopLines);
-
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles("/home/user/data/ToyotaCity2/map/vector_map/", m_RoadMap);
-
-//	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
-//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
-//	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
-
-//	PlannerHNS::MappingHelpers::LoadKML("/home/user/SimuLogs/road_network_test.kml", m_RoadMap);
 	/**
 	 * Writing the kml file for the RoadNetwork Map
 	 */
-//	ostringstream fileName;
-//	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
-//	fileName << "_RoadNetwork.kml";
-//	PlannerHNS::MappingHelpers::WriteKML(fileName.str(),UtilityH::GetHomeDirectory()+
-//			DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile, m_RoadMap);
+//	std::vector<TrafficLight> trafficLights;
+//	std::vector<GPSPoint> stopLines;
+//	PlannerHNS::MappingHelpers::CreateKmlFromLocalizationPathFile("/home/user/Downloads/pose.csv", 50, 0.5, trafficLights, stopLines);
+//	string kml_templateFilePath = UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmlTemplateFile;
+//	string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+//	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+//	PlannerHNS::MappingHelpers::LoadKML("/home/user/SimuLogs/road_network_test.kml", m_RoadMap);
 
-	//Initialize Static Traffic Light
-
-
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles("/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/", m_RoadMap);
 	m_start =  PlannerHNS::MappingHelpers::GetFirstWaypoint(m_RoadMap);
-	//m_followX = m_start.pos.x;
-	//m_followY = m_start.pos.y;
-	//m_followZ = m_start.pos.z;
-	//m_followA = m_start.pos.a;
-
-
 	PrepareVectorMapForDrawing();
-
-
-	}
+}
 
 void AlternativeVisualizer::LoadMaterials()
 {
@@ -84,6 +63,18 @@ bool AlternativeVisualizer::IsInitState()
 
 void AlternativeVisualizer::UpdatePlaneStartGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2)
 {
+	m_start.pos.x = x1;
+	m_start.pos.y = y1;
+	m_start.pos.a = a1;
+
+	m_goal.pos.x = x2;
+	m_goal.pos.y = y2;
+	m_goal.pos.a = a2;
+
+	PlannerHNS::PlannerH planner;
+	m_GeneratedPath.clear();
+	planner.PlanUsingReedShepp(m_start, m_goal, m_GeneratedPath, 0.5, 20);
+	cout << "Path is Generated: " << m_GeneratedPath.size() << endl;
 }
 
 void AlternativeVisualizer::AddSimulatedCarPos(const double& x,const double& y, const double& a)
@@ -125,9 +116,6 @@ void AlternativeVisualizer::PrepareVectorMapForDrawing()
 
 	m_ReadyToDrawLanes.clear();
 	m_ReadyToDrawCenterLines.clear();
-//	m_TrafficLights.clear();
-//	m_StopSigns.clear();
-//	m_OtherSigns.clear();
 
 	if(currLane.size() > 0)
 	{
@@ -154,44 +142,6 @@ void AlternativeVisualizer::PrepareVectorMapForDrawing()
 			j++;
 
 			PlannerHNS::MappingHelpers::GetUniqueNextLanes(l, traversed_lanes, lanes_list);
-
-			//Get the traffic lights pos
-//			for(unsigned int itl = 0; itl < l->trafficLights.size(); itl++)
-//			{
-//
-//				Vector2D p(l->trafficLights[itl]->position.x, l->trafficLights[itl]->position.y, l->trafficLights[itl]->position.z,0);
-//				int iNextIndex = MappingHelpers::GetClosestNextPointIndex(path_local, p);
-//				if(iNextIndex > 0)
-//					p.a = MathUtil::AngleBetweenVectorsPositive(path_local.at(iNextIndex), path_local.at(iNextIndex-1));
-//				else
-//					p.a = MathUtil::AngleBetweenVectorsPositive(path_local.at(iNextIndex+1), path_local.at(iNextIndex));
-//
-//				m_TrafficLights.push_back(p);
-//			}
-//
-//			for(unsigned int itl = 0; itl < l->roadSigns.size(); itl++)
-//			{
-//				Vector2D p(l->roadSigns[itl]->position.x, l->roadSigns[itl]->position.y, l->roadSigns[itl]->position.z,0);
-//				int iNextIndex = MappingHelpers::GetClosestNextPointIndex(path_local, p);
-//				if(iNextIndex > 0)
-//					p.a = MathUtil::AngleBetweenVectorsPositive(path_local.at(iNextIndex), path_local.at(iNextIndex-1));
-//				else
-//					p.a = MathUtil::AngleBetweenVectorsPositive(path_local.at(iNextIndex+1), path_local.at(iNextIndex));
-//
-//				if(l->roadSigns[itl]->signtype == STOP_SIGN)
-//					m_StopSigns.push_back(p);
-//				else if(l->roadSigns[itl]->signtype == STOP_LINE)
-//				{
-//					vector<Vector2D> path_temp;
-//					for(unsigned int k=0; k< l->roadSigns[itl]->points.size(); k++)
-//					{
-//						path_temp.push_back(Vector2D(l->roadSigns[itl]->points.at(k).x, l->roadSigns[itl]->points.at(k).y, l->roadSigns[itl]->points.at(k).z,p.a));
-//					}
-//					m_StopLines.push_back(path_temp);
-//				}
-//				else
-//					m_OtherSigns.push_back(p);
-//			}
 		}
 	}
 }
@@ -386,452 +336,14 @@ void AlternativeVisualizer::DrawVectorMap()
 
 void AlternativeVisualizer::DrawSimu()
 {
-
 	//DrawGPSData();
 	DrawVectorMap();
-
-	glDisable(GL_LIGHTING);
-	glColor3f(1,0,0);
-	for(unsigned int i=0; i < m_RoadMap.roadSegments.at(0).Lanes.size(); i++)
-	{
-		for(unsigned int j=0; j < m_RoadMap.roadSegments.at(0).Lanes.at(i).points.size(); j++)
-		{
-			PlannerHNS::WayPoint* p = &m_RoadMap.roadSegments.at(0).Lanes.at(i).points.at(j);
-			DrawingHelpers::DrawSimpleEllipse(p->pos.x, p->pos.y, 0.25, 1.0, 1.0);
-		}
-	}
-	glEnable(GL_LIGHTING);
-
-//	float TotalPathColor[3] = {0.99, 0.99, 0.0};
-//	float PlannedPathColor[3] = {0.0, 0.99, 0.0};
-//	float ActualPathColor[3] = {0.1, 0.1, 0.9};
-//
-//	pthread_mutex_lock(&planning_mutex);
-//	DrawingHelpers::DrawWidePath(m_State.m_TotalPath, 0.08, 0.25, TotalPathColor);
-//	DrawingHelpers::DrawWidePath(m_State.m_Path, 0.16, 0.2, PlannedPathColor);
-//	DrawingHelpers::DrawWidePath(m_ActualPath, 0.18, 0.15, ActualPathColor);
-//
-//	glDisable(GL_LIGHTING);
-//	for(unsigned int i = 0; i < m_State.m_Path.size(); i+=2 )
-//	{
-//		if(m_State.m_Path.at(i).collisionCost >= 1)
-//		{
-//			glColor3f(1, 0, 0);
-//			float collisionColor[3] = {1, 0, 0};
-//			DrawingHelpers::DrawWideEllipse(m_State.m_Path.at(i).pos.x,
-//					m_State.m_Path.at(i).pos.y, 0.2, 1.0, 1.0, 0.8, collisionColor);
-//		}
-//		else
-//		{
-//			glColor3f(PlannedPathColor[0], PlannedPathColor[1], PlannedPathColor[2]);
-//			DrawingHelpers::DrawSimpleEllipse(m_State.m_Path.at(i).pos.x,
-//					m_State.m_Path.at(i).pos.y, 0.2, 1.0, 1.0);
-//		}
-//
-//		glPointSize(10);
-//		glBegin(GL_POINTS);
-//			glColor3f(0,0,1);
-//			glVertex3f(m_State.m_Path.at(i).pos.x, m_State.m_Path.at(i).pos.y, 0.21);
-//		glEnd();
-//		glPointSize(1);
-//
-//		glPushMatrix();
-//		glTranslated(m_State.m_Path.at(i).pos.x, m_State.m_Path.at(i).pos.y, 0.25);
-//		std::ostringstream str_out ;
-//		str_out.precision(4);
-//		str_out <<  m_State.m_Path.at(i).timeCost;
-//		glColor3f(1,0.9,1);
-//		DrawingHelpers::DrawString(0, 0,
-//				GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//		glPopMatrix();
-//	}
-//
-//
-//	float RollOutsColor[3] = {0.9, 0.2, 0.1};
-//	for(unsigned int oi=0; oi < m_State.m_RollOuts.size();oi++)
-//	{
-//		glDisable(GL_LIGHTING);
-//		DrawingHelpers::DrawWidePath(m_State.m_RollOuts.at(oi), 0.14, 0.075, RollOutsColor);
-//
-//		for(unsigned int i = 0; i < m_State.m_RollOuts.at(oi).size(); i+=2 )
-//		{
-//			if(m_State.m_RollOuts.at(oi).at(i).collisionCost >= 1)
-//			{
-//				glColor3f(1, 0, 0);
-//				float collisionColor[3] = {1, 0, 0};
-//				DrawingHelpers::DrawWideEllipse(m_State.m_RollOuts.at(oi).at(i).pos.x,
-//						m_State.m_RollOuts.at(oi).at(i).pos.y, 0.2, 1.0, 1.0, 0.8, collisionColor);
-//			}
-//			else
-//			{
-//				glColor3f(PlannedPathColor[0], PlannedPathColor[1], PlannedPathColor[2]);
-//				DrawingHelpers::DrawSimpleEllipse(m_State.m_RollOuts.at(oi).at(i).pos.x,
-//						m_State.m_RollOuts.at(oi).at(i).pos.y, 0.2, 1.0, 1.0);
-//			}
-//
-////			glDisable(GL_LIGHTING);
-////			glPointSize(10);
-////			glBegin(GL_POINTS);
-////			int j_dec = 0;
-////			int r_inc = i*8;
-////			if(r_inc > 255)
-////			{
-////				//j_dec = i*5 - 255;
-////				r_inc = 255;
-////			}
-////				glColor3ub(r_inc,255-j_dec,0);
-////				glVertex3f(m_State.m_RollOuts.at(oi).at(i).pos.x, m_State.m_RollOuts.at(oi).at(i).pos.y, 0.21);
-////			glEnd();
-////			glPointSize(1);
-//
-//			glPushMatrix();
-//			glTranslated(m_State.m_RollOuts.at(oi).at(i).pos.x, m_State.m_RollOuts.at(oi).at(i).pos.y, 0.25);
-//			std::ostringstream str_out ;
-//			str_out.precision(4);
-//			str_out <<  m_State.m_RollOuts.at(oi).at(i).timeCost;
-//			glColor3f(1,0.9,1);
-//			DrawingHelpers::DrawString(0, 0,
-//					GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//			glPopMatrix();
-//		}
-//	}
-//
-//	for(unsigned int i =0; i <m_dummyObstacles.size(); i++)
-//	{
-//		float CarColor[3] = {0.9, 0.1, 0.9};
-//		DrawingHelpers::DrawCustomCarModel(m_dummyObstacles.at(i).center, m_State.m_CarShapePolygon, CarColor, 90);
-//		//std::cout << " >>> Calculated Angle : " << (m_dummyObstacles.at(i).center.pos.a*RAD2DEG + 90)*DEG2RAD << std::endl;
-//		glPushMatrix();
-//		glTranslated(m_dummyObstacles.at(i).center.pos.x, m_dummyObstacles.at(i).center.pos.y, 1.3);
-//		std::ostringstream str_out ;
-//		str_out.precision(4);
-//		str_out <<  m_dummyObstacles.at(i).center.v *3.6;
-//		DrawingHelpers::DrawString(0, 0,
-//				GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//		glPopMatrix();
-//	}
-//
-//	for(unsigned int ii = 0; ii < m_State.m_PredictedPath.size(); ii++ )
-//	{
-//		DrawingHelpers::DrawWidePath(m_State.m_PredictedPath.at(ii), 0.08, 0.25, TotalPathColor);
-//
-//		for(unsigned int k = 0; k < m_State.m_PredictedPath.at(ii).size(); k++ )
-//		{
-//			if(m_State.m_PredictedPath.at(ii).at(k).collisionCost >= 1)
-//				glColor3f(1, 0, 0);
-//			else
-//				glColor3f(TotalPathColor[0], TotalPathColor[1], TotalPathColor[2]);
-//			DrawingHelpers::DrawSimpleEllipse(m_State.m_PredictedPath.at(ii).at(k).pos.x,
-//					m_State.m_PredictedPath.at(ii).at(k).pos.y, 0.25, 1.0, 1.0);
-//
-//			glPushMatrix();
-//			glTranslated(m_State.m_PredictedPath.at(ii).at(k).pos.x, m_State.m_PredictedPath.at(ii).at(k).pos.y, 0.25);
-//			std::ostringstream str_out ;
-//			str_out.precision(4);
-//			str_out <<  m_State.m_PredictedPath.at(ii).at(k).timeCost;
-//			glColor3f(1,0.9,1);
-//			DrawingHelpers::DrawString(0, 0,
-//					GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//			glPopMatrix();
-//		}
-//
-//	}
-//
-//	pthread_mutex_unlock(&planning_mutex);
-//
-//	float CarColor[3] = {0.1, 0.9, 0.9};
-//
-//	pthread_mutex_lock(&simulation_mutex);
-//	for(unsigned int i =0; i <m_SimulatedCars.size(); i++)
-//	{
-//		DrawingHelpers::DrawCustomCarModel(m_SimulatedCars.at(i).state, m_State.m_CarShapePolygon, CarColor, 90);
-////
-////		glPushMatrix();
-////		glTranslated(m_SimulatedCars.at(i).state.pos.x, m_SimulatedCars.at(i).state.pos.y, 1.3);
-////		std::ostringstream str_out ;
-////		str_out.precision(2);
-////		str_out <<  m_SimulatedVehicleState.at(i).speed *3.6;
-////		DrawingHelpers::DrawString(0, 1,
-////				GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-////		glPopMatrix();
-//
-//		float TotalPathColor[3] = {0.5, 0.0, 0.99};
-//		DrawingHelpers::DrawWidePath(m_SimulatedCars.at(i).m_TotalPath, 0.08, 0.15, TotalPathColor);
-//
-////		for(unsigned int ii = 0; ii < m_SimulatedCars.at(i).m_TotalPath.size(); ii++ )
-////		{
-////			if(m_SimulatedCars.at(i).m_TotalPath.at(ii).collisionCost >= 1)
-////				glColor3f(1, 0, 0);
-////			else
-////				glColor3f(TotalPathColor[0], TotalPathColor[1], TotalPathColor[2]);
-////			DrawingHelpers::DrawSimpleEllipse(m_SimulatedCars.at(i).m_TotalPath.at(ii).pos.x,
-////					m_SimulatedCars.at(i).m_TotalPath.at(ii).pos.y, 0.25, 1.0, 1.0);
-////
-////
-////		}
-//
-//
-//
-//
-//
-//	}
-//	pthread_mutex_unlock(&simulation_mutex);
-//
-//	glColor3f(1,0,0);
-//	DrawingHelpers::DrawFilledEllipse(m_FollowPoint.x, m_FollowPoint.y, 0.2, 0.2, 0.2);
-//
-//	glColor3f(0,0,1);
-//	DrawingHelpers::DrawFilledEllipse(m_PerpPoint.x, m_PerpPoint.y, 0.2, 0.2, 0.2);
-//
-//	if(m_pMap)
-//		DrawingHelpers::DrawGrid(m_pMap->origin_x, m_pMap->origin_y, m_pMap->w, m_pMap->h, m_pMap->cell_l);
-//
-//
-//	m_followX = m_State.state.pos.x;
-//	m_followY = m_State.state.pos.y;
-//	m_followZ = m_State.state.pos.z;
-//	m_followA = m_State.state.pos.a;
-//
-//	if(m_CarModel)
-//	{
-////		DrawingHelpers::DrawModel(m_CarModel, m_State.m_CarInfo.wheel_base *0.9,
-////				m_State.m_CarInfo.wheel_base*0.9, m_State.m_CarInfo.wheel_base*0.9,
-////				m_State.state.pos.x,m_State.state.pos.y,
-////				m_State.state.pos.z+0.275, m_State.state.pos.a, 0,0);
-//	}
-//
-//	DrawingHelpers::DrawCustomCarModel(m_State.state, m_State.m_CarShapePolygon, CarColor, 90);
-//
-//
-//	//Draw Traffic Light :
-//	glDisable(GL_LIGHTING);
-//	for(unsigned int i=0 ; i < m_State.m_TrafficLights.size(); i++)
-//	{
-//		glColor3f(1,0,0);
-//		DrawingHelpers::DrawFilledEllipse(m_State.m_TrafficLights.at(i).pos.x, m_State.m_TrafficLights.at(i).pos.y, 1, 1,1);
-//		glColor3f(0,1,0);
-//		DrawingHelpers::DrawFilledEllipse(m_State.m_TrafficLights.at(i).pos.x+1.2, m_State.m_TrafficLights.at(i).pos.y, 1, 1,1);
-//		DrawingHelpers::DrawArrow(m_State.m_TrafficLights.at(i).pos.x+2.5, m_State.m_TrafficLights.at(i).pos.y, m_State.m_TrafficLights.at(i).pos.a);
-//	}
-//
-//	for(unsigned int i=0 ; i < m_goals.size(); i++)
-//	{
-//		glColor3f(1,0,1);
-//		DrawingHelpers::DrawFilledEllipse(m_goals.at(i).pos.x, m_goals.at(i).pos.y, 1.2, 0.2,0.2);
-//		DrawingHelpers::DrawArrow(m_goals.at(i).pos.x+2.5, m_goals.at(i).pos.y, m_goals.at(i).pos.a);
-//	}
-//
-//	glColor3f(0,1,1);
-//	DrawingHelpers::DrawFilledEllipse(287.504799, 112.376465, 1.2, 0.5,0.5);
-//	DrawingHelpers::DrawFilledEllipse(257.398966, 146.998802, 1.2, 0.5,0.5);
-//
-//	glEnable(GL_LIGHTING);
+	float color[] = {0, 1, 0};
+	DrawingHelpers::DrawWidePath(m_GeneratedPath, 0.5, 0.5, color);
 }
 
 void AlternativeVisualizer::DrawInfo(const int& centerX, const int& centerY, const int& maxX, const int& maxY)
 {
-//	double left_shift = 25;
-//	glDisable(GL_LIGHTING);
-//	glPushMatrix();
-//	glTranslated(centerX-left_shift, 70, 0);
-//	glRotated(-1*m_VehicleCurrentState.steer*RAD2DEG*16, 0,0,1);
-//	glTranslated(-(centerX-left_shift), -70, 0);
-//
-//	float wheel_color[3] = {0.6, 0.7, 0.8};
-//	DrawingHelpers::DrawWideEllipse(centerX-left_shift, 70, 0.5, 60, 55, 54, wheel_color);
-//
-//	glColor3f(0.5,0.4, 0.3);
-//	PlannerHNS::GPSPoint p1(centerX-left_shift, 70, 0.52, 0), p2(centerX-left_shift+38, 70-38, 0.52, 0);
-//	DrawingHelpers::DrawLinePoygonline(p1, p2, 5);
-//
-//	PlannerHNS::GPSPoint p11(centerX-left_shift, 70, 0.52, 0), p22(centerX-left_shift-38, 70-38, 0.52, 0);
-//	DrawingHelpers::DrawLinePoygonline(p11, p22, 5);
-//
-//	PlannerHNS::GPSPoint p111(centerX-left_shift, 70, 0.52, 0), p222(centerX-left_shift, 70+52, 0.52, 0);
-//	DrawingHelpers::DrawLinePoygonline(p111, p222, 5);
-//	glPopMatrix();
-//
-//	double speed = m_VehicleCurrentState.speed*3.6;
-//	float pedal_color[3] = {0.5,0.4, 0.3};
-//	glColor3f(wheel_color[0],wheel_color[1],wheel_color[2]);
-//	DrawingHelpers::DrawPedal(centerX + 70, 70, 0, 30.0, 100.0, speed*5.5,pedal_color );
-//
-//	glPushMatrix();
-//	glTranslated(centerX-left_shift-15, 70+85, 0);
-//	glColor3f(0.8, 0.1, 0.7);
-//	std::ostringstream str_out ;
-//	str_out.precision(2);
-//	str_out <<  m_VehicleCurrentState.steer*RAD2DEG;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)str_out.str().c_str());
-//	glPopMatrix();
-//
-//	glPushMatrix();
-//	glTranslated(centerX+60, 70+85, 0);
-//	glColor3f(0.8, 0.1, 0.7);
-//	std::ostringstream v_out ;
-//	v_out.precision(2);
-//	v_out <<  speed;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)v_out.str().c_str());
-//	glPopMatrix();
-//
-//	glEnable(GL_LIGHTING);
-////
-////	INITIAL_STATE, WAITING_STATE, FORWARD_STATE, STOPPING_STATE, EMERGENCY_STATE,
-////		TRAFFIC_LIGHT_STOP_STATE, STOP_SIGN_STOP_STATE, FOLLOW_STATE, LANE_CHANGE_STATE, OBSTACLE_AVOIDANCE_STATE, FINISH_STATE
-//
-//	std::ostringstream state_out ;
-//	state_out.precision(4);
-//	state_out << "State-> ";
-//	string str = "Unknown";
-//	switch(m_CurrentBehavior.state)
-//	{
-//	case PlannerHNS::INITIAL_STATE:
-//		str = "Init";
-//		break;
-//	case PlannerHNS::WAITING_STATE:
-//		str = "Waiting";
-//		break;
-//	case PlannerHNS::FORWARD_STATE:
-//		str = "Forward";
-//		break;
-//	case PlannerHNS::STOPPING_STATE:
-//		str = "Stop";
-//		break;
-//	case PlannerHNS::FINISH_STATE:
-//		str = "End";
-//		break;
-//	case PlannerHNS::FOLLOW_STATE:
-//		str = "Follow";
-//		break;
-//	case PlannerHNS::OBSTACLE_AVOIDANCE_STATE:
-//		str = "Swerving";
-//		break;
-//	case PlannerHNS::TRAFFIC_LIGHT_STOP_STATE:
-//		str = "Light Stop";
-//		break;
-//	case PlannerHNS::TRAFFIC_LIGHT_WAIT_STATE:
-//		str = "Light Wait";
-//		break;
-//	default:
-//		str = "Unknown";
-//		break;
-//	}
-//	state_out << str;
-//	state_out << " (" << m_CurrentBehavior.followDistance << ";"
-//			<< m_CurrentBehavior.followVelocity*3.6 << ";"
-//			<< m_CurrentBehavior.stopDistance << ";"
-//			<< m_State.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory << ";"
-//			<< m_State.m_pCurrentBehaviorState->GetCalcParams()->iPrevSafeTrajectory << ")";
-//
-//	glPushMatrix();
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 200, 0);
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)state_out.str().c_str());
-//
-//	double y = 30;
-//	for(unsigned int i = 0; i < m_dummyObstacles.size(); i++)
-//	{
-//		std::ostringstream sim_n_out ;
-//		sim_n_out << "Simu Car (:" << m_dummyObstacles.at(i).id << ") -> ";
-//		sim_n_out << m_dummyObstacles.at(i).center.v;
-//		glColor3f(0.6, 0.6, 0.9);
-//		DrawingHelpers::DrawString(0, y, GLUT_BITMAP_TIMES_ROMAN_24, (char*)sim_n_out.str().c_str());
-//		y+=30;
-//	}
-//
-//	glPopMatrix();
-//
-//	glPushMatrix();
-//	glTranslated(10, 500, 0);
-//	if(m_pVelocityGraph)
-//	{
-//		double axes_color[3] = {0.1, 0.1, 0.8};
-//		double graph_color[3] = {0.9, 0.2, 0.1};
-//		m_pVelocityGraph->ReInitGraphResolution(maxX-20, 200,1000, axes_color, graph_color );
-//		//if(m_VehicleCurrentState.speed>0)
-//		{
-//			m_pVelocityGraph->InsertPointTimeStamp(m_VehicleCurrentState.tStamp, m_VehicleCurrentState.speed*3.6);
-//		}
-//		m_pVelocityGraph->DrawGraph();
-//	}
-//	glPopMatrix();
-//
-//	glPushMatrix();
-//	glTranslated(10, 750, 0);
-//	if(m_pSteeringGraph)
-//	{
-//		double axes_color[3] = {0.1, 0.1, 0.8};
-//		double graph_color[3] = {0.9, 0.2, 0.1};
-//		m_pSteeringGraph->ReInitGraphResolution(maxX-20, 200,1000, axes_color, graph_color );
-//		//if(m_VehicleCurrentState.steer>0)
-//		{
-//			m_pSteeringGraph->InsertPointTimeStamp(m_VehicleCurrentState.tStamp, m_VehicleCurrentState.steer*RAD2DEG);
-//		}
-//		m_pSteeringGraph->DrawGraph();
-//	}
-//	glPopMatrix();
-//
-//	glPushMatrix();
-//	glTranslated(10, 1000, 0);
-//	if(m_pLateralErrGraph)
-//	{
-//		double axes_color[3] = {0.1, 0.1, 0.8};
-//		double graph_color[3] = {0.9, 0.2, 0.1};
-//		m_pLateralErrGraph->ReInitGraphResolution(maxX-20, 200,1000, axes_color, graph_color );
-//		//if(m_VehicleCurrentState.steer>0)
-//		{
-//			m_pLateralErrGraph->InsertPointTimeStamp(m_VehicleCurrentState.tStamp, m_LateralError);
-//		}
-//		m_pLateralErrGraph->DrawGraph();
-//	}
-//	glPopMatrix();
-//
-//	glPushMatrix();
-//	std::ostringstream performance_str ;
-//	performance_str.precision(6);
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 1250, 0);
-//	performance_str << 				"DP Time 		= ";
-//	performance_str << m_GlobalPlanningTime;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)performance_str.str().c_str());
-//	glPopMatrix();
-//	glPushMatrix();
-//	std::ostringstream local_performance_str ;
-//	local_performance_str.precision(6);
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 1280, 0);
-//	local_performance_str << 		"Local Planner 	= ";
-//	local_performance_str << m_LocalPlanningTime;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)local_performance_str.str().c_str());
-//	glPopMatrix();
-//	glPushMatrix();
-//	std::ostringstream track_performance_str ;
-//	track_performance_str.precision(6);
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 1310, 0);
-//	track_performance_str << 		"Tracking Timer	= ";
-//	track_performance_str << m_ObjectTrakingTime;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)track_performance_str.str().c_str());
-//	glPopMatrix();
-//	glPushMatrix();
-//	std::ostringstream control_performance_str ;
-//	control_performance_str.precision(6);
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 1340, 0);
-//	control_performance_str << 		"Control Time	= ";
-//	control_performance_str << m_ControllingTime;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)control_performance_str.str().c_str());
-//	glPopMatrix();
-//	glPushMatrix();
-//	std::ostringstream simu_performance_str ;
-//	simu_performance_str.precision(6);
-//	glColor3f(0.8, 0.5, 0.7);
-//	glTranslated(10, 1370, 0);
-//	simu_performance_str << 		"Simu Time 		= ";
-//	simu_performance_str << m_SimulationTime;
-//	DrawingHelpers::DrawString(0, 0, GLUT_BITMAP_TIMES_ROMAN_24, (char*)simu_performance_str.str().c_str());
-//	glPopMatrix();
-
 }
 
 void AlternativeVisualizer::OnLeftClick(const double& x, const double& y)
