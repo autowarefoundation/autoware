@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 FIND_PACKAGE(CUDA)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 pkg_check_modules(HDF5 hdf5)
 

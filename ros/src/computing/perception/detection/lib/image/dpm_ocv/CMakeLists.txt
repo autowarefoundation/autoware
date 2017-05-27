@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 FIND_PACKAGE(CUDA)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 add_message_files(
   FILES
@@ -121,7 +121,7 @@ TARGET_LINK_LIBRARIES(libdpm_ocv
 
 ENDIF()
 
-SET_TARGET_PROPERTIES(libdpm_ocv PROPERTIES OUTPUT_NAME dpm_ocv)
+#SET_TARGET_PROPERTIES(libdpm_ocv PROPERTIES OUTPUT_NAME dpm_ocv)
 ADD_DEPENDENCIES(libdpm_ocv libdpm_ocv_generate_messages_cpp)
 
 #############

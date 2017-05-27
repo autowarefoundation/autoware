@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 ###################################
 ## catkin specific configuration ##

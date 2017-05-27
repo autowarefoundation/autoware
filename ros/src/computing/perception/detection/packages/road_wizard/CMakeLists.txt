@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   libvectormap
   runtime_manager
   )
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 find_package(Eigen3 QUIET)
 if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
@@ -71,6 +71,7 @@ add_executable(region_tlr
 
 target_link_libraries(region_tlr
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 add_dependencies(region_tlr
@@ -91,6 +92,7 @@ add_executable(feat_proj
 target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 add_dependencies(feat_proj
@@ -149,4 +151,5 @@ target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
+  ${OpenCV_LIBS}
   )

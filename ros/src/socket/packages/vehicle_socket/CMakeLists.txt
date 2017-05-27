@@ -6,6 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   runtime_manager
+  tablet_socket_msgs
+  waypoint_follower_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -30,16 +32,16 @@ include_directories(
 
 add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)
 target_link_libraries(vehicle_receiver ${catkin_LIBRARIES})
-add_dependencies(vehicle_receiver
-  vehicle_socket_generate_messages_cpp
-  tablet_socket_generate_messages_cpp
-)
+#add_dependencies(vehicle_receiver
+  #vehicle_socket_generate_messages_cpp
+  #tablet_socket_generate_messages_cpp
+#)
 
 add_executable(vehicle_sender nodes/vehicle_sender/vehicle_sender.cpp)
 target_link_libraries(vehicle_sender ${catkin_LIBRARIES})
-add_dependencies(vehicle_sender
-  vehicle_socket_generate_messages_cpp
-  tablet_socket_generate_messages_cpp
-  runtime_manager_generate_messages_cpp
-  waypoint_follower_generate_messages_cpp
-)
+#add_dependencies(vehicle_sender
+  #vehicle_socket_generate_messages_cpp
+  #tablet_socket_generate_messages_cpp
+  #runtime_manager_generate_messages_cpp
+  #waypoint_follower_generate_messages_cpp
+#)

@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
 )
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 2.4 REQUIRED)
 
 add_message_files(
   FILES

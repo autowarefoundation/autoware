@@ -33,7 +33,7 @@
 
 #include <ros/console.h>
 
-#include <tablet_socket/Waypoint.h>
+#include <tablet_socket_msgs/Waypoint.h>
 
 #include <geo_pos_conv.hh>
 #include <lane_planner/vmap.hpp>
@@ -506,9 +506,9 @@ vector_map::Point create_vector_map_point(const geometry_msgs::Point& gp)
 	return vp;
 }
 
-waypoint_follower::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd)
+waypoint_follower_msgs::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd)
 {
-	waypoint_follower::dtlane wd;
+	waypoint_follower_msgs::dtlane wd;
 	wd.dist = vd.dist;
 	wd.dir = vd.dir;
 	wd.apara = vd.apara;
@@ -521,7 +521,7 @@ waypoint_follower::dtlane create_waypoint_follower_dtlane(const vector_map::DTLa
 	return wd;
 }
 
-vector_map::DTLane create_vector_map_dtlane(const waypoint_follower::dtlane& wd)
+vector_map::DTLane create_vector_map_dtlane(const waypoint_follower_msgs::dtlane& wd)
 {
 	vector_map::DTLane vd;
 	vd.dist = wd.dist;
@@ -572,22 +572,22 @@ VectorMap create_lane_vmap(const VectorMap& vmap, int lno)
 	return lane_vmap;
 }
 
-VectorMap create_coarse_vmap_from_lane(const waypoint_follower::lane& lane)
+VectorMap create_coarse_vmap_from_lane(const waypoint_follower_msgs::lane& lane)
 {
 	VectorMap coarse_vmap;
-	for (const waypoint_follower::waypoint& w : lane.waypoints)
+	for (const waypoint_follower_msgs::waypoint& w : lane.waypoints)
 		coarse_vmap.points.push_back(create_vector_map_point(w.pose.pose.position));
 
 	return coarse_vmap;
 }
 
-VectorMap create_coarse_vmap_from_route(const tablet_socket::route_cmd& route)
+VectorMap create_coarse_vmap_from_route(const tablet_socket_msgs::route_cmd& route)
 {
 	geo_pos_conv geo;
 	geo.set_plane(7);
 
 	VectorMap coarse_vmap;
-	for (const tablet_socket::Waypoint& w : route.point) {
+	for (const tablet_socket_msgs::Waypoint& w : route.point) {
 		geo.llh_to_xyz(w.lat, w.lon, 0);
 
 		vector_map::Point p;

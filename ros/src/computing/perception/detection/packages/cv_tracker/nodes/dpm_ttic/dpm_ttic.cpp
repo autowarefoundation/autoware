@@ -36,7 +36,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <cv_tracker/image_obj.h>
+#include <cv_tracker_msgs/image_obj.h>
 #include <runtime_manager/ConfigCarDpm.h>
 #include <runtime_manager/ConfigPedestrianDpm.h>
 
@@ -67,10 +67,10 @@ static void set_default_param(DPMTTICParam& param)
 	param.num_cells = 8;counter =0;
 }
 
-static void result_to_image_obj_message(cv_tracker::image_obj& msg, const DPMTTICResult result)
+static void result_to_image_obj_message(cv_tracker_msgs::image_obj& msg, const DPMTTICResult result)
 {
 	for (int i = 0; i < result.num; ++i) {
-		cv_tracker::image_rect rect;
+		cv_tracker_msgs::image_rect rect;
 
 		int base = i * 4;
 		rect.x = result.corner_points[base];
@@ -90,7 +90,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 	IplImage img = cv_image->image;
 	IplImage *img_ptr = &img;
 
-	cv_tracker::image_obj msg;
+	cv_tracker_msgs::image_obj msg;
 	msg.header = image_source.header;
 	msg.type = object_class;
 
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 #endif
 
 	ros::Subscriber sub = n.subscribe(image_topic_name, 1, image_raw_cb);
-	image_obj_pub = n.advertise<cv_tracker::image_obj>("image_obj", 1);
+	image_obj_pub = n.advertise<cv_tracker_msgs::image_obj>("image_obj", 1);
 
 	ros::Subscriber config_sub;
 	std::string config_topic("/config");

@@ -582,9 +582,9 @@ int inv_check(double inv[3][3])
   {
     for (int j = 0; j < 3; j++)
     {
-      if (isnan(inv[i][j]))
+      if (std::isnan(inv[i][j]))
         return 0;
-      if (fabs(inv[i][j]) > 1000)
+      if (std::fabs(inv[i][j]) > 1000)
         return 0;
     }
   }

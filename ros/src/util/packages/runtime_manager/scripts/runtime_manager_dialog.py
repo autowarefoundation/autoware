@@ -78,10 +78,10 @@ from runtime_manager.msg import ConfigLaneSelect
 from runtime_manager.msg import ConfigLaneStop
 from runtime_manager.msg import ConfigCarFusion
 from runtime_manager.msg import ConfigPedestrianFusion
-from tablet_socket.msg import mode_cmd
-from tablet_socket.msg import gear_cmd
-from tablet_socket.msg import Waypoint
-from tablet_socket.msg import route_cmd
+from tablet_socket_msgs.msg import mode_cmd
+from tablet_socket_msgs.msg import gear_cmd
+from tablet_socket_msgs.msg import Waypoint
+from tablet_socket_msgs.msg import route_cmd
 from ndt_localizer.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
@@ -424,7 +424,7 @@ class MyFrame(rtmgr.MyFrame):
 		backup = os.path.expanduser('~/.toprc-autoware-backup')
 		self.toprc_setup(toprc, backup)
 
-		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.NUM_CPUS) ]
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.cpu_count()) ]
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
@@ -891,8 +891,8 @@ class MyFrame(rtmgr.MyFrame):
 			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
-		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
-		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
+		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.cpu_count()) ]
+		cpus = [ i for i in range(psutil.cpu_count()) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
 
 		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
@@ -1230,7 +1230,7 @@ class MyFrame(rtmgr.MyFrame):
 		mem_ibl.lmt_bar_prg = rate_mem
 
 		alerted = False
-		cpu_n = psutil.NUM_CPUS
+		cpu_n = psutil.cpu_count()
 
 		while not ev.wait(interval):
 			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
