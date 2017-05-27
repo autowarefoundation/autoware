@@ -30,7 +30,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-//#include <runtime_manager/ConfigRcnn.h>
+#include <runtime_manager/ConfigSsd.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <cv_tracker/image_obj.h>
@@ -57,6 +57,9 @@ class RosSsdApp
 
 	//The minimum score required to filter the detected objects by the ConvNet
 	float score_threshold_;
+	std::string image_raw_topic_str;
+	std::string network_definition_file;
+	std::string pretrained_model_file;
 
 	//If GPU is enabled, stores the GPU Device to use
 	unsigned int gpu_device_id_;
@@ -136,6 +139,19 @@ class RosSsdApp
 	}
 
 
+	void config_cb(const runtime_manager::ConfigSsd::ConstPtr& param)
+	{
+		score_threshold_ 	= param->score_threshold;
+		image_raw_topic_str 	= param->image_raw_topic_str;
+		network_definition_file	= param->network_definition_file;
+		pretrained_model_file	= param->pretrained_model_file;
+		use_gpu_ 		= param->use_gpu;
+		gpu_device_id_ 	 	= param->gpu_device_id;
+
+		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
+	}
+
 public:
 	void Run()
 	{
@@ -143,7 +159,6 @@ public:
 		ros::NodeHandle private_node_handle("~");//to receive args
 
 		//RECEIVE IMAGE TOPIC NAME
-		std::string image_raw_topic_str;
 		if (private_node_handle.getParam("image_raw_node", image_raw_topic_str))
 		{
 			ROS_INFO("Setting image node to %s", image_raw_topic_str.c_str());
@@ -155,8 +170,6 @@ public:
 		}
 
 		//RECEIVE CONVNET FILENAMES
-		std::string network_definition_file;
-		std::string pretrained_model_file;
 		if (private_node_handle.getParam("network_definition_file", network_definition_file))
 		{
 			ROS_INFO("Network Definition File: %s", network_definition_file.c_str());
@@ -208,8 +221,8 @@ public:
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
 
-		/*std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/ssd";
-		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);*/
+		std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/ssd";
+		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
 
 		ros::spin();
 		ROS_INFO("END Ssd");

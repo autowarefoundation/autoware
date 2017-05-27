@@ -10,6 +10,9 @@
   <arg name="map_resolution" default="0.25" />
   <arg name="map_x_size" default="40.0" />
   <arg name="map_y_size" default="25.0" />
+  <arg name="map_x_offset" default="10.0" />
+
+  <node pkg="tf" type="static_transform_publisher" name="potential_field_link_tf_publiser" args="$(arg map_x_offset) 0 0 0 0 0 base_link potential_field_link 100" />
 
 	<node pkg="object_map" type="potential_field" name="potential_field">
     <param name="use_obstacle_box" type="bool" value="$(arg use_obstacle_box)"/>
@@ -18,6 +21,7 @@
     <param name="map_resolution" type="double" value="$(arg map_resolution)"/>
     <param name="map_x_size" type="double" value="$(arg map_x_size)"/>
     <param name="map_y_size" type="double" value="$(arg map_y_size)"/>
+    <param name="map_x_offset" type="double" value="$(arg map_x_offset)"/>
 	</node>
 
 </launch>
