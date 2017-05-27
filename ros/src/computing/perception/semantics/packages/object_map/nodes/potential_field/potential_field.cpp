@@ -4,10 +4,10 @@
 #include <grid_map_msgs/GridMap.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <iostream>
-#include <lidar_tracker/DetectedObject.h>
-#include <lidar_tracker/DetectedObjectArray.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <lidar_tracker/DetectedObject.h>
+#include <lidar_tracker/DetectedObjectArray.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -31,6 +31,7 @@ private:
   double map_resolution_;
   double tf_x_;
   double tf_z_;
+  double map_x_offset_;
   GridMap map_;
   class ObstacleFieldParameter {
   public:
@@ -92,7 +93,10 @@ PotentialField::PotentialField()
     map_y_size_ = 25.0;
     ROS_INFO("map y size %f", map_y_size_);
   }
-
+  if (!private_nh.getParam("map_x_offset", map_x_offset_)) {
+    map_x_offset_ = 10.0;
+    ROS_INFO("map x offset %f", map_x_offset_);
+  }
   publisher_ =
       nh_.advertise<grid_map_msgs::GridMap>("/potential_field", 1, true);
 
@@ -110,7 +114,7 @@ PotentialField::PotentialField()
 
 void PotentialField::init() {
   ROS_INFO("Created map");
-  map_.setFrameId("/base_link");
+  map_.setFrameId("/potential_field_link");
   map_.setGeometry(Length(map_x_size_, map_y_size_), map_resolution_);
   for (GridMapIterator it(map_); !it.isPastEnd(); ++it) {
     Position position;
@@ -118,6 +122,7 @@ void PotentialField::init() {
     map_.at("obstacle_field", *it) = 0.0;
     map_.at("target_waypoint_field", *it) = 0.0;
     map_.at("vscan_points_field", *it) = 0.0;
+    map_.at("potential_field", *it) = 0.0;
   }
   ROS_INFO("Created map with size %f x %f m (%i x %i cells).",
            map_.getLength().x(), map_.getLength().y(), map_.getSize()(0),
@@ -137,8 +142,7 @@ void PotentialField::publish_potential_field() {
                     message.info.header.stamp.toSec());
 }
 void PotentialField::obj_callback(
-    lidar_tracker::DetectedObjectArray::ConstPtr
-        obj_msg) { // Create grid map.
+    lidar_tracker::DetectedObjectArray::ConstPtr obj_msg) { // Create grid map.
   static ObstacleFieldParameter param;
   double ver_x_p(param.ver_x_p);
   double ver_y_p(param.ver_y_p);
@@ -152,7 +156,8 @@ void PotentialField::obj_callback(
     map_.getPosition(*it, position);
     map_.at("obstacle_field", *it) = 0.0;
     for (int i(0); i < (int)obj_msg->objects.size(); ++i) {
-      double pos_x = obj_msg->objects.at(i).pose.position.x + tf_x_;
+      double pos_x =
+          obj_msg->objects.at(i).pose.position.x + tf_x_ - map_x_offset_;
       double pos_y = obj_msg->objects.at(i).pose.position.y;
       double len_x = obj_msg->objects.at(i).dimensions.x / 2.0;
       double len_y = obj_msg->objects.at(i).dimensions.y / 2.0;
@@ -177,53 +182,71 @@ void PotentialField::obj_callback(
       }
       if (pos_x - len_x < rotated_pos_x && rotated_pos_x < pos_x + len_x) {
         if (pos_y - len_y < rotated_pos_y && rotated_pos_y < pos_y + len_y) {
-          map_.at("obstacle_field", *it) += std::exp(0.0);
+          map_.at("obstacle_field", *it) =
+              std::max(std::exp(0.0),
+                       static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (rotated_pos_y < pos_y - len_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (pos_y + len_y < rotated_pos_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         }
       } else if (rotated_pos_x < pos_x - len_x) {
         if (rotated_pos_y < pos_y - len_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))) +
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0))) +
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (pos_y + len_y < rotated_pos_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))) +
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0))) +
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (pos_y - len_y < rotated_pos_y &&
                    rotated_pos_y < pos_y + len_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x - len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         }
       } else if (pos_x + len_x < rotated_pos_x) {
         if (rotated_pos_y < pos_y - len_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))) +
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y - len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0))) +
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (pos_y + len_y / 2.0 < rotated_pos_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
-                       std::pow(2.0 * ver_y_p, 2.0))) +
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_y - (pos_y + len_y)), 2.0) /
+                           std::pow(2.0 * ver_y_p, 2.0))) +
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         } else if (pos_y - len_y < rotated_pos_y &&
                    rotated_pos_y < pos_y + len_y) {
-          map_.at("obstacle_field", *it) += std::exp(
-              (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
-                       std::pow(2.0 * ver_x_p, 2.0))));
+          map_.at("obstacle_field", *it) = std::max(
+              std::exp(
+                  (-1.0 * (std::pow((rotated_pos_x - (pos_x + len_x)), 2.0) /
+                           std::pow(2.0 * ver_x_p, 2.0)))),
+              static_cast<double>(map_.at("obstacle_field", *it)));
         }
       }
     }
@@ -245,8 +268,10 @@ void PotentialField::target_waypoint_callback(
   tf::TransformListener tflistener;
   try {
     ros::Time now = ros::Time(0);
-    tflistener.waitForTransform("/map", "/base_link", now, ros::Duration(10.0));
-    tflistener.transformPoint("/base_link", in.header.stamp, in, "/map", out);
+    tflistener.waitForTransform("/map", "/potential_field_link", now,
+                                ros::Duration(10.0));
+    tflistener.transformPoint("/potential_field_link", in.header.stamp, in,
+                              "/map", out);
 
   } catch (tf::TransformException &ex) {
     ROS_ERROR("%s", ex.what());
@@ -285,14 +310,15 @@ void PotentialField::vscan_points_callback(
     map_.getPosition(*it, position);
     map_.at("vscan_points_field", *it) = 0.0;
     for (int i(0); i < (int)pcl_vscan.size(); ++i) {
+      double point_x = pcl_vscan.at(i).x - map_x_offset_;
       if (3.0 < pcl_vscan.at(i).z + tf_z_ || pcl_vscan.at(i).z + tf_z_ < 0.3)
         continue;
-      if (length_x < pcl_vscan.at(i).x && pcl_vscan.at(i).x < -1.0 * length_x)
+      if (length_x < point_x && point_x < -1.0 * length_x)
         continue;
       if (length_y < pcl_vscan.at(i).y && pcl_vscan.at(i).y < -1.0 * length_y)
         continue;
-      if (pcl_vscan.at(i).x + tf_x_ - around_x < position.x() &&
-          position.x() < pcl_vscan.at(i).x + tf_x_ + around_x) {
+      if ((point_x + tf_x_) - around_x < position.x() &&
+          position.x() < point_x + tf_x_ + around_x) {
         if (pcl_vscan.at(i).y - around_y < position.y() &&
             position.y() < pcl_vscan.at(i).y + around_y) {
           map_.at("vscan_points_field", *it) = 1.0; // std::exp(0.0) ;
