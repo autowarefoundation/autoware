@@ -1,0 +1,27 @@
+<package>
+  <name>jsk_footstep_msgs</name>
+  <version>2.0.0</version>
+  <description>jsk_footstep_msgs</description>
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/jsk_footstep_msgs</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <!-- <test_depend>geometry_msgs</test_depend> -->
+  <!-- <test_depend>actionlib_msgs</test_depend> -->
+
+  <export>
+
+  </export>
+</package>

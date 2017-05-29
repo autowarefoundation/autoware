@@ -1,0 +1,5 @@
+# service that passes an image and gets object detection results
+sensor_msgs/Image image
+sensor_msgs/CameraInfo camera_info
+---
+ObjectDetection object_detection

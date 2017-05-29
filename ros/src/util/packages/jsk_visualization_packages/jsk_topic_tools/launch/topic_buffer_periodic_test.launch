@@ -1,0 +1,12 @@
+<launch>
+  <include file="$(find jsk_topic_tools)/launch/topic_buffer_client_sample.launch" >
+    <arg name="USE_FIXED_RATE" value="true" />
+    <arg name="USE_UPDATE_RATE" value="true" />
+    <arg name="FIXED_RATE" value="0.1" />
+    <arg name="UPDATE_RATE" value="-1" />
+  </include>
+  <include file="$(find jsk_topic_tools)/launch/topic_buffer_server_sample.launch" >
+    <arg name="USE_PERIODIC_RATE" value="true" />
+    <arg name="PERIODIC_RATE" value="1" />
+  </include>
+</launch>

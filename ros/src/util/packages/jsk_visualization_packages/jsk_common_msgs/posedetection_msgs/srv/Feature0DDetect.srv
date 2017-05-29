@@ -1,0 +1,3 @@
+sensor_msgs/Image image
+---
+posedetection_msgs/Feature0D features

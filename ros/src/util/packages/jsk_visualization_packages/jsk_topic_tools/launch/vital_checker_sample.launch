@@ -1,0 +1,15 @@
+<launch>
+  <node pkg="jsk_topic_tools" name="vital_checker"
+        output="screen"
+        type="vital_checker">
+    <param name="title" value="hoge" />
+    <remap from="~input" to="hoge" />
+  </node>
+  <node pkg="rostopic" type="rostopic"
+        name="hoge_publisher"
+        args="pub hoge std_msgs/String '{data: hoge}' -r 10" />
+  <node pkg="diagnostic_aggregator" type="aggregator_node"
+        name="diagnostic_aggregator" />
+  <node pkg="rqt_robot_monitor" type="rqt_robot_monitor"
+        name="robot_monitor" />
+</launch>

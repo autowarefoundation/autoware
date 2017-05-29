@@ -1,0 +1,6 @@
+string topic_name
+bool periodic  # when true is set, periodic publish starts. when false, it stops. do nothing when this is empty.
+duration periodic_rate # when periodic is true, periodic publish starts at this rate.
+---
+float64 rate
+

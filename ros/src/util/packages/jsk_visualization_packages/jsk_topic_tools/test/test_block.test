@@ -1,0 +1,23 @@
+<launch>
+  <node pkg="nodelet"
+        type="nodelet"
+        name="nodelet_manager"
+        args="manager" />
+  <node pkg="nodelet"
+        type="nodelet"
+        name="blocker"
+        clear_params="true"
+        args="load jsk_topic_tools/Block /nodelet_manager">
+    <remap from="~input" to="input" />
+    <remap from="~input_original" to="input_original" />
+    <remap from="~output" to="output" />
+    <remap from="~output_original" to="output_original" />
+  </node>
+  <node pkg="rostopic"
+        type="rostopic"
+        name="rostopic"
+        args="pub /input std_msgs/String test -r 1" />
+  <test test-name="test_block"
+        pkg="jsk_topic_tools" type="test_block.py"
+        name="test_block" />
+</launch>

@@ -1,0 +1,12 @@
+<launch>
+  <arg name="USE_PERIODIC_RATE" default="false" />
+  <arg name="PERIODIC_RATE" default="1" />
+  <arg name="OUTPUT" default="screen" />
+  <node pkg="roscpp_tutorials" type="talker" name="talker" output="$(arg OUTPUT)"/>
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_server" name="sample_topic_buffer_server"
+        args="/chatter"	output="$(arg OUTPUT)" >
+    <param name="periodic_rate" value="$(arg PERIODIC_RATE)" if="$(arg USE_PERIODIC_RATE)"  />
+  </node>
+
+</launch>

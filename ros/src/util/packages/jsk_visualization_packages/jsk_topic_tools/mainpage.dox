@@ -1,0 +1,16 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b jsk_topic_tools
+
+Source code is hosted here: https://github.com/jsk-ros-pkg/jsk_common/tree/master/jsk_topic_tools
+
+\section ColorUtil
+Please see color_utils.h
+
+
+\section NodeletUtils
+Please see jsk_topic_tools::ConnectionBasedNodelet and jsk_topic_tools::DiagnosticNodelet
+
+*/

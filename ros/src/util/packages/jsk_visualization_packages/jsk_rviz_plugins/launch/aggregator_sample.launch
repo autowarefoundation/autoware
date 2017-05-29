@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="diagnostic_aggregator" type="aggregator_node"
+    name="diagnostic_aggregator" >
+    <!-- Load the file you made above -->
+    <rosparam command="load" file="$(find jsk_rviz_plugins)/launch/analyzerSample.yaml" />
+  </node>
+</launch>

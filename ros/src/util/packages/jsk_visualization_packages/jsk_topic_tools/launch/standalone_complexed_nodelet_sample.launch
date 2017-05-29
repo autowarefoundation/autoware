@@ -1,0 +1,24 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="input" args="pub input std_msgs/String '{data: input}' -r 10" />
+  <node pkg="jsk_topic_tools" type="standalone_complexed_nodelet" name="standalone_complexed_nodelet"
+        output="screen">
+    <rosparam>
+      nodelets:
+        - name: relay_0
+          type: jsk_topic_tools/Relay
+          remappings:
+            - from: ~input
+              to: input
+        - name: relay_1
+          type: jsk_topic_tools/Relay
+          remappings:
+            - from: ~input
+              to: relay_0/output
+        - name: relay_2
+          type: jsk_topic_tools/Relay
+          remappings:
+            - from: ~input
+              to: relay_1/output
+    </rosparam>
+  </node>
+</launch>

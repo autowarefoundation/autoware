@@ -1,0 +1,24 @@
+<launch>
+  <arg name="REMOTE_TF" default="/tf_low_frequency"/>
+  <arg name="JOINT_STATE_UPDATE_RATE" default="1.0"/>
+
+  <include file="$(find jsk_topic_tools)/launch/tf_buffer_client.launch">
+    <arg name="REMOTE_TF" value="$(arg REMOTE_TF)"/>
+  </include>
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_client"
+	name="topic_buffer_client_for_joint_state_pruned" output="screen">
+    <param name="use_service" value="false"/>
+    <param name="update_rate" value="$(arg JOINT_STATE_UPDATE_RATE)"/>
+    <param name="fixed_rate" value="0.1"/>
+    <remap from="/update" to="/topic_buffer_server_for_joint_state_pruned/update"/>
+    <remap from="/list" to="/topic_buffer_server_for_joint_state_pruned/list"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher"
+	name="robot_state_publisher_for_remote">
+    <remap from="/joint_states" to="/joint_states_pruned_buffered"/>
+    <remap from="/tf" to="$(arg REMOTE_TF)"/>
+  </node>
+
+</launch>

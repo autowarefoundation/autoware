@@ -1,0 +1,17 @@
+<launch>
+  <arg name="PREFIX" default="tf_buffer"/>
+  <arg name="REMOTE_TF" default="/tf_low_frequency"/>
+  <group ns="$(arg PREFIX)">
+    <node pkg="jsk_topic_tools" type="topic_buffer_client" name="$(anon tf_buffer_client)"
+	  output="screen">
+      <remap from="/list" to="list"/>
+      <remap from="/update" to="update"/>
+      <remap from="tf_merged_buffered" to="$(arg REMOTE_TF)"/>
+      <rosparam>
+        use_service: false
+        topics: ["tf_merged"]
+        fixed_rate: 0.1
+      </rosparam>
+    </node>
+  </group>
+</launch>

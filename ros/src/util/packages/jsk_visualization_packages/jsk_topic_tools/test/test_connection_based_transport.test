@@ -1,0 +1,22 @@
+<launch>
+  <node pkg="rostopic" type="rostopic" name="input"
+        args="pub /input sensor_msgs/Image 'data: [1, 2, 3]' -r 10">
+  </node>
+
+  <node name="simple_image_transport"
+        pkg="jsk_topic_tools" type="simple_image_transport.py">
+    <remap from="~input" to="input" />
+  </node>
+
+  <test test-name="test_connection"
+        name="test_connection"
+        pkg="jsk_topic_tools" type="test_connection.py">
+    <rosparam>
+      input_topic_type: sensor_msgs/Image
+      check_connected_topics: [simple_image_transport/output, input]
+      wait_for_connection: 3
+    </rosparam>
+    <remap from="~input" to="simple_image_transport/output" />
+  </test>
+
+</launch>

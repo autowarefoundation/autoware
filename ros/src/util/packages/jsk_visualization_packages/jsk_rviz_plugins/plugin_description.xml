@@ -1,0 +1,275 @@
+<library path="lib/libjsk_rviz_plugins">
+  
+  <class name="jsk_rviz_plugin/TabletViewController" type="jsk_rviz_plugins::TabletViewController" base_class_type="rviz::ViewController">
+    <description>
+      A view controller for tablet
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/ScreenshotListener" type="jsk_rviz_plugins::ScreenshotListenerTool" base_class_type="rviz::Tool">
+    <description>
+      screenshot utility
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/CloseAll" type="jsk_rviz_plugins::CloseAllTool" base_class_type="rviz::Tool">
+    <description>
+      close all displays
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OpenAll" type="jsk_rviz_plugins::OpenAllTool" base_class_type="rviz::Tool">
+    <description>
+      open all displays
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PoseArray"
+         type="jsk_rviz_plugins::PoseArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/TwistStamped"
+         type="jsk_rviz_plugins::TwistStampedDisplay"
+         base_class_type="rviz::Display">
+    <description>
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/VideoCapture"
+         type="jsk_rviz_plugins::VideoCaptureDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      capture rviz view as movie
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/PictogramArray"
+         type="jsk_rviz_plugins::PictogramArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize PictogramArray
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/Pictogram"
+         type="jsk_rviz_plugins::PictogramDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize pictogram
+    </description>
+  </class>
+
+  
+  <class name="jsk_rviz_plugin/CameraInfo"
+         type="jsk_rviz_plugins::CameraInfoDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize sensor_msgs/CameraInfo
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PeoplePositionMeasurementArray"
+         type="jsk_rviz_plugins::PeoplePositionMeasurementArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize people_msgs/PositionMeasurementArray
+    </description>
+  </class>
+  
+  <class name="jsk_rviz_plugin/TargetVisualizer"
+         type="jsk_rviz_plugins::TargetVisualizerDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize geometry_msgs/PoseStamped as target mark
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayDiagnostic"
+         type="jsk_rviz_plugins::OverlayDiagnosticDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/SparseOccupancyGridArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/SimpleOccupancyGridArray"
+         type="jsk_rviz_plugins::SimpleOccupancyGridArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/SimpleOccupancyGridArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/QuietInteractiveMarker"
+         type="jsk_rviz_plugins::QuietInteractiveMarkerDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      quiet version of interactive marker
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/BoundingBoxArray"
+         type="jsk_rviz_plugins::BoundingBoxArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/BoundingBoxArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/TorusArray"
+         type="jsk_rviz_plugins::TorusArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      visualize jsk_recognition_msgs/TorusArray
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/Diagnostics"
+         type="jsk_rviz_plugins::DiagnosticsDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      diagnostics display
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/Plotter2D"
+         type="jsk_rviz_plugins::Plotter2DDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      2D plotter on rviz
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/PieChart"
+         type="jsk_rviz_plugins::PieChartDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      2D pie chart on rviz
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayText"
+         type="jsk_rviz_plugins::OverlayTextDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays text as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayMenu"
+         type="jsk_rviz_plugins::OverlayMenuDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays menu as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayImage"
+         type="jsk_rviz_plugins::OverlayImageDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays sensor_msgs::Image as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/OverlayCamera"
+         type="jsk_rviz_plugins::OverlayCameraDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays sensor_msgs::Image with superimposing objects as overlay
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/AmbientSound"
+         type="jsk_rviz_plugins::AmbientSoundDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays from hark_msgs/HarkPower message
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/Footstep"
+         type="jsk_rviz_plugins::FootstepDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays for jsk_footstep_sgs/FootstepArray message
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/NormalDisplay"
+         type="jsk_rviz_plugins::NormalDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays for sensor_msgs::PointCloud2 message
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PolygonArray"
+         type="jsk_rviz_plugins::PolygonArrayDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays for jsk_pcl_msgs/PolygonArray message
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/TFTrajectory"
+         type="jsk_rviz_plugins::TFTrajectoryDisplay"
+         base_class_type="rviz::Display">
+    <description>
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/TabletControllerPanel"
+         type="jsk_rviz_plugins::TabletControllerPanel"
+         base_class_type="rviz::Panel">
+    <description>
+      tablet controller panel
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/PublishTopic"
+         type="jsk_rviz_plugins::PublishTopic"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to publish a topic.
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/CancelAction"
+         type="jsk_rviz_plugins::CancelAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to cancel action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/RecordAction"
+         type="jsk_rviz_plugins::RecordAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to record action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/SelectPointCloudPublishAction"
+         type="jsk_rviz_plugins::SelectPointCloudPublishAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to SelectPointCloudPublish action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/TransformableMarkerOperatorAction"
+         type="jsk_rviz_plugins::TransformableMarkerOperatorAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to TransformableOperator action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/ObjectFitOperatorAction"
+         type="jsk_rviz_plugins::ObjectFitOperatorAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to ObjectFitOperator action
+    </description>
+  </class>
+
+  <class name="jsk_rviz_plugin/RobotCommandInterfaceAction"
+         type="jsk_rviz_plugins::RobotCommandInterfaceAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to RobotCommandInterfaceAction action
+    </description>
+  </class>
+  <class name="jsk_rviz_plugin/EmptyServiceCallInterfaceAction"
+         type="jsk_rviz_plugins::EmptyServiceCallInterfaceAction"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to EmptyServiceCallInterfaceAction action
+    </description>
+  </class>
+</library>

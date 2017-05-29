@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_recognition_utils</name>
+  <version>0.3.6</version>
+  <description>The jsk_recognition_utils package</description>
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>jsk_recognition_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>pcl_msgs</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>image_geometry</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>jsk_topic_tools</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>yaml-cpp</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>pcl_msgs</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf2_ros</run_depend>
+  <run_depend>image_geometry</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>jsk_topic_tools</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>yaml-cpp</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <export>
+  </export>
+</package>

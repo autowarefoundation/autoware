@@ -1,0 +1,4 @@
+# service that returns posedetection_msgs/Object6DPose
+string type
+---
+posedetection_msgs/Object6DPose object_pose

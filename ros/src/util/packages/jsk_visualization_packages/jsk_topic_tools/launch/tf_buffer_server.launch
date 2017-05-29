@@ -1,0 +1,13 @@
+<launch>
+  <arg name="UPDATE_RATE" default="1.0" />
+  <arg name="PREFIX" default="tf_buffer"/>
+  <arg name="TF_CONFIG" default="$(find jsk_topic_tools)/config/tf_buffer.yaml"/>
+  <group ns="$(arg PREFIX)">
+    <node pkg="jsk_topic_tools" type="transform_merger" name="tf_buffer_server"
+	  output="screen">
+      <param name="loop_hz" value="$(arg UPDATE_RATE)" />
+      <rosparam command="load" param="transform_config" file="$(arg TF_CONFIG)"/>
+      <remap from="/tf_merged" to="tf_merged_update"/>
+    </node>
+  </group>
+</launch>

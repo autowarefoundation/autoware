@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="jsk_rqt_plugins" type="rqt_2d_plot" name="scatter_plot"
+        args="/sample_data/output" />
+  <node pkg="jsk_rqt_plugins" type="rqt_2d_plot" name="line_plot"
+        args="/sample_data/output --line" />
+  <node pkg="jsk_rqt_plugins" type="rqt_2d_plot" name="scatter_plot_fit"
+        args="/sample_data/output --fit-line" />
+  <node pkg="jsk_rqt_plugins" type="rqt_2d_plot" name="line_plot_fit"
+        args="/sample_data/output --line --fit-line" />
+  <node pkg="jsk_rqt_plugins" type="rqt_2d_plot" name="line_plot_fit_ransac"
+        args="/sample_data/output --line --fit-line-ransac" />
+  <node pkg="jsk_rqt_plugins" type="sample_2d_plot.py" name="sample_data" />
+</launch>

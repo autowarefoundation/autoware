@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find jsk_rviz_plugins)/cfg/polygon_array_sample.rviz" />
+  <node pkg="jsk_rviz_plugins" type="polygon_array_sample.py" name="polygon_array_sample" />
+</launch>

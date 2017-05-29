@@ -1,0 +1,20 @@
+<launch>
+  <node pkg="roscpp_tutorials" type="listener" name="listener"
+        output="screen">
+    <remap from="chatter" to="chatter_buffered"/>
+  </node>
+
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_client" name="sample_topic_buffer_client"
+        launch-prefix=""
+        output="screen">
+    <remap from="/update" to="/sample_topic_buffer_server/update"/>
+    <rosparam>
+      topics: ["/chatter"]
+      fixed_rate: 0.1
+      use_service: false
+    </rosparam>
+  </node>
+
+
+</launch>

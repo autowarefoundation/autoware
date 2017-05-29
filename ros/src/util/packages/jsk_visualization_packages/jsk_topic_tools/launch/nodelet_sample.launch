@@ -1,0 +1,31 @@
+<launch>
+  <include file="$(find openni_launch)/launch/openni.launch" />
+  <group ns="camera">
+    <node pkg="nodelet"
+          type="nodelet"
+          name="throttle"
+          output="screen"
+          clear_params="true"
+          args="load jsk_topic_tools/LightweightThrottle /camera/camera_nodelet_manager">
+      <remap from="~input" to="/camera/depth/points" />
+      <remap from="~output" to="/camera/depth/points_throttle" />
+      <param name="update_rate" value="10.0" />
+    </node>
+    <!-- mux sample for images -->
+    <node pkg="nodelet"
+          type="nodelet"
+          name="mux"
+          output="screen"
+          clear_params="true"
+          args="load jsk_topic_tools/MUX /camera/camera_nodelet_manager">
+      <rosparam>
+        topics: ["/camera/rgb/image_raw", "/camera/rgb/image_rect_color", "/camera/rgb/image_rect_mono", "/camera/rgb/image_color"]
+      </rosparam>
+      <remap from="~output" to="/camera/rgb/image_mux" />
+      <!-- rosrun topic_tools mux_select /camera/mux /camera/rgb/image_rect_mono -->
+      <!-- rosrun topic_tools mux_list /camera/mux -->
+      <!-- rosrun topic_tools mux_delete /camera/mux /camera/rgb/image_rect_color -->
+      <!-- rosrun topic_tools mux_add /camera/mux /camera/rgb/image_rect_color -->
+    </node>
+  </group>
+</launch>

@@ -1,0 +1,139 @@
+<library path="src">
+  <class name="StatusLight"
+         type="jsk_rqt_plugins.status_light.StatusLight"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>Status</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="StringLabel"
+         type="jsk_rqt_plugins.label.StringLabel"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>String</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="ImageView2Plugin"
+         type="jsk_rqt_plugins.image_view2_wrapper.ImageView2Plugin"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>ImageView2</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="ServiceButtons"
+         type="jsk_rqt_plugins.button.ServiceButtons"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>ServiceButton</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="ServiceRadioButtons"
+         type="jsk_rqt_plugins.radio_button.ServiceRadioButtons"
+         base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>ServiceRadioButton</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="DRCEnvironmentViewer" type="jsk_rqt_plugins.mini_maxwell.DRCEnvironmentViewer" base_class_type="rqt_gui_py::Plugin">
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>DRCEnvironment</label>
+      <icon type="theme">utilities-system-monitor</icon>
+    </qtgui>
+  </class>
+  <class name="Plot3D" type="jsk_rqt_plugins.plot.Plot3D" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing numeric values in a 3D plot using matplotlib.
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>Plot3D</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin for visualizing numeric values in a 3D plot using different plotting backends.</statustip>
+    </qtgui>
+
+  </class>
+  <class name="HistogramPlot" type="jsk_rqt_plugins.hist.HistogramPlot" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing histogram
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>HistogramPlot</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin visualizing histogram</statustip>
+    </qtgui>
+
+  </class>
+  <class name="Plot2D" type="jsk_rqt_plugins.plot_2d.Plot2D" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A plugin visualizing data in 2d
+    </description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>Plot2D</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin visualizing 2d data</statustip>
+    </qtgui>
+
+  </class>
+  <class name="YesNoButton" type="jsk_rqt_plugins.yes_no_button.YesNoButton" base_class_type="rqt_gui_py::Plugin">
+    <description>Simple yes or no button with service call.</description>
+    <qtgui>
+      <group>
+        <label>Visualization</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to visualization.</statustip>
+      </group>
+      <label>YesNo Button</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>A plugin to wait for user input.</statustip>
+    </qtgui>
+  </class>
+</library>

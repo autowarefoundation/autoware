@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_rqt_plugins</name>
+  <version>1.0.25</version>
+  <description>The jsk_rqt_plugins package</description>
+  <maintainer email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
+  <build_depend>image_view2</build_depend>
+  <build_depend>message_generation</build_depend>
+  
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_py</run_depend>
+  <run_depend>rqt_plot</run_depend>
+  <run_depend>rqt_gui</run_depend>
+  <run_depend>rqt_gui_py</run_depend>
+  <run_depend>rqt_plot</run_depend>
+  <run_depend>rqt_image_view</run_depend>
+  <run_depend>qt_gui_py_common</run_depend>
+  <run_depend>resource_retriever</run_depend>
+  <run_depend>image_view2</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>python-urlgrabber</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <export>
+    <rqt_gui plugin="${prefix}/plugin.xml" />
+  </export>
+</package>

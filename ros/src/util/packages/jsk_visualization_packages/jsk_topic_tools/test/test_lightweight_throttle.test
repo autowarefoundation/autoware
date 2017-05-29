@@ -1,0 +1,28 @@
+<launch>
+  <node pkg="nodelet"
+        type="nodelet"
+        name="nodelet_manager"
+        args="manager" />
+  <node pkg="nodelet"
+        type="nodelet"
+        name="throttle"
+        clear_params="true"
+        args="load jsk_topic_tools/LightweightThrottle /nodelet_manager">
+    <remap from="~input" to="/original_topic" />
+    <remap from="~output" to="/throttle_topic" />
+    <param name="update_rate" value="10.0" />
+  </node>
+  <node pkg="rostopic"
+        type="rostopic"
+        name="rostopic_100Hz"
+        args="pub -r 30 original_topic std_msgs/String foo" />
+  
+  <param name="hztest_lightweight_throttle/topic" value="throttle_topic" />
+  <param name="hztest_lightweight_throttle/hz" value="10.0" />
+  <param name="hztest_lightweight_throttle/hzerror" value="5.0" />
+  <param name="hztest_lightweight_throttle/test_duration" value="30.0" />
+  <test test-name="hztest_lightweight_throttle"
+        pkg="rostest"
+        type="hztest" name="hztest_lightweight_throttle"
+        />
+</launch>

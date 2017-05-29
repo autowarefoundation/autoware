@@ -1,0 +1,19 @@
+- name: 'Button A'
+  service: 'dummy'
+  column: 0
+  image: "package://jsk_rviz_plugins/icons/hand-grasp-pose.jpg"
+- name: 'Button B'
+  service: 'dummy'
+  column: 0
+- name: 'Button C'
+  service: 'dummy'
+  column: 0
+- name: 'Button D'
+  service: 'dummy'
+  column: 1
+- name: 'Button E'
+  service: 'dummy'
+  column: 1
+- name: 'Button F'
+  service: 'dummy'
+  column: 1

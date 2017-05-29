@@ -1,0 +1,10 @@
+# sample config yaml file for bag_plotter
+global:
+  layout: vertical
+plots:
+  - title: "x"
+    topic: [/odom]
+    field: ["pose/pose/position/x"]
+  - title: "y"
+    topic: [/odom]
+    field: ["pose/pose/position/y"]

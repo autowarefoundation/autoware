@@ -1,0 +1,57 @@
+<package>
+  <name>jsk_topic_tools</name>
+  <version>2.0.3</version>
+  <description>jsk_topic_tools</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <maintainer email="furuta@jsk.t.u-tokyo.ac.jp">Yusuke Furuta</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/jsk_topic_tools</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+  <author email="furuta@jsk.t.u-tokyo.ac.jp">Yusuke Furuta</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- list depends in alphabetical order -->
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>diagnostic_updater</build_depend>
+  <build_depend>dynamic_tf_publisher</build_depend>
+  <build_depend>eigen_conversions</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>roscpp_tutorials</build_depend>
+  <build_depend>roslaunch</build_depend>
+  <build_depend>rosnode</build_depend>
+  <build_depend>rostest</build_depend>
+  <build_depend>rostime</build_depend>
+  <build_depend>rostopic</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>topic_tools</build_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>diagnostic_updater</run_depend>
+  <run_depend>dynamic_tf_publisher</run_depend>
+  <run_depend>eigen_conversions</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>python-enum34-pip</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>rosnode</run_depend>
+  <run_depend>rostime</run_depend>
+  <run_depend>rostopic</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>topic_tools</run_depend>
+  <export>
+    <nodelet plugin="${prefix}/jsk_topic_tools_nodelet.xml"/>
+  </export>
+</package>

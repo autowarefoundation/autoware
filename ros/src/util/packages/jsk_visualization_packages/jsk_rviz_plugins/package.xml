@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_rviz_plugins</name>
+  <version>1.0.25</version>
+  <description>The jsk_rviz_plugins package</description>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <license>BSD</license>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+  <author email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+  <author email="s-fujii@jsk.t.u-tokyo.ac.jp">Shohei Fujii</author>
+  <author email="ueda@jsk.t.u-tokyo.ac.jp">Ryohei Ueda</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>mk</build_depend>
+  <build_depend>rosbuild</build_depend>
+  <build_depend>rviz</build_depend>
+  <build_depend>jsk_hark_msgs</build_depend>
+  <build_depend>jsk_footstep_msgs</build_depend>
+  <build_depend>jsk_recognition_utils</build_depend>
+  <build_depend>wxwidgets</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>rviz</run_depend>
+  <run_depend>jsk_hark_msgs</run_depend>
+  <run_depend>jsk_footstep_msgs</run_depend>
+  <run_depend>jsk_recognition_utils</run_depend>
+  <run_depend>wxwidgets</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>people_msgs</build_depend>
+  <run_depend>people_msgs</run_depend>
+  <build_depend>image_geometry</build_depend>
+  <run_depend>image_geometry</run_depend>
+  <build_depend>jsk_topic_tools</build_depend>
+  <run_depend>jsk_topic_tools</run_depend>
+  <build_depend>urdfdom_py</build_depend>
+  <run_depend>urdfdom_py</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <build_depend>jsk_gui_msgs</build_depend>
+  <run_depend>jsk_gui_msgs</run_depend>
+  <build_depend>view_controller_msgs</build_depend>
+  <run_depend>view_controller_msgs</run_depend>
+  <build_depend>roseus</build_depend>
+  <run_depend>roseus</run_depend>
+  <build_depend>cv_bridge</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <build_depend>jsk_recognition_msgs</build_depend>
+  <run_depend>jsk_recognition_msgs</run_depend>
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
+  </export>
+</package>

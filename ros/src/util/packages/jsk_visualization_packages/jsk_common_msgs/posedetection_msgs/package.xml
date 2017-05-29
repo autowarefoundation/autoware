@@ -1,0 +1,33 @@
+<package>
+  <name>posedetection_msgs</name>
+  <version>2.0.0</version>
+  <description>posedetection_msgs provides messages and services to facilitate passing pose detection results and features.</description>
+  <!-- <maintainer>Rosen Diankov</maintainer> -->
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/posedetection_msgs</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Rosen Diankov</author>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>message_filters</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>message_filters</run_depend>
+
+</package>

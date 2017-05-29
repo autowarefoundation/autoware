@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_common_msgs</name>
+  <version>2.0.0</version>
+  <description>
+   <p>Metapackage that contains commonly used messages for jsk-ros-pkg</p>
+  </description>
+
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+  <author email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</author>
+
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/jsk_common_msgs</url>
+  <url type="repository">https://github.com/jsk-ros-pkg/jsk_common_msgs</url>
+  <url type="bugtracker">https://github.com/jsk-ros-pkg/jsk_common_msgs/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_gui_msgs</run_depend>
+  <run_depend>posedetection_msgs</run_depend>
+  <run_depend>jsk_footstep_msgs</run_depend>
+  <run_depend>jsk_hark_msgs</run_depend>
+  <run_depend>speech_recognition_msgs</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
