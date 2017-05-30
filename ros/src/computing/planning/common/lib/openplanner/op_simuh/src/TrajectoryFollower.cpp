@@ -7,7 +7,7 @@
 
 #include "TrajectoryFollower.h"
 #include "PlanningHelpers.h"
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <iostream>
 

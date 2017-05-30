@@ -9,7 +9,7 @@
 #define MATRIXOPERATIONS_H_
 
 #include "RoadNetwork.h"
-#include <cmath>
+#include <math.h>
 
 
 namespace PlannerHNS {

@@ -8,7 +8,7 @@
 #ifndef PLANNERCOMMONDEF_H_
 #define PLANNERCOMMONDEF_H_
 
-#include <cmath>
+#include <math.h>
 #include <string>
 
 namespace PlannerHNS

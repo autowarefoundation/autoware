@@ -8,7 +8,7 @@
 #ifndef MAPPINGHELPERS_H_
 #define MAPPINGHELPERS_H_
 
-#include <cmath>
+#include <math.h>
 #include "RoadNetwork.h"
 #include "UtilityH.h"
 #include "DataRW.h"

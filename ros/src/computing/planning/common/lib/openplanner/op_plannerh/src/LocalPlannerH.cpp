@@ -159,7 +159,7 @@ void LocalPlannerH::InitPolygons()
 		 double diff = desiredSteerDeg - currSteerDeg;
 		 double diffSign = UtilityH::GetSign(diff);
 		 double inc = 1.0*diffSign;
-		 if(abs(diff) < 1.0 )
+		 if(fabs(diff) < 1.0 )
 			 inc = diff;
 
 //		 std::cout << "Delay: " << m_SimulationSteeringDelayFactor
@@ -515,7 +515,7 @@ bool LocalPlannerH::CalculateIntersectionVelocities(std::vector<PlannerHNS::WayP
 				{
 					double collision_distance = hypot(ego_path.at(i).pos.x-predctedPath.at(k).at(j).pos.x, ego_path.at(i).pos.y-predctedPath.at(k).at(j).pos.y);
 					double contact_distance = hypot(state.pos.x - ego_path.at(i).pos.x,state.pos.y - ego_path.at(i).pos.y);
-					if(collision_distance <= m_CarInfo.width  && abs(ego_path.at(i).timeCost - predctedPath.at(k).at(j).timeCost)<4.0)
+					if(collision_distance <= m_CarInfo.width  && fabs(ego_path.at(i).timeCost - predctedPath.at(k).at(j).timeCost)<4.0)
 					{
 						ego_path.at(i).collisionCost = 1;
 						double a = UtilityH::AngleBetweenTwoAnglesPositive(ego_path.at(i).pos.a, predctedPath.at(k).at(j).pos.a);

@@ -12,7 +12,7 @@
 #include "opencv2/video/tracking.hpp"
 #include <vector>
 #include "UtilityH.h"
-#include <cmath>
+#include <math.h>
 #include <iostream>
 
 namespace SimulationNS

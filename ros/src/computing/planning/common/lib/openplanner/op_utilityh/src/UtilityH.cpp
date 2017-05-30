@@ -6,7 +6,6 @@
  */
 
 #include "UtilityH.h"
-#include <math.h>
 #include <iostream>
 #include <sstream>
 #include <string.h>

@@ -64,11 +64,11 @@
 #include "RosHelpers.h"
 #include "SimpleTracker.h"
 
-#include <cv.h>
+#include <opencv/cv.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
-#include <highgui.h>
+#include <opencv/highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #if (CV_MAJOR_VERSION < 3)

@@ -8,7 +8,7 @@
 #include "MainWindowWrapper.h"
 #include "DrawingHelpers.h"
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include "UtilityH.h"
 #include "GL/freeglut_ext.h"
 

@@ -8,7 +8,7 @@
 #include "DrawingHelpers.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include "UtilityH.h"
 #include "PlanningHelpers.h"
 #include <GL/freeglut.h>

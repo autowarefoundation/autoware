@@ -1,7 +1,7 @@
 #ifndef __GEO_POS_CONV__
 #define __GEO_POS_CONV__
 
-#include <cmath>
+#include <math.h>
 
 class geo_pos_conv {
 private:
