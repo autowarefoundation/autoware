@@ -8,7 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   lidar_tracker
   pcl_conversions
   pcl_ros
- map_file
+  map_file
+  op_utilityh
+  op_plannerh
 )
 
 ## System dependencies are found with CMake's conventions
@@ -20,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager cv_tracker map_file
+  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utilityh op_plannerh
   DEPENDS system_lib
 )
 
@@ -43,11 +45,9 @@ include_directories(
 
 link_directories(lib)
 add_executable(op_simulator_perception nodes/OpenPlannerSimulatorPerception.cpp nodes/OpenPlannerSimulatorPerception_core.cpp)
-target_link_libraries(op_simulator_perception utilityh plannerh ${catkin_LIBRARIES})
+target_link_libraries(op_simulator_perception ${catkin_LIBRARIES})
 
 add_dependencies(op_simulator_perception 
 runtime_manager_generate_messages_cpp
-cv_tracker_generate_messages_cpp
-waypoint_follower_generate_messages_cpp
 map_file_generate_messages_cpp
 )

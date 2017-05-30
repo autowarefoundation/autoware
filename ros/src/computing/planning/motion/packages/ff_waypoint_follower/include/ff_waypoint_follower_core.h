@@ -35,7 +35,6 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <cv_tracker/obj_label.h>
 #include <runtime_manager/traffic_light.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
@@ -47,6 +46,7 @@
 #include <tf/tf.h>
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
+#include "waypoint_follower_msgs/LaneArray.h"
 #include "TrajectoryFollower.h"
 //#include "CarState.h"
 #include "LocalPlannerH.h"
@@ -166,7 +166,7 @@ protected:
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
-	void callbackGetCurrentTrajectory(const waypoint_follower::laneConstPtr& msg);
+	void callbackGetCurrentTrajectory(const waypoint_follower_msgs::laneConstPtr& msg);
 	//void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);

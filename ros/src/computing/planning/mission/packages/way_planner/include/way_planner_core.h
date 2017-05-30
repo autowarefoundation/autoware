@@ -60,7 +60,7 @@
 
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower/LaneArray.h"
+#include "waypoint_follower_msgs/LaneArray.h"
 #include "vehicle_socket/CanInfo.h"
 #include <visualization_msgs/MarkerArray.h>
 

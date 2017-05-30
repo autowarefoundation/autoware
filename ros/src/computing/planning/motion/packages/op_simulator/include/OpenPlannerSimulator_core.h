@@ -35,7 +35,7 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <cv_tracker/obj_label.h>
+#include <cv_tracker_msgs/obj_label.h>
 #include <runtime_manager/traffic_light.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
@@ -46,13 +46,11 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <std_msgs/Int8.h>
-#include "waypoint_follower/libwaypoint_follower.h"
 #include "TrajectoryFollower.h"
 #include "LocalPlannerH.h"
 #include "PlannerH.h"
 #include "MappingHelpers.h"
 
-#include "waypoint_follower/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>

@@ -50,6 +50,9 @@
   <build_depend>message_generation</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
+  <build_depend>op_utilityh</build_depend>
+  <build_depend>op_plannerh</build_depend>
+  <build_depend>op_simuh</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>vector_map_msgs</run_depend>
@@ -58,8 +61,11 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>waypoint_follower</run_depend>
   <run_depend>message_generation</run_depend>
-    <run_depend>pcl_conversions</run_depend>
+  <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>
+  <run_depend>op_utilityh</run_depend>
+  <run_depend>op_plannerh</run_depend>
+  <run_depend>op_simuh</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

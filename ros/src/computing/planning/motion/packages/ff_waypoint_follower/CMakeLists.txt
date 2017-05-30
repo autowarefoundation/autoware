@@ -5,8 +5,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   runtime_manager
-  cv_tracker
- map_file
+  waypoint_follower_msgs
+  map_file
+  op_utilityh
+  op_plannerh
+  op_simuh
 )
 
 ## System dependencies are found with CMake's conventions
@@ -18,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager cv_tracker map_file
+  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utilityh op_plannerh op_simuh
   DEPENDS system_lib
 )
 
@@ -39,7 +42,7 @@ include_directories(
 
 link_directories(lib)
 add_executable(ff_waypoint_follower nodes/ff_waypoint_follower.cpp nodes/ff_waypoint_follower_core.cpp)
-target_link_libraries(ff_waypoint_follower utilityh plannerh simuh ${catkin_LIBRARIES})
+target_link_libraries(ff_waypoint_follower  ${catkin_LIBRARIES})
 
 #link_directories(/usr/local/lib/zmp/minivan)
 #add_executable(ff_waypoint_follower nodes/ff_waypoint_follower.cpp nodes/ff_waypoint_follower_core.cpp nodes/HevCnt.cpp nodes/HevComm.cpp)
@@ -47,7 +50,6 @@ target_link_libraries(ff_waypoint_follower utilityh plannerh simuh ${catkin_LIBR
 
 add_dependencies(ff_waypoint_follower 
 runtime_manager_generate_messages_cpp
-cv_tracker_generate_messages_cpp
-waypoint_follower_generate_messages_cpp
+waypoint_follower_msgs_generate_messages_cpp
 map_file_generate_messages_cpp
 )

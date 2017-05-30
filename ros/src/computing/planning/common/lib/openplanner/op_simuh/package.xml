@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>op_simuh</name>
+  <version>1.0.0</version>
+  <description>The libopenplanner_simuh package</description>
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+  <author     email="h_ohta@ertl.jp">Hiroki Ohta</author>
+  <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">hatem Darweesh</author>
+  <license>BSD</license>
+  <build_depend>op_utilityh</build_depend>
+  <build_depend>op_plannerh</build_depend>
+  <run_depend>op_utilityh</run_depend>
+  <run_depend>op_plannerh</run_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <export>
+  </export>
+</package>

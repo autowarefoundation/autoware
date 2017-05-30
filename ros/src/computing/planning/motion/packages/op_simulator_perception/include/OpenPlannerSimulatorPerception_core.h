@@ -45,8 +45,6 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <std_msgs/Int8.h>
-#include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>

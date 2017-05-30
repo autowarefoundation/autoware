@@ -7,12 +7,16 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  waypoint_follower_msgs
   waypoint_follower
   message_generation
   tf
   jsk_recognition_msgs
   pcl_conversions
   pcl_ros
+  op_utilityh
+  op_plannerh
+  op_simuh
 )
 
 
@@ -23,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES way_planner
-  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower 
+  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utilityh op_plannerh op_simuh
   DEPENDS system_lib
 )
 
@@ -38,7 +42,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-link_directories(lib)
 
 
 ## Declare a C++ executable
@@ -50,4 +53,4 @@ link_directories(lib)
 # add_dependencies(way_planner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
-target_link_libraries(way_planner utilityh plannerh ${catkin_LIBRARIES} )
+target_link_libraries(way_planner ${catkin_LIBRARIES} )
