@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: fusion
+Description: Description of fusion
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/computing/perception/detection/lib/fusion/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lfusion
+Requires: roscpp scan2image points2image

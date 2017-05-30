@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: cv_tracker
+Description: Description of cv_tracker
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: libdpm_ocv libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar message_runtime std_msgs geometry_msgs

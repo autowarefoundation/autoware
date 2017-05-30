@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: vector_map
+Description: Description of vector_map
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/data/packages/vector_map/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lvector_map
+Requires: roscpp tf geometry_msgs visualization_msgs vector_map_msgs

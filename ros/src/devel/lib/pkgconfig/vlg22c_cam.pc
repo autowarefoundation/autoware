@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: vlg22c_cam
+Description: Description of vlg22c_cam
+Version: 1.0.0
+Cflags: 
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib -lvlg22c_cam
+Requires: 

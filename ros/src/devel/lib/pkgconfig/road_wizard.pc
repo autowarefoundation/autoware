@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: road_wizard
+Description: Description of road_wizard
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/devel/include -I/usr/include/eigen3
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: std_msgs message_runtime libvectormap runtime_manager

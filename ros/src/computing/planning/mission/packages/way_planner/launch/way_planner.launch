@@ -1,0 +1,27 @@
+<!-- -->
+<launch>
+	<arg name="pathDensity" 					default="0.5" /> <!-- distance between each two waypoints-->
+	<arg name="enableSmoothing" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="enableLaneChange" 				default="false" /> <!-- 1 or 0 -->
+	<arg name="enableRvizInput" 				default="true" /> <!-- 1 or 0 -->
+	<arg name="enableReplan"    				default="true" /> <!-- 1 or 0 -->
+	<arg name="enableHMI"	    				default="true" /> <!-- 1 or 0 -->
+	<arg name="velocitySource"					default="2" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info) "" -->
+	<arg name="mapSource" 						default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+	<arg name="mapFileName" 					default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" /> <!-- incase of kml map source -->	
+	
+<node pkg="way_planner" type="way_planner" name="way_planner" output="screen">
+		
+		<param name="pathDensity" 				value="$(arg pathDensity)" />
+		<param name="enableSmoothing" 			value="$(arg enableSmoothing)" />
+		<param name="enableLaneChange" 			value="$(arg enableLaneChange)" />
+		<param name="enableRvizInput" 			value="$(arg enableRvizInput)" />
+		<param name="enableReplan" 				value="$(arg enableReplan)" />		
+		<param name="enableHMI" 				value="$(arg enableHMI)" />
+		<param name="velocitySource" 			value="$(arg velocitySource)" />
+		<param name="mapSource" 				value="$(arg mapSource)" />
+		<param name="mapFileName" 				value="$(arg mapFileName)" />
+			    
+	</node> 
+	
+</launch>

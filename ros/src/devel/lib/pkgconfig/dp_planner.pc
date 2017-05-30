@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware-dev/Autoware/ros/src/devel
+
+Name: dp_planner
+Description: Description of dp_planner
+Version: 0.0.0
+Cflags: -I/home/hatem/autoware-dev/Autoware/ros/src/computing/planning/mission/packages/dp_planner/include
+Libs: -L/home/hatem/autoware-dev/Autoware/ros/src/devel/lib 
+Requires: roscpp geometry_msgs runtime_manager cv_tracker map_file
