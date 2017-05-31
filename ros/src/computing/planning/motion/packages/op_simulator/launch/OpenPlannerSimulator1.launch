@@ -1,10 +1,10 @@
 <!-- -->
 <launch>
 	<arg name="id" 							default="1" />
-	<arg name="width" 						default="1.85" />
-	<arg name="length" 						default="4.7" />
-	<arg name="wheelBaseLength" 			default="2.7" />
-	<arg name="turningRadius"				default="5.2" />
+	<arg name="width" 						default="2.1" />
+	<arg name="length" 						default="10.7" />
+	<arg name="wheelBaseLength" 			default="8.0" />
+	<arg name="turningRadius"				default="12.2" />
 	<arg name="maxSteerAngle" 				default="0.5" />
 				
 	<arg name="steeringDelay" 				default="1.2" />
@@ -15,7 +15,8 @@
 	<arg name="maxAcceleration"				default="0.6"   />
 	<arg name="maxDeceleration"				default="-1.0"   />
 	
-	<arg name="enableRvizPoseEst"			default="true"   />
+	<arg name="enableRvizPoseEst"			default="false"   />
+	<arg name="enableLooper"				default="true"   />
 	<arg name="startPoseX"					default="3704"   /> 
 	<arg name="startPoseY"					default="-99459"   />
 	<arg name="startPoseA"					default="3.12"   />
@@ -47,6 +48,7 @@
 		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
 		
 		<param name="enableRvizPoseEst" 			value="$(arg enableRvizPoseEst)" />
+		<param name="enableLooper" 					value="$(arg enableLooper)" />
 		<param name="startPoseX" 					value="$(arg startPoseX)" />
 		<param name="startPoseY" 					value="$(arg startPoseY)" />
 		<param name="startPoseA" 					value="$(arg startPoseA)" />			

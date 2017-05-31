@@ -7,9 +7,9 @@ find_package(catkin REQUIRED COMPONENTS
   runtime_manager
   waypoint_follower_msgs
   map_file
-  op_utilityh
-  op_plannerh
-  op_simuh
+  op_utility
+  op_planner
+  op_simu
 )
 
 ## System dependencies are found with CMake's conventions
@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utilityh op_plannerh op_simuh
+  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu
   DEPENDS system_lib
 )
 

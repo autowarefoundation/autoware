@@ -74,6 +74,7 @@ public:
 	std::string 	logPath;
 	MAP_SOURCE_TYPE	mapSource;
 	bool			bRandomStart;
+	bool 			bLooper;
 	PlannerHNS::WayPoint startPose;
 	std_msgs::ColorRGBA modelColor;
 
@@ -81,6 +82,7 @@ public:
 	{
 		id = 0;
 		bRandomStart = false;
+		bLooper = false;
 		mapSource = MAP_KML_FILE;
 		modelColor.a = 1;
 		modelColor.b = 1;
@@ -150,6 +152,10 @@ public:
   PlannerHNS::WayPoint GetRealCenter(const PlannerHNS::WayPoint& currState);
 
   void visualizeBehaviors();
+
+  void SaveSimulationData();
+  bool LoadSimulationData(PlannerHNS::WayPoint& start_p);
+  void InitializeSimuCar(PlannerHNS::WayPoint start_pose);
 };
 
 }

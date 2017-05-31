@@ -296,7 +296,7 @@ void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower_msgs::
 		m_State.m_Path.push_back(wp);
 	}
 
-	cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
+//	cout << "### Current Trajectory CallBaclk -> " << m_State.m_Path.size() << endl;
 
 	bNewTrajectory = true;
 }
@@ -559,7 +559,7 @@ void FFSteerControl::PlannerMainLoop()
 			{
 				m_FollowingTrajectory = m_State.m_Path;
 				bNewPath = true;
-				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
+//				cout << "Path is Updated in the controller .. " << m_State.m_Path.size() << endl;
 			}
 
 			//PlannerHNS::ControllerParams c_params = m_ControlParams;

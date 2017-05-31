@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(op_simuh)
+project(op_simu)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -11,8 +11,8 @@ execute_process(
 )
 
 find_package(catkin REQUIRED COMPONENTS
-		op_utilityh
-		op_plannerh
+		op_utility
+		op_planner
 )
 
 find_package(OpenCV REQUIRED)
@@ -29,8 +29,8 @@ find_package(Threads REQUIRED)
 ###################################
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES  op_simuh
-   CATKIN_DEPENDS op_utilityh op_plannerh
+   LIBRARIES  op_simu
+   CATKIN_DEPENDS op_utility op_planner
 )
 
 ###########

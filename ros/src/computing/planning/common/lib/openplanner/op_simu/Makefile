@@ -1,12 +1,12 @@
 CC = g++
 DEBUG = -g
-CFLAGS = -Iinclude -I../op_utilityh/include -I../op_plannerh/include -Wall $(DEBUG) 
-LFLAGS = -Llibs -L../op_plannerh/libs -L../op_utilityh/libs -lGL -lGLU -lglut -lpthread -lutilityh -lplannerh -lopencv_core -lopencv_video -lopencv_highgui -Wl,-rpath=.:../op_utilityh/libs -Wl,-rpath=.:../op_plannerh/libs
+CFLAGS = -Iinclude -I../op_utility/include -I../op_planner/include -Wall $(DEBUG) 
+LFLAGS = -Llibs -L../op_planner/libs -L../op_utility/libs -lGL -lGLU -lglut -lpthread -lutility -lplanner -lopencv_core -lopencv_video -lopencv_highgui -Wl,-rpath=.:../op_utility/libs -Wl,-rpath=.:../op_planner/libs
 SRC = $(wildcard src/*.cpp)
 INCLUDES = $(wildcard include/*.h)
 OBJ = $(SRC:.cpp=.o)
 EXE = libs/Simu
-LIB = libs/libsimuh.so
+LIB = libs/libsimu.so
 
 
 all: $(LIB) $(EXE) 
@@ -29,4 +29,4 @@ src/%.o: src/%.cpp
 .PHONY: clean
 
 clean:
-	rm -rf src/*.o *.o libs/Simu  libs/libsimuh.so
+	rm -rf src/*.o *.o libs/Simu  libs/libsimu.so

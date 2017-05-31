@@ -6,7 +6,7 @@ SRC = $(wildcard src/*.cpp)
 INCLUDES = $(wildcard include/*.h)
 BIN = $(wildcard bin/*.o)
 OBJ = $(SRC:.cpp=.o)
-LIB = libs/libutilityh.so
+LIB = libs/libutility.so
 
 all: $(LIB) post-build
 
@@ -22,9 +22,9 @@ src/%.o: src/%.cpp
 	 	
 
 post-build:	
-	cp $(LIB) ../op_simuh/libs/
+	cp $(LIB) ../op_simu/libs/
 	
 .PHONY: clean
 
 clean:
-	rm -rf src/*.o *.o libs/libutilityh.so 
+	rm -rf src/*.o *.o libs/libutility.so 

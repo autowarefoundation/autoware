@@ -7,7 +7,7 @@
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="hatem@todo.todo">hatem</maintainer>
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -26,7 +26,7 @@
   <!-- Authors do not have to be maintianers, but could be -->
   <!-- Example: -->
   <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
-  <author>Hatem Darweesh</author>
+  <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
 
 
   <!-- The *_depend tags are used to specify dependencies -->
@@ -50,9 +50,9 @@
   <build_depend>message_generation</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
-  <build_depend>op_utilityh</build_depend>
-  <build_depend>op_plannerh</build_depend>
-  <build_depend>op_simuh</build_depend>
+  <build_depend>op_utility</build_depend>
+  <build_depend>op_planner</build_depend>
+  <build_depend>op_simu</build_depend>
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>vector_map_msgs</run_depend>
@@ -63,9 +63,9 @@
   <run_depend>message_generation</run_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>
-  <run_depend>op_utilityh</run_depend>
-  <run_depend>op_plannerh</run_depend>
-  <run_depend>op_simuh</run_depend>
+  <run_depend>op_utility</run_depend>
+  <run_depend>op_planner</run_depend>
+  <run_depend>op_simu</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

@@ -12,12 +12,13 @@
 	<arg name="steeringDelay" 				default="1.2" />
 	<arg name="minPursuiteDistance" 		default="3.0" />		
 	
-	<arg name="maxVelocity" 				default="4.5"  />
+	<arg name="maxVelocity" 				default="5.0"  />
 	<arg name="minVelocity" 				default="0.2"  />
-	<arg name="maxAcceleration"				default="0.6"   />
-	<arg name="maxDeceleration"				default="-1.0"   />
+	<arg name="maxAcceleration"				default="5.6"   />
+	<arg name="maxDeceleration"				default="-5.0"   />
 	
-	<arg name="enableRvizPoseEst"			default="true"   />
+	<arg name="enableRvizPoseEst"			default="false"   />
+	<arg name="enableLooper"				default="true"   />
 	<arg name="startPoseX"					default="3738"   />
 	<arg name="startPoseY"					default="-99373"   />
 	<arg name="startPoseA"					default="-2.88"   />
@@ -50,6 +51,7 @@
 		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
 		
 		<param name="enableRvizPoseEst" 			value="$(arg enableRvizPoseEst)" />
+		<param name="enableLooper" 					value="$(arg enableLooper)" />
 		<param name="startPoseX" 					value="$(arg startPoseX)" />
 		<param name="startPoseY" 					value="$(arg startPoseY)" />
 		<param name="startPoseA" 					value="$(arg startPoseA)" />
