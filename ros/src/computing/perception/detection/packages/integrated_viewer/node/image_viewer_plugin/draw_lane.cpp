@@ -1,10 +1,9 @@
 #include "draw_lane.h"
 
+#include <opencv/cv.hpp>
 #include <opencv2/core/version.hpp>
 
-#if (CV_MAJOR_VERSION == 3)
-#include "gencolors.cpp"
-#else
+#if (CV_MAJOR_VERSION != 3)
 #include <opencv2/contrib/contrib.hpp>
 #endif
 
