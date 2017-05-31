@@ -106,7 +106,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
-target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(euclidean_cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
 
 #SVM Detect
@@ -116,7 +116,7 @@ target_link_libraries (svm_lidar_detect PRIVATE
 	${catkin_LIBRARIES} 
 	${PCL_LIBRARIES} 
 #	svm
-	opencv_highgui opencv_core opencv_contrib
+	${OpenCV_LIBRARIES}	
 )
 
 #target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)

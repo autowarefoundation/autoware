@@ -26,7 +26,10 @@
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+
+#if(CV_MAJOR_VERSION !=3)
 #include <opencv2/contrib/contrib.hpp>
+#endif
 
 class SvmDetect
 {

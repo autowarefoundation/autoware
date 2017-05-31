@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_ros
   grid_map_cv
   grid_map_msgs
-#  lidar_tracker
+  lidar_tracker
 )
 find_package( OpenMP )
 if (OPENMP_FOUND)
@@ -23,7 +23,7 @@ endif()
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs
+  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs lidar_tracker
 )
 
 ###########
