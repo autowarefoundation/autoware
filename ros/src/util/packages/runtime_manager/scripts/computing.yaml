@@ -61,6 +61,9 @@ subs :
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
+      - name : can2odom
+        desc : can2odom desc sample
+        cmd  : roslaunch autoware_connector can2odom.launch
       - name : vel_pose_connect
         desc : vel_pose_connect desc sample
         cmd  : roslaunch autoware_connector vel_pose_connect.launch
