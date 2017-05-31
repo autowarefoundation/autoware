@@ -128,39 +128,39 @@ class Final(InsideDesign):
 
         self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
 
-        ################################
-        ##    For CPU Bar
-        ################################
-        toprc = os.path.expanduser('~/.toprc')
-        backup = os.path.expanduser('~/.toprc-autoware-backup')
-        self.toprc_setup(toprc, backup)
-
-        cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(get_cpu_count()) ]
-        sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
-        self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
-
-
-        self.lb_top5 = []
-        for i in range(5):
-        	lb = wx.StaticText(self, wx.ID_ANY, '')
-        	change_font_point_by_rate(lb, 0.75)
-        	self.lb_top5.append(lb)
-        line = wx.StaticLine(self, wx.ID_ANY)
-        ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
-        szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND | wx.FIXED_MINSIZE)
-        self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
-
-        self.status_dic = self.load_yaml('status.yaml')
-
-        th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
-        	   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl,
-        	   'toprc':toprc, 'backup':backup }
-
-        thinf = th_start(self.top_cmd_th, th_arg)
-        self.all_th_infs.append(thinf)
-
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        self.label_top_cmd.SetFont(font)
+        # ################################
+        # ##    For CPU Bar
+        # ################################
+        # toprc = os.path.expanduser('~/.toprc')
+        # backup = os.path.expanduser('~/.toprc-autoware-backup')
+        # self.toprc_setup(toprc, backup)
+        #
+        # cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(get_cpu_count()) ]
+        # sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
+        # self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
+        #
+        #
+        # self.lb_top5 = []
+        # for i in range(5):
+        # 	lb = wx.StaticText(self, wx.ID_ANY, '')
+        # 	change_font_point_by_rate(lb, 0.75)
+        # 	self.lb_top5.append(lb)
+        # line = wx.StaticLine(self, wx.ID_ANY)
+        # ibl = InfoBarLabel(self, 'Memory', bar_orient=wx.HORIZONTAL)
+        # szr = sizer_wrap(self.lb_top5 + [ line, ibl ], flag=wx.EXPAND | wx.FIXED_MINSIZE)
+        # self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
+        #
+        # self.status_dic = self.load_yaml('status.yaml')
+        #
+        # th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
+        # 	   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl,
+        # 	   'toprc':toprc, 'backup':backup }
+        #
+        # thinf = th_start(self.top_cmd_th, th_arg)
+        # self.all_th_infs.append(thinf)
+        #
+        # font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        # self.label_top_cmd.SetFont(font)
 
         # icon
         bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_2_white.png'), 0.5)
