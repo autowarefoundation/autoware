@@ -3,7 +3,7 @@
 static void check_arguments(int argc, char* argv[])
 {
   if (argc != 3){
-    cout << "Please set arguments like below\n'rosrun dataprocess get_Image save_dir topic_name'\n";
+    cout << "Please set arguments like below\n'rosrun data_preprocessor get_Image save_dir topic_name'\n";
     exit(EXIT_FAILURE);
   }
 }

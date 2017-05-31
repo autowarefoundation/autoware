@@ -98,7 +98,7 @@ class InsideDesign(BaseFrame):
     def _do_layout(self):
         self.sizer_1 = wx.BoxSizer(wx.VERTICAL)
         sizer_29 = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer_cpuinfo = wx.BoxSizer(wx.HORIZONTAL)
+        # self.sizer_cpuinfo = wx.BoxSizer(wx.HORIZONTAL)
 
         ######################3
         ##    大きい中の枠組みの定義
@@ -174,13 +174,13 @@ class InsideDesign(BaseFrame):
         self.notebook_1.AddPage(self.tab_simulation, _("Input Bag File"))
         self.notebook_1.AddPage(self.tab_select, _("Save object from Topics"))
         self.notebook_1.AddPage(self.tab_depth, _("Save Depth from Image and Lidar"))
-        self.sizer_1.Add(self.notebook_1, 1, wx.EXPAND, 0)
+        self.sizer_1.Add(self.notebook_1, 1, wx.EXPAND | wx.ALL, 0)
 
-        sizer_29.Add((0, 100), 0, wx.EXPAND, 0) # width line
-        sizer_29.Add(self.sizer_cpuinfo, 1, wx.EXPAND, 0)
-        self.sizer_1.Add(sizer_29, 0, wx.EXPAND, 0)
-
-        self.sizer_1.Add(self.bitmap_logo, 0, 0, 0)
+        # sizer_29.Add((0, 100), 0, wx.EXPAND, 0) # width line
+        # sizer_29.Add(self.sizer_cpuinfo, 1, wx.EXPAND, 0)
+        # self.sizer_1.Add(sizer_29, 0, wx.EXPAND, 0)
+        #
+        # self.sizer_1.Add(self.bitmap_logo, 0, 0, 0)
 
         self.SetSizer(self.sizer_1)
         self.Layout()

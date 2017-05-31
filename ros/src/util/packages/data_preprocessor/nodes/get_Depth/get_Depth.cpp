@@ -1,5 +1,5 @@
 #include "get_Depth.hpp"
-// catkin_create_pkg dataprocess pcd_tutorial std_msgs roscpp pcl_ros pcl_msgs pcl_conversions libpcl-all-dev cv_bridge
+// catkin_create_pkg data_preprocessor pcd_tutorial std_msgs roscpp pcl_ros pcl_msgs pcl_conversions libpcl-all-dev cv_bridge
 
 // static cv::Mat CameraExtrinsicMat;
 // static cv::Mat CameraMat;
@@ -9,7 +9,7 @@
 static void check_arguments(int argc, char* argv[])
 {
   if (argc != 5){
-    cout << "Please set arguments like below\n'rosrun dataprocess get_PCD save_dir topic_name'\n";
+    cout << "Please set arguments like below\n'rosrun data_preprocessor get_PCD save_dir topic_name'\n";
     exit(EXIT_FAILURE);
   }
 }
