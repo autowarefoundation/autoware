@@ -154,7 +154,7 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
+[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/mqdefault.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading Map Data
 [![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/mqdefault.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
@@ -193,7 +193,7 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 [![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
 ### Data Processor for Bag File
-[![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/0.jpg)](https://youtu.be/M38Obmy-3Ko)
+[![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)
 
 ## Sample Data
 
