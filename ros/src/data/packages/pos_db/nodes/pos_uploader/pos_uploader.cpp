@@ -43,8 +43,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Point.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
 
 
 #include <pos_db.h>
@@ -255,47 +255,47 @@ static void* intervalCall(void *unused)
 }
 
 
-static void car_locate_cb(const visualization_msgs::MarkerArray& obj_pose_msg)
+static void car_locate_cb(const jsk_recognition_msgs::BoundingBoxArray& obj_pose_msg)
 {
-	if (obj_pose_msg.markers.size() > 0) {
+	if (obj_pose_msg.boxes.size() > 0) {
 		geometry_msgs::Point tmpPoint;
 		cv_tracker_msgs::obj_label tmpLabel;
 
 		pthread_mutex_lock(&pose_lock_);
 
-		for (visualization_msgs::Marker tmpMarker : obj_pose_msg.markers) {
-			tmpPoint.x = tmpMarker.pose.position.x;
-			tmpPoint.y = tmpMarker.pose.position.y;
-			tmpPoint.z = tmpMarker.pose.position.z;
+		for (jsk_recognition_msgs::BoundingBox tmpBox : obj_pose_msg.boxes) {
+			tmpPoint.x = tmpBox.pose.position.x;
+			tmpPoint.y = tmpBox.pose.position.y;
+			tmpPoint.z = tmpBox.pose.position.z;
 
 			tmpLabel.reprojected_pos.push_back(tmpPoint);
 		}
 
 		car_positions_array.push_back(tmpLabel);
-		car_num += obj_pose_msg.markers.size();
+		car_num += obj_pose_msg.boxes.size();
 
 		pthread_mutex_unlock(&pose_lock_);
 	}
 }
 
-static void person_locate_cb(const visualization_msgs::MarkerArray &obj_pose_msg)
+static void person_locate_cb(const jsk_recognition_msgs::BoundingBoxArray &obj_pose_msg)
 {
-	if (obj_pose_msg.markers.size() > 0) {
+	if (obj_pose_msg.boxes.size() > 0) {
 		geometry_msgs::Point tmpPoint;
 		cv_tracker_msgs::obj_label tmpLabel;
 
 		pthread_mutex_lock(&pose_lock_);
 
-		for (visualization_msgs::Marker tmpMarker : obj_pose_msg.markers) {
-			tmpPoint.x = tmpMarker.pose.position.x;
-			tmpPoint.y = tmpMarker.pose.position.y;
-			tmpPoint.z = tmpMarker.pose.position.z;
+		for (jsk_recognition_msgs::BoundingBox tmpBox : obj_pose_msg.boxes) {
+			tmpPoint.x = tmpBox.pose.position.x;
+			tmpPoint.y = tmpBox.pose.position.y;
+			tmpPoint.z = tmpBox.pose.position.z;
 
 			tmpLabel.reprojected_pos.push_back(tmpPoint);
 		}
 
 		person_positions_array.push_back(tmpLabel);
-		person_num += obj_pose_msg.markers.size();
+		person_num += obj_pose_msg.boxes.size();
 
 		pthread_mutex_unlock(&pose_lock_);
 	}
