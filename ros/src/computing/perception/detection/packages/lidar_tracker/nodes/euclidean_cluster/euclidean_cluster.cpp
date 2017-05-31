@@ -16,6 +16,7 @@
 #include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/don.h>
+#include <pcl/features/fpfh_omp.h>
 
 #include <pcl/kdtree/kdtree.h>
 
@@ -35,12 +36,21 @@
 
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
+
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/MultiArrayLayout.h>
+#include <std_msgs/MultiArrayDimension.h>
+
 #include <lidar_tracker/centroids.h>
 #include <lidar_tracker/CloudCluster.h>
 #include <lidar_tracker/CloudClusterArray.h>
 
+#include <vector_map_server/PositionState.h>
+
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <jsk_rviz_plugins/Pictogram.h>
+#include <jsk_rviz_plugins/PictogramArray.h>
 
 #include <tf/tf.h>
 
@@ -59,6 +69,8 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "Cluster.h"
 
@@ -73,10 +85,14 @@ ros::Publisher _pub_ground_cloud;
 ros::Publisher _centroid_pub;
 ros::Publisher _marker_pub;
 ros::Publisher _pub_clusters_message;
+ros::Publisher _pub_text_pictogram;
 visualization_msgs::Marker _visualization_marker;
 
 ros::Publisher _pub_points_lanes_cloud;
 ros::Publisher _pub_jsk_boundingboxes;
+ros::Publisher _pub_jsk_hulls;
+
+ros::ServiceClient _vectormap_server;
 
 std_msgs::Header _velodyne_header;
 
@@ -90,6 +106,7 @@ tf::StampedTransform* _velodyne_output_transform;
 tf::TransformListener* _transform_listener;
 
 std::string _output_frame;
+std::string _vectormap_frame;
 static bool _velodyne_transform_available;
 static bool _downsample_cloud;
 static bool _pose_estimation;
@@ -101,6 +118,7 @@ static bool _remove_ground;	//only ground
 
 static bool _using_sensor_cloud;
 static bool _use_diffnormals;
+static bool _use_vector_map;
 
 static double _clip_min_height;
 static double _clip_max_height;
@@ -111,6 +129,7 @@ static double _keep_lane_right_distance;
 
 static double _max_boundingbox_side;
 static double _remove_points_upto;
+static double _cluster_merge_threshold;
 
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
@@ -140,7 +159,7 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracke
 		lidar_tracker::CloudClusterArray clusters_transformed;
 		clusters_transformed.header = in_header;
 		clusters_transformed.header.frame_id = in_target_frame;
-		for (auto i=clusters_transformed.clusters.begin(); i!= clusters_transformed.clusters.end(); i++)
+		for (auto i=in_clusters.clusters.begin(); i!= in_clusters.clusters.end(); i++)
 		{
 			lidar_tracker::CloudCluster cluster_transformed;
 			cluster_transformed.header = in_header;
@@ -149,7 +168,6 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracke
 				_transform_listener->lookupTransform(in_target_frame, _velodyne_header.frame_id,
 										ros::Time(), *_transform);
 				pcl_ros::transformPointCloud(in_target_frame, *_transform, i->cloud, cluster_transformed.cloud);
-
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->min_point, in_header.frame_id, cluster_transformed.min_point);
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->max_point, in_header.frame_id, cluster_transformed.max_point);
 				_transform_listener->transformPoint(in_target_frame, ros::Time(), i->avg_point, in_header.frame_id, cluster_transformed.avg_point);
@@ -280,19 +298,29 @@ std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Pt
 {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 
-	if (in_cloud_ptr->points.size() > 0)
-		tree->setInputCloud (in_cloud_ptr);
+	//create 2d pc
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_2d(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::copyPointCloud(*in_cloud_ptr, *cloud_2d);
+	//make it flat
+	for (size_t i=0; i<cloud_2d->points.size(); i++)
+	{
+		cloud_2d->points[i].z = 0;
+	}
+
+	if (cloud_2d->points.size() > 0)
+		tree->setInputCloud (cloud_2d);
 
 	std::vector<pcl::PointIndices> cluster_indices;
 
+	//perform clustering on 2d cloud
 	pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
 	ec.setClusterTolerance (in_max_cluster_distance); //
 	ec.setMinClusterSize (_cluster_size_min);
 	ec.setMaxClusterSize (_cluster_size_max);
 	ec.setSearchMethod(tree);
-	ec.setInputCloud (in_cloud_ptr);
+	ec.setInputCloud (cloud_2d);
 	ec.extract (cluster_indices);
-
+	//use indices on 3d cloud
 
 	/*pcl::ConditionalEuclideanClustering<pcl::PointXYZ> cec (true);
 	cec.setInputCloud (in_cloud_ptr);
@@ -323,11 +351,89 @@ std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Pt
 
 }
 
+void checkClusterMerge(size_t in_cluster_id, std::vector<ClusterPtr>& in_clusters, std::vector<bool>& in_out_visited_clusters, std::vector<size_t>& out_merge_indices, double in_merge_threshold)
+{
+	//std::cout << "checkClusterMerge" << std::endl;
+	pcl::PointXYZ point_a = in_clusters[in_cluster_id]->GetCentroid();
+	for(size_t i=0; i< in_clusters.size(); i++)
+	{
+		if (i != in_cluster_id && !in_out_visited_clusters[i])
+		{
+			pcl::PointXYZ point_b = in_clusters[i]->GetCentroid();
+			double distance = sqrt( pow(point_b.x - point_a.x,2) + pow(point_b.y - point_a.y,2) );
+			if (distance <= in_merge_threshold)
+			{
+				in_out_visited_clusters[i] = true;
+				out_merge_indices.push_back(i);
+				//std::cout << "Merging " << in_cluster_id << " with " << i << " dist:" << distance << std::endl;
+				checkClusterMerge(i, in_clusters, in_out_visited_clusters, out_merge_indices, in_merge_threshold);
+			}
+		}
+	}
+}
+
+void mergeClusters(const std::vector<ClusterPtr>& in_clusters, std::vector<ClusterPtr>& out_clusters, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_clusters)
+{
+	//std::cout << "mergeClusters:" << in_merge_indices.size() << std::endl;
+	pcl::PointCloud<pcl::PointXYZRGB> sum_cloud;
+	pcl::PointCloud<pcl::PointXYZ> mono_cloud;
+	ClusterPtr merged_cluster(new Cluster());
+	for (size_t i=0; i<in_merge_indices.size(); i++)
+	{
+		sum_cloud += *(in_clusters[in_merge_indices[i]]->GetCloud());
+		in_out_merged_clusters[in_merge_indices[i]] = true;
+	}
+	std::vector<int> indices(sum_cloud.points.size(), 0);
+	for (size_t i=0; i<sum_cloud.points.size(); i++)
+	{
+		indices[i]=i;
+	}
+
+	if (sum_cloud.points.size() > 0)
+	{
+		pcl::copyPointCloud(sum_cloud, mono_cloud);
+		//std::cout << "mergedClusters " << sum_cloud.points.size() << " mono:" << mono_cloud.points.size() << std::endl;
+		//cluster->SetCloud(in_cloud_ptr, it->indices, _velodyne_header, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", _pose_estimation);
+		merged_cluster->SetCloud(mono_cloud.makeShared(), indices, _velodyne_header, current_index,(int)_colors[current_index].val[0], (int)_colors[current_index].val[1], (int)_colors[current_index].val[2], "", _pose_estimation);
+		out_clusters.push_back(merged_cluster);
+	}
+}
+
+void checkAllForMerge(std::vector<ClusterPtr>& in_clusters, std::vector<ClusterPtr>& out_clusters, float in_merge_threshold)
+{
+	//std::cout << "checkAllForMerge" << std::endl;
+	std::vector<bool> visited_clusters(in_clusters.size(), false);
+	std::vector<bool> merged_clusters(in_clusters.size(), false);
+	size_t current_index=0;
+	for (size_t i = 0; i< in_clusters.size(); i++)
+	{
+		if (!visited_clusters[i])
+		{
+			visited_clusters[i] = true;
+			std::vector<size_t> merge_indices;
+			checkClusterMerge(i, in_clusters, visited_clusters, merge_indices, in_merge_threshold);
+			mergeClusters(in_clusters, out_clusters, merge_indices, current_index++, merged_clusters);
+		}
+	}
+	for(size_t i =0; i< in_clusters.size(); i++)
+	{
+		//check for clusters not merged, add them to the output
+		if (!merged_clusters[i])
+		{
+			out_clusters.push_back(in_clusters[i]);
+		}
+	}
+
+	//ClusterPtr cluster(new Cluster());
+}
+
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
 		lidar_tracker::centroids& in_out_centroids,
-		lidar_tracker::CloudClusterArray& in_out_clusters)
+		lidar_tracker::CloudClusterArray& in_out_clusters,
+		jsk_recognition_msgs::PolygonArray& in_out_polygon_array,
+		jsk_rviz_plugins::PictogramArray& in_out_pictogram_array)
 {
 	//cluster the pointcloud according to the distance of the points using different thresholds (not only one for the entire pc)
 	//in this way, the points farther in the pc will also be clustered
@@ -372,39 +478,157 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 
 	//Clusters can be merged or checked in here
 	//....
-	//Get final PointCloud to be published
+	//check for mergable clusters
+	std::vector<ClusterPtr> mid_clusters;
+	std::vector<ClusterPtr> final_clusters;
 
-	for(unsigned int i=0; i<all_clusters.size(); i++)
+	if (all_clusters.size() > 0)
+		checkAllForMerge(all_clusters, mid_clusters, _cluster_merge_threshold);
+	else
+		mid_clusters = all_clusters;
+
+	if (mid_clusters.size() > 0)
+			checkAllForMerge(mid_clusters, final_clusters, _cluster_merge_threshold);
+	else
+		final_clusters = mid_clusters;
+
+	tf::StampedTransform vectormap_transform;
+	if (_use_vector_map)
 	{
-		*out_cloud_ptr = *out_cloud_ptr + *(all_clusters[i]->GetCloud());
+		cv::TickMeter timer;
 
-		jsk_recognition_msgs::BoundingBox bounding_box = all_clusters[i]->GetBoundingBox();
-		pcl::PointXYZ min_point = all_clusters[i]->GetMinPoint();
-		pcl::PointXYZ max_point = all_clusters[i]->GetMaxPoint();
-		pcl::PointXYZ center_point = all_clusters[i]->GetCentroid();
+		try
+		{
+			//if the frame of the vectormap is different than the input, obtain transform
+			if (_vectormap_frame != _velodyne_header.frame_id)
+			{
+				_transform_listener->lookupTransform(_vectormap_frame, _velodyne_header.frame_id, ros::Time(), vectormap_transform);
+			}
+
+			timer.reset();timer.start();
+
+			//check if centroids are inside the drivable area
+			for(unsigned int i=0; i<final_clusters.size(); i++)
+			{
+				//transform centroid points to vectormap frame
+				pcl::PointXYZ pcl_centroid = final_clusters[i]->GetCentroid();
+				tf::Vector3 vector_centroid (pcl_centroid.x, pcl_centroid.y, pcl_centroid.z);
+				tf::Vector3 transformed_centroid;
+
+				if (_vectormap_frame != _velodyne_header.frame_id)
+					transformed_centroid = vectormap_transform*vector_centroid;
+				else
+					transformed_centroid = vector_centroid;
+
+				vector_map_server::PositionState position_state;
+				position_state.request.position.x = transformed_centroid.getX();
+				position_state.request.position.y = transformed_centroid.getY();
+				position_state.request.position.z = transformed_centroid.getZ();
+
+
+				if (_vectormap_server.call(position_state))
+				{
+					final_clusters[i]->SetValidity(position_state.response.state);
+					/*std::cout << "Original:" << pcl_centroid.x << "," << pcl_centroid.y << "," << pcl_centroid.z <<
+							" Transformed:" << transformed_centroid.x() << "," << transformed_centroid.y() << "," << transformed_centroid.z() <<
+							" Validity:" << position_state.response.state << std::endl;*/
+				}
+				else
+				{
+					ROS_INFO("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
+					final_clusters[i]->SetValidity(true);
+				}
+			}
+			timer.stop();
+			//std::cout << "vm server took " << timer.getTimeMilli() << " ms to check " << final_clusters.size() << std::endl;
+		}
+		catch(tf::TransformException &ex)
+		{
+			ROS_INFO("vectormap_filtering: %s", ex.what());
+		}
+	}
+	//Get final PointCloud to be published
+	in_out_polygon_array.header = _velodyne_header;
+	in_out_pictogram_array.header = _velodyne_header;
+	for(unsigned int i=0; i<final_clusters.size(); i++)
+	{
+		*out_cloud_ptr = *out_cloud_ptr + *(final_clusters[i]->GetCloud());
+
+		jsk_recognition_msgs::BoundingBox bounding_box = final_clusters[i]->GetBoundingBox();
+		geometry_msgs::PolygonStamped polygon = final_clusters[i]->GetPolygon();
+		jsk_rviz_plugins::Pictogram pictogram_cluster;
+		pictogram_cluster.header = _velodyne_header;
+
+		//PICTO
+		pictogram_cluster.mode = pictogram_cluster.STRING_MODE;
+		pictogram_cluster.pose.position.x = final_clusters[i]->GetMaxPoint().x;
+		pictogram_cluster.pose.position.y = final_clusters[i]->GetMaxPoint().y;
+		pictogram_cluster.pose.position.z = final_clusters[i]->GetMaxPoint().z;
+		tf::Quaternion quat(0.0, -0.7, 0.0, 0.7);
+		tf::quaternionTFToMsg(quat, pictogram_cluster.pose.orientation);
+		pictogram_cluster.size = 4;
+		std_msgs::ColorRGBA color;
+		color.a = 1; color.r = 1; color.g = 1; color.b = 1;
+		pictogram_cluster.color = color;
+		pictogram_cluster.character = std::to_string( i );
+		//PICTO
+
+		//pcl::PointXYZ min_point = final_clusters[i]->GetMinPoint();
+		//pcl::PointXYZ max_point = final_clusters[i]->GetMaxPoint();
+		pcl::PointXYZ center_point = final_clusters[i]->GetCentroid();
 		geometry_msgs::Point centroid;
 		centroid.x = center_point.x; centroid.y = center_point.y; centroid.z = center_point.z;
 		bounding_box.header = _velodyne_header;
+		polygon.header = _velodyne_header;
 
-		if (	//(fabs(bounding_box.pose.position.x) > 2.1 && fabs(bounding_box.pose.position.y) > 0.8 ) && //ignore points that belong to our car
-				bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0 &&
-				bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
-				&&max_point.z > -1.5 && min_point.z > -1.5 && min_point.z < 1.0
+		if (	final_clusters[i]->IsValid()
+				//&& bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0
+				//&&	bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
 				)
 		{
 			in_out_boundingbox_array.boxes.push_back(bounding_box);
 			in_out_centroids.points.push_back(centroid);
 			_visualization_marker.points.push_back(centroid);
 
+			in_out_polygon_array.polygons.push_back(polygon);
+			in_out_pictogram_array.pictograms.push_back(pictogram_cluster);
+
 			lidar_tracker::CloudCluster cloud_cluster;
-			all_clusters[i]->ToRosMessage(_velodyne_header, cloud_cluster);
+			final_clusters[i]->ToRosMessage(_velodyne_header, cloud_cluster);
 			in_out_clusters.clusters.push_back(cloud_cluster);
 		}
 	}
+
+	for(size_t i=0; i< in_out_polygon_array.polygons.size();i++)
+	{
+		in_out_polygon_array.labels.push_back(i);
+	}
+
 }
 
-void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.35)
+void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_nofloor_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_onlyfloor_cloud_ptr, float in_max_height=0.2, float in_floor_max_angle=0.1)
 {
+	/*pcl::PointIndicesPtr ground (new pcl::PointIndices);
+	// Create the filtering object
+	pcl::ProgressiveMorphologicalFilter<pcl::PointXYZ> pmf;
+	pmf.setInputCloud (in_cloud_ptr);
+	pmf.setMaxWindowSize (20);
+	pmf.setSlope (1.0f);
+	pmf.setInitialDistance (0.5f);
+	pmf.setMaxDistance (3.0f);
+	pmf.extract (ground->indices);
+
+	// Create the filtering object
+	pcl::ExtractIndices<pcl::PointXYZ> extract;
+	extract.setInputCloud (in_cloud_ptr);
+	extract.setIndices (ground);
+	extract.setNegative(true);//true removes the indices, false leaves only the indices
+	extract.filter(*out_nofloor_cloud_ptr);
+
+	//EXTRACT THE FLOOR FROM THE CLOUD
+	extract.setNegative(false);//true removes the indices, false leaves only the indices
+	extract.filter(*out_onlyfloor_cloud_ptr);*/
+
 	pcl::SACSegmentation<pcl::PointXYZ> seg;
 	pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
 	pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
@@ -425,26 +649,24 @@ void removeFloor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Po
 		std::cout << "Could not estimate a planar model for the given dataset." << std::endl;
 	}
 
-	/*REMOVE THE FLOOR FROM THE CLOUD*/
+	//REMOVE THE FLOOR FROM THE CLOUD
 	pcl::ExtractIndices<pcl::PointXYZ> extract;
 	extract.setInputCloud (in_cloud_ptr);
 	extract.setIndices(inliers);
 	extract.setNegative(true);//true removes the indices, false leaves only the indices
 	extract.filter(*out_nofloor_cloud_ptr);
 
-	/*EXTRACT THE FLOOR FROM THE CLOUD*/
+	//EXTRACT THE FLOOR FROM THE CLOUD
 	extract.setNegative(false);//true removes the indices, false leaves only the indices
 	extract.filter(*out_onlyfloor_cloud_ptr);
 }
 
 void downsampleCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_leaf_size=0.2)
 {
-
 	pcl::VoxelGrid<pcl::PointXYZ> sor;
 	sor.setInputCloud(in_cloud_ptr);
 	sor.setLeafSize((float)in_leaf_size, (float)in_leaf_size, (float)in_leaf_size);
 	sor.filter(*out_cloud_ptr);
-
 }
 
 void clipCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr, float in_min_height=-1.3, float in_max_height=0.5)
@@ -462,7 +684,6 @@ void clipCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::Poin
 
 void differenceNormalsSegmentation(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr out_cloud_ptr)
 {
-
 	float small_scale=0.5;
 	float large_scale=2.0;
 	float angle_threshold=0.5;
@@ -557,10 +778,16 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		lidar_tracker::centroids centroids;
 		lidar_tracker::CloudClusterArray cloud_clusters;
 		jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
+		jsk_recognition_msgs::PolygonArray polygon_array;
+		jsk_rviz_plugins::PictogramArray pictograms_array;
 
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 
 		_velodyne_header = in_sensor_cloud->header;
+
+		cv::TickMeter timer;
+
+		timer.reset();timer.start();
 
 		if (_remove_points_upto > 0.0)
 		{
@@ -569,16 +796,27 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		else
 			removed_points_cloud_ptr = current_sensor_cloud_ptr;
 
+		//std::cout << "Downsample before: " <<removed_points_cloud_ptr->points.size();
 		if (_downsample_cloud)
 			downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
 		else
-			downsampled_cloud_ptr=removed_points_cloud_ptr;
+			downsampled_cloud_ptr =removed_points_cloud_ptr;
 
+		//std::cout << " after: " <<downsampled_cloud_ptr->points.size();
+		timer.stop(); //std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
+		clipCloud(downsampled_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
+		timer.stop(); //std::cout << "clipCloud:" << clipped_cloud_ptr->points.size() << "time " << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
 		if(_keep_lanes)
-			keepLanePoints(downsampled_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
+			keepLanePoints(clipped_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
 		else
-			inlanes_cloud_ptr = downsampled_cloud_ptr;
+			inlanes_cloud_ptr = clipped_cloud_ptr;
+		timer.stop(); //std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
 
+		timer.reset();timer.start();
 		if(_remove_ground)
 		{
 			removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
@@ -586,27 +824,46 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		}
 		else
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
+		timer.stop(); //std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		clipCloud(nofloor_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
-		publishCloud(&_pub_points_lanes_cloud, clipped_cloud_ptr);
+		publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
 
+		timer.reset();timer.start();
 		if (_use_diffnormals)
-			differenceNormalsSegmentation(clipped_cloud_ptr, diffnormals_cloud_ptr);
+			differenceNormalsSegmentation(nofloor_cloud_ptr, diffnormals_cloud_ptr);
 		else
-			diffnormals_cloud_ptr = clipped_cloud_ptr;
+			diffnormals_cloud_ptr = nofloor_cloud_ptr;
+		timer.stop(); //std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters);
+		timer.reset();timer.start();
+		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters, polygon_array, pictograms_array);
+		//timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
+		timer.stop(); //std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
+
+		_pub_jsk_hulls.publish(polygon_array);//publish convex hulls
+		_pub_text_pictogram.publish(pictograms_array);//publish_ids
+
+		timer.reset();timer.start();
 		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
+		timer.stop(); //std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
+
+		timer.reset();timer.start();
 		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
+		timer.stop(); //std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();//transform? is it used?
 		cloud_clusters.header = _velodyne_header;
+
+		timer.reset();timer.start();
 		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
+		timer.stop(); //std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl << std::endl;
 
 		_using_sensor_cloud = false;
 	}
@@ -620,14 +877,19 @@ void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_
 	pcl::PointXYZ min_point;
 	pcl::PointXYZ max_point;
 	std::vector<geometry_msgs::Point> vectormap_points;
+	std::string marker_frame;
+	double map_scale = -10.0;
 	for(auto i=in_vectormap_markers->markers.begin(); i!= in_vectormap_markers->markers.end(); i++)
 	{
 		visualization_msgs::Marker current_marker = *i;
+		marker_frame = current_marker.header.frame_id;
 		if (current_marker.ns == "road_edge")
 		{
 			for (unsigned int j=0; j< current_marker.points.size(); j++)
 			{
 				geometry_msgs::Point p = current_marker.points[j];
+				p.x*=map_scale;
+				p.y*=map_scale;
 				if(p.x<min_x)	min_x = p.x;
 				if(p.y<min_y)	min_y = p.y;
 				if(p.x>max_x)	max_x = p.x;
@@ -650,18 +912,34 @@ void vectormap_callback(const visualization_msgs::MarkerArray::Ptr in_vectormap_
 	max_point.x+=min_point.x;
 	max_point.y+=min_point.y;
 	//get world tf
-	_transform_listener->lookupTransform("/map", "/world",
-					ros::Time(_velodyne_header.stamp), *_transform);
-
+	std::string error_transform_msg;
 	tf::Vector3 map_origin_point;
-	map_origin_point = _transform->getOrigin();
+	if(_transform_listener->waitForTransform("/map", marker_frame, ros::Time(0), ros::Duration(5), ros::Duration(0.1), &error_transform_msg))
+	{
+		_transform_listener->lookupTransform("/map", marker_frame, ros::Time(0), *_transform);
+		map_origin_point = _transform->getOrigin();
+		map_origin_point.setX( map_origin_point.x() - min_point.x);
+		map_origin_point.setY( map_origin_point.y() - min_point.y);
+	}
+	else
+	{
+		ROS_INFO("Euclidean Cluster (vectormap_callback): %s", error_transform_msg.c_str());
+	}
 
-	cv::Mat map_image = cv::Mat::zeros(max_point.x, max_point.y, CV_8UC1);
+	cv::Mat map_image = cv::Mat::zeros(max_point.y, max_point.x, CV_8UC3);
 
+	std::cout << "W,H:" << max_point << std::endl;
+
+	cv::Point image_start_point (vectormap_points[0].x, vectormap_points[0].y);
+	cv::Point prev_point = image_start_point;
 	for (auto i=vectormap_points.begin(); i!=vectormap_points.end(); i++)
 	{
-		map_image.at<uchar>( (int)(i->x), (int)(i->y) ) = 255;
+		cv::line(map_image, prev_point, cv::Point((int)(i->x), (int)(i->y)), cv::Scalar::all(255));
+
+		prev_point.x = (int)(i->x);
+		prev_point.y = (int)(i->y);
 	}
+	cv::circle(map_image, image_start_point, 3, cv::Scalar(255,0,0));
 	cv::imshow("vectormap", map_image);
 	cv::waitKey(0);
 }*/
@@ -693,7 +971,9 @@ int main (int argc, char** argv)
 
 	_pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes",1);
 	_pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
+	_pub_jsk_hulls = h.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls",1);
 	_pub_clusters_message = h.advertise<lidar_tracker::CloudClusterArray>("/cloud_clusters",1);
+	_pub_text_pictogram = h.advertise<jsk_rviz_plugins::PictogramArray>("cluster_ids", 10); ROS_INFO("output pictograms topic: %s", "cluster_id");
 
 	std::string points_topic;
 
@@ -732,9 +1012,15 @@ int main (int argc, char** argv)
 	private_nh.param("keep_lane_right_distance", _keep_lane_right_distance, 5.0);	ROS_INFO("keep_lane_right_distance: %f", _keep_lane_right_distance);
 	private_nh.param("clustering_thresholds", _clustering_thresholds);
 	private_nh.param("clustering_distances", _clustering_distances);
-	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);			ROS_INFO("_max_boundingbox_side: %f", _max_boundingbox_side);
+	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);				ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
+	private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);			ROS_INFO("cluster_merge_threshold: %f", _cluster_merge_threshold);
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+
+	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
+	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _output_frame.c_str());
+
 	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
+
 
 	_velodyne_transform_available = false;
 
@@ -753,6 +1039,7 @@ int main (int argc, char** argv)
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
 	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
+	_vectormap_server = h.serviceClient<vector_map_server::PositionState>("vector_map_server/is_way_area");
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();

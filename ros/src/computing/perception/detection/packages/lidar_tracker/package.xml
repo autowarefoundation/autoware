@@ -11,10 +11,12 @@
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>vector_map_server</build_depend>
   <build_depend>cv_tracker_msgs</build_depend>
   <build_depend>rosinterface</build_depend>
   
@@ -23,10 +25,12 @@
   <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>rosinterface</run_depend>
+  <run_depend>vector_map_server</run_depend>
 
   <export></export>
 </package>
