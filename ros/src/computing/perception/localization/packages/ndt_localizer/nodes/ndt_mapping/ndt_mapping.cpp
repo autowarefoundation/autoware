@@ -88,7 +88,6 @@ static ros::Duration scan_duration;
 
 static double diff = 0.0;
 static double diff_x = 0.0, diff_y = 0.0, diff_z = 0.0, diff_yaw; // current_pose - previous_pose
-static double offset_x, offset_y, offset_z, offset_roll, offset_pitch, offset_yaw;
 static double offset_imu_x, offset_imu_y, offset_imu_z, offset_imu_roll, offset_imu_pitch, offset_imu_yaw;
 static double offset_odom_x, offset_odom_y, offset_odom_z, offset_odom_roll, offset_odom_pitch, offset_odom_yaw;
 static double offset_imu_odom_x, offset_imu_odom_y, offset_imu_odom_z, offset_imu_odom_roll, offset_imu_odom_pitch, offset_imu_odom_yaw;
@@ -381,8 +380,10 @@ static void imu_callback(const sensor_msgs::Imu::ConstPtr& input)
 
   imu.header = input->header;
   imu.linear_acceleration.x = input->linear_acceleration.x;
-  imu.linear_acceleration.y = input->linear_acceleration.y;
-  imu.linear_acceleration.z = input->linear_acceleration.z;
+  //imu.linear_acceleration.y = input->linear_acceleration.y;
+  //imu.linear_acceleration.z = input->linear_acceleration.z;
+  imu.linear_acceleration.y = 0;
+  imu.linear_acceleration.z = 0;
 
   if(diff_time != 0)
   {
@@ -492,6 +493,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     guess_pose_for_ndt = guess_pose_odom;
   else
     guess_pose_for_ndt = guess_pose;
+
 
   Eigen::AngleAxisf init_rotation_x(guess_pose_for_ndt.roll, Eigen::Vector3f::UnitX());
   Eigen::AngleAxisf init_rotation_y(guess_pose_for_ndt.pitch, Eigen::Vector3f::UnitY());
@@ -617,12 +619,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   previous_scan_time.sec = current_scan_time.sec;
   previous_scan_time.nsec = current_scan_time.nsec;
   
-  offset_x = 0.0;
-  offset_y = 0.0;
-  offset_z = 0.0;
-  offset_roll = 0.0;
-  offset_pitch = 0.0;
-  offset_yaw = 0.0;
 
   offset_imu_x = 0.0;
   offset_imu_y = 0.0;
@@ -732,13 +728,6 @@ int main(int argc, char** argv)
   guess_pose.pitch = 0.0;
   guess_pose.yaw = 0.0;
 
-  guess_pose_imu.x = 0.0;
-  guess_pose_imu.y = 0.0;
-  guess_pose_imu.z = 0.0;
-  guess_pose_imu.roll = 0.0;
-  guess_pose_imu.pitch = 0.0;
-  guess_pose_imu.yaw = 0.0;
-
   added_pose.x = 0.0;
   added_pose.y = 0.0;
   added_pose.z = 0.0;
@@ -746,12 +735,10 @@ int main(int argc, char** argv)
   added_pose.pitch = 0.0;
   added_pose.yaw = 0.0;
 
-  offset_x = 0.0;
-  offset_y = 0.0;
-  offset_z = 0.0;
-  offset_roll = 0.0;
-  offset_pitch = 0.0;
-  offset_yaw = 0.0;
+  diff_x = 0.0;
+  diff_y = 0.0;
+  diff_z = 0.0;
+  diff_yaw = 0.0;
 
   offset_imu_x = 0.0;
   offset_imu_y = 0.0;
@@ -785,6 +772,8 @@ int main(int argc, char** argv)
   private_nh.getParam("use_odom", _use_odom);
 
   std::cout << "use_openmp: " << _use_openmp << std::endl;
+  std::cout << "use_imu: " << _use_imu << std::endl;
+  std::cout << "use_odom: " << _use_odom << std::endl;
 
   if (nh.getParam("tf_x", _tf_x) == false)
   {

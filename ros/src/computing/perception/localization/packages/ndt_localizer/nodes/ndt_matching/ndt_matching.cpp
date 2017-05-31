@@ -303,6 +303,22 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
     current_pose.pitch = initial_pose.pitch;
     current_pose.yaw = initial_pose.yaw;
 
+    current_velocity = 0;
+    current_velocity_x = 0;
+    current_velocity_y = 0;
+    current_velocity_z = 0;
+    angular_velocity = 0;
+
+    current_pose_imu.x = 0;
+    current_pose_imu.y = 0;
+    current_pose_imu.z = 0;
+    current_pose_imu.roll = 0;
+    current_pose_imu.pitch = 0;
+    current_pose_imu.yaw = 0;
+
+    current_velocity_imu_x = current_velocity_x;
+    current_velocity_imu_y = current_velocity_y;
+    current_velocity_imu_z = current_velocity_z;
     init_pos_set = 1;
   }
 }
@@ -650,8 +666,10 @@ static void imu_callback(const sensor_msgs::Imu::ConstPtr& input)
 
   imu.header = input->header;
   imu.linear_acceleration.x = input->linear_acceleration.x;
-  imu.linear_acceleration.y = input->linear_acceleration.y;
-  imu.linear_acceleration.z = input->linear_acceleration.z;
+  //imu.linear_acceleration.y = input->linear_acceleration.y;
+  //imu.linear_acceleration.z = input->linear_acceleration.z;
+  imu.linear_acceleration.y = 0;
+  imu.linear_acceleration.z = 0;
 
   if(diff_time != 0)
   {
@@ -1106,6 +1124,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       exit(1);
     }
     static ros::Time start_time = input->header.stamp;
+/*
     ofs << input->header.seq << "," << input->header.stamp << "," << input->header.stamp - start_time << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
         << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
         << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
@@ -1134,7 +1153,19 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         << current_pose.z - predict_pose_imu_odom.z << "," << current_pose.roll - predict_pose_imu_odom.roll << ","
         << current_pose.pitch - predict_pose_imu_odom.pitch << "," << current_pose.yaw - predict_pose_imu_odom.yaw << ","
         << std::endl;
-
+*/
+    ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
+        << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
+        << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
+        << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
+        << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
+        << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
+        << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
+        << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
+        << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
+        << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
+        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
+        << std::endl;
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
