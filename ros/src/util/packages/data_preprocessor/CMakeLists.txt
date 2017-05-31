@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dataprocess)
+project(data_preprocessor)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -16,7 +16,7 @@ find_package(OpenCV REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dataprocess
+#  LIBRARIES data_preprocessor
 #  CATKIN_DEPENDS cv_bridge libpcl-all-dev pcd_tutorial pcl_conversions pcl_msgs pcl_ros roscpp std_msgs
 #  DEPENDS system_lib
 )

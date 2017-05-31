@@ -303,14 +303,14 @@ class Final(InsideDesign):
                 self.selected_topic_dic[push] = topic_output_info
                 topic_type = topic_output_info['topic_type']
                 if topic_type == 'sensor_msgs/Image':
-                    cmd = "rosrun dataprocess get_Image %s %s" % (topic_path, topic_output_info['topic'])
+                    cmd = "rosrun data_preprocessor get_Image %s %s" % (topic_path, topic_output_info['topic'])
                     # file_format = topic_output_info['topic'][1:].replace('/', '_') + "_%08d.%s"
                     # cmd = "rosrun image_view image_saver image:=%s _filename_format:=%s" % (topic_output_info['topic'], file_format)
                     self.cmd_dic[push] = (cmd, None)
                     self.launch_kill_proc2(push, self.cmd_dic)
 
                 if topic_type == 'sensor_msgs/PointCloud2':
-                    cmd = "rosrun dataprocess get_PCD %s %s" % (topic_path, topic_output_info['topic'])
+                    cmd = "rosrun data_preprocessor get_PCD %s %s" % (topic_path, topic_output_info['topic'])
                     self.cmd_dic[push] = (cmd, None)
                     self.launch_kill_proc2(push, self.cmd_dic)
 
@@ -405,9 +405,9 @@ class Final(InsideDesign):
                 self.selected_topic_dic[push] = dic[self.select]
                 if not((self.select == 5) or (self.select == 6)):
                     # cmd = "roslaunch velodyne_pointcloud 32e_points.launch"
-                    cmd = "roslaunch" + " dataprocess " + dic[self.select] + " calibration:=%s" %self.file_path
+                    cmd = "roslaunch" + " data_preprocessor " + dic[self.select] + " calibration:=%s" %self.file_path
                 else:
-                    cmd = "roslaunch" + " dataprocess " + dic[self.select]
+                    cmd = "roslaunch" + " data_preprocessor " + dic[self.select]
                 self.cmd_dic[push] = (cmd, None)
                 self.launch_kill_proc2(push, self.cmd_dic)
                 if push == self.objx:
@@ -776,7 +776,7 @@ class Final(InsideDesign):
             else:
                 if not os.path.exists(output_url):
                     subprocess.call(['mkdir', '-p', output_url])
-                cmd = "rosrun dataprocess get_Depth %s %s %s %s" % (output_url, calib_url, self.image_for_depth, self.pointcloud_for_depth)
+                cmd = "rosrun data_preprocessor get_Depth %s %s %s %s" % (output_url, calib_url, self.image_for_depth, self.pointcloud_for_depth)
                 self.cmd_dic[push] = (cmd, None)
                 self.launch_kill_proc2(push, self.cmd_dic)
                 self.depth_flag = True
@@ -3480,7 +3480,7 @@ class DetailDialog(wx.Dialog):
         panel = wx.Panel(self, wx.ID_ANY)
         layout = wx.BoxSizer(wx.VERTICAL)
 
-        self.filename = os.getcwd() + "/src/util/packages/dataprocess/scripts/32db.yaml"
+        self.filename = os.getcwd() + "/src/util/packages/data_preprocessor/scripts/32db.yaml"
         self.tc2 = wx.TextCtrl(panel, wx.ID_ANY, self.filename, style=1024)
         self.tc2.SetMinSize((300, 29))
         self.Bind(wx.EVT_TEXT_ENTER, self.update_path, self.tc2)

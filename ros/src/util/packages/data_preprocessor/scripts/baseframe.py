@@ -13,7 +13,7 @@ class BaseFrame(wx.Frame):
 		self.__do_layout()
 
 	def set_properties(self):
-		self.SetTitle(_("Data Processor"))
+		self.SetTitle(_("Data Preprocessor"))
 		self.SetSize((806, 584))
 
 	def __do_layout(self):
