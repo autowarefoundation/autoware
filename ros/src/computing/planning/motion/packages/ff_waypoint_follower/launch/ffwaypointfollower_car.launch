@@ -1,0 +1,80 @@
+<!-- -->
+<launch>
+
+	<arg name="width" 						default="1.85" />
+	<arg name="length" 						default="4.2" />
+	<arg name="wheelBaseLength" 			default="2.7" />
+	<arg name="turningRadius"				default="5.2" />
+	<arg name="maxSteerAngle" 				default="0.5" />
+	
+	<arg name="maxSteerValue" 				default="660"  />
+	<arg name="minSteerValue" 				default="-660" />
+	<arg name="maxVelocity" 				default="3.0"  />
+	<arg name="minVelocity" 				default="0.0"  />
+		
+	<arg name="steeringDelay" 				default="1.2" />
+	<arg name="minPursuiteDistance" 		default="3.0"  />
+	<arg name="followDistance" 				default="10.0" />
+	<arg name="lowpassSteerCutoff" 			default="5.0"  />
+	
+	<arg name="steerGainKP" 				default="0.07" />
+	<arg name="steerGainKI" 				default="0.02" />
+	<arg name="steerGainKD" 				default="0.01" />
+	
+	<arg name="velocityGainKP" 				default="0.1"   />
+	<arg name="velocityGainKI" 				default="0.005" />
+	<arg name="velocityGainKD" 				default="0.1"   />
+	<arg name="maxAcceleration"				default="0.6"   />
+	<arg name="maxDeceleration"				default="-1.0"   />
+	
+	<arg name="signal" 						default="0" /> <!-- 0 : simulation or 1 : vehicle or 2 : robot -->
+	<arg name="steerMode" 					default="angle" /> <!-- angle or torque -->
+	<arg name="driveMode" 					default="velocity" /> <!-- velocity or stroke -->
+	<arg name="bEnableLogs" 				default="true" /> 
+	<arg name="bCalibrationMode" 			default="false" /> 
+
+	<arg name="mapRecorder" 				default="0" /><!-- 0 or 1  -->
+	<arg name="mapDistance" 				default="100.0" /> <!-- meters -->
+	<arg name="mapDensity" 					default="0.5" /> <!-- meters -->
+	
+	<node pkg="ff_waypoint_follower" type="ff_waypoint_follower" name="ff_waypoint_follower" output="screen">
+	
+		<param name="width" 						value="$(arg width)" />
+		<param name="length" 						value="$(arg length)" />
+		<param name="wheelBaseLength" 				value="$(arg wheelBaseLength)" />
+		<param name="turningRadius" 				value="$(arg turningRadius)" />
+		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
+		
+		<param name="maxSteerValue" 				value="$(arg maxSteerValue)" />
+		<param name="minSteerValue" 				value="$(arg minSteerValue)" />
+		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
+		<param name="minVelocity" 					value="$(arg minVelocity)" />
+		
+		<param name="steeringDelay" 				value="$(arg steeringDelay)" />
+		<param name="minPursuiteDistance" 			value="$(arg minPursuiteDistance)" />
+		<param name="followDistance" 				value="$(arg followDistance)" />
+		<param name="lowpassSteerCutoff" 			value="$(arg lowpassSteerCutoff)" />
+		
+		<param name="steerGainKP" 					value="$(arg steerGainKP)" />
+		<param name="steerGainKI" 					value="$(arg steerGainKI)" />
+		<param name="steerGainKD" 					value="$(arg steerGainKD)" />
+		
+		<param name="velocityGainKP" 				value="$(arg velocityGainKP)" />
+		<param name="velocityGainKI" 				value="$(arg velocityGainKI)" />
+		<param name="velocityGainKD" 				value="$(arg velocityGainKD)" />
+		<param name="maxAcceleration" 				value="$(arg maxAcceleration)" />
+		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
+		
+		<param name="signal" 						value="$(arg signal)" />
+		<param name="steerMode" 					value="$(arg steerMode)" />
+		<param name="driveMode" 					value="$(arg driveMode)" />
+		<param name="bEnableLogs" 					value="$(arg bEnableLogs)" />
+		<param name="bCalibrationMode" 				value="$(arg bCalibrationMode)" />
+		
+		<param name="mapRecorder" 					value="$(arg mapRecorder)" />
+		<param name="mapDistance" 					value="$(arg mapDistance)" />
+		<param name="mapDensity" 					value="$(arg mapDensity)" />
+		
+	</node>
+
+</launch>

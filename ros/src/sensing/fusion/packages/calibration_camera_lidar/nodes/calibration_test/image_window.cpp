@@ -60,7 +60,7 @@ void rad_x_bar(int val)
 
     cvInitMatHeader(&m_rotation_x, 3, 3, CV_64FC1, init_m_rotation_x, CV_AUTOSTEP);
     cvCopy(m_rotation, m_rotation_temp);
-    cvmMul(m_rotation_temp, &m_rotation_x, m_rotation);
+    cvMatMulAdd(m_rotation_temp, &m_rotation_x, 0, m_rotation);
     previous_val_x = val;
 }
 void rad_y_bar(int val)
@@ -74,7 +74,7 @@ void rad_y_bar(int val)
 
     cvInitMatHeader(&m_rotation_y, 3, 3, CV_64FC1, init_m_rotation_y, CV_AUTOSTEP);
     cvCopy(m_rotation, m_rotation_temp);
-    cvmMul(m_rotation_temp, &m_rotation_y, m_rotation);
+    cvMatMulAdd(m_rotation_temp, &m_rotation_y, 0, m_rotation);
     previous_val_y = val;
 }
 void rad_z_bar(int val)
@@ -88,7 +88,7 @@ void rad_z_bar(int val)
 
     cvInitMatHeader(&m_rotation_z, 3, 3, CV_64FC1, init_m_rotation_z);
     cvCopy(m_rotation, m_rotation_temp);
-    cvmMul(m_rotation_temp, &m_rotation_z, m_rotation);
+    cvMatMulAdd(m_rotation_temp, &m_rotation_z, 0, m_rotation);
     previous_val_z = val;
 }
 

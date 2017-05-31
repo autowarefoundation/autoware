@@ -4,7 +4,7 @@ project(vector_map_server)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  waypoint_follower
+  waypoint_follower_msgs
   visualization_msgs
   vector_map_msgs
   vector_map
@@ -47,12 +47,12 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   geometry_msgs
-  waypoint_follower
+  waypoint_follower_msgs
   vector_map_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime roscpp geometry_msgs waypoint_follower visualization_msgs vector_map_msgs vector_map
+  CATKIN_DEPENDS message_runtime roscpp geometry_msgs waypoint_follower_msgs visualization_msgs vector_map_msgs vector_map
 )
 
 include_directories(
@@ -60,19 +60,19 @@ include_directories(
 )
 
 add_executable(vector_map_server nodes/vector_map_server/vector_map_server.cpp)
-target_link_libraries(vector_map_server ${catkin_LIBRARIES} vector_map)
+target_link_libraries(vector_map_server ${catkin_LIBRARIES})
 add_dependencies(vector_map_server
   geometry_msgs_generate_messages_cpp
-  waypoint_follower_generate_messages_cpp
+  waypoint_follower_msgs_generate_messages_cpp
   visualization_msgs_generate_messages_cpp
   vector_map_server_generate_messages_cpp
 )
 
 add_executable(vector_map_client nodes/vector_map_client/vector_map_client.cpp)
-target_link_libraries(vector_map_client ${catkin_LIBRARIES} vector_map)
+target_link_libraries(vector_map_client ${catkin_LIBRARIES})
 add_dependencies(vector_map_client
   geometry_msgs_generate_messages_cpp
-  waypoint_follower_generate_messages_cpp
+  waypoint_follower_msgs_generate_messages_cpp
   visualization_msgs_generate_messages_cpp
   vector_map_server_generate_messages_cpp
 )

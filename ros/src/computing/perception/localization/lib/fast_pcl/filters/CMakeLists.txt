@@ -14,7 +14,7 @@ set(SUBSYS_DEPS common sample_consensus search kdtree octree)
 set(LIB_NAME "fast_pcl_filters")
 
 catkin_package(
-  DEPENDS ${SUBSYS_DEPS}
+  #DEPENDS ${SUBSYS_DEPS}
   INCLUDE_DIRS include
   LIBRARIES ${LIB_NAME}
   )

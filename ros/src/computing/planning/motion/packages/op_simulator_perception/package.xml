@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+  <name>op_simulator_perception</name>
+  <version>0.0.0</version>
+  <description>The op_simulator_perception package</description>
+  <maintainer email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">hatem Darweesh</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>runtime_manager</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>cv_tracker</build_depend>
+  <build_depend>map_file</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>op_utilityh</build_depend>
+  <build_depend>op_plannerh</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>runtime_manager</run_depend>
+  <run_depend>cv_tracker</run_depend>
+  <run_depend>map_file</run_depend>
+  <run_depend>pcl_conversions</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>op_utilityh</run_depend>
+  <run_depend>op_plannerh</run_depend>
+
+  <export>
+  </export>
+</package>

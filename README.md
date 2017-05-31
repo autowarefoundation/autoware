@@ -1,6 +1,6 @@
 # Autoware
 
-Integrated open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
+Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
 - 3D Localization
 - 3D Mapping
@@ -23,6 +23,12 @@ Integrated open-source software for urban autonomous driving, maintained by [Tie
 
 Autoware is protected by the BSD License. Please use it on at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
+## Manuals and Documents
+
+Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
+
+See also Autoware/docs for the tips of Autoware development, including the coding style and branching model.
+
 ## License
 
 * New BSD License
@@ -30,7 +36,7 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 
 ## Spec Recommendation
 
-- # of CPU cores: 8
+- Number of CPU cores: 8
 - RAM size: 32GB
 - Storage size: 30GB
 
@@ -48,25 +54,24 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 ### Install dependencies for Ubuntu 14.04 indigo
 
 ```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map
+% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
 % sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
 ```
 
 **NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
 
-
-### Install dependencies for Ubuntu 15.04 jade
-
+### Install dependencies for Ubuntu 16.04 kinetic
 ```
-% sudo apt-get install ros-jade-desktop-full ros-jade-nmea-msgs ros-jade-nmea-navsat-driver ros-jade-sound-play
-% sudo apt-get install ros-jade-controller-manager ros-jade-ros-control ros-jade-ros-controllers ros-jade-gazebo-ros-control ros-jade-sicktoolbox ros-jade-sicktoolbox-wrapper ros-jade-joystick-drivers ros-jade-novatel-span-driver
-% sudo apt-get install libnlopt-dev freeglut3-dev qt5-default libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev
+% sudo apt-get install ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
+% sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
 ```
 
-**NOTE: jsk_visualization and grid_map is not provided in Ubuntu15.04 Jade. Please download it from the following repository and build it by yourself.
-https://github.com/jsk-ros-pkg/jsk_visualization**
-https://github.com/ethz-asl/grid_map
+**NOTE: Following packages are not supported in ROS Kinetic.**
+- gazebo
+- orb slam
+- dpm ocv
 
 ## How to Build
 
@@ -100,19 +105,17 @@ The original repository is [here](https://github.com/CPFL/velodyne). If you chan
 repository, you must use **git subtree push**. (Please never change and push code if you don't understand
 `git subtree` well).
 
-GitFlow, git branching model, is used in the Autoware repository.
+GitFlow, the git branching model, is used in the Autoware repository.
 - When you adding new features, you can branch off your feature branch from `develop`.  
   you can use the following command.  
   `$ git checkout -b feature/[your_branch_name] develop`
-- When you find bugs in `master` branch, you can branch off your hotfix branch from `master`.  
+- When you find bugs in `master`, you can branch off your hotfix branch from `master`.  
   you can use the following command.  
   `$ git checkout -b hotfix/[your_branch_name] master`
 
-More Details [here](http://nvie.com/posts/a-successful-git-branching-model/)
+See [docs/en/branching_model.md](docs/en/branching_model.md)
 
-## Documents
-
-See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English documents will be added shortly.
+More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Main Packages
 
@@ -146,48 +149,51 @@ See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English d
 ## Demo Videos
 
 ### Public Road Demonstration
-[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/0.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
+[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/mqdefault.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
 
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/0.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
+[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/mqdefault.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
 
 ### Loading Map Data
-[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/0.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/mqdefault.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
 
 ### Localization with GNSS
-[![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/0.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
+[![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/mqdefault.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
 
 ### Localization without GNSS
-[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/0.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
+[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/mqdefault.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
 
 ### Mapping
-[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/0.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
+[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/mqdefault.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
 
 ### Detection with SSD
-[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/0.jpg)](https://youtu.be/EjamMJjkjBA)
+[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
 
 ### Detection with DPM
-[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/0.jpg)](https://youtu.be/P_BFQNbudlg)
+[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)
 
 ### Detection with Euclidean Clustering
-[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/0.jpg)](https://youtu.be/Tma2DKMxt4Y)
+[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/mqdefault.jpg)](https://youtu.be/Tma2DKMxt4Y)
 
 ### Traffic Light Recognition
-[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/0.jpg)](https://youtu.be/KmOdBms9r2w)
+[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/mqdefault.jpg)](https://youtu.be/KmOdBms9r2w)
 
 ### Planning with ROSBAG
-[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/0.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
+[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/mqdefault.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
 
 ### Planning with wf_simulator
-[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/0.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
+[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/mqdefault.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
 
 ### Planning with Hybrid State A*
-[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/0.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
+[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/mqdefault.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
 
 ### Calibration Toolkit
-[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/0.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+
+### Data Processor for Bag File
+[![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)
 
 ## Sample Data
 
@@ -206,6 +212,8 @@ See Autoware/docs. As of Aug 2015, we only provide Japanese documents. English d
 ## Contact
 
 Autoware Developers (<autoware@googlegroups.com>)
+
+Autoware Developers Slack Team (https://autoware.herokuapp.com/)
 
 To subscribe to the Autoware Developers mailing list,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
