@@ -344,8 +344,8 @@ bool CalibrateCameraChessboardBase::calibrateSensor()
     {
         return 0;
     }
-    cv::vector<cv::Mat> rvecs;
-    cv::vector<cv::Mat> tvecs;
+    std::vector<cv::Mat> rvecs;
+    std::vector<cv::Mat> tvecs;
     cv::Size imgsize;
     imgsize.height=calibimages[0].rows;
     imgsize.width=calibimages[0].cols;
@@ -458,7 +458,7 @@ int CalibrateCameraChessboardBase::getChessboardNum()
     return chessboardposes.size();
 }
 
-cv::vector<cv::Mat> CalibrateCameraChessboardBase::getChessboardPoses()
+std::vector<cv::Mat> CalibrateCameraChessboardBase::getChessboardPoses()
 {
     return chessboardposes;
 }
@@ -508,7 +508,7 @@ bool CalibrateCameraChessboardROS::refreshImage()
 bool CalibrateCameraChessboardROS::grabCalibData()
 {
     camerasub->stopReceiveSlot();
-    cv::vector<cv::Point2f> grid2dpoint;
+    std::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
     bool found=false;
     switch(boardtype)
@@ -662,7 +662,7 @@ void CalibrateCameraVelodyneChessboardBase::projectPointsSlot()
             camerapoints.at<double>(j,2)=double(calibvelodynespoints[i]->points[j].z);
         }
         camerapoints=camerapoints*invR.t()+cv::Mat::ones(m,1,CV_64F)*invT.t();
-        cv::vector<cv::Point2d> planepoints;
+        std::vector<cv::Point2d> planepoints;
         planepoints.resize(m);
         for(j=0;j<m;j++)
         {
@@ -1177,7 +1177,7 @@ bool CalibrateCameraVelodyneChessboardROS::grabCalibData()
     camerasub->stopReceiveSlot();
     velodynesub->stopReceiveSlot();
 
-    cv::vector<cv::Point2f> grid2dpoint;
+    std::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
     bool found=false;
     switch(boardtype)
@@ -1344,7 +1344,7 @@ void CalibrateCameraLidarChessboardBase::projectPointsSlot()
             camerapoints.at<double>(j,2)=double(0);
         }
         camerapoints=camerapoints*invR.t()+cv::Mat::ones(m,1,CV_64F)*invT.t();
-        cv::vector<cv::Point2d> planepoints;
+        std::vector<cv::Point2d> planepoints;
         planepoints.resize(m);
         for(j=0;j<m;j++)
         {
@@ -1658,7 +1658,7 @@ bool CalibrateCameraLidarChessboardROS::grabCalibData()
     camerasub->stopReceiveSlot();
     lidarsub->stopReceiveSlot();
 
-    cv::vector<cv::Point2f> grid2dpoint;
+    std::vector<cv::Point2f> grid2dpoint;
     CHESSBOARDTYPE boardtype=CHESSBOARDTYPE(chessboardtype->currentIndex());
     bool found=false;
     switch(boardtype)

@@ -18,6 +18,11 @@
 	<arg name="clustering_distances" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
 	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
+	<arg name="cluster_merge_threshold" default="1.5" />
+	
+	<arg name="use_vector_map" default="true" />
+	<arg name="vectormap_frame" default="map" />
+	
 	<arg name="output_frame" default="velodyne" />
 	
 	<arg name="remove_points_upto" default="0.0" />
@@ -26,7 +31,7 @@
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
 
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
-	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster">
+	<node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster" output="screen">
 		<param name="points_node" value="$(arg points_node)" /> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
 		<param name="remove_ground" value="$(arg remove_ground)" />
 		<param name="downsample_cloud" value="$(arg downsample_cloud)" />
@@ -42,7 +47,10 @@
 		<param name="clip_min_height" value="$(arg clip_min_height)" />
 		<param name="clip_max_height" value="$(arg clip_max_height)" />
 		<param name="output_frame" value="$(arg output_frame)" />
+		<param name="use_vector_map" value="$(arg use_vector_map)" />
+		<param name="vectormap_frame" value="$(arg vectormap_frame)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
+		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 

@@ -1,0 +1,9 @@
+<launch>
+  <arg name="ip" default="192.168.1.10"/>
+  <arg name="topic_name" default="points_raw"/>
+
+  <node name="hokuyo_3d" pkg="hokuyo" type="hokuyo_3d" output="log">
+	<param name="ip" value="$(arg ip)"/>
+	<remap from="hokuyo_cloud2" to="$(arg topic_name)"/>
+  </node>
+</launch>

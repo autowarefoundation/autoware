@@ -57,26 +57,26 @@ add_library(libtraj_gen lib/libtraj_gen.cpp)
 target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
 
 add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
-target_link_libraries(lattice_trajectory_gen gnss libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
+target_link_libraries(lattice_trajectory_gen libtraj_gen ${catkin_LIBRARIES})
 add_dependencies(lattice_trajectory_gen
-waypoint_follower_generate_messages_cpp
+waypoint_follower_msgs_generate_messages_cpp
 runtime_manager_generate_messages_cpp
 vehicle_socket_generate_messages_cpp)
 
 add_executable(lattice_twist_convert nodes/lattice_twist_convert/lattice_twist_convert.cpp)
-target_link_libraries(lattice_twist_convert libwaypoint_follower libtraj_gen ${catkin_LIBRARIES})
+target_link_libraries(lattice_twist_convert libtraj_gen ${catkin_LIBRARIES})
 add_dependencies(lattice_twist_convert 
-waypoint_follower_generate_messages_cpp
+waypoint_follower_msgs_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
 add_executable(lattice_velocity_set nodes/lattice_velocity_set/lattice_velocity_set.cpp nodes/lattice_velocity_set/libvelocity_set.cpp)
-target_link_libraries(lattice_velocity_set libwaypoint_follower ${catkin_LIBRARIES})
+target_link_libraries(lattice_velocity_set ${catkin_LIBRARIES})
 add_dependencies(lattice_velocity_set 
-waypoint_follower_generate_messages_cpp
+waypoint_follower_msgs_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
 add_executable(path_select nodes/path_select/path_select.cpp)
-target_link_libraries(path_select libwaypoint_follower  ${catkin_LIBRARIES})
+target_link_libraries(path_select ${catkin_LIBRARIES})
 add_dependencies(path_select 
-waypoint_follower_generate_messages_cpp)
+waypoint_follower_msgs_generate_messages_cpp)
 

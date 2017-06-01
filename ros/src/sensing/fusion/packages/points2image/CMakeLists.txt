@@ -4,7 +4,6 @@ project(points2image)
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rosinterface
   std_msgs
   sensor_msgs
   rosinterface
@@ -106,7 +105,6 @@ add_dependencies(points2vscan
 
 target_link_libraries(points2vscan
   ${catkin_LIBRARIES}
-  rosinterface
   nlopt
   ${Qt5Core_LIBRARIES}
   ${Qt5Widgets_LIBRARIES}
