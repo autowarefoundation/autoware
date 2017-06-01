@@ -86,7 +86,7 @@ namespace darknet
 			j += offset;
 		}
 
-		if (darknet_network_.w == width && darknet_network_.h == height)
+		if (darknet_network_.w == (int) width && darknet_network_.h == (int) height)
 		{
 			return im;
 		}
@@ -116,13 +116,13 @@ namespace darknet
 		{
 			int class_id = max_index(darknet_box_scores_[i], num_classes);
 			float prob = darknet_box_scores_[i][class_id];
-			if (prob > 0.3)
+			//if (prob > 0.3)
 			{
 				RectClassScore<float> detection;
 				box b = darknet_boxes_[i];
 
-				detection.x = b.x;
-				detection.y = b.y;
+				detection.x = b.x - b.w/2.;
+				detection.y = b.y - b.h/2.;
 				detection.w = b.w;
 				detection.h = b.h;
 				detection.score = prob;
