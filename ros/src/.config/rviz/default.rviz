@@ -137,18 +137,6 @@ Visualization Manager:
         zebra_zone: true
       Queue Size: 100
       Value: true
-    - Class: rviz/Image
-      Enabled: true
-      Image Topic: /image_raw
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: raw
-      Unreliable: false
-      Value: true
     - Class: rviz/Camera
       Enabled: false
       Image Rendering: overlay
@@ -383,43 +371,6 @@ Visualization Manager:
         global_velocity_lane_1: true
       Queue Size: 100
       Value: true
-    - Buffer length: 100
-      Class: jsk_rviz_plugin/Plotter2D
-      Enabled: true
-      Name: km/h
-      Show Value: true
-      Topic: /linear_velocity_viz
-      Value: true
-      auto color change: false
-      auto scale: true
-      background color: 0; 0; 0
-      backround alpha: 0
-      border: true
-      caption: true
-      foreground alpha: 0.6
-      foreground color: 25; 255; 240
-      height: 100
-      left: 10
-      linewidth: 1
-      max color: 255; 0; 0
-      max value: 1
-      min value: -1
-      text size: 12
-      top: 10
-      update interval: 0.04
-      width: 100
-    - Class: jsk_rviz_plugin/BoundingBoxArray
-      Enabled: true
-      Name: Bounding Boxes
-      Topic: /bounding_boxes
-      Unreliable: false
-      Value: true
-      alpha: 0.8
-      color: 25; 255; 0
-      coloring: Auto
-      line width: 0.005
-      only edge: false
-      show coords: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /waypoint_guide
@@ -494,6 +445,4 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1440
-  X: 1895
-  Y: 44
+
