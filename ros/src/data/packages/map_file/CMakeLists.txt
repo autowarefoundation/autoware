@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   waypoint_follower
+  waypoint_follower_msgs
   vector_map
 )
 pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
@@ -41,7 +42,7 @@ add_library(get_file
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file curl)
-add_dependencies(points_map_loader waypoint_follower_generate_messages_cpp)
+add_dependencies(points_map_loader waypoint_follower_msgs_generate_messages_cpp)
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file curl vector_map)
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file curl)

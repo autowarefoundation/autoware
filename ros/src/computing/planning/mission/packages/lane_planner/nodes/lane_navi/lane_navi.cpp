@@ -34,7 +34,7 @@
 #include <tf/transform_datatypes.h>
 
 #include <vector_map/vector_map.h>
-#include <waypoint_follower/LaneArray.h>
+#include <waypoint_follower_msgs/LaneArray.h>
 
 #include <lane_planner/vmap.hpp>
 
@@ -50,7 +50,7 @@ ros::Publisher waypoint_pub;
 
 lane_planner::vmap::VectorMap all_vmap;
 lane_planner::vmap::VectorMap lane_vmap;
-tablet_socket::route_cmd cached_route;
+tablet_socket_msgs::route_cmd cached_route;
 
 std::vector<std::string> split(const std::string& str, char delim)
 {
@@ -90,7 +90,7 @@ int count_lane(const lane_planner::vmap::VectorMap& vmap)
 	return lcnt;
 }
 
-void create_waypoint(const tablet_socket::route_cmd& msg)
+void create_waypoint(const tablet_socket_msgs::route_cmd& msg)
 {
 	std_msgs::Header header;
 	header.stamp = ros::Time::now();
@@ -123,9 +123,9 @@ void create_waypoint(const tablet_socket::route_cmd& msg)
 		fine_vmaps.push_back(v);
 	}
 
-	waypoint_follower::LaneArray lane_waypoint;
+	waypoint_follower_msgs::LaneArray lane_waypoint;
 	for (const lane_planner::vmap::VectorMap& v : fine_vmaps) {
-		waypoint_follower::lane l;
+		waypoint_follower_msgs::lane l;
 		l.header = header;
 		l.increment = 1;
 
@@ -147,7 +147,7 @@ void create_waypoint(const tablet_socket::route_cmd& msg)
 				yaw = atan2(p2.y - p1.y, p2.x - p1.x);
 			}
 
-			waypoint_follower::waypoint w;
+			waypoint_follower_msgs::waypoint w;
 			w.pose.header = header;
 			w.pose.pose.position = lane_planner::vmap::create_geometry_msgs_point(v.points[i]);
 			w.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
@@ -237,7 +237,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	waypoint_pub = n.advertise<waypoint_follower::LaneArray>("/lane_waypoints_array", pub_waypoint_queue_size,
+	waypoint_pub = n.advertise<waypoint_follower_msgs::LaneArray>("/lane_waypoints_array", pub_waypoint_queue_size,
 								 pub_waypoint_latch);
 
 	ros::Subscriber route_sub = n.subscribe("/route_cmd", sub_route_queue_size, create_waypoint);

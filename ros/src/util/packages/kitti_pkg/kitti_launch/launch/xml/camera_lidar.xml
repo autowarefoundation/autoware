@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<launch>
+  <!-- calibration -->
+  <arg name="file" default="$(find kitti_launch)/calib/kitti_cam02_sync.yml" />
+  <arg name="register_lidar2camera_tf" default="true"/>
+  <arg name="publish_extrinsic_mat" default="true"/>
+  <arg name="publish_camera_info" default="true"/>
+
+  <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" args="$(arg file)">
+    <remap from="/image_raw" to="kitti_player/color/left/image_rect"/>
+    <param name="register_lidar2camera_tf" type="bool" value="$(arg register_lidar2camera_tf)"/>
+    <param name="publish_extrinsic_mat" type="bool" value="$(arg publish_extrinsic_mat)"/>
+    <param name="publish_camera_info" type="bool" value="$(arg publish_camera_info)"/>
+  </node>
+
+  <node pkg="topic_tools" type="relay" name="relay_camera_info" args="/camera/camera_info /camera_info"/>
+
+</launch>

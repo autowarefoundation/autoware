@@ -61,16 +61,17 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
+static double measurement_range;
 
 static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& input)
 {
   ring_div = input->ring_div;
   voxel_leaf_size = input->voxel_leaf_size;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  pcl::PointXYZI p;
   pcl::PointCloud<pcl::PointXYZI> scan;
   pcl::PointCloud<velodyne_pointcloud::PointXYZIR> tmp;
   sensor_msgs::PointCloud2 filtered_msg;
@@ -84,11 +85,15 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = tmp.begin(); item != tmp.end(); item++)
   {
-    p.x = (double)item->x;
-    p.y = (double)item->y;
-    p.z = (double)item->z;
-    p.intensity = (double)item->intensity;
-    if (item->ring % ring_div == 0)
+    pcl::PointXYZI p;
+    p.x = item->x;
+    p.y = item->y;
+    p.z = item->z;
+    p.intensity = item->intensity;
+
+    double distance = sqrt(p.x * p.x + p.y * p.y);
+
+    if (item->ring % ring_div == 0 && distance <= measurement_range)
     {
       scan.points.push_back(p);
     }
@@ -124,6 +129,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "ring_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = scan.size();
   if (voxel_leaf_size >= 0.1)
   {

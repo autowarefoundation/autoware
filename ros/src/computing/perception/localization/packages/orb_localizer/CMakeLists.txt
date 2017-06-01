@@ -17,7 +17,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 # Force using C++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
-find_package (Boost REQUIRED COMPONENTS system python)
+find_package (Boost REQUIRED COMPONENTS system serialization python)
 find_package (OpenCV REQUIRED)
 find_package (OpenGL REQUIRED)
 find_package (GLEW REQUIRED)
@@ -25,9 +25,10 @@ find_package (BLAS REQUIRED)
 find_package (LAPACK REQUIRED)
 find_package (GLUT REQUIRED)
 find_package (OpenMP)
-find_package (Eigen3 3.1.0 REQUIRED)
+find_package (Eigen3 REQUIRED)
 find_package (PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package (PythonLibs REQUIRED)
+find_package (X11 REQUIRED)
 
 
 add_message_files (
@@ -56,12 +57,6 @@ add_custom_target (orb_vocabulary ALL
 )
 add_definitions ( 
 	-DORB_SLAM_VOCABULARY="${orb_slam_vocabulary_file}"
-)
-
-# Configuration file
-configure_file (
-	config/orb-slam2.yaml.in
-	${CATKIN_DEVEL_PREFIX}/share/${PROJECT_NAME}/orb-slam2.yaml
 )
 
 # For building Pangolin
@@ -154,6 +149,8 @@ target_link_libraries (
 add_executable (
 	orb_matching
 		nodes/orb_matching/orb_matching.cpp
+		nodes/orb_matching/Matcher.cpp
+#		nodes/orb_matching/FusionOdometry.cpp
 		nodes/common.cpp
 )
 
@@ -162,6 +159,23 @@ target_link_libraries (
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
 )
+
+
+add_executable (
+	orb_matching_pf
+		nodes/orb_matching/orb_matching_pf.cpp
+		nodes/orb_matching/Matcher.cpp
+		nodes/orb_matching/FusionOdometry.cpp
+		nodes/common.cpp
+)
+
+target_link_libraries (
+	orb_matching_pf
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
+)
+
+
 
 add_executable (dumpmap
 	nodes/dumpmap/dumpmap.cc
@@ -172,14 +186,45 @@ target_link_libraries (dumpmap
 	${LINK_LIBRARIES}
 )
 
+
 add_executable (
-	orb_evaluator
-		nodes/orb_evaluator/orb_evaluator.cpp
+	orb_mapping_offline
+		nodes/orb_mapping/orb_mapping_offline.cpp
+		nodes/common.cpp
 )
 
 target_link_libraries (
-	orb_evaluator
-		${catkin_LIBRARIES}
+	orb_mapping_offline
 		${ORB_BIN_LINKS}
 		${LINK_LIBRARIES}
+		boost_program_options
 )
+
+
+add_executable (
+        map_publisher
+                nodes/visualization/map_publisher.cc
+                nodes/common.cpp
+)
+
+target_link_libraries (
+        map_publisher
+                ${catkin_LIBRARIES}
+                ${ORB_BIN_LINKS}
+                ${LINK_LIBRARIES}
+)
+
+
+
+add_executable (
+	imgprocx
+		nodes/imgprocx/imgprocx.cpp
+		nodes/imgprocx/ImagePreprocessor.cpp
+)
+
+target_link_libraries (
+	imgprocx
+		${catkin_LIBRARIES}
+)
+
+

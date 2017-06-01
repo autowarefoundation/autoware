@@ -15,6 +15,10 @@
   <build_depend>tf</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
+  <build_depend>grid_map_ros</build_depend>
+  <build_depend>grid_map_cv</build_depend>
+  <build_depend>grid_map_msgs</build_depend>
+  <build_depend>lidar_tracker</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>pcl_ros</run_depend>
@@ -22,6 +26,11 @@
   <run_depend>tf</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
+
+  <run_depend>grid_map_ros</run_depend>
+  <run_depend>grid_map_cv</run_depend>
+  <run_depend>grid_map_msgs</run_depend>
+  <run_depend>lidar_tracker</run_depend>
 
   <export>
   </export>

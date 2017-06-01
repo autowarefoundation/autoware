@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<launch>
+  
+  <!-- topic name of points -->
+  <arg name="points_topic" value="/points_raw"/>
+
+  <!-- eaclidean_cluster -->
+  <arg name="publish_ground" default="false" />
+  <arg name="publish_filtered" default="false" />
+
+  <node pkg="points2image" type="points2image" name="points2image" output="screen"/>
+
+  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+<!--
+  <node pkg="lidar_tracker" type="euclidean_cluster" name="euclidean_cluster">
+    <param name="points_node" value="$(arg points_topic)" />
+    <param name="publish_ground" value="$(arg publish_ground)" />
+    <param name="publish_filtered" value="$(arg publish_filtered)" />
+  </node>
+-->
+
+</launch>
