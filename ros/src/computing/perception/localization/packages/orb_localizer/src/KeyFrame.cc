@@ -83,6 +83,17 @@ void KeyFrame::ComputeBoW()
     }
 }
 
+
+void KeyFrame::RecomputeBoW (ORBVocabulary *newvoc)
+{
+	mpORBvocabulary = newvoc;
+	mBowVec.clear();
+	mFeatVec.clear();
+	vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
+	mpORBvocabulary->transform (vCurrentDesc, mBowVec, mFeatVec, 4);
+}
+
+
 void KeyFrame::SetPose(const cv::Mat &Tcw_)
 {
     unique_lock<mutex> lock(mMutexPose);
@@ -730,11 +741,18 @@ void KeyFrame::fixConnections (Map *smap, KeyFrameDatabase *kfdb)
 void KeyFrame::getDirectionVector (float &dirX, float &dirY, float &dirZ)
 {
 	cv::Mat orient = this->GetRotation().t();
-	vector<float> q = ORB_SLAM2::Converter::toQuaternion(orient);
-	float norm = sqrtf(q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
-	dirX = q[0]/norm;
-	dirY = q[1]/norm;
-	dirZ = q[2]/norm;
+//	Eigen::Quaterniond q = ORB_SLAM2::Converter::toQuaternion(orient);
+//	float norm = sqrtf(q.x()*q.x() + q.y()*q.y() + q.z()*q.z());
+//	dirX = q.x()/norm;
+//	dirY = q.y()/norm;
+//	dirZ = q.z()/norm;
+	dirX = orient.at<float>(0,2);
+	dirY = orient.at<float>(1,2);
+	dirZ = orient.at<float>(2,2);
+	float norm = sqrtf(dirX*dirX + dirY*dirY + dirZ*dirZ);
+	dirX /= norm;
+	dirY /= norm;
+	dirZ /= norm;
 }
 
 

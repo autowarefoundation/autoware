@@ -57,7 +57,7 @@ static void show(void)
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_msg, encoding);
 	IplImage frame = cv_image->image;
 
-	cv::Mat matImage(&frame, false);
+	cv::Mat matImage=cv::cvarrToMat(&frame);//(&frame, false);
 
 	int w = matImage.size().width;
 	int h = matImage.size().height;

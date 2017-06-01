@@ -160,11 +160,8 @@ void MainWindow::SendCAN(void)
 
   // send drive mode in addition to CAN.
   UpdateState();
-  if (ZMP_DRV_CONTROLLED() && ZMP_STR_CONTROLLED()) {
-    drvmode = CMD_MODE_PROGRAM;
-  } else {
-    drvmode = CMD_MODE_MANUAL;
-  }
+  drvmode = ZMP_STR_CONTROLLED() ? CAN_MODE_STR:0;
+  drvmode |= ZMP_DRV_CONTROLLED() ? CAN_MODE_DRV:0;
   
   wrapSender();
 }

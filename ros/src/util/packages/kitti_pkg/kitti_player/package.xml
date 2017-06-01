@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package>
+  <name>kitti_player</name>
+  <version>1.0.2</version>
+  <description>
+	This node aims to play the kitti data into ROS. This repository is a 
+	catkin upgrade from the original work by Francesco Sacchi
+	http://irawiki.disco.unimib.it/irawiki/index.php/Kitti_Player
+  </description>
+
+  <maintainer email="ballardini@disco.unimib.it">Augusto Luis Ballardini</maintainer>
+
+  <license>BSD</license>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+	<!--
+	<depend package="bullet"/>
+	<depend package="sensor_msgs"/>
+	<depend package="rospy"/>
+	-->
+
+	<build_depend>roscpp</build_depend>
+	<build_depend>tf</build_depend>
+	<build_depend>message_filters</build_depend>
+	<build_depend>dynamic_reconfigure</build_depend>   
+	<build_depend>pcl_ros</build_depend>
+    
+  	<run_depend>roscpp</run_depend>
+	<run_depend>tf</run_depend>
+	<run_depend>message_filters</run_depend>
+	<run_depend>dynamic_reconfigure</run_depend>   
+	<run_depend>pcl_ros</run_depend>
+
+</package>
