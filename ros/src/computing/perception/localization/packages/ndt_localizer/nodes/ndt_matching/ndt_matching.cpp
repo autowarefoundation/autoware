@@ -203,6 +203,9 @@ static bool _get_height = false;
 static bool _use_local_transform = false;
 static bool _use_imu = false;
 static bool _use_odom = false;
+static bool _imu_upside_down = false;
+
+static std::string _imu_topic = "/imu_raw";
 
 static std::ofstream ofs;
 static std::string filename;
@@ -631,9 +634,35 @@ static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
   odom_calc(input->header.stamp);
 }
 
-static void imu_callback(const sensor_msgs::Imu::ConstPtr& input)
+static void imuUpsideDown(const sensor_msgs::Imu::Ptr input)
+{
+  double input_roll, input_pitch, input_yaw;
+
+  tf::Quaternion input_orientation;
+  tf::quaternionMsgToTF(input->orientation, input_orientation);
+  tf::Matrix3x3(input_orientation).getRPY(input_roll, input_pitch, input_yaw);
+
+  input->angular_velocity.x *= -1;
+  input->angular_velocity.y *= -1;
+  input->angular_velocity.z *= -1;
+
+  input->linear_acceleration.x *= -1;
+  input->linear_acceleration.y *= -1;
+  input->linear_acceleration.z *= -1;
+
+  input_roll  *= -1;
+  input_pitch *= -1;
+  input_yaw   *= -1;
+
+  input->orientation = tf::createQuaternionMsgFromRollPitchYaw(input_roll, input_pitch, input_yaw);
+}
+
+static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 {
   std::cout << __func__ << std::endl;
+
+  if(_imu_upside_down)
+    imuUpsideDown(input);
 
   const ros::Time current_time = input->header.stamp;
   static ros::Time previous_time = current_time;
@@ -1124,36 +1153,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       exit(1);
     }
     static ros::Time start_time = input->header.stamp;
-/*
-    ofs << input->header.seq << "," << input->header.stamp << "," << input->header.stamp - start_time << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
-        << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
-        << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
-        << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
-        << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
-        << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
-        << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
-        << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
-        << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
-        << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time 
-        <<"," << predict_pose_imu.x << "," << predict_pose_imu.y << "," << predict_pose_imu.z << ","
-        << predict_pose_imu.roll << "," << predict_pose_imu.pitch << ","  << predict_pose_imu.yaw << ","
-        << current_pose.x - predict_pose_imu.x << "," << current_pose.y - predict_pose_imu.y << ","
-        << current_pose.z - predict_pose_imu.z << "," << current_pose.roll - predict_pose_imu.roll << ","
-        << current_pose.pitch - predict_pose_imu.pitch << "," << current_pose.yaw - predict_pose_imu.yaw << ","
 
-        <<"," << predict_pose_odom.x << "," << predict_pose_odom.y << "," << predict_pose_odom.z << ","
-        << predict_pose_odom.roll << "," << predict_pose_odom.pitch << ","  << predict_pose_odom.yaw << ","
-        << current_pose.x - predict_pose_odom.x << "," << current_pose.y - predict_pose_odom.y << ","
-        << current_pose.z - predict_pose_odom.z << "," << current_pose.roll - predict_pose_odom.roll << ","
-        << current_pose.pitch - predict_pose_odom.pitch << "," << current_pose.yaw - predict_pose_odom.yaw << ","
-        <<"," << predict_pose_imu_odom.x << "," << predict_pose_imu_odom.y << "," << predict_pose_imu_odom.z << ","
-        << predict_pose_imu_odom.roll << "," << predict_pose_imu_odom.pitch << ","  << predict_pose_imu_odom.yaw << ","
-        << current_pose.x - predict_pose_imu_odom.x << "," << current_pose.y - predict_pose_imu_odom.y << ","
-        << current_pose.z - predict_pose_imu_odom.z << "," << current_pose.roll - predict_pose_imu_odom.roll << ","
-        << current_pose.pitch - predict_pose_imu_odom.pitch << "," << current_pose.yaw - predict_pose_imu_odom.yaw << ","
-        << std::endl;
-*/
     ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
         << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
         << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
@@ -1276,6 +1276,8 @@ int main(int argc, char** argv)
   private_nh.getParam("use_local_transform", _use_local_transform);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
+  private_nh.getParam("imu_upside_down", _imu_upside_down);
+  private_nh.getParam("imu_topic", _imu_topic);
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -1323,7 +1325,9 @@ int main(int argc, char** argv)
   std::cout << "use_local_transform: " << _use_local_transform << std::endl;
   std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
+  std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "localizer: " << _localizer << std::endl;
+  std::cout << "imu_topic: " << _imu_topic << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
   std::cout << "-----------------------------------------------------------------" << std::endl;
@@ -1371,7 +1375,7 @@ int main(int argc, char** argv)
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size*10, odom_callback);
-  ros::Subscriber imu_sub = nh.subscribe("/imu_raw", _queue_size*10, imu_callback);
+  ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size*10, imu_callback);
 
   ros::spin();
 

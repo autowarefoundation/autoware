@@ -138,6 +138,10 @@ static bool isMapUpdate = true;
 static bool _use_openmp = false;
 static bool _use_imu = false;
 static bool _use_odom = false;
+static bool _imu_upside_down = false;
+
+static std::string _imu_topic = "/imu_raw";
+
 
 static double fitness_score;
 
@@ -343,12 +347,44 @@ static double wrapToPmPi(double a_angle_rad)
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
+  std::cout << __func__ << std::endl;
+
   odom = *input;
   odom_calc(input->header.stamp);
 }
 
-static void imu_callback(const sensor_msgs::Imu::ConstPtr& input)
+
+static void imuUpsideDown(const sensor_msgs::Imu::Ptr input)
 {
+  double input_roll, input_pitch, input_yaw;
+
+  tf::Quaternion input_orientation;
+  tf::quaternionMsgToTF(input->orientation, input_orientation);
+  tf::Matrix3x3(input_orientation).getRPY(input_roll, input_pitch, input_yaw);
+
+  input->angular_velocity.x *= -1;
+  input->angular_velocity.y *= -1;
+  input->angular_velocity.z *= -1;
+
+  input->linear_acceleration.x *= -1;
+  input->linear_acceleration.y *= -1;
+  input->linear_acceleration.z *= -1;
+
+  input_roll  *= -1;
+  input_pitch *= -1;
+  input_yaw   *= -1;
+
+  input->orientation = tf::createQuaternionMsgFromRollPitchYaw(input_roll, input_pitch, input_yaw);
+}
+
+
+static void imu_callback(const sensor_msgs::Imu::Ptr& input)
+{
+  std::cout << __func__ << std::endl;
+
+  if(_imu_upside_down)
+    imuUpsideDown(input);
+
   const ros::Time current_time = input->header.stamp;
   static ros::Time previous_time = current_time;
   const double diff_time =  (current_time - previous_time).toSec();
@@ -770,10 +806,15 @@ int main(int argc, char** argv)
   private_nh.getParam("use_openmp", _use_openmp);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
+  private_nh.getParam("imu_upside_down", _imu_upside_down);
+  private_nh.getParam("imu_topic", _imu_topic);
 
   std::cout << "use_openmp: " << _use_openmp << std::endl;
   std::cout << "use_imu: " << _use_imu << std::endl;
+  std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
+
+  std::cout << "imu_topic: " << _imu_topic << std::endl;
 
   if (nh.getParam("tf_x", _tf_x) == false)
   {
@@ -830,7 +871,7 @@ int main(int argc, char** argv)
   ros::Subscriber output_sub = nh.subscribe("config/ndt_mapping_output", 10, output_callback);
   ros::Subscriber points_sub = nh.subscribe("points_raw", 100000, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/odom_pose", 100000, odom_callback);
-  ros::Subscriber imu_sub = nh.subscribe("/imu_raw", 100000, imu_callback);
+  ros::Subscriber imu_sub = nh.subscribe(_imu_topic, 100000, imu_callback);
 
   ros::spin();
 
