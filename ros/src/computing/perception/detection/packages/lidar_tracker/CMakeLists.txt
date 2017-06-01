@@ -13,11 +13,25 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   tf
   jsk_recognition_msgs
+  jsk_rviz_plugins
   rosinterface
+  cv_bridge
+  cv_tracker_msgs
 )
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if ("${ROS_VERSION}" MATCHES "(kinetic)")
+	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
+else()
+	pkg_check_modules(OpenCV REQUIRED)
+endif()
 
 execute_process(
   COMMAND pkg-config --variable=host_bins Qt5Core
@@ -75,6 +89,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
    geometry_msgs
    sensor_msgs
    jsk_recognition_msgs
+   jsk_rviz_plugins
  )
 
 
@@ -88,23 +103,39 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros
+   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros vector_map_server
 )
 
 include_directories(
   nodes/euclidean_cluster/includes
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  include
 )
 link_directories(${PCL_LIBRARY_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+
+#LidarFuser
+#add_executable(lidar_fuser nodes/lidar_fuser/lidar_fuser.cpp)
+#target_link_libraries(lidar_fuser opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+#add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
 
 #Euclidean Cluster
 add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
-target_link_libraries(euclidean_cluster opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp)
+target_link_libraries(euclidean_cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
 
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
-target_link_libraries(svm_lidar_detect ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+#add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
+target_link_libraries (svm_lidar_detect PRIVATE
+	${catkin_LIBRARIES} 
+	${PCL_LIBRARIES} 
+#	svm
+	${OpenCV_LIBRARIES}	
+)
+
+#target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
 add_dependencies(svm_lidar_detect lidar_tracker_generate_messages_cpp)
 
 #ParticleFilter Track
@@ -113,7 +144,14 @@ target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(pf_lidar_track lidar_tracker_generate_messages_cpp)
 
 #KalmanFilter Track
-add_executable(kf_lidar_track nodes/kf_lidar_track/kf_lidar_track.cpp)
+add_executable(kf_lidar_track 
+				nodes/kf_lidar_track/kf_lidar_track.cpp 
+				nodes/kf_lidar_track/KfLidarTracker.cpp 
+				nodes/kf_lidar_track/HungarianAlg.cpp
+				nodes/kf_lidar_track/Kalman.cpp
+				nodes/euclidean_cluster/Cluster.cpp
+				)
+target_include_directories(kf_lidar_track PRIVATE nodes/kf_lidar_track/includes)
 target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(kf_lidar_track lidar_tracker_generate_messages_cpp)
 
@@ -129,7 +167,7 @@ target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #Object Fusion
 add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
-add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp cv_tracker_generate_messages_cpp)
+add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp)
 
 # Vscan Track
 execute_process(
@@ -210,16 +248,14 @@ if(EXISTS "/usr/local/cuda")
     )
   add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
 
-  # find_package(Qt5Core REQUIRED)
-  # find_package(Qt5Widgets REQUIRED)
-
-  #QT Stuff
-
   FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
 
-  # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_${CUDA_CAPABILITY_VERSION},code=sm_${CUDA_CAPABILITY_VERSION};-std=c++11)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
+  if ("${ROS_VERSION}" MATCHES "(kinetic)")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH})
+  else()
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
+  endif()
 
   INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS})
@@ -258,12 +294,11 @@ if(EXISTS "/usr/local/cuda")
     vehicle_tracker_moc_mainwindow
     vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
-    cv_tracker_generate_messages_cpp
+    cv_tracker_msgs_generate_messages_cpp
     )
 
   target_link_libraries(vscan_lidar_track
     ${catkin_LIBRARIES}
-    rosinterface
     ${Qt5Core_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     rbsspfvehicletracker

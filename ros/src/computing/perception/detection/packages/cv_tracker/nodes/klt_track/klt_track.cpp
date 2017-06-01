@@ -37,15 +37,15 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker/image_obj.h>
-#include <cv_tracker/image_obj_tracked.h>
-#include <cv_tracker/image_obj_ranged.h>
+#include <cv_tracker_msgs/image_obj.h>
+#include <cv_tracker_msgs/image_obj_tracked.h>
+#include <cv_tracker_msgs/image_obj_ranged.h>
 
 //TRACKING STUFF
 #include <opencv2/core/core.hpp>
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/contrib/contrib.hpp>
+//#include <opencv2/contrib/contrib.hpp>
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
@@ -59,6 +59,7 @@
 #include <algorithm>
 #include <iterator>
 
+#include "gencolors.cpp"
 
 class RosTrackerApp
 {
@@ -78,13 +79,13 @@ class RosTrackerApp
 	int					num_trackers_;
 
 	std::vector<LkTracker*> obj_trackers_;
-	std::vector<cv::LatentSvmDetector::ObjectDetection> obj_detections_;
+	std::vector<ObjectDetection> obj_detections_;
 
 	std::vector<float> ranges_;
 	std::vector<float> min_heights_;
 	std::vector<float> max_heights_;
 
-	cv_tracker::image_obj_tracked ros_objects_msg_;//sync
+	cv_tracker_msgs::image_obj_tracked ros_objects_msg_;//sync
 
 	void Sort(const std::vector<float> in_scores, std::vector<unsigned int>& in_out_indices)
 	{
@@ -121,7 +122,7 @@ class RosTrackerApp
 
 		for(unsigned int i = 0; i< in_out_source.size(); i++)
 		{
-			cv::LatentSvmDetector::ObjectDetection tmp = in_out_source[i]->GetTrackedObject();
+			ObjectDetection tmp = in_out_source[i]->GetTrackedObject();
 			area[i] = tmp.rect.width * tmp.rect.height;
 			if (area[i]>0)
 				is_suppresed[i] = false;
@@ -187,7 +188,10 @@ public:
 	{
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
 		cv::Mat image_track = cv_image->image;
-		cv::LatentSvmDetector::ObjectDetection empty_detection(cv::Rect(0,0,0,0),0,0);
+		
+		ObjectDetection empty_detection;
+		empty_detection.rect=cv::Rect(0,0,0,0);
+		empty_detection.score=0;
 		unsigned int i;
 
 		std::vector<bool> tracker_matched(obj_trackers_.size(), false);
@@ -201,7 +205,7 @@ public:
 				if (tracker_matched[j] || object_matched[i])
 					continue;
 
-				cv::LatentSvmDetector::ObjectDetection tmp_detection = obj_detections_[i];
+				ObjectDetection tmp_detection = obj_detections_[i];
 				int area = tmp_detection.rect.width * tmp_detection.rect.height;
 				cv::Rect intersection = tmp_detection.rect & obj_trackers_[j]->GetTrackedObject().rect;
 				if ( (intersection.width * intersection.height) > area*0.3 )
@@ -256,13 +260,13 @@ public:
 
 		//copy results to ros msg
 		unsigned int num = obj_trackers_.size();
-		std::vector<cv_tracker::image_rect_ranged> rect_ranged_array;//tracked rectangles
+		std::vector<cv_tracker_msgs::image_rect_ranged> rect_ranged_array;//tracked rectangles
 		std::vector<int> real_data(num,0);//boolean array to show if data in rect_ranged comes from tracking or detection
 		std::vector<unsigned int> obj_id(num, 0);//id number for each rect_range
 		std::vector<unsigned int> lifespan(num, 0);//remaining lifespan of each rectranged
 		for(i=0; i < num; i++)
 		{
-			cv_tracker::image_rect_ranged rect_ranged;
+			cv_tracker_msgs::image_rect_ranged rect_ranged;
 			LkTracker tracker_tmp = *obj_trackers_[i];
 			rect_ranged.rect.x = tracker_tmp.GetTrackedObject().rect.x;
 			rect_ranged.rect.y = tracker_tmp.GetTrackedObject().rect.y;
@@ -288,7 +292,7 @@ public:
 		obj_detections_.clear();
         ranges_.clear();
 
-		cv_tracker::image_obj_tracked tmp_objects_msg;
+		cv_tracker_msgs::image_obj_tracked tmp_objects_msg;
 
 		tmp_objects_msg.type = tracked_type_;
 		tmp_objects_msg.total_num = num;
@@ -313,14 +317,14 @@ public:
 
 	}
 
-	void detections_callback(cv_tracker::image_obj_ranged image_objects_msg)
+	void detections_callback(cv_tracker_msgs::image_obj_ranged image_objects_msg)
 	{
 		//if(ready_)
 		//	return;
 		if (!detect_ready_)//must NOT overwrite, data is probably being used by tracking.
 		{
 			unsigned int num = image_objects_msg.obj.size();
-			std::vector<cv_tracker::image_rect_ranged> objects = image_objects_msg.obj;
+			std::vector<cv_tracker_msgs::image_rect_ranged> objects = image_objects_msg.obj;
 			tracked_type_ = image_objects_msg.type;
 			//points are X,Y,W,H and repeat for each instance
 			obj_detections_.clear();
@@ -333,7 +337,9 @@ public:
 				tmp.y = objects.at(i).rect.y;
 				tmp.width = objects.at(i).rect.width;
 				tmp.height = objects.at(i).rect.height;
-				obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+				ObjectDetection tmp_obj;
+				tmp_obj.rect=tmp; tmp_obj.score=0;
+				obj_detections_.push_back(tmp_obj);
 				ranges_.push_back(objects.at(i).range);
 				min_heights_.push_back(objects.at(i).min_height);
 				max_heights_.push_back(objects.at(i).max_height);
@@ -344,13 +350,13 @@ public:
 		publish_if_possible();
 		//ready_ = true;
 	}
-	/*void detections_callback(cv_tracker::image_obj image_objects_msg)
+	/*void detections_callback(cv_tracker_msgs::image_obj image_objects_msg)
 	{
 		if (ready_)
 			return;
 		ready_ = false;
 		unsigned int num = image_objects_msg.obj.size();
-		std::vector<cv_tracker::image_rect> objects = image_objects_msg.obj;
+		std::vector<cv_tracker_msgs::image_rect> objects = image_objects_msg.obj;
 		//object_type = image_objects_msg.type;
 		//points are X,Y,W,H and repeat for each instance
 		obj_detections_.clear();
@@ -362,7 +368,7 @@ public:
 			tmp.y = objects.at(i).y;
 			tmp.width = objects.at(i).width;
 			tmp.height = objects.at(i).height;
-			obj_detections_.push_back(cv::LatentSvmDetector::ObjectDetection(tmp, 0));
+			obj_detections_.push_back(ObjectDetection(tmp, 0));
 		}
 		ready_ = true;
 	}*/
@@ -400,7 +406,7 @@ public:
 		}
 
 
-		publisher_tracked_objects_ = node_handle_.advertise<cv_tracker::image_obj_tracked>("image_obj_tracked", 1);
+		publisher_tracked_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj_tracked>("image_obj_tracked", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		ROS_INFO("Subscribing to... %s", image_obj_topic_str.c_str());

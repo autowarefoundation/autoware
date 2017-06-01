@@ -4,7 +4,7 @@ project(pos_db)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
-  visualization_msgs
+  jsk_recognition_msgs
   tf
   cv_tracker
 )
@@ -34,7 +34,7 @@ add_library(pos_db
 )
 
 add_executable(pos_downloader nodes/pos_downloader/pos_downloader.cpp)
-target_link_libraries(pos_downloader ${catkin_LIBRARIES} gnss pos_db ssh2)
+target_link_libraries(pos_downloader ${catkin_LIBRARIES} pos_db ssh2)
 
 add_executable(pos_uploader nodes/pos_uploader/pos_uploader.cpp)
 target_link_libraries(pos_uploader ${catkin_LIBRARIES} pos_db ssh2)

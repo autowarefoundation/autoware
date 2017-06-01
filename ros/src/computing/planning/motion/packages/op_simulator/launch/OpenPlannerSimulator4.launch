@@ -1,0 +1,70 @@
+<!-- -->
+<launch>
+
+	<arg name="id" 							default="4" />
+
+	<arg name="width" 						default="1.85" />
+	<arg name="length" 						default="4.2" />
+	<arg name="wheelBaseLength" 			default="2.7" />
+	<arg name="turningRadius"				default="5.2" />
+	<arg name="maxSteerAngle" 				default="0.5" />
+				
+	<arg name="steeringDelay" 				default="1.2" />
+	<arg name="minPursuiteDistance" 		default="3.0" />		
+	
+	<arg name="maxVelocity" 				default="5.0"  />
+	<arg name="minVelocity" 				default="0.2"  />
+	<arg name="maxAcceleration"				default="5.6"   />
+	<arg name="maxDeceleration"				default="-5.0"   />
+	
+	<arg name="enableRvizPoseEst"			default="false"   />
+	<arg name="enableLooper"				default="true"   />
+	<arg name="startPoseX"					default="3738"   />
+	<arg name="startPoseY"					default="-99373"   />
+	<arg name="startPoseA"					default="-2.88"   />
+	
+	<arg name="meshPath" 					default="package://model_publisher/../../../.config/model/default.dae" />
+	<arg name="baseColorR"					default="0.5" />
+	<arg name="baseColorG"					default="0.5" />
+	<arg name="baseColorB"					default="0.5" />
+	
+	<arg name="mapSource" 					default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml file=2 -->
+	<arg name="mapFileName" 				default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" /> <!-- incase of kml map source -->
+	<arg name="logFolder" 					default="/home/hatem/SimuLogs/SimulatedCar4/" />
+	
+	<node pkg="op_simulator" type="op_simulator" name="op_simulator4" output="screen">
+		
+		<param name="id" 					value="$(arg id)" />
+		
+		<param name="width" 						value="$(arg width)" />
+		<param name="length" 						value="$(arg length)" />
+		<param name="wheelBaseLength" 				value="$(arg wheelBaseLength)" />
+		<param name="turningRadius" 				value="$(arg turningRadius)" />
+		<param name="maxSteerAngle" 				value="$(arg maxSteerAngle)" />
+		
+		<param name="steeringDelay" 				value="$(arg steeringDelay)" />
+		<param name="minPursuiteDistance" 			value="$(arg minPursuiteDistance)" />
+		
+		<param name="maxVelocity" 					value="$(arg maxVelocity)" />
+		<param name="minVelocity" 					value="$(arg minVelocity)" />		
+		<param name="maxAcceleration" 				value="$(arg maxAcceleration)" />
+		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
+		
+		<param name="enableRvizPoseEst" 			value="$(arg enableRvizPoseEst)" />
+		<param name="enableLooper" 					value="$(arg enableLooper)" />
+		<param name="startPoseX" 					value="$(arg startPoseX)" />
+		<param name="startPoseY" 					value="$(arg startPoseY)" />
+		<param name="startPoseA" 					value="$(arg startPoseA)" />
+		
+		<param name="meshPath" 						value="$(arg meshPath)" />
+		<param name="baseColorR" 					value="$(arg baseColorR)" />
+		<param name="baseColorG" 					value="$(arg baseColorG)" />
+		<param name="baseColorB" 					value="$(arg baseColorB)" />
+		
+		<param name="mapSource" 					value="$(arg mapSource)" />
+		<param name="mapFileName" 					value="$(arg mapFileName)" />		
+		<param name="logFolder" 					value="$(arg logFolder)" />
+		
+	</node>
+
+</launch>

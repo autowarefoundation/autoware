@@ -1073,7 +1073,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1097,7 +1099,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1154,7 +1158,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1178,7 +1184,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1208,7 +1216,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1230,7 +1240,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                    ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }
@@ -1269,7 +1281,9 @@ int main(int argc, char **argv)
                 ifstream timestamps(str_support.c_str());
                 if (!timestamps.is_open())
                 {
-                    ROS_ERROR_STREAM("Fail to open " << timestamps);
+                    string timestamps_string;
+                    timestamps >> timestamps_string;
+                     ROS_ERROR_STREAM("Fail to open " << timestamps_string);
                     node.shutdown();
                     return -1;
                 }

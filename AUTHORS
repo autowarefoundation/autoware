@@ -1,38 +1,44 @@
 Maintainers
 -----------
 PDSL, Nagoya University <http://www.pdsl.jp>
+PFLab, The University of Tokyo <http://www.pf.is.s.u-tokyo.ac.jp>
 AXE, Inc. <http://www.axe-inc.co.jp>
 Tier IV, Inc. <http://www.tier4.jp>
 
 Developers
 ----------
-Tomohito ANDO, Nagoya University
-Takuya AZUMI, Ritsumeikan University - Osaka University
-Yusuke FUJII, Ritsumeikan University - NTT
+Tomohito ANDO, Nagoya University - Tier IV (Nav IV)
+Yamato ANDO, Univeristy of Tsukuba - Tier IV
+Akihiro Aritoshi, The University of Tokyo - Tier IV (Map IV)
+Takuya AZUMI, Ritsumeikan University - Osaka University - Tier IV (Emb IV)
+Yusuke FUJII, Ritsumeikan University - NTT - Tier IV
+Daisuke Fukutomi, Ritsumeikan University - Tier IV (Plat IV)
 Tsuyoshi HAMADA, Nagasaki University
-Alexander (Mengwen) HE, Nagoya University
-Manato HIRABAYASHI, Nagoya University
+Alexander (Mengwen) HE, Nagoya University - CMU
+Manato HIRABAYASHI, Nagoya University - NRIPS
 Tomomi HORII, AXE
-Yuki IIDA, Ritsumeikan University
+Yuki IIDA, Ritsumeikan University - DeNA
 Yoshio ISHIGURO, Nagoya University
-Shinpei KATO, Nagoya University
+Shinpei KATO, Nagoya University - The University of Tokyo - Tier IV
 Masao KONDOH, AXE
-Yuki KITSUKAWA, Nagoya University
-Abraham MONRROY, Nagoya University
-Hiroki OHTA, Nagoya University
+Masahiro Kitazawa, The University of Tokyo - Tier IV (Map IV)
+Yuki KITSUKAWA, Nagoya University - Tier IV (Map IV)
+Abraham MONRROY, Nagoya University - Tier IV (Sense IV)
+Hiroki OHTA, Nagoya University - Tier IV (Nav IV) - Mitsubishi Electric
 Matthew O'KELLY, University of Pennsylvania
 Patricia ORTAL, Nagoya University
-Yukihiro SAITO, Ritsumeikan University
+Yukihiro SAITO, Ritsumeikan University - Tier IV (Plat IV) - SONY
 Tomoya SHOUJI, AXE
 Adi SUJIWO, Nagoya University
-Yuhei SUZUKI, Ritsumeikan University
+Yuhei SUZUKI, Ritsumeikan University - Tier IV (Plat IV)
 Eijiro TAKEUCHI, Nagoya University
+Yuki Tsuji, The University of Tokyo - Tier IV (Secure Engine)
 Hisashi USUDA, AXE
 Makoto YABUTA, Nagoya University - AISIN AW
-Kenjiro YAMADA, Nagoya University
-Syohei YOSHIDA, AXE
+Kenjiro YAMADA, Nagoya University - Tier IV (Unreal IV)
+Syohei YOSHIDA, AXE - DeNA
 
 Contact
 -------
-Shinpei KATO <shinpei@is.nagoya-u.ac.jp>
+Shinpei KATO <shinpei.kato@tier4.jp>/<shinpei@is.s.u-tokyo.ac.jp>
 Autoware Developers <autoware@googlegroups.com>

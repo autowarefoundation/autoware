@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.7
 
 from __future__ import division
 import os
@@ -32,6 +32,7 @@ class DataWriter:
         self.currentPose = None
         self.fps = fps
         self.bridge = CvBridge()
+        self.currentTimestamp = 0.0
 
         # Prepare multiprocessing
         self.dataEx = Lock()
@@ -51,7 +52,9 @@ class DataWriter:
                 cpPose = copy (self.currentPose)
                 self.dataEx.release()
                 
-                cv2.imwrite (self.path + "/{0:06d}.png".format(counter), self.currentImage)
+                curImageName = "{0:06d}.jpg".format (counter)
+                
+                cv2.imwrite (self.path + "/"+curImageName, self.currentImage)
                 poseStr = "{:.6f} {} {} {} {} {} {} {}".format(
                     rospy.Time.now().to_sec(),
                     cpPose.position.x,
@@ -76,7 +79,7 @@ def ImageCallback (imageMsg):
         return
     # Convert to OpenCV format
     logger.dataEx.acquire()
-    cImage = logger.bridge.imgmsg_to_cv2(imageMsg, 'bgr8')
+    cImage = logger.bridge.imgmsg_to_cv2(imageMsg, 'mono8')
     logger.currentImage = copy (cImage)
     logger.dataEx.release()
     
@@ -87,6 +90,7 @@ def PoseCallback (poseMsg):
     
     # Put into datawriter
     logger.dataEx.acquire()
+    logger.currentTimestamp = poseMsg.header.stamp.to_sec()
     logger.currentPose = copy(poseMsg.pose)
     logger.dataEx.release()
     
@@ -96,8 +100,8 @@ if __name__ == '__main__' :
     
     logger = DataWriter(sys.argv[1]) 
     
-    rospy.Subscriber ("/camera/image_raw", Image, ImageCallback)
-    rospy.Subscriber ("/filtered_ndt_current_pose", PoseStamped, PoseCallback)
+    rospy.Subscriber ("/camera/image_hs", Image, ImageCallback, queue_size=20)
+    rospy.Subscriber ("/filtered_ndt_current_pose", PoseStamped, PoseCallback, queue_size=100)
     
     rospy.spin()
     logger.close()
