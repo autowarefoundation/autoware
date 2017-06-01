@@ -4,7 +4,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <cv_tracker/image_obj.h>
+#include <cv_tracker_msgs/image_obj.h>
 
 #include <opencv2/contrib/contrib.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -54,7 +54,7 @@ class Yolo2DetectorNode
 	uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
 	uint32_t image_left_right_border_;
 
-	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, cv_tracker::image_obj& out_message, std::string in_class)
+	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, cv_tracker_msgs::image_obj& out_message, std::string in_class)
 	{
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
@@ -77,7 +77,7 @@ class Yolo2DetectorNode
 					)
 				)//check if the score is larger than minimum required
 			{
-				cv_tracker::image_rect rect;
+				cv_tracker_msgs::image_rect rect;
 
 				rect.x = (in_objects[i].x * darknet_image.w /image_ratio_) - image_left_right_border_/image_ratio_;
 				rect.y = (in_objects[i].y * darknet_image.h /image_ratio_) - image_top_bottom_border_/image_ratio_;
@@ -184,8 +184,8 @@ class Yolo2DetectorNode
 		//ROS_INFO("Detections: %ud", (unsigned int)detections.size());
 
 		//Prepare Output message
-		cv_tracker::image_obj output_car_message;
-		cv_tracker::image_obj output_person_message;
+		cv_tracker_msgs::image_obj output_car_message;
+		cv_tracker_msgs::image_obj output_person_message;
 		output_car_message.header = in_image_message->header;
 		output_car_message.type = "car";
 
@@ -258,8 +258,8 @@ public:
 		yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
 		ROS_INFO("Initialization complete.");
 
-		publisher_car_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_car/image_obj", 1);
-		publisher_person_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_person/image_obj", 1);
+		publisher_car_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj>("/obj_car/image_obj", 1);
+		publisher_person_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj>("/obj_person/image_obj", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo2DetectorNode::image_callback, this);
