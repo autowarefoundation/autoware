@@ -14,9 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_recognition_msgs
   pcl_conversions
   pcl_ros
-  op_utilityh
-  op_plannerh
-  op_simuh
+  op_utility
+  op_planner
+  op_simu
 )
 
 
@@ -27,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES way_planner
-  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utilityh op_plannerh op_simuh
+  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utility op_planner op_simu
   DEPENDS system_lib
 )
 

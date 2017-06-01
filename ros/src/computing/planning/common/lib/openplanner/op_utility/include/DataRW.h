@@ -66,7 +66,7 @@ public:
 	~SimpleReaderBase();
 
 protected:
-	bool ReadAllData();
+	int ReadAllData();
 	bool ReadSingleLine(std::vector<std::vector<std::string> >& line);
 
 };
@@ -78,7 +78,7 @@ protected:
 //		~GPSLocalizerReader(){}
 //
 //		bool ReadNextLine( MsgEstPose& pos, double& logTime);
-//		void ReadAllData(vector<pair<double,  MsgEstPose> >& pos_list);
+//		int ReadAllData(vector<pair<double,  MsgEstPose> >& pos_list);
 //};
 //
 class GPSDataReader : public SimpleReaderBase
@@ -99,7 +99,7 @@ public:
 	~GPSDataReader(){}
 
 	bool ReadNextLine(GPSBasicData& data);
-	void ReadAllData(std::vector<GPSBasicData>& data_list);
+	int ReadAllData(std::vector<GPSBasicData>& data_list);
 };
 
 //
@@ -110,7 +110,7 @@ public:
 //	~VehicleStateReader(){}
 //
 //	bool ReadNextLine( MsgVehicleStatus& state, double& logTime);
-//	void ReadAllData(vector<pair<double,  MsgVehicleStatus> >& state_list);
+//	int ReadAllData(vector<pair<double,  MsgVehicleStatus> >& state_list);
 //};
 //
 //class MovingObjectsReader : public SimpleReaderBase
@@ -120,7 +120,7 @@ public:
 //	~MovingObjectsReader(){}
 //
 //	bool ReadNextLine( MsgMovingObject& state, double& logTime);
-//	void ReadAllData(vector<pair<double,  MsgMovingObject> >& state_list);
+//	int ReadAllData(vector<pair<double,  MsgMovingObject> >& state_list);
 //};
 
 class SimulationFileReader : public SimpleReaderBase
@@ -147,7 +147,7 @@ public:
 	~SimulationFileReader(){}
 
 	bool ReadNextLine(SimulationPoint& data);
-	void ReadAllData(SimulationData& data_list);
+	int ReadAllData(SimulationData& data_list);
 };
 
 class LocalizationPathReader : public SimpleReaderBase
@@ -167,7 +167,7 @@ public:
 	~LocalizationPathReader(){}
 
 	bool ReadNextLine(LocalizationWayPoint& data);
-	void ReadAllData(std::vector<LocalizationWayPoint>& data_list);
+	int ReadAllData(std::vector<LocalizationWayPoint>& data_list);
 };
 
 class AisanPointsFileReader : public SimpleReaderBase
@@ -191,7 +191,7 @@ public:
 	~AisanPointsFileReader(){}
 
 	bool ReadNextLine(AisanPoints& data);
-	void ReadAllData(std::vector<AisanPoints>& data_list);
+	int ReadAllData(std::vector<AisanPoints>& data_list);
 };
 
 class AisanNodesFileReader : public SimpleReaderBase
@@ -208,7 +208,7 @@ public:
 	~AisanNodesFileReader(){}
 
 	bool ReadNextLine(AisanNode& data);
-	void ReadAllData(std::vector<AisanNode>& data_list);
+	int ReadAllData(std::vector<AisanNode>& data_list);
 };
 
 class AisanLinesFileReader : public SimpleReaderBase
@@ -228,7 +228,7 @@ public:
 	~AisanLinesFileReader(){}
 
 	bool ReadNextLine(AisanLine& data);
-	void ReadAllData(std::vector<AisanLine>& data_list);
+	int ReadAllData(std::vector<AisanLine>& data_list);
 };
 
 class AisanCenterLinesFileReader : public SimpleReaderBase
@@ -253,7 +253,7 @@ public:
 	~AisanCenterLinesFileReader(){}
 
 	bool ReadNextLine(AisanCenterLine& data);
-	void ReadAllData(std::vector<AisanCenterLine>& data_list);
+	int ReadAllData(std::vector<AisanCenterLine>& data_list);
 };
 
 class AisanAreasFileReader : public SimpleReaderBase
@@ -271,7 +271,7 @@ public:
 	~AisanAreasFileReader(){}
 
 	bool ReadNextLine(AisanArea& data);
-	void ReadAllData(std::vector<AisanArea>& data_list);
+	int ReadAllData(std::vector<AisanArea>& data_list);
 };
 
 class AisanIntersectionFileReader : public SimpleReaderBase
@@ -289,7 +289,7 @@ public:
 	~AisanIntersectionFileReader(){}
 
 	bool ReadNextLine(AisanIntersection& data);
-	void ReadAllData(std::vector<AisanIntersection>& data_list);
+	int ReadAllData(std::vector<AisanIntersection>& data_list);
 };
 
 class AisanLanesFileReader : public SimpleReaderBase
@@ -331,7 +331,7 @@ public:
 	~AisanLanesFileReader(){}
 
 	bool ReadNextLine(AisanLane& data);
-	void ReadAllData(std::vector<AisanLane>& data_list);
+	int ReadAllData(std::vector<AisanLane>& data_list);
 };
 
 class AisanStopLineFileReader : public SimpleReaderBase
@@ -351,7 +351,7 @@ public:
 	~AisanStopLineFileReader(){}
 
 	bool ReadNextLine(AisanStopLine& data);
-	void ReadAllData(std::vector<AisanStopLine>& data_list);
+	int ReadAllData(std::vector<AisanStopLine>& data_list);
 };
 
 class AisanRoadSignFileReader : public SimpleReaderBase
@@ -371,7 +371,7 @@ public:
 	~AisanRoadSignFileReader(){}
 
 	bool ReadNextLine(AisanRoadSign& data);
-	void ReadAllData(std::vector<AisanRoadSign>& data_list);
+	int ReadAllData(std::vector<AisanRoadSign>& data_list);
 };
 
 class AisanSignalFileReader : public SimpleReaderBase
@@ -391,7 +391,7 @@ public:
 	~AisanSignalFileReader(){}
 
 	bool ReadNextLine(AisanSignal& data);
-	void ReadAllData(std::vector<AisanSignal>& data_list);
+	int ReadAllData(std::vector<AisanSignal>& data_list);
 };
 
 class AisanVectorFileReader : public SimpleReaderBase
@@ -410,7 +410,7 @@ public:
 	~AisanVectorFileReader(){}
 
 	bool ReadNextLine(AisanVector& data);
-	void ReadAllData(std::vector<AisanVector>& data_list);
+	int ReadAllData(std::vector<AisanVector>& data_list);
 };
 
 class AisanDataConnFileReader : public SimpleReaderBase
@@ -429,7 +429,7 @@ public:
 	~AisanDataConnFileReader(){}
 
 	bool ReadNextLine(DataConn& data);
-	void ReadAllData(std::vector<DataConn>& data_list);
+	int ReadAllData(std::vector<DataConn>& data_list);
 };
 
 

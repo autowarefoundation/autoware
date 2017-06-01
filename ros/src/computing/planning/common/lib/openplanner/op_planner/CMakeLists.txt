@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(op_plannerh)
+project(op_planner)
 
 # Get a ros version
 execute_process(
@@ -9,7 +9,7 @@ execute_process(
 )
 
 find_package(catkin REQUIRED COMPONENTS
-		op_utilityh
+		op_utility
 )
 
 find_package(OpenCV REQUIRED)
@@ -19,8 +19,8 @@ find_package(OpenCV REQUIRED)
 ###################################
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES  op_plannerh
-   CATKIN_DEPENDS op_utilityh
+   LIBRARIES  op_planner
+   CATKIN_DEPENDS op_utility
 )
 
 ###########

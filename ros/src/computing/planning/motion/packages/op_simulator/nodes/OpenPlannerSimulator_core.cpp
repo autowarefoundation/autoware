@@ -64,14 +64,10 @@ OpenPlannerSimulator::OpenPlannerSimulator()
 	nh.getParam("id" 		, m_SimParams.strID);
 	nh.getParam("id" 		, m_SimParams.id);
 	nh.getParam("enableRvizPoseEst" 	, m_SimParams.bRandomStart);
+	nh.getParam("enableLooper" 			, m_SimParams.bLooper);
 	nh.getParam("startPoseX" 			, m_SimParams.startPose.pos.x);
 	nh.getParam("startPoseY" 			, m_SimParams.startPose.pos.y);
 	nh.getParam("startPoseA" 			, m_SimParams.startPose.pos.a);
-
-	if(m_SimParams.bRandomStart)
-		bInitPos = false;
-	else
-		bInitPos = true;
 
 	nh.getParam("meshPath" 				, m_SimParams.meshPath);
 	nh.getParam("baseColorR" 			, m_SimParams.modelColor.r);
@@ -127,15 +123,29 @@ OpenPlannerSimulator::OpenPlannerSimulator()
 	pub_LocalTrajectoriesRviz   = nh.advertise<visualization_msgs::MarkerArray>(str_s6.str(), 1);
 	pub_BehaviorStateRviz		= nh.advertise<visualization_msgs::Marker>(str_s2.str(), 1);
 
-	cout << endl << " ID " << m_SimParams.strID << " , But X = " << m_SimParams.startPose.pos.x << "," << str_s1.str() << endl;
-
 	// define subscribers.
-	sub_initialpose 		= nh.subscribe("/initialpose", 		100, &OpenPlannerSimulator::callbackGetInitPose, 		this);
-	sub_cloudClusters 		= nh.subscribe("/cloud_clusters", 		1, &OpenPlannerSimulator::callbackGetCloudClusters, 		this);
+	if(m_SimParams.bRandomStart)
+	{
+		bInitPos = false;
+		sub_initialpose 		= nh.subscribe("/initialpose", 		100, &OpenPlannerSimulator::callbackGetInitPose, 		this);
+	}
+	else
+	{
+		bInitPos = true;
+		PlannerHNS::WayPoint start_p;
+		if(LoadSimulationData(start_p))
+		{
+			m_SimParams.startPose.pos = start_p.pos;
+			m_CarInfo.max_speed_forward = start_p.v;
+		}
+
+		//InitializeSimuCar(m_SimParams.startPose);
+	}
+
+	sub_cloudClusters 		= nh.subscribe("/cloud_clusters", 	1, &OpenPlannerSimulator::callbackGetCloudClusters, 		this);
 
 	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 	std::cout << "OpenPlannerSimulator initialized successfully " << std::endl;
-
 }
 
 void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m_CarInfo,
@@ -170,10 +180,10 @@ void OpenPlannerSimulator::ReadParamFromLaunchFile(PlannerHNS::CAR_BASIC_INFO& m
 	m_PlanningParams.horizonDistance = 100;
 	m_PlanningParams.horizontalSafetyDistancel = 0.1;
 	m_PlanningParams.verticalSafetyDistance = 0.8;
-	m_PlanningParams.maxDistanceToAvoid = 4;
+	m_PlanningParams.maxDistanceToAvoid = 2;
 	m_PlanningParams.microPlanDistance = 50;
-	m_PlanningParams.minDistanceToAvoid = 10;
-	m_PlanningParams.minFollowingDistance = 20;
+	m_PlanningParams.minDistanceToAvoid = 4;
+	m_PlanningParams.minFollowingDistance = 7;
 	m_PlanningParams.pathDensity = 0.5;
 	m_PlanningParams.planningDistance = 1000;
 	m_PlanningParams.carTipMargin = 2;
@@ -198,13 +208,27 @@ void OpenPlannerSimulator::callbackGetInitPose(const geometry_msgs::PoseWithCova
 		p.position.y  = msg->pose.pose.position.y + m_OriginPos.position.y;
 		p.position.z  = msg->pose.pose.position.z + m_OriginPos.position.z;
 		p.orientation = msg->pose.pose.orientation;
-
 		m_SimParams.startPose =  PlannerHNS::WayPoint(p.position.x, p.position.y, p.position.z , tf::getYaw(p.orientation));
-		m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
-		m_LocalPlanner.FirstLocalizeMe(m_SimParams.startPose);
-		m_LocalPlanner.LocalizeMe(0);
+
+		SaveSimulationData();
+
+		InitializeSimuCar(m_SimParams.startPose);
+
 		bInitPos = true;
 	}
+}
+
+void OpenPlannerSimulator::InitializeSimuCar(PlannerHNS::WayPoint start_pose)
+{
+	m_LocalPlanner.m_pCurrentBehaviorState = m_LocalPlanner.m_pInitState;
+	m_LocalPlanner.m_TotalPath.clear();
+	m_LocalPlanner.m_Path.clear();
+	m_LocalPlanner.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
+	m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
+	m_LocalPlanner.FirstLocalizeMe(start_pose);
+	m_LocalPlanner.LocalizeMe(0);
+
+	cout << endl << "LocalPlannerInit: ID " << m_SimParams.strID << " , Pose = ( "  << start_pose.pos.ToString() << ")" << endl;
 }
 
 void OpenPlannerSimulator::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
@@ -232,8 +256,9 @@ void OpenPlannerSimulator::callbackGetCloudClusters(const lidar_tracker::CloudCl
 	int nOriginalPoints=0, nContourPoints = 0;
 
 	ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_LocalPlanner.state, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, nOriginalPoints, nContourPoints);
-	m_ObstacleTracking.DoOneStep(m_LocalPlanner.state, m_OriginalClusters);
-	m_TrackedClusters = m_ObstacleTracking.m_DetectedObjects;
+	//m_ObstacleTracking.DoOneStep(m_LocalPlanner.state, m_OriginalClusters);
+	//m_TrackedClusters = m_ObstacleTracking.m_DetectedObjects;
+	m_TrackedClusters = m_OriginalClusters;
 
 	//m_nTrackObjects = m_TrackedClusters.size();
 	//m_TrackingTime = UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp);
@@ -280,8 +305,8 @@ void OpenPlannerSimulator::displayFollowingInfo(const std::vector<PlannerHNS::GP
 
   m1.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(curr_pose.pos.a));
   m1.color = m_SimParams.modelColor;
-  m1.scale.x = 1.0;
-  m1.scale.y = 1.0;
+  m1.scale.x = 1.0*m_CarInfo.length/4.2;
+  m1.scale.y = 1.0*m_CarInfo.width/1.85;
   m1.scale.z = 1.0;
   m1.frame_locked = true;
   pub_CurrPoseRviz.publish(m1);
@@ -312,7 +337,6 @@ void OpenPlannerSimulator::displayFollowingInfo(const std::vector<PlannerHNS::GP
   	pub_SafetyBorderRviz.publish(lane_waypoint_marker);
 
 }
-
 
 void OpenPlannerSimulator::visualizePath(const std::vector<PlannerHNS::WayPoint>& path)
 {
@@ -491,6 +515,56 @@ void OpenPlannerSimulator::visualizeBehaviors()
 	pub_BehaviorStateRviz.publish(behaviorMarker);
 }
 
+void OpenPlannerSimulator::SaveSimulationData()
+{
+	std::vector<std::string> simulationDataPoints;
+	std::ostringstream startStr;
+	startStr << m_SimParams.startPose.pos.x << "," << m_SimParams.startPose.pos.y << "," << m_SimParams.startPose.pos.z << "," << m_SimParams.startPose.pos.a << ","<< m_SimParams.startPose.cost << "," << m_CarInfo.max_speed_forward << ",";
+	simulationDataPoints.push_back(startStr.str());
+	std::ostringstream goalStr;
+	simulationDataPoints.push_back(goalStr.str());
+
+	std::string header = "X,Y,Z,A,C,V,";
+
+	ostringstream fileName;
+	fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName;
+	fileName << "SimuCar_";
+	fileName << m_SimParams.id;
+	fileName << ".csv";
+
+	std::ofstream f(fileName.str().c_str());
+
+	if(f.is_open())
+	{
+		if(header.size() > 0)
+			f << header << "\r\n";
+		for(unsigned int i = 0 ; i < simulationDataPoints.size(); i++)
+			f << simulationDataPoints.at(i) << "\r\n";
+	}
+
+	f.close();
+}
+
+bool OpenPlannerSimulator::LoadSimulationData(PlannerHNS::WayPoint& start_p)
+{
+	ostringstream fileName;
+	fileName << "SimuCar_";
+	fileName << m_SimParams.id;
+	fileName << ".csv";
+
+	string simuDataFileName = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::SimulationFolderName + fileName.str();
+	UtilityHNS::SimulationFileReader sfr(simuDataFileName);
+	UtilityHNS::SimulationFileReader::SimulationData data;
+
+	if(sfr.ReadAllData(data) == 0)
+		return false;
+
+	start_p = PlannerHNS::WayPoint(data.startPoint.x, data.startPoint.y, data.startPoint.z, data.startPoint.a);
+	start_p.v = data.startPoint.v;
+	start_p.cost = data.startPoint.c;
+	return true;
+}
+
 void OpenPlannerSimulator::PlannerMainLoop()
 {
 
@@ -511,22 +585,14 @@ void OpenPlannerSimulator::PlannerMainLoop()
 			m_bMap = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_SimParams.KmlMapPath, m_Map);
 			if(!m_SimParams.bRandomStart)
-			{
-				m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
-				m_LocalPlanner.FirstLocalizeMe(m_SimParams.startPose);
-				m_LocalPlanner.LocalizeMe(0);
-			}
+				InitializeSimuCar(m_SimParams.startPose);
 		}
 		else if (m_SimParams.mapSource == MAP_FOLDER && !m_bMap)
 		{
 			m_bMap = true;
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_SimParams.KmlMapPath, m_Map, true);
 			if(!m_SimParams.bRandomStart)
-			{
-				m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
-				m_LocalPlanner.FirstLocalizeMe(m_SimParams.startPose);
-				m_LocalPlanner.LocalizeMe(0);
-			}
+				InitializeSimuCar(m_SimParams.startPose);
 		}
 
 		if(m_bMap && bInitPos)
@@ -543,7 +609,11 @@ void OpenPlannerSimulator::PlannerMainLoop()
 				{
 					double remaining_distance =  m_LocalPlanner.m_TotalPath.at(info.iGlobalPath).at(m_LocalPlanner.m_TotalPath.at(info.iGlobalPath).size()-1).cost - (m_LocalPlanner.m_TotalPath.at(info.iGlobalPath).at(info.iFront).cost + info.to_front_distance);
 					if(remaining_distance <= REPLANNING_DISTANCE)
+					{
 						bMakeNewPlan = true;
+						if(m_SimParams.bLooper)
+							InitializeSimuCar(m_SimParams.startPose);
+					}
 				}
 			}
 			else
@@ -616,6 +686,11 @@ void OpenPlannerSimulator::PlannerMainLoop()
 				str_out << m_SimParams.logPath;
 				str_out << "LocalPath_";
 				PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(),  m_LocalPlanner.m_Path);
+			}
+
+			if(m_SimParams.bLooper && currBehavior.state == PlannerHNS::FINISH_STATE)
+			{
+				InitializeSimuCar(m_SimParams.startPose);
 			}
 		}
 

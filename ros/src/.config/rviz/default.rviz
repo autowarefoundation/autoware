@@ -75,7 +75,9 @@ Visualization Manager:
       Tree:
         world:
           map:
-            {}
+            base_link:
+              velodyne:
+                {}
       Update Interval: 0
       Value: true
     - Alpha: 0.05
@@ -332,18 +334,23 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: false
+      Enabled: true
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: Vehicle Model
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: false
+      Value: true
       Visual Enabled: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -454,19 +461,21 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: true
+      Enabled: false
       Marker Topic: /vector_map_center_lines_rviz
       Name: Vector Map CenterLines
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /global_waypoints_rviz
       Name: Global Path
       Namespaces:
-        {}
+        global_lane_array_marker: true
+        global_lane_waypoint_orientation_marker: true
+        global_velocity_lane_1: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -474,7 +483,7 @@ Visualization Manager:
       Marker Topic: /local_trajectories
       Name: Local Rollouts
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -490,7 +499,7 @@ Visualization Manager:
       Marker Topic: /curr_simu_pose
       Name: SimulatedCar Pose
       Namespaces:
-        {}
+        curr_simu_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -498,7 +507,7 @@ Visualization Manager:
       Marker Topic: /follow_pose
       Name: Simulated Following Point
       Namespaces:
-        {}
+        follow_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -506,7 +515,7 @@ Visualization Manager:
       Marker Topic: /behavior_state
       Name: Behavior State
       Namespaces:
-        {}
+        detected_polygons_velocity: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -522,7 +531,7 @@ Visualization Manager:
       Marker Topic: /safety_border
       Name: Safety Box
       Namespaces:
-        {}
+        global_lane_array_marker: true
       Queue Size: 100
       Value: true
     - Class: jsk_rviz_plugin/BoundingBoxArray
@@ -689,11 +698,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 11.8606
+      Scale: 22.8087
       Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 4.39087
-      Y: 3.01324
+      X: 3.80643
+      Y: -18.6686
     Saved: ~
 Window Geometry:
   Camera:

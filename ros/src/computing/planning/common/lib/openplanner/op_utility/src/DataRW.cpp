@@ -244,9 +244,9 @@ bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
 	return true;
 }
 
-bool SimpleReaderBase::ReadAllData()
+int SimpleReaderBase::ReadAllData()
 {
-	if(!m_pFile->is_open()) return false;
+	if(!m_pFile->is_open()) return 0;
 
 	m_AllData.clear();
 	vector<vector<string> > singleLine;
@@ -256,7 +256,7 @@ bool SimpleReaderBase::ReadAllData()
 		m_AllData.push_back(singleLine);
 	}
 
-	return true;
+	return m_AllData.size();
 }
 
 void SimpleReaderBase::ReadHeaders()
@@ -310,12 +310,17 @@ bool GPSDataReader::ReadNextLine(GPSBasicData& data)
 		return false;
 }
 
-void GPSDataReader::ReadAllData(vector<GPSBasicData>& data_list)
+int GPSDataReader::ReadAllData(vector<GPSBasicData>& data_list)
 {
 	data_list.clear();
 	GPSBasicData data;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
@@ -340,7 +345,7 @@ bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
 		return false;
 }
 
-void SimulationFileReader::ReadAllData(SimulationData& data_list)
+int SimulationFileReader::ReadAllData(SimulationData& data_list)
 {
 	data_list.simuCars.clear();
 	SimulationPoint data;
@@ -357,6 +362,8 @@ void SimulationFileReader::ReadAllData(SimulationData& data_list)
 
 		count++;
 	}
+
+	return count;
 }
 
 bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
@@ -381,13 +388,18 @@ bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
 		return false;
 }
 
-void LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list)
+int LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list)
 {
 	data_list.clear();
 	LocalizationWayPoint data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
@@ -408,13 +420,18 @@ bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
 		return false;
 }
 
-void AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
+int AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
 {
 	data_list.clear();
 	AisanNode data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanPointsFileReader::ReadNextLine(AisanPoints& data)
@@ -444,13 +461,18 @@ bool AisanPointsFileReader::ReadNextLine(AisanPoints& data)
 		return false;
 }
 
-void AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
+int AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
 {
 	data_list.clear();
 	AisanPoints data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanLinesFileReader::ReadNextLine(AisanLine& data)
@@ -473,13 +495,18 @@ bool AisanLinesFileReader::ReadNextLine(AisanLine& data)
 		return false;
 }
 
-void AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
+int AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
 {
 	data_list.clear();
 	AisanLine data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanCenterLinesFileReader::ReadNextLine(AisanCenterLine& data)
@@ -508,13 +535,18 @@ bool AisanCenterLinesFileReader::ReadNextLine(AisanCenterLine& data)
 		return false;
 }
 
-void AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
+int AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
 {
 	data_list.clear();
 	AisanCenterLine data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
@@ -575,13 +607,18 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		return false;
 }
 
-void AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
+int AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
 {
 	data_list.clear();
 	AisanLane data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanAreasFileReader::ReadNextLine(AisanArea& data)
@@ -603,13 +640,18 @@ bool AisanAreasFileReader::ReadNextLine(AisanArea& data)
 		return false;
 }
 
-void AisanAreasFileReader::ReadAllData(vector<AisanArea>& data_list)
+int AisanAreasFileReader::ReadAllData(vector<AisanArea>& data_list)
 {
 	data_list.clear();
 	AisanArea data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanIntersectionFileReader::ReadNextLine(AisanIntersection& data)
@@ -631,13 +673,18 @@ bool AisanIntersectionFileReader::ReadNextLine(AisanIntersection& data)
 		return false;
 }
 
-void AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_list)
+int AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_list)
 {
 	data_list.clear();
 	AisanIntersection data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanStopLineFileReader::ReadNextLine(AisanStopLine& data)
@@ -661,13 +708,18 @@ bool AisanStopLineFileReader::ReadNextLine(AisanStopLine& data)
 		return false;
 }
 
-void AisanStopLineFileReader::ReadAllData(vector<AisanStopLine>& data_list)
+int AisanStopLineFileReader::ReadAllData(vector<AisanStopLine>& data_list)
 {
 	data_list.clear();
 	AisanStopLine data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanRoadSignFileReader::ReadNextLine(AisanRoadSign& data)
@@ -691,13 +743,18 @@ bool AisanRoadSignFileReader::ReadNextLine(AisanRoadSign& data)
 		return false;
 }
 
-void AisanRoadSignFileReader::ReadAllData(vector<AisanRoadSign>& data_list)
+int AisanRoadSignFileReader::ReadAllData(vector<AisanRoadSign>& data_list)
 {
 	data_list.clear();
 	AisanRoadSign data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanSignalFileReader::ReadNextLine(AisanSignal& data)
@@ -721,13 +778,19 @@ bool AisanSignalFileReader::ReadNextLine(AisanSignal& data)
 		return false;
 }
 
-void AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
+int AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
 {
 	data_list.clear();
 	AisanSignal data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+
+	return count;
 }
 
 bool AisanVectorFileReader::ReadNextLine(AisanVector& data)
@@ -750,13 +813,18 @@ bool AisanVectorFileReader::ReadNextLine(AisanVector& data)
 		return false;
 }
 
-void AisanVectorFileReader::ReadAllData(vector<AisanVector>& data_list)
+int AisanVectorFileReader::ReadAllData(vector<AisanVector>& data_list)
 {
 	data_list.clear();
 	AisanVector data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 bool AisanDataConnFileReader::ReadNextLine(DataConn& data)
@@ -779,13 +847,18 @@ bool AisanDataConnFileReader::ReadNextLine(DataConn& data)
 		return false;
 }
 
-void AisanDataConnFileReader::ReadAllData(vector<DataConn>& data_list)
+int AisanDataConnFileReader::ReadAllData(vector<DataConn>& data_list)
 {
 	data_list.clear();
 	DataConn data;
 	//double logTime = 0;
+	int count = 0;
 	while(ReadNextLine(data))
+	{
 		data_list.push_back(data);
+		count++;
+	}
+	return count;
 }
 
 } /* namespace UtilityHNS */

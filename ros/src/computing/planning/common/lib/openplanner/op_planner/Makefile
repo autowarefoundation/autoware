@@ -1,14 +1,14 @@
 CC = g++
 DEBUG = -g
-CFLAGS = -Iinclude -I../op_utilityh/include -Wall $(DEBUG)
+CFLAGS = -Iinclude -I../op_utility/include -Wall $(DEBUG)
 #For GPS enabled conversion ! 
 #LFLAGS = -Lbin -Llibs -lutilityh -lproj $(DEBUG) -std=c++11
-LFLAGS = -L../op_utilityh/libs -Llibs -lutilityh $(DEBUG) -std=c++11
+LFLAGS = -L../op_utility/libs -Llibs -lutility $(DEBUG) -std=c++11
 SRC = $(wildcard src/*.cpp)
 BIN = $(wildcard bin/*.o)
 INCLUDES = $(wildcard include/*.h)
 OBJ = $(SRC:.cpp=.o)
-LIB = libs/libplannerh.so
+LIB = libs/libplanner.so
 
 
 all:  $(LIB)  post-build
@@ -24,9 +24,9 @@ src/%.o: src/%.cpp
 #	mv src/*.o ./bin/	
 	
 post-build:	
-	cp $(LIB) ../op_simuh/libs/
+	cp $(LIB) ../op_simu/libs/
 
 .PHONY: clean
 
 clean:
-	rm -rf src/*.o *.o libs/libplannerh.so 
+	rm -rf src/*.o *.o libs/libplanner.so 

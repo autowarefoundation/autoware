@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(op_utilityh)
+project(op_utility)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -18,7 +18,7 @@ find_package(TinyXML REQUIRED)
 ###################################
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES op_utilityh
+   LIBRARIES op_utility
 )
 
 ###########

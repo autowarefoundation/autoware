@@ -9,8 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
   map_file
-  op_utilityh
-  op_plannerh
+  op_utility
+  op_planner
 )
 
 ## System dependencies are found with CMake's conventions
@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utilityh op_plannerh
+  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner
   DEPENDS system_lib
 )
 

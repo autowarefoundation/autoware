@@ -2068,15 +2068,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : enableObjectTracking
-      desc : Enable Planner KF Tracker   
-      label: Enable Tracking
-      kind : checkbox
-      v    : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-
     - name : velocitySource
       desc : Select vehicle velocities source
       label: Velocities Source

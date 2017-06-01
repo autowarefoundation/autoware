@@ -14,10 +14,11 @@
 	
 	<arg name="maxVelocity" 				default="6.0"  />
 	<arg name="minVelocity" 				default="0.2"  />
-	<arg name="maxAcceleration"				default="0.6"   />
-	<arg name="maxDeceleration"				default="-1.0"   />
+	<arg name="maxAcceleration"				default="5.6"   />
+	<arg name="maxDeceleration"				default="-5.0"   />
 	
-	<arg name="enableRvizPoseEst"			default="true"   />
+	<arg name="enableRvizPoseEst"			default="false"   />
+	<arg name="enableLooper"				default="true"   />
 	<arg name="startPoseX"					default="3738"   />
 	<arg name="startPoseY"					default="-99373"   />
 	<arg name="startPoseA"					default="-2.88"   />
@@ -33,7 +34,7 @@
 	
 	<node pkg="op_simulator" type="op_simulator" name="op_simulator5" output="screen">
 		
-		<param name="id" 					value="$(arg id)" />
+		<param name="id" 							value="$(arg id)" />
 		
 		<param name="width" 						value="$(arg width)" />
 		<param name="length" 						value="$(arg length)" />
@@ -50,6 +51,7 @@
 		<param name="maxDeceleration" 				value="$(arg maxDeceleration)" />
 		
 		<param name="enableRvizPoseEst" 			value="$(arg enableRvizPoseEst)" />
+		<param name="enableLooper" 					value="$(arg enableLooper)" />
 		<param name="startPoseX" 					value="$(arg startPoseX)" />
 		<param name="startPoseY" 					value="$(arg startPoseY)" />
 		<param name="startPoseA" 					value="$(arg startPoseA)" />
