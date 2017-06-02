@@ -334,7 +334,7 @@ if(EXISTS "${YOLO2_PATH}")
   set(YOLO2_USE_CUDNN 0)
   set(YOLO2_USE_GPU 1)
   
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+  list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
 
   cuda_add_library(yolo2lib_wa
     ${YOLO2_PATH}/src/activation_kernels.cu
@@ -349,8 +349,10 @@ if(EXISTS "${YOLO2_PATH}")
     ${YOLO2_PATH}/src/col2im.c
     ${YOLO2_PATH}/src/col2im_kernels.cu
     ${YOLO2_PATH}/src/connected_layer.c
-    ${YOLO2_PATH}/src/convolutional_kernels.cu
     ${YOLO2_PATH}/src/convolutional_layer.c
+    ${YOLO2_PATH}/src/convolutional_kernels.cu
+    ${YOLO2_PATH}/src/deconvolutional_layer.c
+    ${YOLO2_PATH}/src/deconvolutional_kernels.cu
     ${YOLO2_PATH}/src/cost_layer.c
     ${YOLO2_PATH}/src/crnn_layer.c
     ${YOLO2_PATH}/src/crop_layer.c
@@ -395,6 +397,7 @@ if(EXISTS "${YOLO2_PATH}")
   target_compile_definitions(yolo2lib_wa PUBLIC -DGPU)
 
   target_include_directories(yolo2lib_wa PRIVATE
+    ${YOLO2_PATH}/include
     ${YOLO2_PATH}/src
     ${CUDA_INCLUDE_DIRS}
   )
@@ -416,6 +419,7 @@ if(EXISTS "${YOLO2_PATH}")
   
   target_include_directories(yolo2_wa PRIVATE
     nodes/yolo2/include
+    ${YOLO2_PATH}/include
     ${YOLO2_PATH}/src
     ${CUDA_INCLUDE_DIRS}
   )

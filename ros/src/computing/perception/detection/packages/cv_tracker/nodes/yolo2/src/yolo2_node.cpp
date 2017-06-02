@@ -102,6 +102,17 @@ class Yolo2DetectorNode
 		}
 	}
 
+	void rgbgr_image(image& im)
+	{
+		int i;
+		for(i = 0; i < im.w*im.h; ++i)
+		{
+			float swap = im.data[i];
+			im.data[i] = im.data[i+im.w*im.h*2];
+			im.data[i+im.w*im.h*2] = swap;
+		}
+	}
+
 	image convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg)
 	{
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, "bgr8");//toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
@@ -169,6 +180,7 @@ class Yolo2DetectorNode
 				}
 			}
 		}
+		rgbgr_image(darknet_image);
 		return darknet_image;
 	}
 
@@ -179,7 +191,7 @@ class Yolo2DetectorNode
 
 		darknet_image = convert_ipl_to_image(in_image_message);
 
-		detections = yolo_detector_.detect(darknet_image.data);
+		detections = yolo_detector_.detect(darknet_image);
 
 		//ROS_INFO("Detections: %ud", (unsigned int)detections.size());
 

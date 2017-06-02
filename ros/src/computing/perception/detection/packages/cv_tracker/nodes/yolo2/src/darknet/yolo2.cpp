@@ -57,9 +57,9 @@ namespace darknet
 		free_network(darknet_network_);
 	}
 
-	std::vector< RectClassScore<float> > Yolo2Detector::detect(float *in_data)
+	std::vector< RectClassScore<float> > Yolo2Detector::detect(image& in_darknet_image)
 	{
-		return forward(in_data);
+		return forward(in_darknet_image);
 	}
 
 	image Yolo2Detector::convert_image(const sensor_msgs::ImageConstPtr& msg)
@@ -95,8 +95,9 @@ namespace darknet
 		return resized;
 	}
 
-	std::vector< RectClassScore<float> > Yolo2Detector::forward(float *in_data)
+	std::vector< RectClassScore<float> > Yolo2Detector::forward(image& in_darknet_image)
 	{
+		float * in_data = in_darknet_image.data;
 		float *prediction = network_predict(darknet_network_, in_data);
 		layer output_layer = darknet_network_.layers[darknet_network_.n - 1];
 
@@ -104,7 +105,12 @@ namespace darknet
 		if (output_layer.type == DETECTION)
 			get_detection_boxes(output_layer, 1, 1, min_confidence_, darknet_box_scores_.data(), darknet_boxes_.data(), 0);
 		else if (output_layer.type == REGION)
-			get_region_boxes(output_layer, 1, 1, min_confidence_, darknet_box_scores_.data(), darknet_boxes_.data(), 0, 0, 0.5);
+		{
+			get_region_boxes(output_layer, in_darknet_image.w, in_darknet_image.h,
+							darknet_network_.w, darknet_network_.h,
+							min_confidence_, darknet_box_scores_.data(), darknet_boxes_.data(),
+							0, 0, 0.5, 1);
+		}
 		else
 			error("Last layer must produce detections\n");
 
