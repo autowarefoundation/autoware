@@ -6,7 +6,11 @@
 
 #include <cv_tracker_msgs/image_obj.h>
 
+#include <opencv2/opencv.hpp>
+
+#if (CV_MAJOR_VERSION != 3)
 #include <opencv2/contrib/contrib.hpp>
+#endif
 #include <opencv2/highgui/highgui.hpp>
 
 #include <cv_bridge/cv_bridge.h>
