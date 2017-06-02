@@ -8,8 +8,14 @@
 #include "Cluster.h"
 
 Cluster::Cluster()
-{}
+{
+	valid_cluster_ = true;
+}
 
+geometry_msgs::PolygonStamped Cluster::GetPolygon()
+{
+	return polygon_;
+}
 
 jsk_recognition_msgs::BoundingBox Cluster::GetBoundingBox()
 {
@@ -92,6 +98,8 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 
 	out_cluster_message.bounding_box = this->GetBoundingBox();
 
+	out_cluster_message.convex_hull = this->GetPolygon();
+
 	Eigen::Vector3f eigen_values = this->GetEigenValues();
 	out_cluster_message.eigen_values.x = eigen_values.x();
 	out_cluster_message.eigen_values.y = eigen_values.y();
@@ -106,6 +114,9 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudC
 		eigen_vector.z = eigen_vectors(i, 2);
 		out_cluster_message.eigen_vectors.push_back(eigen_vector);
 	}
+
+	/*std::vector<float> fpfh_descriptor = GetFpfhDescriptor(8, 0.3, 0.3);
+	out_cluster_message.fpfh_descriptor.data = fpfh_descriptor;*/
 }
 
 void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose)
@@ -178,22 +189,65 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 	//pose estimation
 	double rz = 0;
 
-	if (in_estimate_pose)
 	{
-		//pose estimation for the cluster
-		//test using linear regression
-		//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
-		float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+		std::vector<cv::Point2f> points;
 		for (unsigned int i=0; i<current_cluster->points.size(); i++)
 		{
-			sum_x+= current_cluster->points[i].x;
-			sum_y+= current_cluster->points[i].y;
-			sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
-			sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
+			cv::Point2f pt;
+			pt.x = current_cluster->points[i].x;
+			pt.y = current_cluster->points[i].y;
+			points.push_back(pt);
 		}
-		double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
 
-		rz = atan(slope);
+		if (in_estimate_pose)
+		{
+			//pose estimation for the cluster
+			//test using linear regressionwidth
+			//Slope(b) = (NΣXY - (ΣX)(ΣY)) / (NΣX2 - (ΣX)2)
+
+			//float sum_x=0, sum_y=0, sum_xy=0, sum_xx=0;
+			//for (unsigned int i=0; i<current_cluster->points.size(); i++)
+			//{
+			//	sum_x+= current_cluster->points[i].x;
+			//	sum_y+= current_cluster->points[i].y;
+			//	sum_xy+= current_cluster->points[i].x*current_cluster->points[i].y;
+			//	sum_xx+= current_cluster->points[i].x*current_cluster->points[i].x;
+			//}
+			//double slope= (current_cluster->points.size()*sum_xy - (sum_x*sum_y))/(current_cluster->points.size()*sum_xx - sum_x*sum_x);
+			//rz = atan(-slope);
+			cv::RotatedRect box = minAreaRect(points);
+			rz = box.angle*3.14/180;
+			bounding_box_.pose.position.x = box.center.x;
+			bounding_box_.pose.position.y = box.center.y;
+			//std::cout << bounding_box_.pose.position.y << " " << bounding_box_.pose.position.x  << std::endl;
+			bounding_box_.dimensions.x = box.size.width;
+			bounding_box_.dimensions.y = box.size.height;
+		}
+
+		std::vector<cv::Point2f> hull;
+		cv::convexHull(points, hull);
+
+		polygon_.header = in_ros_header;
+		for (size_t i = 0; i< hull.size() + 1 ; i++)
+		{
+			geometry_msgs::Point32 point;
+			point.x = hull[i%hull.size()].x;
+			point.y = hull[i%hull.size()].y;
+			point.z = min_point_.z;
+			polygon_.polygon.points.push_back(point);
+		}
+
+		for (size_t i = 0; i< hull.size() + 1 ; i++)
+		{
+			geometry_msgs::Point32 point;
+			point.x = hull[i%hull.size()].x;
+			point.y = hull[i%hull.size()].y;
+			point.z = max_point_.z;
+			polygon_.polygon.points.push_back(point);
+		}
+
+		/*cv::Point2f rect_points[4];
+		box.points(rect_points);*/
 	}
 
 	//set bounding box direction
@@ -217,7 +271,74 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
 		eigen_values_ = current_cluster_pca.getEigenValues();
 	}
 
+	valid_cluster_ = true;
 	pointcloud_ = current_cluster;
+}
+
+std::vector<float> Cluster::GetFpfhDescriptor(const unsigned int& in_ompnum_threads, const double& in_normal_search_radius, const double& in_fpfh_search_radius)
+{
+	std::vector<float> cluster_fpfh_histogram(33,0.0);
+
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr norm_tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+	if (pointcloud_->points.size() > 0)
+		norm_tree->setInputCloud(pointcloud_);
+
+	pcl::PointCloud<pcl::Normal>::Ptr normals (new pcl::PointCloud<pcl::Normal>);
+	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> normal_estimation;
+	normal_estimation.setNumberOfThreads(in_ompnum_threads);
+	normal_estimation.setInputCloud (pointcloud_);
+	normal_estimation.setSearchMethod (norm_tree);
+	normal_estimation.setViewPoint (std::numeric_limits<float>::max (), std::numeric_limits<float>::max (),std::numeric_limits<float>::max ());
+	normal_estimation.setRadiusSearch (in_normal_search_radius);
+	normal_estimation.compute (*normals);
+
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_histograms (new pcl::PointCloud<pcl::FPFHSignature33> ());
+
+	pcl::FPFHEstimationOMP<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh;
+	fpfh.setNumberOfThreads(in_ompnum_threads);
+	fpfh.setInputCloud(pointcloud_);
+	fpfh.setInputNormals(normals);
+	fpfh.setSearchMethod(norm_tree);
+	fpfh.setRadiusSearch(in_fpfh_search_radius);
+	fpfh.compute(*fpfh_histograms);
+
+	float fpfh_max = std::numeric_limits<float>::min();
+	float fpfh_min = std::numeric_limits<float>::max();
+
+	for (unsigned int i=0; i<fpfh_histograms->size(); i++) //for each point fpfh
+	{
+		for(unsigned int j=0; j< cluster_fpfh_histogram.size(); j++)//sum each histogram's bin for all points, get min/max
+		{
+			cluster_fpfh_histogram[j]= cluster_fpfh_histogram[j] + fpfh_histograms->points[i].histogram[j];
+			if(cluster_fpfh_histogram[j] < fpfh_min)
+				fpfh_min = cluster_fpfh_histogram[j];
+			if(cluster_fpfh_histogram[j] > fpfh_max)
+				fpfh_max = cluster_fpfh_histogram[j];
+		}
+
+		float fpfh_dif = fpfh_max - fpfh_min;
+		for(unsigned int j=0; fpfh_dif > 0, j < cluster_fpfh_histogram.size(); j++)//substract the min from each and normalize
+		{
+			cluster_fpfh_histogram[j]= (cluster_fpfh_histogram[j] - fpfh_min)/fpfh_dif;
+		}
+	}
+
+	return cluster_fpfh_histogram;
+}
+
+bool Cluster::IsValid()
+{
+	return valid_cluster_;
+}
+
+void Cluster::SetValidity(bool in_valid)
+{
+	valid_cluster_ = in_valid;
+}
+
+int Cluster::GetId()
+{
+	return id_;
 }
 
 Cluster::~Cluster() {

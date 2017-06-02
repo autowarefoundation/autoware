@@ -1,7 +1,15 @@
 #include "draw_rects.h"
 #include <string>
 #include <vector>
+
+
+#include <opencv2/core/version.hpp>
+
+#if (CV_MAJOR_VERSION == 3)
+#include "gencolors.cpp"
+#else
 #include <opencv2/contrib/contrib.hpp>
+#endif
 
 namespace integrated_viewer
 {
@@ -11,12 +19,16 @@ namespace integrated_viewer
   
   DrawRects::DrawRects(void) {
     // Generate color map to represent tracked object
+#if (CV_MAJOR_VERSION == 3)
+    generateColors(color_map_, 25);
+#else
     cv::generateColors(color_map_, 25);
+#endif
 
   } // DrawRects::DrawRects()
 
 
-  void DrawRects::DrawImageObj(const cv_tracker::image_obj::ConstPtr& rect_data,
+  void DrawRects::DrawImageObj(const cv_tracker_msgs::image_obj::ConstPtr& rect_data,
                                cv::Mat &image) {
     if (rect_data == NULL) {
       return;
@@ -50,7 +62,7 @@ namespace integrated_viewer
   } // DrawRects::DrawImageObj()
 
 
-  void DrawRects::DrawImageObjRanged(const cv_tracker::image_obj_ranged::ConstPtr& rect_data,
+  void DrawRects::DrawImageObjRanged(const cv_tracker_msgs::image_obj_ranged::ConstPtr& rect_data,
                                      cv::Mat &image) {
     if (rect_data == NULL) {
       return;
@@ -84,7 +96,7 @@ namespace integrated_viewer
   } // DrawRects::DrawImageObjRanged()
 
 
-  void DrawRects::DrawImageObjTracked(const cv_tracker::image_obj_tracked::ConstPtr& rect_data,
+  void DrawRects::DrawImageObjTracked(const cv_tracker_msgs::image_obj_tracked::ConstPtr& rect_data,
                                       cv::Mat &image) {
     if (rect_data == NULL) {
       return;

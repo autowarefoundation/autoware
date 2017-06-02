@@ -148,8 +148,10 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 	}
 
 	class DriveButton extends RadioButton {
-		static final int AUTO = 1;
 		static final int NORMAL = 0;
+		static final int STR_AUTO = 1;
+		static final int DRV_AUTO = 2;
+		static final int AUTO = 3;
 		static final int PURSUIT = 2;
 
 		ImageButton auto;
@@ -202,7 +204,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 
 			refresh();
 		}
-
 		@Override
 		void refresh() {
 			navigation.setImageResource(R.drawable.app_navi);
@@ -1268,15 +1269,95 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 									}
 								});
 							}
+							if (s1Button.getMode() == S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							if (s2Button.getMode() == S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
+									}
+								});
+							}
 							drawLeftView.setColor(COLOR_RED);
 							drawRightView.setColor(COLOR_RED);
 							drawCenterView.setColor(COLOR_RED);
+							break;
+						case DriveButton.STR_AUTO:
+							if (driveButton.getMode() != DriveButton.AUTO) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.AUTO);
+									}
+								});
+							}
+							if (s1Button.getMode() != S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							if (s2Button.getMode() == S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
+									}
+								});
+							}
+							drawLeftView.setColor(COLOR_BLUE);
+							drawRightView.setColor(COLOR_BLUE);
+							drawCenterView.setColor(COLOR_BLUE);
+							break;
+						case DriveButton.DRV_AUTO:
+							if (driveButton.getMode() != DriveButton.AUTO) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										driveButton.updateMode(DriveButton.AUTO);
+									}
+								});
+							}
+							if (s1Button.getMode() == S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							if (s2Button.getMode() != S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
+									}
+								});
+							}
+							drawLeftView.setColor(COLOR_BLUE);
+							drawRightView.setColor(COLOR_BLUE);
+							drawCenterView.setColor(COLOR_BLUE);
 							break;
 						case DriveButton.AUTO:
 							if (driveButton.getMode() != DriveButton.AUTO) {
 								buttonHandler.post(new Runnable() {
 									public void run() {
 										driveButton.updateMode(DriveButton.AUTO);
+									}
+								});
+							}
+							if (s1Button.getMode() != S1Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s1Button.updateMode(S1Button.NG);
+									}
+								});
+							}
+							if (s2Button.getMode() != S2Button.NG) {
+								buttonHandler.post(new Runnable() {
+									public void run() {
+										s2Button.updateMode(S2Button.NG);
 									}
 								});
 							}
@@ -1288,50 +1369,6 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 							drawLeftView.setColor(COLOR_YELLOW);
 							drawRightView.setColor(COLOR_YELLOW);
 							drawCenterView.setColor(COLOR_YELLOW);
-							break;
-						}
-						break;
-					case InformationClient.NDT:
-						switch (data[1]) {
-						case 0:
-							if (s1Button.getMode() == S1Button.OK) {
-								buttonHandler.post(new Runnable() {
-									public void run() {
-										s1Button.updateMode(S1Button.NG);
-									}
-								});
-							}
-							break;
-						case 1:
-							if (s1Button.getMode() == S1Button.NG) {
-								buttonHandler.post(new Runnable() {
-									public void run() {
-										s1Button.updateMode(S1Button.OK);
-									}
-								});
-							}
-							break;
-						}
-						break;
-					case InformationClient.LF:
-						switch (data[1]) {
-						case 0:
-							if (s2Button.getMode() == S2Button.OK) {
-								buttonHandler.post(new Runnable() {
-									public void run() {
-										s2Button.updateMode(S2Button.NG);
-									}
-								});
-							}
-							break;
-						case 1:
-							if (s2Button.getMode() == S2Button.NG) {
-								buttonHandler.post(new Runnable() {
-									public void run() {
-										s2Button.updateMode(S2Button.OK);
-									}
-								});
-							}
 							break;
 						}
 						break;
@@ -1478,17 +1515,29 @@ public class SoundManagementActivity extends Activity implements OnClickListener
 			}
 			data = 0;
 		} else if (v == s1Button.s1) {
-			if (s1Button.getMode() == S1Button.OK)
-				s1Button.updateMode(S1Button.OK);
-			else
-				s1Button.updateMode(S1Button.NG);
-			data = commandClient.send(CommandClient.S1, s1Button.getMode());
+			if (s1Button.getMode() != S1Button.NG) {
+				if (s2Button.getMode() != S2Button.NG)
+					data = commandClient.send(CommandClient.MODE, DriveButton.STR_AUTO);
+				else
+					data = commandClient.send(CommandClient.MODE, DriveButton.AUTO);
+			} else {
+				if (s2Button.getMode() != S2Button.NG)
+					data = commandClient.send(CommandClient.MODE, DriveButton.NORMAL);
+				else
+					data = commandClient.send(CommandClient.MODE, DriveButton.DRV_AUTO);
+			}
 		} else if (v == s2Button.s2) {
-			if (s2Button.getMode() == S2Button.OK)
-				s2Button.updateMode(S2Button.OK);
-			else
-				s2Button.updateMode(S2Button.NG);
-			data = commandClient.send(CommandClient.S2, s2Button.getMode());
+			if (s2Button.getMode() != S2Button.NG) {
+				if (s1Button.getMode() != S1Button.NG)
+					data = commandClient.send(CommandClient.MODE, DriveButton.DRV_AUTO);
+				else
+					data = commandClient.send(CommandClient.MODE, DriveButton.AUTO);
+			} else {
+				if (s1Button.getMode() != S1Button.NG)
+					data = commandClient.send(CommandClient.MODE, DriveButton.NORMAL);
+				else
+					data = commandClient.send(CommandClient.MODE, DriveButton.STR_AUTO);
+			}
 		}
 
 		if (data < 0)

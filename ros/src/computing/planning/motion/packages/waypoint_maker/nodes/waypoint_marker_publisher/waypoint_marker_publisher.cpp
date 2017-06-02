@@ -38,7 +38,7 @@
 #include <vector>
 #include <string>
 
-#include "waypoint_follower/LaneArray.h"
+#include "waypoint_follower_msgs/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include <runtime_manager/ConfigLaneStop.h>
 #include "runtime_manager/traffic_light.h"
@@ -96,7 +96,7 @@ void publishGlobalMarker()
   g_global_mark_pub.publish(marker_array);
 }
 
-void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
+void createGlobalLaneArrayVelocityMarker(const waypoint_follower_msgs::LaneArray &lane_waypoints_array)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
   // display by markers the velocity of each waypoint.
@@ -138,7 +138,7 @@ void createGlobalLaneArrayVelocityMarker(const waypoint_follower::LaneArray &lan
                                        tmp_marker_array.markers.end());
 }
 
-void createGlobalLaneArrayChangeFlagMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
+void createGlobalLaneArrayChangeFlagMarker(const waypoint_follower_msgs::LaneArray &lane_waypoints_array)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
   // display by markers the velocity of each waypoint.
@@ -198,7 +198,7 @@ void createGlobalLaneArrayChangeFlagMarker(const waypoint_follower::LaneArray &l
 }
 
 void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_waypoint,
-                                       const waypoint_follower::lane &lane_waypoint)
+                                       const waypoint_follower_msgs::lane &lane_waypoint)
 {
 
   // display by markers the velocity of each waypoint.
@@ -231,7 +231,7 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_wa
 
 }
 
-void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const waypoint_follower::LaneArray &lane_waypoints_array)
+void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const waypoint_follower_msgs::LaneArray &lane_waypoints_array)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -261,7 +261,7 @@ void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const waypoint_follo
 
 }
 
-void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &lane_waypoints_array)
+void createGlobalLaneArrayOrientationMarker(const waypoint_follower_msgs::LaneArray &lane_waypoints_array)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
   visualization_msgs::Marker lane_waypoint_marker;
@@ -294,7 +294,7 @@ void createGlobalLaneArrayOrientationMarker(const waypoint_follower::LaneArray &
                                        tmp_marker_array.markers.end());
 }
 
-void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::lane &lane_waypoint)
+void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower_msgs::lane &lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -317,7 +317,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const waypoint_follower::l
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void createLocalPointMarker(const waypoint_follower::lane &lane_waypoint)
+void createLocalPointMarker(const waypoint_follower_msgs::lane &lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -396,7 +396,7 @@ void configParameter(const runtime_manager::ConfigLaneStopConstPtr& msg)
   g_config_manual_detection = msg->manual_detection;
 }
 
-void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
+void laneArrayCallback(const waypoint_follower_msgs::LaneArrayConstPtr &msg)
 {
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
@@ -406,7 +406,7 @@ void laneArrayCallback(const waypoint_follower::LaneArrayConstPtr &msg)
   publishGlobalMarker();
 }
 
-void temporalCallback(const waypoint_follower::laneConstPtr &msg)
+void temporalCallback(const waypoint_follower_msgs::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)

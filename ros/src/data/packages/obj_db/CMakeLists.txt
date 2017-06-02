@@ -32,7 +32,7 @@ add_library(obj_db
 )
 
 add_executable(obj_downloader nodes/obj_downloader/obj_downloader.cpp)
-target_link_libraries(obj_downloader ${catkin_LIBRARIES} gnss obj_db)
+target_link_libraries(obj_downloader ${catkin_LIBRARIES} obj_db)
 
 add_executable(obj_uploader nodes/obj_uploader/obj_uploader.cpp)
 target_link_libraries(obj_uploader ${catkin_LIBRARIES} obj_db)

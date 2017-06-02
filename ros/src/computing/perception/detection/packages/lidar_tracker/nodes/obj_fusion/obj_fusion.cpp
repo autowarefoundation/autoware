@@ -1,4 +1,4 @@
-#include <cv_tracker/obj_label.h>
+#include <cv_tracker_msgs/obj_label.h>
 #include <float.h>
 #include <geometry_msgs/Point.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
@@ -154,7 +154,7 @@ static void fusion_objects(void) {
   obj_pose_timestamp_pub.publish(time);
 }
 
-void obj_label_cb(const cv_tracker::obj_label &obj_label_msg) {
+void obj_label_cb(const cv_tracker_msgs::obj_label &obj_label_msg) {
   object_type = obj_label_msg.type;
   obj_pose_timestamp = obj_label_msg.header.stamp;
 

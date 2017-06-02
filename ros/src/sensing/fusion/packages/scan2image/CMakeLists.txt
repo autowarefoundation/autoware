@@ -32,7 +32,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
   CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs calibration_camera_lidar message_runtime
-  DEPENDS system_lib
+  #DEPENDS system_lib
 )
 
 ###########
