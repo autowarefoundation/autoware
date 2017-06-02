@@ -89,6 +89,7 @@ CV based detectors RCNN and SSD nodes are not automatically built.
 To build these nodes please follow the respective node's README
 [SSD](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
 [RCNN](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
+[Yolo2](ros/src/computing/perception/detection/packages/cv_tracker/nodes/yolo2/README.md)
 
 
 ## How to Start
@@ -170,6 +171,9 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ### Detection with SSD
 [![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
+
+### Detection with Yolo2
+[![Yolo2](http://img.youtube.com/vi/gG_ojWOmDO0/mqdefault.jpg)](https://youtu.be/gG_ojWOmDO0)
 
 ### Detection with DPM
 [![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)

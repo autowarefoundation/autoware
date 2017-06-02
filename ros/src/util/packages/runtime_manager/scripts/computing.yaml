@@ -160,6 +160,11 @@ subs :
             border : 16
             flags : [ all ]
 
+      - name : yolo2_wa
+        desc : yolo2_wa desc sample
+        cmd  : roslaunch cv_tracker yolo2.launch
+        param: yolo2
+
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch cv_tracker ranging.launch
