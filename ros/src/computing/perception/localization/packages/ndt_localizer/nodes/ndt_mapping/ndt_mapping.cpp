@@ -347,7 +347,7 @@ static double wrapToPmPi(double a_angle_rad)
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
-  std::cout << __func__ << std::endl;
+  //std::cout << __func__ << std::endl;
 
   odom = *input;
   odom_calc(input->header.stamp);
@@ -380,7 +380,7 @@ static void imuUpsideDown(const sensor_msgs::Imu::Ptr input)
 
 static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 {
-  std::cout << __func__ << std::endl;
+  //std::cout << __func__ << std::endl;
 
   if(_imu_upside_down)
     imuUpsideDown(input);

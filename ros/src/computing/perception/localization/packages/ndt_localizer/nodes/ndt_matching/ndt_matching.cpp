@@ -390,12 +390,12 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     current_pose.pitch = current_gnss_pose.pitch;
     current_pose.yaw = current_gnss_pose.yaw;
 
+    current_pose_imu = current_pose_odom = current_pose_imu_odom = current_pose;
+
     offset_x = current_pose.x - previous_pose.x;
     offset_y = current_pose.y - previous_pose.y;
     offset_z = current_pose.z - previous_pose.z;
     offset_yaw = current_pose.yaw - previous_pose.yaw;
-
-    //TODO: add imu and odom
 
     init_pos_set = 1;
   }
@@ -426,8 +426,6 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   tf::Quaternion q(input->pose.pose.orientation.x, input->pose.pose.orientation.y, input->pose.pose.orientation.z,
                    input->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
-
-  //TODO: add imu and odom
 
   if (_use_local_transform == true)
   {
@@ -628,7 +626,7 @@ static const double wrapToPmPi(double a_angle_rad)
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
-  std::cout << __func__ << std::endl;
+  //std::cout << __func__ << std::endl;
 
   odom = *input;
   odom_calc(input->header.stamp);
@@ -659,7 +657,7 @@ static void imuUpsideDown(const sensor_msgs::Imu::Ptr input)
 
 static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 {
-  std::cout << __func__ << std::endl;
+  //std::cout << __func__ << std::endl;
 
   if(_imu_upside_down)
     imuUpsideDown(input);
@@ -1019,7 +1017,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_imu_odom_pub.publish(predict_pose_imu_odom_msg);
 
     ndt_q.setRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw);
-	    if (_use_local_transform == true)
+    if (_use_local_transform == true)
     {
       tf::Vector3 v(ndt_pose.x, ndt_pose.y, ndt_pose.z);
       tf::Transform transform(ndt_q, v);
