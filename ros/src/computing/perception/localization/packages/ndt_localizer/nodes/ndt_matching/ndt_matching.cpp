@@ -1004,7 +1004,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 
     tf::Quaternion predict_q_imu_odom;
-    predict_q_odom.setRPY(predict_pose_imu_odom.roll, predict_pose_imu_odom.pitch, predict_pose_imu_odom.yaw);
+    predict_q_imu_odom.setRPY(predict_pose_imu_odom.roll, predict_pose_imu_odom.pitch, predict_pose_imu_odom.yaw);
     predict_pose_imu_odom_msg.header.frame_id = "map";
     predict_pose_imu_odom_msg.header.stamp = input->header.stamp;
     predict_pose_imu_odom_msg.pose.position.x = predict_pose_imu_odom.x;
