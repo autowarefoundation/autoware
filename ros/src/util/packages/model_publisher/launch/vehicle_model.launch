@@ -8,7 +8,7 @@
   <arg name="offset_roll" default="0.0"/> <!-- degree -->
   <arg name="offset_pitch" default="0.0"/> <!-- degree -->
   <arg name="offset_yaw" default="0.0"/> <!-- degree -->
-  <arg name="model_path" default="./src/.config/model/default.urdf" />
+  <arg name="model_path" default="./src/.config/model/tier4_car_black_model/car_model.urdf" />
   <arg name="gui" default="False" />
 
   <param name="robot_description" textfile="$(arg model_path)" />
