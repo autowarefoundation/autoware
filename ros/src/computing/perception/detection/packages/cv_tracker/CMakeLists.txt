@@ -334,9 +334,7 @@ if(EXISTS "${YOLO2_PATH}")
   set(YOLO2_USE_CUDNN 0)
   set(YOLO2_USE_GPU 1)
   
-  if("${CUDA_NVCC_FLAGS}" MATCHES "^std")
-	list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-  endif()
+  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
   list(APPEND CUDA_NVCC_FLAGS "-I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
 
   cuda_add_library(yolo2lib_wa
