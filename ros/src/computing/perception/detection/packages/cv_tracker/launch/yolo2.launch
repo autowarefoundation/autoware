@@ -17,7 +17,7 @@
 	<node pkg="cv_tracker" name="yolo2_wa" type="yolo2_wa">
 		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
 		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
-		<param name="use_gpu" type="bool" value="$(arg use_gpu)/>
+		<param name="use_gpu" type="bool" value="$(arg use_gpu)" />
 		<param name="score_threshold" type="double" value="$(arg score_threshold)"/>
 		<param name="gpu_device_id" type="int" value="$(arg gpu_device_id)"/>
 		<param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src)"/>
