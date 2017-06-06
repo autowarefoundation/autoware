@@ -19,8 +19,9 @@ RUN apt-get update && apt-get install -y \
         libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
 
 RUN apt-get install -y \
-	ros-indigo-velocity-controllers  ros-indigo-grid-map libglew-dev \
-	ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper
+	ros-indigo-velocity-controllers  ros-indigo-grid-map \
+	ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-gps-common \
+	libglew-dev
 
 RUN rosdep init \
         && rosdep update \
