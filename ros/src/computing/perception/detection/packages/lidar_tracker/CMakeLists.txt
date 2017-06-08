@@ -121,9 +121,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 #add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
 
 #Euclidean Cluster
-add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
-target_link_libraries(euclidean_cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
+#moved after cuda check below
 
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
@@ -306,3 +304,36 @@ if(EXISTS "/usr/local/cuda")
 
 
 endif()
+
+#Euclidean Cluster
+add_executable(euclidean_cluster nodes/euclidean_cluster/euclidean_cluster.cpp nodes/euclidean_cluster/Cluster.cpp)
+
+find_package(CUDA)
+if(${CUDA_FOUND})
+	INCLUDE(FindCUDA)
+	message("-- USING ACCELERATED CLUSTERING --")
+	message("Version: " ${CUDA_VERSION})
+	message("Library: " ${CUDA_CUDA_LIBRARY})
+	message("Runtime: " ${CUDA_CUDART_LIBRARY})
+	
+	target_compile_definitions(euclidean_cluster PRIVATE
+		GPU_CLUSTERING=1
+	)
+
+	cuda_add_library(gpu_euclidean_clustering
+		nodes/euclidean_cluster/includes/gpu_euclidean_clustering.h
+		nodes/euclidean_cluster/gpu_euclidean_clustering.cu
+	)
+	
+	target_link_libraries(euclidean_cluster 
+		${OpenCV_LIBRARIES}
+		${catkin_LIBRARIES}
+		${PCL_LIBRARIES}
+		gpu_euclidean_clustering)
+	
+else()
+	target_link_libraries(euclidean_cluster ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+	
+endif()
+
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
