@@ -29,14 +29,14 @@
 */
 
 #include <geometry_msgs/PoseStamped.h>
-#include <waypoint_follower_msgs/lane.h>
+#include "autoware_msgs/lane.h"
 #include <visualization_msgs/MarkerArray.h>
-#include <vector_map/vector_map.h>
+#include "vector_map/vector_map.h"
 
-#include <vector_map_server/GetWhiteLine.h>
-#include <vector_map_server/GetStopLine.h>
-#include <vector_map_server/GetCrossWalk.h>
-#include <vector_map_server/GetSignal.h>
+#include "vector_map_server/GetWhiteLine.h"
+#include "vector_map_server/GetStopLine.h"
+#include "vector_map_server/GetCrossWalk.h"
+#include "vector_map_server/GetSignal.h"
 
 using vector_map::VectorMap;
 using vector_map::Category;
@@ -61,7 +61,7 @@ class VectorMapClient
 {
 private:
   geometry_msgs::PoseStamped pose_;
-  waypoint_follower_msgs::lane waypoints_;
+  autoware_msgs::lane waypoints_;
 
 public:
   VectorMapClient()
@@ -73,7 +73,7 @@ public:
     return pose_;
   }
 
-  waypoint_follower_msgs::lane getWaypoints() const
+  autoware_msgs::lane getWaypoints() const
   {
     return waypoints_;
   }
@@ -83,7 +83,7 @@ public:
     pose_ = pose;
   }
 
-  void setWaypoints(const waypoint_follower_msgs::lane& waypoints)
+  void setWaypoints(const autoware_msgs::lane& waypoints)
   {
     waypoints_ = waypoints;
   }

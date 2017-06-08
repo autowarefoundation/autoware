@@ -54,7 +54,7 @@ void VelocitySetInfo::clearPoints()
   points_.clear();
 }
 
-void VelocitySetInfo::configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
+void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
 {
   stop_distance_ = config->others_distance;
   stop_range_ = config->detection_range;

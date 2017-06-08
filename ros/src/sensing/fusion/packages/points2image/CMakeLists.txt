@@ -6,14 +6,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   sensor_msgs
+  autoware_msgs
   rosinterface
   fastvirtualscan
-  message_generation
   cv_bridge
   tf
   pcl_ros
   pcl_conversions
-  calibration_camera_lidar
 )
 
 find_package(OpenCV REQUIRED)
@@ -25,22 +24,10 @@ pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 ## Declare ROS messages, services and actions ##
 ################################################
 
-add_message_files(
-  FILES
-  PointsImage.msg
-#  CameraExtrinsic.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
-)
-
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera_lidar3d
-   CATKIN_DEPENDS rosinterface calibration_camera_lidar message_runtime std_msgs sensor_msgs
+   CATKIN_DEPENDS rosinterface message_runtime std_msgs sensor_msgs autoware_msgs
 #  DEPENDS system_lib
 )
 
@@ -67,7 +54,7 @@ include_directories(
 add_library(points_image
   lib/points_image/points_image.cpp
 )
-add_dependencies(points_image points2image_generate_messages_cpp)
+add_dependencies(points_image autoware_msgs_generate_messages_cpp)
 
 # points2vscan
 add_custom_command(
@@ -119,8 +106,7 @@ target_link_libraries(points2image
 )
 add_dependencies(points2image
   points_image
-  points2image_generate_messages_cpp
-  calibration_camera_lidar_generate_messages_cpp
+  autoware_msgs_generate_messages_cpp
 )
 
 # vscan2image
@@ -132,8 +118,7 @@ target_link_libraries(vscan2image
 )
 add_dependencies(vscan2image
   points_image
-  points2image_generate_messages_cpp
-  calibration_camera_lidar_generate_messages_cpp
+  autoware_msgs_generate_messages_cpp
 )
 
 

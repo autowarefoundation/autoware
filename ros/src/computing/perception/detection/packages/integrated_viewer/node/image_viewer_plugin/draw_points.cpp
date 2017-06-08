@@ -15,7 +15,7 @@ namespace integrated_viewer
   } //   DrawPoints::DrawPoints()
 
 
-  void DrawPoints::Draw(const points2image::PointsImage::ConstPtr& points,
+  void DrawPoints::Draw(const autoware_msgs::PointsImage::ConstPtr& points,
                         cv::Mat &image) {
     if (points == NULL) {
       return;

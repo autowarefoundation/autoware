@@ -63,7 +63,7 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   temporal_waypoints_.header = new_waypoints_.header;
   temporal_waypoints_.increment = new_waypoints_.increment;
   // push current pose
-  waypoint_follower_msgs::waypoint current_point;
+  autoware_msgs::waypoint current_point;
 
   current_point.pose = control_pose;
   current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
@@ -222,7 +222,7 @@ double VelocitySetPath::calcInterval(const int begin, const int end) const
 }
 
 
-void VelocitySetPath::waypointsCallback(const waypoint_follower_msgs::laneConstPtr& msg)
+void VelocitySetPath::waypointsCallback(const autoware_msgs::laneConstPtr& msg)
 {
   prev_waypoints_ = *msg;
   new_waypoints_ = *msg;

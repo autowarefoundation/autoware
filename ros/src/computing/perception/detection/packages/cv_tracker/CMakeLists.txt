@@ -15,26 +15,24 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  autoware_msgs
   libdpm_ttic
   fusion
   tf
   libdpm_ocv
   kf
-  runtime_manager
-  calibration_camera_lidar
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-  std_msgs
   cv_bridge
   image_transport
   roscpp
+  std_msgs
+  autoware_msgs
   sensor_msgs
   libdpm_ttic
   fusion
   tf
-  runtime_manager
-  calibration_camera_lidar
 )
 endif()
 
@@ -52,11 +50,11 @@ EXECUTE_PROCESS(
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
   CATKIN_DEPENDS libdpm_ocv 
-  libdpm_ttic scan2image fusion kf runtime_manager calibration_camera_lidar std_msgs geometry_msgs
+  libdpm_ttic fusion kf std_msgs geometry_msgs autoware_msgs
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic scan2image fusion runtime_manager calibration_camera_lidar std_msgs geometry_msgs
+  CATKIN_DEPENDS libdpm_ttic fusion std_msgs geometry_msgs autoware_msgs
 )
 endif()
 ###########
@@ -108,7 +106,7 @@ ENDIF()
 
 
 ADD_DEPENDENCIES(dpm_ttic
-  runtime_manager_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 ## dpm_ocv
@@ -125,8 +123,7 @@ TARGET_LINK_LIBRARIES(dpm_ocv
 )
 
 ADD_DEPENDENCIES(dpm_ocv
-  runtime_manager_generate_messages_cpp
-  cv_tracker_msgs_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 IF(CUDA_FOUND)
@@ -163,8 +160,7 @@ TARGET_LINK_LIBRARIES(range_fusion
 )
 
 ADD_DEPENDENCIES(range_fusion
-  cv_tracker_msgs_generate_messages_cpp
-  runtime_manager_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 ## kf_tracker ##
@@ -176,9 +172,6 @@ ADD_EXECUTABLE(kf_track
 TARGET_LINK_LIBRARIES(kf_track
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
-)
-ADD_DEPENDENCIES(kf_track
-  cv_tracker_msgs_generate_messages_cpp
 )
 endif()
 
@@ -200,9 +193,6 @@ TARGET_LINK_LIBRARIES(obj_reproj
   ${OpenCV_LIBS}
 )
 
-ADD_DEPENDENCIES(obj_reproj
-  calibration_camera_lidar_generate_messages_cpp
-)
 
 # check whether jsk library is available or not
 find_package(jsk_recognition_msgs)
@@ -229,7 +219,7 @@ TARGET_LINK_LIBRARIES(lktracker
   ${OpenCV_LIBS}
 )
 ADD_DEPENDENCIES(lktracker
-  cv_tracker_msgs_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 TARGET_LINK_LIBRARIES(klt_track
@@ -279,8 +269,7 @@ ENDIF()
   )
 
   ADD_DEPENDENCIES(rcnn_msr
-    cv_tracker_msgs_generate_messages_cpp
-    runtime_manager_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
     librcnn
   )
 else()
@@ -318,8 +307,7 @@ if(EXISTS "${SSD_CAFFE_PATH}")
   )
 
   ADD_DEPENDENCIES(ssd_unc
-    cv_tracker_msgs_generate_messages_cpp
-    runtime_manager_generate_messages_cpp
+      ${catkin_EXPORTED_TARGETS}
   )
 else()
   message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")

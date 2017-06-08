@@ -3,7 +3,6 @@
 #include <opencv/cxcore.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
-#include <scan2image/ScanImage.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -14,7 +13,8 @@
 #include <algorithm>
 #include "scan2image.h"
 
-#include "calibration_camera_lidar/projection_matrix.h"
+#include "autoware_msgs/ScanImage.h"
+#include "autoware_msgs/projection_matrix.h"
 #include <sensor_msgs/CameraInfo.h>
 
 #if 1 // AXE
@@ -77,7 +77,7 @@ void trans_depth_points_to_image_points(Scan_points_dataset* scan_points_dataset
     }
 }
 
-static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
+static void projection_callback(const autoware_msgs::projection_matrix& msg)
 {
     printf("projection\n");
 
@@ -202,7 +202,7 @@ void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     /*
      * Create message(Topic)
      */
-    scan2image::ScanImage scan_image_msg;
+    autoware_msgs::ScanImage scan_image_msg;
     scan_image_msg.header = msg->header;
     scan_image_msg.distance.assign(scan_image.distance, scan_image.distance + imageSize.width * imageSize.height);
     scan_image_msg.intensity.assign(scan_image.intensity, scan_image.intensity + imageSize.width * imageSize.height);
@@ -232,7 +232,7 @@ int main(int argc, char **argv)
     ros::Subscriber sub = n.subscribe("scan", 1, scanCallback);
     ros::Subscriber projection_sub = n.subscribe("projection_matrix", 1, projection_callback);
     ros::Subscriber intrinsic_sub = n.subscribe("camera/camera_info", 1, intrinsic_callback);
-    transformed_point_data = n.advertise<scan2image::ScanImage>("scan_image", 1);
+    transformed_point_data = n.advertise<autoware_msgs::ScanImage>("scan_image", 1);
 
     ros::spin();
 

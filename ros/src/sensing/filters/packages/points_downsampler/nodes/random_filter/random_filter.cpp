@@ -34,7 +34,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <runtime_manager/ConfigRandomFilter.h>
+#include "autoware_msgs/ConfigRandomFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
@@ -60,7 +60,7 @@ static std::string filename;
 static std::string POINTS_TOPIC;
 static double measurement_range;
 
-static void config_callback(const runtime_manager::ConfigRandomFilter::ConstPtr& input)
+static void config_callback(const autoware_msgs::ConfigRandomFilter::ConstPtr& input)
 {
   sample_num = input->sample_num;
   measurement_range = input->measurement_range;

@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_generation
-  cv_tracker_msgs
+  autoware_msgs
   lidar_tracker
   geometry_msgs
   visualization_msgs
@@ -33,7 +33,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS cv_tracker_msgs points2image message_runtime std_msgs
+  CATKIN_DEPENDS autoware_msgs points2image message_runtime std_msgs
 )
 ###########
 ## Build ##

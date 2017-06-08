@@ -14,11 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  runtime_manager
-  points2image
   rviz
-  cv_tracker_msgs
-  lane_detector
+  autoware_msgs
   )
 
 set(CMAKE_CXX_FLAGS
@@ -124,8 +121,6 @@ install(FILES rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 add_dependencies(${PROJECT_NAME}
-  runtime_manager_generate_messages_cpp
-  cv_tracker_msgs_generate_messages_cpp
-  points2image_generate_messages_cpp
-  lane_detector_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS} 
+)
 #endif()

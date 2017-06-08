@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   tf
   libvectormap
-  runtime_manager
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -33,20 +32,6 @@ endif()
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
-## Generate added messages and services with any dependencies listed here
-add_message_files(FILES
-  ExtractedPosition.msg
-  Signals.msg
-  ValueSet.msg
-  ColorSet.msg
-  TunedResult.msg
-  )
-
-generate_messages(DEPENDENCIES
-  sensor_msgs
-  std_msgs
-  )
-
 
 ###################################
 ## catkin specific configuration ##
@@ -58,7 +43,7 @@ include_directories(
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+  CATKIN_DEPENDS std_msgs message_runtime libvectormap autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -80,8 +65,8 @@ target_link_libraries(region_tlr
 )
 
 add_dependencies(region_tlr
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ### feat_proj ###
 include_directories(
@@ -101,8 +86,7 @@ target_link_libraries(feat_proj
 )
 
 add_dependencies(feat_proj
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
 EXECUTE_PROCESS(

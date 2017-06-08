@@ -9,15 +9,11 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cv_tracker_msgs</build_depend>
-  <build_depend>points2image</build_depend>
-  <build_depend>runtime_manager</build_depend>
+  <build_depend>autoware_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>rviz</build_depend>
 
-  <run_depend>cv_tracker_msgs</run_depend>
-  <run_depend>points2image</run_depend>
-  <run_depend>runtime_manager</run_depend>
+  <run_depend>autoware_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>rviz</run_depend>
 

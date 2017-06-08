@@ -37,7 +37,7 @@
 
 #include <velodyne_pointcloud/point_types.h>
 
-#include <runtime_manager/ConfigRingFilter.h>
+#include "autoware_msgs/ConfigRingFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
@@ -63,7 +63,7 @@ static std::string filename;
 static std::string POINTS_TOPIC;
 static double measurement_range;
 
-static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& input)
+static void config_callback(const autoware_msgs::ConfigRingFilter::ConstPtr& input)
 {
   ring_div = input->ring_div;
   voxel_leaf_size = input->voxel_leaf_size;

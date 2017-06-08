@@ -89,7 +89,7 @@ void displayObstacle(const EControl &kind, const ObstaclePoints& obstacle_points
   //obstacle_pub.publish(marker);
 }
 
-void displayDetectionRange(const waypoint_follower_msgs::lane& lane, const CrossWalk& crosswalk, const int closest_waypoint, const EControl &kind, const int obstacle_waypoint, const double stop_range, const double deceleration_range, const ros::Publisher& detection_range_pub)
+void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const int closest_waypoint, const EControl &kind, const int obstacle_waypoint, const double stop_range, const double deceleration_range, const ros::Publisher& detection_range_pub)
 {
   // set up for marker array
   visualization_msgs::MarkerArray marker_array;
@@ -231,7 +231,7 @@ EControl crossWalkDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const 
   return EControl::KEEP;  // find no obstacles
 }
 
-int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const waypoint_follower_msgs::lane& lane, const CrossWalk& crosswalk, double stop_range, double points_threshold, const geometry_msgs::PoseStamped& localizer_pose, ObstaclePoints* obstacle_points)
+int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const autoware_msgs::lane& lane, const CrossWalk& crosswalk, double stop_range, double points_threshold, const geometry_msgs::PoseStamped& localizer_pose, ObstaclePoints* obstacle_points)
 {
   int stop_obstacle_waypoint = -1;
   // start search from the closest waypoint
@@ -290,7 +290,7 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
   return stop_obstacle_waypoint;
 }
 
-int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const waypoint_follower_msgs::lane& lane, const double stop_range, const double deceleration_range, const double points_threshold, const geometry_msgs::PoseStamped& localizer_pose, ObstaclePoints* obstacle_points)
+int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const autoware_msgs::lane& lane, const double stop_range, const double deceleration_range, const double points_threshold, const geometry_msgs::PoseStamped& localizer_pose, ObstaclePoints* obstacle_points)
 {
   int decelerate_obstacle_waypoint = -1;
   // start search from the closest waypoint
@@ -340,7 +340,7 @@ int detectDecelerateObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const
 
 
 // Detect an obstacle by using pointcloud
-EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const waypoint_follower_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info, int* obstacle_waypoint, ObstaclePoints* obstacle_points)
+EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint, const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info, int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
   if (points.empty() == true || closest_waypoint < 0)
     return EControl::KEEP;
@@ -388,7 +388,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
 
 }
 
-EControl obstacleDetection(int closest_waypoint, const waypoint_follower_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo vs_info, const ros::Publisher& detection_range_pub, const ros::Publisher& obstacle_pub, int* obstacle_waypoint)
+EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo vs_info, const ros::Publisher& detection_range_pub, const ros::Publisher& obstacle_pub, int* obstacle_waypoint)
 {
   ObstaclePoints obstacle_points;
   EControl detection_result = pointsDetection(vs_info.getPoints(), closest_waypoint, lane, crosswalk, vs_info, obstacle_waypoint, &obstacle_points);
@@ -500,7 +500,7 @@ int main(int argc, char **argv)
 
   // publisher
   ros::Publisher detection_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
-  ros::Publisher temporal_waypoints_pub = nh.advertise<waypoint_follower_msgs::lane>("temporal_waypoints", 1000, true);
+  ros::Publisher temporal_waypoints_pub = nh.advertise<autoware_msgs::lane>("temporal_waypoints", 1000, true);
   ros::Publisher obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);
 
   ros::Rate loop_rate(LOOP_RATE);

@@ -38,11 +38,11 @@
 #include <vector>
 
 #include <ros/ros.h>
-#include <cv_tracker_msgs/image_obj.h>
-#include <cv_tracker_msgs/image_rect_ranged.h>
-#include <scan2image/ScanImage.h>
-#include <points2image/PointsImage.h>
-#include <cv_tracker_msgs/image_obj_tracked.h>
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/image_rect_ranged.h"
+#include "autoware_msgs/ScanImage.h"
+#include "autoware_msgs/PointsImage.h"
+#include "autoware_msgs/image_obj_tracked.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -81,10 +81,10 @@ extern std::vector<float> getMaxHeights();
 extern void setParams(float minLowHeight, float maxLowHeight, float maxHeight, int minPoints, float disp);
 
 extern void calcDistance();
-extern void setDetectedObjects(const cv_tracker_msgs::image_obj& image_objects);
-extern void setScanImage(const scan2image::ScanImage& scan_image);
-extern void setPointsImage(const points2image::PointsImage& points_image);
-extern std::vector<cv_tracker_msgs::image_rect_ranged> getObjectsRectRanged();
+extern void setDetectedObjects(const autoware_msgs::image_obj& image_objects);
+extern void setScanImage(const autoware_msgs::ScanImage& scan_image);
+extern void setPointsImage(const autoware_msgs::PointsImage& points_image);
+extern std::vector<autoware_msgs::image_rect_ranged> getObjectsRectRanged();
 extern std::string getObjectsType();
 extern void init();
 extern void destroy();

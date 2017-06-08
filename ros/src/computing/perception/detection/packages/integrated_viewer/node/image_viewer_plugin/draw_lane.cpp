@@ -15,7 +15,7 @@ namespace integrated_viewer
   DrawLane::DrawLane(void) {
   }  // DrawLane::DrawLane()
 
-  void DrawLane::Draw(const lane_detector::ImageLaneObjects::ConstPtr& lane,
+  void DrawLane::Draw(const autoware_msgs::ImageLaneObjects::ConstPtr& lane,
                       cv::Mat &image) {
     if (lane == NULL) {
       return;
