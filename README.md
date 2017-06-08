@@ -42,12 +42,12 @@ See also Autoware/docs for the tips of Autoware development, including the codin
 
 ## Requirements
 
-- ROS indigo(Ubuntu 14.04) or ROS jade(Ubuntu 15.04)
-- OpenCV 2.4.10 or higher **NOTE: As of Octber 2016, Autoware does not support OpenCV 3 or higher. Please use OpenCV 2**
+- ROS indigo (Ubuntu 14.04) or ROS jade (Ubuntu 15.04) or ROS kinetic (Ubuntu 16.04)
+- OpenCV 2.4.10 or higher
 - Qt 5.2.1 or higher
 - CUDA(Optional)
-- FlyCapture2(optional)
-- Armadillo
+- FlyCapture2 (Optional)
+- Armadillo (Optional)
 
 **Please use checkout revision before 2015/OCT/21 if you use Autoware on ROS hydro or Ubuntu 13.04, 13.10.**
 
