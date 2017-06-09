@@ -77,6 +77,10 @@
 //#include <vector_map/vector_map.h>
 //#include <vector_map_server/GetSignal.h>
 
+#ifdef GPU_CLUSTERING
+	#include "gpu_euclidean_clustering.h"
+#endif
+
 using namespace cv;
 
 std::vector<cv::Scalar> _colors;
@@ -290,6 +294,64 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	extract.filter(*out_cloud_ptr);
 }
 
+#ifdef GPU_CLUSTERING
+std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
+											pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
+											jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
+											lidar_tracker::centroids& in_out_centroids,
+											double in_max_cluster_distance=0.5)
+{
+	std::vector<ClusterPtr> clusters;
+
+	//Convert input point cloud to vectors of x, y, and z
+
+	int size = in_cloud_ptr->points.size();
+
+	if (size == 0)
+		return clusters;
+
+	float *tmp_x, *tmp_y, *tmp_z;
+
+	tmp_x = (float *)malloc(sizeof(float) * size);
+	tmp_y = (float *)malloc(sizeof(float) * size);
+	tmp_z = (float *)malloc(sizeof(float) * size);
+
+	for (int i = 0; i < size; i++) {
+		pcl::PointXYZ tmp_point = in_cloud_ptr->at(i);
+
+		tmp_x[i] = tmp_point.x;
+		tmp_y[i] = tmp_point.y;
+		tmp_z[i] = tmp_point.z;
+	}
+
+	GpuEuclideanCluster gecl_cluster;
+
+	gecl_cluster.setInputPoints(tmp_x, tmp_y, tmp_z, size);
+	gecl_cluster.setThreshold(in_max_cluster_distance);
+	gecl_cluster.setMinClusterPts (_cluster_size_min);
+	gecl_cluster.setMaxClusterPts (_cluster_size_max);
+	gecl_cluster.extractClusters();
+	std::vector<GpuEuclideanCluster::GClusterIndex> cluster_indices = gecl_cluster.getOutput();
+
+	unsigned int k = 0;
+
+	for (auto it = cluster_indices.begin(); it != cluster_indices.end(); it++)
+	{
+		ClusterPtr cluster(new Cluster());
+		cluster->SetCloud(in_cloud_ptr, it->points_in_cluster, _velodyne_header, k, (int)_colors[k].val[0], (int)_colors[k].val[1], (int)_colors[k].val[2], "", _pose_estimation);
+		clusters.push_back(cluster);
+
+		k++;
+	}
+
+	free(tmp_x);
+	free(tmp_y);
+	free(tmp_z);
+
+	return clusters;
+}
+#endif
+
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
@@ -471,8 +533,11 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	std::vector <ClusterPtr> all_clusters;
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
+#ifdef GPU_CLUSTERING
+		std::vector<ClusterPtr> local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+#else
 		std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
-
+#endif
 		all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
 	}
 
