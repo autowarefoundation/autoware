@@ -11,6 +11,13 @@ public:
 		std::vector<int> points_in_cluster;
 	} GClusterIndex;
 
+	typedef struct {
+		float *x;
+		float *y;
+		float *z;
+		int size;
+	} SamplePointListXYZ;
+
 	GpuEuclideanCluster();
 
 	void setInputPoints(float *x, float *y, float *z, int size);
@@ -18,7 +25,10 @@ public:
 	void setMinClusterPts(int min_cluster_pts);
 	void setMaxClusterPts(int max_cluster_pts);
 	void extractClusters();
+	void extractClusters2();
 	std::vector<GClusterIndex> getOutput();
+
+	SamplePointListXYZ generateSample();
 
 	~GpuEuclideanCluster();
 
@@ -30,6 +40,8 @@ private:
 	int *cluster_indices_host_;
 	int min_cluster_pts_;
 	int max_cluster_pts_;
+	int cluster_num_;
+
 
 	void exclusiveScan(int *input, int ele_num, int *sum);
 };
