@@ -339,6 +339,18 @@ subs :
             border : 16
             flags : [ all ]
 
+      - name : region_tlr_ssd
+        desc : region_tlr_ssd desc sample
+        cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
+        param : region_tlr_ssd
+        gui  :
+          flags : [ no_link, need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
     - name : viewers
       desc : viewers desc sample
       subs :
@@ -1912,6 +1924,19 @@ params :
       label : Display superimpose result
       kind  : checkbox
       v     : False
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
+  - name : region_tlr_ssd
+    vars :
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu

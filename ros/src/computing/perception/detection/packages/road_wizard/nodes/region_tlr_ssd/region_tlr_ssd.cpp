@@ -95,53 +95,11 @@ void RegionTlrSsdRosNode::RoiSignalCallback(const road_wizard::Signals::ConstPtr
     // Get current state of traffic light from current frame
     LightState current_state = recognizer.RecognizeLightState(roi);
 
-    std::cerr << "current_state: ";
-    switch(current_state) {
-    case GREEN:
-      std::cerr << "GREEN";
-      break;
-    case YELLOW:
-      std::cerr << "YELLOW";
-      break;
-    case RED:
-      std::cerr << "RED";
-      break;
-    case UNDEFINED:
-      std::cerr << "UNDEFINED";
-      break;
-    default:
-      std::cerr << "なにこれ？";
-      break;
-    }
-
-    std::cerr << "(saved: " << context.lightState << ")";
-
     // Determine the final state by referring previous state
     context.lightState = DetermineState(context.lightState, // previous state
                                         current_state,      // current state
                                         &(context.stateJudgeCount)); // counter to record how many times does state recognized
-
-    std::cerr << ", determined: ";
-    switch(context.lightState) {
-    case GREEN:
-      std::cerr << "GREEN | ";
-      break;
-    case YELLOW:
-      std::cerr << "YELLOW | ";
-      break;
-    case RED:
-      std::cerr << "RED | ";
-      break;
-    case UNDEFINED:
-      std::cerr << "UNDEFINED | ";
-      break;
-    default:
-      std::cerr << "なにこれ？ | ";
-      break;
-    }
   }
-
-  std::cerr << std::endl;
 
   // Publish recognition result as some topic format
   PublishTrafficLight(contexts_);
@@ -212,14 +170,6 @@ LightState RegionTlrSsdRosNode::DetermineState(LightState previous_state,
                                                int* state_judge_count) {
   // Get a candidate which considering state transition of traffic light
   LightState transition_candidate = kStateTransitionMatrix[previous_state][current_state];
-
-  std::cerr << " [count:" << *(state_judge_count) << "/" << kChangeStateThreshold
-            << ", pre:" << previous_state << ", cur:" << current_state << ", tra:" << transition_candidate << "]";
-
-  // if (transition_candidate == UNDEFINED) {
-  //   // If candidate is UNDEFINED, return previous state tentatively
-  //   return previous_state;
-  // }
 
   // If state change happens more than threshold times, accept that change
   if (*state_judge_count > kChangeStateThreshold) {

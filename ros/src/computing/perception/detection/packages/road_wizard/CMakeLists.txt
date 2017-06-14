@@ -240,8 +240,7 @@ target_link_libraries(label_maker
 
 ### region_tlr_ssd ###
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
-# set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
-set(SSD_CAFFE_PATH "$ENV{HOME}/test/caffe/distribute")
+set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 if(EXISTS "${SSD_CAFFE_PATH}")
 
