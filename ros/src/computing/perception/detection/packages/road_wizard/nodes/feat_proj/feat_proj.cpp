@@ -24,7 +24,7 @@
 #include <runtime_manager/adjust_xy.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
-#include <waypoint_follower/lane.h>
+#include <waypoint_follower_msgs/lane.h>
 
 static std::string camera_id_str;
 
@@ -64,7 +64,7 @@ namespace
   {
   private:
     geometry_msgs::PoseStamped pose_;
-    waypoint_follower::lane waypoints_;
+    waypoint_follower_msgs::lane waypoints_;
 
   public:
     VectorMapClient()
@@ -78,7 +78,7 @@ namespace
       return pose_;
     }
 
-    waypoint_follower::lane waypoints() const
+    waypoint_follower_msgs::lane waypoints() const
     {
       return waypoints_;
     }
@@ -88,7 +88,7 @@ namespace
       pose_ = pose;
     }
 
-    void set_waypoints(const waypoint_follower::lane& waypoints)
+    void set_waypoints(const waypoint_follower_msgs::lane& waypoints)
     {
       waypoints_ = waypoints;
     }
