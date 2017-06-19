@@ -293,7 +293,8 @@ MainWindow::MainWindow(QWidget *parent) :
     splitter->addWidget(updateview);
 
     vehicletracker=new RBSSPFVehicleTracker;
-    connect(vehicletracker,SIGNAL(signalUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)),updateview,SLOT(slotUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)));
+    connect(vehicletracker,SIGNAL(signalUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)),
+    		updateview,SLOT(slotUpdateTrackerFinish(LaserScan,QMap<int,TrackerResultContainer>)));
 
     scansub->startReceiveSlot();
     //detectionsub->startReceiveSlot();
