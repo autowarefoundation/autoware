@@ -22,7 +22,7 @@ static pcl::PointCloud<pcl::PointXYZI> removePointsByRange(pcl::PointCloud<pcl::
       narrowed_scan.points.push_back(p);
     }
   }
-#if 1
+#if 0
   return narrowed_scan;
 #else
   return scan;    //  This is a only tempolary patch for Localization problem.
