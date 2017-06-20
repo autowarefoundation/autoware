@@ -11,19 +11,22 @@ static pcl::PointCloud<pcl::PointXYZI> removePointsByRange(pcl::PointCloud<pcl::
 
   for(pcl::PointCloud<pcl::PointXYZI>::const_iterator iter = scan.begin(); iter != scan.end(); ++iter)
   {
-    pcl::PointXYZI p;
-    p.x = iter->x;
-    p.y = iter->y;
-    p.z = iter->z;
-    p.intensity = iter->intensity;
+    const pcl::PointXYZI &p = *iter;
+//    p.x = iter->x;
+//    p.y = iter->y;
+//    p.z = iter->z;
+//    p.intensity = iter->intensity;
     double square_distance = p.x * p.x + p.y * p.y;
 
     if(square_min_range <= square_distance && square_distance <= square_max_range){
       narrowed_scan.points.push_back(p);
     }
   }
-
+#if 1
   return narrowed_scan;
+#else
+  return scan;    //  This is a only tempolary patch for Localization problem.
+#endif
 }
 
 #endif // POINTS_DOWNSAMPLER_H
