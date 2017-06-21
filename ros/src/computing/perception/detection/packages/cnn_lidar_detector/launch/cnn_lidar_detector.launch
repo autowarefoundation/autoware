@@ -1,0 +1,21 @@
+<launch>
+	<arg name="use_gpu" default="true"/>
+	<arg name="gpu_device_id" default="0"/>
+	
+	<!-- arguments list -->
+	
+	<arg name="network_definition_file" default="$(env HOME)/cnn_intel/trainV4B_sug.prototxt"/>
+	<arg name="pretrained_model_file" default="$(env HOME)/cnn_intel/lr1-7A_B5+3_Med2HN_V3_W32_OB_100k+_iter_13000.caffemodel"/> 
+
+	<arg name="points_node" default="/points_raw"/>
+	
+	<!-- CNN Node -->
+	<node pkg="cnn_lidar_detector" name="cnn_lidar_detector_node" type="cnn_lidar_detector_node">
+		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
+		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
+		<param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+		<param name="gpu_device_id" type="int" value="$(arg gpu_device_id)"/>
+		<param name="points_node" type="str" value="$(arg camera_id)$(arg image_src)"/>
+	</node>
+	
+</launch>
