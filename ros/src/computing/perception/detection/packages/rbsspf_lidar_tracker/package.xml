@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>rbsspf_lidar_tracker</name>
+  <version>1.0.0</version>
+  <description>The rbsspf_lidar_tracker package</description>
+
+  <maintainer email="amc@auto.ware">ne0</maintainer>
+
+  <license>BSD-3</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_runtime</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>pcl_ros</run_depend>
+
+</package>

@@ -313,6 +313,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+//receive laser scan
 void MainWindow::slotReceive()
 {
     sensor_msgs::LaserScanConstPtr msg=scansub->getMessage();
@@ -332,6 +333,7 @@ void MainWindow::slotReceive()
     }
 }
 
+//not used, receive image detections
 void MainWindow::slotReceiveDetection()
 {
     cv_tracker_msgs::obj_label::ConstPtr msg=detectionsub->getMessage();
@@ -355,6 +357,7 @@ void MainWindow::slotReceiveDetection()
     }
 }
 
+//receive bounding boxes from euclidean cluster
 void MainWindow::slotReceiveBoxes()
 {
 	jsk_recognition_msgs::BoundingBoxArray::ConstPtr msg=boxessub->getMessage();
@@ -380,6 +383,7 @@ void MainWindow::slotReceiveBoxes()
     }
 }
 
+//receive transformation from velodyne to world
 void MainWindow::slotReceiveTF()
 {
     tf::StampedTransform tf;
@@ -409,7 +413,7 @@ void MainWindow::slotReceiveTF()
     }
 }
 
-
+//tf map to lidar
 void MainWindow::slotReceiveTFMap2Lidar()
 {
     tfMap2Lidarsub->getTF(transformMap2Lidar);
