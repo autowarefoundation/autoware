@@ -55,7 +55,7 @@ namespace integrated_viewer
 
         // Draw a point
         cv::rectangle(image,
-                      cv::Point(x, y),
+                      cv::Point(x - 1, y - 1),
                       cv::Point(x + 1, y + 1),
                       CV_RGB(red, green, blue),
                       CV_FILLED);
