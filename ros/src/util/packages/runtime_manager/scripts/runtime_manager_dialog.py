@@ -1358,10 +1358,12 @@ class MyFrame(rtmgr.MyFrame):
 		return col_red
 
 	def mem_kb_info(self):
-		lst = subprocess.check_output(['free']).strip().split('\n')[2].split()[2:4]
-		used = int(lst[0])
-		free = int(lst[1])
-		return (used + free, used)
+		lines = subprocess.check_output('cat /proc/meminfo', shell=True).strip().split(os.linesep)
+		cvt = lambda (k, v): ( k.replace(':', ''), int(v) )
+		d = dict( map( lambda s: cvt( filter( lambda s: s!='kB', s.split() ) ), lines ) )
+		total = d.get('MemTotal')
+		free = d.get('MemFree') + d.get('Buffers') + d.get('Cached')
+		return (total, total - free)
 
 	def toprc_create(self):
 		(child_pid, fd) = pty.fork()
