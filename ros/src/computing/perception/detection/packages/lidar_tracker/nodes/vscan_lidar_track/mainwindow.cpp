@@ -41,8 +41,12 @@ void InitTrackerView::getInitState(QVector<Tracker> & initState)
     {
         initState[i].mean.x=-state[i]->line().p1().y();
         initState[i].mean.y=-state[i]->line().p1().x();
-        initState[i].mean.theta=atan2(state[i]->line().p1().x()-state[i]->line().p2().x(),state[i]->line().p1().y()-state[i]->line().p2().y());
-        initState[i].mean.wl=1.5;initState[i].mean.wr=1.5;initState[i].mean.lf=2.5;initState[i].mean.lb=2.5;
+        initState[i].mean.theta=atan2(state[i]->line().p1().x()-state[i]->line().p2().x(),
+        								state[i]->line().p1().y()-state[i]->line().p2().y());
+        initState[i].mean.wl=1.5;
+        initState[i].mean.wr=1.5;
+        initState[i].mean.lf=2.5;
+        initState[i].mean.lb=2.5;
         initState[i].mean.a=0;initState[i].mean.v=10;initState[i].mean.k=0;initState[i].mean.omega=0;
         initState[i].pfcount=0;
         initState[i].id=idcount++;
@@ -186,7 +190,9 @@ void UpdateTrackerView::slotUpdateTrackerFinish(LaserScan scan, QVector<Tracker>
         Tracker tracker=trackers[i];
         for(int j=0;j<4;j++)
         {
-            scene->addLine(-tracker.cy[j],-tracker.cx[j],-tracker.cy[(j+1)%4],-tracker.cx[(j+1)%4],QPen(tracker.status!=StatusUpdateTracker_PF?Qt::red:Qt::cyan,0.1,Qt::DotLine));
+            scene->addLine(-tracker.cy[j], 		-tracker.cx[j],
+            				-tracker.cy[(j+1)%4],-tracker.cx[(j+1)%4],
+            				QPen(tracker.status!=StatusUpdateTracker_PF?Qt::red:Qt::cyan,0.1,Qt::DotLine));
         }
         scene->addLine(-tracker.cy[0],-tracker.cx[0],-tracker.cy[2],-tracker.cx[2],QPen(tracker.status!=StatusUpdateTracker_PF?Qt::red:Qt::cyan,0.1,Qt::DotLine));
         scene->addLine(-tracker.cy[1],-tracker.cx[1],-tracker.cy[3],-tracker.cx[3],QPen(tracker.status!=StatusUpdateTracker_PF?Qt::red:Qt::cyan,0.1,Qt::DotLine));
