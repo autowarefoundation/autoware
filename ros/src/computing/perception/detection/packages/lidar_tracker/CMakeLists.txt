@@ -237,14 +237,14 @@ if(EXISTS "/usr/local/cuda")
     )
   add_custom_target(vehicle_tracker_moc_mainwindow DEPENDS moc_mainwindow.cpp)
 
-  add_custom_command(
-    OUTPUT moc_rbsspfvehicletracker.cpp
-    COMMAND
-    ${Qt5BIN}/moc
-    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/moc_rbsspfvehicletracker.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/rbsspfvehicletracker.h"
-    )
-  add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
+#  add_custom_command(
+#    OUTPUT moc_rbsspfvehicletracker.cpp
+#    COMMAND
+#    ${Qt5BIN}/moc
+#    "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/moc_rbsspfvehicletracker.cpp"
+#    "${CMAKE_CURRENT_SOURCE_DIR}/nodes/vscan_lidar_track/rbsspfvehicletracker.h"
+#    )
+#  add_custom_target(vehicle_tracker_moc_rbsspfvehicletracker DEPENDS moc_rbsspfvehicletracker.cpp)
 
   FIND_PACKAGE(CUDA REQUIRED)
   INCLUDE(FindCUDA)
@@ -259,10 +259,26 @@ if(EXISTS "/usr/local/cuda")
     ${Qt5Widgets_INCLUDE_DIRS})
 
   #cuda pf lib
+  #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};)
+  set(CUDA_SEPARABLE_COMPILATION ON)
+  
   cuda_add_library(rbsspfvehicletracker
-        nodes/vscan_lidar_track/rbsspfvehicletracker.cu
-        nodes/vscan_lidar_track/rbsspfvehicletracker.cuh)
+#        nodes/vscan_lidar_track/rbsspfvehicletracker.cu
+#        nodes/vscan_lidar_track/rbsspfvehicletracker.cuh
+        nodes/vscan_lidar_track/rbsspf_share.cu
+        nodes/vscan_lidar_track/rbsspf_share.cuh
+        nodes/vscan_lidar_track/rbsspf_geometry.cu
+        nodes/vscan_lidar_track/rbsspf_geometry.cuh
+        nodes/vscan_lidar_track/rbsspf_motion.cu
+        nodes/vscan_lidar_track/rbsspf_motion.cuh
+        nodes/vscan_lidar_track/rbsspf_tracker.cu
+        nodes/vscan_lidar_track/rbsspf_tracker.cuh
+        OPTIONS --compiler-options "-fPIC"
+        )
 
+  set_property(TARGET rbsspfvehicletracker PROPERTY POSITION_INDEPENDENT_CODE ON)
+  #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  
   catkin_package(
     CATKIN_DEPENDS rosinterface
     )
@@ -278,10 +294,10 @@ if(EXISTS "/usr/local/cuda")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
   add_executable(vscan_lidar_track
-    nodes/vscan_lidar_track/rbsspfvehicletracker.h
+#    nodes/vscan_lidar_track/rbsspfvehicletracker.h
     nodes/vscan_lidar_track/main.cpp
     nodes/vscan_lidar_track/mainwindow.cpp
-    nodes/vscan_lidar_track/rbsspfvehicletracker.cpp
+#    nodes/vscan_lidar_track/rbsspfvehicletracker.cpp
     )
 
   set_target_properties(vscan_lidar_track
@@ -290,7 +306,7 @@ if(EXISTS "/usr/local/cuda")
 
   add_dependencies(vscan_lidar_track
     vehicle_tracker_moc_mainwindow
-    vehicle_tracker_moc_rbsspfvehicletracker
+#    vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
     cv_tracker_msgs_generate_messages_cpp
     )
@@ -323,6 +339,7 @@ if(${CUDA_FOUND})
 	cuda_add_library(gpu_euclidean_clustering
 		nodes/euclidean_cluster/includes/gpu_euclidean_clustering.h
 		nodes/euclidean_cluster/gpu_euclidean_clustering.cu
+		OPTIONS --compiler-options "-fPIC"
 	)
 	
 	target_link_libraries(euclidean_cluster 

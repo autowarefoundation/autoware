@@ -10,11 +10,16 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
+  message_filters  
   message_generation
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
 )
+
+find_package(Boost REQUIRED COMPONENTS 
+  signals
+) 
 
 execute_process(
   COMMAND rosversion -d
@@ -30,6 +35,8 @@ endif()
 catkin_package(
    CATKIN_DEPENDS message_runtime std_msgs pcl_ros 
 )
+
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###################
 ###CUDA CHECKER####
@@ -74,8 +81,15 @@ if(EXISTS "/usr/local/cuda")
   if ("${ROS_VERSION}" MATCHES "(kinetic)")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH})
   else()
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -arch=${CUDA_ARCH}; -std=c++11)
   endif()
+  
+  message("---------------------------")
+  message("-- Architecture: " ${CUDA_ARCH})
+  message("-- Version:      " ${CUDA_VERSION})
+  message("-- Library:      " ${CUDA_CUDA_LIBRARY})
+  message("-- Runtime:      " ${CUDA_CUDART_LIBRARY})
+  message("-- NVCC FLAGS:   " ${CUDA_NVCC_FLAGS})
 
 endif()
 ###########
@@ -90,19 +104,38 @@ include_directories(
 link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
-ADD_EXECUTABLE(rbsspf_lidar_tracker
+cuda_add_executable(rbsspf_lidar_tracker
   src/rbsspf_lidar_tracker.cpp
 )
 
-TARGET_LINK_LIBRARIES(rbsspf_lidar_tracker
+set(CUDA_SEPARABLE_COMPILATION ON)
+
+cuda_add_library(rbsspfvehicletracker_lib
+#  src/rbsspfvehicletracker.cu
+#  src/rbsspfvehicletracker.cuh
+  src/rbsspf_share.cu
+  src/rbsspf_share.cuh
+  src/rbsspf_geometry.cu
+  src/rbsspf_geometry.cuh
+  src/rbsspf_motion.cu
+  src/rbsspf_motion.cuh
+  src/rbsspf_tracker.cu
+  src/rbsspf_tracker.cuh
+  OPTIONS --compiler-options "-fPIC"
+)
+
+target_link_libraries(rbsspf_lidar_tracker
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES}
   ${CUDA_curand_LIBRARY}
+  ${Boost_LIBRARIES}
+  rbsspfvehicletracker_lib
 )
 
-TARGET_INCLUDE_DIRECTORIES( rbsspf_lidar_tracker PRIVATE
+target_include_directories(rbsspf_lidar_tracker PRIVATE
   include/rbsspf_lidar_tracker
+  ${Boost_INCLUDE_DIRS}
 )
 
