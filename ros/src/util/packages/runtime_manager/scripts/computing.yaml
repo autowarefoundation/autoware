@@ -468,8 +468,8 @@ subs :
     - name : way_planner (OpenPlanner)
       desc : Global planner for OpenPlanner
       subs :
-      - name : way_planner 
-        desc : for global planning 
+      - name : way_planner
+        desc : for global planning
         cmd  : roslaunch way_planner way_planner.launch
         param: way_planner
 
@@ -479,11 +479,11 @@ subs :
     - name : dp_planner (OpenPlanner)
       desc : Local Planner for OpenPlanner
       subs :
-      - name : dp_planner 
-        desc : for behavior and path planning 
+      - name : dp_planner
+        desc : for behavior and path planning
         cmd  : roslaunch dp_planner dp_planner.launch
         param: dp_planner
-      - name : ff_waypoint_follower 
+      - name : ff_waypoint_follower
         desc : Feedforward PID waypoint follower
         cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
         param: ff_waypoint_follower
@@ -1100,7 +1100,7 @@ params :
       v       : 1.5
       cmd_param :
         dash        : ''
-        delim       : ':=' 
+        delim       : ':='
     - name      : sync
       kind      : hide
       v         : False
@@ -1108,7 +1108,14 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ndt
     topic : /config/ndt
@@ -2126,7 +2133,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : mapFileName
-      desc : select kml map file if applicable 
+      desc : select kml map file if applicable
       label: Map File
       kind : path
       cmd_param:
@@ -2143,7 +2150,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableOutsideControl
-      desc : Enable User Input Control  
+      desc : Enable User Input Control
       label: Enable user control
       kind : checkbox
       v    : False
@@ -2151,7 +2158,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableObjectTracking
-      desc : Enable Planner KF Tracker   
+      desc : Enable Planner KF Tracker
       label: Enable Tracking
       kind : checkbox
       v    : True
@@ -2220,7 +2227,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : rollOutDensity
-      desc : Roll outs density 
+      desc : Roll outs density
       label: Horizontal Density
       min  : 0.1
       max  : 2.0
@@ -2229,14 +2236,14 @@ params :
         dash     : ''
         delim    : ':='
     - name : rollOutsNumber
-      desc : Number of roll outs  
+      desc : Number of roll outs
       label: Rollouts Number
       min  : 0
       max  : 20
       v    : 4
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : enableFollowing
       desc : Enable stop and follow obstacles
       label: Enable Following
@@ -2254,34 +2261,34 @@ params :
         dash     : ''
         delim    : ':='
     - name : minFollowingDistance
-      desc : Distance to start follow Next Car 
+      desc : Distance to start follow Next Car
       label: Follow Distance
       min  : 10.0
       max  : 50.0
       v    : 30.0
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : minDistanceToAvoid
-      desc : Avoidance and Following threshold Distance 
+      desc : Avoidance and Following threshold Distance
       label: Avoiding Distance
       min  : 6.0
       max  : 30.0
       v    : 15.0
       cmd_param:
         dash     : ''
-        delim    : ':=' 
+        delim    : ':='
     - name : maxDistanceToAvoid
-      desc : Distance to give up avoidance 
-      label: Avoidance Limit 
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
       min  : 1.0
       max  : 6.0
       v    : 4.0
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : enableStopSignBehavior
-      desc : Enable stop sign check  
+      desc : Enable stop sign check
       label: Enable Stop Sign Stop
       kind : checkbox
       v    : TRUE
@@ -2289,7 +2296,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableTrafficLightBehavior
-      desc : Enable traffic light check  
+      desc : Enable traffic light check
       label: Enable Traffic Light
       kind : checkbox
       v    : TRUE
@@ -2297,8 +2304,8 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLaneChange
-      desc : Enable Lane Change   
-      label: Enable Lane Change 
+      desc : Enable Lane Change
+      label: Enable Lane Change
       kind : checkbox
       v    : False
       cmd_param:
@@ -2323,7 +2330,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : mapFileName
-      desc : select kml map file if applicable 
+      desc : select kml map file if applicable
       label: Map File
       kind : path
       cmd_param:
@@ -2348,7 +2355,7 @@ params :
   - name  : ff_waypoint_follower
     vars  :
     - name : maxVelocity
-      desc : maximum allowed velocity in 
+      desc : maximum allowed velocity in
       label: Max Velocity
       min  : 0.0
       max  : 20.0
@@ -2357,7 +2364,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : steeringDelay
-      desc : Steering wheel average delay 
+      desc : Steering wheel average delay
       label: Steering Delay
       min  : 0.0
       max  : 2.0
@@ -2366,8 +2373,8 @@ params :
         dash     : ''
         delim    : ':='
     - name : minPursuiteDistance
-      desc : Minimum Follow Point Distance 
-      label: Follow Distance 
+      desc : Minimum Follow Point Distance
+      label: Follow Distance
       min  : 0.0
       max  : 5.0
       v    : 2.5
@@ -2376,7 +2383,7 @@ params :
         delim    : ':='
     - name : steerGainKP
       desc : Gain proportional component
-      label: KP 
+      label: KP
       min  : 0.0
       max  : 1.0
       v    : 0.07
