@@ -74,7 +74,7 @@ class Cluster {
 	Eigen::Vector3f 					eigen_values_;
 
 	bool								valid_cluster_;
-	std::chrono::system_clock::time_point  start_, end_;
+	
 public:
 	/* \brief Constructor. Creates a Cluster object using the specified points in a PointCloud
 	 * \param[in] in_origin_cloud_ptr 	Origin PointCloud
