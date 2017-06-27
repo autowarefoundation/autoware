@@ -135,6 +135,7 @@ static double _remove_points_upto;
 static double _cluster_merge_threshold;
 
 static bool _use_gpu;
+static std::chrono::system_clock::time_point _start, _end;
 
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
@@ -832,7 +833,7 @@ void removePointsUpTo(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pc
 
 void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
-	start = std::chrono::system_clock::now(); // 計測開始時間
+	_start = std::chrono::system_clock::now(); // 計測開始時間
 
 	if (!_using_sensor_cloud)
 	{
@@ -915,8 +916,8 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_using_sensor_cloud = false;
 	}
-	end = std::chrono::system_clock::now();  // 計測終了時間
-  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count(); //処理に要した時間をミリ秒に変換
+	_end = std::chrono::system_clock::now();  // 計測終了時間
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(_end-_start).count(); //処理に要した時間をミリ秒に変換
   ROS_INFO("Euclidean Clustering : %f", elapsed);
 }
 
@@ -1066,13 +1067,13 @@ int main (int argc, char** argv)
 	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);				ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
 	private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);			ROS_INFO("cluster_merge_threshold: %f", _cluster_merge_threshold);
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
-	private_nh.param("use_gpu", _use_gpu, false);				ROS_INFO("use_gpu: %d", _use_gpu);
 
 	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
 	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _output_frame.c_str());
 
 	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
+	private_nh.param("use_gpu", _use_gpu, false);				ROS_INFO("use_gpu: %d", _use_gpu);
 
 	_velodyne_transform_available = false;
 
