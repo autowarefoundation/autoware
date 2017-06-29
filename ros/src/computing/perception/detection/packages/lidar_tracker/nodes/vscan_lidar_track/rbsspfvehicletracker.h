@@ -23,7 +23,7 @@ protected:
         InitMotion,
         UpdateTracker
     } tracker_instance_state_;
-    TrackerDataContainer trackerdatacontainer;
+    TrackerDataContainer tracker_data_container_;
     TrackerResultContainer tracker_result_container_;
 signals:
     void signalCheckInitStateFinish();

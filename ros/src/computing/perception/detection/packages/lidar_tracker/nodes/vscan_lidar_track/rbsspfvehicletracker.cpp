@@ -7,7 +7,7 @@ RBSSPFVehicleTrackerInstance::RBSSPFVehicleTrackerInstance(int vehicleID,
 {
 	id = vehicleID;
 	tracker_instance_state_ = InitGeometry;
-	cuda_OpenTracker(trackerdatacontainer);
+	cuda_OpenTracker(tracker_data_container_);
 	this->moveToThread(thread);
 	connect(thread, SIGNAL(finished()), this, SLOT(deleteLater()));
 	thread->start();
@@ -15,7 +15,7 @@ RBSSPFVehicleTrackerInstance::RBSSPFVehicleTrackerInstance(int vehicleID,
 
 RBSSPFVehicleTrackerInstance::~RBSSPFVehicleTrackerInstance()
 {
-	cuda_CloseTracker(trackerdatacontainer);
+	cuda_CloseTracker(tracker_data_container_);
 }
 
 //this thing is called on every thread and synced using that initFlag
@@ -38,6 +38,7 @@ void RBSSPFVehicleTrackerInstance::slotCheckInitState(int initNum,
 			initFlag[i] = 0; //matched
 		}
 	}
+	std::cout << "Calling slotCheckInitStateFinish from tracker >" << id << std::endl;
 	emit signalCheckInitStateFinish();
 	return;
 }
@@ -48,17 +49,20 @@ void RBSSPFVehicleTrackerInstance::slotUpdateTracker(
 	switch (tracker_instance_state_)
 	{
 	case InitGeometry:
+		std::cout << "InitGeometry->InitMotion >" << id << std::endl;
 		tracker_instance_state_ = InitMotion;
 		tracker_result_container_.estimate = (*initStateMap)[id];
-		cuda_InitGeometry(trackerdatacontainer, tracker_result_container_);
+		cuda_InitGeometry(tracker_data_container_, tracker_result_container_);
 		break;
 	case InitMotion:
+		std::cout << "InitMotion->UpdateTracker >" << id << std::endl;
 		tracker_instance_state_ = UpdateTracker;
-		cuda_InitMotion(trackerdatacontainer, tracker_result_container_);
+		cuda_InitMotion(tracker_data_container_, tracker_result_container_);
 		break;
 	case UpdateTracker:
+		std::cout << "UpdateTracker >" << id << std::endl;
 //        cuda_InitMotion(trackerdatacontainer,trackerresultcontainer);
-		cuda_UpdateTracker(trackerdatacontainer, tracker_result_container_);
+		cuda_UpdateTracker(tracker_data_container_, tracker_result_container_);
 		break;
 	default:
 		return;
@@ -93,14 +97,17 @@ void RBSSPFVehicleTracker::addTrackerData(LaserScan & scan,
 	switch (tracker_state_)
 	{
 	case NoLaserData:
+		std::cout << "NoLaserData->OneLaserData >" << tracker_id_ << std::endl;
 		tracker_state_ = OneLaserData;
 		cuda_SetLaserScan(scan);
 		break;
 	case OneLaserData:
+		std::cout << "OneLaserData->ReadyForTracking >" << tracker_id_ << std::endl;
 		tracker_state_ = ReadyForTracking;
 		cuda_SetLaserScan(scan);
 		break;
 	case ReadyForTracking:
+		std::cout << "ReadyForTracking->Processing >" << tracker_id_ << std::endl;
 		tracker_state_ = Processing;
 		cuda_SetLaserScan(scan);
 		current_laserscan_ = scan;
@@ -112,28 +119,33 @@ void RBSSPFVehicleTracker::addTrackerData(LaserScan & scan,
 			tracker_count_ = trackers_thread_container_map_.size();
 			if (tracker_count_ > 0) //if there are trackers and detections
 			{
+				std::cout << "  TrackersAndDetectionsAvailable =" << tracker_count_ << ", " << detection_num << std::endl;
 				emit signalCheckInitState(detection_num, detections_.data(),
 						detections_matched_.data());
 			}
 			else //if there are detections but NO trackers running
 			{
+				std::cout << "  DetectionsAvailable NoTrackers. Calling slotCheckInitStateFinish from Tracker> " << tracker_id_ << std::endl;
 				slotCheckInitStateFinish();
 			}
 		}
 		else if (trackers_thread_container_map_.size() > 0) //if no detections but trackers running
 		{
+			std::cout << "  OnlyTrackersAvailable >" << tracker_id_ << std::endl;
 			detections_unmatched_.clear();
 			tracker_count_ = trackers_thread_container_map_.size();
 			emit signalUpdateTracker(&detections_unmatched_); //update trackers with empty detection queue
 		}
 		else //no trackers, no detections
 		{
+			std::cout << "  NoTrackers NoDetections>" << tracker_id_ << std::endl;
 			tracker_state_ = ReadyForTracking;
 			emit signalUpdateTrackerFinish(current_laserscan_,
 					tracker_result_container_map_);
 		}
 		break;
 	case Processing:
+		std::cout << "Processing>" << tracker_id_ << std::endl;
 		laserscan_processing_queue_.push_back(scan);
 		detections_processing_queue_.push_back(initState);
 		break;
@@ -143,7 +155,7 @@ void RBSSPFVehicleTracker::addTrackerData(LaserScan & scan,
 void RBSSPFVehicleTracker::slotCheckInitStateFinish()
 {
 	tracker_count_--;
-
+	std::cout << "ReducingLifespan slotCheckInitStateFinish>" << tracker_id_ << std::endl;
 	if (tracker_count_ <= 0)
 	{
 		detections_unmatched_.clear();
@@ -193,7 +205,7 @@ void RBSSPFVehicleTracker::slotUpdateTrackerFinish(int vehicleID,
 		TrackerResultContainer * trackerResult)
 {
 	tracker_count_--;
-
+	std::cout << "ReducingLifespan slotUpdateTrackerFinish >" << vehicleID << std::endl;
 	tracker_result_container_map_[vehicleID] = *trackerResult;
 	if (trackerResult->estimate.dx > 1 || trackerResult->estimate.dy > 1
 			|| trackerResult->estimate.dtheta > DEG2RAD(20)
@@ -207,6 +219,7 @@ void RBSSPFVehicleTracker::slotUpdateTrackerFinish(int vehicleID,
 	}
 	if (tracker_lifespan_map_[vehicleID] > 10)
 	{
+		std::cout << "RemovingTracker >" << tracker_id_ << std::endl;
 		trackers_thread_container_map_[vehicleID]->exit();
 		tracker_result_container_map_.remove(vehicleID);
 		trackers_thread_container_map_.remove(vehicleID);

@@ -80,8 +80,6 @@ enum class ProcessingState
 
 class LaserScanVehicleTracker
 {
-
-	TrackerState 			tracker_state_;
 	ProcessingState			tracker_processing_state_;
 	TrackerDataContainer 	tracker_data_container_;
 	TrackerResultContainer 	tracker_result_container_;
@@ -154,7 +152,6 @@ public:
 	}
 	LaserScanVehicleTracker(unsigned long in_tracker_id)
 	{
-		tracker_state_ 	= TrackerState::NoLaserData;//initial state
 		lifespan_ 		= 0;
 		tracker_id_		= in_tracker_id;
 		tracker_processing_state_ = ProcessingState::InitGeometry;
@@ -180,6 +177,7 @@ class RosRbssPfTrackerNode
 	ros::Publisher 		publisher_detected_objects_;
 
 	LaserScan 			previous_scan_;//GPU LaserScan
+	TrackerState 		tracker_state_;
 
 	bool 				previous_scan_stored_;//Previous LaserScan is required to perform matching before tracking
 	unsigned long		trackers_count_;//Number of CREATED trackers so far, not necessarily represents the number of EXISTENT trackers
@@ -240,7 +238,7 @@ class RosRbssPfTrackerNode
 										LaserScan& in_laserscan,
 										bool in_real_detection)
 	{
-		switch(in_tracker.GetTrackerState())
+		switch(tracker_state_)
 		{
 			case TrackerState::NoLaserData:
 				std::cout << in_tracker.GetTrackerId() << ": NoLaserData->OneLaserData";
@@ -434,6 +432,8 @@ public:
 	{
 		laser_sub_.registerCallback(&RosRbssPfTrackerNode::LaserScanCallback, this);
 		boxes_sub_.registerCallback(&RosRbssPfTrackerNode::BoxesCallback, this);
+
+		tracker_state_ 	= TrackerState::NoLaserData;//initial state
 
 		sync_subs_.registerCallback(boost::bind(&RosRbssPfTrackerNode::SyncedCallback, this, _1, _2));
 		trackers_count_ = 0;
