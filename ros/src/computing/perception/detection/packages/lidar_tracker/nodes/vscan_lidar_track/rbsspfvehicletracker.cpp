@@ -146,7 +146,7 @@ void RBSSPFVehicleTracker::addTrackerData(LaserScan & scan,
 		break;
 	case Processing:
 		//std::cout << "Processing>" << tracker_id_ << std::endl;
-		if (laserscan_processing_queue_.size()<10)
+		if (laserscan_processing_queue_.size()<5)//max 10 frames in queue
 		{
 			laserscan_processing_queue_.push_back(scan);
 			detections_processing_queue_.push_back(initState);
@@ -223,7 +223,7 @@ void RBSSPFVehicleTracker::slotUpdateTrackerFinish(int vehicleID,
 	{
 		tracker_lifespan_map_[vehicleID]--;
 	}
-	if (tracker_lifespan_map_[vehicleID] > 10)
+	if (tracker_lifespan_map_[vehicleID] > 10)//max 10 trackers
 	{
 		//std::cout << "RemovingTracker >" << tracker_id_ << std::endl;
 		trackers_thread_container_map_[vehicleID]->exit();
@@ -231,6 +231,7 @@ void RBSSPFVehicleTracker::slotUpdateTrackerFinish(int vehicleID,
 		trackers_thread_container_map_.remove(vehicleID);
 		tracker_lifespan_map_.remove(vehicleID);
 	}
+
 
 	if (tracker_count_ <= 0)
 	{

@@ -946,28 +946,76 @@ void MainWindow::slotReceiveBoxes()
 	jsk_recognition_msgs::BoundingBoxArray::ConstPtr msg =
 			boxes_subscriber_->getMessage();
 
-	for (const auto& box : msg->boxes)
+	std::vector<bool> visited_box(msg->boxes.size(), false);
+	std::vector<bool> valid_box(msg->boxes.size(), true);
+	std::cout << "Initial boxes " << msg->boxes.size() << std::endl;
+	for(size_t i=0; i< msg->boxes.size(); i++)
+	{
+
+		for(size_t j=0; j< msg->boxes.size(); j++)
+		{
+			if( i != j
+				&& !visited_box[j])
+			{
+				float current_distance = sqrt(
+												pow(msg->boxes[j].pose.position.x - msg->boxes[i].pose.position.x, 2) +
+												pow(msg->boxes[j].pose.position.y - msg->boxes[i].pose.position.y, 2)
+										);
+				if (current_distance < 2.0)//mark one as invalid
+				{
+					valid_box[j] = false;
+				}
+			}
+			visited_box[j] = true;
+		}
+		visited_box[i] = true;
+	}
+
+	//remove invalid boxes
+	std::vector<jsk_recognition_msgs::BoundingBox> final_boxes;
+	for(size_t i=0; i<msg->boxes.size();i++)
+	{
+		if (valid_box[i])
+		{
+			final_boxes.push_back(msg->boxes[i]);
+		}
+	}
+	std::cout << "Final boxes " << final_boxes.size() << std::endl;
+
+	QList< QPair<QTime,VehicleState> > incoming_detections;
+	for (const auto& box : final_boxes)
 	{
 		int msec = (msg->header.stamp.sec) % (24 * 60 * 60) * 1000
 				+ (msg->header.stamp.nsec) / 1000000;
 		QTime timestamp = QTime::fromMSecsSinceStartOfDay(msec);
-		VehicleState vstate;
+		VehicleState vehicle_init;
 		//fill state from msg;
 		// convert object position from map coordinate to sensor coordinate
 		tf::Vector3 pt(box.pose.position.x, box.pose.position.y,
 				box.pose.position.z);
 		//tf::Vector3 converted = transformMap2Lidar * pt;
-		vstate.x = pt.x();
-		vstate.y = pt.y();
+		vehicle_init.x = pt.x();
+		vehicle_init.y = pt.y();
+		vehicle_init.wl = 1.5;
+		vehicle_init.wr = 1.5;
+		vehicle_init.lf = 2.5;
+		vehicle_init.lb = 2.5;
+		vehicle_init.a = 0;
+		vehicle_init.v = 10;
+		vehicle_init.k = 0;
+		vehicle_init.omega = 0;
 		tf::Quaternion quat;
 		tf::quaternionMsgToTF(box.pose.orientation, quat);
-		vstate.theta = tf::getYaw(quat);
+		vehicle_init.theta = tf::getYaw(quat);
+		incoming_detections.push_back(QPair<QTime, VehicleState>(timestamp, vehicle_init)); // "sync"
+	}
 
-		detectionlist.push_back(QPair<QTime, VehicleState>(timestamp, vstate)); // "sync"
-		if (ui->trigger->isChecked())
-		{
-			slotShowScan();
-		}
+
+
+	detectionlist = incoming_detections;
+	if (ui->trigger->isChecked())
+	{
+		slotShowScan();
 	}
 }
 
