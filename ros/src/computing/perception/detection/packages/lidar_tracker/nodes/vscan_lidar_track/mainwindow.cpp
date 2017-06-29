@@ -538,22 +538,23 @@ void InitTrackerView::showLaserScan(LaserScan & scan)
 void InitTrackerView::getInitState(QVector<VehicleState> &initState)
 {
 	int statenum = qt_line_states_.size();
-	initState.resize(statenum);
 	for (int i = 0; i < statenum; i++)
 	{
-		initState[i].x = -qt_line_states_[i]->line().p1().y();
-		initState[i].y = -qt_line_states_[i]->line().p1().x();
-		initState[i].theta = atan2(
+		VehicleState vehicle_init;
+		vehicle_init.x = -qt_line_states_[i]->line().p1().y();
+		vehicle_init.y = -qt_line_states_[i]->line().p1().x();
+		vehicle_init.theta = atan2(
 				qt_line_states_[i]->line().p1().x() - qt_line_states_[i]->line().p2().x(),
 				qt_line_states_[i]->line().p1().y() - qt_line_states_[i]->line().p2().y());
-		initState[i].wl = 1.5;
-		initState[i].wr = 1.5;
-		initState[i].lf = 2.5;
-		initState[i].lb = 2.5;
-		initState[i].a = 0;
-		initState[i].v = 10;
-		initState[i].k = 0;
-		initState[i].omega = 0;
+		vehicle_init.wl = 1.5;
+		vehicle_init.wr = 1.5;
+		vehicle_init.lf = 2.5;
+		vehicle_init.lb = 2.5;
+		vehicle_init.a = 0;
+		vehicle_init.v = 10;
+		vehicle_init.k = 0;
+		vehicle_init.omega = 0;
+		initState.push_back(vehicle_init);
 	}
 }
 
@@ -1056,8 +1057,8 @@ void MainWindow::slotShowScan()
 			//fill initstate from subscribed detection topic
 			//=====================================
 			QVector<VehicleState> initstate;
-			initview->getInitState(initstate);
-			//getInitStateFromTopic(initstate);//get from detectionlist which is being received on slotReceiveXXX
+			initview->getInitState(initstate);//get detection from clicked points in the UI
+			getInitStateFromTopic(initstate);//get detections from bounding_box subscribed topic
 			vehicletracker->addTrackerData(curscan, initstate);
 		}
 		curscan = scanlist[0].second;
