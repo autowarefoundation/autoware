@@ -71,11 +71,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 ## Build ##
 ###########
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-
 add_library(libcontext lib/Context.cpp)
 add_dependencies(libcontext
   road_wizard_generate_messages_cpp)
+
 
 ### region_tlr ###
 add_executable(region_tlr
@@ -173,7 +172,6 @@ target_link_libraries(tlr_tuner
   ${Qt5Widgets_LIBRARIES}
   ${OpenCV_LIBS}
   )
-endif()
 
 
 ### roi_extractor ###
