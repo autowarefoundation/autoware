@@ -233,6 +233,7 @@ public:
 
     ROSPub<jsk_recognition_msgs::BoundingBoxArray> *boxes_publisher_;//added to enable publishing of tracking results
     std_msgs::Header boxes_header_; //used to publish tracking results with correct frame and timestamp
+    bool using_local_coords_;//defines whether to use the global map TF or local coords for tracking
 
     ROSTFSub * tf_subscriber_;
     ROSTFSub * tf_map_to_lidar_subscriber_;

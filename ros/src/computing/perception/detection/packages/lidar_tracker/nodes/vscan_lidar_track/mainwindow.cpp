@@ -745,17 +745,13 @@ void UpdateTrackerView::slotUpdateTrackerFinish(LaserScan scan, QMap<int, Tracke
 		bbox.pose.position.z = 0;
 
 		bbox.dimensions.x = sqrt(
-				pow(trackerresult.estimate.cx[2] - trackerresult.estimate.cx[1],
-						2)
-						+ pow(
-								trackerresult.estimate.cy[2]
-										- trackerresult.estimate.cy[1], 2));
+								pow(trackerresult.estimate.cx[2] - trackerresult.estimate.cx[1], 2)
+								+ pow(trackerresult.estimate.cy[2] - trackerresult.estimate.cy[1], 2)
+								);
 		bbox.dimensions.y = sqrt(
-				pow(trackerresult.estimate.cx[1] - trackerresult.estimate.cx[0],
-						2)
-						+ pow(
-								trackerresult.estimate.cy[1]
-										- trackerresult.estimate.cy[0], 2));
+								pow(trackerresult.estimate.cx[1] - trackerresult.estimate.cx[0],2)
+								+ pow(trackerresult.estimate.cy[1] - trackerresult.estimate.cy[0], 2)
+								);
 		bbox.dimensions.z = 2.0;
 
 		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0,
@@ -844,6 +840,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	boxes_publisher_ = new ROSPub<jsk_recognition_msgs::BoundingBoxArray>(
 			"bounding_boxes_tracked", 10, this);
+
+	using_local_coords_ = false;//try to use map
 
 	//subscribe vehicle detection results (array of [x,y,theta])
 
@@ -1062,9 +1060,18 @@ void MainWindow::slotShowScan()
 			vehicletracker->addTrackerData(curscan, initstate);
 		}
 		curscan = scanlist[0].second;
-		curscan.x = tflist[0].second.x;
-		curscan.y = tflist[0].second.y;
-		curscan.theta = tflist[0].second.theta;
+		if(using_local_coords_)
+		{
+			curscan.x = 0.;//tflist[0].second.x;
+			curscan.y = 0.;//tflist[0].second.y;
+			curscan.theta = atan2(0,1);//tflist[0].second.theta;
+		}
+		else
+		{
+			curscan.x = tflist[0].second.x;
+			curscan.y = tflist[0].second.y;
+			curscan.theta = tflist[0].second.theta;
+		}
 		initview->showLaserScan(curscan);
 		initflag = 1;
 

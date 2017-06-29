@@ -87,13 +87,13 @@ class LaserScanVehicleTracker
 	unsigned long			tracker_id_;
 
 public:
-	TrackerState 			GetTrackerState()							{	return tracker_state_;				}
-	void 					SetTrackerState(TrackerState in_state)		{	tracker_state_ = in_state;			}
-
 	TrackerDataContainer 	GetTrackerDataContainer()					{	return tracker_data_container_; 	}
 	TrackerResultContainer 	GetTrackerResultContainer()				{	return tracker_result_container_;	}
 
 	unsigned long			GetTrackerId()								{	return tracker_id_;					}
+
+	std::size_t				GetLifespan()								{	return lifespan_;					}
+	void					SetLifespan(std::size_t in_lifespan)		{	lifespan_ = in_lifespan;			}
 
 	void Update(VehicleState& in_vehiclestate, bool in_real_detection)
 	{
@@ -108,30 +108,30 @@ public:
 					tracker_result_container_.estimate = in_vehiclestate;
 					std::cout << "Container BEFORE (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
 					cuda_InitGeometry(tracker_data_container_, tracker_result_container_);
-					std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")";
+					std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
 				}
 				break;
 			case ProcessingState::InitMotion:
-				std::cout << "InitMotion ";
+				std::cout << "InitMotion " << std::endl;
 				tracker_processing_state_ = ProcessingState::UpdateTracker;
 				std::cout << "Container BEFORE (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
 				cuda_InitMotion(tracker_data_container_, tracker_result_container_);
-				std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")";
+				std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
 				break;
 			case ProcessingState::UpdateTracker:
 				std::cout << "Container BEFORE (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
-				std::cout << "UpdateTracker ";
+				std::cout << "UpdateTracker " << std::endl;
 				cuda_UpdateTracker(tracker_data_container_, tracker_result_container_);
-				std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")";
+				std::cout << "Container AFTER (x,y,theta): (" << tracker_result_container_.estimate.x << "," << tracker_result_container_.estimate.y << "," << tracker_result_container_.estimate.theta << ")" << std::endl;
 				break;
 			default:
-				std::cout << "OtherState ";
+				std::cout << "OtherState " << std::endl;
 				return;
 		}
-		std::cout << std::endl;
 	}
 	bool IsLifespanValid()
 	{
+		std::cout << "Tracker " << tracker_id_ << " ";
 		if(    tracker_result_container_.estimate.dx > 1
 			|| tracker_result_container_.estimate.dy > 1
 			|| tracker_result_container_.estimate.dtheta > DEG2RAD(20)
@@ -139,15 +139,17 @@ public:
 			)
 		{
 			lifespan_++;
+			std::cout << " Increased>" << lifespan_;
 		}
 		else
 		{
-			lifespan_/=2;
+			lifespan_--;
+			std::cout << " Decreased>" << lifespan_;
 		}
+		std::cout <<std::endl;
 
 		if (lifespan_ > 10)//too old, mark as invalid
 			return false;
-
 		return true;
 	}
 	LaserScanVehicleTracker(unsigned long in_tracker_id)
@@ -182,6 +184,8 @@ class RosRbssPfTrackerNode
 	bool 				previous_scan_stored_;//Previous LaserScan is required to perform matching before tracking
 	unsigned long		trackers_count_;//Number of CREATED trackers so far, not necessarily represents the number of EXISTENT trackers
 
+	std::size_t			max_trackers_;
+
 	//Topic Subscribers and synchronizer
 	message_filters::Subscriber<sensor_msgs::LaserScan> 				laser_sub_;
 	message_filters::Subscriber<jsk_recognition_msgs::BoundingBoxArray> boxes_sub_;
@@ -197,6 +201,9 @@ class RosRbssPfTrackerNode
 		{
 			out_tracker_scan.length[i] = in_sensor_scan->ranges[i];
 		}
+		out_tracker_scan.x = 0.;
+		out_tracker_scan.y = 0.;
+		out_tracker_scan.theta = atan2(0.,1.);
 		//ROS_INFO("Scan Beams: %d", out_tracker_scan.beamnum);
 	}
 
@@ -228,7 +235,6 @@ class RosRbssPfTrackerNode
 			vehicle_state.k=0;
 			vehicle_state.omega=0;
 
-			ROS_INFO("Detection %lu (x,y,theta) (%f, %f, %f)", i, vehicle_state.x, vehicle_state.y, vehicle_state.theta);
 			out_detections.push_back(vehicle_state);
 		}
 	}
@@ -242,31 +248,29 @@ class RosRbssPfTrackerNode
 		{
 			case TrackerState::NoLaserData:
 				std::cout << in_tracker.GetTrackerId() << ": NoLaserData->OneLaserData";
-				in_tracker.SetTrackerState(TrackerState::OneLaserData);
-				cuda_SetLaserScan(in_laserscan);
+				tracker_state_ = TrackerState::OneLaserData;
+				//cuda_SetLaserScan(in_laserscan);
 				break;
 			case TrackerState::OneLaserData:
 				std::cout << in_tracker.GetTrackerId() << ": OneLaserData->ReadyForTracking";
-				in_tracker.SetTrackerState(TrackerState::ReadyForTracking);
-				cuda_SetLaserScan(in_laserscan);
+				tracker_state_ = TrackerState::ReadyForTracking;
+				//cuda_SetLaserScan(in_laserscan);
 				break;
 			case TrackerState::ReadyForTracking:
-				cuda_SetLaserScan(in_laserscan);
+				//cuda_SetLaserScan(in_laserscan);
 				std::cout << in_tracker.GetTrackerId() << ": ReadyForTracking->Processing";
 				if(in_real_detection)
 					std::cout << ", (" << in_detection.x << "," << in_detection.y << "," << in_detection.theta << ") " << std::endl;
 
-				in_tracker.SetTrackerState(TrackerState::Processing);
+				tracker_state_ = TrackerState::Processing;
 				in_tracker.Update(in_detection, in_real_detection);
 				break;
 			case TrackerState::Processing:
-				std::cout << "update_tracker_with_detection processing ";
 				break;
 			default:
 				std::cout << "update_tracker_with_detection unknown ";
 				break;
 		}
-		std::cout << std::endl;
 	}
 
 	void match_trackers_detections(const std::vector<LaserScanVehicleTracker>& in_trackers,
@@ -275,12 +279,10 @@ class RosRbssPfTrackerNode
 										std::vector<bool>& out_updated_trackers,
 										LaserScan& in_laserscan)
 	{
-		std::cout << "Theta LAserScan" << in_laserscan.theta << std::endl;
 		for (std::size_t j = 0; j < in_trackers.size(); j++)
 		{
 			LaserScanVehicleTracker cur_tracker = in_trackers[j];
 			TrackerResultContainer tracker_result = cur_tracker.GetTrackerResultContainer();
-			std::cout << "tracker_result(x,y,theta): (" << tracker_result.estimate.x << "," << tracker_result.estimate.y << "," << tracker_result.estimate.theta << ")"<<std::endl;
 			for(std::size_t i = 0; i < in_detections.size(); i++)
 			{
 				VehicleState cur_detection = in_detections[i];
@@ -302,9 +304,11 @@ class RosRbssPfTrackerNode
 					//overlap found, therefore update current tracker with detection
 					out_matched_detections[i] = true;//mark this detection as matched
 
-					if (!out_updated_trackers[j])
-					{//upddate tracker once
+					if (!out_updated_trackers[j])//upddate tracker once
+					{
 						update_tracker_with_detection(cur_tracker, in_detections[i], in_laserscan, true);
+
+						cur_tracker.SetLifespan(cur_tracker.GetLifespan()-1);
 						ROS_INFO("Matched");
 					}
 					out_updated_trackers[j] = true;
@@ -318,7 +322,7 @@ class RosRbssPfTrackerNode
 		for (std::size_t  i = 0; i < in_trackers.size(); i++)
 		{
 			LaserScanVehicleTracker cur_tracker = in_trackers[i];
-			if(cur_tracker.GetTrackerState()==TrackerState::ReadyForTracking)
+			if(tracker_state_ == TrackerState::ReadyForTracking)
 			{
 				TrackerResultContainer track = cur_tracker.GetTrackerResultContainer();
 				jsk_recognition_msgs::BoundingBox bbox;
@@ -327,11 +331,11 @@ class RosRbssPfTrackerNode
 				bbox.pose.position.y = track.estimate.y;
 				bbox.pose.position.z = 0;
 
-				bbox.dimensions.x = sqrt( pow(track.estimate.cx[0] - track.estimate.cx[1], 2) +
-											pow(track.estimate.cy[0] - track.estimate.cy[1], 2)
+				bbox.dimensions.x = sqrt( pow(track.estimate.cx[2] - track.estimate.cx[1], 2) +
+											pow(track.estimate.cy[2] - track.estimate.cy[1], 2)
 										);
-				bbox.dimensions.y = sqrt( pow(track.estimate.cx[1] - track.estimate.cx[2], 2) +
-											pow(track.estimate.cy[1] - track.estimate.cy[2], 2)
+				bbox.dimensions.y = sqrt( pow(track.estimate.cx[1] - track.estimate.cx[0], 2) +
+											pow(track.estimate.cy[1] - track.estimate.cy[0], 2)
 										);
 				bbox.dimensions.z = 2.0;
 
@@ -359,53 +363,51 @@ class RosRbssPfTrackerNode
 		if (previous_scan_stored_)//Previous LaserScan required to start
 		{
 			//get vehicle states from bboxes
-			ROS_INFO("(2) get_detections_from_boxes");
 			get_detections_from_boxes(in_boxes, frame_detections);
 
 			//all trackers use the same laserscan
 			//try to match detections with trackers
-			ROS_INFO("(3) match_trackers_detections");
 			match_trackers_detections(trackers_pool_, frame_detections, matched_detections, updated_trackers, previous_scan_);
 
 			//update all non-matched trackers, send empty detection
-			ROS_INFO("(4) non-matched_trackers");
 			for (std::size_t i = 0; i< trackers_pool_.size(); i++)
 			{
 				VehicleState empty_detection;
 				update_tracker_with_detection(trackers_pool_[i], empty_detection, previous_scan_, false);
 			}
+
+			//create trackers for unassigned detections
+			for(std::size_t i=0; i < frame_detections.size(); i++)
+			{
+				if(!matched_detections[i]
+				                       && trackers_pool_.size()<=max_trackers_)
+				{
+					LaserScanVehicleTracker tracker(trackers_count_++);
+					update_tracker_with_detection(tracker, frame_detections[i], previous_scan_, true);
+					trackers_pool_.push_back(tracker);
+				}
+			}
+			tracker_state_ = TrackerState::ReadyForTracking;
+
+			//check lifespan, delete old trackers
+			std::vector<LaserScanVehicleTracker>::iterator it;
+			for(it = trackers_pool_.begin(); it != trackers_pool_.end();)
+			{
+				if ( !(it->IsLifespanValid()) ) //if not valid, delete
+				{
+					ROS_INFO("Removing tracker %lu", it->GetTrackerId());
+					it = trackers_pool_.erase(it);
+				}
+				else
+					it++;
+			}
 		}
 
 		//store current laserscan
-		ROS_INFO("(5) ros_laserscan_to_tracker_laserscan");
 		ros_laserscan_to_tracker_laserscan(in_scan, previous_scan_);
 		previous_scan_stored_ = true;
 
-		//create trackers for unassigned detections
-		ROS_INFO("(6) create_trackers_for_detections");
-		for(std::size_t i=0; i < frame_detections.size(); i++)
-		{
-			if(!matched_detections[i])
-			{
-				LaserScanVehicleTracker tracker(trackers_count_++);
-				tracker.Update(frame_detections[i], true);
-				trackers_pool_.push_back(tracker);
-			}
-		}
-
-		//check lifespan, delete old trackers
-		ROS_INFO("(7) lifespan");
-		std::vector<LaserScanVehicleTracker>::iterator it;
-		for(it = trackers_pool_.begin(); it != trackers_pool_.end();)
-		{
-			if ( !(it->IsLifespanValid()) ) //if not valid, delete
-			{
-				ROS_INFO("Removing tracker %lu", it->GetTrackerId());
-				it = trackers_pool_.erase(it);
-			}
-			else
-				it++;
-		}
+		cuda_SetLaserScan(previous_scan_);
 
 		//output, publish
 		jsk_recognition_msgs::BoundingBoxArray output_boxes;
@@ -423,7 +425,7 @@ class RosRbssPfTrackerNode
 	}
 
 public:
-	RosRbssPfTrackerNode(ros::NodeHandle* in_handle, std::string in_scan_topic, std::string in_boxes_topic):
+	RosRbssPfTrackerNode(ros::NodeHandle* in_handle, std::string in_scan_topic, std::string in_boxes_topic, std::size_t in_max_trackers):
 			node_handle_(in_handle),
 			laser_sub_(*node_handle_, in_scan_topic , 10),
 			boxes_sub_(*node_handle_, in_boxes_topic , 10),
@@ -437,6 +439,7 @@ public:
 
 		sync_subs_.registerCallback(boost::bind(&RosRbssPfTrackerNode::SyncedCallback, this, _1, _2));
 		trackers_count_ = 0;
+		max_trackers_ = in_max_trackers;
 		publisher_boxes_ = node_handle_->advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes_tracked",1);
 		cuda_InitLaserScan();
 	}
@@ -456,11 +459,17 @@ int main(int argc, char** argv)
 
 	std::string 	scan_topic_str;
 	std::string 	boxes_topic_str;
+	int				max_trackers;
+	const int 		MIN_TRACKERS = 5;
 
 	private_node_handle.param<std::string>("scan_topic", scan_topic_str, "/scan");				ROS_INFO("scan_topic: %s", scan_topic_str.c_str());
 	private_node_handle.param<std::string>("boxes_topic", boxes_topic_str, "/bounding_boxes");	ROS_INFO("boxes_topic: %s", boxes_topic_str.c_str());
 
-	RosRbssPfTrackerNode lidar_tracker_node(&nh, scan_topic_str, boxes_topic_str);
+	private_node_handle.param("max_trackers", max_trackers, MIN_TRACKERS);	ROS_INFO("max_trackers %ud", max_trackers);
+
+	if (max_trackers <=MIN_TRACKERS ) max_trackers = MIN_TRACKERS;
+
+	RosRbssPfTrackerNode lidar_tracker_node(&nh, scan_topic_str, boxes_topic_str, max_trackers);
 
 	ros::Rate loop_rate(10);
 	ROS_INFO("rbsspf_lidar_tracker: Waiting for %s and %s", scan_topic_str.c_str(), boxes_topic_str.c_str());
