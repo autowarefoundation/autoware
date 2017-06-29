@@ -559,7 +559,6 @@ void InitTrackerView::getInitState(QVector<VehicleState> &initState)
 
 void InitTrackerView::mousePressEvent(QMouseEvent * event)
 {
-	std::cout << "mousePressEvent" << std::endl;
 	switch (event->button())
 	{
 	case Qt::LeftButton:
@@ -745,17 +744,17 @@ void UpdateTrackerView::slotUpdateTrackerFinish(LaserScan scan, QMap<int, Tracke
 		bbox.pose.position.z = 0;
 
 		bbox.dimensions.x = sqrt(
-				pow(trackerresult.estimate.cx[0] - trackerresult.estimate.cx[1],
+				pow(trackerresult.estimate.cx[2] - trackerresult.estimate.cx[1],
 						2)
 						+ pow(
-								trackerresult.estimate.cy[0]
+								trackerresult.estimate.cy[2]
 										- trackerresult.estimate.cy[1], 2));
 		bbox.dimensions.y = sqrt(
-				pow(trackerresult.estimate.cx[1] - trackerresult.estimate.cx[2],
+				pow(trackerresult.estimate.cx[1] - trackerresult.estimate.cx[0],
 						2)
 						+ pow(
 								trackerresult.estimate.cy[1]
-										- trackerresult.estimate.cy[2], 2));
+										- trackerresult.estimate.cy[0], 2));
 		bbox.dimensions.z = 2.0;
 
 		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0,
@@ -896,6 +895,8 @@ MainWindow::~MainWindow()
 void MainWindow::slotReceive()
 {
 	sensor_msgs::LaserScanConstPtr msg = laserscan_subscriber_->getMessage();
+	boxes_header_ = msg->header; //store header
+	updateview->boxes_header_ = boxes_header_;
 	int msec = (msg->header.stamp.sec) % (24 * 60 * 60) * 1000
 			+ (msg->header.stamp.nsec) / 1000000;
 	QTime timestamp = QTime::fromMSecsSinceStartOfDay(msec);
@@ -945,8 +946,7 @@ void MainWindow::slotReceiveBoxes()
 {
 	jsk_recognition_msgs::BoundingBoxArray::ConstPtr msg =
 			boxes_subscriber_->getMessage();
-	boxes_header_ = msg->header; //store header
-	updateview->boxes_header_ = boxes_header_;
+
 	for (const auto& box : msg->boxes)
 	{
 		int msec = (msg->header.stamp.sec) % (24 * 60 * 60) * 1000
