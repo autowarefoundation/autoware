@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+/*#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include<QMainWindow>
@@ -120,9 +120,9 @@ public slots:
 };
 
 #endif // MAINWINDOW_H
+*/
 
 
-/*
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -178,16 +178,17 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 protected:
-    bool pressflag=0;
-    bool ctrlflag=0;
-    QPointF point1,point2;
-    QGraphicsEllipseItem * point1item;
-    QGraphicsLineItem * lineitem;
+    bool clicked_flag_=0;
+    bool ctrl_key_pressed_=0;
+    QPointF qt_click_point_1,qt_click_point_2;
+    QGraphicsEllipseItem * qt_clicked_point_1;
+    QGraphicsLineItem * qt_line_pose_;
 public:
     double sx=1,sy=1;
-    QGraphicsScene * scene=NULL;
+    QGraphicsScene * qt_init_view_graphics_scene_=NULL;
     LaserScan scan;
-    QVector<QGraphicsLineItem *> state;
+
+    QVector<QGraphicsLineItem *> qt_line_states_;
 };
 
 class UpdateTrackerView : public QGraphicsView
@@ -202,11 +203,13 @@ protected:
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
 protected:
-    bool ctrlflag=0;
+    bool ctrl_key_pressed_=0;
     QMap<int, QGraphicsPathItem *> pathmap;
 public:
     double sx=1,sy=1;
-    QGraphicsScene * scene=NULL;
+    ROSPub<jsk_recognition_msgs::BoundingBoxArray> *boxes_publisher_;//added to enable publishing of tracking results
+    std_msgs::Header boxes_header_;
+    QGraphicsScene * qt_view_tracker_scene_=NULL;
 };
 
 struct EGOMOTION
@@ -224,11 +227,15 @@ public:
 private:
     Ui::MainWindow *ui;
 public:
-    ROSSub<sensor_msgs::LaserScanConstPtr> * scansub;
-    ROSSub<cv_tracker_msgs::obj_label::ConstPtr> * detectionsub;
-    ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxessub;
-    ROSTFSub * tfsub;
-    ROSTFSub * tfMap2Lidarsub;
+    ROSSub<sensor_msgs::LaserScanConstPtr> * laserscan_subscriber_;
+    ROSSub<cv_tracker_msgs::obj_label::ConstPtr> * detection_subscriber_;
+    ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxes_subscriber_;
+
+    ROSPub<jsk_recognition_msgs::BoundingBoxArray> *boxes_publisher_;//added to enable publishing of tracking results
+    std_msgs::Header boxes_header_; //used to publish tracking results with correct frame and timestamp
+
+    ROSTFSub * tf_subscriber_;
+    ROSTFSub * tf_map_to_lidar_subscriber_;
     QList< QPair<QTime,LaserScan> > scanlist;
     QList< QPair<QTime,VehicleState> > detectionlist;
     QList< QPair<QTime,EGOMOTION> > tflist;
@@ -251,4 +258,4 @@ private:
 };
 
 #endif // MAINWINDOW_H
-*/
+

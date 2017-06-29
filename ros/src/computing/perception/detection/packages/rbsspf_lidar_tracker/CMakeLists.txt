@@ -111,16 +111,16 @@ cuda_add_executable(rbsspf_lidar_tracker
 set(CUDA_SEPARABLE_COMPILATION ON)
 
 cuda_add_library(rbsspfvehicletracker_lib
-#  src/rbsspfvehicletracker.cu
-#  src/rbsspfvehicletracker.cuh
-  src/rbsspf_share.cu
-  src/rbsspf_share.cuh
-  src/rbsspf_geometry.cu
-  src/rbsspf_geometry.cuh
-  src/rbsspf_motion.cu
-  src/rbsspf_motion.cuh
-  src/rbsspf_tracker.cu
-  src/rbsspf_tracker.cuh
+  src/rbsspfvehicletracker.cu
+  src/rbsspfvehicletracker.cuh
+#  src/rbsspf_share.cu
+#  src/rbsspf_share.cuh
+#  src/rbsspf_geometry.cu
+#  src/rbsspf_geometry.cuh
+#  src/rbsspf_motion.cu
+#  src/rbsspf_motion.cuh
+#  src/rbsspf_tracker.cu
+#  src/rbsspf_tracker.cuh
   OPTIONS --compiler-options "-fPIC"
 )
 

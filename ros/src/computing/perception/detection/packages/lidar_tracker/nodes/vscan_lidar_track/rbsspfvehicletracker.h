@@ -22,9 +22,9 @@ protected:
         InitGeometry,
         InitMotion,
         UpdateTracker
-    } trackerstate;
+    } tracker_instance_state_;
     TrackerDataContainer trackerdatacontainer;
-    TrackerResultContainer trackerresultcontainer;
+    TrackerResultContainer tracker_result_container_;
 signals:
     void signalCheckInitStateFinish();
     void signalUpdateTrackerFinish(int vehicleID, TrackerResultContainer * trackerResult);
@@ -46,21 +46,21 @@ protected:
         OneLaserData,
         ReadyForTracking,
         Processing
-    } trackerstate;
-    int initnum;
-    QVector<VehicleState> initstate;
-    QVector<bool> initflag;
-    int trackercount;
-    QMap<int, VehicleState> initstatemap;
+    } tracker_state_;
+    int detection_num;
+    QVector<VehicleState> detections_;
+    QVector<bool> detections_matched_;
+    int tracker_count_;
+    QMap<int, VehicleState> detections_unmatched_;
 protected:
-    int idcount=0;
-    LaserScan curscan;
-    QMap<int, TrackerResultContainer> trackerresultmap;
-    QMap<int, QThread *> trackerthreadmap;
-    QMap<int, int> discontinuemap;
+    int tracker_id_=0;
+    LaserScan current_laserscan_;
+    QMap<int, TrackerResultContainer> tracker_result_container_map_;
+    QMap<int, QThread *> trackers_thread_container_map_;
+    QMap<int, int> tracker_lifespan_map_;
 protected:
-    QList<LaserScan> scanbuffer;
-    QList< QVector<VehicleState> > initstatebuffer;
+    QList<LaserScan> laserscan_processing_queue_;
+    QList< QVector<VehicleState> > detections_processing_queue_;
 public:
     void addTrackerData(LaserScan & scan, QVector<VehicleState> & initState);
 signals:
