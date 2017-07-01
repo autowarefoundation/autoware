@@ -5,8 +5,6 @@ static pcl::PointCloud<pcl::PointXYZI> removePointsByRange(pcl::PointCloud<pcl::
 {
   pcl::PointCloud<pcl::PointXYZI> narrowed_scan;
   narrowed_scan.header = scan.header;
-
-  max_range = 100.0;    //  This is a only tempolary patch for Localization problem.
   double square_min_range = min_range * min_range;
   double square_max_range = max_range * max_range;
 

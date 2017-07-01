@@ -60,7 +60,7 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
-static double measurement_range;
+static double measurement_range=100.0;
 
 static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
 {
