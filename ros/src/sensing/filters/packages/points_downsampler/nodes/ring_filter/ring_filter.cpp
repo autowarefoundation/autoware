@@ -43,6 +43,8 @@
 
 #include <chrono>
 
+#define MAX_MEASUREMENT_RANGE 200.0
+
 ros::Publisher filtered_points_pub;
 
 // Leaf size of VoxelGrid filter.
@@ -61,7 +63,7 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
-static double measurement_range=100.0;
+static double measurement_range = MAX_MEASUREMENT_RANGE;
 
 static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& input)
 {
@@ -83,6 +85,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   scan.points.clear();
 
+  double square_measurement_range = measurement_range*measurement_range;
+
   for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = tmp.begin(); item != tmp.end(); item++)
   {
     pcl::PointXYZI p;
@@ -91,9 +95,9 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     p.z = item->z;
     p.intensity = item->intensity;
 
-    double distance = sqrt(p.x * p.x + p.y * p.y);
+    double square_distance = p.x * p.x + p.y * p.y;
 
-    if (item->ring % ring_div == 0 && distance <= measurement_range)
+    if (item->ring % ring_div == 0 && square_distance <= square_measurement_range)
     {
       scan.points.push_back(p);
     }
