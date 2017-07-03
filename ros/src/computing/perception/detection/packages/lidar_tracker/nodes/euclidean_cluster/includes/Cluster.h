@@ -52,6 +52,7 @@
 
 #include <limits>
 #include <cmath>
+#include <chrono>
 
 class Cluster {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr	pointcloud_;
@@ -73,6 +74,7 @@ class Cluster {
 	Eigen::Vector3f 					eigen_values_;
 
 	bool								valid_cluster_;
+	
 public:
 	/* \brief Constructor. Creates a Cluster object using the specified points in a PointCloud
 	 * \param[in] in_origin_cloud_ptr 	Origin PointCloud

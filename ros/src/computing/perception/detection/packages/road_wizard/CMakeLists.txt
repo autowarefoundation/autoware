@@ -66,7 +66,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 ## Build ##
 ###########
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ### region_tlr ###
 add_executable(region_tlr
   nodes/region_tlr/region_tlr.cpp
@@ -158,4 +157,3 @@ target_link_libraries(tlr_tuner
   ${Qt5Widgets_LIBRARIES}
   ${OpenCV_LIBS}
   )
-endif()

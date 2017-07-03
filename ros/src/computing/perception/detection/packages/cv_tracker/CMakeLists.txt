@@ -214,7 +214,6 @@ if (jsk_recognition_msgs_FOUND)
 endif (jsk_recognition_msgs_FOUND)
 
 ## klt_tracker ##
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
   
@@ -241,7 +240,6 @@ TARGET_LINK_LIBRARIES(klt_track
 ADD_DEPENDENCIES(klt_track
   libdpm_ocv_generate_messages_cpp
 )
-endif()
 ############# RCNN#############
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
