@@ -373,8 +373,11 @@ static void superimpose_cb(const std_msgs::Bool::ConstPtr& config_msg)
   }
 
   if (!show_superimpose_result) {
-    cv::destroyWindow(window_name);
-    cv::waitKey(1);
+	  if (cvGetWindowHandle(window_name.c_str()) != NULL)
+	  {
+		  cv::destroyWindow(window_name);
+		  cv::waitKey(1);
+	  }
   }
 
 } /* static void superimpose_cb() */
