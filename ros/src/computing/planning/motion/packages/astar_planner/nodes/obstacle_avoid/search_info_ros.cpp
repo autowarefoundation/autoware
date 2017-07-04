@@ -32,7 +32,6 @@
 
 namespace astar_planner
 {
-
 SearchInfo::SearchInfo()
   : map_set_(false)
   , start_set_(false)
@@ -59,14 +58,16 @@ SearchInfo::~SearchInfo()
 {
 }
 
-double SearchInfo::calcPathLength(const waypoint_follower_msgs::lane& lane, const int start_waypoint_index, const int goal_waypoint_index) const
+double SearchInfo::calcPathLength(const waypoint_follower_msgs::lane &lane, const int start_waypoint_index,
+                                  const int goal_waypoint_index) const
 {
   if (lane.waypoints.size() <= 1)
     return 0;
 
   // calulate the length of the path
   double dist_sum = 0;
-  for (int i = start_waypoint_index; i < goal_waypoint_index; i++) {
+  for (int i = start_waypoint_index; i < goal_waypoint_index; i++)
+  {
     geometry_msgs::Pose p1 = lane.waypoints[i].pose.pose;
     geometry_msgs::Pose p2 = lane.waypoints[i + 1].pose.pose;
 
@@ -124,8 +125,8 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
   ROS_INFO("Subcscribed goal pose!");
 
-  std::string map_frame  = map_frame_;
-  std::string goal_frame  = msg->header.frame_id;
+  std::string map_frame = map_frame_;
+  std::string goal_frame = msg->header.frame_id;
 
   // Get transform of map to the frame of goal pose
   tf::StampedTransform map2world;
@@ -141,9 +142,9 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
   // Set goal pose
   geometry_msgs::Pose pose_msg = msg->pose;
-  goal_pose_global_.pose   = astar_planner::transformPose(pose_msg, map2world);
+  goal_pose_global_.pose = astar_planner::transformPose(pose_msg, map2world);
   goal_pose_global_.header = msg->header;
-  goal_pose_local_.pose    = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
+  goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
   goal_pose_local_.header = goal_pose_global_.header;
 
   goal_set_ = true;
@@ -162,10 +163,10 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 
   // Set start pose
-  start_pose_global_.pose   = astar_planner::transformPose(current_pose_.pose, map2start_frame);
+  start_pose_global_.pose = astar_planner::transformPose(current_pose_.pose, map2start_frame);
   start_pose_global_.header = current_pose_.header;
-  start_pose_local_.pose    = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
-  start_pose_local_.header  = start_pose_global_.header;
+  start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
+  start_pose_local_.header = start_pose_global_.header;
 
   start_set_ = true;
 }
@@ -187,7 +188,6 @@ void SearchInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   closest_waypoint_index_ = msg->data;
 }
 
-
 void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 {
   // not always avoid AND current state is not avoidance
@@ -196,9 +196,10 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
     ROS_WARN("current state is not OBSTACLE_AVOIDANCE");
     return;
   }
-  
+
   // there are no obstacles
-  if (msg->data < 0 || closest_waypoint_index_ < 0 || current_waypoints_.waypoints.empty()) {
+  if (msg->data < 0 || closest_waypoint_index_ < 0 || current_waypoints_.waypoints.empty())
+  {
     return;
   }
 
@@ -211,7 +212,8 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   static int prev_obstacle_waypoint_index = -1;
   static int obstacle_count = 0;
   int same_obstacle_threshold = 2;
-  if (obstacle_waypoint_index_  >= prev_obstacle_waypoint_index - same_obstacle_threshold && obstacle_waypoint_index_ <= prev_obstacle_waypoint_index + same_obstacle_threshold)
+  if (obstacle_waypoint_index_ >= prev_obstacle_waypoint_index - same_obstacle_threshold &&
+      obstacle_waypoint_index_ <= prev_obstacle_waypoint_index + same_obstacle_threshold)
   {
     obstacle_count++;
   }
@@ -231,7 +233,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 
   // Decide start and goal waypoints for planning
   start_waypoint_index_ = obstacle_waypoint_index_ - avoid_distance_;
-  goal_waypoint_index_  = obstacle_waypoint_index_ + avoid_distance_;
+  goal_waypoint_index_ = obstacle_waypoint_index_ + avoid_distance_;
 
   // Handle out of range
   if (start_waypoint_index_ < 0)
@@ -265,7 +267,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 
   // Set transit pose
   // TODO:
-  double actual_car_width = 2.5; // [m]
+  double actual_car_width = 2.5;  // [m]
   geometry_msgs::Pose relative_transit_pose;
   // TODO: always right avoidance ???
   relative_transit_pose.position.y -= actual_car_width;
@@ -290,10 +292,9 @@ void SearchInfo::stateCallback(const std_msgs::StringConstPtr &msg)
 
 void SearchInfo::reset()
 {
-  map_set_   = false;
+  map_set_ = false;
   start_set_ = false;
-  goal_set_  = false;
+  goal_set_ = false;
   obstacle_waypoint_index_ = -1;
 }
-
 }

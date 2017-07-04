@@ -43,7 +43,6 @@
 
 namespace astar_planner
 {
-
 class SearchInfo
 {
 public:
@@ -52,7 +51,7 @@ public:
 
   // ROS Callback
   void mapCallback(const nav_msgs::OccupancyGridConstPtr &msg);
-  //void startCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
+  // void startCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
   void goalCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr &msg);
@@ -62,35 +61,99 @@ public:
   void stateCallback(const std_msgs::StringConstPtr &msg);
 
   // get method
-  bool getMapSet() const {return map_set_;}
-  bool getStartSet() const {return start_set_;}
-  bool getGoalSet() const {return goal_set_;}
-  bool getPathSet() const {return path_set_;}
-  nav_msgs::OccupancyGrid getMap() const {return map_;}
-  geometry_msgs::PoseStamped getStartPose() const {return start_pose_local_;}
-  geometry_msgs::PoseStamped getGoalPose() const {return goal_pose_local_;}
-  geometry_msgs::PoseStamped getTransitPose() const {return transit_pose_local_;}
-  geometry_msgs::PoseStamped getCurrentPose() const {return current_pose_;}
-  double getCurrentVelocity() const {return current_velocity_mps_;}
-  waypoint_follower_msgs::lane getSubscribedWaypoints() const {return subscribed_waypoints_;}
-  waypoint_follower_msgs::lane getCurrentWaypoints() const {return current_waypoints_;}
-  int getObstacleWaypointIndex() const {return obstacle_waypoint_index_;}
-  int getClosestWaypointIndex() const {return closest_waypoint_index_;}
-  int getStartWaypointIndex() const {return start_waypoint_index_;}
-  int getGoalWaypointIndex() const {return goal_waypoint_index_;}
-  double getUpperBoundDistance() const {return upper_bound_distance_;}
-  double getAvoidVelocityLimitMPS() const {return avoid_velocity_limit_mps_;}
-  bool getAvoidance() const {return avoidance_;}
-  bool getChangePath() const {return change_path_;}
+  bool getMapSet() const
+  {
+    return map_set_;
+  }
+  bool getStartSet() const
+  {
+    return start_set_;
+  }
+  bool getGoalSet() const
+  {
+    return goal_set_;
+  }
+  bool getPathSet() const
+  {
+    return path_set_;
+  }
+  nav_msgs::OccupancyGrid getMap() const
+  {
+    return map_;
+  }
+  geometry_msgs::PoseStamped getStartPose() const
+  {
+    return start_pose_local_;
+  }
+  geometry_msgs::PoseStamped getGoalPose() const
+  {
+    return goal_pose_local_;
+  }
+  geometry_msgs::PoseStamped getTransitPose() const
+  {
+    return transit_pose_local_;
+  }
+  geometry_msgs::PoseStamped getCurrentPose() const
+  {
+    return current_pose_;
+  }
+  double getCurrentVelocity() const
+  {
+    return current_velocity_mps_;
+  }
+  waypoint_follower_msgs::lane getSubscribedWaypoints() const
+  {
+    return subscribed_waypoints_;
+  }
+  waypoint_follower_msgs::lane getCurrentWaypoints() const
+  {
+    return current_waypoints_;
+  }
+  int getObstacleWaypointIndex() const
+  {
+    return obstacle_waypoint_index_;
+  }
+  int getClosestWaypointIndex() const
+  {
+    return closest_waypoint_index_;
+  }
+  int getStartWaypointIndex() const
+  {
+    return start_waypoint_index_;
+  }
+  int getGoalWaypointIndex() const
+  {
+    return goal_waypoint_index_;
+  }
+  double getUpperBoundDistance() const
+  {
+    return upper_bound_distance_;
+  }
+  double getAvoidVelocityLimitMPS() const
+  {
+    return avoid_velocity_limit_mps_;
+  }
+  bool getAvoidance() const
+  {
+    return avoidance_;
+  }
+  bool getChangePath() const
+  {
+    return change_path_;
+  }
 
   // set method
-  void setCurrentWaypoints(const waypoint_follower_msgs::lane& waypoints) {current_waypoints_ = waypoints;}
+  void setCurrentWaypoints(const waypoint_follower_msgs::lane &waypoints)
+  {
+    current_waypoints_ = waypoints;
+  }
 
   // Reset flag
   void reset();
 
 private:
-  double calcPathLength(const waypoint_follower_msgs::lane& lane, const int start_waypoint_index, const int goal_waypoint_index) const;
+  double calcPathLength(const waypoint_follower_msgs::lane &lane, const int start_waypoint_index,
+                        const int goal_waypoint_index) const;
 
   nav_msgs::OccupancyGrid map_;
   geometry_msgs::PoseStamped start_pose_global_;
@@ -111,9 +174,9 @@ private:
 
   // ROS param
   std::string map_frame_;
-  int obstacle_detect_count_; // 1 increment means 100ms
-  int avoid_distance_; // the number of waypoint
-  double avoid_velocity_limit_mps_; // m/s
+  int obstacle_detect_count_;        // 1 increment means 100ms
+  int avoid_distance_;               // the number of waypoint
+  double avoid_velocity_limit_mps_;  // m/s
   double upper_bound_ratio_;
   bool avoidance_;
   bool change_path_;
@@ -133,6 +196,6 @@ private:
   double upper_bound_distance_;
 };
 
-} // namespace astar_planner
+}  // namespace astar_planner
 
-#endif // SEARCH_INFO_ROS_H
+#endif  // SEARCH_INFO_ROS_H

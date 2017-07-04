@@ -35,7 +35,6 @@
 
 namespace astar_planner
 {
-
 enum class STATUS : uint8_t
 {
   NONE,
@@ -46,13 +45,13 @@ enum class STATUS : uint8_t
 
 struct AstarNode
 {
-  double x, y, theta;                   // Coordinate of each node
-  STATUS status        = STATUS::NONE;  // NONE, OPEN, CLOSED or OBS
-  double gc            = 0;             // Actual cost
-  double hc            = 0;             // heuristic cost
-  double move_distance = 0;             // actual move distance
-  bool back;                            // true if the current direction of the vehicle is back
-  AstarNode *parent    = NULL;          // parent node
+  double x, y, theta;            // Coordinate of each node
+  STATUS status = STATUS::NONE;  // NONE, OPEN, CLOSED or OBS
+  double gc = 0;                 // Actual cost
+  double hc = 0;                 // heuristic cost
+  double move_distance = 0;      // actual move distance
+  bool back;                     // true if the current direction of the vehicle is back
+  AstarNode *parent = NULL;      // parent node
 };
 
 struct WaveFrontNode
@@ -84,14 +83,14 @@ struct SimpleNode
   int index_theta;
   double cost;
 
-  bool operator>(const SimpleNode& right) const {
+  bool operator>(const SimpleNode &right) const
+  {
     return cost > right.cost;
   }
 
   SimpleNode();
   SimpleNode(int x, int y, int theta, double gc, double hc);
 };
-
 
 inline double calcDistance(double x1, double y1, double x2, double y2)
 {
@@ -163,6 +162,6 @@ inline geometry_msgs::Pose xytToPoseMsg(double x, double y, double theta)
   return p;
 }
 
-} // namespace astar_planner
+}  // namespace astar_planner
 
 #endif
