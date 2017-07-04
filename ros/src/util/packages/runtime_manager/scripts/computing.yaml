@@ -2841,29 +2841,56 @@ params :
   - name : points2costmap
     vars :
     - name      : resolution
-      desc      : resolution desc sample
+      desc      : Map resolution [meter]
       label     : resolution
       min       : 0.0
-      max       : 0.2
-      v         : 0.1
+      max       : 1.0
+      v         : 0.2
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_width
-      desc      : cell_width desc sample
+      desc      : Map cell size x
       label     : map_size_x
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 300
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_height
-      desc      : cell_height desc sample
+      desc      : Map cell size y
       label     : map_size_y
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 150
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_x
+      desc      : Map offset of x [meter]
+      label     : map_offset_x
+      min       : -100
+      max       : 100
+      v         : 25.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_y
+      desc      : Map offset of y [meter]
+      label     : map_offset_y
+      min       : -100
+      max       : 100
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_z
+      desc      : Map offset of z [meter]
+      label     : map_offset_z
+      min       : -100
+      max       : 100
+      v         : -2.0
       cmd_param :
         dash      : ''
         delim     : ':='
