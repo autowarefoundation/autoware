@@ -406,7 +406,7 @@ void laneArrayCallback(const waypoint_follower_msgs::LaneArrayConstPtr &msg)
   publishGlobalMarker();
 }
 
-void temporalCallback(const waypoint_follower_msgs::laneConstPtr &msg)
+void finalCallback(const waypoint_follower_msgs::laneConstPtr &msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
   ros::Subscriber traffic_array_sub = nh.subscribe("traffic_waypoints_array", 10, laneArrayCallback);
 
   //subscribe local waypoints
-  ros::Subscriber temporal_sub = nh.subscribe("temporal_waypoints", 10, temporalCallback);
+  ros::Subscriber final_sub = nh.subscribe("final_waypoints", 10, finalCallback);
   ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, closestCallback);
 
   //subscribe config
