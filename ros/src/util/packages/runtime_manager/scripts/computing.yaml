@@ -495,15 +495,16 @@ subs :
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
+      - name : obstacle_avoid
+        desc : obstacle_avoid desc sample
+        cmd  : roslaunch astar_planner obstacle_avoid.launch
+        param: obstacle_avoid
       - name : velocity_set
         desc : velocity_set desc sample
         cmd  : roslaunch astar_planner velocity_set.launch
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
-      - name : obstacle_avoid
-        desc : obstacle_avoid desc sample
-        cmd  : rosrun astar_planner obstacle_avoid
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1422,6 +1423,35 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : obstacle_avoid
+    vars  :
+    - name  : avoidance
+      desc  : if not checked, decide if we avoid by reading the current state
+      label : Avoidance
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : avoid_distance
+      desc      : Avoid distance from the obstacle
+      label     : Avoid Distance (m)
+      min       : 0.0
+      max       : 50.0
+      v         : 13.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : avoid_velocity_limit_mps
+      desc      : if the current velocity exceeds this value, we do not avoid
+      label     : Avoid Velocity Limit (m/s)
+      min       : 0.0
+      max       : 20.0
+      v         : 4.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set
