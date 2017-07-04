@@ -23,7 +23,7 @@ endif()
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs lidar_tracker
+  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs
 )
 
 ###########
@@ -46,3 +46,6 @@ target_link_libraries(points2costmap ${catkin_LIBRARIES})
 add_executable(potential_field nodes/potential_field/potential_field.cpp)
 add_dependencies(potential_field lidar_tracker_generate_messages_cpp)
 target_link_libraries(potential_field ${catkin_LIBRARIES})
+
+add_executable(dist_transform nodes/dist_transform/dist_transform.cpp)
+target_link_libraries(dist_transform ${catkin_LIBRARIES})
