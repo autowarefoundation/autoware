@@ -433,6 +433,11 @@ subs :
       cmd  : roslaunch object_map potential_field.launch
       param: potential_field
 
+    - name : dist_transform
+      desc : Generate distance transformed cost map from OccupancyGrid
+      cmd  : roslaunch object_map dist_transform.launch
+      param: dist_transform
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -2867,6 +2872,26 @@ params :
       label     : Points Topic
       kind      : str
       v         : /points_lanes
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : dist_transform
+    vars :
+    - name      : max_distance
+      desc      : Max distance for distance transform
+      label     : Max Distance
+      min       : 0.0
+      max       : 20.0
+      v         : 3.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_topic
+      desc      : Subscribing topic of OccupancyGrid message
+      label     : Map Topic
+      kind      : str
+      v         : /realtime_cost_map
       cmd_param :
         dash      : ''
         delim     : ':='
