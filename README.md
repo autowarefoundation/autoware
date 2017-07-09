@@ -77,6 +77,7 @@ See also Autoware/docs for the tips of Autoware development, including the codin
 
 ```
 $ cd $HOME
+$ export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
 $ git clone https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
