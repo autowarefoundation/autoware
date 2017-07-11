@@ -34,6 +34,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
+include(FindZLIB)
 
 EXECUTE_PROCESS(
   COMMAND uname -m
@@ -79,6 +80,24 @@ INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
 )
 
+####### MatlabIO Library #######
+add_library(matlab_io SHARED
+  src/MatlabIO.cpp
+)
+
+target_include_directories(matlab_io PRIVATE
+  ${OPENCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${ZLIB_INCLUDE_DIR}
+  include
+)
+
+target_link_libraries(matlab_io 
+  ${Boost_LIBRARIES} 
+  ${OpenCV_LIBS}
+  ${ZLIB_LIBRARIES}
+)
+
 #####CNN LIDAR########
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
 set(CNN_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
@@ -98,6 +117,8 @@ if(EXISTS "${CNN_CAFFE_PATH}")
     ${CUDA_curand_LIBRARY}
     ${CNN_CAFFE_PATH}/lib/libcaffe.so
     glog
+    matlab_io
+    
   )
 
   TARGET_INCLUDE_DIRECTORIES( cnn_lidar_detector_node PRIVATE

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,9 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <string>
 #include <ros/ros.h>
+#include <ros/package.h>
+
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -56,28 +57,130 @@
 	#include <opencv2/contrib/contrib.hpp>
 #endif
 
+#include <string>
 #include <cmath>
 
 #include "cnn_lidar_detector.hpp"
 
+#include "MatlabIO.hpp"
+#include "MatlabIOContainer.hpp"
+
 class RosLidarDetectorApp
 {
 	ros::Subscriber subscriber_image_raw_;
-	ros::Publisher publisher_pointcloud_class_;
-	ros::Publisher publisher_boxes_;
-	ros::Publisher publisher_depth_image_;
-	ros::Publisher publisher_intensity_image_;
+	ros::Publisher 	publisher_pointcloud_class_;
+	ros::Publisher 	publisher_boxes_;
+	ros::Publisher 	publisher_depth_image_;
+	ros::Publisher 	publisher_height_image_;
+	ros::Publisher 	publisher_intensity_image_;
 	ros::NodeHandle node_handle_;
 
 	//Caffe based Object Detection ConvNet
 	CnnLidarDetector* lidar_detector_;
 
 	//Sets whether or not use GPU acceleration
-	bool use_gpu_;
+	bool 			use_gpu_;
+	int 			gpu_device_id_;
+	const double 	pi_ = 3.14159265;
 
-	unsigned int gpu_device_id_;
+	double 			horizontal_res_;
+	double 			vertical_res_;
+	unsigned int 	image_width_;
+	unsigned int 	image_height_;
 
-	const double pi_ = 3.14159265;
+	cv::Mat			projection_mean_depth_;//single channel float image subtrahend for depth projection
+	cv::Mat			projection_mean_height_;//single channel float image subtrahend for height projection
+
+	cv::Mat			projection_std_dev_depth_;//double divisor for depth channel
+	cv::Mat			projection_std_dev_height_;//double divisor for height channel
+
+	//Project 3D PointCloud to Image using a Cylindrical representation
+	void project_pointcloud_to_image(
+			pcl::PointCloud<pcl::PointXYZI>::Ptr in_point_cloud, //pointcloud to be projected to image
+			cv::Mat& out_depth_image, //resulting depth projection image
+			cv::Mat& out_height_image, //resulting height projection image
+			cv::Mat& out_intensity_image, //resulting intensity image
+			std::vector<cv::Point2d>& out_points2d, //resulting 2d points
+			std::vector<pcl::PointXYZI>& out_points_3d//corresponding 3d points
+			)
+	{
+		for(unsigned int i=0; i<in_point_cloud->points.size(); i++)
+		{
+			pcl::PointXYZI point = in_point_cloud->points[i];
+			if (point.x > 0. && point.x <70.)
+			{
+				double theta = atan2(point.y, point.x);
+				double length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
+				double angle = asin(point.z/length);
+				double depth = sqrt(point.x*point.x + point.y*point.y);
+				unsigned int image_x = floor((theta/horizontal_res_) + 250.5);
+				unsigned int image_y = floor((angle/vertical_res_) + 71.);
+
+				if ( (image_x >= 0) && (image_x < image_width_) &&
+					 (image_y >= 0) && (image_y < image_height_)
+					) //check the projection is inside the image
+				{
+					out_depth_image.at<double>(image_y, image_x) = depth;
+					out_height_image.at<double>(image_y, image_x) = point.z;
+					out_intensity_image.at<double>(image_y, image_x) = point.intensity;
+					//store correspondence between cloud and image coords
+					out_points2d[i] = cv::Point2d(image_x, image_y);
+					out_points_3d[i] = point;
+				}
+			}
+		}
+	}
+
+	//Normalizes in_image and creates a ColorMap representation of it in out_image to be published
+	void post_process_image(cv::Mat& in_image, cv::Mat& out_image)
+	{
+		cv::flip(in_image, in_image,-1);
+
+		cv::Mat grayscale_cloud;
+		double min, max;
+		cv::minMaxIdx(in_image, &min, &max);
+		in_image.convertTo(grayscale_cloud,CV_8UC1, 255 / (max-min), -min);
+
+		//Apply colormap:
+		applyColorMap(grayscale_cloud, out_image, cv::COLORMAP_JET);
+	}
+
+	void publish_image(ros::Publisher& in_publisher, cv::Mat& in_image, pcl::PCLHeader in_header)
+	{
+		sensor_msgs::ImagePtr pub_image_msg;
+		pub_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", in_image).toImageMsg();
+		pub_image_msg->header.seq = in_header.seq;
+		pub_image_msg->header.frame_id = in_header.frame_id;
+		pub_image_msg->header.stamp = ros::Time(in_header.stamp);
+		in_publisher.publish(pub_image_msg);
+	}
+
+	void subtract_image(cv::Mat& in_out_minuend_image, double in_subtrahend)
+	{
+		for(unsigned int y = 0; y < in_out_minuend_image.rows; y++)
+		{
+			for(unsigned int x = 0; x < in_out_minuend_image.cols; x++)
+			{
+				in_out_minuend_image.at<double>(y, x) -= in_subtrahend;
+			}
+		}
+	}
+
+	void divide_image(cv::Mat& in_out_dividend, double in_divisor)
+	{
+		if(fabs(in_divisor) < 0.00001)
+		{
+			ROS_ERROR("Not performing division by small number, divisor is too small (%f). Check Mat file.", in_divisor);
+			return;
+		}
+		for(unsigned int y = 0; y < in_out_dividend.rows; y++)
+		{
+			for(unsigned int x = 0; x < in_out_dividend.cols; x++)
+			{
+				in_out_dividend.at<double>(y, x) /= in_divisor;
+			}
+		}
+	}
 
 	void cloud_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 	{
@@ -85,82 +188,97 @@ class RosLidarDetectorApp
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 		//get cloud and project to image
 
-		double horizontal_res = 0.32 * pi_ /180.;
-		double vertical_res = 0.4*pi_/180.;
-
-		unsigned int image_width = 2.8/horizontal_res;
-		unsigned int image_height = 0.63 / vertical_res;
-
-		cv::Mat projected_cloud_depth(image_height, image_width, CV_64F, 0.);//depth image
-		cv::Mat projected_cloud_height(image_height, image_width, CV_64F, 0.);//height image
-		cv::Mat projected_cloud_intensity(image_height, image_width, CV_64F, 0.);//height image
+		cv::Mat projected_cloud_depth(image_height_, image_width_, CV_64F, 0.);//depth image
+		cv::Mat projected_cloud_height(image_height_, image_width_, CV_64F, 0.);//height image
+		cv::Mat projected_cloud_intensity(image_height_, image_width_, CV_64F, 0.);//intensity image
+		cv::Mat resulting_objectness;//height image
 
 		std::vector<cv::Point2d> image_points;
 		std::vector<pcl::PointXYZI> cloud_points;
 
+		//store the 3d and 2d points relation for faster backprojection
 		image_points.resize(current_sensor_cloud_ptr->points.size());
 		cloud_points.resize(current_sensor_cloud_ptr->points.size());
 
-		for(unsigned int i=0; i<current_sensor_cloud_ptr->points.size(); i++)
-		{
-			pcl::PointXYZI point = current_sensor_cloud_ptr->points[i];
-			if (point.x > 5. && point.x <70.)
-			{
-				double theta = atan2(point.y, point.x);
-				double length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
-				double angle = asin(point.z/length);
-				double depth = sqrt(point.x*point.x + point.y*point.y);
-				unsigned int image_x = floor((theta/horizontal_res) + 250.5);
-				unsigned int image_y = floor((angle/vertical_res) + 71.);
+		project_pointcloud_to_image(current_sensor_cloud_ptr,
+								projected_cloud_depth,
+								projected_cloud_height,
+								projected_cloud_intensity,
+								image_points,
+								cloud_points);
 
-				if ( (image_x >= 0) && (image_x < image_width) &&
-					 (image_y >= 0) && (image_y < image_height)) //check the projection is inside the image
-				{
-					projected_cloud_depth.at<double>(image_y, image_x) = depth;
-					projected_cloud_height.at<double>(image_y, image_x) = point.z;
-					projected_cloud_intensity.at<double>(image_y, image_x) = point.intensity;
-					//store correspondence between cloud and image coords
-					image_points[i] = cv::Point2d(image_x, image_y);
-					cloud_points[i] = point;
-				}
-			}
-		}
+		lidar_detector_->Detect(projected_cloud_depth,
+								projected_cloud_height,
+								resulting_objectness);
 
-		cv::flip(projected_cloud_depth, projected_cloud_depth,-1);
+		// subtract mean
+		subtract_image(projected_cloud_depth, projection_mean_depth_.at<float>(0));
+		subtract_image(projected_cloud_height, projection_mean_height_.at<float>(0));
+		// divide std dev
+		divide_image(projected_cloud_depth, projection_std_dev_depth_.at<float>(0));
+		divide_image(projected_cloud_height, projection_std_dev_height_.at<float>(0));
 
-		cv::Mat grayscale_cloud;
-		double min;
-		double max;
-		cv::minMaxIdx(projected_cloud_depth, &min, &max);
-		projected_cloud_depth.convertTo(grayscale_cloud,CV_8UC1, 255 / (max-min), -min);
+		//use image for CNN forward
+
+
+		cv::Mat ros_depth_image, ros_height_image, ros_intensity_image; //mats for publishing
+
+		//grayscale to colormap  representation
+		post_process_image(projected_cloud_depth, ros_depth_image);
+		post_process_image(projected_cloud_height, ros_height_image);
+		post_process_image(projected_cloud_intensity, ros_intensity_image);
+
+		publish_image(publisher_depth_image_, ros_depth_image, current_sensor_cloud_ptr->header);
+		publish_image(publisher_height_image_, ros_height_image, current_sensor_cloud_ptr->header);
+		publish_image(publisher_intensity_image_, ros_intensity_image, current_sensor_cloud_ptr->header);
 		
-		cv::Mat rainbow_cloud;
-		//Apply the colormap:
-		applyColorMap(grayscale_cloud, rainbow_cloud, cv::COLORMAP_JET);
-		
-		//move back to ROS
-		sensor_msgs::ImagePtr depth_image_msg;
-		depth_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", rainbow_cloud).toImageMsg();
-		depth_image_msg->header.seq = current_sensor_cloud_ptr->header.seq;
-		depth_image_msg->header.frame_id = current_sensor_cloud_ptr->header.frame_id;
-		depth_image_msg->header.stamp = ros::Time(current_sensor_cloud_ptr->header.stamp);
-		publisher_depth_image_.publish(depth_image_msg);
-
-		///////////////////intensity
-		cv::flip(projected_cloud_intensity, projected_cloud_intensity,-1);
-		cv::minMaxIdx(projected_cloud_intensity, &min, &max);
-		projected_cloud_intensity.convertTo(grayscale_cloud,CV_8UC1, 255 / (max-min), -min);
-		applyColorMap(grayscale_cloud, rainbow_cloud, cv::COLORMAP_JET);
-
-		sensor_msgs::ImagePtr intensity_image_msg;
-		intensity_image_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", rainbow_cloud).toImageMsg();
-		intensity_image_msg->header.seq = current_sensor_cloud_ptr->header.seq;
-		intensity_image_msg->header.frame_id = current_sensor_cloud_ptr->header.frame_id;
-		intensity_image_msg->header.stamp = ros::Time(current_sensor_cloud_ptr->header.stamp);
-		publisher_intensity_image_.publish(intensity_image_msg);
 	}//end cloud_callback
 
+	bool LoadPreProcessingParamsFromMat(std::string in_matfile_path)
+	{
+		MatlabIO mat_io;
+		if (!mat_io.open(in_matfile_path, "r"))//try to open specified file
+			return false;
 
+		std::vector<MatlabIOContainer> variables;
+		variables = mat_io.read();
+
+		mat_io.close();
+
+		mat_io.whos(variables);
+
+		std::size_t count = 0;
+		for (unsigned int i = 0; i < variables.size(); i++)
+		{
+			if (variables[i].name().compare("mean_depth") == 0)
+			{
+				projection_mean_depth_ = variables[i].data<cv::Mat>();
+				ROS_INFO("Successfully loaded Depth Channel Mean");
+				count++;
+			}
+			if (variables[i].name().compare("mean_height") == 0)
+			{
+				projection_mean_height_ = variables[i].data<cv::Mat>();
+				ROS_INFO("Successfully loaded Height Channel Mean");
+				count++;
+			}
+			if (variables[i].name().compare("std_depth") == 0)
+			{
+				projection_std_dev_depth_ = variables[i].data<cv::Mat>();
+				ROS_INFO("Successfully loaded Depth Channel Standard Deviation ");
+				count++;
+			}
+			if (variables[i].name().compare("std_height") == 0)
+			{
+				projection_std_dev_height_ = variables[i].data<cv::Mat>();
+				ROS_INFO("Successfully loaded Height Channel Standard Deviation");
+				count++;
+			}
+		}
+		if(count != 4) //4 expected vars to be contained in the Mat file
+			return false;
+		return true;
+	}
 
 public:
 	void Run()
@@ -180,59 +298,50 @@ public:
 			cloud_topic_str = "/points_raw";
 		}
 
+		std::string preprocess_mat_path;
+		private_node_handle.param<std::string>("preprocess_mat_path", preprocess_mat_path, ros::package::getPath("cnn_lidar_detector")+"/data/preprocess.mat");
+		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
+
+		//Load Std Dev and Mean from Mat File
+		if( !LoadPreProcessingParamsFromMat(preprocess_mat_path) )
+			ROS_ERROR("cnn_lidar_detector. Unable to Load all the pre processing parameters from MAT file. Preprocessing of the image projection will not be executed, leading to an incorrect detection.");
+
 		//RECEIVE CONVNET FILENAMES
-		/*std::string network_definition_file;
+		std::string network_definition_file;
 		std::string pretrained_model_file;
-		if (private_node_handle.getParam("network_definition_file", network_definition_file))
-		{
-			ROS_INFO("Network Definition File: %s", network_definition_file.c_str());
-		}
-		else
-		{
-			ROS_INFO("No Network Definition File was received. Finishing execution.");
-			return;
-		}
-		if (private_node_handle.getParam("pretrained_model_file", pretrained_model_file))
-		{
-			ROS_INFO("Pretrained Model File: %s", pretrained_model_file.c_str());
-		}
-		else
-		{
-			ROS_INFO("No Pretrained Model File was received. Finishing execution.");
-			return;
-		}*/
+		private_node_handle.param<std::string>("network_definition_file",
+							network_definition_file,
+							ros::package::getPath("cnn_lidar_detector")+"/data/lidar_detector.prototxt");
+		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
 
-		if (private_node_handle.getParam("use_gpu", use_gpu_))
-		{
-			ROS_INFO("GPU Mode: %d", use_gpu_);
-		}
-		int gpu_id;
-		if (private_node_handle.getParam("gpu_device_id", gpu_id ))
-		{
-			ROS_INFO("GPU Device ID: %d", gpu_id);
-			gpu_device_id_ = (unsigned int) gpu_id;
-		}
+		private_node_handle.param<std::string>("pretrained_model_file",
+							pretrained_model_file,
+							ros::package::getPath("cnn_lidar_detector")+"/data/lidar_detector.caffemodel");
+		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
 
-		/*lidar_detector_ = new CnnLidarDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_);
+		private_node_handle.param("use_gpu", use_gpu_, true);	ROS_INFO("use_gpu: %d", use_gpu_);
+		private_node_handle.param("gpu_device_id", gpu_device_id_, 0);	ROS_INFO("gpu_device_id: %d", gpu_device_id_);
+
+		lidar_detector_ = new CnnLidarDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_);
 
 		if (NULL == lidar_detector_)
 		{
 			ROS_INFO("Error while creating LidarDetector Object");
 			return;
 		}
-		ROS_INFO("CNN Lidar Detector initialized.");*/
+		ROS_INFO("CNN Lidar Detector initialized.");
 
 		publisher_pointcloud_class_ = node_handle_.advertise<sensor_msgs::PointCloud2>("/points_class",1);
 		publisher_boxes_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
 		publisher_depth_image_= node_handle_.advertise<sensor_msgs::Image>("/image_depth",1);
+		publisher_height_image_= node_handle_.advertise<sensor_msgs::Image>("/image_height",1);
 		publisher_intensity_image_= node_handle_.advertise<sensor_msgs::Image>("/image_intensity",1);
 
 		ROS_INFO("Subscribing to... %s", cloud_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(cloud_topic_str, 1, &RosLidarDetectorApp::cloud_callback, this);
 
-
 		ros::spin();
-		ROS_INFO("END Ssd");
+		ROS_INFO("END CNN Lidar Detector");
 
 	}
 
@@ -245,8 +354,16 @@ public:
 	RosLidarDetectorApp()
 	{
 		lidar_detector_ 	= NULL;
-		use_gpu_ 		= false;
+		use_gpu_ 		= true;
+
 		gpu_device_id_ 	= 0;
+
+		//TODO: parametrize these to enable different lidar models to be projected.
+		horizontal_res_ = 0.32 * pi_ /180.;//Angular Resolution (Horizontal/Azimuth)
+		vertical_res_ = 0.4*pi_/180.;//0.4 degrees Vertical Resolution
+		image_width_ = 2.8 / horizontal_res_;
+		image_height_ = 0.63 / vertical_res_;
+
 	}
 };
 
