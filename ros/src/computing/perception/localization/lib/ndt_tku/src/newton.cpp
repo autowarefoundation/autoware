@@ -3,13 +3,10 @@
 #include <stdlib.h>
 #include <string>
 
-#include "ndt.h"
 #include "algebra.h"
+#include "ndt.h"
 
 #define E_THETA 0.0001
-
-//#define WEIGHTED_SELECT 1
-#define WEIGHTED_SELECT 0
 
 extern int point_num;
 extern NDMapPtr NDmap;
@@ -17,8 +14,6 @@ extern int layer_select;
 
 extern double scan_points_weight[];
 extern double scan_points_totalweight;
-
-extern int _downsampler_num;
 
 double qdd[3][3][2];
 double qd[3][2];
@@ -31,10 +26,6 @@ int check_Hessian(double H[3][3]);
 void save_data(PointPtr scan, int num, PosturePtr pose);
 void depth(PointPtr scan, int num, PosturePtr pose);
 
-/*
-�����̤���뤿��η׻��ʰ���ʬ��
-�إå�����η׻��⤦�����ڤǤ��뤫�⡣
-�켡��ʬ�����ο������׻����ơ��إå�����Ϥ���κ�ʬ������롣*/
 double calc_summand3d(PointPtr p, NDPtr nd, PosturePtr pose, double *g, double H[6][6], double qd3_d[6][3], double dist)
 {
   double a[3];
@@ -43,13 +34,10 @@ double calc_summand3d(PointPtr p, NDPtr nd, PosturePtr pose, double *g, double H
   double qda[6][3], *qda_p;  //,*qdd_p;
   int i, j;
 
-  /*q�η׻�*/
   q[0] = p->x - nd->mean.x;
   q[1] = p->y - nd->mean.y;
   q[2] = p->z - nd->mean.z;
 
-  /*exp�η׻�*/
-  //  e = probability_on_ND(nd, p->x, p->y, p->z);
   e = probability_on_ND(nd, q[0], q[1], q[2]) * dist;
 
   if (e < 0.000000001)
@@ -64,7 +52,7 @@ double calc_summand3d(PointPtr p, NDPtr nd, PosturePtr pose, double *g, double H
     }
     return 0;
   }
-  /*  */
+
   a[0] = q[0] * nd->inv_covariance[0][0] + q[1] * nd->inv_covariance[1][0] + q[2] * nd->inv_covariance[2][0];
   a[1] = q[0] * nd->inv_covariance[0][1] + q[1] * nd->inv_covariance[1][1] + q[2] * nd->inv_covariance[2][1];
   a[2] = q[0] * nd->inv_covariance[0][2] + q[1] * nd->inv_covariance[1][2] + q[2] * nd->inv_covariance[2][2];
@@ -104,7 +92,6 @@ double calc_summand3d(PointPtr p, NDPtr nd, PosturePtr pose, double *g, double H
   return e;
 }
 
-/*�ȤäƤʤ���*/
 int check_Hessian(double H[3][3])
 {
   int i, j;
@@ -119,7 +106,6 @@ int check_Hessian(double H[3][3])
   return 1;
 }
 
-/*�ǡ�������¸*/
 void save_data(PointPtr scan, int num, PosturePtr pose)
 {
   double sc[3][3], x, y, z;
@@ -170,7 +156,6 @@ void scan_transrate(PointPtr src, PointPtr dst, PosturePtr pose, int num)
   }
 }
 
-/*��*/
 void depth(PointPtr scan, int num, PosturePtr pose)
 {
   double sc[3][3], x, y, z;
@@ -191,28 +176,22 @@ void depth(PointPtr scan, int num, PosturePtr pose)
   }
 }
 
-/*���ʬ�ν���*/
 double adjust3d(PointPtr scan, int num, PosturePtr initial, int target)
 {
-  // double gsum[6], Hsum[6][6],Hsumh[6][6],Hinv[6][6],g[6],gd[6],ge[6][6],H[6][6],hH[6][6];
   double gsum[6], Hsum[6][6], Hsumh[6][6], Hinv[6][6], g[6], H[6][6], hH[6][6];
-  // double sc[3][3],sc_d[3][3][3],sc_dd[3][3][3][3],sce[3][3][3];
   double sc[3][3], sc_d[3][3][3], sc_dd[3][3][3][3];
-  // double *work,*work2,*work3;
   double *work;
   double esum = 0, gnum = 0;
   NDPtr nd[8];
   NDMapPtr nd_map;
   int i, j, n, m, k, layer;
-  double x, y, z;  //,sa,ca,sb,cb,sg,cg;
+  double x, y, z;
   PosturePtr pose;
-  // Point p,pe[6],pd;
   Point p;
   PointPtr scanptr;
-  // int inc,count;
   int inc;
   int ndmode;
-  double dist, weight_total, weight_sum, weight_next;
+  double dist;
 
   /*initialize*/
   gsum[0] = 0;
@@ -226,16 +205,13 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial, int target)
   zero_matrix6d(Hsumh);
   pose = initial;
 
-  /*�Ѵ������1����ʬʬ��ޤ�ˤβ�žʬ��׻�*/
   set_sincos(pose->theta, pose->theta2, pose->theta3, sc_d);
   set_sincos(pose->theta + E_THETA, pose->theta2, pose->theta3, sc_dd[0]);
   set_sincos(pose->theta, pose->theta2 + E_THETA, pose->theta3, sc_dd[1]);
   set_sincos(pose->theta, pose->theta2, pose->theta3 + E_THETA, sc_dd[2]);
 
-  /*��ɸ�Ѵ���*/
   set_sincos2(pose->theta, pose->theta2, pose->theta3, sc);
 
-  /*�켡��ʬ������Ѳ����ʤ���ʬ�η׻�*/
   qd3[0][0] = 1;
   qd3[0][1] = 0;
   qd3[0][2] = 0;
@@ -258,255 +234,103 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial, int target)
     }
   }
 
-  //#if WEIGHTED_SELECT
-  if (_downsampler_num == 0)
+  // using voxel grid filter
+  switch (target)
   {
-    /*�ǡ��������Ф�����1=��ĤŤġ�*/
-    switch (target)
-    {
-      case 3:
-        inc = 1;
-        ndmode = 0;
-        break;
-      case 2:
-        inc = 500;
-        ndmode = 1;
-        break;
-      case 1:
-        inc = 5000;
-        ndmode = 0;
-        break;
-      default:
-        inc = 5000;
-        ndmode = 0;
-        break;
-    }
+    case 3:
+      inc = 1;
+      ndmode = 0;
+      break;
+    case 2:
+      inc = 1;
+      ndmode = 1;
+      break;
+    case 1:
+      inc = 1;
+      ndmode = 0;
+      break;
+    default:
+      inc = 1;
+      ndmode = 0;
+      break;
   }
-  //#else
-  if (_downsampler_num == 1)
-  {
-    /*�ǡ��������Ф�����1=��ĤŤġ�*/
-    switch (target)
-    {
-      case 3:
-        inc = 1;
-        ndmode = 0;
-        break;
-      case 2:
-        inc = 1;
-        ndmode = 1;
-        break;
-      case 1:
-        inc = 1;
-        ndmode = 0;
-        break;
-      default:
-        inc = 1;
-        ndmode = 0;
-        break;
-    }
-  }
+
   //#endif
 
   scanptr = scan;
 
-  /*����ˤĤ��Ʒ����֤��׻�*/
-
-  //#if WEIGHTED_SELECT
-  if (_downsampler_num == 0)
+  // case of voxel grid filter used
+  for (i = 0; i < num; i += inc)
   {
-    weight_total = scan_points_totalweight;
-    ;
-    weight_next = 0;
-    weight_sum = 0;
+    x = scanptr->x;
+    y = scanptr->y;
+    z = scanptr->z;
+    dist = 1;
+    scanptr += inc;
 
-    //  FILE *point_fp;
-    // point_fp=fopen("/tmp/range","w");
-    for (i = 0; i < num; i++)
+    p.x = x * sc[0][0] + y * sc[0][1] + z * sc[0][2] + pose->x;
+    p.y = x * sc[1][0] + y * sc[1][1] + z * sc[1][2] + pose->y;
+    p.z = x * sc[2][0] + y * sc[2][1] + z * sc[2][2] + pose->z;
+
+    if (ndmode == 1)
+      layer = 1;  // layer_select;
+    if (ndmode == 0)
+      layer = 0;  // layer_select;
+    nd_map = NDmap;
+
+    while (layer > 0)
     {
-      weight_sum += scan_points_weight[i];
-      if (weight_sum < weight_next)
+      if (nd_map->next)
+        nd_map = nd_map->next;
+      layer--;
+    }
+
+
+    if (!get_ND(nd_map, &p, nd, target))
+      continue;
+
+    work = (double *)sc_d;
+    for (m = 0; m < 3; m++)
+    {
+      for (k = 0; k < 3; k++)
       {
-        scanptr++;
-        continue;
+        qd3[m + 3][k] = x * (*work) + y * (*(work + 1)) + z * (*(work + 2));
+        work += 3;
       }
+    }
 
-      /*���κ�ɸ�Ѵ��׻�*/
-      x = scanptr->x;
-      y = scanptr->y;
-      z = scanptr->z;
-      //    fprintf(point_fp,"%f %f %f \n",x,y,z);
-
-      scanptr++;
-      weight_next += weight_total / (double)inc;  // 1000;
-      dist = 1;
-
-      p.x = x * sc[0][0] + y * sc[0][1] + z * sc[0][2] + pose->x;
-      p.y = x * sc[1][0] + y * sc[1][1] + z * sc[1][2] + pose->y;
-      p.z = x * sc[2][0] + y * sc[2][1] + z * sc[2][2] + pose->z;
-
-      /*���ϥ������ˤ�����������*/
-      if (ndmode == 1)
-        layer = 1;  // layer_select;
-      if (ndmode == 0)
-        layer = 0;  // layer_select;
-      nd_map = NDmap;
-
-      while (layer > 0)
-      {
-        if (nd_map->next)
-          nd_map = nd_map->next;
-        layer--;
-      }
-
-      /*�����б�����ND�ܥ�����������Ʊ���˼�������ND�ܥ�����򹹿���
-        �٤����Τ�Ĥ������Ӥ���Ĥ�Ĥ�����*/
-
-      if (!get_ND(nd_map, &p, nd, target))
-        continue;
-
-      /*q�ΰ켡��ʬ(�Ѳ�������Τ�)*/
-      work = (double *)sc_d;
-      for (m = 0; m < 3; m++)
-      {
-        for (k = 0; k < 3; k++)
-        {
-          // qd3[txtytzabg][xyz]
-          qd3[m + 3][k] = x * (*work) + y * (*(work + 1)) + z * (*(work + 2));
-          // x*sc_d[m][k][0] + y*sc_d[m][k][1] + z*sc_d[m][k][2];
+    work = (double *)sc_dd;
+    for (n = 0; n < 3; n++) {
+      for (m = 0; m < 3; m++) {
+        for (k = 0; k < 3; k++) {
+          qdd3[n + 3][m + 3][k] = (*work * x + *(work + 1) * y + *(work + 2) * z - qd3[m + 3][k]) / E_THETA;
           work += 3;
         }
       }
-
-      /*q������ʬ���Ѳ�������Τߡ�*/
-      work = (double *)sc_dd;
-      for (n = 0; n < 3; n++)
-      {
-        for (m = 0; m < 3; m++)
-        {
-          for (k = 0; k < 3; k++)
-          {
-            qdd3[n + 3][m + 3][k] = (*work * x + *(work + 1) * y + *(work + 2) * z - qd3[m + 3][k]) / E_THETA;
-            work += 3;
-          }
-        }
-      }
-
-      /*�����̷׻�*/
-      if (nd[j])
-      {
-        if (nd[j]->num > 10 && nd[j]->sign == 1)
-        {
-          //	double e;
-          esum += calc_summand3d(&p, nd[j], pose, g, hH, qd3, dist);
-          add_matrix6d(Hsumh, hH, Hsumh);
-
-          //	  dist =1;
-          gsum[0] += g[0];                //*nd[j]->w;
-          gsum[1] += g[1];                //*nd[j]->w;
-          gsum[2] += g[2] + pose->z * 0;  //*nd[j]->w;
-          gsum[3] += g[3];                //*nd[j]->w;
-          gsum[4] += g[4];                //+(pose->theta2-(0.0))*1;//*nd[j]->w;
-          gsum[5] += g[5];                //*nd[j]->w;
-          gnum += 1;  // nd[j]->w;
-        }
-      }
     }
-  }
 
-  //#else
-  if (_downsampler_num == 1)
-  {
-    for (i = 0; i < num; i += inc)
+    if (nd[j])
     {
-      //    dist = (x*x+y*y+z*z);
-      // dist *= (1.2-exp(-1*(-1 - z)*(-1 - z)/4.0));
-      //    if(dist>2500)dist=2500;
-      /*���κ�ɸ�Ѵ��׻�*/
-      x = scanptr->x;
-      y = scanptr->y;
-      z = scanptr->z;
-      dist = 1;
-      scanptr += inc;
-
-      p.x = x * sc[0][0] + y * sc[0][1] + z * sc[0][2] + pose->x;
-      p.y = x * sc[1][0] + y * sc[1][1] + z * sc[1][2] + pose->y;
-      p.z = x * sc[2][0] + y * sc[2][1] + z * sc[2][2] + pose->z;
-
-      /*���ϥ������ˤ�����������*/
-      if (ndmode == 1)
-        layer = 1;  // layer_select;
-      if (ndmode == 0)
-        layer = 0;  // layer_select;
-      nd_map = NDmap;
-
-      while (layer > 0)
+      if (nd[j]->num > 10 && nd[j]->sign == 1)
       {
-        if (nd_map->next)
-          nd_map = nd_map->next;
-        layer--;
-      }
+        //	double e;
+        esum += calc_summand3d(&p, nd[j], pose, g, hH, qd3, dist);
+        add_matrix6d(Hsumh, hH, Hsumh);
 
-      /*�����б�����ND�ܥ�����������Ʊ���˼�������ND�ܥ�����򹹿���
-        �٤����Τ�Ĥ������Ӥ���Ĥ�Ĥ�����*/
-
-      if (!get_ND(nd_map, &p, nd, target))
-        continue;
-
-      /*q�ΰ켡��ʬ(�Ѳ�������Τ�)*/
-      work = (double *)sc_d;
-      for (m = 0; m < 3; m++)
-      {
-        for (k = 0; k < 3; k++)
-        {
-          // qd3[txtytzabg][xyz]
-          qd3[m + 3][k] = x * (*work) + y * (*(work + 1)) + z * (*(work + 2));
-          // x*sc_d[m][k][0] + y*sc_d[m][k][1] + z*sc_d[m][k][2];
-          work += 3;
-        }
-      }
-
-      /*q������ʬ���Ѳ�������Τߡ�*/
-      work = (double *)sc_dd;
-      for (n = 0; n < 3; n++)
-      {
-        for (m = 0; m < 3; m++)
-        {
-          for (k = 0; k < 3; k++)
-          {
-            qdd3[n + 3][m + 3][k] = (*work * x + *(work + 1) * y + *(work + 2) * z - qd3[m + 3][k]) / E_THETA;
-            work += 3;
-          }
-        }
-      }
-
-      /*�����̷׻�*/
-      if (nd[j])
-      {
-        if (nd[j]->num > 10 && nd[j]->sign == 1)
-        {
-          //	double e;
-          esum += calc_summand3d(&p, nd[j], pose, g, hH, qd3, dist);
-          add_matrix6d(Hsumh, hH, Hsumh);
-
-          //	  dist =1;
-          gsum[0] += g[0];                //*nd[j]->w;
-          gsum[1] += g[1];                //*nd[j]->w;
-          gsum[2] += g[2] + pose->z * 0;  //*nd[j]->w;
-          gsum[3] += g[3];                //*nd[j]->w;
-          gsum[4] += g[4];                //+(pose->theta2-(0.0))*1;//*nd[j]->w;
-          gsum[5] += g[5];                //*nd[j]->w;
-          gnum += 1;  // nd[j]->w;
-        }
+        //	  dist =1;
+        gsum[0] += g[0];                //*nd[j]->w;
+        gsum[1] += g[1];                //*nd[j]->w;
+        gsum[2] += g[2] + pose->z * 0;  //*nd[j]->w;
+        gsum[3] += g[3];                //*nd[j]->w;
+        gsum[4] += g[4];                //+(pose->theta2-(0.0))*1;//*nd[j]->w;
+        gsum[5] += g[5];                //*nd[j]->w;
+        gnum += 1;                      // nd[j]->w;
       }
     }
   }
-  //#endif
 
   if (gnum > 1)
   {
-    //  printf("gnum=%lf\n",gnum);
-    //    fclose(point_fp);
     identity_matrix6d(H);
     H[0][0] = H[0][0] / (gnum * gnum * 1000.001);
     H[1][1] = H[1][1] / (gnum * gnum * 1000.001);
@@ -519,7 +343,7 @@ double adjust3d(PointPtr scan, int num, PosturePtr initial, int target)
 
     ginverse_matrix6d(Hsumh, Hinv);
 
-    /*----------------����------------------------*/
+
     pose->x -= (Hinv[0][0] * gsum[0] + Hinv[0][1] * gsum[1] + Hinv[0][2] * gsum[2] + Hinv[0][3] * gsum[3] +
                 Hinv[0][4] * gsum[4] + Hinv[0][5] * gsum[5]);
     pose->y -= (Hinv[1][0] * gsum[0] + Hinv[1][1] * gsum[1] + Hinv[1][2] * gsum[2] + Hinv[1][3] * gsum[3] +
@@ -581,35 +405,10 @@ void set_sincos2(double a, double b, double g, double sc[3][3])
   mux_matrix3d(W, Rz, R);
   mux_matrix3d(R, Ry, W);
   mux_matrix3d(W, Rx, sc);
-
-  /*
-  sc[0][0] =  ca*cb*cg-sa*sg;
-  sc[0][1] = -ca*cb*sg -sa*cg;
-  sc[0][2] =  ca*sb;
-  sc[1][0] =  sa*cb*cg+ca*sg;
-  sc[1][1] = -sa*cb*sg+ca*cg;
-  sc[1][2] =  sa*sb;
-  sc[2][0] = -sb*cg;
-  sc[2][1] =  sb*sg;
-  sc[2][2] =  cb;
-  */
-
-  /*
-  sc[0][0] =  ca*cb*cg-sa*sg;
-  sc[0][1] = -ca*cb*sg -sa*cg;
-  sc[0][2] =  ca*sb;
-  sc[1][0] =  sa*cb*cg+ca*sg;
-  sc[1][1] = -sa*cb*sg+ca*cg;
-  sc[1][2] =  sa*sb;
-  sc[2][0] = -sb*cg;
-  sc[2][1] =  sb*sg;
-  sc[2][2] =  cb;
-  */
 }
 
 void set_sincos(double a, double b, double g, double sc[3][3][3])
 {
-  //  double sa,ca,sb,cb,sg,cg;
   double dd[3][3][3], d[3][3];
   int i, j, k;
 
@@ -628,96 +427,4 @@ void set_sincos(double a, double b, double g, double sc[3][3][3])
       }
     }
   }
-
-  /*
-  sa = sin(a);
-  ca = cos(a);
-  sb = sin(b);
-  cb = cos(b);
-  sg = sin(g);
-  cg = cos(g);
-
-  //sc[tx ty tz a b g][x y z][x+y+z ]
-  sc[0][0][0] = -sa*cb*cg-ca*sg;
-  sc[0][0][1] =  sa*cb*sg-ca*cg;
-  sc[0][0][2] = -sa*sb;
-  sc[0][1][0] =  ca*cb*cg-sa*sg;
-  sc[0][1][1] = -ca*cb*sg-sa*cg;
-  sc[0][1][2] =  ca*sb;
-  sc[0][2][0] =  0;
-  sc[0][2][1] =  0;
-  sc[0][2][2] =  0;
-
-  sc[1][0][0] = -ca*sb*cg;
-  sc[1][0][1] =  ca*sb*sg;
-  sc[1][0][2] =  ca*cb;
-  sc[1][1][0] = -sa*sb*cg;
-  sc[1][1][1] =  sa*sb*sg;
-  sc[1][1][2] =  sa*cb;
-  sc[1][2][0] = -cb*cg;
-  sc[1][2][1] =  cb*sg;
-  sc[1][2][2] = -sb;
-
-
-  sc[2][0][0] = -ca*cb*sg-sa*cg;
-  sc[2][0][1] = -ca*cb*cg+sa*sg;
-  sc[2][0][2] =  0;
-  sc[2][1][0] = -sa*cb*sg+ca*cg;
-  sc[2][1][1] = -sa*cb*cg-ca*sg;
-  sc[2][1][2] =  0;
-  sc[2][2][0] =  sb*sg;
-  sc[2][2][1] =  sb*cg;
-  sc[2][2][2] =  0;
-  */
 }
-/*
-void set_sincos(double a,double b,double g,double sc_d[3][3][3]){
-  double sa,ca,sb,cb,sg,cg;
-
-  sa = sin(a);
-  ca = cos(a);
-  sb = sin(b);
-  cb = cos(b);
-  sg = sin(g);
-  cg = cos(g);
-
-  sc_d[0][0][0] = -sa*cb*cg - ca*sg;
-  sc_d[0][0][1] =  ca*sb*sg - sa*cg;
-  sc_d[0][0][2] = -sa*sb;
-
-  sc_d[1][0][0] =  ca*sb*cg;
-  sc_d[1][0][1] =  ca*sb*sg;
-  sc_d[1][0][2] =  ca*cb;
-
-  sc_d[2][0][0] =  -ca*cb*sg-sa*cg;
-  sc_d[2][0][1] =  -ca*cb*cg+sa*sg;
-  sc_d[2][0][2] =  0;
-
-
-  sc_d[0][1][0] =  ca*cb*cg - sa*sg;
-  sc_d[0][1][1] = -ca*cb*sg - sa*cg;
-  sc_d[0][1][2] =  ca*sb;
-
-  sc_d[1][1][0] =  -sa*sb*cg;
-  sc_d[1][1][1] =  sa*sb*sg;
-  sc_d[1][1][2] =  sa*cb;
-
-  sc_d[2][1][0] =  -sa*cb*sg+ca*cg;
-  sc_d[2][1][1] =  -sa*cb*cg-ca*sg;
-  sc_d[2][1][2] =  0;
-
-  sc_d[0][2][0] =  0;
-  sc_d[0][2][1] =  0;
-  sc_d[0][2][2] =  0;
-
-  sc_d[1][2][0] =  -cb*cg;
-  sc_d[1][2][1] =  cb*sg;
-  sc_d[1][2][2] =  -sb;
-
-  sc_d[2][2][0] =  sb*sg;
-  sc_d[2][2][1] =  sb*cg;
-  sc_d[2][2][2] =  0;
-
-}
-
-*/
