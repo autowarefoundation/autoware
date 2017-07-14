@@ -157,7 +157,6 @@ Visualization Manager:
         Global Waypoints: true
         GlobalPathAnimation: true
         Grid: true
-        Image: true
         Laserscan Costmap: true
         Local Rollouts: true
         Local Waypoints: true
@@ -168,24 +167,7 @@ Visualization Manager:
         Points Map: true
         Points Raw: true
         Safety Box: true
-        SimBehavior1: true
-        SimBehavior2: true
-        SimBehavior3: true
-        SimBehavior4: true
-        SimBehavior5: true
-        SimPath1: true
-        SimPath2: true
-        SimPath3: true
-        SimPath4: true
-        SimPath5: true
-        SimuCar1: true
-        SimuCar2: true
-        SimuCar3: true
-        SimuCar4: true
-        SimuCar5: true
-        Simulated Following Point: true
         Simulated Obstacle: true
-        SimulatedCar Pose: true
         Stixel: true
         TF: false
         Tracked Contours: true
@@ -195,7 +177,6 @@ Visualization Manager:
         Vehicle Model: true
         Vscan Points: true
         Waypoint Guide: true
-        km/h: true
       Zoom Factor: 1
     - Alpha: 0.5
       Autocompute Intensity Bounds: true
@@ -239,7 +220,7 @@ Visualization Manager:
       Color: 255; 255; 0
       Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 255
@@ -256,13 +237,13 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
       Class: rviz/Pose
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Length: 2
       Head Radius: 2
       Name: Control Pose
@@ -271,7 +252,7 @@ Visualization Manager:
       Shape: Arrow
       Topic: /control_pose
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Axes Length: 1
       Axes Radius: 0.1
@@ -412,13 +393,13 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /vector_map_center_lines_rviz
       Name: Vector Map CenterLines
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /global_waypoints_rviz
@@ -443,22 +424,6 @@ Visualization Manager:
       Name: Tracked Contours
       Namespaces:
         {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /curr_simu_pose
-      Name: SimulatedCar Pose
-      Namespaces:
-        curr_simu_pose: true
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /follow_pose
-      Name: Simulated Following Point
-      Namespaces:
-        follow_pose: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -497,126 +462,6 @@ Visualization Manager:
       line width: 0.01
       only edge: false
       show coords: false
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator1/curr_simu_pose_1
-      Name: SimuCar1
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator2/curr_simu_pose_2
-      Name: SimuCar2
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator3/curr_simu_pose_3
-      Name: SimuCar3
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator4/curr_simu_pose_4
-      Name: SimuCar4
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator5/curr_simu_pose_5
-      Name: SimuCar5
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /op_simulator1/simu_local_trajectory_1
-      Name: SimPath1
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /op_simulator2/simu_local_trajectory_2
-      Name: SimPath2
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /op_simulator3/simu_local_trajectory_3
-      Name: SimPath3
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /op_simulator4/simu_local_trajectory_4
-      Name: SimPath4
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
-      Marker Topic: /op_simulator5/simu_local_trajectory_5
-      Name: SimPath5
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator1/sim_beh_txt_1
-      Name: SimBehavior1
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator2/sim_beh_txt_2
-      Name: SimBehavior2
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator3/sim_beh_txt_3
-      Name: SimBehavior3
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator4/sim_beh_txt_4
-      Name: SimBehavior4
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/Marker
-      Enabled: true
-      Marker Topic: /op_simulator5/sim_beh_txt_5
-      Name: SimBehavior5
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -663,8 +508,6 @@ Window Geometry:
   Height: 1416
   Hide Left Dock: false
   Hide Right Dock: false
-  Image:
-    collapsed: false
   QMainWindow State: 000000ff00000000fd0000000400000000000001fc000004e0fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000004e0000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000005c00fffffffb0000000c00430061006d0065007200610000000000ffffffff0000006500fffffffb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb00000000000000000000000100000163000004e0fc0200000003fb0000000a005600690065007700730100000028000004e0000000b000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e1000001970000000300000a000000005cfc0100000002fb0000000800540069006d0065010000000000000a00000002f600fffffffb0000000800540069006d0065010000000000000450000000000000000000000695000004e000000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false

@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <iostream>
 
-points2image::PointsImage
+autoware_msgs::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 		     const cv::Mat& cameraExtrinsicMat,
 		     const cv::Mat& cameraMat, const cv::Mat& distCoeff,
@@ -42,7 +42,7 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	int w = imageSize.width;
 	int h = imageSize.height;
 
-	points2image::PointsImage msg;
+	autoware_msgs::PointsImage msg;
 
 	msg.header = pointcloud2->header;
 
@@ -126,11 +126,11 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	return msg;
 }
 
-/*points2image::CameraExtrinsic
+/*autoware_msgs::CameraExtrinsic
 pointcloud2_to_3d_calibration(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 			      const cv::Mat& cameraExtrinsicMat)
 {
-	points2image::CameraExtrinsic msg;
+	autoware_msgs::CameraExtrinsic msg;
 	std::vector<double> cali;
 	for (int y = 0; y < msg.ysize ; ++y) {
 		for (int x = 0; x < msg.xsize ; ++x){

@@ -11,20 +11,14 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>gnss</build_depend>
-  <!--<build_depend>message_generation</build_depend>-->
-  <build_depend>runtime_manager</build_depend>
-  <build_depend>vehicle_socket</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>waypoint_follower_msgs</build_depend>
-  <run_depend>runtime_manager</run_depend>
-  <!--<run_depend>message_runtime</run_depend>-->
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>gnss</run_depend>
-  <run_depend>vehicle_socket</run_depend>
   <run_depend>geometry_msgs</run_depend>
-  <run_depend>waypoint_follower_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
 
   <export>
   </export>

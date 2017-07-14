@@ -42,13 +42,13 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 }
 
 void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
-		waypoint_follower_msgs::LaneArray& laneArray)
+		autoware_msgs::LaneArray& laneArray)
 {
-	waypoint_follower_msgs::lane l;
+	autoware_msgs::lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		waypoint_follower_msgs::waypoint wp;
+		autoware_msgs::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).x;
 		wp.pose.pose.position.y = path.at(i).y;
 		wp.pose.pose.position.z = path.at(i).z;
@@ -63,13 +63,13 @@ void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
-		waypoint_follower_msgs::LaneArray& laneArray)
+		autoware_msgs::LaneArray& laneArray)
 {
-	waypoint_follower_msgs::lane l;
+	autoware_msgs::lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		waypoint_follower_msgs::waypoint wp;
+		autoware_msgs::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
@@ -109,7 +109,7 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
 {
 	markerArray.markers.clear();
-	waypoint_follower_msgs::LaneArray map_lane_array;
+	autoware_msgs::LaneArray map_lane_array;
 	for(unsigned int i = 0; i< map.roadSegments.size(); i++)
 		for(unsigned int j = 0; j < map.roadSegments.at(i).Lanes.size(); j++)
 			RosHelpers::ConvertFromPlannerHToAutowarePathFormat(map.roadSegments.at(i).Lanes.at(j).points, map_lane_array);
@@ -173,7 +173,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 			  ns_id << map.stopLines.at(i).id;
 			  stop_waypoint_marker.ns =ns_id.str();
 
-			  waypoint_follower_msgs::LaneArray lane_array_2;
+			  autoware_msgs::LaneArray lane_array_2;
 			  RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(map.stopLines.at(i).points, lane_array_2);
 
 			  stop_waypoint_marker.points.clear();
@@ -346,7 +346,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 }
 
 void RosHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
-		const waypoint_follower_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray)
+		const autoware_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -377,7 +377,7 @@ void RosHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
 
 }
 
-void RosHelpers::createGlobalLaneArrayVelocityMarker(const waypoint_follower_msgs::LaneArray &lane_waypoints_array
+void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array
 		, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
@@ -425,7 +425,7 @@ void RosHelpers::createGlobalLaneArrayVelocityMarker(const waypoint_follower_msg
                                        tmp_marker_array.markers.end());
 }
 
-void RosHelpers::createGlobalLaneArrayOrientationMarker(const waypoint_follower_msgs::LaneArray &lane_waypoints_array
+void RosHelpers::createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array
 		, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::MarkerArray tmp_marker_array;

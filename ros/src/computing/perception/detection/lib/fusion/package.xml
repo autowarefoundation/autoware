@@ -8,14 +8,10 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>dpm</build_depend>
-  <build_depend>scan2image</build_depend>
-  <build_depend>points2image</build_depend>
-  <build_depend>cv_tracker_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>dpm</run_depend>
-  <run_depend>scan2image</run_depend>
-  <run_depend>points2image</run_depend>
-  <run_depend>cv_tracker_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
   <export>
   </export>
 </package>

@@ -51,12 +51,12 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-		waypoint_follower_msgs::lane& trajectory)
+		autoware_msgs::lane& trajectory)
 {
 	trajectory.waypoints.clear();
 	for(unsigned int i=iStart; i < path.size(); i++)
 	{
-		waypoint_follower_msgs::waypoint wp;
+		autoware_msgs::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
@@ -609,7 +609,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 }
 
 void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
+		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
 		int& nOriginalPoints, int& nContourPoints)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);

@@ -40,8 +40,8 @@
 
 #include <vector_map/vector_map.h>
 #include <tablet_socket_msgs/route_cmd.h>
-#include <waypoint_follower_msgs/dtlane.h>
-#include <waypoint_follower_msgs/lane.h>
+#include "autoware_msgs/dtlane.h"
+#include "autoware_msgs/lane.h"
 
 namespace lane_planner {
 
@@ -77,11 +77,11 @@ bool is_connection_dtlane(const VectorMap& fine_vmap, int index);
 
 geometry_msgs::Point create_geometry_msgs_point(const vector_map::Point& vp);
 vector_map::Point create_vector_map_point(const geometry_msgs::Point& gp);
-waypoint_follower_msgs::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd);
-vector_map::DTLane create_vector_map_dtlane(const waypoint_follower_msgs::dtlane& wd);
+autoware_msgs::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd);
+vector_map::DTLane create_vector_map_dtlane(const autoware_msgs::dtlane& wd);
 
 VectorMap create_lane_vmap(const VectorMap& vmap, int lno);
-VectorMap create_coarse_vmap_from_lane(const waypoint_follower_msgs::lane& lane);
+VectorMap create_coarse_vmap_from_lane(const autoware_msgs::lane& lane);
 VectorMap create_coarse_vmap_from_route(const tablet_socket_msgs::route_cmd& route);
 VectorMap create_fine_vmap(const VectorMap& lane_vmap, int lno, const VectorMap& coarse_vmap, double search_radius,
 			   int waypoint_max);

@@ -8,8 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  message_generation
-  cv_tracker_msgs
+  autoware_msgs
   lidar_tracker
   geometry_msgs
   visualization_msgs
@@ -18,22 +17,12 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 
 #set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-add_message_files(
-  FILES
-  time_monitor.msg
-  time_diff.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS cv_tracker_msgs points2image message_runtime std_msgs
+  CATKIN_DEPENDS autoware_msgs points2image message_runtime std_msgs
 )
 ###########
 ## Build ##
@@ -43,7 +32,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(sync_drivers sync_drivers.cpp)
 target_link_libraries(sync_drivers ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(sync_drivers synchronization_generate_messages_cpp)
+add_dependencies(sync_drivers ${catkin_EXPORTED_TARGETS})
 
 add_executable(sync_range_fusion computing/perception/detection/packages/cv_tracker/nodes/range_fusion/sync_range_fusion.cpp)
 target_link_libraries(sync_range_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
@@ -59,4 +48,4 @@ target_link_libraries(sync_obj_fusion ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(time_monitor time_monitor.cpp)
 target_link_libraries(time_monitor ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(time_monitor synchronization_generate_messages_cpp)
+add_dependencies(time_monitor ${catkin_EXPORTED_TARGETS})

@@ -39,8 +39,8 @@
 #include <std_msgs/Bool.h>
 #include <tablet_socket_msgs/error_info.h>
 #include <tablet_socket_msgs/mode_info.h>
-#include <vehicle_socket/CanInfo.h>
-#include <ndt_localizer/ndt_stat.h>
+#include "autoware_msgs/CanInfo.h"
+#include "autoware_msgs/ndt_stat.h"
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
@@ -71,7 +71,7 @@ struct can_request {
 	int32_t type;
 	int32_t driveshift;
 
-	can_request(const vehicle_socket::CanInfo& msg)
+	can_request(const autoware_msgs::CanInfo& msg)
 	: type(CAN_INFO_TYPE), driveshift(msg.driveshift) {
 	}
 };
@@ -94,7 +94,7 @@ struct ndt_request {
 	float acceleration;
 	int32_t use_predict_pose;
 
-	ndt_request(const ndt_localizer::ndt_stat& msg) {
+	ndt_request(const autoware_msgs::ndt_stat& msg) {
 		type = NDT_STAT_TYPE;
 		exe_time = msg.exe_time;
 		iteration = msg.iteration;
@@ -148,7 +148,7 @@ static void subscribe_error_info(const tablet_socket_msgs::error_info& msg)
 	}
 }
 
-static void subscribe_can_info(const vehicle_socket::CanInfo& msg)
+static void subscribe_can_info(const autoware_msgs::CanInfo& msg)
 {
 	can_request request(msg);
 	int response;
@@ -214,7 +214,7 @@ static void subscribe_mode_info(const tablet_socket_msgs::mode_info& msg)
 	}
 }
 
-static void subscribe_ndt_stat(const ndt_localizer::ndt_stat& msg)
+static void subscribe_ndt_stat(const autoware_msgs::ndt_stat& msg)
 {
 	ndt_request request(msg);
 	int response;

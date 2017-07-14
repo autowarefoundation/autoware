@@ -15,10 +15,10 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   glviewer
   rosinterface
-  message_generation
   cv_bridge
   pcl_ros
   image_transport
+  autoware_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -27,20 +27,10 @@ pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 pkg_check_modules(Qt5OpenGL REQUIRED Qt5OpenGL)
 
-add_message_files(
-  FILES
-  projection_matrix.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES camera
-   CATKIN_DEPENDS glviewer rosinterface std_msgs message_runtime
+   CATKIN_DEPENDS glviewer rosinterface std_msgs message_runtime autoware_msgs
 #  DEPENDS system_lib
 )
 
@@ -193,7 +183,7 @@ add_executable(calibration_publisher
   )
 
 add_dependencies(calibration_publisher
-  calibration_camera_lidar_generate_messages_cpp
+  autoware_msgs_generate_messages_cpp
 )
 
 target_link_libraries(calibration_publisher

@@ -35,7 +35,6 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <runtime_manager/traffic_light.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -50,8 +49,8 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 #include <geometry_msgs/PoseArray.h>
 
 
@@ -78,7 +77,7 @@ protected:
 	timespec m_Timer;
 	DetectionCommandParams m_DecParams;
 
-	lidar_tracker::CloudClusterArray m_ObjClustersArray;
+	autoware_msgs::CloudClusterArray m_ObjClustersArray;
 	std::vector<std::pair<int, double> > m_keepTime;
 
 	ros::Publisher pub_DetectedObjects;
@@ -93,7 +92,7 @@ protected:
 public:
 	OpenPlannerSimulatorPerception();
 	virtual ~OpenPlannerSimulatorPerception();
-	lidar_tracker::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::Pose& centerPose);
+	autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::Pose& centerPose);
 	void MainLoop();
 };
 

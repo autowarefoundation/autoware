@@ -82,7 +82,7 @@ void VelPoseConnectNode::run()
   ros::spin();
 }
 
-void VelPoseConnectNode::publishVelocity(const vehicle_socket::CanInfoConstPtr &msg)
+void VelPoseConnectNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &msg)
 {
   geometry_msgs::TwistStamped tw;
   tw.header = msg->header;
@@ -97,14 +97,14 @@ void VelPoseConnectNode::publishVelocity(const vehicle_socket::CanInfoConstPtr &
   pub1_.publish(tw);
 }
 
-void VelPoseConnectNode::publishVelocityViz(const vehicle_socket::CanInfoConstPtr &msg)
+void VelPoseConnectNode::publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg)
 {
   std_msgs::Float32 fl;
   fl.data = msg->speed;
   pub2_.publish(fl);
 }
 
-void VelPoseConnectNode::publishOdometry(const vehicle_socket::CanInfoConstPtr &msg)
+void VelPoseConnectNode::publishOdometry(const autoware_msgs::CanInfoConstPtr &msg)
 {
   double vx = kmph2mps(msg->speed);
   double vth = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
@@ -147,7 +147,7 @@ void VelPoseConnectNode::publishOdometry(const vehicle_socket::CanInfoConstPtr &
   pub3_.publish(odom);
 }
 
-void VelPoseConnectNode::callbackFromCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+void VelPoseConnectNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
 {
   publishVelocity(msg);
   publishVelocityViz(msg);

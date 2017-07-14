@@ -51,12 +51,10 @@
 
 #include <std_msgs/Float64.h>
 #include <std_msgs/Header.h>
-#include <scan2image/ScanImage.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <cv_tracker_msgs/image_obj_tracked.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -65,8 +63,9 @@
 #include "axialMove.h"
 #include "geo_pos_conv.hh"
 #include "CalObjLoc.h"
-#include "cv_tracker_msgs/obj_label.h"
-#include "calibration_camera_lidar/projection_matrix.h"
+#include "autoware_msgs/image_obj_tracked.h"
+#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/projection_matrix.h"
 #include <sensor_msgs/CameraInfo.h>
 #include <mutex>
 
@@ -121,7 +120,7 @@ static tf::StampedTransform transformCam2Map;
 std::string camera_id_str;
 
 
-static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker_msgs::obj_label& src)
+static visualization_msgs::MarkerArray convert_marker_array(const autoware_msgs::obj_label& src)
 {
   visualization_msgs::MarkerArray ret;
   int index = 0;
@@ -196,7 +195,7 @@ static visualization_msgs::MarkerArray convert_marker_array(const cv_tracker_msg
 }
 
 #ifdef HAVE_JSK_PLUGIN
-static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const cv_tracker_msgs::obj_label& src)
+static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const autoware_msgs::obj_label& src)
 {
   jsk_recognition_msgs::BoundingBoxArray ret;
   ret.header.frame_id ="map";
@@ -219,7 +218,7 @@ static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const c
 }
 #endif  // ifdef HAVE_JSK_PLUGIN
 
-static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
+static void projection_callback(const autoware_msgs::projection_matrix& msg)
 {
   for (int row=0; row<4; row++) {
     for (int col=0; col<4; col++) {
@@ -254,7 +253,7 @@ void GetRPY(const geometry_msgs::Pose &pose,
 
 void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
                              vector<OBJPOS>::iterator cp_iterator,
-                             cv_tracker_msgs::obj_label& send_data)
+                             autoware_msgs::obj_label& send_data)
 {
   geometry_msgs::Point tmpPoint;
 
@@ -298,7 +297,7 @@ void locatePublisher(void){
   //get values from sample_corner_point , convert latitude and longitude,
   //and send database server.
 
-  cv_tracker_msgs::obj_label obj_label_msg;
+  autoware_msgs::obj_label obj_label_msg;
   visualization_msgs::MarkerArray obj_label_marker_msgs;
 
   vector<OBJPOS>::iterator cp_iterator;
@@ -329,7 +328,7 @@ void locatePublisher(void){
 #endif  // ifdef HAVE_JSK_PLUGIN
 }
 
-static void obj_pos_xyzCallback(const cv_tracker_msgs::image_obj_tracked& fused_objects)
+static void obj_pos_xyzCallback(const autoware_msgs::image_obj_tracked& fused_objects)
 {
   if (!ready_)
     return;
@@ -399,7 +398,7 @@ int main(int argc, char **argv){
 
   ros::Subscriber obj_pos_xyz = n.subscribe("image_obj_tracked", 1, obj_pos_xyzCallback);
 
-  pub = n.advertise<cv_tracker_msgs::obj_label>("obj_label",1);
+  pub = n.advertise<autoware_msgs::obj_label>("obj_label",1);
   marker_pub = n.advertise<visualization_msgs::MarkerArray>("obj_label_marker", 1);
 
 #ifdef HAVE_JSK_PLUGIN

@@ -10,13 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
-  message_generation
+  autoware_msgs
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
   rosinterface
   cv_bridge
-  cv_tracker_msgs
+  vector_map_server
 )
 
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
@@ -45,53 +45,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependencies might have been
-##     pulled in transitively but can be declared for certainty nonetheless:
-##     * add a build_depend tag for "message_generation"
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   centroids.msg
-   CloudCluster.msg
-   CloudClusterArray.msg
-   DetectedObject.msg
-   DetectedObjectArray.msg
-   geometric_rectangle.msg
-   vscan_tracked.msg
-   vscan_tracked_array.msg
- )
-
-## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
-   geometry_msgs
-   sensor_msgs
-   jsk_recognition_msgs
-   jsk_rviz_plugins
- )
-
 
 ###################################
 ## catkin specific configuration ##
@@ -103,7 +56,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros vector_map_server
+   CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs 
 )
 
 include_directories(
@@ -120,9 +73,6 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 #target_link_libraries(lidar_fuser opencv_highgui opencv_core opencv_contrib opencv_imgproc ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #add_dependencies(lidar_fuser lidar_tracker_generate_messages_cpp)
 
-#Euclidean Cluster
-#moved after cuda check below
-
 #SVM Detect
 add_executable(svm_lidar_detect nodes/svm_lidar_detect/svm_lidar_detect.cpp)
 #add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
@@ -134,12 +84,12 @@ target_link_libraries (svm_lidar_detect PRIVATE
 )
 
 #target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
-add_dependencies(svm_lidar_detect lidar_tracker_generate_messages_cpp)
+add_dependencies(svm_lidar_detect ${catkin_EXPORTED_TARGETS})
 
 #ParticleFilter Track
 add_executable(pf_lidar_track nodes/pf_lidar_track/pf_lidar_track.cpp)
 target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(pf_lidar_track lidar_tracker_generate_messages_cpp)
+add_dependencies(pf_lidar_track ${catkin_EXPORTED_TARGETS})
 
 #KalmanFilter Track
 add_executable(kf_lidar_track 
@@ -151,12 +101,12 @@ add_executable(kf_lidar_track
 				)
 target_include_directories(kf_lidar_track PRIVATE nodes/kf_lidar_track/includes)
 target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(kf_lidar_track lidar_tracker_generate_messages_cpp)
+add_dependencies(kf_lidar_track ${catkin_EXPORTED_TARGETS})
 
 #Euclidean Track
 add_executable(euclidean_lidar_track nodes/euclidean_lidar_track/euclidean_lidar_track.cpp)
 target_link_libraries(euclidean_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_lidar_track lidar_tracker_generate_messages_cpp)
+add_dependencies(euclidean_lidar_track ${catkin_EXPORTED_TARGETS})
 
 #Vscan Filling
 add_executable(vscan_filling nodes/vscan_filling/vscan_filling.cpp)
@@ -165,7 +115,7 @@ target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #Object Fusion
 add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
-add_dependencies(obj_fusion lidar_tracker_generate_messages_cpp)
+add_dependencies(obj_fusion ${catkin_EXPORTED_TARGETS})
 
 # Vscan Track
 execute_process(
@@ -292,7 +242,7 @@ if(EXISTS "/usr/local/cuda")
     vehicle_tracker_moc_mainwindow
     vehicle_tracker_moc_rbsspfvehicletracker
     vehicle_tracker_ui_mainwindow
-    cv_tracker_msgs_generate_messages_cpp
+    ${catkin_EXPORTED_TARGETS}
     )
 
   target_link_libraries(vscan_lidar_track

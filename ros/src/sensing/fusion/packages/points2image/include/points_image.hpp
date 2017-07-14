@@ -33,9 +33,9 @@
 
 #include <opencv2/opencv.hpp>
 #include <sensor_msgs/PointCloud2.h>
-#include "points2image/PointsImage.h"
+#include "autoware_msgs/PointsImage.h"
 
-points2image::PointsImage
+autoware_msgs::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointclound2,
 		     const cv::Mat& cameraExtrinsicMat,
 		     const cv::Mat& cameraMat, const cv::Mat& distCoeff,

@@ -10,8 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   waypoint_follower
-  waypoint_follower_msgs
   vector_map
+  autoware_msgs
 )
 pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
@@ -21,7 +21,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES fake_drivers
-   CATKIN_DEPENDS waypoint_follower std_msgs vector_map
+   CATKIN_DEPENDS waypoint_follower std_msgs vector_map autoware_msgs
 #  DEPENDS system_lib
    DEPENDS gnss curl
 )
@@ -42,7 +42,7 @@ add_library(get_file
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file curl)
-add_dependencies(points_map_loader waypoint_follower_msgs_generate_messages_cpp)
+add_dependencies(points_map_loader autoware_msgs_generate_messages_cpp)
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
 target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file curl)

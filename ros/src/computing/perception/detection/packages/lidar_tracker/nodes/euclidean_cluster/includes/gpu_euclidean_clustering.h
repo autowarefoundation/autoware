@@ -24,6 +24,7 @@ public:
 	void setThreshold(double threshold);
 	void setMinClusterPts(int min_cluster_pts);
 	void setMaxClusterPts(int max_cluster_pts);
+	void extractClustersOld();
 	void extractClusters();
 	void extractClusters2();
 	std::vector<GClusterIndex> getOutput();

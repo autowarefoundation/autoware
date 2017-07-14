@@ -2,7 +2,6 @@
 
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker_msgs/image_obj.h>
 
 #include <cstdint>
 #include <cstdlib>

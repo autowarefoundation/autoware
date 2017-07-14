@@ -4,14 +4,11 @@ project(dp_planner)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  runtime_manager
-  cv_tracker_msgs
-  waypoint_follower_msgs
+  autoware_msgs  
   map_file
   pcl_conversions
   pcl_ros
   sensor_msgs
-  message_generation
   tf
   jsk_recognition_msgs
   op_utility
@@ -28,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager cv_tracker_msgs waypoint_follower_msgs map_file op_utility op_planner op_simu
+  CATKIN_DEPENDS roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu
 #  DEPENDS system_lib
 )
 
@@ -52,8 +49,4 @@ add_executable(dp_planner nodes/dp_planner.cpp nodes/dp_planner_core.cpp nodes/R
 target_link_libraries(dp_planner ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(dp_planner 
 ${catkin_EXPORTED_TARGETS}
-runtime_manager_generate_messages_cpp
-map_file_generate_messages_cpp
-lidar_tracker_generate_messages_cpp 
-vector_map_server_generate_messages_cpp
 )

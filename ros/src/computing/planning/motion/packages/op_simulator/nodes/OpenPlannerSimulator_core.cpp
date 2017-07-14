@@ -250,7 +250,7 @@ void OpenPlannerSimulator::GetTransformFromTF(const std::string parent_frame, co
 	}
 }
 
-void OpenPlannerSimulator::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
+void OpenPlannerSimulator::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg)
 {
 	m_OriginalClusters.clear();
 	int nOriginalPoints=0, nContourPoints = 0;
@@ -380,7 +380,7 @@ void OpenPlannerSimulator::visualizePath(const std::vector<PlannerHNS::WayPoint>
 }
 
 void OpenPlannerSimulator::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
+		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
 		int& nOriginalPoints, int& nContourPoints)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
