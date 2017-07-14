@@ -9,7 +9,7 @@ namespace integrated_viewer {
   class DrawPoints{
   public:
     explicit DrawPoints(void);
-    void Draw(const points2image::PointsImage::ConstPtr& points, cv::Mat& image);
+    void Draw(const points2image::PointsImage::ConstPtr& points, cv::Mat& image, int drawn_size);
 
   private:
     cv::Mat color_map_;

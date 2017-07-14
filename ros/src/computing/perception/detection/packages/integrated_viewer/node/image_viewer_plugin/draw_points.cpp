@@ -16,7 +16,8 @@ namespace integrated_viewer
 
 
   void DrawPoints::Draw(const points2image::PointsImage::ConstPtr& points,
-                        cv::Mat &image) {
+                        cv::Mat &image,
+                        int drawn_size) {
     if (points == NULL) {
       return;
     }
@@ -54,9 +55,16 @@ namespace integrated_viewer
         int blue  = color[2];
 
         // Draw a point
+        int minus_offset = 0;
+        int plus_offset = static_cast<int>(drawn_size/2);
+        if (drawn_size % 2 == 0) {
+          minus_offset = static_cast<int>(drawn_size/2) - 1;
+        } else {
+          minus_offset = static_cast<int>(drawn_size/2);
+        }
         cv::rectangle(image,
-                      cv::Point(x - 1, y - 1),
-                      cv::Point(x + 1, y + 1),
+                      cv::Point(x - minus_offset, y - minus_offset),
+                      cv::Point(x + plus_offset, y + plus_offset),
                       CV_RGB(red, green, blue),
                       CV_FILLED);
       }
