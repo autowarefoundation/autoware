@@ -332,8 +332,9 @@ if(EXISTS "${YOLO2_PATH}")
   set(YOLO2_USE_CUDNN 0)
   set(YOLO2_USE_GPU 1)
   
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-  list(APPEND CUDA_NVCC_FLAGS "-I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
+  list(APPEND CUDA_NVCC_FLAGS "--std=c++11 -I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
+  SET(CUDA_PROPAGATE_HOST_FLAGS OFF)    
+
 
   cuda_add_library(yolo2lib_wa
     ${YOLO2_PATH}/src/activation_kernels.cu
