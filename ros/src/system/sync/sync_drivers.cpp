@@ -36,7 +36,7 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "autoware_msgs/time_diff.h"
+#include "autoware_msgs/Sync_time_diff.h"
 
 /* ----var---- */
 /* common var */

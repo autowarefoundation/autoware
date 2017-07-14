@@ -300,7 +300,7 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 											pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 											jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-											lidar_tracker::centroids& in_out_centroids,
+											autoware_msgs::centroids& in_out_centroids,
 											double in_max_cluster_distance=0.5)
 {
 	std::vector<ClusterPtr> clusters;

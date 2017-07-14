@@ -73,5 +73,5 @@ ${catkin_EXPORTED_TARGETS})
 add_executable(path_select nodes/path_select/path_select.cpp)
 target_link_libraries(path_select ${catkin_LIBRARIES})
 add_dependencies(path_select 
-autoware_msgs_generate_messages_cpp)
+${catkin_EXPORTED_TARGETS})
 

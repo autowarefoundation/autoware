@@ -1,11 +1,12 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <autoware_msgs/ConfigSsd.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <autoware_msgs/ConfigSsd.h>
 #include <autoware_msgs/image_obj.h>
 
+#include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
 #if (CV_MAJOR_VERSION != 3)
@@ -13,7 +14,6 @@
 #endif
 #include <opencv2/highgui/highgui.hpp>
 
-#include <cv_bridge/cv_bridge.h>
 
 #include <string>
 #include <vector>

@@ -20,11 +20,11 @@
 #include <cstdio>
 #include "Math.h"
 #include <Eigen/Eigen>
-#include "road_wizard/Signals.h"
-#include <runtime_manager/adjust_xy.h>
+#include <autoware_msgs/Signals.h>
+#include <autoware_msgs/adjust_xy.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
-#include <waypoint_follower_msgs/lane.h>
+#include <autoware_msgs/lane.h>
 
 static std::string camera_id_str;
 
@@ -64,7 +64,7 @@ namespace
   {
   private:
     geometry_msgs::PoseStamped pose_;
-    waypoint_follower_msgs::lane waypoints_;
+    autoware_msgs::lane waypoints_;
 
   public:
     VectorMapClient()
@@ -78,7 +78,7 @@ namespace
       return pose_;
     }
 
-    waypoint_follower_msgs::lane waypoints() const
+    autoware_msgs::lane waypoints() const
     {
       return waypoints_;
     }
@@ -88,7 +88,7 @@ namespace
       pose_ = pose;
     }
 
-    void set_waypoints(const waypoint_follower_msgs::lane& waypoints)
+    void set_waypoints(const autoware_msgs::lane& waypoints)
     {
       waypoints_ = waypoints;
     }
@@ -98,7 +98,7 @@ static VectorMapClient g_vector_map_client;
 
 
 /* Callback function to shift projection result */
-void adjust_xyCallback (const runtime_manager::adjust_xy::ConstPtr& config_msg)
+void adjust_xyCallback (const autoware_msgs::adjust_xy::ConstPtr& config_msg)
 {
   adjust_proj_x = config_msg->x;
   adjust_proj_y = config_msg->y;
@@ -260,7 +260,7 @@ double GetSignalAngleInCameraSystem(double hang, double vang)
 void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 {
   int countPoint = 0;
-  road_wizard::Signals signalsInFrame;
+  autoware_msgs::Signals signalsInFrame;
 
   /* Get signals on the path if vecter_map_server is enabled */
   if (g_use_vector_map_server) {
@@ -308,7 +308,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       project2 (signalcenterx, ux, vx, useOpenGLCoord);
       radius = (int)distance (ux, vx, u, v);
 
-      road_wizard::ExtractedPosition sign;
+      autoware_msgs::ExtractedPosition sign;
       sign.signalId = signal.id;
 
       sign.u = u + adjust_proj_x; // shift project position by configuration value from runtime manager
@@ -420,7 +420,7 @@ int main (int argc, char *argv[])
     g_ros_client = rosnode.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
   }
 
-  ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
+  ros::Publisher  signalPublisher      = rosnode.advertise <autoware_msgs::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 
   Rate loop (25);

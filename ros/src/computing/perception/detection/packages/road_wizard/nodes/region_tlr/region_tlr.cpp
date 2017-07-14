@@ -7,10 +7,10 @@
 #include <float.h>
 #include <math.h>
 #include <sstream>
-#include <runtime_manager/traffic_light.h>
 #include <std_msgs/String.h>
-#include "road_wizard/Signals.h"
-#include "road_wizard/TunedResult.h"
+#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Signals.h>
+#include <autoware_msgs/TunedResult.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/Bool.h>
@@ -170,7 +170,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 } /* static void image_raw_cb() */
 
 
-static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
+static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr& extractedPos)
 {
   if (frame.empty())
     return;
@@ -181,7 +181,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
   detector.brightnessDetect(frame);
 
   /* publish result */
-  runtime_manager::traffic_light state_msg;
+  autoware_msgs::traffic_light state_msg;
   std_msgs::String state_string_msg;
   const int32_t TRAFFIC_LIGHT_RED     = 0;
   const int32_t TRAFFIC_LIGHT_GREEN   = 1;
@@ -339,7 +339,7 @@ static void extractedPos_cb(const road_wizard::Signals::ConstPtr& extractedPos)
 } /* static void extractedPos_cb() */
 
 
-static void tunedResult_cb(const road_wizard::TunedResult& msg)
+static void tunedResult_cb(const autoware_msgs::TunedResult& msg)
 {
   thSet.Red.Hue.upper = cvtInt2Double_hue(msg.Red.Hue.center, msg.Red.Hue.range);
   thSet.Red.Hue.lower = cvtInt2Double_hue(msg.Red.Hue.center, -msg.Red.Hue.range);
@@ -427,7 +427,7 @@ int main(int argc, char* argv[]) {
   ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
   ros::Subscriber superimpose_sub = n.subscribe("/config/superimpose", 1, superimpose_cb);
 
-  signalState_pub       = n.advertise<runtime_manager::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  signalState_pub       = n.advertise<autoware_msgs::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
   marker_pub            = n.advertise<visualization_msgs::MarkerArray>("tlr_result", ADVERTISE_QUEUE_SIZE);
   superimpose_image_pub= n.advertise<sensor_msgs::Image>("tlr_superimpose_image", ADVERTISE_QUEUE_SIZE);

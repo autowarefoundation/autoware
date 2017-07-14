@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   cv_bridge
-  message_generation
   sensor_msgs
   tf
   libvectormap
@@ -20,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   waypoint_follower
   cmake_modules
+  autoware_msgs
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -49,11 +49,7 @@ include_directories(
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-<<<<<<< HEAD
   CATKIN_DEPENDS std_msgs message_runtime libvectormap autoware_msgs
-=======
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager vector_map_server geometry_msgs waypoint_follower
->>>>>>> fe3055867d3a8cd8990ab0541b7a69538eb1c322
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -63,7 +59,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 add_library(libcontext lib/Context.cpp)
 add_dependencies(libcontext
-  road_wizard_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS})
 
 
 ### region_tlr ###

@@ -10,7 +10,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "Context.h"
-#include "road_wizard/Signals.h"
+#include "autoware_msgs/Signals.h"
 
 class RoiExtractor {
  public:
@@ -24,7 +24,7 @@ class RoiExtractor {
 
   // Callback functions to obtain images and signal position
   void ImageRawCallback(const sensor_msgs::Image &image);
-  void RoiSignalCallback(const road_wizard::Signals::ConstPtr &extracted_pos);
+  void RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos);
   
   // Utility function to create directory which roi images will be saved
   void CreateTargetDirectory(std::string base_name);

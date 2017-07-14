@@ -23,15 +23,15 @@ bool Context::CompareContext(const Context left, const Context right)
 
 
 void Context::SetContexts(std::vector<Context> &contexts,
-                          const road_wizard::Signals::ConstPtr &extracted_pos,
+                          const autoware_msgs::Signals::ConstPtr &extracted_pos,
                           const int frame_row,
                           const int frame_column) {
   /* copy parts of data to local variable */
-  std::vector<road_wizard::ExtractedPosition> signals;
-  std::vector<road_wizard::ExtractedPosition>::iterator sig_iterator;
+  std::vector<autoware_msgs::ExtractedPosition> signals;
+  std::vector<autoware_msgs::ExtractedPosition>::iterator sig_iterator;
   for (unsigned int i=0; i<extracted_pos->Signals.size(); i++ )
     {
-      road_wizard::ExtractedPosition tmp;
+      autoware_msgs::ExtractedPosition tmp;
       tmp.signalId = extracted_pos->Signals.at(i).signalId;
       tmp.u        = extracted_pos->Signals.at(i).u;
       tmp.v        = extracted_pos->Signals.at(i).v;

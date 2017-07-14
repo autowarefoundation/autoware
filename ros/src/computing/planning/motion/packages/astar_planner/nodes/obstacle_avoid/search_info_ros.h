@@ -32,7 +32,7 @@
 #define SEARCH_INFO_ROS_H
 
 #include "astar_util.h"
-#include "waypoint_follower_msgs/lane.h"
+#include "autoware_msgs/lane.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 #include <nav_msgs/OccupancyGrid.h>
@@ -55,7 +55,7 @@ public:
   void goalCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr &msg);
-  void waypointsCallback(const waypoint_follower_msgs::laneConstPtr &msg);
+  void waypointsCallback(const autoware_msgs::laneConstPtr &msg);
   void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg);
   void stateCallback(const std_msgs::StringConstPtr &msg);
@@ -101,11 +101,11 @@ public:
   {
     return current_velocity_mps_;
   }
-  waypoint_follower_msgs::lane getSubscribedWaypoints() const
+  autoware_msgs::lane getSubscribedWaypoints() const
   {
     return subscribed_waypoints_;
   }
-  waypoint_follower_msgs::lane getCurrentWaypoints() const
+  autoware_msgs::lane getCurrentWaypoints() const
   {
     return current_waypoints_;
   }
@@ -143,7 +143,7 @@ public:
   }
 
   // set method
-  void setCurrentWaypoints(const waypoint_follower_msgs::lane &waypoints)
+  void setCurrentWaypoints(const autoware_msgs::lane &waypoints)
   {
     current_waypoints_ = waypoints;
   }
@@ -152,7 +152,7 @@ public:
   void reset();
 
 private:
-  double calcPathLength(const waypoint_follower_msgs::lane &lane, const int start_waypoint_index,
+  double calcPathLength(const autoware_msgs::lane &lane, const int start_waypoint_index,
                         const int goal_waypoint_index) const;
 
   nav_msgs::OccupancyGrid map_;
@@ -186,8 +186,8 @@ private:
   int obstacle_waypoint_index_;
   int start_waypoint_index_;
   int goal_waypoint_index_;
-  waypoint_follower_msgs::lane subscribed_waypoints_;
-  waypoint_follower_msgs::lane current_waypoints_;
+  autoware_msgs::lane subscribed_waypoints_;
+  autoware_msgs::lane current_waypoints_;
   geometry_msgs::PoseStamped current_pose_;
   double current_velocity_mps_;
   std::string state_;
