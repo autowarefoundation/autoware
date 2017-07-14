@@ -36,9 +36,8 @@ add_dependencies(velocity_set
 waypoint_follower_msgs_generate_messages_cpp
 runtime_manager_generate_messages_cpp)
 
-add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp)
-target_link_libraries(obstacle_avoid  ${catkin_LIBRARIES})
-add_dependencies(obstacle_avoid 
-waypoint_follower_msgs_generate_messages_cpp)
+add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp nodes/obstacle_avoid/astar_search.cpp nodes/obstacle_avoid/search_info_ros.cpp nodes/obstacle_avoid/astar_util.cpp)
+target_link_libraries(obstacle_avoid ${catkin_LIBRARIES})
+add_dependencies(obstacle_avoid waypoint_follower_generate_messages_cpp)
 
 
