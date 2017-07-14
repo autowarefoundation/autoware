@@ -11,10 +11,10 @@
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
-#include <lidar_tracker/DetectedObject.h>
-#include <lidar_tracker/DetectedObjectArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 
 
 class PfTrack
@@ -28,23 +28,23 @@ private:
 	ros::Subscriber cloud_clusters_sub_;
 	ros::Publisher detected_objects_pub_;
 
-	void CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
+	void CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 };
 
 PfTrack::PfTrack() :
 		node_handle_("~")
 {
 	cloud_clusters_sub_ = node_handle_.subscribe("/cloud_clusters_class", 10, &PfTrack::CloudClustersCallback, this);
-	detected_objects_pub_ = node_handle_.advertise<lidar_tracker::DetectedObjectArray>( "/detected_objects", 10);
+	detected_objects_pub_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>( "/detected_objects", 10);
 }
 
-void PfTrack::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
+void PfTrack::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
-	lidar_tracker::DetectedObjectArray detected_objects;
+	autoware_msgs::DetectedObjectArray detected_objects;
 	detected_objects.header = in_cloud_cluster_array_ptr->header;
 	for (auto i = in_cloud_cluster_array_ptr->clusters.begin(); i != in_cloud_cluster_array_ptr->clusters.end(); i++)
 	{
-		lidar_tracker::DetectedObject detected_object;
+		autoware_msgs::DetectedObject detected_object;
 		detected_object.header 		= i->header;
 		detected_object.id 			= i->id;
 		detected_object.label 		= i->label;

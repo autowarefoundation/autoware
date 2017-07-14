@@ -38,16 +38,16 @@
 //#include <map_file/NodeArray.h>
 //#include <map_file/StopLineArray.h>
 //#include <map_file/DTLaneArray.h>
-#include <vector_map_msgs/PointArray.h>
-#include <vector_map_msgs/LaneArray.h>
-#include <vector_map_msgs/NodeArray.h>
-#include <vector_map_msgs/StopLineArray.h>
-#include <vector_map_msgs/DTLaneArray.h>
-#include <vector_map_msgs/LineArray.h>
-#include <vector_map_msgs/AreaArray.h>
-#include <vector_map_msgs/SignalArray.h>
-#include <vector_map_msgs/StopLine.h>
-#include <vector_map_msgs/VectorArray.h>
+#include "vector_map_msgs/PointArray.h"
+#include "vector_map_msgs/LaneArray.h"
+#include "vector_map_msgs/NodeArray.h"
+#include "vector_map_msgs/StopLineArray.h"
+#include "vector_map_msgs/DTLaneArray.h"
+#include "vector_map_msgs/LineArray.h"
+#include "vector_map_msgs/AreaArray.h"
+#include "vector_map_msgs/SignalArray.h"
+#include "vector_map_msgs/StopLine.h"
+#include "vector_map_msgs/VectorArray.h"
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -60,8 +60,7 @@
 
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower_msgs/LaneArray.h"
-#include "vehicle_socket/CanInfo.h"
+#include "autoware_msgs/CanInfo.h"
 #include <visualization_msgs/MarkerArray.h>
 
 #include "MappingHelpers.h"
@@ -196,7 +195,7 @@ private:
   void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-  void callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
+  void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
   void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 
   void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);

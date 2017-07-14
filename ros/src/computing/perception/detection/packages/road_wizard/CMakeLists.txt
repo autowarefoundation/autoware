@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   cv_bridge
-  message_generation
   sensor_msgs
   tf
   libvectormap
@@ -20,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   waypoint_follower
   cmake_modules
+  autoware_msgs
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -37,20 +37,6 @@ endif()
 pkg_check_modules(Qt5Core REQUIRED Qt5Core)
 pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
 
-## Generate added messages and services with any dependencies listed here
-add_message_files(FILES
-  ExtractedPosition.msg
-  Signals.msg
-  ValueSet.msg
-  ColorSet.msg
-  TunedResult.msg
-  )
-
-generate_messages(DEPENDENCIES
-  sensor_msgs
-  std_msgs
-  )
-
 
 ###################################
 ## catkin specific configuration ##
@@ -63,7 +49,7 @@ include_directories(
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager vector_map_server geometry_msgs waypoint_follower
+  CATKIN_DEPENDS std_msgs message_runtime libvectormap autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -73,7 +59,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 add_library(libcontext lib/Context.cpp)
 add_dependencies(libcontext
-  road_wizard_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS})
 
 
 ### region_tlr ###
@@ -89,8 +75,8 @@ target_link_libraries(region_tlr
 )
 
 add_dependencies(region_tlr
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ### feat_proj ###
 include_directories(
@@ -111,11 +97,15 @@ target_link_libraries(feat_proj
 )
 
 add_dependencies(feat_proj
+<<<<<<< HEAD
+  ${catkin_EXPORTED_TARGETS}
+=======
 runtime_manager_generate_messages_cpp
 road_wizard_generate_messages_cpp
 vector_map_server_generate_messages_cpp
 geometry_msgs_generate_messages_cpp
 waypoint_follower_generate_messages_cpp
+>>>>>>> fe3055867d3a8cd8990ab0541b7a69538eb1c322
 )
 
 ### tlr_tuner ###

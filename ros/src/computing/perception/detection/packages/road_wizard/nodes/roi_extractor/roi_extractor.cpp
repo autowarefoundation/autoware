@@ -14,7 +14,7 @@
 
 
 #include "Context.h"
-#include "road_wizard/Signals.h"
+#include <autoware_msgs/Signals.h>
 
 
 void RoiExtractor::ImageRawCallback(const sensor_msgs::Image &image) {
@@ -27,7 +27,7 @@ void RoiExtractor::ImageRawCallback(const sensor_msgs::Image &image) {
 } // void RoiExtractor::ImageRawCallback()
 
 
-void RoiExtractor::RoiSignalCallback(const road_wizard::Signals::ConstPtr &extracted_pos) {
+void RoiExtractor::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
   // If frame image has not been updated, do nothing
   if (frame_timestamp_ == previous_timestamp_) {
     return;

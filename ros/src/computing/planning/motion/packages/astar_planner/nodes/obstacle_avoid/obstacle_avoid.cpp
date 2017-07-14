@@ -31,14 +31,14 @@
 #include "astar_search.h"
 #include "search_info_ros.h"
 
-#include "waypoint_follower_msgs/LaneArray.h"
+#include <autoware_msgs/LaneArray.h>
 
 namespace
 {
-waypoint_follower_msgs::lane createPublishWaypoints(const waypoint_follower_msgs::lane& ref_lane, int closest_waypoint,
+autoware_msgs::lane createPublishWaypoints(const autoware_msgs::lane& ref_lane, int closest_waypoint,
                                                     int size)
 {
-  waypoint_follower_msgs::lane follow_lane;
+  autoware_msgs::lane follow_lane;
 
   follow_lane.header = ref_lane.header;
   follow_lane.increment = ref_lane.increment;
@@ -56,14 +56,14 @@ waypoint_follower_msgs::lane createPublishWaypoints(const waypoint_follower_msgs
 }
 
 void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner::SearchInfo& search_info, int size,
-                          waypoint_follower_msgs::lane* avoid_lane, int* end_of_avoid_index)
+                          autoware_msgs::lane* avoid_lane, int* end_of_avoid_index)
 {
   int closest_waypoint_index = search_info.getClosestWaypointIndex();
 
   avoid_lane->waypoints.clear();
 
   // Get global lane
-  const waypoint_follower_msgs::lane& current_lane = search_info.getCurrentWaypoints();
+  const autoware_msgs::lane& current_lane = search_info.getCurrentWaypoints();
   avoid_lane->header = current_lane.header;
   avoid_lane->increment = current_lane.increment;
 
@@ -81,7 +81,7 @@ void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner:
   // Set waypoints for avoiding
   for (const auto& pose : astar_path.poses)
   {
-    waypoint_follower_msgs::waypoint wp;
+    autoware_msgs::waypoint wp;
     wp.pose = pose;
     wp.twist.twist.linear.x = avoid_velocity;
 
@@ -131,12 +131,12 @@ int main(int argc, char** argv)
 
   // ROS publishers
   ros::Publisher path_pub = n.advertise<nav_msgs::Path>("astar_path", 1, true);
-  ros::Publisher waypoints_pub = n.advertise<waypoint_follower_msgs::lane>("safety_waypoints", 1, true);
+  ros::Publisher waypoints_pub = n.advertise<autoware_msgs::lane>("safety_waypoints", 1, true);
 
   ros::Rate loop_rate(10);
 
   // variables for avoidance
-  waypoint_follower_msgs::lane avoid_lane;
+  autoware_msgs::lane avoid_lane;
   int end_of_avoid_index = -1;
   bool avoidance = false;
   while (ros::ok())
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
     // Follow the original waypoints
     if (!avoidance)
     {
-      waypoint_follower_msgs::lane publish_lane;
+      autoware_msgs::lane publish_lane;
       publish_lane = createPublishWaypoints(search_info.getSubscribedWaypoints(), closest_waypoint, 100);
       waypoints_pub.publish(publish_lane);
     }
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
     else
     {
       // create waypoints from closest on avoid_lane
-      waypoint_follower_msgs::lane publish_lane;
+      autoware_msgs::lane publish_lane;
       publish_lane = createPublishWaypoints(avoid_lane, closest_waypoint, 100);
       waypoints_pub.publish(publish_lane);
 

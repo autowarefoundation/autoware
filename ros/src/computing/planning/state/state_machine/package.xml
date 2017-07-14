@@ -10,7 +10,7 @@
   
   <depend>roscpp</depend>
   <depend>geometry_msgs</depend>
-  <depend>runtime_manager</depend>
+  <depend>autoware_msgs</depend>
 
   <export>
   </export>

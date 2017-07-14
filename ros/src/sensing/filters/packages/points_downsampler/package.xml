@@ -10,7 +10,6 @@
   
   <build_depend>sensor_msgs</build_depend>
   <build_depend>velodyne_pointcloud</build_depend>
-  <build_depend>runtime_manager</build_depend>
   <build_depend>message_generation</build_depend>
 
   <run_depend>sensor_msgs</run_depend>

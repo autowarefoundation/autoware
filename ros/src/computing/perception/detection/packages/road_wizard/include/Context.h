@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <opencv2/core/core.hpp>
-#include "road_wizard/Signals.h"
+#include <autoware_msgs/Signals.h>
 
 enum LightState { GREEN, YELLOW, RED, UNDEFINED };
 
@@ -13,7 +13,7 @@ public:
 	Context(cv::Point aRedCenter, cv::Point aYellowCenter, cv::Point aGreenCenter,
 		int aLampRadius, cv::Point aTopLeft, cv::Point aBotRight);
         static void SetContexts(std::vector<Context> &contexts, 
-                                const road_wizard::Signals::ConstPtr &extracted_pos,
+                                const autoware_msgs::Signals::ConstPtr &extracted_pos,
                                 const int frame_row,
                                 const int frame_colmuns);
 

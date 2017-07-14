@@ -35,7 +35,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigVoxelGridFilter.h>
+#include "autoware_msgs/ConfigVoxelGridFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
@@ -62,7 +62,7 @@ static std::string filename;
 static std::string POINTS_TOPIC;
 static double measurement_range = MAX_MEASUREMENT_RANGE;
 
-static void config_callback(const runtime_manager::ConfigVoxelGridFilter::ConstPtr& input)
+static void config_callback(const autoware_msgs::ConfigVoxelGridFilter::ConstPtr& input)
 {
   voxel_leaf_size = input->voxel_leaf_size;
   measurement_range = input->measurement_range;

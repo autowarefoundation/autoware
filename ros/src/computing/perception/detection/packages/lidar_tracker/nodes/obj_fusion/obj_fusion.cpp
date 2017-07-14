@@ -1,10 +1,10 @@
-#include <cv_tracker_msgs/obj_label.h>
 #include <float.h>
 #include <geometry_msgs/Point.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 #include <math.h>
 #include <mutex>
 #include <ros/ros.h>
@@ -28,7 +28,7 @@ ros::Publisher cluster_class_pub;
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
 static std_msgs::Header sensor_header;
-static std::vector<lidar_tracker::CloudCluster> v_cloud_cluster;
+static std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
 static ros::Time obj_pose_timestamp;
 static double threshold_min_dist;
 static tf::StampedTransform transform;
@@ -58,7 +58,7 @@ static double euclid_distance(const geometry_msgs::Point pos1,
 /* fusion reprojected position and pointcloud centroids */
 static void fusion_objects(void) {
   obj_label_t obj_label_current;
-  std::vector<lidar_tracker::CloudCluster> v_cloud_cluster_current;
+  std::vector<autoware_msgs::CloudCluster> v_cloud_cluster_current;
   std_msgs::Header header = sensor_header;
   std::vector<geometry_msgs::Point> centroids_current;
 
@@ -83,7 +83,7 @@ static void fusion_objects(void) {
     pub_msg.header = header;
     std_msgs::Time time;
     obj_pose_pub.publish(pub_msg);
-    lidar_tracker::CloudClusterArray cloud_clusters_msg;
+    autoware_msgs::CloudClusterArray cloud_clusters_msg;
     cloud_clusters_msg.header = header;
     cluster_class_pub.publish(cloud_clusters_msg);
 
@@ -121,7 +121,7 @@ static void fusion_objects(void) {
   /* Publish marker with centroids coordinates */
   jsk_recognition_msgs::BoundingBoxArray pub_msg;
   pub_msg.header = header;
-  lidar_tracker::CloudClusterArray cloud_clusters_msg;
+  autoware_msgs::CloudClusterArray cloud_clusters_msg;
   cloud_clusters_msg.header = header;
 
   for (unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
@@ -154,7 +154,7 @@ static void fusion_objects(void) {
   obj_pose_timestamp_pub.publish(time);
 }
 
-void obj_label_cb(const cv_tracker_msgs::obj_label &obj_label_msg) {
+void obj_label_cb(const autoware_msgs::obj_label &obj_label_msg) {
   object_type = obj_label_msg.type;
   obj_pose_timestamp = obj_label_msg.header.stamp;
 
@@ -192,7 +192,7 @@ void obj_label_cb(const cv_tracker_msgs::obj_label &obj_label_msg) {
 } /* void obj_label_cb() */
 
 void cluster_centroids_cb(
-    const lidar_tracker::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr) {
+    const autoware_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr) {
   LOCK(mtx_centroids);
   centroids.clear();
   v_cloud_cluster.clear();
@@ -203,7 +203,7 @@ void cluster_centroids_cb(
   try {
     trf_listener.lookupTransform("map", "velodyne", ros::Time(0), transform);
     for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i) {
-      lidar_tracker::CloudCluster cloud_cluster =
+      autoware_msgs::CloudCluster cloud_cluster =
           in_cloud_cluster_array_ptr->clusters.at(i);
       /* convert centroids coodinate from velodyne frame to map frame */
       tf::Vector3 pt(cloud_cluster.centroid_point.point.x,
@@ -264,7 +264,7 @@ int main(int argc, char *argv[]) {
       "/cloud_clusters", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
   obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
       "obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
-  cluster_class_pub = n.advertise<lidar_tracker::CloudClusterArray>(
+  cluster_class_pub = n.advertise<autoware_msgs::CloudClusterArray>(
       "/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
   obj_pose_timestamp_pub =
       n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);

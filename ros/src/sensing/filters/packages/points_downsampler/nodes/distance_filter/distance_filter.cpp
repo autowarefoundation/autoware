@@ -35,7 +35,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigDistanceFilter.h>
+#include "autoware_msgs/ConfigDistanceFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
@@ -62,7 +62,7 @@ static std::string filename;
 static std::string POINTS_TOPIC;
 static double measurement_range = MAX_MEASUREMENT_RANGE;
 
-static void config_callback(const runtime_manager::ConfigDistanceFilter::ConstPtr& input)
+static void config_callback(const autoware_msgs::ConfigDistanceFilter::ConstPtr& input)
 {
   sample_num = input->sample_num;
   measurement_range = input->measurement_range;

@@ -65,8 +65,8 @@
 #include <pcl/filters/voxel_grid.h>
 #endif
 
-#include <runtime_manager/ConfigNdtMapping.h>
-#include <runtime_manager/ConfigNdtMappingOutput.h>
+#include "autoware_msgs/ConfigNdtMapping.h"
+#include "autoware_msgs/ConfigNdtMappingOutput.h"
 
 struct pose {
     double x;
@@ -125,7 +125,7 @@ static bool _use_openmp = false;
 
 static double fitness_score;
 
-static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
+static void param_callback(const autoware_msgs::ConfigNdtMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
@@ -145,7 +145,7 @@ static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& in
   std::cout << "min_add_scan_shift: " << min_add_scan_shift << std::endl;
 }
 
-static void output_callback(const runtime_manager::ConfigNdtMappingOutput::ConstPtr& input)
+static void output_callback(const autoware_msgs::ConfigNdtMappingOutput::ConstPtr& input)
 {
   double filter_res = input->filter_res;
   std::string filename = input->filename;

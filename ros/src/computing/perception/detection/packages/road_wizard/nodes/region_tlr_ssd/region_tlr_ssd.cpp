@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include <runtime_manager/traffic_light.h>
+#include <autoware_msgs/traffic_light.h>
 #include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -70,7 +70,7 @@ void RegionTlrSsdRosNode::ImageRawCallback(const sensor_msgs::Image &image) {
 // ==========================================
 // Callback function to acquire extracted_pos
 // ==========================================
-void RegionTlrSsdRosNode::RoiSignalCallback(const road_wizard::Signals::ConstPtr &extracted_pos) {
+void RegionTlrSsdRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
   static ros::Time previous_timestamp;
   // If frame has not been prepared, abort this callback
   if (frame_.empty() ||
@@ -154,7 +154,7 @@ void RegionTlrSsdRosNode::StartSubscribersAndPublishers() {
                                                 this);
 
   // Register publishers
-  signal_state_publisher        = node_handle.advertise<runtime_manager::traffic_light>("light_color", 1);
+  signal_state_publisher        = node_handle.advertise<autoware_msgs::traffic_light>("light_color", 1);
   signal_state_string_publisher = node_handle.advertise<std_msgs::String>("/sound_player", 1);
   marker_publisher              = node_handle.advertise<visualization_msgs::MarkerArray>("tlr_result", 1, kAdvertiseInLatch_);
   superimpose_image_publisher   = node_handle.advertise<sensor_msgs::Image>("tlr_superimpose_image", 1);
@@ -186,10 +186,10 @@ LightState RegionTlrSsdRosNode::DetermineState(LightState previous_state,
 
 
 // =================================================================
-// Publish recognition result as runtime_manager::traffic_light type
+// Publish recognition result as autoware_msgs::traffic_light type
 // =================================================================
 void RegionTlrSsdRosNode::PublishTrafficLight(std::vector<Context> contexts) {
-  runtime_manager::traffic_light topic;
+  autoware_msgs::traffic_light topic;
   static int32_t previous_state = kTrafficLightUnknown;
   topic.traffic_light = kTrafficLightUnknown;
   for (const auto ctx: contexts) {
