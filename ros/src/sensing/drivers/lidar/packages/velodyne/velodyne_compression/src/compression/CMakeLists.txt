@@ -15,10 +15,10 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   velodyne_msgs
   pcl_conversions
-  OpenCV
   compression_msgs
   )
 
+find_package(OpenCV REQUIRED )
 
 
 set(${compression}_CATKIN_DEPS
