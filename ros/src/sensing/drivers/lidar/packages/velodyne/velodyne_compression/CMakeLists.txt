@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(compression)
+project(velodyne_compression)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -15,10 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   velodyne_msgs
   pcl_conversions
-  compression_msgs
   )
-
-find_package(OpenCV REQUIRED )
+find_package( OpenCV REQUIRED )
 
 
 set(${compression}_CATKIN_DEPS
@@ -57,6 +55,12 @@ set(${compression}_CATKIN_DEPS
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
+add_message_files(
+  DIRECTORY msg
+  FILES
+  CompressedPacket.msg
+)
+generate_messages(DEPENDENCIES std_msgs)
 
 ## To declare and build messages, services or actions from within this
 ## package, follow these steps:
@@ -129,7 +133,7 @@ set(${compression}_CATKIN_DEPS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES particle_filter
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS message_runtime std_msgs
   #roscpp rospy std_msgs tf visualization_msgs
   DEPENDS system_lib message_runtime
 )
@@ -267,3 +271,12 @@ target_link_libraries(recon2packet ${libpcap_LIBRARIES})
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+
+
+
+
+
+
+
+

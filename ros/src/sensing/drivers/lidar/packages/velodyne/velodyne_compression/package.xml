@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>compression</name>
+  <name>velodyne_compression</name>
   <version>0.0.0</version>
-  <description>The compression package</description>
+  <description>The velodyne_compression package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
