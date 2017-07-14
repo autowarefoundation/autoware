@@ -37,16 +37,17 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
+#include "geometry_msgs/PoseStamped.h"
+#include "visualization_msgs/MarkerArray.h"
+
 #include "autoware_msgs/image_obj.h"
 #include "autoware_msgs/PointsImage.h"
 #include "autoware_msgs/image_obj_ranged.h"
 #include "autoware_msgs/image_obj_tracked.h"
-#include "geometry_msgs/PoseStamped.h"
 #include "autoware_msgs/obj_label.h"
 #include "autoware_msgs/centroids.h"
-#include "visualization_msgs/MarkerArray.h"
-#include "synchronization/time_monitor.h"
-#include "synchronization/time_diff.h"
+#include "autoware_msgs/Sync_time_monitor.h"
+#include "autoware_msgs/Sync_time_diff.h"
 
 /* ----var---- */
 /* common var */
@@ -195,7 +196,7 @@ public:
     void sync_obj_label_callback(const autoware_msgs::image_obj_tracked::ConstPtr& sync_image_obj_tracked_msg);
     void sync_obj_pose_callback(const autoware_msgs::obj_label::ConstPtr& sync_obj_label_msg);
     // time difference
-    void time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg);
+    void time_diff_callback(const autoware_msgs::Sync_time_diff::ConstPtr& time_diff_msg);
     void run();
 };
 
@@ -210,7 +211,7 @@ TimeManager::TimeManager(int buffer_size) {
         is_vscan_image_ = false;
     }
 
-    time_monitor_pub = nh.advertise<synchronization::time_monitor> ("/times", 10);
+    time_monitor_pub = nh.advertise<autoware_msgs::Sync_time_monitor> ("/times", 10);
     image_raw_sub = nh.subscribe("/sync_drivers/image_raw", 10, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/sync_drivers/points_raw", 10, &TimeManager::points_raw_callback, this);
     points_image_sub = nh.subscribe("/points_image", 10, &TimeManager::points_image_callback, this);
@@ -328,7 +329,7 @@ void TimeManager::sync_obj_pose_callback(const autoware_msgs::obj_label::ConstPt
 }
 
 /* time difference */
-void TimeManager::time_diff_callback(const synchronization::time_diff::ConstPtr& time_diff_msg) {
+void TimeManager::time_diff_callback(const autoware_msgs::Sync_time_diff::ConstPtr& time_diff_msg) {
     ros::Time sensors_time_diff;
     double lidar = (double)time_diff_msg->lidar.sec + (double)time_diff_msg->lidar.nsec/1000000000.0L;
     double camera = (double)time_diff_msg->camera.sec + (double)time_diff_msg->camera.nsec/1000000000.0L;
@@ -368,7 +369,7 @@ void TimeManager::obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_tim
     obj_pose_.push_front(obj_pose_timestamp_msg->data, get_walltime_now());
     static ros::Time pre_sensor_time;
 
-    synchronization::time_monitor time_monitor_msg;
+    autoware_msgs::Sync_time_monitor time_monitor_msg;
     time_monitor_msg.header.frame_id = "0";
     time_monitor_msg.header.stamp = ros::Time::now();
 

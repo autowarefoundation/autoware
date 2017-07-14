@@ -204,7 +204,6 @@ if (jsk_recognition_msgs_FOUND)
 endif (jsk_recognition_msgs_FOUND)
 
 ## klt_tracker ##
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ADD_EXECUTABLE(klt_track
   nodes/klt_track/klt_track.cpp
   
@@ -231,7 +230,6 @@ TARGET_LINK_LIBRARIES(klt_track
 ADD_DEPENDENCIES(klt_track
   libdpm_ocv_generate_messages_cpp
 )
-endif()
 ############# RCNN#############
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
@@ -322,8 +320,9 @@ if(EXISTS "${YOLO2_PATH}")
   set(YOLO2_USE_CUDNN 0)
   set(YOLO2_USE_GPU 1)
   
-  list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-  list(APPEND CUDA_NVCC_FLAGS "-I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
+  list(APPEND CUDA_NVCC_FLAGS "--std=c++11 -I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
+  SET(CUDA_PROPAGATE_HOST_FLAGS OFF)    
+
 
   cuda_add_library(yolo2lib_wa
     ${YOLO2_PATH}/src/activation_kernels.cu

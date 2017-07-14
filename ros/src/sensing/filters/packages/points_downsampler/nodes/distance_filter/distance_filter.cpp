@@ -60,7 +60,7 @@ static std::ofstream ofs;
 static std::string filename;
 
 static std::string POINTS_TOPIC;
-static double measurement_range;
+static double measurement_range = MAX_MEASUREMENT_RANGE;
 
 static void config_callback(const autoware_msgs::ConfigDistanceFilter::ConstPtr& input)
 {

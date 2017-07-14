@@ -81,7 +81,11 @@ add_message_files(
   lamp_cmd.msg
   steer_cmd.msg
   traffic_light.msg
-  
+ 
+## Sync
+  Sync_time_monitor.msg
+  Sync_time_diff.msg
+ 
 )
 
 

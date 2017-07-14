@@ -31,7 +31,7 @@
 #ifndef VELOCITY_SET_PATH_H
 #define VELOCITY_SET_PATH_H
 
-#include "autoware_msgs/lane.h"
+#include <autoware_msgs/lane.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 class VelocitySetPath
 {
@@ -58,6 +58,7 @@ class VelocitySetPath
   void changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint);
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
+  void resetFlag();
 
   // ROS Callbacks
   void waypointsCallback(const autoware_msgs::laneConstPtr& msg);

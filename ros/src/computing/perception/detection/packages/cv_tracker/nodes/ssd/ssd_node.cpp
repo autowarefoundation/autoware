@@ -37,8 +37,12 @@
 
 #include <rect_class_score.h>
 
-#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
+#if (CV_MAJOR_VERSION <= 2)
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 #include "ssd_detector.h"
 

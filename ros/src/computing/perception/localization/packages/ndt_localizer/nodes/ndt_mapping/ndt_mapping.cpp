@@ -515,7 +515,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   if (_use_imu == true && _use_odom == true)
     imu_odom_calc(current_scan_time);
-  if(_use_imu == true && _use_odom == true)
+  if (_use_imu == true && _use_odom == false)
     imu_calc(current_scan_time);
   if (_use_imu == false && _use_odom == true)
     odom_calc(current_scan_time);

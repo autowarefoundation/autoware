@@ -32,6 +32,10 @@ namespace integrated_viewer
     // Initialize Form
     ui_.setupUi(this);
 
+    // Set point size parameter
+    ui_.point_size_spin_box_->setMinimum(2); // minimum point size is 2x2
+    ui_.point_size_spin_box_->setValue(3);   // Set default size to 3
+
     // Load default image
     default_image_ = cv::imread(STR(IMAGE_VIEWER_DEFAULT_IMAGE));
 
@@ -325,7 +329,8 @@ namespace integrated_viewer
       rects_drawer_.DrawImageObjTracked(image_obj_tracked_msg_, viewed_image_);
 
       // Draw points on the image
-      points_drawer_.Draw(points_msg_, viewed_image_);
+      int point_size = ui_.point_size_spin_box_->value();
+      points_drawer_.Draw(points_msg_, viewed_image_, point_size);
 
       // Draw lane on the image
       lane_drawer_.Draw(lane_msg_, viewed_image_);

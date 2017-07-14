@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>microstrain_driver</name>
+  <version>0.0.1</version>
+  <description>The microstrain_driver package</description>
+
+  <author email="briansbingham@gmail.com">Brian Bingham</author>
+  <maintainer email="briansbingham@gmail.com">Brian Bingham</maintainer>
+  <maintainer email="yuki@ertl.jp">Yuki KITSUKAWA</maintainer>
+
+  <license>GPL</license>
+  <url type="website">http://wiki.ros.org/microstrain_3dm_gx5_45</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>cmake_modules</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+
+</package>
