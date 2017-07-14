@@ -83,7 +83,7 @@ from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
-from ndt_localizer.msg import ndt_stat
+from autoware_msgs.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
 from autoware_msgs.msg import accel_cmd

@@ -6,8 +6,8 @@
   <maintainer email="syouji@axe.bz">syouji</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>runtime_manager</build_depend>
-  <run_depend>runtime_manager</run_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <run_depend>autoware_msgs</run_depend>
   <export>
   </export>
 </package>

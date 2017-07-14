@@ -44,8 +44,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <cv_tracker_msgs/image_obj_tracked.h>
-#include <cv_tracker_msgs/image_obj.h>
+#include <autoware_msgs/image_obj_tracked.h>
+#include <autoware_msgs/image_obj.h>
 
 //DPM related
 static std::vector<cv::Rect> cars;		//objects detected
@@ -215,7 +215,7 @@ static void image_viewer_callback(const sensor_msgs::Image& image_source)
 	_drawing = false;
 }
 
-static void image_obj_update_cb(const cv_tracker_msgs::image_obj& image_objs)
+static void image_obj_update_cb(const autoware_msgs::image_obj& image_objs)
 {
 	if(_drawing)
 		return;
@@ -245,7 +245,7 @@ static void image_obj_update_cb(const cv_tracker_msgs::image_obj& image_objs)
 	}
 }
 
-static void image_obj_updater_cb_tracked(const cv_tracker_msgs::image_obj_tracked& image_objs_tracked_msg)
+static void image_obj_updater_cb_tracked(const autoware_msgs::image_obj_tracked& image_objs_tracked_msg)
 {
 	if(_drawing)
 		return;

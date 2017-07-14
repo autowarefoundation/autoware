@@ -36,7 +36,7 @@
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/CompressedImage.h>
-#include "cv_tracker_msgs/image_obj_ranged.h"
+#include "autoware_msgs/image_obj_ranged.h"
 #include <math.h>
 #include <float.h>
 #define NO_DATA 0
@@ -49,8 +49,8 @@ static IplImage temp;
 static IplImage *image;
 static double ratio = 1;	//resize ratio
 
-static cv_tracker_msgs::image_obj_ranged car_fused_objects;
-static cv_tracker_msgs::image_obj_ranged pedestrian_fused_objects;
+static autoware_msgs::image_obj_ranged car_fused_objects;
+static autoware_msgs::image_obj_ranged pedestrian_fused_objects;
 
 static const int OBJ_RECT_THICKNESS = 3;
 static void showImage();
@@ -64,7 +64,7 @@ static inline bool isNearlyNODATA(float x)
 }
 
 void showRects(IplImage *Image,
-               std::vector<cv_tracker_msgs::image_rect_ranged> objects,
+               std::vector<autoware_msgs::image_rect_ranged> objects,
                double ratio,
                CvScalar col)
 {
@@ -80,7 +80,7 @@ void showRects(IplImage *Image,
     }
 }
 
-static void obj_carCallback(const cv_tracker_msgs::image_obj_ranged& fused_objects)
+static void obj_carCallback(const autoware_msgs::image_obj_ranged& fused_objects)
 {
     if(image == NULL){
       return;
@@ -89,7 +89,7 @@ static void obj_carCallback(const cv_tracker_msgs::image_obj_ranged& fused_objec
     showImage();
 }
 
-static void obj_personCallback(const cv_tracker_msgs::image_obj_ranged& fused_objects)
+static void obj_personCallback(const autoware_msgs::image_obj_ranged& fused_objects)
 {
     if(image == NULL){
       return;
