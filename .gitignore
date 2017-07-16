@@ -31,3 +31,4 @@ cmake-build-debug/
 # clang-format
 .clang-format
 
+.DS_Store
