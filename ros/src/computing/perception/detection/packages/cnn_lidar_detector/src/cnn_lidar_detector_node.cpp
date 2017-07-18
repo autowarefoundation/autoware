@@ -73,6 +73,7 @@ class RosLidarDetectorApp
 	ros::Publisher 	publisher_depth_image_;
 	ros::Publisher 	publisher_height_image_;
 	ros::Publisher 	publisher_intensity_image_;
+	ros::Publisher 	publisher_objectness_image_;
 	ros::NodeHandle node_handle_;
 
 	//Caffe based Object Detection ConvNet
@@ -83,10 +84,11 @@ class RosLidarDetectorApp
 	int 			gpu_device_id_;
 	const double 	pi_ = 3.14159265;
 
-	double 			horizontal_res_;
-	double 			vertical_res_;
+	float 			horizontal_res_;
+	float 			vertical_res_;
 	unsigned int 	image_width_;
 	unsigned int 	image_height_;
+	double			score_threshold_;
 
 	cv::Mat			projection_mean_depth_;//single channel float image subtrahend for depth projection
 	cv::Mat			projection_mean_height_;//single channel float image subtrahend for height projection
@@ -107,12 +109,12 @@ class RosLidarDetectorApp
 		for(unsigned int i=0; i<in_point_cloud->points.size(); i++)
 		{
 			pcl::PointXYZI point = in_point_cloud->points[i];
-			if (point.x > 0. && point.x <70.)
+			if (point.x > 5. && point.x <70.)
 			{
-				double theta = atan2(point.y, point.x);
-				double length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
-				double angle = asin(point.z/length);
-				double depth = sqrt(point.x*point.x + point.y*point.y);
+				float theta = atan2(point.y, point.x);
+				float length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
+				float angle = asin(point.z/length);
+				float depth = sqrt(point.x*point.x + point.y*point.y);
 				unsigned int image_x = floor((theta/horizontal_res_) + 250.5);
 				unsigned int image_y = floor((angle/vertical_res_) + 71.);
 
@@ -120,9 +122,9 @@ class RosLidarDetectorApp
 					 (image_y >= 0) && (image_y < image_height_)
 					) //check the projection is inside the image
 				{
-					out_depth_image.at<double>(image_y, image_x) = depth;
-					out_height_image.at<double>(image_y, image_x) = point.z;
-					out_intensity_image.at<double>(image_y, image_x) = point.intensity;
+					out_depth_image.at<float>(image_y, image_x) = depth;
+					out_height_image.at<float>(image_y, image_x) = point.z;
+					out_intensity_image.at<float>(image_y, image_x) = point.intensity;
 					//store correspondence between cloud and image coords
 					out_points2d[i] = cv::Point2d(image_x, image_y);
 					out_points_3d[i] = point;
@@ -155,18 +157,18 @@ class RosLidarDetectorApp
 		in_publisher.publish(pub_image_msg);
 	}
 
-	void subtract_image(cv::Mat& in_out_minuend_image, double in_subtrahend)
+	void subtract_image(cv::Mat& in_out_minuend_image, float in_subtrahend)
 	{
 		for(unsigned int y = 0; y < in_out_minuend_image.rows; y++)
 		{
 			for(unsigned int x = 0; x < in_out_minuend_image.cols; x++)
 			{
-				in_out_minuend_image.at<double>(y, x) -= in_subtrahend;
+				in_out_minuend_image.at<float>(y, x) -= in_subtrahend;
 			}
 		}
 	}
 
-	void divide_image(cv::Mat& in_out_dividend, double in_divisor)
+	void divide_image(cv::Mat& in_out_dividend, float in_divisor)
 	{
 		if(fabs(in_divisor) < 0.00001)
 		{
@@ -177,7 +179,7 @@ class RosLidarDetectorApp
 		{
 			for(unsigned int x = 0; x < in_out_dividend.cols; x++)
 			{
-				in_out_dividend.at<double>(y, x) /= in_divisor;
+				in_out_dividend.at<float>(y, x) /= in_divisor;
 			}
 		}
 	}
@@ -188,10 +190,10 @@ class RosLidarDetectorApp
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 		//get cloud and project to image
 
-		cv::Mat projected_cloud_depth(image_height_, image_width_, CV_64F, 0.);//depth image
-		cv::Mat projected_cloud_height(image_height_, image_width_, CV_64F, 0.);//height image
-		cv::Mat projected_cloud_intensity(image_height_, image_width_, CV_64F, 0.);//intensity image
-		cv::Mat resulting_objectness;//height image
+		cv::Mat projected_cloud_depth(image_height_, image_width_, CV_32F, 0.);//depth image
+		cv::Mat projected_cloud_height(image_height_, image_width_, CV_32F, 0.);//height image
+		cv::Mat projected_cloud_intensity(image_height_, image_width_, CV_32F, 0.);//intensity image
+		cv::Mat resulting_objectness;//objectness image
 
 		std::vector<cv::Point2d> image_points;
 		std::vector<pcl::PointXYZI> cloud_points;
@@ -207,10 +209,6 @@ class RosLidarDetectorApp
 								image_points,
 								cloud_points);
 
-		lidar_detector_->Detect(projected_cloud_depth,
-								projected_cloud_height,
-								resulting_objectness);
-
 		// subtract mean
 		subtract_image(projected_cloud_depth, projection_mean_depth_.at<float>(0));
 		subtract_image(projected_cloud_height, projection_mean_height_.at<float>(0));
@@ -220,6 +218,9 @@ class RosLidarDetectorApp
 
 		//use image for CNN forward
 
+		lidar_detector_->Detect(projected_cloud_depth,
+								projected_cloud_height,
+								resulting_objectness);
 
 		cv::Mat ros_depth_image, ros_height_image, ros_intensity_image; //mats for publishing
 
@@ -231,6 +232,7 @@ class RosLidarDetectorApp
 		publish_image(publisher_depth_image_, ros_depth_image, current_sensor_cloud_ptr->header);
 		publish_image(publisher_height_image_, ros_height_image, current_sensor_cloud_ptr->header);
 		publish_image(publisher_intensity_image_, ros_intensity_image, current_sensor_cloud_ptr->header);
+		publish_image(publisher_objectness_image_, resulting_objectness, current_sensor_cloud_ptr->header);
 		
 	}//end cloud_callback
 
@@ -319,10 +321,11 @@ public:
 							ros::package::getPath("cnn_lidar_detector")+"/data/lidar_detector.caffemodel");
 		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
 
-		private_node_handle.param("use_gpu", use_gpu_, true);	ROS_INFO("use_gpu: %d", use_gpu_);
-		private_node_handle.param("gpu_device_id", gpu_device_id_, 0);	ROS_INFO("gpu_device_id: %d", gpu_device_id_);
+		private_node_handle.param("use_gpu", use_gpu_, true);					ROS_INFO("use_gpu: %d", use_gpu_);
+		private_node_handle.param("gpu_device_id", gpu_device_id_, 0);			ROS_INFO("gpu_device_id: %d", gpu_device_id_);
+		private_node_handle.param("score_threshold", score_threshold_, 0.9);	ROS_INFO("score_threshold: %f", score_threshold_);
 
-		lidar_detector_ = new CnnLidarDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_);
+		lidar_detector_ = new CnnLidarDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_, score_threshold_);
 
 		if (NULL == lidar_detector_)
 		{
@@ -336,6 +339,7 @@ public:
 		publisher_depth_image_= node_handle_.advertise<sensor_msgs::Image>("/image_depth",1);
 		publisher_height_image_= node_handle_.advertise<sensor_msgs::Image>("/image_height",1);
 		publisher_intensity_image_= node_handle_.advertise<sensor_msgs::Image>("/image_intensity",1);
+		publisher_objectness_image_= node_handle_.advertise<sensor_msgs::Image>("/image_objectness",1);
 
 		ROS_INFO("Subscribing to... %s", cloud_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(cloud_topic_str, 1, &RosLidarDetectorApp::cloud_callback, this);
@@ -357,6 +361,7 @@ public:
 		use_gpu_ 		= true;
 
 		gpu_device_id_ 	= 0;
+		score_threshold_ = 0.5;
 
 		//TODO: parametrize these to enable different lidar models to be projected.
 		horizontal_res_ = 0.32 * pi_ /180.;//Angular Resolution (Horizontal/Azimuth)

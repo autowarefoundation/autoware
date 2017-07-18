@@ -32,8 +32,10 @@
 void CnnLidarDetector::Detect(const cv::Mat& in_depth_image, const cv::Mat& in_height_image, cv::Mat& out_objectness_image)
 {
 	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
-	input_layer->Reshape(1, num_channels_, input_geometry_.height,
-			input_geometry_.width);
+	input_layer->Reshape(1,
+						num_channels_,
+						input_geometry_.height,
+						input_geometry_.width);
 	/* Forward dimension change to all layers. */
 	net_->Reshape();
 
@@ -44,7 +46,65 @@ void CnnLidarDetector::Detect(const cv::Mat& in_depth_image, const cv::Mat& in_h
 
 	net_->Forward();
 
+	GetNetworkResults(out_objectness_image);
 
+}
+
+void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image)
+{
+	caffe::Blob<float>* boxes_blob = net_->output_blobs().at(0);//0 boxes
+	caffe::Blob<float>* objectness_blob = net_->output_blobs().at(1);//1 objectness
+
+	//output layer     0  1    2     3
+	//prob 		shape  1 04 height width
+	//bb_score 	shape  1 24 height width
+	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 24 channel image, but instead is " << boxes_blob->shape(1);
+	CHECK_EQ(objectness_blob->shape(1), 4) << "The output prob layer should be 4 channel image, but instead is " << objectness_blob->shape(1) ;
+
+	std::vector<cv::Mat> objectness_channels;
+	int width = objectness_blob->shape(3);
+	int height = objectness_blob->shape(2);
+	float* objectness_ptr = objectness_blob->mutable_cpu_data();//pointer to the prob layer
+	//copy each channel(class) from the output layer to a Mat
+	for (int i = 0; i < objectness_blob->shape(1); ++i)
+	{
+		cv::Mat channel(height, width, CV_32FC1, objectness_ptr);
+		cv::normalize(channel, channel, 1, 0, cv::NORM_MINMAX);
+		objectness_channels.push_back(channel);
+		objectness_ptr += width * height;
+	}
+
+	//cv::imshow("Channel 1", objectness_channels[1]);
+	//cv::imshow("Channel 2", objectness_channels[2]);
+	//cv::imshow("Channel 3", objectness_channels[3]);
+	//cv::waitKey(10);
+
+	//check each pixel of each channel and assign color depending threshold
+	cv::Mat bgr_channels(height, width, CV_8UC3, cv::Scalar(0,0,0));
+
+	for(unsigned int h = 0; h < height; h++)
+	{
+		for(unsigned int w = 0; w < width; w++)
+		{
+			//0 nothing
+			//1 car, red
+			//2 person, green
+			//3 bike, blue
+			//BGR Image
+			if (
+					objectness_channels[1].at<float>(h,w) > score_threshold_
+				)
+				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 0, 255);
+			if (objectness_channels[2].at<float>(h,w) > score_threshold_
+				)
+				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 255, 0);
+			if (objectness_channels[3].at<float>(h,w) > score_threshold_
+				)
+				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(255, 0, 0);
+		}
+	}
+
+	cv::flip(bgr_channels, out_objectness_image,-1);
 }
 
 void CnnLidarDetector::PreProcess(const cv::Mat& in_depth_image, const cv::Mat& in_height_image, std::vector<cv::Mat>* in_out_channels)
@@ -63,10 +123,10 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_depth_image, const cv::Mat& 
 		else
 			height_resized = in_height_image;
 
-	//depth and heigh images are already preprocessed
-	//put each corrected mat geometry and onto the correct input layer type pointers
-	depth_resized.convertTo(in_out_channels->at(0), CV_32FC1);
-	height_resized.convertTo(in_out_channels->at(1), CV_32FC1);
+	//depth and height images are already preprocessed
+	//put each corrected mat geometry onto the correct input layer type pointers
+	depth_resized.copyTo(in_out_channels->at(0));
+	height_resized.copyTo(in_out_channels->at(1));
 
 	//check that the pre processed and resized mat pointers correspond to the pointers of the input layers
 	CHECK(reinterpret_cast<float*>(in_out_channels->at(0).data) == net_->input_blobs()[0]->cpu_data())	<< "Input channels are not wrapping the input layer of the network.";
@@ -91,7 +151,8 @@ void CnnLidarDetector::WrapInputLayer(std::vector<cv::Mat>* in_out_channels)
 CnnLidarDetector::CnnLidarDetector(const std::string& in_network_definition_file,
 		const std::string& in_pre_trained_model_file,
 		bool in_use_gpu,
-		unsigned int in_gpu_id)
+		unsigned int in_gpu_id,
+		float in_score_threshold)
 {
 	if(in_use_gpu)
 	{
@@ -110,5 +171,7 @@ CnnLidarDetector::CnnLidarDetector(const std::string& in_network_definition_file
 	num_channels_ = input_layer->channels();
 
 	input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
+
+	score_threshold_ = in_score_threshold;
 
 }
