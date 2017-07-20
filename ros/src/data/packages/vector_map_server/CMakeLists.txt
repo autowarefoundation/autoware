@@ -66,11 +66,13 @@ include_directories(
 add_executable(vector_map_server nodes/vector_map_server/vector_map_server.cpp)
 target_link_libraries(vector_map_server ${catkin_LIBRARIES})
 add_dependencies(vector_map_server
+  vector_map_server_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
 
 add_executable(vector_map_client nodes/vector_map_client/vector_map_client.cpp)
 target_link_libraries(vector_map_client ${catkin_LIBRARIES})
 add_dependencies(vector_map_client
+  vector_map_server_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
