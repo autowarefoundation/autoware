@@ -51,7 +51,6 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "runtime_manager/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include <vector>

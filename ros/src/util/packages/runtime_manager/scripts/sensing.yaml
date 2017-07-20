@@ -95,6 +95,14 @@ subs :
           baud : { flags: [ nl ] }
           mode : { flags: [ nl ] }
           frequency: { flags: [ nl ] }
+      - name : MicroStrain 3DM-GX5-15
+        desc : MicroStrain 3DM-GX5-15 desc sample
+        probe:
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/3dm_gx5_15.sh"
+        param: 3dm_gx5_15
+        gui  :
+          flags: [ kill_children ]
+          baud : { flags: [ nl ] }
 
   - name : LIDARs
     desc : LIDARs desc sample
@@ -571,6 +579,34 @@ params :
       label     : 'Wait sec:'
       kind      : num
       v         : 3
+      cmd_param :
+        delim     : ''
+
+  - name : 3dm_gx5_15
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyACM0
+      cmd_param :
+        delim     : ''
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '115200'
+      cmd_param :
+        delim     : ''
+    - name      : frequency
+      desc      : frequency desc sample
+      label     : 'Frequency:'
+      kind      : menu
+      choices   : [ '1','5','10','20','40','50','80','100','200','400' ]
+      choices_type : str
+      v         : '100'
       cmd_param :
         delim     : ''
 

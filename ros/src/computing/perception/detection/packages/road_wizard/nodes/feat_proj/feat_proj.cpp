@@ -15,12 +15,16 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <signal.h>
 #include <cstdio>
 #include "Math.h"
 #include <Eigen/Eigen>
-#include "road_wizard/Signals.h"
-#include <runtime_manager/adjust_xy.h>
+#include <autoware_msgs/Signals.h>
+#include <autoware_msgs/adjust_xy.h>
+#include <vector_map/vector_map.h>
+#include <vector_map_server/GetSignal.h>
+#include <autoware_msgs/lane.h>
 
 static std::string camera_id_str;
 
@@ -48,10 +52,53 @@ static  float fx,
   cy;
 static tf::StampedTransform trf;
 
+static bool g_use_vector_map_server; // Switch flag whether vecter-map-server function will be used
+static ros::ServiceClient g_ros_client;
+
 #define SignalLampRadius 0.3
 
+/* Define utility class to use vector map server */
+namespace
+{
+  class VectorMapClient
+  {
+  private:
+    geometry_msgs::PoseStamped pose_;
+    autoware_msgs::lane waypoints_;
+
+  public:
+    VectorMapClient()
+    {}
+
+    ~VectorMapClient()
+    {}
+
+    geometry_msgs::PoseStamped pose() const
+    {
+      return pose_;
+    }
+
+    autoware_msgs::lane waypoints() const
+    {
+      return waypoints_;
+    }
+
+    void set_pose(const geometry_msgs::PoseStamped& pose)
+    {
+      pose_ = pose;
+    }
+
+    void set_waypoints(const autoware_msgs::lane& waypoints)
+    {
+      waypoints_ = waypoints;
+    }
+  }; // Class VectorMapClient
+} // namespace
+static VectorMapClient g_vector_map_client;
+
+
 /* Callback function to shift projection result */
-void adjust_xyCallback (const runtime_manager::adjust_xy::ConstPtr& config_msg)
+void adjust_xyCallback (const autoware_msgs::adjust_xy::ConstPtr& config_msg)
 {
   adjust_proj_x = config_msg->x;
   adjust_proj_y = config_msg->y;
@@ -177,11 +224,72 @@ bool project2 (const Point3 &pt, int &u, int &v, bool useOpenGLCoord=false)
   return true;
 }
 
+double ConvertDegreeToRadian(double degree)
+{
+  return degree * M_PI / 180.0f;
+}
+
+
+double ConvertRadianToDegree(double radian)
+{
+  return radian * 180.0f / M_PI;
+}
+
+
+double GetSignalAngleInCameraSystem(double hang, double vang)
+{
+  // Fit the vector map format into ROS style
+  double signal_pitch_in_map = ConvertDegreeToRadian(vang - 90);
+  double signal_yaw_in_map   = ConvertDegreeToRadian(-hang + 90);
+
+  tf::Quaternion signal_orientation_in_map_system;
+  signal_orientation_in_map_system.setRPY(0, signal_pitch_in_map, signal_yaw_in_map);
+
+  tf::Quaternion signal_orientation_in_cam_system = trf * signal_orientation_in_map_system;
+  double signal_roll_in_cam;
+  double signal_pitch_in_cam;
+  double signal_yaw_in_cam;
+  tf::Matrix3x3(signal_orientation_in_cam_system).getRPY(signal_roll_in_cam,
+                                                         signal_pitch_in_cam,
+                                                         signal_yaw_in_cam);
+
+  return ConvertRadianToDegree(signal_pitch_in_cam);   // holizontal angle of camera is represented by pitch
+}  // double GetSignalAngleInCameraSystem()
+
 
 void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
 {
   int countPoint = 0;
-  road_wizard::Signals signalsInFrame;
+  autoware_msgs::Signals signalsInFrame;
+
+  /* Get signals on the path if vecter_map_server is enabled */
+  if (g_use_vector_map_server) {
+    vector_map_server::GetSignal service;
+    /* Set server's request */
+    service.request.pose = g_vector_map_client.pose();
+    service.request.waypoints = g_vector_map_client.waypoints();
+
+    /* Get server's response*/
+    if (g_ros_client.call(service)) {
+      /* Reset signal data container */
+      vmap.signals.clear();
+
+      /* Newle insert signal data on the path */
+      for (const auto& response: service.response.objects.data) {
+        if (response.id == 0)
+          continue;
+
+        Signal signal;
+        signal.id = response.id;
+        signal.vid = response.vid;
+        signal.plid = response.plid;
+        signal.type = response.type;
+        signal.linkid = response.linkid;
+
+        vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
+      }
+    }
+  }
 
   for (unsigned int i=1; i<=vmap.signals.size(); i++) {
     Signal signal = vmap.signals[i];
@@ -200,7 +308,7 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       project2 (signalcenterx, ux, vx, useOpenGLCoord);
       radius = (int)distance (ux, vx, u, v);
 
-      road_wizard::ExtractedPosition sign;
+      autoware_msgs::ExtractedPosition sign;
       sign.signalId = signal.id;
 
       sign.u = u + adjust_proj_x; // shift project position by configuration value from runtime manager
@@ -212,26 +320,13 @@ void echoSignals2 (ros::Publisher &pub, bool useOpenGLCoord=false)
       sign.type = signal.type, sign.linkId = signal.linkid;
       sign.plId = signal.plid;
 
-      /* convert signal's horizontal angle to yaw */
-      double reversed_signalYaw = setDegree0to360(sign.hang + 180.0f);
+      // Get holizontal angle of signal in camera corrdinate system
+      double signal_angle = GetSignalAngleInCameraSystem(vmap.vectors[signal.vid].hang + 180.0f,
+                                                         vmap.vectors[signal.vid].vang + 180.0f);
 
-      get_cameraRollPitchYaw(&cameraOrientation.thiX,
-                             &cameraOrientation.thiY,
-                             &cameraOrientation.thiZ);
-
-      // std::cout << "signal : " << reversed_signalYaw << ", car : " << cameraOrientation.thiZ << std::endl;
-
-      /*
-        check whether this signal is oriented to the camera
-        interested signals have below condition orientation:
-        (camera_orientation - 70deg) < (signal_orientation + 180deg) < (camera_orientatin + 70deg)
-      */
-      double conditionRange_lower = setDegree0to360(cameraOrientation.thiZ - 70);
-      double conditionRange_upper = setDegree0to360(cameraOrientation.thiZ + 70);
-
-      // std::cout << "lower: " << conditionRange_lower << ", upper: " << conditionRange_upper << std::endl;
-
-      if (isRange(conditionRange_lower, conditionRange_upper, reversed_signalYaw)) {
+      // signal_angle will be zero if signal faces to x-axis
+      // Target signal should be face to -50 <= z-axis (= 90 degree) <= +50
+      if (isRange(-50, 50, signal_angle - 90)) {
         signalsInFrame.Signals.push_back (sign);
       }
     }
@@ -267,6 +362,9 @@ int main (int argc, char *argv[])
     camera_id_str = "camera";
   }
   
+  /* Get Flag wheter vecter_map_server function will be used  */
+  private_nh.param<bool>("use_path_info", g_use_vector_map_server, false);
+
   /* load vector map */
   ros::Subscriber sub_point     = rosnode.subscribe("vector_map_info/point",
                                                     SUBSCRIBE_QUEUE_SIZE,
@@ -311,8 +409,18 @@ int main (int argc, char *argv[])
 
   ros::Subscriber cameraInfoSubscriber = rosnode.subscribe (cameraInfo_topic_name, 100, cameraInfoCallback);
   ros::Subscriber adjust_xySubscriber  = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
-  //  ros::Subscriber ndtPoseSubscriber    = rosnode.subscribe("/current_pose", 10, ndtPoseCallback);
-  ros::Publisher  signalPublisher      = rosnode.advertise <road_wizard::Signals> ("roi_signal", 100);
+  ros::Subscriber current_pose_subscriber;
+  ros::Subscriber waypoint_subscriber;
+  if (g_use_vector_map_server) {
+    /* Create subscribers which deliver informations requested by server */
+    current_pose_subscriber = rosnode.subscribe("/current_pose", 1, &VectorMapClient::set_pose, &g_vector_map_client);
+    waypoint_subscriber     = rosnode.subscribe("/final_waypoints", 1, &VectorMapClient::set_waypoints, &g_vector_map_client);
+
+    /* Create ros client to use Server-Client communication */
+    g_ros_client = rosnode.serviceClient<vector_map_server::GetSignal>("vector_map_server/get_signal");
+  }
+
+  ros::Publisher  signalPublisher      = rosnode.advertise <autoware_msgs::Signals> ("roi_signal", 100);
   signal (SIGINT, interrupt);
 
   Rate loop (25);

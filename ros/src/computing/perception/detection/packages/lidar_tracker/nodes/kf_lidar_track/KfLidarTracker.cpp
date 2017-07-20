@@ -29,7 +29,7 @@ void KfLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_po
 	boost::geometry::assign_points(out_polygon, hull_detection_points);
 }
 
-void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
+void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
 {
 	size_t num_detections = in_cloud_cluster_array.clusters.size();
 	size_t num_tracks = tracks.size();
@@ -103,7 +103,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 				tracks[i].skipped_frames = 0;
 
 				//join all assigned detections to update the tracker
-				/*lidar_tracker::CloudClusterPtr summed_cloud_cluster(new lidar_tracker::CloudCluster());
+				/*autoware_msgs::CloudClusterPtr summed_cloud_cluster(new autoware_msgs::CloudCluster());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr summed_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 				for (size_t j = 0; j < track_assignments_vector[i].size(); j++)
 				{
@@ -128,7 +128,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 			}
 			else				     // if not matched continue using predictions, and increase life
 			{
-				tracks[i].Update(lidar_tracker::CloudCluster(), //empty cluster
+				tracks[i].Update(autoware_msgs::CloudCluster(), //empty cluster
 									false, //not matched,
 									maximum_trace_length_
 								);
@@ -257,7 +257,7 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 //
 // ---------------------------------------------------------------------------
 /*void KfLidarTracker::Update(
-	const lidar_tracker::CloudClusterArray& in_cloud_cluster_array,
+	const autoware_msgs::CloudClusterArray& in_cloud_cluster_array,
 	DistType distType
 	)
 {
@@ -393,7 +393,7 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 		else				     // if not continue using predictions
 		{
 			std::cout << "Not Matched. Kalman Update on " << i << std::endl;
-			tracks[i].Update(lidar_tracker::CloudCluster(), false, maximum_trace_length_);
+			tracks[i].Update(autoware_msgs::CloudCluster(), false, maximum_trace_length_);
 		}
 	}
 

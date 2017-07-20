@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_ros
   grid_map_cv
   grid_map_msgs
-  lidar_tracker
+  autoware_msgs
 )
 find_package( OpenMP )
 if (OPENMP_FOUND)
@@ -23,7 +23,7 @@ endif()
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs lidar_tracker
+  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs autoware_msgs
 )
 
 ###########
@@ -44,5 +44,8 @@ add_executable(points2costmap nodes/points2costmap/points2costmap.cpp)
 target_link_libraries(points2costmap ${catkin_LIBRARIES})
 
 add_executable(potential_field nodes/potential_field/potential_field.cpp)
-add_dependencies(potential_field lidar_tracker_generate_messages_cpp)
+add_dependencies(potential_field autoware_msgs_generate_messages_cpp)
 target_link_libraries(potential_field ${catkin_LIBRARIES})
+
+add_executable(dist_transform nodes/dist_transform/dist_transform.cpp)
+target_link_libraries(dist_transform ${catkin_LIBRARIES})

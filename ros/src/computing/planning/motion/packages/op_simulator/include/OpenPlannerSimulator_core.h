@@ -35,8 +35,7 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <cv_tracker_msgs/obj_label.h>
-#include <runtime_manager/traffic_light.h>
+#include "autoware_msgs/obj_label.h"
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -55,8 +54,8 @@
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 #include "SimpleTracker.h"
 
 namespace OpenPlannerSimulatorNS
@@ -128,7 +127,7 @@ protected:
 
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
-	void callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
+	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg);
 
 public:
 	OpenPlannerSimulator();
@@ -146,7 +145,7 @@ public:
   void visualizePath(const std::vector<PlannerHNS::WayPoint>& path);
 
   void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-  		const lidar_tracker::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
+  		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
   		int& nOriginalPoints, int& nContourPoints);
 
   PlannerHNS::WayPoint GetRealCenter(const PlannerHNS::WayPoint& currState);

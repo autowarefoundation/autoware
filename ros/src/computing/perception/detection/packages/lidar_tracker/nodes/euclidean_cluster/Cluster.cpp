@@ -62,7 +62,7 @@ Eigen::Vector3f Cluster::GetEigenValues()
 	return eigen_values_;
 }
 
-void Cluster::ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message)
+void Cluster::ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
 
@@ -317,7 +317,7 @@ std::vector<float> Cluster::GetFpfhDescriptor(const unsigned int& in_ompnum_thre
 		}
 
 		float fpfh_dif = fpfh_max - fpfh_min;
-		for(unsigned int j=0; fpfh_dif > 0, j < cluster_fpfh_histogram.size(); j++)//substract the min from each and normalize
+		for(unsigned int j=0; fpfh_dif > 0 && j < cluster_fpfh_histogram.size(); j++)//substract the min from each and normalize
 		{
 			cluster_fpfh_histogram[j]= (cluster_fpfh_histogram[j] - fpfh_min)/fpfh_dif;
 		}
@@ -344,4 +344,3 @@ int Cluster::GetId()
 Cluster::~Cluster() {
 	// TODO Auto-generated destructor stub
 }
-

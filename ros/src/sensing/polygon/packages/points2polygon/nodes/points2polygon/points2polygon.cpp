@@ -32,7 +32,7 @@
 #include <ros/console.h>
 
 #include <sensor_msgs/PointCloud2.h>
-#include <runtime_manager/ConfigPoints2Polygon.h>
+#include <autoware_msgs/ConfigPoints2Polygon.h>
 
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
@@ -115,7 +115,7 @@ static void points_to_polygon(const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud)
 	pcl::io::saveVTKFile(points_polygon_vtk, triangles);
 }
 
-static void config_callback(const runtime_manager::ConfigPoints2Polygon& msg)
+static void config_callback(const autoware_msgs::ConfigPoints2Polygon& msg)
 {
 	config_k_search = msg.k_search;
 	config_search_radius = msg.search_radius;

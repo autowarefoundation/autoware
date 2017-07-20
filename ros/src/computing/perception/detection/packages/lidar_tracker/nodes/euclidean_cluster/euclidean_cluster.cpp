@@ -41,9 +41,9 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 
-#include <lidar_tracker/centroids.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/centroids.h"
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 
 #include <vector_map_server/PositionState.h>
 
@@ -66,7 +66,6 @@
 #include <opencv2/contrib/contrib.hpp>
 #endif
 
-#include <chrono>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -135,6 +134,9 @@ static double _max_boundingbox_side;
 static double _remove_points_upto;
 static double _cluster_merge_threshold;
 
+static bool _use_gpu;
+static std::chrono::system_clock::time_point _start, _end;
+
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
 	geometry_msgs::PoseStamped pose_in, pose_out;
@@ -156,16 +158,16 @@ void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbo
 	out_boundingbox.label = in_boundingbox.label;
 }
 
-void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracker::CloudClusterArray& in_clusters, const std::string& in_target_frame, const std_msgs::Header& in_header)
+void publishCloudClusters(const ros::Publisher* in_publisher, const autoware_msgs::CloudClusterArray& in_clusters, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
 	if (in_target_frame!=in_header.frame_id)
 	{
-		lidar_tracker::CloudClusterArray clusters_transformed;
+		autoware_msgs::CloudClusterArray clusters_transformed;
 		clusters_transformed.header = in_header;
 		clusters_transformed.header.frame_id = in_target_frame;
 		for (auto i=in_clusters.clusters.begin(); i!= in_clusters.clusters.end(); i++)
 		{
-			lidar_tracker::CloudCluster cluster_transformed;
+			autoware_msgs::CloudCluster cluster_transformed;
 			cluster_transformed.header = in_header;
 			try
 			{
@@ -198,11 +200,11 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const lidar_tracke
 	}
 }
 
-void publishCentroids(const ros::Publisher* in_publisher, const lidar_tracker::centroids& in_centroids, const std::string& in_target_frame, const std_msgs::Header& in_header)
+void publishCentroids(const ros::Publisher* in_publisher, const autoware_msgs::centroids& in_centroids, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
 	if (in_target_frame!=in_header.frame_id)
 	{
-		lidar_tracker::centroids centroids_transformed;
+		autoware_msgs::centroids centroids_transformed;
 		centroids_transformed.header = in_header;
 		centroids_transformed.header.frame_id = in_target_frame;
 		for (auto i=centroids_transformed.points.begin(); i!= centroids_transformed.points.end(); i++)
@@ -298,7 +300,7 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 											pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 											jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-											lidar_tracker::centroids& in_out_centroids,
+											autoware_msgs::centroids& in_out_centroids,
 											double in_max_cluster_distance=0.5)
 {
 	std::vector<ClusterPtr> clusters;
@@ -355,7 +357,7 @@ std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>:
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-		lidar_tracker::centroids& in_out_centroids,
+		autoware_msgs::centroids& in_out_centroids,
 		double in_max_cluster_distance=0.5)
 {
 	pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
@@ -492,8 +494,8 @@ void checkAllForMerge(std::vector<ClusterPtr>& in_clusters, std::vector<ClusterP
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
 		jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-		lidar_tracker::centroids& in_out_centroids,
-		lidar_tracker::CloudClusterArray& in_out_clusters,
+		autoware_msgs::centroids& in_out_centroids,
+		autoware_msgs::CloudClusterArray& in_out_clusters,
 		jsk_recognition_msgs::PolygonArray& in_out_polygon_array,
 		jsk_rviz_plugins::PictogramArray& in_out_pictogram_array)
 {
@@ -534,7 +536,12 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	for(unsigned int i=0; i<cloud_segments_array.size(); i++)
 	{
 #ifdef GPU_CLUSTERING
-		std::vector<ClusterPtr> local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+    std::vector<ClusterPtr> local_clusters;
+		if (_use_gpu) {
+			local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+		} else {
+			local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+		}
 #else
 		std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
 #endif
@@ -658,7 +665,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 			in_out_polygon_array.polygons.push_back(polygon);
 			in_out_pictogram_array.pictograms.push_back(pictogram_cluster);
 
-			lidar_tracker::CloudCluster cloud_cluster;
+			autoware_msgs::CloudCluster cloud_cluster;
 			final_clusters[i]->ToRosMessage(_velodyne_header, cloud_cluster);
 			in_out_clusters.clusters.push_back(cloud_cluster);
 		}
@@ -826,6 +833,8 @@ void removePointsUpTo(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr, pc
 
 void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 {
+	_start = std::chrono::system_clock::now(); // 計測開始時間
+
 	if (!_using_sensor_cloud)
 	{
 		_using_sensor_cloud = true;
@@ -840,8 +849,8 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		pcl::PointCloud<pcl::PointXYZ>::Ptr clipped_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 
-		lidar_tracker::centroids centroids;
-		lidar_tracker::CloudClusterArray cloud_clusters;
+		autoware_msgs::centroids centroids;
+		autoware_msgs::CloudClusterArray cloud_clusters;
 		jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
 		jsk_recognition_msgs::PolygonArray polygon_array;
 		jsk_rviz_plugins::PictogramArray pictograms_array;
@@ -850,10 +859,6 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 
 		_velodyne_header = in_sensor_cloud->header;
 
-		cv::TickMeter timer;
-
-		timer.reset();timer.start();
-
 		if (_remove_points_upto > 0.0)
 		{
 			removePointsUpTo(current_sensor_cloud_ptr, removed_points_cloud_ptr, _remove_points_upto);
@@ -861,27 +866,18 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		else
 			removed_points_cloud_ptr = current_sensor_cloud_ptr;
 
-		//std::cout << "Downsample before: " <<removed_points_cloud_ptr->points.size();
 		if (_downsample_cloud)
 			downsampleCloud(removed_points_cloud_ptr, downsampled_cloud_ptr, _leaf_size);
 		else
 			downsampled_cloud_ptr =removed_points_cloud_ptr;
 
-		//std::cout << " after: " <<downsampled_cloud_ptr->points.size();
-		timer.stop(); //std::cout << "downsampleCloud:" << timer.getTimeMilli() << "ms" << std::endl;
-
-		timer.reset();timer.start();
 		clipCloud(downsampled_cloud_ptr, clipped_cloud_ptr, _clip_min_height, _clip_max_height);
-		timer.stop(); //std::cout << "clipCloud:" << clipped_cloud_ptr->points.size() << "time " << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
 		if(_keep_lanes)
 			keepLanePoints(clipped_cloud_ptr, inlanes_cloud_ptr, _keep_lane_left_distance, _keep_lane_right_distance);
 		else
 			inlanes_cloud_ptr = clipped_cloud_ptr;
-		timer.stop(); //std::cout << "keepLanePoints:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
 		if(_remove_ground)
 		{
 			removeFloor(inlanes_cloud_ptr, nofloor_cloud_ptr, onlyfloor_cloud_ptr);
@@ -889,49 +885,40 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 		}
 		else
 			nofloor_cloud_ptr = inlanes_cloud_ptr;
-		timer.stop(); //std::cout << "removeFloor:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		publishCloud(&_pub_points_lanes_cloud, nofloor_cloud_ptr);
 
-		timer.reset();timer.start();
 		if (_use_diffnormals)
 			differenceNormalsSegmentation(nofloor_cloud_ptr, diffnormals_cloud_ptr);
 		else
 			diffnormals_cloud_ptr = nofloor_cloud_ptr;
-		timer.stop(); //std::cout << "differenceNormalsSegmentation:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
 		segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr, boundingbox_array, centroids, cloud_clusters, polygon_array, pictograms_array);
-		//timer.stop(); std::cout << "segmentByDistance:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
 		publishColorCloud(&_pub_cluster_cloud, colored_clustered_cloud_ptr);
-		timer.stop(); //std::cout << "publishColorCloud:" << timer.getTimeMilli() << "ms" << std::endl;
+
 		// Publish BB
 		boundingbox_array.header = _velodyne_header;
 
 		_pub_jsk_hulls.publish(polygon_array);//publish convex hulls
 		_pub_text_pictogram.publish(pictograms_array);//publish_ids
 
-		timer.reset();timer.start();
 		publishBoundingBoxArray(&_pub_jsk_boundingboxes, boundingbox_array, _output_frame, _velodyne_header);
 		centroids.header = _velodyne_header;
-		timer.stop(); //std::cout << "publishBoundingBoxArray:" << timer.getTimeMilli() << "ms" << std::endl;
 
-		timer.reset();timer.start();
 		publishCentroids(&_centroid_pub, centroids, _output_frame, _velodyne_header);
-		timer.stop(); //std::cout << "publishCentroids:" << timer.getTimeMilli() << "ms" << std::endl;
 
 		_marker_pub.publish(_visualization_marker);
 		_visualization_marker.points.clear();//transform? is it used?
 		cloud_clusters.header = _velodyne_header;
 
-		timer.reset();timer.start();
 		publishCloudClusters(&_pub_clusters_message, cloud_clusters, _output_frame, _velodyne_header);
-		timer.stop(); //std::cout << "publishCloudClusters:" << timer.getTimeMilli() << "ms" << std::endl << std::endl;
 
 		_using_sensor_cloud = false;
 	}
+	_end = std::chrono::system_clock::now();  // 計測終了時間
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(_end-_start).count(); //処理に要した時間をミリ秒に変換
+  ROS_INFO("Euclidean Clustering : %f", elapsed);
 }
 
 /*
@@ -1031,13 +1018,13 @@ int main (int argc, char** argv)
 
 	_pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster",1);
 	_pub_ground_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_ground",1);
-	_centroid_pub = h.advertise<lidar_tracker::centroids>("/cluster_centroids",1);
+	_centroid_pub = h.advertise<autoware_msgs::centroids>("/cluster_centroids",1);
 	_marker_pub = h.advertise<visualization_msgs::Marker>("centroid_marker",1);
 
 	_pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes",1);
 	_pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
 	_pub_jsk_hulls = h.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls",1);
-	_pub_clusters_message = h.advertise<lidar_tracker::CloudClusterArray>("/cloud_clusters",1);
+	_pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters",1);
 	_pub_text_pictogram = h.advertise<jsk_rviz_plugins::PictogramArray>("cluster_ids", 10); ROS_INFO("output pictograms topic: %s", "cluster_id");
 
 	std::string points_topic;
@@ -1086,6 +1073,7 @@ int main (int argc, char** argv)
 
 	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
+	private_nh.param("use_gpu", _use_gpu, false);				ROS_INFO("use_gpu: %d", _use_gpu);
 
 	_velodyne_transform_available = false;
 

@@ -62,13 +62,14 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   temporal_waypoints_.waypoints.clear();
   temporal_waypoints_.header = new_waypoints_.header;
   temporal_waypoints_.increment = new_waypoints_.increment;
-  // push current pose
-  waypoint_follower_msgs::waypoint current_point;
 
+  // push current pose
+  autoware_msgs::waypoint current_point;
   current_point.pose = control_pose;
   current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
   current_point.dtlane = new_waypoints_.waypoints[closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);
+
   for (int i = 0; i < temporal_waypoints_size; i++)
   {
     if (closest_waypoint + i >= getNewWaypointsSize())
@@ -202,7 +203,7 @@ double VelocitySetPath::calcInterval(const int begin, const int end) const
   if (begin < 0 || begin >= getPrevWaypointsSize() || end < 0 || end >= getPrevWaypointsSize())
   {
     ROS_WARN("Invalid index");
-    return -1;
+    return 0;
   }
 
   // Calculate the inteval of waypoints
@@ -221,14 +222,18 @@ double VelocitySetPath::calcInterval(const int begin, const int end) const
   return dist_sum;
 }
 
+void VelocitySetPath::resetFlag()
+{
+  set_path_ = false;
+}
 
-void VelocitySetPath::waypointsCallback(const waypoint_follower_msgs::laneConstPtr& msg)
+void VelocitySetPath::waypointsCallback(const autoware_msgs::laneConstPtr& msg)
 {
   prev_waypoints_ = *msg;
+  // temporary, edit waypoints velocity later
   new_waypoints_ = *msg;
 
-  if (!set_path_)
-    set_path_ = true;
+  set_path_ = true;
 }
 
 void VelocitySetPath::currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr& msg)

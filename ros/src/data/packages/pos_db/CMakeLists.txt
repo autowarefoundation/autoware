@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   gnss
   jsk_recognition_msgs
   tf
-  cv_tracker
+  autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-   CATKIN_DEPENDS roscpp vehicle_socket cv_tracker
+   CATKIN_DEPENDS roscpp autoware_msgs
    DEPENDS ssh2
 )
 
@@ -38,7 +38,7 @@ target_link_libraries(pos_downloader ${catkin_LIBRARIES} pos_db ssh2)
 
 add_executable(pos_uploader nodes/pos_uploader/pos_uploader.cpp)
 target_link_libraries(pos_uploader ${catkin_LIBRARIES} pos_db ssh2)
-add_dependencies(pos_uploader cv_tracker_generate_messages_cpp)
+add_dependencies(pos_uploader autoware_msgs_generate_messages_cpp)
 
 set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 

@@ -11,8 +11,8 @@
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -49,7 +49,7 @@ private:
 
 	FILE *model_file_handle_;
 
-	void CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
+	void CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 	void ClassifyFpfhDescriptor(const std::vector<float>& in_fpfh_descriptor, double& out_label, std::vector<double>& out_scores, double& out_sum_scores);
 
 	void CloseModel();
@@ -81,7 +81,7 @@ void SvmDetect::Run()
 	private_node_handle.param<std::string>("clusters_node_name", clusters_node_name, "/cloud_clusters");	ROS_INFO("clusters_node_name: %s", clusters_node_name.c_str());
 
 	cloud_clusters_sub_ = node_handle_.subscribe(clusters_node_name, 10, &SvmDetect::CloudClustersCallback, this);
-	cloud_clusters_pub_ = node_handle_.advertise<lidar_tracker::CloudClusterArray>(out_clusters_topic_name, 10); ROS_INFO("output clusters topic: %s", out_clusters_topic_name.c_str());
+	cloud_clusters_pub_ = node_handle_.advertise<autoware_msgs::CloudClusterArray>(out_clusters_topic_name, 10); ROS_INFO("output clusters topic: %s", out_clusters_topic_name.c_str());
 
 	/*text_pictogram_pub_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>(out_pictograms_topic_name, 10); ROS_INFO("output pictograms topic: %s", out_pictograms_topic_name.c_str());
 
@@ -100,7 +100,7 @@ void SvmDetect::Run()
 }
 
 
-void SvmDetect::CloudClustersCallback(const lidar_tracker::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
+void SvmDetect::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
 	cloud_clusters_pub_.publish(*in_cloud_cluster_array_ptr);
 	return;

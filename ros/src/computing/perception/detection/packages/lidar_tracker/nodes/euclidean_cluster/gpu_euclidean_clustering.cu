@@ -360,7 +360,7 @@ extern "C" __global__ void resetClusterIndexes(int *cluster_indices, int *cluste
  *
  * Result of this method is stored at cluster_indices_host_.
  */
-void GpuEuclideanCluster::extractClusters()
+void GpuEuclideanCluster::extractClustersOld()
 {
 	int block_x, grid_x;
 
@@ -591,7 +591,7 @@ extern "C" __global__ void clustersIntersecCheck(int *cluster_matrix, int *chang
  * are larger than threshold), which may lead to infinite loop in the first method.
  */
 
-void GpuEuclideanCluster::extractClusters2()
+void GpuEuclideanCluster::extractClusters()
 {
 	int block_x, grid_x;
 

@@ -40,7 +40,6 @@
 
 #include <fstream>
 
-#include "vehicle_socket/CanInfo.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 static const int SYNC_FRAMES = 50;

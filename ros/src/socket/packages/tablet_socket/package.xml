@@ -6,19 +6,15 @@
   <maintainer email="syouji@axe.bz">syouji</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-  <build_depend>vehicle_socket</build_depend>
-  <build_depend>ndt_localizer</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>gnss</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tablet_socket_msgs</build_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>vehicle_socket</run_depend>
-  <run_depend>ndt_localizer</run_depend>
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>tf</run_depend>
   <run_depend>gnss</run_depend>
   <run_depend>tablet_socket_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
   <export>
   </export>
 </package>

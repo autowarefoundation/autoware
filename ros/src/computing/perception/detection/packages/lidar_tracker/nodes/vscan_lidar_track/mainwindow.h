@@ -6,7 +6,7 @@
 #include<sensor_msgs/LaserScan.h>
 #include<sensor_msgs/PointCloud2.h>
 #include<visualization_msgs/MarkerArray.h>
-#include "cv_tracker_msgs/obj_label.h"
+#include "autoware_msgs/obj_label.h"
 
 #include<QGraphicsView>
 #include<QGraphicsScene>
@@ -100,7 +100,7 @@ private:
     Ui::MainWindow *ui;
 public:
     ROSSub<sensor_msgs::LaserScanConstPtr> * scansub;
-    ROSSub<cv_tracker_msgs::obj_label::ConstPtr> * detectionsub;
+    ROSSub<autoware_msgs::obj_label::ConstPtr> * detectionsub;
     ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxessub;
     ROSTFSub * tfsub;
     ROSTFSub * tfMap2Lidarsub;

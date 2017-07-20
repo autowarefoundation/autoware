@@ -34,7 +34,7 @@
  * @param Start_Position in simulation environment like rviz, this node require the user to select start position using "2D Pose Estimate" button and select starting position from the global path, //
  * if localization node is working and ndt_pose or curr_pose messages are published the node will use localization as starting position instead of "2D Pose Estimate"
  * @param Goal_Position destination to generate global plan to. if "replan" option selection used can choose multiple goal positions. goal positions are selected from Rviz using "2D Nav Goal" button.
- * @return global , reference path as list of waypoints. data type is "waypoint_follower_msgs::LaneArray" , and the topic name is "lane_waypoints_array"
+ * @return global , reference path as list of waypoints. data type is "autoware_msgs::LaneArray" , and the topic name is "lane_waypoints_array"
  */
 
 #include <ros/ros.h>
