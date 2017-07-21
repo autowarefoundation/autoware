@@ -1,5 +1,6 @@
 #include <float.h>
 #include <geometry_msgs/Point.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include "autoware_msgs/obj_label.h"
@@ -11,6 +12,12 @@
 #include <std_msgs/Time.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
+#include <vector_map/vector_map.h>
+#include <vector_map_server/GetLane.h>
+
+using vector_map::Node;
+using vector_map::Point;
+using vector_map::Key;
 
 /* flag for comfirming whether multiple topics are received */
 static bool isReady_obj_label;
@@ -24,6 +31,7 @@ static constexpr double LOOP_RATE = 15.0;
 ros::Publisher obj_pose_pub;
 ros::Publisher obj_pose_timestamp_pub;
 ros::Publisher cluster_class_pub;
+ros::Publisher marker_array_pub;
 
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
@@ -32,6 +40,10 @@ static std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
 static ros::Time obj_pose_timestamp;
 static double threshold_min_dist;
 static tf::StampedTransform transform;
+
+static vector_map::VectorMap vmap;
+static ros::ServiceClient vmap_server;
+static double vmap_threshold;
 
 struct obj_label_t {
   std::vector<geometry_msgs::Point> reprojected_positions;
@@ -86,6 +98,8 @@ static void fusion_objects(void) {
     autoware_msgs::CloudClusterArray cloud_clusters_msg;
     cloud_clusters_msg.header = header;
     cluster_class_pub.publish(cloud_clusters_msg);
+    visualization_msgs::MarkerArray marker_array_msg;
+    marker_array_pub.publish(marker_array_msg);
 
     time.data = obj_pose_timestamp;
     obj_pose_timestamp_pub.publish(time);
@@ -124,6 +138,18 @@ static void fusion_objects(void) {
   autoware_msgs::CloudClusterArray cloud_clusters_msg;
   cloud_clusters_msg.header = header;
 
+  tf::StampedTransform tform;
+  tf::TransformListener listener;
+  try {
+    ros::Time now = ros::Time(0);
+    listener.waitForTransform("/map", "/velodyne", now, ros::Duration(10));
+    listener.lookupTransform("/map", "/velodyne", now, tform);
+  } catch (tf::TransformException ex) {
+    ROS_INFO("%s: %s", __FUNCTION__, ex.what());
+  }
+  visualization_msgs::MarkerArray marker_array_msg;
+  int id = 0;
+
   for (unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
     jsk_recognition_msgs::BoundingBox bounding_box;
     if (obj_indices.at(i) == -1)
@@ -145,7 +171,104 @@ static void fusion_objects(void) {
     pub_msg.boxes.push_back(bounding_box);
     cloud_clusters_msg.clusters.push_back(
         v_cloud_cluster_current.at(obj_indices.at(i)));
+
+    tf::Quaternion q1(bounding_box.pose.orientation.x, bounding_box.pose.orientation.y, bounding_box.pose.orientation.z, bounding_box.pose.orientation.w);
+    vector_map_server::GetLane get_lane;
+    get_lane.request.pose.pose = bounding_box.pose;
+    tf::Vector3 orgpt(bounding_box.pose.position.x, bounding_box.pose.position.y, bounding_box.pose.position.z);
+    tf::Vector3 convpt = tform * orgpt;
+    get_lane.request.pose.pose.position.x = convpt.x();
+    get_lane.request.pose.pose.position.y = convpt.y();
+    get_lane.request.pose.pose.position.z = convpt.z();
+    ROS_INFO("pos x=%f y=%f z=%f", get_lane.request.pose.pose.position.x, get_lane.request.pose.pose.position.y, get_lane.request.pose.pose.position.z);
+    //get_lane.request.waypoints.waypoints.clear();
+    if (vmap_server.call(get_lane)) {
+      for (const auto& lane : get_lane.response.objects.data) {
+        Node bn = vmap.findByKey(Key<Node>(lane.bnid));
+        Point bp = vmap.findByKey(Key<Point>(bn.pid));
+        Node fn = vmap.findByKey(Key<Node>(lane.fnid));
+        Point fp = vmap.findByKey(Key<Point>(fn.pid));
+        ROS_INFO(" lane bn=(%f,%f) fn=(%f,%f)", bp.ly, bp.bx, fp.ly, fp.bx);
+        double mx = get_lane.request.pose.pose.position.x;
+        double my = get_lane.request.pose.pose.position.y;
+        if ((mx - fp.ly)*(mx - fp.ly) + (my - fp.bx)*(my - fp.bx) < vmap_threshold) {
+          tf::Quaternion ql;
+          ql.setRPY(0, 0, atan2(fp.bx - bp.bx, fp.ly - bp.ly)); // y,x
+          tf::Quaternion qb = tform * q1;
+          tf::Quaternion qm;
+          qm.setRPY(0, 0, M_PI/2);
+          double mr = M_PI;
+          int mi = 0;
+          for (int i = 0; i < 4; i++) { // 0,90,180,270-degree
+            double r = ql.angle(qb);
+            r = (r >= M_PI/2) ? (r - M_PI):r;
+            if (fabs(r) < mr) {
+              mr = fabs(r);
+              mi = i;
+            }
+            qb *= qm;
+          }
+          if (mi > 0) {
+            qm.setRPY(0, 0, M_PI*mi/2);
+            q1 *= qm;
+          }
+          double roll, pitch, yaw;
+          tf::Matrix3x3(q1).getRPY(roll, pitch, yaw);
+          ROS_INFO(" %d roll=%f pitch=%f yaw=%f", mi*90, roll, pitch, yaw);
+        }
+      }
+    } else {
+      ROS_INFO("%s: VectorMap Server call failed.", __FUNCTION__);
+    }
+
+    // x-axis
+    visualization_msgs::Marker marker;
+    marker.header = header;
+    marker.id = id++;
+    marker.lifetime = ros::Duration(0.1);
+    marker.type = visualization_msgs::Marker::ARROW;
+    marker.pose.position = bounding_box.pose.position;
+    marker.pose.orientation.x = q1.x();
+    marker.pose.orientation.y = q1.y();
+    marker.pose.orientation.z = q1.z();
+    marker.pose.orientation.w = q1.w();
+    marker.scale.x = 2.0;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.1;
+    marker.color.r = 1.0;
+    marker.color.a = 1.0;
+    marker_array_msg.markers.push_back(marker);
+
+    // y-axis
+    tf::Quaternion q2;
+    q2.setRPY(0, 0, M_PI/2);
+    q1 *= q2;
+    marker.id = id++;
+    marker.pose.orientation.x = q1.x();
+    marker.pose.orientation.y = q1.y();
+    marker.pose.orientation.z = q1.z();
+    marker.pose.orientation.w = q1.w();
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.a = 1.0;
+    marker_array_msg.markers.push_back(marker);
+
+    // z-axis
+    tf::Quaternion q3;
+    q3.setRPY(0, -M_PI/2, 0);
+    q1 *= q3;
+    marker.id = id++;
+    marker.pose.orientation.x = q1.x();
+    marker.pose.orientation.y = q1.y();
+    marker.pose.orientation.z = q1.z();
+    marker.pose.orientation.w = q1.w();
+    marker.color.g = 0.0;
+    marker.color.b = 1.0;
+    marker.color.a = 1.0;
+    marker_array_msg.markers.push_back(marker);
   }
+  marker_array_pub.publish(marker_array_msg);
+  //marker_array_msg.markers.clear();
 
   obj_pose_pub.publish(pub_msg);
   cluster_class_pub.publish(cloud_clusters_msg);
@@ -258,6 +381,9 @@ int main(int argc, char *argv[]) {
   isReady_obj_label = false;
   isReady_cluster_centroids = false;
 
+  private_n.param("vmap_threshold", vmap_threshold, 5.0);
+  vmap_threshold *= vmap_threshold;
+
   ros::Subscriber obj_label_sub =
       n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
   ros::Subscriber cluster_centroids_sub = n.subscribe(
@@ -268,6 +394,11 @@ int main(int argc, char *argv[]) {
       "/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
   obj_pose_timestamp_pub =
       n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
+  marker_array_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_arrow", 1, true);
+  vmap_server = n.serviceClient<vector_map_server::GetLane>("/vector_map_server/get_lane");
+  vmap.subscribe(n, vector_map::Category::POINT | vector_map::Category::NODE,
+                 ros::Duration(0)); // non-blocking
+
   ros::spin();
 
   return 0;
