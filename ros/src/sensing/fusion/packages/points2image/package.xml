@@ -7,17 +7,16 @@
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>rosinterface</build_depend>
-  <build_depend>calibration_camera_lidar</build_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>fastvirtualscan</build_depend>
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>rosinterface</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>calibration_camera_lidar</run_depend>
   <run_depend>fastvirtualscan</run_depend>
+  <run_depend>autoware_msgs</run_depend>
   <export>
   </export>
 </package>

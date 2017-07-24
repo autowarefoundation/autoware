@@ -38,9 +38,9 @@
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
-#include "runtime_manager/ConfigWaypointFollower.h"
-#include "waypoint_follower_msgs/lane.h"
-#include "waypoint_follower_msgs/ControlCommandStamped.h"
+#include "autoware_msgs/ConfigWaypointFollower.h"
+#include "autoware_msgs/lane.h"
+#include "autoware_msgs/ControlCommandStamped.h"
 #include "pure_pursuit_viz.h"
 #include "pure_pursuit.h"
 
@@ -98,10 +98,10 @@ private:
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
 
   // callbacks
-  void callbackFromConfig(const runtime_manager::ConfigWaypointFollowerConstPtr &config);
+  void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromWayPoints(const waypoint_follower_msgs::laneConstPtr &msg);
+  void callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg);
 
   // initializer
   void initForROS();

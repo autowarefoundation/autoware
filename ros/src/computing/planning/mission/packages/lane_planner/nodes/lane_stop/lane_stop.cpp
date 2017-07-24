@@ -30,9 +30,9 @@
 
 #include <ros/console.h>
 
-#include <runtime_manager/ConfigLaneStop.h>
-#include <runtime_manager/traffic_light.h>
-#include <waypoint_follower_msgs/LaneArray.h>
+#include "autoware_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/traffic_light.h"
+#include "autoware_msgs/LaneArray.h"
 
 #include <lane_planner/vmap.hpp>
 
@@ -42,14 +42,14 @@ bool config_manual_detection = true;
 
 ros::Publisher traffic_pub;
 
-waypoint_follower_msgs::LaneArray current_red_lane;
-waypoint_follower_msgs::LaneArray current_green_lane;
+autoware_msgs::LaneArray current_red_lane;
+autoware_msgs::LaneArray current_green_lane;
 
-const waypoint_follower_msgs::LaneArray *previous_lane = &current_red_lane;
+const autoware_msgs::LaneArray *previous_lane = &current_red_lane;
 
-void select_current_lane(const runtime_manager::traffic_light& msg)
+void select_current_lane(const autoware_msgs::traffic_light& msg)
 {
-	const waypoint_follower_msgs::LaneArray *current;
+	const autoware_msgs::LaneArray *current;
 	switch (msg.traffic_light) {
 	case lane_planner::vmap::TRAFFIC_LIGHT_RED:
 		current = &current_red_lane;
@@ -75,29 +75,29 @@ void select_current_lane(const runtime_manager::traffic_light& msg)
 	previous_lane = current;
 }
 
-void receive_auto_detection(const runtime_manager::traffic_light& msg)
+void receive_auto_detection(const autoware_msgs::traffic_light& msg)
 {
 	if (!config_manual_detection)
 		select_current_lane(msg);
 }
 
-void receive_manual_detection(const runtime_manager::traffic_light& msg)
+void receive_manual_detection(const autoware_msgs::traffic_light& msg)
 {
 	if (config_manual_detection)
 		select_current_lane(msg);
 }
 
-void cache_red_lane(const waypoint_follower_msgs::LaneArray& msg)
+void cache_red_lane(const autoware_msgs::LaneArray& msg)
 {
 	current_red_lane = msg;
 }
 
-void cache_green_lane(const waypoint_follower_msgs::LaneArray& msg)
+void cache_green_lane(const autoware_msgs::LaneArray& msg)
 {
 	current_green_lane = msg;
 }
 
-void config_parameter(const runtime_manager::ConfigLaneStop& msg)
+void config_parameter(const autoware_msgs::ConfigLaneStop& msg)
 {
 	config_manual_detection = msg.manual_detection;
 }
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
 	bool pub_waypoint_latch;
 	n.param<bool>("/lane_stop/pub_waypoint_latch", pub_waypoint_latch, true);
 
-	traffic_pub = n.advertise<waypoint_follower_msgs::LaneArray>("/traffic_waypoints_array", pub_waypoint_queue_size,
+	traffic_pub = n.advertise<autoware_msgs::LaneArray>("/traffic_waypoints_array", pub_waypoint_queue_size,
 								pub_waypoint_latch);
 
 	ros::Subscriber light_sub = n.subscribe("/light_color", sub_light_queue_size, receive_auto_detection);

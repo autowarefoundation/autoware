@@ -56,43 +56,43 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from runtime_manager.msg import ConfigRcnn
-from runtime_manager.msg import ConfigSsd
-from runtime_manager.msg import ConfigCarDpm
-from runtime_manager.msg import ConfigPedestrianDpm
-from runtime_manager.msg import ConfigNdt
-from runtime_manager.msg import ConfigNdtMapping
-from runtime_manager.msg import ConfigNdtMappingOutput
-from runtime_manager.msg import ConfigICP
-from runtime_manager.msg import ConfigVoxelGridFilter
-from runtime_manager.msg import ConfigRingFilter
-from runtime_manager.msg import ConfigDistanceFilter
-from runtime_manager.msg import ConfigRandomFilter
-from runtime_manager.msg import ConfigWaypointFollower
-from runtime_manager.msg import ConfigTwistFilter
-from runtime_manager.msg import ConfigVelocitySet
-from runtime_manager.msg import ConfigLatticeVelocitySet
-from runtime_manager.msg import ConfigCarKf
-from runtime_manager.msg import ConfigPedestrianKf
-from runtime_manager.msg import ConfigLaneRule
-from runtime_manager.msg import ConfigLaneSelect
-from runtime_manager.msg import ConfigLaneStop
-from runtime_manager.msg import ConfigCarFusion
-from runtime_manager.msg import ConfigPedestrianFusion
+from autoware_msgs.msg import ConfigRcnn
+from autoware_msgs.msg import ConfigSsd
+from autoware_msgs.msg import ConfigCarDpm
+from autoware_msgs.msg import ConfigPedestrianDpm
+from autoware_msgs.msg import ConfigNdt
+from autoware_msgs.msg import ConfigNdtMapping
+from autoware_msgs.msg import ConfigNdtMappingOutput
+from autoware_msgs.msg import ConfigICP
+from autoware_msgs.msg import ConfigVoxelGridFilter
+from autoware_msgs.msg import ConfigRingFilter
+from autoware_msgs.msg import ConfigDistanceFilter
+from autoware_msgs.msg import ConfigRandomFilter
+from autoware_msgs.msg import ConfigWaypointFollower
+from autoware_msgs.msg import ConfigTwistFilter
+from autoware_msgs.msg import ConfigVelocitySet
+from autoware_msgs.msg import ConfigLatticeVelocitySet
+from autoware_msgs.msg import ConfigCarKf
+from autoware_msgs.msg import ConfigPedestrianKf
+from autoware_msgs.msg import ConfigLaneRule
+from autoware_msgs.msg import ConfigLaneSelect
+from autoware_msgs.msg import ConfigLaneStop
+from autoware_msgs.msg import ConfigCarFusion
+from autoware_msgs.msg import ConfigPedestrianFusion
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
-from ndt_localizer.msg import ndt_stat
+from autoware_msgs.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
-from runtime_manager.msg import accel_cmd
-from runtime_manager.msg import steer_cmd
-from runtime_manager.msg import brake_cmd
-from runtime_manager.msg import indicator_cmd
-from runtime_manager.msg import lamp_cmd
-from runtime_manager.msg import traffic_light
-from runtime_manager.msg import adjust_xy
+from autoware_msgs.msg import accel_cmd
+from autoware_msgs.msg import steer_cmd
+from autoware_msgs.msg import brake_cmd
+from autoware_msgs.msg import indicator_cmd
+from autoware_msgs.msg import lamp_cmd
+from autoware_msgs.msg import traffic_light
+from autoware_msgs.msg import adjust_xy
 from types import MethodType
 
 SCHED_OTHER = 0
@@ -486,8 +486,29 @@ class MyFrame(rtmgr.MyFrame):
 		self.SetIcon(icon)
 	
 
+		wx.CallAfter( self.boot_booted_cmds )
+
 	def __do_layout(self):
 		pass
+
+	def boot_booted_cmds(self):
+		if not self.load_dic.get('booted_cmds', {}).get('enable', False):
+			return
+		names = self.load_dic.get('booted_cmds', {}).get('names', [])
+		lst = [ ( name, self.cfg_dic( { 'name': name } ).get('obj') ) for name in names ]
+		lst = [ (name, obj) for (name, obj) in lst if obj ]
+		if not lst:
+			return
+
+		choices = [ obj.GetLabel() if hasattr(obj, 'GetLabel') else name for (name, obj) in lst ]
+		dlg = wx.MultiChoiceDialog(self, 'boot command ?', '', choices)
+		dlg.SetSelections( range( len(names) ) )
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+
+		for i in dlg.GetSelections():
+			(_, obj) = lst[i]
+                        post_evt_toggle_obj(self, obj, True)
 
 	def OnClose(self, event):
 		if self.quit_select() != 'quit':
@@ -532,6 +553,7 @@ class MyFrame(rtmgr.MyFrame):
 			( 'Save to param.yaml', [ 'save' ] ),
 			( 'Quit without saving', [ 'quit' ] ),
 			( 'Reload computing.yaml', [ 'reload' ] ),
+			( self.get_booted_cmds_enable_msg()[1], [ 'toggle_booted_cmds' ] ),
 		]
 		choices = [ s for (s, _) in lst ]
 		dlg = wx.SingleChoiceDialog(self, 'select command', '', choices)
@@ -544,6 +566,8 @@ class MyFrame(rtmgr.MyFrame):
 			self.save_param_yaml()
 		if 'reload' in f:
 			self.reload_computing_yaml()
+		if 'toggle_booted_cmds' in f:
+			self.toggle_booted_cmds()
 		return 'quit' if 'quit' in f else 'not quit'
 
 	def save_param_yaml(self):
@@ -557,6 +581,16 @@ class MyFrame(rtmgr.MyFrame):
 					if k in no_saves:
 						del pdic[k]
 				save_dic[name] = pdic
+
+		names = []
+		for proc in self.all_procs:
+			(_, obj) = self.proc_to_cmd_dic_obj(proc)
+			name = self.cfg_dic( { 'obj': obj } ).get('name')
+			names.append(name)
+		if 'booted_cmds' not in save_dic:
+			save_dic['booted_cmds'] = {}
+		save_dic.get('booted_cmds')['names'] = names
+
 		if save_dic != {}:
 			dir = rtmgr_src_dir()
 			print('saving param.yaml')
@@ -631,6 +665,22 @@ class MyFrame(rtmgr.MyFrame):
 				set_val(obj, True)
 
 		parent.Layout()
+
+	def toggle_booted_cmds(self):
+		(enable, msg) = self.get_booted_cmds_enable_msg()
+		style = wx.OK | wx.CANCEL | wx.ICON_QUESTION
+		dlg = wx.MessageDialog(self, msg, '', style)
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		if 'booted_cmds' not in self.load_dic:
+			self.load_dic['booted_cmds'] = {}
+		self.load_dic.get('booted_cmds')['enable'] = not enable
+
+	def get_booted_cmds_enable_msg(self):
+		enable = self.load_dic.get('booted_cmds', {}).get('enable', False)
+		s = 'Enable' if not enable else 'Disable'
+		msg = '{} booted commands menu ?'.format(s)
+		return (enable, msg)
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
@@ -1308,10 +1358,12 @@ class MyFrame(rtmgr.MyFrame):
 		return col_red
 
 	def mem_kb_info(self):
-		lst = subprocess.check_output(['free']).strip().split('\n')[2].split()[2:4]
-		used = int(lst[0])
-		free = int(lst[1])
-		return (used + free, used)
+		lines = subprocess.check_output('cat /proc/meminfo', shell=True).strip().split(os.linesep)
+		cvt = lambda (k, v): ( k.replace(':', ''), int(v) )
+		d = dict( map( lambda s: cvt( filter( lambda s: s!='kB', s.split() ) ), lines ) )
+		total = d.get('MemTotal')
+		free = d.get('MemFree') + d.get('Buffers') + d.get('Cached')
+		return (total, total - free)
 
 	def toprc_create(self):
 		(child_pid, fd) = pty.fork()
@@ -2908,6 +2960,24 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		set_path(tc, path)
 	dlg.Destroy()
 	return ret
+
+def post_evt_toggle_obj(win, obj, v):
+	evt_id = {
+		CT.GenericTreeItem : CT.wxEVT_TREE_ITEM_CHECKED,
+		wx.CheckBox : wx.EVT_CHECKBOX.typeId,
+		wx.ToggleButton : wx.EVT_TOGGLEBUTTON.typeId,
+		wx.Button : wx.EVT_BUTTON.typeId,
+	}.get( type(obj) )
+
+	if evt_id == CT.wxEVT_TREE_ITEM_CHECKED:
+		evt = CT.TreeEvent( evt_id, win.GetId() )
+		evt.SetItem(obj)
+	else:
+		evt = wx.PyCommandEvent( evt_id, obj.GetId() )
+		evt.SetEventObject(obj)
+
+	set_val(obj, v)
+	wx.PostEvent(win, evt)
 
 def button_color_change(btn, v=None):
 	if v is None and type(btn) is wx.ToggleButton:

@@ -39,7 +39,7 @@
 #include <tf/transform_broadcaster.h>
 
 // User Defined Includes
-#include "vehicle_socket/CanInfo.h"
+#include "autoware_msgs/CanInfo.h"
 
 namespace autoware_connector
 {
@@ -53,9 +53,9 @@ struct VehicleInfo {
   VehicleInfo()
   {
     is_stored = false;
-    wheel_base = 0;
-    minimum_turning_radius = 0;
-    maximum_steering_angle = 0;
+    wheel_base = 0.0;
+    minimum_turning_radius = 0.0;
+    maximum_steering_angle = 0.0;
   }
   double convertSteeringAngleToAngularVelocity(const double cur_vel_mps, const double cur_angle_deg) // rad/s
   {
@@ -88,19 +88,23 @@ struct Odometry {
 
   Odometry(const ros::Time &time)
   {
-    x = 0;
-    y = 0;
-    th = 0;
+    x = 0.0;
+    y = 0.0;
+    th = 0.0;
     stamp = time;
   }
 
   void updateOdometry(const double vx, const double vth, const ros::Time &cur_time)
   {
-
+    if(stamp.sec == 0 && stamp.nsec == 0)
+    {
+      stamp = cur_time;
+    }
     double dt = (cur_time - stamp).toSec();
     double delta_x = (vx * cos(th)) * dt;
     double delta_y = (vx * sin(th)) * dt;
     double delta_th = vth * dt;
+
     std::cout << "dt : " << dt << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
 
 
@@ -139,15 +143,15 @@ private:
   // tf::TransformBroadcaster odom_broadcaster_;
 
   // callbacks
-  void callbackFromCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
+  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishVelocity(const vehicle_socket::CanInfoConstPtr &msg);
-  void publishVelocityViz(const vehicle_socket::CanInfoConstPtr &msg);
-  void publishOdometry(const vehicle_socket::CanInfoConstPtr &msg);
+  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishOdometry(const autoware_msgs::CanInfoConstPtr &msg);
 };
 
 inline double kmph2mps(double velocity_kmph)

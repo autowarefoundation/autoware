@@ -39,15 +39,15 @@
 // ROS header
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-#include "waypoint_follower_msgs/lane.h"
+#include "autoware_msgs/lane.h"
 
 class WayPoints
 {
 protected:
-  waypoint_follower_msgs::lane current_waypoints_;
+  autoware_msgs::lane current_waypoints_;
 
 public:
-  void setPath(const waypoint_follower_msgs::lane &waypoints)
+  void setPath(const autoware_msgs::lane &waypoints)
   {
     current_waypoints_ = waypoints;
   }
@@ -61,7 +61,7 @@ public:
   geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
   geometry_msgs::Pose getWaypointPose(int waypoint) const;
   double getWaypointVelocityMPS(int waypoint) const;
-  waypoint_follower_msgs::lane getCurrentWaypoints() const
+  autoware_msgs::lane getCurrentWaypoints() const
   {
     return current_waypoints_;
   }
@@ -96,7 +96,7 @@ geometry_msgs::Point calcAbsoluteCoordinate(geometry_msgs::Point point,
                                                                                 // coordinate
 double getPlaneDistance(geometry_msgs::Point target1,
                         geometry_msgs::Point target2);  // get 2 dimentional distance between target 1 and target 2
-int getClosestWaypoint(const waypoint_follower_msgs::lane &current_path, geometry_msgs::Pose current_pose);
+int getClosestWaypoint(const autoware_msgs::lane &current_path, geometry_msgs::Pose current_pose);
 bool getLinearEquation(geometry_msgs::Point start, geometry_msgs::Point end, double *a, double *b, double *c);
 double getDistanceBetweenLineAndPoint(geometry_msgs::Point point, double sa, double b, double c);
 double getRelativeAngle(geometry_msgs::Pose waypoint_pose, geometry_msgs::Pose vehicle_pose);

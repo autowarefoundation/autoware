@@ -1,4 +1,4 @@
-FROM nvidia/cuda:8.0-ubuntu14.04
+FROM nvidia/cuda:8.0-devel-ubuntu14.04
 MAINTAINER Yuki Iida <aiueo.0409@gmail.com>
 
 RUN apt-get update && apt-get install -y \
@@ -17,6 +17,12 @@ RUN apt-get update && apt-get install -y \
         ros-indigo-turtlebot-simulator \
         libnlopt-dev freeglut3-dev qtbase5-dev \
         libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
+
+RUN apt-get install -y \
+	ros-indigo-velocity-controllers  ros-indigo-grid-map \
+	ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-gps-common \
+	libglew-dev
+
 RUN rosdep init \
         && rosdep update \
         && echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc

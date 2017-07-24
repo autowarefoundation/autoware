@@ -6,9 +6,9 @@ project(autoware_connector)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  geometry_msgs
-  vehicle_socket
   tf
+  geometry_msgs
+  autoware_msgs
 )
 
 
@@ -42,4 +42,4 @@ include_directories(
 add_executable(can_info_translator nodes/can_info_translator/can_info_translator_node.cpp
   nodes/can_info_translator/can_info_translator_core.cpp)
 target_link_libraries(can_info_translator ${catkin_LIBRARIES})
-add_dependencies(can_info_translator vehicle_socket_generate_messages_cpp)
+add_dependencies(can_info_translator autoware_msgs_generate_messages_cpp)

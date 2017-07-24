@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <runtime_manager/traffic_light.h>
+#include <autoware_msgs/traffic_light.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -13,7 +13,7 @@ static const int32_t TRAFFIC_LIGHT_RED     = 0;
 static const int32_t TRAFFIC_LIGHT_GREEN   = 1;
 static const int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
-static void signalState_cb(const runtime_manager::traffic_light::ConstPtr& msg)
+static void signalState_cb(const autoware_msgs::traffic_light::ConstPtr& msg)
 {
   const int   fontFace      = cv::FONT_HERSHEY_COMPLEX;
   const float fontScale     = 1.0f;

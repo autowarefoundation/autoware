@@ -2,10 +2,10 @@
 #include <geometry_msgs/Point.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
-#include <lidar_tracker/DetectedObject.h>
-#include <lidar_tracker/DetectedObjectArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 #include <math.h>
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
@@ -15,7 +15,7 @@ ros::Publisher tracked_pub;
 ros::Publisher tracked_bba_pub;
 ros::Publisher tracked_bba_textlabel_pub;
 
-static std::vector<lidar_tracker::CloudCluster> v_pre_cloud_cluster;
+static std::vector<autoware_msgs::CloudCluster> v_pre_cloud_cluster;
 static double threshold_dist;
 
 static double euclid_distance(const geometry_msgs::Point pos1,
@@ -31,9 +31,9 @@ void pos_stamped2pos(geometry_msgs::PointStamped in_pos,
 }
 
 void cluster_cb(
-    const lidar_tracker::CloudClusterArray::Ptr &cloud_cluster_array_ptr) {
+    const autoware_msgs::CloudClusterArray::Ptr &cloud_cluster_array_ptr) {
 
-  lidar_tracker::CloudClusterArray base_msg = *cloud_cluster_array_ptr;
+  autoware_msgs::CloudClusterArray base_msg = *cloud_cluster_array_ptr;
   static int id = 1;
 
   for (int i(0); i < (int)base_msg.clusters.size(); ++i) {
@@ -62,14 +62,14 @@ void cluster_cb(
 
   v_pre_cloud_cluster.clear();
   for (int i(0); i < (int)base_msg.clusters.size(); ++i) {
-    lidar_tracker::CloudCluster cloud_cluster = base_msg.clusters.at(i);
+    autoware_msgs::CloudCluster cloud_cluster = base_msg.clusters.at(i);
     v_pre_cloud_cluster.push_back(cloud_cluster);
   }
 
-  lidar_tracker::DetectedObjectArray detected_objects_msg;
+  autoware_msgs::DetectedObjectArray detected_objects_msg;
   detected_objects_msg.header = base_msg.header;
   for (auto i = base_msg.clusters.begin(); i != base_msg.clusters.end(); i++) {
-    lidar_tracker::DetectedObject detected_object;
+    autoware_msgs::DetectedObject detected_object;
     detected_object.header = i->header;
     detected_object.id = i->id;
     detected_object.label = i->label;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   ros::Subscriber cluster_centroids_sub =
       n.subscribe("/cloud_clusters_class", 1, cluster_cb);
   tracked_pub =
-      n.advertise<lidar_tracker::DetectedObjectArray>("/detected_objects", 1);
+      n.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
   tracked_bba_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
       "/cloud_cluster_tracked_bounding_box", 1);
   tracked_bba_textlabel_pub = n.advertise<visualization_msgs::MarkerArray>(

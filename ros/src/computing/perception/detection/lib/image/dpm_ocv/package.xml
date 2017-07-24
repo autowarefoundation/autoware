@@ -3,11 +3,12 @@
   <name>libdpm_ocv</name>
   <version>0.0.0</version>
   <description>The opencv_dpm_gpu package</description>
-  <maintainer email="hoshika@todo.todo">hoshika</maintainer>
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke Fujii</maintainer>
+  <author email="hoshika@todo.todo">hoshika</author>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <export>

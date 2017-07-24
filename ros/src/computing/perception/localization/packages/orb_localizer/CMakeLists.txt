@@ -215,7 +215,6 @@ target_link_libraries (
 )
 
 
-
 add_executable (
 	imgprocx
 		nodes/imgprocx/imgprocx.cpp

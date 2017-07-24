@@ -9,12 +9,10 @@
   <build_depend>dpm</build_depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>image_transport</build_depend>
-  <build_depend>runtime_manager</build_depend>
-  <build_depend>cv_tracker_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>image_transport</run_depend>
-  <run_depend>runtime_manager</run_depend>
-  <run_depend>cv_tracker_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
   <export>
   </export>
 </package>

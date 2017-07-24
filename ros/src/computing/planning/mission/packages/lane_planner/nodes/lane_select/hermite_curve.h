@@ -43,8 +43,7 @@
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/Pose.h>
 
-#include "waypoint_follower_msgs/lane.h"
-#include "waypoint_follower_msgs/waypoint.h"
+#include "autoware_msgs/waypoint.h"
 
 namespace lane_planner
 {
@@ -66,7 +65,7 @@ struct Element2D
 
 std::vector<Element2D> generateHermiteCurve(const Element2D &p0, const Element2D &v0, const Element2D &p1,
                                             const Element2D &v1, const double vlength = 20);
-std::vector<waypoint_follower_msgs::waypoint> generateHermiteCurveForROS(const geometry_msgs::Pose &start,
+std::vector<autoware_msgs::waypoint> generateHermiteCurveForROS(const geometry_msgs::Pose &start,
                                                                     const geometry_msgs::Pose &end,
                                                                     const double velocity, const double vlength);
 void createVectorFromPose(const geometry_msgs::Pose &p, tf::Vector3 *v);

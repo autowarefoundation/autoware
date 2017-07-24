@@ -43,7 +43,6 @@
 
 // User defined includes
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "runtime_manager/ConfigWaypointFollower.h"
 
 namespace waypoint_follower
 {

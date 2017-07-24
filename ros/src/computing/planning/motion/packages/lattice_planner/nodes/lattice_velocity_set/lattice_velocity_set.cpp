@@ -43,10 +43,10 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
-#include <runtime_manager/ConfigLatticeVelocitySet.h>
+#include "autoware_msgs/ConfigLatticeVelocitySet.h"
 #include <iostream>
 
-#include "waypoint_follower_msgs/lane.h"
+#include "autoware_msgs/lane.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libvelocity_set.h"
 
@@ -97,7 +97,7 @@ WayPoints g_path_dk;
 class PathVset : public WayPoints
 {
 private:
-  waypoint_follower_msgs::lane temporal_waypoints_;
+  autoware_msgs::lane temporal_waypoints_;
 
 public:
   void changeWaypoints(int stop_waypoint);
@@ -106,7 +106,7 @@ public:
   void setDeceleration();
   bool checkWaypoint(int num, const char *name) const;
   void setTemporalWaypoints();
-  waypoint_follower_msgs::lane getTemporalWaypoints() const
+  autoware_msgs::lane getTemporalWaypoints() const
   {
     return temporal_waypoints_;
   }
@@ -138,7 +138,7 @@ void PathVset::setTemporalWaypoints()
   temporal_waypoints_.header = current_waypoints_.header;
   temporal_waypoints_.increment = current_waypoints_.increment;
   // push current pose
-  waypoint_follower_msgs::waypoint current_point;
+  autoware_msgs::waypoint current_point;
 
   current_point.pose = g_control_pose;
   current_point.twist = current_waypoints_.waypoints[g_closest_waypoint].twist;
@@ -279,7 +279,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 
     changed_vel = sqrt(2.0 * g_decel * (interval * i));  // sqrt(2*a*x)
 
-    waypoint_follower_msgs::waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
+    autoware_msgs::waypoint initial_waypoint = g_path_dk.getCurrentWaypoints().waypoints[num];
     if (changed_vel > initial_waypoint.twist.twist.linear.x)
     {  // avoid acceleration
       current_waypoints_.waypoints[num].twist.twist.linear.x = initial_waypoint.twist.twist.linear.x;
@@ -312,7 +312,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 //          Callback
 //===============================
 
-void configCallback(const runtime_manager::ConfigLatticeVelocitySetConstPtr &config)
+void configCallback(const autoware_msgs::ConfigLatticeVelocitySetConstPtr &config)
 {
   g_others_distance = config->others_distance;
   g_detection_range = config->detection_range;
@@ -330,7 +330,7 @@ void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   g_current_vel = msg->twist.linear.x;
 }
 
-void baseWaypointCallback(const waypoint_follower_msgs::laneConstPtr &msg)
+void baseWaypointCallback(const autoware_msgs::laneConstPtr &msg)
 {
   g_path_dk.setPath(*msg);
   g_path_change.setPath(*msg);
@@ -838,7 +838,7 @@ int main(int argc, char **argv)
 
   g_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 0);
   g_sound_pub = nh.advertise<std_msgs::String>("sound_player", 10);
-  g_temporal_waypoints_pub = nh.advertise<waypoint_follower_msgs::lane>("temporal_waypoints", 1000, true);
+  g_temporal_waypoints_pub = nh.advertise<autoware_msgs::lane>("temporal_waypoints", 1000, true);
   ros::Publisher closest_waypoint_pub;
   closest_waypoint_pub = nh.advertise<std_msgs::Int32>("closest_waypoint", 1000);
   g_obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 0);

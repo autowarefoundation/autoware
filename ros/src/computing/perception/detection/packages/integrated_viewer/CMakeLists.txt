@@ -14,10 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  runtime_manager
-  points2image
   rviz
-  cv_tracker_msgs
+  autoware_msgs
   )
 
 set(CMAKE_CXX_FLAGS
@@ -83,6 +81,7 @@ set(SOURCE_FILES
   node/image_viewer_plugin/image_viewer_plugin.cpp
   node/image_viewer_plugin/draw_rects.cpp
   node/image_viewer_plugin/draw_points.cpp
+  node/image_viewer_plugin/draw_lane.cpp
   ${MOC_FILES}
   ${UI_HEADERS})
 
@@ -122,7 +121,6 @@ install(FILES rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 add_dependencies(${PROJECT_NAME}
-  runtime_manager_generate_messages_cpp
-  cv_tracker_msgs_generate_messages_cpp
-  points2image_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS} 
+)
 #endif()
