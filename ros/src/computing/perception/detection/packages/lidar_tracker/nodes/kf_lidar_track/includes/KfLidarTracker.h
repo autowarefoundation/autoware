@@ -118,7 +118,7 @@ public:
 		RectsDist = 1
 	};
 
-	std::vector< CTrack > tracks;
+	std::vector< CTrack > tracks_;//TODO: add GetTracks getter
 	void Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_disttype);
 
 
