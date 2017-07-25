@@ -30,9 +30,17 @@ target_link_libraries(space_filter ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #Ground Filter
 find_package(PCL 1.7 REQUIRED)
-include_directories(${PCL_INCLUDE_DIRS})
-link_libraries(${PCL_LIBRARIES})
 add_definitions(${PCL_DEFINITIONS})
 
-add_executable(ground_filter nodes/ground_filter/ground_filter.cpp)
-target_link_libraries(ground_filter ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(ground_filter 
+	nodes/ground_filter/ground_filter.cpp
+)
+
+target_include_directories(ground_filter PRIVATE
+	include_directories(${PCL_INCLUDE_DIRS})
+)
+
+target_link_libraries(ground_filter
+	${catkin_LIBRARIES}
+	${PCL_LIBRARIES}
+)
