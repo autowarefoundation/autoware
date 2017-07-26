@@ -204,7 +204,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 				}
 				else
 				{//this should never execute due to Sensor specs
-					ROS_ERROR("GrooundFilter: Division by Zero avoided on pair_angle");
+					ROS_ERROR("GroundFilter: Division by Zero avoided on pair_angle");
 					pair_angle = 0;
 				}
 				if (
