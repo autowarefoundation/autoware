@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   pcl_ros
+  pcl_conversions
   cv_bridge
   velodyne_pointcloud
 )
@@ -13,6 +14,8 @@ catkin_package(CATKIN_DEPENDS
 	sensor_msgs
 	velodyne_pointcloud
 )
+
+find_package(Qt5Core REQUIRED)
 
 ###########
 ## Build ##
@@ -39,10 +42,11 @@ add_executable(ground_filter
 )
 
 target_include_directories(ground_filter PRIVATE
-	include_directories(${PCL_INCLUDE_DIRS})
+	${PCL_INCLUDE_DIRS}
 )
 
 target_link_libraries(ground_filter
 	${catkin_LIBRARIES}
 	${PCL_LIBRARIES}
+	${Qt5Core_LIBRARIES}
 )
