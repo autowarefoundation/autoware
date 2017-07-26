@@ -162,7 +162,8 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 
 	velodyne_pointcloud::PointXYZIR point;
 
-	horizontal_res_ = int(in_cloud_msg->points.size() / vertical_res_);
+	//This line is not necessary
+	//horizontal_res_ = int(in_cloud_msg->points.size() / vertical_res_);
 	InitDepthMap(horizontal_res_);
 
 	for (size_t i = 0; i < in_cloud_msg->points.size(); i++)
@@ -259,6 +260,11 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 						}
 						point_index_size = 0;
 					}
+					//These line were missing
+					r_ref = r0;
+					z_ref = z0;
+					point_index[point_index_size] = j;
+					point_index_size++;
 				}
 			}
 			if (j == 0)
@@ -332,6 +338,20 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 						}
 					}
 					else
+					{
+						if(cluster_index_size > 1)
+						{
+							PublishPointCloud(in_cloud_msg, cluster_index, cluster_index_size, out_groundless_points);
+						}
+						else
+						{
+							PublishPointCloud(in_cloud_msg, cluster_index, cluster_index_size, out_ground_points);
+						}
+						cluster_index[cluster_index_size] = unknown_index[m];
+						cluster_index_size++;
+						centroid = r0;
+					}
+					if (m == 0)
 					{
 						if(cluster_index_size > 1)
 						{
