@@ -6,10 +6,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   pcl_ros
   cv_bridge
+  velodyne_pointcloud
 )
 
-catkin_package(
-  CATKIN_DEPENDS sensor_msgs
+catkin_package(CATKIN_DEPENDS
+	sensor_msgs
+	velodyne_pointcloud
 )
 
 ###########

@@ -14,9 +14,9 @@
 
 enum Label
 {
-	GROUND = 0,
-	VERTICAL = 1,
-	UNKNOWN = 3
+	GROUND,
+	VERTICAL,
+	UNKNOWN //Initial state, not classified
 };
 
 class GroundFilter
@@ -71,22 +71,32 @@ private:
 GroundFilter::GroundFilter() : node_handle_("~")
 {
 	ROS_INFO("Inititalizing Ground Filter...");
-	node_handle_.param<std::string>("point_topic", point_topic_, "/points_raw");	ROS_INFO("Input Point Cloud: %s", point_topic_.c_str());
- 	node_handle_.param("remove_floor",  floor_removal_,  true);						ROS_INFO("Floor Removal: %d", floor_removal_);
-	node_handle_.param("sensor_model", sensor_model_, 64);							ROS_INFO("Sensor Model: %d", sensor_model_);
-	node_handle_.param("sensor_height", sensor_height_, 1.72);						ROS_INFO("Sensor Height: %f", sensor_height_);
-	node_handle_.param("max_slope", max_slope_, 20.0);								ROS_INFO("Max Slope: %f", max_slope_);
-	node_handle_.param("point_distance", point_distance_, 0.05);					ROS_INFO("Point Distance: %f", point_distance_);
-
-	node_handle_.param("min_point", min_point_, 3);									ROS_INFO("Min Points: %d", min_point_);
-	node_handle_.param("clipping_thres", clipping_thres_, 0.5);						ROS_INFO("Lower Clipping Threshold: %f", clipping_thres_);
-	node_handle_.param("gap_thres", gap_thres_, 0.5);								ROS_INFO("Point Gap Threshold: %f", gap_thres_);
+	node_handle_.param<std::string>("point_topic", point_topic_, "/points_raw");
+	ROS_INFO("Input Point Cloud: %s", point_topic_.c_str());
+ 	node_handle_.param("remove_floor",  floor_removal_,  true);
+ 	ROS_INFO("Floor Removal: %d", floor_removal_);
+	node_handle_.param("sensor_model", sensor_model_, 64);
+	ROS_INFO("Sensor Model: %d", sensor_model_);
+	node_handle_.param("sensor_height", sensor_height_, 1.72);
+	ROS_INFO("Sensor Height: %f", sensor_height_);
+	node_handle_.param("max_slope", max_slope_, 20.0);
+	ROS_INFO("Max Slope: %f", max_slope_);
+	node_handle_.param("point_distance", point_distance_, 0.05);
+	ROS_INFO("Point Distance: %f", point_distance_);
+	node_handle_.param("min_point", min_point_, 3);
+	ROS_INFO("Min Points: %d", min_point_);
+	node_handle_.param("clipping_thres", clipping_thres_, 0.5);
+	ROS_INFO("Lower Clipping Threshold: %f", clipping_thres_);
+	node_handle_.param("gap_thres", gap_thres_, 0.5);
+	ROS_INFO("Point Gap Threshold: %f", gap_thres_);
 
 	std::string no_ground_topic, ground_topic;
-	node_handle_.param<std::string>("no_ground_point_topic", no_ground_topic, "/points_no_ground");	ROS_INFO("No Ground Output Point Cloud: %s", no_ground_topic.c_str());
-	node_handle_.param<std::string>("ground_point_topic", ground_topic, "/points_ground");	ROS_INFO("Only Ground Output Point Cloud: %s", ground_topic.c_str());
+	node_handle_.param<std::string>("no_ground_point_topic", no_ground_topic, "/points_no_ground");
+	ROS_INFO("No Ground Output Point Cloud: %s", no_ground_topic.c_str());
+	node_handle_.param<std::string>("ground_point_topic", ground_topic, "/points_ground");
+	ROS_INFO("Only Ground Output Point Cloud: %s", ground_topic.c_str());
 
-	int default_horizontal_res = DEFAULT_HOR_RES;
+	int default_horizontal_res;
 	switch(sensor_model_)
 	{
 		case 64:
@@ -98,12 +108,15 @@ GroundFilter::GroundFilter() : node_handle_("~")
 		case 16:
 			default_horizontal_res = 1800;
 			break;
+		default:
+			default_horizontal_res = DEFAULT_HOR_RES;
+			break;
 	}
 	node_handle_.param("horizontal_res", horizontal_res_, default_horizontal_res);
 
-	points_node_sub_ = node_handle_.subscribe(point_topic_, 10, &GroundFilter::VelodyneCallback, this);
-	groundless_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(no_ground_topic, 10);
-	ground_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(ground_topic, 10);
+	points_node_sub_ = node_handle_.subscribe(point_topic_, 2, &GroundFilter::VelodyneCallback, this);
+	groundless_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(no_ground_topic, 2);
+	ground_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(ground_topic, 2);
 
 	vertical_res_ = sensor_model_;
 	InitLabelArray(sensor_model_);
@@ -155,7 +168,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 	for (size_t i = 0; i < in_cloud_msg->points.size(); i++)
 	{
 		double u = atan2(in_cloud_msg->points[i].y,in_cloud_msg->points[i].x) * 180/M_PI;
-		if (u < 0) u = 360 + u;
+		if (u < 0) { u = 360 + u; }
 		int column = horizontal_res_ - (int)((double)horizontal_res_ * u / 360.0) - 1;
 		int row = vertical_res_ - 1 - in_cloud_msg->points[i].ring;
 		index_map_.at<int>(row, column) = i;
@@ -182,28 +195,44 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 				double r0 = sqrt(x0*x0 + y0*y0);
 				double r_diff = r0 - r_ref;
 				double z_diff = fabs(z0 - z_ref);
-				double pair_angle = z_diff/r_diff;
-				if (((pair_angle > 0 && pair_angle < limiting_ratio_) && z_diff < gap_thres_ && z0 < clipping_thres_) || point_index_size == 0)
+				double pair_angle;
+
+				if (r_diff != 0.)
+				{
+					pair_angle = z_diff/r_diff;
+				}
+				else
+				{//this should never execute due to Sensor specs
+					ROS_ERROR("GrooundFilter: Division by Zero avoided on pair_angle");
+					pair_angle = 0;
+				}
+				if (
+					 (	(pair_angle > 0 && pair_angle < limiting_ratio_)
+						&& z_diff < gap_thres_
+						&& z0 < clipping_thres_
+					 )
+					|| point_index_size == 0
+					)
 				{
 					r_ref = r0;
 					z_ref = z0;
 					point_index[point_index_size] = j;
 					point_index_size++;
-				} else
+				}
+				else
 				{
 					if (point_index_size > min_point_)
 					{
 						for (int m = 0; m < point_index_size; m++)
 						{
-								
-								int index = index_map_.at<int>(point_index[m],i);
-								point.x = in_cloud_msg->points[index].x;
-								point.y = in_cloud_msg->points[index].y;
-								point.z = in_cloud_msg->points[index].z;
-								point.intensity = in_cloud_msg->points[index].intensity;
-								point.ring = in_cloud_msg->points[index].ring;
-								out_ground_points.push_back(point);
-								point_class[point_index[m]] = GROUND;
+							int index = index_map_.at<int>(point_index[m],i);
+							point.x = in_cloud_msg->points[index].x;
+							point.y = in_cloud_msg->points[index].y;
+							point.z = in_cloud_msg->points[index].z;
+							point.intensity = in_cloud_msg->points[index].intensity;
+							point.ring = in_cloud_msg->points[index].ring;
+							out_ground_points.push_back(point);
+							point_class[point_index[m]] = GROUND;
 						}
 						point_index_size = 0;
 					}
@@ -221,7 +250,9 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 								point.ring = in_cloud_msg->points[index].ring;
 								out_groundless_points.push_back(point);
 								point_class[point_index[m]] = VERTICAL;
-							} else {
+							}
+							else
+							{
 								unknown_index[unknown_index_size] = index;
 								unknown_index_size++;
 							}

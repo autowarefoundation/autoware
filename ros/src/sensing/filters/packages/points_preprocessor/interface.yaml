@@ -1,3 +1,0 @@
-- name: ground_filter
-  publish: [/points_lanes, /points_ground]
-  subscribe: [/points_raw]
