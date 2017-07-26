@@ -254,9 +254,7 @@ target_include_directories(region_tlr_ssd PRIVATE
   )
 
 add_dependencies(region_tlr_ssd
-  cv_tracker_generate_messages_cpp
-  runtime_manager_generate_messages_cpp
-  road_wizard_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
   )
 
 else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
