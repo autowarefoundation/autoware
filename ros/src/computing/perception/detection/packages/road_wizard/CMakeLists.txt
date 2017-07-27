@@ -49,7 +49,7 @@ include_directories(
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap autoware_msgs
+  CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -97,15 +97,7 @@ target_link_libraries(feat_proj
 )
 
 add_dependencies(feat_proj
-<<<<<<< HEAD
   ${catkin_EXPORTED_TARGETS}
-=======
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp
-vector_map_server_generate_messages_cpp
-geometry_msgs_generate_messages_cpp
-waypoint_follower_generate_messages_cpp
->>>>>>> fe3055867d3a8cd8990ab0541b7a69538eb1c322
 )
 
 ### tlr_tuner ###
@@ -262,9 +254,7 @@ target_include_directories(region_tlr_ssd PRIVATE
   )
 
 add_dependencies(region_tlr_ssd
-  cv_tracker_generate_messages_cpp
-  runtime_manager_generate_messages_cpp
-  road_wizard_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
   )
 
 else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
