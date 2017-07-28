@@ -22,8 +22,8 @@ using vector_map::Node;
 using vector_map::Point;
 using vector_map::Key;
 
-static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 100;
-static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
+static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1;
+static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1;
 static constexpr bool ADVERTISE_LATCH = false;
 static constexpr double LOOP_RATE = 15.0;
 
@@ -152,7 +152,7 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   autoware_msgs::CloudClusterArray cloud_clusters_msg;
   cloud_clusters_msg.header = header;
   visualization_msgs::MarkerArray marker_array_msg;
-  int id = 0;
+  int marker_id = 0;
 
   for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i) {
     if (obj_indices.at(i) == -1) continue;
@@ -171,13 +171,13 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     bounding_box = v_cloud_cluster.at(obj_indices.at(i)).bounding_box;
 
     /* adjust object rotation using lane in vector_map */
-    tf::Quaternion q1(bounding_box.pose.orientation.x,
+    tf::Quaternion q_obj(bounding_box.pose.orientation.x,
       bounding_box.pose.orientation.y,
       bounding_box.pose.orientation.z,
       bounding_box.pose.orientation.w);
     bool fixed_rotation = false;
     if (use_vmap) {
-      int mi = 0; // number of rotaiton 90deg
+      int rot_n = 0; // yaw' = yaw + n*pi/2
       vector_map_server::GetLane get_lane;
       get_lane.request.pose.pose = bounding_box.pose;
       tf::Vector3 orgpt(bounding_box.pose.position.x,
@@ -202,25 +202,26 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
           double my = get_lane.request.pose.pose.position.y;
           if ((mx-fp.ly)*(mx-fp.ly)+(my-fp.bx)*(my-fp.bx) < vmap_threshold) {
             fixed_rotation = true;
-            tf::Quaternion ql;
-            ql.setRPY(0, 0, atan2(fp.bx - bp.bx, fp.ly - bp.ly)); // y,x
-            tf::Quaternion qb = tform * q1;
-            tf::Quaternion qm;
-            qm.setRPY(0, 0, M_PI/2);
-            double mr = M_PI;
+            tf::Quaternion qm_lane;   // map-cood
+            qm_lane.setRPY(0, 0, atan2(fp.bx - bp.bx, fp.ly - bp.ly)); // y,x
+            tf::Quaternion q_step;  // 90 deg
+            q_step.setRPY(0, 0, M_PI/2);
+            double r_max = M_PI;
             // search in 0,90,180,270-degree
+            tf::Quaternion qr_obj = q_obj; // rotated
             for (int i = 0; i < 4; i++) {
-              double r = ql.angle(qb);
+              tf::Quaternion qrm_obj = tform * qr_obj;  // map-cood
+              double r = qm_lane.angle(qrm_obj);
               r = (r >= M_PI/2) ? (r - M_PI):r;
-              if (fabs(r) < mr) {
-                mr = fabs(r);
-                mi = i;
+              if (fabs(r) < r_max) {
+                r_max = fabs(r);
+                rot_n = i;
               }
-              qb *= qm;
+              qr_obj *= q_step;
             }
             double roll, pitch, yaw;
-            tf::Matrix3x3(q1).getRPY(roll, pitch, yaw);
-            ROS_INFO(" %d roll=%f pitch=%f yaw=%f", mi*90, roll, pitch, yaw);
+            tf::Matrix3x3(q_obj).getRPY(roll, pitch, yaw);
+            ROS_INFO(" %d roll=%f pitch=%f yaw=%f", rot_n*90, roll, pitch, yaw);
             break;
           }
         }
@@ -228,24 +229,25 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
         ROS_INFO("%s: VectorMap Server call failed.", __FUNCTION__);
       }
       // determine rotation
-      tf::Quaternion dq1;
-      dq1.setRPY(0, 0, M_PI*mi/2);
-      q1 *= dq1;
+      tf::Quaternion dq_obj;
+      dq_obj.setRPY(0, 0, M_PI*rot_n/2);
+      q_obj *= dq_obj;
       // bounding_box
-      bounding_box.pose.orientation.x = q1.x();
-      bounding_box.pose.orientation.y = q1.y();
-      bounding_box.pose.orientation.z = q1.z();
-      bounding_box.pose.orientation.w = q1.w();
-      if (mi % 2 == 1) { // swap x-y at 90,270 deg
+      bounding_box.pose.orientation.x = q_obj.x();
+      bounding_box.pose.orientation.y = q_obj.y();
+      bounding_box.pose.orientation.z = q_obj.z();
+      bounding_box.pose.orientation.w = q_obj.w();
+      if (rot_n % 2 == 1) { // swap x-y at 90,270 deg
         std::swap(bounding_box.dimensions.x, bounding_box.dimensions.y);
       }
+      // cloud clusters
       v_cloud_cluster.at(obj_indices.at(i)).bounding_box = bounding_box;
     }
 
     // x-axis
     visualization_msgs::Marker marker;
     marker.header = header;
-    marker.id = id++;
+    marker.id = marker_id++;
     marker.lifetime = ros::Duration(0.1);
     marker.type = visualization_msgs::Marker::ARROW;
     marker.pose.position = bounding_box.pose.position;
@@ -258,28 +260,28 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     marker_array_msg.markers.push_back(marker);
 
     // y-axis
-    tf::Quaternion q2;
-    q2.setRPY(0, 0, M_PI/2);
-    q1 *= q2;
-    marker.id = id++;
-    marker.pose.orientation.x = q1.x();
-    marker.pose.orientation.y = q1.y();
-    marker.pose.orientation.z = q1.z();
-    marker.pose.orientation.w = q1.w();
+    tf::Quaternion qy;
+    qy.setRPY(0, 0, M_PI/2);
+    q_obj *= qy;
+    marker.id = marker_id++;
+    marker.pose.orientation.x = q_obj.x();
+    marker.pose.orientation.y = q_obj.y();
+    marker.pose.orientation.z = q_obj.z();
+    marker.pose.orientation.w = q_obj.w();
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.a = 1.0;
     marker_array_msg.markers.push_back(marker);
 
     // z-axis
-    tf::Quaternion q3;
-    q3.setRPY(0, -M_PI/2, 0);
-    q1 *= q3;
-    marker.id = id++;
-    marker.pose.orientation.x = q1.x();
-    marker.pose.orientation.y = q1.y();
-    marker.pose.orientation.z = q1.z();
-    marker.pose.orientation.w = q1.w();
+    tf::Quaternion qz;
+    qz.setRPY(0, -M_PI/2, 0);
+    q_obj *= qz;
+    marker.id = marker_id++;
+    marker.pose.orientation.x = q_obj.x();
+    marker.pose.orientation.y = q_obj.y();
+    marker.pose.orientation.z = q_obj.z();
+    marker.pose.orientation.w = q_obj.w();
     marker.color.g = 0.0;
     marker.color.b = 1.0;
     marker.color.a = 1.0;
@@ -287,14 +289,14 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
 
     // rotated by lane
     if (fixed_rotation) {
-      marker.id = id++;
+      marker.id = marker_id++;
       marker.type = visualization_msgs::Marker::SPHERE;
       marker.scale.x = 1.0;
       marker.scale.y = 1.0;
       marker.scale.z = 1.0;
+      marker.color.r = 1.0;
       marker.color.g = 1.0;
       marker.color.b = 1.0;
-      marker.color.a = 1.0;
       marker_array_msg.markers.push_back(marker);
     }
 
