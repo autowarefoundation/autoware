@@ -14,14 +14,13 @@
 #include <tf/transform_listener.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetLane.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
 
 using vector_map::Node;
 using vector_map::Point;
 using vector_map::Key;
-
-/* flag for comfirming whether multiple topics are received */
-static bool isReady_obj_label;
-static bool isReady_cluster_centroids;
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 100;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 10;
@@ -39,7 +38,6 @@ static std_msgs::Header sensor_header;
 static std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
 static ros::Time obj_pose_timestamp;
 static double threshold_min_dist;
-static tf::StampedTransform transform;
 
 static vector_map::VectorMap vmap;
 static ros::ServiceClient vmap_server;
@@ -50,16 +48,7 @@ struct obj_label_t {
   std::vector<geometry_msgs::Point> reprojected_positions;
   std::vector<int> obj_id;
 };
-
 obj_label_t obj_label;
-
-/* mutex to handle objects from within multi thread safely */
-std::mutex mtx_flag_obj_label;
-std::mutex mtx_flag_cluster_centroids;
-std::mutex mtx_reprojected_positions;
-std::mutex mtx_centroids;
-#define LOCK(mtx) (mtx).lock()
-#define UNLOCK(mtx) (mtx).unlock()
 
 static double euclid_distance(const geometry_msgs::Point pos1,
                               const geometry_msgs::Point pos2) {
@@ -69,29 +58,55 @@ static double euclid_distance(const geometry_msgs::Point pos1,
 } /* static double distance() */
 
 /* fusion reprojected position and pointcloud centroids */
-static void fusion_objects(void) {
-  obj_label_t obj_label_current;
-  std::vector<autoware_msgs::CloudCluster> v_cloud_cluster_current;
+void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
+  const autoware_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr) {
+
+  tf::StampedTransform tform;
+  tf::TransformListener tflistener;
+  try {
+    ros::Time now = ros::Time(0);
+    tflistener.waitForTransform("/map", "/velodyne", now, ros::Duration(10));
+    tflistener.lookupTransform("/map", "/velodyne", now, tform);
+  } catch (tf::TransformException ex) {
+    ROS_INFO("%s: %s", __FUNCTION__, ex.what());
+    return;
+  }
+
+  obj_label_t obj_label;
+  object_type = obj_label_msg->type;
+  obj_pose_timestamp = obj_label_msg->header.stamp;
+
+  for (unsigned int i = 0; i < obj_label_msg->obj_id.size(); ++i) {
+    obj_label.reprojected_positions.push_back(
+        obj_label_msg->reprojected_pos.at(i));
+    obj_label.obj_id.push_back(obj_label_msg->obj_id.at(i));
+  }
+
+  std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
   std_msgs::Header header = sensor_header;
-  std::vector<geometry_msgs::Point> centroids_current;
+  std::vector<geometry_msgs::Point> centroids;
 
-  LOCK(mtx_reprojected_positions);
-  copy(obj_label.reprojected_positions.begin(),
-       obj_label.reprojected_positions.end(),
-       back_inserter(obj_label_current.reprojected_positions));
-  copy(obj_label.obj_id.begin(), obj_label.obj_id.end(),
-       back_inserter(obj_label_current.obj_id));
-  UNLOCK(mtx_reprojected_positions);
+  for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i) {
+    autoware_msgs::CloudCluster cloud_cluster =
+        in_cloud_cluster_array_ptr->clusters.at(i);
+    /* convert centroids coodinate from velodyne frame to map frame */
+    tf::Vector3 pt(cloud_cluster.centroid_point.point.x,
+                   cloud_cluster.centroid_point.point.y,
+                   cloud_cluster.centroid_point.point.z);
+    tf::Vector3 converted = tform * pt;
+    sensor_header = cloud_cluster.header;
+    v_cloud_cluster.push_back(cloud_cluster);
+    geometry_msgs::Point point_in_map;
+    point_in_map.x = converted.x();
+    point_in_map.y = converted.y();
+    point_in_map.z = converted.z();
 
-  LOCK(mtx_centroids);
-  copy(centroids.begin(), centroids.end(), back_inserter(centroids_current));
-  copy(v_cloud_cluster.begin(), v_cloud_cluster.end(),
-       back_inserter(v_cloud_cluster_current));
-  UNLOCK(mtx_centroids);
+    centroids.push_back(point_in_map);
+  }
 
-  if (centroids_current.empty() ||
-      obj_label_current.reprojected_positions.empty() ||
-      obj_label_current.obj_id.empty()) {
+  if (centroids.empty() ||
+      obj_label.reprojected_positions.empty() ||
+      obj_label.obj_id.empty()) {
     jsk_recognition_msgs::BoundingBoxArray pub_msg;
     pub_msg.header = header;
     std_msgs::Time time;
@@ -101,24 +116,22 @@ static void fusion_objects(void) {
     cluster_class_pub.publish(cloud_clusters_msg);
     visualization_msgs::MarkerArray marker_array_msg;
     marker_array_pub.publish(marker_array_msg);
-
     time.data = obj_pose_timestamp;
     obj_pose_timestamp_pub.publish(time);
     return;
   }
 
   std::vector<int> obj_indices;
-
-  for (unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
+  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i) {
     unsigned int min_idx = 0;
     double min_distance = DBL_MAX;
 
     /* calculate each euclid distance between reprojected position and centroids
      */
-    for (unsigned int j = 0; j < centroids_current.size(); j++) {
+    for (unsigned int j = 0; j < centroids.size(); j++) {
       double distance =
-          euclid_distance(obj_label_current.reprojected_positions.at(i),
-                          centroids_current.at(j));
+          euclid_distance(obj_label.reprojected_positions.at(i),
+                          centroids.at(j));
 
       /* Nearest centroid correspond to this reprojected object */
       if (distance < min_distance) {
@@ -138,34 +151,24 @@ static void fusion_objects(void) {
   pub_msg.header = header;
   autoware_msgs::CloudClusterArray cloud_clusters_msg;
   cloud_clusters_msg.header = header;
-
-  tf::StampedTransform tform;
-  tf::TransformListener listener;
-  try {
-    ros::Time now = ros::Time(0);
-    listener.waitForTransform("/map", "/velodyne", now, ros::Duration(10));
-    listener.lookupTransform("/map", "/velodyne", now, tform);
-  } catch (tf::TransformException ex) {
-    ROS_INFO("%s: %s", __FUNCTION__, ex.what());
-  }
   visualization_msgs::MarkerArray marker_array_msg;
   int id = 0;
 
-  for (unsigned int i = 0; i < obj_label_current.obj_id.size(); ++i) {
+  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i) {
     if (obj_indices.at(i) == -1) continue;
 
-    v_cloud_cluster_current.at(obj_indices.at(i)).label = object_type;
+    v_cloud_cluster.at(obj_indices.at(i)).label = object_type;
     if (object_type == "car") {
-      v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 0;
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 0;
     } else if (object_type == "person") {
-      v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 1;
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 1;
     } else {
-      v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.label = 2;
-      v_cloud_cluster_current.at(obj_indices.at(i)).label = "unknown";
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 2;
+      v_cloud_cluster.at(obj_indices.at(i)).label = "unknown";
     }
 
     jsk_recognition_msgs::BoundingBox bounding_box;
-    bounding_box = v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box;
+    bounding_box = v_cloud_cluster.at(obj_indices.at(i)).bounding_box;
 
     /* adjust object rotation using lane in vector_map */
     tf::Quaternion q1(bounding_box.pose.orientation.x,
@@ -236,6 +239,7 @@ static void fusion_objects(void) {
       if (mi % 2 == 1) { // swap x-y at 90,270 deg
         std::swap(bounding_box.dimensions.x, bounding_box.dimensions.y);
       }
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box = bounding_box;
     }
 
     // x-axis
@@ -294,11 +298,11 @@ static void fusion_objects(void) {
       marker_array_msg.markers.push_back(marker);
     }
 
-    v_cloud_cluster_current.at(obj_indices.at(i)).bounding_box.value =
-        obj_label_current.obj_id.at(i);
+    v_cloud_cluster.at(obj_indices.at(i)).bounding_box.value
+      = obj_label.obj_id.at(i);
     pub_msg.boxes.push_back(bounding_box);
     cloud_clusters_msg.clusters.push_back(
-        v_cloud_cluster_current.at(obj_indices.at(i)));
+      v_cloud_cluster.at(obj_indices.at(i)));
   }
 
   marker_array_pub.publish(marker_array_msg);
@@ -307,89 +311,7 @@ static void fusion_objects(void) {
   std_msgs::Time time;
   time.data = obj_pose_timestamp;
   obj_pose_timestamp_pub.publish(time);
-
-  LOCK(mtx_flag_obj_label);
-  isReady_obj_label = false;
-  UNLOCK(mtx_flag_obj_label);
-
-  LOCK(mtx_flag_cluster_centroids);
-  isReady_cluster_centroids = false;
-  UNLOCK(mtx_flag_cluster_centroids);
 }
-
-void obj_label_cb(const autoware_msgs::obj_label &obj_label_msg) {
-  object_type = obj_label_msg.type;
-  obj_pose_timestamp = obj_label_msg.header.stamp;
-
-  LOCK(mtx_reprojected_positions);
-  obj_label.reprojected_positions.clear();
-  obj_label.obj_id.clear();
-  UNLOCK(mtx_reprojected_positions);
-
-  LOCK(mtx_reprojected_positions);
-  for (unsigned int i = 0; i < obj_label_msg.obj_id.size(); ++i) {
-    obj_label.reprojected_positions.push_back(
-        obj_label_msg.reprojected_pos.at(i));
-    obj_label.obj_id.push_back(obj_label_msg.obj_id.at(i));
-  }
-  UNLOCK(mtx_reprojected_positions);
-
-  /* confirm obj_label is subscribed */
-  LOCK(mtx_flag_obj_label);
-  isReady_obj_label = true;
-  UNLOCK(mtx_flag_obj_label);
-
-  /* Publish fusion result if both of topics are ready */
-  if (isReady_obj_label && isReady_cluster_centroids) {
-    fusion_objects();
-  }
-
-} /* void obj_label_cb() */
-
-void cluster_centroids_cb(
-    const autoware_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr) {
-  LOCK(mtx_centroids);
-  centroids.clear();
-  v_cloud_cluster.clear();
-  UNLOCK(mtx_centroids);
-
-  LOCK(mtx_centroids);
-  static tf::TransformListener trf_listener;
-  try {
-    trf_listener.lookupTransform("map", "velodyne", ros::Time(0), transform);
-    for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i) {
-      autoware_msgs::CloudCluster cloud_cluster =
-          in_cloud_cluster_array_ptr->clusters.at(i);
-      /* convert centroids coodinate from velodyne frame to map frame */
-      tf::Vector3 pt(cloud_cluster.centroid_point.point.x,
-                     cloud_cluster.centroid_point.point.y,
-                     cloud_cluster.centroid_point.point.z);
-      tf::Vector3 converted = transform * pt;
-      sensor_header = cloud_cluster.header;
-      v_cloud_cluster.push_back(cloud_cluster);
-      geometry_msgs::Point point_in_map;
-      point_in_map.x = converted.x();
-      point_in_map.y = converted.y();
-      point_in_map.z = converted.z();
-
-      centroids.push_back(point_in_map);
-    }
-  } catch (tf::TransformException ex) {
-    ROS_INFO("%s", ex.what());
-    ros::Duration(1.0).sleep();
-  }
-  UNLOCK(mtx_centroids);
-
-  LOCK(mtx_flag_cluster_centroids);
-  isReady_cluster_centroids = true;
-  UNLOCK(mtx_flag_cluster_centroids);
-
-  /* Publish fusion result if both of topics are ready */
-  if (isReady_obj_label && isReady_cluster_centroids) {
-    fusion_objects();
-  }
-
-} /* void cluster_centroids_cb() */
 
 int main(int argc, char *argv[]) {
   /* ROS initialization */
@@ -403,14 +325,16 @@ int main(int argc, char *argv[]) {
   private_n.param("vmap_threshold", vmap_threshold, 5.0);
   vmap_threshold *= vmap_threshold; // squared
 
-  /* Initialize flags */
-  isReady_obj_label = false;
-  isReady_cluster_centroids = false;
+  typedef message_filters::sync_policies::ApproximateTime<
+    autoware_msgs::obj_label, autoware_msgs::CloudClusterArray> SyncPolicy;
+  message_filters::Subscriber<autoware_msgs::obj_label> obj_label_sub(
+    n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
+  message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(
+    n, "/cloud_clusters", SUBSCRIBE_QUEUE_SIZE);
+  message_filters::Synchronizer<SyncPolicy> sync(
+    SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub, cluster_centroids_sub);
+  sync.registerCallback(boost::bind(&fusion_cb, _1, _2));
 
-  ros::Subscriber obj_label_sub =
-      n.subscribe("obj_label", SUBSCRIBE_QUEUE_SIZE, obj_label_cb);
-  ros::Subscriber cluster_centroids_sub = n.subscribe(
-      "/cloud_clusters", SUBSCRIBE_QUEUE_SIZE, cluster_centroids_cb);
   obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
       "obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
   cluster_class_pub = n.advertise<autoware_msgs::CloudClusterArray>(
