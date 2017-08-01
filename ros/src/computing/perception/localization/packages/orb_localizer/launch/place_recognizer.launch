@@ -1,0 +1,16 @@
+<launch>
+	<arg name="orb_config" />
+	<arg name="map_file" default="/tmp/orbx.map" />
+	<arg name="image_topic" default="/camera/image_raw" />
+	<arg name="image_rate" default="3" />
+	
+	<!-- slow down -->
+	<node name="downsample" pkg="topic_tools" type="throttle" args="messages $(arg image_topic) $(arg image_rate) $(arg image_topic)_d" />
+
+	<node name="place_recognizer" pkg="orb_localizer" type="place_recognizer" output="screen">
+		<param name="map_file"                    value="$(arg map_file)" />
+		<param name="configuration_file"          value="$(arg orb_config)" />
+		<param name="image_topic"                 value="$(arg image_topic)_d" />
+	</node>
+
+</launch>
