@@ -74,7 +74,11 @@ public:
 		const string &strSettingsFile,
 		const eSensor sensor,
 		const bool bUseViewer = true,
+
+		// Put empty string to disable map loading. In this way, you need to
+		// call openmap yourself
 		const string &mapFileName=string(),
+
 		const operationMode mode=System::MAPPING,
 		bool doOfflineMapping=false
     );
@@ -138,6 +142,7 @@ public:
     LoopClosing* getLoopCloser() { return mpLoopCloser; }
     LocalMapping* getLocalMapper() { return mpLocalMapper; }
     FrameDrawer* getFrameDrawer() { return mpFrameDrawer; }
+    KeyFrameDatabase* getKeyFrameDB() { return mpKeyFrameDatabase; }
 
     const operationMode opMode;
 

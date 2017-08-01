@@ -92,6 +92,18 @@ public:
     inline void setFps (int f)
     {  mMaxFrames = f; }
 
+//    const ORBVocabulary* getVocabulary ()
+//    { return mpORBVocabulary; }
+//
+//    const ORBextractor* getMonocularExtractor ()
+//    { return mpIniORBextractor; }
+//
+//    cv::Mat getCalibrationMatrix ()
+//    { return mK; }
+
+    Frame createMonocularFrame (const cv::Mat& inputGray, const double timestamp);
+
+
 public:
 
     // Tracking states

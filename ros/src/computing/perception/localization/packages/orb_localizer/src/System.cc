@@ -43,35 +43,35 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 				opMode (mode),
 				offlineMapping(doOfflineMapping)
 {
-    // Output welcome message
-    cout << endl <<
-    "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
-    "This program comes with ABSOLUTELY NO WARRANTY;" << endl  <<
-    "This is free software, and you are welcome to redistribute it" << endl <<
-    "under certain conditions. See LICENSE.txt." << endl << endl;
+	// Output welcome message
+	cout << endl <<
+	"ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
+	"This program comes with ABSOLUTELY NO WARRANTY;" << endl  <<
+	"This is free software, and you are welcome to redistribute it" << endl <<
+	"under certain conditions. See LICENSE.txt." << endl << endl;
 
-    cout << "Input sensor was set to: ";
+	cout << "Input sensor was set to: ";
 
-    if(mSensor==MONOCULAR)
-        cout << "Monocular" << endl;
-    else if(mSensor==STEREO)
-        cout << "Stereo" << endl;
-    else if(mSensor==RGBD)
-        cout << "RGB-D" << endl;
+	if(mSensor==MONOCULAR)
+		cout << "Monocular" << endl;
+	else if(mSensor==STEREO)
+		cout << "Stereo" << endl;
+	else if(mSensor==RGBD)
+		cout << "RGB-D" << endl;
 
-    //Check settings file
-    fsSettings = cv::FileStorage(strSettingsFile.c_str(), cv::FileStorage::READ);
-    if(!fsSettings.isOpened())
-    {
-       cerr << "Failed to open settings file at: " << strSettingsFile << endl;
-       exit(-1);
-    }
+	//Check settings file
+	fsSettings = cv::FileStorage(strSettingsFile.c_str(), cv::FileStorage::READ);
+	if(!fsSettings.isOpened())
+	{
+	   cerr << "Failed to open settings file at: " << strSettingsFile << endl;
+	   exit(-1);
+	}
 
-    //Load ORB Vocabulary
+	//Load ORB Vocabulary
 
-    mpVocabulary = new ORBVocabulary();
-    if (opMode==MAPPING and strVocFile.empty() == false) {
-    	cout << endl << "Loading Generic ORB Vocabulary..." << endl;
+	mpVocabulary = new ORBVocabulary();
+	if (opMode==MAPPING and strVocFile.empty() == false) {
+		cout << endl << "Loading Generic ORB Vocabulary..." << endl;
 		bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
 		if(!bVocLoad)
 		{
@@ -80,11 +80,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 			exit(-1);
 		}
 		cout << "Vocabulary loaded!" << endl << endl;
-    }
-    else {
-    	cout << endl << "Loading Custom ORB Vocabulary... " ;
-    	string mapVoc = mapFileName + ".voc";
-    	bool vocload = mpVocabulary->loadFromTextFile (mapVoc);
+	}
+	else {
+		cout << endl << "Loading Custom ORB Vocabulary... " ;
+		string mapVoc = mapFileName + ".voc";
+		bool vocload = mpVocabulary->loadFromTextFile (mapVoc);
 		if(!vocload)
 		{
 			cerr << "Failed. Falling back to generic... " << endl;
@@ -95,72 +95,72 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 			}
 		}
 		cout << "Vocabulary loaded!" << endl << endl;
-    }
-    fps = (float)fsSettings["Camera.fps"];
+	}
+	fps = (float)fsSettings["Camera.fps"];
 
-    //Create KeyFrame Database
-    mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
+	//Create KeyFrame Database
+	mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
-    //Create the Map
-    mpMap = new Map();
-    try {
-    	cout << "Loading map..." << endl;
-    	mpMap->loadFromDisk (mapFileName, mpKeyFrameDatabase);
-    } catch (exception &e) {
-    	cout << "Unable to load map " << mapFileName << endl;
-    }
+	//Create the Map
+	mpMap = new Map();
+	try {
+		cout << "Loading map..." << endl;
+		mpMap->loadFromDisk (mapFileName, mpKeyFrameDatabase);
+	} catch (exception &e) {
+		cout << "Unable to load map " << mapFileName << endl;
+	}
 
-    //Create Drawers. These are used by the Viewer
-    mpFrameDrawer = new FrameDrawer(mpMap);
-    mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
+	//Create Drawers. These are used by the Viewer
+	mpFrameDrawer = new FrameDrawer(mpMap);
+	mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
 
-    //Initialize the Tracking thread
-    //(it will live in the main thread of execution, the one that called this constructor)
-    mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                             mpMap, mpKeyFrameDatabase, strSettingsFile, mSensor);
-    if (mpMap->mbMapUpdated)
-    	mpTracker->setMapLoaded();
+	//Initialize the Tracking thread
+	//(it will live in the main thread of execution, the one that called this constructor)
+	mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+							 mpMap, mpKeyFrameDatabase, strSettingsFile, mSensor);
+	if (mpMap->mbMapUpdated)
+		mpTracker->setMapLoaded();
 
-    mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR, offlineMapping);
-    mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR, offlineMapping);
+	mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR, offlineMapping);
+	mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR, offlineMapping);
 
-    if (opMode==System::MAPPING) {
+	if (opMode==System::MAPPING) {
 
-    	if (offlineMapping==false) {
+		if (offlineMapping==false) {
 			//Initialize the Local Mapping thread and launch
 			mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
 
 			//Initialize the Loop Closing thread and launch
 			mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
-    	}
+		}
 
-	    mpLocalMapper->SetTracker(mpTracker);
-	    mpLocalMapper->SetLoopCloser(mpLoopCloser);
+		mpLocalMapper->SetTracker(mpTracker);
+		mpLocalMapper->SetLoopCloser(mpLoopCloser);
 
-	    mpLoopCloser->SetTracker(mpTracker);
-	    mpLoopCloser->SetLocalMapper(mpLocalMapper);
+		mpLoopCloser->SetTracker(mpTracker);
+		mpLoopCloser->SetLocalMapper(mpLocalMapper);
 
-	    mpTracker->InformOnlyTracking(false);
-    }
+		mpTracker->InformOnlyTracking(false);
+	}
 
-    else {
-//    	ActivateLocalizationMode();
-    	mpTracker->InformOnlyTracking(true);
-    	mptLocalMapping = NULL;
-    	mptLoopClosing = NULL;
-    }
+	else {
+	//    	ActivateLocalizationMode();
+		mpTracker->InformOnlyTracking(true);
+		mptLocalMapping = NULL;
+		mptLoopClosing = NULL;
+	}
 
-    //Initialize the Viewer thread and launch
-    mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,fsSettings,
-    	opMode);
-    if(bUseViewer)
-        mptViewer = new thread(&Viewer::Run, mpViewer);
+	//Initialize the Viewer thread and launch
+	mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,fsSettings,
+		opMode);
+	if(bUseViewer)
+		mptViewer = new thread(&Viewer::Run, mpViewer);
 
-    mpTracker->SetViewer(mpViewer);
+	mpTracker->SetViewer(mpViewer);
 
-    //Set pointers between threads
-    mpTracker->SetLocalMapper(mpLocalMapper);
-    mpTracker->SetLoopClosing(mpLoopCloser);
+	//Set pointers between threads
+	mpTracker->SetLocalMapper(mpLocalMapper);
+	mpTracker->SetLoopClosing(mpLoopCloser);
 
 }
 
@@ -263,9 +263,9 @@ void System::Shutdown()
 			usleep(5000);
 		}
 
-		try {
-			mpMap->saveToDisk(mapFileName, mpKeyFrameDatabase);
-		} catch (...) {}
+//		try {
+//			mpMap->saveToDisk(mapFileName, mpKeyFrameDatabase);
+//		} catch (...) {}
 
 		while (!mpViewer->isFinished())
 			usleep (5000);

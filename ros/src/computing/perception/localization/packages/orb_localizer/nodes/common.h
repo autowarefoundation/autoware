@@ -15,6 +15,9 @@
 #include "Frame.h"
 #include "KeyFrame.h"
 
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+
 
 using std::string;
 using std::vector;
@@ -45,7 +48,15 @@ tf::Transform getKeyFrameExtPose (const ORB_SLAM2::KeyFrame *kf);
 
 cv::Vec3d tfToCv (const tf::Vector3 &pos);
 
-
+cv::Mat createImageFromRosMessage (const sensor_msgs::ImageConstPtr &imageMsg,
+	int newWidth=-1,
+	int newHeight=-1,
+	int roi_x=-1,
+	int roi_y=-1,
+	int roi_width=-1,
+	int roi_height=-1,
+	bool gray=false
+);
 
 class OrbException: public exception
 {

@@ -11,6 +11,18 @@ Requirements:
 - GLUT
 
 
+Notes for Large-scale Map
+ROSLaunch will raise signal SIGTERM and SIGKILL whenever a process timeouts
+after SIGINT. You may need to increase timeout values in the file
+/opt/ros/indigo/lib/python2.7/dist-packages/roslaunch/nodeprocess.py
+(change indigo to your ROS version).
+The default values are:
+_TIMEOUT_SIGINT  = 15.0 #seconds
+_TIMEOUT_SIGTERM = 2.0 #seconds
+which should be changed to arbitrarily large values.
+
+
+
 Mapping HOWTO
 
 1) Prepare ROS bag files containing both image streams and ground truth pose 

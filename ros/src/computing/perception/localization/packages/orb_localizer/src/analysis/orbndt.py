@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from math import cos, sin, tan, exp
 from tf import transformations as trafo
-from boto.manage.cmdshell import start
 from scipy.constants.constants import point
 
 

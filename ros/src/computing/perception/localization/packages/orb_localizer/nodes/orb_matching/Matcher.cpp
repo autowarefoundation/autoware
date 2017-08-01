@@ -205,6 +205,21 @@ void Matcher::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 	else
 		image = cv_ptr->image;
 
+	// Processing before sending image to tracker
+	// Do Resizing and cropping here
+	cv::resize(image, image,
+		cv::Size(
+			(int)SLAMSystem->fsSettings["Camera.WorkingResolution.Width"],
+			(int)SLAMSystem->fsSettings["Camera.WorkingResolution.Height"]
+		));
+	image = image(
+		cv::Rect(
+			(int)SLAMSystem->fsSettings["Camera.ROI.x0"],
+			(int)SLAMSystem->fsSettings["Camera.ROI.y0"],
+			(int)SLAMSystem->fsSettings["Camera.ROI.width"],
+			(int)SLAMSystem->fsSettings["Camera.ROI.height"]
+		)).clone();
+
 	const double imageTime = msg->header.stamp.toSec();
 	lastImageTimestamp = imageTime;
 
@@ -223,21 +238,6 @@ void Matcher::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 		SLAMSystem->getTracker()->ChangeCalibration (fx2, fy2, cx2, cy2);
 		gotFirstFrame = true;
 	}
-
-	// Processing before sending image to tracker
-	// Do Resizing and cropping here
-	cv::resize(image, image,
-		cv::Size(
-			(int)SLAMSystem->fsSettings["Camera.WorkingResolution.Width"],
-			(int)SLAMSystem->fsSettings["Camera.WorkingResolution.Height"]
-		));
-	image = image(
-		cv::Rect(
-			(int)SLAMSystem->fsSettings["Camera.ROI.x0"],
-			(int)SLAMSystem->fsSettings["Camera.ROI.y0"],
-			(int)SLAMSystem->fsSettings["Camera.ROI.width"],
-			(int)SLAMSystem->fsSettings["Camera.ROI.height"]
-		)).clone();
 
 	SLAMSystem->TrackMonocular(image, imageTime);
 

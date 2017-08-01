@@ -217,6 +217,9 @@ public:
 
     void debug (const string &dirname="debug");
 
+    // Keyframe Image
+    cv::Mat frImage;
+
     // The following variables need to be accessed trough a mutex to be thread safe.
 protected:
 

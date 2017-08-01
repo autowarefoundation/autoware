@@ -160,10 +160,11 @@ KeyFrame* Map::offsetKeyframe (KeyFrame* kfSrc, int offset)
 
 const char *signature = "ORBSLAM";
 
-void Map::saveToDisk(const string &mapfilename, KeyFrameDatabase *keyframeDatabase)
+void Map::saveToDisk(const string &mapfilename, KeyFrameDatabase *keyframeDatabase, bool saveKeyframeImages)
 {
 	MapFileHeader header;
 	memcpy (header.signature, signature, sizeof(header.signature));
+	header.hasImage = (unsigned char)saveKeyframeImages;
 	header.numOfKeyFrame = this->mspKeyFrames.size();
 	header.numOfMapPoint = this->mspMapPoints.size();
 	header.numOfReferencePoint = this->mvpReferenceMapPoints.size();
@@ -222,6 +223,17 @@ void Map::saveToDisk(const string &mapfilename, KeyFrameDatabase *keyframeDataba
 	string mapVocab = mapPath.string() + ".voc";
 	mapVoc.saveToTextFile (mapVocab);
 	cout << "Done\n";
+
+	if (saveKeyframeImages) {
+		string imageDir = mapDir.string() + "/keyframe_images";
+		boost::filesystem::create_directory(imageDir);
+		for (auto &kf: mspKeyFrames) {
+			const cv::Mat kfImage = kf->frImage;
+			string imgPath = imageDir + "/" + std::to_string(kf->mnId) + ".jpg";
+			cv::imwrite(imgPath, kfImage);
+		}
+	}
+
 }
 
 
@@ -233,7 +245,7 @@ struct _keyframeTimestampSortComparator {
 
 #define MapOctreeResolution 1.0
 
-void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
+void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb, bool loadKeyframeImages)
 {
 	MapFileHeader header;
 
@@ -342,6 +354,20 @@ void Map::loadFromDisk(const string &filename, KeyFrameDatabase *kfMemDb)
 	kfOctree->addPointsFromInputCloud();
 	mKeyFrameDb = kfMemDb;
 //	cout << "Done restoring Octree" << endl;
+
+	if (loadKeyframeImages && header.hasImage) {
+		cout << "Loading images...";
+
+		boost::filesystem::path mapPath (filename);
+		boost::filesystem::path mapDir = mapPath.parent_path();
+		string imageDir = mapDir.string() + "/keyframe_images";
+
+		for (auto &kf: mspKeyFrames) {
+			string imagePath = imageDir + "/" + std::to_string(kf->mnId);
+			kf->frImage = cv::imread (imagePath);
+		}
+		cout << "Done\n";
+	}
 }
 
 

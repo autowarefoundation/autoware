@@ -70,6 +70,9 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     	this->extPosition = KeyFrame::extEgoPosition.clone();
     	this->extOrientation = KeyFrame::extEgoOrientation.clone();
     }
+
+//    F.image.copyTo(this->frImage);
+    this->frImage = F.image;
 }
 
 void KeyFrame::ComputeBoW()

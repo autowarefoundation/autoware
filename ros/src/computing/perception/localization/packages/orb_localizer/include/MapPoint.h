@@ -110,8 +110,8 @@ public:
     float GetMaxDistanceInvariance();
     int PredictScale(const float &currentDist, const float &logScaleFactor);
 
-    friend void Map::loadFromDisk (const std::string &filename, KeyFrameDatabase *kfMemDb);
-    friend void Map::saveToDisk (const std::string &filename, KeyFrameDatabase *kfMemDb);
+    friend void Map::loadFromDisk (const std::string &filename, KeyFrameDatabase *kfMemDb, bool loadKeyframeImages);
+    friend void Map::saveToDisk (const std::string &filename, KeyFrameDatabase *kfMemDb, bool saveKeyframeImages);
 
 public:
     long unsigned int mnId;

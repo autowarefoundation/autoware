@@ -95,11 +95,14 @@ public:
     class MapFileException : public std::exception
 	{};
 
-    void saveToDisk (const std::string &filename, KeyFrameDatabase *kfMemDb);
-    void loadFromDisk (const std::string &filename, KeyFrameDatabase *kfMemDb=NULL);
+    void saveToDisk (const std::string &filename, KeyFrameDatabase *kfMemDb, bool saveKeyframeImages=false);
+    void loadFromDisk (const std::string &filename, KeyFrameDatabase *kfMemDb=NULL, bool loadKeyframeImages=false);
+
 
 	struct MapFileHeader {
 		char signature[7];
+		unsigned char
+			hasImage;
 		long unsigned int
 			numOfKeyFrame,
 			numOfMapPoint,

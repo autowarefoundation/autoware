@@ -2,6 +2,7 @@
 #include <rosbag/view.h>
 #include <tf/tfMessage.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <cv_bridge/cv_bridge.h>
 #include <iostream>
 #include <exception>
 #include "common.h"
@@ -15,6 +16,7 @@ using std::cout;
 using std::endl;
 using std::exception;
 using ORB_SLAM2::KeyFrame;
+namespace imgenc = sensor_msgs::image_encodings;
 
 
 void equalizeImageHistogramFromMask (cv::Mat &input, cv::Mat &output, cv::Mat &mask)
@@ -190,4 +192,65 @@ tfToCv (const tf::Vector3 &pos)
 	cvVec[1] = pos.y();
 	cvVec[2] = pos.z();
 	return cvVec;
+}
+
+
+cv::Mat createImageFromRosMessage (const sensor_msgs::ImageConstPtr &imageMsg,
+	int newWidth,
+	int newHeight,
+	int roi_x,
+	int roi_y,
+	int roi_width,
+	int roi_height,
+	bool gray
+)
+{
+	// Copy the ros image message to cv::Mat.
+	cv_bridge::CvImageConstPtr cv_ptr;
+	try
+	{
+		cv_ptr = cv_bridge::toCvShare(imageMsg);
+	}
+	catch (cv_bridge::Exception& e)
+	{
+		ROS_ERROR("cv_bridge exception: %s", e.what());
+		throw e;
+	}
+
+	cv::Mat image;
+	// Check if we need debayering
+	if (imgenc::isBayer(imageMsg->encoding)) {
+		int code=-1;
+		if (imageMsg->encoding == imgenc::BAYER_RGGB8 ||
+			imageMsg->encoding == imgenc::BAYER_RGGB16) {
+			code = cv::COLOR_BayerBG2BGR;
+		}
+		else if (imageMsg->encoding == imgenc::BAYER_BGGR8 ||
+			imageMsg->encoding == imgenc::BAYER_BGGR16) {
+			code = cv::COLOR_BayerRG2BGR;
+		}
+		else if (imageMsg->encoding == imgenc::BAYER_GBRG8 ||
+			imageMsg->encoding == imgenc::BAYER_GBRG16) {
+			code = cv::COLOR_BayerGR2BGR;
+		}
+		else if (imageMsg->encoding == imgenc::BAYER_GRBG8 ||
+			imageMsg->encoding == imgenc::BAYER_GRBG16) {
+			code = cv::COLOR_BayerGB2BGR;
+		}
+		cv::cvtColor(cv_ptr->image, image, code);
+	}
+	else
+		image = cv_ptr->image;
+
+	// Do Resizing and cropping here
+	cv::resize(image, image,
+		cv::Size(newWidth, newHeight));
+	image = image(
+		cv::Rect(roi_x, roi_y, roi_width, roi_height
+	)).clone();
+
+	if (gray)
+		cv::cvtColor (image, image, CV_BGR2GRAY);
+
+	return image;
 }

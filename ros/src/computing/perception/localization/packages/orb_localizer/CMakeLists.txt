@@ -18,7 +18,9 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
 
 find_package (Boost REQUIRED COMPONENTS system serialization python)
+
 find_package (OpenCV REQUIRED)
+
 find_package (OpenGL REQUIRED)
 find_package (GLEW REQUIRED)
 find_package (BLAS REQUIRED)
@@ -212,6 +214,31 @@ target_link_libraries (
                 ${catkin_LIBRARIES}
                 ${ORB_BIN_LINKS}
                 ${LINK_LIBRARIES}
+)
+
+
+add_executable (
+	place_recognizer
+		nodes/place_recognizer/place_recognizer.cpp
+		nodes/common.cpp
+)
+
+target_link_libraries (
+	place_recognizer
+		${catkin_LIBRARIES}
+		${ORB_BIN_LINKS}
+		${LINK_LIBRARIES}
+)
+
+add_executable (
+	image_testpub
+		nodes/place_recognizer/image_publisher.cpp
+)
+
+target_link_libraries (
+	image_testpub
+		${catkin_LIBRARIES}
+		${OpenCV_LIBS}
 )
 
 
