@@ -1,0 +1,9 @@
+<launch>
+
+<node name="base_link_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 1.571 0 0 base_link ins 10" />
+<node name="ins_tf" pkg="tf" type="static_transform_publisher" args="1.72 0 1.07 -0.006 -0.040 0.013 ins camera 10" />
+<node name="ldmrs_tf" pkg="tf" type="static_transform_publisher" args="1.98 0.13 -1.2 -0.0299 0.0767 3.162 camera ldmrs 10" />
+<node name="lms_front_tf" pkg="tf" type="static_transform_publisher" args="1.98 -0.13 -1.2 0.0356 -1.4572 3.097 camera lms_front 10" />
+<node name="camera_view_tf" pkg="tf" type="static_transform_publisher" args="0 0 0 -1.571 0 -1.571 camera camera_view 10" />
+
+</launch>

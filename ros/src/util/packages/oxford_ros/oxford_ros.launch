@@ -1,0 +1,15 @@
+<launch>
+
+<param name="use_sim_time" value="true" />
+
+<arg name="dir" />
+<arg name="rate" default="1.0" />
+<arg name="start" default="0" />
+
+<node name="oxford_player" pkg="oxford_ros" type="player.py" args="--dir=$(arg dir) --rate=$(arg rate) --start=$(arg start)" output="screen" />
+<node name="oxford_path" pkg="oxford_ros" type="path.py" args="$(arg dir)" />
+
+<!-- TF setup; copied from Oxford Dataset SDK -->
+<include file="$(find oxford_ros)/tf.launch" />
+
+</launch>

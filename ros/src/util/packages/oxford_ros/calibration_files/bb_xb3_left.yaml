@@ -1,0 +1,20 @@
+image_width: 1280
+image_height: 960
+camera_name: bb_xb3_left
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1638.491075293838, 0, 612.8006700500399, 0, 1636.401184130434, 496.2079270182608, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.6122917363521588, 0.4438066927793106, -0.001694346217443872, 0.002071024598711364, -0.2440304791061574]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1470.4580078125, 0, 608.0263389136526, 0, 0, 1544.334106445312, 496.7670040796111, 0, 0, 0, 1, 0]
