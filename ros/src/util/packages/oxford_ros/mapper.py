@@ -11,7 +11,7 @@ import bisect
 base_link2lms_front_tr = [0.126, 3.746, -0.051]
 base_link2lms_front_qr = [0.524, 0.512, 0.483, -0.480]
 # limit mapping time length, in seconds
-timeLimit = 1000
+timeLimit = 0
 
 
 def interpolatePose (targetTimestamp, poseTimestamps, poses):
@@ -109,5 +109,6 @@ def buildMap(datasetDir):
 if __name__ == '__main__' :
     datadir=sys.argv[1]
     pcmap = buildMap (datadir)
+    sdk.create_pointcloud_file (pcmap, argv[2])
     
     pass
