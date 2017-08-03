@@ -1391,7 +1391,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 
 				wp->cost = pH->cost + d;
 				wp->pRight = pH;
-				wp->pRight = 0;
+				wp->pLeft = 0;
 
 				nextLeafToTrace.push_back(make_pair(pH, wp));
 				all_cells_to_delete.push_back(wp);

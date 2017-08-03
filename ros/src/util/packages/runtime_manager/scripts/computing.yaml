@@ -2058,7 +2058,7 @@ params :
     vars  :
     - name  : traffic_light
       desc  : traffic_light desc sample
-      v     : 0
+      v     : 1
     - name  : lane_stop
       v     : False
 

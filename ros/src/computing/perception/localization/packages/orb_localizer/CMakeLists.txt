@@ -154,6 +154,8 @@ add_executable (
 		nodes/common.cpp
 )
 
+add_dependencies(orb_matching orb_localizer_generate_messages_cpp)
+
 target_link_libraries (
 	orb_matching
 		${ORB_BIN_LINKS}
@@ -168,6 +170,8 @@ add_executable (
 		nodes/orb_matching/FusionOdometry.cpp
 		nodes/common.cpp
 )
+
+add_dependencies(orb_matching_pf orb_localizer_generate_messages_cpp)
 
 target_link_libraries (
 	orb_matching_pf

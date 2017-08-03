@@ -27,7 +27,7 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 
 Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
 
-See also Autoware/docs for the tips of Autoware development, including the coding style and branching model.
+See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for the tips of Autoware development, including the coding style and branching model.
 
 ## License
 
