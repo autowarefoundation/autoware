@@ -51,6 +51,13 @@ struct obj_label_t
 };
 obj_label_t obj_label;
 
+enum ObjLabel
+{
+  Car,
+  Person,
+  Unknown
+};
+
 static double euclid_distance(const geometry_msgs::Point pos1, const geometry_msgs::Point pos2)
 {
   return sqrt(pow(pos1.x - pos2.x, 2) + pow(pos1.y - pos2.y, 2) + pow(pos1.z - pos2.z, 2));
@@ -169,15 +176,15 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     v_cloud_cluster.at(obj_indices.at(i)).label = object_type;
     if (object_type == "car")
     {
-      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 0;
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = Car;
     }
     else if (object_type == "person")
     {
-      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 1;
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = Person;
     }
     else
     {
-      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 2;
+      v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = Unknown;
       v_cloud_cluster.at(obj_indices.at(i)).label = "unknown";
     }
 
