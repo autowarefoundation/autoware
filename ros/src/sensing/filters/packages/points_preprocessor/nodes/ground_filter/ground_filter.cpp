@@ -2,7 +2,8 @@
  * ground_filter.cpp
  *
  * Created on	: May 19, 2017
- * Author	: Patiphon Narksri					
+ * Author	: Patiphon Narksri
+ * @brief Below algorithm is documented here https://github.com/CPFL/Autoware-Manuals/tree/master/en/pdfs/ground_filter.pdf.
  */
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
