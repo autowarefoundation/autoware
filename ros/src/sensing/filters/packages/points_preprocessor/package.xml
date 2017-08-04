@@ -5,6 +5,7 @@
   <description>The points_preprocessor package</description>
 
   <maintainer email="amc@auto.ware">ne0</maintainer>
+  <maintainer email="n.patiphon@gmail.com">n-patiphon</maintainer>
 
   <license>BSD</license>
 
@@ -14,6 +15,8 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>velodyne_pointcloud</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>pcl_conversions</run_depend>
@@ -21,6 +24,8 @@
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <build_depend>sensor_msgs</build_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>velodyne_pointcloud</run_depend>
 
   <export></export>
 </package>

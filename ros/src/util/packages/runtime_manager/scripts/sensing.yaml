@@ -203,6 +203,12 @@ cmds:
         sync :
           func : self.button_synchronization.GetValue()
 
+  - name : Points Preprocessor
+    desc : Points Preprocessor desc sample
+    subs :
+    - name : ground_filter
+      desc : ground_filter desc sample
+      cmd  : roslaunch points_preprocessor ground_filter.launch node_name:=ground_filter
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
