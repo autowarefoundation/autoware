@@ -2,8 +2,8 @@
 Changelog for package vectacam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * TierFusion Driver Updated (`#742 <https://github.com/CPFL/Autoware/issues/742>`_)
   Added Support for new firmware version.
   Features:

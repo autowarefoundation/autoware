@@ -2,8 +2,8 @@
 Changelog for package op_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * revise bugs in planninghelpers.cpp
 * Contributors: huiyi1990
 

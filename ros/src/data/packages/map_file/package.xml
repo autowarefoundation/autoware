@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>map_file</name>
-  <version>1.3.1</version>
+  <version>1.4.0</version>
   <description>The map_file package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <license>BSD</license>

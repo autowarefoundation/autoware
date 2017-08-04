@@ -2,8 +2,8 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * Publish initial light color as green
 * Contributors: TomohitoAndo
 

@@ -2,8 +2,8 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * Change specifing each msg to catkin_EXPORTED_TARGETS
 * R.I.P.
 * Contributors: Yusuke FUJII

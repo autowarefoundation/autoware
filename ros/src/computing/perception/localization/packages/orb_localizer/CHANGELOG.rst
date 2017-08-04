@@ -2,8 +2,8 @@
 Changelog for package orb_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * fix dependencies
 * Contributors: Yusuke FUJII
 

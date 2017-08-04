@@ -2,8 +2,8 @@
 Changelog for package lidar_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2017-08-04)
+------------------
 * Publishing unique IDs (`#740 <https://github.com/CPFL/Autoware/issues/740>`_)
   Checked against 14.04 and 16.04
 * Contributors: Abraham Monrroy
