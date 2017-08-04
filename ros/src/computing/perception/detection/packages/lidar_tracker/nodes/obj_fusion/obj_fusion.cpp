@@ -44,30 +44,33 @@ static ros::ServiceClient vmap_server;
 static bool use_vmap;
 static double vmap_threshold;
 
-struct obj_label_t {
+struct obj_label_t
+{
   std::vector<geometry_msgs::Point> reprojected_positions;
   std::vector<int> obj_id;
 };
 obj_label_t obj_label;
 
-static double euclid_distance(const geometry_msgs::Point pos1,
-                              const geometry_msgs::Point pos2) {
-  return sqrt(pow(pos1.x - pos2.x, 2) + pow(pos1.y - pos2.y, 2) +
-              pow(pos1.z - pos2.z, 2));
+static double euclid_distance(const geometry_msgs::Point pos1, const geometry_msgs::Point pos2)
+{
+  return sqrt(pow(pos1.x - pos2.x, 2) + pow(pos1.y - pos2.y, 2) + pow(pos1.z - pos2.z, 2));
 
 } /* static double distance() */
 
 /* fusion reprojected position and pointcloud centroids */
 void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
-  const autoware_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr) {
-
+               const autoware_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr)
+{
   tf::StampedTransform tform;
   tf::TransformListener tflistener;
-  try {
-    ros::Time now = ros::Time(0);
-    tflistener.waitForTransform("/map", "/velodyne", now, ros::Duration(10));
-    tflistener.lookupTransform("/map", "/velodyne", now, tform);
-  } catch (tf::TransformException ex) {
+  try
+  {
+    ros::Time latest_time = ros::Time(0);
+    tflistener.waitForTransform("/map", "/velodyne", latest_time, ros::Duration(10));
+    tflistener.lookupTransform("/map", "/velodyne", latest_time, tform);
+  }
+  catch (tf::TransformException ex)
+  {
     ROS_INFO("%s: %s", __FUNCTION__, ex.what());
     return;
   }
@@ -76,9 +79,9 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   object_type = obj_label_msg->type;
   obj_pose_timestamp = obj_label_msg->header.stamp;
 
-  for (unsigned int i = 0; i < obj_label_msg->obj_id.size(); ++i) {
-    obj_label.reprojected_positions.push_back(
-        obj_label_msg->reprojected_pos.at(i));
+  for (unsigned int i = 0; i < obj_label_msg->obj_id.size(); ++i)
+  {
+    obj_label.reprojected_positions.push_back(obj_label_msg->reprojected_pos.at(i));
     obj_label.obj_id.push_back(obj_label_msg->obj_id.at(i));
   }
 
@@ -86,12 +89,11 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   std_msgs::Header header = sensor_header;
   std::vector<geometry_msgs::Point> centroids;
 
-  for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i) {
-    autoware_msgs::CloudCluster cloud_cluster =
-        in_cloud_cluster_array_ptr->clusters.at(i);
+  for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i)
+  {
+    autoware_msgs::CloudCluster cloud_cluster = in_cloud_cluster_array_ptr->clusters.at(i);
     /* convert centroids coodinate from velodyne frame to map frame */
-    tf::Vector3 pt(cloud_cluster.centroid_point.point.x,
-                   cloud_cluster.centroid_point.point.y,
+    tf::Vector3 pt(cloud_cluster.centroid_point.point.x, cloud_cluster.centroid_point.point.y,
                    cloud_cluster.centroid_point.point.z);
     tf::Vector3 converted = tform * pt;
     sensor_header = cloud_cluster.header;
@@ -104,9 +106,8 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     centroids.push_back(point_in_map);
   }
 
-  if (centroids.empty() ||
-      obj_label.reprojected_positions.empty() ||
-      obj_label.obj_id.empty()) {
+  if (centroids.empty() || obj_label.reprojected_positions.empty() || obj_label.obj_id.empty())
+  {
     jsk_recognition_msgs::BoundingBoxArray pub_msg;
     pub_msg.header = header;
     std_msgs::Time time;
@@ -122,26 +123,30 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   }
 
   std::vector<int> obj_indices;
-  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i) {
+  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i)
+  {
     unsigned int min_idx = 0;
     double min_distance = DBL_MAX;
 
     /* calculate each euclid distance between reprojected position and centroids
      */
-    for (unsigned int j = 0; j < centroids.size(); j++) {
-      double distance =
-          euclid_distance(obj_label.reprojected_positions.at(i),
-                          centroids.at(j));
+    for (unsigned int j = 0; j < centroids.size(); ++j)
+    {
+      double distance = euclid_distance(obj_label.reprojected_positions.at(i), centroids.at(j));
 
       /* Nearest centroid correspond to this reprojected object */
-      if (distance < min_distance) {
+      if (distance < min_distance)
+      {
         min_distance = distance;
         min_idx = j;
       }
     }
-    if (min_distance < threshold_min_dist) {
+    if (min_distance < threshold_min_dist)
+    {
       obj_indices.push_back(min_idx);
-    } else {
+    }
+    else
+    {
       obj_indices.push_back(-1);
     }
   }
@@ -154,15 +159,24 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   visualization_msgs::MarkerArray marker_array_msg;
   int marker_id = 0;
 
-  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i) {
-    if (obj_indices.at(i) == -1) continue;
+  for (unsigned int i = 0; i < obj_label.obj_id.size(); ++i)
+  {
+    if (obj_indices.at(i) == -1)
+    {
+      continue;
+    }
 
     v_cloud_cluster.at(obj_indices.at(i)).label = object_type;
-    if (object_type == "car") {
+    if (object_type == "car")
+    {
       v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 0;
-    } else if (object_type == "person") {
+    }
+    else if (object_type == "person")
+    {
       v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 1;
-    } else {
+    }
+    else
+    {
       v_cloud_cluster.at(obj_indices.at(i)).bounding_box.label = 2;
       v_cloud_cluster.at(obj_indices.at(i)).label = "unknown";
     }
@@ -171,28 +185,25 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     bounding_box = v_cloud_cluster.at(obj_indices.at(i)).bounding_box;
 
     /* adjust object rotation using lane in vector_map */
-    tf::Quaternion q_obj(bounding_box.pose.orientation.x,
-      bounding_box.pose.orientation.y,
-      bounding_box.pose.orientation.z,
-      bounding_box.pose.orientation.w);
+    tf::Quaternion q_obj(bounding_box.pose.orientation.x, bounding_box.pose.orientation.y,
+                         bounding_box.pose.orientation.z, bounding_box.pose.orientation.w);
     bool fixed_rotation = false;
-    if (use_vmap) {
-      int rot_n = 0; // yaw' = yaw + n*pi/2
+    if (use_vmap)
+    {
+      int rot_n = 0;  // yaw' = yaw + n*pi/2
       vector_map_server::GetLane get_lane;
       get_lane.request.pose.pose = bounding_box.pose;
-      tf::Vector3 orgpt(bounding_box.pose.position.x,
-        bounding_box.pose.position.y,
-        bounding_box.pose.position.z);
+      tf::Vector3 orgpt(bounding_box.pose.position.x, bounding_box.pose.position.y, bounding_box.pose.position.z);
       tf::Vector3 convpt = tform * orgpt;
       get_lane.request.pose.pose.position.x = convpt.x();
       get_lane.request.pose.pose.position.y = convpt.y();
       get_lane.request.pose.pose.position.z = convpt.z();
-      ROS_INFO("pos x=%f y=%f z=%f",
-        get_lane.request.pose.pose.position.x,
-        get_lane.request.pose.pose.position.y,
-        get_lane.request.pose.pose.position.z);
-      if (vmap_server.call(get_lane)) {
-        for (const auto& lane : get_lane.response.objects.data) {
+      ROS_INFO("pos x=%f y=%f z=%f", get_lane.request.pose.pose.position.x, get_lane.request.pose.pose.position.y,
+               get_lane.request.pose.pose.position.z);
+      if (vmap_server.call(get_lane))
+      {
+        for (const auto &lane : get_lane.response.objects.data)
+        {
           Node bn = vmap.findByKey(Key<Node>(lane.bnid));
           Point bp = vmap.findByKey(Key<Point>(bn.pid));
           Node fn = vmap.findByKey(Key<Node>(lane.fnid));
@@ -200,20 +211,23 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
           ROS_INFO(" lane bn=(%f,%f) fn=(%f,%f)", bp.ly, bp.bx, fp.ly, fp.bx);
           double mx = get_lane.request.pose.pose.position.x;
           double my = get_lane.request.pose.pose.position.y;
-          if ((mx-fp.ly)*(mx-fp.ly)+(my-fp.bx)*(my-fp.bx) < vmap_threshold) {
+          if ((mx - fp.ly) * (mx - fp.ly) + (my - fp.bx) * (my - fp.bx) < vmap_threshold)
+          {
             fixed_rotation = true;
-            tf::Quaternion qm_lane;   // map-cood
-            qm_lane.setRPY(0, 0, atan2(fp.bx - bp.bx, fp.ly - bp.ly)); // y,x
-            tf::Quaternion q_step;  // 90 deg
-            q_step.setRPY(0, 0, M_PI/2);
+            tf::Quaternion qm_lane;                                     // map-cood
+            qm_lane.setRPY(0, 0, atan2(fp.bx - bp.bx, fp.ly - bp.ly));  // y,x
+            tf::Quaternion q_step;                                      // 90 deg
+            q_step.setRPY(0, 0, M_PI / 2);
             double r_max = M_PI;
             // search in 0,90,180,270-degree
-            tf::Quaternion qr_obj = q_obj; // rotated
-            for (int i = 0; i < 4; i++) {
+            tf::Quaternion qr_obj = q_obj;  // rotated
+            for (int i = 0; i < 4; ++i)
+            {
               tf::Quaternion qrm_obj = tform * qr_obj;  // map-cood
               double r = qm_lane.angle(qrm_obj);
-              r = (r >= M_PI/2) ? (r - M_PI):r;
-              if (fabs(r) < r_max) {
+              r = (r >= M_PI / 2) ? (r - M_PI) : r;
+              if (fabs(r) < r_max)
+              {
                 r_max = fabs(r);
                 rot_n = i;
               }
@@ -221,23 +235,26 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
             }
             double roll, pitch, yaw;
             tf::Matrix3x3(q_obj).getRPY(roll, pitch, yaw);
-            ROS_INFO(" %d roll=%f pitch=%f yaw=%f", rot_n*90, roll, pitch, yaw);
+            ROS_INFO(" %d roll=%f pitch=%f yaw=%f", rot_n * 90, roll, pitch, yaw);
             break;
           }
         }
-      } else {
+      }
+      else
+      {
         ROS_INFO("%s: VectorMap Server call failed.", __FUNCTION__);
       }
       // determine rotation
       tf::Quaternion dq_obj;
-      dq_obj.setRPY(0, 0, M_PI*rot_n/2);
+      dq_obj.setRPY(0, 0, M_PI * rot_n / 2);
       q_obj *= dq_obj;
       // bounding_box
       bounding_box.pose.orientation.x = q_obj.x();
       bounding_box.pose.orientation.y = q_obj.y();
       bounding_box.pose.orientation.z = q_obj.z();
       bounding_box.pose.orientation.w = q_obj.w();
-      if (rot_n % 2 == 1) { // swap x-y at 90,270 deg
+      if (rot_n % 2 == 1) // swap x-y at 90,270 deg
+      {
         std::swap(bounding_box.dimensions.x, bounding_box.dimensions.y);
       }
       // cloud clusters
@@ -261,7 +278,7 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
 
     // y-axis
     tf::Quaternion qy;
-    qy.setRPY(0, 0, M_PI/2);
+    qy.setRPY(0, 0, M_PI / 2);
     q_obj *= qy;
     marker.id = marker_id++;
     marker.pose.orientation.x = q_obj.x();
@@ -275,7 +292,7 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
 
     // z-axis
     tf::Quaternion qz;
-    qz.setRPY(0, -M_PI/2, 0);
+    qz.setRPY(0, -M_PI / 2, 0);
     q_obj *= qz;
     marker.id = marker_id++;
     marker.pose.orientation.x = q_obj.x();
@@ -288,7 +305,8 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
     marker_array_msg.markers.push_back(marker);
 
     // rotated by lane
-    if (fixed_rotation) {
+    if (fixed_rotation)
+    {
       marker.id = marker_id++;
       marker.type = visualization_msgs::Marker::SPHERE;
       marker.scale.x = 1.0;
@@ -300,11 +318,9 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
       marker_array_msg.markers.push_back(marker);
     }
 
-    v_cloud_cluster.at(obj_indices.at(i)).bounding_box.value
-      = obj_label.obj_id.at(i);
+    v_cloud_cluster.at(obj_indices.at(i)).bounding_box.value = obj_label.obj_id.at(i);
     pub_msg.boxes.push_back(bounding_box);
-    cloud_clusters_msg.clusters.push_back(
-      v_cloud_cluster.at(obj_indices.at(i)));
+    cloud_clusters_msg.clusters.push_back(v_cloud_cluster.at(obj_indices.at(i)));
   }
 
   marker_array_pub.publish(marker_array_msg);
@@ -315,7 +331,8 @@ void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
   obj_pose_timestamp_pub.publish(time);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   /* ROS initialization */
   ros::init(argc, argv, "obj_fusion");
 
@@ -325,28 +342,23 @@ int main(int argc, char *argv[]) {
   private_n.param("min_dist", threshold_min_dist, 2.0);
   private_n.param("use_vmap", use_vmap, true);
   private_n.param("vmap_threshold", vmap_threshold, 5.0);
-  vmap_threshold *= vmap_threshold; // squared
+  vmap_threshold *= vmap_threshold;  // squared
 
-  typedef message_filters::sync_policies::ApproximateTime<
-    autoware_msgs::obj_label, autoware_msgs::CloudClusterArray> SyncPolicy;
-  message_filters::Subscriber<autoware_msgs::obj_label> obj_label_sub(
-    n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
-  message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(
-    n, "/cloud_clusters", SUBSCRIBE_QUEUE_SIZE);
-  message_filters::Synchronizer<SyncPolicy> sync(
-    SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub, cluster_centroids_sub);
+  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::obj_label, autoware_msgs::CloudClusterArray>
+      SyncPolicy;
+  message_filters::Subscriber<autoware_msgs::obj_label> obj_label_sub(n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
+  message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(n, "/cloud_clusters",
+                                                                                      SUBSCRIBE_QUEUE_SIZE);
+  message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub,
+                                                 cluster_centroids_sub);
   sync.registerCallback(boost::bind(&fusion_cb, _1, _2));
 
-  obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>(
-      "obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
-  cluster_class_pub = n.advertise<autoware_msgs::CloudClusterArray>(
-      "/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
-  obj_pose_timestamp_pub =
-      n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
+  obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  cluster_class_pub = n.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
+  obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
   marker_array_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_arrow", 1, true);
   vmap_server = n.serviceClient<vector_map_server::GetLane>("/vector_map_server/get_lane");
-  vmap.subscribe(n, vector_map::Category::POINT | vector_map::Category::NODE,
-                 ros::Duration(0)); // non-blocking
+  vmap.subscribe(n, vector_map::Category::POINT | vector_map::Category::NODE, ros::Duration(0));  // non-blocking
 
   ros::spin();
 
