@@ -102,25 +102,25 @@ void KfLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterAr
 
 	tracked_hulls.header = in_cloud_cluster_array_ptr->header;
 	tracked_boxes.header = in_cloud_cluster_array_ptr->header;
-	for (unsigned int i = 0; i < tracker_ptr->tracks.size(); i++)
+	for (unsigned int i = 0; i < tracker_ptr->tracks_.size(); i++)
 	{
 		//BBOXES
 		jsk_recognition_msgs::BoundingBox tracked_box;
-		tracked_box = tracker_ptr->tracks[i].GetCluster().bounding_box;
+		tracked_box = tracker_ptr->tracks_[i].GetCluster().bounding_box;
 		tracked_box.header = in_cloud_cluster_array_ptr->header;
-		tracked_box.label = tracker_ptr->tracks[i].track_id;
-		tracked_box.value = tracker_ptr->tracks[i].track_id;
-		//tracker_ptr->tracks[i]->trace.end();//calculate orientation
+		tracked_box.label = tracker_ptr->tracks_[i].track_id;
+		tracked_box.value = tracker_ptr->tracks_[i].track_id;
+		//tracker_ptr->tracks_[i]->trace.end();//calculate orientation
 		tracked_boxes.boxes.push_back(tracked_box);
 		//END BBOXES
 
 		//CONVEx HULL
 		geometry_msgs::PolygonStamped hull;
-		hull = tracker_ptr->tracks[i].GetCluster().convex_hull;
+		hull = tracker_ptr->tracks_[i].GetCluster().convex_hull;
 		//std::cout << "hull size:" << hull.polygon.points.size() << std::endl;
 		hull.header = in_cloud_cluster_array_ptr->header;
 		tracked_hulls.polygons.push_back(hull);
-		tracked_hulls.labels.push_back(tracker_ptr->tracks[i].track_id);
+		tracked_hulls.labels.push_back(tracker_ptr->tracks_[i].track_id);
 
 		//END HULLS
 
@@ -129,16 +129,16 @@ void KfLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterAr
 		tracked_pictogram.header = in_cloud_cluster_array_ptr->header;
 
 		tracked_pictogram.mode = tracked_pictogram.STRING_MODE;
-		tracked_pictogram.pose.position.x = tracker_ptr->tracks[i].GetCluster().max_point.point.x;
-		tracked_pictogram.pose.position.y = tracker_ptr->tracks[i].GetCluster().max_point.point.y;
-		tracked_pictogram.pose.position.z = tracker_ptr->tracks[i].GetCluster().max_point.point.z;
+		tracked_pictogram.pose.position.x = tracker_ptr->tracks_[i].GetCluster().max_point.point.x;
+		tracked_pictogram.pose.position.y = tracker_ptr->tracks_[i].GetCluster().max_point.point.y;
+		tracked_pictogram.pose.position.z = tracker_ptr->tracks_[i].GetCluster().max_point.point.z;
 		tf::Quaternion quat(0.0, -0.7, 0.0, 0.7);
 		tf::quaternionTFToMsg(quat, tracked_pictogram.pose.orientation);
 		tracked_pictogram.size = 4;
 		std_msgs::ColorRGBA color;
 		color.a = 1; color.r = 1; color.g = 1; color.b = 1;
 		tracked_pictogram.color = color;
-		tracked_pictogram.character = std::to_string( tracker_ptr->tracks[i].track_id );
+		tracked_pictogram.character = std::to_string( tracker_ptr->tracks_[i].track_id );
 		tracked_ids.header = in_cloud_cluster_array_ptr->header;
 		tracked_ids.pictograms.push_back(tracked_pictogram);
 		//PICTO

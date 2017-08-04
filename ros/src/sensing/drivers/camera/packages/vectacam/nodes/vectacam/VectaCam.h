@@ -40,7 +40,7 @@ struct VectaCamCommand
 class VectaCam
 {
 public:
-	VectaCam(unsigned int in_configuration_port, unsigned int in_data_port, std::string in_parameter_file);
+	VectaCam(std::string in_camera_ip, unsigned int in_configuration_port, unsigned int in_data_port, std::string in_parameter_file);
 	void 			GetImage(cv::Mat& out_image);
 	virtual 		~VectaCam();
 	void 			StartCamera();
@@ -61,6 +61,7 @@ private:
 	int				image_width_;
 	int				image_height_;
 	char			*image_buffer_;
+	std::string		camera_ip_;
 	void 			_udp_receive(int in_socket_descriptor);
 	void			_initialize_camera(unsigned int in_configuration_port, unsigned int in_data_port, std::string in_parameter_file);
 	void			_parse_parameter_file(std::string in_parameter_file, std::vector<VectaCamCommand>& out_commands);

@@ -76,7 +76,7 @@ public:
 			publishers_cameras_[i] = node_handle_.advertise<sensor_msgs::Image>(current_topic, 1);
 		}
 
-		VectaCam vectacamera(VECTACAM_CONFIG_PORT, VECTACAM_DATA_PORT, config_file_path);
+		VectaCam vectacamera(camera_ip, VECTACAM_CONFIG_PORT, VECTACAM_DATA_PORT, config_file_path);
 		std::thread *capture_thread= new std::thread(&VectaCam::StartCamera, &vectacamera);
 
 		cv::Mat image;

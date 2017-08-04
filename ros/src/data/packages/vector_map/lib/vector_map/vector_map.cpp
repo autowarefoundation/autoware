@@ -557,162 +557,162 @@ void VectorMap::registerSubscriber(ros::NodeHandle& nh, category_t category)
 {
   if (category & POINT)
   {
-    point_.registerSubscriber(nh, "vector_map_info/point");
+    point_.registerSubscriber(nh, "/vector_map_info/point");
     point_.registerUpdater(updatePoint);
   }
   if (category & VECTOR)
   {
-    vector_.registerSubscriber(nh, "vector_map_info/vector");
+    vector_.registerSubscriber(nh, "/vector_map_info/vector");
     vector_.registerUpdater(updateVector);
   }
   if (category & LINE)
   {
-    line_.registerSubscriber(nh, "vector_map_info/line");
+    line_.registerSubscriber(nh, "/vector_map_info/line");
     line_.registerUpdater(updateLine);
   }
   if (category & AREA)
   {
-    area_.registerSubscriber(nh, "vector_map_info/area");
+    area_.registerSubscriber(nh, "/vector_map_info/area");
     area_.registerUpdater(updateArea);
   }
   if (category & POLE)
   {
-    pole_.registerSubscriber(nh, "vector_map_info/pole");
+    pole_.registerSubscriber(nh, "/vector_map_info/pole");
     pole_.registerUpdater(updatePole);
   }
   if (category & BOX)
   {
-    box_.registerSubscriber(nh, "vector_map_info/box");
+    box_.registerSubscriber(nh, "/vector_map_info/box");
     box_.registerUpdater(updateBox);
   }
   if (category & DTLANE)
   {
-    dtlane_.registerSubscriber(nh, "vector_map_info/dtlane");
+    dtlane_.registerSubscriber(nh, "/vector_map_info/dtlane");
     dtlane_.registerUpdater(updateDTLane);
   }
   if (category & NODE)
   {
-    node_.registerSubscriber(nh, "vector_map_info/node");
+    node_.registerSubscriber(nh, "/vector_map_info/node");
     node_.registerUpdater(updateNode);
   }
   if (category & LANE)
   {
-    lane_.registerSubscriber(nh, "vector_map_info/lane");
+    lane_.registerSubscriber(nh, "/vector_map_info/lane");
     lane_.registerUpdater(updateLane);
   }
   if (category & WAY_AREA)
   {
-    way_area_.registerSubscriber(nh, "vector_map_info/way_area");
+    way_area_.registerSubscriber(nh, "/vector_map_info/way_area");
     way_area_.registerUpdater(updateWayArea);
   }
   if (category & ROAD_EDGE)
   {
-    road_edge_.registerSubscriber(nh, "vector_map_info/road_edge");
+    road_edge_.registerSubscriber(nh, "/vector_map_info/road_edge");
     road_edge_.registerUpdater(updateRoadEdge);
   }
   if (category & GUTTER)
   {
-    gutter_.registerSubscriber(nh, "vector_map_info/gutter");
+    gutter_.registerSubscriber(nh, "/vector_map_info/gutter");
     gutter_.registerUpdater(updateGutter);
   }
   if (category & CURB)
   {
-    curb_.registerSubscriber(nh, "vector_map_info/curb");
+    curb_.registerSubscriber(nh, "/vector_map_info/curb");
     curb_.registerUpdater(updateCurb);
   }
   if (category & WHITE_LINE)
   {
-    white_line_.registerSubscriber(nh, "vector_map_info/white_line");
+    white_line_.registerSubscriber(nh, "/vector_map_info/white_line");
     white_line_.registerUpdater(updateWhiteLine);
   }
   if (category & STOP_LINE)
   {
-    stop_line_.registerSubscriber(nh, "vector_map_info/stop_line");
+    stop_line_.registerSubscriber(nh, "/vector_map_info/stop_line");
     stop_line_.registerUpdater(updateStopLine);
   }
   if (category & ZEBRA_ZONE)
   {
-    zebra_zone_.registerSubscriber(nh, "vector_map_info/zebra_zone");
+    zebra_zone_.registerSubscriber(nh, "/vector_map_info/zebra_zone");
     zebra_zone_.registerUpdater(updateZebraZone);
   }
   if (category & CROSS_WALK)
   {
-    cross_walk_.registerSubscriber(nh, "vector_map_info/cross_walk");
+    cross_walk_.registerSubscriber(nh, "/vector_map_info/cross_walk");
     cross_walk_.registerUpdater(updateCrossWalk);
   }
   if (category & ROAD_MARK)
   {
-    road_mark_.registerSubscriber(nh, "vector_map_info/road_mark");
+    road_mark_.registerSubscriber(nh, "/vector_map_info/road_mark");
     road_mark_.registerUpdater(updateRoadMark);
   }
   if (category & ROAD_POLE)
   {
-    road_pole_.registerSubscriber(nh, "vector_map_info/road_pole");
+    road_pole_.registerSubscriber(nh, "/vector_map_info/road_pole");
     road_pole_.registerUpdater(updateRoadPole);
   }
   if (category & ROAD_SIGN)
   {
-    road_sign_.registerSubscriber(nh, "vector_map_info/road_sign");
+    road_sign_.registerSubscriber(nh, "/vector_map_info/road_sign");
     road_sign_.registerUpdater(updateRoadSign);
   }
   if (category & SIGNAL)
   {
-    signal_.registerSubscriber(nh, "vector_map_info/signal");
+    signal_.registerSubscriber(nh, "/vector_map_info/signal");
     signal_.registerUpdater(updateSignal);
   }
   if (category & STREET_LIGHT)
   {
-    street_light_.registerSubscriber(nh, "vector_map_info/street_light");
+    street_light_.registerSubscriber(nh, "/vector_map_info/street_light");
     street_light_.registerUpdater(updateStreetLight);
   }
   if (category & UTILITY_POLE)
   {
-    utility_pole_.registerSubscriber(nh, "vector_map_info/utility_pole");
+    utility_pole_.registerSubscriber(nh, "/vector_map_info/utility_pole");
     utility_pole_.registerUpdater(updateUtilityPole);
   }
   if (category & GUARD_RAIL)
   {
-    guard_rail_.registerSubscriber(nh, "vector_map_info/guard_rail");
+    guard_rail_.registerSubscriber(nh, "/vector_map_info/guard_rail");
     guard_rail_.registerUpdater(updateGuardRail);
   }
   if (category & SIDE_WALK)
   {
-    side_walk_.registerSubscriber(nh, "vector_map_info/side_walk");
+    side_walk_.registerSubscriber(nh, "/vector_map_info/side_walk");
     side_walk_.registerUpdater(updateSideWalk);
   }
   if (category & DRIVE_ON_PORTION)
   {
-    drive_on_portion_.registerSubscriber(nh, "vector_map_info/drive_on_portion");
+    drive_on_portion_.registerSubscriber(nh, "/vector_map_info/drive_on_portion");
     drive_on_portion_.registerUpdater(updateDriveOnPortion);
   }
   if (category & CROSS_ROAD)
   {
-    cross_road_.registerSubscriber(nh, "vector_map_info/cross_road");
+    cross_road_.registerSubscriber(nh, "/vector_map_info/cross_road");
     cross_road_.registerUpdater(updateCrossRoad);
   }
   if (category & SIDE_STRIP)
   {
-    side_strip_.registerSubscriber(nh, "vector_map_info/side_strip");
+    side_strip_.registerSubscriber(nh, "/vector_map_info/side_strip");
     side_strip_.registerUpdater(updateSideStrip);
   }
   if (category & CURVE_MIRROR)
   {
-    curve_mirror_.registerSubscriber(nh, "vector_map_info/curve_mirror");
+    curve_mirror_.registerSubscriber(nh, "/vector_map_info/curve_mirror");
     curve_mirror_.registerUpdater(updateCurveMirror);
   }
   if (category & WALL)
   {
-    wall_.registerSubscriber(nh, "vector_map_info/wall");
+    wall_.registerSubscriber(nh, "/vector_map_info/wall");
     wall_.registerUpdater(updateWall);
   }
   if (category & FENCE)
   {
-    fence_.registerSubscriber(nh, "vector_map_info/fence");
+    fence_.registerSubscriber(nh, "/vector_map_info/fence");
     fence_.registerUpdater(updateFence);
   }
   if (category & RAIL_CROSSING)
   {
-    rail_crossing_.registerSubscriber(nh, "vector_map_info/rail_crossing");
+    rail_crossing_.registerSubscriber(nh, "/vector_map_info/rail_crossing");
     rail_crossing_.registerUpdater(updateRailCrossing);
   }
 }
