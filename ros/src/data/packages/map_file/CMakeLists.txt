@@ -4,26 +4,40 @@ project(map_file)
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  gnss
   std_msgs
   visualization_msgs
   geometry_msgs
   tf
-  waypoint_follower
   vector_map
   autoware_msgs
 )
-pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
-pkg_check_modules(EIGEN3 REQUIRED eigen3)
+
+find_package(PCL REQUIRED COMPONENTS io)
+# See: https://github.com/ros-perception/perception_pcl/blob/lunar-devel/pcl_ros/CMakeLists.txt#L10-L22
+if(NOT "${PCL_LIBRARIES}" STREQUAL "")
+  # FIXME: this causes duplicates and not found error in ubuntu:zesty
+  list(REMOVE_ITEM PCL_LIBRARIES "/usr/lib/libmpi.so")
+
+  # For debian: https://github.com/ros-perception/perception_pcl/issues/139
+  list(REMOVE_ITEM PCL_LIBRARIES
+    "vtkGUISupportQt"
+    "vtkGUISupportQtOpenGL"
+    "vtkGUISupportQtSQL"
+    "vtkGUISupportQtWebkit"
+    "vtkViewsQt"
+    "vtkRenderingQt")
+endif()
+
+include(FindCURL)
+if(NOT CURL_FOUND)
+  message("CURL not found!  Aborting...")
+  fail()
+endif(NOT CURL_FOUND)
+
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES fake_drivers
-   CATKIN_DEPENDS waypoint_follower std_msgs vector_map autoware_msgs
-#  DEPENDS system_lib
-   DEPENDS gnss curl
 )
 
 ###########
@@ -34,15 +48,25 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
+  ${CURL_INCLUDE_DIRS}
 )
 
 add_library(get_file
   lib/map_file/get_file.cpp
 )
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
-target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file curl)
-add_dependencies(points_map_loader autoware_msgs_generate_messages_cpp)
+target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file ${CURL_LIBRARIES})
+add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file curl)
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES})
+
+## Install executables and/or libraries
+install(TARGETS get_file points_map_loader vector_map_loader
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
