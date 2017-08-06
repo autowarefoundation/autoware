@@ -19,7 +19,7 @@ if(NOT "${PCL_LIBRARIES}" STREQUAL "")
   list(REMOVE_ITEM PCL_LIBRARIES "/usr/lib/libmpi.so")
 
   # For debian: https://github.com/ros-perception/perception_pcl/issues/139
-  list(REMOVE_ITEM PCL_LIBRARIES
+  list(REMOVE_ITEM PCL_IO_LIBRARIES
     "vtkGUISupportQt"
     "vtkGUISupportQtOpenGL"
     "vtkGUISupportQtSQL"
@@ -53,9 +53,10 @@ include_directories(
 
 add_library(get_file
   lib/map_file/get_file.cpp
-)
+  )
+
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
-target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} get_file ${CURL_LIBRARIES})
+target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES} ${PCL_IO_LIBRARIES})
 add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
