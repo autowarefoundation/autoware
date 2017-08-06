@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
 	geometry_msgs
 	sensor_msgs
 	jsk_recognition_msgs
-	jsk_rviz_plugins
 )
 
 
@@ -96,8 +95,13 @@ generate_messages(
   geometry_msgs
   sensor_msgs
   jsk_recognition_msgs
-  jsk_rviz_plugins
 )
+
 catkin_package(
-  CATKIN_DEPENDS std_msgs geometry_msgs
+  CATKIN_DEPENDS
+  message_runtime
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  jsk_recognition_msgs
 )
