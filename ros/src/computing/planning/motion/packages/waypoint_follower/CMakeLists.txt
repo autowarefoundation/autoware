@@ -70,6 +70,6 @@ install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(
-  FILES pure_pursuit.launch  twist_filter.launch  wf_simulator.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)
