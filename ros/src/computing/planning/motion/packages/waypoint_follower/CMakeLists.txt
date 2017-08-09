@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+find_package(Qt5Core REQUIRED)
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################

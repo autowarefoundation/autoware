@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
 )
 
+find_package(Qt5Core REQUIRED)
 
 ###################################
 ## catkin specific configuration ##

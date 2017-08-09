@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 find_package(OpenCV REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include

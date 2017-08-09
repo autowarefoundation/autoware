@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(PCL 1.7 REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 generate_dynamic_reconfigure_options(cfg/kitti_player.cfg)
 

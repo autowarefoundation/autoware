@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
 )
 
+find_package(Qt5Core REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################

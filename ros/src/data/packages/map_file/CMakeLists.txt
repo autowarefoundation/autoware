@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
 )
 
+find_package(Qt5Core REQUIRED)
+
 find_package(PCL REQUIRED COMPONENTS io)
 # See: https://github.com/ros-perception/perception_pcl/blob/lunar-devel/pcl_ros/CMakeLists.txt#L10-L22
 if(NOT "${PCL_LIBRARIES}" STREQUAL "")

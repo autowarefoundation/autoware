@@ -16,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   #dbw_mkz_msgs
 )
 
+find_package(Qt5Core REQUIRED)
+
 ################################################
 ## Find OpenMP in order to parallelize loops  ##
 ################################################

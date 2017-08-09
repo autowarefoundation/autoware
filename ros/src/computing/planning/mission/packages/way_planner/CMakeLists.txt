@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
 )
 
-
+find_package(Qt5Core REQUIRED)
 
 ###################################
 ## catkin specific configuration ##

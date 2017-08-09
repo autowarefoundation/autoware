@@ -10,6 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 
+find_package(Qt5Core REQUIRED)
+
 catkin_package(
 )
 
