@@ -52,6 +52,9 @@ class VelocitySetInfo
   double velocity_change_limit_;    // (m/s)
   double temporal_waypoints_size_;  // (meter)
 
+  // ROS param
+  double remove_points_upto_;
+
   pcl::PointCloud<pcl::PointXYZ> points_;
   geometry_msgs::PoseStamped localizer_pose_;  // pose of sensor
   geometry_msgs::PoseStamped control_pose_;    // pose of base_link

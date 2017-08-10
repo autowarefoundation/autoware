@@ -42,6 +42,8 @@ VelocitySetInfo::VelocitySetInfo()
     temporal_waypoints_size_(100),
     set_pose_(false)
 {
+  ros::NodeHandle private_nh_("~");
+  private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
 }
 
 VelocitySetInfo::~VelocitySetInfo()
@@ -78,6 +80,10 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
       continue;
 
     if (v.z > detection_height_top_ || v.z < detection_height_bottom_)
+      continue;
+
+    // ignore points nearby the vehicle
+    if (v.x * v.x + v.y * v.y < remove_points_upto_ * remove_points_upto_)
       continue;
 
     points_.push_back(v);
