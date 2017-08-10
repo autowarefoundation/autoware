@@ -79,11 +79,11 @@ class Dataset:
         return gpsTbl
     
     def getIns (self, useOriginCorrection=True):
-        # Get timestamp, easting, northing, altitude, roll, pitch, yaw
+        # Get timestamp, easting, northing, altitude, roll, pitch, yaw, velocity_east, velocity_north, velocity_down 
         insTbl = np.loadtxt(self.path+'/gps/ins.csv', 
             skiprows=1, 
             delimiter=',', 
-            usecols=[0,6,5,4,12,13,14])
+            usecols=[0,6,5,4,12,13,14,10,9,11])
         insTbl[:,0] /= 1000000.0
         if useOriginCorrection:
             insTbl[:,1] += Dataset.OriginCorrectionEasting

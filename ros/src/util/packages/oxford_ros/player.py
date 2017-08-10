@@ -3,6 +3,7 @@
 import os
 import sdk
 import time
+from bisect import bisect
 import rospy
 import yaml
 import cv2
@@ -46,11 +47,13 @@ class ImagePlayer:
             self.publisherImgInfo = rospy.Publisher('/oxford/camera_info', CameraInfo, queue_size=1)
         
         self.imageList = dataset.getStereo()
+        
         pkgpack = rospkg.RosPack()
         try:
             path = pkgpack.get_path('oxford_ros')
         except ResourceNotFound:
-            path = os.path.dirname(os.path.abspath(__file__)) 
+            path = os.path.dirname(os.path.abspath(__file__))
+             
         self.cameraModel = sdk.CameraModel (path+'/models', sdk.CameraModel.cam_stereo_center)
         
         calib_file = file(path+'/calibration_files/bb_xb3_center.yaml')
@@ -119,6 +122,8 @@ class ImagePlayer:
             return msg
         
     def createMessageFromMat (self, imgMat, timestamp, compressed=False):
+        if imgMat is None:
+            return None
         if self.raw==False:
             if compressed:
                 msg = self.cvbridge.cv2_to_compressed_imgmsg(imgMat, dst_format='png')
@@ -406,31 +411,33 @@ class PlayerControl:
                 e = {'timestamp': evt['timestamp'], 'id':evt['id'], 'object':player}
                 self.eventList.append(e)
         self.eventList.sort(key=lambda e: e['timestamp'])
+
+        # We need to tell each player regarding start time
         if self.startTime == 0.0:
             for player in self.players:
                 player.firstValidId = 0
 
-        else:    
+        else:
             validEvents = []
             start=self.eventList[0]['timestamp']
-            for evt in self.eventList:
-                if evt['timestamp'] < start + self.startTime:
-                    continue
-                else:
-                    if evt['object'].firstValidId == -1:
-                        evt['object'].firstValidId = evt['id']
-                    validEvents.append(evt)
+            _tsList = [e['timestamp'] for e in self.eventList]
+            startPos = bisect (_tsList, start+self.startTime)
             
+            for i in range(startPos, len(self.eventList)) :
+                evt = self.eventList[i]
+                if evt['object'].firstValidId == -1:
+                    evt['object'].firstValidId = evt['id']
+                validEvents.append(evt)
             self.eventList = validEvents
-
+            
         # Tell data players to initialize
         for player in self.players:
             player.initializeRun()
         
-        # Tell timer to initialize. Put a delay 1.s 
+        # Tell timer to initialize.
         self.timer = TimerProcess (
             [self.eventList[i]['timestamp'] for i in range(len(self.eventList))], 
-            self.eventList[0]['timestamp']-1.0, 
+            self.eventList[0]['timestamp'], 
             self.rate)
         
         
@@ -442,18 +449,27 @@ if __name__ == '__main__' :
     argsp.add_argument('--dir', type=str, default=None, help='Directory of Oxford dataset')
     argsp.add_argument('--rate', type=float, default=1.0, help='Speed up/Slow down by rate factor')
     argsp.add_argument('--start', type=float, default=0.0, help='Start SEC seconds into dataset')
+    argsp.add_argument('--no_lidars', action='store_true', help='Disable LiDAR publisher')
+    argsp.add_argument('--no_pose', action='store_true', help='Disable pose publisher')
+    argsp.add_argument('--no_images', action='store_true', help='Disable image publisher')
     args, unknown_args = argsp.parse_known_args()
     
     rospy.init_node('oxford_player', anonymous=True)
     player = PlayerControl (args.dir, rate=args.rate, start=args.start)
-    poses = PosePlayer (player.dataset)
-    images = ImagePlayer(player.dataset, raw=True)
-    lidar3d = Lidar3Player (player.dataset)
-    lidarfront = Lidar2Player (player.dataset)
-    player.add_data_player(poses)
-    player.add_data_player(images)
-    player.add_data_player(lidar3d)
-    player.add_data_player(lidarfront)
+    
+    if (args.no_pose==False) :
+        poses = PosePlayer (player.dataset)
+        player.add_data_player(poses)
+
+    if (args.no_images==False):    
+        images = ImagePlayer(player.dataset, raw=False)
+        player.add_data_player(images)
+
+    if (args.no_lidars==False):    
+        lidar3d = Lidar3Player (player.dataset)
+        lidarfront = Lidar2Player (player.dataset)
+        player.add_data_player(lidar3d)
+        player.add_data_player(lidarfront)
     
     print ("[SPACE] to pause, [Ctrl+C] to break")
     player.run()
