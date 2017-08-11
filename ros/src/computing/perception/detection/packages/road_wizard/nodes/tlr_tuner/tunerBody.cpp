@@ -1,5 +1,5 @@
 #include "tunerBody.h"
-#include "road_wizard/TunedResult.h"
+#include "autoware_msgs/TunedResult.h"
 
 
 #include <opencv2/core/version.hpp>
@@ -152,7 +152,7 @@ void TunerBody::launch(void)
 
   ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, image_raw_callBack);
 
-  ros::Publisher tunedResult_pub = n.advertise <road_wizard::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+  ros::Publisher tunedResult_pub = n.advertise <autoware_msgs::TunedResult> ("tuned_result", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 
   /* valiables to check status change */
   cv::Point prev_clicked = cv::Point(-1, -1);
@@ -275,7 +275,7 @@ void TunerBody::launch(void)
       prev_vw = vw;
 
       /* publish tuned result */
-      road_wizard::TunedResult res;
+      autoware_msgs::TunedResult res;
       res.Red.Hue.center = Red_set.hue.center;
       res.Red.Hue.range  = Red_set.hue.range;
       res.Red.Sat.center = Red_set.sat.center;

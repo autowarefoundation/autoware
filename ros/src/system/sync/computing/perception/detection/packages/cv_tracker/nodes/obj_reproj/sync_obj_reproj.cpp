@@ -1,7 +1,7 @@
 #include "ros/ros.h"
-#include "cv_tracker_msgs/image_obj_tracked.h"
+#include "autoware_msgs/image_obj_tracked.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "cv_tracker_msgs/obj_label.h"
+#include "autoware_msgs/obj_label.h"
 #include "sync.hpp"
 
 int main(int argc, char **argv) {
@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     std::string pub1("/image_obj_tracked");
     std::string pub2("/current_pose");
 
-    Synchronizer<cv_tracker_msgs::image_obj_tracked, geometry_msgs::PoseStamped, cv_tracker_msgs::obj_label> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    Synchronizer<autoware_msgs::image_obj_tracked, geometry_msgs::PoseStamped, autoware_msgs::obj_label> synchronizer(sub1, sub2, pub1, pub2, req, ns);
     synchronizer.run();
 
     return 0;
@@ -39,9 +39,9 @@ int main(int argc, char **argv) {
 #include <pthread.h>
 #include "t_sync_message.h"
 /* user header */
-#include "cv_tracker_msgs/image_obj_tracked.h"
+#include "autoware_msgs/image_obj_tracked.h"
 #include "geometry_msgs/PoseStamped.h"
-#include "cv_tracker_msgs/obj_label.h"
+#include "autoware_msgs/obj_label.h"
 
 /* ----mode---- */
 #define _REQ_PUB 1
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 bool buf_flag;
 pthread_mutex_t mutex;
 /* user var */
-boost::circular_buffer<cv_tracker_msgs::image_obj_tracked> image_obj_tracked_ringbuf(10);
+boost::circular_buffer<autoware_msgs::image_obj_tracked> image_obj_tracked_ringbuf(10);
 boost::circular_buffer<geometry_msgs::PoseStamped> current_pose_ringbuf(10);
 ros::Publisher image_obj_tracked__pub;
 ros::Publisher current_pose__pub;
@@ -71,10 +71,10 @@ double get_time(const std_msgs::Header *timespec) {
 
 
 #if _REQ_PUB
-cv_tracker_msgs::image_obj_tracked* p_image_obj_tracked_buf;
+autoware_msgs::image_obj_tracked* p_image_obj_tracked_buf;
 geometry_msgs::PoseStamped* p_current_pose_buf;
 
-void publish_msg(cv_tracker_msgs::image_obj_tracked* p_image_obj_tracked_buf, geometry_msgs::PoseStamped* p_current_pose_buf) {
+void publish_msg(autoware_msgs::image_obj_tracked* p_image_obj_tracked_buf, geometry_msgs::PoseStamped* p_current_pose_buf) {
     ROS_INFO("publish");
     image_obj_tracked__pub.publish(*p_image_obj_tracked_buf);
     current_pose__pub.publish(*p_current_pose_buf);
@@ -97,7 +97,7 @@ bool publish() {
         // image_obj_tracked > current_pose
         if (get_time(&(image_obj_tracked_ringbuf.front().header)) >= get_time(&(current_pose_ringbuf.front().header))) {
             p_current_pose_buf = &(current_pose_ringbuf.front());
-            boost::circular_buffer<cv_tracker_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
+            boost::circular_buffer<autoware_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
             if (image_obj_tracked_ringbuf.size() == 1) {
                 p_image_obj_tracked_buf = &*it;
                 publish_msg(p_image_obj_tracked_buf, p_current_pose_buf);
@@ -163,7 +163,7 @@ bool publish() {
     }
 }
 
-void image_obj_tracked_callback(const cv_tracker_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
+void image_obj_tracked_callback(const autoware_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
     pthread_mutex_lock(&mutex);
     image_obj_tracked_ringbuf.push_front(*image_obj_tracked_msg);
     //current_pose is empty
@@ -204,7 +204,7 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_p
 #else
 #endif
 
-void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_msg) {
+void obj_label_callback(const autoware_msgs::obj_label::ConstPtr& obj_label_msg) {
     pthread_mutex_lock(&mutex);
     obj_label_flag = true;
     ROS_INFO("catch publish request");
@@ -252,7 +252,7 @@ int main(int argc, char **argv) {
 
     ros::Subscriber image_obj_tracked_sub = nh.subscribe("/image_obj_tracked", 1, image_obj_tracked_callback);
     ros::Subscriber current_pose_sub = nh.subscribe("/current_pose", 1, current_pose_callback);
-    image_obj_tracked__pub = nh.advertise<cv_tracker_msgs::image_obj_tracked>("/sync_reprojection/image_obj_tracked", 5);
+    image_obj_tracked__pub = nh.advertise<autoware_msgs::image_obj_tracked>("/sync_reprojection/image_obj_tracked", 5);
     current_pose__pub = nh.advertise<geometry_msgs::PoseStamped>("/sync_reprojection/current_pose", 5);
 
     while (!buf_flag && ros::ok()) {
@@ -281,10 +281,10 @@ int main(int argc, char **argv) {
 }
 
 #if 0
-cv_tracker_msgs::image_obj_tracked image_obj_tracked_buf;
+autoware_msgs::image_obj_tracked image_obj_tracked_buf;
 geometry_msgs::PoseStamped current_pose_buf;
 
-void image_obj_tracked_callback(const cv_tracker_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
+void image_obj_tracked_callback(const autoware_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
     pthread_mutex_lock(&mutex);
     image_obj_tracked_ringbuf.push_front(*image_obj_tracked_msg);
 
@@ -300,7 +300,7 @@ void image_obj_tracked_callback(const cv_tracker_msgs::image_obj_tracked::ConstP
     // image_obj_tracked > current_pose
     if (get_time(&(image_obj_tracked_ringbuf.front().header)) >= get_time(&(current_pose_ringbuf.front().header))) {
         current_pose_buf = current_pose_ringbuf.front();
-        boost::circular_buffer<cv_tracker_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
         if (image_obj_tracked_ringbuf.size() == 1) {
             image_obj_tracked_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -372,7 +372,7 @@ void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_p
     // image_obj_tracked > current_pose
     if (get_time(&(image_obj_tracked_ringbuf.front().header)) >= get_time(&(current_pose_ringbuf.front().header))) {
         current_pose_buf = current_pose_ringbuf.front();
-        boost::circular_buffer<cv_tracker_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::image_obj_tracked>::iterator it = image_obj_tracked_ringbuf.begin();
         if (image_obj_tracked_ringbuf.size() == 1) {
             image_obj_tracked_buf = *it;
             pthread_mutex_unlock(&mutex);

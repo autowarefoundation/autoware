@@ -11,7 +11,7 @@
 	<arg name="pose_estimation" default="true" />
 	<arg name="clip_min_height" default="-1.3" />
 	<arg name="clip_max_height" default="0.5" />
-	
+
 	<arg name="keep_lanes" default="false" />
 	<arg name="keep_lane_left_distance" default="5" />
 	<arg name="keep_lane_right_distance" default="5" />
@@ -19,13 +19,15 @@
 	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
 	<arg name="cluster_merge_threshold" default="1.5" />
-	
+
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
-	
+
 	<arg name="output_frame" default="velodyne" />
-	
+
 	<arg name="remove_points_upto" default="0.0" />
+
+	<arg name="use_gpu" default="false" />
 
 	<!-- rosrun lidar_tracker vscan_filling -->
 	<node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" />
@@ -51,6 +53,7 @@
 		<param name="vectormap_frame" value="$(arg vectormap_frame)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
 		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
+		<param name="use_gpu" value="$(arg use_gpu)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 	</node>
 

@@ -6,6 +6,7 @@
 #include<sensor_msgs/LaserScan.h>
 #include<sensor_msgs/PointCloud2.h>
 #include<visualization_msgs/MarkerArray.h>
+#include "autoware_msgs/obj_label.h"
 
 #include<QGraphicsView>
 #include<QGraphicsScene>
@@ -96,7 +97,9 @@ private:
     Ui::MainWindow *ui;
 public:
     ROSSub<sensor_msgs::LaserScanConstPtr> * scansub;
-//    ROSSub<cv_tracker::obj_label::ConstPtr> * detectionsub;
+    ROSSub<autoware_msgs::obj_label::ConstPtr> * detectionsub;
+    ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxessub;
+
     ROSTFSub * tfsub;
 //    ROSTFSub * tfMap2Lidarsub;
     QList< QPair<double,LaserScan> > scanlist;
@@ -131,7 +134,6 @@ public slots:
 #include<sensor_msgs/LaserScan.h>
 #include<sensor_msgs/PointCloud2.h>
 #include<visualization_msgs/MarkerArray.h>
-#include "cv_tracker_msgs/obj_label.h"
 
 #include<QGraphicsView>
 #include<QGraphicsScene>
@@ -153,7 +155,6 @@ public slots:
 #include<Eigen/Dense>
 
 #include<rbsspfvehicletracker.h>
-
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -228,7 +229,6 @@ private:
     Ui::MainWindow *ui;
 public:
     ROSSub<sensor_msgs::LaserScanConstPtr> * laserscan_subscriber_;
-    ROSSub<cv_tracker_msgs::obj_label::ConstPtr> * detection_subscriber_;
     ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr> * boxes_subscriber_;
 
     ROSPub<jsk_recognition_msgs::BoundingBoxArray> *boxes_publisher_;//added to enable publishing of tracking results
@@ -249,7 +249,6 @@ public:
     bool initflag=0;
 public slots:
     void slotReceive();
-    void slotReceiveDetection();
     void slotReceiveBoxes();
     void slotReceiveTF();
     void slotReceiveTFMap2Lidar();

@@ -5,11 +5,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   runtime_manager
-  waypoint_follower_msgs
+  autoware_msgs
   map_file
   op_utility
   op_planner
   op_simu
+  waypoint_follower
 )
 
 ## System dependencies are found with CMake's conventions
@@ -21,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu
+  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu waypoint_follower
   DEPENDS system_lib
 )
 
@@ -49,7 +50,5 @@ target_link_libraries(ff_waypoint_follower  ${catkin_LIBRARIES})
 #target_link_libraries(ff_waypoint_follower utilityh plannerh simuh CANUSB hevcontrol ${catkin_LIBRARIES})
 
 add_dependencies(ff_waypoint_follower 
-runtime_manager_generate_messages_cpp
-waypoint_follower_msgs_generate_messages_cpp
-map_file_generate_messages_cpp
+${catkin_EXPORTED_TARGETS}
 )

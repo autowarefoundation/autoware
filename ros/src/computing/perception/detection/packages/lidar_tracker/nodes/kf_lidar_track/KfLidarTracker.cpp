@@ -29,12 +29,11 @@ void KfLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_po
 	boost::geometry::assign_points(out_polygon, hull_detection_points);
 }
 
-void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
+void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
 {
 	size_t num_detections = in_cloud_cluster_array.clusters.size();
-	size_t num_tracks = tracks.size();
-	std::vector<int> track_assignments(num_tracks, -1);
-	std::vector< std::vector<size_t> > track_assignments_vector(num_tracks);
+	size_t num_tracks = tracks_.size();
+
 	std::vector<size_t> detections_assignments;
 	std::vector<double> detections_areas(num_detections, 0.0f);
 
@@ -47,13 +46,17 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 		// If no tracks yet
 		for (size_t i = 0; i < num_detections; ++i)
 		{
-			tracks.push_back(CTrack(in_cloud_cluster_array.clusters[i],
+			tracks_.push_back(CTrack(in_cloud_cluster_array.clusters[i],
 									time_delta_,
 									acceleration_noise_magnitude_,
 									next_track_id_++)
 							);
 		}
+		num_tracks = tracks_.size();
 	}
+	std::vector<int> track_assignments(num_tracks, -1);
+	std::vector< std::vector<size_t> > track_assignments_vector(num_tracks);
+
 	//else
 	{
 		//std::cout << "Trying to match " << num_tracks << " tracks with " << num_detections << std::endl;
@@ -71,15 +74,15 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 
 			for (size_t j = 0; j < num_tracks; j++)
 			{
-				//float current_distance = tracks[j].CalculateDistance(cv::Point2f(in_cloud_cluster_array.clusters[i].centroid_point.point.x, in_cloud_cluster_array.clusters[i].centroid_point.point.y));
+				//float current_distance = tracks_[j].CalculateDistance(cv::Point2f(in_cloud_cluster_array.clusters[i].centroid_point.point.x, in_cloud_cluster_array.clusters[i].centroid_point.point.y));
 				float current_distance = sqrt(
-												pow(tracks[j].GetCluster().centroid_point.point.x - in_cloud_cluster_array.clusters[i].centroid_point.point.x, 2) +
-												pow(tracks[j].GetCluster().centroid_point.point.y - in_cloud_cluster_array.clusters[i].centroid_point.point.y, 2)
+												pow(tracks_[j].GetCluster().centroid_point.point.x - in_cloud_cluster_array.clusters[i].centroid_point.point.x, 2) +
+												pow(tracks_[j].GetCluster().centroid_point.point.y - in_cloud_cluster_array.clusters[i].centroid_point.point.y, 2)
 										);
 
 				//tracker polygon
 				boost_polygon hull_track_polygon;
-				CreatePolygonFromPoints(tracks[j].GetCluster().convex_hull.polygon, hull_track_polygon);
+				CreatePolygonFromPoints(tracks_[j].GetCluster().convex_hull.polygon, hull_track_polygon);
 
 				//if(current_distance < current_distance_threshold)
 				if (!boost::geometry::disjoint(hull_detection_polygon, hull_track_polygon)
@@ -100,10 +103,10 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 			if (track_assignments[i]>=0) //if this track was assigned, update kalman filter, reset remaining life
 			{
 				//keep oldest
-				tracks[i].skipped_frames = 0;
+				tracks_[i].skipped_frames = 0;
 
 				//join all assigned detections to update the tracker
-				/*lidar_tracker::CloudClusterPtr summed_cloud_cluster(new lidar_tracker::CloudCluster());
+				/*autoware_msgs::CloudClusterPtr summed_cloud_cluster(new autoware_msgs::CloudCluster());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr summed_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 				for (size_t j = 0; j < track_assignments_vector[i].size(); j++)
 				{
@@ -121,28 +124,28 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 
 				merged_cluster->ToRosMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
 
-				tracks[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],//*summed_cloud_cluster,
+				tracks_[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],//*summed_cloud_cluster,
 								true,
 								maximum_trace_length_);
 				//detections_assignments.push_back(track_assignments[i]);
 			}
 			else				     // if not matched continue using predictions, and increase life
 			{
-				tracks[i].Update(lidar_tracker::CloudCluster(), //empty cluster
+				tracks_[i].Update(autoware_msgs::CloudCluster(), //empty cluster
 									false, //not matched,
 									maximum_trace_length_
 								);
-				tracks[i].skipped_frames++;
+				tracks_[i].skipped_frames++;
 			}
-			tracks[i].life_span++;
+			tracks_[i].life_span++;
 		}
 
 		// If track life is long, remove it.
-		for (size_t i = 0; i < tracks.size(); i++)
+		for (size_t i = 0; i < tracks_.size(); i++)
 		{
-			if (tracks[i].skipped_frames > maximum_allowed_skipped_frames_)
+			if (tracks_[i].skipped_frames > maximum_allowed_skipped_frames_)
 			{
-				tracks.erase(tracks.begin() + i);
+				tracks_.erase(tracks_.begin() + i);
 				i--;
 			}
 		}
@@ -154,7 +157,7 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 			std::vector<size_t>::iterator it = find(detections_assignments.begin(), detections_assignments.end(), i);
 			if (it == detections_assignments.end())//if detection not found in the already assigned ones, add new tracker
 			{
-				tracks.push_back(CTrack(in_cloud_cluster_array.clusters[i],
+				tracks_.push_back(CTrack(in_cloud_cluster_array.clusters[i],
 										time_delta_,
 										acceleration_noise_magnitude_,
 										next_track_id_++)
@@ -167,9 +170,18 @@ void KfLidarTracker::Update(const lidar_tracker::CloudClusterArray& in_cloud_clu
 		//std::cout << "Trackers added: " << una << std::endl;
 
 		//finally check trackers among them
+		for(size_t i=0; i< tracks_.size(); i++)
+			std::cout << tracks_[i].track_id << ",";
+		std::cout << std::endl << "Check" << std::endl;
 		CheckAllTrackersForMerge(final_tracks);
 
-		tracks = final_tracks;
+		tracks_ = final_tracks;
+
+		for(size_t i=0; i< tracks_.size(); i++)
+			std::cout << tracks_[i].track_id << ",";
+		std::cout << std::endl;
+
+		//std::cout << "Final Trackers " << tracks_.size() << std::endl;
 	}//endof matching
 
 }
@@ -221,43 +233,49 @@ void KfLidarTracker::MergeTrackers(std::vector<CTrack>& in_trackers, std::vector
 		}
 		in_out_merged_trackers[in_merge_indices[i]] = true;
 	}
-
-	out_trackers.push_back(in_trackers[oldest_index]);
+	bool found=false;
+	for(size_t i=0; i< out_trackers.size(); i++){
+		found = out_trackers[i].track_id == in_trackers[oldest_index].track_id;
+	}
+	if (!found)
+	{
+		out_trackers.push_back(in_trackers[oldest_index]);
+		in_out_merged_trackers[oldest_index] = true;
+	}
 	//out_trackers.back().cluster = in_trackers[largest_index].GetCluster();
 }
 
 void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 {
 	//std::cout << "checkAllForMerge" << std::endl;
-	std::vector<bool> visited_trackers(tracks.size(), false);
-	std::vector<bool> merged_trackers(tracks.size(), false);
+	std::vector<bool> visited_trackers(tracks_.size(), false);
+	std::vector<bool> merged_trackers(tracks_.size(), false);
 	size_t current_index=0;
-	for (size_t i = 0; i< tracks.size(); i++)
+	for (size_t i = 0; i< tracks_.size(); i++)
 	{
 		if (!visited_trackers[i])
 		{
 			visited_trackers[i] = true;
 			std::vector<size_t> merge_indices;
-			CheckTrackerMerge(i, tracks, visited_trackers, merge_indices, tracker_merging_threshold_);
-			MergeTrackers(tracks, out_trackers, merge_indices, current_index++, merged_trackers);
+			CheckTrackerMerge(i, tracks_, visited_trackers, merge_indices, tracker_merging_threshold_);
+			MergeTrackers(tracks_, out_trackers, merge_indices, current_index++, merged_trackers);
 		}
 	}
-	for(size_t i =0; i< tracks.size(); i++)
+	for(size_t i =0; i< tracks_.size(); i++)
 	{
 		//check for clusters not merged, add them to the output
 		if (!merged_trackers[i])
 		{
-			out_trackers.push_back(tracks[i]);
+			out_trackers.push_back(tracks_[i]);
 		}
 	}
-
 	//ClusterPtr cluster(new Cluster());
 }
 // ---------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------
 /*void KfLidarTracker::Update(
-	const lidar_tracker::CloudClusterArray& in_cloud_cluster_array,
+	const autoware_msgs::CloudClusterArray& in_cloud_cluster_array,
 	DistType distType
 	)
 {
@@ -265,13 +283,13 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 	// -----------------------------------
 	// If there is no tracks yet, then every cv::Point begins its own track.
 	// -----------------------------------
-	if (tracks.size() == 0)
+	if (tracks_.size() == 0)
 	{
 		std::cout << "New track" << std::endl;
 		// If no tracks yet
 		for (size_t i = 0; i < detections_num; ++i)
 		{
-			tracks.push_back(CTrack(in_cloud_cluster_array.clusters[i],
+			tracks_.push_back(CTrack(in_cloud_cluster_array.clusters[i],
 									time_delta_,
 									acceleration_noise_magnitude_,
 									next_track_id_++)
@@ -279,12 +297,12 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 		}
 	}
 
-	size_t N = tracks.size();
+	size_t N = tracks_.size();
 	size_t M = detections_num;
 
 	std::vector<int> assignment;
 
-	if (!tracks.empty())
+	if (!tracks_.empty())
 	{
 		std::cout << "Try to match" << std::endl;
 		std::vector<float> cost_matrix(N * M);
@@ -292,21 +310,21 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 		switch (distType)
 		{
 		case CentersDist:
-			for (size_t i = 0; i < tracks.size(); i++)
+			for (size_t i = 0; i < tracks_.size(); i++)
 			{
 				for (size_t j = 0; j < detections_num; j++)
 				{
-					cost_matrix[i + j * N] = tracks[i].CalculateDistance(cv::Point2f(in_cloud_cluster_array.clusters[j].centroid_point.point.x, in_cloud_cluster_array.clusters[j].centroid_point.point.y));
+					cost_matrix[i + j * N] = tracks_[i].CalculateDistance(cv::Point2f(in_cloud_cluster_array.clusters[j].centroid_point.point.x, in_cloud_cluster_array.clusters[j].centroid_point.point.y));
 				}
 			}
 			break;
 
 		case RectsDist:
-			for (size_t i = 0; i < tracks.size(); i++)
+			for (size_t i = 0; i < tracks_.size(); i++)
 			{
 				for (size_t j = 0; j < detections_num; j++)
 				{
-					cost_matrix[i + j * N] = tracks[i].CalculateDistance( cv::Rect_<float>(in_cloud_cluster_array.clusters[i].centroid_point.point.x - in_cloud_cluster_array.clusters[i].bounding_box.dimensions.x/2,
+					cost_matrix[i + j * N] = tracks_[i].CalculateDistance( cv::Rect_<float>(in_cloud_cluster_array.clusters[i].centroid_point.point.x - in_cloud_cluster_array.clusters[i].bounding_box.dimensions.x/2,
 																			in_cloud_cluster_array.clusters[i].centroid_point.point.y - in_cloud_cluster_array.clusters[i].bounding_box.dimensions.y/2,
 																			in_cloud_cluster_array.clusters[i].bounding_box.dimensions.x,
 																			in_cloud_cluster_array.clusters[i].bounding_box.dimensions.y
@@ -334,26 +352,26 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 				if (cost_matrix[i + assignment[i] * N] > distance_threshold_)
 				{
 					assignment[i] = -1;
-					tracks[i].skipped_frames = 1;
+					tracks_[i].skipped_frames = 1;
 					std::cout << "Existing track Not matched " << i << " Distance:" << cost_matrix[i + assignment[i] * N] << std::endl;
 				}
 			}
 			else
 			{
 				// If track have no assigned detect, then increment skipped frames counter.
-				tracks[i].skipped_frames++;
-				std::cout << "Existing track Not matched " << i <<", dying " << tracks[i].skipped_frames << std::endl;
+				tracks_[i].skipped_frames++;
+				std::cout << "Existing track Not matched " << i <<", dying " << tracks_[i].skipped_frames << std::endl;
 			}
 		}
 
 		// -----------------------------------
 		// If track didn't get detects long time, remove it.
 		// -----------------------------------
-		for (size_t i = 0; i < tracks.size(); i++)
+		for (size_t i = 0; i < tracks_.size(); i++)
 		{
-			if (tracks[i].skipped_frames > maximum_allowed_skipped_frames_)
+			if (tracks_[i].skipped_frames > maximum_allowed_skipped_frames_)
 			{
-				tracks.erase(tracks.begin() + i);
+				tracks_.erase(tracks_.begin() + i);
 				assignment.erase(assignment.begin() + i);
 				std::cout << "Died " << i << std::endl;
 				i--;
@@ -369,7 +387,7 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 		if (find(assignment.begin(), assignment.end(), i) == assignment.end())
 		{
 			std::cout << "New object, Not matched " << i << std::endl;
-			tracks.push_back(CTrack(in_cloud_cluster_array.clusters[i],
+			tracks_.push_back(CTrack(in_cloud_cluster_array.clusters[i],
 									time_delta_,
 									acceleration_noise_magnitude_,
 									next_track_id_++)
@@ -384,16 +402,16 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 
 		if (assignment[i] != -1) // If we have assigned detect, then update using its coordinates,
 		{
-			tracks[i].skipped_frames = 0;
+			tracks_[i].skipped_frames = 0;
 			std::cout << "Matched. Kalman Update on " << i << std::endl;
-			tracks[i].Update(	in_cloud_cluster_array.clusters[i],
+			tracks_[i].Update(	in_cloud_cluster_array.clusters[i],
 								true,
 								maximum_trace_length_);
 		}
 		else				     // if not continue using predictions
 		{
 			std::cout << "Not Matched. Kalman Update on " << i << std::endl;
-			tracks[i].Update(lidar_tracker::CloudCluster(), false, maximum_trace_length_);
+			tracks_[i].Update(autoware_msgs::CloudCluster(), false, maximum_trace_length_);
 		}
 	}
 

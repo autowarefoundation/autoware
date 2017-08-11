@@ -32,10 +32,10 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <tablet_socket_msgs/mode_cmd.h>
 #include <tablet_socket_msgs/gear_cmd.h>
-#include <runtime_manager/accel_cmd.h>
-#include <runtime_manager/brake_cmd.h>
-#include <runtime_manager/steer_cmd.h>
-#include <waypoint_follower_msgs/ControlCommandStamped.h>
+#include "autoware_msgs/accel_cmd.h"
+#include "autoware_msgs/brake_cmd.h"
+#include "autoware_msgs/steer_cmd.h"
+#include "autoware_msgs/ControlCommandStamped.h"
 
 #include <iostream>
 #include <string>
@@ -96,22 +96,22 @@ static void gearCMDCallback(const tablet_socket_msgs::gear_cmd& gear)
   command_data.gearValue = gear.gear;
 }
 
-static void accellCMDCallback(const runtime_manager::accel_cmd& accell)
+static void accellCMDCallback(const autoware_msgs::accel_cmd& accell)
 {
   command_data.accellValue = accell.accel;
 }
 
-static void steerCMDCallback(const runtime_manager::steer_cmd& steer)
+static void steerCMDCallback(const autoware_msgs::steer_cmd& steer)
 {
   command_data.steerValue = steer.steer;
 }
 
-static void brakeCMDCallback(const runtime_manager::brake_cmd &brake)
+static void brakeCMDCallback(const autoware_msgs::brake_cmd &brake)
 {
   command_data.brakeValue = brake.brake;
 }
 
-static void ctrlCMDCallback(const waypoint_follower_msgs::ControlCommandStamped& msg)
+static void ctrlCMDCallback(const autoware_msgs::ControlCommandStamped& msg)
 {
   command_data.linear_velocity = msg.cmd.linear_velocity;
   command_data.steering_angle = msg.cmd.steering_angle;

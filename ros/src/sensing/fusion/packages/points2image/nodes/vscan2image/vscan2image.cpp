@@ -31,9 +31,9 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
-#include "points2image/PointsImage.h"
-#include "calibration_camera_lidar/projection_matrix.h"
-//#include "points2image/CameraExtrinsic.h"
+#include "autoware_msgs/PointsImage.h"
+#include "autoware_msgs/projection_matrix.h"
+//#include "autoware_msgs/CameraExtrinsic.h"
 
 #include <points_image.hpp>
 
@@ -49,7 +49,7 @@ static cv::Mat distCoeff;
 static cv::Size imageSize;
 static ros::Publisher pub;
 
-static void projection_callback(const calibration_camera_lidar::projection_matrix& msg)
+static void projection_callback(const autoware_msgs::projection_matrix& msg)
 {
 	cameraExtrinsicMat = cv::Mat(4,4,CV_64F);
 	for (int row=0; row<4; row++) {
@@ -84,7 +84,7 @@ static void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 		ROS_INFO("Looks like /camera/camera_info or /projection_matrix are not being published.. Please check that both are running..");
 		return;
 	}
-	points2image::PointsImage pub_msg
+	autoware_msgs::PointsImage pub_msg
 		= pointcloud2_to_image(msg, cameraExtrinsicMat,
 				       cameraMat, distCoeff, imageSize);
 	pub.publish(pub_msg);
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	//imageSize.width = IMAGE_WIDTH;
 	//imageSize.height = IMAGE_HEIGHT;
 
-	pub = n.advertise<points2image::PointsImage>("vscan_image", 10);
+	pub = n.advertise<autoware_msgs::PointsImage>("vscan_image", 10);
 	ros::Subscriber sub = n.subscribe("vscan_points", 1, callback);
 	ros::Subscriber projection = n.subscribe(projectionMat_topic_name, 1, projection_callback);
 	ros::Subscriber intrinsic = n.subscribe(cameraInfo_topic_name, 1, intrinsic_callback);

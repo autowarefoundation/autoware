@@ -9,8 +9,8 @@
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/PolygonStamped.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 #include <tf/tf.h>
 
 #include <boost/assert.hpp>
@@ -32,7 +32,7 @@ class CTrack
 	cv::Point2f prediction_point_;
 	TKalmanFilter kf_;
 public:
-	lidar_tracker::CloudCluster cluster;
+	autoware_msgs::CloudCluster cluster;
 
 	std::vector<cv::Point2f> trace;
 	size_t track_id;
@@ -40,7 +40,7 @@ public:
 	size_t life_span;
 	double area;
 
-	CTrack(const lidar_tracker::CloudCluster& in_cluster, float in_time_delta, float in_acceleration_noise_magnitude, size_t in_track_id)
+	CTrack(const autoware_msgs::CloudCluster& in_cluster, float in_time_delta, float in_acceleration_noise_magnitude, size_t in_track_id)
 		: kf_(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_time_delta, in_acceleration_noise_magnitude)
 	{
 		track_id = in_track_id;
@@ -62,7 +62,7 @@ public:
 		return 0.0f;
 	}
 
-	void Update(const lidar_tracker::CloudCluster& in_cluster, bool in_data_correct, size_t in_max_trace_length)
+	void Update(const autoware_msgs::CloudCluster& in_cluster, bool in_data_correct, size_t in_max_trace_length)
 	{
 		kf_.GetPrediction();
 		prediction_point_ = kf_.Update(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_data_correct);
@@ -81,7 +81,7 @@ public:
 		trace.push_back(prediction_point_);
 	}
 
-	lidar_tracker::CloudCluster GetCluster()
+	autoware_msgs::CloudCluster GetCluster()
 	{
 		return cluster;
 	}
@@ -118,8 +118,8 @@ public:
 		RectsDist = 1
 	};
 
-	std::vector< CTrack > tracks;
-	void Update(const lidar_tracker::CloudClusterArray& in_cloud_cluster_array, DistType in_disttype);
+	std::vector< CTrack > tracks_;//TODO: add GetTracks getter
+	void Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_disttype);
 
 
 };

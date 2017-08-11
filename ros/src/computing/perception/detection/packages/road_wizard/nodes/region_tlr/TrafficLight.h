@@ -8,13 +8,13 @@
 #include "TrafficLightDetector.h"
 
 /* Extra includes */
-#include "road_wizard/Signals.h"
+#include "autoware_msgs/Signals.h"
 
 #define MAIN_WINDOW_NAME "Main"
 #define SETTINGS_WINDOW_NAME "Settings"
 
 /* Functions declarations */
-void setContexts(TrafficLightDetector &detector, const road_wizard::Signals::ConstPtr& extractedPos);
+void setContexts(TrafficLightDetector &detector, const autoware_msgs::Signals::ConstPtr& extractedPos);
 
 #define MINIMAM_RADIUS 3
 #define ROI_MARGINE 20

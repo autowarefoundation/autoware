@@ -35,7 +35,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/image_encodings.h>
-#include "points2image/PointsImage.h"
+#include "autoware_msgs/PointsImage.h"
 
 #define IMAGE_WIDTH 800
 #define IMAGE_HEIGHT 640
@@ -43,7 +43,7 @@
 static bool existImage = false;
 static bool existPoints = false;
 static sensor_msgs::Image image_msg;
-static points2image::PointsImageConstPtr points_msg;
+static autoware_msgs::PointsImageConstPtr points_msg;
 static cv::Mat colormap;
 
 static const char window_name_base[] = "points_image_viewer";
@@ -103,7 +103,7 @@ static void image_cb(const sensor_msgs::Image& msg)
 	show();
 }
 
-static void points_cb(const points2image::PointsImageConstPtr& msg)
+static void points_cb(const autoware_msgs::PointsImageConstPtr& msg)
 {
 	points_msg = msg;
 	existPoints = true;

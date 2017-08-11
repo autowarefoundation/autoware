@@ -89,7 +89,7 @@ way_planner_core::way_planner_core()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_Paths = nh.advertise<waypoint_follower_msgs::LaneArray>("lane_waypoints_array", 1, true);
+	pub_Paths = nh.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
 	pub_PathsRviz = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_rviz", 1, true);
 	pub_StartPointRviz = nh.advertise<visualization_msgs::Marker>("Global_StartPoint_rviz", 1, true);
 	pub_GoalPointRviz = nh.advertise<visualization_msgs::MarkerArray>("Global_GoalPoints_rviz", 1, true);
@@ -225,7 +225,7 @@ void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampe
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
-void way_planner_core::callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+void way_planner_core::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * 0.45 / 660;
@@ -436,7 +436,7 @@ if(m_params.bEnableHMI)
 
 void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::WayPoint> > generatedTotalPaths)
 {
-	waypoint_follower_msgs::LaneArray lane_array;
+	autoware_msgs::LaneArray lane_array;
 	visualization_msgs::MarkerArray pathsToVisualize;
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)

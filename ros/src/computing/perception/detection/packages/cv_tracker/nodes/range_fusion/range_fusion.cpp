@@ -29,10 +29,10 @@
 */
 
 #include <ros/ros.h>
-#include <cv_tracker_msgs/image_obj_ranged.h>
 #include <std_msgs/Header.h>
 #include <fusion_func.h>
-#include <runtime_manager/ConfigCarFusion.h>
+#include "autoware_msgs/image_obj_ranged.h"
+#include "autoware_msgs/ConfigCarFusion.h"
 
 static void publishTopic();
 static ros::Publisher fused_objects;
@@ -40,7 +40,7 @@ static std_msgs::Header sensor_header;
 
 bool ready_ = false;
 
-static void DetectedObjectsCallback(const cv_tracker_msgs::image_obj& image_object)
+static void DetectedObjectsCallback(const autoware_msgs::image_obj& image_object)
 {
     sensor_header = image_object.header;
     setDetectedObjects(image_object);
@@ -62,7 +62,7 @@ static void DetectedObjectsCallback(const cv_tracker_msgs::image_obj& image_obje
 	publishTopic();
 }*/
 
-static void PointsImageCallback(const points2image::PointsImage& points_image)
+static void PointsImageCallback(const autoware_msgs::PointsImage& points_image)
 {
     sensor_header = points_image.header;
     setPointsImage(points_image);
@@ -80,7 +80,7 @@ static void publishTopic()
 	/*
 	 * Publish topic(obj position ranged).
 	 */
-	cv_tracker_msgs::image_obj_ranged fused_objects_msg;
+	autoware_msgs::image_obj_ranged fused_objects_msg;
 	fused_objects_msg.header = sensor_header;
 
 	fused_objects_msg.type = getObjectsType();
@@ -88,7 +88,7 @@ static void publishTopic()
 	fused_objects.publish(fused_objects_msg);
 }
 
-static void config_cb(const runtime_manager::ConfigCarFusion::ConstPtr& param)
+static void config_cb(const autoware_msgs::ConfigCarFusion::ConstPtr& param)
 {
 	setParams(param->min_low_height,
 			param->max_low_height,
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-	fused_objects = n.advertise<cv_tracker_msgs::image_obj_ranged>("image_obj_ranged", 1);
+	fused_objects = n.advertise<autoware_msgs::image_obj_ranged>("image_obj_ranged", 1);
 
 	ros::Subscriber config_subscriber;
 	std::string config_topic("/config");

@@ -339,6 +339,18 @@ subs :
             border : 16
             flags : [ all ]
 
+      - name : region_tlr_ssd
+        desc : region_tlr_ssd desc sample
+        cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
+        param : region_tlr_ssd
+        gui  :
+          flags : [ no_link, need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
     - name : viewers
       desc : viewers desc sample
       subs :
@@ -433,6 +445,11 @@ subs :
       cmd  : roslaunch object_map potential_field.launch
       param: potential_field
 
+    - name : dist_transform
+      desc : Generate distance transformed cost map from OccupancyGrid
+      cmd  : roslaunch object_map dist_transform.launch
+      param: dist_transform
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -468,8 +485,8 @@ subs :
     - name : way_planner (OpenPlanner)
       desc : Global planner for OpenPlanner
       subs :
-      - name : way_planner 
-        desc : for global planning 
+      - name : way_planner
+        desc : for global planning
         cmd  : roslaunch way_planner way_planner.launch
         param: way_planner
 
@@ -479,26 +496,27 @@ subs :
     - name : dp_planner (OpenPlanner)
       desc : Local Planner for OpenPlanner
       subs :
-      - name : dp_planner 
-        desc : for behavior and path planning 
+      - name : dp_planner
+        desc : for behavior and path planning
         cmd  : roslaunch dp_planner dp_planner.launch
         param: dp_planner
-      - name : ff_waypoint_follower 
+      - name : ff_waypoint_follower
         desc : Feedforward PID waypoint follower
         cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
         param: ff_waypoint_follower
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
+      - name : obstacle_avoid
+        desc : obstacle_avoid desc sample
+        cmd  : roslaunch astar_planner obstacle_avoid.launch
+        param: obstacle_avoid
       - name : velocity_set
         desc : velocity_set desc sample
         cmd  : roslaunch astar_planner velocity_set.launch
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
-      - name : obstacle_avoid
-        desc : obstacle_avoid desc sample
-        cmd  : rosrun astar_planner obstacle_avoid
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1100,7 +1118,7 @@ params :
       v       : 1.5
       cmd_param :
         dash        : ''
-        delim       : ':=' 
+        delim       : ':='
     - name      : sync
       kind      : hide
       v         : False
@@ -1108,7 +1126,14 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ndt
     topic : /config/ndt
@@ -1417,6 +1442,35 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : obstacle_avoid
+    vars  :
+    - name  : avoidance
+      desc  : if not checked, decide if we avoid by reading the current state
+      label : Avoidance
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : avoid_distance
+      desc      : Avoid distance from the obstacle
+      label     : Avoid Distance (m)
+      min       : 0.0
+      max       : 50.0
+      v         : 13.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : avoid_velocity_limit_mps
+      desc      : if the current velocity exceeds this value, we do not avoid
+      label     : Avoid Velocity Limit (m/s)
+      min       : 0.0
+      max       : 20.0
+      v         : 4.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set
@@ -1923,6 +1977,19 @@ params :
         delim        : ':='
         only_enable  : True
 
+  - name : region_tlr_ssd
+    vars :
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
   - name  : traffic_light
     vars :
     - name      : file
@@ -1991,7 +2058,7 @@ params :
     vars  :
     - name  : traffic_light
       desc  : traffic_light desc sample
-      v     : 0
+      v     : 1
     - name  : lane_stop
       v     : False
 
@@ -2126,7 +2193,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : mapFileName
-      desc : select kml map file if applicable 
+      desc : select kml map file if applicable
       label: Map File
       kind : path
       cmd_param:
@@ -2143,7 +2210,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableOutsideControl
-      desc : Enable User Input Control  
+      desc : Enable User Input Control
       label: Enable user control
       kind : checkbox
       v    : False
@@ -2151,7 +2218,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableObjectTracking
-      desc : Enable Planner KF Tracker   
+      desc : Enable Planner KF Tracker
       label: Enable Tracking
       kind : checkbox
       v    : True
@@ -2220,7 +2287,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : rollOutDensity
-      desc : Roll outs density 
+      desc : Roll outs density
       label: Horizontal Density
       min  : 0.1
       max  : 2.0
@@ -2229,14 +2296,14 @@ params :
         dash     : ''
         delim    : ':='
     - name : rollOutsNumber
-      desc : Number of roll outs  
+      desc : Number of roll outs
       label: Rollouts Number
       min  : 0
       max  : 20
       v    : 4
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : enableFollowing
       desc : Enable stop and follow obstacles
       label: Enable Following
@@ -2254,34 +2321,34 @@ params :
         dash     : ''
         delim    : ':='
     - name : minFollowingDistance
-      desc : Distance to start follow Next Car 
+      desc : Distance to start follow Next Car
       label: Follow Distance
       min  : 10.0
       max  : 50.0
       v    : 30.0
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : minDistanceToAvoid
-      desc : Avoidance and Following threshold Distance 
+      desc : Avoidance and Following threshold Distance
       label: Avoiding Distance
       min  : 6.0
       max  : 30.0
       v    : 15.0
       cmd_param:
         dash     : ''
-        delim    : ':=' 
+        delim    : ':='
     - name : maxDistanceToAvoid
-      desc : Distance to give up avoidance 
-      label: Avoidance Limit 
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
       min  : 1.0
       max  : 6.0
       v    : 4.0
       cmd_param:
         dash     : ''
-        delim    : ':='  
+        delim    : ':='
     - name : enableStopSignBehavior
-      desc : Enable stop sign check  
+      desc : Enable stop sign check
       label: Enable Stop Sign Stop
       kind : checkbox
       v    : TRUE
@@ -2289,7 +2356,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableTrafficLightBehavior
-      desc : Enable traffic light check  
+      desc : Enable traffic light check
       label: Enable Traffic Light
       kind : checkbox
       v    : TRUE
@@ -2297,8 +2364,8 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLaneChange
-      desc : Enable Lane Change   
-      label: Enable Lane Change 
+      desc : Enable Lane Change
+      label: Enable Lane Change
       kind : checkbox
       v    : False
       cmd_param:
@@ -2323,7 +2390,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : mapFileName
-      desc : select kml map file if applicable 
+      desc : select kml map file if applicable
       label: Map File
       kind : path
       cmd_param:
@@ -2348,7 +2415,7 @@ params :
   - name  : ff_waypoint_follower
     vars  :
     - name : maxVelocity
-      desc : maximum allowed velocity in 
+      desc : maximum allowed velocity in
       label: Max Velocity
       min  : 0.0
       max  : 20.0
@@ -2357,7 +2424,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : steeringDelay
-      desc : Steering wheel average delay 
+      desc : Steering wheel average delay
       label: Steering Delay
       min  : 0.0
       max  : 2.0
@@ -2366,8 +2433,8 @@ params :
         dash     : ''
         delim    : ':='
     - name : minPursuiteDistance
-      desc : Minimum Follow Point Distance 
-      label: Follow Distance 
+      desc : Minimum Follow Point Distance
+      label: Follow Distance
       min  : 0.0
       max  : 5.0
       v    : 2.5
@@ -2376,7 +2443,7 @@ params :
         delim    : ':='
     - name : steerGainKP
       desc : Gain proportional component
-      label: KP 
+      label: KP
       min  : 0.0
       max  : 1.0
       v    : 0.07
@@ -2836,29 +2903,56 @@ params :
   - name : points2costmap
     vars :
     - name      : resolution
-      desc      : resolution desc sample
+      desc      : Map resolution [meter]
       label     : resolution
       min       : 0.0
-      max       : 0.2
-      v         : 0.1
+      max       : 1.0
+      v         : 0.2
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_width
-      desc      : cell_width desc sample
+      desc      : Map cell size x
       label     : map_size_x
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 300
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_height
-      desc      : cell_height desc sample
+      desc      : Map cell size y
       label     : map_size_y
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 150
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_x
+      desc      : Map offset of x [meter]
+      label     : map_offset_x
+      min       : -100
+      max       : 100
+      v         : 25.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_y
+      desc      : Map offset of y [meter]
+      label     : map_offset_y
+      min       : -100
+      max       : 100
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_z
+      desc      : Map offset of z [meter]
+      label     : map_offset_z
+      min       : -100
+      max       : 100
+      v         : -2.0
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -2867,6 +2961,26 @@ params :
       label     : Points Topic
       kind      : str
       v         : /points_lanes
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : dist_transform
+    vars :
+    - name      : max_distance
+      desc      : Max distance for distance transform
+      label     : Max Distance
+      min       : 0.0
+      max       : 20.0
+      v         : 3.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_topic
+      desc      : Subscribing topic of OccupancyGrid message
+      label     : Map Topic
+      kind      : str
+      v         : /realtime_cost_map
       cmd_param :
         dash      : ''
         delim     : ':='

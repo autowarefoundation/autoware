@@ -10,28 +10,16 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  message_generation
-  calibration_camera_lidar
+  autoware_msgs
 )
 find_package(OpenCV REQUIRED)
-
-add_message_files(
-  FILES
-  ScanImage.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  sensor_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs calibration_camera_lidar message_runtime
+  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs autoware_msgs message_runtime
   #DEPENDS system_lib
 )
 
@@ -52,6 +40,5 @@ set_target_properties(scan2image
 
 target_link_libraries(scan2image ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(scan2image
-  scan2image_generate_messages_cpp
-  calibration_camera_lidar_generate_messages_cpp
+  autoware_msgs_generate_messages_cpp
 )

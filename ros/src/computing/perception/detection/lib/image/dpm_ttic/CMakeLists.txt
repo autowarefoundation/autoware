@@ -4,7 +4,6 @@ project(libdpm_ttic)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
-  message_generation
 )
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(CUDA)
@@ -101,7 +100,7 @@ ADD_CUSTOM_COMMAND(
 ADD_CUSTOM_TARGET(cuda_binary DEPENDS GPU_function.cubin)
 ADD_DEPENDENCIES(libdpm_ttic
   cuda_binary
-  runtime_manager_generate_messages_cpp)
+)
 
 ELSE()
 
@@ -127,8 +126,6 @@ TARGET_LINK_LIBRARIES(libdpm_ttic
   ${OpenCV_LIBS}
 )
 
-ADD_DEPENDENCIES(libdpm_ttic
-  runtime_manager_generate_messages_cpp)
 
 ENDIF()
 

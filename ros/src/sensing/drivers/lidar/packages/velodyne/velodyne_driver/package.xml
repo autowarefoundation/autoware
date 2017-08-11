@@ -1,7 +1,7 @@
 <package>
 
   <name>velodyne_driver</name>
-  <version>1.2.0</version>
+  <version>1.4.0</version>
   <description>
     ROS device driver for Velodyne HDL-64E, and HDL-32 LIDARs.
   </description>
