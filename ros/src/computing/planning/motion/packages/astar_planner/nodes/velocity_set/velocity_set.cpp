@@ -432,14 +432,8 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
 {
   if (detection_result == EControl::STOP)
   {  // STOP for obstacle
-    // stop_waypoint is about stop distance meter away from obstacles
-    int stop_waypoint = 0;
-    if (vs_path->getPrevWaypointsSize() > 1)
-    {
-      stop_waypoint = obstacle_waypoint - vs_info.getStopDistance() / vs_path->calcInterval(0, 1);
-    }
-    if (stop_waypoint < 0)
-      stop_waypoint = 0;
+    // stop_waypoint is about stop_distance meter away from obstacles
+    int stop_waypoint = calcWaypointIndexReverse(vs_path->getPrevWaypoints(), obstacle_waypoint, vs_info.getStopDistance());
 
     // change waypoints to stop by the stop_waypoint
     vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, vs_info.getDeceleration());
