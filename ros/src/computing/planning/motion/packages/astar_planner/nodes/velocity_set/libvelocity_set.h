@@ -145,4 +145,27 @@ inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_
   return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
 }
 
+// Calculate waypoint index corresponding to distance from begin_waypoint
+inline int calcWaypointIndexReverse(const autoware_msgs::lane& lane, const int begin_waypoint, const double distance)
+{
+  double dist_sum = 0;
+  for (int i = begin_waypoint; i > 0; i--)
+  {
+    tf::Vector3 v1(lane.waypoints[i].pose.pose.position.x,
+                   lane.waypoints[i].pose.pose.position.y, 0);
+
+    tf::Vector3 v2(lane.waypoints[i - 1].pose.pose.position.x,
+                   lane.waypoints[i - 1].pose.pose.position.y, 0);
+
+    dist_sum += tf::tfDistance(v1, v2);
+
+    if (dist_sum > distance)
+      return i;
+  }
+
+  // reach the first waypoint
+  return 0;
+}
+
+
 #endif /* _VELOCITY_SET_H */
