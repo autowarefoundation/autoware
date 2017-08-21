@@ -193,9 +193,6 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
         for (const auto& p : crosswalk.getDetectionPoints(c_id).points)
         {
           scale = crosswalk.getDetectionPoints(c_id).width;
-          crosswalk_marker.scale.x = scale;
-          crosswalk_marker.scale.y = scale;
-          crosswalk_marker.scale.z = scale;
           crosswalk_marker.points.push_back(p);
         }
       }
