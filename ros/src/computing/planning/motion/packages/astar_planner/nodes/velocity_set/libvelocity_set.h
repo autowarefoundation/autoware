@@ -37,6 +37,9 @@ private:
   int detection_crosswalk_id_;
   std::vector<geometry_msgs::Point> obstacle_points_;
   std::vector<int> bdID_;
+  
+  bool enable_multiple_crosswalk_detection_;
+  std::vector<int> detection_crosswalk_array_;
 
 public:
   bool loaded_crosswalk;
@@ -45,6 +48,7 @@ public:
   bool loaded_point;
   bool loaded_all;
   bool set_points;
+
   vector_map::CrossWalkArray crosswalk_;
   vector_map::AreaArray area_;
   vector_map::LineArray line_;
@@ -92,6 +96,32 @@ public:
   {
     return detection_crosswalk_id_;
   }
+  
+  void initDetectionCrossWalkIDs()
+  {
+    return detection_crosswalk_array_.clear();
+  }
+  void addDetectionCrossWalkIDs(const int &id)
+  {
+	  auto itr = std::find(detection_crosswalk_array_.begin(), detection_crosswalk_array_.end(), id);
+	  if(detection_crosswalk_array_.empty() || itr == detection_crosswalk_array_.end()){
+		  detection_crosswalk_array_.push_back(id);
+	  }
+
+  }
+  std::vector<int> getDetectionCrossWalkIDs() const
+  {
+    return detection_crosswalk_array_;
+  }
+  void setMultipleDetectionFlag(const bool _multiple_flag)
+  {
+	enable_multiple_crosswalk_detection_ = _multiple_flag;
+  }
+  bool isMultipleDetection() const
+  {
+	  return enable_multiple_crosswalk_detection_;
+  }
+ 
 
   CrossWalk()
     : detection_waypoint_(-1)

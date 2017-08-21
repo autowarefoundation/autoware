@@ -174,16 +174,27 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
     waypoint_marker_stop.points.push_back(point);
 
     if (i > DECELERATION_SEARCH_DISTANCE)
-      continue;
+	    continue;
     waypoint_marker_decelerate.points.push_back(point);
   }
 
   if (crosswalk_id > 0)
   {
-    for (const auto &p : crosswalk.getDetectionPoints(crosswalk_id).points)
-      crosswalk_marker.points.push_back(p);
+	  if(!crosswalk.isMultipleDetection()){
+		  for (const auto &p : crosswalk.getDetectionPoints(crosswalk_id).points)
+			  crosswalk_marker.points.push_back(p);
+	  }else {
+		  for (const auto &c_id : crosswalk.getDetectionCrossWalkIDs()){
+			  for (const auto &p : crosswalk.getDetectionPoints(c_id).points){
+				  scale = crosswalk.getDetectionPoints(c_id).width;
+				  crosswalk_marker.scale.x = scale;
+				  crosswalk_marker.scale.y = scale;
+				  crosswalk_marker.scale.z = scale;
+				  crosswalk_marker.points.push_back(p);
+			  }
+		  }
+	  }
   }
-
   // publish marker
   marker_array.markers.push_back(crosswalk_marker);
   marker_array.markers.push_back(waypoint_marker_stop);
@@ -199,35 +210,38 @@ EControl crossWalkDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const 
 {
   int crosswalk_id = crosswalk.getDetectionCrossWalkID();
   double search_radius = crosswalk.getDetectionPoints(crosswalk_id).width / 2;
+  //std::vector<int> crosswalk_ids crosswalk.getDetectionCrossWalkIDs();
 
   // Search each calculated points in the crosswalk
-  for (const auto &p : crosswalk.getDetectionPoints(crosswalk_id).points)
-  {
-    geometry_msgs::Point detection_point = calcRelativeCoordinate(p, localizer_pose.pose);
-    tf::Vector3 detection_vector = point2vector(detection_point);
-    detection_vector.setZ(0.0);
+  for (const auto &c_id : crosswalk.getDetectionCrossWalkIDs()){
+	  for (const auto &p : crosswalk.getDetectionPoints(c_id).points)
+	  {
+		  geometry_msgs::Point detection_point = calcRelativeCoordinate(p, localizer_pose.pose);
+		  tf::Vector3 detection_vector = point2vector(detection_point);
+		  detection_vector.setZ(0.0);
 
-    int stop_count = 0;  // the number of points in the detection area
-    for (const auto &p : points)
-    {
-      tf::Vector3 point_vector(p.x, p.y, 0.0);
-      double distance = tf::tfDistance(point_vector, detection_vector);
-      if (distance < search_radius)
-      {
-        stop_count++;
-        geometry_msgs::Point point_temp;
-        point_temp.x = p.x;
-        point_temp.y = p.y;
-        point_temp.z = p.z;
-	obstacle_points->setStopPoint(calcAbsoluteCoordinate(point_temp, localizer_pose.pose));
-      }
-      if (stop_count > points_threshold)
-        return EControl::STOP;
-    }
+		  int stop_count = 0;  // the number of points in the detection area
+		  for (const auto &p : points)
+		  {
+			  tf::Vector3 point_vector(p.x, p.y, 0.0);
+			  double distance = tf::tfDistance(point_vector, detection_vector);
+			  if (distance < search_radius)
+			  {
+				  stop_count++;
+				  geometry_msgs::Point point_temp;
+				  point_temp.x = p.x;
+				  point_temp.y = p.y;
+				  point_temp.z = p.z;
+				  obstacle_points->setStopPoint(calcAbsoluteCoordinate(point_temp, localizer_pose.pose));
+			  }
+			  if (stop_count > points_threshold)
+				  return EControl::STOP;
+		  }
+	  }
 
-    obstacle_points->clearStopPoints();
+	  obstacle_points->clearStopPoints();
+	  if(!crosswalk.isMultipleDetection())break;
   }
-
   return EControl::KEEP;  // find no obstacles
 }
 
@@ -472,8 +486,11 @@ int main(int argc, char **argv)
   ros::NodeHandle private_nh("~");
 
   bool use_crosswalk_detection;
+  bool enable_multiple_crosswalk_detection;
   std::string points_topic;
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
+  private_nh.param<bool>("enable_multiple_crosswalk_detection", enable_multiple_crosswalk_detection, true);
+
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
 
   // class
@@ -519,6 +536,8 @@ int main(int argc, char **argv)
       loop_rate.sleep();
       continue;
     }
+
+    crosswalk.setMultipleDetectionFlag(enable_multiple_crosswalk_detection);
 
     if (use_crosswalk_detection)
       crosswalk.setDetectionWaypoint(crosswalk.findClosestCrosswalk(closest_waypoint, vs_path.getPrevWaypoints(), STOP_SEARCH_DISTANCE));
