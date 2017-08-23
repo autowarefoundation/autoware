@@ -68,6 +68,10 @@ void ENetSegmenter::Predict(const cv::Mat& in_image_mat, cv::Mat& out_segmented)
 	}
 
 	out_segmented = Visualization(prediction_map, lookuptable_file_);
+
+	cv::resize(out_segmented, out_segmented, cv::Size(in_image_mat.cols, in_image_mat.rows));
+
+
 }
 
 cv::Mat ENetSegmenter::Visualization(cv::Mat in_prediction_map, string in_lookuptable_file)
@@ -129,9 +133,6 @@ void ENetSegmenter::Preprocess(const cv::Mat& in_image_mat,
 		sample_resized.convertTo(sample_float, CV_32FC1);
 	}
 
-	/* This operation will write the separate BGR planes directly to the
-	 * input layer of the network because it is wrapped by the cv::Mat
-	 * objects in input_channels. */
 	cv::split(sample_float, *in_input_channels);
 
 	CHECK(reinterpret_cast<float*>(in_input_channels->at(0).data)

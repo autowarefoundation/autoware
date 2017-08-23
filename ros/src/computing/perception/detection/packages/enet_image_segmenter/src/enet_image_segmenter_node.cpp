@@ -18,19 +18,14 @@ class RosENetSegmenterApp
 	ros::Subscriber subscriber_image_raw_;
 	ros::NodeHandle node_handle_;
 
-	cv::Scalar pixel_mean_;
+	ros::Publisher publisher_image_segmented_;
+	ros::Publisher publisher_image_segmented_blended_;
 
-	//Caffe based Object Detection ConvNet
 	ENetSegmenter* enet_segmenter_;
 
-	//If GPU is enabled, stores the GPU Device to use
 	unsigned int gpu_device_id_;
 
-	//Sets whether or not use GPU acceleration
 	bool use_gpu_;
-
-	//vector of indices of the classes to search for
-	std::vector<unsigned int> detect_classes_;
 
 	void image_callback(const sensor_msgs::Image& in_image_sensor)
 	{
@@ -38,25 +33,33 @@ class RosENetSegmenterApp
 		cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(in_image_sensor, "bgr8");
 		cv::Mat image = cv_image->image;
 
-		cv::Mat segmented_image;
+		cv::Mat segmented_mat;
+		cv::Mat blended_mat;
 
-		enet_segmenter_->Predict(image, segmented_image);
+		enet_segmenter_->Predict(image, segmented_mat);
 
-		if (!segmented_image.empty())
+		if (!segmented_mat.empty())
 		{
-		cv::imshow("Segmentation window", segmented_image);
-		cv::waitKey(10);
+			addWeighted( image, 0.4, segmented_mat, 0.6, 0.0, blended_mat);
+
+			cv_bridge::CvImage segmented_rosimage;
+			segmented_rosimage.header = in_image_sensor.header; segmented_rosimage.encoding = "bgr8";
+			segmented_rosimage.image = segmented_mat;
+
+			cv_bridge::CvImage blended_rosimage;
+			blended_rosimage.header = in_image_sensor.header; blended_rosimage.encoding = "bgr8";
+			blended_rosimage.image = blended_mat;
+
+			publisher_image_segmented_.publish(segmented_rosimage.toImageMsg());
+			publisher_image_segmented_blended_.publish(blended_rosimage.toImageMsg());
 		}
 	}
-
 
 public:
 	void Run()
 	{
-		//ROS STUFF
 		ros::NodeHandle private_node_handle("~");//to receive args
 
-		//RECEIVE IMAGE TOPIC NAME
 		std::string image_raw_topic_str;
 		if (private_node_handle.getParam("image_raw_node", image_raw_topic_str))
 		{
@@ -68,7 +71,6 @@ public:
 			image_raw_topic_str = "/image_raw";
 		}
 
-		//RECEIVE CONVNET FILENAMES
 		std::string network_definition_file;
 		std::string pretrained_model_file;
 		std::string lookuptable_file;
@@ -111,7 +113,6 @@ public:
 			gpu_device_id_ = (unsigned int) gpu_id;
 		}
 
-		//SSD STUFF
 		enet_segmenter_ = new ENetSegmenter(network_definition_file,
 												pretrained_model_file,
 												lookuptable_file);
@@ -125,6 +126,12 @@ public:
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosENetSegmenterApp::image_callback, this);
+
+		publisher_image_segmented_ = node_handle_.advertise<sensor_msgs::Image>("/image_segmented", 1);
+		ROS_INFO("Publishing /image_segmented");
+		publisher_image_segmented_blended_ = node_handle_.advertise<sensor_msgs::Image>("/image_segmented_blended", 1);
+		ROS_INFO("Publishing /image_segmented_blended");
+
 		ROS_INFO("Waiting for data...");
 		ros::spin();
 		ROS_INFO("END ENetSegmenter");
@@ -141,7 +148,6 @@ public:
 		enet_segmenter_ = NULL;
 		use_gpu_ 		= false;
 		gpu_device_id_ 	= 0;
-		pixel_mean_		= cv::Scalar(102.9801, 115.9465, 122.7717);
 	}
 };
 
