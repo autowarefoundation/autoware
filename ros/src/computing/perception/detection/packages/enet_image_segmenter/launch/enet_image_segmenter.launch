@@ -1,9 +1,5 @@
 <launch>
-	<arg name="use_gpu" default="true"/>
-	<arg name="gpu_device_id" default="0"/>
-	
 	<!-- arguments list -->
-	
 	<arg name="network_definition_file" default="$(env HOME)/ENet/prototxts/enet_deploy_final.prototxt"/>
 	<arg name="pretrained_model_file" default="$(env HOME)/ENet/enet_weights_zoo/cityscapes_weights.caffemodel"/>
 	<arg name="lookuptable_file" default="$(env HOME)/ENet/scripts/cityscapes19.png"/> 
@@ -16,8 +12,6 @@
 		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>
 		<param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)"/>
 		<param name="lookuptable_file" type="str" value="$(arg lookuptable_file)"/>
-		<param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
-		<param name="gpu_device_id" type="int" value="$(arg gpu_device_id)"/>
 		<param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src)"/>
 	</node>
 	

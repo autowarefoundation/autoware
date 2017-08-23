@@ -23,10 +23,6 @@ class RosENetSegmenterApp
 
 	ENetSegmenter* enet_segmenter_;
 
-	unsigned int gpu_device_id_;
-
-	bool use_gpu_;
-
 	void image_callback(const sensor_msgs::Image& in_image_sensor)
 	{
 		//Receive Image, convert it to OpenCV Mat
@@ -61,13 +57,13 @@ public:
 		ros::NodeHandle private_node_handle("~");//to receive args
 
 		std::string image_raw_topic_str;
-		if (private_node_handle.getParam("image_raw_node", image_raw_topic_str))
+		if (private_node_handle.getParam("image_src", image_raw_topic_str))
 		{
 			ROS_INFO("Setting image node to %s", image_raw_topic_str.c_str());
 		}
 		else
 		{
-			ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_raw_node:=YOUR_TOPIC");
+			ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_src:=YOUR_TOPIC");
 			image_raw_topic_str = "/image_raw";
 		}
 
@@ -100,17 +96,6 @@ public:
 		{
 			ROS_INFO("No lookuptable File was received. Finishing execution.");
 			return;
-		}
-
-		if (private_node_handle.getParam("use_gpu", use_gpu_))
-		{
-			ROS_INFO("GPU Mode: %d", use_gpu_);
-		}
-		int gpu_id;
-		if (private_node_handle.getParam("gpu_device_id", gpu_id ))
-		{
-			ROS_INFO("GPU Device ID: %d", gpu_id);
-			gpu_device_id_ = (unsigned int) gpu_id;
 		}
 
 		enet_segmenter_ = new ENetSegmenter(network_definition_file,
@@ -146,14 +131,12 @@ public:
 	RosENetSegmenterApp()
 	{
 		enet_segmenter_ = NULL;
-		use_gpu_ 		= false;
-		gpu_device_id_ 	= 0;
 	}
 };
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "ssd_unc");
+	ros::init(argc, argv, "enet_image_segmenter");
 
 	RosENetSegmenterApp app;
 
