@@ -3,49 +3,48 @@
 
 namespace state_machine
 {
-
-#define TARGET_WAYPOINTS_NUM 15 //need to change rosparam
-CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints, std::vector<CrossRoadArea> &intersects)
+#define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
+CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
+                                                   std::vector<CrossRoadArea> &intersects)
 {
-	CrossRoadArea *_area = nullptr;
-	
-	euclidean_space::point _pa;
-	euclidean_space::point _pb;
+  CrossRoadArea *_area = nullptr;
 
-	double _min_distance = DBL_MAX;
+  euclidean_space::point _pa;
+  euclidean_space::point _pb;
 
-	int _label = 1;
+  double _min_distance = DBL_MAX;
 
-	if (!_finalwaypoints.waypoints.empty())
-	{
-		_pa.x = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.x;
-		_pa.y = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.y;
-		_pa.z = 0.0;
-	}
+  int _label = 1;
 
-	for (size_t i = 0; i < intersects.size(); i++)
-	{
-		_pb.x = intersects[i].bbox.pose.position.x;
-		_pb.y = intersects[i].bbox.pose.position.y;
+  if (!_finalwaypoints.waypoints.empty())
+  {
+    _pa.x = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.x;
+    _pa.y = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.y;
+    _pa.z = 0.0;
+  }
 
-		_pb.z = 0.0;
+  for (size_t i = 0; i < intersects.size(); i++)
+  {
+    _pb.x = intersects[i].bbox.pose.position.x;
+    _pb.y = intersects[i].bbox.pose.position.y;
 
-		double __temp_dis = euclidean_space::EuclideanSpace::find_distance(&_pa, &_pb);
+    _pb.z = 0.0;
 
-		intersects[i].bbox.label = 0;
-		if (_min_distance >= __temp_dis)
-		{
-			_area = &intersects[i];
-			_min_distance = __temp_dis;  //
-		}
-	}
+    double __temp_dis = euclidean_space::EuclideanSpace::find_distance(&_pa, &_pb);
 
-	if (_area)
-	{
-		_area->bbox.label = 3;
-	}
+    intersects[i].bbox.label = 0;
+    if (_min_distance >= __temp_dis)
+    {
+      _area = &intersects[i];
+      _min_distance = __temp_dis;  //
+    }
+  }
 
-	return _area;
+  if (_area)
+  {
+    _area->bbox.label = 3;
+  }
+
+  return _area;
 }
-
 }

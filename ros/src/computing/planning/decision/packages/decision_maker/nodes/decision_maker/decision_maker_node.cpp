@@ -5,12 +5,10 @@
 #include <stdio.h>
 #include <tf/transform_listener.h>
 
-//lib
+// lib
+#include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
-#include <euclidean_space.hpp>
-
-
 
 #include <state_machine_node.hpp>
 
@@ -25,7 +23,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 
-//for dynamic reconfigure
+// for dynamic reconfigure
 //#include <dynamic_reconfigure/server.h>
 //#include <state_machine/state_machineConfig.h>
 

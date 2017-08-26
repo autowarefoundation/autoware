@@ -135,7 +135,8 @@ private:
   DriveLaneChangeRightAvoidanceState(void)
   {
     StateName = "LaneChangeRightAvoidanceState";
-    StateNum = DRIVE_STATE | DRIVE_LANECHANGE_STATE | DRIVE_LANECHANGE_RIGHT_STATE |  DRIVE_LANECHANGE_RIGHT_AVOIDANCE_STATE;
+    StateNum =
+        DRIVE_STATE | DRIVE_LANECHANGE_STATE | DRIVE_LANECHANGE_RIGHT_STATE | DRIVE_LANECHANGE_RIGHT_AVOIDANCE_STATE;
     StateTransMask = DRIVE_STATE | DRIVE_LANECHANGE_STATE;
   }
 
@@ -189,7 +190,7 @@ private:
   DriveStopState(void)
   {
     StateName = "DriveStop";
-    StateNum  = DRIVE_STATE | DRIVE_STOP_STATE;
+    StateNum = DRIVE_STATE | DRIVE_STOP_STATE;
     StateTransMask = DRIVE_STATE;
   }
 
@@ -204,7 +205,7 @@ private:
   DriveStopAvoidanceState(void)
   {
     StateName = "DriveStopAvoidance";
-    StateNum  = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_AVOIDANCE_STATE;
+    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_AVOIDANCE_STATE;
     StateTransMask = DRIVE_STATE;
   }
 
@@ -219,7 +220,7 @@ private:
   DriveStopStopLineState(void)
   {
     StateName = "DriveStopStopLine";
-    StateNum  = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_STOPLINE_STATE;
+    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_STOPLINE_STATE;
     StateTransMask = DRIVE_STATE;
   }
 
@@ -232,7 +233,7 @@ private:
   DriveStopTrafficLightState(void)
   {
     StateName = "DriveStopTrafficLight";
-    StateNum  = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_TRAFFICLIGHT_STATE;
+    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_TRAFFICLIGHT_STATE;
     StateTransMask = DRIVE_STATE;
   }
 

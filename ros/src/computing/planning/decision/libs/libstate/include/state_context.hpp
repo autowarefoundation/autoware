@@ -85,18 +85,17 @@ public:
 
   bool isState(unsigned long long _state_num);
   bool inState(unsigned long long _state_num);
-  
+
   void StateDecider(void);
 
- 
   bool setCurrentState(BaseState *state);
   bool setCurrentState(BaseState *state, BaseState *substate);
   bool setCurrentState(BaseState *state, BaseState *substate, BaseState *subsubstate);
- 
+
   BaseState *getCurrentState(void);
   std::unique_ptr<std::string> getCurrentStateName(void);
   void showCurrentStateName(void);
-  
+
   BaseState *getStateObject(unsigned long long _state_num);
   void InitContext(void);
 

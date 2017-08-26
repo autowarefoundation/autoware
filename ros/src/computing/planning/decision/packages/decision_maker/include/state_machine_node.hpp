@@ -27,28 +27,24 @@
 
 namespace state_machine
 {
-
-
-	enum class EControl
-	{
-		KEEP = -1,
-		STOP = 1,
-		DECELERATE = 2,
-		ACCELERATE = 3,
-		OTHERS = 4,
-	};
+enum class EControl
+{
+  KEEP = -1,
+  STOP = 1,
+  DECELERATE = 2,
+  ACCELERATE = 3,
+  OTHERS = 4,
+};
 
 inline bool hasvMap(void)
 {
-	return true;
+  return true;
 }
 
 inline double mps2kmph(double _mpsval)
 {
-	return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
+  return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
 }
-
-
 
 class StateMachineNode
 {
@@ -74,9 +70,9 @@ private:
   vector_map_msgs::CrossRoadArray vMap_CrossRoads;
 
   // Current way/behavior status
-  double 	current_velocity_;
-  double 	average_velocity_;
-  int 		CurrentTrafficlight;
+  double current_velocity_;
+  double average_velocity_;
+  int CurrentTrafficlight;
   CrossRoadArea *ClosestArea_;
   std::string CurrentStateName;
   std::string TextOffset;
@@ -105,14 +101,14 @@ private:
   void update_msgs(void);
   void update_pubsub(void);
   void displayMarker(void);
-  
-  // 
+
+  //
   bool isInsideArea(geometry_msgs::Point pt);
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
 
   double calcIntersectWayAngle(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
- 
-  //callback by topic subscribing
+
+  // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromLightColor(const autoware_msgs::traffic_light &msg);
@@ -128,7 +124,7 @@ private:
 
   // for ros dynamic reconfigure
   // Currently. this feature is not working.
-  //static void callbackFromDynamicReconfigure(state_machine::state_machineConfig &config, uint32_t level);
+  // static void callbackFromDynamicReconfigure(state_machine::state_machineConfig &config, uint32_t level);
 
   // in near future, these function will be deprecate
   CrossRoadArea *findClosestCrossRoad(void);
@@ -142,7 +138,7 @@ public:
 
     ctx = new StateContext();
     this->initROS(argc, argv);
- 
+
     vector_map_init = false;
     vMap_Areas_flag = vMap_Lines_flag = vMap_Points_flag = vMap_CrossRoads_flag = false;
 

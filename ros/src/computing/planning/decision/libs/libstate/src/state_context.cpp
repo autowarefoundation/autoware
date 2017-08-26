@@ -9,8 +9,8 @@
 #include <euclidean_space.hpp>
 #include <state_context.hpp>
 
-#include <state_common.hpp>
 #include <state.hpp>
+#include <state_common.hpp>
 
 using namespace std;
 
@@ -65,43 +65,43 @@ bool StateContext::setCurrentState(BaseState *_state, BaseState *_substate)
 
 bool StateContext::setCurrentState(BaseState *_state, BaseState *_substate, BaseState *_subsubstate)
 {
-	BaseState *prevState = state_;
+  BaseState *prevState = state_;
 
-	if (!state_)
-	{
-		state_ = _state;
+  if (!state_)
+  {
+    state_ = _state;
 
-		std::cout << "Successed to set state \""
-			<< "NULL"
-			<< "\" to \"" << *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
-			<< "NULL"
-			<< "-" << _state->GetStateNum() << "]" << std::endl;
-	}
-	else
-	{
-		if (_state && (_state->GetStateTransMask() & state_->GetStateNum()))
-		{
+    std::cout << "Successed to set state \""
+              << "NULL"
+              << "\" to \"" << *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
+              << "NULL"
+              << "-" << _state->GetStateNum() << "]" << std::endl;
+  }
+  else
+  {
+    if (_state && (_state->GetStateTransMask() & state_->GetStateNum()))
+    {
+      if (!(state_ == _state))
+      {
+        state_ = _state;
+        sub_state = _substate;
+        sub_sub_state = _subsubstate;
 
-			if(!(state_ == _state)){  
-				state_ = _state;
-				sub_state = _substate;
-				sub_sub_state = _subsubstate;
-
-				std::cout << "Successed to set state \"" << *prevState->GetStateName().get() << "\" to \""
-					<< *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
-					<< prevState->GetStateNum() << "-" << _state->GetStateNum() << "]" << std::endl;
-			}
-		}
-		else
-		{
-			std::cerr << "Failed to set state \"" << *state_->GetStateName().get() << "\" to \""
-				<< *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
-				<< state_->GetStateNum() << "-" << _state->GetStateNum() << "]" << std::endl;
-			prevState = nullptr;
-			return false;
-		}
-	}
-	return true;
+        std::cout << "Successed to set state \"" << *prevState->GetStateName().get() << "\" to \""
+                  << *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
+                  << prevState->GetStateNum() << "-" << _state->GetStateNum() << "]" << std::endl;
+      }
+    }
+    else
+    {
+      std::cerr << "Failed to set state \"" << *state_->GetStateName().get() << "\" to \""
+                << *_state->GetStateName().get() << "\" : Mask is [" << _state->GetStateTransMask() << "/"
+                << state_->GetStateNum() << "-" << _state->GetStateNum() << "]" << std::endl;
+      prevState = nullptr;
+      return false;
+    }
+  }
+  return true;
 }
 
 BaseState *StateContext::getCurrentState(void)
@@ -139,30 +139,32 @@ void StateContext::handleTrafficLight(uint32_t _light_color)
   }
 }
 
-
-
 #define ANGLE_STRAIGHT 50.0
-#define ANGLE_LEFT  360.0
+#define ANGLE_LEFT 360.0
 #define ANGLE_RIGHT 180.0
 bool StateContext::handleIntersection(bool _hasIntersection, double _angle)
 {
-	if (_hasIntersection){
-		// *Temporary implementation*
-		// To straight/left/right recognition by using angle between
-		// first-waypoint
-		// and end-waypoint in intersection area.
-		int temp = (int)std::floor(_angle+360.0) % 360;
+  if (_hasIntersection)
+  {
+    // *Temporary implementation*
+    // To straight/left/right recognition by using angle between
+    // first-waypoint
+    // and end-waypoint in intersection area.
+    int temp = (int)std::floor(_angle + 360.0) % 360;
 
-		if (std::abs(temp) <= ANGLE_STRAIGHT)
-			return this->setCurrentState(StateStores[DRIVE_MOVEFWD_STRAIGHT_STATE]);
-		else if (temp <= ANGLE_RIGHT)
-			return this->setCurrentState(StateStores[DRIVE_MOVEFWD_RIGHT_STATE]);
-		else if (temp <= ANGLE_LEFT)
-			return this->setCurrentState(StateStores[DRIVE_MOVEFWD_LEFT_STATE]);
-		else return false;
-	}else{
-		return false;
-	}
+    if (std::abs(temp) <= ANGLE_STRAIGHT)
+      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_STRAIGHT_STATE]);
+    else if (temp <= ANGLE_RIGHT)
+      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_RIGHT_STATE]);
+    else if (temp <= ANGLE_LEFT)
+      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_LEFT_STATE]);
+    else
+      return false;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 bool StateContext::handleTwistCmd(bool _hasTwistCmd)
@@ -213,7 +215,7 @@ bool StateContext::handleCurrentPose(double _x, double _y, double _z, double _ro
   else
   {
     avg_distances = (avg_distances + distances[0]) / CONV_NUM;
-    
+
     if (avg_distances <= CONVERGENCE_THRESHOLD)
       return this->setCurrentState(StateStores[DRIVE_STATE]);
     else
