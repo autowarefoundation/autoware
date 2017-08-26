@@ -7,10 +7,11 @@
 % git clone --recursive https://github.com/TimoSaemann/ENet.git
 ```
 
-3. Follow the authors' instruction to complete the requisites to compile.
+3. Follow the authors' instruction to complete the requisites to compile as shown in
 https://github.com/TimoSaemann/ENet/tree/master/Tutorial
 
-4. Compile ENet fork of Caffe
+4. Compile ENet fork of Caffe using Make (http://caffe.berkeleyvision.org/installation.html#compilation)
+*Don't use CMake to compile, manually modify Makefile.config*
 ```
 make && make distribute
 ```
