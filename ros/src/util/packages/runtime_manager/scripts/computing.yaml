@@ -1555,6 +1555,15 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
+    
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
@@ -2426,6 +2435,14 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='
