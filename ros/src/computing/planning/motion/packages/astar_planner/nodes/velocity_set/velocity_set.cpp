@@ -515,7 +515,7 @@ int main(int argc, char** argv)
   std::string points_topic;
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
   private_nh.param<bool>("enable_multiple_crosswalk_detection", enable_multiple_crosswalk_detection, true);
-  private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, true);
+  private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
 
 
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
