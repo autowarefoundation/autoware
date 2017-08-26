@@ -73,9 +73,9 @@ void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
   _mutex.lock();
   if (msg.data != enableLattice_)
     enableLattice_ = msg.data;
-  std::cout << "[" << __func__ << "]: setEnableLattice" << enableLattice_ << " <=" << msg.data << std::endl;
   _mutex.unlock();
 #endif
+  // for debug
   //	ROS_INFO("\n***** EnableLattice = %d  **** \n",enableLattice_,msg.data);
 }
 
@@ -91,14 +91,13 @@ void PlannerSelectorNode::callbackFromWaypoints(const ros::MessageEvent<autoware
   if (this->enableLattice_ && topic.find("dp") != std::string::npos)
   {
     Pubs["final_waypoints"].publish(*waypoints);
-    std::cout << "ENABLE_LATTTICE" << enableLattice_ << topic;
   }
   else if (!this->enableLattice_ && topic.find("astar") != std::string::npos)
   {
-    std::cout << "ENABLE_ASTAR:" << enableLattice_ << topic;
     Pubs["final_waypoints"].publish(*waypoints);
   }
-  ROS_INFO("%s, %d-%d-%d", topic.c_str(), __closest_waypoint_dp, __closest_waypoint_astar, this->enableLattice_);
+//for debug
+//ROS_INFO("%s, %d-%d-%d", topic.c_str(), __closest_waypoint_dp, __closest_waypoint_astar, this->enableLattice_);
   _mutex.unlock();
 }
 
