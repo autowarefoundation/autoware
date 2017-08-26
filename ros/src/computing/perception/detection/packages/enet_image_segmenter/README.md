@@ -4,10 +4,11 @@
 
 2. Clone ENEt Caffe fork in your home directory
 ```
-% git clone https://github.com/TimoSaemann/ENet.git
+% git clone --recursive https://github.com/TimoSaemann/ENet.git
 ```
 
 3. Follow the authors' instruction to complete the requisites to compile.
+https://github.com/TimoSaemann/ENet/tree/master/Tutorial
 
 4. Compile ENet fork of Caffe
 ```

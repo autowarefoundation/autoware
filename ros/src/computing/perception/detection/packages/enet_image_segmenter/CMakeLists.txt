@@ -58,7 +58,7 @@ INCLUDE_DIRECTORIES(
 
 
 #####ENET########
-##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+##############################ENet's CAFFE FORK NEEDS TO BE PREVIOUSLY COMPILED####################
 set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
 if(EXISTS "${ENET_CAFFE_PATH}")
