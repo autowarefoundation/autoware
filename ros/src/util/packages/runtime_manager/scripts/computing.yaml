@@ -612,15 +612,18 @@ subs :
            position_error :
              flags : [ nl ]
 
-  - name : State
-    desc : State desc sample
+  - name : Decision
+    desc : decision groups
     subs :
-    - name : state_machine
+    - name : state_machine(old)
       desc : state_machine desc sample
-      subs :
-      - name : state_machine
-        desc : state_machine desc sample
-        cmd  : roslaunch state_machine state_machine.launch
+      cmd  : roslaunch state_machine state_machine.launch
+    - name : decision_maker
+      desc : decision_maker desc sample
+      cmd  : roslaunch decision_maker decision_maker.launch
+    - name : planner_selector
+      desc : planner_selector desc sample
+      cmd  : roslaunch planner_selector planner_selector.launch
 
 buttons:
   car_dpm :
@@ -2122,6 +2125,14 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : astar_navi
     vars  :

@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+
+	<node pkg="planner_selector" type="planner_selector_node" name="planner_selector_node" output="screen">
+	</node>
+	
+</launch>
