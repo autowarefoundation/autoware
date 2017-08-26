@@ -263,7 +263,7 @@ int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const autoware_m
   initDetectionCrossWalkIDs();  // for multiple
 
   // Find near cross walk
-  for (int num = closest_waypoint; num < closest_waypoint + search_distance; num++)
+  for (int num = closest_waypoint; num < closest_waypoint + search_distance && num < (int)lane.waypoints.size(); num++)
   {
     geometry_msgs::Point waypoint = lane.waypoints[num].pose.pose.position;
     waypoint.z = 0.0;  // ignore Z axis
