@@ -47,7 +47,6 @@ public:
   }
 
 
-
 };
 }  // namespace euclidean_space
 

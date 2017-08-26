@@ -19,6 +19,6 @@ include_directories(
  include
   ${catkin_INCLUDE_DIRS}
 )
-add_executable(${PROJECT_NAME}_node src/planner_selector_node.cpp)
+add_executable(${PROJECT_NAME}_node nodes/planner_selector/planner_selector_node.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
