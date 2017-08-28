@@ -1,5 +1,5 @@
 /*
- * enet_image_segmenter.hpp
+ * image_segmenter_enet.hpp
  *
  *  Created on: Aug 23, 2017
  *      Author: ne0

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(enet_image_segmenter)
+project(image_segmenter)
 execute_process(
   COMMAND rosversion -d
   OUTPUT_VARIABLE ROS_VERSION
@@ -63,12 +63,12 @@ set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
 if(EXISTS "${ENET_CAFFE_PATH}")
 
-  ADD_EXECUTABLE(enet_image_segmenter
-    src/enet_image_segmenter_node.cpp
-    src/enet_image_segmenter.cpp
+  ADD_EXECUTABLE(image_segmenter_enet
+    src/image_segmenter_enet_node.cpp
+    src/image_segmenter_enet.cpp
   )
 	
-  TARGET_LINK_LIBRARIES(enet_image_segmenter
+  TARGET_LINK_LIBRARIES(image_segmenter_enet
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
     ${CUDA_LIBRARIES}
@@ -78,15 +78,15 @@ if(EXISTS "${ENET_CAFFE_PATH}")
     glog
   )
 
-  TARGET_INCLUDE_DIRECTORIES(enet_image_segmenter PRIVATE
+  TARGET_INCLUDE_DIRECTORIES(image_segmenter_enet PRIVATE
     ${CUDA_INCLUDE_DIRS}
     ${ENET_CAFFE_PATH}/include
     include
   )
 
-  ADD_DEPENDENCIES(enet_image_segmenter
+  ADD_DEPENDENCIES(image_segmenter_enet
       ${catkin_EXPORTED_TARGETS}
   )
 else()
-  message("'ENet/Caffe' is not installed. 'enet_image_segmenter' will not be built.")
+  message("'ENet/Caffe' is not installed. 'image_segmenter_enet' will not be built.")
 endif()

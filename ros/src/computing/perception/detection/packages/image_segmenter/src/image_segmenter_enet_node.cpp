@@ -1,5 +1,5 @@
 /*
- * enet_image_segmenter_node.cpp
+ * image_segmenter_enet_node.cpp
  *
  *  Created on: Aug 23, 2017
  *      Author: ne0
@@ -11,7 +11,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "enet_image_segmenter.hpp"
+#include "image_segmenter_enet.hpp"
 
 class RosENetSegmenterApp
 {
@@ -136,7 +136,7 @@ public:
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "enet_image_segmenter");
+	ros::init(argc, argv, "image_segmenter_enet");
 
 	RosENetSegmenterApp app;
 

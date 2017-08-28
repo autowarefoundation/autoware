@@ -1,11 +1,11 @@
 /*
- * enet_image_segmenter_node.cpp
+ * image_segmenter_enet.cpp
  *
  *  Created on: Aug 23, 2017
  *      Author: amc
  */
 
-#include "enet_image_segmenter.hpp"
+#include "image_segmenter_enet.hpp"
 
 ENetSegmenter::ENetSegmenter(const string& in_model_file,
 		const string& in_trained_file,
