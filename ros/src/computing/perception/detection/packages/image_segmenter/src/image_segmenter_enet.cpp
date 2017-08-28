@@ -105,22 +105,24 @@ void ENetSegmenter::Preprocess(const cv::Mat& in_image_mat,
 {
 	/* Convert the input image to the input image format of the network. */
 	cv::Mat sample;
-	if (in_image_mat.channels() == 3 && num_channels_ == 1)
-		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGR2GRAY);
-	else if (in_image_mat.channels() == 4 && num_channels_ == 1)
-		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGRA2GRAY);
-	else if (in_image_mat.channels() == 4 && num_channels_ == 3)
-		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGRA2BGR);
-	else if (in_image_mat.channels() == 1 && num_channels_ == 3)
-		cv::cvtColor(in_image_mat, sample, cv::COLOR_GRAY2BGR);
-	else
+	if (in_image_mat.channels() == 3 && num_channels_ == 1){
+		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGR2GRAY);}
+	else if (in_image_mat.channels() == 4 && num_channels_ == 1){
+		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGRA2GRAY);}
+	else if (in_image_mat.channels() == 4 && num_channels_ == 3){
+		cv::cvtColor(in_image_mat, sample, cv::COLOR_BGRA2BGR);}
+	else if (in_image_mat.channels() == 1 && num_channels_ == 3){
+		cv::cvtColor(in_image_mat, sample, cv::COLOR_GRAY2BGR);}
+	else{
 		sample = in_image_mat;
+	}
 
 	cv::Mat sample_resized;
-	if (sample.size() != input_geometry_)
-		cv::resize(sample, sample_resized, input_geometry_);
-	else
+	if (sample.size() != input_geometry_){
+		cv::resize(sample, sample_resized, input_geometry_);}
+	else{
 		sample_resized = sample;
+	}
 
 	cv::Mat sample_float;
 	if (num_channels_ == 3)
@@ -136,5 +138,5 @@ void ENetSegmenter::Preprocess(const cv::Mat& in_image_mat,
 
 	CHECK(reinterpret_cast<float*>(in_input_channels->at(0).data)
 			== net_->input_blobs()[0]->cpu_data())
-															<< "Input channels are not wrapping the input layer of the network.";
+													<< "Input channels are not wrapping the input layer of the network.";
 }

@@ -41,7 +41,7 @@ private:
 	std::shared_ptr<caffe::Net<float> > 	net_;
 	cv::Size 					input_geometry_;
 	int 						num_channels_;
-	std::string 						lookuptable_file_;
+	std::string 				lookuptable_file_;
 	cv::Scalar 					pixel_mean_;
 
 };
