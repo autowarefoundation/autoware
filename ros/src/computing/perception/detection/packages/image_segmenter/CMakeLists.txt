@@ -14,16 +14,12 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   sensor_msgs
-  std_msgs
-  autoware_msgs
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   roscpp
-  std_msgs
-  autoware_msgs
   sensor_msgs
 )
 endif()
@@ -31,21 +27,12 @@ endif()
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
 
-EXECUTE_PROCESS(
-  COMMAND uname -m
-  OUTPUT_VARIABLE ARCHITECTURE
-  OUTPUT_STRIP_TRAILING_WHITESPACE
+catkin_package(CATKIN_DEPENDS
+  cv_bridge
+  image_transport
+  roscpp
+  sensor_msgs
 )
-
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-catkin_package(
-  CATKIN_DEPENDS std_msgs geometry_msgs autoware_msgs
-)
-elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
-catkin_package(
-  CATKIN_DEPENDS std_msgs geometry_msgs autoware_msgs
-)
-endif()
 ###########
 ## Build ##
 ###########

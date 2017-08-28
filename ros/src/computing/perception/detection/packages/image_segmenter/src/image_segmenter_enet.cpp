@@ -7,21 +7,21 @@
 
 #include "image_segmenter_enet.hpp"
 
-ENetSegmenter::ENetSegmenter(const string& in_model_file,
-		const string& in_trained_file,
-		const string& in_lookuptable_file)
+ENetSegmenter::ENetSegmenter(const std::string& in_model_file,
+		const std::string& in_trained_file,
+		const std::string& in_lookuptable_file)
 {
 
-	Caffe::set_mode(Caffe::GPU);
+	caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
 	/* Load the network. */
-	net_.reset(new Net<float>(in_model_file, TEST));
+	net_.reset(new caffe::Net<float>(in_model_file, caffe::TEST));
 	net_->CopyTrainedLayersFrom(in_trained_file);
 
 	CHECK_EQ(net_->num_inputs(), 1)<< "Network should have exactly one input.";
 	CHECK_EQ(net_->num_outputs(), 1)<< "Network should have exactly one output.";
 
-	Blob<float>* input_layer = net_->input_blobs()[0];
+	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 	num_channels_ = input_layer->channels();
 	CHECK(num_channels_ == 3 || num_channels_ == 1) << "Input layer should have 1 or 3 channels.";
 	input_geometry_ = cv::Size(input_layer->width(), input_layer->height());
@@ -33,7 +33,7 @@ ENetSegmenter::ENetSegmenter(const string& in_model_file,
 
 void ENetSegmenter::Predict(const cv::Mat& in_image_mat, cv::Mat& out_segmented)
 {
-	Blob<float>* input_layer = net_->input_blobs()[0];
+	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 	input_layer->Reshape(1, num_channels_, input_geometry_.height,
 			input_geometry_.width);
 	/* Forward dimension change to all layers. */
@@ -47,12 +47,11 @@ void ENetSegmenter::Predict(const cv::Mat& in_image_mat, cv::Mat& out_segmented)
 	net_->Forward();
 
 	/* Copy the output layer to a std::vector */
-	Blob<float>* output_layer = net_->output_blobs()[0];
+	caffe::Blob<float>* output_layer = net_->output_blobs()[0];
 
 	int width = output_layer->width();
 	int height = output_layer->height();
 	int channels = output_layer->channels();
-	int num = output_layer->num();
 
 	// compute argmax
 	cv::Mat class_each_row(channels, width * height, CV_32FC1,
@@ -74,7 +73,7 @@ void ENetSegmenter::Predict(const cv::Mat& in_image_mat, cv::Mat& out_segmented)
 
 }
 
-cv::Mat ENetSegmenter::Visualization(cv::Mat in_prediction_map, string in_lookuptable_file)
+cv::Mat ENetSegmenter::Visualization(cv::Mat in_prediction_map, std::string in_lookuptable_file)
 {
 
 	cv::cvtColor(in_prediction_map.clone(), in_prediction_map, CV_GRAY2BGR);
@@ -88,7 +87,7 @@ cv::Mat ENetSegmenter::Visualization(cv::Mat in_prediction_map, string in_lookup
 
 void ENetSegmenter::WrapInputLayer(std::vector<cv::Mat>* in_input_channels)
 {
-	Blob<float>* input_layer = net_->input_blobs()[0];
+	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 
 	int width = input_layer->width();
 	int height = input_layer->height();
