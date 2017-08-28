@@ -23,7 +23,7 @@ If you didn't install ENet Caffe in `ENet` inside your home, modify the ENet's C
 Once compiled, run from the terminal, or launch from RunTimeManager
 
 ```
-% roslaunch enet_image_segmenter enet_image_segmenter.launch 
+% roslaunch image_segmenter image_segmenter_enet.launch 
 ```
 Remember to modify the launch file located inside 
 `computing/perception/detection/packages/enet_image_segmenter/launch/enet_image_segmenter.launch`
