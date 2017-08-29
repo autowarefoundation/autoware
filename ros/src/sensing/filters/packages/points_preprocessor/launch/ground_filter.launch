@@ -10,11 +10,11 @@
         <arg name="min_point" default="3" />
         <arg name="clipping_thres" default="-0.5" />
         <arg name="gap_thres" default="0.5" />
-        <arg name="no_ground_point_topic" default="/points_no_ground />
+        <arg name="no_ground_point_topic" default="/points_no_ground" />
         <arg name="ground_point_topic" default="/points_ground" />
 
         <!-- rosrun lidar_tracker ground_filter -->
-        <node pkg="points_preprocessor" type="ground_filter" name="ground_filter">
+        <node pkg="points_preprocessor" type="ground_filter" name="ground_filter" output="log">
                 <param name="point_topic" value="$(arg point_topic)" />
                 <param name="remove_floor" value="$(arg remove_floor)" />
                 <param name="sensor_model" value="$(arg sensor_model)" />
