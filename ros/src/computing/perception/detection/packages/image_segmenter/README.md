@@ -29,5 +29,5 @@ Once compiled, run from the terminal
 % roslaunch image_segmenter image_segmenter_enet.launch 
 ```
 Remember to modify the launch file located inside 
-`computing/perception/detection/packages/enet_image_segmenter/launch/enet_image_segmenter.launch`
+`computing/perception/detection/packages/image_segmenter/launch/image_segmenter_enet.launch`
 and configure the network configuration file, the pretrained models and the LUT file.
