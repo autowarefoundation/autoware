@@ -56,10 +56,13 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 
+//#define USE_FAST_PCL 1
+
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+
 #ifdef USE_FAST_PCL
 #include <fast_pcl/registration/ndt.h>
 #else
@@ -72,6 +75,23 @@
 #include <runtime_manager/ConfigNdt.h>
 
 #include <ndt_localizer/ndt_stat.h>
+
+//Added for comparing cpu and gpu
+//#define MEASURE_ 1
+#ifdef MEASURE_
+#include <fast_pcl/registration/ndt.h>
+#include <fast_pcl/filters/voxel_grid.h>
+#endif
+//End of adding
+
+#define USING_GPU_NDT_ 1
+
+#ifdef USING_GPU_NDT_
+#include "NormalDistributionsTransform.h"
+#endif
+
+
+
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -102,7 +122,14 @@ static int map_loaded = 0;
 static int _use_gnss = 1;
 static int init_pos_set = 0;
 
+#ifndef USING_GPU_NDT_
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
+#else
+static gpu::GNormalDistributionsTransform ndt;
+#ifdef MEASURE_
+static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> cpu_ndt;
+#endif
+#endif
 // Default values
 static int max_iter = 30;        // Maximum iterations
 static float ndt_res = 1.0;      // Resolution
@@ -189,6 +216,11 @@ static std::string filename;
 
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
+
+#ifdef MEASURE_
+static std::ofstream ofs_align;
+static std::string ofs_log;
+#endif
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -310,6 +342,10 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
     // Setting point cloud to be aligned to.
     ndt.setInputTarget(map_ptr);
+#ifdef MEASURE_
+    cpu_ndt.setInputTarget(map_ptr);
+#endif
+
 
     // Setting NDT parameters to default values
     ndt.setMaximumIterations(max_iter);
@@ -451,8 +487,29 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         getFitnessScore_end;
     static double align_time, getFitnessScore_time = 0.0;
 
+#ifdef MEASURE_
+#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
+#endif
+
+#ifdef MEASURE_
+    struct timeval init_start, init_end;
+
     // Setting point cloud to be aligned.
+    gettimeofday(&init_start, NULL);
+#endif
     ndt.setInputSource(filtered_scan_ptr);
+#ifdef MEASURE_
+    gettimeofday(&init_end, NULL);
+#endif
+
+#ifdef MEASURE_
+    struct timeval cpu_init_start, cpu_init_end;
+    gettimeofday(&cpu_init_start, NULL);
+    cpu_ndt.setInputSource(filtered_scan_ptr);
+    gettimeofday(&cpu_init_end, NULL);
+#endif
+
+
 
     // Guess the initial gross estimation of the transformation
     predict_pose.x = previous_pose.x + offset_x;
@@ -462,6 +519,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose.pitch = previous_pose.pitch;
     predict_pose.yaw = previous_pose.yaw + offset_yaw;
 
+
+//    std::cout << "Previous_pose.x = " << previous_pose.x << " previous_pose.y = " << previous_pose.y << " previous_pose.z = " << previous_pose.z << std::endl;
+//    std::cout << "offset_x = " << offset_x << " offset_y = " << offset_y << " offset_z = " << offset_z << std::endl;
+//    std::cout << "offset_yaw = " << offset_yaw << std::endl;
+//    std::cout << "Predict_pose.x = " << predict_pose.x << " predict_pose.y = " << predict_pose.y << " predict_pose.z = " << predict_pose.z << std::endl;
+//    std::cout << "Predict_pose.roll = " << predict_pose.roll << std::endl;
+//    std::cout << "Predict_pose.pitch = " << predict_pose.pitch << std::endl;
+//    std::cout << "Predict_pose.yaw = " << predict_pose.yaw << std::endl;
+
     Eigen::Translation3f init_translation(predict_pose.x, predict_pose.y, predict_pose.z);
     Eigen::AngleAxisf init_rotation_x(predict_pose.roll, Eigen::Vector3f::UnitX());
     Eigen::AngleAxisf init_rotation_y(predict_pose.pitch, Eigen::Vector3f::UnitY());
@@ -469,6 +535,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+#ifdef MEASURE_
+    struct timeval gpu_align_start, gpu_align_end, gpu_fit_start, gpu_fit_end;
+    struct timeval cpu_align_start, cpu_align_end, cpu_fit_start, cpu_fit_end;
+#endif
+
+#ifndef USING_GPU_NDT_
 #ifdef USE_FAST_PCL
     if (_use_openmp == true)
     {
@@ -479,18 +552,39 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     else
     {
 #endif
+#endif
       align_start = std::chrono::system_clock::now();
+#ifndef USING_GPU_NDT_
       ndt.align(*output_cloud, init_guess);
+#else
+#ifdef MEASURE_
+      gettimeofday(&gpu_align_start, NULL);
+#endif
+      ndt.align(init_guess);
+#ifdef MEASURE_
+      gettimeofday(&gpu_align_end, NULL);
+#endif
+
+#ifdef MEASURE_
+      gettimeofday(&cpu_align_start, NULL);
+      cpu_ndt.align(*output_cloud, init_guess);
+      gettimeofday(&cpu_align_end, NULL);
+#endif
+#endif
       align_end = std::chrono::system_clock::now();
+#ifndef USING_GPU_NDT_
 #ifdef USE_FAST_PCL
     }
 #endif
+#endif
+
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
     t = ndt.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
 
     iteration = ndt.getFinalNumIteration();
+#ifndef USING_GPU_NDT_
 #ifdef USE_FAST_PCL
     if (_use_openmp == true)
     {
@@ -501,11 +595,29 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     else
     {
 #endif
+#endif
       getFitnessScore_start = std::chrono::system_clock::now();
+      //Added for GPU
+#ifdef MEASURE_
+      gettimeofday(&gpu_fit_start, NULL);
+#endif
       fitness_score = ndt.getFitnessScore();
+#ifdef MEASURE_
+      gettimeofday(&gpu_fit_end, NULL);
+#endif
+
+#ifdef MEASURE_
+      gettimeofday(&cpu_fit_start, NULL);
+      cpu_ndt.getFitnessScore();
+      gettimeofday(&cpu_fit_end, NULL);
+#endif
+      //End of adding
+
       getFitnessScore_end = std::chrono::system_clock::now();
+#ifndef USING_GPU_NDT_
 #ifdef USE_FAST_PCL
     }
+#endif
 #endif
     getFitnessScore_time =
         std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() /
@@ -776,6 +888,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
         << std::endl;
 
+#ifdef MEASURE_
+    if (!ofs_align) {
+    	std::cerr << "Could not open " << ofs_log << std::endl;
+    	exit(1);
+    }
+
+    ofs_align << input->header.seq << "," << timeDiff(gpu_align_start, gpu_align_end) / 1000.0 << "," << ndt.getFinalNumIteration() << "," << timeDiff(cpu_align_start, cpu_align_end) / 1000.0 << "," << cpu_ndt.getFinalNumIteration() << std::endl;
+#endif
+
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
     std::cout << "Timestamp: " << input->header.stamp << std::endl;
@@ -793,6 +914,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
               << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
     std::cout << "Transformation Matrix: " << std::endl;
     std::cout << t << std::endl;
+    std::cout << "Align time: " << align_time << std::endl;
+    std::cout << "Get fitness score time: " << getFitnessScore_time << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
 
     // Update offset
@@ -854,6 +977,16 @@ int main(int argc, char** argv)
   std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
   filename = "ndt_matching_" + std::string(buffer) + ".csv";
   ofs.open(filename.c_str(), std::ios::app);
+
+#ifdef MEASURE_
+  ofs_log = "/home/anh/ros_log/GPU";
+
+  ofs_log += "align_ndt_matching.csv";
+
+  ofs_align.open(ofs_log.c_str(), std::ios::app);
+#endif
+
+
 
   // Geting parameters
   private_nh.getParam("use_gnss", _use_gnss);

@@ -12,6 +12,8 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+find_package(CUDA REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
@@ -54,6 +56,26 @@ ELSE(PCL_VERSION VERSION_LESS "1.7.2")
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -DUSE_FAST_PCL ${CMAKE_CXX_FLAGS}")
 ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
 
+if(EXISTS "/usr/local/cuda")
+  include_directories(
+    ${catkin_INCLUDE_DIRS}
+    "/usr/local/cuda/include"
+    )
+endif()
+set(CUDA_ARCH "sm_52")
+
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11;--ptxas-options=-v)
+
+
+cuda_add_library(gpu_ndt
+	gpu/MatrixDevice.cu
+	gpu/MatrixHost.cu
+	gpu/NormalDistributionsTransform.cu
+	gpu/Registration.cu
+	gpu/VoxelGrid.cu
+	gpu/SymmetricEigensolver.cu
+)
+
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
@@ -66,8 +88,8 @@ add_executable(ndt_mapping_tku nodes/ndt_mapping_tku/ndt_mapping_tku.cpp)
 add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 
-target_link_libraries(ndt_matching ${catkin_LIBRARIES})
-target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
+target_link_libraries(ndt_matching ${catkin_LIBRARIES} gpu_ndt)
+target_link_libraries(ndt_mapping ${catkin_LIBRARIES} gpu_ndt)
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
@@ -82,3 +104,4 @@ add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
 add_dependencies(lazy_ndt_mapping runtime_manager_generate_messages_cpp)
 add_dependencies(local2global runtime_manager_generate_messages_cpp)
 add_dependencies(queue_counter runtime_manager_generate_messages_cpp)
+
