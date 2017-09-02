@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   velodyne_msgs
   pcl_conversions
+  velodyne_pointcloud
   )
 find_package( OpenCV REQUIRED )
 
