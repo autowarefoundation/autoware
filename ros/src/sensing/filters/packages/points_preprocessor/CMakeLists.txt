@@ -33,7 +33,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 link_directories(${PCL_LIBRARY_DIRS})
 
-#Space Filter
+# Space Filter
 add_executable(space_filter
     nodes/space_filter/space_filter.cpp
 )
@@ -42,7 +42,7 @@ target_link_libraries(space_filter
     ${PCL_LIBRARIES}
 )
 
-#Ring Ground Filter
+# Ring Ground Filter
 add_definitions(${PCL_DEFINITIONS})
 
 add_executable(ring_ground_filter
@@ -60,7 +60,7 @@ target_link_libraries(ring_ground_filter
 )
 
 
-#Ray Ground Filter
+# Ray Ground Filter
 add_executable(ray_ground_filter
     nodes/ray_ground_filter/ray_ground_filter.cpp
 )
@@ -82,4 +82,14 @@ target_link_libraries(ray_ground_filter
     ${PCL_LIBRARIES}
     ${OpenCV_LIBRARIES}
     ${Qt5Core_LIBRARIES}
+)
+
+# Fusion filter
+add_executable(fusion_filter
+	nodes/fusion_filter/fusion_filter.cpp
+)
+
+target_link_libraries(fusion_filter
+	${catkin_LIBRARIES}
+	${PCL_LIBRARIES}
 )
