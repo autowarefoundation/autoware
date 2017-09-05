@@ -109,14 +109,14 @@ class RosLidarDetectorApp
 		for(unsigned int i=0; i<in_point_cloud->points.size(); i++)
 		{
 			pcl::PointXYZI point = in_point_cloud->points[i];
-			if (point.x > 5. && point.x <70.)
+			if (point.x > 0. && point.x <70.)
 			{
 				float theta = atan2(point.y, point.x);
 				float length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
 				float angle = asin(point.z/length);
 				float depth = sqrt(point.x*point.x + point.y*point.y);
-				unsigned int image_x = floor((theta/horizontal_res_) + 250.5);
-				unsigned int image_y = floor((angle/vertical_res_) + 71.);
+				unsigned int image_x = floor((theta/horizontal_res_) + horizontal_res_/2);//250.5 = (501/2)
+				unsigned int image_y = floor((angle/vertical_res_) + vertical_res_/2);//71.0 = 90*0.78
 
 				if ( (image_x >= 0) && (image_x < image_width_) &&
 					 (image_y >= 0) && (image_y < image_height_)
@@ -364,10 +364,17 @@ public:
 		score_threshold_ = 0.5;
 
 		//TODO: parametrize these to enable different lidar models to be projected.
-		horizontal_res_ = 0.32 * pi_ /180.;//Angular Resolution (Horizontal/Azimuth)
-		vertical_res_ = 0.4*pi_/180.;//0.4 degrees Vertical Resolution
-		image_width_ = 2.8 / horizontal_res_;
-		image_height_ = 0.63 / vertical_res_;
+		//Model   |   Horizontal   |   Vertical   | FOV(Vertical)    degrees / rads
+		//----------------------------------------------------------
+		//HDL-64  |0.08-0.35(0.32) |     0.4      |  -24.9 <=x<=2.0   (26.9  / 0.47)
+		//HDL-32  |     0.1-0.4    |     1.33     |  -30.67<=x<=10.67 (41.33 / 0.72)
+		//VLP-16  |     0.1-0.4    |     2.0      |  -15.0<=x<=15.0   (30    / 0.52)
+		//VLP-16HD|     0.1-0.4    |     1.33     |  -10.0<=x<=10.0   (20    / 0.35)
+
+		horizontal_res_ = 0.25 * pi_ /180.;//Angular Resolution (Horizontal/Azimuth)
+		vertical_res_ = 2.0*pi_/180.;//Vertical Resolution HDL
+		image_width_ = pi_ / horizontal_res_;//501
+		image_height_ = 0.52 / vertical_res_;//90
 
 	}
 };
