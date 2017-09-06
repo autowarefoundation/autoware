@@ -3,16 +3,20 @@ project(ndt_localizer)
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration)
+SET(FAST_PCL_PACKAGES filters registration ndt_gpu)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DOMP_FOUND)
 endif()
 
-find_package(CUDA REQUIRED)
+find_package(CUDA)
+if(CUDA_FOUND)
+    add_definitions(-DCUDA_FOUND)
+endif()
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -56,44 +60,26 @@ ELSE(PCL_VERSION VERSION_LESS "1.7.2")
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -DUSE_FAST_PCL ${CMAKE_CXX_FLAGS}")
 ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
 
-if(EXISTS "/usr/local/cuda")
-  include_directories(
-    ${catkin_INCLUDE_DIRS}
-    "/usr/local/cuda/include"
-    )
-endif()
-set(CUDA_ARCH "sm_52")
-
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11;--ptxas-options=-v)
-
-
-cuda_add_library(gpu_ndt
-	gpu/MatrixDevice.cu
-	gpu/MatrixHost.cu
-	gpu/NormalDistributionsTransform.cu
-	gpu/Registration.cu
-	gpu/VoxelGrid.cu
-	gpu/SymmetricEigensolver.cu
-)
-
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
-
-#add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp nodes/ndt_matching_tku/newton.cpp nodes/ndt_matching_tku/algebra.cpp)
 add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp)
 add_executable(ndt_mapping_tku nodes/ndt_mapping_tku/ndt_mapping_tku.cpp)
 add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 
-target_link_libraries(ndt_matching ${catkin_LIBRARIES} gpu_ndt)
-target_link_libraries(ndt_mapping ${catkin_LIBRARIES} gpu_ndt)
+if(CUDA_FOUND)
+target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
+target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
+endif()
+
+target_link_libraries(ndt_matching ${catkin_LIBRARIES})
+target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
-
 target_link_libraries(ndt_matching_tku ndt_tku ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping_tku ndt_tku ${catkin_LIBRARIES})
 target_link_libraries(mapping ndt_tku ${catkin_LIBRARIES})

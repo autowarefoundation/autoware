@@ -8,6 +8,7 @@
   <arg name="use_openmp" default="false" />
   <arg name="get_height" default="false" />
   <arg name="use_local_transform" default="false" />
+  <arg name="use_gpu" default="true" />
   <arg name="sync" default="false" />
   
   <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="screen">
@@ -17,6 +18,7 @@
     <param name="use_openmp" value="$(arg use_openmp)" />
     <param name="get_height" value="$(arg get_height)" />
     <param name="use_local_transform" value="$(arg use_local_transform)" />
+    <param name="use_gpu" value="$(arg use_gpu)" />
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
   

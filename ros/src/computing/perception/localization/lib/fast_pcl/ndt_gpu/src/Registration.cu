@@ -1,5 +1,5 @@
-#include "Registration.h"
-#include "debug.h"
+#include "fast_pcl/ndt_gpu/Registration.h"
+#include "fast_pcl/ndt_gpu/debug.h"
 #include <iostream>
 
 namespace gpu {

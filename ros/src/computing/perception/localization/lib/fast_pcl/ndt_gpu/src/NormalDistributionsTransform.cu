@@ -1,5 +1,5 @@
-#include "NormalDistributionsTransform.h"
-#include "debug.h"
+#include "fast_pcl/ndt_gpu/NormalDistributionsTransform.h"
+#include "fast_pcl/ndt_gpu/debug.h"
 #include <cmath>
 #include <iostream>
 #include <pcl/common/transforms.h>

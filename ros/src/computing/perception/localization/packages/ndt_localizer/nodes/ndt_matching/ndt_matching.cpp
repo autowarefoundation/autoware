@@ -56,16 +56,17 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 
-//#define USE_FAST_PCL 1
-
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#ifdef USE_FAST_PCL
+#if defined (USE_FAST_PCL) && defined (CUDA_FOUND)
+#include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #include <fast_pcl/registration/ndt.h>
-#else
+#endif
+
+#ifndef USE_FAST_PCL
 #include <pcl/registration/ndt.h>
 #endif
 
@@ -75,23 +76,6 @@
 #include <runtime_manager/ConfigNdt.h>
 
 #include <ndt_localizer/ndt_stat.h>
-
-//Added for comparing cpu and gpu
-//#define MEASURE_ 1
-#ifdef MEASURE_
-#include <fast_pcl/registration/ndt.h>
-#include <fast_pcl/filters/voxel_grid.h>
-#endif
-//End of adding
-
-#define USING_GPU_NDT_ 1
-
-#ifdef USING_GPU_NDT_
-#include "NormalDistributionsTransform.h"
-#endif
-
-
-
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -122,14 +106,11 @@ static int map_loaded = 0;
 static int _use_gnss = 1;
 static int init_pos_set = 0;
 
-#ifndef USING_GPU_NDT_
+#ifdef CUDA_FOUND
+static gpu::GNormalDistributionsTransform gpu_ndt;
+#endif
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
-#else
-static gpu::GNormalDistributionsTransform ndt;
-#ifdef MEASURE_
-static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> cpu_ndt;
-#endif
-#endif
+
 // Default values
 static int max_iter = 30;        // Maximum iterations
 static float ndt_res = 1.0;      // Resolution
@@ -159,6 +140,7 @@ static ros::Time previous_scan_time;
 static ros::Duration scan_duration;
 
 static double exe_time = 0.0;
+static bool has_converged;
 static int iteration = 0;
 static double fitness_score = 0.0;
 static double trans_probability = 0.0;
@@ -207,7 +189,13 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
+#ifdef CUDA_FOUND
+static bool _use_gpu = false;
+#endif
+#ifdef USE_FAST_PCL
 static bool _use_openmp = false;
+#endif
+
 static bool _get_height = false;
 static bool _use_local_transform = false;
 
@@ -216,11 +204,6 @@ static std::string filename;
 
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
-
-#ifdef MEASURE_
-static std::ofstream ofs_align;
-static std::string ofs_log;
-#endif
 
 static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
 {
@@ -241,22 +224,62 @@ static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
   if (input->resolution != ndt_res)
   {
     ndt_res = input->resolution;
+#ifdef CUDA_FOUND
+    if(_use_gpu == true){
+      gpu_ndt.setResolution(ndt_res);
+    }
+    else
+    {
+#endif
     ndt.setResolution(ndt_res);
+#ifdef CUDA_FOUND
+    }
+#endif
   }
   if (input->step_size != step_size)
   {
     step_size = input->step_size;
+#ifdef CUDA_FOUND
+    if(_use_gpu == true){
+      gpu_ndt.setStepSize(step_size);
+    }
+    else
+    {
+#endif
     ndt.setStepSize(step_size);
+#ifdef CUDA_FOUND
+    }
+#endif
   }
   if (input->trans_epsilon != trans_eps)
   {
     trans_eps = input->trans_epsilon;
+#ifdef CUDA_FOUND
+    if(_use_gpu == true){
+      gpu_ndt.setTransformationEpsilon(trans_eps);
+    }
+    else
+    {
+#endif
     ndt.setTransformationEpsilon(trans_eps);
+#ifdef CUDA_FOUND
+    }
+#endif
   }
   if (input->max_iterations != max_iter)
   {
     max_iter = input->max_iterations;
+#ifdef CUDA_FOUND
+    if(_use_gpu == true){
+      gpu_ndt.setMaximumIterations(max_iter);
+    }
+    else
+    {
+#endif
     ndt.setMaximumIterations(max_iter);
+#ifdef CUDA_FOUND
+    }
+#endif
   }
 
   if (_use_gnss == 0 && init_pos_set == 0)
@@ -341,18 +364,26 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
     // Setting point cloud to be aligned to.
-    ndt.setInputTarget(map_ptr);
-#ifdef MEASURE_
-    cpu_ndt.setInputTarget(map_ptr);
+#ifdef CUDA_FOUND
+    if(_use_gpu == true)
+    {
+      gpu_ndt.setInputTarget(map_ptr);
+      gpu_ndt.setMaximumIterations(max_iter);
+      gpu_ndt.setResolution(ndt_res);
+      gpu_ndt.setStepSize(step_size);
+      gpu_ndt.setTransformationEpsilon(trans_eps);
+    }
+    else
+    {
 #endif
-
-
-    // Setting NDT parameters to default values
-    ndt.setMaximumIterations(max_iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-
+      ndt.setInputTarget(map_ptr);
+      ndt.setMaximumIterations(max_iter);
+      ndt.setResolution(ndt_res);
+      ndt.setStepSize(step_size);
+      ndt.setTransformationEpsilon(trans_eps);
+#ifdef CUDA_FOUND
+    }
+#endif
     map_loaded = 1;
   }
 }
@@ -487,29 +518,18 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         getFitnessScore_end;
     static double align_time, getFitnessScore_time = 0.0;
 
-#ifdef MEASURE_
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
+#ifdef CUDA_FOUND
+    if(_use_gpu == true)
+    {
+      gpu_ndt.setInputSource(filtered_scan_ptr);
+    }
+    else
+    {
 #endif
-
-#ifdef MEASURE_
-    struct timeval init_start, init_end;
-
-    // Setting point cloud to be aligned.
-    gettimeofday(&init_start, NULL);
+      ndt.setInputSource(filtered_scan_ptr);
+#ifdef CUDA_FOUND
+    }
 #endif
-    ndt.setInputSource(filtered_scan_ptr);
-#ifdef MEASURE_
-    gettimeofday(&init_end, NULL);
-#endif
-
-#ifdef MEASURE_
-    struct timeval cpu_init_start, cpu_init_end;
-    gettimeofday(&cpu_init_start, NULL);
-    cpu_ndt.setInputSource(filtered_scan_ptr);
-    gettimeofday(&cpu_init_end, NULL);
-#endif
-
-
 
     // Guess the initial gross estimation of the transformation
     predict_pose.x = previous_pose.x + offset_x;
@@ -536,94 +556,108 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
-#ifdef MEASURE_
-    struct timeval gpu_align_start, gpu_align_end, gpu_fit_start, gpu_fit_end;
-    struct timeval cpu_align_start, cpu_align_end, cpu_fit_start, cpu_fit_end;
-#endif
+#ifdef CUDA_FOUND
+    if(_use_gpu == true)
+    {
+      align_start = std::chrono::system_clock::now();
+      gpu_ndt.align(init_guess);
+      align_end = std::chrono::system_clock::now();
 
-#ifndef USING_GPU_NDT_
-#ifdef USE_FAST_PCL
-    if (_use_openmp == true)
+      has_converged = gpu_ndt.hasConverged();
+
+      t = gpu_ndt.getFinalTransformation();
+      iteration = gpu_ndt.getFinalNumIteration();
+
+      getFitnessScore_start = std::chrono::system_clock::now();
+      fitness_score = gpu_ndt.getFitnessScore();
+      getFitnessScore_end = std::chrono::system_clock::now();
+
+      trans_probability = gpu_ndt.getTransformationProbability();
+    }
+  #ifdef USE_FAST_PCL
+    else if (_use_openmp == true)
     {
       align_start = std::chrono::system_clock::now();
       ndt.omp_align(*output_cloud, init_guess);
       align_end = std::chrono::system_clock::now();
+
+      has_converged = ndt.hasConverged();
+
+      t = ndt.getFinalTransformation();
+      iteration = ndt.getFinalNumIteration();
+
+      getFitnessScore_start = std::chrono::system_clock::now();
+      fitness_score = ndt.omp_getFitnessScore();
+      getFitnessScore_end = std::chrono::system_clock::now();
+
+      trans_probability = ndt.getTransformationProbability();
+    }
+  #endif
+    else
+    {
+      align_start = std::chrono::system_clock::now();
+      ndt.align(*output_cloud, init_guess);
+      align_end = std::chrono::system_clock::now();
+
+      has_converged = ndt.hasConverged();
+
+      t = ndt.getFinalTransformation();
+      iteration = ndt.getFinalNumIteration();
+
+      getFitnessScore_start = std::chrono::system_clock::now();
+      fitness_score = ndt.getFitnessScore();
+      getFitnessScore_end = std::chrono::system_clock::now();
+
+      trans_probability = ndt.getTransformationProbability();
+    }
+#else
+  #ifdef USE_FAST_PCL
+    if(_use_openmp == true)
+    {
+      align_start = std::chrono::system_clock::now();
+      ndt.omp_align(*output_cloud, init_guess);
+      align_end = std::chrono::system_clock::now();
+
+      has_converged = ndt.hasConverged();
+
+      t = ndt.getFinalTransformation();
+      iteration = ndt.getFinalNumIteration();
+
+      getFitnessScore_start = std::chrono::system_clock::now();
+      fitness_score = ndt.omp_getFitnessScore();
+      getFitnessScore_end = std::chrono::system_clock::now();
+
+      trans_probability = ndt.getTransformationProbability();
     }
     else
     {
-#endif
-#endif
+  #endif
       align_start = std::chrono::system_clock::now();
-#ifndef USING_GPU_NDT_
       ndt.align(*output_cloud, init_guess);
-#else
-#ifdef MEASURE_
-      gettimeofday(&gpu_align_start, NULL);
-#endif
-      ndt.align(init_guess);
-#ifdef MEASURE_
-      gettimeofday(&gpu_align_end, NULL);
-#endif
-
-#ifdef MEASURE_
-      gettimeofday(&cpu_align_start, NULL);
-      cpu_ndt.align(*output_cloud, init_guess);
-      gettimeofday(&cpu_align_end, NULL);
-#endif
-#endif
       align_end = std::chrono::system_clock::now();
-#ifndef USING_GPU_NDT_
-#ifdef USE_FAST_PCL
+
+      has_converged = ndt.hasConverged();
+
+      t = ndt.getFinalTransformation();
+      iteration = ndt.getFinalNumIteration();
+
+      getFitnessScore_start = std::chrono::system_clock::now();
+      fitness_score = ndt.getFitnessScore();
+      getFitnessScore_end = std::chrono::system_clock::now();
+
+      trans_probability = ndt.getTransformationProbability();
+  #ifdef USE_FAST_PCL
     }
-#endif
+  #endif
 #endif
 
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
-    t = ndt.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
 
-    iteration = ndt.getFinalNumIteration();
-#ifndef USING_GPU_NDT_
-#ifdef USE_FAST_PCL
-    if (_use_openmp == true)
-    {
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = ndt.omp_getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
-    }
-    else
-    {
-#endif
-#endif
-      getFitnessScore_start = std::chrono::system_clock::now();
-      //Added for GPU
-#ifdef MEASURE_
-      gettimeofday(&gpu_fit_start, NULL);
-#endif
-      fitness_score = ndt.getFitnessScore();
-#ifdef MEASURE_
-      gettimeofday(&gpu_fit_end, NULL);
-#endif
-
-#ifdef MEASURE_
-      gettimeofday(&cpu_fit_start, NULL);
-      cpu_ndt.getFitnessScore();
-      gettimeofday(&cpu_fit_end, NULL);
-#endif
-      //End of adding
-
-      getFitnessScore_end = std::chrono::system_clock::now();
-#ifndef USING_GPU_NDT_
-#ifdef USE_FAST_PCL
-    }
-#endif
-#endif
     getFitnessScore_time =
         std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() /
         1000.0;
-
-    trans_probability = ndt.getTransformationProbability();
 
     tf::Matrix3x3 mat_l;  // localizer
     mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
@@ -888,26 +922,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
         << std::endl;
 
-#ifdef MEASURE_
-    if (!ofs_align) {
-    	std::cerr << "Could not open " << ofs_log << std::endl;
-    	exit(1);
-    }
-
-    ofs_align << input->header.seq << "," << timeDiff(gpu_align_start, gpu_align_end) / 1000.0 << "," << ndt.getFinalNumIteration() << "," << timeDiff(cpu_align_start, cpu_align_end) / 1000.0 << "," << cpu_ndt.getFinalNumIteration() << std::endl;
-#endif
-
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
     std::cout << "Timestamp: " << input->header.stamp << std::endl;
     std::cout << "Frame ID: " << input->header.frame_id << std::endl;
     //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
     std::cout << "Number of Filtered Scan Points: " << scan_points_num << " points." << std::endl;
-    std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
+    std::cout << "NDT has converged: " << has_converged << std::endl;
     std::cout << "Fitness Score: " << fitness_score << std::endl;
-    std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
+    std::cout << "Transformation Probability: " << trans_probability << std::endl;
     std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
-    std::cout << "Number of Iterations: " << ndt.getFinalNumIteration() << std::endl;
+    std::cout << "Number of Iterations: " << iteration << std::endl;
     std::cout << "NDT Reliability: " << ndt_reliability.data << std::endl;
     std::cout << "(x,y,z,roll,pitch,yaw): " << std::endl;
     std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
@@ -978,23 +1003,26 @@ int main(int argc, char** argv)
   filename = "ndt_matching_" + std::string(buffer) + ".csv";
   ofs.open(filename.c_str(), std::ios::app);
 
-#ifdef MEASURE_
-  ofs_log = "/home/anh/ros_log/GPU";
-
-  ofs_log += "align_ndt_matching.csv";
-
-  ofs_align.open(ofs_log.c_str(), std::ios::app);
-#endif
-
-
-
   // Geting parameters
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
+#ifdef USE_FAST_PCL
   private_nh.getParam("use_openmp", _use_openmp);
+#endif
+#ifdef CUDA_FOUND
+  private_nh.getParam("use_gpu", _use_gpu);
+#endif
   private_nh.getParam("get_height", _get_height);
   private_nh.getParam("use_local_transform", _use_local_transform);
+
+#if defined (CUDA_FOUND) && defined (USE_FAST_PCL)
+  if(_use_gpu == true && _use_openmp == true)
+  {
+    std::cout << "use_gpu and use_openmp are exclusive. Set use_gpu true and use_openmp false." << std::endl;
+    _use_openmp = false;
+  }
+#endif
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -1038,7 +1066,12 @@ int main(int argc, char** argv)
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
+#ifdef CUDA_FOUND
+  std::cout << "use_gpu: " << _use_gpu << std::endl;
+#endif
+#ifdef USE_FAST_PCL
   std::cout << "use_openmp: " << _use_openmp << std::endl;
+#endif
   std::cout << "get_height: " << _get_height << std::endl;
   std::cout << "use_local_transform: " << _use_local_transform << std::endl;
   std::cout << "localizer: " << _localizer << std::endl;

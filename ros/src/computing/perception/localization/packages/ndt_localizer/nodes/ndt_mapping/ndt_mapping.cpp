@@ -56,32 +56,19 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-//#define USE_FAST_PCL 1
-
-#ifdef USE_FAST_PCL
+#if defined (USE_FAST_PCL) && defined (CUDA_FOUND)
+#include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #include <fast_pcl/registration/ndt.h>
 #include <fast_pcl/filters/voxel_grid.h>
-#else
+#endif
+
+#ifndef USE_FAST_PCL
 #include <pcl/registration/ndt.h>
 #include <pcl/filters/voxel_grid.h>
 #endif
 
 #include <runtime_manager/ConfigNdtMapping.h>
 #include <runtime_manager/ConfigNdtMappingOutput.h>
-
-//Added for GPU ndt
-#define USING_GPU_NDT_ 1
-#ifdef USING_GPU_NDT_
-#include "NormalDistributionsTransform.h"
-#endif
-
-//Added for comparing cpu and gpu
-//#define MEASURE_ 1
-#ifdef MEASURE_
-#include <fast_pcl/registration/ndt.h>
-#include <fast_pcl/filters/voxel_grid.h>
-#endif
-//End of adding
 
 #include <time.h>
 
@@ -103,18 +90,11 @@ static double offset_x, offset_y, offset_z, offset_yaw;  // current_pose - previ
 static pcl::PointCloud<pcl::PointXYZI> map;
 
 //Added for GPU ndt
-
-#ifndef USING_GPU_NDT_
+#ifdef CUDA_FOUND
+static gpu::GNormalDistributionsTransform gpu_ndt;
+#endif
 static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
-#else
-static gpu::GNormalDistributionsTransform ndt;
-#ifdef MEASURE_
-static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> cpu_ndt;
-#endif
-#endif
 //end of adding
-
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
 
 // Default values
 static int max_iter = 30;            // Maximum iterations
@@ -147,15 +127,18 @@ static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static bool isMapUpdate = true;
+
+#ifdef USE_FAST_PCL
 static bool _use_openmp = false;
+#endif
+#ifdef CUDA_FOUND
+static bool _use_gpu = false;
+#endif
 
 static double fitness_score;
+static bool has_converged;
+static int final_num_iteration;
 
-//Added for measuring computation time of GPU and CPU
-#ifdef MEASURE_
-static std::ofstream ofs_align, ofs_set;
-static std::string align_log, set_input_log;
-#endif
 
 static void param_callback(const runtime_manager::ConfigNdtMapping::ConstPtr& input)
 {
@@ -273,48 +256,42 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
 
-  struct timeval init_start, init_end;
-
-  gettimeofday(&init_start, NULL);
+#ifdef CUDA_FOUND
+  if(_use_gpu == true){
+    gpu_ndt.setTransformationEpsilon(trans_eps);
+    gpu_ndt.setStepSize(step_size);
+    gpu_ndt.setResolution(ndt_res);
+    gpu_ndt.setMaximumIterations(max_iter);
+    gpu_ndt.setInputSource(filtered_scan_ptr);
+  }else{
+    ndt.setTransformationEpsilon(trans_eps);
+    ndt.setStepSize(step_size);
+    ndt.setResolution(ndt_res);
+    ndt.setMaximumIterations(max_iter);
+    ndt.setInputSource(filtered_scan_ptr);
+  }
+#else
   ndt.setTransformationEpsilon(trans_eps);
   ndt.setStepSize(step_size);
   ndt.setResolution(ndt_res);
   ndt.setMaximumIterations(max_iter);
   ndt.setInputSource(filtered_scan_ptr);
-  gettimeofday(&init_end, NULL);
-
-#ifdef MEASURE_
-  	  struct timeval cpu_init_start, cpu_init_end;
-  	  gettimeofday(&cpu_init_start, NULL);
-  	  cpu_ndt.setTransformationEpsilon(trans_eps);
-  	  cpu_ndt.setStepSize(step_size);
-  	  cpu_ndt.setResolution(ndt_res);
-  	  cpu_ndt.setMaximumIterations(max_iter);
-  	  cpu_ndt.setInputSource(filtered_scan_ptr);
-  	  gettimeofday(&cpu_init_end, NULL);
 #endif
-
-  struct timeval target_set_start, target_set_end;
-
-#ifdef MEASURE_
-  struct timeval cpu_target_set_start, cpu_target_set_end;
-#endif
-
 
   if (isMapUpdate == true)
   {
-	gettimeofday(&target_set_start, NULL);
+#ifdef CUDA_FOUND
+    if(_use_gpu == true){
+      gpu_ndt.setInputTarget(map_ptr);
+    }else{
+      ndt.setInputTarget(map_ptr);
+    }
+#else
     ndt.setInputTarget(map_ptr);
-    gettimeofday(&target_set_end, NULL);
-
-#ifdef MEASURE_
-    gettimeofday(&cpu_target_set_start, NULL);
-	cpu_ndt.setInputTarget(map_ptr);
-	gettimeofday(&cpu_target_set_end, NULL);
 #endif
+
     isMapUpdate = false;
   }
-
 
   guess_pose.x = previous_pose.x + offset_x;
   guess_pose.y = previous_pose.y + offset_y;
@@ -340,68 +317,61 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
   std::cout << "Start aligning" << std::endl;
 
-  struct timeval align_start, align_end;
-  struct timeval get_fit_s, get_fit_e;
-
-#ifdef MEASURE_
-  struct timeval cpu_align_start, cpu_align_end;
-  struct timeval cpu_get_fit_s, cpu_get_fit_e;
-#endif
-
-#ifndef USING_GPU_NDT_
-#ifdef USE_FAST_PCL
+#ifdef CUDA_FOUND
+  if(_use_gpu == true)
+  {
+    gpu_ndt.align(init_guess);
+    t_localizer = gpu_ndt.getFinalTransformation();
+    has_converged = gpu_ndt.hasConverged();
+    fitness_score = gpu_ndt.getFitnessScore();
+    final_num_iteration = ndt.getFinalNumIteration();
+  }
+  #ifdef USE_FAST_PCL
+  else if(_use_openmp == true)
+  {
+    ndt.omp_align(*output_cloud, init_guess);
+    t_localizer = ndt.getFinalTransformation();
+    has_converged = ndt.hasConverged();
+    fitness_score = ndt.omp_getFitnessScore();
+    final_num_iteration = ndt.getFinalNumIteration();
+  }
+  #endif
+  else
+  {
+    ndt.align(*output_cloud, init_guess);
+    t_localizer = ndt.getFinalTransformation();
+    has_converged = ndt.hasConverged();
+    fitness_score = ndt.getFitnessScore();
+    final_num_iteration = ndt.getFinalNumIteration();
+  }
+#else
+  #ifdef USE_FAST_PCL
   if (_use_openmp == true)
   {
     ndt.omp_align(*output_cloud, init_guess);
+    t_localizer = ndt.getFinalTransformation();
+    has_converged = ndt.hasConverged;
     fitness_score = ndt.omp_getFitnessScore();
+    final_num_iteration = ndt.getFinalNumIteration();
   }
   else
   {
-#endif
-	  //Added for GPU ndt
-	gettimeofday(&align_start, NULL);
+  #endif
+    //Added for GPU ndt
     ndt.align(*output_cloud, init_guess);
-    gettimeofday(&align_end, NULL);
-
-    gettimeofday(&get_fit_s, NULL);
+    t_localizer = ndt.getFinalTransformation();
+    has_converged = ndt.hasConverged();
     fitness_score = ndt.getFitnessScore();
-    gettimeofday(&get_fit_e, NULL);
-
+    final_num_iteration = ndt.getFinalNumIteration();
     //End of adding GPU ndt
-
-#ifdef USE_FAST_PCL
+  #ifdef USE_FAST_PCL
   }
-#endif
-#else
-  	gettimeofday(&align_start, NULL);
-    ndt.align(init_guess);
-    gettimeofday(&align_end, NULL);
-
-    gettimeofday(&get_fit_s, NULL);
-    fitness_score = ndt.getFitnessScore();
-    gettimeofday(&get_fit_e, NULL);
-
-#ifdef MEASURE_
-    gettimeofday(&cpu_align_start, NULL);
-    cpu_ndt.omp_align(*output_cloud, init_guess);
-    gettimeofday(&cpu_align_end, NULL);
-
-    gettimeofday(&cpu_get_fit_s, NULL);
-    fitness_score = cpu_ndt.omp_getFitnessScore();
-    gettimeofday(&cpu_get_fit_e, NULL);
-#endif
+  #endif
 #endif
 
-  t_localizer = ndt.getFinalTransformation();
   t_base_link = t_localizer * tf_ltob;
 
   pcl::transformPointCloud(*scan_ptr, *transformed_scan_ptr, t_localizer);
-
-  std::cout << "Init = " << timeDiff(init_start, init_end) << std::endl;
-  std::cout << " GPU Set Target = " << timeDiff(target_set_start, target_set_end) << " align = " << timeDiff(align_start, align_end) << " getFitnessScore = " << timeDiff(get_fit_s, get_fit_e) << std::endl;
-#ifdef MEASURE_
-  std::cout << " CPU Set Target = " << timeDiff(cpu_target_set_start, cpu_target_set_end) << " align = " << timeDiff(cpu_align_start, cpu_align_end) << " getFitnessScore = " << timeDiff(cpu_get_fit_s, cpu_get_fit_e) << std::endl;
-#endif
 
   tf::Matrix3x3 mat_l, mat_b;
 
@@ -487,32 +457,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   current_pose_pub.publish(current_pose_msg);
 
-  // Write log
-#ifdef MEASURE_
-  if (!ofs_align)
-  {
-    std::cerr << "Could not open " << align_log << "." << std::endl;
-    exit(1);
-  }
-
-  if (!ofs_set) {
-	  std::cerr << "Could not open " << set_input_log << "." << std::endl;
-	  exit(1);
-  }
-
-  ofs_align << input->header.seq << "," << timeDiff(align_start, align_end) / 1000.0 << "," << ndt.getFinalNumIteration() << "," << timeDiff(cpu_align_start, cpu_align_end) / 1000.0 << "," << cpu_ndt.getFinalNumIteration() << "," << ndt.getRealIterations() << std::endl;
-  ofs_set << input->header.seq << "," << timeDiff(target_set_start, target_set_end) / 1000.0 << "," << ndt.getFinalNumIteration() << "," << timeDiff(cpu_target_set_start, cpu_target_set_end) /1000.0 << "," << cpu_ndt.getFinalNumIteration() << std::endl;
-#endif
-
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Sequence number: " << input->header.seq << std::endl;
   std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
   std::cout << "Number of filtered scan points: " << filtered_scan_ptr->size() << " points." << std::endl;
   std::cout << "transformed_scan_ptr: " << transformed_scan_ptr->points.size() << " points." << std::endl;
   std::cout << "map: " << map.points.size() << " points." << std::endl;
-  std::cout << "NDT has converged: " << ndt.hasConverged() << std::endl;
+  std::cout << "NDT has converged: " << has_converged << std::endl;
   std::cout << "Fitness score: " << fitness_score << std::endl;
-  std::cout << "Number of iteration: " << ndt.getFinalNumIteration() << std::endl;
+  std::cout << "Number of iteration: " << final_num_iteration << std::endl;
   std::cout << "(x,y,z,roll,pitch,yaw):" << std::endl;
   std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
             << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
@@ -524,17 +477,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 int main(int argc, char** argv)
 {
-#ifdef MEASURE_
-	align_log = "/home/anh/ros_log/GPU";
-	set_input_log = "/home/anh/ros_log/GPU";
-
-	align_log += "align_ndt_mapping.csv";
-	set_input_log += "setInput_ndt_mapping.csv";
-
-	ofs_align.open(align_log.c_str(), std::ios::out);
-	ofs_set.open(set_input_log.c_str(), std::ios::out);
-#endif
-
   previous_pose.x = 0.0;
   previous_pose.y = 0.0;
   previous_pose.z = 0.0;
@@ -581,9 +523,14 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
   // setting parameters
+#ifdef CUDA_FOUND
+  private_nh.getParam("use_gpu", _use_gpu);
+  std::cout << "use_gpu: " << _use_gpu << std::endl;
+#endif
+#ifdef USE_FAST_PCL
   private_nh.getParam("use_openmp", _use_openmp);
   std::cout << "use_openmp: " << _use_openmp << std::endl;
-
+#endif
   if (nh.getParam("tf_x", _tf_x) == false)
   {
     std::cout << "tf_x is not set." << std::endl;
@@ -614,6 +561,14 @@ int main(int argc, char** argv)
     std::cout << "tf_yaw is not set." << std::endl;
     return 1;
   }
+
+#if defined (CUDA_FOUND) && defined (USE_FAST_PCL)
+  if(_use_gpu == true && _use_openmp == true)
+  {
+    std::cout << "use_gpu and use_openmp are exclusive. Set use_gpu true and use_openmp false." << std::endl;
+    _use_openmp = false;
+  }
+#endif
 
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
