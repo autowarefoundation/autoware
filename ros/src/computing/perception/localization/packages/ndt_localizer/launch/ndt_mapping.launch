@@ -1,8 +1,7 @@
 <!-- -->
 <launch>
 
-  <!-- send table.xml to param server -->
-  <arg name="use_gpu" default="true" />
+  <arg name="use_gpu" default="false" />
   <arg name="use_openmp" default="false" />
 
   <!-- rosrun ndt_localizer ndt_mapping  -->
