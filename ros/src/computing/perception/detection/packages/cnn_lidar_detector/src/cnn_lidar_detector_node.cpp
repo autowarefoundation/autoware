@@ -65,6 +65,9 @@
 #include "MatlabIO.hpp"
 #include "MatlabIOContainer.hpp"
 
+//#define DEG2RAD(angleDegrees) (angleDegrees * M_PI / 180.0)
+//#define RAD2DEG(angleRadians) (angleRadians * 180.0 / M_PI)
+
 class RosLidarDetectorApp
 {
 	ros::Subscriber subscriber_image_raw_;
@@ -82,13 +85,14 @@ class RosLidarDetectorApp
 	//Sets whether or not use GPU acceleration
 	bool 			use_gpu_;
 	int 			gpu_device_id_;
-	const double 	pi_ = 3.14159265;
 
 	float 			horizontal_res_;
 	float 			vertical_res_;
 	unsigned int 	image_width_;
 	unsigned int 	image_height_;
 	double			score_threshold_;
+
+	unsigned int	sensor_res_; //16,32,64
 
 	cv::Mat			projection_mean_depth_;//single channel float image subtrahend for depth projection
 	cv::Mat			projection_mean_height_;//single channel float image subtrahend for height projection
@@ -115,8 +119,8 @@ class RosLidarDetectorApp
 				float length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
 				float angle = asin(point.z/length);
 				float depth = sqrt(point.x*point.x + point.y*point.y);
-				unsigned int image_x = floor((theta/horizontal_res_) + horizontal_res_/2);//250.5 = (501/2)
-				unsigned int image_y = floor((angle/vertical_res_) + vertical_res_/2);//71.0 = 90*0.78
+				unsigned int image_x = floor((theta/horizontal_res_) + image_width_/2);//250.5 = (501/2)
+				unsigned int image_y = floor((angle/vertical_res_) + image_height_/2);//71.0 = 90*0.78
 
 				if ( (image_x >= 0) && (image_x < image_width_) &&
 					 (image_y >= 0) && (image_y < image_height_)
@@ -362,6 +366,7 @@ public:
 
 		gpu_device_id_ 	= 0;
 		score_threshold_ = 0.5;
+		sensor_res_ = 16;
 
 		//TODO: parametrize these to enable different lidar models to be projected.
 		//Model   |   Horizontal   |   Vertical   | FOV(Vertical)    degrees / rads
@@ -371,10 +376,34 @@ public:
 		//VLP-16  |     0.1-0.4    |     2.0      |  -15.0<=x<=15.0   (30    / 0.52)
 		//VLP-16HD|     0.1-0.4    |     1.33     |  -10.0<=x<=10.0   (20    / 0.35)
 
-		horizontal_res_ = 0.25 * pi_ /180.;//Angular Resolution (Horizontal/Azimuth)
-		vertical_res_ = 2.0*pi_/180.;//Vertical Resolution HDL
-		image_width_ = pi_ / horizontal_res_;//501
-		image_height_ = 0.52 / vertical_res_;//90
+		float horizontal_res_sensor, vertical_res_sensor;
+		float horizontal_fov = DEG2RAD(80),
+				vertical_fov_sensor;
+		switch (sensor_res_)
+		{
+		case 16:
+			horizontal_res_sensor = 0.4;
+			vertical_res_sensor = 2.;
+			vertical_fov_sensor = 30;
+			break;
+		case 32:
+			horizontal_res_sensor = 0.4;
+			vertical_res_sensor = 1.33;
+			vertical_fov_sensor = 41.33;
+			break;
+		case 64:
+			horizontal_res_sensor = 0.32;
+			vertical_res_sensor = 0.4;
+			vertical_fov_sensor = 26.9;
+			break;
+		default:
+			break;
+		}
+
+		horizontal_res_ = DEG2RAD(horizontal_res_sensor);//Angular Resolution in rads (Horizontal/Azimuth)
+		vertical_res_ 	= DEG2RAD(vertical_res_sensor);//Vertical Resolution HDL
+		image_width_ 	= (horizontal_fov / horizontal_res_) + 1;//501
+		image_height_ 	= (DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
 
 	}
 };
