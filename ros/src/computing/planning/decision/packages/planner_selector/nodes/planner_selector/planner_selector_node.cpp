@@ -24,12 +24,12 @@ private:
   std::unordered_map<std::string, ros::Subscriber> Subs;
 
 
-  autoware_msgs::lane final_waypoints_dp;
-  autoware_msgs::lane final_waypoints_astar;
+  autoware_msgs::lane final_waypoints_dp_;
+  autoware_msgs::lane final_waypoints_astar_;
 
   std::unordered_map<std::string, int> closest_waypoints_;
-  int __closest_waypoint_astar;
-  int __closest_waypoint_dp;
+  int closest_waypoint_astar_;
+  int closest_waypoint_dp_;
 
   unsigned int way_offset;
 
@@ -37,9 +37,11 @@ private:
 
   int enableLattice_;
   bool pastWaypoint;
-  unsigned int config_latency_num;
-  unsigned int config_waypoints_num;
-  double config_convergence_num;
+  unsigned int 	config_latency_num_;
+  unsigned int 	config_waypoints_num_;
+  double 	config_convergence_num_;
+
+  bool existWaypoints(const int _config_waypoints_num); 
 
 public:
   PlannerSelectorNode()
@@ -47,9 +49,9 @@ public:
     this->initROS();
     enableLattice_ = 0;
     pastWaypoint = false;
-    config_latency_num = DEFAULT_LATENCY_NUM;
-    config_waypoints_num = DEFAULT_WAYPOINTS_NUM;
-    config_convergence_num = DEFAULT_CONVERGENCE_NUM;
+    config_latency_num_ = DEFAULT_LATENCY_NUM;
+    config_waypoints_num_ = DEFAULT_WAYPOINTS_NUM;
+    config_convergence_num_ = DEFAULT_CONVERGENCE_NUM;
   }
 
   void initROS();
@@ -79,16 +81,23 @@ void PlannerSelectorNode::initROS()
   Pubs["closest_waypoint"] = nh_.advertise<std_msgs::Int32>("/closest_waypoint", 1);
 }
 
+inline bool PlannerSelectorNode::existWaypoints(const int _config_waypoints_num)
+{
+	bool ret;
+	ret = ( _config_waypoints_num < final_waypoints_dp_.waypoints.size() ) 
+		&& ( _config_waypoints_num < final_waypoints_dp_.waypoints.size() ) ;
+	return ret;
+}
+
 void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
 {
   //static int prev[LATENCY_NUM] = { 1 };
-  static int counter = 0;
-  
+  static int counter = 0;  
   double _distance = 100.0;
 
   try{
-	  autoware_msgs::waypoint dp_point = final_waypoints_dp.waypoints.at(config_waypoints_num);
-	  autoware_msgs::waypoint astar_point = final_waypoints_astar.waypoints.at(config_waypoints_num);
+	  autoware_msgs::waypoint dp_point = final_waypoints_dp_.waypoints.at(config_waypoints_num_);
+	  autoware_msgs::waypoint astar_point = final_waypoints_astar_.waypoints.at(config_waypoints_num_);
 
 	  euclidean_space::point p_dp, p_astar;
 	  p_dp.x = dp_point.pose.pose.position.x;
@@ -100,15 +109,16 @@ void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
 	  p_astar.z = 0.0;
 
 	  _distance = euclidean_space::EuclideanSpace::find_distance(&p_dp, &p_astar);
-	//  ROS_INFO("distance=%f. %d:%d", _distance, dp_point.dtlane.dist,astar_point.dtlane.dist);
+	  //  ROS_INFO("distance=%f. %d:%d", _distance, dp_point.dtlane.dist,astar_point.dtlane.dist);
   }catch(const std::out_of_range &ex){
+	  ROS_ERROR("Out of Range:%s", ex.what() );
   }
 
-#if 0
+#if 0 // delay switch
   _mutex.lock();
   if(enableLattice_){
 	  if (msg.data == 0){
-		  if(counter++ >= config_latency_num){
+		  if(counter++ >= config_latency_num_){
 			  enableLattice_ = 0;
 			  counter = 0;
 		  }
@@ -125,12 +135,12 @@ void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
 		  if(pastWaypoint == false){
 			  pastWaypoint  = true;
 			  counter = 0;
-			  way_offset = config_waypoints_num;
+			  way_offset = config_waypoints_num_;
 		  }
 	  }
 	  enableLattice_ = msg.data;
   }
-  if(counter++ >= config_latency_num)
+  if(counter++ >= config_latency_num_)
   {
 	  counter = 0;
 	  if(way_offset>0)
@@ -154,46 +164,43 @@ void PlannerSelectorNode::callbackFromWaypoints(const ros::MessageEvent<autoware
   std::string topic = header.at("topic");
   const autoware_msgs::lane *waypoints = event.getMessage().get();
 
-  /// ROS_INFO("%s", enableLattice_?"flag = True":"flag = False");
-
   _mutex.lock();
+
   if (this->enableLattice_ && topic.find("dp") != std::string::npos)
   {
     Pubs["final_waypoints"].publish(*waypoints);
-    final_waypoints_dp = *waypoints;
+    final_waypoints_dp_ = *waypoints;
   }
   else if (!this->enableLattice_ && topic.find("astar") != std::string::npos)
   {
-
     if(pastWaypoint){
-	    static bool initflag = true;
-	    for(int i=0; i<config_waypoints_num; i++){
-		    if(!final_waypoints_astar.waypoints.empty())
-			    final_waypoints_astar.waypoints.erase(final_waypoints_astar.waypoints.begin());
+	    for(int i=0; i < config_waypoints_num_; i++){
+		    if(!final_waypoints_astar_.waypoints.empty())
+			    final_waypoints_astar_.waypoints.erase(final_waypoints_astar_.waypoints.begin());
 		    else{
 			    pastWaypoint = false;
 			    way_offset=0;
-
 		    }
 	    }
-	    Pubs["final_waypoints"].publish(final_waypoints_astar);
+	    Pubs["final_waypoints"].publish(final_waypoints_astar_);
     }else{
 	    Pubs["final_waypoints"].publish(*waypoints);
     }
-    final_waypoints_astar = *waypoints;
+    final_waypoints_astar_ = *waypoints;
   }
+
   //for debug
-  //ROS_INFO("%s, %d-%d-%d", topic.c_str(), __closest_waypoint_dp, __closest_waypoint_astar, this->enableLattice_);
+  //ROS_INFO("%s, %d-%d-%d", topic.c_str(), closest_waypoint_dp_, closest_waypoint_astar_, this->enableLattice_);
   _mutex.unlock();
 }
 
 void PlannerSelectorNode::callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg)
 {
-	config_latency_num = msg.latency_num;
-	config_waypoints_num = msg.waypoints_num;
-	config_convergence_num = msg.convergence_num;
+	config_latency_num_ = msg.latency_num;
+	config_waypoints_num_ = msg.waypoints_num;
+	config_convergence_num_ = msg.convergence_num;
 
-	ROS_INFO("PARAM_SET-latency:%d, waypoints:%d, convergence:%f", config_latency_num, config_waypoints_num, config_convergence_num);
+	ROS_INFO("PARAM_SET-latency:%d, waypoints:%d, convergence:%f", config_latency_num_, config_waypoints_num_, config_convergence_num_);
 }
 
 
@@ -208,25 +215,25 @@ void PlannerSelectorNode::callbackFromClosest(const ros::MessageEvent<std_msgs::
 #if 1
   if (topic.find("/dp") == 0)
   {
-    closest_waypoints_["dp"] = temp;
+	  closest_waypoints_["dp"] = temp;
 
-    if (closest_waypoints_["astar"])
-    {
-      msg.data = __closest_waypoint_astar;
-    }
-    __closest_waypoint_dp = temp;
+	  if (closest_waypoints_["astar"])
+	  {
+		  msg.data = closest_waypoint_astar_;
+	  }
+	  closest_waypoint_dp_ = temp;
   }
   else if (topic.find("/astar") == 0)
   {
-    closest_waypoints_["astar"] = temp;
-    __closest_waypoint_astar = temp;
+	  closest_waypoints_["astar"] = temp;
+	  closest_waypoint_astar_ = temp;
   }
 
-//  ROS_INFO("PastWaypoint:%s-offset:%d, latency:%d, closest:%d", pastWaypoint?"true":"false", way_offset, config_latency_num,__closest_waypoint_astar);
-  if(pastWaypoint &&  final_waypoints_astar.waypoints.size() > __closest_waypoint_astar + way_offset){
-	  msg.data = __closest_waypoint_astar + way_offset;
+  //  ROS_INFO("PastWaypoint:%s-offset:%d, latency:%d, closest:%d", pastWaypoint?"true":"false", way_offset, config_latency_num_,closest_waypoint_astar);
+  if(pastWaypoint &&  final_waypoints_astar_.waypoints.size() > closest_waypoint_astar_ + way_offset){
+	  msg.data = closest_waypoint_astar_ + way_offset;
   }else{
-	  msg.data = __closest_waypoint_astar;
+	  msg.data = closest_waypoint_astar_;
   }
 #endif
   Pubs["closest_waypoint"].publish(msg);
@@ -234,8 +241,8 @@ void PlannerSelectorNode::callbackFromClosest(const ros::MessageEvent<std_msgs::
 }
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "planner_selector");
+	ros::init(argc, argv, "planner_selector");
 
-  decision_maker::PlannerSelectorNode _psn;
-  ros::spin();
+	decision_maker::PlannerSelectorNode _psn;
+	ros::spin();
 }

@@ -624,6 +624,9 @@ subs :
     - name : planner_selector
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
+      param: planner_selector
+         
+
 
 buttons:
   car_dpm :
@@ -1756,6 +1759,29 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+ 
+  - name  : planner_selector
+    topic : /config/PlannerSelector
+    msg   : ConfigPlannerSelector
+    vars  :
+    - name : latency_num
+      desc : latency_num
+      label: latency_num
+      min  : 0
+      max  : 200
+      v    : 10
+    - name : waypoints_num
+      desc : waypoints_num
+      label: waypoints_num
+      min  : 0
+      max  : 30
+      v    : 8
+    - name : convergence_num
+      desc : convergence_num
+      label: convergence_num
+      min  : 0.0
+      max  : 30.0
+      v    : 2.0
 
   - name  : car_kf
     topic : /config/car_kf
