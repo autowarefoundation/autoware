@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   autoware_msgs
+  euc
 )
 
 catkin_package(
