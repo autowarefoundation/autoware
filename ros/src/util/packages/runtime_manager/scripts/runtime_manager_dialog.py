@@ -101,7 +101,7 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
-		
+
 
 
 	def __init__(self, *args, **kwds):
@@ -390,7 +390,7 @@ class MyFrame(rtmgr.MyFrame):
 			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
 
 		self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
-		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'auto_pilot'),
+		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'remote_control', 'auto_pilot'),
 						 ('qs', 'interface') )
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
@@ -484,7 +484,7 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
-	
+
 
 		wx.CallAfter( self.boot_booted_cmds )
 
@@ -757,8 +757,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
-	
-	
+
+
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -3347,7 +3347,7 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
-	
+
 # psutil 3.x to 1.x backward compatibility
 def get_cpu_count():
 	try:

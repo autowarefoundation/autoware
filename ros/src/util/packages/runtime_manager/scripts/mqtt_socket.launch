@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="mqtt_socket" type="mqtt_sender" name="mqtt_sender" />
+</launch>

@@ -1,7 +1,7 @@
 #include "std_msgs/String.h"
 
 #define VEHICLEID       "1"
-#define ADDRESS         "tcp://52.243.39.113:1883"
+#define ADDRESS         "tcp://localhost:1883"
 #define CLIENTID        "vehicle"
 #define SENDER_TOPIC    "vehicle/"
 #define RECIEVER_TOPIC  "vehicle/"
