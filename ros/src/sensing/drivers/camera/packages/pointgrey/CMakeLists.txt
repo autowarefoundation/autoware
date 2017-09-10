@@ -28,6 +28,7 @@ catkin_package(
 if(EXISTS "/usr/include/flycapture")
 include_directories(
 	/usr/include/flycapture
+	${catkin_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
 )
 add_executable(grasshopper3 nodes/grasshopper3/grasshopper3.cpp)
