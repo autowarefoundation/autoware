@@ -168,7 +168,7 @@ void ObstacleSim::displayObstacleMarker(const geometry_msgs::Point& p1, const ge
 
   marker.scale.x = 0.1;
   marker.color.a = 1.0;
-  marker.color.r = 0.0;
+  marker.color.r = 1.0;
   marker.color.g = 1.0;
   marker.color.b = 0.0;
   //marker.lifetime = ros::Duration(0.1);
