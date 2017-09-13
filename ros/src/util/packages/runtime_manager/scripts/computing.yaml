@@ -517,6 +517,7 @@ subs :
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1479,6 +1480,14 @@ params :
     - name  : use_crosswalk_detection
       desc  : use_crosswalk_detection desc sample
       label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : enable_multiple_crosswalk_detection
+      desc  : enable_multiple_crosswalk_detection desc sample
+      label : Enable Multiple Crosswalk Detection
       kind  : checkbox
       v     : False
       cmd_param:

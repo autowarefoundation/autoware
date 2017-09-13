@@ -307,7 +307,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-        must        : True
   - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile

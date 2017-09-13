@@ -3,7 +3,14 @@
 // ---------------------------------------------------------------------------
 // Tracker. Manage tracks. Create, remove, update.
 // ---------------------------------------------------------------------------
-KfLidarTracker::KfLidarTracker(float in_time_delta,	float in_acceleration_noise_magnitude, float in_distance_threshold, float in_tracker_merging_threshold, size_t maximum_allowed_skipped_frames, size_t maximum_trace_length, bool pose_estimation) :
+KfLidarTracker::KfLidarTracker(float in_time_delta,
+		float in_acceleration_noise_magnitude,
+		float in_distance_threshold,
+		float in_tracker_merging_threshold,
+		size_t maximum_allowed_skipped_frames,
+		size_t maximum_trace_length,
+		bool pose_estimation,
+		size_t maximum_track_id) :
 	time_delta_(in_time_delta),
 	acceleration_noise_magnitude_(in_acceleration_noise_magnitude),
 	distance_threshold_(in_distance_threshold),
@@ -11,7 +18,8 @@ KfLidarTracker::KfLidarTracker(float in_time_delta,	float in_acceleration_noise_
 	maximum_allowed_skipped_frames_(maximum_allowed_skipped_frames),
 	maximum_trace_length_(maximum_trace_length),
 	next_track_id_(0),
-	pose_estimation_(false)
+	pose_estimation_(false),
+	maximum_track_id_(maximum_track_id)
 {
 }
 
@@ -162,24 +170,31 @@ void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 										acceleration_noise_magnitude_,
 										next_track_id_++)
 								);
-				if (next_track_id_ > 200)
+				if (next_track_id_ > maximum_track_id_)
 					next_track_id_ = 0;
 				una++;
 			}
 		}
-		//std::cout << "Trackers added: " << una << std::endl;
-
-		//finally check trackers among them
+		//finally check trackers among them. Remove previously merged objects, causing ID duplication
 		for(size_t i=0; i< tracks_.size(); i++)
-			std::cout << tracks_[i].track_id << ",";
-		std::cout << std::endl << "Check" << std::endl;
+		{
+			for (size_t j=0; j< tracks_.size(); j++)
+			{
+				if (i != j &&
+					 (tracks_[i].GetCluster().centroid_point.point.x == tracks_[j].GetCluster().centroid_point.point.x &&
+					  tracks_[i].GetCluster().centroid_point.point.y == tracks_[j].GetCluster().centroid_point.point.y &&
+					  tracks_[i].GetCluster().centroid_point.point.z == tracks_[j].GetCluster().centroid_point.point.z
+					 )
+					)
+				{
+					tracks_.erase(tracks_.begin() + j);
+					j--;
+				}
+			}
+		}
 		CheckAllTrackersForMerge(final_tracks);
 
 		tracks_ = final_tracks;
-
-		for(size_t i=0; i< tracks_.size(); i++)
-			std::cout << tracks_[i].track_id << ",";
-		std::cout << std::endl;
 
 		//std::cout << "Final Trackers " << tracks_.size() << std::endl;
 	}//endof matching

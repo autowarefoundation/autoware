@@ -102,6 +102,7 @@ class KfLidarTracker
 	size_t maximum_allowed_skipped_frames_;
 	size_t maximum_trace_length_;
 	size_t next_track_id_;
+	size_t maximum_track_id_;
 
 	bool pose_estimation_;
 	void CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>& in_trackers, std::vector<bool>& in_out_visited_trackers, std::vector<size_t>& out_merge_indices, double in_merge_threshold);
@@ -109,7 +110,14 @@ class KfLidarTracker
 	void MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers);
 	void CreatePolygonFromPoints(const geometry_msgs::Polygon& in_points, boost_polygon& out_polygon);
 public:
-	KfLidarTracker(float in_time_delta, float accel_noise_mag, float dist_thres = 3, float tracker_merging_threshold=2, size_t maximum_allowed_skipped_frames = 10, size_t max_trace_length = 10, bool in_pose_estimation = false);
+	KfLidarTracker(float in_time_delta,
+					float accel_noise_mag,
+					float dist_thres = 3,
+					float tracker_merging_threshold=2,
+					size_t maximum_allowed_skipped_frames = 10,
+					size_t max_trace_length = 10,
+					bool in_pose_estimation = false,
+					size_t maximum_track_id = 200);
 	~KfLidarTracker(void);
 
 	enum DistType
