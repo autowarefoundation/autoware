@@ -14,7 +14,7 @@
   <arg name="potential_weight" default="10.0" />
   <arg name="lateral_goal_range" default="0.5" /> <!-- meter -->
   <arg name="longitudinal_goal_range" default="2.0" /> <!-- meter -->
-  <arg name="goal_angle_range" default="24.0" /> <!-- degree -->
+  <arg name="goal_angle_range" default="48.0" /> <!-- degree -->
   <arg name="time_limit" default="5.0" />
   <arg name="use_back" default="false" />
   <arg name="use_wavefront_heuristic" default="false" />
@@ -25,11 +25,11 @@
   <arg name="obstacle_detect_count" default="8" />
   <arg name="avoid_distance" default="13" />
   <arg name="avoid_velocity_limit_mps" default="4.5" />
-  <arg name="upper_bound_ratio" default="1.04" />
+  <arg name="upper_bound_ratio" default="1.20" />
   <arg name="avoidance" default="true" /> <!-- always avoid regardless of current state -->
   <arg name="switch_path" default="true" /> <!-- generate avoiding path and follow it -->
   
-  <node pkg="astar_planner" type="obstacle_avoid" name="obstacle_avoid" output="screen">
+  <node pkg="astar_planner" type="obstacle_avoid" name="obstacle_avoid" output="log">
     <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
     <param name="map_frame" value="$(arg map_frame)" />
     <param name="angle_size" value="$(arg angle_size)" />
