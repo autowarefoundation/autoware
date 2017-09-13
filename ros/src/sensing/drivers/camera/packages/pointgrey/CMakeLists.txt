@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 find_package(OpenCV REQUIRED)
+find_package(XercesC)
 
 ###################################
 ## catkin specific configuration ##
@@ -41,11 +42,13 @@ message("'flycapture2' is not installed. 'grasshopper3' will not be built.")
 endif()
 
 
-if(EXISTS "/usr/include/ladybug")
+if(EXISTS "/usr/include/ladybug" AND ${XercesC_FOUND})
 include_directories(
 	/usr/include/ladybug
 	nodes/ladybug
+	${catkin_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
+  ${XercesC_INCLUDE_DIRS}
 )
 
 add_executable(lady_bug
@@ -53,7 +56,7 @@ add_executable(lady_bug
 )
 
 target_link_libraries(lady_bug
-   ${catkin_LIBRARIES} ${OpenCV_LIBS}
+   ${catkin_LIBRARIES} ${OpenCV_LIBS} ${XercesC_LIBRARIES}
    flycapture
    ladybug
    xerces-c
