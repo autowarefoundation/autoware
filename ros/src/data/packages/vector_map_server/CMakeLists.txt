@@ -8,8 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   vector_map_msgs
   vector_map
-  jsk_recognition_msgs
-  jsk_rviz_plugins
   message_generation
 )
 
@@ -51,8 +49,6 @@ generate_messages(
   geometry_msgs
   autoware_msgs
   vector_map_msgs
-  jsk_recognition_msgs
-  jsk_rviz_plugins
 )
 
 catkin_package(
@@ -76,3 +72,9 @@ add_dependencies(vector_map_client
   vector_map_server_generate_messages_cpp
   ${catkin_EXPORTED_TARGETS}
 )
+
+
+install(TARGETS vector_map_server vector_map_client
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
