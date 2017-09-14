@@ -14,7 +14,7 @@
   <arg name="potential_weight" default="10.0" />
   <arg name="lateral_goal_range" default="0.5" /> <!-- meter -->
   <arg name="longitudinal_goal_range" default="2.0" /> <!-- meter -->
-  <arg name="goal_angle_range" default="24.0" /> <!-- degree -->
+  <arg name="goal_angle_range" default="48.0" /> <!-- degree -->
   <arg name="time_limit" default="5.0" />
   <arg name="use_back" default="false" />
   <arg name="use_wavefront_heuristic" default="false" />
@@ -25,7 +25,7 @@
   <arg name="obstacle_detect_count" default="8" />
   <arg name="avoid_distance" default="13" />
   <arg name="avoid_velocity_limit_mps" default="4.5" />
-  <arg name="upper_bound_ratio" default="1.04" />
+  <arg name="upper_bound_ratio" default="1.20" />
   <arg name="avoidance" default="true" /> <!-- always avoid regardless of current state -->
   <arg name="switch_path" default="true" /> <!-- generate avoiding path and follow it -->
   
@@ -57,6 +57,19 @@
     <param name="upper_bound_ratio" value="$(arg upper_bound_ratio)" />
     <param name="avoidance" value="$(arg avoidance)" />
     <param name="change_path" value="$(arg switch_path)" />
+  </node>
+
+  <!-- obstacle simulation node -->
+  <arg name="obstacle_height" default="1.0" />
+  <arg name="obstacle_width" default="1.0" />
+  <arg name="points_interval" default="0.1" />
+  <arg name="obstacle_frame" default="/velodyne" />
+
+  <node pkg="astar_planner" type="obstacle_sim" name="obstacle_sim" output="screen">
+    <param name="obstacle_height" value="$(arg obstacle_height)" />
+    <param name="obstacle_width" value="$(arg obstacle_width)" />
+    <param name="points_interval" value="$(arg points_interval)" />
+    <param name="obstacle_frame" value="$(arg obstacle_frame)" />
   </node>
 
 </launch>

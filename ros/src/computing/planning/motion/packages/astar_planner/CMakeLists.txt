@@ -38,4 +38,6 @@ add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp nodes/obst
 target_link_libraries(obstacle_avoid ${catkin_LIBRARIES})
 add_dependencies(obstacle_avoid ${catkin_EXPORTED_TARGETS})
 
-
+add_executable(obstacle_sim nodes/obstacle_avoid/obstacle_sim/obstacle_sim.cpp nodes/obstacle_avoid/obstacle_sim/obstacle_sim_node.cpp)
+target_link_libraries(obstacle_sim ${catkin_LIBRARIES})
+add_dependencies(obstacle_sim ${catkin_EXPORTED_TARGETS})
