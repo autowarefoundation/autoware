@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "ff_waypoint_follower_core.h"
-#include "waypoint_follower_msgs/LaneArray.h"
+#include "autoware_msgs/LaneArray.h"
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>
@@ -266,7 +266,7 @@ void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedC
 	bNewBehaviorState = true;
 }
 
-void FFSteerControl::callbackGetCurrentTrajectory(const waypoint_follower_msgs::laneConstPtr &msg)
+void FFSteerControl::callbackGetCurrentTrajectory(const autoware_msgs::laneConstPtr &msg)
 {
 	m_State.m_Path.clear();
 	for(unsigned int i = 0 ; i < msg->waypoints.size(); i++)

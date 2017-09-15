@@ -10,7 +10,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
-  runtime_manager
+  autoware_msgs
 )
 
 find_package(PCL 1.2 REQUIRED)
@@ -21,7 +21,7 @@ set(QT_LIBRARIES Qt5::Core)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS autoware_msgs
 )
 
 include_directories(
@@ -36,5 +36,5 @@ add_definitions(${PCL_DEFINITIONS})
 
 add_executable(points2polygon nodes/points2polygon/points2polygon.cpp)
 target_link_libraries(points2polygon ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${Qt5Core_LIBRARIES})
-add_dependencies(points2polygon runtime_manager_generate_messages_cpp)
+add_dependencies(points2polygon ${catkin_EXPORTED_TARGETS})
 endif()

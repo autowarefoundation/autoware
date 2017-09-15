@@ -71,9 +71,9 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 
-#include <runtime_manager/ConfigNdt.h>
+#include <autoware_msgs/ConfigNdt.h>
 
-#include <ndt_localizer/ndt_stat.h>
+#include <autoware_msgs/ndt_stat.h>
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -185,7 +185,7 @@ static std_msgs::Float32 time_ndt_matching;
 static int _queue_size = 1000;
 
 static ros::Publisher ndt_stat_pub;
-static ndt_localizer::ndt_stat ndt_stat_msg;
+static autoware_msgs::ndt_stat ndt_stat_msg;
 
 static double predict_pose_error = 0.0;
 
@@ -217,7 +217,7 @@ static nav_msgs::Odometry odom;
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
 
-static void param_callback(const runtime_manager::ConfigNdt::ConstPtr& input)
+static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {
@@ -1363,7 +1363,7 @@ int main(int argc, char** argv)
   estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
   time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
-  ndt_stat_pub = nh.advertise<ndt_localizer::ndt_stat>("/ndt_stat", 1000);
+  ndt_stat_pub = nh.advertise<autoware_msgs::ndt_stat>("/ndt_stat", 1000);
   ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
   // Subscribers

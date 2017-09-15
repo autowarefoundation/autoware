@@ -133,7 +133,7 @@ void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg)
   _initial_set = true;
 }
 
-void waypointCallback(const waypoint_follower_msgs::laneConstPtr &msg)
+void waypointCallback(const autoware_msgs::laneConstPtr &msg)
 {
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);

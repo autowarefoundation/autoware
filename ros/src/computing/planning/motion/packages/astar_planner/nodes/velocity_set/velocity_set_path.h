@@ -31,14 +31,14 @@
 #ifndef VELOCITY_SET_PATH_H
 #define VELOCITY_SET_PATH_H
 
-#include <waypoint_follower_msgs/lane.h>
+#include <autoware_msgs/lane.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 class VelocitySetPath
 {
  private:
-  waypoint_follower_msgs::lane prev_waypoints_;
-  waypoint_follower_msgs::lane new_waypoints_;
-  waypoint_follower_msgs::lane temporal_waypoints_;
+  autoware_msgs::lane prev_waypoints_;
+  autoware_msgs::lane new_waypoints_;
+  autoware_msgs::lane temporal_waypoints_;
   bool set_path_;
   double current_vel_;
 
@@ -58,24 +58,25 @@ class VelocitySetPath
   void changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint);
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
+  void resetFlag();
 
   // ROS Callbacks
-  void waypointsCallback(const waypoint_follower_msgs::laneConstPtr& msg);
+  void waypointsCallback(const autoware_msgs::laneConstPtr& msg);
   void currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr& msg);
 
   double calcInterval(const int begin, const int end) const;
 
-  waypoint_follower_msgs::lane getPrevWaypoints() const
+  autoware_msgs::lane getPrevWaypoints() const
   {
     return prev_waypoints_;
   }
 
-  waypoint_follower_msgs::lane getNewWaypoints() const
+  autoware_msgs::lane getNewWaypoints() const
   {
     return new_waypoints_;
   }
 
-  waypoint_follower_msgs::lane getTemporalWaypoints() const
+  autoware_msgs::lane getTemporalWaypoints() const
   {
     return temporal_waypoints_;
   }

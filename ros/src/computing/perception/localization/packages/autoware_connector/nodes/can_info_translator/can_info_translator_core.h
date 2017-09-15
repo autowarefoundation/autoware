@@ -39,7 +39,7 @@
 #include <tf/transform_broadcaster.h>
 
 // User Defined Includes
-#include "vehicle_socket/CanInfo.h"
+#include "autoware_msgs/CanInfo.h"
 
 namespace autoware_connector
 {
@@ -143,15 +143,15 @@ private:
   // tf::TransformBroadcaster odom_broadcaster_;
 
   // callbacks
-  void callbackFromCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
+  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishVelocity(const vehicle_socket::CanInfoConstPtr &msg);
-  void publishVelocityViz(const vehicle_socket::CanInfoConstPtr &msg);
-  void publishOdometry(const vehicle_socket::CanInfoConstPtr &msg);
+  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishOdometry(const autoware_msgs::CanInfoConstPtr &msg);
 };
 
 inline double kmph2mps(double velocity_kmph)

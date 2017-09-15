@@ -23,8 +23,14 @@ include_directories(
 )
 
 add_library(vector_map lib/vector_map/vector_map.cpp)
-add_dependencies(vector_map
-  geometry_msgs_generate_messages_cpp
-  visualization_msgs_generate_messages_cpp
-  vector_map_msgs_generate_messages_cpp
-  )
+add_dependencies(vector_map ${catkin_EXPORTED_TARGETS})
+
+## Install executables and/or libraries
+install(TARGETS vector_map
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

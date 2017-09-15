@@ -19,18 +19,22 @@
 namespace integrated_viewer
 {
   const QString     ImageViewerPlugin::kImageDataType               = "sensor_msgs/Image";
-  const QString     ImageViewerPlugin::kRectDataTypeBase            = "cv_tracker_msgs/image_obj";
-  const QString     ImageViewerPlugin::kPointDataType               = "points2image/PointsImage";
-  const QString     ImageViewerPlugin::kLaneDataType                = "lane_detector/ImageLaneObjects";
+  const QString     ImageViewerPlugin::kRectDataTypeBase            = "autoware_msgs/image_obj";
+  const QString     ImageViewerPlugin::kPointDataType               = "autoware_msgs/PointsImage";
+  const QString     ImageViewerPlugin::kLaneDataType                = "autoware_msgs/ImageLaneObjects";
   const QString     ImageViewerPlugin::kBlankTopic                  = "-----";
-  const std::string ImageViewerPlugin::kRectDataTypeImageObjRanged  = "cv_tracker_msgs/image_obj_ranged";
-  const std::string ImageViewerPlugin::kRectDataTypeImageObjTracked = "cv_tracker_msgs/image_obj_tracked";
+  const std::string ImageViewerPlugin::kRectDataTypeImageObjRanged  = "autoware_msgs/image_obj_ranged";
+  const std::string ImageViewerPlugin::kRectDataTypeImageObjTracked = "autoware_msgs/image_obj_tracked";
 
   ImageViewerPlugin::ImageViewerPlugin(QWidget* parent)
     : rviz::Panel(parent) {
 
     // Initialize Form
     ui_.setupUi(this);
+
+    // Set point size parameter
+    ui_.point_size_spin_box_->setMinimum(2); // minimum point size is 2x2
+    ui_.point_size_spin_box_->setValue(3);   // Set default size to 3
 
     // Load default image
     default_image_ = cv::imread(STR(IMAGE_VIEWER_DEFAULT_IMAGE));
@@ -228,7 +232,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj_ranged
-      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj_ranged>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<autoware_msgs::image_obj_ranged>(selected_topic,
                                                                        1,
                                                                        &ImageViewerPlugin::ImageObjRangedCallback,
                                                                        this);
@@ -238,7 +242,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj_tracked
-      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj_tracked>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<autoware_msgs::image_obj_tracked>(selected_topic,
                                                                        1,
                                                                        &ImageViewerPlugin::ImageObjTrackedCallback,
                                                                        this);
@@ -247,7 +251,7 @@ namespace integrated_viewer
       image_obj_ranged_msg_  = NULL;
       image_obj_tracked_msg_ = NULL;
       // this topic type is image_obj
-      rect_sub_ = node_handle_.subscribe<cv_tracker_msgs::image_obj>(selected_topic,
+      rect_sub_ = node_handle_.subscribe<autoware_msgs::image_obj>(selected_topic,
                                                                 1,
                                                                 &ImageViewerPlugin::ImageObjCallback,
                                                                 this);
@@ -257,15 +261,15 @@ namespace integrated_viewer
   } // ImageViewerPlugin::on_rect_topic_combo_box__activated()
   
 
-  void ImageViewerPlugin::ImageObjCallback(const cv_tracker_msgs::image_obj::ConstPtr& msg) {
+  void ImageViewerPlugin::ImageObjCallback(const autoware_msgs::image_obj::ConstPtr& msg) {
     image_obj_msg_ = msg;
   } // ImageViewerPlugin::ImageObjCallback()
 
-  void ImageViewerPlugin::ImageObjRangedCallback(const cv_tracker_msgs::image_obj_ranged::ConstPtr &msg) {
+  void ImageViewerPlugin::ImageObjRangedCallback(const autoware_msgs::image_obj_ranged::ConstPtr &msg) {
     image_obj_ranged_msg_ = msg;
   } // ImageViewerPlugin::ImageObjRangedCallback()
 
-  void ImageViewerPlugin::ImageObjTrackedCallback(const cv_tracker_msgs::image_obj_tracked::ConstPtr &msg) {
+  void ImageViewerPlugin::ImageObjTrackedCallback(const autoware_msgs::image_obj_tracked::ConstPtr &msg) {
     image_obj_tracked_msg_ = msg;
   } // ImageViewerPlugin::ImageObjTrackedCallback()
 
@@ -281,7 +285,7 @@ namespace integrated_viewer
     }
 
     // if selected topic is not blank or empty , start callback function
-    point_sub_ = node_handle_.subscribe<points2image::PointsImage>(selected_topic,
+    point_sub_ = node_handle_.subscribe<autoware_msgs::PointsImage>(selected_topic,
                                                                    1,
                                                                    &ImageViewerPlugin::PointCallback,
                                                                    this);
@@ -289,7 +293,7 @@ namespace integrated_viewer
   } // ImageViewerPlugin::on_point_topic_combo_box__activated()
 
 
-  void ImageViewerPlugin::PointCallback(const points2image::PointsImage::ConstPtr &msg) {
+  void ImageViewerPlugin::PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg) {
     points_msg_ = msg;
   } // ImageViewerPlugin::PointCallback()
 
@@ -305,14 +309,14 @@ namespace integrated_viewer
     }
 
     // if selected topic is not blank or emtpy, start callback function
-    lane_sub_ = node_handle_.subscribe<lane_detector::ImageLaneObjects>(selected_topic,
+    lane_sub_ = node_handle_.subscribe<autoware_msgs::ImageLaneObjects>(selected_topic,
                                                                         1,
                                                                         &ImageViewerPlugin::LaneCallback,
                                                                         this);
   }  // void ImageViewerPlugin::on_lane_topic_combo_box__activated()
 
 
-  void ImageViewerPlugin::LaneCallback(const lane_detector::ImageLaneObjects::ConstPtr& msg)  {
+  void ImageViewerPlugin::LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg)  {
     lane_msg_ = msg;
   }
 
@@ -325,7 +329,8 @@ namespace integrated_viewer
       rects_drawer_.DrawImageObjTracked(image_obj_tracked_msg_, viewed_image_);
 
       // Draw points on the image
-      points_drawer_.Draw(points_msg_, viewed_image_);
+      int point_size = ui_.point_size_spin_box_->value();
+      points_drawer_.Draw(points_msg_, viewed_image_, point_size);
 
       // Draw lane on the image
       lane_drawer_.Draw(lane_msg_, viewed_image_);

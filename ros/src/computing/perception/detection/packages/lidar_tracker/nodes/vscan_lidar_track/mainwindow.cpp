@@ -269,7 +269,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     scansub=new ROSSub<sensor_msgs::LaserScanConstPtr>("/scan",1000,10,this);
-    //detectionsub=new ROSSub<cv_tracker_msgs::obj_label::ConstPtr>("obj_label",1000,10,this);
+    //detectionsub=new ROSSub<autoware_msgs::obj_label::ConstPtr>("obj_label",1000,10,this);
     boxessub=new ROSSub<jsk_recognition_msgs::BoundingBoxArray::ConstPtr>("bounding_boxes",1000,10,this);
     tfsub=new ROSTFSub("/world","/velodyne",10,this);
     tfMap2Lidarsub=new ROSTFSub("/velodyne","/map",10,this); // obj_pose is published into "map" frame
@@ -333,7 +333,7 @@ void MainWindow::slotReceive()
 
 void MainWindow::slotReceiveDetection()
 {
-    cv_tracker_msgs::obj_label::ConstPtr msg=detectionsub->getMessage();
+    autoware_msgs::obj_label::ConstPtr msg=detectionsub->getMessage();
 
     for (const auto& point : msg->reprojected_pos) {
         int msec=(msg->header.stamp.sec)%(24*60*60)*1000+(msg->header.stamp.nsec)/1000000;

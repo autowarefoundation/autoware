@@ -37,10 +37,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <runtime_manager/ConfigCarKf.h>
-#include <cv_tracker_msgs/image_obj_ranged.h>
+#include <autoware_msgs/ConfigCarKf.h>
+#include <autoware_msgs/image_obj_ranged.h>
 
-#include <cv_tracker_msgs/image_obj_tracked.h>
+#include <autoware_msgs/image_obj_tracked.h>
 #include <std_msgs/Header.h>
 
 //TRACKING STUFF
@@ -92,7 +92,7 @@ static bool 		USE_ORB;
 
 static bool 		track_ready_;
 static bool 		detect_ready_;
-static cv_tracker_msgs::image_obj_tracked kf_objects_msg_;
+static autoware_msgs::image_obj_tracked kf_objects_msg_;
 
 struct kstate
 {
@@ -819,7 +819,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<ObjectDete
 
 	//ROS
 	int num = tracked_detections.size();
-	std::vector<cv_tracker_msgs::image_rect_ranged> rect_ranged_array;
+	std::vector<autoware_msgs::image_rect_ranged> rect_ranged_array;
 	std::vector<int> real_data(num,0);
 	std::vector<int> obj_id(num, 0);
 	std::vector<int> lifespan(num, 0);
@@ -828,7 +828,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<ObjectDete
 	for (size_t i = 0; i < tracked_detections.size(); i++)
 	{
 		kstate od = tracked_detections[i];
-		cv_tracker_msgs::image_rect_ranged rect_ranged_;
+		autoware_msgs::image_rect_ranged rect_ranged_;
 
 		//od.rect contains x,y, width, height
 		rectangle(image, od.pos, od.color, 3);
@@ -850,7 +850,7 @@ void trackAndDrawObjects(cv::Mat& image, int frameNumber, std::vector<ObjectDete
 		//ENDROS
 	}
 	//more ros
-	cv_tracker_msgs::image_obj_tracked kf_objects_msg;
+	autoware_msgs::image_obj_tracked kf_objects_msg;
 
 	kf_objects_msg.type = object_type;
 	kf_objects_msg.total_num = num;
@@ -882,12 +882,12 @@ void image_callback(const sensor_msgs::Image& image_source)
 	_counter++;
 }
 
-void detections_callback(cv_tracker_msgs::image_obj_ranged image_objects_msg)
+void detections_callback(autoware_msgs::image_obj_ranged image_objects_msg)
 {
 	if(!detect_ready_)
 	{
 		unsigned int num = image_objects_msg.obj.size();
-		std::vector<cv_tracker_msgs::image_rect_ranged> objects = image_objects_msg.obj;
+		std::vector<autoware_msgs::image_rect_ranged> objects = image_objects_msg.obj;
 		object_type = image_objects_msg.type;
 		image_objects_header = image_objects_msg.header;
 		//points are X,Y,W,H and repeat for each instance
@@ -918,7 +918,7 @@ void detections_callback(cv_tracker_msgs::image_obj_ranged image_objects_msg)
 	publish_if_possible();
 }
 
-static void kf_config_cb(const runtime_manager::ConfigCarKf::ConstPtr& param)
+static void kf_config_cb(const autoware_msgs::ConfigCarKf::ConstPtr& param)
 {
 	if (param->initial_lifespan > 0)
 		INITIAL_LIFESPAN	= param->initial_lifespan;
@@ -962,7 +962,7 @@ int kf_main(int argc, char* argv[])
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	image_objects = n.advertise<cv_tracker_msgs::image_obj_tracked>("image_obj_tracked", 1);
+	image_objects = n.advertise<autoware_msgs::image_obj_tracked>("image_obj_tracked", 1);
 
 #if (CV_MAJOR_VERSION == 3)
 	generateColors(_colors, 25);

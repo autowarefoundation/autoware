@@ -9,20 +9,10 @@ execute_process(
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   std_msgs
-  message_generation
+  autoware_msgs
 )
 FIND_PACKAGE(CUDA)
 find_package(OpenCV REQUIRED)
-
-add_message_files(
-  FILES
-  ImageObjects.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -std=c++11 -DUSE_GPU -DCUBIN_PATH=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin ${CMAKE_CXX_FLAGS}")
 SET(CMAKE_NVCC_FLAGS "-use_fast_math")
@@ -49,7 +39,6 @@ ADD_LIBRARY(libdpm_ocv
   gpu/matching_gpu.cpp
   gpu/resizeimg_gpu.cpp
   gpu/routine_gpu.cpp
-
   cpu/dpm_ocv_cpu.cpp
 )
 
@@ -128,7 +117,7 @@ TARGET_LINK_LIBRARIES(libdpm_ocv
 ENDIF()
 
 SET_TARGET_PROPERTIES(libdpm_ocv PROPERTIES OUTPUT_NAME dpm_ocv)
-ADD_DEPENDENCIES(libdpm_ocv libdpm_ocv_generate_messages_cpp)
+ADD_DEPENDENCIES(libdpm_ocv ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

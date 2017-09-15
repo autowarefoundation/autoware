@@ -47,11 +47,11 @@
 #include <std_msgs/Int8.h>
 #include <std_msgs/Int32.h>
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower_msgs/LaneArray.h"
-#include "vehicle_socket/CanInfo.h"
+#include "autoware_msgs/LaneArray.h"
+#include "autoware_msgs/CanInfo.h"
 
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -212,16 +212,16 @@ protected:
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
-	void callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg);
+	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg);
 	void callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg);
+	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetEmergencyStop(const std_msgs::Int8& msg);
 	void callbackGetTrafficLight(const std_msgs::Int8& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);
-	void callbackGetAStarPath(const waypoint_follower_msgs::LaneArrayConstPtr& msg);
-	void callbackGetWayPlannerPath(const waypoint_follower_msgs::LaneArrayConstPtr& msg);
+	void callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg);
+	void callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetCostMap(const nav_msgs::OccupancyGrid& msg);
 
 
@@ -245,7 +245,7 @@ protected:
   //Helper Functions
   void UpdatePlanningParams();
 
-  lidar_tracker::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
+  autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
 
 #ifdef DATASET_GENERATION_BLOCK
 private:

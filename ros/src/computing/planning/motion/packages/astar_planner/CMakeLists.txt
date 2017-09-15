@@ -7,9 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   pcl_conversions
   tf
-  runtime_manager
   waypoint_follower
-  waypoint_follower_msgs
+  autoware_msgs 
   vector_map
 )
 
@@ -17,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs tf runtime_manager waypoint_follower waypoint_follower_msgs vector_map
+  CATKIN_DEPENDS roscpp std_msgs tf waypoint_follower autoware_msgs vector_map
 )
 
 ###########
@@ -33,12 +32,10 @@ include_directories(
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp nodes/velocity_set/velocity_set_path.cpp nodes/velocity_set/velocity_set_info.cpp nodes/velocity_set/libvelocity_set.cpp)
 target_link_libraries(velocity_set ${catkin_LIBRARIES})
 add_dependencies(velocity_set 
-waypoint_follower_msgs_generate_messages_cpp
-runtime_manager_generate_messages_cpp)
+${catkin_EXPORTED_TARGETS})
 
-add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp)
-target_link_libraries(obstacle_avoid  ${catkin_LIBRARIES})
-add_dependencies(obstacle_avoid 
-waypoint_follower_msgs_generate_messages_cpp)
+add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp nodes/obstacle_avoid/astar_search.cpp nodes/obstacle_avoid/search_info_ros.cpp nodes/obstacle_avoid/astar_util.cpp)
+target_link_libraries(obstacle_avoid ${catkin_LIBRARIES})
+add_dependencies(obstacle_avoid ${catkin_EXPORTED_TARGETS})
 
 

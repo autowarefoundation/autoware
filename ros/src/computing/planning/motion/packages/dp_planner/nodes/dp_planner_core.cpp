@@ -95,8 +95,8 @@ PlannerX::PlannerX()
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
 
-	pub_LocalPath = nh.advertise<waypoint_follower_msgs::lane>("final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<waypoint_follower_msgs::lane>("base_waypoints", 100,true);
+	pub_LocalPath = nh.advertise<autoware_msgs::lane>("final_waypoints", 100,true);
+	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("base_waypoints", 100,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 100,true);
 
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
@@ -465,7 +465,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	point.point.y = msg->point.y+m_OriginPos.position.y;
 	point.point.z = msg->point.z+m_OriginPos.position.z;
 
-	lidar_tracker::CloudClusterArray clusters_array;
+	autoware_msgs::CloudClusterArray clusters_array;
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, height, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
@@ -597,9 +597,9 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 #endif
 }
 
-lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
+autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
 {
-	lidar_tracker::CloudCluster cluster;
+	autoware_msgs::CloudCluster cluster;
 	cluster.centroid_point.point = centerPose.point;
 	cluster.dimensions.x = x_rand;
 	cluster.dimensions.y = y_rand;
@@ -631,7 +631,7 @@ lidar_tracker::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const dou
 	return cluster;
 }
 
-void PlannerX::callbackGetCloudClusters(const lidar_tracker::CloudClusterArrayConstPtr& msg)
+void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg)
 {
 	timespec timerTemp;
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);
@@ -681,7 +681,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 	//std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
-void PlannerX::callbackGetCanInfo(const vehicle_socket::CanInfoConstPtr &msg)
+void PlannerX::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * m_LocalPlanner.m_CarInfo.max_steer_angle / m_LocalPlanner.m_CarInfo.max_steer_value;
@@ -730,7 +730,7 @@ void PlannerX::callbackGetOutsideControl(const std_msgs::Int8& msg)
 	m_bOutsideControl  = msg.data;
 }
 
-void PlannerX::callbackGetAStarPath(const waypoint_follower_msgs::LaneArrayConstPtr& msg)
+void PlannerX::callbackGetAStarPath(const autoware_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{
@@ -753,7 +753,7 @@ void PlannerX::callbackGetAStarPath(const waypoint_follower_msgs::LaneArrayConst
 	}
 }
 
-void PlannerX::callbackGetWayPlannerPath(const waypoint_follower_msgs::LaneArrayConstPtr& msg)
+void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg)
 {
 	if(msg->lanes.size() > 0)
 	{
@@ -1026,7 +1026,7 @@ void PlannerX::PlannerMainLoop()
 		}
 
 
-		waypoint_follower_msgs::lane current_trajectory;
+		autoware_msgs::lane current_trajectory;
 		std_msgs::Int32 closest_waypoint;
 		PlannerHNS::RelativeInfo info;
 		PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_Path, m_LocalPlanner.state, info);

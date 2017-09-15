@@ -4,13 +4,11 @@ project(op_simulator_perception)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  runtime_manager
-  lidar_tracker
   pcl_conversions
   pcl_ros
-  map_file
   op_utility
   op_planner
+  autoware_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -22,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager map_file op_utility op_planner
+  CATKIN_DEPENDS roscpp geometry_msgs op_utility op_planner autoware_msgs
   DEPENDS system_lib
 )
 
@@ -48,6 +46,5 @@ add_executable(op_simulator_perception nodes/OpenPlannerSimulatorPerception.cpp 
 target_link_libraries(op_simulator_perception ${catkin_LIBRARIES})
 
 add_dependencies(op_simulator_perception 
-runtime_manager_generate_messages_cpp
-map_file_generate_messages_cpp
+autoware_msgs_generate_messages_cpp
 )
