@@ -38,6 +38,11 @@ subs :
           border : 4
           flags  : [ all, no_category, nl ]
 
+    - name : vector_map_server
+      desc : RUN "vector_map_server" Services
+      cmd : rosrun vector_map_server vector_map_server
+      param : other
+
   - name : Position
     subs :
     - name  : pos_downloader
