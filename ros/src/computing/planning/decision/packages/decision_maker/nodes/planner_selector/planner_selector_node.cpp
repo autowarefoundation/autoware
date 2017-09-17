@@ -40,6 +40,7 @@ private:
   unsigned int 	config_latency_num_;
   unsigned int 	config_waypoints_num_;
   double 	config_convergence_num_;
+  double current_velocity_;
 
   bool existWaypoints(const int _config_waypoints_num); 
 
@@ -60,6 +61,7 @@ public:
   void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event);
   void callbackFromLattice(const std_msgs::Int32 &msg);
   void callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg);
+  void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
 };
 
 void PlannerSelectorNode::initROS()
@@ -77,7 +79,10 @@ void PlannerSelectorNode::initROS()
 
   Subs["/config/planner_selector"] = nh_.subscribe("/config/PlannerSelector", 1, &PlannerSelectorNode::callbackFromConfig, this);
 
-  Pubs["final_waypoints"] = nh_.advertise<autoware_msgs::lane>("/final_waypoints", 1);
+  Subs["current_velocity"] =
+      nh_.subscribe("current_velocity", 3, &PlannerSelectorNode::callbackFromCurrentVelocity, this);
+  
+Pubs["final_waypoints"] = nh_.advertise<autoware_msgs::lane>("/final_waypoints", 1);
   Pubs["closest_waypoint"] = nh_.advertise<std_msgs::Int32>("/closest_waypoint", 1);
 }
 
@@ -143,10 +148,11 @@ void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
   if(counter++ >= config_latency_num_)
   {
 	  counter = 0;
-	  if(way_offset>0)
+	  if(way_offset>0){
 		  way_offset--;
-	  else
+	  }else{
 		  pastWaypoint = false;
+	  }
   }
 
 
@@ -156,6 +162,10 @@ void PlannerSelectorNode::callbackFromLattice(const std_msgs::Int32 &msg)
 #endif
   // for debug
   //	ROS_INFO("\n***** EnableLattice = %d  **** \n",enableLattice_,msg.data);
+}
+inline double mps2kmph(double _mpsval)
+{
+  return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
 }
 
 void PlannerSelectorNode::callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event)
@@ -182,6 +192,18 @@ void PlannerSelectorNode::callbackFromWaypoints(const ros::MessageEvent<autoware
 			    way_offset=0;
 		    }
 	    }
+#if 0
+	    if(final_waypoints_astar_.waypoints.empty()){
+		    int _size = final_waypoints_astar_.waypoints.size();
+		    _size = _size>=5?5:_size;
+		    auto itr = final_waypoints_astar_.waypoints.begin();
+		    for(int i=0; i < 5;  i++){
+			    itr->twist.twist.linear.x =  (current_velocity_*2 + itr->twist.twist.linear.x) / 3;
+			    std::cout << "set linear velocity:" <<  mps2kmph(itr->twist.twist.linear.x)  << std::endl; 
+			    itr++;
+		    }
+	    }
+#endif
 	    Pubs["final_waypoints"].publish(final_waypoints_astar_);
     }else{
 	    Pubs["final_waypoints"].publish(*waypoints);
@@ -194,6 +216,11 @@ void PlannerSelectorNode::callbackFromWaypoints(const ros::MessageEvent<autoware
   _mutex.unlock();
 }
 
+void PlannerSelectorNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg)
+{
+	current_velocity_ = msg.twist.linear.x;
+}
+
 void PlannerSelectorNode::callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg)
 {
 	config_latency_num_ = msg.latency_num;
@@ -202,6 +229,7 @@ void PlannerSelectorNode::callbackFromConfig(const autoware_msgs::ConfigPlannerS
 
 	ROS_INFO("PARAM_SET-latency:%d, waypoints:%d, convergence:%f", config_latency_num_, config_waypoints_num_, config_convergence_num_);
 }
+
 
 
 void PlannerSelectorNode::callbackFromClosest(const ros::MessageEvent<std_msgs::Int32> &event)
