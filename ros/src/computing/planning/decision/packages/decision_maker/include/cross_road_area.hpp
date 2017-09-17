@@ -8,7 +8,7 @@
 
 #include <autoware_msgs/lane.h>
 
-namespace state_machine
+namespace decision_maker
 {
 #define CROSS_ROAD 3232
 class CrossRoadArea

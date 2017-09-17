@@ -1,5 +1,5 @@
-#ifndef __STATE_MACHINE_NODE__
-#define __STATE_MACHINE_NODE__
+#ifndef __DECISION_MAKER_NODE__
+#define __DECISION_MAKER_NODE__
 
 #include <unordered_map>
 
@@ -20,12 +20,18 @@
 
 #include <geometry_msgs/Point.h>
 
+// lib
+#include <euclidean_space.hpp>
+#include <state.hpp>
+#include <state_context.hpp>
+
 #include <cross_road_area.hpp>
 
-//#include <dynamic_reconfigure/server.h>
-//#include <state_machine/state_machineConfig.h>
 
-namespace state_machine
+//#include <dynamic_reconfigure/server.h>
+//#include <decision_maker/decision_makerConfig.h>
+
+namespace decision_maker
 {
 enum class EControl
 {
@@ -46,7 +52,7 @@ inline double mps2kmph(double _mpsval)
   return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
 }
 
-class StateMachineNode
+class DecisionMakerNode
 {
 private:
   ros::NodeHandle nh_;
@@ -124,19 +130,19 @@ private:
 
   // for ros dynamic reconfigure
   // Currently. this feature is not working.
-  // static void callbackFromDynamicReconfigure(state_machine::state_machineConfig &config, uint32_t level);
+  // static void callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level);
 
   // in near future, these function will be deprecate
   CrossRoadArea *findClosestCrossRoad(void);
 
 public:
-  StateContext *ctx;
+  state_machine::StateContext *ctx;
 
-  StateMachineNode(int argc, char **argv)
+  DecisionMakerNode(int argc, char **argv)
   {
     SimulationMode = false;
 
-    ctx = new StateContext();
+    ctx = new state_machine::StateContext();
     this->initROS(argc, argv);
 
     vector_map_init = false;
@@ -148,6 +154,6 @@ public:
   void run(void);
 };
 
-}  // namespace state_machine
+}  // namespace decision_maker
 
 #endif

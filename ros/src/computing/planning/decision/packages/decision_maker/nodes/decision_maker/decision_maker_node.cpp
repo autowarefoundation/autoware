@@ -10,8 +10,7 @@
 #include <state.hpp>
 #include <state_context.hpp>
 
-#include <state_machine_node.hpp>
-
+#include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
 #include <autoware_msgs/lane.h>
@@ -25,14 +24,14 @@
 
 // for dynamic reconfigure
 //#include <dynamic_reconfigure/server.h>
-//#include <state_machine/state_machineConfig.h>
+//#include <decision_maker/decision_makerConfig.h>
 
-namespace state_machine
+namespace decision_maker
 {
 #define DOUBLE_MAX 1.7976931348623158e308
 #define TARGET_WAYPOINTS_NUM 14
 
-CrossRoadArea *StateMachineNode::findClosestCrossRoad(void)
+CrossRoadArea *DecisionMakerNode::findClosestCrossRoad(void)
 {
   CrossRoadArea *_area = nullptr;
 
@@ -75,7 +74,7 @@ CrossRoadArea *StateMachineNode::findClosestCrossRoad(void)
   return _area;
 }
 
-bool StateMachineNode::isInsideArea(geometry_msgs::Point pt)
+bool DecisionMakerNode::isInsideArea(geometry_msgs::Point pt)
 {
   // simply implementation
   //
@@ -98,30 +97,30 @@ bool StateMachineNode::isInsideArea(geometry_msgs::Point pt)
   return false;
 }
 
-void StateMachineNode::initStateMsgs(void)
+void DecisionMakerNode::initStateMsgs(void)
 {
 }
 
-void StateMachineNode::initROS(int argc, char **argv)
+void DecisionMakerNode::initROS(int argc, char **argv)
 {
   // status subscriber
-  Subs["current_pose"] = nh_.subscribe("current_pose", 20, &StateMachineNode::callbackFromCurrentPose, this);
+  Subs["current_pose"] = nh_.subscribe("current_pose", 20, &DecisionMakerNode::callbackFromCurrentPose, this);
   Subs["current_velocity"] =
-      nh_.subscribe("current_velocity", 20, &StateMachineNode::callbackFromCurrentVelocity, this);
-  Subs["light_color"] = nh_.subscribe("light_color", 10, &StateMachineNode::callbackFromLightColor, this);
-  Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &StateMachineNode::callbackFromPointsRaw, this);
-  Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &StateMachineNode::callbackFromFinalWaypoint, this);
-  Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &StateMachineNode::callbackFromTwistCmd, this);
+      nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
+  Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
+  Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
+  Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
+  Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
 
   // vector map subscriber
   Subs["vector_map_area"] =
-      nh_.subscribe("/vector_map_info/area", 1, &StateMachineNode::callbackFromVectorMapArea, this);
+      nh_.subscribe("/vector_map_info/area", 1, &DecisionMakerNode::callbackFromVectorMapArea, this);
   Subs["vector_map_point"] =
-      nh_.subscribe("/vector_map_info/point", 1, &StateMachineNode::callbackFromVectorMapPoint, this);
+      nh_.subscribe("/vector_map_info/point", 1, &DecisionMakerNode::callbackFromVectorMapPoint, this);
   Subs["vector_map_line"] =
-      nh_.subscribe("/vector_map_info/line", 1, &StateMachineNode::callbackFromVectorMapLine, this);
+      nh_.subscribe("/vector_map_info/line", 1, &DecisionMakerNode::callbackFromVectorMapLine, this);
   Subs["vector_map_crossroad"] =
-      nh_.subscribe("/vector_map_info/cross_road", 1, &StateMachineNode::callbackFromVectorMapCrossRoad, this);
+      nh_.subscribe("/vector_map_info/cross_road", 1, &DecisionMakerNode::callbackFromVectorMapCrossRoad, this);
 
   // pub
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
@@ -135,8 +134,8 @@ void StateMachineNode::initROS(int argc, char **argv)
 
 #if 0
   // dynamic reconfigure
-  dynamic_reconfigure::Server<state_machine::state_machineConfig> dr_server;
-  dynamic_reconfigure::Server<state_machine::state_machineConfig>::CallbackType dr_server_f;
+  dynamic_reconfigure::Server<decision_maker::decision_makerConfig> dr_server;
+  dynamic_reconfigure::Server<decision_maker::decision_makerConfig>::CallbackType dr_server_f;
 
   dr_server_f = boost::bind(&callbackFromDynamicReconfigure, _1, _2);
   dr_server.setCallback(dr_server_f);
@@ -170,7 +169,7 @@ void StateMachineNode::initROS(int argc, char **argv)
   }
 }
 
-void StateMachineNode::run(void)
+void DecisionMakerNode::run(void)
 {
   ros::Rate loop_rate(0.3);
 
@@ -187,13 +186,13 @@ void StateMachineNode::run(void)
   }
 }
 
-void StateMachineNode::update_pubsub(void)
+void DecisionMakerNode::update_pubsub(void)
 {
   // if state machine require to re-subscribe topic,
   // this function will re-definition subscriber.
 }
 
-void StateMachineNode::initVectorMap(void)
+void DecisionMakerNode::initVectorMap(void)
 {
   if (!vector_map_init && vMap_Areas_flag & vMap_Points_flag & vMap_Lines_flag & vMap_CrossRoads_flag)
   {
@@ -258,7 +257,7 @@ void StateMachineNode::initVectorMap(void)
   }
 }
 
-void StateMachineNode::displayMarker(void)
+void DecisionMakerNode::displayMarker(void)
 {
   // vector_map init
   // parse vectormap
@@ -327,7 +326,7 @@ void StateMachineNode::displayMarker(void)
   marker_array.markers.clear();
 }
 
-void StateMachineNode::update_msgs(void)
+void DecisionMakerNode::update_msgs(void)
 {
   if (ctx)
   {
@@ -350,7 +349,7 @@ void StateMachineNode::update_msgs(void)
     std::cerr << "ctx is not found " << std::endl;
 }
 
-bool StateMachineNode::initVectorMapClient()
+bool DecisionMakerNode::initVectorMapClient()
 {
 #ifdef USE_VMAP_SERVER  // This is not successfully run due to failing vmap
   // server
@@ -367,7 +366,7 @@ bool StateMachineNode::initVectorMapClient()
 #endif
 }
 
-bool StateMachineNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg,
+bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg,
                                                     const geometry_msgs::PoseStamped &pose_msg)
 {
 #ifdef USE_VMAP_SERVER  // this is not successfully run
@@ -392,7 +391,7 @@ bool StateMachineNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &l
 #endif
 }
 
-double StateMachineNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_msg,
+double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_msg,
                                                const geometry_msgs::PoseStamped &pose_msg)
 {
   if (vMap_CrossRoads_flag)
@@ -468,7 +467,7 @@ double StateMachineNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_m
   }
 }
 
-void StateMachineNode::update(void)
+void DecisionMakerNode::update(void)
 {
   update_msgs();
 }
@@ -476,8 +475,8 @@ void StateMachineNode::update(void)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "state_machine");
-  state_machine::StateMachineNode smn(argc, argv);
+  ros::init(argc, argv, "decision_maker");
+  decision_maker::DecisionMakerNode smn(argc, argv);
   smn.run();
 
   return 0;

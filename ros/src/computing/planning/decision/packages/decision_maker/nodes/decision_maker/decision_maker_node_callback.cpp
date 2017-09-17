@@ -11,15 +11,15 @@
 #include <cross_road_area.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
-#include <state_machine_node.hpp>
+#include <decision_maker_node.hpp>
 
-namespace state_machine
+namespace decision_maker
 {
 #define VEL_COUNT 10
-void StateMachineNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
+void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped _pose = current_pose_ = msg;
-  bool initLocalizationFlag = ctx->isState(INITIAL_LOCATEVEHICLE_STATE);
+  bool initLocalizationFlag = ctx->isState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
 
   if (initLocalizationFlag &&
       ctx->handleCurrentPose(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
@@ -29,7 +29,7 @@ void StateMachineNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped 
   }
 }
 
-void StateMachineNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
+void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
 {
   ROS_INFO("Light color callback");
   CurrentTrafficlight = msg.traffic_light;
@@ -37,7 +37,7 @@ void StateMachineNode::callbackFromLightColor(const autoware_msgs::traffic_light
 }
 
 //
-void StateMachineNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
+void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   if (ctx->handlePointsRaw(true))
   {
@@ -45,7 +45,7 @@ void StateMachineNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::Con
   }
 }
 
-void StateMachineNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
+void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
   if (!hasvMap())
   {
@@ -56,7 +56,7 @@ void StateMachineNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
   current_finalwaypoints_ = msg;
   ClosestArea_ = CrossRoadArea::findClosestCrossRoad(current_finalwaypoints_, intersects);
 
-  if (ctx->inState(DRIVE_STATE))
+  if (ctx->inState(state_machine::DRIVE_STATE))
   {
     double intersect_wayangle = calcIntersectWayAngle(current_finalwaypoints_, current_pose_);
     ctx->handleIntersection(true, intersect_wayangle);
@@ -85,7 +85,7 @@ void StateMachineNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 
   std::cout << "Velocity: " << current_velocity_ << " to " << average_velocity_ << std::endl;
 }
-void StateMachineNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
+void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {
   static bool Twistflag = false;
 
@@ -95,33 +95,33 @@ void StateMachineNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &m
     Twistflag = true;
 }
 
-void StateMachineNode::callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg)
+void DecisionMakerNode::callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg)
 {
   vMap_Areas = msg;
   vMap_Areas_flag = true;
 }
-void StateMachineNode::callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg)
+void DecisionMakerNode::callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg)
 {
   vMap_Points = msg;
   vMap_Points_flag = true;
 }
-void StateMachineNode::callbackFromVectorMapLine(const vector_map_msgs::LineArray &msg)
+void DecisionMakerNode::callbackFromVectorMapLine(const vector_map_msgs::LineArray &msg)
 {
   vMap_Lines = msg;
   vMap_Lines_flag = true;
 }
-void StateMachineNode::callbackFromVectorMapCrossRoad(const vector_map_msgs::CrossRoadArray &msg)
+void DecisionMakerNode::callbackFromVectorMapCrossRoad(const vector_map_msgs::CrossRoadArray &msg)
 {
   vMap_CrossRoads = msg;
   vMap_CrossRoads_flag = true;
 }
 
-void StateMachineNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg)
+void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg)
 {
   current_velocity_ = mps2kmph(msg.twist.linear.x);
 }
 #if 0
-	void StateMachineNode::callbackFromDynamicReconfigure(state_machine::state_machineConfig &config, uint32_t level){
+	void DecisionMakerNode::callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level){
 		ROS_INFO("Reconfigure Request: %d ", config.TARGET_WAYPOINT_COUNT);
 	}
 #endif

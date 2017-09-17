@@ -48,7 +48,7 @@ set(TARGET_SRC  nodes/decision_maker/decision_maker_node.cpp
 
 add_executable(${PROJECT_NAME}_node ${TARGET_SRC})
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node state_machine_gencfg)
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
 # This function will be integrated into decision_maker soon.
 set(SUBPROJECT_NAME planner_selector)

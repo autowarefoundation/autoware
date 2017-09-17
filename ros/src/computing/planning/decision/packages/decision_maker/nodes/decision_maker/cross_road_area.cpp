@@ -1,7 +1,7 @@
 #include <cross_road_area.hpp>
 #include <euclidean_space.hpp>
 
-namespace state_machine
+namespace decision_maker
 {
 #define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
 CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
