@@ -22,10 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map_msgs
   jsk_recognition_msgs
   euc
-  dynamic_reconfigure
 )
-
-#generate_dynamic_reconfigure_options(cfg/state.cfg)
 
 
 catkin_package(

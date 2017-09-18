@@ -22,10 +22,6 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 
-// for dynamic reconfigure
-//#include <dynamic_reconfigure/server.h>
-//#include <decision_maker/decision_makerConfig.h>
-
 namespace decision_maker
 {
 #define DOUBLE_MAX 1.7976931348623158e308
@@ -132,14 +128,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["crossroad_inside_visual"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/bbox", 10);
 
-#if 0
-  // dynamic reconfigure
-  dynamic_reconfigure::Server<decision_maker::decision_makerConfig> dr_server;
-  dynamic_reconfigure::Server<decision_maker::decision_makerConfig>::CallbackType dr_server_f;
-
-  dr_server_f = boost::bind(&callbackFromDynamicReconfigure, _1, _2);
-  dr_server.setCallback(dr_server_f);
-#endif
   // message setup
   state_text_msg.text_size = 18;
   state_text_msg.line_width = 0;
