@@ -69,7 +69,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
 
   average_velocity_ = _temp_sum / VEL_COUNT;
-
   if (std::fabs(average_velocity_ - current_velocity_) <= 2.0)
   {
     TextOffset = "Keep";
@@ -82,6 +81,9 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   {
     TextOffset = "Decelerate";
   }
+
+  // for publish plan of velocity
+  publishToVelocityArray();
 
   std::cout << "Velocity: " << current_velocity_ << " to " << average_velocity_ << std::endl;
 }

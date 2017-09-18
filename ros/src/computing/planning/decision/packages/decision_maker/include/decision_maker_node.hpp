@@ -83,6 +83,7 @@ private:
   std::string CurrentStateName;
   std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
+  bool isDisplay;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -107,6 +108,8 @@ private:
   void update_msgs(void);
   void update_pubsub(void);
   void displayMarker(void);
+
+  void publishToVelocityArray();
 
   //
   bool isInsideArea(geometry_msgs::Point pt);
@@ -141,6 +144,7 @@ public:
   DecisionMakerNode(int argc, char **argv)
   {
     SimulationMode = false;
+    isDisplay = true;
 
     ctx = new state_machine::StateContext();
     this->initROS(argc, argv);
@@ -153,6 +157,8 @@ public:
 
   void run(void);
 };
+
+
 
 }  // namespace decision_maker
 
