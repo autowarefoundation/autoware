@@ -126,10 +126,10 @@ static void drawDetections(std::vector<cv::Rect> dets, std::vector<float> scores
 			&text_size,
 			&baseline);
 
-		//cvRectangle( &frame,
-			//cvPoint(dets[i].x, dets[i].y),
-			//cvPoint(dets[i].x+dets[i].width, dets[i].y+dets[i].height),
-			//CV_RGB(0, 0, 255), OBJ_RECT_THICKNESS, CV_AA, 0);
+		cvRectangle( &frame,
+			cvPoint(dets[i].x, dets[i].y),
+			cvPoint(dets[i].x+dets[i].width, dets[i].y+dets[i].height),
+			CV_RGB(0, 0, 255), OBJ_RECT_THICKNESS, CV_AA, 0);
 		cvCircle(&frame, cvPoint(dets[i].x+dets[i].width/2, dets[i].y+dets[i].height/2), 30, cvScalar(0,255,0),3);		/* draw object label */
 		CvPoint textOrg = cvPoint(dets[i].x - OBJ_RECT_THICKNESS, dets[i].y - baseline - OBJ_RECT_THICKNESS);
 

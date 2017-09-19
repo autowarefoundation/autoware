@@ -500,7 +500,8 @@ bool CalibrateCameraChessboardROS::refreshImage()
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
 
     cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    calibimage = cv_image->image.clone();
+    cv::Mat tempimage = cv_image->image.clone();
+    cv::cvtColor(tempimage, calibimage, CV_BGR2GRAY);
 
     return CalibrateCameraBase::refreshImage();
 }
@@ -1155,7 +1156,8 @@ bool CalibrateCameraVelodyneChessboardROS::refreshImage()
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
 
     cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    calibimage = cv_image->image.clone();
+    cv::Mat tempimage = cv_image->image.clone();
+    cv::cvtColor(tempimage, calibimage, CV_BGR2GRAY);
 
     return CalibrateCameraBase::refreshImage();
 }
@@ -1636,7 +1638,8 @@ bool CalibrateCameraLidarChessboardROS::refreshImage()
     cameratimestamp=QTime::fromMSecsSinceStartOfDay((msg->header.stamp.sec%(24*60*60))*1000+msg->header.stamp.nsec/1000000);
 
     cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    calibimage = cv_image->image.clone();
+    cv::Mat tempimage = cv_image->image.clone();
+    cv::cvtColor(tempimage, calibimage, CV_BGR2GRAY);
 
     return CalibrateCameraBase::refreshImage();
 }
