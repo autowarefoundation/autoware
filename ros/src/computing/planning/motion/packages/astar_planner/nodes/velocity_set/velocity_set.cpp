@@ -510,9 +510,13 @@ int main(int argc, char** argv)
 
   bool use_crosswalk_detection;
   bool enable_multiple_crosswalk_detection;
+  bool enablePlannerDynamicSwitch;
+
   std::string points_topic;
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
   private_nh.param<bool>("enable_multiple_crosswalk_detection", enable_multiple_crosswalk_detection, true);
+  private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
+
 
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
 
@@ -541,9 +545,15 @@ int main(int argc, char** argv)
 
   // publisher
   ros::Publisher detection_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 1);
-  ros::Publisher final_waypoints_pub = nh.advertise<autoware_msgs::lane>("final_waypoints", 1, true);
   ros::Publisher obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 1);
   ros::Publisher obstacle_waypoint_pub = nh.advertise<std_msgs::Int32>("obstacle_waypoint", 1, true);
+
+  ros::Publisher final_waypoints_pub;
+  if(enablePlannerDynamicSwitch){
+	  final_waypoints_pub = nh.advertise<autoware_msgs::lane>("astar/final_waypoints", 1, true);
+  }else{
+	  final_waypoints_pub = nh.advertise<autoware_msgs::lane>("final_waypoints", 1, true);
+  }
 
   ros::Rate loop_rate(LOOP_RATE);
   while (ros::ok())

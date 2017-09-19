@@ -73,6 +73,7 @@ add_message_files(
   ConfigVelocitySet.msg
   ConfigVoxelGridFilter.msg
   ConfigWaypointFollower.msg
+  ConfigPlannerSelector.msg
   accel_cmd.msg
   adjust_xy.msg
   brake_cmd.msg

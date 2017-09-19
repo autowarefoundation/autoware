@@ -612,15 +612,21 @@ subs :
            position_error :
              flags : [ nl ]
 
-  - name : State
-    desc : State desc sample
+  - name : Decision
+    desc : decision groups
     subs :
-    - name : state_machine
+    - name : state_machine(old)
       desc : state_machine desc sample
-      subs :
-      - name : state_machine
-        desc : state_machine desc sample
-        cmd  : roslaunch state_machine state_machine.launch
+      cmd  : roslaunch state_machine state_machine.launch
+    - name : decision_maker
+      desc : decision_maker desc sample
+      cmd  : roslaunch decision_maker decision_maker.launch
+    - name : planner_selector
+      desc : planner_selector desc sample
+      cmd  : roslaunch planner_selector planner_selector.launch
+      param: planner_selector
+         
+
 
 buttons:
   car_dpm :
@@ -1555,6 +1561,15 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
+    
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
@@ -1744,6 +1759,29 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+ 
+  - name  : planner_selector
+    topic : /config/PlannerSelector
+    msg   : ConfigPlannerSelector
+    vars  :
+    - name : latency_num
+      desc : latency_num
+      label: latency_num
+      min  : 0
+      max  : 200
+      v    : 10
+    - name : waypoints_num
+      desc : waypoints_num
+      label: waypoints_num
+      min  : 0
+      max  : 30
+      v    : 8
+    - name : convergence_num
+      desc : convergence_num
+      label: convergence_num
+      min  : 0.0
+      max  : 30.0
+      v    : 2.0
 
   - name  : car_kf
     topic : /config/car_kf
@@ -2113,6 +2151,14 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : astar_navi
     vars  :
@@ -2426,6 +2472,14 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='
