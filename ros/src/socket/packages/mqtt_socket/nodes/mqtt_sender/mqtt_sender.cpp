@@ -44,8 +44,8 @@ public:
   void canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg);
 
 private:
-  ros::Subscriber vehicle_info_sub_;
-	ros::NodeHandle node_handle_;
+  std::unordered_map<std::string, ros::Subscriber> Subs;
+  ros::NodeHandle node_handle_;
   MQTTClient_message pubmsg_;
   MQTTClient_deliveryToken deliveredtoken_;
 
@@ -57,13 +57,32 @@ private:
   int mqtt_timeout_;
   double mqtt_downsample_;
   int callback_counter_;
+
+  // current behavior/status
+  std_msgs::Float64MultiArray current_target_velocity_array_; //kmph
+  geometry_msgs::TwistStamped current_twist_cmd_; //mps
+  double current_target_velocity_; // mps2kmph(current_twist_cmd_.twist.twist.linear.x);
+  std_msgs::String current_state_;
+  
+  void targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg);
+  void twistCmdCallback(const geometry_msgs::TwistStamped &msg);
+  void stateCallback(const std_msgs::String &msg);
+
 };
+
+inline double mps2kmph(double _mpsval)
+{
+	return (_mpsval * 60 * 60) / 1000; // mps * 60sec * 60 minute / 1000m
+}
 
 MqttSender::MqttSender() :
     node_handle_("~")
 {
-  // ROS Publisher
-  vehicle_info_sub_ = node_handle_.subscribe("/can_info", 1000, &MqttSender::canInfoCallback, this);
+  // ROS Subscriber
+  Subs["can_info"] = node_handle_.subscribe("/can_info", 1000, &MqttSender::canInfoCallback, this);
+  Subs["target_velocity_array"] = node_handle_.subscribe("/target_velocity_array", 1, &MqttSender::targetVelocityArrayCallback, this);
+  Subs["twist_cmd"] = node_handle_.subscribe("/twist_cmd", 1, &MqttSender::twistCmdCallback, this);
+  Subs["state"] = node_handle_.subscribe("/state", 1, &MqttSender::stateCallback, this)
 
   // MQTT PARAMS
   pubmsg_ = MQTTClient_message_initializer;
@@ -100,6 +119,23 @@ MqttSender::~MqttSender()
 {
   MQTTClient_disconnect(mqtt_client_, 10000);
   MQTTClient_destroy(&mqtt_client_);
+}
+
+
+void MqttSender::targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg)
+{
+  current_target_velocity_array_ = msg;
+}
+
+void MqttSender::twistCmdCallback(const geometry_msgs::TwistStamped &msg)
+{
+  current_twist_cmd_ = msg;
+  current_target_velocity_ = mps2kmph(msg.twist.twist.linear.x);
+}
+
+void MqttSender::stateCallback(const std_msgs::String &msg)
+{
+  current_state_ = msg.data;
 }
 
 void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
