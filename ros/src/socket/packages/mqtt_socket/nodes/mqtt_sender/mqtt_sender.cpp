@@ -32,9 +32,12 @@
 #include "std_msgs/String.h"
 #include "stdlib.h"
 #include "string.h"
-#include "MQTTClient.h"
 #include "mqtt_socket/mqtt_setting.hpp"
 #include "autoware_msgs/CanInfo.h"
+#include <std_msgs/Float64MultiArray.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <unordered_map>
+#include <mosquitto.h>
 
 class MqttSender
 {
@@ -42,15 +45,18 @@ public:
   MqttSender();
   ~MqttSender();
   void canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg);
+  static void on_connect(struct mosquitto *mosq, void *obj, int result);
+  static void on_disconnect(struct mosquitto *mosq, void *obj, int rc);
+  static void on_publish(struct mosquitto *mosq, void *userdata, int mid);
 
 private:
   std::unordered_map<std::string, ros::Subscriber> Subs;
   ros::NodeHandle node_handle_;
-  MQTTClient_message pubmsg_;
-  MQTTClient_deliveryToken deliveredtoken_;
 
-  MQTTClient mqtt_client_;
+  // MQTT
+  struct mosquitto *mqtt_client_ = NULL;
   std::string mqtt_address_;
+  int mqtt_port_;
   std::string mqtt_topic_;
   std::string mqtt_client_id_;
   int mqtt_qos_;
@@ -63,7 +69,7 @@ private:
   geometry_msgs::TwistStamped current_twist_cmd_; //mps
   double current_target_velocity_; // mps2kmph(current_twist_cmd_.twist.twist.linear.x);
   std_msgs::String current_state_;
-  
+
   void targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg);
   void twistCmdCallback(const geometry_msgs::TwistStamped &msg);
   void stateCallback(const std_msgs::String &msg);
@@ -79,48 +85,58 @@ MqttSender::MqttSender() :
     node_handle_("~")
 {
   // ROS Subscriber
-  Subs["can_info"] = node_handle_.subscribe("/can_info", 1000, &MqttSender::canInfoCallback, this);
+  Subs["can_info"] = node_handle_.subscribe("/can_info", 100, &MqttSender::canInfoCallback, this);
   Subs["target_velocity_array"] = node_handle_.subscribe("/target_velocity_array", 1, &MqttSender::targetVelocityArrayCallback, this);
   Subs["twist_cmd"] = node_handle_.subscribe("/twist_cmd", 1, &MqttSender::twistCmdCallback, this);
-  Subs["state"] = node_handle_.subscribe("/state", 1, &MqttSender::stateCallback, this)
+  Subs["state"] = node_handle_.subscribe("/state", 1, &MqttSender::stateCallback, this);
 
   // MQTT PARAMS
-  pubmsg_ = MQTTClient_message_initializer;
-  mqtt_address_ = ADDRESS;
+  mosquitto_lib_init();
+
+  mqtt_address_ = MQTT_ADDRESS;
+  mqtt_port_ = MQTT_PORT;
   mqtt_topic_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/can_info";
   mqtt_client_id_ = std::string(CLIENTID) + "_" + std::string(VEHICLEID) + "_snd";
   mqtt_qos_ = QOS;
   mqtt_timeout_ = TIMEOUT;
   mqtt_downsample_ = DOWNSAMPLE;
   callback_counter_ = 0;
+
   node_handle_.param("/confing/mqtt/address", mqtt_address_, mqtt_address_);
+  node_handle_.param("/confing/mqtt/port", mqtt_port_, mqtt_port_);
   node_handle_.param("/confing/mqtt/topic", mqtt_topic_, mqtt_topic_);
   node_handle_.param("/confing/mqtt/client_id", mqtt_client_id_, mqtt_client_id_);
   node_handle_.param("/confing/mqtt/qos", mqtt_qos_, mqtt_qos_);
   node_handle_.param("/confing/mqtt/timeout", mqtt_timeout_, mqtt_timeout_);
   node_handle_.param("/confing/mqtt/downsample", mqtt_downsample_, mqtt_downsample_);
-  ROS_INFO("MQTT Sender ADDR: %s, TOPIC: %s, ID: %s, DOWNSAMPLE: %f\n", mqtt_address_.c_str(), mqtt_topic_.c_str(), mqtt_client_id_.c_str(), mqtt_downsample_);
-  MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-  int rc;
+  ROS_INFO("MQTT Sender ADDR: %s:%d, TOPIC: %s, ID: %s, DOWNSAMPLE: %f\n", mqtt_address_.c_str(), mqtt_port_, mqtt_topic_.c_str(), mqtt_client_id_.c_str(), mqtt_downsample_);
 
-  MQTTClient_create(&mqtt_client_, mqtt_address_.c_str(), mqtt_client_id_.c_str(),
-      MQTTCLIENT_PERSISTENCE_NONE, NULL);
-  conn_opts.keepAliveInterval = 20;
-  conn_opts.cleansession = 1;
+  mqtt_client_ = mosquitto_new(mqtt_client_id_.c_str(), true, NULL);
+  mosquitto_connect_callback_set(mqtt_client_, &MqttSender::on_connect);
+  mosquitto_disconnect_callback_set(mqtt_client_, &MqttSender::on_disconnect);
 
-  if ((rc = MQTTClient_connect(mqtt_client_, &conn_opts)) != MQTTCLIENT_SUCCESS)
-  {
-      ROS_INFO("Failed to connect, return code %d\n", rc);
-      exit(EXIT_FAILURE);
+  if(mosquitto_connect_bind(mqtt_client_, mqtt_address_.c_str(), mqtt_port_, mqtt_timeout_, NULL)){
+    ROS_INFO("Failed to connect broker.\n");
+    mosquitto_lib_cleanup();
+    exit(EXIT_FAILURE);
   }
 }
 
 MqttSender::~MqttSender()
 {
-  MQTTClient_disconnect(mqtt_client_, 10000);
-  MQTTClient_destroy(&mqtt_client_);
+  mosquitto_destroy(mqtt_client_);
+  mosquitto_lib_cleanup();
 }
 
+void MqttSender::on_connect(struct mosquitto *mosq, void *obj, int result)
+{
+    ROS_INFO("on_connect: %s(%d)\n", __FUNCTION__, __LINE__);
+}
+
+void MqttSender::on_disconnect(struct mosquitto *mosq, void *obj, int rc)
+{
+    ROS_INFO("on_disconnect: %s(%d)\n", __FUNCTION__, __LINE__);
+}
 
 void MqttSender::targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg)
 {
@@ -130,12 +146,13 @@ void MqttSender::targetVelocityArrayCallback(const std_msgs::Float64MultiArray &
 void MqttSender::twistCmdCallback(const geometry_msgs::TwistStamped &msg)
 {
   current_twist_cmd_ = msg;
-  current_target_velocity_ = mps2kmph(msg.twist.twist.linear.x);
+  current_target_velocity_ = mps2kmph(msg.twist.linear.x);
 }
 
 void MqttSender::stateCallback(const std_msgs::String &msg)
 {
-  current_state_ = msg.data;
+  ROS_INFO("State: %s\n", msg.data);
+  // current_state_ = msg.data;
 }
 
 void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
@@ -199,13 +216,16 @@ void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
 
     // std::ostringstream publish_msg = create_message(msg);
     std::string publish_msg_str = publish_msg.str();
+    int ret = mosquitto_publish(
+      mqtt_client_,
+      NULL,
+      mqtt_topic_.c_str(),
+      strlen(publish_msg_str.c_str()),
+      publish_msg_str.c_str(),
+      mqtt_qos_,
+      false
+    );
 
-    pubmsg_.payload = publish_msg_str.c_str();
-    pubmsg_.payloadlen = strlen(publish_msg_str.c_str());
-    pubmsg_.qos = mqtt_qos_;
-    pubmsg_.retained = 0;
-    MQTTClient_publishMessage(mqtt_client_, mqtt_topic_.c_str(), &pubmsg_, &deliveredtoken_);
-    int rc = MQTTClient_waitForCompletion(mqtt_client_, deliveredtoken_, mqtt_timeout_);
     callback_counter_ = 0;
   }
   else {
