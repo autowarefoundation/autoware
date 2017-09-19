@@ -5,9 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "state_flags.hpp"
-
-using namespace std;
+#include <state_flags.hpp>
 
 namespace state_machine
 {

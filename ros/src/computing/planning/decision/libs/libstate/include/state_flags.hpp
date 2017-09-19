@@ -41,10 +41,10 @@ enum StateKinds
 
 enum TrafficLightColors
 {
-  RED,
-  YELLOW,
-  GREEN,
-  COLOR_ERROR
+  E_RED,
+  E_YELLOW,
+  E_GREEN,
+  E_COLOR_ERROR
 };
 }
 

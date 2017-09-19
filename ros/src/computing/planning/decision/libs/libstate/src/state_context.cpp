@@ -31,7 +31,12 @@ namespace state_machine
  */
 void StateContext::showCurrentStateName(void)
 {
-  current_state_.MainState->showStateName();
+  for(auto &&p : HolderList){
+    if(*p){
+	(*p)->showStateName();
+    }
+  }
+
 #if 0
   if (sub_state)
     sub_state->showStateName();
@@ -110,7 +115,10 @@ bool StateContext::setCurrentState(BaseState *_state)
   return true;
 }
 
-
+bool StateContext::setCurrentState(StateFlags flag)
+{
+   this->setCurrentState(StateStores[flag]);
+}
 bool StateContext::setEnableForceSetState(bool force_flag)
 {
 	enableForceSetState = force_flag;
@@ -174,65 +182,15 @@ bool StateContext::handleTwistCmd(bool _hasTwistCmd)
     return false;
 }
 
-bool StateContext::handlePointsRaw(bool _hasLidarData)
-{
-  return _hasLidarData ? this->setCurrentState(StateStores[INITIAL_LOCATEVEHICLE_STATE]) : false;
-}
-
-#define CONV_NUM 10
-#define CONVERGENCE_THRESHOLD 0.01
-
-bool StateContext::handleCurrentPose(double _x, double _y, double _z, double _roll, double _pitch, double _yaw)
-{
-  static int _init_count = 0;
-  static euclidean_space::point *a = new euclidean_space::point();
-  static euclidean_space::point *b = new euclidean_space::point();
-
-  static double distances[CONV_NUM] = { 0.0 };
-  double avg_distances = 0.0;
-
-  for (int i = 1; i < CONV_NUM; i++)
-  {
-    distances[i] = distances[i - 1];
-    avg_distances += distances[i];
-  }
-
-  a->x = b->x;
-  a->y = b->y;
-  a->z = b->z;
-
-  b->x = _x;
-  b->y = _y;
-  b->z = _z;
-
-  distances[0] = euclidean_space::EuclideanSpace::find_distance(a, b);
-
-  if (++_init_count <= CONV_NUM)
-  {
-    return false;
-  }
-  else
-  {
-    avg_distances = (avg_distances + distances[0]) / CONV_NUM;
-
-    if (avg_distances <= CONVERGENCE_THRESHOLD)
-      return this->setCurrentState(StateStores[DRIVE_STATE]);
-    else
-      return false;
-  }
-}
 
 void StateContext::stateDecider(void)
 {
+// not running
   while (thread_loop)
   {
-    if (ChangeStateFlags)
-      for (unsigned long long l = 1; l < STATE_END; l = l * 2)
-      {
-        if (ChangeStateFlags & l && StateStores[l])
-        {
-          setCurrentState(StateStores[l]);
-          ChangeStateFlags -= l;
+    if (!ChangeStateFlags.empty())
+	  setCurrentState(StateStores[ChangeStateFlags.front()]);
+          ChangeStateFlags.pop();
         }
       }
     std::this_thread::sleep_for(std::chrono::microseconds(1000));

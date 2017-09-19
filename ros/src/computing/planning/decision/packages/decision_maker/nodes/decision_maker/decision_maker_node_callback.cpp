@@ -12,16 +12,75 @@
 #include <state.hpp>
 #include <state_context.hpp>
 #include <decision_maker_node.hpp>
+#include <euclidean_space.hpp>
 
 namespace decision_maker
 {
 #define VEL_AVERAGE_COUNT 10
+#define CONV_NUM 10
+#define CONVERGENCE_THRESHOLD 0.01
 
+bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw)
+{
+  static int _init_count = 0;
+  static euclidean_space::point *a = new euclidean_space::point();
+  static euclidean_space::point *b = new euclidean_space::point();
+
+  static double distances[CONV_NUM] = { 0.0 };
+  double avg_distances = 0.0;
+
+  for (int i = 1; i < CONV_NUM; i++)
+  {
+    distances[i] = distances[i - 1];
+    avg_distances += distances[i];
+  }
+
+  a->x = b->x;
+  a->y = b->y;
+  a->z = b->z;
+
+  b->x = _x;
+  b->y = _y;
+  b->z = _z;
+
+  distances[0] = euclidean_space::EuclideanSpace::find_distance(a, b);
+
+  if (++_init_count <= CONV_NUM)
+  {
+    return false;
+  }else
+  {
+    avg_distances = (avg_distances + distances[0]) / CONV_NUM;
+    if (avg_distances <= CONVERGENCE_THRESHOLD){
+      return this->setCurrentState(StateStores[state_machine::DRIVE_STATE]);
+    }else
+    {
+      return false;
+    }
+  }
+}
+
+void StateContext::stateDecider(void)
+{
+// not running
+  while (thread_loop)
+  {
+    if (!ChangeStateFlags.empty())
+	  setCurrentState(StateStores[ChangeStateFlags.front()]);
+          ChangeStateFlags.pop();
+        }
+      }
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+  }
+  std::cerr << "StateDecider thread will be closed" << std::endl;
+  return;
+    
+
+}
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped _pose = current_pose_ = msg;
   bool initLocalizationFlag = ctx->isState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
-
   if (initLocalizationFlag &&
       ctx->handleCurrentPose(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
                              _pose.pose.orientation.x, _pose.pose.orientation.y, _pose.pose.orientation.z))
@@ -34,16 +93,18 @@ void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_ligh
 {
   ROS_INFO("Light color callback");
   CurrentTrafficlight = msg.traffic_light;
+  if(CurrentTrafficLight == state_machine::E_RED ||
+	CurrentTrafficLight == state_machine::E_YELLOW ){
+	ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+  }
   //ctx->handleTrafficLight(CurrentTrafficlight);
 }
 
 //
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-  if (ctx->handlePointsRaw(true))
-  {
-    Subs["points_raw"].shutdown();
-  }
+  if(ctx->setCurrentState(state_machine::INITIAL_LOCATE_VEHICLE_STATE]);
+  Subs["points_raw"].shutdown();
 }
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)

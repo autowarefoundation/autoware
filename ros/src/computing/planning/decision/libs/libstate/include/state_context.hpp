@@ -24,11 +24,15 @@ private:
 			BaseState *PerceptionState;
 			BaseState *OtherState;
 	} current_state_;
+	
+  std::vector<BaseState **> HolderList;
+
 
   std::unordered_map<uint64_t, BaseState *> StateStores;
   
   bool enableForceSetState;
-  unsigned long long ChangeStateFlags;
+  //unsigned long long ChangeStateFlags;
+  std::queue<unsigned long long> ChangeStateFlags;
   std::atomic<bool> thread_loop;
 
   std::thread *thr_state_dec;
@@ -61,15 +65,25 @@ public:
     StateStores[DRIVE_DETECT_TRAFFICLIGHT_RED_STATE] = DriveDetectTrafficlightRedState::getInstance();
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
+
+    HolderList.push_back(&current_state_.MainState); 
+    HolderList.push_back(&current_state_.AccState); 
+    HolderList.push_back(&current_state_.StrState); 
+    HolderList.push_back(&current_state_.BehaviorState); 
+    HolderList.push_back(&current_state_.PerceptionState); 
+ e   HolderList.push_back(&current_state_.OtherState); 
     
+    for(auto &&p : HolderList){
+      *p = nullptr;
+    }
+#if 0
     current_state_.MainState = nullptr;
     current_state_.AccState = nullptr;
     current_state_.StrState = nullptr;
     current_state_.BehaviorState = nullptr;
     current_state_.PerceptionState = nullptr;
     current_state_.OtherState = nullptr;
-
-    ChangeStateFlags = 0;
+#endif
     thread_loop = true;
 
     this->InitContext();
