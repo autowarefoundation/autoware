@@ -38,8 +38,10 @@ include_directories(
 )
 
 set(TARGET_SRC  nodes/decision_maker/decision_maker_node.cpp
+		nodes/decision_maker/decision_maker_node_core.cpp
+		nodes/decision_maker/decision_maker_node_init.cpp
 		nodes/decision_maker/decision_maker_node_callback.cpp
-		nodes/decision_maker/decision_maker_publish.cpp
+		nodes/decision_maker/decision_maker_node_publish.cpp
 		nodes/decision_maker/cross_road_area.cpp
 	)
 
