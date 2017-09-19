@@ -25,6 +25,7 @@
 
 namespace decision_maker
 {
+
 #define DOUBLE_MAX 1.7976931348623158e308
 #define TARGET_WAYPOINTS_NUM 14
 
@@ -95,24 +96,6 @@ bool DecisionMakerNode::isInsideArea(geometry_msgs::Point pt)
 }
 
 
-void DecisionMakerNode::run(void)
-{
-  ros::Rate loop_rate(0.3);
-
-  // for subscribe callback function
-  ros::AsyncSpinner spinner(1);
-  spinner.start();
-  // ros::MultiThreadedSpinner spinner(2);
-  // spinner.spin();
-  while (ros::ok())
-  {
-    update();
-    if(isDisplay)
-	    displayMarker();
-    loop_rate.sleep();
-  }
-}
-
 
 bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg,
                                                     const geometry_msgs::PoseStamped &pose_msg)
@@ -120,7 +103,6 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
 #ifdef USE_VMAP_SERVER  // this is not successfully run
   cross_road_srv.request.pose = pose_msg;
   cross_road_srv.request.waypoints.waypoints.clear();
-  std::cout << "test" << std::endl;
 
   for (int i = 0; i < 50; i++)
   {
@@ -133,9 +115,8 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
 
   for (const auto &cross_road_d : cross_road_srv.response.objects.data)
   {
-    std::cout << "EEEEEEEEE" << cross_road_d.linkid << std::endl;
+ //   std::cout << "EEEEEEEEE" << cross_road_d.linkid << std::endl;
   }
-#else
 #endif
 }
 
@@ -187,8 +168,8 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_
       tf::Matrix3x3(quat_in).getRPY(r, p, _y);
 
       diff = std::floor(_y - y) * 180.0 / M_PI;
-#if 1
-      /* DEBUG */
+
+#ifdef DEBUG_PRINT
       std::cout << "Yaw:" << _y << "-" << y << ":" << _y - y << std::endl;
       if (diff > 50)
       {
@@ -218,5 +199,21 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_
 void DecisionMakerNode::update(void)
 {
   update_msgs();
+}
+
+void DecisionMakerNode::run(void)
+{
+  ros::Rate loop_rate(0.3);
+
+  // for subscribe callback function
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+  while (ros::ok())
+  {
+    update();
+    if(isDisplay)
+	    displayMarker();
+    loop_rate.sleep();
+  }
 }
 }

@@ -10,6 +10,7 @@
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_rviz_plugins/OverlayText.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/String.h>
 
 //#include <vector_map_server/GetCrossRoad.h>
 
@@ -33,6 +34,7 @@
 
 namespace decision_maker
 {
+//#define DEBUG_PRINT
 enum class EControl
 {
   KEEP = -1,
@@ -125,6 +127,7 @@ private:
   void callbackFromFinalWaypoint(const autoware_msgs::lane &msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
+  void callbackFromStateCmd(const std_msgs::String &msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);

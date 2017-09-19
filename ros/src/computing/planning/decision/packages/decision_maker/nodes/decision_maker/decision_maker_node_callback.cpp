@@ -15,7 +15,8 @@
 
 namespace decision_maker
 {
-#define VEL_COUNT 10
+#define VEL_AVERAGE_COUNT 10
+
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped _pose = current_pose_ = msg;
@@ -33,7 +34,7 @@ void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_ligh
 {
   ROS_INFO("Light color callback");
   CurrentTrafficlight = msg.traffic_light;
-  ctx->handleTrafficLight(CurrentTrafficlight);
+  //ctx->handleTrafficLight(CurrentTrafficlight);
 }
 
 //
@@ -63,12 +64,12 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
 
   double _temp_sum = 0;
-  for (int i = 0; i < VEL_COUNT; i++)
+  for (int i = 0; i < VEL_AVERAGE_COUNT; i++)
   {
     _temp_sum += mps2kmph(msg.waypoints[i].twist.twist.linear.x);
   }
-
-  average_velocity_ = _temp_sum / VEL_COUNT;
+  average_velocity_ = _temp_sum / VEL_AVERAGE_COUNT;
+  
   if (std::fabs(average_velocity_ - current_velocity_) <= 2.0)
   {
     TextOffset = "Keep";
