@@ -15,63 +15,59 @@ namespace state_machine
 class StateContext
 {
 private:
-  BaseState *state_;
-  BaseState *sub_state;
-  BaseState *sub_sub_state;
+	class StateHolder{
+		public:
+			BaseState *MainState;
+			BaseState *AccState;
+			BaseState *StrState;
+			BaseState *BehaviorState;
+			BaseState *PerceptionState;
+			BaseState *OtherState;
+	} current_state_;
+
   std::unordered_map<uint64_t, BaseState *> StateStores;
-  unsigned long long st;
+  
+  bool enableForceSetState;
   unsigned long long ChangeStateFlags;
   std::atomic<bool> thread_loop;
 
   std::thread *thr_state_dec;
 
-  void ShowStateMove(unsigned long long _state_num)
+  void showStateMove(unsigned long long _state_num)
   {
-    std::cout << "State will be [" << *StateStores[_state_num]->GetStateName() << "]" << std::endl;
+    std::cout << "State will be [" << *StateStores[_state_num]->getStateName() << "]" << std::endl;
   }
 
 public:
-  void debug_next_state()
-  {
-    if (st >= STATE_END)
-      st = 1;
-    state_ = StateStores[st];
-    st = st << 1;
-  }
   StateContext(void)
   {
-    st = 1;
-    state_ = nullptr;
-    sub_state = nullptr;
-    sub_sub_state = nullptr;
 
-    StateStores[START_STATE] = StartState::GetInstance();
-    StateStores[INITIAL_STATE] = InitialState::GetInstance();
-    StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::GetInstance();
-    StateStores[DRIVE_STATE] = DriveState::GetInstance();
-    StateStores[DRIVE_MOVEFWD_STATE] = DriveMoveFwdState::GetInstance();
-    StateStores[DRIVE_MOVEFWD_LEFT_STATE] = DriveMoveFwdLeftState::GetInstance();
-    StateStores[DRIVE_MOVEFWD_RIGHT_STATE] = DriveMoveFwdRightState::GetInstance();
-    StateStores[DRIVE_MOVEFWD_STRAIGHT_STATE] = DriveMoveFwdStraightState::GetInstance();
-    StateStores[DRIVE_LANECHANGE_STATE] = DriveLaneChangeState::GetInstance();
-    StateStores[DRIVE_LANECHANGE_LEFT_STATE] = DriveLaneChangeLeftState::GetInstance();
-    StateStores[DRIVE_LANECHANGE_RIGHT_STATE] = DriveLaneChangeRightState::GetInstance();
-    StateStores[DRIVE_LANECHANGE_RIGHT_AVOIDANCE_STATE] = DriveLaneChangeRightAvoidanceState::GetInstance();
-    StateStores[DRIVE_OBSTACLE_AVOIDANCE_STATE] = DriveObstacleAvoidanceState::GetInstance();
-    StateStores[DRIVE_OBSTACLE_AVOIDANCE_STATIC_STATE] = DriveObstacleAvoidanceStaticState::GetInstance();
-    StateStores[DRIVE_OBSTACLE_AVOIDANCE_DYNAMIC_STATE] = DriveObstacleAvoidanceDynamicState::GetInstance();
-    StateStores[DRIVE_STOP_STATE] = DriveStopState::GetInstance();
-    StateStores[DRIVE_STOP_AVOIDANCE_STATE] = DriveStopAvoidanceState::GetInstance();
-    StateStores[DRIVE_STOP_STOPLINE_STATE] = DriveStopStopLineState::GetInstance();
-    StateStores[DRIVE_STOP_TRAFFICLIGHT_STATE] = DriveStopTrafficLightState::GetInstance();
-    StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::GetInstance();
-    StateStores[EMERGENCY_STATE] = EmergencyState::GetInstance();
-    StateStores[EMERGENCY_HW_STATE] = EmergencyHWState::GetInstance();
-    StateStores[EMERGENCY_HWVEHICLE_STATE] = EmergencyHWVehicleState::GetInstance();
-    StateStores[EMERGENCY_HWCONTROLLER_STATE] = EmergencyHWControllerState::GetInstance();
-    StateStores[EMERGENCY_SW_STATE] = EmergencySWState::GetInstance();
-    StateStores[EMERGENCY_SWAUTOWARE_STATE] = EmergencySWAutowareState::GetInstance();
-    StateStores[EMERGENCY_SWCONTROLLER_STATE] = EmergencySWControllerState::GetInstance();
+    StateStores[START_STATE] = StartState::getInstance();
+    StateStores[INITIAL_STATE] = InitialState::getInstance();
+    StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
+    StateStores[DRIVE_STATE] = DriveState::getInstance();
+    StateStores[DRIVE_ACC_ACCELERATION_STATE] = DriveAccAccelerationState::getInstance();
+    StateStores[DRIVE_ACC_DECELERATION_STATE] = DriveAccDecelerationState::getInstance();
+    StateStores[DRIVE_ACC_KEEP_STATE] = DriveAccKeepState::getInstance();
+    StateStores[DRIVE_ACC_STOP_STATE] = DriveAccStopState::getInstance();
+    StateStores[DRIVE_STR_STRAIGHT_STATE] = DriveStrStraightState::getInstance();
+    StateStores[DRIVE_STR_LEFT_STATE] = DriveStrLeftState::getInstance();
+    StateStores[DRIVE_STR_RIGHT_STATE] = DriveStrRightState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE] = DriveBehaviorLaneChangeLeftState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE] = DriveBehaviorLaneChangeRightState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE] = DriveBehaviorObstacleAvoidanceState::getInstance();
+    StateStores[DRIVE_DETECT_OBSTACLE_STATE] = DriveDetectObstacleState::getInstance();
+    StateStores[DRIVE_DETECT_STOPLINE_STATE] = DriveDetectStoplineState::getInstance();
+    StateStores[DRIVE_DETECT_TRAFFICLIGHT_RED_STATE] = DriveDetectTrafficlightRedState::getInstance();
+    StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
+    StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
+    
+    current_state_.MainState = nullptr;
+    current_state_.AccState = nullptr;
+    current_state_.StrState = nullptr;
+    current_state_.BehaviorState = nullptr;
+    current_state_.PerceptionState = nullptr;
+    current_state_.OtherState = nullptr;
 
     ChangeStateFlags = 0;
     thread_loop = true;
@@ -86,16 +82,18 @@ public:
   bool isState(unsigned long long _state_num);
   bool inState(unsigned long long _state_num);
 
-  void StateDecider(void);
+  void stateDecider(void);
 
   bool setCurrentState(BaseState *state);
   bool setCurrentState(BaseState *state, BaseState *substate);
   bool setCurrentState(BaseState *state, BaseState *substate, BaseState *subsubstate);
 
+  BaseState *getCurrentMainState(void);
   BaseState *getCurrentState(void);
   std::unique_ptr<std::string> getCurrentStateName(void);
   void showCurrentStateName(void);
 
+  bool setEnableForceSetState(bool force_flag);
   BaseState *getStateObject(unsigned long long _state_num);
   void InitContext(void);
 

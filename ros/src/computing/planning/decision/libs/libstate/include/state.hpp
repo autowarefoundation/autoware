@@ -14,30 +14,30 @@ namespace state_machine
 class StartState;
 class InitialState;
 class LocateVehicleState;
+
 class DriveState;
-class DriveMoveFwdState;
-class DriveMoveFwdLeftState;
-class DriveMoveFwdRightState;
-class DriveMoveFwdStraightState;
-class DriveLaneChangeState;
-class DriveLaneChangeLeftState;
-class DriveLaneChangeRightState;
-class DriveLaneChangeRightAvoidanceState;
-class DriveObstacleAvoidanceState;
-class DriveObstacleAvoidanceStaticState;
-class DriveObstacleAvoidanceDynamicState;
-class DriveStopState;
-class DriveStopAvoidanceState;
-class DriveStopStopLineState;
-class DriveStopTrafficLightState;
+ //Accel/Brake subState
+ class DriveAccAccelerationState;
+ class DriveAccDecelerationState;
+ class DriveAccKeepState;
+ class DriveAccStopState;
+ //Steering subState
+ class DriveStrStraightState;
+ class DriveStrLeftTurnState;
+ class DriveStrRightTurnState;
+
+ //Behavior subState
+ class DriveBehaviorLaneChangeLeftState;
+ class DriveBehaviorLaneChangeRightState;
+ class DriveBehaviorObstacleAvoidanceState;
+
+ //Perception subState
+ class DriveDetectObstacleState;
+ class DriveDetectStoplineState;
+ class DriveDetectTrafficlightRedState;
+
 class MissionCompleteState;
 class EmergencyState;
-class EmergencyHWState;
-class EmergencyHWVehicleState;
-class EmergencyHWControllerState;
-class EmergencySWState;
-class EmergencySWAutowareState;
-class EmergencySWControllerState;
 
 // base class
 class BaseState
@@ -47,10 +47,11 @@ public:
   BaseState()
   {
   }
-  virtual void ShowStateName(void) = 0;
-  virtual unsigned long long GetStateTransMask() = 0;
-  virtual unsigned long long GetStateNum() = 0;
-  virtual std::unique_ptr<std::string> GetStateName() = 0;
+  virtual void showStateName(void) = 0;
+  virtual unsigned long long getStateTransMask() = 0;
+  virtual unsigned long long getStateNum() = 0;
+  virtual std::unique_ptr<std::string> getStateName() = 0;
+  virtual unsigned char getStateKind() = 0;
 };
 
 // Interface
@@ -61,34 +62,41 @@ protected:
   std::string StateName = "Base";
   unsigned long long StateNum;
   unsigned long long StateTransMask;
+  unsigned char StateKind;
 
 public:
   State()
   {
     StateNum = 0;
     StateTransMask = (unsigned long long)STATE_END - 1;
+    StateKind = UNKNOWN_STATE;
   }
-  void ShowStateName(void)
+  void showStateName(void)
   {
     std::cout << StateName << "-";
   }
 
-  static T* GetInstance(void)
+  static T* getInstance(void)
   {
     static T singleton;
     return &singleton;
   }
 
-  std::unique_ptr<std::string> GetStateName(void)
+  std::unique_ptr<std::string> getStateName(void)
   {
     return std::unique_ptr<std::string>(new std::string(StateName));
   }
 
-  unsigned long long GetStateTransMask(void)
+  unsigned char getStateKind(void)
+  {
+    return StateKind;
+  }
+
+  unsigned long long getStateTransMask(void)
   {
     return StateTransMask;
   }
-  unsigned long long GetStateNum(void)
+  unsigned long long getStateNum(void)
   {
     return StateNum;
   }
@@ -104,6 +112,7 @@ private:
     StateName = "Start";
     StateNum = START_STATE;
     StateTransMask = (unsigned long long)STATE_END - 1;
+    StateKind = MAIN_STATE;
   }
 
 public:
@@ -119,6 +128,7 @@ private:
     StateName = "Initial";
     StateNum = StateTransMask = INITIAL_STATE;
     StateTransMask |= START_STATE | EMERGENCY_STATE | MISSION_COMPLETE_STATE;
+    StateKind = MAIN_STATE;
   }
 
 public:
@@ -132,6 +142,7 @@ private:
     StateName = "Locate Vehicle";
     StateNum = StateTransMask = INITIAL_LOCATEVEHICLE_STATE;
     StateTransMask |= INITIAL_STATE;
+    StateKind = MAIN_STATE;
   }
 
 public:
@@ -146,6 +157,7 @@ private:
     StateName = "MissionComplete";
     StateNum = MISSION_COMPLETE_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = MAIN_STATE;
   }
 
 public:
