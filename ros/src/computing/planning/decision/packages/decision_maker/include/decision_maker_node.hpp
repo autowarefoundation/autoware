@@ -68,19 +68,20 @@ private:
   geometry_msgs::PoseStamped current_pose_;
 
   jsk_rviz_plugins::OverlayText state_text_msg;
+
+  // ROS Messages(Autoware)
   autoware_msgs::lane current_finalwaypoints_;
-
-  std::vector<geometry_msgs::Point> inside_points_;
-
   vector_map_msgs::AreaArray vMap_Areas;
   vector_map_msgs::PointArray vMap_Points;
   vector_map_msgs::LineArray vMap_Lines;
   vector_map_msgs::CrossRoadArray vMap_CrossRoads;
+  
+  std::vector<geometry_msgs::Point> inside_points_;
 
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
-  int CurrentTrafficlight;
+  int current_traffic_light;
   CrossRoadArea *ClosestArea_;
   std::string CurrentStateName;
   std::string TextOffset;
@@ -113,9 +114,11 @@ private:
 
   void publishToVelocityArray();
 
-  //
+  // judge method
+  // in near future, these methods will be deprecate to decision_maker library 
   bool isInsideArea(geometry_msgs::Point pt);
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
+  bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
 
   double calcIntersectWayAngle(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
 
@@ -138,7 +141,7 @@ private:
   // Currently. this feature is not working.
   // static void callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level);
 
-  // in near future, these function will be deprecate
+  // in near future, these methods will be deprecate to ADAS library 
   CrossRoadArea *findClosestCrossRoad(void);
 
 public:

@@ -52,37 +52,20 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
   {
     avg_distances = (avg_distances + distances[0]) / CONV_NUM;
     if (avg_distances <= CONVERGENCE_THRESHOLD){
-      return this->setCurrentState(StateStores[state_machine::DRIVE_STATE]);
+      return ctx->setCurrentState(state_machine::DRIVE_STATE);
     }else
     {
       return false;
     }
   }
 }
-
-void StateContext::stateDecider(void)
-{
-// not running
-  while (thread_loop)
-  {
-    if (!ChangeStateFlags.empty())
-	  setCurrentState(StateStores[ChangeStateFlags.front()]);
-          ChangeStateFlags.pop();
-        }
-      }
-    std::this_thread::sleep_for(std::chrono::microseconds(1000));
-  }
-  std::cerr << "StateDecider thread will be closed" << std::endl;
-  return;
     
-
-}
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped _pose = current_pose_ = msg;
   bool initLocalizationFlag = ctx->isState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
   if (initLocalizationFlag &&
-      ctx->handleCurrentPose(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
+      isLocalizationConvergence(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
                              _pose.pose.orientation.x, _pose.pose.orientation.y, _pose.pose.orientation.z))
   {
     ROS_INFO("Localization was convergence");
@@ -92,9 +75,9 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
 {
   ROS_INFO("Light color callback");
-  CurrentTrafficlight = msg.traffic_light;
-  if(CurrentTrafficLight == state_machine::E_RED ||
-	CurrentTrafficLight == state_machine::E_YELLOW ){
+  current_traffic_light = msg.traffic_light;
+  if(current_traffic_light == state_machine::E_RED ||
+	current_traffic_light == state_machine::E_YELLOW ){
 	ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
   //ctx->handleTrafficLight(CurrentTrafficlight);
@@ -103,8 +86,8 @@ void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_ligh
 //
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-  if(ctx->setCurrentState(state_machine::INITIAL_LOCATE_VEHICLE_STATE]);
-  Subs["points_raw"].shutdown();
+	if(ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
+		Subs["points_raw"].shutdown();
 }
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
