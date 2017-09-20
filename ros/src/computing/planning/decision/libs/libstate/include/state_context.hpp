@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <queue>
 #include <thread>
 #include <unordered_map>
 #include <utility>
@@ -71,7 +72,7 @@ public:
     HolderList.push_back(&current_state_.StrState); 
     HolderList.push_back(&current_state_.BehaviorState); 
     HolderList.push_back(&current_state_.PerceptionState); 
- e   HolderList.push_back(&current_state_.OtherState); 
+    HolderList.push_back(&current_state_.OtherState); 
     
     for(auto &&p : HolderList){
       *p = nullptr;
@@ -98,6 +99,7 @@ public:
 
   void stateDecider(void);
 
+  bool setCurrentState(StateFlags flag);
   bool setCurrentState(BaseState *state);
   bool setCurrentState(BaseState *state, BaseState *substate);
   bool setCurrentState(BaseState *state, BaseState *substate, BaseState *subsubstate);

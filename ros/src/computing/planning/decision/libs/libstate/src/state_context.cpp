@@ -188,12 +188,11 @@ void StateContext::stateDecider(void)
 // not running
   while (thread_loop)
   {
-    if (!ChangeStateFlags.empty())
-	  setCurrentState(StateStores[ChangeStateFlags.front()]);
-          ChangeStateFlags.pop();
-        }
-      }
-    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+	  if (!ChangeStateFlags.empty()){
+		  this->setCurrentState(StateStores[ChangeStateFlags.front()]);
+		  ChangeStateFlags.pop();
+	  }
+	  std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
   std::cerr << "StateDecider thread will be closed" << std::endl;
   return;
