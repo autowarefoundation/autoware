@@ -14,6 +14,8 @@
     "babel": "^6.23.0",
     "create-react-app": "^1.4.0",
     "element-resize-event": "^2.0.9",
+    "gulp": "^3.9.1",
+    "gulp-cli": "^1.4.0",
     "immutable": "^3.8.1",
     "little-loader": "^0.2.0",
     "lodash": "^4.17.4",
