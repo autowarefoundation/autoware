@@ -37,6 +37,5 @@ class MarkerDownSampler(object):
 if __name__ == '__main__':
     rospy.init_node("marker_downsampler", anonymous=True)
     MarkerDownSampler().setup("/trajectory_circle_mark", 1.5)
-    # MarkerDownSampler().setup("/next_waypoint_mark", 0.5)
     MarkerDownSampler().setup("/next_target_mark")
     rospy.spin()
