@@ -31,6 +31,7 @@ include_directories(
 	/usr/include/flycapture
 	${catkin_INCLUDE_DIRS}
 	${OpenCV_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
 )
 add_executable(grasshopper3 nodes/grasshopper3/grasshopper3.cpp)
 
