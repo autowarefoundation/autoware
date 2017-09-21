@@ -14,25 +14,25 @@ class InitialState;
 class LocateVehicleState;
 
 class DriveState;
- //Accel/Brake subState
- class DriveAccAccelerationState;
- class DriveAccDecelerationState;
- class DriveAccKeepState;
- class DriveAccStopState;
- //Steering subState
- class DriveStrStraightState;
- class DriveStrLeftTurnState;
- class DriveStrRightTurnState;
+// Accel/Brake subState
+class DriveAccAccelerationState;
+class DriveAccDecelerationState;
+class DriveAccKeepState;
+class DriveAccStopState;
+// Steering subState
+class DriveStrStraightState;
+class DriveStrLeftTurnState;
+class DriveStrRightTurnState;
 
- //Behavior subState
- class DriveBehaviorLaneChangeLeftState;
- class DriveBehaviorLaneChangeRightState;
- class DriveBehaviorObstacleAvoidanceState;
+// Behavior subState
+class DriveBehaviorLaneChangeLeftState;
+class DriveBehaviorLaneChangeRightState;
+class DriveBehaviorObstacleAvoidanceState;
 
- //Perception subState
- class DriveDetectObstacleState;
- class DriveDetectStoplineState;
- class DriveDetectTrafficlightRedState;
+// Perception subState
+class DriveDetectObstacleState;
+class DriveDetectStoplineState;
+class DriveDetectTrafficlightRedState;
 
 class MissionCompleteState;
 class EmergencyState;

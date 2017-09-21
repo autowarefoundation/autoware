@@ -9,22 +9,21 @@
 #include <autoware_msgs/traffic_light.h>
 
 #include <cross_road_area.hpp>
-#include <state.hpp>
-#include <state_context.hpp>
 #include <decision_maker_node.hpp>
 #include <euclidean_space.hpp>
+#include <state.hpp>
+#include <state_context.hpp>
 
 namespace decision_maker
 {
-
-	// TODO for Decision_maker
-	// - lane_change
-	// - change substate class to state_context
-	// - fix a light_color_changed
-	// - disable/clear_subclassa
-	// - object detection
-	// - changed subscribing waypoint topic to base_waypoints from final_waypoints 
-	//
+// TODO for Decision_maker
+// - lane_change
+// - change substate class to state_context
+// - fix a light_color_changed
+// - disable/clear_subclassa
+// - object detection
+// - changed subscribing waypoint topic to base_waypoints from final_waypoints
+//
 
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
@@ -32,58 +31,60 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
   bool initLocalizationFlag = ctx->isCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
   if (initLocalizationFlag &&
       isLocalizationConvergence(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
-                             _pose.pose.orientation.x, _pose.pose.orientation.y, _pose.pose.orientation.z))
+                                _pose.pose.orientation.x, _pose.pose.orientation.y, _pose.pose.orientation.z))
   {
     ROS_INFO("Localization was convergence");
   }
 
-  //displacement_from_path_ =  getDisplacementFromPath(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z);
+  // displacement_from_path_ =  getDisplacementFromPath(_pose.pose.position.x, _pose.pose.position.y,
+  // _pose.pose.position.z);
 }
 
 bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 {
-	return ctx->setCurrentState((state_machine::StateFlags)_state_num);
+  return ctx->setCurrentState((state_machine::StateFlags)_state_num);
 }
 
 void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 {
-	ROS_INFO("Received forcing state changing request");
-	handleStateCmd((unsigned long long)msg.data);
+  ROS_INFO("Received forcing state changing request");
+  handleStateCmd((unsigned long long)msg.data);
 }
-
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
 {
-	if(msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
-		ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-	else if(msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
-		ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-	else{
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-	}
+  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
+  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
+  else
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
+  }
 }
 
 void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg)
 {
-	ROS_INFO("Param setted by Runtime Manager");
-	enableDisplayMarker = msg.enable_display_marker;
-	ctx->setEnableForceSetState(msg.enable_force_state_change);
-	if(msg.enable_force_state_change){
-		if(msg.MainState_ChangeFlag)
-			handleStateCmd((unsigned long long)1 << msg.MainState_ChangeFlag);
-		if(msg.SubState_Acc_ChangeFlag)
-			handleStateCmd(state_machine::DRIVE_ACC_ACCELERATION_STATE << (msg.SubState_Acc_ChangeFlag-1));
-		if(msg.SubState_Str_ChangeFlag)
-			handleStateCmd(state_machine::DRIVE_STR_STRAIGHT_STATE << (msg.SubState_Str_ChangeFlag-1));
-		if(msg.SubState_Behavior_ChangeFlag)
-			handleStateCmd(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE << (msg.SubState_Behavior_ChangeFlag-1));
-		if(msg.SubState_Perception_ChangeFlag)
-			handleStateCmd(state_machine::DRIVE_DETECT_OBSTACLE_STATE << (msg.SubState_Perception_ChangeFlag -1));
-	}
+  ROS_INFO("Param setted by Runtime Manager");
+  enableDisplayMarker = msg.enable_display_marker;
+  ctx->setEnableForceSetState(msg.enable_force_state_change);
+  if (msg.enable_force_state_change)
+  {
+    if (msg.MainState_ChangeFlag)
+      handleStateCmd((unsigned long long)1 << msg.MainState_ChangeFlag);
+    if (msg.SubState_Acc_ChangeFlag)
+      handleStateCmd(state_machine::DRIVE_ACC_ACCELERATION_STATE << (msg.SubState_Acc_ChangeFlag - 1));
+    if (msg.SubState_Str_ChangeFlag)
+      handleStateCmd(state_machine::DRIVE_STR_STRAIGHT_STATE << (msg.SubState_Str_ChangeFlag - 1));
+    if (msg.SubState_Behavior_ChangeFlag)
+      handleStateCmd(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE << (msg.SubState_Behavior_ChangeFlag - 1));
+    if (msg.SubState_Perception_ChangeFlag)
+      handleStateCmd(state_machine::DRIVE_DETECT_OBSTACLE_STATE << (msg.SubState_Perception_ChangeFlag - 1));
+  }
 }
 
-//void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
+// void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
 {
   const ros::M_string &header = event.getConnectionHeader();
@@ -91,24 +92,23 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 
   current_traffic_light = light->traffic_light;
-  if(current_traffic_light == state_machine::E_RED ||
-	current_traffic_light == state_machine::E_YELLOW ){
-	ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
-  }else{
-	  ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+  if (current_traffic_light == state_machine::E_RED || current_traffic_light == state_machine::E_YELLOW)
+  {
+    ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
-  //ctx->handleTrafficLight(CurrentTrafficlight);
+  else
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+  }
+  // ctx->handleTrafficLight(CurrentTrafficlight);
 }
 
 //
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-	if(ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
-		Subs["points_raw"].shutdown();
+  if (ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
+    Subs["points_raw"].shutdown();
 }
-
-
-
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
@@ -119,7 +119,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
   {
-    std::cerr << "State is not DRIVE_STATE["<< ctx->getCurrentStateName() <<"]" << std::endl;
+    std::cerr << "State is not DRIVE_STATE[" << ctx->getCurrentStateName() << "]" << std::endl;
     return;
   }
 
@@ -132,11 +132,11 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   // between first-waypoint and end-waypoint in intersection area.
   int temp = (int)std::floor(intersect_wayangle + 360.0) % 360;
   if (std::abs(temp) <= ANGLE_STRAIGHT)
-	  ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
   else if (temp <= ANGLE_RIGHT)
-	  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
   else if (temp <= ANGLE_LEFT)
-	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
 
   // velocity
   double _temp_sum = 0;
@@ -145,13 +145,13 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
     _temp_sum += mps2kmph(msg.waypoints[i].twist.twist.linear.x);
   }
   average_velocity_ = _temp_sum / VEL_AVERAGE_COUNT;
-  
+
   if (std::fabs(average_velocity_ - current_velocity_) <= 2.0)
-	  ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
   else if (average_velocity_ - current_velocity_)
-	  ctx->setCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE);
   else
-	  ctx->setCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE);
 
   // for publish plan of velocity
   publishToVelocityArray();
@@ -159,7 +159,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 #ifdef DEBUG_PRINT
   std::cout << "Velocity: " << current_velocity_ << " to " << average_velocity_ << std::endl;
 #endif
-
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {
@@ -169,7 +168,6 @@ void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &
     ctx->handleTwistCmd(false);
   else
     Twistflag = true;
-
 }
 
 void DecisionMakerNode::callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg)

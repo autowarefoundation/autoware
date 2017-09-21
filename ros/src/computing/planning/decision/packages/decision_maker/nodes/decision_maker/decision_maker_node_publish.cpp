@@ -24,13 +24,11 @@
 
 namespace decision_maker
 {
-
 void DecisionMakerNode::update_pubsub(void)
 {
   // if state machine require to re-subscribe topic,
   // this function will re-definition subscriber.
 }
-
 
 void DecisionMakerNode::displayMarker(void)
 {
@@ -126,7 +124,7 @@ void DecisionMakerNode::update_msgs(void)
 
 std::string DecisionMakerNode::createStateMessageText()
 {
-	return ctx->createStateMessageText();
+  return ctx->createStateMessageText();
 }
 
 void DecisionMakerNode::publishToVelocityArray()
@@ -134,11 +132,12 @@ void DecisionMakerNode::publishToVelocityArray()
   int count = 0;
   std_msgs::Float64MultiArray msg;
 
-  for(const auto &i : current_finalwaypoints_.waypoints ){
-	  msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
-	  if(++count>=10)break;
+  for (const auto &i : current_finalwaypoints_.waypoints)
+  {
+    msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
+    if (++count >= 10)
+      break;
   }
   Pubs["target_velocity_array"].publish(msg);
 }
-
 }

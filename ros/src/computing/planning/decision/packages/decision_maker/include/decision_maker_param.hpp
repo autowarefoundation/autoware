@@ -1,8 +1,8 @@
 #ifndef __DECISION_MAKER_PARAM_HPP__
 #define __DECISION_MAKER_PARAM_HPP__
 
-namespace decision_maker{
-
+namespace decision_maker
+{
 //#define DEBUG_PRINT
 
 #define DEFAULT_DISPLAY_FLAG false
@@ -18,14 +18,6 @@ namespace decision_maker{
 #define ANGLE_STRAIGHT 50.0
 #define ANGLE_LEFT 360.0
 #define ANGLE_RIGHT 180.0
-
-
-
-
 }
 
-
-
-
 #endif
-

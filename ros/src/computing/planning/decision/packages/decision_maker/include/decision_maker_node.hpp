@@ -1,20 +1,19 @@
 #ifndef __DECISION_MAKER_NODE__
 #define __DECISION_MAKER_NODE__
 
-#include <unordered_map>
 #include <mutex>
+#include <unordered_map>
 
-
-#include <autoware_msgs/lane.h>
 #include <autoware_msgs/ConfigDecisionMaker.h>
+#include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_rviz_plugins/OverlayText.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
 
 //#include <vector_map_server/GetCrossRoad.h>
 
@@ -26,14 +25,12 @@
 #include <geometry_msgs/Point.h>
 
 // lib
+#include <cross_road_area.hpp>
 #include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
-#include <cross_road_area.hpp>
-
 
 #include <decision_maker_param.hpp>
-
 
 //#include <dynamic_reconfigure/server.h>
 //#include <decision_maker/decision_makerConfig.h>
@@ -54,14 +51,14 @@ enum class E_ChangeFlags : int32_t
   STRAIGHT,
   LEFT,
   RIGHT,
-  
+
   UNKNOWN = -1,
 };
 
 template <class T>
 typename std::underlying_type<T>::type enumToInteger(T t)
 {
-	return static_cast<typename std::underlying_type<T>::type>(t);
+  return static_cast<typename std::underlying_type<T>::type>(t);
 }
 inline bool hasvMap(void)
 {
@@ -94,7 +91,7 @@ private:
   vector_map_msgs::PointArray vMap_Points;
   vector_map_msgs::LineArray vMap_Lines;
   vector_map_msgs::CrossRoadArray vMap_CrossRoads;
-  
+
   std::vector<geometry_msgs::Point> inside_points_;
 
   // Current way/behavior status
@@ -143,7 +140,7 @@ private:
   std::string createStateMessageText();
 
   // judge method
-  // in near future, these methods will be deprecate to decision_maker library 
+  // in near future, these methods will be deprecate to decision_maker library
   bool isInsideArea(geometry_msgs::Point pt);
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
@@ -169,7 +166,7 @@ private:
   void callbackFromVectorMapLine(const vector_map_msgs::LineArray &msg);
   void callbackFromVectorMapCrossRoad(const vector_map_msgs::CrossRoadArray &msg);
 
-  // in near future, these methods will be deprecate to ADAS library 
+  // in near future, these methods will be deprecate to ADAS library
   CrossRoadArea *findClosestCrossRoad(void);
 
 public:
@@ -179,7 +176,7 @@ public:
   {
     SimulationMode = false;
     enableDisplayMarker = DEFAULT_DISPLAY_FLAG;
-    param_convergence_threshold_ = DEFAULT_CONVERGENCE_THRESHOLD; 
+    param_convergence_threshold_ = DEFAULT_CONVERGENCE_THRESHOLD;
     param_convergence_count_ = DEFAULT_CONVERGENCE_COUNT;
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
 
@@ -191,13 +188,10 @@ public:
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;
-
   }
 
   void run(void);
 };
-
-
 
 }  // namespace decision_maker
 

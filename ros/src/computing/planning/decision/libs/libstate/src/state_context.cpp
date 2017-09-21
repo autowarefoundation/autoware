@@ -31,9 +31,11 @@ namespace state_machine
  */
 void StateContext::showCurrentStateName(void)
 {
-  for(auto &&p : HolderList){
-    if(*p){
-	(*p)->showStateName();
+  for (auto &&p : HolderList)
+  {
+    if (*p)
+    {
+      (*p)->showStateName();
     }
   }
 
@@ -75,36 +77,38 @@ bool StateContext::setCurrentState(BaseState *_state)
   {
     if (_state && (enableForceSetState || (_state->getStateTransMask() & prevState->getStateNum())))
     {
-	switch(_state->getStateKind()){
-		case MAIN_STATE:
-			current_state_.MainState = _state;
-			current_state_.AccState = nullptr;
-			current_state_.StrState = nullptr;
-			current_state_.BehaviorState = nullptr;
-			current_state_.PerceptionState = nullptr;
-			current_state_.OtherState = nullptr;
-			break;
-		case ACC_STATE:
-			current_state_.AccState = _state;
-			break;
-		case STR_STATE:
-			current_state_.StrState = _state;
-			break;
-		case BEHAVIOR_STATE:
-			current_state_.BehaviorState = _state;
-			break;
-		case PERCEPTION_STATE:
-			current_state_.PerceptionState = _state;
-			break;
-		case OTHER_STATE:
-			current_state_.OtherState = _state;
-			break;
-	}
-        std::cout << "Successed to set state \"" << prevState->getStateName() << "\" to \""
-                  << _state->getStateName() << "\" : Mask is [" << _state->getStateTransMask() << "/"
-                  << prevState->getStateNum() << "-" << _state->getStateNum() << "]" << std::endl;
+      switch (_state->getStateKind())
+      {
+        case MAIN_STATE:
+          current_state_.MainState = _state;
+          current_state_.AccState = nullptr;
+          current_state_.StrState = nullptr;
+          current_state_.BehaviorState = nullptr;
+          current_state_.PerceptionState = nullptr;
+          current_state_.OtherState = nullptr;
+          break;
+        case ACC_STATE:
+          current_state_.AccState = _state;
+          break;
+        case STR_STATE:
+          current_state_.StrState = _state;
+          break;
+        case BEHAVIOR_STATE:
+          current_state_.BehaviorState = _state;
+          break;
+        case PERCEPTION_STATE:
+          current_state_.PerceptionState = _state;
+          break;
+        case OTHER_STATE:
+          current_state_.OtherState = _state;
+          break;
       }
-    else{
+      std::cout << "Successed to set state \"" << prevState->getStateName() << "\" to \"" << _state->getStateName()
+                << "\" : Mask is [" << _state->getStateTransMask() << "/" << prevState->getStateNum() << "-"
+                << _state->getStateNum() << "]" << std::endl;
+    }
+    else
+    {
       std::cerr << "Failed to set state \"" << current_state_.MainState->getStateName() << "\" to \""
                 << _state->getStateName() << "\" : Mask is [" << _state->getStateTransMask() << "/"
                 << current_state_.MainState->getStateNum() << "-" << _state->getStateNum() << "]" << std::endl;
@@ -117,13 +121,13 @@ bool StateContext::setCurrentState(BaseState *_state)
 
 bool StateContext::setCurrentState(StateFlags flag)
 {
-   this->setCurrentState(StateStores[flag]);
+  this->setCurrentState(StateStores[flag]);
 }
 
 bool StateContext::setEnableForceSetState(bool force_flag)
 {
-	enableForceSetState = force_flag;
-	return true;
+  enableForceSetState = force_flag;
+  return true;
 }
 
 BaseState *StateContext::getCurrentMainState(void)
@@ -139,65 +143,69 @@ BaseState *StateContext::getStateObject(unsigned long long _state_num)
 BaseState **StateContext::getCurrentStateHolderPtr(unsigned long long _state_num)
 {
   BaseState **state_ptr;
-  switch(getStateObject(_state_num)->getStateKind())
+  switch (getStateObject(_state_num)->getStateKind())
   {
-		case MAIN_STATE:
-			state_ptr = &current_state_.MainState;
-			break;
-		case ACC_STATE:
-			state_ptr = &current_state_.AccState;
-			break;
-		case STR_STATE:
-			state_ptr = &current_state_.StrState;
-			break;
-		case BEHAVIOR_STATE:
-			state_ptr = &current_state_.BehaviorState;
-			break;
-		case PERCEPTION_STATE:
-			state_ptr = &current_state_.PerceptionState;
-			break;
-		case OTHER_STATE:
-			state_ptr = &current_state_.OtherState;
-			break;
-		default:
-			state_ptr = nullptr;
-			break;
+    case MAIN_STATE:
+      state_ptr = &current_state_.MainState;
+      break;
+    case ACC_STATE:
+      state_ptr = &current_state_.AccState;
+      break;
+    case STR_STATE:
+      state_ptr = &current_state_.StrState;
+      break;
+    case BEHAVIOR_STATE:
+      state_ptr = &current_state_.BehaviorState;
+      break;
+    case PERCEPTION_STATE:
+      state_ptr = &current_state_.PerceptionState;
+      break;
+    case OTHER_STATE:
+      state_ptr = &current_state_.OtherState;
+      break;
+    default:
+      state_ptr = nullptr;
+      break;
   }
   return state_ptr;
-
 }
 
 bool StateContext::disableCurrentState(unsigned long long _state_num)
 {
   BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-  if(state_ptr && this->isState((*state_ptr), _state_num)){
-	  *state_ptr = nullptr;
-	  return true;
-  }else{
-	  return false;
+  if (state_ptr && this->isState((*state_ptr), _state_num))
+  {
+    *state_ptr = nullptr;
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
-
 
 bool StateContext::isCurrentState(unsigned long long _state_num)
 {
   BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-  return (*state_ptr)?(*state_ptr)->getStateNum() == _state_num?true:false:false;
- // return current_state_.MainState?current_state_.MainState->getStateNum() == _state_num?true:false:false;
+  return (*state_ptr) ? (*state_ptr)->getStateNum() == _state_num ? true : false : false;
+  // return current_state_.MainState?current_state_.MainState->getStateNum() == _state_num?true:false:false;
 }
 
 bool StateContext::isState(BaseState *base, unsigned long long _state_num)
 {
-  return base?base->getStateNum() == _state_num?true:false:false;
+  return base ? base->getStateNum() == _state_num ? true : false : false;
 }
 
 bool StateContext::inState(unsigned long long _state_num)
 {
-	if(current_state_.MainState){
-		return ((current_state_.MainState->getStateNum() & _state_num) != 0)?true:false;
-	}else{
-		return false;
-	}
+  if (current_state_.MainState)
+  {
+    return ((current_state_.MainState->getStateNum() & _state_num) != 0) ? true : false;
+  }
+  else
+  {
+    return false;
+  }
 }
 
 #define ANGLE_STRAIGHT 50.0
@@ -229,21 +237,19 @@ bool StateContext::handleIntersection(bool _hasIntersection, double _angle)
   }
 }
 
-
 std::string StateContext::createStateMessageText(void)
 {
-	std::string ret;
+  std::string ret;
 
-	for(auto &&p : HolderList){
-		if(*p){
-			ret = ret + "\n" + (*p)->getStateName();
-		}
-	}
-	return ret;
-
-
+  for (auto &&p : HolderList)
+  {
+    if (*p)
+    {
+      ret = ret + "\n" + (*p)->getStateName();
+    }
+  }
+  return ret;
 }
-
 
 bool StateContext::handleTwistCmd(bool _hasTwistCmd)
 {
@@ -253,17 +259,17 @@ bool StateContext::handleTwistCmd(bool _hasTwistCmd)
     return false;
 }
 
-
 void StateContext::stateDecider(void)
 {
-// not running
+  // not running
   while (thread_loop)
   {
-	  if (!ChangeStateFlags.empty()){
-		  this->setCurrentState(StateStores[ChangeStateFlags.front()]);
-		  ChangeStateFlags.pop();
-	  }
-	  std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    if (!ChangeStateFlags.empty())
+    {
+      this->setCurrentState(StateStores[ChangeStateFlags.front()]);
+      ChangeStateFlags.pop();
+    }
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
   }
   std::cerr << "StateDecider thread will be closed" << std::endl;
   return;

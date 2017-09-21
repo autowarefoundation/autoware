@@ -16,23 +16,23 @@ namespace state_machine
 class StateContext
 {
 private:
-	class StateHolder{
-		public:
-			BaseState *MainState;
-			BaseState *AccState;
-			BaseState *StrState;
-			BaseState *BehaviorState;
-			BaseState *PerceptionState;
-			BaseState *OtherState;
-	} current_state_;
-	
+  class StateHolder
+  {
+  public:
+    BaseState *MainState;
+    BaseState *AccState;
+    BaseState *StrState;
+    BaseState *BehaviorState;
+    BaseState *PerceptionState;
+    BaseState *OtherState;
+  } current_state_;
+
   std::vector<BaseState **> HolderList;
 
-
   std::unordered_map<uint64_t, BaseState *> StateStores;
-  
+
   bool enableForceSetState;
-  //unsigned long long ChangeStateFlags;
+  // unsigned long long ChangeStateFlags;
   std::queue<unsigned long long> ChangeStateFlags;
   std::atomic<bool> thread_loop;
 
@@ -46,7 +46,6 @@ private:
 public:
   StateContext(void)
   {
-
     StateStores[START_STATE] = StartState::getInstance();
     StateStores[INITIAL_STATE] = InitialState::getInstance();
     StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
@@ -67,14 +66,15 @@ public:
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
-    HolderList.push_back(&current_state_.MainState); 
-    HolderList.push_back(&current_state_.AccState); 
-    HolderList.push_back(&current_state_.StrState); 
-    HolderList.push_back(&current_state_.BehaviorState); 
-    HolderList.push_back(&current_state_.PerceptionState); 
-    HolderList.push_back(&current_state_.OtherState); 
-    
-    for(auto &&p : HolderList){
+    HolderList.push_back(&current_state_.MainState);
+    HolderList.push_back(&current_state_.AccState);
+    HolderList.push_back(&current_state_.StrState);
+    HolderList.push_back(&current_state_.BehaviorState);
+    HolderList.push_back(&current_state_.PerceptionState);
+    HolderList.push_back(&current_state_.OtherState);
+
+    for (auto &&p : HolderList)
+    {
       *p = nullptr;
     }
 #if 0
@@ -99,7 +99,6 @@ public:
   bool isCurrentState(unsigned long long _state_num);
   bool isCurrentState(unsigned char _state_kind, unsigned long long _state_num);
   bool inState(unsigned long long _state_num);
-
 
   bool setCurrentState(StateFlags flag);
   bool setCurrentState(BaseState *state);

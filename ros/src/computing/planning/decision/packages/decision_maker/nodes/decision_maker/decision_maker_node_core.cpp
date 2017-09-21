@@ -25,7 +25,6 @@
 
 namespace decision_maker
 {
-
 CrossRoadArea *DecisionMakerNode::findClosestCrossRoad(void)
 {
   CrossRoadArea *_area = nullptr;
@@ -92,10 +91,8 @@ bool DecisionMakerNode::isInsideArea(geometry_msgs::Point pt)
   return false;
 }
 
-
-
 bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg,
-                                                    const geometry_msgs::PoseStamped &pose_msg)
+                                                     const geometry_msgs::PoseStamped &pose_msg)
 {
 #ifdef USE_VMAP_SERVER  // this is not successfully run
   cross_road_srv.request.pose = pose_msg;
@@ -112,13 +109,13 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
 
   for (const auto &cross_road_d : cross_road_srv.response.objects.data)
   {
- //   std::cout << "EEEEEEEEE" << cross_road_d.linkid << std::endl;
+    //   std::cout << "EEEEEEEEE" << cross_road_d.linkid << std::endl;
   }
 #endif
 }
 
 double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_msg,
-                                               const geometry_msgs::PoseStamped &pose_msg)
+                                                const geometry_msgs::PoseStamped &pose_msg)
 {
   if (vMap_CrossRoads_flag)
   {
@@ -208,8 +205,8 @@ void DecisionMakerNode::run(void)
   while (ros::ok())
   {
     update();
-    if(enableDisplayMarker)
-	    displayMarker();
+    if (enableDisplayMarker)
+      displayMarker();
     loop_rate.sleep();
   }
 }

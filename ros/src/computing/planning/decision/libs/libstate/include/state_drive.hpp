@@ -188,6 +188,7 @@ private:
     StateTransMask = DRIVE_STATE;
     StateKind = BEHAVIOR_STATE;
   }
+
 public:
 };
 

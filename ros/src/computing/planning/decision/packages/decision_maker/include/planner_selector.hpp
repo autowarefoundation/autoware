@@ -1,8 +1,8 @@
 #ifndef __PLANNER_SELECTOR_HPP__
 #define __PLANNER_SELECTOR_HPP__
 
-#include <autoware_msgs/lane.h>
 #include <autoware_msgs/ConfigPlannerSelector.h>
+#include <autoware_msgs/lane.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 
@@ -26,7 +26,6 @@ private:
   std::unordered_map<std::string, ros::Publisher> Pubs;
   std::unordered_map<std::string, ros::Subscriber> Subs;
 
-
   autoware_msgs::lane final_waypoints_dp_;
   autoware_msgs::lane final_waypoints_astar_;
 
@@ -40,12 +39,12 @@ private:
 
   int enableLattice_;
   bool pastWaypoint;
-  unsigned int 	config_latency_num_;
-  unsigned int 	config_waypoints_num_;
-  double 	config_convergence_num_;
+  unsigned int config_latency_num_;
+  unsigned int config_waypoints_num_;
+  double config_convergence_num_;
   double current_velocity_;
 
-  bool existWaypoints(const int _config_waypoints_num); 
+  bool existWaypoints(const int _config_waypoints_num);
 
 public:
   PlannerSelector()
