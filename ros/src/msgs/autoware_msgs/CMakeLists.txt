@@ -48,7 +48,8 @@ add_message_files(
   vscan_tracked_array.msg
   waypoint.msg
 
-## Runtime Manager ## 
+## Runtime Manager ##
+  ConfigApproximateNdtMapping.msg 
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
