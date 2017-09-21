@@ -1,5 +1,6 @@
 Header header
 bool enable_force_state_change
+bool enable_display_marker
 int32 MainState_ChangeFlag
 int32 SubState_ChangeFlag
 float32 convergence_threshold

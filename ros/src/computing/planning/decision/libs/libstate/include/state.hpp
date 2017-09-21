@@ -48,7 +48,7 @@ public:
   virtual void showStateName(void) = 0;
   virtual unsigned long long getStateTransMask() = 0;
   virtual unsigned long long getStateNum() = 0;
-  virtual std::unique_ptr<std::string> getStateName() = 0;
+  virtual std::string getStateName() = 0;
   virtual unsigned char getStateKind() = 0;
 };
 
@@ -80,9 +80,9 @@ public:
     return &singleton;
   }
 
-  std::unique_ptr<std::string> getStateName(void)
+  std::string getStateName(void)
   {
-    return std::unique_ptr<std::string>(new std::string(StateName));
+    return std::string(StateName);
   }
 
   unsigned char getStateKind(void)

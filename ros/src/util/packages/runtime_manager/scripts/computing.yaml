@@ -1797,6 +1797,11 @@ params :
       label: enable_force_state_change
       kind : checkbox
       v    : False
+    - name : enable_display_marker
+      desc : enable display marker flag
+      label: enable_display_marker
+      kind : checkbox
+      v    : False
     - name : MainState_ChangeFlag
       desc : Forcibly change state if enable force change flags.
       label: MainState_ChangeFlag

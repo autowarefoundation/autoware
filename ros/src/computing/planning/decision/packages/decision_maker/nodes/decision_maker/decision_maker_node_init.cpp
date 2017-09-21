@@ -5,6 +5,7 @@
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <tf/transform_listener.h>
+#include <mutex>
 
 // lib
 #include <euclidean_space.hpp>
@@ -39,9 +40,11 @@ namespace decision_maker{
 		Subs["current_velocity"] =
 			nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
 		Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
+		Subs["light_color_managed"] = nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
 		Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
 		Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
 		Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
+		Subs["change_flag"] = nh_.subscribe("change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
 
 		// vector map subscriber
 		Subs["vector_map_area"] =
@@ -52,6 +55,9 @@ namespace decision_maker{
 			nh_.subscribe("/vector_map_info/line", 1, &DecisionMakerNode::callbackFromVectorMapLine, this);
 		Subs["vector_map_crossroad"] =
 			nh_.subscribe("/vector_map_info/cross_road", 1, &DecisionMakerNode::callbackFromVectorMapCrossRoad, this);
+
+		// Config subscriber
+		Subs["config/decision_maker"] = nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
 
 		// pub
 		Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
@@ -89,73 +95,77 @@ namespace decision_maker{
 		}
 		{
 			initVectorMapClient();
-			if(isDisplay)
+			if(enableDisplayMarker)
 				displayMarker();
 		}
 	}
 
 	void DecisionMakerNode::initVectorMap(void)
 	{
-		if (!vector_map_init && vMap_Areas_flag & vMap_Points_flag & vMap_Lines_flag & vMap_CrossRoads_flag)
-		{
-			vector_map_init = true;
-
-			int _index = 0;
-
-			for (const auto &cross_road : vMap_CrossRoads.data)
-			{
-				for (const auto &area : vMap_Areas.data)
+		if(!vector_map_init){
+			vMap_mutex.lock();
+				if (!vector_map_init && vMap_Areas_flag & vMap_Points_flag & vMap_Lines_flag & vMap_CrossRoads_flag)
 				{
-					if (cross_road.aid == area.aid)
+					vector_map_init = true;
+
+					int _index = 0;
+
+					for (const auto &cross_road : vMap_CrossRoads.data)
 					{
-						CrossRoadArea carea;
-						carea.id = _index++;
-						carea.area_id = area.aid;
-
-						double x_avg = 0.0, x_min = 0.0, x_max = 0.0;
-						double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
-						double z = 0.0;
-
-						int points_count = 0;
-						for (const auto &line : vMap_Lines.data)
+						for (const auto &area : vMap_Areas.data)
 						{
-							if (area.slid <= line.lid && line.lid <= area.elid)
+							if (cross_road.aid == area.aid)
 							{
-								for (const auto &point : vMap_Points.data)
+								CrossRoadArea carea;
+								carea.id = _index++;
+								carea.area_id = area.aid;
+
+								double x_avg = 0.0, x_min = 0.0, x_max = 0.0;
+								double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
+								double z = 0.0;
+
+								int points_count = 0;
+								for (const auto &line : vMap_Lines.data)
 								{
-									if (line.fpid <= point.pid && point.pid <= line.fpid)
+									if (area.slid <= line.lid && line.lid <= area.elid)
 									{
-										geometry_msgs::Point _point;
-										_point.x = point.ly;
-										_point.y = point.bx;
-										_point.z = point.h;
+										for (const auto &point : vMap_Points.data)
+										{
+											if (line.fpid <= point.pid && point.pid <= line.fpid)
+											{
+												geometry_msgs::Point _point;
+												_point.x = point.ly;
+												_point.y = point.bx;
+												_point.z = point.h;
 
-										x_avg += _point.x;
-										y_avg += _point.y;
+												x_avg += _point.x;
+												y_avg += _point.y;
 
-										x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
-										x_max = (x_max == 0.0) ? _point.x : std::max(_point.x, x_max);
-										y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
-										y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
-										z = _point.z;
-										points_count++;
+												x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
+												x_max = (x_max == 0.0) ? _point.x : std::max(_point.x, x_max);
+												y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
+												y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
+												z = _point.z;
+												points_count++;
 
-										carea.points.push_back(_point);
-									}  // if pid
-								}    // points iter
-							}      // if lid
-						}        // line iter
-						carea.bbox.pose.position.x = x_avg / (double)points_count;
-						carea.bbox.pose.position.y = y_avg / (double)points_count;
-						carea.bbox.pose.position.z = z;
-						carea.bbox.dimensions.x = x_max - x_min;
-						carea.bbox.dimensions.y = y_max - y_min;
-						carea.bbox.dimensions.z = 2;
-						carea.bbox.label = 1;
-						intersects.push_back(carea);
+												carea.points.push_back(_point);
+											}  // if pid
+										}    // points iter
+									}      // if lid
+								}        // line iter
+								carea.bbox.pose.position.x = x_avg / (double)points_count;
+								carea.bbox.pose.position.y = y_avg / (double)points_count;
+								carea.bbox.pose.position.z = z;
+								carea.bbox.dimensions.x = x_max - x_min;
+								carea.bbox.dimensions.y = y_max - y_min;
+								carea.bbox.dimensions.z = 2;
+								carea.bbox.label = 1;
+								intersects.push_back(carea);
+							}
+						}
 					}
 				}
-			}
+			vMap_mutex.unlock();
 		}
 	}
 
@@ -174,5 +184,6 @@ namespace decision_maker{
 
 		return cross_road_cli.call(cross_road_srv);
 #endif
+		return false;
 	}
 }

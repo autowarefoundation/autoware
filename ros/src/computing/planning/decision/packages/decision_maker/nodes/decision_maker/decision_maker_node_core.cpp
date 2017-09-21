@@ -26,9 +26,6 @@
 namespace decision_maker
 {
 
-#define DOUBLE_MAX 1.7976931348623158e308
-#define TARGET_WAYPOINTS_NUM 14
-
 CrossRoadArea *DecisionMakerNode::findClosestCrossRoad(void)
 {
   CrossRoadArea *_area = nullptr;
@@ -42,8 +39,8 @@ CrossRoadArea *DecisionMakerNode::findClosestCrossRoad(void)
 
   if (!current_finalwaypoints_.waypoints.empty())
   {
-    _pa.x = current_finalwaypoints_.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.x;
-    _pa.y = current_finalwaypoints_.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.y;
+    _pa.x = current_finalwaypoints_.waypoints[param_target_waypoint_].pose.pose.position.x;
+    _pa.y = current_finalwaypoints_.waypoints[param_target_waypoint_].pose.pose.position.y;
     _pa.z = 0.0;
   }
 
@@ -173,11 +170,11 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lane_
       std::cout << "Yaw:" << _y << "-" << y << ":" << _y - y << std::endl;
       if (diff > 50)
       {
-        std::cout << "Right Turn!!!!!!" << diff << std::endl;
+        std::cout << "Right Turn" << diff << std::endl;
       }
       else if (diff < -50)
       {
-        std::cout << "Left Turn!!!!!!" << diff << std::endl;
+        std::cout << "Left Turn" << diff << std::endl;
       }
       else
       {
@@ -211,7 +208,7 @@ void DecisionMakerNode::run(void)
   while (ros::ok())
   {
     update();
-    if(isDisplay)
+    if(enableDisplayMarker)
 	    displayMarker();
     loop_rate.sleep();
   }

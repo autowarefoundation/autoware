@@ -40,7 +40,7 @@ private:
 
   void showStateMove(unsigned long long _state_num)
   {
-    std::cout << "State will be [" << *StateStores[_state_num]->getStateName() << "]" << std::endl;
+    std::cout << "State will be [" << StateStores[_state_num]->getStateName() << "]" << std::endl;
   }
 
 public:
@@ -93,21 +93,25 @@ public:
   {
     thread_loop = false;
   }
+  void stateDecider(void);
 
-  bool isState(unsigned long long _state_num);
+  bool isState(BaseState *base, unsigned long long _state_num);
+  bool isCurrentState(unsigned long long _state_num);
+  bool isCurrentState(unsigned char _state_kind, unsigned long long _state_num);
   bool inState(unsigned long long _state_num);
 
-  void stateDecider(void);
 
   bool setCurrentState(StateFlags flag);
   bool setCurrentState(BaseState *state);
-  bool setCurrentState(BaseState *state, BaseState *substate);
-  bool setCurrentState(BaseState *state, BaseState *substate, BaseState *subsubstate);
+  bool disableCurrentState(unsigned long long);
 
   BaseState *getCurrentMainState(void);
   BaseState *getCurrentState(void);
-  std::unique_ptr<std::string> getCurrentStateName(void);
+  std::string getCurrentStateName(void);
+  std::string getStateName(void);
+  BaseState **getCurrentStateHolderPtr(unsigned long long _state_num);
   void showCurrentStateName(void);
+  std::string createStateMessageText(void);
 
   bool setEnableForceSetState(bool force_flag);
   BaseState *getStateObject(unsigned long long _state_num);
