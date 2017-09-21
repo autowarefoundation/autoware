@@ -2,8 +2,8 @@
 Changelog for package euc
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * apply clang-format
 * organize package files and directories
 * Add a decision_maker package

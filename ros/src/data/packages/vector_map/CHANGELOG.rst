@@ -2,8 +2,8 @@
 Changelog for package vector_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * static functions were never defined, so I removed them
 * install target
 * Contributors: Dejan Pangercic

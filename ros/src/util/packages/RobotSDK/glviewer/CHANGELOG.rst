@@ -2,8 +2,8 @@
 Changelog for package glviewer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * add support for aarch64
 * Contributors: Yusuke FUJII
 

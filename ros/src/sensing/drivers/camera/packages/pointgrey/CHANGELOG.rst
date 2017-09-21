@@ -2,8 +2,8 @@
 Changelog for package pointgrey
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * add web ui
 * Fix cmake and package
 * Fix build error

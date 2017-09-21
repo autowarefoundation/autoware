@@ -2,8 +2,8 @@
 Changelog for package state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * apply clang-format
 * Add to support dynamical parameter for decision_maker
 * Fix a build error for libstate

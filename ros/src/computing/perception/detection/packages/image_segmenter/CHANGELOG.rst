@@ -2,8 +2,8 @@
 Changelog for package image_segmenter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * fix version inconsistency
 * Feature/enet image segmenter (`#784 <https://github.com/cpfl/autoware/issues/784>`_)
   * Initial Release of ENEt Image Segmenter

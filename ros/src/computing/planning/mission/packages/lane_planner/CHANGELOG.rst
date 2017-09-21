@@ -2,8 +2,8 @@
 Changelog for package lane_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * Add decision packages into runtime_manager
 * Contributors: Yusuke FUJII
 

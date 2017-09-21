@@ -2,8 +2,8 @@
 Changelog for package points_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * [hotfix] fixes to lidar_tracker package(`#787 <https://github.com/cpfl/autoware/issues/787>`_)
   -Fixed a typo in the ground_filter launch file from points_preprocessor
   -Fixed ID duplication in kf_lidar_tracker

@@ -2,8 +2,8 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * update decision maker config
 * Add to support dynamical parameter for decision_maker
 * Add decision_maker config

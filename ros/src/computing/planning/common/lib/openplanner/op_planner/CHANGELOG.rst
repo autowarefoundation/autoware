@@ -2,8 +2,8 @@
 Changelog for package op_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * Add changing topic name option for the planner selector.
 * Contributors: Yusuke FUJII
 

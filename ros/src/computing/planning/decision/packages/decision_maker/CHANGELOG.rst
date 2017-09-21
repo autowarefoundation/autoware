@@ -2,8 +2,8 @@
 Changelog for package decision_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * Add build option
 * apply clang-format
 * update decision maker config

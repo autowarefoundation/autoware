@@ -2,8 +2,8 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * compilation issues
 * added install targets
   changed finding pcl

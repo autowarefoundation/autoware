@@ -2,8 +2,8 @@
 Changelog for package velodyne_compression
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2017-09-21)
+------------------
 * fix version inconsistency
 * Fix build error:https://github.com/CPFL/Autoware/issues/789
 * missing dep
