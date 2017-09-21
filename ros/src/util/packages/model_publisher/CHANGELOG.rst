@@ -2,6 +2,12 @@
 Changelog for package model_publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* added install targets
+* removed comments
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

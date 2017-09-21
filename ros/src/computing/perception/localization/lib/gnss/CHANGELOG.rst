@@ -2,6 +2,11 @@
 Changelog for package gnss
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* install target
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

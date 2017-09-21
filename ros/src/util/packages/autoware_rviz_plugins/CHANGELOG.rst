@@ -2,6 +2,12 @@
 Changelog for package autoware_rviz_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* reformat
+* add simulation object flag tool for openplanner
+* Contributors: Yusuke FUJII
+
 1.4.0 (2017-08-04)
 ------------------
 

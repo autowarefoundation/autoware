@@ -2,6 +2,14 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* compilation issues
+* added install targets
+  changed finding pcl
+  removed unneeded dependencies
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

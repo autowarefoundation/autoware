@@ -2,6 +2,9 @@
 Changelog for package twist_cmd_converter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.4.0 (2017-08-04)
 ------------------
 

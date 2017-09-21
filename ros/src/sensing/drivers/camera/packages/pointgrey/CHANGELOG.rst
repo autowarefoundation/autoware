@@ -2,6 +2,13 @@
 Changelog for package pointgrey
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add web ui
+* Fix cmake and package
+* Fix build error
+* Contributors: Akihito OHSATO, hironari.yashiro
+
 1.4.0 (2017-08-04)
 ------------------
 

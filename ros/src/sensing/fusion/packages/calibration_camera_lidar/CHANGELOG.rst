@@ -2,6 +2,9 @@
 Changelog for package calibration_camera_lidar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.4.0 (2017-08-04)
 ------------------
 

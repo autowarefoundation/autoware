@@ -2,6 +2,11 @@
 Changelog for package map_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add map_extender
+* Contributors: yukikitsukawa
+
 1.4.0 (2017-08-04)
 ------------------
 

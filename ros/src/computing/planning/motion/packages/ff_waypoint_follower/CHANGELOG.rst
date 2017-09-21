@@ -2,6 +2,11 @@
 Changelog for package ff_waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* compilation issues
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

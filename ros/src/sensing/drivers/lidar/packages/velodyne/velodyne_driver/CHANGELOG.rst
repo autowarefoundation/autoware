@@ -1,6 +1,9 @@
 Change history
 ==============
 
+Forthcoming
+-----------
+
 1.2.0 (2014-08-06)
 ------------------
 * Fixed bug in diagnostic rate for driver (`#16

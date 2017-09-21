@@ -2,6 +2,12 @@
 Changelog for package libvectormap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fixed cmake and package.xml for libvectormap
+  moved headers into include/libvectormap since otherwise this otherwise can conflict with other files elsewhere.
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

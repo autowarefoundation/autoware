@@ -2,6 +2,12 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add changing topic name option for the planner selector.
+* compilation issues
+* Contributors: Dejan Pangercic, Yusuke FUJII
+
 1.4.0 (2017-08-04)
 ------------------
 

@@ -2,6 +2,15 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update decision maker config
+* Add to support dynamical parameter for decision_maker
+* Add decision_maker config
+* add config parameter
+* autoware_msgs does not depend on jsk_rviz_plugin, cmake and package.xml were not correct
+* Contributors: Dejan Pangercic, Yusuke FUJII
+
 1.4.0 (2017-08-04)
 ------------------
 

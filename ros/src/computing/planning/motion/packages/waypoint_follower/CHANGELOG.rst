@@ -2,6 +2,13 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* launch files
+* added install targets
+  some dependencies are not used
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

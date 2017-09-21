@@ -2,6 +2,11 @@
 Changelog for package scan2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed zero division in scan2image
+* Contributors: Yukihiro.Saito
+
 1.4.0 (2017-08-04)
 ------------------
 
