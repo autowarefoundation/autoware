@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2017, TierIV, Inc.
+ * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -167,7 +168,6 @@ void AutowareSimObjTool::save( rviz::Config config ) const
 
 void AutowareSimObjTool::load( const rviz::Config& config )
 {
-  // Here we get the "Flags" sub-config from the tool config and loop over its entries:
   rviz::Config flags_config = config.mapGetChild( "Flags" );
   int num_flags = flags_config.listLength();
   for( int i = 0; i < num_flags; i++ )
@@ -182,7 +182,7 @@ void AutowareSimObjTool::load( const rviz::Config& config )
     makeFlag( prop->getVector() );
   }
 }
-} // end namespace rviz_plugin_tutorials
+} 
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(autoware_sim_object::AutowareSimObjTool,rviz::Tool )
