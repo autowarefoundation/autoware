@@ -128,8 +128,10 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
     msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
     msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
     msg.gear = std::stoi(cmds[3]);
-    msg.mode = std::stoi(cmds[4]);
-    msg.emergency = std::stoi(cmds[5]);
+    int blinker = std::stoi(cmds[4]);
+    msg.mode = std::stoi(cmds[5]);
+    int hev_mode = std::stoi(cmds[6]);
+    msg.emergency = std::stoi(cmds[7]);
     remote_cmd_pub_.publish(msg);
   }
 }
