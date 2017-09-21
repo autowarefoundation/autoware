@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(decision_maker)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -lpthread -pg -Wall -Wextra)
+add_compile_options(-std=c++11 -lpthread -pg -Wall -Wextra -Wno-unused-parameter)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
