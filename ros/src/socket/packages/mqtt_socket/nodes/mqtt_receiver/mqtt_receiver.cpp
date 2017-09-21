@@ -30,124 +30,120 @@
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "stdlib.h"
+#include "string.h"
+#include "mqtt_socket/mqtt_setting.hpp"
+#include "autoware_msgs/remote_cmd.h"
+#include <mosquitto.h>
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <string>
-#include <list>
-#include "stdlib.h"
-#include "string.h"
-#include "MQTTClient.h"
-#include "mqtt_socket/mqtt_setting.hpp"
 
-class MqttReciever
+static struct mosquitto *mqtt_client_ = NULL;
+static std::string mqtt_topic_;
+static int mqtt_qos_;
+static ros::Publisher remote_cmd_pub_;
+
+class MqttReceiver
 {
 public:
-  MqttReciever();
-  ~MqttReciever();
-  static void delivered(void *context, MQTTClient_deliveryToken dt);
-  static int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message);
-  static void connlost(void *context, char *cause);
+  MqttReceiver();
+  ~MqttReceiver();
+  static void on_connect(struct mosquitto *mosq, void *obj, int result);
+  static void on_disconnect(struct mosquitto *mosq, void *obj, int rc);
+  static void on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message);
 
 private:
-  static ros::Publisher remote_cmd_pub_;
-  static MQTTClient_deliveryToken deliveredtoken_;
-	ros::NodeHandle node_handle_;
-  MQTTClient mqtt_client_;
+  ros::NodeHandle node_handle_;
+
+  // MQTT
+  std::string mqtt_address_;
+  int mqtt_port_;
+  std::string mqtt_client_id_;
+  int mqtt_timeout_;
 };
 
-ros::Publisher MqttReciever::remote_cmd_pub_;
-MQTTClient_deliveryToken MqttReciever::deliveredtoken_;
-
-MqttReciever::MqttReciever() :
+MqttReceiver::MqttReceiver() :
     node_handle_("~")
 {
   // ROS Publisher
-  remote_cmd_pub_ = node_handle_.advertise<mqtt_socket_msgs::RemoteCmd>("/remote_cmd", 1000);
+  remote_cmd_pub_ = node_handle_.advertise<autoware_msgs::remote_cmd>("/remote_cmd", 5);
 
   // MQTT PARAMS
-  std::string mqtt_address = ADDRESS;
-  std::string mqtt_topic = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/remote_cmd";
-  std::string mqtt_client_id = std::string(CLIENTID) + "_" + std::string(VEHICLEID) + "_rcv";
-  int mqtt_qos = QOS;
-  int mqtt_timeout = TIMEOUT;
+  mosquitto_lib_init();
 
-  node_handle_.param("/confing/mqtt/address", mqtt_address, mqtt_address);
-  node_handle_.param("/confing/mqtt/topic", mqtt_topic, mqtt_topic);
-  node_handle_.param("/confing/mqtt/client_id", mqtt_client_id, mqtt_client_id);
-  node_handle_.param("/confing/mqtt/qos", mqtt_qos, mqtt_qos);
-  node_handle_.param("/confing/mqtt/timeout", mqtt_timeout, mqtt_timeout);
-  ROS_INFO("%s, %s, %s\n", mqtt_address.c_str(), mqtt_topic.c_str(), mqtt_client_id.c_str());
-  MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
-  int rc;
-  int ch;
+  mqtt_address_ = MQTT_ADDRESS;
+  mqtt_port_ = MQTT_PORT;
+  mqtt_topic_ = std::string(RECIEVER_TOPIC) + std::string(VEHICLEID) + "/remote_cmd";
+  mqtt_client_id_ = std::string(CLIENTID) + "_" + std::string(VEHICLEID) + "_rcv";
+  mqtt_qos_ = QOS;
 
-  MQTTClient_create(&mqtt_client_, mqtt_address.c_str(), mqtt_client_id.c_str(),
-      MQTTCLIENT_PERSISTENCE_NONE, NULL);
-  conn_opts.keepAliveInterval = 20;
-  conn_opts.cleansession = 1;
+  node_handle_.param("/confing/mqtt/address", mqtt_address_, mqtt_address_);
+  node_handle_.param("/confing/mqtt/port", mqtt_port_, mqtt_port_);
+  node_handle_.param("/confing/mqtt/topic", mqtt_topic_, mqtt_topic_);
+  node_handle_.param("/confing/mqtt/client_id", mqtt_client_id_, mqtt_client_id_);
+  node_handle_.param("/confing/mqtt/qos", mqtt_qos_, mqtt_qos_);
+  node_handle_.param("/confing/mqtt/timeout", mqtt_timeout_, mqtt_timeout_);
+  ROS_INFO("MQTT Receiver ADDR: %s:%d, TOPIC: %s, ID: %s\n", mqtt_address_.c_str(), mqtt_port_, mqtt_topic_.c_str(), mqtt_client_id_.c_str());
 
-  MQTTClient_setCallbacks(mqtt_client_, NULL, connlost, msgarrvd, delivered);
-  if ((rc = MQTTClient_connect(mqtt_client_, &conn_opts)) != MQTTCLIENT_SUCCESS)
-  {
-      ROS_INFO("Failed to connect, return code %d\n", rc);
-      exit(EXIT_FAILURE);
+  mqtt_client_ = mosquitto_new(mqtt_client_id_.c_str(), true, NULL);
+  mosquitto_connect_callback_set(mqtt_client_, &MqttReceiver::on_connect);
+  mosquitto_disconnect_callback_set(mqtt_client_, &MqttReceiver::on_disconnect);
+  mosquitto_message_callback_set(mqtt_client_, &MqttReceiver::on_message);
+
+  if(mosquitto_connect_bind(mqtt_client_, mqtt_address_.c_str(), mqtt_port_, mqtt_timeout_, NULL)){
+    ROS_INFO("Failed to connect broker.\n");
+    mosquitto_lib_cleanup();
+    exit(EXIT_FAILURE);
   }
-
-  MQTTClient_subscribe(mqtt_client_, mqtt_topic.c_str(), mqtt_qos);
 }
 
-MqttReciever::~MqttReciever()
+MqttReceiver::~MqttReceiver()
 {
-  MQTTClient_disconnect(mqtt_client_, 10000);
-  MQTTClient_destroy(&mqtt_client_);
+  ROS_INFO("Launch MqttReceiver");
 }
 
-static void MqttReciever::delivered(void *context, MQTTClient_deliveryToken dt)
+static void MqttReceiver::on_connect(struct mosquitto *mosq, void *obj, int result)
 {
-    ROS_INFO("Message with token value %d delivery confirmed\n", dt);
-    MqttReciever::deliveredtoken_ = dt;
+  ROS_INFO("on_connect: %s(%d)\n", __FUNCTION__, __LINE__);
+  mosquitto_subscribe(mqtt_client_, NULL, mqtt_topic_.c_str(), mqtt_qos_);
 }
 
-static int MqttReciever::msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+static void MqttReceiver::on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 {
+  ROS_INFO("on_disconnect: %s(%d)\n", __FUNCTION__, __LINE__);
+}
+
+static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
+{
+  if(message->payloadlen) {
+    ROS_INFO("%s ", message->topic);
     std::string delim (",");
     std::string msg_str((char *)message->payload, message->payloadlen);
     std::vector<std::string> cmds;
     boost::algorithm::split(cmds, msg_str, boost::is_any_of(","));
 
-    mqtt_socket_msgs::RemoteCmd msg;
-    msg.accel = std::stof(cmds[0]) * ACCEL_MAX_VAL;
-    msg.brake = std::stof(cmds[1]) * BRAKE_MAX_VAL;
-    msg.steer = std::stof(cmds[2]) * STEER_MAX_VAL;
+    autoware_msgs::remote_cmd msg;
+    msg.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
+    msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
+    msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
     msg.gear = std::stoi(cmds[3]);
     msg.mode = std::stoi(cmds[4]);
     msg.emergency = std::stoi(cmds[5]);
     remote_cmd_pub_.publish(msg);
-
-    MQTTClient_freeMessage(&message);
-    MQTTClient_free(topicName);
-    return 1;
-}
-
-static void MqttReciever::connlost(void *context, char *cause)
-{
-    ROS_INFO("\nConnection lost\n");
-    ROS_INFO("     cause: %s\n", cause);
-    mqtt_socket_msgs::RemoteCmd msg;
-    msg.accel = 0;
-    msg.brake = 0;
-    msg.steer = 0;
-    msg.gear = 0;
-    msg.mode = AUTO_MODE;
-    msg.emergency = EMERGENCY_MODE;
-    remote_cmd_pub_.publish(msg);
+  }
 }
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "mqtt_receiver");
-  MqttReciever node;
-  ros::spin();
+  MqttReceiver node;
+  ros::spinOnce();
+
+  int ret = mosquitto_loop_forever(mqtt_client_, -1, 1);
+
+  mosquitto_destroy(mqtt_client_);
+  mosquitto_lib_cleanup();
 
   return 0;
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_msgs)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
 	message_generation
 	std_msgs
 	geometry_msgs
@@ -48,7 +48,7 @@ add_message_files(
   vscan_tracked_array.msg
   waypoint.msg
 
-## Runtime Manager ## 
+## Runtime Manager ##
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
@@ -81,11 +81,13 @@ add_message_files(
   lamp_cmd.msg
   steer_cmd.msg
   traffic_light.msg
- 
+
 ## Sync
   Sync_time_monitor.msg
   Sync_time_diff.msg
- 
+
+## Remote Control
+	remote_cmd.msg
 )
 
 
