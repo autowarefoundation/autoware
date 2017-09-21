@@ -1802,18 +1802,20 @@ params :
       label: MainState_ChangeFlag
       kind : radio_box
       choices:
+      - NOT_CHANGE
       - START_State
       - INITIAL_State
       - LOCATE_VEHICLE_State
       - DRIVE_State
       - MISSION_COMPLETE_State 
       - EMERGENCY_State
-      v   : 1
+      v   : 0
     - name : SubState_ChangeFlag
       desc : Forcibly change state if enable force change flags.
       label: SubState_ChangeFlag
       kind : radio_box
       choices:
+      - NOT_CHANGE
       - ACC_ACCELERATION_State
       - ACC_DECELERATION_State
       - ACC_KEEP_State
@@ -1826,7 +1828,7 @@ params :
       - DETECT_OBSTACLE_STATE
       - DETECT_STOPLINE_STATE
       - DETECT_TRAFFICLIGHT_STATE
-      v   : 7
+      v   : 0
     - name : convergence_threshold
       desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
       label: convergence_threshold
