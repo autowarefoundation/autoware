@@ -1016,12 +1016,11 @@ class MyFrame(rtmgr.MyFrame):
 		return ( d.get('pdic'), d.get('gdic'), d.get('param') )
 
 	def update_func(self, pdic, gdic, prm):
-		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
-			if func is None and not pdic_empty:
+			if func is None and name in pdic:
 				continue
 			v = var.get('v')
 			if func is not None:
