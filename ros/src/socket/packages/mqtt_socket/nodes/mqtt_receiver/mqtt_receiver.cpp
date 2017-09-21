@@ -33,7 +33,7 @@
 #include "stdlib.h"
 #include "string.h"
 #include "mqtt_socket/mqtt_setting.hpp"
-#include "autoware_msgs/remote_cmd.h"
+#include "autoware_msgs/RemoteCmd.h"
 #include <mosquitto.h>
 #include <vector>
 #include <boost/algorithm/string.hpp>
@@ -67,7 +67,7 @@ MqttReceiver::MqttReceiver() :
     node_handle_("~")
 {
   // ROS Publisher
-  remote_cmd_pub_ = node_handle_.advertise<autoware_msgs::remote_cmd>("/remote_cmd", 5);
+  remote_cmd_pub_ = node_handle_.advertise<autoware_msgs::RemoteCmd>("/remote_cmd", 5);
 
   // MQTT PARAMS
   mosquitto_lib_init();
@@ -123,7 +123,7 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
     std::vector<std::string> cmds;
     boost::algorithm::split(cmds, msg_str, boost::is_any_of(","));
 
-    autoware_msgs::remote_cmd msg;
+    autoware_msgs::RemoteCmd msg;
     msg.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
     msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
     msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;

@@ -47,6 +47,7 @@ add_message_files(
   vscan_tracked.msg
   vscan_tracked_array.msg
   waypoint.msg
+	TwistGate.msg
 
 ## Runtime Manager ##
   ConfigCarDpm.msg
@@ -87,7 +88,7 @@ add_message_files(
   Sync_time_diff.msg
 
 ## Remote Control
-	remote_cmd.msg
+	RemoteCmd.msg
 )
 
 
