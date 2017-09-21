@@ -1,14 +1,14 @@
 #ifndef _VELOCITY_SET_H
 #define _VELOCITY_SET_H
 
+#include <math.h>
 #include <iostream>
-#include <vector>
 #include <map>
 #include <unordered_map>
-#include <math.h>
+#include <vector>
 
-#include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+#include <ros/ros.h>
 #include <vector_map/vector_map.h>
 
 #include "waypoint_follower/libwaypoint_follower.h"
@@ -38,6 +38,9 @@ private:
   std::vector<geometry_msgs::Point> obstacle_points_;
   std::vector<int> bdID_;
 
+  bool enable_multiple_crosswalk_detection_;
+  std::vector<int> detection_crosswalk_array_;
+
 public:
   bool loaded_crosswalk;
   bool loaded_area;
@@ -45,6 +48,7 @@ public:
   bool loaded_point;
   bool loaded_all;
   bool set_points;
+
   vector_map::CrossWalkArray crosswalk_;
   vector_map::AreaArray area_;
   vector_map::LineArray line_;
@@ -63,7 +67,7 @@ public:
   geometry_msgs::Point getPoint(const int &pid) const;
   void calcCenterPoints();
   void setCrossWalkPoints();
-  int findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::lane& lane, const int search_distance);
+  int findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::lane &lane, const int search_distance);
   int getSize() const
   {
     return detection_points_.size();
@@ -91,6 +95,31 @@ public:
   int getDetectionCrossWalkID() const
   {
     return detection_crosswalk_id_;
+  }
+
+  void initDetectionCrossWalkIDs()
+  {
+    return detection_crosswalk_array_.clear();
+  }
+  void addDetectionCrossWalkIDs(const int &id)
+  {
+    auto itr = std::find(detection_crosswalk_array_.begin(), detection_crosswalk_array_.end(), id);
+    if (detection_crosswalk_array_.empty() || itr == detection_crosswalk_array_.end())
+    {
+      detection_crosswalk_array_.push_back(id);
+    }
+  }
+  std::vector<int> getDetectionCrossWalkIDs() const
+  {
+    return detection_crosswalk_array_;
+  }
+  void setMultipleDetectionFlag(const bool _multiple_flag)
+  {
+    enable_multiple_crosswalk_detection_ = _multiple_flag;
+  }
+  bool isMultipleDetection() const
+  {
+    return enable_multiple_crosswalk_detection_;
   }
 
   CrossWalk()
@@ -143,6 +172,26 @@ public:
 inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
 {
   return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
+}
+
+// Calculate waypoint index corresponding to distance from begin_waypoint
+inline int calcWaypointIndexReverse(const autoware_msgs::lane &lane, const int begin_waypoint, const double distance)
+{
+  double dist_sum = 0;
+  for (int i = begin_waypoint; i > 0; i--)
+  {
+    tf::Vector3 v1(lane.waypoints[i].pose.pose.position.x, lane.waypoints[i].pose.pose.position.y, 0);
+
+    tf::Vector3 v2(lane.waypoints[i - 1].pose.pose.position.x, lane.waypoints[i - 1].pose.pose.position.y, 0);
+
+    dist_sum += tf::tfDistance(v1, v2);
+
+    if (dist_sum > distance)
+      return i;
+  }
+
+  // reach the first waypoint
+  return 0;
 }
 
 #endif /* _VELOCITY_SET_H */

@@ -2,6 +2,11 @@
 Changelog for package vector_map_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.0 (2017-09-21)
+------------------
+* no jsk msgs used
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

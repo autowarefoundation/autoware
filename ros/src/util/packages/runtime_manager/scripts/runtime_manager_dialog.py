@@ -79,6 +79,8 @@ from autoware_msgs.msg import ConfigLaneSelect
 from autoware_msgs.msg import ConfigLaneStop
 from autoware_msgs.msg import ConfigCarFusion
 from autoware_msgs.msg import ConfigPedestrianFusion
+from autoware_msgs.msg import ConfigPlannerSelector
+from autoware_msgs.msg import ConfigDecisionMaker
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
@@ -1016,12 +1018,11 @@ class MyFrame(rtmgr.MyFrame):
 		return ( d.get('pdic'), d.get('gdic'), d.get('param') )
 
 	def update_func(self, pdic, gdic, prm):
-		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
-			if func is None and not pdic_empty:
+			if func is None and name in pdic:
 				continue
 			v = var.get('v')
 			if func is not None:

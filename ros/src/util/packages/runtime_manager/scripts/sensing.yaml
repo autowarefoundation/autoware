@@ -69,6 +69,10 @@ subs :
         param: serial
         gui  :
           flags : [ kill_children ]
+      - name : Garmin GPS 18x LVC
+        desc : Garmin GPS 18x LVC desc sample
+        probe:
+        run  : rosrun garmin garmin_gps_18x_lvc
       - name : Serial GNSS
         desc : Serial GNSS desc sample
         probe:
@@ -303,7 +307,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-        must        : True
   - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile

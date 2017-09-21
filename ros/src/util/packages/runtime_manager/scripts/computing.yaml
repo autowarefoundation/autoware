@@ -517,6 +517,7 @@ subs :
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -611,15 +612,26 @@ subs :
            position_error :
              flags : [ nl ]
 
-  - name : State
-    desc : State desc sample
+  - name : Decision
+    desc : decision groups
     subs :
-    - name : state_machine
+    - name : state_machine(old)
       desc : state_machine desc sample
-      subs :
-      - name : state_machine
-        desc : state_machine desc sample
-        cmd  : roslaunch state_machine state_machine.launch
+      cmd  : roslaunch state_machine state_machine.launch
+    - name : decision_maker
+      desc : decision_maker desc sample
+      cmd  : roslaunch decision_maker decision_maker.launch
+      param: decision_maker
+      gui  :
+          dialog_width  : 400
+          dialog_height : 600
+
+    - name : planner_selector
+      desc : planner_selector desc sample
+      cmd  : roslaunch planner_selector planner_selector.launch
+      param: planner_selector
+         
+
 
 buttons:
   car_dpm :
@@ -1484,6 +1496,22 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name  : enable_multiple_crosswalk_detection
+      desc  : enable_multiple_crosswalk_detection desc sample
+      label : Enable Multiple Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : points_topic
+      desc      : pointcloud2 topic for obstacle detection
+      label     : Points Topic
+      kind      : str
+      v         : points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name  : others_distance
       desc  : others_distance desc sample
       label : Others Distance (m)
@@ -1538,6 +1566,15 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
+    
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
@@ -1727,6 +1764,115 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+ 
+  - name  : planner_selector
+    topic : /config/PlannerSelector
+    msg   : ConfigPlannerSelector
+    vars  :
+    - name : latency_num
+      desc : latency_num
+      label: latency_num
+      min  : 0
+      max  : 200
+      v    : 10
+    - name : waypoints_num
+      desc : waypoints_num
+      label: waypoints_num
+      min  : 0
+      max  : 30
+      v    : 8
+    - name : convergence_num
+      desc : convergence_num
+      label: convergence_num
+      min  : 0.0
+      max  : 30.0
+      v    : 2.0
+
+  - name  : decision_maker
+    topic : /config/decision_maker
+    msg   : ConfigDecisionMaker
+    vars  : 
+    - name : enable_force_state_change
+      desc : enable force state change flag
+      label: enable_force_state_change
+      kind : checkbox
+      v    : False
+    - name : enable_display_marker
+      desc : enable display marker flag
+      label: enable_display_marker
+      kind : checkbox
+      v    : False
+    - name : MainState_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: MainState_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - START_State
+      - INITIAL_State
+      - LOCATE_VEHICLE_State
+      - DRIVE_State
+      - MISSION_COMPLETE_State 
+      - EMERGENCY_State
+      v   : 0
+    - name : SubState_Acc_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Acc_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - ACC_ACCELERATION_State
+      - ACC_DECELERATION_State
+      - ACC_KEEP_State
+      v   : 0
+    - name : SubState_Str_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Str_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - STR_STRAIGHT_State
+      - STR_LEFT_State
+      - STR_RIGHT_State
+      v   : 0
+    - name : SubState_Behavior_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Behavior_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - BEHAVIOR_LANECHANGE_LEFT_State
+      - BEHAVIOR_LANECHANGE_RIGHT_State
+      - BEHAVIOR_LANECHANGE_OBSTACLE_AVOIDANCE_State
+      v   : 0
+    - name : SubState_Perception_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Perception_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - DETECT_OBSTACLE_STATE
+      - DETECT_STOPLINE_STATE
+      - DETECT_TRAFFICLIGHT_STATE
+      v   : 0
+    - name : convergence_threshold
+      desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
+      label: convergence_threshold
+      min  : 0.0
+      max  : 10.0
+      v    : 0.01
+    - name : convergence_count
+      desc : Number of values used for convergence determination
+      label: convergence_count
+      min  : 1
+      max  : 30
+      v    : 5
+    - name : target_waypoint
+      desc : this target waypoint is used by judge turn angle.
+      label: target_waypoint
+      min  : 0
+      max  : 50
+      v    : 14
 
   - name  : car_kf
     topic : /config/car_kf
@@ -2096,6 +2242,14 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : astar_navi
     vars  :
@@ -2409,6 +2563,14 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='

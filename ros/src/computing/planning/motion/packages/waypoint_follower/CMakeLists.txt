@@ -4,12 +4,12 @@ project(waypoint_follower)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  tf
+  geometry_msgs
+  autoware_msgs
   pcl_ros
   pcl_conversions
   sensor_msgs
-  tf
-  gnss
-  autoware_msgs
 )
 
 ################################################
@@ -60,4 +60,16 @@ target_link_libraries(twist_filter ${catkin_LIBRARIES})
 add_dependencies(twist_filter
 ${catkin_EXPORTED_TARGETS} )
 
+## Install executables and/or libraries
+install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)

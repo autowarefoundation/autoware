@@ -56,7 +56,7 @@ void trans_depth_points_to_image_points(Scan_points_dataset* scan_points_dataset
                     + cameraExtrinsicMat.at<double>(2,1) * scan_points_dataset->scan_points.y.at(i)*1000
                     + cameraExtrinsicMat.at<double>(2,2) * scan_points_dataset->scan_points.z.at(i)*1000)
             + (cameraExtrinsicMat.at<double>(2,3));
-        if (camera_z >= 0.0) {
+        if (camera_z > 0.0) {
             /*
              * Projection transformation. Change from camera coordinate to image coordinate
              */

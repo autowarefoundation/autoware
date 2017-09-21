@@ -607,7 +607,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 				}
 				else
 				{
-					ROS_INFO("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
+					ROS_WARN_ONCE("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
 					final_clusters[i]->SetValidity(true);
 				}
 			}
