@@ -739,6 +739,8 @@ public:
 	bool 	enableHeadingSmoothing;
 	bool 	enableTrafficLightBehavior;
 	bool 	enableStopSignBehavior;
+	
+	bool	enableDynamicPlannerSwitch;
 
 	bool 	enabTrajectoryVelocities;
 
@@ -773,6 +775,9 @@ public:
 		enableLaneChange 				= false;
 		enableStopSignBehavior			= false;
 		enabTrajectoryVelocities		= false;
+
+		enableDynamicPlannerSwitch 		= false;
+
 	}
 };
 

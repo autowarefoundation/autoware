@@ -79,6 +79,8 @@ from autoware_msgs.msg import ConfigLaneSelect
 from autoware_msgs.msg import ConfigLaneStop
 from autoware_msgs.msg import ConfigCarFusion
 from autoware_msgs.msg import ConfigPedestrianFusion
+from autoware_msgs.msg import ConfigPlannerSelector
+from autoware_msgs.msg import ConfigDecisionMaker
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
