@@ -69,13 +69,18 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 	ROS_INFO("Param setted by Runtime Manager");
 	enableDisplayMarker = msg.enable_display_marker;
 	ctx->setEnableForceSetState(msg.enable_force_state_change);
-	if(msg.MainState_ChangeFlag)
-		handleStateCmd((unsigned long long)1 << msg.MainState_ChangeFlag);
-	if(msg.SubState_ChangeFlag)
-		handleStateCmd((unsigned long long)1 << (msg.SubState_ChangeFlag + 7));
-
-
-
+	if(msg.enable_force_state_change){
+		if(msg.MainState_ChangeFlag)
+			handleStateCmd((unsigned long long)1 << msg.MainState_ChangeFlag);
+		if(msg.SubState_Acc_ChangeFlag)
+			handleStateCmd(state_machine::DRIVE_ACC_ACCELERATION_STATE << (msg.SubState_Acc_ChangeFlag-1));
+		if(msg.SubState_Str_ChangeFlag)
+			handleStateCmd(state_machine::DRIVE_STR_STRAIGHT_STATE << (msg.SubState_Str_ChangeFlag-1));
+		if(msg.SubState_Behavior_ChangeFlag)
+			handleStateCmd(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE << (msg.SubState_Behavior_ChangeFlag-1));
+		if(msg.SubState_Perception_ChangeFlag)
+			handleStateCmd(state_machine::DRIVE_DETECT_OBSTACLE_STATE << (msg.SubState_Perception_ChangeFlag -1));
+	}
 }
 
 //void DecisionMakerNode::callbackFromLightColor(const autoware_msgs::traffic_light &msg)
@@ -102,9 +107,6 @@ void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::Co
 		Subs["points_raw"].shutdown();
 }
 
-#define ANGLE_STRAIGHT 50.0
-#define ANGLE_LEFT 360.0
-#define ANGLE_RIGHT 180.0
 
 
 

@@ -1815,21 +1815,42 @@ params :
       - MISSION_COMPLETE_State 
       - EMERGENCY_State
       v   : 0
-    - name : SubState_ChangeFlag
+    - name : SubState_Acc_ChangeFlag
       desc : Forcibly change state if enable force change flags.
-      label: SubState_ChangeFlag
+      label: SubState_Acc_ChangeFlag
       kind : radio_box
       choices:
       - NOT_CHANGE
       - ACC_ACCELERATION_State
       - ACC_DECELERATION_State
       - ACC_KEEP_State
+      v   : 0
+    - name : SubState_Str_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Str_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
       - STR_STRAIGHT_State
       - STR_LEFT_State
       - STR_RIGHT_State
+      v   : 0
+    - name : SubState_Behavior_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Behavior_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
       - BEHAVIOR_LANECHANGE_LEFT_State
       - BEHAVIOR_LANECHANGE_RIGHT_State
       - BEHAVIOR_LANECHANGE_OBSTACLE_AVOIDANCE_State
+      v   : 0
+    - name : SubState_Perception_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Perception_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
       - DETECT_OBSTACLE_STATE
       - DETECT_STOPLINE_STATE
       - DETECT_TRAFFICLIGHT_STATE

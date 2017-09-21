@@ -47,4 +47,3 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
 
 }
 }
-    
