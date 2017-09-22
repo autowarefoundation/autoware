@@ -29,9 +29,9 @@ subs :
           dialog : MyDialogNdtMapping
           dialog_width  : 400
           dialog_height : 450
-      - name : lazy_ndt_mapping
-        cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
-        param: ndt_mapping
+      - name : approximate_ndt_mapping
+        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
           dialog_width  : 400
@@ -2760,6 +2760,68 @@ params :
       min       : 0.0
       max       : 10.0
       v         : 1.0
+    - name      : use_openmp
+      desc      : use_openmp desc sample
+      label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : approximate_ndt_mapping
+    topic : /config/approximate_ndt_mapping
+    msg   : ConfigApproximateNdtMapping
+    flags : [ no_init_update ]
+    vars  :
+    - name      : resolution
+      desc      : resolution desc sample
+      label     : Resolution
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : step_size
+      desc      : step_size desc sample
+      label     : Step Size
+      min       : 0.0
+      max       : 1.0
+      v         : 0.1
+    - name      : trans_epsilon
+      desc      : trans_epsilon desc sample
+      label     : Transformation Epsilon
+      min       : 0.0
+      max       : 0.1
+      v         : 0.01
+    - name      : max_iterations
+      desc      : max_iterations desc sample
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
+    - name      : leaf_size
+      desc      : leaf_size desc sample
+      label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : min_scan_range
+      desc      : min_scan_range desc sample
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : min_add_scan_shift desc sample
+      label     : Minimum Add Scan Shift
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : max_submap_size
+      desc      : max_submap_size desc sample
+      label     : Submap Size
+      min       : 0.0
+      max       : 1000
+      v         : 100.0
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP

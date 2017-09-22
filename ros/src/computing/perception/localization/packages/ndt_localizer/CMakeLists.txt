@@ -75,6 +75,7 @@ ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
 
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
+add_executable(approximate_ndt_mapping nodes/approximate_ndt_mapping/approximate_ndt_mapping.cpp)
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
@@ -88,6 +89,7 @@ endif()
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
+target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
@@ -101,4 +103,3 @@ endif()
 add_dependencies(ndt_matching autoware_msgs_generate_messages_cpp)
 add_dependencies(ndt_mapping autoware_msgs_generate_messages_cpp)
 add_dependencies(lazy_ndt_mapping autoware_msgs_generate_messages_cpp)
-
