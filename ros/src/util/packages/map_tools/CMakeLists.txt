@@ -4,7 +4,7 @@ project(map_tools)
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   pcl_conversions
-#  runtime_manager
+  velodyne_pointcloud
 )
 
 ###################################
