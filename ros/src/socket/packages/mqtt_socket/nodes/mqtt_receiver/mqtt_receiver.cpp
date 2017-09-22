@@ -38,11 +38,18 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <string>
+#include <signal.h>
 
 static struct mosquitto *mqtt_client_ = NULL;
 static std::string mqtt_topic_;
 static int mqtt_qos_;
 static ros::Publisher remote_cmd_pub_;
+sig_atomic_t volatile g_request_shutdown = 0;
+
+void mySigIntHandler(int sig)
+{
+  g_request_shutdown = 1;
+}
 
 class MqttReceiver
 {
@@ -96,11 +103,17 @@ MqttReceiver::MqttReceiver() :
     mosquitto_lib_cleanup();
     exit(EXIT_FAILURE);
   }
+
+  // Start Subscribe
+  int ret = mosquitto_loop(mqtt_client_, -1, 1);
+  ret = mosquitto_loop_start(mqtt_client_);
 }
 
 MqttReceiver::~MqttReceiver()
 {
-  ROS_INFO("Launch MqttReceiver");
+  int ret = mosquitto_loop_stop(mqtt_client_, 1);
+  mosquitto_destroy(mqtt_client_);
+  mosquitto_lib_cleanup();
 }
 
 static void MqttReceiver::on_connect(struct mosquitto *mosq, void *obj, int result)
@@ -138,14 +151,14 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "mqtt_receiver");
+  ros::init(argc, argv, "mqtt_receiver", ros::init_options::NoSigintHandler);
+  signal(SIGINT, mySigIntHandler);
   MqttReceiver node;
-  ros::spinOnce();
 
-  int ret = mosquitto_loop_forever(mqtt_client_, -1, 1);
-
-  mosquitto_destroy(mqtt_client_);
-  mosquitto_lib_cleanup();
+  while (!g_request_shutdown)
+  {
+    sleep(1);
+  }
 
   return 0;
 }
