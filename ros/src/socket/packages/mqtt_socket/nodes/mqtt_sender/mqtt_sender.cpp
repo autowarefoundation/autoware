@@ -57,7 +57,11 @@ private:
   struct mosquitto *mqtt_client_ = NULL;
   std::string mqtt_address_;
   int mqtt_port_;
-  std::string mqtt_topic_;
+  std::string mqtt_topic_can_info_;
+  std::string mqtt_topic_state_;
+  std::string mqtt_topic_target_velocity_;
+  std::string mqtt_topic_current_target_velocity_;
+
   std::string mqtt_client_id_;
   int mqtt_qos_;
   int mqtt_timeout_;
@@ -95,7 +99,11 @@ MqttSender::MqttSender() :
 
   mqtt_address_ = MQTT_ADDRESS;
   mqtt_port_ = MQTT_PORT;
-  mqtt_topic_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/can_info";
+  mqtt_topic_can_info_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/can_info";
+  mqtt_topic_state_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/state";
+  mqtt_topic_target_velocity_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/target_velocity";
+  mqtt_topic_current_target_velocity_ = std::string(SENDER_TOPIC) + std::string(VEHICLEID) + "/current_velocity";
+
   mqtt_client_id_ = std::string(CLIENTID) + "_" + std::string(VEHICLEID) + "_snd";
   mqtt_qos_ = QOS;
   mqtt_timeout_ = TIMEOUT;
@@ -104,12 +112,11 @@ MqttSender::MqttSender() :
 
   node_handle_.param("/confing/mqtt/address", mqtt_address_, mqtt_address_);
   node_handle_.param("/confing/mqtt/port", mqtt_port_, mqtt_port_);
-  node_handle_.param("/confing/mqtt/topic", mqtt_topic_, mqtt_topic_);
   node_handle_.param("/confing/mqtt/client_id", mqtt_client_id_, mqtt_client_id_);
   node_handle_.param("/confing/mqtt/qos", mqtt_qos_, mqtt_qos_);
   node_handle_.param("/confing/mqtt/timeout", mqtt_timeout_, mqtt_timeout_);
   node_handle_.param("/confing/mqtt/downsample", mqtt_downsample_, mqtt_downsample_);
-  ROS_INFO("MQTT Sender ADDR: %s:%d, TOPIC: %s, ID: %s, DOWNSAMPLE: %f\n", mqtt_address_.c_str(), mqtt_port_, mqtt_topic_.c_str(), mqtt_client_id_.c_str(), mqtt_downsample_);
+  ROS_INFO("MQTT Sender ADDR: %s:%d, TOPIC: %s, ID: %s, DOWNSAMPLE: %f\n", mqtt_address_.c_str(), mqtt_port_, mqtt_topic_can_info_.c_str(), mqtt_client_id_.c_str(), mqtt_downsample_);
 
   mqtt_client_ = mosquitto_new(mqtt_client_id_.c_str(), true, NULL);
   mosquitto_connect_callback_set(mqtt_client_, &MqttSender::on_connect);
@@ -140,19 +147,58 @@ void MqttSender::on_disconnect(struct mosquitto *mosq, void *obj, int rc)
 
 void MqttSender::targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg)
 {
+  std::ostringstream publish_msg;
   current_target_velocity_array_ = msg;
+
+  for(int i = 0; i < sizeof(msg.data); i++) {
+    publish_msg << std::to_string(msg.data[i]) << ",";
+  }
+  std::string publish_msg_str = publish_msg.str();
+
+  int ret = mosquitto_publish(
+    mqtt_client_,
+    NULL,
+    mqtt_topic_target_velocity_.c_str(),
+    strlen(publish_msg_str.c_str()),
+    publish_msg_str.c_str(),
+    mqtt_qos_,
+    false
+  );
 }
 
 void MqttSender::twistCmdCallback(const geometry_msgs::TwistStamped &msg)
 {
+  std::ostringstream publish_msg;
   current_twist_cmd_ = msg;
   current_target_velocity_ = mps2kmph(msg.twist.linear.x);
+
+  publish_msg << std::to_string(current_target_velocity_);
+  std::string publish_msg_str = publish_msg.str();
+
+  int ret = mosquitto_publish(
+    mqtt_client_,
+    NULL,
+    mqtt_topic_current_target_velocity_.c_str(),
+    strlen(publish_msg_str.c_str()),
+    publish_msg_str.c_str(),
+    mqtt_qos_,
+    false
+  );
 }
 
 void MqttSender::stateCallback(const std_msgs::String &msg)
 {
-  ROS_INFO("State: %s\n", msg.data);
-  // current_state_ = msg.data;
+  ROS_INFO("State: %s\n", msg.data.c_str());
+
+  int ret = mosquitto_publish(
+    mqtt_client_,
+    NULL,
+    mqtt_topic_state_.c_str(),
+    strlen(msg.data.c_str()),
+    msg.data.c_str(),
+    mqtt_qos_,
+    false
+  );
 }
 
 void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
@@ -219,7 +265,7 @@ void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
     int ret = mosquitto_publish(
       mqtt_client_,
       NULL,
-      mqtt_topic_.c_str(),
+      mqtt_topic_can_info_.c_str(),
       strlen(publish_msg_str.c_str()),
       publish_msg_str.c_str(),
       mqtt_qos_,
