@@ -26,6 +26,7 @@ public:
 	void setMaxClusterPts(int max_cluster_pts);
 	void extractClustersOld();
 	void extractClusters();
+	void extractClusters2();
 	std::vector<GClusterIndex> getOutput();
 
 	SamplePointListXYZ generateSample();

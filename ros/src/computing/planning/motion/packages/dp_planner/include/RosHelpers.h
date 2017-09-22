@@ -13,16 +13,16 @@
 #include "PlannerCommonDef.h"
 #include "LocalPlannerH.h"
 
-#include <vector_map_msgs/PointArray.h>
-#include <vector_map_msgs/LaneArray.h>
-#include <vector_map_msgs/NodeArray.h>
-#include <vector_map_msgs/StopLineArray.h>
-#include <vector_map_msgs/DTLaneArray.h>
-#include <vector_map_msgs/LineArray.h>
-#include <vector_map_msgs/AreaArray.h>
-#include <vector_map_msgs/SignalArray.h>
-#include <vector_map_msgs/StopLine.h>
-#include <vector_map_msgs/VectorArray.h>
+#include "vector_map_msgs/PointArray.h"
+#include "vector_map_msgs/LaneArray.h"
+#include "vector_map_msgs/NodeArray.h"
+#include "vector_map_msgs/StopLineArray.h"
+#include "vector_map_msgs/DTLaneArray.h"
+#include "vector_map_msgs/LineArray.h"
+#include "vector_map_msgs/AreaArray.h"
+#include "vector_map_msgs/SignalArray.h"
+#include "vector_map_msgs/StopLine.h"
+#include "vector_map_msgs/VectorArray.h"
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -35,12 +35,10 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-#include <lidar_tracker/centroids.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudClusterArray.h"
 
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "waypoint_follower_msgs/LaneArray.h"
+#include "autoware_msgs/LaneArray.h"
 
 #include <visualization_msgs/MarkerArray.h>
 
@@ -177,7 +175,7 @@ public:
 	virtual ~RosHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-				waypoint_follower_msgs::lane & trajectory);
+				autoware_msgs::lane & trajectory);
 
 	static void ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 			visualization_msgs::Marker& marker);
@@ -195,7 +193,7 @@ public:
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
 	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-			const lidar_tracker::CloudClusterArray& clusters,
+			const autoware_msgs::CloudClusterArray& clusters,
 			std::vector<PlannerHNS::DetectedObject>& impObstacles, int& nOriginalPoints, int& nContourPoints);
 
 	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,

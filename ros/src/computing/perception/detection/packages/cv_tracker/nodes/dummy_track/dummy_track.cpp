@@ -29,14 +29,14 @@
 */
 
 #include <ros/ros.h>
-#include <cv_tracker_msgs/image_obj_tracked.h>
-#include <cv_tracker_msgs/image_obj_ranged.h>
+#include <autoware_msgs/image_obj_tracked.h>
+#include <autoware_msgs/image_obj_ranged.h>
 
 class DummyTrack{
 public:
   DummyTrack(){
     subscriber_image_obj_ = node_handle_.subscribe("image_obj_ranged", 1, &DummyTrack::detections_callback, this);
-		publisher_tracked_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj_tracked>("image_obj_tracked", 1);
+		publisher_tracked_objects_ = node_handle_.advertise<autoware_msgs::image_obj_tracked>("image_obj_tracked", 1);
   }
   void run(){
     ros::spin();
@@ -46,9 +46,9 @@ private:
   ros::Publisher 		publisher_tracked_objects_;//ROS
   ros::NodeHandle 	node_handle_;
 
-  void detections_callback(cv_tracker_msgs::image_obj_ranged image_objects_msg)
+  void detections_callback(autoware_msgs::image_obj_ranged image_objects_msg)
   {
-    cv_tracker_msgs::image_obj_tracked pub_msg;
+    autoware_msgs::image_obj_tracked pub_msg;
     pub_msg.header = image_objects_msg.header;
     pub_msg.type = image_objects_msg.type;
     pub_msg.rect_ranged = image_objects_msg.obj;

@@ -6,7 +6,7 @@
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <rviz/panel.h>
-#include <runtime_manager/traffic_light.h>
+#include "autoware_msgs/traffic_light.h"
 
 #include "convert_image.h"
 #include "ui_form.h"
@@ -36,7 +36,7 @@ namespace integrated_viewer
     };
 
     // The Callback function for signal state
-    void SignalStateCallback(const runtime_manager::traffic_light::ConstPtr& msg);
+    void SignalStateCallback(const autoware_msgs::traffic_light::ConstPtr& msg);
 
     // The function to convert recognition result to color and string information
     void GetStateInfo(const StateNumber num, StateInfo& info);

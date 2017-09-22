@@ -1,12 +1,9 @@
-//#include "ros/ros.h"
-//#include "std_msgs/String.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "vector_map.h"
+#include "libvectormap/vector_map.h"
 #include <vector>
 #include <map>
-#include <tf/transform_listener.h>
 
 void VectorMap::load_points(const vector_map::PointArray& msg)
 {

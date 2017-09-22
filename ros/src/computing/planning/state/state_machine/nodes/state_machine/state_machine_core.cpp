@@ -79,7 +79,7 @@ void StateMachineNode::publish() const
   pub_.publish(msg);
 }
 
-void StateMachineNode::callbackFromLightColor(const runtime_manager::traffic_lightConstPtr& msg)
+void StateMachineNode::callbackFromLightColor(const autoware_msgs::traffic_lightConstPtr& msg)
 {
   ROS_INFO("Light color callback");
   if (is_manual_light_detection_)
@@ -90,7 +90,7 @@ void StateMachineNode::callbackFromLightColor(const runtime_manager::traffic_lig
   publish();
 }
 
-void StateMachineNode::callbackFromLightColorManaged(const runtime_manager::traffic_lightConstPtr& msg)
+void StateMachineNode::callbackFromLightColorManaged(const autoware_msgs::traffic_lightConstPtr& msg)
 {
   ROS_INFO("Light color managed callback");
   if (!is_manual_light_detection_)

@@ -124,6 +124,13 @@
        <item row="1" column="0" colspan="2">
         <widget class="QComboBox" name="point_topic_combo_box_"/>
        </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QSpinBox" name="point_size_spin_box_">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Displayed Point Size&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>

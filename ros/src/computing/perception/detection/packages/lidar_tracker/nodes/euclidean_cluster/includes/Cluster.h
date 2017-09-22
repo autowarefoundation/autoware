@@ -45,7 +45,7 @@
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <jsk_rviz_plugins/PictogramArray.h>
 
-#include <lidar_tracker/CloudCluster.h>
+#include "autoware_msgs/CloudCluster.h"
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -88,8 +88,8 @@ public:
 	 * */
 	void SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose);
 
-	/* \brief Returns the lidar_tracker::CloudCluster message associated to this Cluster */
-	void ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message);
+	/* \brief Returns the autoware_msgs::CloudCluster message associated to this Cluster */
+	void ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message);
 
 	Cluster();
 	virtual ~Cluster();

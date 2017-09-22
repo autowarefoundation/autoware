@@ -9,8 +9,8 @@
 #include <jsk_recognition_msgs/PolygonArray.h>
 #include <geometry_msgs/Polygon.h>
 #include <geometry_msgs/PolygonStamped.h>
-#include <lidar_tracker/CloudCluster.h>
-#include <lidar_tracker/CloudClusterArray.h>
+#include "autoware_msgs/CloudCluster.h"
+#include "autoware_msgs/CloudClusterArray.h"
 #include <tf/tf.h>
 
 #include <boost/assert.hpp>
@@ -32,7 +32,7 @@ class CTrack
 	cv::Point2f prediction_point_;
 	TKalmanFilter kf_;
 public:
-	lidar_tracker::CloudCluster cluster;
+	autoware_msgs::CloudCluster cluster;
 
 	std::vector<cv::Point2f> trace;
 	size_t track_id;
@@ -40,7 +40,7 @@ public:
 	size_t life_span;
 	double area;
 
-	CTrack(const lidar_tracker::CloudCluster& in_cluster, float in_time_delta, float in_acceleration_noise_magnitude, size_t in_track_id)
+	CTrack(const autoware_msgs::CloudCluster& in_cluster, float in_time_delta, float in_acceleration_noise_magnitude, size_t in_track_id)
 		: kf_(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_time_delta, in_acceleration_noise_magnitude)
 	{
 		track_id = in_track_id;
@@ -62,7 +62,7 @@ public:
 		return 0.0f;
 	}
 
-	void Update(const lidar_tracker::CloudCluster& in_cluster, bool in_data_correct, size_t in_max_trace_length)
+	void Update(const autoware_msgs::CloudCluster& in_cluster, bool in_data_correct, size_t in_max_trace_length)
 	{
 		kf_.GetPrediction();
 		prediction_point_ = kf_.Update(cv::Point2f(in_cluster.centroid_point.point.x, in_cluster.centroid_point.point.y), in_data_correct);
@@ -81,7 +81,7 @@ public:
 		trace.push_back(prediction_point_);
 	}
 
-	lidar_tracker::CloudCluster GetCluster()
+	autoware_msgs::CloudCluster GetCluster()
 	{
 		return cluster;
 	}
@@ -102,6 +102,7 @@ class KfLidarTracker
 	size_t maximum_allowed_skipped_frames_;
 	size_t maximum_trace_length_;
 	size_t next_track_id_;
+	size_t maximum_track_id_;
 
 	bool pose_estimation_;
 	void CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>& in_trackers, std::vector<bool>& in_out_visited_trackers, std::vector<size_t>& out_merge_indices, double in_merge_threshold);
@@ -109,7 +110,14 @@ class KfLidarTracker
 	void MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers);
 	void CreatePolygonFromPoints(const geometry_msgs::Polygon& in_points, boost_polygon& out_polygon);
 public:
-	KfLidarTracker(float in_time_delta, float accel_noise_mag, float dist_thres = 3, float tracker_merging_threshold=2, size_t maximum_allowed_skipped_frames = 10, size_t max_trace_length = 10, bool in_pose_estimation = false);
+	KfLidarTracker(float in_time_delta,
+					float accel_noise_mag,
+					float dist_thres = 3,
+					float tracker_merging_threshold=2,
+					size_t maximum_allowed_skipped_frames = 10,
+					size_t max_trace_length = 10,
+					bool in_pose_estimation = false,
+					size_t maximum_track_id = 200);
 	~KfLidarTracker(void);
 
 	enum DistType
@@ -118,8 +126,8 @@ public:
 		RectsDist = 1
 	};
 
-	std::vector< CTrack > tracks;
-	void Update(const lidar_tracker::CloudClusterArray& in_cloud_cluster_array, DistType in_disttype);
+	std::vector< CTrack > tracks_;//TODO: add GetTracks getter
+	void Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_disttype);
 
 
 };

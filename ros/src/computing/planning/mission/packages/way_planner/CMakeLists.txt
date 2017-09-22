@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  waypoint_follower_msgs
   waypoint_follower
   message_generation
   tf
@@ -17,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_utility
   op_planner
   op_simu
+  autoware_msgs
 )
 
 

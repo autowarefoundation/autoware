@@ -27,7 +27,7 @@ Autoware is protected by the BSD License. Please use it on at your own discretio
 
 Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
 
-See also Autoware/docs for the tips of Autoware development, including the coding style and branching model.
+See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for the tips of Autoware development, including the coding style and branching model.
 
 ## License
 
@@ -207,17 +207,20 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ## Sample Data
 
-[3D map of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
+[3D maps of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
 
-[ROSBAG data of Moriyama driving](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
+[ROSBAG data for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
 
-[Script for generating demo launch files of Moriyama](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
+[Script of generating launch files for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
 
-[ROSBAG data for Calibration](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
+[ROSBAG data for calibration test](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
 
-## IROS 2016 Data
+[ROSBAG data for IROS 2016](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
 
-[ROSBAG data of Nagoya driving](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
+## ROSBAG STORE
+
+You can download many ROSBAG files for research and development of self-driving technology using Autoware.
+[https://rosbag.tier4.jp](https://rosbag.tier4.jp)
 
 ## Contact
 

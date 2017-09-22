@@ -6,8 +6,8 @@
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker_msgs/image_obj.h>
-#include <runtime_manager/ConfigCarDpm.h>
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/ConfigCarDpm.h"
 
 #include <dpm_ocv.hpp>
 
@@ -31,7 +31,7 @@ public:
 
 private:
 	void imageCallback(const sensor_msgs::ImageConstPtr& img);
-	void configCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param);
+	void configCallback(const autoware_msgs::ConfigCarDpm::ConstPtr& param);
 
 	ros::NodeHandle nh_;
 	ros::Subscriber config_sub_;
@@ -133,9 +133,9 @@ void objectDetect::run()
 {
 	std::string config_topic("/config");
 	config_topic += ros::this_node::getNamespace() + "/dpm";
-	config_sub_ = nh_.subscribe<runtime_manager::ConfigCarDpm>(config_topic, 1, &objectDetect::configCallback, this);
+	config_sub_ = nh_.subscribe<autoware_msgs::ConfigCarDpm>(config_topic, 1, &objectDetect::configCallback, this);
 	img_sub_ = nh_.subscribe<sensor_msgs::Image>(image_topic_name, 1, &objectDetect::imageCallback, this);
-	detect_pub_ = nh_.advertise<cv_tracker_msgs::image_obj>("image_obj", 1);
+	detect_pub_ = nh_.advertise<autoware_msgs::image_obj>("image_obj", 1);
 }
 
 // Callback
@@ -164,14 +164,14 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 	std::vector<int> corner_point_array(num * 4.0);
 	std::vector<int> type_array(num, 0);
 
-	cv_tracker_msgs::image_obj msg;
+	autoware_msgs::image_obj msg;
 	msg.header = img->header;
 	msg.type = object_class;
 
 	for(size_t i = 0; i < detections.size(); i++)
 	{
 		const cv::LatentSvmDetector::ObjectDetection& od = detections[i];
-		cv_tracker_msgs::image_rect rect;
+		autoware_msgs::image_rect rect;
 
 		type_array[i] = od.classID;
 		rect.x = od.rect.x;
@@ -185,7 +185,7 @@ void objectDetect::imageCallback(const sensor_msgs::ImageConstPtr& img)
 	detect_pub_.publish(msg);
 }
 
-void objectDetect::configCallback(const runtime_manager::ConfigCarDpm::ConstPtr& param)
+void objectDetect::configCallback(const autoware_msgs::ConfigCarDpm::ConstPtr& param)
 {
 	score_threshold_   = param->score_threshold;
 	overlap_threshold_ = param->group_threshold;

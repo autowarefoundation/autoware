@@ -6,8 +6,8 @@
 #include <iostream>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <lidar_tracker/DetectedObject.h>
-#include <lidar_tracker/DetectedObjectArray.h>
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -52,7 +52,7 @@ private:
     double around_y;
   };
 
-  void obj_callback(lidar_tracker::DetectedObjectArray::ConstPtr obj_msg);
+  void obj_callback(autoware_msgs::DetectedObjectArray::ConstPtr obj_msg);
   void target_waypoint_callback(
       visualization_msgs::Marker::ConstPtr target_point_msgs);
   void vscan_points_callback(sensor_msgs::PointCloud2::ConstPtr vscan_msg);
@@ -142,7 +142,7 @@ void PotentialField::publish_potential_field() {
                     message.info.header.stamp.toSec());
 }
 void PotentialField::obj_callback(
-    lidar_tracker::DetectedObjectArray::ConstPtr obj_msg) { // Create grid map.
+    autoware_msgs::DetectedObjectArray::ConstPtr obj_msg) { // Create grid map.
   static ObstacleFieldParameter param;
   double ver_x_p(param.ver_x_p);
   double ver_y_p(param.ver_y_p);

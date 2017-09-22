@@ -45,9 +45,9 @@
 #include <tuple>
 
 // User defined includes
-#include "waypoint_follower_msgs/LaneArray.h"
+#include "autoware_msgs/LaneArray.h"
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "runtime_manager/ConfigLaneSelect.h"
+#include "autoware_msgs/ConfigLaneSelect.h"
 #include "hermite_curve.h"
 
 namespace lane_planner
@@ -91,9 +91,9 @@ private:
   int32_t current_lane_idx_;  // the index of the lane we are driving
   int32_t right_lane_idx_;
   int32_t left_lane_idx_;
-  std::vector<std::tuple<waypoint_follower_msgs::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
+  std::vector<std::tuple<autoware_msgs::lane, int32_t, ChangeFlag>> tuple_vec_;  // lane, closest_waypoint,
                                                                                      // change_flag
-  std::tuple<waypoint_follower_msgs::lane, int32_t, ChangeFlag> lane_for_change_;
+  std::tuple<autoware_msgs::lane, int32_t, ChangeFlag> lane_for_change_;
   bool is_lane_array_subscribed_, is_current_pose_subscribed_, is_current_velocity_subscribed_, is_current_state_subscribed_, is_config_subscribed_;
 
   // parameter from runtime manager
@@ -105,11 +105,11 @@ private:
   std::string current_state_;
 
   // callbacks
-  void callbackFromLaneArray(const waypoint_follower_msgs::LaneArrayConstPtr &msg);
+  void callbackFromLaneArray(const autoware_msgs::LaneArrayConstPtr &msg);
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromState(const std_msgs::StringConstPtr &msg);
-  void callbackFromConfig(const runtime_manager::ConfigLaneSelectConstPtr &msg);
+  void callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg);
 
   // initializer
   void initForROS();
@@ -128,7 +128,7 @@ private:
   void resetSubscriptionFlag();
   bool isAllTopicsSubscribed();
   void processing();
-  void publishLane(const waypoint_follower_msgs::lane &lane);
+  void publishLane(const autoware_msgs::lane &lane);
   void publishClosestWaypoint(const int32_t clst_wp);
   void publishChangeFlag(const ChangeFlag flag);
   bool getClosestWaypointNumberForEachLanes();
@@ -138,10 +138,10 @@ private:
   void changeLane();
   void updateChangeFlag();
   void createLaneForChange();
-  int32_t getClosestLaneChangeWaypointNumber(const std::vector<waypoint_follower_msgs::waypoint> &wps, int32_t cl_wp);
+  int32_t getClosestLaneChangeWaypointNumber(const std::vector<autoware_msgs::waypoint> &wps, int32_t cl_wp);
 };
 
-int32_t getClosestWaypointNumber(const waypoint_follower_msgs::lane &current_lane, const geometry_msgs::Pose &current_pose,
+int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const geometry_msgs::Pose &current_pose,
                                  const geometry_msgs::Twist &current_velocity, const int32_t previous_number, const double distance_threshold);
 
 double getTwoDimensionalDistance(const geometry_msgs::Point &target1, const geometry_msgs::Point &target2);

@@ -30,10 +30,10 @@
 #include <string>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-#include <runtime_manager/ConfigRcnn.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker_msgs/image_obj.h>
+#include <autoware_msgs/image_obj.h>
+#include <autoware_msgs/ConfigRcnn.h>
 
 #include <rcnn_detector.h>
 #include <rect_class_score.h>
@@ -73,7 +73,7 @@ class RosRcnnApp
 	//vector of indices of the classes to search for
 	std::vector<unsigned int> detect_classes_;
 
-	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, cv_tracker_msgs::image_obj& out_message, cv::Mat& in_image, std::string in_class)
+	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::image_obj& out_message, cv::Mat& in_image, std::string in_class)
 	{
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
@@ -85,7 +85,7 @@ class RosRcnnApp
 				)//check if the score is larger than minimum required
 			{
 				//std::cout << in_objects[i].toString() << std::endl;
-				cv_tracker_msgs::image_rect rect;
+				autoware_msgs::image_rect rect;
 
 				rect.x = in_objects[i].x;
 				rect.y = in_objects[i].y;
@@ -124,8 +124,8 @@ class RosRcnnApp
 		//std::cout << "Detection took: " << timer.getTimeMilli() << std::endl;
 
 		//Prepare Output message
-		cv_tracker_msgs::image_obj output_car_message;
-		cv_tracker_msgs::image_obj output_person_message;
+		autoware_msgs::image_obj output_car_message;
+		autoware_msgs::image_obj output_person_message;
 		output_car_message.header = image_source.header;
 		output_car_message.type = "car";
 
@@ -141,7 +141,7 @@ class RosRcnnApp
 		publisher_person_objects_.publish(output_person_message);
 	}
 
-	void config_cb(const runtime_manager::ConfigRcnn::ConstPtr& param)
+	void config_cb(const autoware_msgs::ConfigRcnn::ConstPtr& param)
 	{
 		rcnn_detector_->SetPixelMean(cv::Scalar(param->b_mean, param->g_mean, param->r_mean));
 
@@ -216,8 +216,8 @@ public:
 			return;
 		}
 
-		publisher_car_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj>("/obj_car/image_obj", 1);
-		publisher_person_objects_ = node_handle_.advertise<cv_tracker_msgs::image_obj>("/obj_person/image_obj", 1);
+		publisher_car_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_car/image_obj", 1);
+		publisher_person_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_person/image_obj", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosRcnnApp::image_callback, this);

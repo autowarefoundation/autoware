@@ -17,9 +17,9 @@
 #include <pthread.h>
 #include "t_sync_message.h"
 /* user header */
-#include "cv_tracker/image_obj.h"
-#include "points2image/PointsImage.h"
-#include "cv_tracker/image_obj_ranged.h"
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/PointsImage.h"
+#include "autoware_msgs/image_obj_ranged.h"
 
 /* ----mode---- */
 #define _REQ_PUB 1
@@ -30,8 +30,8 @@ bool buf_flag;
 pthread_mutex_t mutex;
 pthread_mutex_t flag_mutex;
 /* user var */
-boost::circular_buffer<cv_tracker::image_obj> image_obj_ringbuf(10);
-boost::circular_buffer<points2image::PointsImage> vscan_image_ringbuf(10);
+boost::circular_buffer<autoware_msgs::image_obj> image_obj_ringbuf(10);
+boost::circular_buffer<autoware_msgs::PointsImage> vscan_image_ringbuf(10);
 ros::Publisher image_obj__pub;
 ros::Publisher vscan_image__pub;
 bool image_obj_ranged_flag;
@@ -50,10 +50,10 @@ double get_time(const std_msgs::Header *timespec) {
 
 
 #if _REQ_PUB
-cv_tracker::image_obj* p_image_obj_buf;
-points2image::PointsImage* p_vscan_image_buf;
+autoware_msgs::image_obj* p_image_obj_buf;
+autoware_msgs::PointsImage* p_vscan_image_buf;
 
-void publish_msg(cv_tracker::image_obj* p_image_obj_buf, points2image::PointsImage* p_vscan_image_buf) {
+void publish_msg(autoware_msgs::image_obj* p_image_obj_buf, autoware_msgs::PointsImage* p_vscan_image_buf) {
     ROS_INFO("publish");
     image_obj__pub.publish(*p_image_obj_buf);
     vscan_image__pub.publish(*p_vscan_image_buf);
@@ -80,7 +80,7 @@ bool publish() {
         // image_obj > vscan_image
         if (get_time(&(image_obj_ringbuf.front().header)) >= get_time(&(vscan_image_ringbuf.front().header))) {
             p_vscan_image_buf = &(vscan_image_ringbuf.front());
-            boost::circular_buffer<cv_tracker::image_obj>::iterator it = image_obj_ringbuf.begin();
+            boost::circular_buffer<autoware_msgs::image_obj>::iterator it = image_obj_ringbuf.begin();
             if (image_obj_ringbuf.size() == 1) {
                 p_image_obj_buf = &*it;
                 publish_msg(p_image_obj_buf, p_vscan_image_buf);
@@ -102,7 +102,7 @@ bool publish() {
         // image_obj < vscan_image
         else {
             p_image_obj_buf = &(image_obj_ringbuf.front());
-            boost::circular_buffer<points2image::PointsImage>::iterator it = vscan_image_ringbuf.begin();
+            boost::circular_buffer<autoware_msgs::PointsImage>::iterator it = vscan_image_ringbuf.begin();
             if (vscan_image_ringbuf.size() == 1) {
                 p_vscan_image_buf = &*it;
                 publish_msg(p_image_obj_buf, p_vscan_image_buf);
@@ -136,7 +136,7 @@ bool publish() {
     }
 }
 
-void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
+void image_obj_callback(const autoware_msgs::image_obj::ConstPtr& image_obj_msg) {
     pthread_mutex_lock(&mutex);
     image_obj_ringbuf.push_front(*image_obj_msg);
     //vscan_image is empty
@@ -153,7 +153,7 @@ void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
     }
 }
 
-void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image_msg) {
+void vscan_image_callback(const autoware_msgs::PointsImage::ConstPtr& vscan_image_msg) {
     pthread_mutex_lock(&mutex);
     vscan_image_ringbuf.push_front(*vscan_image_msg);
     //image_obj is empty
@@ -172,7 +172,7 @@ void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image
 #else
 #endif
 
-void image_obj_ranged_callback(const cv_tracker::image_obj_ranged::ConstPtr& image_obj_ranged_msg) {
+void image_obj_ranged_callback(const autoware_msgs::image_obj_ranged::ConstPtr& image_obj_ranged_msg) {
     image_obj_ranged_flag= true;
     ROS_INFO("catch publish request");
     if (publish() == false) {
@@ -222,8 +222,8 @@ int main(int argc, char **argv) {
 
     ros::Subscriber image_obj_sub = nh.subscribe("obj_car/image_obj", 1, image_obj_callback);
     ros::Subscriber vscan_image_sub = nh.subscribe("vscan_image", 1, vscan_image_callback);
-    image_obj__pub = nh.advertise<cv_tracker::image_obj>("obj_car/image_obj_", 5);
-    vscan_image__pub = nh.advertise<points2image::PointsImage>("vscan_image_", 5);
+    image_obj__pub = nh.advertise<autoware_msgs::image_obj>("obj_car/image_obj_", 5);
+    vscan_image__pub = nh.advertise<autoware_msgs::PointsImage>("vscan_image_", 5);
 
     pthread_mutex_lock(&flag_mutex);
     while ((!buf_flag) || ros::ok()) {
@@ -253,10 +253,10 @@ int main(int argc, char **argv) {
 
 
 #if 0
-cv_tracker::image_obj image_obj_buf;
-points2image::PointsImage vscan_image_buf;
+autoware_msgs::image_obj image_obj_buf;
+autoware_msgs::PointsImage vscan_image_buf;
 
-void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
+void image_obj_callback(const autoware_msgs::image_obj::ConstPtr& image_obj_msg) {
     pthread_mutex_lock(&mutex);
     image_obj_ringbuf.push_front(*image_obj_msg);
 
@@ -272,7 +272,7 @@ void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
     // image_obj > vscan_image
     if (get_time(&(image_obj_ringbuf.front().header)) >= get_time(&(vscan_image_ringbuf.front().header))) {
         vscan_image_buf = vscan_image_ringbuf.front();
-        boost::circular_buffer<cv_tracker::image_obj>::iterator it = image_obj_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::image_obj>::iterator it = image_obj_ringbuf.begin();
         if (image_obj_ringbuf.size() == 1) {
             image_obj_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -292,7 +292,7 @@ void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
 
     } else {
         image_obj_buf = image_obj_ringbuf.front();
-        boost::circular_buffer<points2image::PointsImage>::iterator it = vscan_image_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::PointsImage>::iterator it = vscan_image_ringbuf.begin();
         if (vscan_image_ringbuf.size() == 1) {
             vscan_image_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -314,7 +314,7 @@ void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
     pthread_mutex_unlock(&mutex);
 }
 
-void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image_msg) {
+void vscan_image_callback(const autoware_msgs::PointsImage::ConstPtr& vscan_image_msg) {
     pthread_mutex_lock(&mutex);
     vscan_image_ringbuf.push_front(*vscan_image_msg);
     //image_obj is empty
@@ -329,7 +329,7 @@ void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image
     // image_obj > vscan_image
     if (get_time(&(image_obj_ringbuf.front().header)) >= get_time(&(vscan_image_ringbuf.front().header))) {
         vscan_image_buf = vscan_image_ringbuf.front();
-        boost::circular_buffer<cv_tracker::image_obj>::iterator it = image_obj_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::image_obj>::iterator it = image_obj_ringbuf.begin();
         if (image_obj_ringbuf.size() == 1) {
             image_obj_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -349,7 +349,7 @@ void vscan_image_callback(const points2image::PointsImage::ConstPtr& vscan_image
 
     } else {
         image_obj_buf = image_obj_ringbuf.front();
-        boost::circular_buffer<points2image::PointsImage>::iterator it = vscan_image_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::PointsImage>::iterator it = vscan_image_ringbuf.begin();
         if (vscan_image_ringbuf.size() == 1) {
             vscan_image_buf = *it;
             pthread_mutex_unlock(&mutex);

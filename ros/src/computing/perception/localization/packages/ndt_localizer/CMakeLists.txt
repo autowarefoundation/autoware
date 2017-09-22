@@ -22,10 +22,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   sensor_msgs
+  autoware_msgs
   pcl_conversions
-  runtime_manager
   velodyne_pointcloud
-  message_generation
   ${FAST_PCL_PACKAGES}
   ndt_tku
 )
@@ -34,19 +33,12 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
   sensor_msgs
+  autoware_msgs
   pcl_conversions
-  runtime_manager
   velodyne_pointcloud
-  message_generation
   ${FAST_PCL_PACKAGES}
 )
 endif()
-add_message_files(FILES ndt_stat.msg)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
@@ -55,7 +47,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS runtime_manager message_runtime std_msgs velodyne_pointcloud ${FAST_PCL_PACKAGES}
+  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
   DEPENDS ndt_tku
 #  DEPENDS system_lib
 )
@@ -63,7 +55,7 @@ elseif("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS runtime_manager message_runtime std_msgs velodyne_pointcloud ${FAST_PCL_PACKAGES}
+  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
 #  DEPENDS ndt_tku
 #  DEPENDS system_lib
 )
@@ -83,8 +75,8 @@ ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
 
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
+add_executable(approximate_ndt_mapping nodes/approximate_ndt_mapping/approximate_ndt_mapping.cpp)
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
-add_executable(local2global nodes/local2global/local2global.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
@@ -97,8 +89,8 @@ endif()
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
+target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
-target_link_libraries(local2global ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
@@ -108,8 +100,6 @@ target_link_libraries(mapping ndt_tku ${catkin_LIBRARIES})
 target_link_libraries(tf_mapping ${catkin_LIBRARIES})
 endif()
 
-add_dependencies(ndt_matching runtime_manager_generate_messages_cpp ndt_localizer_generate_messages_cpp)
-add_dependencies(ndt_mapping runtime_manager_generate_messages_cpp)
-add_dependencies(lazy_ndt_mapping runtime_manager_generate_messages_cpp)
-add_dependencies(local2global runtime_manager_generate_messages_cpp)
-add_dependencies(queue_counter runtime_manager_generate_messages_cpp)
+add_dependencies(ndt_matching autoware_msgs_generate_messages_cpp)
+add_dependencies(ndt_mapping autoware_msgs_generate_messages_cpp)
+add_dependencies(lazy_ndt_mapping autoware_msgs_generate_messages_cpp)

@@ -6,10 +6,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <rviz/panel.h>
-#include <cv_tracker_msgs/image_obj.h>
-#include <cv_tracker_msgs/image_obj_ranged.h>
-#include <cv_tracker_msgs/image_obj_tracked.h>
-#include <points2image/PointsImage.h>
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/image_obj_ranged.h"
+#include "autoware_msgs/image_obj_tracked.h"
+#include "autoware_msgs/PointsImage.h"
 
 #include <string>
 #include <map>
@@ -48,11 +48,11 @@ namespace integrated_viewer
     
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
-    void ImageObjCallback(const cv_tracker_msgs::image_obj::ConstPtr& msg);
-    void ImageObjRangedCallback(const cv_tracker_msgs::image_obj_ranged::ConstPtr& msg);
-    void ImageObjTrackedCallback(const cv_tracker_msgs::image_obj_tracked::ConstPtr& msg);
-    void PointCallback(const points2image::PointsImage::ConstPtr &msg);
-    void LaneCallback(const lane_detector::ImageLaneObjects::ConstPtr& msg);
+    void ImageObjCallback(const autoware_msgs::image_obj::ConstPtr& msg);
+    void ImageObjRangedCallback(const autoware_msgs::image_obj_ranged::ConstPtr& msg);
+    void ImageObjTrackedCallback(const autoware_msgs::image_obj_tracked::ConstPtr& msg);
+    void PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg);
+    void LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg);
 
    // The function to refrect modified image on UI
    void ShowImageOnUi(void);
@@ -88,11 +88,11 @@ namespace integrated_viewer
     cv::Mat default_image_;
 
     // Data pointer to hold subscribed data
-    points2image::PointsImage::ConstPtr points_msg_;
-    cv_tracker_msgs::image_obj::ConstPtr image_obj_msg_;
-    cv_tracker_msgs::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
-    cv_tracker_msgs::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
-    lane_detector::ImageLaneObjects::ConstPtr lane_msg_;
+    autoware_msgs::PointsImage::ConstPtr points_msg_;
+    autoware_msgs::image_obj::ConstPtr image_obj_msg_;
+    autoware_msgs::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
+    autoware_msgs::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
+    autoware_msgs::ImageLaneObjects::ConstPtr lane_msg_;
 
     // data structure to hold topic information for detection result
     std::map<std::string, std::string> rect_topic_info_;
