@@ -1,37 +1,10 @@
-FROM nvidia/cuda:8.0-devel-ubuntu14.04
-MAINTAINER Yuki Iida <aiueo.0409@gmail.com>
-
-RUN apt-get update && apt-get install -y \
-        software-properties-common \
-        wget curl git cmake cmake-curses-gui
-
-# Intall ROS
-RUN wget http://packages.ros.org/ros.key -O - | apt-key add -
-RUN echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list
-RUN apt-get update && apt-get install -y \
-        ros-indigo-desktop-full ros-indigo-nmea-msgs \
-        ros-indigo-nmea-navsat-driver ros-indigo-sound-play \
-        ros-indigo-jsk-visualization \
-        ros-indigo-perception-pcl \
-        ros-indigo-openni-launch \
-        ros-indigo-turtlebot-simulator \
-        libnlopt-dev freeglut3-dev qtbase5-dev \
-        libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu
-
-RUN apt-get install -y \
-	ros-indigo-velocity-controllers  ros-indigo-grid-map \
-	ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-gps-common \
-	libglew-dev
-
-RUN apt-get install -y ros-indigo-ros-control ros-indigo-ros-controllers \
-    ros-indigo-gazebo-ros-control
-
-RUN rosdep init \
-        && rosdep update \
-        && echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
+FROM nvidia/cuda:8.0-devel-ubuntu16.04
+MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
 
 # Develop
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
+        software-properties-common \
+        wget curl git cmake cmake-curses-gui \
         libboost-all-dev \
         libflann-dev \
         libgsl0-dev \
@@ -52,19 +25,18 @@ RUN apt-get install -y \
         cmake-qt-gui \
         gnome-terminal
 
-# Install OpenCV
-RUN apt-get update && apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-0 libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
-
-RUN wget https://github.com/opencv/opencv/archive/2.4.13.zip && \
-    unzip 2.4.13.zip && \
-    rm 2.4.13.zip && \
-    cd opencv-2.4.13/ && \
-    mkdir build && \
-    cd build/ && \
-    cmake -D WITH_TBB=ON -D BUILD_NEW_PYTHON_SUPPORT=ON -D WITH_V4L=ON -D CUDA_GENERATION=Auto -D WITH_QT=ON -D WITH_OPENGL=ON -D WITH_VTK=ON .. && \
-    make -j8 && \
-    make install 
-ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+# Intall ROS
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-get update && apt-get install -y \
+        ros-kinetic-desktop-full ros-kinetic-nmea-msgs \
+        ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play \
+        ros-kinetic-jsk-visualization ros-kinetic-grid-map \
+        ros-kinetic-gps-common ros-kinetic-controller-manager \
+        ros-kinetic-ros-control ros-kinetic-ros-controllers \
+        ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers \
+        libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev \
+        libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0
 
 # Add basic user
 ENV USERNAME autoware
@@ -80,18 +52,22 @@ RUN useradd -m $USERNAME && \
         groupmod --gid 1000 $USERNAME
 
 # Setup .bashrc for ROS
-RUN echo "source /opt/ros/indigo/setup.bash" >> /home/$USERNAME/.bashrc && \
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         #Fix for qt and X server errors
         echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
         # cd to home on login
-        echo "cd" >> /home/$USERNAME/.bashrc 
+        echo "cd" >> /home/$USERNAME/.bashrc
 
 # Change user
 USER autoware
 
+RUN sudo rosdep init \
+        && rosdep update \
+        && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+
 # Install Autoware
 RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
-RUN /bin/bash -c 'source /opt/ros/indigo/setup.bash; cd /home/$USERNAME/Autoware/ros/src; catkin_init_workspace; cd ../; ./catkin_make_release'
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Change Terminal Color
