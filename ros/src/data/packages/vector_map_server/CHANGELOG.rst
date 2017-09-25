@@ -2,6 +2,9 @@
 Changelog for package vector_map_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * no jsk msgs used

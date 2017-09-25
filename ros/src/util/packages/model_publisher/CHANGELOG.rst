@@ -2,6 +2,9 @@
 Changelog for package model_publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * added install targets

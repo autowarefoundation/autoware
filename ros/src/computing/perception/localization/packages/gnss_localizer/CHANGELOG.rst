@@ -2,6 +2,9 @@
 Changelog for package gnss_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * support Garmin GPS 18x LVC

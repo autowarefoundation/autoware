@@ -2,6 +2,9 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * fixed cmake and package.xml for libvectormap

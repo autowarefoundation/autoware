@@ -2,6 +2,9 @@
 Changelog for package catvehicle
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * fix version inconsistency

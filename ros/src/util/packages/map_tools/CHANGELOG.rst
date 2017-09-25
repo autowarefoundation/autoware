@@ -2,6 +2,11 @@
 Changelog for package map_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix compile error in map_extender.
+* Contributors: yukikitsukawa
+
 1.5.0 (2017-09-21)
 ------------------
 * add map_extender

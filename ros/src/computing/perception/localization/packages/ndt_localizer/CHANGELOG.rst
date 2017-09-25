@@ -2,6 +2,9 @@
 Changelog for package ndt_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.0 (2017-09-21)
 ------------------
 * add map_extender
