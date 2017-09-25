@@ -2,8 +2,8 @@
 Changelog for package euc
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2017-09-25)
+------------------
 * fix a build error by gcc version
 * Contributors: Yusuke FUJII
 

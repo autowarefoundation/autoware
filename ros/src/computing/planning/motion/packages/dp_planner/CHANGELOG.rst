@@ -2,8 +2,8 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.1 (2017-09-25)
+------------------
 * fix build error for older indigo version
 * Contributors: Yusuke FUJII
 
