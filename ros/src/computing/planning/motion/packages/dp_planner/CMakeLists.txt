@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dp_planner)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -35,6 +41,9 @@ catkin_package(
 ###########
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+if ("${ROS_VERSION}" MATCHES "(kinetic)")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")
+endif()
 
 include_directories(
   include include/plannerh
