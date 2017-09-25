@@ -1068,7 +1068,11 @@ void PlannerX::PlannerMainLoop()
 				enableLattice.data = 1;
 			}else{
 				visualization_msgs::Marker delMarker;
+#ifndef ROS_KINETIC
+				delMarker.action = visualization_msgs::Marker::DELETE;
+#else
 				delMarker.action = visualization_msgs::Marker::DELETEALL;
+#endif
 				delMarker.ns = "global_lane_array_marker_dynamic";
 				all_rollOuts_dynamic.markers.push_back(delMarker);
 				pub_LocalTrajectoriesRviz_dynamic.publish(all_rollOuts_dynamic);
