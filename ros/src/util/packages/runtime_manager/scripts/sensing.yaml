@@ -683,7 +683,7 @@ params :
         dash        : ''
         delim       : ':='
     - name  : radial_divider_angle
-      desc  : Angle of each Radial division on the XY Plane (default 0.1 degrees)
+      desc  : Angle of each Radial division on the XY Plane (default 0.08 degrees)
       label : radial_divider_angle
       min   : 0.01
       max   : 5
