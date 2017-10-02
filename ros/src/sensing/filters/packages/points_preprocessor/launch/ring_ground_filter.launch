@@ -14,7 +14,7 @@
         <arg name="ground_point_topic" default="/points_ground" />
 
         <!-- rosrun lidar_tracker ground_filter -->
-        <node pkg="points_preprocessor" type="ground_filter" name="ground_filter" output="log">
+        <node pkg="points_preprocessor" type="ring_ground_filter" name="ring_ground_filter" output="log">
                 <param name="point_topic" value="$(arg point_topic)" />
                 <param name="remove_floor" value="$(arg remove_floor)" />
                 <param name="sensor_model" value="$(arg sensor_model)" />

@@ -395,7 +395,7 @@ void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::P
 int main(int argc, char **argv)
 {
 
-	ros::init(argc, argv, "ground_filter");
+	ros::init(argc, argv, "ring_ground_filter");
 	GroundFilter node;
 	ros::spin();
 
