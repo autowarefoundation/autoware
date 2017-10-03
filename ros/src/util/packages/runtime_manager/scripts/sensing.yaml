@@ -213,6 +213,10 @@ cmds:
     - name : ground_filter
       desc : ground_filter desc sample
       cmd  : roslaunch points_preprocessor ground_filter.launch node_name:=ground_filter
+      param: ground_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -444,7 +448,54 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-
+  - name  : ground_filter
+    topic : /config/ground_filter
+    msg   : ConfigGroundFilter
+    vars  :
+    - name  : sensor_model
+      desc  : sensor_model desc sample
+      label : Sensor Model
+      kind  : radio_box
+      choices: [ '64', '32', '16' ]
+      descs  : [ 'HDL-64e', 'HDL-32e', 'VLP-16' ]
+      choices_type: str
+      v     : '32'
+    - name  : sensor_height
+      desc  : sensor_height desc sample
+      label : Sensor Height
+      min   : -3.0
+      max   : 3.0
+      v     : 1.72
+    - name  : max_slope
+      desc  : max_slope desc sample
+      label : Max Slope
+      min   : 0.0
+      max   : 40.0
+      v     : 20.0
+    - name  : point_distance
+      desc  : point_distance desc sample
+      label : Point Distance
+      min   : 0.0
+      max   : 1.0
+      v     : 0.05
+    - name  : min_point
+      desc  : min_point desc sample
+      label : Min Point
+      min   : 1
+      max   : 10
+      v     : 3
+    - name  : clipping_thres
+      desc  : clipping_thres desc sample
+      label : Clipping Thres
+      min   : -3.0
+      max   : 3.0
+      v     : -0.5
+    - name  : gap_thres
+      desc  : gap_thres desc sample
+      label : Gap Thres
+      min   : 0.0
+      max   : 3.0
+      v     : 0.5
   - name  : calibration_publisher
     vars  :
     - name         : camera_id

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_msgs)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
 	message_generation
 	std_msgs
 	geometry_msgs
@@ -49,12 +49,13 @@ add_message_files(
   waypoint.msg
 
 ## Runtime Manager ##
-  ConfigApproximateNdtMapping.msg 
+  ConfigApproximateNdtMapping.msg
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
   ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
+  ConfigGroundFilter.msg
   ConfigICP.msg
   ConfigLaneRule.msg
   ConfigLaneSelect.msg
@@ -84,11 +85,11 @@ add_message_files(
   steer_cmd.msg
   traffic_light.msg
   state_cmd.msg
- 
+
 ## Sync
   Sync_time_monitor.msg
   Sync_time_diff.msg
- 
+
 )
 
 
