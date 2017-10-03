@@ -1,4 +1,4 @@
-<!-- Launch file for Ground Filter -->
+<!-- Launch file for RingGround Filter -->
 <launch>
 
         <arg name="point_topic" default="/points_raw" />
@@ -6,7 +6,7 @@
         <arg name="sensor_model" default="64" />
         <arg name="sensor_height" default="1.72" />
         <arg name="max_slope" default="20.0" />
-        <arg name="points_distance" default="0.05" />
+        <arg name="point_distance" default="0.05" />
         <arg name="min_point" default="3" />
         <arg name="clipping_thres" default="-0.5" />
         <arg name="gap_thres" default="0.5" />
@@ -20,7 +20,7 @@
                 <param name="sensor_model" value="$(arg sensor_model)" />
                 <param name="sensor_height" value="$(arg sensor_height)" />
                 <param name="max_slope" value="$(arg max_slope)" />
-                <param name="points_distance" value="$(arg points_distance)" />
+                <param name="point_distance" value="$(arg point_distance)" />
                 <param name="min_point" value="$(arg min_point)" />
                 <param name="clipping_thres" value="$(arg clipping_thres)" />
                 <param name="gap_thres" value="$(arg gap_thres)" />

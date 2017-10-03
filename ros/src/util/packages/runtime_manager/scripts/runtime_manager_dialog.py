@@ -69,6 +69,7 @@ from autoware_msgs.msg import ConfigVoxelGridFilter
 from autoware_msgs.msg import ConfigRingFilter
 from autoware_msgs.msg import ConfigDistanceFilter
 from autoware_msgs.msg import ConfigRandomFilter
+from autoware_msgs.msg import ConfigRingGroundFilter
 from autoware_msgs.msg import ConfigWaypointFollower
 from autoware_msgs.msg import ConfigTwistFilter
 from autoware_msgs.msg import ConfigVelocitySet
@@ -105,7 +106,7 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
-		
+
 
 
 	def __init__(self, *args, **kwds):
@@ -488,7 +489,7 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
-	
+
 
 		wx.CallAfter( self.boot_booted_cmds )
 
@@ -761,8 +762,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
-	
-	
+
+
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -3350,7 +3351,7 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
-	
+
 # psutil 3.x to 1.x backward compatibility
 def get_cpu_count():
 	try:
