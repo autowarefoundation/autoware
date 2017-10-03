@@ -12,7 +12,7 @@
 #include <pcl/point_types.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <opencv/cv.h>
-#include "autoware_msgs/ConfigGroundFilter.h"
+#include "autoware_msgs/ConfigRingGroundFilter.h"
 
 enum Label
 {
@@ -64,7 +64,7 @@ private:
 				int in_indices[], int &in_out_index_size,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &in_cloud);
 
-	void ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config);
+	void ConfigCallback(const autoware_msgs::ConfigRingGroundFilterConstPtr &config);
 	void VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg);
 	void FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &out_groundless_points,
@@ -379,7 +379,7 @@ void RingGroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::P
 
 }
 
-void RingGroundFilter::ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config)
+void RingGroundFilter::ConfigCallback(const autoware_msgs::ConfigRingGroundFilterConstPtr &config)
 {
   sensor_model_ = std::stoi(config->sensor_model);
   sensor_height_ = config->sensor_height;
