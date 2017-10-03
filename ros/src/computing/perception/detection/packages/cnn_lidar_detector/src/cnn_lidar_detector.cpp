@@ -29,7 +29,10 @@
  */
 #include "cnn_lidar_detector.hpp"
 
-void CnnLidarDetector::Detect(const cv::Mat& in_depth_image, const cv::Mat& in_height_image, cv::Mat& out_objectness_image)
+void CnnLidarDetector::Detect(const cv::Mat& in_depth_image,
+                              const cv::Mat& in_height_image,
+                              cv::Mat& out_objectness_image,
+                              jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
 	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 	input_layer->Reshape(1,
@@ -46,11 +49,12 @@ void CnnLidarDetector::Detect(const cv::Mat& in_depth_image, const cv::Mat& in_h
 
 	net_->Forward();
 
-	GetNetworkResults(out_objectness_image);
+	GetNetworkResults(out_objectness_image, out_boxes);
 
 }
 
-void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image)
+void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
+                                         jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
 	caffe::Blob<float>* boxes_blob = net_->output_blobs().at(0);//0 boxes
 	caffe::Blob<float>* objectness_blob = net_->output_blobs().at(1);//1 objectness
@@ -58,7 +62,7 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image)
 	//output layer     0  1    2     3
 	//prob 		shape  1 04 height width
 	//bb_score 	shape  1 24 height width
-	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 24 channel image, but instead is " << boxes_blob->shape(1);
+	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 96 channel image, but instead is " << boxes_blob->shape(1);
 	CHECK_EQ(objectness_blob->shape(1), 4) << "The output prob layer should be 4 channel image, but instead is " << objectness_blob->shape(1) ;
 
 	std::vector<cv::Mat> objectness_channels;
@@ -74,11 +78,6 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image)
 		objectness_ptr += width * height;
 	}
 
-	//cv::imshow("Channel 1", objectness_channels[1]);
-	//cv::imshow("Channel 2", objectness_channels[2]);
-	//cv::imshow("Channel 3", objectness_channels[3]);
-	//cv::waitKey(10);
-
 	//check each pixel of each channel and assign color depending threshold
 	cv::Mat bgr_channels(height, width, CV_8UC3, cv::Scalar(0,0,0));
 
@@ -91,16 +90,18 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image)
 			//2 person, green
 			//3 bike, blue
 			//BGR Image
-			if (
-					objectness_channels[1].at<float>(h,w) > score_threshold_
-				)
+			if (objectness_channels[1].at<float>(h,w) > score_threshold_)
+			{
 				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 0, 255);
-			if (objectness_channels[2].at<float>(h,w) > score_threshold_
-				)
+			}
+			if (objectness_channels[2].at<float>(h,w) > score_threshold_)
+			{
 				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 255, 0);
-			if (objectness_channels[3].at<float>(h,w) > score_threshold_
-				)
+			}
+			if (objectness_channels[3].at<float>(h,w) > score_threshold_)
+			{
 				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(255, 0, 0);
+			}
 		}
 	}
 

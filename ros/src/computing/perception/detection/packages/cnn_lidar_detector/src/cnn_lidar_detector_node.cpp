@@ -27,6 +27,10 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+#include <string>
+#include <cmath>
+
 #include <ros/ros.h>
 #include <ros/package.h>
 
@@ -44,8 +48,6 @@
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <jsk_rviz_plugins/Pictogram.h>
-#include <jsk_rviz_plugins/PictogramArray.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -56,9 +58,6 @@
 #else
 	#include <opencv2/contrib/contrib.hpp>
 #endif
-
-#include <string>
-#include <cmath>
 
 #include "cnn_lidar_detector.hpp"
 
@@ -88,11 +87,11 @@ class RosLidarDetectorApp
 
 	float 			horizontal_res_;
 	float 			vertical_res_;
-	unsigned int 	image_width_;
-	unsigned int 	image_height_;
+	size_t          image_width_;
+	size_t          image_height_;
 	double			score_threshold_;
 
-	unsigned int	sensor_res_; //16,32,64
+	size_t	sensor_res_; //16,32,64
 
 	cv::Mat			projection_mean_depth_;//single channel float image subtrahend for depth projection
 	cv::Mat			projection_mean_height_;//single channel float image subtrahend for height projection
@@ -110,7 +109,7 @@ class RosLidarDetectorApp
 			std::vector<pcl::PointXYZI>& out_points_3d//corresponding 3d points
 			)
 	{
-		for(unsigned int i=0; i<in_point_cloud->points.size(); i++)
+		for(size_t i=0; i<in_point_cloud->points.size(); i++)
 		{
 			pcl::PointXYZI point = in_point_cloud->points[i];
 			if (point.x > 0. && point.x <70.)
@@ -119,8 +118,8 @@ class RosLidarDetectorApp
 				float length = sqrt(point.x*point.x + point.y*point.y + point.z*point.z);
 				float angle = asin(point.z/length);
 				float depth = sqrt(point.x*point.x + point.y*point.y);
-				unsigned int image_x = floor((theta/horizontal_res_) + image_width_/2);//250.5 = (501/2)
-				unsigned int image_y = floor((angle/vertical_res_) + image_height_/2);//71.0 = 90*0.78
+				size_t image_x = floor((theta/horizontal_res_) + image_width_/2);//250.5 = (501/2)
+				size_t image_y = floor((angle/vertical_res_) + image_height_/2);//71.0 = 90*0.78
 
 				if ( (image_x >= 0) && (image_x < image_width_) &&
 					 (image_y >= 0) && (image_y < image_height_)
@@ -163,9 +162,9 @@ class RosLidarDetectorApp
 
 	void subtract_image(cv::Mat& in_out_minuend_image, float in_subtrahend)
 	{
-		for(unsigned int y = 0; y < in_out_minuend_image.rows; y++)
+		for(size_t y = 0; y < in_out_minuend_image.rows; y++)
 		{
-			for(unsigned int x = 0; x < in_out_minuend_image.cols; x++)
+			for(size_t x = 0; x < in_out_minuend_image.cols; x++)
 			{
 				in_out_minuend_image.at<float>(y, x) -= in_subtrahend;
 			}
@@ -179,9 +178,9 @@ class RosLidarDetectorApp
 			ROS_ERROR("Not performing division by small number, divisor is too small (%f). Check Mat file.", in_divisor);
 			return;
 		}
-		for(unsigned int y = 0; y < in_out_dividend.rows; y++)
+		for(size_t y = 0; y < in_out_dividend.rows; y++)
 		{
-			for(unsigned int x = 0; x < in_out_dividend.cols; x++)
+			for(size_t x = 0; x < in_out_dividend.cols; x++)
 			{
 				in_out_dividend.at<float>(y, x) /= in_divisor;
 			}
@@ -221,10 +220,13 @@ class RosLidarDetectorApp
 		divide_image(projected_cloud_height, projection_std_dev_height_.at<float>(0));
 
 		//use image for CNN forward
+		jsk_recognition_msgs::BoundingBoxArray objects_boxes;
+		objects_boxes.header = in_sensor_cloud->header;
 
 		lidar_detector_->Detect(projected_cloud_depth,
 								projected_cloud_height,
-								resulting_objectness);
+								resulting_objectness,
+								objects_boxes);
 
 		cv::Mat ros_depth_image, ros_height_image, ros_intensity_image; //mats for publishing
 
@@ -254,7 +256,7 @@ class RosLidarDetectorApp
 		mat_io.whos(variables);
 
 		std::size_t count = 0;
-		for (unsigned int i = 0; i < variables.size(); i++)
+		for (size_t i = 0; i < variables.size(); i++)
 		{
 			if (variables[i].name().compare("mean_depth") == 0)
 			{
@@ -366,7 +368,7 @@ public:
 
 		gpu_device_id_ 	= 0;
 		score_threshold_ = 0.5;
-		sensor_res_ = 16;
+		sensor_res_ = 64;
 
 		//TODO: parametrize these to enable different lidar models to be projected.
 		//Model   |   Horizontal   |   Vertical   | FOV(Vertical)    degrees / rads
@@ -402,8 +404,8 @@ public:
 
 		horizontal_res_ = DEG2RAD(horizontal_res_sensor);//Angular Resolution in rads (Horizontal/Azimuth)
 		vertical_res_ 	= DEG2RAD(vertical_res_sensor);//Vertical Resolution HDL
-		image_width_ 	= (horizontal_fov / horizontal_res_) + 1;//501
-		image_height_ 	= (DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
+		image_width_ 	= 501;//(horizontal_fov / horizontal_res_) + 1;//501
+		image_height_ 	= 90;//(DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
 
 	}
 };

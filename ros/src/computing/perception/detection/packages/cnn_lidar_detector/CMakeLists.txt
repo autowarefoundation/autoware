@@ -25,16 +25,13 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
-  geometry_msgs
-  message_generation
-  tf
   jsk_recognition_msgs
   jsk_rviz_plugins
 )
 
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
-include(FindZLIB)
+FIND_PACKAGE(ZLIB REQUIRED)
 
 EXECUTE_PROCESS(
   COMMAND uname -m
@@ -45,16 +42,15 @@ EXECUTE_PROCESS(
 catkin_package(CATKIN_DEPENDS 
   message_runtime
   std_msgs
-  geometry_msgs
   pcl_ros
 )
 ###########################################
 ###_CUDA COMPUTING CAPABILITY DETECTION####
 ###########################################
 IF(CUDA_FOUND)
-  set(CUDA_CAPABILITY_VERSION_CHECKER
-    "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
-  )
+  if(NOT CUDA_CAPABILITY_VERSION_CHECKER)
+    set(CUDA_CAPABILITY_VERSION_CHECKER "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")
+  endif()
 
   execute_process(
     COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
