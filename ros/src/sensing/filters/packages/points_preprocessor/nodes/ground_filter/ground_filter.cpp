@@ -12,6 +12,7 @@
 #include <pcl/point_types.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <opencv/cv.h>
+#include "autoware_msgs/ConfigGroundFilter.h"
 
 enum Label
 {
@@ -23,12 +24,13 @@ enum Label
 class GroundFilter
 {
 public:
-	
+
 	GroundFilter();
 
 private:
 
 	ros::NodeHandle node_handle_;
+	ros::Subscriber config_node_sub_;
 	ros::Subscriber points_node_sub_;
 	ros::Publisher groundless_points_pub_;
 	ros::Publisher ground_points_pub_;
@@ -55,13 +57,14 @@ private:
 
 	const int 	DEFAULT_HOR_RES = 2000;
 
+	void SetHorizontalRes(const int sensor_model, int &horizontal_res);
 	void InitLabelArray(int in_model);
 	void InitDepthMap(int in_width);
 	void PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
-				int in_indices[], int &in_out_index_size, 
+				int in_indices[], int &in_out_index_size,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &in_cloud);
 
-
+	void ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config);
 	void VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg);
 	void FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &out_groundless_points,
@@ -98,23 +101,10 @@ GroundFilter::GroundFilter() : node_handle_("~")
 	ROS_INFO("Only Ground Output Point Cloud: %s", ground_topic.c_str());
 
 	int default_horizontal_res;
-	switch(sensor_model_)
-	{
-		case 64:
-			default_horizontal_res = 2083;
-			break;
-		case 32:
-			default_horizontal_res = 2250;
-			break;
-		case 16:
-			default_horizontal_res = 1800;
-			break;
-		default:
-			default_horizontal_res = DEFAULT_HOR_RES;
-			break;
-	}
+	SetHorizontalRes(sensor_model_, default_horizontal_res);
 	node_handle_.param("horizontal_res", horizontal_res_, default_horizontal_res);
 
+	config_node_sub_ = node_handle_.subscribe("/config/ground_filter", 10, &GroundFilter::ConfigCallback, this);
 	points_node_sub_ = node_handle_.subscribe(point_topic_, 2, &GroundFilter::VelodyneCallback, this);
 	groundless_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(no_ground_topic, 2);
 	ground_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(ground_topic, 2);
@@ -123,6 +113,25 @@ GroundFilter::GroundFilter() : node_handle_("~")
 	InitLabelArray(sensor_model_);
 	limiting_ratio_ = tan(max_slope_*M_PI/180);
 
+}
+
+void GroundFilter::SetHorizontalRes(const int sensor_model, int &horizontal_res)
+{
+	switch(sensor_model)
+	{
+		case 64:
+			horizontal_res = 2083;
+			break;
+		case 32:
+			horizontal_res = 2250;
+			break;
+		case 16:
+			horizontal_res = 1800;
+			break;
+		default:
+			horizontal_res = DEFAULT_HOR_RES;
+			break;
+	}
 }
 
 void GroundFilter::InitLabelArray(int in_model)
@@ -140,7 +149,7 @@ void GroundFilter::InitDepthMap(int in_width)
 }
 
 void GroundFilter::PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
-				int in_indices[], int &in_out_index_size, 
+				int in_indices[], int &in_out_index_size,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &in_cloud)
 {
 	velodyne_pointcloud::PointXYZIR point;
@@ -153,7 +162,7 @@ void GroundFilter::PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::
 		point.ring = in_cloud_msg->points[in_indices[i]].ring;
 		in_cloud.push_back(point);
 	}
-	in_out_index_size = 0;	
+	in_out_index_size = 0;
 }
 
 void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
@@ -175,7 +184,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 		int row = vertical_res_ - 1 - in_cloud_msg->points[i].ring;
 		index_map_.at<int>(row, column) = i;
 	}
-	
+
 	for (int i = 0; i < horizontal_res_; i++)
 	{
 		Label point_class[vertical_res_];
@@ -185,7 +194,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 		int point_index_size = 0;
 		double z_ref = 0;
 		double r_ref = 0;
-		std::copy(class_label_, class_label_ + vertical_res_, point_class); 
+		std::copy(class_label_, class_label_ + vertical_res_, point_class);
 
 		for (int j = vertical_res_ - 1; j >= 0; j--)
 		{
@@ -370,6 +379,18 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 
 }
 
+void GroundFilter::ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config)
+{
+  sensor_model_ = std::stoi(config->sensor_model);
+  sensor_height_ = config->sensor_height;
+	max_slope_ = config->max_slope;
+	point_distance_ = config->point_distance;
+	min_point_ = config->min_point;
+	clipping_thres_ = config->clipping_thres;
+	gap_thres_ = config->gap_thres;
+	SetHorizontalRes(sensor_model_, horizontal_res_);
+}
+
 void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
 {
 
@@ -385,8 +406,8 @@ void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::P
 	if (!floor_removal_)
 	{
 		vertical_points = *in_cloud_msg;
-	} 
-	
+	}
+
 	groundless_points_pub_.publish(vertical_points);
 	ground_points_pub_.publish(ground_points);
 
