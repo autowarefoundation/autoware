@@ -30,7 +30,6 @@ if __name__ == '__main__':
         topics = "--all"
         logger.info("record all topics")
     else:
-        print args.topics
         topics = " ".join(args.topics)
         logger.info("record topics: {}".format(topics))
     # prepare record

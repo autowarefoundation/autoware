@@ -11,6 +11,7 @@ logger = common.genlogger()
 
 def getargs():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default="0.0.0.0") # default: listen on all ip
     parser.add_argument("--port", default="3000")
     parser.add_argument("--limit", type=int, default=12) # [GB]
     parser.add_argument("--dir", default=common.BAG_PATH)
@@ -45,4 +46,4 @@ def upload():
 if __name__ == "__main__":
     args = getargs()
     app.config['MAX_CONTENT_LENGTH'] = args.limit * 1024**3
-    app.run(port=args.port)
+    app.run(host=args.ip, port=args.port)
