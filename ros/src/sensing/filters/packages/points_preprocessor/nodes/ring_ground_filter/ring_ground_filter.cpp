@@ -12,7 +12,7 @@
 #include <pcl/point_types.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <opencv/cv.h>
-#include "autoware_msgs/ConfigGroundFilter.h"
+#include "autoware_msgs/ConfigRingGroundFilter.h"
 
 enum Label
 {
@@ -21,11 +21,11 @@ enum Label
 	UNKNOWN //Initial state, not classified
 };
 
-class GroundFilter
+class RingGroundFilter
 {
 public:
 
-	GroundFilter();
+	RingGroundFilter();
 
 private:
 
@@ -64,7 +64,7 @@ private:
 				int in_indices[], int &in_out_index_size,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &in_cloud);
 
-	void ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config);
+	void ConfigCallback(const autoware_msgs::ConfigRingGroundFilterConstPtr &config);
 	void VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg);
 	void FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &out_groundless_points,
@@ -72,7 +72,7 @@ private:
 
 };
 
-GroundFilter::GroundFilter() : node_handle_("~")
+RingGroundFilter::RingGroundFilter() : node_handle_("~")
 {
 	ROS_INFO("Inititalizing Ground Filter...");
 	node_handle_.param<std::string>("point_topic", point_topic_, "/points_raw");
@@ -104,8 +104,8 @@ GroundFilter::GroundFilter() : node_handle_("~")
 	SetHorizontalRes(sensor_model_, default_horizontal_res);
 	node_handle_.param("horizontal_res", horizontal_res_, default_horizontal_res);
 
-	config_node_sub_ = node_handle_.subscribe("/config/ground_filter", 10, &GroundFilter::ConfigCallback, this);
-	points_node_sub_ = node_handle_.subscribe(point_topic_, 2, &GroundFilter::VelodyneCallback, this);
+	config_node_sub_ = node_handle_.subscribe("/config/ring_ground_filter", 10, &RingGroundFilter::ConfigCallback, this);
+	points_node_sub_ = node_handle_.subscribe(point_topic_, 2, &RingGroundFilter::VelodyneCallback, this);
 	groundless_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(no_ground_topic, 2);
 	ground_points_pub_ = node_handle_.advertise<sensor_msgs::PointCloud2>(ground_topic, 2);
 
@@ -115,7 +115,7 @@ GroundFilter::GroundFilter() : node_handle_("~")
 
 }
 
-void GroundFilter::SetHorizontalRes(const int sensor_model, int &horizontal_res)
+void RingGroundFilter::SetHorizontalRes(const int sensor_model, int &horizontal_res)
 {
 	switch(sensor_model)
 	{
@@ -134,7 +134,7 @@ void GroundFilter::SetHorizontalRes(const int sensor_model, int &horizontal_res)
 	}
 }
 
-void GroundFilter::InitLabelArray(int in_model)
+void RingGroundFilter::InitLabelArray(int in_model)
 {
 	for(int a = 0; a < vertical_res_; a++)
 	{
@@ -142,13 +142,13 @@ void GroundFilter::InitLabelArray(int in_model)
 	}
 }
 
-void GroundFilter::InitDepthMap(int in_width)
+void RingGroundFilter::InitDepthMap(int in_width)
 {
 	const int mOne = -1;
 	index_map_ = cv::Mat_<int>(vertical_res_, in_width, mOne);
 }
 
-void GroundFilter::PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
+void RingGroundFilter::PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
 				int in_indices[], int &in_out_index_size,
 				pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &in_cloud)
 {
@@ -165,7 +165,7 @@ void GroundFilter::PublishPointCloud(const pcl::PointCloud<velodyne_pointcloud::
 	in_out_index_size = 0;
 }
 
-void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
+void RingGroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg,
 			pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &out_groundless_points,
 			pcl::PointCloud<velodyne_pointcloud::PointXYZIR> &out_ground_points)
 {
@@ -214,7 +214,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 				}
 				else
 				{//this should never execute due to Sensor specs
-					ROS_WARN("GroundFilter: Division by Zero avoided on pair_angle");
+					ROS_WARN("RingGroundFilter: Division by Zero avoided on pair_angle");
 					pair_angle = 0;
 				}
 				if (
@@ -379,7 +379,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 
 }
 
-void GroundFilter::ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPtr &config)
+void RingGroundFilter::ConfigCallback(const autoware_msgs::ConfigRingGroundFilterConstPtr &config)
 {
   sensor_model_ = std::stoi(config->sensor_model);
   sensor_height_ = config->sensor_height;
@@ -391,7 +391,7 @@ void GroundFilter::ConfigCallback(const autoware_msgs::ConfigGroundFilterConstPt
 	SetHorizontalRes(sensor_model_, horizontal_res_);
 }
 
-void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
+void RingGroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
 {
 
 	pcl::PointCloud<velodyne_pointcloud::PointXYZIR> vertical_points;
@@ -416,8 +416,8 @@ void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::P
 int main(int argc, char **argv)
 {
 
-	ros::init(argc, argv, "ground_filter");
-	GroundFilter node;
+	ros::init(argc, argv, "ring_ground_filter");
+	RingGroundFilter node;
 	ros::spin();
 
 	return 0;

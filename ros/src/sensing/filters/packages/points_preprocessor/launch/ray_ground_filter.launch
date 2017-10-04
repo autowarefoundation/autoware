@@ -1,0 +1,32 @@
+<!-- Launch file for Ray Ground Filter -->
+<launch>
+
+        <arg name="input_point_topic" default="/points_raw" /> <!-- input_point_topic, ground filtering will be performed over the pointcloud in this topic. -->
+        <arg name="sensor_height" default="1.8" /><!--  Height of the sensor from the ground -->
+        <arg name="clipping_height" default="0.2" /><!-- Remove Points above this height value (default 0.2 meters) -->
+        <arg name="min_point_distance" default="1.85" /><!-- Removes Points closer than this distance from the sensor origin (default 1.85 meters) -->
+        <arg name="radial_divider_angle" default="0.08" /><!-- Angle of each Radial division on the XY Plane (default 0.08 degrees)-->
+        <arg name="concentric_divider_distance" default="0.01" /><!-- Distance of each concentric division on the XY Plane (default 0.01 meters) -->
+        <arg name="local_max_slope" default="8" /><!-- Max Slope of the ground between Points (default 8 degrees) -->
+        <arg name="general_max_slope" default="5" /><!-- Max Slope of the ground in the entire PointCloud, used when reclassification occurs (default 5 degrees)-->
+        <arg name="min_height_threshold" default="0.5" /><!-- Minimum height threshold between points (default 0.05 meters)-->
+        <arg name="reclass_distance_threshold" default="0.2" /><!-- Distance between points at which re classification will occur (default 0.2 meters)-->
+        <arg name="no_ground_point_topic" default="/points_no_ground" />
+        <arg name="ground_point_topic" default="/points_ground" />
+
+        <!-- rosrun points_preprocessor ray_ground_filter -->
+        <node pkg="points_preprocessor" type="ray_ground_filter" name="ray_ground_filter" output="screen">
+                <param name="input_point_topic" value="$(arg input_point_topic)" />
+                <param name="sensor_height" value="$(arg sensor_height)" />
+                <param name="clipping_height" value="$(arg clipping_height)" />
+                <param name="min_point_distance" value="$(arg min_point_distance)" />
+                <param name="radial_divider_angle" value="$(arg radial_divider_angle)" />
+                <param name="concentric_divider_distance" value="$(arg concentric_divider_distance)" />
+                <param name="local_max_slope" value="$(arg local_max_slope)" />
+                <param name="general_max_slope" value="$(arg general_max_slope)" />
+                <param name="min_height_threshold" value="$(arg min_height_threshold)" />
+                <param name="reclass_distance_threshold" value="$(arg reclass_distance_threshold)" />
+                <param name="no_ground_point_topic" value="$(arg no_ground_point_topic)" />
+                <param name="ground_point_topic" value="$(arg ground_point_topic)" />
+        </node>
+</launch>

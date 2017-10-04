@@ -55,7 +55,7 @@ add_message_files(
   ConfigCarKf.msg
   ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
-  ConfigGroundFilter.msg
+  ConfigRingGroundFilter.msg
   ConfigICP.msg
   ConfigLaneRule.msg
   ConfigLaneSelect.msg
@@ -72,6 +72,7 @@ add_message_files(
   ConfigRandomFilter.msg
   ConfigRcnn.msg
   ConfigRingFilter.msg
+  ConfigRayGroundFilter.msg
   ConfigSsd.msg
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
