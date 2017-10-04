@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>pos_db</name>
-  <version>1.4.0</version>
+  <version>1.5.0</version>
   <description>The pos_db package</description>
   <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
   <license>BSD</license>

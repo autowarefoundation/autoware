@@ -49,6 +49,24 @@ double g_offset_x;
 double g_offset_y;
 double g_offset_z;
 
+pcl::PointCloud<pcl::PointXYZ> g_obstacle_sim_points;
+bool g_use_obstacle_sim = false;
+
+void callbackFromObstacleSim(const sensor_msgs::PointCloud2ConstPtr &msg)
+{
+  pcl::fromROSMsg(*msg, g_obstacle_sim_points);
+
+  g_use_obstacle_sim = true;
+}
+
+void joinPoints(const pcl::PointCloud<pcl::PointXYZ>& points1, pcl::PointCloud<pcl::PointXYZ>* points2)
+{
+  for (const auto& p : points1)
+  {
+    points2->push_back(p);
+  }
+}
+
 std::vector<int> createCostMap(const pcl::PointCloud<pcl::PointXYZ> &scan)
 {
   std::vector<int> cost_map(g_cell_width * g_cell_height, 0);
@@ -147,6 +165,14 @@ void createOccupancyGrid(const sensor_msgs::PointCloud2::ConstPtr &input)
   pcl::PointCloud<pcl::PointXYZ> scan;
   pcl::fromROSMsg(*input, scan);
 
+  // use simulated obstacle
+  if (g_use_obstacle_sim)
+  {
+    joinPoints(g_obstacle_sim_points, &scan);
+    g_obstacle_sim_points.clear();
+  }
+  // ---
+
   static nav_msgs::OccupancyGrid og;
   if (!count)
     setOccupancyGrid(&og);
@@ -189,6 +215,7 @@ int main(int argc, char **argv)
 
   g_costmap_pub = nh.advertise<nav_msgs::OccupancyGrid>("realtime_cost_map", 10);
   ros::Subscriber points_sub = nh.subscribe(points_topic, 10, createOccupancyGrid);
+  ros::Subscriber obstacle_sim_points_sub = nh.subscribe("obstacle_sim_pointcloud", 1, callbackFromObstacleSim);
 
   ros::spin();
 }

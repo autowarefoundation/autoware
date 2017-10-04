@@ -62,12 +62,14 @@ from autoware_msgs.msg import ConfigCarDpm
 from autoware_msgs.msg import ConfigPedestrianDpm
 from autoware_msgs.msg import ConfigNdt
 from autoware_msgs.msg import ConfigNdtMapping
+from autoware_msgs.msg import ConfigApproximateNdtMapping
 from autoware_msgs.msg import ConfigNdtMappingOutput
 from autoware_msgs.msg import ConfigICP
 from autoware_msgs.msg import ConfigVoxelGridFilter
 from autoware_msgs.msg import ConfigRingFilter
 from autoware_msgs.msg import ConfigDistanceFilter
 from autoware_msgs.msg import ConfigRandomFilter
+from autoware_msgs.msg import ConfigRingGroundFilter
 from autoware_msgs.msg import ConfigWaypointFollower
 from autoware_msgs.msg import ConfigTwistFilter
 from autoware_msgs.msg import ConfigVelocitySet
@@ -79,6 +81,9 @@ from autoware_msgs.msg import ConfigLaneSelect
 from autoware_msgs.msg import ConfigLaneStop
 from autoware_msgs.msg import ConfigCarFusion
 from autoware_msgs.msg import ConfigPedestrianFusion
+from autoware_msgs.msg import ConfigPlannerSelector
+from autoware_msgs.msg import ConfigDecisionMaker
+from autoware_msgs.msg import ConfigRayGroundFilter
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
@@ -101,7 +106,7 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
-		
+
 
 
 	def __init__(self, *args, **kwds):
@@ -484,7 +489,7 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
-	
+
 
 		wx.CallAfter( self.boot_booted_cmds )
 
@@ -757,8 +762,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
-	
-	
+
+
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -1016,12 +1021,11 @@ class MyFrame(rtmgr.MyFrame):
 		return ( d.get('pdic'), d.get('gdic'), d.get('param') )
 
 	def update_func(self, pdic, gdic, prm):
-		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
-			if func is None and not pdic_empty:
+			if func is None and name in pdic:
 				continue
 			v = var.get('v')
 			if func is not None:
@@ -3347,7 +3351,7 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
-	
+
 # psutil 3.x to 1.x backward compatibility
 def get_cpu_count():
 	try:

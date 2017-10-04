@@ -23,6 +23,9 @@ RUN apt-get install -y \
 	ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-gps-common \
 	libglew-dev
 
+RUN apt-get install -y ros-indigo-ros-control ros-indigo-ros-controllers \
+    ros-indigo-gazebo-ros-control
+
 RUN rosdep init \
         && rosdep update \
         && echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc

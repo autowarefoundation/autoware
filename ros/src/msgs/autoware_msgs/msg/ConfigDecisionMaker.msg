@@ -1,0 +1,11 @@
+Header header
+bool enable_force_state_change
+bool enable_display_marker
+int32 MainState_ChangeFlag
+int32 SubState_Acc_ChangeFlag
+int32 SubState_Str_ChangeFlag
+int32 SubState_Behavior_ChangeFlag
+int32 SubState_Perception_ChangeFlag
+float32 convergence_threshold
+int32 convergence_count
+int32 target_waypoint
