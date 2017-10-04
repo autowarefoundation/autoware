@@ -47,13 +47,16 @@ add_message_files(
   vscan_tracked.msg
   vscan_tracked_array.msg
   waypoint.msg
-	TwistGate.msg
+  TwistGate.msg
 
 ## Runtime Manager ##
+  ConfigApproximateNdtMapping.msg
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
+  ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
+  ConfigRingGroundFilter.msg
   ConfigICP.msg
   ConfigLaneRule.msg
   ConfigLaneSelect.msg
@@ -65,16 +68,17 @@ add_message_files(
   ConfigPedestrianDpm.msg
   ConfigPedestrianFusion.msg
   ConfigPedestrianKf.msg
+  ConfigPlannerSelector.msg
   ConfigPoints2Polygon.msg
   ConfigRandomFilter.msg
   ConfigRcnn.msg
   ConfigRingFilter.msg
+  ConfigRayGroundFilter.msg
   ConfigSsd.msg
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
   ConfigVoxelGridFilter.msg
   ConfigWaypointFollower.msg
-  ConfigPlannerSelector.msg
   accel_cmd.msg
   adjust_xy.msg
   brake_cmd.msg
@@ -82,6 +86,7 @@ add_message_files(
   lamp_cmd.msg
   steer_cmd.msg
   traffic_light.msg
+  state_cmd.msg
 
 ## Sync
   Sync_time_monitor.msg

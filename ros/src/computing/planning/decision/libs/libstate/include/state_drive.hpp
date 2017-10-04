@@ -23,20 +23,22 @@ private:
     StateName = "Drive";
     StateNum = StateTransMask = DRIVE_STATE;
     StateTransMask |= INITIAL_LOCATEVEHICLE_STATE;
+    StateKind = MAIN_STATE;
   }
 
 public:
 };
 
-class DriveMoveFwdState : public State<DriveMoveFwdState>
+class DriveAccAccelerationState : public State<DriveAccAccelerationState>
 {
 private:
-  friend class State<DriveMoveFwdState>;
-  DriveMoveFwdState(void)
+  friend class State<DriveAccAccelerationState>;
+  DriveAccAccelerationState(void)
   {
-    StateName = "MoveFwd";
-    StateNum = DRIVE_STATE | DRIVE_MOVEFWD_STATE;
-    StateTransMask = 0;
+    StateName = "Acceleration";
+    StateNum = DRIVE_STATE | DRIVE_ACC_ACCELERATION_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = ACC_STATE;
   }
 
 public:
@@ -46,195 +48,190 @@ public:
   }
 };
 
-class DriveMoveFwdLeftState : public State<DriveMoveFwdLeftState>
+class DriveAccDecelerationState : public State<DriveAccDecelerationState>
 {
 private:
-  friend class State<DriveMoveFwdLeftState>;
-  DriveMoveFwdLeftState(void)
+  friend class State<DriveAccDecelerationState>;
+  DriveAccDecelerationState(void)
   {
-    StateName = "MoveFwdLeft";
-    StateNum = DRIVE_STATE | DRIVE_MOVEFWD_LEFT_STATE;
-    StateTransMask = DRIVE_STATE | DRIVE_MOVEFWD_STATE;
-  }
-
-public:
-};
-class DriveMoveFwdRightState : public State<DriveMoveFwdRightState>
-{
-private:
-  friend class State<DriveMoveFwdRightState>;
-  DriveMoveFwdRightState(void)
-  {
-    StateName = "MoveFwdRight";
-    StateNum = DRIVE_STATE | DRIVE_MOVEFWD_STATE | DRIVE_MOVEFWD_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE | DRIVE_MOVEFWD_STATE;
-  }
-
-public:
-};
-class DriveMoveFwdStraightState : public State<DriveMoveFwdStraightState>
-{
-private:
-  friend class State<DriveMoveFwdStraightState>;
-  DriveMoveFwdStraightState(void)
-  {
-    StateName = "MoveFwdStraight";
-    StateNum = DRIVE_STATE | DRIVE_MOVEFWD_STATE | DRIVE_MOVEFWD_STRAIGHT_STATE;
+    StateName = "Deceleration";
+    StateNum = DRIVE_STATE | DRIVE_ACC_DECELERATION_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = ACC_STATE;
   }
 
 public:
-};
-
-class DriveLaneChangeState : public State<DriveLaneChangeState>
-{
-private:
-  friend class State<DriveLaneChangeState>;
-  DriveLaneChangeState(void)
+  void ShowStateName(void)
   {
-    StateName = "LaneChange";
-    StateNum = DRIVE_STATE | DRIVE_LANECHANGE_STATE;
+    std::cout << StateName << "-";
+  }
+};
+
+class DriveAccKeepState : public State<DriveAccKeepState>
+{
+private:
+  friend class State<DriveAccKeepState>;
+  DriveAccKeepState(void)
+  {
+    StateName = "Keep";
+    StateNum = DRIVE_STATE | DRIVE_ACC_KEEP_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = ACC_STATE;
+  }
+
+public:
+  void ShowStateName(void)
+  {
+    std::cout << StateName << "-";
+  }
+};
+
+class DriveAccStopState : public State<DriveAccStopState>
+{
+private:
+  friend class State<DriveAccStopState>;
+  DriveAccStopState(void)
+  {
+    StateName = "Stop";
+    StateNum = DRIVE_STATE | DRIVE_ACC_STOP_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = ACC_STATE;
+  }
+
+public:
+  void ShowStateName(void)
+  {
+    std::cout << StateName << "-";
+  }
+};
+
+class DriveStrLeftState : public State<DriveStrLeftState>
+{
+private:
+  friend class State<DriveStrLeftState>;
+  DriveStrLeftState(void)
+  {
+    StateName = "Left Turn";
+    StateNum = DRIVE_STATE | DRIVE_STR_LEFT_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = STR_STATE;
+  }
+
+public:
+};
+class DriveStrRightState : public State<DriveStrRightState>
+{
+private:
+  friend class State<DriveStrRightState>;
+  DriveStrRightState(void)
+  {
+    StateName = "Right Turn";
+    StateNum = DRIVE_STATE | DRIVE_STR_RIGHT_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = STR_STATE;
+  }
+
+public:
+};
+class DriveStrStraightState : public State<DriveStrStraightState>
+{
+private:
+  friend class State<DriveStrStraightState>;
+  DriveStrStraightState(void)
+  {
+    StateName = "Straight";
+    StateNum = DRIVE_STATE | DRIVE_STR_STRAIGHT_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = STR_STATE;
   }
 
 public:
 };
 
-class DriveLaneChangeLeftState : public State<DriveLaneChangeLeftState>
+class DriveBehaviorLaneChangeLeftState : public State<DriveBehaviorLaneChangeLeftState>
 {
 private:
-  friend class State<DriveLaneChangeLeftState>;
-  DriveLaneChangeLeftState(void)
+  friend class State<DriveBehaviorLaneChangeLeftState>;
+  DriveBehaviorLaneChangeLeftState(void)
   {
     StateName = "LaneChangeLeft";
-    StateNum = DRIVE_STATE | DRIVE_LANECHANGE_STATE | DRIVE_LANECHANGE_LEFT_STATE;
-    StateTransMask = DRIVE_STATE | DRIVE_LANECHANGE_STATE;
+    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-class DriveLaneChangeRightState : public State<DriveLaneChangeRightState>
+class DriveBehaviorLaneChangeRightState : public State<DriveBehaviorLaneChangeRightState>
 {
 private:
-  friend class State<DriveLaneChangeRightState>;
-  DriveLaneChangeRightState(void)
+  friend class State<DriveBehaviorLaneChangeRightState>;
+  DriveBehaviorLaneChangeRightState(void)
   {
     StateName = "LaneChangeRight";
-    StateNum = DRIVE_STATE | DRIVE_LANECHANGE_STATE | DRIVE_LANECHANGE_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE | DRIVE_LANECHANGE_STATE;
+    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE;
+    StateTransMask = DRIVE_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-class DriveLaneChangeRightAvoidanceState : public State<DriveLaneChangeRightAvoidanceState>
+class DriveBehaviorObstacleAvoidanceState : public State<DriveBehaviorObstacleAvoidanceState>
 {
 private:
-  friend class State<DriveLaneChangeRightAvoidanceState>;
-  DriveLaneChangeRightAvoidanceState(void)
-  {
-    StateName = "LaneChangeRightAvoidanceState";
-    StateNum =
-        DRIVE_STATE | DRIVE_LANECHANGE_STATE | DRIVE_LANECHANGE_RIGHT_STATE | DRIVE_LANECHANGE_RIGHT_AVOIDANCE_STATE;
-    StateTransMask = DRIVE_STATE | DRIVE_LANECHANGE_STATE;
-  }
-
-public:
-};
-
-class DriveObstacleAvoidanceState : public State<DriveObstacleAvoidanceState>
-{
-private:
-  friend class State<DriveObstacleAvoidanceState>;
-  DriveObstacleAvoidanceState(void)
+  friend class State<DriveBehaviorObstacleAvoidanceState>;
+  DriveBehaviorObstacleAvoidanceState(void)
   {
     StateName = "ObstacleAvoidance";
-    StateTransMask = 0;
-  }
-
-public:
-};
-
-class DriveObstacleAvoidanceStaticState : public State<DriveObstacleAvoidanceStaticState>
-{
-private:
-  friend class State<DriveObstacleAvoidanceStaticState>;
-  DriveObstacleAvoidanceStaticState(void)
-  {
-    StateName = "ObstacleAvoidanceStatic";
-    StateTransMask = 0;
-  }
-
-public:
-};
-
-class DriveObstacleAvoidanceDynamicState : public State<DriveObstacleAvoidanceDynamicState>
-{
-private:
-  friend class State<DriveObstacleAvoidanceDynamicState>;
-  DriveObstacleAvoidanceDynamicState(void)
-  {
-    StateName = "ObstacleAvoidanceDynamic";
-    StateTransMask = 0;
-  }
-
-public:
-};
-
-// DriveStopState
-class DriveStopState : public State<DriveStopState>
-{
-private:
-  friend class State<DriveStopState>;
-  DriveStopState(void)
-  {
-    StateName = "DriveStop";
-    StateNum = DRIVE_STATE | DRIVE_STOP_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-// DriveStopAvoidanceState
-class DriveStopAvoidanceState : public State<DriveStopAvoidanceState>
+class DriveDetectObstacleState : public State<DriveDetectObstacleState>
 {
 private:
-  friend class State<DriveStopAvoidanceState>;
-  DriveStopAvoidanceState(void)
+  friend class State<DriveDetectObstacleState>;
+  DriveDetectObstacleState(void)
   {
-    StateName = "DriveStopAvoidance";
-    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_AVOIDANCE_STATE;
+    StateName = "DetectObstacle";
+    StateNum = DRIVE_STATE | DRIVE_DETECT_OBSTACLE_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = PERCEPTION_STATE;
   }
 
 public:
 };
 
-// DriveStopStopLineState
-class DriveStopStopLineState : public State<DriveStopStopLineState>
+class DriveDetectStoplineState : public State<DriveDetectStoplineState>
 {
 private:
-  friend class State<DriveStopStopLineState>;
-  DriveStopStopLineState(void)
+  friend class State<DriveDetectStoplineState>;
+  DriveDetectStoplineState(void)
   {
-    StateName = "DriveStopStopLine";
-    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_STOPLINE_STATE;
+    StateName = "DetectStopline";
+    StateNum = DRIVE_STATE | DRIVE_DETECT_STOPLINE_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = PERCEPTION_STATE;
   }
 
 public:
 };
-class DriveStopTrafficLightState : public State<DriveStopTrafficLightState>
+
+class DriveDetectTrafficlightRedState : public State<DriveDetectTrafficlightRedState>
 {
 private:
-  friend class State<DriveStopTrafficLightState>;
-  DriveStopTrafficLightState(void)
+  friend class State<DriveDetectTrafficlightRedState>;
+  DriveDetectTrafficlightRedState(void)
   {
-    StateName = "DriveStopTrafficLight";
-    StateNum = DRIVE_STATE | DRIVE_STOP_STATE | DRIVE_STOP_TRAFFICLIGHT_STATE;
+    StateName = "DetectTrafficLightRed";
+    StateNum = DRIVE_STATE | DRIVE_DETECT_TRAFFICLIGHT_RED_STATE;
     StateTransMask = DRIVE_STATE;
+    StateKind = PERCEPTION_STATE;
   }
 
 public:

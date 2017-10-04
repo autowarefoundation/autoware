@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2017, TierIV, Inc.
  * Copyright (c) 2012, Willow Garage, Inc.
  * All rights reserved.
  *
@@ -26,8 +27,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef PLANT_FLAG_TOOL_H
-#define PLANT_FLAG_TOOL_H
+#ifndef AUTOWARE_FLAG_TOOL_H
+#define AUTOWARE_FLAG_TOOL_H
 
 #include <ros/node_handle.h>
 #include <ros/publisher.h>

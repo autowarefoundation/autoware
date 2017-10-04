@@ -24,13 +24,11 @@
 
 namespace decision_maker
 {
-
 void DecisionMakerNode::update_pubsub(void)
 {
   // if state machine require to re-subscribe topic,
   // this function will re-definition subscriber.
 }
-
 
 void DecisionMakerNode::displayMarker(void)
 {
@@ -106,7 +104,7 @@ void DecisionMakerNode::update_msgs(void)
   if (ctx)
   {
     static std::string prevStateName;
-    CurrentStateName = *ctx->getCurrentStateName();
+    CurrentStateName = ctx->getCurrentStateName();
 
     if (prevStateName != CurrentStateName)
     {
@@ -115,7 +113,7 @@ void DecisionMakerNode::update_msgs(void)
     }
 
     state_string_msg.data = CurrentStateName;
-    state_text_msg.text = CurrentStateName + "\n" + TextOffset;
+    state_text_msg.text = createStateMessageText();
 
     Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);
@@ -124,16 +122,22 @@ void DecisionMakerNode::update_msgs(void)
     std::cerr << "ctx is not found " << std::endl;
 }
 
+std::string DecisionMakerNode::createStateMessageText()
+{
+  return ctx->createStateMessageText();
+}
+
 void DecisionMakerNode::publishToVelocityArray()
 {
   int count = 0;
   std_msgs::Float64MultiArray msg;
 
-  for(const auto &i : current_finalwaypoints_.waypoints ){
-	  msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
-	  if(++count>=10)break;
+  for (const auto &i : current_finalwaypoints_.waypoints)
+  {
+    msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
+    if (++count >= 10)
+      break;
   }
   Pubs["target_velocity_array"].publish(msg);
 }
-
 }

@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 set(TARGET euc)
 set(TARGET_SRC  src/main.cpp
