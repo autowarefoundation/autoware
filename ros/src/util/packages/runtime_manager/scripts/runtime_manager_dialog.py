@@ -1168,7 +1168,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetEventObject())
 
 	def OnRosbagRecord(self, event):
-		self.dlg_rosbag_record.Show()
+		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
 
@@ -2906,6 +2906,9 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			self.cbs.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
+
+	def show(self):
+		self.Show()
 		self.update_filename()
 
 	def update_filename(self):
@@ -2913,7 +2916,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		path = tc.GetValue()
 		(dn, fn) = os.path.split(path)
 		now = datetime.datetime.now()
-		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
+		fn = 'autoware-%04d%02d%02d%02d%02d%02d' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(dn, fn)
 		set_path(tc, path)
