@@ -1923,7 +1923,7 @@ class MyFrame(rtmgr.MyFrame):
 					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
 				else:
 					self.add_cfg_info(item, item, name, None, gdic, False, None)
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, flag=wx.ALIGN_CENTER_VERTICAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 
@@ -1935,6 +1935,8 @@ class MyFrame(rtmgr.MyFrame):
 		lkc = None
 		if 'no_link' not in gdic.get('flags', []):
 			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+			if hasattr(lkc, 'SetCanFocus'):
+				lkc.SetCanFocus(False)
 			fix_link_color(lkc)
 			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
 			if len(add_objs) > 0:
