@@ -1,6 +1,9 @@
 Change history
 ==============
 
+1.5.0 (2017-09-21)
+------------------
+
 1.2.0 (2014-08-06)
 ------------------
 * velodyne_pointcloud: remove model-dependent "constants" from

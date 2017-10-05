@@ -1,6 +1,6 @@
 #include "VectaCam.h"
 
-VectaCam::VectaCam(unsigned int in_configuration_port, unsigned int in_data_port, std::string in_parameter_file)
+VectaCam::VectaCam(std::string in_camera_ip, unsigned int in_configuration_port, unsigned int in_data_port, std::string in_parameter_file)
 {
 	this->data_port_ 			= in_data_port;
 	this->configuration_port_ 	= in_configuration_port;
@@ -14,6 +14,7 @@ VectaCam::VectaCam(unsigned int in_configuration_port, unsigned int in_data_port
 	this->image_height_ 		= VECTACAM_IMG_HEIGHT;
 	this->image_buffer_ 		= new char[image_width_ * 3 * image_height_];
 	this->parameter_file_ 		= in_parameter_file;
+	this->camera_ip_			= in_camera_ip;
 	_initialize_camera(configuration_port_, data_port_, parameter_file_);
 }
 
@@ -61,7 +62,7 @@ void VectaCam::_send_commands_to_camera(unsigned int in_port, std::vector<VectaC
 	memset((char *) &socket_address, 0, sizeof(socket_address));
 	socket_address.sin_family = AF_INET;
 	socket_address.sin_port = htons(in_port);
-	if (inet_aton("10.0.0.1", &socket_address.sin_addr)==0)
+	if (inet_aton(camera_ip_.c_str(), &socket_address.sin_addr)==0)
 	{
 		std::cout << "Invalid IP address" << std::endl;
 		return;
@@ -121,7 +122,7 @@ void VectaCam::_enable_camera(unsigned int in_port, bool in_enable)
 	memset((char *) &socket_address, 0, sizeof(socket_address));
 	socket_address.sin_family = AF_INET;
 	socket_address.sin_port = htons(in_port);
-	if (inet_aton(VECTACAM_CAMERA_IP, &socket_address.sin_addr)==0)
+	if (inet_aton(camera_ip_.c_str(), &socket_address.sin_addr)==0)
 	{
 		std::cout << "Invalid IP address" << std::endl;
 		return;
@@ -167,7 +168,6 @@ long int VectaCam::GetFrameNumber()
 
 void VectaCam::StartCamera()
 {
-
 	int 		socket_descriptor;
 	struct 		sockaddr_in socket_address;
 	socklen_t length;
@@ -177,6 +177,7 @@ void VectaCam::StartCamera()
 		std::cout << "Problem creating socket\n";
 		return;
 	}
+	std::cout << "Socket Created\n";
 
 	socket_address.sin_family = AF_INET;
 	socket_address.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -187,6 +188,7 @@ void VectaCam::StartCamera()
 		std::cout << "Problem binding" << std::endl;
 		return;
 	}
+	std::cout << "Binded..." << std::endl;
 
 	length = sizeof(socket_address);
 	if (getsockname(socket_descriptor, reinterpret_cast<sockaddr *> (&socket_address), &length) < 0)
@@ -241,6 +243,7 @@ void VectaCam::_udp_receive(int in_socket_descriptor)
 		}
 		else
 		{
+			//std::cout << "Received data " << n << std::endl;
 			uint32_t packet_offset = ntohl(*(uint32_t*)(buffer_in + 4));
 			uint32_t packet_length = ntohl(*(uint32_t*)(buffer_in + 8));
 			uint32_t header = ntohl(*(uint32_t*)(buffer_in + 12));
@@ -256,7 +259,6 @@ void VectaCam::_udp_receive(int in_socket_descriptor)
 			}
 			else
 			{
-
 				line_number = header - 1;
 				_form_image(line_number, buffer_in, packet_offset, packet_length);
 			}

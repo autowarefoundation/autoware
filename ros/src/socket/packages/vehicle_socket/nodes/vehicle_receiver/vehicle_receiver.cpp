@@ -29,8 +29,8 @@
 */
 
 #include <ros/ros.h>
-#include <vehicle_socket/CanInfo.h>
-#include <tablet_socket/mode_info.h>
+#include "autoware_msgs/CanInfo.h"
+#include <tablet_socket_msgs/mode_info.h>
 
 #include <iostream>
 #include <string>
@@ -58,7 +58,7 @@ static ros::Publisher can_pub;
 static ros::Publisher mode_pub;
 static int mode;
 
-static bool parseCanValue(const std::string& can_data, vehicle_socket::CanInfo& msg)
+static bool parseCanValue(const std::string& can_data, autoware_msgs::CanInfo& msg)
 {
   std::istringstream ss(can_data);
   std::vector<std::string> columns;
@@ -141,7 +141,7 @@ static void* getCanValue(void *arg)
   if(can_data.empty())
     return nullptr;
 
-  vehicle_socket::CanInfo can_msg;
+  autoware_msgs::CanInfo can_msg;
   bool ret = parseCanValue(can_data, can_msg);
   if(!ret)
     return nullptr;
@@ -150,7 +150,7 @@ static void* getCanValue(void *arg)
   can_msg.header.stamp = ros::Time::now();
   can_pub.publish(can_msg);
 
-  tablet_socket::mode_info mode_msg;
+  tablet_socket_msgs::mode_info mode_msg;
   mode_msg.header.frame_id = "/mode";
   mode_msg.header.stamp = ros::Time::now();
   mode_msg.mode = mode;
@@ -228,8 +228,8 @@ int main(int argc, char **argv)
 
   std::cout << "vehicle receiver" << std::endl;
 
-  can_pub = nh.advertise<vehicle_socket::CanInfo>("can_info", 100);
-  mode_pub = nh.advertise<tablet_socket::mode_info>("mode_info", 100);
+  can_pub = nh.advertise<autoware_msgs::CanInfo>("can_info", 100);
+  mode_pub = nh.advertise<tablet_socket_msgs::mode_info>("mode_info", 100);
 
   pthread_t th;
   int ret = pthread_create(&th, nullptr, receiverCaller, nullptr);

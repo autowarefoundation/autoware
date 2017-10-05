@@ -1,3 +1,0 @@
-int32 ring_div
-float32 voxel_leaf_size
-

@@ -69,6 +69,10 @@ subs :
         param: serial
         gui  :
           flags : [ kill_children ]
+      - name : Garmin GPS 18x LVC
+        desc : Garmin GPS 18x LVC desc sample
+        probe:
+        run  : rosrun garmin garmin_gps_18x_lvc
       - name : Serial GNSS
         desc : Serial GNSS desc sample
         probe:
@@ -78,10 +82,31 @@ subs :
   - name : IMU
     desc : IMU desc sample
     subs :
-      - name : Crossbow vg440
-        desc : Crossbow vg440 desc sample
+      - name : Memsic VG440
+        desc : Memsic VG440 desc sample
         probe:
-        run  :
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/vg440.sh"
+        param: vg440
+        gui  :
+          flags: [ kill_children ]
+      - name : Xsens MTi-300
+        desc : Xsens MTi-300 desc sample
+        probe:
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/mti300.sh"
+        param: mti300
+        gui  :
+          flags: [ kill_children ]
+          baud : { flags: [ nl ] }
+          mode : { flags: [ nl ] }
+          frequency: { flags: [ nl ] }
+      - name : MicroStrain 3DM-GX5-15
+        desc : MicroStrain 3DM-GX5-15 desc sample
+        probe:
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/3dm_gx5_15.sh"
+        param: 3dm_gx5_15
+        gui  :
+          flags: [ kill_children ]
+          baud : { flags: [ nl ] }
 
   - name : LIDARs
     desc : LIDARs desc sample
@@ -182,6 +207,22 @@ cmds:
         sync :
           func : self.button_synchronization.GetValue()
 
+  - name : Points Preprocessor
+    desc : Points Preprocessor desc sample
+    subs :
+    - name : ring_ground_filter
+      desc : ring_ground_filter performs ground filtering using the ring number contained on each point
+      cmd  : roslaunch points_preprocessor ring_ground_filter.launch node_name:=ring_ground_filter
+      param: ring_ground_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
+
+    - name : ray_ground_filter
+      desc : ray_ground_filter performs ground filtering using a radial-concentric based approach
+      cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
+      param: ray_ground_filter
+      
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -276,7 +317,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-        must        : True
   - name  : calibration_path_ladybug
     vars  :
     - name  : CalibrationFile
@@ -323,6 +363,12 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -347,6 +393,12 @@ params :
       min   : 0
       max   : 10
       v     : 2.0
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -365,6 +417,12 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -383,6 +441,12 @@ params :
       min   : 100
       max   : 30000
       v     : 10000
+    - name  : measurement_range
+      desc  : measurement_range desc sample
+      label : Measurement Range
+      min   : 0
+      max   : 200
+      v     : 200
     - name      : sync
       kind      : hide
       v         : False
@@ -390,6 +454,55 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : ring_ground_filter
+    topic : /config/ring_ground_filter
+    msg   : ConfigRingGroundFilter
+    vars  :
+    - name  : sensor_model
+      desc  : sensor_model desc sample
+      label : Sensor Model
+      kind  : radio_box
+      choices: [ '64', '32', '16' ]
+      descs  : [ 'HDL-64e', 'HDL-32e', 'VLP-16' ]
+      choices_type: str
+      v     : '32'
+    - name  : sensor_height
+      desc  : sensor_height desc sample
+      label : Sensor Height
+      min   : -3.0
+      max   : 3.0
+      v     : 1.72
+    - name  : max_slope
+      desc  : max_slope desc sample
+      label : Max Slope
+      min   : 0.0
+      max   : 40.0
+      v     : 20.0
+    - name  : point_distance
+      desc  : point_distance desc sample
+      label : Point Distance
+      min   : 0.0
+      max   : 1.0
+      v     : 0.05
+    - name  : min_point
+      desc  : min_point desc sample
+      label : Min Point
+      min   : 1
+      max   : 10
+      v     : 3
+    - name  : clipping_thres
+      desc  : clipping_thres desc sample
+      label : Clipping Thres
+      min   : -3.0
+      max   : 3.0
+      v     : -0.5
+    - name  : gap_thres
+      desc  : gap_thres desc sample
+      label : Gap Thres
+      min   : 0.0
+      max   : 3.0
+      v     : 0.5
 
   - name  : calibration_publisher
     vars  :
@@ -474,6 +587,97 @@ params :
         dash      : ''
         delim     : ':='
 
+  - name : vg440
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyUSB0
+      cmd_param :
+        delim     : ''
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '57600'
+      cmd_param :
+        delim     : ''
+
+  - name : mti300
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyUSB0
+      cmd_param :
+        delim     : ''
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '115200'
+      cmd_param :
+        delim     : ''
+    - name      : mode
+      desc      : mode desc sample
+      label     : 'Mode:'
+      kind      : menu
+      choices   : [ '1', '2', '3' ]
+      choices_type : str
+      v         : '2'
+      cmd_param :
+        delim     : ''
+    - name      : frequency
+      desc      : frequency desc sample
+      label     : 'Frequency:'
+      kind      : menu
+      choices   : [ '1','5','10','20','40','50','80','100','200','400' ]
+      choices_type : str
+      v         : '100'
+      cmd_param :
+        delim     : ''
+    - name      : wait_sec
+      desc      : wait sec of booting between mtdevice and mtnode
+      label     : 'Wait sec:'
+      kind      : num
+      v         : 3
+      cmd_param :
+        delim     : ''
+
+  - name : 3dm_gx5_15
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyACM0
+      cmd_param :
+        delim     : ''
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '115200'
+      cmd_param :
+        delim     : ''
+    - name      : frequency
+      desc      : frequency desc sample
+      label     : 'Frequency:'
+      kind      : menu
+      choices   : [ '1','5','10','20','40','50','80','100','200','400' ]
+      choices_type : str
+      v         : '100'
+      cmd_param :
+        delim     : ''
+
   - name : sel_cam_and_sync
     vars :
     - name         : camera_id
@@ -493,3 +697,97 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : ray_ground_filter
+    topic : /config/ray_ground_filter
+    msg   : ConfigRayGroundFilter
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : sensor_height
+      desc  : Height of the sensor from the ground
+      label : sensor_height
+      min   : -5
+      max   : 5
+      v     : 1.8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : clipping_height
+      desc  : Remove Points above this height value (default 0.2 meters)
+      label : clipping_height
+      min   : -5
+      max   : 5
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_point_distance
+      desc  : Removes Points closer than this distance from the sensor origin (default 1.85 meters)
+      label : min_point_distance
+      min   : 0
+      max   : 5
+      v     : 1.85
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : radial_divider_angle
+      desc  : Angle of each Radial division on the XY Plane (default 0.08 degrees)
+      label : radial_divider_angle
+      min   : 0.01
+      max   : 5
+      v     : 0.08
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : concentric_divider_distance
+      desc  : Distance of each concentric division on the XY Plane (default 0.01 meters)
+      label : concentric_divider_distance
+      min   : 0.01
+      max   : 1
+      v     : 0.01
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : local_max_slope
+      desc  : Max Slope of the ground between Points (default 8 degrees)
+      label : local_max_slope
+      min   : 1
+      max   : 25
+      v     : 8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : general_max_slope
+      desc  : Max Slope of the ground in the entire PointCloud (default 5 degrees)
+      label : general_max_slope
+      min   : 1
+      max   : 25
+      v     : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_height_threshold
+      desc  : Minimum height threshold between points (default 0.05 meters)
+      label : min_height_threshold
+      min   : 0.01
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : reclass_distance_threshold
+      desc  : Distance between points at which re classification will occur (default 0.2 meters)
+      label : reclass_distance_threshold
+      min   : 0.01
+      max   : 1
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='

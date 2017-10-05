@@ -83,6 +83,7 @@ public:
   {
     return 0;
   };
+  
   virtual std::unique_ptr<std::string> getStateNameString()
   {
     return 0;

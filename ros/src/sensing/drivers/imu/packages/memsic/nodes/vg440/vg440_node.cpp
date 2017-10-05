@@ -313,7 +313,7 @@ struct SNAV1Msg{
   double dRollRate; //[rad/s]
   double dPitchRate;
   double dYawRate;
-  double dXAccel; //[m/s^2]
+  double dXAccel; //[G]
   double dYAccel;
   double dZAccel;
   double dNVel;   //[m/s]
@@ -344,17 +344,19 @@ bool MsgToNav1(const unsigned char* data, SNAV1Msg &sMsg) {
   sMsg.dLatitude = MKInt(data+28)*2.0*M_PI/(256*256);
   sMsg.dAltitude = MKShort(data+32)/4.0;
   sMsg.xRateTemp = MKShort(data+34)*200.0/(256*256);
-  sMsg.timeITOW			= (unsigned int)MKInt(data+36);
-  sMsg.BITStatus     = (unsigned short)MKShort(data+40);
+  sMsg.timeITOW = (unsigned int)MKInt(data+36);
+  sMsg.BITStatus = (unsigned short)MKShort(data+40);
 }
 
 void Nav1ToRosImu(const SNAV1Msg &rNav1, sensor_msgs::Imu &ImuData) {
+  const double gravityAccel = 9.80665;
+  
   ImuData.angular_velocity.x = rNav1.dRollRate;
   ImuData.angular_velocity.y = rNav1.dPitchRate;
   ImuData.angular_velocity.z = rNav1.dYawRate;
-  ImuData.linear_acceleration.x = rNav1.dXAccel;
-  ImuData.linear_acceleration.y = rNav1.dYAccel;
-  ImuData.linear_acceleration.z = rNav1.dZAccel;
+  ImuData.linear_acceleration.x = rNav1.dXAccel * gravityAccel;
+  ImuData.linear_acceleration.y = rNav1.dYAccel * gravityAccel;
+  ImuData.linear_acceleration.z = rNav1.dZAccel * gravityAccel;
   ImuData.orientation = tf::createQuaternionMsgFromRollPitchYaw(rNav1.dRollAngle, rNav1.dPitchAngle, rNav1.dYawAngle);
 }
 
@@ -436,8 +438,8 @@ int main(int argc, char **argv) {
   int nBaudRate;
 
   string sFrameDefault = "/vg440";
-  string sTopicDefault = "/imu_data";
-  string sPortDefault  = "/dev/ttyUSB0";
+  string sTopicDefault = "/imu_raw";
+  string sPortDefault = "/dev/ttyUSB0";
   int nBaudRateDefault = 57600;
   ros::init(argc, argv, "vg440_node");
   ros::NodeHandle n_private_("~");

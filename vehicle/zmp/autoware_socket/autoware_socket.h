@@ -57,6 +57,8 @@ using namespace zmp;
 #define CMD_GEAR_N 4
 
 #define CAN_KEY_MODE	(0)
+#define CAN_MODE_STR	(1)
+#define CAN_MODE_DRV	(2)
 #define CAN_KEY_TIME	(1)
 #define CAN_KEY_VELOC	(2)
 #define CAN_KEY_ANGLE	(3)

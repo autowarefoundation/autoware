@@ -1,0 +1,5 @@
+<launch>
+
+  <node pkg="autoware_connector" type="can_info_translator" name="can_info_translator" output="log" />
+
+</launch>

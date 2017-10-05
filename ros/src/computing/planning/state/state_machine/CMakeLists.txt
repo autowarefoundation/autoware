@@ -4,7 +4,7 @@ project(state_machine)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  runtime_manager
+  autoware_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES libnode_template
-  CATKIN_DEPENDS roscpp geometry_msgs runtime_manager
+  CATKIN_DEPENDS roscpp geometry_msgs autoware_msgs
 #  DEPENDS system_lib
 )
 
@@ -35,6 +35,6 @@ add_executable(state_machine
   nodes/state_machine/state_machine_node.cpp
   nodes/state_machine/state_machine_core.cpp
   nodes/state_machine/state_machine.cpp)
-add_dependencies(state_machine runtime_manager_generate_messages_cpp)
+add_dependencies(state_machine autoware_msgs_generate_messages_cpp)
 target_link_libraries(state_machine ${catkin_LIBRARIES})
 

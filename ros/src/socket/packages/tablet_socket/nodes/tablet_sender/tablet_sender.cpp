@@ -37,10 +37,10 @@
 #include <signal.h>
 
 #include <std_msgs/Bool.h>
-#include <tablet_socket/error_info.h>
-#include <tablet_socket/mode_info.h>
-#include <vehicle_socket/CanInfo.h>
-#include <ndt_localizer/ndt_stat.h>
+#include <tablet_socket_msgs/error_info.h>
+#include <tablet_socket_msgs/mode_info.h>
+#include "autoware_msgs/CanInfo.h"
+#include "autoware_msgs/ndt_stat.h"
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
@@ -62,7 +62,7 @@ struct error_request {
 	int32_t type;
 	int32_t error;
 
-	error_request(const tablet_socket::error_info& msg)
+	error_request(const tablet_socket_msgs::error_info& msg)
 	: type(ERROR_INFO_TYPE), error(msg.error) {
 	}
 };
@@ -71,7 +71,7 @@ struct can_request {
 	int32_t type;
 	int32_t driveshift;
 
-	can_request(const vehicle_socket::CanInfo& msg)
+	can_request(const autoware_msgs::CanInfo& msg)
 	: type(CAN_INFO_TYPE), driveshift(msg.driveshift) {
 	}
 };
@@ -80,7 +80,7 @@ struct mode_request {
 	int32_t type;
 	int32_t mode;
 
-	mode_request(const tablet_socket::mode_info& msg)
+	mode_request(const tablet_socket_msgs::mode_info& msg)
 	: type(MODE_INFO_TYPE), mode(msg.mode) {
 	}
 };
@@ -94,7 +94,7 @@ struct ndt_request {
 	float acceleration;
 	int32_t use_predict_pose;
 
-	ndt_request(const ndt_localizer::ndt_stat& msg) {
+	ndt_request(const autoware_msgs::ndt_stat& msg) {
 		type = NDT_STAT_TYPE;
 		exe_time = msg.exe_time;
 		iteration = msg.iteration;
@@ -115,7 +115,7 @@ struct lf_request {
 	}
 };
 
-static void subscribe_error_info(const tablet_socket::error_info& msg)
+static void subscribe_error_info(const tablet_socket_msgs::error_info& msg)
 {
 	error_request request(msg);
 	int response;
@@ -148,7 +148,7 @@ static void subscribe_error_info(const tablet_socket::error_info& msg)
 	}
 }
 
-static void subscribe_can_info(const vehicle_socket::CanInfo& msg)
+static void subscribe_can_info(const autoware_msgs::CanInfo& msg)
 {
 	can_request request(msg);
 	int response;
@@ -181,7 +181,7 @@ static void subscribe_can_info(const vehicle_socket::CanInfo& msg)
 	}
 }
 
-static void subscribe_mode_info(const tablet_socket::mode_info& msg)
+static void subscribe_mode_info(const tablet_socket_msgs::mode_info& msg)
 {
 	mode_request request(msg);
 	int response;
@@ -214,7 +214,7 @@ static void subscribe_mode_info(const tablet_socket::mode_info& msg)
 	}
 }
 
-static void subscribe_ndt_stat(const ndt_localizer::ndt_stat& msg)
+static void subscribe_ndt_stat(const autoware_msgs::ndt_stat& msg)
 {
 	ndt_request request(msg);
 	int response;

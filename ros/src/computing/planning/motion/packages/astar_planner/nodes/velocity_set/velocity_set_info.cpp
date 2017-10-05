@@ -30,6 +30,14 @@
 
 #include "velocity_set_info.h"
 
+void joinPoints(const pcl::PointCloud<pcl::PointXYZ>& points1, pcl::PointCloud<pcl::PointXYZ>* points2)
+{
+  for (const auto& p : points1)
+  {
+    points2->push_back(p);
+  }
+}
+
 VelocitySetInfo::VelocitySetInfo()
   : stop_range_(1.3),
     deceleration_range_(0),
@@ -40,9 +48,11 @@ VelocitySetInfo::VelocitySetInfo()
     decel_(0.8),
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
-    closest_waypoint_(-1),
-    set_pose_(false)
+    set_pose_(false),
+    use_obstacle_sim_(false)
 {
+  ros::NodeHandle private_nh_("~");
+  private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
 }
 
 VelocitySetInfo::~VelocitySetInfo()
@@ -54,7 +64,7 @@ void VelocitySetInfo::clearPoints()
   points_.clear();
 }
 
-void VelocitySetInfo::configCallback(const runtime_manager::ConfigVelocitySetConstPtr &config)
+void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
 {
   stop_distance_ = config->others_distance;
   stop_range_ = config->detection_range;
@@ -81,7 +91,17 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
     if (v.z > detection_height_top_ || v.z < detection_height_bottom_)
       continue;
 
+    // ignore points nearby the vehicle
+    if (v.x * v.x + v.y * v.y < remove_points_upto_ * remove_points_upto_)
+      continue;
+
     points_.push_back(v);
+  }
+
+  if (use_obstacle_sim_)
+  {
+    joinPoints(obstacle_sim_points_, &points_);
+    obstacle_sim_points_.clear();
   }
 }
 
@@ -98,7 +118,9 @@ void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedCons
   localizer_pose_ = *msg;
 }
 
-void VelocitySetInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
+void VelocitySetInfo::obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
 {
-  closest_waypoint_ = msg->data;
+  pcl::fromROSMsg(*msg, obstacle_sim_points_);
+
+  use_obstacle_sim_ = true;
 }

@@ -4,19 +4,12 @@ project(icp_localizer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
-  sensor_msgs
+#  sensor_msgs
+  autoware_msgs
   pcl_conversions
-  runtime_manager
   velodyne_pointcloud
-  message_generation
 )
 
-add_message_files(FILES icp_stat.msg)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 ###################################
 ## catkin specific configuration ##
@@ -24,7 +17,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS runtime_manager message_runtime std_msgs
+  CATKIN_DEPENDS std_msgs autoware_msgs
 #  DEPENDS system_lib
 )
 
@@ -40,4 +33,5 @@ add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
 
 target_link_libraries(icp_matching ${catkin_LIBRARIES})
 
-add_dependencies(icp_matching runtime_manager_generate_messages_cpp icp_localizer_generate_messages_cpp)
+add_dependencies(icp_matching autoware_msgs_generate_messages_cpp)
+

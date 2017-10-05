@@ -20,7 +20,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/conditional_removal.h>
 
-#include <pcl/features/normal_3d.h>
+#include <pcl/features/fpfh_omp.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/features/don.h>
 
@@ -42,11 +42,17 @@
 #include <pcl/segmentation/extract_clusters.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
+#include <jsk_rviz_plugins/PictogramArray.h>
 
-#include <lidar_tracker/CloudCluster.h>
+#include "autoware_msgs/CloudCluster.h"
+
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 #include <limits>
 #include <cmath>
+#include <chrono>
 
 class Cluster {
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr	pointcloud_;
@@ -58,6 +64,7 @@ class Cluster {
 	float 								length_, width_, height_;
 
 	jsk_recognition_msgs::BoundingBox 	bounding_box_;
+	geometry_msgs::PolygonStamped 		polygon_;
 
 	std::string							label_;
 	int									id_;
@@ -65,6 +72,9 @@ class Cluster {
 
 	Eigen::Matrix3f 					eigen_vectors_;
 	Eigen::Vector3f 					eigen_values_;
+
+	bool								valid_cluster_;
+	
 public:
 	/* \brief Constructor. Creates a Cluster object using the specified points in a PointCloud
 	 * \param[in] in_origin_cloud_ptr 	Origin PointCloud
@@ -78,8 +88,8 @@ public:
 	 * */
 	void SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr, const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r, int in_g, int in_b, std::string in_label, bool in_estimate_pose);
 
-	/* \brief Returns the lidar_tracker::CloudCluster message associated to this Cluster */
-	void ToRosMessage(std_msgs::Header in_ros_header, lidar_tracker::CloudCluster& out_cluster_message);
+	/* \brief Returns the autoware_msgs::CloudCluster message associated to this Cluster */
+	void ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message);
 
 	Cluster();
 	virtual ~Cluster();
@@ -96,6 +106,8 @@ public:
 	pcl::PointXYZ 						GetCentroid();
 	/* \brief Returns the calculated BoundingBox of the object */
 	jsk_recognition_msgs::BoundingBox	GetBoundingBox();
+	/* \brief Returns the calculated PolygonArray of the object */
+	geometry_msgs::PolygonStamped GetPolygon();
 	/* \brief Returns the angle in radians of the BoundingBox. 0 if pose estimation was not enabled. */
 	double								GetOrientationAngle();
 	/* \brief Returns the Length of the Cluster */
@@ -113,10 +125,20 @@ public:
 	/* \brief Returns the Eigen Values of the Cluster */
 	Eigen::Vector3f						GetEigenValues();
 
+	/* \brief Returns if the Cluster is marked as valid or not*/
+	bool								IsValid();
+	/* \brief Sets whether the Cluster is valid or not*/
+	void								SetValidity(bool in_valid);
+
 	/* \brief Returns a pointer to a PointCloud object containing the merged points between current Cluster and the specified PointCloud
 	 * \param[in] in_cloud_ptr 	Origin PointCloud
 	 * */
 	pcl::PointCloud<pcl::PointXYZ>::Ptr	JoinCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr);
+
+	/* \brief Calculates and returns a pointer to the FPFH Descriptor of this cluster
+	 *
+	 */
+	std::vector<float> GetFpfhDescriptor(const unsigned int& in_ompnum_threads, const double& in_normal_search_radius, const double& in_fpfh_search_radius);
 
 };
 

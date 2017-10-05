@@ -9,12 +9,12 @@ message("fast_pcl requires PCL 1.7.2 or higher versions")
 ELSE(PCL_VERSION VERSION_LESS "1.7.2")
 set(SUBSYS_NAME registration)
 set(SUBSYS_DESC "Point cloud registration library")
-set(SUBSYS_DEPS common octree kdtree search sample_consensus features filters)
+set(SUBSYS_DEPS pcl_common octree kdtree search sample_consensus features filters)
 
 set(LIB_NAME "fast_pcl_registration")
 
 catkin_package(
-  DEPENDS ${SUBSYS_DEPS}
+  #DEPENDS ${SUBSYS_DEPS}
   INCLUDE_DIRS include
   LIBRARIES ${LIB_NAME}
   )

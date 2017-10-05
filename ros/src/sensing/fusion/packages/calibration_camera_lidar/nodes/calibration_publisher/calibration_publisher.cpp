@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/Image.h>
-#include <calibration_camera_lidar/projection_matrix.h>
+#include "autoware_msgs/projection_matrix.h"
 
 static cv::Mat  CameraExtrinsicMat;
 static cv::Mat  CameraMat;
@@ -64,7 +64,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_msg)
 
 void projectionMatrix_sender(const cv::Mat  &projMat)
 {
-	calibration_camera_lidar::projection_matrix projMsg;
+	autoware_msgs::projection_matrix projMsg;
 
 	projMsg.header.frame_id=camera_id_str;
 
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
   }
 
   if (isPublish_extrinsic) {
-    projection_matrix_pub = n.advertise<calibration_camera_lidar::projection_matrix>(projection_matrix_name, 10, true);
+    projection_matrix_pub = n.advertise<autoware_msgs::projection_matrix>(projection_matrix_name, 10, true);
     projectionMatrix_sender(CameraExtrinsicMat);
   }
 

@@ -1,0 +1,13 @@
+mainstate:
+        - name : Start
+        - name : Init
+        - name : Locate
+        - name : Drive
+        - name : Goal
+        - name : Emergency
+
+substate:
+    - name : acc
+    - name : steering
+    - name : behavior
+    - name : perception
