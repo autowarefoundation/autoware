@@ -10,7 +10,7 @@ namespace gpu {
 
 GNormalDistributionsTransform::GNormalDistributionsTransform()
 {
-	GRegistration::GRegistration();
+	//GRegistration::GRegistration();
 
 	gauss_d1_ = gauss_d2_ = 0;
 	outlier_ratio_ = 0.55;
@@ -83,8 +83,71 @@ GNormalDistributionsTransform::GNormalDistributionsTransform()
 	real_iterations_ = 0;
 }
 
+GNormalDistributionsTransform::GNormalDistributionsTransform(const GNormalDistributionsTransform &other)
+{
+	gauss_d1_ = other.gauss_d1_;
+	gauss_d2_ = other.gauss_d2_;
+
+	outlier_ratio_ = other.outlier_ratio_;
+
+	j_ang_a_ = other.j_ang_a_;
+	j_ang_b_ = other.j_ang_b_;
+	j_ang_c_ = other.j_ang_c_;
+	j_ang_d_ = other.j_ang_d_;
+	j_ang_e_ = other.j_ang_e_;
+	j_ang_f_ = other.j_ang_f_;
+	j_ang_g_ = other.j_ang_g_;
+	j_ang_h_ = other.j_ang_h_;
+
+	h_ang_a2_ = other.h_ang_a2_;
+	h_ang_a3_ = other.h_ang_a3_;
+	h_ang_b2_ = other.h_ang_b2_;
+	h_ang_b3_ = other.h_ang_b3_;
+	h_ang_c2_ = other.h_ang_c2_;
+	h_ang_c3_ = other.h_ang_c3_;
+	h_ang_d1_ = other.h_ang_d2_;
+	h_ang_d2_ = other.h_ang_d2_;
+	h_ang_d3_ = other.h_ang_d3_;
+	h_ang_e1_ = other.h_ang_e1_;
+	h_ang_e2_ = other.h_ang_e2_;
+	h_ang_f1_ = other.h_ang_f1_;
+	h_ang_f2_ = other.h_ang_f2_;
+	h_ang_f3_ = other.h_ang_f3_;
+
+	dj_ang_a_ = other.dj_ang_a_;
+	dj_ang_b_ = other.dj_ang_b_;
+	dj_ang_c_ = other.dj_ang_c_;
+	dj_ang_e_ = other.dj_ang_e_;
+	dj_ang_f_ = other.dj_ang_f_;
+	dj_ang_g_ = other.dj_ang_g_;
+	dj_ang_h_ = other.dj_ang_h_;
+
+	dh_ang_a2_ = other.dh_ang_a2_;
+	dh_ang_a3_ = other.dh_ang_a3_;
+	dh_ang_b2_ = other.dh_ang_b2_;
+	dh_ang_b3_ = other.dh_ang_b3_;
+	dh_ang_c2_ = other.dh_ang_c2_;
+	dh_ang_c3_ = other.dh_ang_c3_;
+	dh_ang_d1_ = other.dh_ang_d2_;
+	dh_ang_d2_ = other.dh_ang_d2_;
+	dh_ang_d3_ = other.dh_ang_d3_;
+	dh_ang_e1_ = other.dh_ang_e1_;
+	dh_ang_e2_ = other.dh_ang_e2_;
+	dh_ang_f1_ = other.dh_ang_f1_;
+	dh_ang_f2_ = other.dh_ang_f2_;
+	dh_ang_f3_ = other.dh_ang_f3_;
+
+	step_size_ = other.step_size_;
+	resolution_ = other.resolution_;
+	trans_probability_ = other.trans_probability_;
+	real_iterations_ = other.real_iterations_;
+
+	voxel_grid_ = other.voxel_grid_;
+}
+
 GNormalDistributionsTransform::~GNormalDistributionsTransform()
 {
+	std::cout << __func__ << std::endl;
 	dj_ang_a_.memFree();
 	dj_ang_b_.memFree();
 	dj_ang_c_.memFree();
@@ -110,9 +173,59 @@ GNormalDistributionsTransform::~GNormalDistributionsTransform()
 	dh_ang_f2_.memFree();
 	dh_ang_f3_.memFree();
 
-	voxel_grid_.~GVoxelGrid();
+	//voxel_grid_.~GVoxelGrid();
+	std::cout << __func__ << std::endl;
 }
 
+void GNormalDistributionsTransform::setStepSize(double step_size)
+{
+	step_size_ = step_size;
+}
+
+void GNormalDistributionsTransform::setResolution(float resolution)
+{
+	resolution_ = resolution;
+}
+
+void GNormalDistributionsTransform::setOutlierRatio(double olr)
+{
+	outlier_ratio_ = olr;
+}
+
+double GNormalDistributionsTransform::getStepSize() const
+{
+	return step_size_;
+}
+
+float GNormalDistributionsTransform::getResolution() const
+{
+	return resolution_;
+}
+
+double GNormalDistributionsTransform::getOutlierRatio() const
+{
+	return outlier_ratio_;
+}
+
+double GNormalDistributionsTransform::getTransformationProbability() const
+{
+	return trans_probability_;
+}
+
+int GNormalDistributionsTransform::getRealIterations()
+{
+	 return real_iterations_;
+}
+
+double GNormalDistributionsTransform::auxilaryFunction_PsiMT(double a, double f_a, double f_0, double g_0, double mu)
+{
+  return (f_a - f_0 - mu * g_0 * a);
+}
+
+double GNormalDistributionsTransform::auxilaryFunction_dPsiMT(double g_a, double g_0, double mu)
+{
+  return (g_a - mu * g_0);
+}
 
 void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZI>::Ptr input)
 {
@@ -138,7 +251,7 @@ void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZ
 	}
 }
 
-void GNormalDistributionsTransform::computeTransformation(Eigen::Matrix<float, 4, 4> &guess)
+void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess)
 {
 	struct timeval start, end;
 
@@ -155,7 +268,7 @@ void GNormalDistributionsTransform::computeTransformation(Eigen::Matrix<float, 4
 
 	if (guess != Eigen::Matrix4f::Identity()) {
 		final_transformation_ = guess;
-		
+
 		transformPointCloud(x_, y_, z_, trans_x_, trans_y_, trans_z_, points_number_, guess);
 	}
 
@@ -1794,7 +1907,9 @@ __global__ void gpuSum(T *input, int size, int half_size)
 	int stride = blockDim.x * gridDim.x;
 
 	for (int i = idx; i < half_size; i += stride) {
-		input[i] += (half_size < size) ? input[i + half_size] : 0;
+		if (i + half_size < size) {
+			input[i] += (half_size < size) ? input[i + half_size] : 0;
+		}
 	}
 }
 

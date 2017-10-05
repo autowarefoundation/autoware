@@ -19,6 +19,26 @@ SymmetricEigensolver3x3::SymmetricEigensolver3x3(int offset)
 	is_copied_ = false;
 }
 
+void SymmetricEigensolver3x3::setInputMatrices(double *input_matrices)
+{
+	input_matrices_ = input_matrices;
+}
+
+void SymmetricEigensolver3x3::setEigenvectors(double *eigenvectors)
+{
+	eigenvectors_ = eigenvectors;
+}
+
+void SymmetricEigensolver3x3::setEigenvalues(double *eigenvalues)
+{
+	eigenvalues_ = eigenvalues;
+}
+
+double* SymmetricEigensolver3x3::getBuffer() const
+{
+	return buffer_;
+}
+
 void SymmetricEigensolver3x3::memFree()
 {
 	if (!is_copied_) {

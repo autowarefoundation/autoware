@@ -19,22 +19,17 @@ public:
 	GRegistration();
 	GRegistration(const GRegistration &other);
 
-	void align(Eigen::Matrix<float, 4, 4> &guess);
+	void align(const Eigen::Matrix<float, 4, 4> &guess);
 
-	inline void setTransformationEpsilon(double trans_eps)
-	{
-		transformation_epsilon_ = trans_eps;
-	}
+	void setTransformationEpsilon(double trans_eps);
 
-	inline void setMaximumIterations(int max_itr)
-	{
-		max_iterations_ = max_itr;
-	}
+	double getTransformationEpsilon() const;
 
-	inline Eigen::Matrix<float, 4, 4> getFinalTransformation()
-	{
-		return final_transformation_;
-	}
+	void setMaximumIterations(int max_itr);
+
+	int getMaximumIterations() const;
+
+	Eigen::Matrix<float, 4, 4> getFinalTransformation() const;
 
 	/* Set input Scanned point cloud.
 	 * Copy input points from the main memory to the GPU memory */
@@ -46,16 +41,14 @@ public:
 	void setInputTarget(pcl::PointCloud<pcl::PointXYZI>::Ptr input);
 	void setInputTarget(pcl::PointCloud<pcl::PointXYZ>::Ptr input);
 
-	inline int getFinalNumIteration() { return nr_iterations_; }
+	int getFinalNumIteration() const;
 
-	inline bool hasConverged() { return converged_; }
+	bool hasConverged() const;
 
 	virtual ~GRegistration();
 protected:
 
-	virtual void computeTransformation(Eigen::Matrix<float, 4, 4> &guess) {
-		printf("Unsupported by Registration\n");
-	}
+	virtual void computeTransformation(const Eigen::Matrix<float, 4, 4> &guess);
 
 	double transformation_epsilon_;
 	int max_iterations_;

@@ -9,7 +9,7 @@ GRegistration::GRegistration()
 	max_iterations_ = 0;
 	x_ = y_ = z_ = NULL;
 	points_number_ = 0;
-		
+
 	trans_x_ = trans_y_ = trans_z_ = NULL;
 
 	converged_ = false;
@@ -21,6 +21,7 @@ GRegistration::GRegistration()
 
 	target_x_ = target_y_ = target_z_ = NULL;
 	is_copied_ = false;
+
 }
 
 GRegistration::GRegistration(const GRegistration &other)
@@ -58,6 +59,8 @@ GRegistration::GRegistration(const GRegistration &other)
 
 GRegistration::~GRegistration()
 {
+	std::cout << __func__ << std::endl;
+
 	if (!is_copied_) {
 		if (x_ != NULL) {
 			checkCudaErrors(cudaFree(x_));
@@ -104,7 +107,45 @@ GRegistration::~GRegistration()
 			target_z_ = NULL;
 		}
 	}
+	std::cout << __func__ << std::endl;
+
 }
+
+void GRegistration::setTransformationEpsilon(double trans_eps)
+{
+	transformation_epsilon_ = trans_eps;
+}
+
+double GRegistration::getTransformationEpsilon() const
+{
+	return transformation_epsilon_;
+}
+
+void GRegistration::setMaximumIterations(int max_itr)
+{
+	max_iterations_ = max_itr;
+}
+
+int GRegistration::getMaximumIterations() const
+{
+	return max_iterations_;
+}
+
+Eigen::Matrix<float, 4, 4> GRegistration::getFinalTransformation() const
+{
+	return final_transformation_;
+}
+
+int GRegistration::getFinalNumIteration() const
+{
+	return nr_iterations_;
+}
+
+bool GRegistration::hasConverged() const
+{
+	return converged_;
+}
+
 
 template <typename T>
 __global__ void convertInput(T *input, float *out_x, float *out_y, float *out_z, int point_num)
@@ -361,7 +402,7 @@ void GRegistration::setInputTarget(pcl::PointCloud<pcl::PointXYZ>::Ptr input)
 	}
 }
 
-void GRegistration::align(Eigen::Matrix<float, 4, 4> &guess)
+void GRegistration::align(const Eigen::Matrix<float, 4, 4> &guess)
 {
 	converged_ = false;
 
@@ -370,6 +411,8 @@ void GRegistration::align(Eigen::Matrix<float, 4, 4> &guess)
 	computeTransformation(guess);
 }
 
+void GRegistration::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess) {
+	printf("Unsupported by Registration\n");
 }
 
-
+}

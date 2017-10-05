@@ -23,4 +23,10 @@ void MatrixDevice::memFree()
 }
 
 
+SquareMatrixDevice::SquareMatrixDevice(int size) :
+	MatrixDevice(size, size)
+{
+
+}
+
 }

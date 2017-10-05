@@ -20,6 +20,42 @@
 
 namespace gpu {
 
+GVoxelGrid::GVoxelGrid():
+	x_(NULL),
+	y_(NULL),
+	z_(NULL),
+	points_num_(0),
+	centroid_(NULL),
+	covariance_(NULL),
+	inverse_covariance_(NULL),
+	points_per_voxel_(NULL),
+	voxel_num_(0),
+	max_x_(FLT_MAX),
+	max_y_(FLT_MAX),
+	max_z_(FLT_MAX),
+	min_x_(FLT_MIN),
+	min_y_(FLT_MIN),
+	min_z_(FLT_MIN),
+	voxel_x_(0),
+	voxel_y_(0),
+	voxel_z_(0),
+	max_b_x_(0),
+	max_b_y_(0),
+	max_b_z_(0),
+	min_b_x_(0),
+	min_b_y_(0),
+	min_b_z_(0),
+	vgrid_x_(0),
+	vgrid_y_(0),
+	vgrid_z_(0),
+	min_points_per_voxel_(6),
+	starting_point_ids_(NULL),
+	point_ids_(NULL),
+	is_copied_(false)
+{
+
+};
+
 GVoxelGrid::GVoxelGrid(const GVoxelGrid &other)
 {
 	x_ = other.x_;
@@ -69,11 +105,18 @@ GVoxelGrid::GVoxelGrid(const GVoxelGrid &other)
 
 
 GVoxelGrid::~GVoxelGrid() {
+	std::cout << __func__ << std::endl;
 	if (!is_copied_) {
 
 		for (unsigned int i = 1; i < octree_centroids_.size(); i++) {
-			checkCudaErrors(cudaFree(octree_centroids_[i]));
-			checkCudaErrors(cudaFree(octree_points_per_node_[i]));
+			if (octree_centroids_[i] != NULL) {
+				checkCudaErrors(cudaFree(octree_centroids_[i]));
+				octree_centroids_[i] = NULL;
+			}
+			if (octree_points_per_node_[i] != NULL) {
+				checkCudaErrors(cudaFree(octree_points_per_node_[i]));
+				octree_points_per_node_[i] = NULL;
+			}
 		}
 
 		octree_centroids_.clear();
@@ -109,7 +152,24 @@ GVoxelGrid::~GVoxelGrid() {
 			checkCudaErrors(cudaFree(points_per_voxel_));
 			points_per_voxel_ = NULL;
 		}
+
+		if(x_ != NULL) {
+			checkCudaErrors(cudaFree(x_));
+			x_ = NULL;
+		}
+
+		if(y_ != NULL) {
+			checkCudaErrors(cudaFree(y_));
+			y_ = NULL;
+		}
+
+		if(z_ != NULL) {
+			checkCudaErrors(cudaFree(z_));
+			z_ = NULL;
+		}
 	}
+	std::cout << __func__ << std::endl;
+
 }
 
 
@@ -143,6 +203,123 @@ void GVoxelGrid::initialize()
 	checkCudaErrors(cudaMemset(inverse_covariance_, 0, sizeof(double) * 9 * voxel_num_));
 	checkCudaErrors(cudaMemset(points_per_voxel_, 0, sizeof(int) * voxel_num_));
 	checkCudaErrors(cudaDeviceSynchronize());
+}
+
+int GVoxelGrid::getVoxelNum() const
+{
+	return voxel_num_;
+}
+
+
+float GVoxelGrid::getMaxX() const
+{
+	return max_x_;
+}
+float GVoxelGrid::getMaxY() const
+{
+	return max_y_;
+}
+float GVoxelGrid::getMaxZ() const
+{
+	return max_z_;
+}
+
+
+float GVoxelGrid::getMinX() const
+{
+	return min_x_;
+}
+float GVoxelGrid::getMinY() const
+{
+	return min_y_;
+}
+float GVoxelGrid::getMinZ() const
+{
+	return min_z_;
+}
+
+
+float GVoxelGrid::getVoxelX() const
+{
+	return voxel_x_;
+}
+float GVoxelGrid::getVoxelY() const
+{
+	return voxel_y_;
+}
+float GVoxelGrid::getVoxelZ() const
+{
+	return voxel_z_;
+}
+
+
+int GVoxelGrid::getMaxBX() const
+{
+	return max_b_x_;
+}
+int GVoxelGrid::getMaxBY() const
+{
+	return max_b_y_;
+}
+int GVoxelGrid::getMaxBZ() const
+{
+	return max_b_z_;
+}
+
+
+int GVoxelGrid::getMinBX() const
+{
+	return min_b_x_;
+}
+int GVoxelGrid::getMinBY() const
+{
+	return min_b_y_;
+}
+int GVoxelGrid::getMinBZ() const
+{
+	return min_b_z_;
+}
+
+
+int GVoxelGrid::getVgridX() const
+{
+	return vgrid_x_;
+}
+int GVoxelGrid::getVgridY() const
+{
+	return vgrid_y_;
+}
+int GVoxelGrid::getVgridZ() const
+{
+	return vgrid_z_;
+}
+
+
+void GVoxelGrid::setLeafSize(float voxel_x, float voxel_y, float voxel_z)
+{
+	voxel_x_ = voxel_x;
+	voxel_y_ = voxel_y;
+	voxel_z_ = voxel_z;
+}
+
+double* GVoxelGrid::getCentroidList() const
+{
+	return centroid_;
+}
+
+double* GVoxelGrid::getCovarianceList() const
+{
+	return covariance_;
+}
+
+double* GVoxelGrid::getInverseCovarianceList() const
+{
+	return inverse_covariance_;
+}
+
+int* GVoxelGrid::getPointsPerVoxelList() const
+{
+	return points_per_voxel_;
 }
 
 
@@ -911,7 +1088,6 @@ void GVoxelGrid::radiusSearch(float *qx, float *qy, float *qz, int points_num, f
 															candidate_voxel_num_per_point);
 	checkCudaErrors(cudaGetLastError());
 	checkCudaErrors(cudaDeviceSynchronize());
-
 	//Total candidate voxel num is determined by an exclusive scan on candidate_voxel_num_per_point
 	ExclusiveScan(candidate_voxel_num_per_point, points_num + 1, &total_candidate_voxel_num);
 
@@ -979,13 +1155,16 @@ void GVoxelGrid::radiusSearch(float *qx, float *qy, float *qz, int points_num, f
 	int *valid_points_location;
 
 	checkCudaErrors(cudaMalloc(&valid_points_location, sizeof(int) * (points_num + 1)));
+	checkCudaErrors(cudaMemset(valid_points_location, 0, sizeof(int) * (points_num + 1)));
 	checkCudaErrors(cudaMemcpy(valid_points_location, valid_points_mark, sizeof(int) * points_num, cudaMemcpyDeviceToDevice));
 
 	//Writing location to the output buffer is determined by an exclusive scan
 	ExclusiveScan(valid_points_location, points_num + 1, valid_points_num);
 
 	if (*valid_points_num <= 0) {
-		std::cout << "No valid point was found. Exiting..." << std::endl;
+		//std::cout << "No valid point was found. Exiting..." << std::endl;
+		std::cout << "No valid point was found. Exiting...: " << *valid_points_num << std::endl;
+
 		checkCudaErrors(cudaFree(max_vid_x));
 		checkCudaErrors(cudaFree(max_vid_y));
 		checkCudaErrors(cudaFree(max_vid_z));
@@ -1038,22 +1217,35 @@ void GVoxelGrid::radiusSearch(float *qx, float *qy, float *qz, int points_num, f
 
 	if (*valid_voxel_num <= 0) {
 		checkCudaErrors(cudaFree(max_vid_x));
+		max_vid_x = NULL;
 		checkCudaErrors(cudaFree(max_vid_y));
+		max_vid_y = NULL;
 		checkCudaErrors(cudaFree(max_vid_z));
+		max_vid_z = NULL;
 
 		checkCudaErrors(cudaFree(min_vid_x));
+		min_vid_x = NULL;
 		checkCudaErrors(cudaFree(min_vid_y));
+		min_vid_y = NULL;
 		checkCudaErrors(cudaFree(min_vid_z));
+		min_vid_z = NULL;
 
 		checkCudaErrors(cudaFree(candidate_voxel_num_per_point));
+		candidate_voxel_num_per_point = NULL;
 		checkCudaErrors(cudaFree(candidate_voxel_id));
+		candidate_voxel_id = NULL;
 
 		checkCudaErrors(cudaFree(valid_voxel_mark));
+		valid_voxel_mark = NULL;
 		checkCudaErrors(cudaFree(valid_voxel_count));
+		valid_voxel_count = NULL;
 		checkCudaErrors(cudaFree(valid_points_mark));
+		valid_points_mark = NULL;
 
 		checkCudaErrors(cudaFree(valid_points_location));
+		valid_points_location = NULL;
 		checkCudaErrors(cudaFree(valid_voxel_location));
+		valid_voxel_location = NULL;
 
 		valid_points = NULL;
 		starting_voxel_id = NULL;
@@ -1142,7 +1334,7 @@ extern "C" __global__ void buildParent(double *child_centroids, int *points_per_
 
 /* Compute the number of points per voxel using atomicAdd */
 extern "C"  __global__ void insertPointsToGrid(float *x, float *y, float *z, int points_num,
-												int *points_per_voxel,
+												int *points_per_voxel, int voxel_num,
 												int vgrid_x, int vgrid_y, int vgrid_z,
 												float voxel_x, float voxel_y, float voxel_z,
 												int min_b_x, int min_b_y, int min_b_z)
@@ -1157,12 +1349,15 @@ extern "C"  __global__ void insertPointsToGrid(float *x, float *y, float *z, int
 		int voxel_id = voxelId(t_x, t_y, t_z, voxel_x, voxel_y, voxel_z, min_b_x, min_b_y, min_b_z, vgrid_x, vgrid_y, vgrid_z);
 
 		// Update number of points in the voxel
-		atomicAdd(points_per_voxel + voxel_id, 1);
+		int ptr_increment = (voxel_id < voxel_num) * voxel_id; // if (voxel_id < voxel_num), then use voxel_id
+		int incremental_value = (voxel_id < voxel_num);
+		//atomicAdd(points_per_voxel + voxel_id, 1);
+		atomicAdd(points_per_voxel + ptr_increment, incremental_value);
 	}
 }
 
 /* Rearrange points to locations corresponding to voxels */
-extern "C" __global__ void scatterPointsToVoxels(float *x, float *y, float *z, int points_num,
+extern "C" __global__ void scatterPointsToVoxels(float *x, float *y, float *z, int points_num, int voxel_num,
 													float voxel_x, float voxel_y, float voxel_z,
 													int min_b_x, int min_b_y, int min_b_z,
 													int vgrid_x, int vgrid_y, int vgrid_z,
@@ -1174,7 +1369,11 @@ extern "C" __global__ void scatterPointsToVoxels(float *x, float *y, float *z, i
 	for (int i = idx; i < points_num; i += stride) {
 		int voxel_id = voxelId(x[i], y[i], z[i], voxel_x, voxel_y, voxel_z,
 								min_b_x, min_b_y, min_b_z, vgrid_x, vgrid_y, vgrid_z);
-		int loc = atomicAdd(writing_locations + voxel_id, 1);
+
+		int ptr_increment = (voxel_id < voxel_num) * voxel_id;
+		int incremental_value = (voxel_id < voxel_num);
+		//int loc = atomicAdd(writing_locations + voxel_id, 1);
+		int loc =  atomicAdd(writing_locations + ptr_increment, incremental_value);
 
 		point_ids[loc] = i;
 	}
@@ -1195,7 +1394,7 @@ void GVoxelGrid::scatterPointsToVoxelGrid()
 	int block_x = (points_num_ > BLOCK_SIZE_X) ? BLOCK_SIZE_X : points_num_;
 	int grid_x = (points_num_ - 1) / block_x + 1;
 
-	insertPointsToGrid<<<grid_x, block_x>>>(x_, y_, z_, points_num_, points_per_voxel_,
+	insertPointsToGrid<<<grid_x, block_x>>>(x_, y_, z_, points_num_, points_per_voxel_, voxel_num_,
 												vgrid_x_, vgrid_y_, vgrid_z_,
 												voxel_x_, voxel_y_, voxel_z_,
 												min_b_x_, min_b_y_, min_b_z_);
@@ -1216,7 +1415,7 @@ void GVoxelGrid::scatterPointsToVoxelGrid()
 
 	checkCudaErrors(cudaMalloc(&point_ids_, sizeof(int) * points_num_));
 
-	scatterPointsToVoxels<<<grid_x, block_x>>>(x_, y_, z_, points_num_,
+	scatterPointsToVoxels<<<grid_x, block_x>>>(x_, y_, z_, points_num_, voxel_num_,
 												voxel_x_, voxel_y_, voxel_z_,
 												min_b_x_, min_b_y_, min_b_z_,
 												vgrid_x_, vgrid_y_, vgrid_z_,
@@ -1230,8 +1429,14 @@ void GVoxelGrid::scatterPointsToVoxelGrid()
 void GVoxelGrid::buildOctree()
 {
 	for (unsigned int i = 1; i < octree_centroids_.size(); i++) {
-		checkCudaErrors(cudaFree(octree_centroids_[i]));
-		checkCudaErrors(cudaFree(octree_points_per_node_[i]));
+		if (octree_centroids_[i] != NULL) {
+			checkCudaErrors(cudaFree(octree_centroids_[i]));
+			octree_centroids_[i] = NULL;
+		}
+		if (octree_points_per_node_[i] != NULL) {
+			checkCudaErrors(cudaFree(octree_points_per_node_[i]));
+			octree_points_per_node_[i] = NULL;
+		}
 	}
 
 	octree_centroids_.clear();

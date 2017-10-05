@@ -10,46 +10,19 @@ namespace gpu {
 
 class SymmetricEigensolver3x3 {
 public:
-	CUDAH SymmetricEigensolver3x3() {
-		buffer_ = NULL;
-		eigenvectors_ = NULL;
-		eigenvalues_ = NULL;
-		input_matrices_ = NULL;
-		maxAbsElement_ = NULL;
-		norm_ = NULL;
-		i02_ = NULL;
-		offset_ = 0;
-		is_copied_ = false;
-	}
+	CUDAH SymmetricEigensolver3x3();
 
 	SymmetricEigensolver3x3(int offset);
 
-	CUDAH SymmetricEigensolver3x3(const SymmetricEigensolver3x3& other) {
-		buffer_ = other.buffer_;
-		offset_ = other.offset_;
-		eigenvectors_ = other.eigenvectors_;
-		eigenvalues_ = other.eigenvalues_;
-		input_matrices_ = other.input_matrices_;
+	CUDAH SymmetricEigensolver3x3(const SymmetricEigensolver3x3& other);
 
-		maxAbsElement_ = other.maxAbsElement_;
-		norm_ = other.norm_;
-		i02_ = other.i02_;
-		is_copied_ = true;
-	}
+	void setInputMatrices(double *input_matrices);
 
-	void setInputMatrices(double *input_matrices) {
-		input_matrices_ = input_matrices;
-	}
+	void setEigenvectors(double *eigenvectors);
 
-	void setEigenvectors(double *eigenvectors) {
-		eigenvectors_ = eigenvectors;
-	}
+	void setEigenvalues(double *eigenvalues);
 
-	void setEigenvalues(double *eigenvalues) {
-		eigenvalues_ = eigenvalues;
-	}
-
-	double *getBuffer() { return buffer_; }
+	double *getBuffer() const;
 
 	/* Normalize input matrices by dividing each matrix
 	 * to the element that has the largest absolute value
@@ -113,6 +86,34 @@ private:
 
 	bool is_copied_;
 };
+
+
+CUDAH SymmetricEigensolver3x3::SymmetricEigensolver3x3()
+{
+		buffer_ = NULL;
+		eigenvectors_ = NULL;
+		eigenvalues_ = NULL;
+		input_matrices_ = NULL;
+		maxAbsElement_ = NULL;
+		norm_ = NULL;
+		i02_ = NULL;
+		offset_ = 0;
+		is_copied_ = false;
+}
+
+CUDAH SymmetricEigensolver3x3::SymmetricEigensolver3x3(const SymmetricEigensolver3x3& other)
+{
+	buffer_ = other.buffer_;
+	offset_ = other.offset_;
+	eigenvectors_ = other.eigenvectors_;
+	eigenvalues_ = other.eigenvalues_;
+	input_matrices_ = other.input_matrices_;
+
+	maxAbsElement_ = other.maxAbsElement_;
+	norm_ = other.norm_;
+	i02_ = other.i02_;
+	is_copied_ = true;
+}
 
 CUDAH void SymmetricEigensolver3x3::normalizeInput(int tid)
 {

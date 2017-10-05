@@ -7,18 +7,10 @@
 namespace gpu {
 class MatrixHost : public Matrix {
 public:
-	MatrixHost() : Matrix() { fr_ = false; }
+	MatrixHost();
 	MatrixHost(int rows, int cols);
+	MatrixHost(int rows, int cols, int offset, double *buffer);
 	MatrixHost(const MatrixHost& other);
-
-
-	MatrixHost(int rows, int cols, int offset, double *buffer) {
-		rows_ = rows;
-		cols_ = cols;
-		offset_ = offset;
-		buffer_ = buffer;
-		fr_ = false;
-	}
 
 	bool moveToGpu(MatrixDevice output);
 	bool moveToHost(MatrixDevice input);
@@ -34,7 +26,7 @@ private:
 
 class SquareMatrixHost: public MatrixHost {
 public:
-	SquareMatrixHost(int size) : MatrixHost(size, size) {};
+	SquareMatrixHost(int size);
 };
 
 }
