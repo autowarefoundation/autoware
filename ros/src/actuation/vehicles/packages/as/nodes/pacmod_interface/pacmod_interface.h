@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
