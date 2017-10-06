@@ -105,7 +105,6 @@ GVoxelGrid::GVoxelGrid(const GVoxelGrid &other)
 
 
 GVoxelGrid::~GVoxelGrid() {
-	std::cout << __func__ << std::endl;
 	if (!is_copied_) {
 
 		for (unsigned int i = 1; i < octree_centroids_.size(); i++) {
@@ -152,24 +151,7 @@ GVoxelGrid::~GVoxelGrid() {
 			checkCudaErrors(cudaFree(points_per_voxel_));
 			points_per_voxel_ = NULL;
 		}
-
-		if(x_ != NULL) {
-			checkCudaErrors(cudaFree(x_));
-			x_ = NULL;
-		}
-
-		if(y_ != NULL) {
-			checkCudaErrors(cudaFree(y_));
-			y_ = NULL;
-		}
-
-		if(z_ != NULL) {
-			checkCudaErrors(cudaFree(z_));
-			z_ = NULL;
-		}
 	}
-	std::cout << __func__ << std::endl;
-
 }
 
 

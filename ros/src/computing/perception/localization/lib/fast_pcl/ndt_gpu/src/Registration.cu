@@ -59,8 +59,6 @@ GRegistration::GRegistration(const GRegistration &other)
 
 GRegistration::~GRegistration()
 {
-	std::cout << __func__ << std::endl;
-
 	if (!is_copied_) {
 		if (x_ != NULL) {
 			checkCudaErrors(cudaFree(x_));
@@ -93,7 +91,7 @@ GRegistration::~GRegistration()
 		}
 
 		if (target_x_ != NULL) {
-			checkCudaErrors(cudaFree(target_x_));
+				checkCudaErrors(cudaFree(target_x_));
 			target_x_ = NULL;
 		}
 
@@ -107,8 +105,6 @@ GRegistration::~GRegistration()
 			target_z_ = NULL;
 		}
 	}
-	std::cout << __func__ << std::endl;
-
 }
 
 void GRegistration::setTransformationEpsilon(double trans_eps)

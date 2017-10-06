@@ -147,7 +147,6 @@ GNormalDistributionsTransform::GNormalDistributionsTransform(const GNormalDistri
 
 GNormalDistributionsTransform::~GNormalDistributionsTransform()
 {
-	std::cout << __func__ << std::endl;
 	dj_ang_a_.memFree();
 	dj_ang_b_.memFree();
 	dj_ang_c_.memFree();
@@ -174,7 +173,6 @@ GNormalDistributionsTransform::~GNormalDistributionsTransform()
 	dh_ang_f3_.memFree();
 
 	//voxel_grid_.~GVoxelGrid();
-	std::cout << __func__ << std::endl;
 }
 
 void GNormalDistributionsTransform::setStepSize(double step_size)
@@ -1372,7 +1370,7 @@ void GNormalDistributionsTransform::computeAngleDerivatives(MatrixHost pose, boo
 
 		h_ang_e1_(0) = sy * sz;
 		h_ang_e1_(1) = sy * cz;
-		h_ang_e1_(3) = 0;
+		h_ang_e1_(2) = 0;
 
 		h_ang_e2_(0) = -sx * cy * sz;
 		h_ang_e2_(1) = -sx * cy * cz;
