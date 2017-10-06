@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(as)
 
+# If submodule is not cloned this project will not be build.
+set(AS_MSG_PATH "${CMAKE_SOURCE_DIR}/msgs/platform_automation_msgs/module_comm_msgs")
+if(EXISTS "${AS_MSG_PATH}")
+
 find_package(
   catkin REQUIRED COMPONENTS
   roscpp
@@ -32,3 +36,5 @@ add_executable(pacmod_interface
   )
 target_link_libraries(pacmod_interface ${catkin_LIBRARIES})
 add_dependencies(pacmod_interface ${catkin_EXPORTED_TARGETS} )
+
+endif()
