@@ -42,7 +42,7 @@ window.onload = function() {
   setSteeringAngle(0);
   setSpeed(0);
   setRPM(0);
-  setGear("1");
+  setGear("P");
 
   var send_cmd = function(){
     if(remote_cmd["mode"] == MODE_REMOTE_CONTROL || remote_cmd["emergency"] == EMERGENCY_ON || publish_flag) {
@@ -57,8 +57,8 @@ function set_vehicle_info(msg) {
   if(msg["topic"] == TOPIC_CAN_INFO) {
     vehicle_info = convert_can_info_csv_to_dict(msg["message"]);
 
-    setSteeringAngle(parseFloat(vehicle_info["angle"]), MAX_STEERING_ANGLE);
-    setSteeringPosition(parseFloat(vehicle_info["angle"]), MAX_STEERING_ANGLE);
+    setSteeringAngle(-parseFloat(vehicle_info["angle"]), MAX_STEERING_ANGLE);
+    setSteeringPosition(-parseFloat(vehicle_info["angle"]), MAX_STEERING_ANGLE);
     setSpeed(parseFloat(vehicle_info["speed"]));
     setRPM(parseFloat(vehicle_info["rpm"]));
     setGear(vehicle_info["driveshift"]);

@@ -9,9 +9,6 @@ var MESSAGE_SIGNALING_SERVER_ERROR = 'Can not access signal server.';
 // Development
 var configuration = { iceServers: [{ url: 'stun:stun.l.google.com:19302'}, {urls: "stun:23.21.150.121" }] };
 var signalingChannel = io.connect('http://' + location.host);
-// Production
-// var configuration = { iceServers: [{ url: 'stun:turn.tier4.jp:443' }, { url: 'turn:turn.tier4.jp:443', username: 'user1', credential: 'pass1' }] };
-// var signalingChannel = io.connect('https://' + location.host);
 var pc;// = new RTCPeerConnection(configuration);
 var roomName = '';
 var actionName = '';
