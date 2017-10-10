@@ -19,8 +19,8 @@
 /* user header */
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/PointCloud2.h"
-#include "cv_tracker/image_obj.h"
-#include "points2image/PointsImage.h"
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/PointsImage.h"
 
 /* ----mode---- */
 #define _REQ_PUB 1
@@ -296,7 +296,7 @@ bool publish() {
 }
 #endif
 
-void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
+void image_obj_callback(const autoware_msgs::image_obj::ConstPtr& image_obj_msg) {
     if (image_obj_flag) {
         image_obj_flag = false;
         points_image_flag = false;
@@ -318,7 +318,7 @@ void image_obj_callback(const cv_tracker::image_obj::ConstPtr& image_obj_msg) {
         points_image_flag = false;
     }
 }
-void points_image_callback(const points2image::PointsImage::ConstPtr& points_image_msg) {
+void points_image_callback(const autoware_msgs::PointsImage::ConstPtr& points_image_msg) {
     if (points_image_flag) {
         image_obj_flag = false;
         points_image_flag = false;

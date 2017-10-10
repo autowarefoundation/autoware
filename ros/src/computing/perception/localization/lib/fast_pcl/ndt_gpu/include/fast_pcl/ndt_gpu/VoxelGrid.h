@@ -13,38 +13,7 @@
 namespace gpu {
 class GVoxelGrid {
 public:
-	GVoxelGrid():
-		x_(NULL),
-		y_(NULL),
-		z_(NULL),
-		points_num_(0),
-		centroid_(NULL),
-		covariance_(NULL),
-		inverse_covariance_(NULL),
-		points_per_voxel_(NULL),
-		voxel_num_(0),
-		max_x_(FLT_MAX),
-		max_y_(FLT_MAX),
-		max_z_(FLT_MAX),
-		min_x_(FLT_MIN),
-		min_y_(FLT_MIN),
-		min_z_(FLT_MIN),
-		voxel_x_(0),
-		voxel_y_(0),
-		voxel_z_(0),
-		max_b_x_(0),
-		max_b_y_(0),
-		max_b_z_(0),
-		min_b_x_(0),
-		min_b_y_(0),
-		min_b_z_(0),
-		vgrid_x_(0),
-		vgrid_y_(0),
-		vgrid_z_(0),
-		min_points_per_voxel_(6),
-		starting_point_ids_(NULL),
-		point_ids_(NULL),
-		is_copied_(false) {};
+	GVoxelGrid();
 
 	GVoxelGrid(const GVoxelGrid &other);
 
@@ -66,48 +35,44 @@ public:
 											int **valid_points, int **starting_voxel_id, int **voxel_id,
 											int *valid_voxel_num, int *valid_points_num);
 
-	int getVoxelNum() { return voxel_num_; }
+	int getVoxelNum() const;
 
-	float getMaxX() { return max_x_; }
-	float getMaxY() { return max_y_; }
-	float getMaxZ() { return max_z_; }
+	float getMaxX() const;
+	float getMaxY() const;
+	float getMaxZ() const;
 
-	float getMinX() { return min_x_; }
-	float getMinY() { return min_y_; }
-	float getMinZ() { return min_z_; }
+	float getMinX() const;
+	float getMinY() const;
+	float getMinZ() const;
 
-	float getVoxelX() { return voxel_x_; }
-	float getVoxelY() { return voxel_y_; }
-	float getVoxelZ() { return voxel_z_; }
+	float getVoxelX() const;
+	float getVoxelY() const;
+	float getVoxelZ() const;
 
-	int getMaxBX() { return max_b_x_; }
-	int getMaxBY() { return max_b_y_; }
-	int getMaxBZ() { return max_b_z_; }
+	int getMaxBX() const;
+	int getMaxBY() const;
+	int getMaxBZ() const;
 
-	int getMinBX() { return min_b_x_; }
-	int getMinBY() { return min_b_y_; }
-	int getMinBZ() { return min_b_z_; }
+	int getMinBX() const;
+	int getMinBY() const;
+	int getMinBZ() const;
 
-	int getVgridX() { return vgrid_x_; }
-	int getVgridY() { return vgrid_y_; }
-	int getVgridZ() { return vgrid_z_; }
+	int getVgridX() const;
+	int getVgridY() const;
+	int getVgridZ() const;
 
-	void setLeafSize(float voxel_x, float voxel_y, float voxel_z) {
-		voxel_x_ = voxel_x;
-		voxel_y_ = voxel_y;
-		voxel_z_ = voxel_z;
-	}
+	void setLeafSize(float voxel_x, float voxel_y, float voxel_z);
 
 	/* Get the centroid list. */
-	double *getCentroidList() { return centroid_; }
+	double *getCentroidList() const;
 
 	/* Get the covariance list. */
-	double *getCovarianceList() { return covariance_; }
+	double *getCovarianceList() const;
 
 	/* Get the pointer to the inverse covariances list. */
-	double *getInverseCovarianceList() { return inverse_covariance_; }
+	double *getInverseCovarianceList() const;
 
-	int *getPointsPerVoxelList() { return points_per_voxel_; }
+	int *getPointsPerVoxelList() const;
 
 	/* Searching for the nearest point of each input query point.
 	 * Coordinates of query points are input by trans_x, trans_y, and trans_z.

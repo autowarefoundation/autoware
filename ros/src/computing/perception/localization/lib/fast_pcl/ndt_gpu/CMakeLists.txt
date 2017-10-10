@@ -8,6 +8,8 @@ find_package(PCL REQUIRED)
 find_package(CUDA)
 
 if (CUDA_FOUND)
+  set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+
 	if(NOT DEFINED CUDA_CAPABILITY_VERSION_CHECKER)
 		set(CUDA_CAPABILITY_VERSION_CHECKER
 			"${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")

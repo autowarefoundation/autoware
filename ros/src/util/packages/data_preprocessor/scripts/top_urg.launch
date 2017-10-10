@@ -1,0 +1,5 @@
+<launch>
+  <param name="hokuyo_node/calibrate_time" type="bool" value="false" />
+  <param name="hokuyo_node/port" type="str" value="/dev/ttyACM0" />
+  <node name="hokuyo_node" pkg="hokuyo_node" type="hokuyo_node" />
+</launch>

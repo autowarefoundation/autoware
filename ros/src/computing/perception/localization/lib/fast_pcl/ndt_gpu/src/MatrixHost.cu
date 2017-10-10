@@ -5,6 +5,12 @@
 #include <stdlib.h>
 
 namespace gpu {
+
+MatrixHost::MatrixHost()
+{
+	fr_ = false;
+}
+
 MatrixHost::MatrixHost(int rows, int cols) {
 	rows_ = rows;
 	cols_ = cols;
@@ -13,6 +19,15 @@ MatrixHost::MatrixHost(int rows, int cols) {
 	buffer_ = (double*)malloc(sizeof(double) * rows_ * cols_ * offset_);
 	memset(buffer_, 0, sizeof(double) * rows_ * cols_ * offset_);
 	fr_ = true;
+}
+
+MatrixHost::MatrixHost(int rows, int cols, int offset, double *buffer)
+{
+	rows_ = rows;
+	cols_ = cols;
+	offset_ = offset;
+	buffer_ = buffer;
+	fr_ = false;
 }
 
 MatrixHost::MatrixHost(const MatrixHost& other) {
@@ -129,6 +144,13 @@ MatrixHost::~MatrixHost()
 {
 	if (fr_)
 		free(buffer_);
+}
+
+
+SquareMatrixHost::SquareMatrixHost(int size) :
+	 MatrixHost(size, size)
+{
+
 }
 
 }

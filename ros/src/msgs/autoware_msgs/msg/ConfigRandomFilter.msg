@@ -1,0 +1,2 @@
+int32 sample_num
+float32 measurement_range

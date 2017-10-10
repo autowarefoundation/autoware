@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="port" default="/dev/ttyACM0" />
+  <arg name="baudrate" default="115200" />
+  <arg name="frequency" default="100" />
+
+  <node pkg="microstrain_driver" type="3dm_gx5_15_node" name="microstrain_3dm_gx5_15" output="screen">
+    <param name="port" value="$(arg port)" />
+    <param name="baudrate" value="$(arg baudrate)" />
+    <param name="imu_rate" value="$(arg frequency)" />
+
+    <param name="device_setup" value="true" type="bool" />
+    <param name="readback_settings" value="true" type="bool" />
+    <param name="save_settings" value="true" type="bool" />
+    <param name="auto_init" value="true" type="bool" />
+    <param name="gps_rate" value="4" type="int" />
+
+    <param name="nav_rate" value="10" type="int" />
+    <param name="dynamics_mode" value="1" type="int" />
+    <param name="declination_source" value="1" type="int" />
+    <param name="declination" value="0.23" type="double" />
+    
+    <param name="gps_frame_id" value="wgs84" type="str" />
+    <param name="imu_frame_id" value="3dm_gx5_15" type="str" />
+    <param name="odom_frame_id" value="wgs84" type="str" />
+    <param name="odom_child_frame_id" value="base_link" type="str" />
+
+    <param name="publish_gps" value="false" type="bool" />
+    <param name="publish_imu" value="true" type="bool" />
+    <param name="publish_odom" value="false" type="bool" />
+
+  </node>
+  
+</launch>
