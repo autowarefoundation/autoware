@@ -1176,6 +1176,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : Use GPU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : get_height
       desc      : get_height desc sample
       label     : Get Height
@@ -2098,6 +2106,14 @@ params :
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : Use GPU
       kind      : checkbox
       v         : False
       cmd_param :
