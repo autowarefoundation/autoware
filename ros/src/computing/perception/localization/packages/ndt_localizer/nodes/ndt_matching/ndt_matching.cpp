@@ -34,24 +34,24 @@
  Yuki KITSUKAWA
  */
 
+#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 #include <string>
-#include <chrono>
 
-#include <ros/ros.h>
-#include <std_msgs/Float32.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Bool.h>
 #include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/rawdata.h>
 
-#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -63,7 +63,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#if defined (USE_FAST_PCL) && defined (CUDA_FOUND)
+#if defined(USE_FAST_PCL) && defined(CUDA_FOUND)
 #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #include <fast_pcl/registration/ndt.h>
 #endif
@@ -95,13 +95,15 @@ struct pose
   double yaw;
 };
 
-static pose initial_pose, predict_pose, predict_pose_imu, predict_pose_odom, predict_pose_imu_odom, previous_pose, ndt_pose, current_pose, current_pose_imu, current_pose_odom, current_pose_imu_odom, localizer_pose, previous_gnss_pose,
-    current_gnss_pose;
+static pose initial_pose, predict_pose, predict_pose_imu, predict_pose_odom, predict_pose_imu_odom, previous_pose,
+    ndt_pose, current_pose, current_pose_imu, current_pose_odom, current_pose_imu_odom, localizer_pose,
+    previous_gnss_pose, current_gnss_pose;
 
 static double offset_x, offset_y, offset_z, offset_yaw;  // current_pos - previous_pose
 static double offset_imu_x, offset_imu_y, offset_imu_z, offset_imu_roll, offset_imu_pitch, offset_imu_yaw;
 static double offset_odom_x, offset_odom_y, offset_odom_z, offset_odom_roll, offset_odom_pitch, offset_odom_yaw;
-static double offset_imu_odom_x, offset_imu_odom_y, offset_imu_odom_z, offset_imu_odom_roll, offset_imu_odom_pitch, offset_imu_odom_yaw;
+static double offset_imu_odom_x, offset_imu_odom_y, offset_imu_odom_z, offset_imu_odom_roll, offset_imu_odom_pitch,
+    offset_imu_odom_yaw;
 
 // Can't load if typed "pcl::PointCloud<pcl::PointXYZRGB> map, add;"
 static pcl::PointCloud<pcl::PointXYZ> map, add;
@@ -228,7 +230,6 @@ static std::string filename;
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
 
-
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
 
@@ -252,13 +253,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     ndt_res = input->resolution;
 #ifdef CUDA_FOUND
-    if(_use_gpu == true){
+    if (_use_gpu == true)
+    {
       gpu_ndt.setResolution(ndt_res);
     }
     else
     {
 #endif
-    ndt.setResolution(ndt_res);
+      ndt.setResolution(ndt_res);
 #ifdef CUDA_FOUND
     }
 #endif
@@ -267,13 +269,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     step_size = input->step_size;
 #ifdef CUDA_FOUND
-    if(_use_gpu == true){
+    if (_use_gpu == true)
+    {
       gpu_ndt.setStepSize(step_size);
     }
     else
     {
 #endif
-    ndt.setStepSize(step_size);
+      ndt.setStepSize(step_size);
 #ifdef CUDA_FOUND
     }
 #endif
@@ -282,13 +285,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     trans_eps = input->trans_epsilon;
 #ifdef CUDA_FOUND
-    if(_use_gpu == true){
+    if (_use_gpu == true)
+    {
       gpu_ndt.setTransformationEpsilon(trans_eps);
     }
     else
     {
 #endif
-    ndt.setTransformationEpsilon(trans_eps);
+      ndt.setTransformationEpsilon(trans_eps);
 #ifdef CUDA_FOUND
     }
 #endif
@@ -297,13 +301,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     max_iter = input->max_iterations;
 #ifdef CUDA_FOUND
-    if(_use_gpu == true){
+    if (_use_gpu == true)
+    {
       gpu_ndt.setMaximumIterations(max_iter);
     }
     else
     {
 #endif
-    ndt.setMaximumIterations(max_iter);
+      ndt.setMaximumIterations(max_iter);
 #ifdef CUDA_FOUND
     }
 #endif
@@ -406,9 +411,9 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
-    // Setting point cloud to be aligned to.
+// Setting point cloud to be aligned to.
 #ifdef CUDA_FOUND
-    if(_use_gpu == true)
+    if (_use_gpu == true)
     {
       gpu_ndt.setInputTarget(map_ptr);
       gpu_ndt.setMaximumIterations(max_iter);
@@ -557,7 +562,6 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   offset_imu_odom_roll = 0.0;
   offset_imu_odom_pitch = 0.0;
   offset_imu_odom_yaw = 0.0;
-
 }
 
 static void imu_odom_calc(ros::Time current_time)
@@ -565,65 +569,63 @@ static void imu_odom_calc(ros::Time current_time)
   static ros::Time previous_time = current_time;
   double diff_time = (current_time - previous_time).toSec();
 
-  double diff_imu_roll  = imu.angular_velocity.x * diff_time;
+  double diff_imu_roll = imu.angular_velocity.x * diff_time;
   double diff_imu_pitch = imu.angular_velocity.y * diff_time;
-  double diff_imu_yaw   = imu.angular_velocity.z * diff_time;
+  double diff_imu_yaw = imu.angular_velocity.z * diff_time;
 
-  current_pose_imu_odom.roll  += diff_imu_roll;
+  current_pose_imu_odom.roll += diff_imu_roll;
   current_pose_imu_odom.pitch += diff_imu_pitch;
-  current_pose_imu_odom.yaw   += diff_imu_yaw;
+  current_pose_imu_odom.yaw += diff_imu_yaw;
 
   double diff_distance = odom.twist.twist.linear.x * diff_time;
-  offset_imu_odom_x += diff_distance*cos(-current_pose_imu_odom.pitch)*cos(current_pose_imu_odom.yaw);
-  offset_imu_odom_y += diff_distance*cos(-current_pose_imu_odom.pitch)*sin(current_pose_imu_odom.yaw);
-  offset_imu_odom_z += diff_distance*sin(-current_pose_imu_odom.pitch);
+  offset_imu_odom_x += diff_distance * cos(-current_pose_imu_odom.pitch) * cos(current_pose_imu_odom.yaw);
+  offset_imu_odom_y += diff_distance * cos(-current_pose_imu_odom.pitch) * sin(current_pose_imu_odom.yaw);
+  offset_imu_odom_z += diff_distance * sin(-current_pose_imu_odom.pitch);
 
-  offset_imu_odom_roll  += diff_imu_roll;
+  offset_imu_odom_roll += diff_imu_roll;
   offset_imu_odom_pitch += diff_imu_pitch;
-  offset_imu_odom_yaw   += diff_imu_yaw;
+  offset_imu_odom_yaw += diff_imu_yaw;
 
-  predict_pose_imu_odom.x     = previous_pose.x     + offset_imu_odom_x;
-  predict_pose_imu_odom.y     = previous_pose.y     + offset_imu_odom_y;
-  predict_pose_imu_odom.z     = previous_pose.z     + offset_imu_odom_z;
-  predict_pose_imu_odom.roll  = previous_pose.roll  + offset_imu_odom_roll;
+  predict_pose_imu_odom.x = previous_pose.x + offset_imu_odom_x;
+  predict_pose_imu_odom.y = previous_pose.y + offset_imu_odom_y;
+  predict_pose_imu_odom.z = previous_pose.z + offset_imu_odom_z;
+  predict_pose_imu_odom.roll = previous_pose.roll + offset_imu_odom_roll;
   predict_pose_imu_odom.pitch = previous_pose.pitch + offset_imu_odom_pitch;
-  predict_pose_imu_odom.yaw   = previous_pose.yaw   + offset_imu_odom_yaw;
+  predict_pose_imu_odom.yaw = previous_pose.yaw + offset_imu_odom_yaw;
 
   previous_time = current_time;
 }
-
 
 static void odom_calc(ros::Time current_time)
 {
   static ros::Time previous_time = current_time;
   double diff_time = (current_time - previous_time).toSec();
 
-  double diff_odom_roll  = odom.twist.twist.angular.x * diff_time;
+  double diff_odom_roll = odom.twist.twist.angular.x * diff_time;
   double diff_odom_pitch = odom.twist.twist.angular.y * diff_time;
-  double diff_odom_yaw   = odom.twist.twist.angular.z * diff_time;
+  double diff_odom_yaw = odom.twist.twist.angular.z * diff_time;
 
-  current_pose_odom.roll  += diff_odom_roll;
+  current_pose_odom.roll += diff_odom_roll;
   current_pose_odom.pitch += diff_odom_pitch;
-  current_pose_odom.yaw   += diff_odom_yaw;
+  current_pose_odom.yaw += diff_odom_yaw;
 
   double diff_distance = odom.twist.twist.linear.x * diff_time;
-  offset_odom_x += diff_distance*cos(-current_pose_odom.pitch)*cos(current_pose_odom.yaw);
-  offset_odom_y += diff_distance*cos(-current_pose_odom.pitch)*sin(current_pose_odom.yaw);
-  offset_odom_z += diff_distance*sin(-current_pose_odom.pitch);
+  offset_odom_x += diff_distance * cos(-current_pose_odom.pitch) * cos(current_pose_odom.yaw);
+  offset_odom_y += diff_distance * cos(-current_pose_odom.pitch) * sin(current_pose_odom.yaw);
+  offset_odom_z += diff_distance * sin(-current_pose_odom.pitch);
 
-  offset_odom_roll  += diff_odom_roll;
+  offset_odom_roll += diff_odom_roll;
   offset_odom_pitch += diff_odom_pitch;
-  offset_odom_yaw   += diff_odom_yaw;
+  offset_odom_yaw += diff_odom_yaw;
 
-  predict_pose_odom.x     = previous_pose.x     + offset_odom_x;
-  predict_pose_odom.y     = previous_pose.y     + offset_odom_y;
-  predict_pose_odom.z     = previous_pose.z     + offset_odom_z;
-  predict_pose_odom.roll  = previous_pose.roll  + offset_odom_roll;
+  predict_pose_odom.x = previous_pose.x + offset_odom_x;
+  predict_pose_odom.y = previous_pose.y + offset_odom_y;
+  predict_pose_odom.z = previous_pose.z + offset_odom_z;
+  predict_pose_odom.roll = previous_pose.roll + offset_odom_roll;
   predict_pose_odom.pitch = previous_pose.pitch + offset_odom_pitch;
-  predict_pose_odom.yaw   = previous_pose.yaw   + offset_odom_yaw;
+  predict_pose_odom.yaw = previous_pose.yaw + offset_odom_yaw;
 
   previous_time = current_time;
-
 }
 
 static void imu_calc(ros::Time current_time)
@@ -631,19 +633,19 @@ static void imu_calc(ros::Time current_time)
   static ros::Time previous_time = current_time;
   double diff_time = (current_time - previous_time).toSec();
 
-  double diff_imu_roll  = imu.angular_velocity.x * diff_time;
+  double diff_imu_roll = imu.angular_velocity.x * diff_time;
   double diff_imu_pitch = imu.angular_velocity.y * diff_time;
-  double diff_imu_yaw   = imu.angular_velocity.z * diff_time;
+  double diff_imu_yaw = imu.angular_velocity.z * diff_time;
 
   current_pose_imu.roll += diff_imu_roll;
   current_pose_imu.pitch += diff_imu_pitch;
   current_pose_imu.yaw += diff_imu_yaw;
 
   double accX1 = imu.linear_acceleration.x;
-  double accY1 = std::cos(current_pose_imu.roll) * imu.linear_acceleration.y
-                -std::sin(current_pose_imu.roll) * imu.linear_acceleration.z;
-  double accZ1 = std::sin(current_pose_imu.roll) * imu.linear_acceleration.y
-                +std::cos(current_pose_imu.roll) * imu.linear_acceleration.z;
+  double accY1 = std::cos(current_pose_imu.roll) * imu.linear_acceleration.y -
+                 std::sin(current_pose_imu.roll) * imu.linear_acceleration.z;
+  double accZ1 = std::sin(current_pose_imu.roll) * imu.linear_acceleration.y +
+                 std::cos(current_pose_imu.roll) * imu.linear_acceleration.z;
 
   double accX2 = std::sin(current_pose_imu.pitch) * accZ1 + std::cos(current_pose_imu.pitch) * accX1;
   double accY2 = accY1;
@@ -661,39 +663,37 @@ static void imu_calc(ros::Time current_time)
   current_velocity_imu_y += accY * diff_time;
   current_velocity_imu_z += accZ * diff_time;
 
-  offset_imu_roll  += diff_imu_roll;
+  offset_imu_roll += diff_imu_roll;
   offset_imu_pitch += diff_imu_pitch;
-  offset_imu_yaw   += diff_imu_yaw;
+  offset_imu_yaw += diff_imu_yaw;
 
-  predict_pose_imu.x     = previous_pose.x     + offset_imu_x;
-  predict_pose_imu.y     = previous_pose.y     + offset_imu_y;
-  predict_pose_imu.z     = previous_pose.z     + offset_imu_z;
-  predict_pose_imu.roll  = previous_pose.roll  + offset_imu_roll;
+  predict_pose_imu.x = previous_pose.x + offset_imu_x;
+  predict_pose_imu.y = previous_pose.y + offset_imu_y;
+  predict_pose_imu.z = previous_pose.z + offset_imu_z;
+  predict_pose_imu.roll = previous_pose.roll + offset_imu_roll;
   predict_pose_imu.pitch = previous_pose.pitch + offset_imu_pitch;
-  predict_pose_imu.yaw   = previous_pose.yaw   + offset_imu_yaw;
+  predict_pose_imu.yaw = previous_pose.yaw + offset_imu_yaw;
 
   previous_time = current_time;
 }
 
-
 static const double wrapToPm(double a_num, const double a_max)
 {
-    if (a_num >= a_max)
-    {
-        a_num -= 2.0 * a_max;
-    }
-    return a_num;
+  if (a_num >= a_max)
+  {
+    a_num -= 2.0 * a_max;
+  }
+  return a_num;
 }
 
 static const double wrapToPmPi(double a_angle_rad)
 {
-    return wrapToPm(a_angle_rad, M_PI);
+  return wrapToPm(a_angle_rad, M_PI);
 }
-
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
-  //std::cout << __func__ << std::endl;
+  // std::cout << __func__ << std::endl;
 
   odom = *input;
   odom_calc(input->header.stamp);
@@ -715,23 +715,23 @@ static void imuUpsideDown(const sensor_msgs::Imu::Ptr input)
   input->linear_acceleration.y *= -1;
   input->linear_acceleration.z *= -1;
 
-  input_roll  *= -1;
+  input_roll *= -1;
   input_pitch *= -1;
-  input_yaw   *= -1;
+  input_yaw *= -1;
 
   input->orientation = tf::createQuaternionMsgFromRollPitchYaw(input_roll, input_pitch, input_yaw);
 }
 
 static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 {
-  //std::cout << __func__ << std::endl;
+  // std::cout << __func__ << std::endl;
 
-  if(_imu_upside_down)
+  if (_imu_upside_down)
     imuUpsideDown(input);
 
   const ros::Time current_time = input->header.stamp;
   static ros::Time previous_time = current_time;
-  const double diff_time =  (current_time - previous_time).toSec();
+  const double diff_time = (current_time - previous_time).toSec();
 
   double imu_roll, imu_pitch, imu_yaw;
   tf::Quaternion imu_orientation;
@@ -743,33 +743,33 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
   imu_yaw = wrapToPmPi(imu_yaw);
 
   static double previous_imu_roll = imu_roll, previous_imu_pitch = imu_pitch, previous_imu_yaw = imu_yaw;
-  const double diff_imu_roll  = imu_roll  - previous_imu_roll;
+  const double diff_imu_roll = imu_roll - previous_imu_roll;
 
   const double diff_imu_pitch = imu_pitch - previous_imu_pitch;
 
   double diff_imu_yaw;
-  if(fabs(imu_yaw - previous_imu_yaw) > M_PI)
+  if (fabs(imu_yaw - previous_imu_yaw) > M_PI)
   {
-    if(imu_yaw > 0)
-      diff_imu_yaw = (imu_yaw - previous_imu_yaw) - M_PI*2;
+    if (imu_yaw > 0)
+      diff_imu_yaw = (imu_yaw - previous_imu_yaw) - M_PI * 2;
     else
-      diff_imu_yaw = -M_PI*2 - (imu_yaw - previous_imu_yaw);
+      diff_imu_yaw = -M_PI * 2 - (imu_yaw - previous_imu_yaw);
   }
   else
-  diff_imu_yaw = imu_yaw - previous_imu_yaw;
+    diff_imu_yaw = imu_yaw - previous_imu_yaw;
 
   imu.header = input->header;
   imu.linear_acceleration.x = input->linear_acceleration.x;
-  //imu.linear_acceleration.y = input->linear_acceleration.y;
-  //imu.linear_acceleration.z = input->linear_acceleration.z;
+  // imu.linear_acceleration.y = input->linear_acceleration.y;
+  // imu.linear_acceleration.z = input->linear_acceleration.z;
   imu.linear_acceleration.y = 0;
   imu.linear_acceleration.z = 0;
 
-  if(diff_time != 0)
+  if (diff_time != 0)
   {
-    imu.angular_velocity.x = diff_imu_roll  / diff_time;
+    imu.angular_velocity.x = diff_imu_roll / diff_time;
     imu.angular_velocity.y = diff_imu_pitch / diff_time;
-    imu.angular_velocity.z = diff_imu_yaw   / diff_time;
+    imu.angular_velocity.z = diff_imu_yaw / diff_time;
   }
   else
   {
@@ -781,9 +781,9 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
   imu_calc(input->header.stamp);
 
   previous_time = current_time;
-  previous_imu_roll  = imu_roll;
+  previous_imu_roll = imu_roll;
   previous_imu_pitch = imu_pitch;
-  previous_imu_yaw   = imu_yaw;
+  previous_imu_yaw = imu_yaw;
 }
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -813,7 +813,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     static double align_time, getFitnessScore_time = 0.0;
 
 #ifdef CUDA_FOUND
-    if(_use_gpu == true)
+    if (_use_gpu == true)
     {
       gpu_ndt.setInputSource(filtered_scan_ptr);
     }
@@ -832,7 +832,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose.roll = previous_pose.roll;
     predict_pose.pitch = previous_pose.pitch;
     predict_pose.yaw = previous_pose.yaw + offset_yaw;
-
 
     if (_use_imu == true && _use_odom == true)
       imu_odom_calc(current_scan_time);
@@ -857,13 +856,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     Eigen::AngleAxisf init_rotation_z(predict_pose_for_ndt.yaw, Eigen::Vector3f::UnitZ());
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
 
-
-
-
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
 #ifdef CUDA_FOUND
-    if(_use_gpu == true)
+    if (_use_gpu == true)
     {
       align_start = std::chrono::system_clock::now();
       gpu_ndt.align(init_guess);
@@ -880,7 +876,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
       trans_probability = gpu_ndt.getTransformationProbability();
     }
-  #ifdef USE_FAST_PCL
+#ifdef USE_FAST_PCL
     else if (_use_openmp == true)
     {
       align_start = std::chrono::system_clock::now();
@@ -898,7 +894,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
       trans_probability = ndt.getTransformationProbability();
     }
-  #endif
+#endif
     else
     {
       align_start = std::chrono::system_clock::now();
@@ -917,8 +913,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       trans_probability = ndt.getTransformationProbability();
     }
 #else
-  #ifdef USE_FAST_PCL
-    if(_use_openmp == true)
+#ifdef USE_FAST_PCL
+    if (_use_openmp == true)
     {
       align_start = std::chrono::system_clock::now();
       ndt.omp_align(*output_cloud, init_guess);
@@ -937,7 +933,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     else
     {
-  #endif
+#endif
       align_start = std::chrono::system_clock::now();
       ndt.align(*output_cloud, init_guess);
       align_end = std::chrono::system_clock::now();
@@ -952,9 +948,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       getFitnessScore_end = std::chrono::system_clock::now();
 
       trans_probability = ndt.getTransformationProbability();
-  #ifdef USE_FAST_PCL
+#ifdef USE_FAST_PCL
     }
-  #endif
+#endif
 #endif
 
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
@@ -1002,7 +998,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     use_predict_pose = 0;
 
-
     if (use_predict_pose == 0)
     {
       current_pose.x = ndt_pose.x;
@@ -1021,7 +1016,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       current_pose.pitch = predict_pose_for_ndt.pitch;
       current_pose.yaw = predict_pose_for_ndt.yaw;
     }
-
 
     // Compute the velocity and acceleration
     scan_duration = current_scan_time - previous_scan_time;
@@ -1048,7 +1042,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     current_velocity_imu_x = current_velocity_x;
     current_velocity_imu_y = current_velocity_y;
     current_velocity_imu_z = current_velocity_z;
-
 
     current_pose_odom.x = current_pose.x;
     current_pose_odom.y = current_pose.y;
@@ -1135,7 +1128,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_odom_msg.pose.orientation.z = predict_q_odom.z();
     predict_pose_odom_msg.pose.orientation.w = predict_q_odom.w();
     predict_pose_odom_pub.publish(predict_pose_odom_msg);
-
 
     tf::Quaternion predict_q_imu_odom;
     predict_q_imu_odom.setRPY(predict_pose_imu_odom.roll, predict_pose_imu_odom.pitch, predict_pose_imu_odom.yaw);
@@ -1275,7 +1267,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_reliability.data = Wa * (exe_time / 100.0) * 100.0 + Wb * (iteration / 10.0) * 100.0 +
                            Wc * ((2.0 - trans_probability) / 2.0) * 100.0;
     ndt_reliability_pub.publish(ndt_reliability);
-
 
     // Write log
     if (!ofs)
@@ -1417,8 +1408,8 @@ int main(int argc, char** argv)
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
 
-#if defined (CUDA_FOUND) && defined (USE_FAST_PCL)
-  if(_use_gpu == true && _use_openmp == true)
+#if defined(CUDA_FOUND) && defined(USE_FAST_PCL)
+  if (_use_gpu == true && _use_openmp == true)
   {
     std::cout << "use_gpu and use_openmp are exclusive. Set use_gpu true and use_openmp false." << std::endl;
     _use_openmp = false;
@@ -1519,8 +1510,8 @@ int main(int argc, char** argv)
   ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
-  ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size*10, odom_callback);
-  ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size*10, imu_callback);
+  ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size * 10, odom_callback);
+  ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size * 10, imu_callback);
 
   ros::spin();
 
