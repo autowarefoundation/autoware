@@ -55,7 +55,7 @@ void PacmodInterface::initForROS()
   // setup subscriber
   twist_cmd_sub_    = nh_.subscribe("twist_cmd", 10, &PacmodInterface::callbackFromTwistCmd, this);
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 10, &PacmodInterface::callbackFromControlMode, this);
-  speed_sub_        = nh_.subscribe("/vehicle/steering_report", 10, &PacmodInterface::callbackFromTwistCmd, this);
+  speed_sub_        = nh_.subscribe("/vehicle/steering_report", 10, &PacmodInterface::callbackFromSteeringReport, this);
 
   // setup publisher
   steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
