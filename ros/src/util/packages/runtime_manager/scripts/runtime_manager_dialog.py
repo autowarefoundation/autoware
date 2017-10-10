@@ -1168,7 +1168,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetEventObject())
 
 	def OnRosbagRecord(self, event):
-		self.dlg_rosbag_record.Show()
+		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
 
@@ -1923,7 +1923,7 @@ class MyFrame(rtmgr.MyFrame):
 					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
 				else:
 					self.add_cfg_info(item, item, name, None, gdic, False, None)
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, flag=wx.ALIGN_CENTER_VERTICAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 
@@ -1935,6 +1935,8 @@ class MyFrame(rtmgr.MyFrame):
 		lkc = None
 		if 'no_link' not in gdic.get('flags', []):
 			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+			if hasattr(lkc, 'SetCanFocus'):
+				lkc.SetCanFocus(False)
 			fix_link_color(lkc)
 			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
 			if len(add_objs) > 0:
@@ -2906,6 +2908,9 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			self.cbs.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
+
+	def show(self):
+		self.Show()
 		self.update_filename()
 
 	def update_filename(self):
@@ -2913,7 +2918,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		path = tc.GetValue()
 		(dn, fn) = os.path.split(path)
 		now = datetime.datetime.now()
-		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
+		fn = 'autoware-%04d%02d%02d%02d%02d%02d' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(dn, fn)
 		set_path(tc, path)

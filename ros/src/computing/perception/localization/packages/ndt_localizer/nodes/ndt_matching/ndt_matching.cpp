@@ -190,7 +190,7 @@ static autoware_msgs::ndt_stat ndt_stat_msg;
 static double predict_pose_error = 0.0;
 
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
-static Eigen::Matrix4f tf_btol, tf_ltob;
+static Eigen::Matrix4f tf_btol;
 
 static std::string _localizer = "velodyne";
 static std::string _offset = "linear";  // linear, zero, quadratic
@@ -805,7 +805,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 
     t = ndt.getFinalTransformation();  // localizer
-    t2 = t * tf_ltob;                  // base_link
+    t2 = t * tf_btol.inverse();                  // base_link
 
     iteration = ndt.getFinalNumIteration();
 #ifdef USE_FAST_PCL
@@ -1335,12 +1335,6 @@ int main(int argc, char** argv)
   Eigen::AngleAxisf rot_y_btol(_tf_pitch, Eigen::Vector3f::UnitY());
   Eigen::AngleAxisf rot_z_btol(_tf_yaw, Eigen::Vector3f::UnitZ());
   tf_btol = (tl_btol * rot_z_btol * rot_y_btol * rot_x_btol).matrix();
-
-  Eigen::Translation3f tl_ltob((-1.0) * _tf_x, (-1.0) * _tf_y, (-1.0) * _tf_z);  // tl: translation
-  Eigen::AngleAxisf rot_x_ltob((-1.0) * _tf_roll, Eigen::Vector3f::UnitX());     // rot: rotation
-  Eigen::AngleAxisf rot_y_ltob((-1.0) * _tf_pitch, Eigen::Vector3f::UnitY());
-  Eigen::AngleAxisf rot_z_ltob((-1.0) * _tf_yaw, Eigen::Vector3f::UnitZ());
-  tf_ltob = (tl_ltob * rot_z_ltob * rot_y_ltob * rot_x_ltob).matrix();
 
   // Updated in initialpose_callback or gnss_callback
   initial_pose.x = 0.0;
