@@ -252,7 +252,7 @@ select::-ms-expand {
   border-radius: 25px;
   margin: 0 auto;
   display: block;
-  padding: 8px 0 8px 19px;
+  padding: 2px 0 2px 15px;
   letter-spacing: 2em;
   border: 1px solid #db1f46;
   color: #fff;

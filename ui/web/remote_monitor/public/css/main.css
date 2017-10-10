@@ -45,14 +45,14 @@ header {
 }
 
 .row-top {
-  height: 25%;
+  height: 34%;
 }
 
 .row-center {
-  height: 48%;
+  height: 34%;
 }
 .row-bottom {
-  height: 22%;
+  height: 23%;
 }
 
 img#vehicle_steering {
@@ -263,4 +263,11 @@ video {
 
 *[aria-hidden="true"] {
   display: none;
+}
+
+/* CUSTOM */
+h4.operator {
+  font-size: 85%;
+  margin-top: 0;
+  margin-bottom: 2px;
 }

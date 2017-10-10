@@ -32,12 +32,12 @@ progress[value]::-webkit-progress-value {
   background: #fff;
 }
 .seekbar .fill {
-  height: 10px;
+  height: 30px;
   border-radius: 10px;
 }
 .seekbar .handle {
-  width: 15px;
-  height: 15px;
+  width: 2%;
+  height: 0.4vw;
   background: #00a3e0;
   border-radius: 10px;
   transform: scale(2);

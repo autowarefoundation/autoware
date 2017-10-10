@@ -209,9 +209,9 @@ $grad-color: #9affff;
   bottom: -14%;
 }
 .meter--gear div {
-  font-size: 2.5rem;
+  font-size: 2rem;
   text-align: center;
-  line-height: 7.5rem;
+  line-height: 4rem;
   font-family: 'Roboto Mono', monospace;
   font-style: italic;
   font-weight: bold;
