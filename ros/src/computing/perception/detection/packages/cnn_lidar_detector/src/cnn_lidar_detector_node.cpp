@@ -40,19 +40,6 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/PCLPointCloud2.h>
-#include <pcl/conversions.h>
-#include <pcl_ros/transforms.h>
-#include <pcl_ros/point_cloud.h>
-
-#include <jsk_recognition_msgs/BoundingBox.h>
-#include <jsk_recognition_msgs/BoundingBoxArray.h>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-
 #if (CV_MAJOR_VERSION == 3)
 	#include <opencv2/imgcodecs.hpp>
 #else

@@ -71,7 +71,6 @@ ENDIF()
 ## Build Node(s)##
 ##################
 
-
 INCLUDE_DIRECTORIES(
   ${catkin_INCLUDE_DIRS}
 )
@@ -114,7 +113,6 @@ if(EXISTS "${CNN_CAFFE_PATH}")
     ${CNN_CAFFE_PATH}/lib/libcaffe.so
     glog
     matlab_io
-    
   )
 
   TARGET_INCLUDE_DIRECTORIES( cnn_lidar_detector_node PRIVATE

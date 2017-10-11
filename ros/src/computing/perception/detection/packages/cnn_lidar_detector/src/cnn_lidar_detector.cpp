@@ -53,6 +53,73 @@ void CnnLidarDetector::Detect(const cv::Mat& in_depth_image,
 
 }
 
+void CnnLidarDetector::get_box_points_from_matrices(size_t row,
+                                                    size_t col,
+                                                    const std::vector<cv::Mat>& in_boxes_channels,
+                                                    CnnLidarDetector::BoundingBoxCorners& out_box)
+{
+	CHECK_EQ(in_boxes_channels.size(), 24) << "Incorrect Number of points to form a bounding box, expecting 24, got: " << in_boxes_channels.size();
+
+	//bottom layer
+	out_box.bottom_front_left.x = in_boxes_channels[0].at<float>(row,col);
+	out_box.bottom_front_left.y = in_boxes_channels[1].at<float>(row,col);
+	out_box.bottom_front_left.z = in_boxes_channels[2].at<float>(row,col);
+
+	out_box.bottom_back_left.x = in_boxes_channels[3].at<float>(row,col);
+	out_box.bottom_back_left.y = in_boxes_channels[4].at<float>(row,col);
+	out_box.bottom_back_left.z = in_boxes_channels[5].at<float>(row,col);
+
+	out_box.bottom_back_right.x = in_boxes_channels[6].at<float>(row,col);
+	out_box.bottom_back_right.y = in_boxes_channels[7].at<float>(row,col);
+	out_box.bottom_back_right.z = in_boxes_channels[8].at<float>(row,col);
+
+	out_box.bottom_front_right.x = in_boxes_channels[9].at<float>(row,col);
+	out_box.bottom_front_right.y = in_boxes_channels[10].at<float>(row,col);
+	out_box.bottom_front_right.z = in_boxes_channels[11].at<float>(row,col);
+
+	//top layer
+	out_box.top_front_left = out_box.bottom_front_left;
+	out_box.top_back_left = out_box.bottom_back_left;
+	out_box.top_back_right = out_box.bottom_back_right;
+	out_box.top_front_right = out_box.bottom_front_right;
+
+	//update only height for the top layer
+	out_box.top_front_left.z = in_boxes_channels[14].at<float>(row,col);
+	out_box.top_back_left.z = in_boxes_channels[17].at<float>(row,col);
+	out_box.top_back_right.z = in_boxes_channels[20].at<float>(row,col);
+	out_box.top_front_right.z = in_boxes_channels[23].at<float>(row,col);
+}
+
+void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector::BoundingBoxCorners& in_box_corners,
+                                                          unsigned int in_class,
+                                                          std_msgs::Header& in_header,
+                                                          jsk_recognition_msgs::BoundingBox& out_jsk_box)
+{
+	out_jsk_box.header = in_header;
+
+	out_jsk_box.dimensions.x = sqrt(in_box_corners.top_front_left.x * in_box_corners.top_front_left.x -
+			                        in_box_corners.top_back_left.x * in_box_corners.top_back_left.x);
+	out_jsk_box.dimensions.y = sqrt(in_box_corners.top_front_left.y * in_box_corners.top_front_left.y -
+	                                in_box_corners.top_front_right.y * in_box_corners.top_front_right.y);
+	out_jsk_box.dimensions.z = in_box_corners.top_front_right.z - in_box_corners.bottom_front_right.z;//any z would do
+
+	//centroid
+	out_jsk_box.pose.position.x = (in_box_corners.top_front_left.x + in_box_corners.top_back_right.x) / 2;
+	out_jsk_box.pose.position.y = (in_box_corners.top_front_left.y + in_box_corners.top_back_right.y) / 2;
+	out_jsk_box.pose.position.z = (in_box_corners.top_front_left.z + in_box_corners.top_front_left.z) / 2;
+
+	//rotation angle
+	float x_diff = in_box_corners.top_front_left.x - in_box_corners.top_back_right.x;
+	float y_diff = in_box_corners.top_front_left.y - in_box_corners.top_back_right.y;
+	float rotation_angle = atan2(y_diff, x_diff);
+
+	tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rotation_angle);
+	tf::quaternionTFToMsg(quat, out_jsk_box.pose.orientation);
+
+	out_jsk_box.label = in_class;
+
+}
+
 void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
                                          jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
@@ -65,9 +132,14 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 96 channel image, but instead is " << boxes_blob->shape(1);
 	CHECK_EQ(objectness_blob->shape(1), 4) << "The output prob layer should be 4 channel image, but instead is " << objectness_blob->shape(1) ;
 
+	CHECK_EQ(boxes_blob->shape(3), objectness_blob->shape(3)) << "Boxes and Objectness should have the same shape, " << boxes_blob->shape(3);
+	CHECK_EQ(boxes_blob->shape(2), objectness_blob->shape(2)) << "Boxes and Objectness should have the same shape, " << boxes_blob->shape(2);
+
 	std::vector<cv::Mat> objectness_channels;
 	int width = objectness_blob->shape(3);
 	int height = objectness_blob->shape(2);
+
+	//convert objectness (classes) channels to Mat
 	float* objectness_ptr = objectness_blob->mutable_cpu_data();//pointer to the prob layer
 	//copy each channel(class) from the output layer to a Mat
 	for (int i = 0; i < objectness_blob->shape(1); ++i)
@@ -78,32 +150,54 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 		objectness_ptr += width * height;
 	}
 
+	//convert boxes (24 floats representing each of the 8 3D points forming the bbox)
+	float* boxes_ptr = boxes_blob->mutable_cpu_data();//pointer to the bbox layer
+	std::vector<cv::Mat> boxes_channels;
+	for (int i = 0; i < boxes_blob->shape(1); ++i)
+	{
+		cv::Mat channel(height, width, CV_32FC1, boxes_ptr);
+		boxes_channels.push_back(channel);
+		boxes_ptr += width * height;
+	}
 	//check each pixel of each channel and assign color depending threshold
 	cv::Mat bgr_channels(height, width, CV_8UC3, cv::Scalar(0,0,0));
 
-	for(unsigned int h = 0; h < height; h++)
+	std::vector<CnnLidarDetector::BoundingBoxCorners> cars_boxes, person_boxes, bike_boxes;
+	for(unsigned int row = 0; row < height; row++)
 	{
-		for(unsigned int w = 0; w < width; w++)
+		for(unsigned int col = 0; col < width; col++)
 		{
 			//0 nothing
 			//1 car, red
 			//2 person, green
 			//3 bike, blue
 			//BGR Image
-			if (objectness_channels[1].at<float>(h,w) > score_threshold_)
+			CnnLidarDetector::BoundingBoxCorners current_box;
+			if (objectness_channels[1].at<float>(row,col) > score_threshold_)
 			{
-				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 0, 255);
+				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 0, 255);
+				cars_boxes.push_back(current_box);
 			}
-			if (objectness_channels[2].at<float>(h,w) > score_threshold_)
+			if (objectness_channels[2].at<float>(row,col) > score_threshold_)
 			{
-				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(0, 255, 0);
+				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 255, 0);
+				person_boxes.push_back(current_box);
 			}
-			if (objectness_channels[3].at<float>(h,w) > score_threshold_)
+			if (objectness_channels[3].at<float>(row,col) > score_threshold_)
 			{
-				bgr_channels.at<cv::Vec3b>(h,w) = cv::Vec3b(255, 0, 0);
+				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(255, 0, 0);
+				bike_boxes.push_back(current_box);
 			}
 		}
 	}
+	//apply NMS to boxes
+
+	//copy resulting boxes to output message
+	out_boxes.boxes.clear();
+
 
 	cv::flip(bgr_channels, out_objectness_image,-1);
 }
@@ -120,9 +214,9 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_depth_image, const cv::Mat& 
 		depth_resized = in_depth_image;
 
 	if (in_height_image.size() != input_geometry_)
-			cv::resize(in_height_image, height_resized, input_geometry_);
-		else
-			height_resized = in_height_image;
+		{cv::resize(in_height_image, height_resized, input_geometry_);}
+	else
+		{height_resized = in_height_image;}
 
 	//depth and height images are already preprocessed
 	//put each corrected mat geometry onto the correct input layer type pointers

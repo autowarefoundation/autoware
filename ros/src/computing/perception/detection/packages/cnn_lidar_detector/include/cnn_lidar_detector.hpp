@@ -13,15 +13,24 @@
 #include <iostream>
 
 #include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/conversions.h>
+#include <pcl_ros/transforms.h>
+#include <pcl_ros/point_cloud.h>
+
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 
 class CnnLidarDetector
 {
+
 public:
 	CnnLidarDetector(const std::string& in_network_definition_file,
 			const std::string& in_pre_trained_model_file,
@@ -35,6 +44,11 @@ public:
 	            jsk_recognition_msgs::BoundingBoxArray& out_boxes);
 
 private:
+	struct BoundingBoxCorners
+	{
+		pcl::PointXYZ top_front_left, top_front_right, top_back_left, top_back_right;
+		pcl::PointXYZ bottom_front_left, bottom_front_right, bottom_back_left, bottom_back_right;
+	};
 	boost::shared_ptr<caffe::Net<float> > net_;
 	cv::Size 	input_geometry_;
 	int 		num_channels_;
@@ -46,6 +60,15 @@ private:
 	                std::vector<cv::Mat>* in_out_channels);//match input images to input layer geometry
 	void GetNetworkResults(cv::Mat& out_objectness_image,
 	                       jsk_recognition_msgs::BoundingBoxArray& out_boxes);//get objectness image and bounding boxes
+
+	void BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector::BoundingBoxCorners& in_box_corners,
+	                                        unsigned int in_class,
+	                                        std_msgs::Header& in_header,
+	                                        jsk_recognition_msgs::BoundingBox& out_jsk_box);
+	void get_box_points_from_matrices(size_t row,
+	                                  size_t col,
+	                                  const std::vector<cv::Mat>& in_boxes_channels,
+	                                  CnnLidarDetector::BoundingBoxCorners& out_bounding_box);
 };
 
 #endif /* CNN_LIDAR_DETECTOR_HPP_ */
