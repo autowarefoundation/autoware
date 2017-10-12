@@ -9,13 +9,19 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration)
+SET(FAST_PCL_PACKAGES filters registration ndt_gpu)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DOMP_FOUND)
+endif()
+
+find_package(CUDA)
+if(CUDA_FOUND)
+    add_definitions(-DCUDA_FOUND)
 endif()
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
@@ -85,6 +91,11 @@ add_executable(ndt_matching_tku nodes/ndt_matching_tku/ndt_matching_tku.cpp)
 add_executable(ndt_mapping_tku nodes/ndt_mapping_tku/ndt_mapping_tku.cpp)
 add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
+endif()
+
+if(CUDA_FOUND)
+target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
+target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
 endif()
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
