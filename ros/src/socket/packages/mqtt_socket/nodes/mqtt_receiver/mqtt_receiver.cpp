@@ -44,12 +44,6 @@ static struct mosquitto *mqtt_client_ = NULL;
 static std::string mqtt_topic_;
 static int mqtt_qos_;
 static ros::Publisher remote_cmd_pub_;
-sig_atomic_t volatile g_request_shutdown = 0;
-
-void mySigIntHandler(int sig)
-{
-  g_request_shutdown = 1;
-}
 
 class MqttReceiver
 {
@@ -136,29 +130,29 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
     std::vector<std::string> cmds;
     boost::algorithm::split(cmds, msg_str, boost::is_any_of(","));
 
-    autoware_msgs::RemoteCmd msg;
-    msg.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
-    msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
-    msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
-    msg.gear = std::stoi(cmds[3]);
-    int blinker = std::stoi(cmds[4]);
-    msg.mode = std::stoi(cmds[5]);
-    int hev_mode = std::stoi(cmds[6]);
-    msg.emergency = std::stoi(cmds[7]);
-    remote_cmd_pub_.publish(msg);
+    if(cmds.size() == 8) {
+      autoware_msgs::RemoteCmd msg;
+      msg.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
+      msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
+      msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
+      msg.gear = std::stoi(cmds[3]);
+      int blinker = std::stoi(cmds[4]);
+      msg.mode = std::stoi(cmds[5]);
+      int hev_mode = std::stoi(cmds[6]);
+      msg.emergency = std::stoi(cmds[7]);
+      remote_cmd_pub_.publish(msg);
+    }
+    else {
+      ROS_INFO("Failed to parse remote command.\n");
+    }
   }
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "mqtt_receiver", ros::init_options::NoSigintHandler);
-  signal(SIGINT, mySigIntHandler);
+  ros::init(argc, argv, "mqtt_receiver");
   MqttReceiver node;
-
-  while (!g_request_shutdown)
-  {
-    sleep(1);
-  }
+  ros::spin();
 
   return 0;
 }
