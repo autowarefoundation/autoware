@@ -217,7 +217,23 @@ void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
     publish_msg << std::to_string(msg->inputpedalstr) << ",";
     publish_msg << std::to_string(msg->targetveloc) << ",";
     publish_msg << std::to_string(msg->speed) << ",";
-    publish_msg << std::to_string(msg->driveshift) << ",";
+    switch (msg->driveshift) {
+      case GEAR_D:
+        publish_msg << "D,";
+        break;
+      case GEAR_N:
+        publish_msg << "N,";
+        break;
+      case GEAR_R:
+        publish_msg << "R,";
+        break;
+      case GEAR_P:
+        publish_msg << "P,";
+        break;
+      default:
+        publish_msg << "Unkwown,";
+        break;
+    }
     publish_msg << std::to_string(msg->targetshift) << ",";
     publish_msg << std::to_string(msg->inputshift) << ",";
     publish_msg << std::to_string(msg->strmode) << ",";

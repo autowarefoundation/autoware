@@ -17,3 +17,7 @@
 #define BRAKE_MAX_VAL   10000
 #define STEER_MAX_VAL   0.6
 #define DOWNSAMPLE      0.1
+#define GEAR_D          16
+#define GEAR_N          32
+#define GEAR_R          64
+#define GEAR_P          128
