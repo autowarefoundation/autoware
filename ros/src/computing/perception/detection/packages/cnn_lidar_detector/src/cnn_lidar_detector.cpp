@@ -95,6 +95,16 @@ void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector
                                                           std_msgs::Header& in_header,
                                                           jsk_recognition_msgs::BoundingBox& out_jsk_box)
 {
+	//          top_front_left      top_front_right
+	//              ----------------
+	//             /               /
+	//            /               /
+	//           /               /
+	//          /               /
+	//         /               /
+	//        /               /
+	//       -----------------
+	//   top_back_left     top_back_right
 	out_jsk_box.header = in_header;
 
 	out_jsk_box.dimensions.x = sqrt(in_box_corners.top_front_left.x * in_box_corners.top_front_left.x -
@@ -120,6 +130,33 @@ void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector
 
 }
 
+void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
+              size_t in_min_num_neighbors,
+              float in_min_neighbor_distance,
+              float in_min_box_distance,
+              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners)
+{
+	//calculate distance between each box in the input vector
+	//the distance is calculated using the euclidean distance between the points forming the longer diagonal in each box
+	size_t total_boxes = in_out_box_corners.size();
+	for (size_t i=0; i<total_boxes; i++)
+	{
+		in_out_box_corners[i].distance_candidates.resize(total_boxes);
+		for (size_t j=0; j<total_boxes; j++)
+		{
+			in_out_box_corners[i].distance_candidates[j] = pcl::geometry::distance(in_out_box_corners[i].top_front_left,
+			                                                                       in_out_box_corners[j].top_front_left) +
+			                                            pcl::geometry::distance(in_out_box_corners[i].bottom_back_right,
+			                                                                    in_out_box_corners[j].bottom_back_right);
+			//if its not the same box and is closer than the minimum threshold for neighbors, add it as one
+			if (i != j && in_out_box_corners[i].distance_candidates[j] < in_min_neighbor_distance)
+				{in_out_box_corners[i].neighbor_indices.push_back(j);}
+		}
+	}
+
+	//for each group select one
+}
+
 void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
                                          jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
@@ -129,7 +166,7 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	//output layer     0  1    2     3
 	//prob 		shape  1 04 height width
 	//bb_score 	shape  1 24 height width
-	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 96 channel image, but instead is " << boxes_blob->shape(1);
+	CHECK_EQ(boxes_blob->shape(1), 24) << "The output bb_score layer should be 24 channel image, but instead is " << boxes_blob->shape(1);
 	CHECK_EQ(objectness_blob->shape(1), 4) << "The output prob layer should be 4 channel image, but instead is " << objectness_blob->shape(1) ;
 
 	CHECK_EQ(boxes_blob->shape(3), objectness_blob->shape(3)) << "Boxes and Objectness should have the same shape, " << boxes_blob->shape(3);
@@ -194,12 +231,14 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 		}
 	}
 	//apply NMS to boxes
-
+	std::vector<CnnLidarDetector::BoundingBoxCorners> final_cars_boxes, final_person_boxes, final_bike_boxes;
+	ApplyNms(cars_boxes, 5, 0.3, 7.0, final_cars_boxes);
+	ApplyNms(person_boxes, 5, 0.3, 7.0, final_person_boxes);
+	ApplyNms(bike_boxes, 5, 0.3, 7.0, final_bike_boxes);
 	//copy resulting boxes to output message
 	out_boxes.boxes.clear();
 
-
-	cv::flip(bgr_channels, out_objectness_image,-1);
+	cv::flip(bgr_channels, out_objectness_image, -1);
 }
 
 void CnnLidarDetector::PreProcess(const cv::Mat& in_depth_image, const cv::Mat& in_height_image, std::vector<cv::Mat>* in_out_channels)

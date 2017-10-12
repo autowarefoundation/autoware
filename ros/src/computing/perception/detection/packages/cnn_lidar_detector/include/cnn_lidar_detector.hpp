@@ -19,6 +19,7 @@
 #include <pcl/conversions.h>
 #include <pcl_ros/transforms.h>
 #include <pcl_ros/point_cloud.h>
+#include <pcl/common/geometry.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -48,6 +49,9 @@ private:
 	{
 		pcl::PointXYZ top_front_left, top_front_right, top_back_left, top_back_right;
 		pcl::PointXYZ bottom_front_left, bottom_front_right, bottom_back_left, bottom_back_right;
+		std::vector<float> distance_candidates;
+		std::vector<size_t> neighbor_indices;
+		size_t original_index;
 	};
 	boost::shared_ptr<caffe::Net<float> > net_;
 	cv::Size 	input_geometry_;
@@ -69,6 +73,11 @@ private:
 	                                  size_t col,
 	                                  const std::vector<cv::Mat>& in_boxes_channels,
 	                                  CnnLidarDetector::BoundingBoxCorners& out_bounding_box);
+	void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
+	              size_t in_min_num_neighbors,
+	              float in_min_neighbor_distance,
+	              float in_min_box_distance,
+	              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners);
 };
 
 #endif /* CNN_LIDAR_DETECTOR_HPP_ */
