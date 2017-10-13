@@ -86,11 +86,47 @@ class RosLidarDetectorApp
 	cv::Mat			projection_std_dev_depth_;//double divisor for depth channel
 	cv::Mat			projection_std_dev_height_;//double divisor for height channel
 
+	float get_image_mean(const cv::Mat& in_image)
+	{
+		float mean = 0.;
+		size_t elements = in_image.rows + in_image.cols;
+		for (unsigned int row = 0; row < in_image.rows; row++)
+		{
+			for (unsigned int col = 0; col < in_image.cols; col++)
+			{
+				mean +=in_image.at<float>(row, col);
+			}
+		}
+		if (0 == elements)
+			{return 0.;}
+		else
+			{return mean/elements;}
+	}
+
+	float get_image_stddev(const cv::Mat& in_image, float in_mean)
+	{
+		float std = 0.;
+		size_t elements = in_image.rows + in_image.cols;
+		for (unsigned int row = 0; row < in_image.rows; row++)
+		{
+			for (unsigned int col = 0; col < in_image.cols; col++)
+			{
+				std +=(in_image.at<float>(row, col) - in_mean) * (in_image.at<float>(row, col) - in_mean);
+			}
+		}
+		if (0 == elements)
+			{return 0.;}
+		else
+			{return sqrt(std/(elements-1));}
+	}
+
 	//Project 3D PointCloud to Image using a Cylindrical representation
 	void project_pointcloud_to_image(
 			pcl::PointCloud<pcl::PointXYZI>::Ptr in_point_cloud, //pointcloud to be projected to image
-			cv::Mat& out_depth_image, //resulting depth projection image
-			cv::Mat& out_height_image, //resulting height projection image
+			cv::Mat& out_range_image, //resulting depth projection image
+			cv::Mat& out_x_image, //resulting x value projection image
+			cv::Mat& out_y_image, //resulting y value projection image
+			cv::Mat& out_z_image, //resulting z value projection image
 			cv::Mat& out_intensity_image, //resulting intensity image
 			std::vector<cv::Point2d>& out_points2d, //resulting 2d points
 			std::vector<pcl::PointXYZI>& out_points_3d//corresponding 3d points
@@ -112,8 +148,10 @@ class RosLidarDetectorApp
 					 (image_y >= 0) && (image_y < image_height_)
 					) //check the projection is inside the image
 				{
-					out_depth_image.at<float>(image_y, image_x) = depth;
-					out_height_image.at<float>(image_y, image_x) = point.z;
+					out_range_image.at<float>(image_y, image_x) = depth;
+					out_x_image.at<float>(image_y, image_x) = point.x;
+					out_y_image.at<float>(image_y, image_x) = point.y;
+					out_z_image.at<float>(image_y, image_x) = point.z;
 					out_intensity_image.at<float>(image_y, image_x) = point.intensity;
 					//store correspondence between cloud and image coords
 					out_points2d[i] = cv::Point2d(image_x, image_y);
@@ -180,9 +218,11 @@ class RosLidarDetectorApp
 		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
 		//get cloud and project to image
 
-		cv::Mat projected_cloud_depth(image_height_, image_width_, CV_32F, 0.);//depth image
-		cv::Mat projected_cloud_height(image_height_, image_width_, CV_32F, 0.);//height image
 		cv::Mat projected_cloud_intensity(image_height_, image_width_, CV_32F, 0.);//intensity image
+		cv::Mat projected_cloud_range(image_height_, image_width_, CV_32F, 0.);//range (distance) image
+		cv::Mat projected_cloud_x(image_height_, image_width_, CV_32F, 0.);//x value image
+		cv::Mat projected_cloud_y(image_height_, image_width_, CV_32F, 0.);//y value image
+		cv::Mat projected_cloud_z(image_height_, image_width_, CV_32F, 0.);//z value image
 		cv::Mat resulting_objectness;//objectness image
 
 		std::vector<cv::Point2d> image_points;
@@ -193,38 +233,68 @@ class RosLidarDetectorApp
 		cloud_points.resize(current_sensor_cloud_ptr->points.size());
 
 		project_pointcloud_to_image(current_sensor_cloud_ptr,
-								projected_cloud_depth,
-								projected_cloud_height,
+								projected_cloud_range,
+								projected_cloud_x,
+								projected_cloud_y,
+								projected_cloud_z,
 								projected_cloud_intensity,
 								image_points,
 								cloud_points);
 
-		// subtract mean
-		subtract_image(projected_cloud_depth, projection_mean_depth_.at<float>(0));
-		subtract_image(projected_cloud_height, projection_mean_height_.at<float>(0));
-		// divide std dev
-		divide_image(projected_cloud_depth, projection_std_dev_depth_.at<float>(0));
-		divide_image(projected_cloud_height, projection_std_dev_height_.at<float>(0));
+		// calculate mean, std, dev for each image, subtract and divide
+		float range_mean, x_mean, y_mean, z_mean, intensity_mean;//range, x, y ,z, intensity
+		float range_stddev, x_stddev, y_stddev, z_stddev, intensity_stddev;//range, x, y ,z, intensity
+
+		intensity_mean = get_image_mean(projected_cloud_intensity);
+		subtract_image(projected_cloud_intensity, intensity_mean);
+		intensity_stddev = get_image_stddev(projected_cloud_intensity, intensity_mean);
+		divide_image(projected_cloud_intensity, intensity_stddev);
+
+		range_mean = get_image_mean(projected_cloud_range);
+		subtract_image(projected_cloud_range, range_mean);
+		range_stddev = get_image_stddev(projected_cloud_range, range_mean);
+		divide_image(projected_cloud_range, range_stddev);
+
+		x_mean = get_image_mean(projected_cloud_x);
+		subtract_image(projected_cloud_x, x_mean);
+		x_stddev = get_image_stddev(projected_cloud_x, x_mean);
+		divide_image(projected_cloud_x, x_stddev);
+
+		y_mean = get_image_mean(projected_cloud_y);
+		subtract_image(projected_cloud_y, y_mean);
+		y_stddev = get_image_stddev(projected_cloud_y, y_mean);
+		divide_image(projected_cloud_y, y_stddev);
+
+		z_mean = get_image_mean(projected_cloud_z);
+		subtract_image(projected_cloud_z, z_mean);
+		z_stddev = get_image_stddev(projected_cloud_z, z_mean);
+		divide_image(projected_cloud_z, z_stddev);
 
 		//use image for CNN forward
 		jsk_recognition_msgs::BoundingBoxArray objects_boxes;
 		objects_boxes.header = in_sensor_cloud->header;
 
-		lidar_detector_->Detect(projected_cloud_depth,
-								projected_cloud_height,
-								resulting_objectness,
-								objects_boxes);
+		lidar_detector_->Detect(projected_cloud_intensity,
+		                        projected_cloud_range,
+		                        projected_cloud_x,
+		                        projected_cloud_y,
+		                        projected_cloud_z,
+		                        resulting_objectness,
+		                        objects_boxes);
 
-		cv::Mat ros_depth_image, ros_height_image, ros_intensity_image; //mats for publishing
+		cv::Mat ros_image_intensity, ros_image_range, ros_image_x, ros_image_y, ros_image_z; //mats for publishing
 
 		//grayscale to colormap  representation
-		post_process_image(projected_cloud_depth, ros_depth_image);
-		post_process_image(projected_cloud_height, ros_height_image);
-		post_process_image(projected_cloud_intensity, ros_intensity_image);
+		post_process_image(projected_cloud_intensity, ros_image_intensity);
+		post_process_image(projected_cloud_range, ros_image_range);
+		post_process_image(projected_cloud_x, ros_image_x);
+		post_process_image(projected_cloud_y, ros_image_y);
+		post_process_image(projected_cloud_z, ros_image_z);
 
-		publish_image(publisher_depth_image_, ros_depth_image, current_sensor_cloud_ptr->header);
-		publish_image(publisher_height_image_, ros_height_image, current_sensor_cloud_ptr->header);
-		publish_image(publisher_intensity_image_, ros_intensity_image, current_sensor_cloud_ptr->header);
+
+		publish_image(publisher_depth_image_, ros_image_range, current_sensor_cloud_ptr->header);
+		publish_image(publisher_height_image_, ros_image_z, current_sensor_cloud_ptr->header);
+		publish_image(publisher_intensity_image_, ros_image_intensity, current_sensor_cloud_ptr->header);
 		publish_image(publisher_objectness_image_, resulting_objectness, current_sensor_cloud_ptr->header);
 		
 	}//end cloud_callback

@@ -39,8 +39,11 @@ public:
 			unsigned int in_gpu_id,
 			float in_score_threshold);
 
-	void Detect(const cv::Mat& in_depth_image,
-	            const cv::Mat& in_height_image,
+	void Detect(const cv::Mat& in_image_intensity,
+	            const cv::Mat& in_image_range,
+	            const cv::Mat& in_image_x,
+	            const cv::Mat& in_image_y,
+	            const cv::Mat& in_image_z,
 	            cv::Mat& out_objectness_image,
 	            jsk_recognition_msgs::BoundingBoxArray& out_boxes);
 
@@ -58,9 +61,22 @@ private:
 	int 		num_channels_;
 	float		score_threshold_;
 
+	//cheap functs
+	void get_box_points_from_matrices(size_t row,
+	                                  size_t col,
+	                                  const std::vector<cv::Mat>& in_boxes_channels,
+	                                  CnnLidarDetector::BoundingBoxCorners& out_bounding_box);
+	template<typename PointT> float get_points_distance(const PointT& in_p1, const PointT& in_p2);
+
+	cv::Mat resize_image(cv::Mat in_image, cv::Size in_geometry);
+
+	//regular functs
 	void WrapInputLayer(std::vector<cv::Mat>* in_out_channels);//Point mat vector to the network input layer
-	void PreProcess(const cv::Mat& in_depth_image,
-	                const cv::Mat& in_height_image,
+	void PreProcess(const cv::Mat& in_image_intensity,
+	                const cv::Mat& in_image_range,
+	                const cv::Mat& in_image_x,
+	                const cv::Mat& in_image_y,
+	                const cv::Mat& in_image_z,
 	                std::vector<cv::Mat>* in_out_channels);//match input images to input layer geometry
 	void GetNetworkResults(cv::Mat& out_objectness_image,
 	                       jsk_recognition_msgs::BoundingBoxArray& out_boxes);//get objectness image and bounding boxes
@@ -69,10 +85,7 @@ private:
 	                                        unsigned int in_class,
 	                                        std_msgs::Header& in_header,
 	                                        jsk_recognition_msgs::BoundingBox& out_jsk_box);
-	void get_box_points_from_matrices(size_t row,
-	                                  size_t col,
-	                                  const std::vector<cv::Mat>& in_boxes_channels,
-	                                  CnnLidarDetector::BoundingBoxCorners& out_bounding_box);
+
 	void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
 	              size_t in_min_num_neighbors,
 	              float in_min_neighbor_distance,

@@ -29,30 +29,6 @@
  */
 #include "cnn_lidar_detector.hpp"
 
-void CnnLidarDetector::Detect(const cv::Mat& in_depth_image,
-                              const cv::Mat& in_height_image,
-                              cv::Mat& out_objectness_image,
-                              jsk_recognition_msgs::BoundingBoxArray& out_boxes)
-{
-	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
-	input_layer->Reshape(1,
-						num_channels_,
-						input_geometry_.height,
-						input_geometry_.width);
-	/* Forward dimension change to all layers. */
-	net_->Reshape();
-
-	std::vector<cv::Mat> input_channels;
-	WrapInputLayer(&input_channels);//create pointers for input layers
-
-	PreProcess(in_depth_image, in_height_image, &input_channels);
-
-	net_->Forward();
-
-	GetNetworkResults(out_objectness_image, out_boxes);
-
-}
-
 void CnnLidarDetector::get_box_points_from_matrices(size_t row,
                                                     size_t col,
                                                     const std::vector<cv::Mat>& in_boxes_channels,
@@ -88,6 +64,60 @@ void CnnLidarDetector::get_box_points_from_matrices(size_t row,
 	out_box.top_back_left.z = in_boxes_channels[17].at<float>(row,col);
 	out_box.top_back_right.z = in_boxes_channels[20].at<float>(row,col);
 	out_box.top_front_right.z = in_boxes_channels[23].at<float>(row,col);
+}
+
+
+template<typename PointT>
+float CnnLidarDetector::get_points_distance(const PointT& in_p1, const PointT& in_p2)
+{
+
+	Eigen::Vector3f p1 = Eigen::Vector3f(in_p1.getArray3fMap());
+	Eigen::Vector3f p2 = Eigen::Vector3f(in_p2.getArray3fMap());
+
+	return pcl::geometry::distance(p1, p2);
+}
+
+cv::Mat resize_image(cv::Mat in_image, cv::Size in_geometry)
+{
+	cv::Mat resized;
+	if (in_image.size() != in_geometry)
+		{cv::resize(in_image, resized, in_geometry);}
+	else
+		{resized = in_image;}
+
+	return resized;
+}
+
+void CnnLidarDetector::Detect(const cv::Mat& in_image_intensity,
+                              const cv::Mat& in_image_range,
+                              const cv::Mat& in_image_x,
+                              const cv::Mat& in_image_y,
+                              const cv::Mat& in_image_z,
+                              cv::Mat& out_objectness_image,
+                              jsk_recognition_msgs::BoundingBoxArray& out_boxes)
+{
+	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
+	input_layer->Reshape(1,
+	                     num_channels_,
+	                     input_geometry_.height,
+	                     input_geometry_.width);
+	/* Forward dimension change to all layers. */
+	net_->Reshape();
+
+	std::vector<cv::Mat> input_channels;
+	WrapInputLayer(&input_channels);//create pointers for input layers
+
+	PreProcess(in_image_intensity,
+	           in_image_range,
+	           in_image_x,
+	           in_image_y,
+	           in_image_z,
+	           &input_channels);
+
+	net_->Forward();
+
+	GetNetworkResults(out_objectness_image, out_boxes);
+
 }
 
 void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector::BoundingBoxCorners& in_box_corners,
@@ -130,6 +160,7 @@ void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector
 
 }
 
+
 void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
               size_t in_min_num_neighbors,
               float in_min_neighbor_distance,
@@ -139,18 +170,27 @@ void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners
 	//calculate distance between each box in the input vector
 	//the distance is calculated using the euclidean distance between the points forming the longer diagonal in each box
 	size_t total_boxes = in_out_box_corners.size();
+	out_nms_box_corners.clear();
 	for (size_t i=0; i<total_boxes; i++)
 	{
 		in_out_box_corners[i].distance_candidates.resize(total_boxes);
 		for (size_t j=0; j<total_boxes; j++)
 		{
-			in_out_box_corners[i].distance_candidates[j] = pcl::geometry::distance(in_out_box_corners[i].top_front_left,
-			                                                                       in_out_box_corners[j].top_front_left) +
-			                                            pcl::geometry::distance(in_out_box_corners[i].bottom_back_right,
+			in_out_box_corners[i].distance_candidates[j] =  get_points_distance(in_out_box_corners[i].top_front_left,
+			                                                                    in_out_box_corners[j].top_front_left) +
+			                                                get_points_distance(in_out_box_corners[i].bottom_back_right,
 			                                                                    in_out_box_corners[j].bottom_back_right);
 			//if its not the same box and is closer than the minimum threshold for neighbors, add it as one
 			if (i != j && in_out_box_corners[i].distance_candidates[j] < in_min_neighbor_distance)
 				{in_out_box_corners[i].neighbor_indices.push_back(j);}
+		}
+	}
+	//keep only those who have only the minimum neighbors
+	for (size_t i=0; i<total_boxes; i++)
+	{
+		if (in_out_box_corners[i].neighbor_indices.size() >= in_min_num_neighbors)
+		{
+			out_nms_box_corners.push_back(in_out_box_corners[i]);
 		}
 	}
 
@@ -241,26 +281,29 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	cv::flip(bgr_channels, out_objectness_image, -1);
 }
 
-void CnnLidarDetector::PreProcess(const cv::Mat& in_depth_image, const cv::Mat& in_height_image, std::vector<cv::Mat>* in_out_channels)
+void CnnLidarDetector::PreProcess(const cv::Mat& in_image_intensity,
+                                  const cv::Mat& in_image_range,
+                                  const cv::Mat& in_image_x,
+                                  const cv::Mat& in_image_y,
+                                  const cv::Mat& in_image_z,
+                                  std::vector<cv::Mat>* in_out_channels)
 {
 	//resize image if required
-	cv::Mat depth_resized;
-	cv::Mat height_resized;
+	cv::Mat intensity_resized, range_resized;
+	cv::Mat x_resized, y_resized, z_resized;
 
-	if (in_depth_image.size() != input_geometry_)
-		cv::resize(in_depth_image, depth_resized, input_geometry_);
-	else
-		depth_resized = in_depth_image;
+	intensity_resized = resize_image(in_image_intensity, input_geometry_);
+	range_resized = resize_image(in_image_range, input_geometry_);
+	x_resized = resize_image(in_image_x, input_geometry_);
+	y_resized = resize_image(in_image_y, input_geometry_);
+	z_resized = resize_image(in_image_z, input_geometry_);
 
-	if (in_height_image.size() != input_geometry_)
-		{cv::resize(in_height_image, height_resized, input_geometry_);}
-	else
-		{height_resized = in_height_image;}
-
-	//depth and height images are already preprocessed
 	//put each corrected mat geometry onto the correct input layer type pointers
-	depth_resized.copyTo(in_out_channels->at(0));
-	height_resized.copyTo(in_out_channels->at(1));
+	intensity_resized.copyTo(in_out_channels->at(0));
+	range_resized.copyTo(in_out_channels->at(1));
+	x_resized.copyTo(in_out_channels->at(2));
+	y_resized.copyTo(in_out_channels->at(3));
+	z_resized.copyTo(in_out_channels->at(4));
 
 	//check that the pre processed and resized mat pointers correspond to the pointers of the input layers
 	CHECK(reinterpret_cast<float*>(in_out_channels->at(0).data) == net_->input_blobs()[0]->cpu_data())	<< "Input channels are not wrapping the input layer of the network.";
@@ -274,7 +317,7 @@ void CnnLidarDetector::WrapInputLayer(std::vector<cv::Mat>* in_out_channels)
 	int width = input_layer->width();
 	int height = input_layer->height();
 	float* input_data = input_layer->mutable_cpu_data();
-	for (int i = 0; i < input_layer->channels(); ++i)
+	for (int i = 0; i < input_layer->shape(1); ++i)
 	{
 		cv::Mat channel(height, width, CV_32FC1, input_data);
 		in_out_channels->push_back(channel);
