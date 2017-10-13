@@ -59,9 +59,11 @@ class RosLidarDetectorApp
 	ros::Subscriber subscriber_image_raw_;
 	ros::Publisher 	publisher_pointcloud_class_;
 	ros::Publisher 	publisher_boxes_;
-	ros::Publisher 	publisher_depth_image_;
-	ros::Publisher 	publisher_height_image_;
 	ros::Publisher 	publisher_intensity_image_;
+	ros::Publisher 	publisher_image_range_;
+	ros::Publisher 	publisher_image_x_;
+	ros::Publisher 	publisher_image_y_;
+	ros::Publisher 	publisher_image_z_;
 	ros::Publisher 	publisher_objectness_image_;
 	ros::NodeHandle node_handle_;
 
@@ -292,9 +294,11 @@ class RosLidarDetectorApp
 		post_process_image(projected_cloud_z, ros_image_z);
 
 
-		publish_image(publisher_depth_image_, ros_image_range, current_sensor_cloud_ptr->header);
-		publish_image(publisher_height_image_, ros_image_z, current_sensor_cloud_ptr->header);
 		publish_image(publisher_intensity_image_, ros_image_intensity, current_sensor_cloud_ptr->header);
+		publish_image(publisher_image_range_, ros_image_range, current_sensor_cloud_ptr->header);
+		publish_image(publisher_image_x_, ros_image_x, current_sensor_cloud_ptr->header);
+		publish_image(publisher_image_y_, ros_image_y, current_sensor_cloud_ptr->header);
+		publish_image(publisher_image_z_, ros_image_z, current_sensor_cloud_ptr->header);
 		publish_image(publisher_objectness_image_, resulting_objectness, current_sensor_cloud_ptr->header);
 		
 	}//end cloud_callback
@@ -399,9 +403,12 @@ public:
 
 		publisher_pointcloud_class_ = node_handle_.advertise<sensor_msgs::PointCloud2>("/points_class",1);
 		publisher_boxes_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes",1);
-		publisher_depth_image_= node_handle_.advertise<sensor_msgs::Image>("/image_depth",1);
-		publisher_height_image_= node_handle_.advertise<sensor_msgs::Image>("/image_height",1);
 		publisher_intensity_image_= node_handle_.advertise<sensor_msgs::Image>("/image_intensity",1);
+		publisher_image_range_= node_handle_.advertise<sensor_msgs::Image>("/image_range",1);
+		publisher_image_x_= node_handle_.advertise<sensor_msgs::Image>("/image_x",1);
+		publisher_image_y_= node_handle_.advertise<sensor_msgs::Image>("/image_y",1);
+		publisher_image_z_= node_handle_.advertise<sensor_msgs::Image>("/image_z",1);
+
 		publisher_objectness_image_= node_handle_.advertise<sensor_msgs::Image>("/image_objectness",1);
 
 		ROS_INFO("Subscribing to... %s", cloud_topic_str.c_str());
