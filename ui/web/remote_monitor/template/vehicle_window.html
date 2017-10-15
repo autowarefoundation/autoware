@@ -18,7 +18,6 @@
   <script src="/js/bootstrap.min.js"></script>
   <script src="socket.io/socket.io.js"></script>
   <script src="/js/webrtc_polyfill.js"></script>
-  <script src="/js/uuid.core.js"></script>
   <script src="/js/utility.js"></script>
   <script src="/js/remote_ui.js"></script>
 </head>
@@ -74,7 +73,7 @@
         </div>
       </div>
 
-      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
         <div class="streamItemContainer">
           <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream2" data-no="2" title="DELETE"></span><br />
           <button class="btnAddStream" id="btnAddStream2" data-no="2">
@@ -90,20 +89,9 @@
           <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream5" data-no="5" title="DELETE"></span><br />
           <button class="btnAddStream" id="btnAddStream5" data-no="5">
             <span class="glyphicon glyphicon-remove r45"></span><br />
-            <span>Add Internal Camera</span>
+            <span>Add Dashboard Camera</span>
           </button>
           <video id="localView5"></video>
-        </div>
-      </div>
-
-      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-        <div class="streamItemContainer">
-          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream6" data-no="6" title="DELETE"></span><br />
-          <button class="btnAddStream" id="btnAddStream6" data-no="6">
-            <span class="glyphicon glyphicon-remove r45"></span><br />
-            <span>Add Instrument Panel Camera</span>
-          </button>
-          <video id="localView6"></video>
         </div>
       </div>
 
@@ -122,7 +110,7 @@
         </div>
       </div>
 
-      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
         <div class="streamItemContainer">
           <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream1" data-no="1" title="DELETE"></span><br />
           <button class="btnAddStream" id="btnAddStream1" data-no="1">
@@ -141,12 +129,6 @@
             <span>Add Right Back Camera</span>
           </button>
           <video id="localView4"></video>
-        </div>
-      </div>
-
-      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-        <div class="streamItemContainer">
-          <video id="remoteView1"></video>
         </div>
       </div>
     </div>
@@ -181,9 +163,10 @@
             <h4>Gear</h4>
             <select name="gear" id="gear" onChange="select_gear(this);">
               <option value="0">P</option>
-              <option value="1">N</option>
-              <option value="2">D</option>
-              <option value="3">R</option>
+              <option value="1">D</option>
+              <option value="2">R</option>
+              <option value="3">N</option>
+              <option value="4">B</option>
             </select>
           </div>
         </div>

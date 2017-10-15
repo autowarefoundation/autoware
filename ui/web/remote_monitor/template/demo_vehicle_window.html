@@ -20,8 +20,6 @@
   <script src="/js/webrtc_polyfill.js"></script>
   <script src="/js/utility.js"></script>
   <script src="/js/remote_ui.js"></script>
-  <script src="/js/gamepad.js"></script>
-  <script src="/js/vehicle_button.js"></script>
 </head>
 
 <body>
@@ -75,36 +73,79 @@
         </div>
       </div>
 
-      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
         <div class="streamItemContainer">
-          <video id="remoteView2"></video>
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream2" data-no="2" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream2" data-no="2">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Back Camera</span>
+          </button>
+          <video id="localView2"></video>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
         <div class="streamItemContainer">
-          <video id="remoteView5"></video>
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream5" data-no="5" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream5" data-no="5">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Dashboard Camera</span>
+          </button>
+          <video id="localView5"></video>
         </div>
       </div>
+
+      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <div class="streamItemContainer">
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream6" data-no="6" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream6" data-no="6">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Internal Camera</span>
+          </button>
+          <video id="localView6"></video>
+        </div>
+      </div>
+
     </div>
 
     <!-- UI Second row -->
     <div class="row row-eq-height row-center">
       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
         <div class="streamItemContainer">
-          <video id="remoteView3"></video>
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream3" data-no="3" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream3" data-no="3">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Left Back Camera</span>
+          </button>
+          <video id="localView3"></video>
         </div>
       </div>
 
-      <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
         <div class="streamItemContainer">
-          <video id="remoteView1"></video>
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream1" data-no="1" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream1" data-no="1">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Front Camera</span>
+          </button>
+          <video id="localView1"></video>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
         <div class="streamItemContainer">
-          <video id="remoteView4"></video>
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream4" data-no="4" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream4" data-no="4">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Right Back Camera</span>
+          </button>
+          <video id="localView4"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <div class="streamItemContainer">
+          <video id="remoteView1"></video>
         </div>
       </div>
     </div>
@@ -117,41 +158,31 @@
 
       <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
         <div class="dashboard">
-          <div class="meter meter--rpm meter--big-label"></div>
-          <div class="meter meter--gear"><div>1</div></div>
-          <div class="meter meter--speed"></div>
+        	<div class="meter meter--rpm meter--big-label"></div>
+        	<div class="meter meter--gear"><div>1</div></div>
+        	<div class="meter meter--speed"></div>
         </div>
       </div>
 
       <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
         <div align="left" style="margin-left: 10px">
-          <h4 class="operator">Accel</h4>
-          <progress class="operator" id="accel_bar" value="0" max="100"></progress>
-          <h4 class="operator">Brake</h4>
-          <progress class="operator" id="brake_bar" value="0" max="100"></progress>
-          <h4 class="operator">Vehicle Steer</h4>
+          <h4>Accel</h4>
+          <progress id="accel_bar" value="0" max="100"></progress>
+          <h4>Brake</h4>
+          <progress id="brake_bar" value="0" max="100"></progress>
+          <h4>Steer</h4>
           <div class="seekbar">
             <div class="fill"></div>
             <div class="handle"></div>
           </div>
-          <h4 class="operator">Controller Accel</h4>
-          <progress class="operator" id="controller_accel_bar" value="0" max="100"></progress>
-          <h4 class="operator">Controller Brake</h4>
-          <progress class="operator" id="controller_brake_bar" value="0" max="100"></progress>
-          <h4 class="operator">Controller Steer</h4>
-          <div class="seekbar">
-            <div class="cfill"></div>
-            <div class="handle"></div>
-          </div>
 
           <div class="select-wrap select-circle">
-            <h4 class="operator">Gear</h4>
+            <h4>Gear</h4>
             <select name="gear" id="gear" onChange="select_gear(this);">
               <option value="0">P</option>
-              <option value="1">D</option>
-              <option value="2">R</option>
-              <option value="3">N</option>
-              <option value="4">B</option>
+              <option value="1">N</option>
+              <option value="2">D</option>
+              <option value="3">R</option>
             </select>
           </div>
         </div>
@@ -171,19 +202,6 @@
               <span class="modeswitch-inner"></span>
           </label>
         </div>
-
-        <div class="row">
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <input id="blinker_left" type="button" class="square_btn" value="◁" onclick="pushBlinker(1)">
-          </div>
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <input id="blinker_hazard" type="button" class="square_btn" value="△" onclick="pushBlinker(3)">
-          </div>
-          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-            <input id="blinker_right" type="button" class="square_btn" value="▷" onclick="pushBlinker(2)">
-          </div>
-        </div>
-
       </div>
     </div>
   </div>

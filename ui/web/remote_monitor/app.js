@@ -35,8 +35,16 @@ app.get('/vehicle', function (req, res) {
   res.sendFile(__dirname + '/template/vehicle_window.html');
 });
 
+app.get('/demo_vehicle', function (req, res) {
+  res.sendFile(__dirname + '/template/demo_vehicle_window.html');
+});
+
 app.get('/operator', function (req, res) {
   res.sendFile(__dirname + '/template/operator_window.html');
+});
+
+app.get('/demo_operator', function (req, res) {
+  res.sendFile(__dirname + '/template/demo_operator_window.html');
 });
 
 io.on('connection', function (socket) {

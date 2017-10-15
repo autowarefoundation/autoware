@@ -28,7 +28,7 @@
 
 .flat_ss .btnttl {
   display: inline-block;
-  width: 200px;
+  width: 300px;
   text-align: center;
   vertical-align: middle;
 }
@@ -318,4 +318,22 @@ select::-ms-expand {
   top: 0;
   right: 15px;
   width: 20px;
+}
+
+/*Squre Button*/
+.square_btn {
+display: inline-block;
+padding: 0.3em 1em;
+text-decoration: none;
+color: #67c5ff;
+width: 90%;
+height: 3vw;
+text-align: center;
+border: solid 2px #67c5ff;
+border-radius: 3px;
+transition: .4s;
+background: white;
+}.square_btn:hover {
+background: yellow;
+color: black;
 }

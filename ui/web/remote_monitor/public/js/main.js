@@ -31,7 +31,6 @@ var $selectDeviceDialog = $('#selectDeviceDialog');
 // Set Event Listener -------
 
 btnJoinRoom.addEventListener('click', setFocusTxtRoomName);
-// btnGenerateRoomName.addEventListener('click', generateRoomName);
 formJoinRoom.onsubmit = function (evt) {
   joinRoom();
   return false;
@@ -61,11 +60,6 @@ function setFocusTxtRoomName() {
     txtRoomName.focus();
   }, 100);
 }
-function generateRoomName(evt){
-  txtRoomName.value = UUID.generate();
-  txtRoomName.focus();
-  txtRoomName.select();
-}
 
 navigator.mediaDevices.enumerateDevices()
   .then(function (devices) {
@@ -85,8 +79,9 @@ navigator.mediaDevices.enumerateDevices()
       });
       deviceList.selectedIndex = 0;
     } else {
-      showMessageDialog(MESSAGE_NOTFOUND_DEVICE);
-      btnJoinRoom.disabled = true;
+      console.log(MESSAGE_NOTFOUND_DEVICE);
+      // showMessageDialog(MESSAGE_NOTFOUND_DEVICE);
+      // btnJoinRoom.disabled = true;
     }
   });
 
@@ -143,13 +138,19 @@ function deviceChange() {
   clearStream(streamPreview);
   if (deviceId || isFirefox) {
     deviceList.disabled = true;
-    // 現時点での Firefox(v39) では sourceId のオプションは無視される
     var constraints = {
-      audio: true,
+      audio: false,
       video: {
-        optional: [{ sourceId: deviceId }]
+        width: 1280,
+        height: 720,
       }
     };
+    // var constraints = {
+    //   audio: false,
+    //   video: {
+    //     optional: [{ sourceId: deviceId }],
+    //   }
+    // };
   }
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function (stream) {
