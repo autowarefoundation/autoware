@@ -28,6 +28,8 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "nms.hpp"
+
 
 class CnnLidarDetector
 {
@@ -61,11 +63,21 @@ private:
 	int 		num_channels_;
 	float		score_threshold_;
 
+	typedef boost::geometry::model::d2::point_xy<double> boost_point_xy;
+	typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > boost_polygon;
+
 	//cheap functs
-	void get_box_points_from_matrices(size_t row,
-	                                  size_t col,
+	/*!
+	 * Extracts 4 values (x1, y1, x2,y2) forming the base of the 2D Bounding Box
+	 * @param in_row row index
+	 * @param in_col column index
+	 * @param in_boxes_channels image channels forming the 3D bounding box
+	 * @param out_bounding_box vector containing the 4 values
+	 */
+	void get_box_points_from_matrices(size_t in_row,
+	                                  size_t in_col,
 	                                  const std::vector<cv::Mat>& in_boxes_channels,
-	                                  CnnLidarDetector::BoundingBoxCorners& out_bounding_box);
+	                                  std::vector<float>& out_bounding_box);
 	template<typename PointT> float get_points_distance(const PointT& in_p1, const PointT& in_p2);
 
 	cv::Mat resize_image(cv::Mat in_image, cv::Size in_geometry);
@@ -86,11 +98,11 @@ private:
 	                                        std_msgs::Header& in_header,
 	                                        jsk_recognition_msgs::BoundingBox& out_jsk_box);
 
-	void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
+	/*void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
 	              size_t in_min_num_neighbors,
 	              float in_min_neighbor_distance,
 	              float in_min_box_distance,
-	              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners);
+	              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners);*/
 };
 
 #endif /* CNN_LIDAR_DETECTOR_HPP_ */

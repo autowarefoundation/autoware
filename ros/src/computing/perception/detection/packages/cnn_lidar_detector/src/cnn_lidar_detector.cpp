@@ -29,15 +29,29 @@
  */
 #include "cnn_lidar_detector.hpp"
 
-void CnnLidarDetector::get_box_points_from_matrices(size_t row,
-                                                    size_t col,
+void CnnLidarDetector::get_box_points_from_matrices(size_t in_row,
+                                                    size_t in_col,
                                                     const std::vector<cv::Mat>& in_boxes_channels,
-                                                    CnnLidarDetector::BoundingBoxCorners& out_box)
+                                                    std::vector<float>& out_box)
 {
 	CHECK_EQ(in_boxes_channels.size(), 24) << "Incorrect Number of points to form a bounding box, expecting 24, got: " << in_boxes_channels.size();
 
 	//bottom layer
-	out_box.bottom_front_left.x = in_boxes_channels[0].at<float>(row,col);
+	out_box.clear();
+	out_box.resize(8);//8 points representing a rectangle in the XY plane
+	out_box[0] = in_boxes_channels[0].at<float>(in_row, in_col); //bottom_front_left X
+	out_box[1] = in_boxes_channels[1].at<float>(in_row, in_col); //bottom_front_left Y
+
+	out_box[2] = in_boxes_channels[3].at<float>(in_row, in_col); //bottom_back_right X
+	out_box[3] = in_boxes_channels[4].at<float>(in_row, in_col); //bottom_back_right Y
+
+	out_box[4] = in_boxes_channels[6].at<float>(in_row, in_col); //bottom_back_right X
+	out_box[5] = in_boxes_channels[7].at<float>(in_row, in_col); //bottom_back_right Y
+
+	out_box[6] = in_boxes_channels[9].at<float>(in_row, in_col); //bottom_back_right X
+	out_box[7] = in_boxes_channels[10].at<float>(in_row, in_col); //bottom_back_right Y
+
+	/*out_box.bottom_front_left.x = in_boxes_channels[0].at<float>(row,col);
 	out_box.bottom_front_left.y = in_boxes_channels[1].at<float>(row,col);
 	out_box.bottom_front_left.z = in_boxes_channels[2].at<float>(row,col);
 
@@ -63,7 +77,7 @@ void CnnLidarDetector::get_box_points_from_matrices(size_t row,
 	out_box.top_front_left.z = in_boxes_channels[14].at<float>(row,col);
 	out_box.top_back_left.z = in_boxes_channels[17].at<float>(row,col);
 	out_box.top_back_right.z = in_boxes_channels[20].at<float>(row,col);
-	out_box.top_front_right.z = in_boxes_channels[23].at<float>(row,col);
+	out_box.top_front_right.z = in_boxes_channels[23].at<float>(row,col);*/
 }
 
 
@@ -77,7 +91,7 @@ float CnnLidarDetector::get_points_distance(const PointT& in_p1, const PointT& i
 	return pcl::geometry::distance(p1, p2);
 }
 
-cv::Mat resize_image(cv::Mat in_image, cv::Size in_geometry)
+cv::Mat CnnLidarDetector::resize_image(cv::Mat in_image, cv::Size in_geometry)
 {
 	cv::Mat resized;
 	if (in_image.size() != in_geometry)
@@ -161,7 +175,7 @@ void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector
 }
 
 
-void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
+/*void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
               size_t in_min_num_neighbors,
               float in_min_neighbor_distance,
               float in_min_box_distance,
@@ -195,7 +209,7 @@ void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners
 	}
 
 	//for each group select one
-}
+}*/
 
 void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
                                          jsk_recognition_msgs::BoundingBoxArray& out_boxes)
@@ -239,7 +253,7 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	//check each pixel of each channel and assign color depending threshold
 	cv::Mat bgr_channels(height, width, CV_8UC3, cv::Scalar(0,0,0));
 
-	std::vector<CnnLidarDetector::BoundingBoxCorners> cars_boxes, person_boxes, bike_boxes;
+	std::vector< std::vector<float> > cars_boxes, person_boxes, bike_boxes;
 	for(unsigned int row = 0; row < height; row++)
 	{
 		for(unsigned int col = 0; col < width; col++)
@@ -249,7 +263,10 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 			//2 person, green
 			//3 bike, blue
 			//BGR Image
-			CnnLidarDetector::BoundingBoxCorners current_box;
+
+			//8 item vector (x1, y1), (x2,y2), (x3, y3), (x4,y4) forming the bottom rectangle of the box
+			std::vector<float> current_box;
+
 			if (objectness_channels[1].at<float>(row,col) > score_threshold_)
 			{
 				get_box_points_from_matrices(row, col, boxes_channels, current_box);
@@ -271,10 +288,11 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 		}
 	}
 	//apply NMS to boxes
-	std::vector<CnnLidarDetector::BoundingBoxCorners> final_cars_boxes, final_person_boxes, final_bike_boxes;
-	ApplyNms(cars_boxes, 5, 0.3, 7.0, final_cars_boxes);
-	ApplyNms(person_boxes, 5, 0.3, 7.0, final_person_boxes);
-	ApplyNms(bike_boxes, 5, 0.3, 7.0, final_bike_boxes);
+	std::vector< std::vector<float> > final_cars_boxes, final_person_boxes, final_bike_boxes;
+
+	//ApplyNms(cars_boxes, 5, 0.3, 7.0, final_cars_boxes);
+	//ApplyNms(person_boxes, 5, 0.3, 7.0, final_person_boxes);
+	//ApplyNms(bike_boxes, 5, 0.3, 7.0, final_bike_boxes);
 	//copy resulting boxes to output message
 	out_boxes.boxes.clear();
 

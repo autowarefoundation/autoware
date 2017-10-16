@@ -102,6 +102,7 @@ if(EXISTS "${CNN_CAFFE_PATH}")
   ADD_EXECUTABLE(cnn_lidar_detector_node
     src/cnn_lidar_detector_node.cpp
     src/cnn_lidar_detector.cpp
+    src/nms.cpp
   )
 
   TARGET_LINK_LIBRARIES(cnn_lidar_detector_node
