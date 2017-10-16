@@ -1,23 +1,23 @@
 #include "nms.hpp"
 
-std::vector<float> Nms(const std::vector<std::vector<float> > &in_boxes,
+std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in_boxes,
                                const float &in_threshold)
 {
 	if (in_boxes.empty())
-		{return std::vector<boost_polygon>();}
+		{return std::vector< std::vector<float> >();}
 
 	// grab the coordinates of the bounding in_boxes CCW
 	std::vector<float> x1 = get_point_from_vector(in_boxes, X_FrontLeft);
 	std::vector<float> y1 = get_point_from_vector(in_boxes, Y_FrontLeft);
+
 	std::vector<float> x2 = get_point_from_vector(in_boxes, X_BackLeft);
 	std::vector<float> y2 = get_point_from_vector(in_boxes, Y_BackLeft);
+
 	std::vector<float> x3 = get_point_from_vector(in_boxes, X_BackRight);
 	std::vector<float> y3 = get_point_from_vector(in_boxes, Y_BackRight);
+
 	std::vector<float> x4 = get_point_from_vector(in_boxes, X_FrontRight);
 	std::vector<float> y4 = get_point_from_vector(in_boxes, Y_FrontRight);
-
-
-	//std::vector<float> distances = get_distances();
 
 	// compute the area of the bounding in_boxes and sort the bounding
 	std::vector<float> area = get_polygon_area(x1, y1, x2, y2, x3, y3, x4, y4);
@@ -45,25 +45,37 @@ std::vector<float> Nms(const std::vector<std::vector<float> > &in_boxes,
 		// for the end of the bounding box
 		auto indices_except_last = remove_last_element(indices);
 
-		auto xx1 = keep_elements_less_than(x1[current_index], copy_by_indices(x1, indices_except_last));
-		auto yy1 = keep_elements_less_than(y1[current_index], copy_by_indices(y1, indices_except_last));
-		auto xx2 = keep_elements_larger_than(x2[current_index], copy_by_indices(x2, indices_except_last));
-		auto yy2 = keep_elements_larger_than(y2[current_index], copy_by_indices(y2, indices_except_last));
+		auto xx1 = set_elements_to_min_value(x1[current_index], copy_by_indices(x1, indices_except_last));
+		auto yy1 = set_elements_to_min_value(y1[current_index], copy_by_indices(y1, indices_except_last));
+		auto xx3 = set_elements_to_max_value(x3[current_index], copy_by_indices(x3, indices_except_last));
+		auto yy3 = set_elements_to_max_value(y3[current_index], copy_by_indices(y3, indices_except_last));
 
 		// compute the width and height of the bounding box
-		auto w = keep_elements_less_than(0, subtract_element_wise(xx2, xx1));
-		auto h = keep_elements_less_than(0, subtract_element_wise(yy2, yy1));
+		auto w = euclidean_distance(xx1, xx3);
+		auto h = euclidean_distance(yy1, yy3);
 
 		// compute the ratio of overlap
 		auto overlap = divide_element_wise(multiply_element_wise(w, h), copy_by_indices(area, indices_except_last));
 
 		// delete all indexes from the index list that have
-		auto deleteIdxs = keep_by_threshold(overlap, in_threshold);
-		deleteIdxs.push_back(last_index);
-		indices = remove_elements_by_index(indices, deleteIdxs);
+		auto delete_indices = keep_by_threshold(overlap, in_threshold);
+		delete_indices.push_back(last_index);
+		indices = remove_elements_by_index(indices, delete_indices);
 	}
 
-	return BoxesToRectangles(keep_only_indices(in_boxes, selected_indices));
+	return keep_only_indices(in_boxes, selected_indices);
+}
+
+std::vector<float> euclidean_distance(const std::vector<float> &a,
+                                      const std::vector<float> &b)
+{
+	std::vector distances;
+	distances.resize(a.size());
+	for(size_t i=0 ; i < a.size(); i++)
+	{
+		distances[i] = sqrt( (a[i]-b[i])*(a[i]-b[i]) );
+	}
+	return distances;
 }
 
 std::vector<float> get_largest_y(const std::vector<float> &y1,
@@ -137,28 +149,28 @@ std::vector<int> argsort(const std::vector<T> & in_vector)
 	return idx;
 }
 
-std::vector<float> keep_elements_less_than(const float &in_max,
-                                           const std::vector<float> &in_vector)
+std::vector<float> set_elements_to_min_value(const float &in_min_value,
+                                             const std::vector<float> &in_vector)
 {
 	auto maxVec = in_vector;
 	auto len = in_vector.size();
 
 	for (decltype(len) idx = 0; idx < len; ++idx)
-		if (in_vector[idx] < in_max)
-			maxVec[idx] = in_max;
+		if (in_vector[idx] < in_min_value)
+			maxVec[idx] = in_min_value;
 
 	return maxVec;
 }
 
-std::vector<float> keep_elements_larger_than(const float &in_min,
+std::vector<float> set_elements_to_max_value(const float &in_max_value,
                                              const std::vector<float> &in_vector)
 {
 	auto minVec = in_vector;
 	auto len = in_vector.size();
 
 	for (decltype(len) idx = 0; idx < len; ++idx)
-		if (in_vector[idx] > in_min)
-			minVec[idx] = in_min;
+		if (in_vector[idx] > in_max_value)
+			minVec[idx] = in_max_value;
 
 	return minVec;
 }

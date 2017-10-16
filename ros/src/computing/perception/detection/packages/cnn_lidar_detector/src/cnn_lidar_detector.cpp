@@ -174,6 +174,51 @@ void CnnLidarDetector::BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector
 
 }
 
+void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<std::vector<float> > &in_box_corners,
+                                                             unsigned int in_class,
+                                                             jsk_recognition_msgs::BoundingBoxArray &out_jsk_boxes)
+{
+	//          top_front_left      top_front_right
+	//              ----------------
+	//             /               /
+	//            /               /
+	//           /               /
+	//          /               /
+	//         /               /
+	//        /               /
+	//       -----------------
+	//   top_back_left     top_back_right
+
+	for(size_t i=0; i< in_box_corners.size(); i++)
+	{
+		jsk_recognition_msgs::BoundingBox current_jsk_box;
+		current_jsk_box.header = out_jsk_boxes.header;
+
+		current_jsk_box.dimensions.x = sqrt(in_box_corners[i][X_FrontLeft] * in_box_corners[i][X_FrontLeft] -
+		                                in_box_corners[i][X_BackLeft] * in_box_corners[i][X_BackLeft]);
+		current_jsk_box.dimensions.y = sqrt(in_box_corners[i][Y_FrontLeft] * in_box_corners[i][Y_FrontLeft] -
+		                                in_box_corners[i][Y_FrontRight] * in_box_corners[i][Y_FrontRight]);
+		current_jsk_box.dimensions.z = 1.5;//any z would do
+
+		//centroid
+		current_jsk_box.pose.position.x = (in_box_corners[i][X_FrontLeft] + in_box_corners[i][X_BackRight]) / 2;
+		current_jsk_box.pose.position.y = (in_box_corners[i][Y_FrontLeft] + in_box_corners[i][Y_BackRight]) / 2;
+		current_jsk_box.pose.position.z = (1.5) / 2;
+
+		//rotation angle
+		float x_diff = in_box_corners[i][X_FrontLeft] - in_box_corners[i][X_BackRight];
+		float y_diff = in_box_corners[i][Y_FrontLeft] - in_box_corners[i][Y_BackRight];
+		float rotation_angle = atan2(y_diff, x_diff);
+
+		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rotation_angle);
+		tf::quaternionTFToMsg(quat, current_jsk_box.pose.orientation);
+
+		current_jsk_box.label = in_class;
+		current_jsk_box.header = out_jsk_boxes.header;
+		out_jsk_boxes.boxes.push_back(current_jsk_box);
+	}
+}
+
 
 /*void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
               size_t in_min_num_neighbors,
@@ -289,12 +334,15 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	}
 	//apply NMS to boxes
 	std::vector< std::vector<float> > final_cars_boxes, final_person_boxes, final_bike_boxes;
-
-	//ApplyNms(cars_boxes, 5, 0.3, 7.0, final_cars_boxes);
-	//ApplyNms(person_boxes, 5, 0.3, 7.0, final_person_boxes);
-	//ApplyNms(bike_boxes, 5, 0.3, 7.0, final_bike_boxes);
+	final_cars_boxes = Nms(cars_boxes, 0.3);
+	final_person_boxes = Nms(person_boxes, 0.3);
+	final_bike_boxes = Nms(bike_boxes, 0.3);
 	//copy resulting boxes to output message
 	out_boxes.boxes.clear();
+
+	AppendCornersVectorToJskBoundingBoxes(final_cars_boxes, 1, out_boxes);
+	AppendCornersVectorToJskBoundingBoxes(final_person_boxes, 2, out_boxes);
+	AppendCornersVectorToJskBoundingBoxes(final_bike_boxes, 3, out_boxes);
 
 	cv::flip(bgr_channels, out_objectness_image, -1);
 }

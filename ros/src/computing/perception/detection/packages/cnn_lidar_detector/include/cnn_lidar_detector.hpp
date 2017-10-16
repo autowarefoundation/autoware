@@ -58,6 +58,7 @@ private:
 		std::vector<size_t> neighbor_indices;
 		size_t original_index;
 	};
+
 	boost::shared_ptr<caffe::Net<float> > net_;
 	cv::Size 	input_geometry_;
 	int 		num_channels_;
@@ -97,6 +98,10 @@ private:
 	                                        unsigned int in_class,
 	                                        std_msgs::Header& in_header,
 	                                        jsk_recognition_msgs::BoundingBox& out_jsk_box);
+
+	void AppendCornersVectorToJskBoundingBoxes(const std::vector<std::vector<float> > &in_box_corners,
+	                                           unsigned int in_class,
+	                                           jsk_recognition_msgs::BoundingBoxArray &out_jsk_boxes);
 
 	/*void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
 	              size_t in_min_num_neighbors,

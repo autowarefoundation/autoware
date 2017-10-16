@@ -300,7 +300,9 @@ class RosLidarDetectorApp
 		publish_image(publisher_image_y_, ros_image_y, current_sensor_cloud_ptr->header);
 		publish_image(publisher_image_z_, ros_image_z, current_sensor_cloud_ptr->header);
 		publish_image(publisher_objectness_image_, resulting_objectness, current_sensor_cloud_ptr->header);
-		
+
+
+		publisher_boxes_.publish(objects_boxes);
 	}//end cloud_callback
 
 	bool LoadPreProcessingParamsFromMat(std::string in_matfile_path)
