@@ -11,7 +11,7 @@ export default class CameraView extends React.Component {
         };
     }
     render() {
-        const url = ROSVIDEO_URL+"/stream?topic=/image_raw&width="+this.state.width+"&height="+this.state.height+"";
+        const url = ROSVIDEO_URL+"/stream?topic=/image_raw&width="+this.state.width+"&height="+this.state.height+"&type=mjpeg&quality=20";
         //console.log(url);
         return (
             <div>
