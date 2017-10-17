@@ -141,16 +141,9 @@ function deviceChange() {
     var constraints = {
       audio: false,
       video: {
-        width: 1280,
-        height: 720,
+        optional: [{ sourceId: deviceId }],
       }
     };
-    // var constraints = {
-    //   audio: false,
-    //   video: {
-    //     optional: [{ sourceId: deviceId }],
-    //   }
-    // };
   }
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function (stream) {
