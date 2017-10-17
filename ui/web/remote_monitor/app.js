@@ -13,7 +13,7 @@ function convert_remote_cmd(remote_cmd) {
   remote_cmd["gear"] + "," +
   remote_cmd["blinker"] + "," +
   remote_cmd["mode"] + "," +
-  remote_cmd["hev_mode"] + "," +
+  remote_cmd["control_mode"] + "," +
   remote_cmd["emergency"];
 
   return msg;
@@ -98,7 +98,6 @@ io.on('connection', function (socket) {
       var remote_cmd = JSON.parse(message)["remote_cmd"];
       if(remote_cmd != null) {
         var msg = convert_remote_cmd(remote_cmd);
-        console.log('vehicle/' + remote_cmd["vehicle_id"] + "/remote_cmd");
         mqtt_client.publish('vehicle/' + remote_cmd["vehicle_id"] + "/remote_cmd", msg);
       }
     }

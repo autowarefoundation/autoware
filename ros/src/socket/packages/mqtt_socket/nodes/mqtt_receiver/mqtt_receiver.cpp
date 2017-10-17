@@ -68,7 +68,7 @@ MqttReceiver::MqttReceiver() :
     node_handle_("~")
 {
   // ROS Publisher
-  remote_cmd_pub_ = node_handle_.advertise<autoware_msgs::RemoteCmd>("/remote_cmd", 5);
+  remote_cmd_pub_ = node_handle_.advertise<autoware_msgs::RemoteCmd>("/remote_cmd", 1);
 
   // MQTT PARAMS
   mosquitto_lib_init();
@@ -124,7 +124,6 @@ static void MqttReceiver::on_disconnect(struct mosquitto *mosq, void *obj, int r
 static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message)
 {
   if(message->payloadlen) {
-    ROS_INFO("%s ", message->topic);
     std::string delim (",");
     std::string msg_str((char *)message->payload, message->payloadlen);
     std::vector<std::string> cmds;
@@ -136,9 +135,9 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
       msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
       msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
       msg.gear = std::stoi(cmds[3]);
-      int blinker = std::stoi(cmds[4]);
+      msg.blinker = std::stoi(cmds[4]);
       msg.mode = std::stoi(cmds[5]);
-      int hev_mode = std::stoi(cmds[6]);
+      msg.control_mode = std::stoi(cmds[6]);
       msg.emergency = std::stoi(cmds[7]);
       remote_cmd_pub_.publish(msg);
     }

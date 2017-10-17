@@ -46,6 +46,7 @@ struct CommandData {
   double angular_z;
   int modeValue;
   int gearValue;
+  int blinkerValue;
   int accellValue;
   int brakeValue;
   int steerValue;
@@ -57,13 +58,14 @@ struct CommandData {
 
 void CommandData::reset()
 {
-  linear_x    = 0;
-  angular_z   = 0;
-  modeValue   = 0;
-  gearValue   = 0;
-  accellValue = 0;
-  brakeValue  = 0;
-  steerValue  = 0;
+  linear_x      = 0;
+  angular_z     = 0;
+  modeValue     = 0;
+  gearValue     = 0;
+  blinkerValue  = 0;
+  accellValue   = 0;
+  brakeValue    = 0;
+  steerValue    = 0;
   linear_velocity = -1;
   steering_angle = 0;
 }
@@ -76,6 +78,7 @@ static void twistGateCallback(const autoware_msgs::TwistGate& msg)
   command_data.angular_z = msg.angular_z;
   command_data.modeValue = msg.mode;
   command_data.gearValue = msg.gear;
+  command_data.blinkerValue = msg.blinker;
   command_data.accellValue = msg.accel;
   command_data.steerValue = msg.steer;
   command_data.brakeValue = msg.brake;

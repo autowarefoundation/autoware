@@ -80,7 +80,7 @@ class TwistGate
     ros::Duration timeout_period_;
 
     std::thread watchdog_timer_thread_;
-    enum class CommandMode{AUTO=3, REMOTE=4} command_mode_;
+    enum class CommandMode{AUTO=1, REMOTE=2} command_mode_;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh) :
@@ -121,6 +121,7 @@ void TwistGate::reset_select_cmd_msg()
   twist_gate_msg_.angular_z       = 0;
   twist_gate_msg_.mode            = 0;
   twist_gate_msg_.gear            = 0;
+  twist_gate_msg_.blinker         = 0;
   twist_gate_msg_.accel           = 0;
   twist_gate_msg_.brake           = 0;
   twist_gate_msg_.steer           = 0;
@@ -138,20 +139,20 @@ void TwistGate::watchdog_timer()
     // if lost Communication
     if(command_mode_ == CommandMode::REMOTE && now_time - remote_cmd_time_ >  timeout_period_) {
       emergency_flag = true;
-      std::cout << "Lost Communication!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << "Lost Communication!" << std::endl;
     }
 
     if(emergency_stop_msg_.data == true)
     {
       emergency_flag = true;
-      std::cout << "Emergency Mode!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << "Emergency Mode!" << std::endl;
     }
 
     if(emergency_flag) {
       command_mode_ = CommandMode::AUTO;
       emergency_stop_msg_.data = true;
       emergency_stop_pub_.publish(emergency_stop_msg_);
-      std::cout << "Emergency Stop!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+      std::cout << "Emergency Stop!" << std::endl;
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -164,14 +165,12 @@ void TwistGate::watchdog_timer()
 
 void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 {
-  command_mode_ = static_cast<CommandMode>(input_msg->mode);
-  twist_gate_msg_.mode = input_msg->mode;
+  command_mode_ = static_cast<CommandMode>(input_msg->control_mode);
   emergency_stop_msg_.data = static_cast<bool>(input_msg->emergency);
   remote_cmd_time_ = ros::Time::now();
 
   if(command_mode_ == CommandMode::REMOTE)
   {
-    std::cout << "Remote Comannd!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
@@ -181,19 +180,12 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
     twist_gate_msg_.accel = input_msg->accel;
     twist_gate_msg_.brake = input_msg->brake;
     twist_gate_msg_.steer = input_msg->steer;
-    // twist_gate_msg_.gear = input_msg->gear;
-    twist_gate_msg_.gear = 0;
-    // twist_gate_msg_.mode = input_msg->mode;
-    twist_gate_msg_.mode = 0;
+    twist_gate_msg_.gear = input_msg->gear;
+    twist_gate_msg_.blinker = input_msg->blinker;
+    twist_gate_msg_.mode = input_msg->mode;
     twist_gate_msg_.emergency = input_msg->emergency;
     select_cmd_pub_.publish(twist_gate_msg_);
   }
-  // if(twist_gate_msg_.emergency == 1)
-  // {
-  //   emergency_stop_msg_.data = true;
-  //   emergency_stop_pub_.publish(emergency_stop_msg_);
-  //   std::cout << "emergency_stop!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-  // }
 }
 
 void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg)
@@ -280,7 +272,6 @@ void TwistGate::auto_cmd_ctrl_cmd_callback(const autoware_msgs::ControlCommandSt
     twist_gate_msg_.linear_velocity = input_msg->cmd.linear_velocity;
     twist_gate_msg_.steering_angle = input_msg->cmd.steering_angle;
     select_cmd_pub_.publish(twist_gate_msg_);
-    std::cout << "Control Comannd!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   }
 }
 

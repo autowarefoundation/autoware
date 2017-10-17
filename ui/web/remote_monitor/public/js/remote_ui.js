@@ -5,8 +5,8 @@ const MAX_ACCEL_STROKE = 1000;
 const MAX_BRAKE_STROKE = 3000;
 const EMERGENCY_OFF = 0;
 const EMERGENCY_ON = 1;
-const MODE_AUTO_CONTROL = 3;
-const MODE_REMOTE_CONTROL = 4;
+const MODE_AUTO_CONTROL = 1;
+const MODE_REMOTE_CONTROL = 2;
 const TOPIC_CAN_INFO = "/can_info"
 const TOPIC_STATE = "/state"
 const TOPIC_CURRENT_VELOCITY = "/current_velocity"
@@ -20,8 +20,8 @@ let remote_cmd = {
   "gear": 0,
   "blinker": 0,
   "emergency": EMERGENCY_OFF,
-  "mode": MODE_AUTO_CONTROL,
-  "hev_mode": 0,
+  "mode": 0,
+  "control_mode": MODE_AUTO_CONTROL,
 }
 
 let vehicle_info = {}
@@ -45,7 +45,7 @@ window.onload = function() {
   setGear("P");
 
   var send_cmd = function(){
-    if(remote_cmd["mode"] == MODE_REMOTE_CONTROL || remote_cmd["emergency"] == EMERGENCY_ON || publish_flag) {
+    if(remote_cmd["control_mode"] == MODE_REMOTE_CONTROL || remote_cmd["emergency"] == EMERGENCY_ON || publish_flag) {
       signalingChannel.send(JSON.stringify({ "remote_cmd": remote_cmd }));
       publish_flag = false;
     }
@@ -93,8 +93,8 @@ function select_emergency_button(obj) {
 }
 
 function select_mode_button(obj) {
-  remote_cmd["mode"] = remote_cmd["mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
-  console.log('select_mode_button => ' + remote_cmd["mode"]);
+  remote_cmd["control_mode"] = remote_cmd["control_mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
+  console.log('select_mode_button => ' + remote_cmd["control_mode"]);
   publish_flag = true;
 }
 
