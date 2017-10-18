@@ -84,12 +84,12 @@ target_link_libraries(ray_ground_filter
     ${Qt5Core_LIBRARIES}
 )
 
-# Fusion filter
-add_executable(fusion_filter
-	nodes/fusion_filter/fusion_filter.cpp
+# Points Concat filter
+add_executable(points_concat_filter
+	nodes/points_concat_filter/points_concat_filter.cpp
 )
 
-target_link_libraries(fusion_filter
+target_link_libraries(points_concat_filter
 	${catkin_LIBRARIES}
 	${PCL_LIBRARIES}
 )

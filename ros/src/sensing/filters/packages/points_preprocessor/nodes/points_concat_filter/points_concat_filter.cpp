@@ -18,10 +18,10 @@
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 
-class FusionFilter
+class PointsConcatFilter
 {
 public:
-  FusionFilter();
+  PointsConcatFilter();
 
 private:
   typedef pcl::PointXYZI PointT;
@@ -36,17 +36,17 @@ private:
   void callback(const PointCloudT::ConstPtr& msg1, const PointCloudT::ConstPtr& msg2);
 };
 
-FusionFilter::FusionFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("base_link")
+PointsConcatFilter::PointsConcatFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("base_link")
 {
   pnh_.param("sensor_frame", sensor_frame, sensor_frame);
-  sub1_ = new message_filters::Subscriber<PointCloudT>(nh_, "/front/velodyne_points", 1);
-  sub2_ = new message_filters::Subscriber<PointCloudT>(nh_, "/rear/velodyne_points", 1);
+  sub1_ = new message_filters::Subscriber<PointCloudT>(nh_, "/lidar0/points_raw", 1);
+  sub2_ = new message_filters::Subscriber<PointCloudT>(nh_, "/lidar1/points_raw", 1);
   sync_ = new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *sub1_, *sub2_);
-  sync_->registerCallback(boost::bind(&FusionFilter::callback, this, _1, _2));
-  pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_raw", 1);
+  sync_->registerCallback(boost::bind(&PointsConcatFilter::callback, this, _1, _2));
+  pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_concat", 1);
 }
 
-void FusionFilter::callback(const PointCloudT::ConstPtr& msg1, const PointCloudT::ConstPtr& msg2)
+void PointsConcatFilter::callback(const PointCloudT::ConstPtr& msg1, const PointCloudT::ConstPtr& msg2)
 {
   PointCloudT::Ptr cloud1(new PointCloudT);
   PointCloudT::Ptr cloud2(new PointCloudT);
@@ -82,8 +82,8 @@ void FusionFilter::callback(const PointCloudT::ConstPtr& msg1, const PointCloudT
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "fusion_filter");
-  FusionFilter node;
+  ros::init(argc, argv, "points_concat_filter");
+  PointsConcatFilter node;
   ros::spin();
   return 0;
 }

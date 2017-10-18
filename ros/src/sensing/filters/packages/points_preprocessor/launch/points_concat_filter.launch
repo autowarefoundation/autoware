@@ -1,0 +1,15 @@
+<!-- -->
+<launch>
+  <arg name="sensor_frame" default="/base_link" />
+  <arg name="input0" default="/lidar0/points_raw" />
+  <arg name="input1" default="/lidar1/points_raw" />
+  <arg name="output" default="/points_concat" />
+
+  <node pkg="points_preprocessor" type="points_concat_filter"
+        name="points_concat_filter" output="log">
+    <param name="sensor_frame" value="$(arg sensor_frame)" />
+    <remap from="/lidar0/points_raw" to="$(arg input0)" />
+    <remap from="/lidar1/points_raw" to="$(arg input1)" />
+    <remap from="/points_concat" to="$(arg output)" />
+  </node>
+</launch>

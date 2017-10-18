@@ -223,9 +223,9 @@ cmds:
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
 
-    - name : fusion_filter
-      desc : Fusion filter performs merging multiple lidar input
-      cmd  : roslaunch points_preprocessor fusion_filter.launch node_name:=fusion_filter
+    - name : points_concat_filter
+      desc : points_concat_filter filter performs merging multiple lidar input
+      cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
 
 buttons:
   calibration_toolkit :
