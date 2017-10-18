@@ -22,17 +22,18 @@ class FusionFilter
 {
 public:
   FusionFilter();
+
 private:
   typedef pcl::PointXYZI PointT;
   typedef pcl::PointCloud<PointT> PointCloudT;
   typedef message_filters::sync_policies::ApproximateTime<PointCloudT, PointCloudT> SyncPolicy;
   ros::NodeHandle nh_, pnh_;
   message_filters::Subscriber<PointCloudT> *sub1_, *sub2_;
-  message_filters::Synchronizer<SyncPolicy> *sync_;
+  message_filters::Synchronizer<SyncPolicy>* sync_;
   ros::Publisher pub_;
   tf::TransformListener tfl;
   std::string sensor_frame;
-  void callback(const PointCloudT::ConstPtr &msg1, const PointCloudT::ConstPtr &msg2);
+  void callback(const PointCloudT::ConstPtr& msg1, const PointCloudT::ConstPtr& msg2);
 };
 
 FusionFilter::FusionFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("base_link")
@@ -45,23 +46,29 @@ FusionFilter::FusionFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("base_link"
   pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_raw", 1);
 }
 
-void FusionFilter::callback(const PointCloudT::ConstPtr &msg1, const PointCloudT::ConstPtr &msg2)
+void FusionFilter::callback(const PointCloudT::ConstPtr& msg1, const PointCloudT::ConstPtr& msg2)
 {
   PointCloudT::Ptr cloud1(new PointCloudT);
   PointCloudT::Ptr cloud2(new PointCloudT);
   PointCloudT::Ptr cloud(new PointCloudT);
   // transform points
-  try {
+  try
+  {
     tfl.waitForTransform(sensor_frame, msg1->header.frame_id, ros::Time(0), ros::Duration(1.0));
     pcl_ros::transformPointCloud(sensor_frame, *msg1, *cloud1, tfl);
-  } catch (tf::TransformException &ex) {
+  }
+  catch (tf::TransformException& ex)
+  {
     ROS_ERROR("%s", ex.what());
     return;
   }
-  try {
+  try
+  {
     tfl.waitForTransform(sensor_frame, msg2->header.frame_id, ros::Time(0), ros::Duration(1.0));
     pcl_ros::transformPointCloud(sensor_frame, *msg2, *cloud2, tfl);
-  } catch (tf::TransformException &ex) {
+  }
+  catch (tf::TransformException& ex)
+  {
     ROS_ERROR("%s", ex.what());
     return;
   }
@@ -73,9 +80,9 @@ void FusionFilter::callback(const PointCloudT::ConstPtr &msg1, const PointCloudT
   pub_.publish(cloud);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "fusion_filter");
+  ros::init(argc, argv, "fusion_filter");
   FusionFilter node;
   ros::spin();
   return 0;
