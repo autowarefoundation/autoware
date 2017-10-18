@@ -39,9 +39,11 @@ std::vector<float> get_largest_y(const std::vector<float> &y1,
                                  const std::vector<float> &y3,
                                  const std::vector<float> &y4);
 
-std::vector<float> euclidean_distance(const std::vector<float> &a,
-                                      const std::vector<float> &b);
+std::vector<float> euclidean_distance_1d(const std::vector<float> &a,
+                                         const std::vector<float> &b);
 
+std::vector<float> euclidean_distance_2d(const std::vector<float> &x1, const std::vector<float> &y1,
+                                         const std::vector<float> &x2, const std::vector<float> &y2);
 
 std::vector<size_t> argsort(std::vector<float> & v);
 

@@ -20,8 +20,8 @@ std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in
 	std::vector<float> y4 = get_point_from_vector(in_boxes, Y_FrontRight);
 
 	// compute the area of the bounding in_boxes and sort the bounding
-	std::vector<float> ww = euclidean_distance(x1, x2);
-	std::vector<float> hh = euclidean_distance(x2, x3);
+	std::vector<float> ww = euclidean_distance_2d(x1, y1, x2, y2);
+	std::vector<float> hh = euclidean_distance_2d(x2, y2, x3, y3);
 	std::vector<float> area = multiply_element_wise(ww,hh);//get_polygon_area(x1, y1, x2, y2, x3, y3, x4, y4);
 	//sort the bounding in_boxes by the bottom-right y-coordinate of the bounding box
 	//first get the largest Y point
@@ -49,12 +49,14 @@ std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in
 
 		auto xx1 = set_elements_to_min_value(x1[current_index], copy_by_indices(x1, indices_except_last));
 		auto yy1 = set_elements_to_min_value(y1[current_index], copy_by_indices(y1, indices_except_last));
+		auto xx2 = set_elements_to_min_value(x2[current_index], copy_by_indices(x2, indices_except_last));
+		auto yy2 = set_elements_to_min_value(y2[current_index], copy_by_indices(y2, indices_except_last));
 		auto xx3 = set_elements_to_max_value(x3[current_index], copy_by_indices(x3, indices_except_last));
 		auto yy3 = set_elements_to_max_value(y3[current_index], copy_by_indices(y3, indices_except_last));
 
 		// compute the width and height of the bounding box
-		auto w = euclidean_distance(xx1, xx3);
-		auto h = euclidean_distance(yy1, yy3);
+		auto w = euclidean_distance_2d(xx1, yy1, xx2, yy2);
+		auto h = euclidean_distance_2d(xx2, yy2, xx3, yy3);
 
 		// compute the ratio of overlap
 		auto overlap = divide_element_wise(multiply_element_wise(w, h), copy_by_indices(area, indices_except_last));
@@ -68,14 +70,26 @@ std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in
 	return keep_only_indices(in_boxes, selected_indices);
 }
 
-std::vector<float> euclidean_distance(const std::vector<float> &a,
-                                      const std::vector<float> &b)
+std::vector<float> euclidean_distance_1d(const std::vector<float> &a,
+                                         const std::vector<float> &b)
 {
 	std::vector<float> distances;
 	distances.resize(a.size());
 	for(size_t i=0 ; i < a.size(); i++)
 	{
 		distances[i] = sqrt( (a[i]-b[i])*(a[i]-b[i]) );
+	}
+	return distances;
+}
+
+std::vector<float> euclidean_distance_2d(const std::vector<float> &x1, const std::vector<float> &y1,
+                                         const std::vector<float> &x2, const std::vector<float> &y2)
+{
+	std::vector<float> distances;
+	distances.resize(x1.size());
+	for(size_t i=0 ; i < x1.size(); i++)
+	{
+		distances[i] = sqrt( (x1[i]-x2[i])*(x1[i]-x2[i]) + (y1[i]-y2[i])*(y1[i]-y2[i]) );
 	}
 	return distances;
 }
