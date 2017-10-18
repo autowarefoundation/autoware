@@ -37,7 +37,7 @@ private:
   void callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2);
 };
 
-PointsConcatFilter::PointsConcatFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("base_link")
+PointsConcatFilter::PointsConcatFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("lidar_base")
 {
   pnh_.param("sensor_frame", sensor_frame, sensor_frame);
   sub1_ = new message_filters::Subscriber<PointCloudMsgT>(nh_, "/lidar0/points_raw", 1);
@@ -53,7 +53,7 @@ void PointsConcatFilter::callback(const PointCloudMsgT::ConstPtr& msg1, const Po
   PointCloudT::Ptr cloud1(new PointCloudT);
   PointCloudT::Ptr cloud2(new PointCloudT);
 
-  // Note: If use kinetic, you can directly receive messages as PointCloutT.
+  // Note: If you use kinetic, you can directly receive messages as PointCloutT.
   pcl::fromROSMsg(*msg1, *cloud1);
   pcl::fromROSMsg(*msg2, *cloud2);
 

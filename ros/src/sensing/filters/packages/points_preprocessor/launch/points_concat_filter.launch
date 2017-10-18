@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-  <arg name="sensor_frame" default="/base_link" />
+  <arg name="sensor_frame" default="/lidar_base" />
   <arg name="input0" default="/lidar0/points_raw" />
   <arg name="input1" default="/lidar1/points_raw" />
   <arg name="output" default="/points_concat" />
