@@ -15,6 +15,9 @@ $ sudo apt-get install nodejs npm
 $ npm install
 ```
 
+- controler
+  - Logicool G29 Driving Force
+
 ## Running
 ```
 $ node app.js
