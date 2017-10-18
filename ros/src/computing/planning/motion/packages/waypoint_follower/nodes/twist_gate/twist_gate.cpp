@@ -35,6 +35,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/String.h>
 #include <geometry_msgs/TwistStamped.h>
 
 #include "autoware_msgs/RemoteCmd.h"
@@ -70,6 +71,7 @@ class TwistGate
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     ros::Publisher emergency_stop_pub_;
+    ros::Publisher control_command_pub_;
     ros::Publisher select_cmd_pub_;
     ros::Subscriber remote_cmd_sub_;
     std::map<std::string , ros::Subscriber> auto_cmd_sub_stdmap_;
@@ -80,16 +82,19 @@ class TwistGate
     ros::Duration timeout_period_;
 
     std::thread watchdog_timer_thread_;
-    enum class CommandMode{AUTO=1, REMOTE=2} command_mode_;
+    enum class CommandMode{AUTO=1, REMOTE=2} command_mode_, previous_command_mode_;
+    std_msgs::String command_mode_topic_;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh) :
      nh_(nh)
     ,private_nh_(private_nh)
     ,timeout_period_(1.0)
-    ,command_mode_(CommandMode::REMOTE)
+    ,command_mode_(CommandMode::AUTO)
+    ,previous_command_mode_(CommandMode::AUTO)
 {
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
+  control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   select_cmd_pub_ = nh_.advertise<twist_gate_msgs_t>("/select_cmd", 1, true);
 
   remote_cmd_sub_ = nh_.subscribe("/remote_cmd", 1, &TwistGate::remote_cmd_callback, this);
@@ -136,18 +141,36 @@ void TwistGate::watchdog_timer()
     ros::Time now_time = ros::Time::now();
     bool emergency_flag = false;
 
+    // check command mode
+    if(previous_command_mode_ != command_mode_) {
+      if(command_mode_ == CommandMode::AUTO) {
+        command_mode_topic_.data = "AUTO";
+      }
+      else if(command_mode_ == CommandMode::REMOTE) {
+        command_mode_topic_.data = "REMOTE";
+      }
+      else{
+        command_mode_topic_.data = "UNDEFINED";
+      }
+
+      control_command_pub_.publish(command_mode_topic_);
+      previous_command_mode_ = command_mode_;
+    }
+
     // if lost Communication
     if(command_mode_ == CommandMode::REMOTE && now_time - remote_cmd_time_ >  timeout_period_) {
       emergency_flag = true;
       std::cout << "Lost Communication!" << std::endl;
     }
 
+    // if push emergency stop button
     if(emergency_stop_msg_.data == true)
     {
       emergency_flag = true;
       std::cout << "Emergency Mode!" << std::endl;
     }
 
+    // Emergency
     if(emergency_flag) {
       command_mode_ = CommandMode::AUTO;
       emergency_stop_msg_.data = true;
@@ -156,10 +179,6 @@ void TwistGate::watchdog_timer()
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    std::cout << "c_mode:"     << static_cast<int>(command_mode_)
-              << " e_stop:"    << static_cast<bool>(emergency_stop_msg_.data)
-              << " diff_time:" << (now_time - remote_cmd_time_).toSec()
-              << std::endl;
   }
 }
 
