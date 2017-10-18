@@ -13,7 +13,7 @@
 #define REMOTE_MODE     2
 #define NORMAL_MODE     0
 #define EMERGENCY_MODE  1
-#define ACCEL_MAX_VAL   5 // km/h
+#define ACCEL_MAX_VAL   15 * 1000 / 60 / 60 // 15 km/h
 #define BRAKE_MAX_VAL   10000
 #define STEER_MAX_VAL   0.6
 #define DOWNSAMPLE      0.1
