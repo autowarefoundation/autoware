@@ -42,8 +42,8 @@ std::vector<float> get_largest_y(const std::vector<float> &y1,
 std::vector<float> euclidean_distance(const std::vector<float> &a,
                                       const std::vector<float> &b);
 
-template <typename T>
-std::vector<int> argsort(const std::vector<T> & v);
+
+std::vector<size_t> argsort(std::vector<float> & v);
 
 std::vector<float> set_elements_to_min_value(const float &,
                                              const std::vector<float> &);
@@ -52,9 +52,9 @@ std::vector<float> set_elements_to_max_value(const float &,
                                              const std::vector<float> &);
 
 std::vector<float> copy_by_indices(const std::vector<float> &,
-                                   const std::vector<int> &);
+                                   const std::vector<size_t> &);
 
-std::vector<int> remove_last_element(const std::vector<int> &);
+std::vector<size_t> remove_last_element(const std::vector<size_t> &);
 
 std::vector<float> subtract_element_wise(const std::vector<float> &,
                                          const std::vector<float> &);
@@ -65,16 +65,16 @@ std::vector<float> multiply_element_wise(const std::vector<float> &,
 std::vector<float> divide_element_wise(const std::vector<float> &,
                                        const std::vector<float> &);
 
-std::vector<int> keep_by_threshold(const std::vector<float> &,
+std::vector<size_t> keep_by_threshold(const std::vector<float> &,
                                    const float &);
 
-std::vector<int> remove_elements_by_index(const std::vector<int> &,
-                                          const std::vector<int> &);
+std::vector<size_t> remove_elements_by_index(const std::vector<size_t> &,
+                                          const std::vector<size_t> &);
 
 std::vector< std::vector<float> > BoxesToRectangles(const std::vector< std::vector<float> > &);
 
 template <typename T>
 std::vector<T> keep_only_indices(const std::vector<T> &,
-                                 const std::vector<int> &);
+                                 const std::vector<size_t> &);
 
 #endif // NMS_HPP_

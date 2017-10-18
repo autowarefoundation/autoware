@@ -100,9 +100,11 @@ class RosLidarDetectorApp
 			}
 		}
 		if (0 == elements)
-			{return 0.;}
+			{mean =  0.;}
 		else
-			{return mean/elements;}
+			{mean/=elements;}
+		std::cout<<"mean: " << mean << std::endl;
+		return mean;
 	}
 
 	float get_image_stddev(const cv::Mat& in_image, float in_mean)
@@ -117,9 +119,11 @@ class RosLidarDetectorApp
 			}
 		}
 		if (0 == elements)
-			{return 0.;}
+			{std= 0.;}
 		else
-			{return sqrt(std/(elements-1));}
+			{std= sqrt(std/(elements-1));}
+		std::cout << "std:" << std << std::endl;
+		return std;
 	}
 
 	//Project 3D PointCloud to Image using a Cylindrical representation
@@ -247,7 +251,7 @@ class RosLidarDetectorApp
 		float range_mean, x_mean, y_mean, z_mean, intensity_mean;//range, x, y ,z, intensity
 		float range_stddev, x_stddev, y_stddev, z_stddev, intensity_stddev;//range, x, y ,z, intensity
 
-		intensity_mean = get_image_mean(projected_cloud_intensity);
+		/*intensity_mean = get_image_mean(projected_cloud_intensity);
 		subtract_image(projected_cloud_intensity, intensity_mean);
 		intensity_stddev = get_image_stddev(projected_cloud_intensity, intensity_mean);
 		divide_image(projected_cloud_intensity, intensity_stddev);
@@ -270,8 +274,15 @@ class RosLidarDetectorApp
 		z_mean = get_image_mean(projected_cloud_z);
 		subtract_image(projected_cloud_z, z_mean);
 		z_stddev = get_image_stddev(projected_cloud_z, z_mean);
-		divide_image(projected_cloud_z, z_stddev);
+		divide_image(projected_cloud_z, z_stddev);*/
 
+		// subtract mean
+		subtract_image(projected_cloud_range, projection_mean_depth_.at<float>(0));
+		subtract_image(projected_cloud_z, projection_mean_height_.at<float>(0));//
+		// divide std devjsk_recognition_msgs::BoundingBoxArray objects_boxes;
+		divide_image(projected_cloud_range, projection_std_dev_depth_.at<float>(0));
+		divide_image(projected_cloud_z, projection_std_dev_height_.at<float>(0));
+		
 		//use image for CNN forward
 		jsk_recognition_msgs::BoundingBoxArray objects_boxes;
 		objects_boxes.header = in_sensor_cloud->header;
@@ -292,7 +303,6 @@ class RosLidarDetectorApp
 		post_process_image(projected_cloud_x, ros_image_x);
 		post_process_image(projected_cloud_y, ros_image_y);
 		post_process_image(projected_cloud_z, ros_image_z);
-
 
 		publish_image(publisher_intensity_image_, ros_image_intensity, current_sensor_cloud_ptr->header);
 		publish_image(publisher_image_range_, ros_image_range, current_sensor_cloud_ptr->header);
@@ -470,8 +480,8 @@ public:
 
 		horizontal_res_ = DEG2RAD(horizontal_res_sensor);//Angular Resolution in rads (Horizontal/Azimuth)
 		vertical_res_ 	= DEG2RAD(vertical_res_sensor);//Vertical Resolution HDL
-		image_width_ 	= 501;//(horizontal_fov / horizontal_res_) + 1;//501
-		image_height_ 	= 90;//(DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
+		image_width_ 	= 501;//512;//(horizontal_fov / horizontal_res_) + 1;//501
+		image_height_ 	= 90;//64;//(DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
 
 	}
 };

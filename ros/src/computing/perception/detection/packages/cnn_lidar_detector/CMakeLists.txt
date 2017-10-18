@@ -95,7 +95,7 @@ target_link_libraries(matlab_io
 
 #####CNN LIDAR########
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
-set(CNN_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
+set(CNN_CAFFE_PATH "$ENV{HOME}/caffe/distribute")
 ####################################################################################################
 if(EXISTS "${CNN_CAFFE_PATH}")
 
@@ -122,5 +122,5 @@ if(EXISTS "${CNN_CAFFE_PATH}")
     include
   )
 else()
-  message("'SSD/Caffe' is not installed. 'cnn_lidar_detector' will not be built.")
+  message("'Caffe' is not installed. 'cnn_lidar_detector' will not be built.")
 endif()

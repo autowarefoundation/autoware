@@ -20,16 +20,18 @@ std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in
 	std::vector<float> y4 = get_point_from_vector(in_boxes, Y_FrontRight);
 
 	// compute the area of the bounding in_boxes and sort the bounding
-	std::vector<float> area = get_polygon_area(x1, y1, x2, y2, x3, y3, x4, y4);
+	std::vector<float> ww = euclidean_distance(x1, x2);
+	std::vector<float> hh = euclidean_distance(x2, x3);
+	std::vector<float> area = multiply_element_wise(ww,hh);//get_polygon_area(x1, y1, x2, y2, x3, y3, x4, y4);
 	//sort the bounding in_boxes by the bottom-right y-coordinate of the bounding box
 	//first get the largest Y point
 	std::vector<float> max_y = get_largest_y(y1, y2, y3, y4);
-	//std::vector<int> idxs = argsort(y2);
-	std::vector<int> indices = argsort(max_y);
-  
-	int last_index;
-	int current_index;
-	std::vector<int> selected_indices;
+	//std::vector<size_t> idxs = argsort(y2);
+	std::vector<size_t> indices = argsort(max_y);
+
+	size_t last_index;
+	size_t current_index;
+	std::vector<size_t> selected_indices;
 
 	// keep looping while some indexes still remain in the indexes list
 	while (indices.size() > 0)
@@ -69,7 +71,7 @@ std::vector< std::vector<float> > Nms(const std::vector<std::vector<float> > &in
 std::vector<float> euclidean_distance(const std::vector<float> &a,
                                       const std::vector<float> &b)
 {
-	std::vector distances;
+	std::vector<float> distances;
 	distances.resize(a.size());
 	for(size_t i=0 ; i < a.size(); i++)
 	{
@@ -90,17 +92,18 @@ std::vector<float> get_largest_y(const std::vector<float> &y1,
 		std::vector<float> tmp = {y1[i], y2[i], y3[i], y4[i]};
 		largest_y[i] = *std::max_element(tmp.begin(), tmp.end());
 	}
+	return largest_y;
 }
 
 std::vector<float> get_point_from_vector(const std::vector< std::vector<float> > &rect,
                                          const PointInRectangle &pos)
 {
-  std::vector<float> points;
-  
-  for (const auto & p: rect)
-    points.push_back(p[pos]);
-  
-  return points;
+	std::vector<float> points;
+
+	for (const auto & p: rect)
+	points.push_back(p[pos]);
+
+	return points;
 }
 
 std::vector<float> get_polygon_area(const std::vector<float> &x1,
@@ -129,22 +132,23 @@ std::vector<float> get_polygon_area(const std::vector<float> &x1,
 	return areas;
 }
 
+
 /*!
  * Returns the indices that would sort @param in_vector
  * @tparam T Type of the vector
  * @param in_vector Vector to be ordered
  * @return The ordered indices
  */
-template <typename T>
-std::vector<int> argsort(const std::vector<T> & in_vector)
+std::vector<size_t> argsort(std::vector<float> & in_vector)
 {
 	// initialize original index locations
-	std::vector<int> idx(in_vector.size());
+	std::vector<size_t> idx(in_vector.size());
 	std::iota(idx.begin(), idx.end(), 0);
 
 	// sort indexes based on comparing values in v
-	sort(idx.begin(), idx.end(),
-	   [&in_vector](T i1, T i2) {return in_vector[i1] < in_vector[i2];});
+	std::sort(idx.begin(), idx.end(),
+	          [&](size_t i1, size_t i2) {return in_vector[i1] < in_vector[i2];});
+
 
 	return idx;
 }
@@ -176,7 +180,7 @@ std::vector<float> set_elements_to_max_value(const float &in_max_value,
 }
 
 std::vector<float> copy_by_indices(const std::vector<float> &in_vector,
-                                   const std::vector<int> &in_indices)
+                                   const std::vector<size_t> &in_indices)
 {
 	std::vector<float> resultVec;
 
@@ -186,7 +190,7 @@ std::vector<float> copy_by_indices(const std::vector<float> &in_vector,
 	return resultVec;
 }
 
-std::vector<int> remove_last_element(const std::vector<int> &in_vector)
+std::vector<size_t> remove_last_element(const std::vector<size_t> &in_vector)
 {
 	auto resultVec = in_vector;
 	resultVec.erase(resultVec.end()-1);
@@ -229,10 +233,10 @@ std::vector<float> divide_element_wise(const std::vector<float> &vec1,
 	return resultVec;
 }
 
-std::vector<int> keep_by_threshold(const std::vector<float> &in_vector,
+std::vector<size_t> keep_by_threshold(const std::vector<float> &in_vector,
                                    const float &in_threshold)
 {
-	std::vector<int> resultVec;
+	std::vector<size_t> resultVec;
 	auto len = in_vector.size();
 
 	for (decltype(len) index = 0; index < len; ++index)
@@ -244,8 +248,8 @@ std::vector<int> keep_by_threshold(const std::vector<float> &in_vector,
 	return resultVec;
 }
 
-std::vector<int> remove_elements_by_index(const std::vector<int> &in_vector,
-                                          const std::vector<int> &indices)
+std::vector<size_t> remove_elements_by_index(const std::vector<size_t> &in_vector,
+                                          const std::vector<size_t> &indices)
 {
 	auto resultVec = in_vector;
 	auto offset = 0;
@@ -272,7 +276,7 @@ std::vector< std::vector<float> > BoxesToRectangles(const std::vector< std::vect
 
 template <typename T>
 std::vector<T> keep_only_indices(const std::vector<T> &in_vector,
-                                 const std::vector<int> &in_indices)
+                                 const std::vector<size_t> &in_indices)
 {
 	std::vector<T> resultVec;
   

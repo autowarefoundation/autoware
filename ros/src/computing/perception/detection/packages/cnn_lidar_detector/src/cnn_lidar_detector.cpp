@@ -203,7 +203,7 @@ void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<s
 		//centroid
 		current_jsk_box.pose.position.x = (in_box_corners[i][X_FrontLeft] + in_box_corners[i][X_BackRight]) / 2;
 		current_jsk_box.pose.position.y = (in_box_corners[i][Y_FrontLeft] + in_box_corners[i][Y_BackRight]) / 2;
-		current_jsk_box.pose.position.z = (1.5) / 2;
+		current_jsk_box.pose.position.z = (-1.7) / 2;
 
 		//rotation angle
 		float x_diff = in_box_corners[i][X_FrontLeft] - in_box_corners[i][X_BackRight];
@@ -334,10 +334,16 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	}
 	//apply NMS to boxes
 	std::vector< std::vector<float> > final_cars_boxes, final_person_boxes, final_bike_boxes;
-	final_cars_boxes = Nms(cars_boxes, 0.3);
-	final_person_boxes = Nms(person_boxes, 0.3);
-	final_bike_boxes = Nms(bike_boxes, 0.3);
+	final_cars_boxes = Nms(cars_boxes, 0.1);
+	final_person_boxes = Nms(person_boxes, 0.1);
+	final_bike_boxes = Nms(bike_boxes, 0.1);
+	/*final_cars_boxes = cars_boxes;
+	final_person_boxes = person_boxes;
+	final_bike_boxes = bike_boxes;*/
 	//copy resulting boxes to output message
+	std::cout << "in_boxes_cars: " << cars_boxes.size() << ", after_nms:" << final_cars_boxes.size() << std::endl <<
+	             "in_boxes_person: " << person_boxes.size() << ", after_nms:" << final_person_boxes.size() << std::endl <<
+				 "in_boxes_bike: " << bike_boxes.size() << ", after_nms:" << final_bike_boxes.size() << std::endl ;
 	out_boxes.boxes.clear();
 
 	AppendCornersVectorToJskBoundingBoxes(final_cars_boxes, 1, out_boxes);
@@ -358,6 +364,7 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_image_intensity,
 	cv::Mat intensity_resized, range_resized;
 	cv::Mat x_resized, y_resized, z_resized;
 
+	//V2
 	intensity_resized = resize_image(in_image_intensity, input_geometry_);
 	range_resized = resize_image(in_image_range, input_geometry_);
 	x_resized = resize_image(in_image_x, input_geometry_);
@@ -365,11 +372,15 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_image_intensity,
 	z_resized = resize_image(in_image_z, input_geometry_);
 
 	//put each corrected mat geometry onto the correct input layer type pointers
-	intensity_resized.copyTo(in_out_channels->at(0));
+	/*intensity_resized.copyTo(in_out_channels->at(0));
 	range_resized.copyTo(in_out_channels->at(1));
 	x_resized.copyTo(in_out_channels->at(2));
 	y_resized.copyTo(in_out_channels->at(3));
-	z_resized.copyTo(in_out_channels->at(4));
+	z_resized.copyTo(in_out_channels->at(4));*/
+
+	//V1
+	range_resized.copyTo(in_out_channels->at(0));
+	z_resized.copyTo(in_out_channels->at(1));
 
 	//check that the pre processed and resized mat pointers correspond to the pointers of the input layers
 	CHECK(reinterpret_cast<float*>(in_out_channels->at(0).data) == net_->input_blobs()[0]->cpu_data())	<< "Input channels are not wrapping the input layer of the network.";
