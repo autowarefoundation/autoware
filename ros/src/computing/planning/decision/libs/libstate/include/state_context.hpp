@@ -5,6 +5,7 @@
 #include <iostream>
 #include <queue>
 #include <thread>
+#include <mutex>
 #include <unordered_map>
 #include <utility>
 #include "state.hpp"
@@ -38,10 +39,14 @@ private:
 
   std::thread *thr_state_dec;
 
+
+  std::mutex change_state_mutex;
+
   void showStateMove(unsigned long long _state_num)
   {
     std::cout << "State will be [" << StateStores[_state_num]->getStateName() << "]" << std::endl;
   }
+
 
 public:
   StateContext(void)

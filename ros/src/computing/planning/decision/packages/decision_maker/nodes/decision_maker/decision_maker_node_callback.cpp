@@ -42,13 +42,17 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 
 bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 {
-  return ctx->setCurrentState((state_machine::StateFlags)_state_num);
+  bool _ret;
+  ctx->setEnableForceSetState(true);
+  _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
+  ctx->setEnableForceSetState(false);
+  return _ret;
 }
 
 void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 {
   ROS_INFO("Received forcing state changing request");
-  handleStateCmd((unsigned long long)msg.data);
+  handleStateCmd((unsigned long long) 1 << msg.data);
 }
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)

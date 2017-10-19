@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <cassert>
+#include <mutex>
 
 #include <euclidean_space.hpp>
 #include <state_context.hpp>
@@ -62,6 +63,7 @@ std::string StateContext::getCurrentStateName(void)
  */
 bool StateContext::setCurrentState(BaseState *_state)
 {
+  change_state_mutex.lock();
   BaseState *prevState = current_state_.MainState;
 
   if (!prevState)
@@ -113,9 +115,11 @@ bool StateContext::setCurrentState(BaseState *_state)
                 << _state->getStateName() << "\" : Mask is [" << _state->getStateTransMask() << "/"
                 << current_state_.MainState->getStateNum() << "-" << _state->getStateNum() << "]" << std::endl;
       prevState = nullptr;
+      change_state_mutex.unlock();
       return false;
     }
   }
+  change_state_mutex.unlock();
   return true;
 }
 

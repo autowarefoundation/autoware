@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <ros/spinner.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/String.h>
@@ -43,6 +44,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
   Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
   Subs["change_flag"] = nh_.subscribe("change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
+  Subs["state_cmd"] = nh_.subscribe("state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
 
   // vector map subscriber
   Subs["vector_map_area"] =
@@ -87,8 +89,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   {
     std::cout << "wait for tf of map to world" << std::endl;
     tf::TransformListener tf;
-    tf.waitForTransform("map", "world", ros::Time(), ros::Duration(999));
-
+    
+    tf.waitForTransform("map", "world", ros::Time(), ros::Duration(15));
     if (!ctx->TFInitialized())
       std::cerr << "failed initialization " << std::endl;
   }
