@@ -382,6 +382,9 @@ class MyFrame(rtmgr.MyFrame):
                 #
                 # for State tab
                 #
+                tab = self.tab_states
+                self.all_tabs.append(tab)
+                
                 self.state_dic = self.load_yaml('state.yaml')
                 self.mainstate_dic = self.state_dic["mainstate"]
                 self.substate_dic = self.state_dic["substate"]
