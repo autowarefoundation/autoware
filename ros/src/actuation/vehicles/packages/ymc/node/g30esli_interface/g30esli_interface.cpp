@@ -122,7 +122,14 @@ void readCanData(FILE* fp)
       data.erase(data.begin(), data.begin() + 3);
 
       int id = std::stoi(parsed_data.at(1), nullptr, 10);
-      ymc::translateCanData(id, data, g_current_twist_pub, &g_mode);
+      double _current_vel_mps = ymc::translateCanData(id, data, &g_mode);
+      if(_current_vel_mps != RET_NO_PUBLISH )
+      {
+	      geometry_msgs::TwistStamped ts;
+	      ts.twist.linear.x = _current_vel_mps;
+	      g_current_twist_pub.publish(ts);
+      } 
+      
     }
 
   }

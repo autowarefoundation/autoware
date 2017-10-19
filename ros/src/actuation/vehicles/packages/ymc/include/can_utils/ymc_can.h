@@ -33,15 +33,15 @@
 
 #include <iostream>
 #include <cstring>
+#include <vector>
 
-#include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
+#define RET_NO_PUBLISH (double)-1.0
 
 namespace ymc
 {
 
 void setCanData(unsigned char* data, unsigned char d1, unsigned char d2, uint16_t d3, int16_t d4, unsigned char d5, unsigned char d6);
-void translateCanData(const int id, const std::vector<std::string>& data, const ros::Publisher& pub1, int* mode);
+double translateCanData(const int id, const std::vector<std::string>& data, int* mode);
 
 }
 
