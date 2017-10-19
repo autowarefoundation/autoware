@@ -2,6 +2,11 @@
 Changelog for package euc
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+* fix a build error by gcc version
+* Contributors: Yusuke FUJII
+
 1.5.0 (2017-09-21)
 ------------------
 * apply clang-format
