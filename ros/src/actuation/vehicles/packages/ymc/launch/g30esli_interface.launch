@@ -6,7 +6,7 @@
   <arg name="stop_time_sec" default="2"/>
 
   <!-- Execute Autoware communicator -->
-  <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="screen">
+  <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="log">
     <param name="wheel_base" value="$(arg wheel_base)"/>
     <param name="mode" value="$(arg mode)"/>
     <param name="device" value="$(arg device)"/>
