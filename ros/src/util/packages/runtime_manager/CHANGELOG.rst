@@ -2,6 +2,9 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
 1.5.0 (2017-09-21)
 ------------------
 * Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
