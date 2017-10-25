@@ -125,7 +125,8 @@ void publishImage(cv::Mat& image, ros::Publisher& image_pub, long int& count)
 	msg.header.frame_id = "camera";
 	msg.header.stamp.sec = ros::Time::now().sec; msg.header.stamp.nsec = ros::Time::now().nsec;
 	msg.height = image.size().height; msg.width  = image.size().width;
-	msg.encoding = "rgb8";
+	//msg.encoding = "rgb8";
+	msg.encoding = "bayer_bggr8";
 	msg.step = image.cols * image.elemSize();
 	size_t image_size = image.rows * image.cols * image.elemSize();
 
@@ -316,8 +317,8 @@ int main (int argc, char **argv)
 	}
 	else
 	{
-		ROS_INFO("Ladybug ImageScale scale must be (0,100]. Defaulting to 100 ");
-		image_scale=100;
+		ROS_INFO("Ladybug ImageScale scale must be (0,100]. Defaulting to 20 ");
+		image_scale=20;
 	}
 
 	ros::Publisher camera_info_pub;
@@ -359,18 +360,18 @@ int main (int argc, char **argv)
 			out << "image" << i;
 			cv::Mat rawImage(size, CV_8UC1, currentImage.pData + (i * size.width*size.height));
 			//cv::flip(mat, mat, -1);
-			cv::Mat image(size, CV_8UC3);
-			cv::cvtColor(rawImage, image, cv::COLOR_BayerBG2RGB);
-			cv::resize(image,image,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
-			cv::transpose(image, image);
+			//cv::Mat image(size, CV_8UC3);
+			//cv::cvtColor(rawImage, image, cv::COLOR_BayerBG2RGB);
+			cv::resize(rawImage,rawImage,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
+			cv::transpose(rawImage, rawImage);
 			if (i==0)
-				image.copyTo(full_size);
+				rawImage.copyTo(full_size);
 			else
-				cv::hconcat(image, full_size, full_size);
+				cv::hconcat(rawImage, full_size, full_size);
 
 			unlock_image(currentImage.uiBufferIndex);
 
-			publishImage(image, pub[LADYBUG_NUM_CAMERAS - i], count);
+			publishImage(rawImage, pub[LADYBUG_NUM_CAMERAS - i], count);
 
 		}
 		//publish stitched one
@@ -381,12 +382,12 @@ int main (int argc, char **argv)
 		count++;
 	}
 
-	cout << "Stopping ladybug..." << endl;
+	cout << "Stopping ladybug_camera..." << endl;
 
 	// Shutdown
 	stop_camera();
 
-	ROS_INFO("ladybug stopped");
+	ROS_INFO("ladybug_camera stopped");
 
 	return 0;
 }
