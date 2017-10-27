@@ -70,8 +70,6 @@
   #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
 
-
-
 #include <autoware_msgs/ConfigNdtMapping.h>
 #include <autoware_msgs/ConfigNdtMappingOutput.h>
 
