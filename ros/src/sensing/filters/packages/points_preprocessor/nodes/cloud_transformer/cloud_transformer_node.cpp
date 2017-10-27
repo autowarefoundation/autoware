@@ -39,7 +39,6 @@
 #include <tf/transform_listener.h>
 #include <pcl_ros/transforms.h>
 
-
 class CloudTransformerNode
 {
 private:
@@ -55,19 +54,64 @@ private:
 	tf::TransformListener *tf_listener_ptr_;
 
 	void publish_cloud(const ros::Publisher& in_publisher,
-	                   const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud_to_publish_ptr)
+	                   const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
 	{
-		sensor_msgs::PointCloud2 cloud_msg;
-		pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
-		in_publisher.publish(cloud_msg);
+		in_publisher.publish(in_cloud_msg);
 	}
 
-	void CloudCallback(const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud)
+	void transformXYZIRCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>& in_cloud,
+	                         pcl::PointCloud<velodyne_pointcloud::PointXYZIR>& out_cloud,
+	                         const tf::StampedTransform& in_tf_stamped_transform)
 	{
-		pcl::PointCloud<pcl::PointXYZI>::Ptr current_sensor_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-		pcl::fromROSMsg(*in_sensor_cloud, *current_sensor_cloud_ptr);
+		Eigen::Matrix4f transform;
+		pcl_ros::transformAsMatrix(in_tf_stamped_transform, transform);
 
-		pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+		if (&in_cloud != &out_cloud)
+		{
+			// Note: could be replaced by out_cloud = in_cloud
+			out_cloud.header   = in_cloud.header;
+			out_cloud.is_dense = in_cloud.is_dense;
+			out_cloud.width    = in_cloud.width;
+			out_cloud.height   = in_cloud.height;
+			out_cloud.points.reserve (out_cloud.points.size ());
+			out_cloud.points.assign (in_cloud.points.begin (), in_cloud.points.end ());
+			out_cloud.sensor_orientation_ = in_cloud.sensor_orientation_;
+			out_cloud.sensor_origin_      = in_cloud.sensor_origin_;
+			}
+		if (in_cloud.is_dense)
+			{
+			// If the dataset is dense, simply transform it!
+			for (size_t i = 0; i < out_cloud.points.size (); ++i)
+				{
+				//out_cloud.points[i].getVector3fMap () = transform * in_cloud.points[i].getVector3fMap ();
+				Eigen::Matrix<float, 3, 1> pt (in_cloud[i].x, in_cloud[i].y, in_cloud[i].z);
+				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) + transform (0, 1) * pt.coeffRef (1) + transform (0, 2) * pt.coeffRef (2) + transform (0, 3));
+				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) + transform (1, 1) * pt.coeffRef (1) + transform (1, 2) * pt.coeffRef (2) + transform (1, 3));
+				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) + transform (2, 1) * pt.coeffRef (1) + transform (2, 2) * pt.coeffRef (2) + transform (2, 3));
+				}
+			}
+		else
+		{
+			// Dataset might contain NaNs and Infs, so check for them first,
+			// otherwise we get errors during the multiplication (?)
+			for (size_t i = 0; i < out_cloud.points.size (); ++i)
+			{
+				if (!pcl_isfinite (in_cloud.points[i].x) ||
+				           !pcl_isfinite (in_cloud.points[i].y) ||
+				           !pcl_isfinite (in_cloud.points[i].z))
+					continue;
+				//out_cloud.points[i].getVector3fMap () = transform * in_cloud.points[i].getVector3fMap ();
+				Eigen::Matrix<float, 3, 1> pt (in_cloud[i].x, in_cloud[i].y, in_cloud[i].z);
+				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) + transform (0, 1) * pt.coeffRef (1) + transform (0, 2) * pt.coeffRef (2) + transform (0, 3));
+				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) + transform (1, 1) * pt.coeffRef (1) + transform (1, 2) * pt.coeffRef (2) + transform (1, 3));
+				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) + transform (2, 1) * pt.coeffRef (1) + transform (2, 2) * pt.coeffRef (2) + transform (2, 3));
+			}
+		}
+	}
+
+	void CloudCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_sensor_cloud)
+	{
+		pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr transformed_cloud_ptr;
 
 		if (target_frame_ != in_sensor_cloud->header.frame_id)
 		{
@@ -79,11 +123,12 @@ private:
 			catch (tf::TransformException ex) {
 				ROS_ERROR("%s", ex.what());
 			}
-			pcl_ros::transformPointCloud(*current_sensor_cloud_ptr, *transformed_cloud_ptr, transform);
+			//pcl_ros::transformPointCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform);
+			transformXYZIRCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform);
 			transformed_cloud_ptr->header.frame_id = target_frame_;
 		}
 		else
-			{ transformed_cloud_ptr = current_sensor_cloud_ptr;}
+			{ pcl::copyPointCloud(*in_sensor_cloud, *transformed_cloud_ptr);}
 
 		publish_cloud(transformed_points_pub_, transformed_cloud_ptr);
 	}

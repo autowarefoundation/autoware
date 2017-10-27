@@ -464,6 +464,14 @@ params :
     topic : /config/ring_ground_filter
     msg   : ConfigRingGroundFilter
     vars  :
+    - name  : point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : sensor_model
       desc  : sensor_model desc sample
       label : Sensor Model
