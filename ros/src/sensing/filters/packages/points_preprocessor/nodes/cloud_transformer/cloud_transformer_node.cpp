@@ -53,6 +53,8 @@ private:
 
 	tf::TransformListener *tf_listener_ptr_;
 
+	bool                transform_ok_;
+
 	void publish_cloud(const ros::Publisher& in_publisher,
 	                   const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
 	{
@@ -68,7 +70,6 @@ private:
 
 		if (&in_cloud != &out_cloud)
 		{
-			// Note: could be replaced by out_cloud = in_cloud
 			out_cloud.header   = in_cloud.header;
 			out_cloud.is_dense = in_cloud.is_dense;
 			out_cloud.width    = in_cloud.width;
@@ -80,52 +81,76 @@ private:
 			}
 		if (in_cloud.is_dense)
 			{
-			// If the dataset is dense, simply transform it!
 			for (size_t i = 0; i < out_cloud.points.size (); ++i)
 				{
 				//out_cloud.points[i].getVector3fMap () = transform * in_cloud.points[i].getVector3fMap ();
 				Eigen::Matrix<float, 3, 1> pt (in_cloud[i].x, in_cloud[i].y, in_cloud[i].z);
-				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) + transform (0, 1) * pt.coeffRef (1) + transform (0, 2) * pt.coeffRef (2) + transform (0, 3));
-				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) + transform (1, 1) * pt.coeffRef (1) + transform (1, 2) * pt.coeffRef (2) + transform (1, 3));
-				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) + transform (2, 1) * pt.coeffRef (1) + transform (2, 2) * pt.coeffRef (2) + transform (2, 3));
+				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) +
+													transform (0, 1) * pt.coeffRef (1) +
+													transform (0, 2) * pt.coeffRef (2) +
+													transform (0, 3));
+				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) +
+													transform (1, 1) * pt.coeffRef (1) +
+													transform (1, 2) * pt.coeffRef (2) +
+													transform (1, 3));
+				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) +
+													transform (2, 1) * pt.coeffRef (1) +
+													transform (2, 2) * pt.coeffRef (2) +
+													transform (2, 3));
 				}
 			}
 		else
 		{
 			// Dataset might contain NaNs and Infs, so check for them first,
-			// otherwise we get errors during the multiplication (?)
 			for (size_t i = 0; i < out_cloud.points.size (); ++i)
 			{
 				if (!pcl_isfinite (in_cloud.points[i].x) ||
 				           !pcl_isfinite (in_cloud.points[i].y) ||
 				           !pcl_isfinite (in_cloud.points[i].z))
-					continue;
+					{continue;}
 				//out_cloud.points[i].getVector3fMap () = transform * in_cloud.points[i].getVector3fMap ();
 				Eigen::Matrix<float, 3, 1> pt (in_cloud[i].x, in_cloud[i].y, in_cloud[i].z);
-				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) + transform (0, 1) * pt.coeffRef (1) + transform (0, 2) * pt.coeffRef (2) + transform (0, 3));
-				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) + transform (1, 1) * pt.coeffRef (1) + transform (1, 2) * pt.coeffRef (2) + transform (1, 3));
-				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) + transform (2, 1) * pt.coeffRef (1) + transform (2, 2) * pt.coeffRef (2) + transform (2, 3));
+				out_cloud[i].x = static_cast<float> (transform (0, 0) * pt.coeffRef (0) +
+													transform (0, 1) * pt.coeffRef (1) +
+													transform (0, 2) * pt.coeffRef (2) +
+													transform (0, 3));
+				out_cloud[i].y = static_cast<float> (transform (1, 0) * pt.coeffRef (0) +
+													transform (1, 1) * pt.coeffRef (1) +
+													transform (1, 2) * pt.coeffRef (2) +
+													transform (1, 3));
+				out_cloud[i].z = static_cast<float> (transform (2, 0) * pt.coeffRef (0) +
+													transform (2, 1) * pt.coeffRef (1) +
+													transform (2, 2) * pt.coeffRef (2) +
+													transform (2, 3));
 			}
 		}
 	}
 
 	void CloudCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_sensor_cloud)
 	{
-		pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr transformed_cloud_ptr;
+		pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr transformed_cloud_ptr (new pcl::PointCloud<velodyne_pointcloud::PointXYZIR>);
 
+		bool do_transform = false;
+		tf::StampedTransform transform;
 		if (target_frame_ != in_sensor_cloud->header.frame_id)
 		{
-			tf::StampedTransform transform;
 			try {
 				tf_listener_ptr_->lookupTransform(target_frame_, in_sensor_cloud->header.frame_id, ros::Time(0),
 				                                  transform);
+				do_transform = true;
 			}
 			catch (tf::TransformException ex) {
-				ROS_ERROR("%s", ex.what());
+				ROS_ERROR("cloud_transformer: %s NOT Transforming.", ex.what());
+				do_transform = false;
+				transform_ok_ = false;
 			}
-			//pcl_ros::transformPointCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform);
+		}
+		if (do_transform)
+		{
 			transformXYZIRCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform);
 			transformed_cloud_ptr->header.frame_id = target_frame_;
+			if (!transform_ok_)
+				{ROS_INFO("cloud_transformer: Correctly Transformed"); transform_ok_=true;}
 		}
 		else
 			{ pcl::copyPointCloud(*in_sensor_cloud, *transformed_cloud_ptr);}
@@ -134,7 +159,7 @@ private:
 	}
 
 public:
-	CloudTransformerNode(tf::TransformListener* in_tf_listener_ptr):node_handle_("~")
+	CloudTransformerNode(tf::TransformListener* in_tf_listener_ptr):node_handle_("~"), transform_ok_(false)
 	{
 		tf_listener_ptr_ = in_tf_listener_ptr;
 	}

@@ -225,7 +225,7 @@ cmds:
 
     - name : cloud_transformer
       desc : Transforms cloud points' coordinates to the specified target frame
-      cmd  : rosrun points_preprocessor cloud_transformer
+      cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
       
 buttons:
