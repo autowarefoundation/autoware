@@ -83,3 +83,19 @@ target_link_libraries(ray_ground_filter
     ${OpenCV_LIBRARIES}
     ${Qt5Core_LIBRARIES}
 )
+
+
+#Cloud Transformer
+add_executable(cloud_transformer
+        nodes/cloud_transformer/cloud_transformer_node.cpp
+        )
+
+target_include_directories(cloud_transformer PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
+target_link_libraries(cloud_transformer
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+)
