@@ -93,9 +93,8 @@ add_message_files(
   Sync_time_diff.msg
 
 ## Remote Control
-	RemoteCmd.msg
+  RemoteCmd.msg
 )
-
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(

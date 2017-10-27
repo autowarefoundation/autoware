@@ -12,6 +12,7 @@ $ sudo apt-get install mosquitto mosquitto-clients
 - nodejs
 ```
 $ sudo apt-get install nodejs npm
+$ cd /ui/web/remote_monitor
 $ npm install
 ```
 

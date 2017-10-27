@@ -38,7 +38,6 @@
 #include <vector>
 #include <boost/algorithm/string.hpp>
 #include <string>
-#include <signal.h>
 
 static struct mosquitto *mqtt_client_ = NULL;
 static std::string mqtt_topic_;
@@ -131,9 +130,9 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
 
     if(cmds.size() == 8) {
       autoware_msgs::RemoteCmd msg;
-      msg.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
-      msg.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
-      msg.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
+      msg.steer.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
+      msg.accel.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
+      msg.brake.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
       msg.gear = std::stoi(cmds[3]);
       msg.blinker = std::stoi(cmds[4]);
       msg.mode = std::stoi(cmds[5]);

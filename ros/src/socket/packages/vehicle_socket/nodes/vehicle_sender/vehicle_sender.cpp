@@ -186,7 +186,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub = nh.subscribe("/select_cmd", 1, twistGateCallback);
+  ros::Subscriber sub = nh.subscribe("/vehicle_cmd", 1, twistGateCallback);
 
   command_data.reset();
 

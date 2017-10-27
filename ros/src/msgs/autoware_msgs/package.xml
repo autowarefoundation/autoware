@@ -16,7 +16,6 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>jsk_recognition_msgs</run_depend>
-
   <export>
   </export>
 </package>

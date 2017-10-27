@@ -1,7 +1,7 @@
 Header header
-float64 steer
-float64 accel
-float64 brake
+autoware_msgs/steer_cmd steer
+autoware_msgs/accel_cmd accel
+autoware_msgs/brake_cmd brake
 int32 gear
 int32 blinker
 int32 mode
