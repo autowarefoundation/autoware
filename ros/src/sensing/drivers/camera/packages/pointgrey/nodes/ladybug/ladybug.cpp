@@ -125,8 +125,7 @@ void publishImage(cv::Mat& image, ros::Publisher& image_pub, long int& count)
 	msg.header.frame_id = "camera";
 	msg.header.stamp.sec = ros::Time::now().sec; msg.header.stamp.nsec = ros::Time::now().nsec;
 	msg.height = image.size().height; msg.width  = image.size().width;
-	//msg.encoding = "rgb8";
-	msg.encoding = "bayer_bggr8";
+	msg.encoding = "rgb8";
 	msg.step = image.cols * image.elemSize();
 	size_t image_size = image.rows * image.cols * image.elemSize();
 
@@ -270,7 +269,7 @@ LadybugError unlock_image( unsigned int bufferIndex )
 int main (int argc, char **argv)
 {
 	////ROS STUFF
-	ros::init(argc, argv, "lady_bug");
+	ros::init(argc, argv, "ladybug_camera");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
@@ -359,24 +358,24 @@ int main (int argc, char **argv)
 			std::ostringstream out;
 			out << "image" << i;
 			cv::Mat rawImage(size, CV_8UC1, currentImage.pData + (i * size.width*size.height));
-			//cv::flip(mat, mat, -1);
-			//cv::Mat image(size, CV_8UC3);
-			//cv::cvtColor(rawImage, image, cv::COLOR_BayerBG2RGB);
-			cv::resize(rawImage,rawImage,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
-			cv::transpose(rawImage, rawImage);
+			cv::Mat image(size, CV_8UC3);
+			cv::cvtColor(rawImage, image, cv::COLOR_BayerBG2RGB);
+			cv::resize(image,image,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
+			//
+			cv::transpose(image, image);
+
 			if (i==0)
-				rawImage.copyTo(full_size);
+				image.copyTo(full_size);
 			else
-				cv::hconcat(rawImage, full_size, full_size);
+				cv::hconcat(image, full_size, full_size);
 
 			unlock_image(currentImage.uiBufferIndex);
 
-			publishImage(rawImage, pub[LADYBUG_NUM_CAMERAS - i], count);
+			publishImage(image, pub[LADYBUG_NUM_CAMERAS - i], count);
 
 		}
 		//publish stitched one
 		publishImage(full_size, pub[0], count);
-
 		ros::spinOnce();
 		loop_rate.sleep();
 		count++;
