@@ -18,8 +18,8 @@ from jsk_recognition_msgs.msg import BoundingBoxArray
 from jsk_rviz_plugins.msg import Pictogram
 from jsk_rviz_plugins.msg import PictogramArray
 #from calibration_camera_lidar.msg import projection_matrix
-from cv_tracker.msg import image_obj
-from cv_tracker.msg import image_rect
+from autoware_msgs.msg import image_obj
+from autoware_msgs.msg import image_rect
 
 import os.path #Autoware
 from numpy import dtype
