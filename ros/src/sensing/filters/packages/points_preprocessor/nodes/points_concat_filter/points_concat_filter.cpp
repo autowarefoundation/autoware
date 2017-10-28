@@ -27,41 +27,46 @@ private:
   typedef pcl::PointXYZI PointT;
   typedef pcl::PointCloud<PointT> PointCloudT;
   typedef sensor_msgs::PointCloud2 PointCloudMsgT;
-  typedef message_filters::sync_policies::ApproximateTime<PointCloudMsgT, PointCloudMsgT> SyncPolicy;
-  ros::NodeHandle nh_, pnh_;
-  message_filters::Subscriber<PointCloudMsgT> *sub1_, *sub2_;
-  message_filters::Synchronizer<SyncPolicy>* sync_;
-  ros::Publisher pub_;
-  tf::TransformListener tfl;
-  std::string sensor_frame;
-  void callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2);
+  typedef message_filters::sync_policies::ApproximateTime<PointCloudMsgT, PointCloudMsgT> SyncPolicyT;
+
+  ros::NodeHandle node_handle_, private_node_handle_;
+  message_filters::Subscriber<PointCloudMsgT> *cloud_subscriber1_, *cloud_subscriber2_;
+  message_filters::Synchronizer<SyncPolicyT>* cloud_synchronizer_;
+  ros::Publisher cloud_publisher_;
+  tf::TransformListener tf_listener_;
+  std::string output_frame_;
+
+  void pointcloud_callback(const PointCloudMsgT::ConstPtr& cloud_msg1, const PointCloudMsgT::ConstPtr& cloud_msg2);
 };
 
-PointsConcatFilter::PointsConcatFilter() : nh_(), pnh_("~"), tfl(), sensor_frame("lidar_base")
+PointsConcatFilter::PointsConcatFilter()
+  : node_handle_(), private_node_handle_("~"), tf_listener_(), output_frame_("output_frame")
 {
-  pnh_.param("sensor_frame", sensor_frame, sensor_frame);
-  sub1_ = new message_filters::Subscriber<PointCloudMsgT>(nh_, "/lidar0/points_raw", 1);
-  sub2_ = new message_filters::Subscriber<PointCloudMsgT>(nh_, "/lidar1/points_raw", 1);
-  sync_ = new message_filters::Synchronizer<SyncPolicy>(SyncPolicy(10), *sub1_, *sub2_);
-  sync_->registerCallback(boost::bind(&PointsConcatFilter::callback, this, _1, _2));
-  pub_ = nh_.advertise<PointCloudMsgT>("/points_concat", 1);
+  private_node_handle_.param("output_frame", output_frame_, output_frame_);
+  cloud_subscriber1_ = new message_filters::Subscriber<PointCloudMsgT>(node_handle_, "/lidar0/points_raw", 1);
+  cloud_subscriber2_ = new message_filters::Subscriber<PointCloudMsgT>(node_handle_, "/lidar1/points_raw", 1);
+  cloud_synchronizer_ =
+      new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10), *cloud_subscriber1_, *cloud_subscriber2_);
+  cloud_synchronizer_->registerCallback(boost::bind(&PointsConcatFilter::pointcloud_callback, this, _1, _2));
+  cloud_publisher_ = node_handle_.advertise<PointCloudMsgT>("/points_concat", 1);
 }
 
-void PointsConcatFilter::callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2)
+void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr& cloud_msg1,
+                                             const PointCloudMsgT::ConstPtr& cloud_msg2)
 {
-  PointCloudT::Ptr cloud(new PointCloudT);
-  PointCloudT::Ptr cloud1(new PointCloudT);
-  PointCloudT::Ptr cloud2(new PointCloudT);
+  PointCloudT::Ptr cloud_source1(new PointCloudT);
+  PointCloudT::Ptr cloud_source2(new PointCloudT);
+  PointCloudT::Ptr cloud_concatenated(new PointCloudT);
 
   // Note: If you use kinetic, you can directly receive messages as PointCloutT.
-  pcl::fromROSMsg(*msg1, *cloud1);
-  pcl::fromROSMsg(*msg2, *cloud2);
+  pcl::fromROSMsg(*cloud_msg1, *cloud_source1);
+  pcl::fromROSMsg(*cloud_msg2, *cloud_source2);
 
   // transform points
   try
   {
-    tfl.waitForTransform(sensor_frame, msg1->header.frame_id, ros::Time(0), ros::Duration(1.0));
-    pcl_ros::transformPointCloud(sensor_frame, *cloud1, *cloud1, tfl);
+    tf_listener_.waitForTransform(output_frame_, cloud_msg1->header.frame_id, ros::Time(0), ros::Duration(1.0));
+    pcl_ros::transformPointCloud(output_frame_, *cloud_source1, *cloud_source1, tf_listener_);
   }
   catch (tf::TransformException& ex)
   {
@@ -70,8 +75,8 @@ void PointsConcatFilter::callback(const PointCloudMsgT::ConstPtr& msg1, const Po
   }
   try
   {
-    tfl.waitForTransform(sensor_frame, msg2->header.frame_id, ros::Time(0), ros::Duration(1.0));
-    pcl_ros::transformPointCloud(sensor_frame, *cloud2, *cloud2, tfl);
+    tf_listener_.waitForTransform(output_frame_, cloud_msg2->header.frame_id, ros::Time(0), ros::Duration(1.0));
+    pcl_ros::transformPointCloud(output_frame_, *cloud_source2, *cloud_source2, tf_listener_);
   }
   catch (tf::TransformException& ex)
   {
@@ -80,11 +85,11 @@ void PointsConcatFilter::callback(const PointCloudMsgT::ConstPtr& msg1, const Po
   }
 
   // merge points
-  *cloud += *cloud1;
-  *cloud += *cloud2;
-  cloud->header = pcl_conversions::toPCL(msg1->header);
-  cloud->header.frame_id = sensor_frame;
-  pub_.publish(cloud);
+  *cloud_concatenated += *cloud_source1;
+  *cloud_concatenated += *cloud_source2;
+  cloud_concatenated->header = pcl_conversions::toPCL(cloud_msg1->header);
+  cloud_concatenated->header.frame_id = output_frame_;
+  cloud_publisher_.publish(cloud_concatenated);
 }
 
 int main(int argc, char** argv)
