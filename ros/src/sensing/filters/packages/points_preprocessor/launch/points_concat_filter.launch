@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-  <arg name="output_frame" default="/output_frame" />
+  <arg name="output_frame" default="lidar_frame" />
   <arg name="input0" default="/lidar0/points_raw" />
   <arg name="input1" default="/lidar1/points_raw" />
   <arg name="output" default="/points_concat" />

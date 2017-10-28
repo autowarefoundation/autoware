@@ -69,6 +69,7 @@ add_message_files(
   ConfigPedestrianKf.msg
   ConfigPlannerSelector.msg
   ConfigPoints2Polygon.msg
+  ConfigPointsConcatFilter.msg
   ConfigRandomFilter.msg
   ConfigRcnn.msg
   ConfigRingFilter.msg
