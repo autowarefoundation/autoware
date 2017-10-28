@@ -8,6 +8,8 @@ execute_process(
 
 find_package(PCL REQUIRED)
 
+find_package(Qt5Core REQUIRED)
+
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 SET(FAST_PCL_PACKAGES filters registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))

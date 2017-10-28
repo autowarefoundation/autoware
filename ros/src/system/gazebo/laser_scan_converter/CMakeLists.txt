@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 
+find_package(Qt5Core REQUIRED)
 
 catkin_package()
 
