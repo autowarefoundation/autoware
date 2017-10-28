@@ -46,7 +46,7 @@ struct CommandData {
   double angular_z;
   int modeValue;
   int gearValue;
-  int blinkerValue;
+  int lampValue;
   int accellValue;
   int brakeValue;
   int steerValue;
@@ -62,7 +62,7 @@ void CommandData::reset()
   angular_z     = 0;
   modeValue     = 0;
   gearValue     = 0;
-  blinkerValue  = 0;
+  lampValue     = 0;
   accellValue   = 0;
   brakeValue    = 0;
   steerValue    = 0;
@@ -74,16 +74,27 @@ static CommandData command_data;
 
 static void twistGateCallback(const autoware_msgs::TwistGate& msg)
 {
-  command_data.linear_x = msg.linear_x;
-  command_data.angular_z = msg.angular_z;
+  command_data.linear_x = msg.twist_cmd.twist.linear.x;
+  command_data.angular_z = msg.twist_cmd.twist.angular.z;
   command_data.modeValue = msg.mode;
   command_data.gearValue = msg.gear;
-  command_data.blinkerValue = msg.blinker;
-  command_data.accellValue = msg.accel;
-  command_data.steerValue = msg.steer;
-  command_data.brakeValue = msg.brake;
-  command_data.linear_velocity = msg.linear_velocity;
-  command_data.steering_angle = msg.steering_angle;
+  if(msg.lamp_cmd.l == 0 && msg.lamp_cmd.r == 0) {
+    command_data.lampValue = 0;
+  }
+  else if (msg.lamp_cmd.l == 1 && msg.lamp_cmd.r == 0) {
+    command_data.lampValue = 1;
+  }
+  else if (msg.lamp_cmd.l == 0 && msg.lamp_cmd.r == 1) {
+    command_data.lampValue = 2;
+  }
+  else if (msg.lamp_cmd.l == 1 && msg.lamp_cmd.r == 1) {
+    command_data.lampValue = 3;
+  }
+  command_data.accellValue = msg.accel_cmd.accel;
+  command_data.steerValue = msg.steer_cmd.steer;
+  command_data.brakeValue = msg.brake_cmd.brake;
+  command_data.linear_velocity = msg.ctrl_cmd.linear_velocity;
+  command_data.steering_angle = msg.ctrl_cmd.steering_angle;
 }
 
 static void *sendCommand(void *arg)

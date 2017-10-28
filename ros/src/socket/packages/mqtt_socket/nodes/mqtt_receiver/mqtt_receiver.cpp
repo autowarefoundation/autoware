@@ -130,11 +130,34 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
 
     if(cmds.size() == 8) {
       autoware_msgs::RemoteCmd msg;
-      msg.steer.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
-      msg.accel.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
-      msg.brake.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
+      msg.steer_cmd.steer = std::stof(cmds[0]) * STEER_MAX_VAL;
+      msg.accel_cmd.accel = std::stof(cmds[1]) * ACCEL_MAX_VAL;
+      msg.brake_cmd.brake = std::stof(cmds[2]) * BRAKE_MAX_VAL;
       msg.gear = std::stoi(cmds[3]);
-      msg.blinker = std::stoi(cmds[4]);
+      // lamp
+      switch(std::stoi(cmds[4])) {
+        msg.lamp_cmd.l = 0;
+        msg.lamp_cmd.r = 0;
+        case 0:
+          break;
+        case 1:
+          msg.lamp_cmd.l = 1;
+          break;
+        case 2:
+          msg.lamp_cmd.r = 1;
+          break;
+        case 3:
+          msg.lamp_cmd.l = 1;
+          msg.lamp_cmd.r = 1;
+          break;
+        default:
+          ROS_WARN("Invalid lamp_cmd");
+          break;
+      }
+      msg.twist_cmd.twist.linear.x = std::stof(cmds[1]) * LINEAR_X_MAX_VAL;
+      msg.twist_cmd.twist.angular.z = std::stof(cmds[0]);
+      msg.ctrl_cmd.linear_velocity = std::stof(cmds[1]) * LINEAR_X_MAX_VAL;
+      msg.ctrl_cmd.steering_angle = std::stof(cmds[0]) * STEER_MAX_VAL;
       msg.mode = std::stoi(cmds[5]);
       msg.control_mode = std::stoi(cmds[6]);
       msg.emergency = std::stoi(cmds[7]);

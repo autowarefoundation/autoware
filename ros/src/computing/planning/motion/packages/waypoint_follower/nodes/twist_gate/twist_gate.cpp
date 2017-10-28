@@ -59,12 +59,13 @@ class TwistGate
     void watchdog_timer();
     void remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg);
     void auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg);
-    void auto_cmd_mode_cmd_callback(const tablet_socket_msgs::mode_cmd::ConstPtr& input_msg);
-    void auto_cmd_gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& input_msg);
-    void auto_cmd_accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg);
-    void auto_cmd_steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg);
-    void auto_cmd_brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg);
-    void auto_cmd_ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg);
+    void mode_cmd_callback(const tablet_socket_msgs::mode_cmd::ConstPtr& input_msg);
+    void gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& input_msg);
+    void accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg);
+    void steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg);
+    void brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg);
+    void lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input_msg);
+    void ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg);
 
     void reset_vehicle_cmd_msg();
 
@@ -100,12 +101,13 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   remote_cmd_sub_ = nh_.subscribe("/remote_cmd", 1, &TwistGate::remote_cmd_callback, this);
 
   auto_cmd_sub_stdmap_["twist_cmd"] = nh_.subscribe("/twist_cmd", 1, &TwistGate::auto_cmd_twist_cmd_callback, this);
-  auto_cmd_sub_stdmap_["mode_cmd"] = nh_.subscribe("/mode_cmd", 1, &TwistGate::auto_cmd_mode_cmd_callback, this);
-  auto_cmd_sub_stdmap_["gear_cmd"] = nh_.subscribe("/gear_cmd", 1, &TwistGate::auto_cmd_gear_cmd_callback, this);
-  auto_cmd_sub_stdmap_["accel_cmd"] = nh_.subscribe("/accel_cmd", 1, &TwistGate::auto_cmd_accel_cmd_callback, this);
-  auto_cmd_sub_stdmap_["steer_cmd"] = nh_.subscribe("/steer_cmd", 1, &TwistGate::auto_cmd_steer_cmd_callback, this);
-  auto_cmd_sub_stdmap_["brake_cmd"] = nh_.subscribe("/brake_cmd", 1, &TwistGate::auto_cmd_brake_cmd_callback, this);
-  auto_cmd_sub_stdmap_["ctrl_cmd"] = nh_.subscribe("/ctrl_cmd", 1, &TwistGate::auto_cmd_ctrl_cmd_callback, this);
+  auto_cmd_sub_stdmap_["mode_cmd"] = nh_.subscribe("/mode_cmd", 1, &TwistGate::mode_cmd_callback, this);
+  auto_cmd_sub_stdmap_["gear_cmd"] = nh_.subscribe("/gear_cmd", 1, &TwistGate::gear_cmd_callback, this);
+  auto_cmd_sub_stdmap_["accel_cmd"] = nh_.subscribe("/accel_cmd", 1, &TwistGate::accel_cmd_callback, this);
+  auto_cmd_sub_stdmap_["steer_cmd"] = nh_.subscribe("/steer_cmd", 1, &TwistGate::steer_cmd_callback, this);
+  auto_cmd_sub_stdmap_["brake_cmd"] = nh_.subscribe("/brake_cmd", 1, &TwistGate::brake_cmd_callback, this);
+  auto_cmd_sub_stdmap_["lamp_cmd"] = nh_.subscribe("/lamp_cmd", 1, &TwistGate::lamp_cmd_callback, this);
+  auto_cmd_sub_stdmap_["ctrl_cmd"] = nh_.subscribe("/ctrl_cmd", 1, &TwistGate::ctrl_cmd_callback, this);
 
   twist_gate_msg_.header.seq = 0;
 
@@ -122,16 +124,17 @@ TwistGate::~TwistGate()
 
 void TwistGate::reset_vehicle_cmd_msg()
 {
-  twist_gate_msg_.linear_x        = 0;
-  twist_gate_msg_.angular_z       = 0;
-  twist_gate_msg_.mode            = 0;
-  twist_gate_msg_.gear            = 0;
-  twist_gate_msg_.blinker         = 0;
-  twist_gate_msg_.accel           = 0;
-  twist_gate_msg_.brake           = 0;
-  twist_gate_msg_.steer           = 0;
-  twist_gate_msg_.linear_velocity = -1;
-  twist_gate_msg_.steering_angle  = 0;
+  twist_gate_msg_.twist_cmd.twist.linear.x  = 0;
+  twist_gate_msg_.twist_cmd.twist.angular.z = 0;
+  twist_gate_msg_.mode                      = 0;
+  twist_gate_msg_.gear                      = 0;
+  twist_gate_msg_.lamp_cmd.l                = 0;
+  twist_gate_msg_.lamp_cmd.r                = 0;
+  twist_gate_msg_.accel_cmd.accel           = 0;
+  twist_gate_msg_.brake_cmd.brake           = 0;
+  twist_gate_msg_.steer_cmd.steer           = 0;
+  twist_gate_msg_.ctrl_cmd.linear_velocity  = -1;
+  twist_gate_msg_.ctrl_cmd.steering_angle   = 0;
 }
 
 void TwistGate::watchdog_timer()
@@ -193,14 +196,13 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.linear_x = input_msg->accel;
-    twist_gate_msg_.angular_z = 0;
-    twist_gate_msg_.steering_angle = input_msg->steer;
-    twist_gate_msg_.accel = input_msg->accel;
-    twist_gate_msg_.brake = input_msg->brake;
-    twist_gate_msg_.steer = input_msg->steer;
+    twist_gate_msg_.twist_cmd.twist = input_msg->twist_cmd.twist;
+    twist_gate_msg_.ctrl_cmd  = input_msg->ctrl_cmd;
+    twist_gate_msg_.accel_cmd = input_msg->accel_cmd;
+    twist_gate_msg_.brake_cmd = input_msg->brake_cmd;
+    twist_gate_msg_.steer_cmd = input_msg->steer_cmd;
     twist_gate_msg_.gear = input_msg->gear;
-    twist_gate_msg_.blinker = input_msg->blinker;
+    twist_gate_msg_.lamp_cmd = input_msg->lamp_cmd;
     twist_gate_msg_.mode = input_msg->mode;
     twist_gate_msg_.emergency = input_msg->emergency;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
@@ -214,13 +216,12 @@ void TwistGate::auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::C
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.linear_x = input_msg->twist.linear.x;
-    twist_gate_msg_.angular_z = input_msg->twist.angular.z;
+    twist_gate_msg_.twist_cmd.twist = input_msg->twist;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
 
-void TwistGate::auto_cmd_mode_cmd_callback(const tablet_socket_msgs::mode_cmd::ConstPtr& input_msg)
+void TwistGate::mode_cmd_callback(const tablet_socket_msgs::mode_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
@@ -236,7 +237,7 @@ void TwistGate::auto_cmd_mode_cmd_callback(const tablet_socket_msgs::mode_cmd::C
   }
 }
 
-void TwistGate::auto_cmd_gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& input_msg)
+void TwistGate::gear_cmd_callback(const tablet_socket_msgs::gear_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
@@ -245,51 +246,63 @@ void TwistGate::auto_cmd_gear_cmd_callback(const tablet_socket_msgs::gear_cmd::C
   }
 }
 
-void TwistGate::auto_cmd_accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg)
+void TwistGate::accel_cmd_callback(const autoware_msgs::accel_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.accel = input_msg->accel;
+    twist_gate_msg_.accel_cmd.accel = input_msg->accel;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
 
-void TwistGate::auto_cmd_steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg)
+void TwistGate::steer_cmd_callback(const autoware_msgs::steer_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.steer = input_msg->steer;
+    twist_gate_msg_.steer_cmd.steer = input_msg->steer;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
 
-void TwistGate::auto_cmd_brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg)
+void TwistGate::brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.brake = input_msg->brake;
+    twist_gate_msg_.brake_cmd.brake = input_msg->brake;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
 
-void TwistGate::auto_cmd_ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg)
+void TwistGate::lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input_msg)
 {
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.linear_velocity = input_msg->cmd.linear_velocity;
-    twist_gate_msg_.steering_angle = input_msg->cmd.steering_angle;
+    twist_gate_msg_.lamp_cmd.l = input_msg->l;
+    twist_gate_msg_.lamp_cmd.r = input_msg->r;
+    vehicle_cmd_pub_.publish(twist_gate_msg_);
+  }
+}
+
+void TwistGate::ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg)
+{
+  if(command_mode_ == CommandMode::AUTO)
+  {
+    twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
+    twist_gate_msg_.header.stamp = input_msg->header.stamp;
+    twist_gate_msg_.header.seq++;
+    twist_gate_msg_.ctrl_cmd = input_msg->cmd;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
