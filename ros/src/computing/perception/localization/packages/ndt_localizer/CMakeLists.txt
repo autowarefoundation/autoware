@@ -9,7 +9,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration ndt_gpu)
+SET(FAST_PCL_PACKAGES filters registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -22,6 +22,7 @@ endif()
 find_package(CUDA)
 if(CUDA_FOUND)
     add_definitions(-DCUDA_FOUND)
+    list(APPEND FAST_PCL_PACKAGES ndt_gpu)
 endif()
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS

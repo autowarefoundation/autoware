@@ -2,6 +2,11 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+* fix build error for older indigo version
+* Contributors: Yusuke FUJII
+
 1.5.0 (2017-09-21)
 ------------------
 * Add changing topic name option for the planner selector.

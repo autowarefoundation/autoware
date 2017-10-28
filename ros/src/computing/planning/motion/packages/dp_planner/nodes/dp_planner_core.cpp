@@ -1069,9 +1069,9 @@ void PlannerX::PlannerMainLoop()
 			}else{
 				visualization_msgs::Marker delMarker;
 #ifndef ROS_KINETIC
-					delMarker.action = visualization_msgs::Marker::DELETE;
+				delMarker.action = visualization_msgs::Marker::DELETE;
 #else
-					delMarker.action = visualization_msgs::Marker::DELETEALL;
+				delMarker.action = visualization_msgs::Marker::DELETEALL;
 #endif
 				delMarker.ns = "global_lane_array_marker_dynamic";
 				all_rollOuts_dynamic.markers.push_back(delMarker);

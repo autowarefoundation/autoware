@@ -228,6 +228,11 @@ cmds:
       cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
       param: points_concat_filter
 
+    - name : cloud_transformer
+      desc : Transforms cloud points' coordinates to the specified target frame
+      cmd  : roslaunch points_preprocessor cloud_transformer.launch
+      param: cloud_transformer
+      
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -464,6 +469,14 @@ params :
     topic : /config/ring_ground_filter
     msg   : ConfigRingGroundFilter
     vars  :
+    - name  : point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : sensor_model
       desc  : sensor_model desc sample
       label : Sensor Model
@@ -822,3 +835,30 @@ params :
       label : output_frame
       kind  : str
       v     : lidar_frame
+
+  - name  : cloud_transformer
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, i.e. /points_raw
+      label : input_point_topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : target_frame
+      desc  : Target Frame to transform the Input Point Cloud
+      label : target_frame
+      kind  : str
+      v     : base_link
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_point_topic
+      desc  : Output PointCloud Topic name, /points_transformed
+      label : output_point_topic
+      kind  : str
+      v     : /points_transformed
+      cmd_param :
+        dash        : ''
+        delim       : ':='
