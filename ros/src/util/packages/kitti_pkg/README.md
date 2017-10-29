@@ -25,11 +25,11 @@ i.e. `roslaunch kitti_launch kittiplayer.launch directory:=/PATH_TO_KITTI_DATASE
 3. Modify the `src/util/packages/kitti_pkg/kitti_launch/launch/kittiplayer.launch` file to choose the set you wish to reproduce.
 Lines 5 and 16
 
-4. Select the frame rate you wish to reproduce changing the `-f` param in line 44
+4. Select the frame rate you wish to reproduce changing the using the fps argument from the launch file
 ```
-args= "-d $(arg directory) -f 1 -v -g -i -C -G -T" 
+roslaunch kitti_launch kittiplayer.launch fps:=10
 ```
-in the above example, the player will reproduce the set at 1 fps.
+in the above example, the player will reproduce the set at 10 fps.
 
 5. The launch file will run `calibration_publisher` and `kitti_box_publisher` nodes and publish:
 ```
