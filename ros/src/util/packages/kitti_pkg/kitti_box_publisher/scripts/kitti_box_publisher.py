@@ -243,9 +243,10 @@ def run():
 if __name__ == "__main__":
 	argv = sys.argv
 	
-	if len(argv) > 1:	
-		xml_file = argv[1]
-		publishProjectionMatrix(os.path.dirname(os.path.dirname(xml_file))) #Get parent directory
+	if len(argv) > 1:
+		kitti_dir = argv[1]
+		xml_file = kitti_dir + "/tracklet_labels.xml"
+		publishProjectionMatrix(os.path.dirname(os.path.dirname(kitti_dir))) #Get parent directory
 		kitti_data, auto_boxes, pictogram_texts = readXML(xml_file)
 		run()
 
