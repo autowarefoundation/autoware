@@ -223,6 +223,11 @@ cmds:
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
 
+    - name : points_concat_filter
+      desc : points_concat_filter filter performs merging multiple lidar input
+      cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
+      param: points_concat_filter
+
     - name : cloud_transformer
       desc : Transforms cloud points' coordinates to the specified target frame
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
@@ -804,6 +809,33 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : points_concat_filter
+    topic : /config/points_concat_filter
+    msg   : ConfigPointsConcatFilter
+    vars  :
+    - name  : input0
+      desc  : 1st concatinated pointcloud topic
+      label : Lidar0 topic
+      kind  : str
+      v     : /lidar0/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : input1
+      desc  : 2nd concatinated pointcloud topic
+      label : Lidar1 topic
+      kind  : str
+      v     : /lidar1/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_frame
+      desc  : Concatinated pointcloud frame
+      label : output_frame
+      kind  : str
+      v     : lidar_frame
+
   - name  : cloud_transformer
     vars  :
     - name  : input_point_topic
