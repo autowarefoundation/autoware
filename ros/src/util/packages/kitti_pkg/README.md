@@ -19,6 +19,9 @@ kitti_download_dir/2011_09_26/2011_09_26_drive_0001_sync
 ```
 2. Create a symlink under `src/util/packages/kitti_pkg/kitti_player` with the name `dataset` that points to your `kitti_download_dir`
 
+2a. Instead of creating a symlink you can also use the `directory` parameter in the launch file.
+i.e. `roslaunch kitti_launch kittiplayer.launch directory:=/PATH_TO_KITTI_DATASET/2011_09_26/2011_09_26_drive_0093_sync/`
+
 3. Modify the `src/util/packages/kitti_pkg/kitti_launch/launch/kittiplayer.launch` file to choose the set you wish to reproduce.
 Lines 5 and 16
 
@@ -40,3 +43,4 @@ in the above example, the player will reproduce the set at 1 fps.
 /kitti_player/oxts/imu (sensor_msgs/Imu)
 
 ```
+
