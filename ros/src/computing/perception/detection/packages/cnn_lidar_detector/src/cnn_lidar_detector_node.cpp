@@ -91,7 +91,7 @@ class RosLidarDetectorApp
 	float get_image_mean(const cv::Mat& in_image)
 	{
 		float mean = 0.;
-		size_t elements = in_image.rows + in_image.cols;
+		size_t elements = in_image.rows * in_image.cols;
 		for (unsigned int row = 0; row < in_image.rows; row++)
 		{
 			for (unsigned int col = 0; col < in_image.cols; col++)
@@ -110,7 +110,7 @@ class RosLidarDetectorApp
 	float get_image_stddev(const cv::Mat& in_image, float in_mean)
 	{
 		float std = 0.;
-		size_t elements = in_image.rows + in_image.cols;
+		size_t elements = in_image.rows * in_image.cols;
 		for (unsigned int row = 0; row < in_image.rows; row++)
 		{
 			for (unsigned int col = 0; col < in_image.cols; col++)
@@ -251,7 +251,7 @@ class RosLidarDetectorApp
 		float range_mean, x_mean, y_mean, z_mean, intensity_mean;//range, x, y ,z, intensity
 		float range_stddev, x_stddev, y_stddev, z_stddev, intensity_stddev;//range, x, y ,z, intensity
 
-		/*intensity_mean = get_image_mean(projected_cloud_intensity);
+		intensity_mean = get_image_mean(projected_cloud_intensity);
 		subtract_image(projected_cloud_intensity, intensity_mean);
 		intensity_stddev = get_image_stddev(projected_cloud_intensity, intensity_mean);
 		divide_image(projected_cloud_intensity, intensity_stddev);
@@ -274,14 +274,14 @@ class RosLidarDetectorApp
 		z_mean = get_image_mean(projected_cloud_z);
 		subtract_image(projected_cloud_z, z_mean);
 		z_stddev = get_image_stddev(projected_cloud_z, z_mean);
-		divide_image(projected_cloud_z, z_stddev);*/
+		divide_image(projected_cloud_z, z_stddev);
 
 		// subtract mean
-		subtract_image(projected_cloud_range, projection_mean_depth_.at<float>(0));
-		subtract_image(projected_cloud_z, projection_mean_height_.at<float>(0));//
+		//subtract_image(projected_cloud_range, projection_mean_depth_.at<float>(0));
+		//subtract_image(projected_cloud_z, projection_mean_height_.at<float>(0));//
 		// divide std devjsk_recognition_msgs::BoundingBoxArray objects_boxes;
-		divide_image(projected_cloud_range, projection_std_dev_depth_.at<float>(0));
-		divide_image(projected_cloud_z, projection_std_dev_height_.at<float>(0));
+		//divide_image(projected_cloud_range, projection_std_dev_depth_.at<float>(0));
+		//divide_image(projected_cloud_z, projection_std_dev_height_.at<float>(0));
 		
 		//use image for CNN forward
 		jsk_recognition_msgs::BoundingBoxArray objects_boxes;
