@@ -451,6 +451,14 @@ subs :
       param: dist_transform
 
 - subs :
+  - name : CSV Logger
+    desc : logging in csv
+    subs :
+    - name : csv_logger
+      desc : csv_logger desc sample
+      cmd  : roslaunch csv_logger csv_logger.launch
+      param: csv_logger_param
+
   - name : Mission Planning
     desc : Mission Planning desc sample
     subs :
@@ -630,7 +638,7 @@ subs :
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
       param: planner_selector
-         
+   
 
 
 buttons:
@@ -1764,6 +1772,25 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : csv_logger_param
+    vars  :
+    - name      : ndt_matching_flag
+      desc      : ndt_matching_flag desc sample
+      label     : ndt_matching
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : obj_detection_flag
+      desc      : obj_detection_flag desc sample
+      label     : obj_detection
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
  
   - name  : planner_selector
     topic : /config/PlannerSelector

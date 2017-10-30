@@ -1,0 +1,7 @@
+<launch>
+  <node pkg = "csv_logger" type = "csv_logger" name = "csv_logger" output = "screen">
+    <param name = "ndt_matching_flag" value = "true" />
+    <param name = "obj_detection_flag" value = "true" />
+  </node>
+</launch>
+
