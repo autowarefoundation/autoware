@@ -1,0 +1,10 @@
+<launch>
+  <arg name = "ndt_matching_flag" default = "false" />
+  <arg name = "obj_detection_flag" default = "false" /> 
+
+  <node pkg = "csv_logger" type = "csv_logger" name = "csv_logger" output = "screen">
+    <param name = "ndt_matching_flag" value = "$(arg ndt_matching_flag)" />
+    <param name = "obj_detection_flag" value = "$(arg obj_detection_flag)" />
+  </node>
+</launch>
+
