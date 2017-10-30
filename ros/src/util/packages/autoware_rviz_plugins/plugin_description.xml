@@ -7,5 +7,13 @@
             State Panel on rviz
         </description>
     </class>
+    
+    <class name="autoware_sim_object/OpFlag"
+	    type="autoware_sim_object::AutowareSimObjTool"
+	    base_class_type="rviz::Tool">
+    <description>
+      Tool for sim_obj flags on the ground plane in rviz.
+    </description>
+  </class>
 
 </library>

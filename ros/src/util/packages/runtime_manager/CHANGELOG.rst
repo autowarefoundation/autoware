@@ -2,6 +2,30 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
+  [WIP]Feature/decision maker `#807 <https://github.com/cpfl/autoware/issues/807>`_
+* update decision maker config
+* Add to support dynamical parameter for decision_maker
+* Change default value of decision maker config
+* Add decision_maker config
+* Runtime Manager, modify update_func()
+* fix msg import for planner_switch
+* add config parameter
+* Runtime Manager Sensing tab, remove calibrationfile check of GH3 camera
+* Add decision packages into runtime_manager
+* Trash
+* Add changing topic name option for the planner selector.
+* add multiple crosswalk detection
+* Add parameter dialog in runtime manager
+* support Garmin GPS 18x LVC
+* Add vector_map_server to RuntimeManager  `#722 <https://github.com/cpfl/autoware/issues/722>`_
+* Contributors: TomohitoAndo, Yusuke FUJII, andoh104, kondoh, yukikitsukawa
+
 1.4.0 (2017-08-04)
 ------------------
 * Publish initial light color as green

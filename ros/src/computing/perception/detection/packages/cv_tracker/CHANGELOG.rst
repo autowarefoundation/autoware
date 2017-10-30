@@ -2,6 +2,15 @@
 Changelog for package cv_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+* Update README.md (`#813 <https://github.com/cpfl/autoware/issues/813>`_)
+  Added instructions to compile compatible version of SSD with Autoware
+* Contributors: Abraham Monrroy
+
+1.5.0 (2017-09-21)
+------------------
+
 1.4.0 (2017-08-04)
 ------------------
 

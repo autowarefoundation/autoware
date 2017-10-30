@@ -2,6 +2,31 @@
 Changelog for package astar_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
+  [WIP]Feature/decision maker `#807 <https://github.com/cpfl/autoware/issues/807>`_
+* add web ui
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision_maker
+* Resolve conflicts
+* Change parameter for obstacle avoid
+* Change color of a simulated obstacle
+* fix a planner selector
+  - lane select got to be able to change topicname for planner selector
+* Add changing topic name option for the planner selector.
+* fix segv
+* Add feature to put simulated obstacles in astar planner
+* R.I.P.
+* apply clang-format
+* add multiple crosswalk detection
+* Change the method to decide stop point
+* Fix indentation
+* Add parameter to ignore points nearby the vehicle
+* Contributors: TomohitoAndo, Yusuke FUJII, hironari.yashiro
+
 1.4.0 (2017-08-04)
 ------------------
 

@@ -74,6 +74,8 @@ PlannerX::PlannerX()
 	m_ObstacleTracking.m_DT = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 
+	enablePlannerDynamicSwitch = false;
+
 
 	int iSource = 0;
 	nh.getParam("/dp_planner/mapSource", iSource);
@@ -95,9 +97,17 @@ PlannerX::PlannerX()
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
 
-	pub_LocalPath = nh.advertise<autoware_msgs::lane>("final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("base_waypoints", 100,true);
-	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 100,true);
+	std::string topic_prefix;
+	nh.getParam("/dp_planner/enablePlannerDynamicSwitch", enablePlannerDynamicSwitch);
+	if(enablePlannerDynamicSwitch){
+		topic_prefix = "/dp";
+		pub_LocalTrajectoriesRviz_dynamic = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_dynamic", 1);
+		pub_EnableLattice = nh.advertise<std_msgs::Int32>("enableLattice", 1);
+	}
+
+	pub_LocalPath = nh.advertise<autoware_msgs::lane>(topic_prefix + "/final_waypoints", 100,true);
+	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>(topic_prefix + "/base_waypoints", 100,true);
+	pub_ClosestIndex = nh.advertise<std_msgs::Int32>(topic_prefix + "/closest_waypoint", 100,true);
 
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
 	pub_GlobalPlanNodes = nh.advertise<geometry_msgs::PoseArray>("global_plan_nodes", 1);
@@ -109,6 +119,7 @@ PlannerX::PlannerX()
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1, true);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("dp_planner_tracked_boxes", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
+	
 	pub_TestLineRviz	= nh.advertise<visualization_msgs::MarkerArray>("testing_line", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
@@ -410,6 +421,7 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
 	nh.getParam("/dp_planner/enableOutsideControl", m_bEnableOutsideControl);
 
+
 	PlannerHNS::ControllerParams controlParams;
 	controlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01);
 	controlParams.Velocity_Gain = PlannerHNS::PID_CONST(0.1, 0.005, 0.1);
@@ -429,6 +441,7 @@ void PlannerX::UpdatePlanningParams()
 	m_LocalPlanner.m_SimulationSteeringDelayFactor = controlParams.SimulationSteeringDelay;
 	m_LocalPlanner.Init(controlParams, params, vehicleInfo);
 	m_LocalPlanner.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
+
 }
 
 void PlannerX::callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg)
@@ -902,6 +915,7 @@ void PlannerX::PlannerMainLoop()
 			 }
 		}
 
+		int iDirection = 0;
 		if(bInitPos && m_LocalPlanner.m_TotalPath.size()>0)
 		{
 //			bool bMakeNewPlan = false;
@@ -919,7 +933,6 @@ void PlannerX::PlannerMainLoop()
 
 			visualization_msgs::Marker behavior_rviz;
 
-			int iDirection = 0;
 			if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory > m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
 				iDirection = 1;
 			else if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory < m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
@@ -1036,8 +1049,38 @@ void PlannerX::PlannerMainLoop()
 		pub_LocalBasePath.publish(current_trajectory);
 		pub_LocalPath.publish(current_trajectory);
 		visualization_msgs::MarkerArray all_rollOuts;
+
+	
 		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
+
+		//Publish markers that visualize only when avoiding objects
+		if(enablePlannerDynamicSwitch){
+			visualization_msgs::MarkerArray all_rollOuts_dynamic;
+			std_msgs::Int32 enableLattice;
+			if(iDirection != 0) { // if obstacle avoidance state,
+				all_rollOuts_dynamic = all_rollOuts;
+		   		
+			     	for(auto &ro : all_rollOuts_dynamic.markers){
+					ro.ns = "global_lane_array_marker_dynamic";
+				}
+				pub_LocalTrajectoriesRviz_dynamic.publish(all_rollOuts_dynamic);
+				enableLattice.data = 1;
+			}else{
+				visualization_msgs::Marker delMarker;
+#ifndef ROS_KINETIC
+				delMarker.action = visualization_msgs::Marker::DELETE;
+#else
+				delMarker.action = visualization_msgs::Marker::DELETEALL;
+#endif
+				delMarker.ns = "global_lane_array_marker_dynamic";
+				all_rollOuts_dynamic.markers.push_back(delMarker);
+				pub_LocalTrajectoriesRviz_dynamic.publish(all_rollOuts_dynamic);
+				enableLattice.data = 0;
+			}
+			pub_EnableLattice.publish(enableLattice); //Publish flag of object avoidance
+		}
+
 
 		if(m_CurrentBehavior.bNewPlan)
 		{
@@ -1048,7 +1091,6 @@ void PlannerX::PlannerMainLoop()
 			str_out << "LocalPath_";
 			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
 		}
-
 
 
 		//Traffic Light Simulation Part

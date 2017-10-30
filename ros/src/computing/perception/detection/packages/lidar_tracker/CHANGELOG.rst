@@ -2,6 +2,19 @@
 Changelog for package lidar_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* [hotfix] fixes to lidar_tracker package(`#787 <https://github.com/cpfl/autoware/issues/787>`_)
+  -Fixed a typo in the ground_filter launch file from points_preprocessor
+  -Fixed ID duplication in kf_lidar_tracker
+  Tested on Ubuntu 14.04 and 16.04
+* ROS_WARN_ONCE " VectorMap Server Call failed"
+* Add vector_map_server to RuntimeManager  `#722 <https://github.com/cpfl/autoware/issues/722>`_
+* Contributors: Abraham Monrroy, andoh104
+
 1.4.0 (2017-08-04)
 ------------------
 * Publishing unique IDs (`#740 <https://github.com/CPFL/Autoware/issues/740>`_)

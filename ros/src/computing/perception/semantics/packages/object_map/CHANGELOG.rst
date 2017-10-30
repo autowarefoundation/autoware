@@ -2,6 +2,14 @@
 Changelog for package object_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* Add feature to put simulated obstacles in astar planner
+* Contributors: TomohitoAndo
+
 1.4.0 (2017-08-04)
 ------------------
 

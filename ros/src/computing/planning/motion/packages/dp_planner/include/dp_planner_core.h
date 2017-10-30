@@ -157,6 +157,7 @@ protected:
 
   	std::vector<std::string>    m_LogData;
 
+	bool  enablePlannerDynamicSwitch;
 
 protected:
 	//ROS messages (topics)
@@ -173,10 +174,12 @@ protected:
 	ros::Publisher pub_GoalPoint;
 	ros::Publisher pub_AStarStartPoint;
 	ros::Publisher pub_AStarGoalPoint;
+	ros::Publisher pub_EnableLattice;
 
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
 	ros::Publisher pub_LocalTrajectoriesRviz;
+	ros::Publisher pub_LocalTrajectoriesRviz_dynamic;
 	ros::Publisher pub_TestLineRviz;
 	ros::Publisher pub_BehaviorStateRviz;
 	ros::Publisher pub_SafetyBorderRviz;

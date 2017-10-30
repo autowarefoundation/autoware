@@ -2,6 +2,14 @@
 Changelog for package autoware_connector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* autoware_connector deps fixed
+* Contributors: Dejan Pangercic
+
 1.4.0 (2017-08-04)
 ------------------
 

@@ -2,6 +2,14 @@
 Changelog for package state_machine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+* update decision maker config
+* Contributors: Yusuke FUJII
+
 1.4.0 (2017-08-04)
 ------------------
 
