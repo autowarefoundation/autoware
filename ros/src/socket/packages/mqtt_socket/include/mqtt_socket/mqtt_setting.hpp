@@ -1,24 +1,33 @@
-#include "std_msgs/String.h"
+#define MQTT_NODE_NAME "mqtt_socket"
+#define MQTT_CONFIG_FILE_NAME "/mqtt_config.yaml"
 
-#define VEHICLEID       "1"
-#define MQTT_ADDRESS    "localhost"
-#define MQTT_PORT       1883
-#define CLIENTID        "vehicle"
-#define SENDER_TOPIC    "vehicle/"
-#define RECIEVER_TOPIC  "vehicle/"
-#define PAYLOAD         "Autoware"
-#define QOS             0
-#define TIMEOUT         10000L
+// MODE
 #define AUTO_MODE       1
 #define REMOTE_MODE     2
 #define NORMAL_MODE     0
 #define EMERGENCY_MODE  1
-#define ACCEL_MAX_VAL   100
-#define BRAKE_MAX_VAL   10000
-#define STEER_MAX_VAL   0.6
-#define LINEAR_X_MAX_VAL 15 * 1000 / 60 / 60 // 15 km/h
-#define DOWNSAMPLE      0.1
-#define GEAR_D          16
-#define GEAR_N          32
-#define GEAR_R          64
-#define GEAR_P          128
+
+// REMOTE CMD
+static int vehicle_id;
+static int accel_max_val;
+static int brake_max_val;
+static float steer_max_val;
+static float linear_x_max_val;
+
+// CANINFO
+static float caninfo_downsample;
+
+// GEAR
+int gear_d;
+int gear_n;
+int gear_r;
+int gear_p;
+
+// MQTT
+static struct mosquitto *mqtt_client = NULL;
+static string mqtt_client_id;
+static string mqtt_address;
+static int mqtt_port;
+static string mqtt_topic;
+static int mqtt_qos;
+static int mqtt_timeout;

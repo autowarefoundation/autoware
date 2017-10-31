@@ -3,6 +3,7 @@ project(mqtt_socket)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   std_msgs
   autoware_msgs
 )
@@ -10,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs autoware_msgs
+  CATKIN_DEPENDS roscpp roslib std_msgs autoware_msgs
 )
 
 include_directories(
@@ -19,13 +20,13 @@ include_directories(
 )
 
 add_executable(mqtt_sender nodes/mqtt_sender/mqtt_sender.cpp)
-target_link_libraries(mqtt_sender -lmosquitto ${catkin_LIBRARIES})
+target_link_libraries(mqtt_sender -lmosquitto -lyaml-cpp ${catkin_LIBRARIES})
 add_dependencies(mqtt_sender
   autoware_msgs_generate_messages_cpp
 )
 
 add_executable(mqtt_receiver nodes/mqtt_receiver/mqtt_receiver.cpp)
-target_link_libraries(mqtt_receiver -lmosquitto ${catkin_LIBRARIES})
+target_link_libraries(mqtt_receiver -lmosquitto -lyaml-cpp ${catkin_LIBRARIES})
 add_dependencies(mqtt_receiver
   autoware_msgs_generate_messages_cpp
 )
