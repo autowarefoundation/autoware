@@ -1,0 +1,2 @@
+- name: oculus_sender
+  subscribe: [/current_pose, /obj_X/obj_pose]

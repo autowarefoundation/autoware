@@ -1,0 +1,43 @@
+<launch>
+<arg name="robot_name"/>
+<arg name="init_pose"/>
+<arg name="config_file"/>
+
+<node name="urdf_spawner$(arg robot_name)" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+args="$(arg init_pose) -urdf -model $(arg robot_name) -param robot_description"/>
+
+
+<!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find catvehicle)/config/$(arg config_file)" command="load" ns="/$(arg robot_name)"/>
+  <param name="tf_prefix" value="$(arg robot_name)"/>
+
+<!-- load the controllers -->
+<node name="controller_spawner$(arg robot_name)" pkg="controller_manager" type="spawner" respawn="false"
+output="screen" ns="/$(arg robot_name)" args="joint1_velocity_controller joint2_velocity_controller front_left_steering_position_controller front_right_steering_position_controller  joint_state_controller"/>
+
+<!-- convert joint states to TF transforms for rviz, etc -->
+<node name="robot_state_publisher$(arg robot_name)" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/$(arg robot_name)/joint_states" />
+</node>
+
+<!-- need for publishing joint states that are not controlled -->
+<node name="joint_state_publisher$(arg robot_name)" pkg="joint_state_publisher" type="joint_state_publisher" respawn="false" output="screen">
+    <remap from="/joint_states" to="/$(arg robot_name)/joint_states" />
+</node>
+
+<!-- needed in order to accept cmd_vel inputs to drive the car -->
+<node name="cmdvel2gazebo$(arg robot_name)" pkg="cmdvel2gazebo" type="cmdvel2gazebo_node" respawn="false" output="screen"> 
+<!-- remap the topics to match our robot's name and namespace -->
+<remap from="/catvehicle/cmd_vel" to="/$(arg robot_name)/cmd_vel" />
+<remap from="/catvehicle/joint1_velocity_controller/command" to="/$(arg robot_name)/joint1_velocity_controller/command" />
+<remap from="/catvehicle/joint2_velocity_controller/command" to="/$(arg robot_name)/joint2_velocity_controller/command" />
+<remap from="/catvehicle/front_left_steering_position_controller/command" to="/$(arg robot_name)/front_left_steering_position_controller/command" />
+<remap from="/catvehicle/front_right_steering_position_controller/command" to="/$(arg robot_name)/front_right_steering_position_controller/command" />
+</node>
+
+<!-- publish the path information of this vehicle -->
+<node name="odom2path$(arg robot_name)" pkg="catvehicle" type="odom2path.py" respawn="true" output="screen" args="-n /$(arg robot_name)">
+</node>
+
+
+</launch>

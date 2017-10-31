@@ -1,0 +1,31 @@
+ORB-SLAM Localizer with External Reference Mapping
+
+This is a localizer node that uses maps generated from built-in mapper.
+
+Requirements:
+- Eigen
+- PCL
+- OpenCV
+- OpenGL
+- GLEW
+- GLUT
+
+
+Mapping HOWTO
+
+1) Prepare ROS bag files containing both image streams and ground truth pose 
+   (may be separated). Ground truth pose must be in message type "geometry_msgs/
+   PoseStamped".
+2) Make a copy of configuration file config/orb-slam2.yaml.in to some place, and
+   edit it to put your configurations regarding:
+   - Camera parameters
+   - Localization output
+3) Run the script orb_mapping.launch:
+   $ roslaunch orb_localizer orb_mapping.launch \
+   config_file:=<path_to_orb-slam-config> \
+   external_pose_topic:=<topic_of_map_ground_truth_pose> \
+
+   Please wait until visualization windows is open
+   
+4) Play the bags in slow rate
+5) To stop mapping, press Ctrl+C in the console

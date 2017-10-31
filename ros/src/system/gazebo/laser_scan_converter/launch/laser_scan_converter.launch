@@ -1,0 +1,7 @@
+<launch>
+	<node pkg="laser_scan_converter" name="laser_scan_converter" type="laser_scan_converter_node" >
+		<remap from="points_in" to="/catvehicle/front_laser_points"/>
+		<remap from="points_out" to="/laser_scan" />
+
+	</node>
+</launch>

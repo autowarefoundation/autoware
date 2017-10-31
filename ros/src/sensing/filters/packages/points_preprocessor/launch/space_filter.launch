@@ -1,0 +1,24 @@
+<!-- Launch file for Space Filter -->
+<launch>
+	<arg name="subscribe_topic" default="/points_raw" />
+	<arg name="vertical_removal" default="true" />
+	<arg name="below_distance" default="-1.3" />
+	<arg name="above_distance" default="0.5" />
+	
+	<arg name="lateral_removal" default="false" />
+	<arg name="left_distance" default="5" />
+	<arg name="right_distance" default="5" />
+
+	<!-- rosrun lidar_tracker space_filter -->
+	<node pkg="points_preprocessor" type="space_filter" name="space_filter">
+		<param name="subscribe_topic" value="$(arg subscribe_topic)" />
+		<param name="vertical_removal" value="$(arg vertical_removal)" />
+		<param name="below_distance" value="$(arg below_distance)" />
+		<param name="above_distance" value="$(arg above_distance)" />
+
+		<param name="lateral_removal" value="$(arg lateral_removal)" />
+		<param name="left_distance" value="$(arg left_distance)" />
+		<param name="right_distance" value="$(arg right_distance)" />
+	</node>
+
+</launch>

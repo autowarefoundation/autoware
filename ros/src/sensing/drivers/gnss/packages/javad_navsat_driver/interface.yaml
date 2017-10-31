@@ -1,0 +1,4 @@
+- {name: javad_serial_driver}
+- {name: javad_topic_driver}
+- name: javad_topic_serial_driver
+  publish: [/nmea_sentence]

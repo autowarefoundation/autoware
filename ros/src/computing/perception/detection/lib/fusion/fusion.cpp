@@ -61,7 +61,7 @@ static std::vector<float> filtered_distances;
 static std::vector<float> filtered_min_heights;//stores the min height of the object
 static std::vector<float> filtered_max_heights;//stores the max height of the object
 
-static points2image::PointsImage points_msg;
+static autoware_msgs::PointsImage points_msg;
 
 static bool objectsStored = false, pointsStored = false;
 
@@ -265,7 +265,7 @@ static void showRects(IplImage *image, int object_num, const std::vector<int>& c
 }
 #endif
 
-void setDetectedObjects(const cv_tracker::image_obj& detected_objects)
+void setDetectedObjects(const autoware_msgs::image_obj& detected_objects)
 {
 	objectsStored = false;
 	obj_type = detected_objects.type;
@@ -283,7 +283,7 @@ void setDetectedObjects(const cv_tracker::image_obj& detected_objects)
 	objectsStored = true;
 }
 
-/*void setScanImage(const scan2image::ScanImage& scan_image)
+/*void setScanImage(const autoware_msgs::ScanImage& scan_image)
 {
 #if _DEBUG
 	if(image == nullptr){
@@ -303,7 +303,7 @@ void setDetectedObjects(const cv_tracker::image_obj& detected_objects)
 	g_scan_image.min_y = scan_image.min_y;
 }*/
 
-void setPointsImage(const points2image::PointsImage& points_image)
+void setPointsImage(const autoware_msgs::PointsImage& points_image)
 {
 #if _DEBUG
 	if(image == nullptr){
@@ -370,7 +370,8 @@ void calcDistance()
 		}
 
 		std::vector<float> distance_candidates;
-		for(int j = g_corner_points[0+i*4]; j < g_corner_points[0+i*4] + g_corner_points[2+i*4]; j++) {
+		int max_right_corner_point = (g_corner_points[0+i*4] + g_corner_points[2+i*4])>g_scan_image.distance.size()-1 ? g_scan_image.distance.size()-1 : (g_corner_points[0+i*4] + g_corner_points[2+i*4]);
+		for(int j = g_corner_points[0+i*4]; j < max_right_corner_point; j++) {
 		    for(int k = search_scope_min_y; k <= search_scope_max_y; k++) {
 			if(g_scan_image.distance[j][k] != NO_DATA) {
 			    distance_candidates.push_back(g_scan_image.distance[j][k]);
@@ -445,13 +446,13 @@ std::vector<float> getMaxHeights()
 	return filtered_max_heights;
 }
 
-std::vector<cv_tracker::image_rect_ranged> getObjectsRectRanged()
+std::vector<autoware_msgs::image_rect_ranged> getObjectsRectRanged()
 {
-	std::vector<cv_tracker::image_rect_ranged> fused_objects;
+	std::vector<autoware_msgs::image_rect_ranged> fused_objects;
 	for (int i=0; i<filtered_objects_num; i++)
 	{
 		int base = i * 4;
-		cv_tracker::image_rect_ranged obj_ranged;
+		autoware_msgs::image_rect_ranged obj_ranged;
 		obj_ranged.rect.x      = filtered_corner_points.at(base);
 		obj_ranged.rect.y      = filtered_corner_points.at(base + 1);
 		obj_ranged.rect.width  = filtered_corner_points.at(base + 2);

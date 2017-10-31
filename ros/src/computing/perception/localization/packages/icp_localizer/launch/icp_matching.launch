@@ -7,7 +7,7 @@
   <arg name="offset" default="linear" />
   <arg name="sync" default="false" />
   
-  <node pkg="icp_localizer" type="icp_matching" name="icp_matching" output="screen">
+  <node pkg="icp_localizer" type="icp_matching" name="icp_matching" output="log">
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="queue_size" value="$(arg queue_size)" />
     <param name="offset" value="$(arg offset)" />

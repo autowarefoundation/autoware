@@ -7,6 +7,7 @@ buttons:
       stdout_func : self.rosbag_play_progress_bar
       ext_toggle_enables :
       - self.label_rosbag_play_bar
+      panel : self.panel_rosbag_play
       start :
         border : 20
         flags  : [ left ]
@@ -19,6 +20,11 @@ buttons:
       sim_time :
         border : 20
         flags  : [ left, no_category ]
+
+  gazebo :
+    run : sh -c "$(rospack find runtime_manager)/scripts/gazebo.sh"
+    gui :
+      flags : [ kill_children ]
 
 params :
   - name  : rosbag_play

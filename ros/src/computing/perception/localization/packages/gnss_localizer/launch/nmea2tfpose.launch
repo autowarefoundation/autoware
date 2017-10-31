@@ -3,7 +3,7 @@
 
   <arg name="plane" default="7"/>
 
-  <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose" output="screen">
+  <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose" output="log">
     <param name="plane" value="$(arg plane)"/>
   </node>
 

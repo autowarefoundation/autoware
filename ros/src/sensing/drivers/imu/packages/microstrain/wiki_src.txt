@@ -1,0 +1,185 @@
+
+== Overview ==
+
+Interface (driver) software, including ROS node, for Microstrain 3DM-GX5-45.
+
+The interface makes use of the MIP SDK Version 1.1 from Microstrain to communicate with the device.  Includes the following applications:
+ 
+=== Supported Devices ===
+
+== ROS Nodes ==
+{{{
+#!clearsilver CS/NodeAPI
+node.0 {
+ name = microstrain_3dm_gx5_45
+ desc = ROS node that captures IMU/GPS data.
+ pub {
+  0.name= gps/fix
+  0.type= sensor_msgs/NavSatFix
+  0.desc= See [[#gpsmsg|Navsatfix message description]] below.
+  1.name= imu/data
+  1.type= sensor_msgs/Imu
+  1.desc= See [[#imumsg|Imu message description]] below
+  2.name= nav/odom 
+  2.type= nav_msgs/Odometry
+  2.desc= See [[#odommsg|Odometry message description]] below
+  3.name= nav/status
+  3.type= std_msgs/Int16MultiArray
+  3.desc= See below [[#navstatusmsg|Nav Status message description]]
+ }
+ srv {
+  0.name = reset_kf
+  0.type = std_srvs/Empty
+  0.desc = Resets the Kalman filter on the device
+ }
+ param {
+  0.name = port
+  0.type = string
+  0.desc = Serial port - Linux only
+  0.default = /dev/ttyACM0
+  1.name = baud_rate
+  1.type = int
+  1.desc = Baud rate of serial connection
+  1.default = 115200
+  2.name= device_setup
+  2.type= bool
+  2.desc= If true, puts device in idle mode and configures the device.If false, skips configuration.  Important: the configuration parameters below are not effective unless this flag is true.
+  2.default= true
+  3.name= readback_settings
+  3.type= bool
+  3.desc= coming soon
+  3.default= true
+  4.name= auto-init
+  4.type= bool
+  4.desc= tbd
+  4.default= true
+  5.name=dynamics_mode
+  5.type=int
+  5.desc=Vehicle dynamics mode 0x01=Portable, 0x02=Automotive, 0x03=Airborne
+  5.default = 1
+  6.name=declination_source
+  6.type=int
+  6.desc=Possible declination sources: 0x01=Node, device reports magnetic north, 0x02=Internal World Magnetic Model, 0x03=Manual (see declination parameter)
+  6.default=2
+  8.name=gps_frame_id 
+  8.type=string
+  8.desc= Value for the frame_id field in the header of the NavSatFix message published on the gps/fix topic
+  8.default=wgs84
+  9.name=imu_frame_id 
+  9.type=string
+  9.desc=Value of the frame_id field in the header of the Imu message publised in the imu/data topic
+  9.default=base_link
+  10.name=odom_frame_id 
+  10.type=string
+  10.desc=Value of the frame_id field in the header of the Odometry message published on the nav/odom topic
+  10.default=wgs84
+  11.name=odom_child_frame_id 
+  11.type=string
+  11.desc=Value of the child_frame_id field in the Odometry message published on the nav/odom topic.
+  11.default=base_link
+  12.name=publish_gps
+  12.type=bool
+  12.desc=Sets if ~gps/fix should be advertised/published or not. Note - to maximize performance you may want to only publish the Odometry messages
+  12.default=true
+  13.name=publish_imu
+  13.type=bool
+  13.desc= Sets if ~imu/data should be advertised/published or not.
+  13.default=true
+  14.name=publish_gps
+  14.type=bool
+  14.desc=Sets if ~nav/odom should be advertised/published or not.
+  14.default=true
+  15.name=gps_rate
+  15.type=int
+  15.desc=Target update (publishing) rate for gps/fix messages. See [[#rates|Update Rates]] below.
+  15.default=1
+  16.name=imu_rate
+  16.type=int
+  16.desc=Target update (publishing) rate for imu/data messages. See [[#rates|Update Rates]] below.
+  16.default=10
+  17.name=odom_rate
+  17.type=int
+  17.desc=Target update (publishing) rate for nav/odom messages. See [[#rates|Update Rates]] below.
+  17.default=10
+ }
+}
+}}}
+
+
+<<Anchor(rates)>>>
+=== Update Rates ===
+
+The rates are set as a target value in Hz. The device accepts a decimation value for each output; the packet rate is base_rate/decimation, where decimation is an integer. The program calculates the decimation to get close the the desired rate, based on polling the sensor for its base rate.
+
+For the 3DM-GX4-45 and 3DM-GX5-45 devices tested the base rates were...
+
+ * GPS - base rate = 4 Hz
+ * IMU - base rate = 500 Hz
+ * Filter - base rate = 500 Hz
+
+<<Anchor(gpsmsg)>>
+=== Nav Sat Fix message description == 
+Position covariance is populated with diagonals based on reported horizontal and vertical accuracy. The status.status field is the LLH position data "valid flag"-1.  The valid flag mapping from the 3DM protocol is
+  * 0x0001 – Latitude and Longitude Valid
+  * 0x0002 – Ellipsoid Height Valid
+  * 0x0004 – MSL Height Valid
+  * 0x0008 – Horizontal Accuracy Valid
+  * 0x0010 – Vertical Accuracy Valid
+  * E.g., if all valid, then the status.status field should be 30.
+
+<<Anchor(imumsg)>>
+=== IMU message description ===
+Coming soon
+
+<<Anchor(odommsg)>>
+=== Odometry message description ===
+ * Currently the pose.position is the longitude (x), latitude (y) and ellipsoid height (z)
+ * pose.covariance and twist.covariance include diagonal elements for position and attitude
+
+<<Anchor(navstatusmsg)>>
+== Nav Status message description ===
+ 
+ * Includes three values - see communication protocol for full documentation.
+   * filter_state
+     * 0x00 – Startup
+     * 0x01 – Initialization (see status flags)
+     * 0x02 – Running, Solution Valid
+     * 0x03 – Running, Solution Error (see status flags)
+   * dynamics mode
+     * 0x01 – Portable (device default)
+     * 0x02 – Automotive 
+     * 0x03 – Airborne
+   * status_flags
+     * See device documentation
+
+
+== Build Instructions ==
+
+Building from source
+{{{
+DISTRO={hydro|indigo}
+cd ~/catkin_ws
+rosdep update
+rosdep check --from-paths src/microstrain_3dm_gx5_45/ --rosdistro=$DISRO
+rosdep install --from-paths src/microstrain_3dm_gx5_45/ --ignore-src --rosdistro=$DISTRO --simulate
+rosdep install --from-paths src/microstrain_3dm_gx5_45/ --ignore-src --rosdistro=$DISTRO
+catkin_make
+source devel/setup.bash
+}}}
+ 
+== Dev Notes ==
+ 
+ The mip_sdk_user_functions are C functions that need to be called by various parts of the SDK.  The main purpose of these functions is to implement the platform-specific serial (RS232) port elements.  The prototype serial port open function takes the COM number as an integer input - which is clunky for Linux serial ports.  Changed this to take a string defining the port (e.g., /dev/ttyS0), but this necessitated also modifying the mip_sdk_interface.[ch] files, since this is what is called by the application - changed the mip_interface_init function to accept a string argument for specifying the port.
+ 
+== TODO ==
+ 
+ * Verify order of quaternions
+ 
+
+== Examples ==
+
+
+
+== Launch File Examples ==
+ 
+Example launch files are provided with the package to illustrate setting the various parameters.  

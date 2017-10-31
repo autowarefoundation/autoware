@@ -1,0 +1,15 @@
+How to write map
+1) Write signature, number of KeyFrame, MapPoint and mvpReferenceMapPoints
+2) Write serialization result of KeyFrames to fstream (one-by-one)
+3) Write serialization result of MapPoint to fstream (one-by-one)
+4) Write list of id of reference MapPoint (in single step)
+5) Write serialization of KeyFrameDatabase::mvInvertedFile (in single step)
+
+How to read map (tentative)
+
+
+
+
+
+Start mapper using --loadmap
+start NewCollege camera bag at 400

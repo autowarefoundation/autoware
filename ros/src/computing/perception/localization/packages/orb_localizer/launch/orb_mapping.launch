@@ -1,0 +1,34 @@
+<launch>
+	<param name="use_sim_time" value="true" />
+
+	<arg name="orb_config" />
+	<arg name="map_file" default="/tmp/orbx.map" />
+	<arg name="mask_image" default="$(find orb_localizer)/config/mask.png" />
+	<arg name="image_topic" default="/camera/image_raw" />
+	<arg name="external_pose_topic" default="/current_pose" />
+	<arg name="image_rate" default="10" />
+
+	<!-- slow down -->
+	<node name="downsample" pkg="topic_tools" type="throttle" args="messages /camera/image_raw $(arg image_rate) /camera/image_raw_d" />
+	
+	<!--
+	0 = no process
+	1 = gamma adjustment
+	2 = to illuminati invariant
+	-->
+	<arg name="processMode" default="1" />
+
+	<node name="imgprocx" pkg="orb_localizer" type="imgprocx" args="$(arg mask_image) $(arg processMode)" output="screen">
+		<param name="input_topic" value="/camera/image_raw_d" />
+		<param name="output_topic" value="/camera/image_hs" />
+	</node>
+
+
+	<node name="orb_mapping_1" pkg="orb_localizer" type="orb_mapping" output="screen">
+		<param name="map_file"                    value="$(arg map_file)" />
+		<param name="configuration_file"          value="$(arg orb_config)" />
+		<param name="external_localization_topic" value="$(arg external_pose_topic)"   />
+		<param name="image_topic"                 value="/camera/image_hs" />
+	</node>
+
+</launch>

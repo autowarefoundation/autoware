@@ -1,0 +1,4 @@
+- name: grasshopper3
+  publish: [/camera/camera_info, /camera/image_raw]
+- name: ladybug
+  publish: [/camera/camera_info, /camera/image_raw]

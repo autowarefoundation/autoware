@@ -1,0 +1,4 @@
+geometry_msgs/PoseStamped pose
+autoware_msgs/lane waypoints
+---
+vector_map_msgs/CurveMirrorArray objects

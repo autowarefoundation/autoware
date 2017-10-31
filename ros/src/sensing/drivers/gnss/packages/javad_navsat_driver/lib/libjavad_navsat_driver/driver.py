@@ -58,7 +58,7 @@ class RosNMEADriver(object):
                           "Sentence was: %s" % repr(nmea_string))
             return False
 
-        parsed_sentence = libnmea_navsat_driver.parser.parse_nmea_sentence(nmea_string)
+        parsed_sentence = libjavad_navsat_driver.parser.parse_nmea_sentence(nmea_string)
         if not parsed_sentence:
             rospy.logdebug("Failed to parse NMEA sentence. Sentece was: %s" % nmea_string)
             return False

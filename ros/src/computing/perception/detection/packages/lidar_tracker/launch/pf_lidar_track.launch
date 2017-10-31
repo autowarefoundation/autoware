@@ -1,0 +1,6 @@
+<!-- Launch file for Particle Filter Tracker -->
+<launch>
+	<!-- rosrun lidar_tracker pf_lidar_track -->
+	<node pkg="lidar_tracker" type="pf_lidar_track" name="pf_lidar_track" />
+
+</launch>

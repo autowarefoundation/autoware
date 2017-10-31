@@ -1,0 +1,75 @@
+<launch>
+
+  <arg name="use_2dnav_goal" default="false" />
+  <arg name="map_frame" default="map" />
+  <arg name="angle_size" default="42" />
+  <arg name="minimum_turning_radius" default="5.5" />
+  <arg name="obstacle_threshold" default="70" />
+  <arg name="robot_length" default="5.0" />
+  <arg name="robot_width" default="4.0" />
+  <arg name="base2back" default="0.8" />
+  <arg name="curve_weight" default="1.00" />
+  <arg name="reverse_weight" default="2.50" />
+  <arg name="distance_heuristic_weight" default="1.0" />
+  <arg name="potential_weight" default="10.0" />
+  <arg name="lateral_goal_range" default="0.5" /> <!-- meter -->
+  <arg name="longitudinal_goal_range" default="2.0" /> <!-- meter -->
+  <arg name="goal_angle_range" default="48.0" /> <!-- degree -->
+  <arg name="time_limit" default="5.0" />
+  <arg name="use_back" default="false" />
+  <arg name="use_wavefront_heuristic" default="false" />
+  <arg name="use_potential_heuristic" default="true" />
+  <arg name="publish_marker" default="true" />
+
+  <!-- params for search_info -->
+  <arg name="obstacle_detect_count" default="8" />
+  <arg name="avoid_distance" default="13" />
+  <arg name="avoid_velocity_limit_mps" default="4.5" />
+  <arg name="upper_bound_ratio" default="1.20" />
+  <arg name="avoidance" default="true" /> <!-- always avoid regardless of current state -->
+  <arg name="switch_path" default="true" /> <!-- generate avoiding path and follow it -->
+  
+  <node pkg="astar_planner" type="obstacle_avoid" name="obstacle_avoid" output="log">
+    <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
+    <param name="map_frame" value="$(arg map_frame)" />
+    <param name="angle_size" value="$(arg angle_size)" />
+    <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
+    <param name="obstacle_threshold" value="$(arg obstacle_threshold)" />
+    <param name="use_back" value="$(arg use_back)" />
+    <param name="robot_length" value="$(arg robot_length)" />
+    <param name="robot_width" value="$(arg robot_width)" />
+    <param name="base2back" value="$(arg base2back)" />
+    <param name="curve_weight" value="$(arg curve_weight)" />
+    <param name="reverse_weight" value="$(arg reverse_weight)" />
+    <param name="distance_heuristic_weight" value="$(arg distance_heuristic_weight)" />
+    <param name="potential_weight" value="$(arg potential_weight)" />
+    <param name="time_limit" value="$(arg time_limit)" />
+    <param name="lateral_goal_range" value="$(arg lateral_goal_range)" />
+    <param name="longitudinal_goal_range" value="$(arg longitudinal_goal_range)" />
+    <param name="goal_angle_range" value="$(arg goal_angle_range)" />
+    <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
+    <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
+    <param name="publish_marker" value="$(arg publish_marker)" />
+
+    <param name="obstacle_detect_count" value="$(arg obstacle_detect_count)" />
+    <param name="avoid_distance" value="$(arg avoid_distance)" />
+    <param name="avoid_velocity_limit_mps" value="$(arg avoid_velocity_limit_mps)" />
+    <param name="upper_bound_ratio" value="$(arg upper_bound_ratio)" />
+    <param name="avoidance" value="$(arg avoidance)" />
+    <param name="change_path" value="$(arg switch_path)" />
+  </node>
+
+  <!-- obstacle simulation node -->
+  <arg name="obstacle_height" default="1.0" />
+  <arg name="obstacle_width" default="1.0" />
+  <arg name="points_interval" default="0.1" />
+  <arg name="obstacle_frame" default="/velodyne" />
+
+  <node pkg="astar_planner" type="obstacle_sim" name="obstacle_sim" output="screen">
+    <param name="obstacle_height" value="$(arg obstacle_height)" />
+    <param name="obstacle_width" value="$(arg obstacle_width)" />
+    <param name="points_interval" value="$(arg points_interval)" />
+    <param name="obstacle_frame" value="$(arg obstacle_frame)" />
+  </node>
+
+</launch>

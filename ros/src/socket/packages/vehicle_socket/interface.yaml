@@ -1,0 +1,4 @@
+- name: vehicle_receiver
+  publish: [/can_info, /mode_info]
+- name: vehicle_sender
+  subscribe: [/twist_cmd, /mode_cmd, /gear_cmd, /accel_cmd, /steer_cmd, /brake_cmd]

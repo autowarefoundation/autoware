@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!--
+
+Author: Jonathan Sprinkle, Sam Taylor, Alex Warren
+Copyright (c) 2015 Arizona Board of Regents
+All rights reserved.
+
+Permission is hereby granted, without written agreement and without 
+license or royalty fees, to use, copy, modify, and distribute this
+software and its documentation for any purpose, provided that the 
+above copyright notice and the following two paragraphs appear in 
+all copies of this software.
+
+IN NO EVENT SHALL THE ARIZONA BOARD OF REGENTS BE LIABLE TO ANY PARTY 
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES 
+ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN 
+IF THE ARIZONA BOARD OF REGENTS HAS BEEN ADVISED OF THE POSSIBILITY OF 
+SUCH DAMAGE.
+
+THE ARIZONA BOARD OF REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, 
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY 
+AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER
+IS ON AN "AS IS" BASIS, AND THE ARIZONA BOARD OF REGENTS HAS NO OBLIGATION
+TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+Summary: 
+This file includes the control interfaces for ROS-based control
+through Gazebo. For more information and for the tutorials used to create
+this file, see
+http://gazebosim.org/tutorials/?tut=ros_control#Prerequisites
+
+Sensors are included separately, based on the arguments passed to the xacro include
+
+-->
+<robot>
+
+
+<gazebo reference="front_laser_link">
+        <mu1>0.6</mu1>
+        <mu2>0.5</mu2>
+</gazebo>
+
+<gazebo reference="front_laser_link">
+        <sensor type="ray" name="sick_lms291">
+              <pose>0 0 0 0 0 0</pose>
+                   <visualize>true</visualize>
+                    <update_rate>40</update_rate>
+                       <ray>
+                           <scan>
+                                <horizontal>
+                                       <samples>180</samples>
+                                           <resolution>1</resolution>
+                                            <min_angle>-1.57</min_angle>
+                                            <max_angle>1.57</max_angle>
+                                </horizontal>
+                           </scan>
+                           <range>
+                                <min>1.5</min>
+                                <!-- This range is in m, I hope... -->
+                                <max>80.0</max>
+                                <resolution>0.05</resolution>
+                           </range>
+
+                           <noise>
+                                <type>gaussian</type>
+                                <mean>0.0</mean>
+                                <stddev>0.02</stddev>
+                           </noise>
+
+                      </ray>
+			   <plugin name="sick_lms291_controller" filename="libgazebo_ros_laser.so">
+<!--			      <robotNamespace>/catvehicle</robotNamespace>-->
+			      <topicName>/$(arg roboname)/front_laser_points</topicName>
+			      <frameName>/front_laser_link</frameName>
+			      <gaussianNoise>0.02</gaussianNoise>
+                 </plugin>
+      </sensor>
+</gazebo>
+
+</robot>
+

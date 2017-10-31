@@ -27,16 +27,21 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
+          dialog_width  : 400
+          dialog_height : 450
       - name : lazy_ndt_mapping
         cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
+          dialog_width  : 400
+          dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
+          dialog_height : 350
           stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
           x  :
             user_category : ''
@@ -53,21 +58,27 @@ subs :
       - name : icp_matching
         cmd  : roslaunch icp_localizer icp_matching.launch
         param: icp
-    - name : vel_pose_mux
-      desc : vel_pose_mux desc sample
+    - name : autoware_connector
+      desc : autoware_connector desc sample
       subs :
-      - name : vel_pose_mux
-        desc : vel_pose_mux desc sample
-        cmd  : roslaunch vel_pose_mux vel_pose_mux.launch
-        param: vel_pose_mux
+      - name : can2odom
+        desc : can2odom desc sample
+        cmd  : roslaunch autoware_connector can2odom.launch
+      - name : vel_pose_connect
+        desc : vel_pose_connect desc sample
+        cmd  : roslaunch autoware_connector vel_pose_connect.launch
+        param: vel_pose_connect
         gui  :
-           pose_mux_select:
+           topic_pose_stamped:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
-           vel_mux_select:
+             flags : [ nl ]
+             prop  : 1
+           topic_twist_stamped:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
-           stat_topic : [ lf ]  
+             flags : [ nl ]
+             prop  : 1
 
   - name : Detection
     desc : Detection desc sample
@@ -124,9 +135,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-            
-      - name : rcnn_node
-        desc : rcnn_node desc sample
+
+      - name : rcnn_msr
+        desc : rcnn_msr desc sample
         cmd  : roslaunch cv_tracker rcnn.launch
         param: rcnn
         gui   :
@@ -136,6 +147,23 @@ subs :
           camera_id :
             border : 16
             flags : [ all ]
+
+      - name : ssd_unc
+        desc : ssd_unc desc sample
+        cmd  : roslaunch cv_tracker ssd.launch
+        param: ssd
+        gui   :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
+      - name : yolo2_wa
+        desc : yolo2_wa desc sample
+        cmd  : roslaunch cv_tracker yolo2.launch
+        param: yolo2
 
       - name : range_fusion
         desc : range_fusion desc sample
@@ -201,7 +229,16 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
+      - name : dummy_track
+        desc : dummy_track desc sample
+        cmd  : roslaunch cv_tracker dummy_track.launch
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
       - name : obj_reproj
         desc : obj_reproj desc sample
         cmd  : roslaunch cv_tracker reprojection.launch
@@ -229,6 +266,34 @@ subs :
         desc : euclidean_cluster desc sample
         cmd  : roslaunch lidar_tracker euclidean_clustering.launch
         param: euclidean_cluster
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : svm_lidar_detect
+        desc : svm_lidar_detect desc sample
+        cmd  : roslaunch lidar_tracker svm_lidar_detect.launch
+        param: svm_lidar_detect
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : kf_lidar_track
+        desc : kf_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker kf_lidar_track.launch
+        param: kf_lidar_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : pf_lidar_track
+        desc : pf_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker pf_lidar_track.launch
+        param: pf_lidar_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : euclidean_lidar_track
+        desc : euclidean_lidar_track desc sample
+        cmd  : roslaunch lidar_tracker euclidean_lidar_track.launch
+        param: euclidean_lidar_track
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -268,6 +333,18 @@ subs :
         param: region_tlr
         gui  :
           flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
+      - name : region_tlr_ssd
+        desc : region_tlr_ssd desc sample
+        cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
+        param : region_tlr_ssd
+        gui  :
+          flags : [ no_link, need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
           camera_id :
@@ -363,6 +440,16 @@ subs :
       cmd  : roslaunch object_map points2costmap.launch
       param: points2costmap
 
+    - name : potential_field
+      desc : potential_field desc sample
+      cmd  : roslaunch object_map potential_field.launch
+      param: potential_field
+
+    - name : dist_transform
+      desc : Generate distance transformed cost map from OccupancyGrid
+      cmd  : roslaunch object_map dist_transform.launch
+      param: dist_transform
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -386,31 +473,66 @@ subs :
           dialog: MyDialogLaneStop
       - name : lane_select
         desc : lane_select desc sample
-        cmd  : rosrun lane_planner lane_select
+        cmd  : roslaunch lane_planner lane_select.launch
         param: lane_select
     - name : freespace_planner
       desc : freespace_planner desc sample
       subs :
       - name : astar_navi
         desc : astar_navi desc sample
-        cmd  : rosrun freespace_planner astar_navi
+        cmd  : roslaunch freespace_planner astar_navi.launch
+        param: astar_navi
+    - name : way_planner (OpenPlanner)
+      desc : Global planner for OpenPlanner
+      subs :
+      - name : way_planner
+        desc : for global planning
+        cmd  : roslaunch way_planner way_planner.launch
+        param: way_planner
 
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : driving_planner
-      desc : driving_planner desc sample
+    - name : dp_planner (OpenPlanner)
+      desc : Local Planner for OpenPlanner
       subs :
+      - name : dp_planner
+        desc : for behavior and path planning
+        cmd  : roslaunch dp_planner dp_planner.launch
+        param: dp_planner
+      - name : ff_waypoint_follower
+        desc : Feedforward PID waypoint follower
+        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
+        param: ff_waypoint_follower
+    - name : astar_planner
+      desc : astar_planner desc sample
+      subs :
+      - name : obstacle_avoid
+        desc : obstacle_avoid desc sample
+        cmd  : roslaunch astar_planner obstacle_avoid.launch
+        param: obstacle_avoid
       - name : velocity_set
         desc : velocity_set desc sample
-        cmd  : roslaunch driving_planner velocity_set.launch
+        cmd  : roslaunch astar_planner velocity_set.launch
         param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+    - name : lattice_planner
+      desc : lattice_planner desc sample
+      subs :
+      - name : lattice_velocity_set
+        desc : lattice_velocity_set desc sample
+        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
+        param: lattice_velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
-        cmd  : rosrun driving_planner path_select
+        cmd  : rosrun lattice_planner path_select
       - name : lattice_trajectory_gen
         desc : lattice_trajectory_gen desc sample
-        cmd  : roslaunch driving_planner lattice_trajectory_gen.launch
+        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
         gui  :
           velocity:
@@ -420,15 +542,15 @@ subs :
             depend : param_flag
             depend_bool : 'lambda v : v == 1'
           minimum_lookahead_threshold:
-            depend : param_flag   
-            depend_bool : 'lambda v : v == 0'          
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
           threshold_ratio:
             depend : param_flag
-            depend_bool : 'lambda v : v == 0' 
+            depend_bool : 'lambda v : v == 0'
           stat_topic : [ lf ]
       - name : lattice_twist_convert
         desc : lattice_twist_convert desc sample
-        cmd  : rosrun driving_planner lattice_twist_convert
+        cmd  : rosrun lattice_planner lattice_twist_convert
 
     - name : waypoint_maker
       desc : waypoint_maker desc sample
@@ -439,7 +561,7 @@ subs :
          param: waypoint_loader
          gui  :
            lane_waypoint_csv :
-             prop  : 1    
+             prop  : 1
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -455,7 +577,7 @@ subs :
          param: waypoint_clicker
     - name : waypoint_follower
       desc : waypoint_follower desc sample
-      subs :   
+      subs :
        - name : pure_pursuit
          desc : pure_pursuit desc sample
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
@@ -464,16 +586,16 @@ subs :
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           lookahead_threshold:
+           lookahead_distance:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
-           minimum_lookahead_threshold:
-             depend : param_flag   
-             depend_bool : 'lambda v : v == 0'          
-           threshold_ratio:
+           minimum_lookahead_distance:
              depend : param_flag
-             depend_bool : 'lambda v : v == 0' 
-           stat_topic : [ lf ]  
+             depend_bool : 'lambda v : v == 0'
+           lookahead_ratio:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0'
+           stat_topic : [ lf ]
        - name : twist_filter
          desc : twist_filter desc sample
          cmd  : roslaunch waypoint_follower twist_filter.launch
@@ -482,7 +604,35 @@ subs :
          desc : wf_simulator desc sample
          cmd  : roslaunch waypoint_follower wf_simulator.launch
          param: wf_simulator
+         gui  :
+           initialize_source :
+             flags : [ nl ]
+           accel_rate :
+             flags : [ nl ]
+           position_error :
+             flags : [ nl ]
+
+  - name : Decision
+    desc : decision groups
+    subs :
+    - name : state_machine(old)
+      desc : state_machine desc sample
+      cmd  : roslaunch state_machine state_machine.launch
+    - name : decision_maker
+      desc : decision_maker desc sample
+      cmd  : roslaunch decision_maker decision_maker.launch
+      param: decision_maker
+      gui  :
+          dialog_width  : 400
+          dialog_height : 600
+
+    - name : planner_selector
+      desc : planner_selector desc sample
+      cmd  : roslaunch planner_selector planner_selector.launch
+      param: planner_selector
          
+
+
 buttons:
   car_dpm :
     param   : car_dpm
@@ -537,7 +687,7 @@ params :
       desc     : cpu_chks desc sample
       label    : CPU
       kind     : checkboxes
-      item_n   : psutil.NUM_CPUS
+      item_n   : get_cpu_count()
       v        : []
     - name     : nice
       desc     : nice desc sample
@@ -801,17 +951,34 @@ params :
       min   : 2
       max   : 10
       v     : 9
-      
+
   - name  : euclidean_cluster
     vars  :
-    - name    : publish_ground
-      desc    : publish_ground desc sample
-      label   : 'publish ground'
+    - name    : remove_ground
+      desc    : remove_ground desc sample
+      label   : 'remove ground'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : pose_estimation
+      desc    : pose_estimation desc sample
+      label   : 'pose_estimation'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
       kind    : checkbox
       v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
+
     - name    : publish_filtered
       desc    : publish_filtered desc sample
       label   : 'publish filtered'
@@ -820,23 +987,24 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : is_downsampling
-      desc    : is_downsampling desc sample
-      label   : 'is downsampling'
+    - name    : downsample_cloud
+      desc    : downsample_cloud desc sample
+      label   : 'downsample_cloud'
       kind    : checkbox
       v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance
-      desc    : distance desc sample
-      label   : 'distance'
-      min       : 0
-      max       : 5
-      v       : 0.5
+
+    - name    : points_node
+      desc    : points_node desc sample
+      label   : 'input_points_node'
+      kind    : str
+      v       : points_raw
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
+
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
@@ -845,25 +1013,124 @@ params :
       v       : 0.1
       cmd_param :
         dash        : ''
-        delim       : ':='  
+        delim       : ':='
     - name    : cluster_size_min
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
       min       : 0
-      max       : 3000
-      v       : 50
+      max       : 100000
+      v       : 20
       cmd_param :
         dash        : ''
-        delim       : ':='   
+        delim       : ':='
     - name    : cluster_size_max
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
       min       : 0
-      max       : 3000
-      v       : 2500
+      max       : 100000
+      v       : 100000
       cmd_param :
         dash        : ''
-        delim       : ':='              
+        delim       : ':='
+    - name    : clip_min_height
+      desc    : clip_min_height desc sample
+      label   : 'clip_min_height (~sensor height)'
+      min       : -5
+      max       : 5
+      v       : -1.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clip_max_height
+      desc    : clip_max_height desc sample
+      label   : 'clip_max_height (above sensor)'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_vector_map
+      desc    : use_vector_map desc sample
+      label   : 'use_vector_map'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_frame
+      desc    : vectormap_frame desc sample
+      label   : 'vectormap_frame'
+      kind    : str
+      v       : map
+    - name    : remove_points_upto
+      desc    : remove_points_upto desc sample
+      label   : 'remove_points_upto (ignore points up to this distance)'
+      min       : 0
+      max       : 2.5
+      v       : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lanes
+      desc    : keep_lanes desc sample
+      label   : 'keep_only_lanes_points'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lane_left_distance
+      desc    : keep_lane_left_distance desc sample
+      label   : 'keep_lane_left_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lane_right_distance
+      desc    : keep_lane_right_distance desc sample
+      label   : 'keep_lane_right_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (no spaces)'
+      kind    : str
+      v       : '[15,30,45,60]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_thresholds
+      desc    : clustering_thresholds desc sample
+      label   : 'clustering_thresholds (no spaces)'
+      kind    : str
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_frame
+      desc    : output_frame desc sample
+      label   : 'output_frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : cluster_merge_threshold
+      desc    : cluster_merge_threshold desc sample
+      label   : 'cluster_merge_threshold'
+      min       : 0
+      max       : 10
+      v       : 1.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : sync
       kind      : hide
       v         : False
@@ -871,6 +1138,14 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ndt
     topic : /config/ndt
@@ -951,12 +1226,18 @@ params :
       min   : 0
       max   : 1
       v     : 0.1
-    - name  : trans_esp
-      desc  : trans_esp desc sample
-      label : Trans ESP
+    - name  : trans_epsilon
+      desc  : trans_epsilon desc sample
+      label : Transformation Epsilon
       min   : 0
       max   : 0.1
       v     : 0.01
+    - name  : max_iterations
+      desc  : max_iterations desc sample
+      label : Maximum Iterations
+      min   : 1
+      max   : 300
+      v     : 30
 #    - name  : leaf_size
 #      label : Leaf Size
 #      min   : 0
@@ -993,6 +1274,14 @@ params :
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : get_height
+      desc      : get_height desc sample
+      label     : Get Height
       kind      : checkbox
       v         : False
       cmd_param :
@@ -1072,28 +1361,24 @@ params :
         delim       : ':='
         only_enable : True
 
-  - name  : vel_pose_mux
+  - name  : vel_pose_connect
     vars  :
-    - name    : pose_mux_select
-      desc    : pose_mux_select desc sample
-      label   : Pose Select 
-      kind    : radio_box
-      choices : ['ndt_matching','gnss']
-      descs   : ['ndt_matching desc sample', 'gnss desc sample']
-      v       : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name    : vel_mux_select
-      desc    : vel_mux_select desc sample
-      label   : Velocity Select
-      kind    : radio_box
-      choices : ['ndt_matching','CAN']
-      descs   : ['ndt_matching desc sample', 'CAN desc sample']
-      v       : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+    - name      : topic_pose_stamped
+      desc      : topic_pose_stamped desc sample
+      label     : /current_pose (geometry_msgs/PoseStamped)
+      kind      : str
+      v         : /ndt_pose
+      cmd_param :
+        dash    : ''
+        delim   : ':='
+    - name      : topic_twist_stamped
+      desc      : topic_twist_stamped desc sample
+      label     : /current_velocity (geometry_msgs/TwistStamped)
+      kind      : str
+      v         : /estimate_twist
+      cmd_param :
+         dash    : ''
+         delim   : ':='
     - name    : sim_mode
       desc    : sim_mode desc sample
       label   : 'Simulation Mode'
@@ -1101,7 +1386,7 @@ params :
       v       : False
       cmd_param:
         dash     : ''
-        delim    : ':='        
+        delim    : ':='
 
   - name  : waypoint_follower
     topic : /config/waypoint_follower
@@ -1123,73 +1408,116 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
-      min   : 1.0
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
+      min   : 0.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
-      min   : 2.0
-      max   : 10.0
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
+      min   : 0.0
+      max   : 20.0
       v     : 6.0
     - name  : displacement_threshold
       desc  : displacement_threshold desc sample
       label : displacement_threshold
       min   : 0
       max   : 1.0
-      v     : 0.0 
+      v     : 0.0
     - name  : relative_angle_threshold
       desc  : relative_angle_threshold desc sample
       label : relative_angle_threshold
       min   : 0
       max   : 90
-      v     : 0   
-    - name    : linear_interpolate_mode
+      v     : 0
+    - name    : is_linear_interpolation
       desc    : linear_interpolate_mode desc sample
-      label   : 'Linear Interpolate'
+      label   : 'Linear Interpolation'
       kind    : checkbox
       v       : True
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+    - name    : publishes_for_steering_robot
+      desc    : linear_interpolate_mode desc sample
+      label   : 'Publishes topic for steering robot'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : obstacle_avoid
+    vars  :
+    - name  : avoidance
+      desc  : if not checked, decide if we avoid by reading the current state
+      label : Avoidance
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : avoid_distance
+      desc      : Avoid distance from the obstacle
+      label     : Avoid Distance (m)
+      min       : 0.0
+      max       : 50.0
+      v         : 13.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : avoid_velocity_limit_mps
+      desc      : if the current velocity exceeds this value, we do not avoid
+      label     : Avoid Velocity Limit (m/s)
+      min       : 0.0
+      max       : 20.0
+      v         : 4.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
   - name  : velocity_set
     topic : /config/velocity_set
     msg   : ConfigVelocitySet
     vars  :
-    - name  : velocity_limit
-      desc  : velocity_limit desc sample
-      label : Velocity Limit (km/h)
-      min   : 0
-      max   : 60
-      v     : 42.0
+    - name  : use_crosswalk_detection
+      desc  : use_crosswalk_detection desc sample
+      label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : enable_multiple_crosswalk_detection
+      desc  : enable_multiple_crosswalk_detection desc sample
+      label : Enable Multiple Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : points_topic
+      desc      : pointcloud2 topic for obstacle detection
+      label     : Points Topic
+      kind      : str
+      v         : points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name  : others_distance
       desc  : others_distance desc sample
       label : Others Distance (m)
       min   : 0
       max   : 50
       v     : 15.0
-    - name  : cars_distance
-      desc  : cars_distance desc sample
-      label : Cars Distance (m)
-      min   : 0
-      max   : 50
-      v     : 15.0
-    - name  : pedestrians_distance
-      desc  : pedestrians_distance desc sample
-      label : Pedestrians Distance (m)
-      min   : 0
-      max   : 50
-      v     : 10.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1201,7 +1529,83 @@ params :
       label : Deceleration Range (m)
       min   : 0
       max   : 10
-      v     : 1.7
+      v     : 0
+    - name  : threshold_points
+      desc  : threshold_points desc sample
+      label : Points Threshold
+      min   : 0
+      max   : 30
+      v     : 5
+    - name  : detection_height_top
+      desc  : detection_height_top desc sample
+      label : Detection Height Top (m)
+      min   : 0
+      max   : 10
+      v     : 0.1
+    - name  : detection_height_bottom
+      desc  : detection_height_bottom desc sample
+      label : Detection Height Bottom (m)
+      min   : -10
+      max   : 0
+      v     : -1.5
+    - name  : deceleration
+      desc  : deceleration desc sample
+      label : Deceleration (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 0.7
+    - name  : velocity_change_limit
+      desc  : velocity_change_limit desc sample
+      label : Velocity Change Limit (km/h)
+      min   : 5
+      max   : 40
+      v     : 7.0
+    - name  : temporal_waypoints_size
+      desc  : temporal_waypoints_size desc sample
+      label : Temporal Waypoints Size
+      min   : 0
+      max   : 150
+      v     : 100.0
+    
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : lattice_velocity_set
+    topic : /config/lattice_velocity_set
+    msg   : ConfigLatticeVelocitySet
+    vars  :
+    - name  : use_crosswalk_detection
+      desc  : use_crosswalk_detection desc sample
+      label : Use Crosswalk Detection
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : others_distance
+      desc  : others_distance desc sample
+      label : Others Distance (m)
+      min   : 0
+      max   : 50
+      v     : 15.0
+    - name  : detection_range
+      desc  : detection_range desc sample
+      label : Detection Range (m)
+      min   : 0
+      max   : 10
+      v     : 1.3
+    - name  : deceleration_range
+      desc  : deceleration_range desc sample
+      label : Deceleration Range (m)
+      min   : 0
+      max   : 10
+      v     : 0
     - name  : threshold_points
       desc  : threshold_points desc sample
       label : Points Threshold
@@ -1225,31 +1629,20 @@ params :
       label : Deceleration (m/s^2)
       min   : 0
       max   : 5
-      v     : 1.0
+      v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
       min   : 5
       max   : 40
-      v     : 15.0
-    - name  : velocity_offset
-      desc  : velocity_offset desc sample
-      label : Velocity Offset (km/h)
-      min   : 0
-      max   : 40
-      v     : 3.0
-    - name  : deceleration_minimum
-      desc  : deceleration_minimum desc sample
-      label : Deceleration Minimum (km/h)
-      min   : 0
-      max   : 40
-      v     : 5.0
+      v     : 7.0
     - name  : temporal_waypoints_size
       desc  : temporal_waypoints_size desc sample
       label : Temporal Waypoints (m)
       min   : 0
       max   : 150
       v     : 100.0
+
 
   - name  : lane_follower_trajgen
     topic : /config/waypoint_follower
@@ -1271,30 +1664,24 @@ params :
       min   : 0
       max   : 60
       v     : 5.0
-    - name  : lookahead_threshold
-      desc  : lookahead_threshold desc sample
-      label : Lookahead Threshold
+    - name  : lookahead_distance
+      desc  : lookahead_distance desc sample
+      label : Lookahead Distance
       min   : 0
       max   : 30
       v     : 4.0
-    - name  : threshold_ratio
-      desc  : threshold_ratio desc sample
-      label : threshold_ratio
+    - name  : lookahead_ratio
+      desc  : lookahead_ratio desc sample
+      label : lookahead_ratio
       min   : 1.0
       max   : 5.0
       v     : 2.0
-    - name  : minimum_lookahead_threshold
-      desc  : minimum_lookahead_threshold desc sample
-      label : minimum_lookahead_threshold
+    - name  : minimum_lookahead_distance
+      desc  : minimum_lookahead_distance desc sample
+      label : minimum_lookahead_distance
       min   : 2.0
       max   : 10.0
       v     : 6.0
-    - name  : offset
-      desc  : offset desc sample
-      label : offset
-      min   : -5.0
-      max   : 5.0
-      v     : -1.17
     - name    : sim_mode
       desc    : sim_mode desc sample
       label   : 'Simulation Mode'
@@ -1324,13 +1711,25 @@ params :
     topic : /config/twist_filter
     msg   : ConfigTwistFilter
     vars  :
-    - name    : lateral_accel_limit 
+    - name    : lateral_accel_limit
       desc    : lateral_accel_limit  desc sample
       label   : 'lateral_accel_limit :'
       min   : 0
       max   : 5.0
       v         : 0.8
-  
+    - name    : lowpass_gain_linear_x
+      desc    : lowpass_gain_linear_x  desc sample
+      label   : 'lowpass_gain_linear_x :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
+    - name    : lowpass_gain_angular_z
+      desc    : lowpass_gain_angular_z  desc sample
+      label   : 'lowpass_gain_angular_z :'
+      min   : 0
+      max   : 1.0
+      v         : 0.0
+
   - name  : wf_simulator
     vars  :
     - name    : initialize_source
@@ -1343,7 +1742,137 @@ params :
       v       : Rviz
       cmd_param:
         dash     : ''
-        delim    : ':='   
+        delim    : ':='
+    - name      : accel_rate
+      desc      :
+      label   : 'accel_rate(m/s^2) :'
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : position_error
+      desc      :
+      label   : 'position_error(m) :'
+      v         : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : angle_error
+      desc      :
+      label   : 'angle_error(degree) :'
+      v         : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+ 
+  - name  : planner_selector
+    topic : /config/PlannerSelector
+    msg   : ConfigPlannerSelector
+    vars  :
+    - name : latency_num
+      desc : latency_num
+      label: latency_num
+      min  : 0
+      max  : 200
+      v    : 10
+    - name : waypoints_num
+      desc : waypoints_num
+      label: waypoints_num
+      min  : 0
+      max  : 30
+      v    : 8
+    - name : convergence_num
+      desc : convergence_num
+      label: convergence_num
+      min  : 0.0
+      max  : 30.0
+      v    : 2.0
+
+  - name  : decision_maker
+    topic : /config/decision_maker
+    msg   : ConfigDecisionMaker
+    vars  : 
+    - name : enable_force_state_change
+      desc : enable force state change flag
+      label: enable_force_state_change
+      kind : checkbox
+      v    : False
+    - name : enable_display_marker
+      desc : enable display marker flag
+      label: enable_display_marker
+      kind : checkbox
+      v    : False
+    - name : MainState_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: MainState_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - START_State
+      - INITIAL_State
+      - LOCATE_VEHICLE_State
+      - DRIVE_State
+      - MISSION_COMPLETE_State 
+      - EMERGENCY_State
+      v   : 0
+    - name : SubState_Acc_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Acc_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - ACC_ACCELERATION_State
+      - ACC_DECELERATION_State
+      - ACC_KEEP_State
+      v   : 0
+    - name : SubState_Str_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Str_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - STR_STRAIGHT_State
+      - STR_LEFT_State
+      - STR_RIGHT_State
+      v   : 0
+    - name : SubState_Behavior_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Behavior_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - BEHAVIOR_LANECHANGE_LEFT_State
+      - BEHAVIOR_LANECHANGE_RIGHT_State
+      - BEHAVIOR_LANECHANGE_OBSTACLE_AVOIDANCE_State
+      v   : 0
+    - name : SubState_Perception_ChangeFlag
+      desc : Forcibly change state if enable force change flags.
+      label: SubState_Perception_ChangeFlag
+      kind : radio_box
+      choices:
+      - NOT_CHANGE
+      - DETECT_OBSTACLE_STATE
+      - DETECT_STOPLINE_STATE
+      - DETECT_TRAFFICLIGHT_STATE
+      v   : 0
+    - name : convergence_threshold
+      desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
+      label: convergence_threshold
+      min  : 0.0
+      max  : 10.0
+      v    : 0.01
+    - name : convergence_count
+      desc : Number of values used for convergence determination
+      label: convergence_count
+      min  : 1
+      max  : 30
+      v    : 5
+    - name : target_waypoint
+      desc : this target waypoint is used by judge turn angle.
+      label: target_waypoint
+      min  : 0
+      max  : 50
+      v    : 14
 
   - name  : car_kf
     topic : /config/car_kf
@@ -1594,6 +2123,19 @@ params :
         delim        : ':='
         only_enable  : True
 
+  - name : region_tlr_ssd
+    vars :
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
   - name  : traffic_light
     vars :
     - name      : file
@@ -1636,6 +2178,12 @@ params :
       min       : 0
       max       : 100
       v         : 1.0
+    - name      : stopline_search_radius
+      desc      : stopline_search_radius desc sample
+      label     : Stopline Search Radius (m)
+      min       : 0
+      max       : 100
+      v         : 1.0
     - name      : number_of_zeros_ahead
       desc      : number_of_zeros_ahead desc sample
       label     : Number of Zeros Ahead
@@ -1652,31 +2200,460 @@ params :
   - name  : lane_stop
     topic : /light_color_managed
     msg   : traffic_light
+    no_save_vars : [ lane_stop ]
     vars  :
     - name  : traffic_light
       desc  : traffic_light desc sample
-      v     : 0
-      
+      v     : 1
+    - name  : lane_stop
+      v     : False
+
   - name  : lane_select
     topic : /config/lane_select
     msg   : ConfigLaneSelect
     vars  :
-    - name  : number
-      desc  : number desc sample
-      kind  : radio_box
+    - name      : distance_threshold_neighbor_lanes
+      desc      : distance_threshold_neighbor_lanes desc sample
+      label     : Distance threshold to neighbor lanes (m)
+      min       : 1.0
+      max       : 10.0
+      v         : 5.0
+    - name      : lane_change_interval
+      desc      : lane_change_interval desc sample
+      label     : Lane Change Interval After Lane merge (m)
+      min       : 1.0
+      max       : 50.0
+      v         : 10.0
+    - name      : lane_change_target_ratio
+      desc      : lane_change_target_ratio desc sample
+      label     : Lane Change Target Ratio
+      min       : 0
+      max       : 20
+      v         : 5.0
+    - name      : lane_change_target_minimum
+      desc      : lane_change_target_minimum desc sample
+      label     : Lane Change Target Minimum (m)
+      min       : 2.0
+      max       : 30.0
+      v         : 10.0
+    - name      : vector_length_hermite_curve
+      desc      : vector_length_hermite_curve desc sample
+      label     : Vector Length of Hermite Curve (m)
+      min       : 1.0
+      max       : 50
+      v         : 10.0
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : astar_navi
+    vars  :
+    - name  : use_back
+      desc  : Use reverse motion for planning
+      label : Use Reverse Motion
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : waypoint_velocity_kmph
+      desc      : Velocity of planned waypoints
+      label     : Waypoint Velocity
+      min       : 0.0
+      max       : 40.0
+      v         : 5.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : way_planner
+    vars  :
+    - name : enableLaneChange
+      desc : global plan extended by lane changes
+      label: Enable Lane Changing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableReplan
+      desc : infinite replanning to multiple goals including the start position
+      label: Enable Replanning
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableHMI
+      desc : Enable connection to Human Machine Interface (HMI)
+      label: Enable HMI
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
       choices:
-      - Driving
-      - Passing
+      - Odometry
+      - Autoware
+      - Car Info
       descs :
-      - Driving desc sample
-      - Passing desc sample
-      v     : 1
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.75
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSmoothing
+      desc : smooth and fix global path
+      label: Enable Smoothing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Autoware
+      - Folder
+      - KML
+      descs :
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : dp_planner
+    vars  :
+    - name : enabTrajectoryVelocities
+      desc : Enable Use Pure Pursuit
+      label: Use Pure Pursuit
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableOutsideControl
+      desc : Enable User Input Control
+      label: Enable user control
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableObjectTracking
+      desc : Enable Planner KF Tracker
+      label: Enable Tracking
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxVelocity
+      desc : maximum allowed velocity in meter/second
+      label: Max Velocity
+      min  : 0.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxLocalPlanDistance
+      desc : max length of the local plan
+      label: Plan Ditance
+      min  : 10.0
+      max  : 150.0
+      v    : 60.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingTipMargin
+      desc : Car Tip Initial Margin
+      label: Tip Margin
+      min  : 2.5
+      max  : 10.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingOutMargin
+      desc : Roll In Margin
+      label: Roll In Margin
+      min  : 5.0
+      max  : 30.0
+      v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutDensity
+      desc : Roll outs density
+      label: Horizontal Density
+      min  : 0.1
+      max  : 2.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutsNumber
+      desc : Number of roll outs
+      label: Rollouts Number
+      min  : 0
+      max  : 20
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car
+      label: Follow Distance
+      min  : 10.0
+      max  : 50.0
+      v    : 30.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minDistanceToAvoid
+      desc : Avoidance and Following threshold Distance
+      label: Avoiding Distance
+      min  : 6.0
+      max  : 30.0
+      v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
+      min  : 1.0
+      max  : 6.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableTrafficLightBehavior
+      desc : Enable traffic light check
+      label: Enable Traffic Light
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLaneChange
+      desc : Enable Lane Change
+      label: Enable Lane Change
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.2
+      max : 2.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.5
+      max : 4.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Autoware
+      - Folder
+      - KML
+      descs :
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enablePlannerDynamicSwitch
+      desc : Enable Planner dynamical switch
+      label: Enable Planner dynamical switch
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : ff_waypoint_follower
+    vars  :
+    - name : maxVelocity
+      desc : maximum allowed velocity in
+      label: Max Velocity
+      min  : 0.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steeringDelay
+      desc : Steering wheel average delay
+      label: Steering Delay
+      min  : 0.0
+      max  : 2.0
+      v    : 0.85
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minPursuiteDistance
+      desc : Minimum Follow Point Distance
+      label: Follow Distance
+      min  : 0.0
+      max  : 5.0
+      v    : 2.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKP
+      desc : Gain proportional component
+      label: KP
+      min  : 0.0
+      max  : 1.0
+      v    : 0.07
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKI
+      desc : Gain integral component
+      label: KI
+      min  : 0.0
+      max  : 1.0
+      v    : 0.02
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKD
+      desc : Gain Defferential component
+      label: KD
+      min  : 0.0
+      max  : 1.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : signal
+      desc : To what component should the control signal be sent
+      label: Control Signal
+      kind : radio_box
+      choices:
+      - Simulation
+      - Vehicle
+      - Autoware
+      - Robot
+      descs :
+      - Simulation Mode
+      - ZMP Vehicle
+      - Autoware Other Nodes
+      - Smaller Robot
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
       desc      : save_filename desc sample
-      label     : Save File 
+      label     : Save File
       kind      : path
       path_type : save
       v         : '/tmp/saved_waypoints.csv'
@@ -1716,33 +2693,26 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
-        
+
   - name  : waypoint_loader
     vars  :
-    - name      : driving_lane_csv
+    - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : Driving
+      label     : Multi Lane
       kind      : path
+      path_type : multi
       v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : passing_lane_csv
-      desc      : passing_lane_csv desc sample
-      label     : Passing
-      kind      : path
-      v         : /tmp/driving_lane.csv
-      cmd_param :
-        dash        : ''
-        delim       : ':='        
-    - name      : decelerate  
+    - name      : decelerate
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
@@ -1760,15 +2730,33 @@ params :
       min       : 0.0
       max       : 1.0
       v         : 0.1
-    - name      : trans_eps
-      desc      : trans_eps desc sample
-      label     : Trans EPS
+    - name      : trans_epsilon
+      desc      : trans_epsilon desc sample
+      label     : Transformation Epsilon
       min       : 0.0
       max       : 0.1
       v         : 0.01
+    - name      : max_iterations
+      desc      : max_iterations desc sample
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
     - name      : leaf_size
       desc      : leaf_size desc sample
       label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : min_scan_range
+      desc      : min_scan_range desc sample
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : min_add_scan_shift desc sample
+      label     : Minimum Add Scan Shift
       min       : 0.0
       max       : 10.0
       v         : 1.0
@@ -1932,6 +2920,71 @@ params :
         delim        : ':='
         only_enable  : True
 
+  - name  : ssd
+    topic : /config/ssd
+    msg   : ConfigSsd
+    vars  :
+    - name  : score_threshold
+      desc  : score_threshold desc sample
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.6
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_raw_topic_str
+      desc      : image_raw_topic_str desc sample
+      label     : image_raw_topic_str
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : network_definition_file sample
+      label    : 'network_file (ssd)'
+      kind     : path
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : pretrained_model_file sample
+      label    : 'pattern_file (ssd)'
+      kind     : path
+      v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : use_gpu
+      kind     : checkbox
+      v        : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
   - name : viewer_sel_cam
     vars :
     - name         : camera_id
@@ -2012,29 +3065,84 @@ params :
   - name : points2costmap
     vars :
     - name      : resolution
-      desc      : resolution desc sample
+      desc      : Map resolution [meter]
       label     : resolution
       min       : 0.0
-      max       : 0.2
-      v         : 0.1
+      max       : 1.0
+      v         : 0.2
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_width
-      desc      : cell_width desc sample
+      desc      : Map cell size x
       label     : map_size_x
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 300
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : cell_height
-      desc      : cell_height desc sample
+      desc      : Map cell size y
       label     : map_size_y
       min       : 0
       max       : 1000
-      v         : 500
+      v         : 150
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_x
+      desc      : Map offset of x [meter]
+      label     : map_offset_x
+      min       : -100
+      max       : 100
+      v         : 25.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_y
+      desc      : Map offset of y [meter]
+      label     : map_offset_y
+      min       : -100
+      max       : 100
+      v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : offset_z
+      desc      : Map offset of z [meter]
+      label     : map_offset_z
+      min       : -100
+      max       : 100
+      v         : -2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : points_topic
+      desc      : Subscribing topic for generating a cost map (PointCloud2 message)
+      label     : Points Topic
+      kind      : str
+      v         : /points_lanes
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : dist_transform
+    vars :
+    - name      : max_distance
+      desc      : Max distance for distance transform
+      label     : Max Distance
+      min       : 0.0
+      max       : 20.0
+      v         : 3.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_topic
+      desc      : Subscribing topic of OccupancyGrid message
+      label     : Map Topic
+      kind      : str
+      v         : /realtime_cost_map
       cmd_param :
         dash      : ''
         delim     : ':='

@@ -4,84 +4,40 @@ project(map_file)
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  gnss
   std_msgs
   visualization_msgs
   geometry_msgs
-  message_generation
   tf
-  waypoint_follower
+  vector_map
+  autoware_msgs
 )
-pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
-pkg_check_modules(EIGEN3 REQUIRED eigen3)
+
+find_package(PCL REQUIRED COMPONENTS io)
+# See: https://github.com/ros-perception/perception_pcl/blob/lunar-devel/pcl_ros/CMakeLists.txt#L10-L22
+if(NOT "${PCL_LIBRARIES}" STREQUAL "")
+  # FIXME: this causes duplicates and not found error in ubuntu:zesty
+  list(REMOVE_ITEM PCL_LIBRARIES "/usr/lib/libmpi.so")
+
+  # For debian: https://github.com/ros-perception/perception_pcl/issues/139
+  list(REMOVE_ITEM PCL_IO_LIBRARIES
+    "vtkGUISupportQt"
+    "vtkGUISupportQtOpenGL"
+    "vtkGUISupportQtSQL"
+    "vtkGUISupportQtWebkit"
+    "vtkViewsQt"
+    "vtkRenderingQt")
+endif()
+
+include(FindCURL)
+if(NOT CURL_FOUND)
+  message("CURL not found!  Aborting...")
+  fail()
+endif(NOT CURL_FOUND)
+
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-add_message_files(
-  FILES
-  AreaClass.msg
-  AreaClassArray.msg
-  BoxClass.msg
-  BoxClassArray.msg
-  CrossRoad.msg
-  CrossRoadArray.msg
-  CrossWalk.msg
-  CrossWalkArray.msg
-  Curb.msg
-  CurbArray.msg
-  DTLane.msg
-  DTLaneArray.msg
-  GuardRail.msg
-  GuardRailArray.msg
-  Gutter.msg
-  GutterArray.msg
-  Lane.msg
-  LaneArray.msg
-  LineClass.msg
-  LineClassArray.msg
-  Node.msg
-  NodeArray.msg
-  PointClass.msg
-  PointClassArray.msg
-  Pole.msg
-  PoleArray.msg
-  PoleClass.msg
-  PoleClassArray.msg
-  RoadEdge.msg
-  RoadEdgeArray.msg
-  RoadMark.msg
-  RoadMarkArray.msg
-  RoadSign.msg
-  RoadSignArray.msg
-  SideWalk.msg
-  SideWalkArray.msg
-  Signal.msg
-  SignalArray.msg
-  StopLine.msg
-  StopLineArray.msg
-  StreetLight.msg
-  StreetLightArray.msg
-  UtilityPole.msg
-  UtilityPoleArray.msg
-  VectorClass.msg
-  VectorClassArray.msg
-  WhiteLine.msg
-  WhiteLineArray.msg
-  ZebraZone.msg
-  ZebraZoneArray.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES fake_drivers
-   CATKIN_DEPENDS waypoint_follower message_runtime std_msgs
-#  DEPENDS system_lib
-   DEPENDS gnss curl
 )
 
 ###########
@@ -92,18 +48,26 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
+  ${CURL_INCLUDE_DIRS}
 )
 
-add_library(map_file
-  lib/map_db/GetFile.cpp
-)
+add_library(get_file
+  lib/map_file/get_file.cpp
+  )
+
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
-target_link_libraries(points_map_loader ${catkin_LIBRARIES} ${PCL_IO_LIBRARIES} map_file curl)
-add_dependencies(points_map_loader waypoint_follower_generate_messages_cpp)
+target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES} ${PCL_IO_LIBRARIES})
+add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
-add_executable(vector_map_loader
-  nodes/vector_map_loader/vector_map_loader.cpp
-  nodes/vector_map_loader/pack_into.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} map_file curl)
-add_dependencies(vector_map_loader map_file_generate_messages_cpp)
+add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES})
+
+## Install executables and/or libraries
+install(TARGETS get_file points_map_loader vector_map_loader
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Install project namespaced headers
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

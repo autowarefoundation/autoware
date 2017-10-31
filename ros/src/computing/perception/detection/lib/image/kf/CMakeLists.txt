@@ -1,14 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kf)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   roscpp
   sensor_msgs
   std_msgs
-  message_generation
-  runtime_manager
+  autoware_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -18,10 +23,10 @@ find_package(OpenCV REQUIRED)
 ###################################
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dpm
+  LIBRARIES kf
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
-  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS autoware_msgs
 )
 
 ###########
@@ -30,8 +35,8 @@ catkin_package(
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
-include_directories(src)
+include_directories(${catkin_INCLUDE_DIRS}
+ include)
 
 ## Declare a cpp library
 add_library(kf
@@ -43,4 +48,5 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_generate_messages_cpp)
+add_dependencies(kf ${catkin_EXPORTED_TARGETS})
+endif()

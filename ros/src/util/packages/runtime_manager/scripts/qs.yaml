@@ -12,28 +12,38 @@ buttons :
     param : map_qs
     gui   :
       stat_topic : [ pmap, vmap ]
+      panel      : self.panel_map_qs
   sensing_qs :
     desc  : sensing_qs desc sample
     run   : roslaunch
     param : sensing_qs
     gui   :
       flags : [ SIGTERM, kill_children ]
+      panel : self.panel_sensing_qs
   localization_qs :
     desc  : localization_qs desc sample
     run   : roslaunch
     param : localization_qs
+    gui   :
+      panel : self.panel_localization_qs
   detection_qs :
     desc  : detection_qs desc sample
     run   : roslaunch
     param : detection_qs
+    gui   :
+      panel : self.panel_detection_qs
   mission_planning_qs :
     desc  : mission_planning_qs desc sample
     run   : roslaunch
     param : mission_planning_qs
+    gui   :
+      panel : self.panel_mission_planning_qs
   motion_planning_qs :
     desc  : planning_qs desc sample
     run   : roslaunch
     param : motion_planning_qs
+    gui   :
+      panel : self.panel_motion_planning_qs
 
   android_tablet_qs :
     desc: android_tablet_qs desc sample

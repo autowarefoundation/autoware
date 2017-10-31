@@ -1,0 +1,4 @@
+- name: tablet_receiver
+  publish: [/gear_cmd, /mode_cmd, /route_cmd, /gnss_pose, /gnss_stat]
+- name: tablet_sender
+  subscribe: [/error_info, /can_info, /mode_info, /ndt_stat, /wf_stat]

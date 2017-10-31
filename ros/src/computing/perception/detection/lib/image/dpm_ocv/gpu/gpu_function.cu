@@ -493,9 +493,9 @@ void calculateNorm(
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
 
-    if(y <= sizeY)
+    if(y < sizeY)
     {
-        if(x <= sizeX)
+        if(x < sizeX)
         {
             int i, j, p, pos;
             float valOfNorm = 0.0f;

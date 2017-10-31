@@ -56,41 +56,46 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from runtime_manager.msg import ConfigRcnn
-from runtime_manager.msg import ConfigCarDpm
-from runtime_manager.msg import ConfigPedestrianDpm
-from runtime_manager.msg import ConfigNdt
-from runtime_manager.msg import ConfigNdtMapping
-from runtime_manager.msg import ConfigNdtMappingOutput
-from runtime_manager.msg import ConfigICP
-from runtime_manager.msg import ConfigVoxelGridFilter
-from runtime_manager.msg import ConfigRingFilter
-from runtime_manager.msg import ConfigDistanceFilter
-from runtime_manager.msg import ConfigRandomFilter
-from runtime_manager.msg import ConfigWaypointFollower
-from runtime_manager.msg import ConfigTwistFilter
-from runtime_manager.msg import ConfigVelocitySet
-from runtime_manager.msg import ConfigCarKf
-from runtime_manager.msg import ConfigPedestrianKf
-from runtime_manager.msg import ConfigLaneRule
-from runtime_manager.msg import ConfigLaneSelect
-from runtime_manager.msg import ConfigLaneStop
-from runtime_manager.msg import ConfigCarFusion
-from runtime_manager.msg import ConfigPedestrianFusion
-from tablet_socket.msg import mode_cmd
-from tablet_socket.msg import gear_cmd
-from tablet_socket.msg import Waypoint
-from tablet_socket.msg import route_cmd
-from ndt_localizer.msg import ndt_stat
+from autoware_msgs.msg import ConfigRcnn
+from autoware_msgs.msg import ConfigSsd
+from autoware_msgs.msg import ConfigCarDpm
+from autoware_msgs.msg import ConfigPedestrianDpm
+from autoware_msgs.msg import ConfigNdt
+from autoware_msgs.msg import ConfigNdtMapping
+from autoware_msgs.msg import ConfigNdtMappingOutput
+from autoware_msgs.msg import ConfigICP
+from autoware_msgs.msg import ConfigVoxelGridFilter
+from autoware_msgs.msg import ConfigRingFilter
+from autoware_msgs.msg import ConfigDistanceFilter
+from autoware_msgs.msg import ConfigRandomFilter
+from autoware_msgs.msg import ConfigWaypointFollower
+from autoware_msgs.msg import ConfigTwistFilter
+from autoware_msgs.msg import ConfigVelocitySet
+from autoware_msgs.msg import ConfigLatticeVelocitySet
+from autoware_msgs.msg import ConfigCarKf
+from autoware_msgs.msg import ConfigPedestrianKf
+from autoware_msgs.msg import ConfigLaneRule
+from autoware_msgs.msg import ConfigLaneSelect
+from autoware_msgs.msg import ConfigLaneStop
+from autoware_msgs.msg import ConfigCarFusion
+from autoware_msgs.msg import ConfigPedestrianFusion
+from autoware_msgs.msg import ConfigPlannerSelector
+from autoware_msgs.msg import ConfigDecisionMaker
+from tablet_socket_msgs.msg import mode_cmd
+from tablet_socket_msgs.msg import gear_cmd
+from tablet_socket_msgs.msg import Waypoint
+from tablet_socket_msgs.msg import route_cmd
+from autoware_msgs.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
-from runtime_manager.msg import accel_cmd
-from runtime_manager.msg import steer_cmd
-from runtime_manager.msg import brake_cmd
-from runtime_manager.msg import indicator_cmd
-from runtime_manager.msg import lamp_cmd
-from runtime_manager.msg import traffic_light
-from runtime_manager.msg import adjust_xy
+from autoware_msgs.msg import accel_cmd
+from autoware_msgs.msg import steer_cmd
+from autoware_msgs.msg import brake_cmd
+from autoware_msgs.msg import indicator_cmd
+from autoware_msgs.msg import lamp_cmd
+from autoware_msgs.msg import traffic_light
+from autoware_msgs.msg import adjust_xy
+from types import MethodType
 
 SCHED_OTHER = 0
 SCHED_FIFO = 1
@@ -98,13 +103,15 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
+		
+
+
 	def __init__(self, *args, **kwds):
 		rtmgr.MyFrame.__init__(self, *args, **kwds)
 		self.all_procs = []
 		self.all_cmd_dics = []
 		self.load_dic = self.load_yaml('param.yaml', def_ret={})
 		self.config_dic = {}
-		self.selector = {}
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 		self.params = []
 		self.all_tabs = []
@@ -136,10 +143,6 @@ class MyFrame(rtmgr.MyFrame):
 		self.setup_buttons(self.qs_dic.get('buttons', {}), self.qs_cmd)
 
 		for nm in [ 'map', 'sensing', 'localization', 'detection', 'mission_planning', 'motion_planning' ]:
-			btn = self.obj_get('button_' + nm + '_qs')
-			pnl = self.obj_get('panel_' + nm + '_qs')
-			self.set_param_panel(btn, pnl)
-
 			for key in self.qs_dic.get('exec_time', {}).get(nm, {}).keys():
 				(topic, msg, attr) = ( key.split('.') + [ None, None, None ] )[:3]
 				msg = globals().get(msg)
@@ -156,11 +159,9 @@ class MyFrame(rtmgr.MyFrame):
 		setup_cmd = {}
 		self.all_cmd_dics.append(setup_cmd)
 		dic = self.load_yaml('setup.yaml')
-		
+
 		self.add_params(dic.get('params', []))
 		self.setup_buttons(dic.get('buttons', {}), setup_cmd)
-		for nm in [ 'setup_tf', 'vehicle_model', 'vehicle_info' ]:
-			self.set_param_panel(self.obj_get('button_' + nm), self.obj_get('panel_' + nm))
 
 		#
 		# for Map tab
@@ -173,14 +174,8 @@ class MyFrame(rtmgr.MyFrame):
 		self.map_dic = self.load_yaml('map.yaml')
 
 		self.add_params(self.map_dic.get('params', []))
-		self.selector.update(self.map_dic.get('selector', {}))
 
 		self.setup_buttons(self.map_dic.get('buttons', {}), self.map_cmd)
-
-		for nm in [ 'point_cloud', 'vector_map', 'area_lists', 'tf', 'pcd_filter', 'pcd_binarizer' ]:
-			btn = self.obj_get('button_' + nm)
-			pnl = self.obj_get('panel_' + nm)
-			self.set_param_panel(btn, pnl)
 
 		self.tc_point_cloud = self.obj_to_varpanel_tc(self.button_point_cloud, 'path_pcd')
 		self.tc_area_list = self.obj_to_varpanel_tc(self.button_area_lists, 'path_area_list')
@@ -197,16 +192,9 @@ class MyFrame(rtmgr.MyFrame):
 
 		args = { 'func':self.tc_point_cloud.GetValue }
 		hook_var = { 'hook':hook1G, 'args':args, 'flags':['every_time'] }
-		objs = [ self.button_point_cloud,
-			 self.button_points_map_loader,
-			 self.button_points_map_loader_update ]
-		tgls = []
-		for obj in objs:
-			gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
-			gdic_v['hook_var'] = hook_var
-			tgls.append( self.obj_to_gdic(obj, {}).get('ext_toggle_enables', []) )
-		tgls[1].extend(tgls[0])
-		tgls[2].extend(tgls[0])
+		obj = self.button_point_cloud
+		gdic_v = self.obj_to_gdic(obj, {}).get('path_pcd', {})
+		gdic_v['hook_var'] = hook_var
 
 		#
 		# for Sensing tab
@@ -336,13 +324,10 @@ class MyFrame(rtmgr.MyFrame):
 		dic = self.load_yaml('simulation.yaml')
 
 		self.add_params(dic.get('params', []))
-		self.selector.update(dic.get('selector', {}))
 
 		self.setup_buttons(dic.get('buttons'), self.simulation_cmd)
 
 		btn = self.button_play_rosbag_play
-		pnl = self.panel_rosbag_play
-		self.set_param_panel(btn, pnl)
 
 		# setup for rosbag info
 		gdic = self.obj_to_gdic(btn, {})
@@ -446,7 +431,7 @@ class MyFrame(rtmgr.MyFrame):
 		backup = os.path.expanduser('~/.toprc-autoware-backup')
 		self.toprc_setup(toprc, backup)
 
-		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(psutil.NUM_CPUS) ]
+		cpu_ibls = [ InfoBarLabel(self, 'CPU'+str(i)) for i in range(get_cpu_count())]
 		sz = sizer_wrap(cpu_ibls, wx.HORIZONTAL, 1, wx.EXPAND, 0)
 		self.sizer_cpuinfo.Add(sz, 8, wx.ALL | wx.EXPAND, 4)
 
@@ -461,7 +446,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.sizer_cpuinfo.Add(szr, 2, wx.ALL | wx.EXPAND, 4)
 
 		th_arg = { 'setting':self.status_dic.get('top_cmd_setting', {}),
-			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl, 
+			   'cpu_ibls':cpu_ibls, 'mem_ibl':ibl,
 			   'toprc':toprc, 'backup':backup }
 		thinf = th_start(self.top_cmd_th, th_arg)
 		self.all_th_infs.append(thinf)
@@ -501,34 +486,40 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
+	
+
+		wx.CallAfter( self.boot_booted_cmds )
 
 	def __do_layout(self):
 		pass
 
+	def boot_booted_cmds(self):
+		if not self.load_dic.get('booted_cmds', {}).get('enable', False):
+			return
+		names = self.load_dic.get('booted_cmds', {}).get('names', [])
+		lst = [ ( name, self.cfg_dic( { 'name': name } ).get('obj') ) for name in names ]
+		lst = [ (name, obj) for (name, obj) in lst if obj ]
+		if not lst:
+			return
+
+		choices = [ obj.GetLabel() if hasattr(obj, 'GetLabel') else name for (name, obj) in lst ]
+		dlg = wx.MultiChoiceDialog(self, 'boot command ?', '', choices)
+		dlg.SetSelections( range( len(names) ) )
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+
+		for i in dlg.GetSelections():
+			(_, obj) = lst[i]
+                        post_evt_toggle_obj(self, obj, True)
+
 	def OnClose(self, event):
+		if self.quit_select() != 'quit':
+			return
+
 		# kill_all
 		for proc in self.all_procs[:]: # copy
 			(_, obj) = self.proc_to_cmd_dic_obj(proc)
 			self.launch_kill(False, 'dmy', proc, obj=obj)
-
-		save_dic = {}
-		for (name, pdic) in self.load_dic.items():
-			if pdic and pdic != {}:
-				prm = self.cfg_dic( {'name':name, 'pdic':pdic} ).get('param', {})
-				no_saves = prm.get('no_save_vars', [])
-				pdic = pdic.copy()
-				for k in pdic.keys():
-					if k in no_saves:
-						del pdic[k]
-				save_dic[name] = pdic
-		if save_dic != {}:
-			dir = rtmgr_src_dir()
-			print('saving param.yaml')
-			f = open(dir + 'param.yaml', 'w')
-			s = yaml.dump(save_dic, default_flow_style=False)
-			#print 'save\n', s # for debug
-			f.write(s)
-			f.close()
 
 		shutdown_proc_manager()
 
@@ -540,6 +531,158 @@ class MyFrame(rtmgr.MyFrame):
 			th_end(thinf)
 
 		self.Destroy()
+
+	def quit_select(self):
+		def timer_func():
+			if self.quit_timer:
+				self.quit_timer = 'timeout'
+				evt = wx.PyCommandEvent( wx.EVT_CLOSE.typeId, self.GetId() )
+				wx.PostEvent(self, evt)
+
+		if not hasattr(self, 'quit_timer') or not self.quit_timer:
+			self.quit_timer = threading.Timer(2.0, timer_func)
+			self.quit_timer.start()
+			return 'not quit'
+
+		if self.quit_timer == 'timeout':
+			self.save_param_yaml()
+			return 'quit'
+
+		self.quit_timer.cancel()
+		self.quit_timer = None
+		lst = [
+			( 'Save and Quit', [ 'save', 'quit' ] ),
+			( 'Save to param.yaml', [ 'save' ] ),
+			( 'Quit without saving', [ 'quit' ] ),
+			( 'Reload computing.yaml', [ 'reload' ] ),
+			( self.get_booted_cmds_enable_msg()[1], [ 'toggle_booted_cmds' ] ),
+		]
+		choices = [ s for (s, _) in lst ]
+		dlg = wx.SingleChoiceDialog(self, 'select command', '', choices)
+		if dlg.ShowModal() != wx.ID_OK:
+			return 'not quit'
+
+		i = dlg.GetSelection() # index of choices
+		(_, f) = lst[i]
+		if 'save' in f:
+			self.save_param_yaml()
+		if 'reload' in f:
+			self.reload_computing_yaml()
+		if 'toggle_booted_cmds' in f:
+			self.toggle_booted_cmds()
+		return 'quit' if 'quit' in f else 'not quit'
+
+	def save_param_yaml(self):
+		save_dic = {}
+		for (name, pdic) in self.load_dic.items():
+			if pdic and pdic != {}:
+				prm = self.cfg_dic( {'name':name, 'pdic':pdic} ).get('param', {})
+				no_saves = prm.get('no_save_vars', [])
+				pdic = pdic.copy()
+				for k in pdic.keys():
+					if k in no_saves:
+						del pdic[k]
+				save_dic[name] = pdic
+
+		names = []
+		for proc in self.all_procs:
+			(_, obj) = self.proc_to_cmd_dic_obj(proc)
+			name = self.cfg_dic( { 'obj': obj } ).get('name')
+			names.append(name)
+		if 'booted_cmds' not in save_dic:
+			save_dic['booted_cmds'] = {}
+		save_dic.get('booted_cmds')['names'] = names
+
+		if save_dic != {}:
+			dir = rtmgr_src_dir()
+			print('saving param.yaml')
+			f = open(dir + 'param.yaml', 'w')
+			s = yaml.dump(save_dic, default_flow_style=False)
+			#print 'save\n', s # for debug
+			f.write(s)
+			f.close()
+
+	def reload_computing_yaml(self):
+		parent = self.tree_ctrl_0.GetParent()
+		sizer = self.tree_ctrl_0.GetContainingSizer()
+
+		items = self.load_yaml('computing.yaml')
+
+		# backup cmd_dic proc
+		cmd_dic = self.computing_cmd
+		to_name = lambda obj: next( ( d.get('name') for d in self.config_dic.values() if d.get('obj') == obj ), None )
+		procs = [ ( to_name(obj), proc ) for (obj, (cmd, proc)) in cmd_dic.items() if proc ]
+
+		# remove old tree ctrl
+		for i in range(2):
+			self.obj_get('tree_ctrl_' + str(i)).Destroy()
+
+		# remove old params
+		names = [ prm.get('name') for prm in items.get('params', []) ]
+		for prm in self.params[:]: # copy
+			if prm.get('name') in names:
+				self.params.remove(prm)
+
+		self.add_params(items.get('params', []))
+
+		# overwrite sys_gdic
+		old = self.sys_gdic
+		self.sys_gdic = items.get('sys_gui')
+		self.sys_gdic['update_func'] = self.update_func
+		for d in self.config_dic.values():
+			if d.get('gdic') == old:
+				d['gdic'] = self.sys_gdic
+
+		# listing update names
+		def subs_names(subs):
+			f2 = lambda s: subs_names( s.get('subs') ) if 'subs' in s else [ s.get('name') ]
+			f = lambda lst, s: lst + f2(s)
+			return reduce(f, subs, [])
+
+		names = subs_names( items.get('subs') )
+		names += items.get('buttons', {}).keys()
+
+		# remove old data of name in config_dic
+		for (k, v) in self.config_dic.items():
+			if v.get('name') in names:
+				self.config_dic.pop(k, None)
+
+		# rebuild tree ctrl
+		cmd_dic.clear()
+		for i in range(2):
+			tree_ctrl = self.create_tree(parent, items['subs'][i], None, None, self.computing_cmd)
+			tree_ctrl.ExpandAll()
+			tree_ctrl.SetBackgroundColour(wx.NullColour)
+			setattr(self, 'tree_ctrl_' + str(i), tree_ctrl)
+			sizer.Add(tree_ctrl, 1, wx.EXPAND, 0)
+
+		self.setup_buttons(items.get('buttons', {}), self.computing_cmd)
+
+		# restore cmd_dic proc
+		to_obj = lambda name: next( ( d.get('obj') for d in self.config_dic.values() if d.get('name') == name ), None )
+		for (name, proc) in procs:
+			obj = to_obj(name)
+			if obj and obj in cmd_dic:
+				cmd_dic[ obj ] = ( cmd_dic.get(obj)[0], proc )
+				set_val(obj, True)
+
+		parent.Layout()
+
+	def toggle_booted_cmds(self):
+		(enable, msg) = self.get_booted_cmds_enable_msg()
+		style = wx.OK | wx.CANCEL | wx.ICON_QUESTION
+		dlg = wx.MessageDialog(self, msg, '', style)
+		if dlg.ShowModal() != wx.ID_OK:
+			return
+		if 'booted_cmds' not in self.load_dic:
+			self.load_dic['booted_cmds'] = {}
+		self.load_dic.get('booted_cmds')['enable'] = not enable
+
+	def get_booted_cmds_enable_msg(self):
+		enable = self.load_dic.get('booted_cmds', {}).get('enable', False)
+		s = 'Enable' if not enable else 'Disable'
+		msg = '{} booted commands menu ?'.format(s)
+		return (enable, msg)
 
 	def RosCb(self, data):
 		print('recv topic msg : ' + data.data)
@@ -577,6 +720,11 @@ class MyFrame(rtmgr.MyFrame):
 					restore(v)
 
 				self.add_cfg_info(obj, obj, k, pdic, gdic, False, prm)
+
+				pnls = [ gdic.get(var.get('name'), {}).get('panel') for var in prm.get('vars') ]
+				for pnl in [ gdic.get('panel') ] + pnls:
+					if pnl:
+						self.set_param_panel(obj, eval_if_str(self, pnl))
 			else:
 				self.add_cfg_info(obj, obj, k, None, gdic, False, None)
 
@@ -611,6 +759,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
+	
+	
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -753,7 +903,7 @@ class MyFrame(rtmgr.MyFrame):
 				dlg_ret = show_modal(dlg)
 				dic_list_pop(gdic, 'dialog_type')
 				if dlg_ret != 0:
-					return False			
+					return False
 			else:
 				pdic['camera_id'] = ''
 
@@ -764,7 +914,7 @@ class MyFrame(rtmgr.MyFrame):
 			dlg_ret = show_modal(dlg)
 			dic_list_pop(gdic, 'dialog_type')
 			if dlg_ret != 0:
-				return False			
+				return False
 
 		self.update_func(pdic, gdic, prm)
 		s = ''
@@ -793,14 +943,14 @@ class MyFrame(rtmgr.MyFrame):
 			v = pdic.get(name)
 			if (v is None or v == '') and 'default' in cmd_param:
 				v = cmd_param.get('default')
-			if cmd_param.get('must') and (v is None or v == ''):
+			if dic_eval_if_str(self, cmd_param, 'must') and (v is None or v == ''):
 				print 'cmd_param', name, 'is required'
 				if msg_box:
 					wx.MessageBox('cmd_param ' + name + ' is required')
 				return False
-			if cmd_param.get('only_enable') and not v:
+			if dic_eval_if_str(self, cmd_param, 'only_enable') and not v:
 				continue
-			if cmd_param.get('only_disable') and v:
+			if dic_eval_if_str(self, cmd_param, 'only_disable') and v:
 				continue
 			name = cmd_param.get('var_name', name)
 			unpack = cmd_param.get('unpack')
@@ -868,12 +1018,11 @@ class MyFrame(rtmgr.MyFrame):
 		return ( d.get('pdic'), d.get('gdic'), d.get('param') )
 
 	def update_func(self, pdic, gdic, prm):
-		pdic_empty = (pdic == {})
 		for var in prm.get('vars', []):
 			name = var.get('name')
 			gdic_v = gdic.get(name, {})
 			func = gdic_v.get('func')
-			if func is None and not pdic_empty:
+			if func is None and name in pdic:
 				continue
 			v = var.get('v')
 			if func is not None:
@@ -908,8 +1057,8 @@ class MyFrame(rtmgr.MyFrame):
 			(pdic, _, prm) = self.obj_to_pdic_gdic_prm(obj, sys=True)
 
 		cpu_chks = self.param_value_get(pdic, prm, 'cpu_chks')
-		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(psutil.NUM_CPUS) ]
-		cpus = [ i for i in range(psutil.NUM_CPUS) if cpu_chks[i] ]
+		cpu_chks = cpu_chks if cpu_chks else [ True for i in range(get_cpu_count()) ]
+		cpus = [ i for i in range(get_cpu_count()) if cpu_chks[i] ]
 		nice = self.param_value_get(pdic, prm, 'nice', 0)
 
 		d = { 'OTHER':SCHED_OTHER, 'FIFO':SCHED_FIFO, 'RR':SCHED_RR }
@@ -919,15 +1068,15 @@ class MyFrame(rtmgr.MyFrame):
 			policy = d.get(self.param_value_get(pdic, prm, 'policy', 'FIFO'), SCHED_FIFO)
 			priority = self.param_value_get(pdic, prm, 'prio', 0)
 
-		procs = [ proc ] + proc.get_children(recursive=True)
+		procs = [ proc ] + get_proc_children(proc, r=True)
 		for proc in procs:
 			print 'pid={}'.format(proc.pid)
-			if proc.get_nice() != nice:
-				print 'nice {} -> {}'.format(proc.get_nice(), nice)
+			if get_proc_nice(proc) != nice:
+				print 'nice {} -> {}'.format(get_proc_nice(proc), nice)
 				if set_process_nice(proc, nice) is False:
 					print 'Err set_process_nice()'
-			if proc.get_cpu_affinity() != cpus:
-				print 'cpus {} -> {}'.format(proc.get_cpu_affinity(), cpus)
+			if get_proc_cpu_affinity(proc) != cpus:
+				print 'cpus {} -> {}'.format(get_proc_cpu_affinity(proc), cpus)
 				if set_process_cpu_affinity(proc, cpus) is False:
 					print 'Err set_process_cpu_affinity()'
 
@@ -973,7 +1122,7 @@ class MyFrame(rtmgr.MyFrame):
 			if obj and attr in obj.__slots__:
 				type_str = obj._slot_types[ obj.__slots__.index(attr) ]
 				setattr(obj, attr, str_to_rosval(v, type_str, v))
-		
+
 		if 'stamp' in prm.get('flags', []):
 			(obj, attr) = msg_path_to_obj_attr(msg, 'header.stamp')
 			setattr(obj, attr, rospy.get_rostime())
@@ -1071,7 +1220,7 @@ class MyFrame(rtmgr.MyFrame):
 	def camera_ids(self):
 		if self.button_synchronization.GetValue():
 			return []
-		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed s/^$//"
+		cmd = "rostopic list | sed -n 's|/image_raw||p' | sed 's/^$/\//'"
 		return subprocess.check_output(cmd, shell=True).strip().split()
 
 	def cam_id_to_obj(self, cam_id, v):
@@ -1087,7 +1236,7 @@ class MyFrame(rtmgr.MyFrame):
 		if new_id not in ids:
 			return
 		idx = ids.index(new_id)
-		
+
 		pp = args.get('param_panel')
 		if pp:
 			pp.detach_func()
@@ -1123,6 +1272,9 @@ class MyFrame(rtmgr.MyFrame):
 			gdic['flags'] = flags
 
 			cam_id_obj = self.cam_id_to_obj(cam_id, obj.GetValue())
+			if not hasattr(cam_id_obj, 'enables_proxy'):
+				cam_id_obj.enables_proxy = (obj, cam_id_obj.s)
+
 			if not pdic_a or not gdic_a:
 				self.add_cfg_info(cam_id_obj, cam_id_obj, cam_id, pdic, gdic, False, prm)
 			if not cam_id_obj in cmd_dic:
@@ -1181,10 +1333,13 @@ class MyFrame(rtmgr.MyFrame):
 	def rosbag_info_hook(self, v):
 		if not v:
 			return
+		th_start(self.rosbag_info_hook_th, {'v':v} )
+
+	def rosbag_info_hook_th(self, ev, v):  # thread
 		err = subprocess.STDOUT
 		s = subprocess.check_output([ 'rosbag', 'info', v ], stderr=err).strip()
-		self.label_rosbag_info.SetLabel(s)
-		self.label_rosbag_info.GetParent().FitInside()
+		wx.CallAfter(self.label_rosbag_info.SetLabel, s)
+		wx.CallAfter(self.label_rosbag_info.GetParent().FitInside)
 
 	#
 	# Data Tab
@@ -1197,17 +1352,19 @@ class MyFrame(rtmgr.MyFrame):
 	def info_col(self, v, v_yellow, v_red, col_normal, col_red):
 		if v < v_yellow:
 			return col_normal
-		if v < v_red:		
+		if v < v_red:
 			(nr,ng,nb) = col_normal
 			(rr,rg,rb) = col_red
 			return ( (nr+rr)/2, (ng+rg)/2, (nb+rb)/2 )
 		return col_red
 
 	def mem_kb_info(self):
-		lst = subprocess.check_output(['free']).strip().split('\n')[2].split()[2:4]
-		used = int(lst[0])
-		free = int(lst[1])
-		return (used + free, used)
+		lines = subprocess.check_output('cat /proc/meminfo', shell=True).strip().split(os.linesep)
+		cvt = lambda (k, v): ( k.replace(':', ''), int(v) )
+		d = dict( map( lambda s: cvt( filter( lambda s: s!='kB', s.split() ) ), lines ) )
+		total = d.get('MemTotal')
+		free = d.get('MemFree') + d.get('Buffers') + d.get('Cached')
+		return (total, total - free)
 
 	def toprc_create(self):
 		(child_pid, fd) = pty.fork()
@@ -1244,7 +1401,7 @@ class MyFrame(rtmgr.MyFrame):
 		mem_ibl.lmt_bar_prg = rate_mem
 
 		alerted = False
-		cpu_n = psutil.NUM_CPUS
+		cpu_n = get_cpu_count()
 
 		while not ev.wait(interval):
 			s = subprocess.check_output(['sh', '-c', 'env COLUMNS=512 top -b -n 2 -d 0.1']).strip()
@@ -1316,7 +1473,7 @@ class MyFrame(rtmgr.MyFrame):
 
 			i = hd.find('%CPU')
 			loads = [ line[i-1:].strip().split(' ')[0] for line in top5 ]
-			
+
 			for (lb, cmd, load) in zip(self.lb_top5, cmds, loads):
 				col = self.info_col(str_to_float(load), rate_per_cpu_yellow, rate_per_cpu, (64,64,64), (200,0,0))
 				wx.CallAfter(lb.SetForegroundColour, col)
@@ -1428,7 +1585,7 @@ class MyFrame(rtmgr.MyFrame):
 		# info clear
 		lb = self.label_topics_info
 		lb.SetLabel('')
-		
+
 		# echo clear
 		self.topics_proc_th_end()
 
@@ -1471,7 +1628,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.topics_echo_proc = psutil.Popen([ 'rostopic', 'echo', topic ], stdout=out, stderr=err)
 
 		self.topics_echo_thinf = th_start(self.topics_echo_th)
-		
+
 	def topics_proc_th_end(self):
 		thinf = self.topics_echo_thinf
 		if thinf:
@@ -1542,38 +1699,6 @@ class MyFrame(rtmgr.MyFrame):
 	#
 	# Common Utils
 	#
-	def OnSelector(self, event):
-		self.OnSelector_obj(event.GetEventObject())
-
-	def OnSelector_obj(self, obj):
-		pfs = ('button_', 'checkbox_')
-		key = self.obj_key_get(obj, pfs)
-		if key is None:
-			return
-		if not hasattr(obj, 'GetValue'):
-			return
-		v = obj.GetValue()
-		if self.OnSelector_name(key, v) is None:
-			if getattr(obj, 'SetValue', None):
-				set_val(obj, not v)
-
-	def OnSelector_name(self, key, v):
-		sdic = self.selector.get(key)
-		if sdic is None:
-			return None
-		sels = eval(sdic.get('sel', 'None')) if v else sdic.get('launched', [])
-		if v and ( sels is None or sels == [] ):
-			return None
-		for sel in sels:
-			name = sdic.get(sel)
-			if name is None:
-				continue
-			obj = self.obj_get('button_' + name)
-			obj.SetValue(v)
-			self.OnLaunchKill_obj(obj)
-		sdic['launched'] = sels if v else None
-		return True
-
 	def set_param_panel(self, obj, parent):
 		(pdic, gdic, prm) = self.obj_to_pdic_gdic_prm(obj)
 		panel = ParamPanel(parent, frame=self, pdic=pdic, gdic=gdic, prm=prm)
@@ -1605,7 +1730,7 @@ class MyFrame(rtmgr.MyFrame):
 		return gdic
 
 	def add_cfg_info(self, cfg_obj, obj, name, pdic, gdic, run_disable, prm):
-		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic, 
+		self.config_dic[ cfg_obj ] = { 'obj':obj , 'name':name , 'pdic':pdic , 'gdic':gdic,
 					       'run_disable':run_disable , 'param':prm }
 
 	def get_param(self, prm_name):
@@ -1670,7 +1795,7 @@ class MyFrame(rtmgr.MyFrame):
 			(_, _, proc) = self.obj_to_cmd_dic_cmd_proc(play)
 			if proc:
 				proc.stdin.write(' ')
-			
+
 	def OnFtrace(self, event):
 		obj = event.GetEventObject()
 		cmd = 'rosrun runtime_manager ftrace.py'
@@ -1750,7 +1875,7 @@ class MyFrame(rtmgr.MyFrame):
 		for o in grp:
 			if o is obj:
 				continue
-			
+
 			if en is not None and o.IsEnabled() != en and not self.is_toggle_button(o):
 				if key:
 					enable_set(o, key, en)
@@ -1772,6 +1897,10 @@ class MyFrame(rtmgr.MyFrame):
 		if tree is None:
 			style = wx.TR_HAS_BUTTONS | wx.TR_NO_LINES | wx.TR_HIDE_ROOT | wx.TR_DEFAULT_STYLE | wx.SUNKEN_BORDER
 			tree = CT.CustomTreeCtrl(parent, wx.ID_ANY, agwStyle=style)
+
+			# for disable wrong scrolling at checked
+			tree.AcceptsFocus = MethodType(lambda self: False, tree, CT.CustomTreeCtrl)
+
 			item = tree.AddRoot(name, data=tree)
 			tree.Bind(wx.EVT_MOTION, self.OnTreeMotion)
 		else:
@@ -1861,7 +1990,7 @@ class MyFrame(rtmgr.MyFrame):
 			print(args) # for debug
 
 			f = self.obj_to_gdic(obj, {}).get('stdout_func')
-			f = eval(f) if type(f) is str else f
+			f = eval_if_str(self, f)
 			f = f if f else self.log_th
 
 			out = subprocess.PIPE if f else None
@@ -1869,7 +1998,10 @@ class MyFrame(rtmgr.MyFrame):
 			if f == self.log_th:
 				err = subprocess.PIPE
 
-			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err)
+			shell = ( len(args) > 0 and args[0] == 'do_shell_exec' )
+			if shell:
+				args = ' '.join( args[1:] )
+			proc = psutil.Popen(args, stdin=subprocess.PIPE, stdout=out, stderr=err, shell=shell)
 			self.all_procs.append(proc)
 
 			if f == self.log_th:
@@ -1889,7 +2021,8 @@ class MyFrame(rtmgr.MyFrame):
 			if kill_children:
 				terminate_children(proc, sigint)
 			terminate(proc, sigint)
-			proc.wait()
+			enables_set(obj, 'proc_wait', False)
+			th_start( proc_wait_thread, {'proc': proc, 'obj': obj} )
 			if proc in self.all_procs:
 				self.all_procs.remove(proc)
 			proc = None
@@ -1906,7 +2039,7 @@ class MyFrame(rtmgr.MyFrame):
 	def set_bg_all_tabs(self, col=wx.NullColour):
 
 		add_pnls = [
-			self, 
+			self,
 			self.tree_ctrl_0,
 			self.tree_ctrl_1,
 			self.tree_ctrl_data ]
@@ -1928,9 +2061,9 @@ class MyFrame(rtmgr.MyFrame):
 		key = self.obj_key_get(obj, pfs)
 		if key:
 			objs += self.key_objs_get(pfs, key)
-			
+
 		gdic = self.obj_to_gdic(obj, {})
-		objs += [ (eval(e) if type(e) is str else e) for e in gdic.get('ext_toggle_enables', []) ]
+		objs += [ eval_if_str(self, e) for e in gdic.get('ext_toggle_enables', []) ]
 
 		self.toggle_enables(objs)
 
@@ -1973,6 +2106,7 @@ class MyFrame(rtmgr.MyFrame):
 
 	def obj_get(self, name):
 		return getattr(self, name, None)
+
 
 def gdic_dialog_type_chk(gdic, name):
 	dlg_type = dic_list_get(gdic, 'dialog_type', 'config')
@@ -2022,7 +2156,9 @@ class ParamPanel(wx.Panel):
 			if not gdic_dialog_type_chk(self.gdic, name):
 				continue
 
-			gdic_v = dic_getset(self.gdic, name, {})
+			gdic_v = self.get_gdic_v_and_chk_enable(name)
+			if gdic_v is None:
+				continue
 
 			bak_stk_push(gdic_v, 'func')
 			if gdic_v.get('func'):
@@ -2096,6 +2232,12 @@ class ParamPanel(wx.Panel):
 		if 'no_init_update' not in self.prm.get('flags', []):
 			self.update()
 
+	def get_gdic_v_and_chk_enable(self, var_name):
+                gdic_v = dic_getset(self.gdic, var_name, {})
+		if 'panel' in gdic_v and dic_eval_if_str(self.frame, gdic_v, 'panel') != self.GetParent():
+			return None
+		return gdic_v
+
 	def update(self, var=None):
 		update_func = self.gdic.get('update_func')
 		if update_func:
@@ -2109,7 +2251,10 @@ class ParamPanel(wx.Panel):
 			if not gdic_dialog_type_chk(self.gdic, name):
 				continue
 
-			gdic_v = self.gdic.get(name, {})
+			gdic_v = self.get_gdic_v_and_chk_enable(name)
+			if gdic_v is None:
+				continue
+
 			if 'func' in gdic_v:
 				bak_stk_pop(gdic_v, 'func')
 
@@ -2164,9 +2309,7 @@ class VarPanel(wx.Panel):
 			self.Bind(wx.EVT_CHECKBOX, self.OnUpdate, self.obj)
 			return
 		if self.kind == 'checkboxes':
-			item_n = self.var.get('item_n', 1)
-			if type(item_n) is str:
-				item_n = eval(item_n)
+			item_n = dic_eval_if_str(self, self.var, 'item_n', 1)
 			self.obj = Checkboxes(self, item_n, label)
 			self.obj.set(v)
 			for box in self.obj.boxes:
@@ -2337,6 +2480,7 @@ class MyDialogParam(rtmgr.MyDialogParam):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogParam.__init__(self, *args, **kwds)
+		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2377,6 +2521,7 @@ class MyDialogDpm(rtmgr.MyDialogDpm):
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2424,6 +2569,7 @@ class MyDialogCarPedestrian(rtmgr.MyDialogCarPedestrian):
 		self.gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
 		rtmgr.MyDialogCarPedestrian.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -2453,7 +2599,13 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogLaneStop.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 		self.frame = self.GetParent()
+
+		name = 'lane_stop'
+		var = next( ( var for var in self.prm.get('vars', []) if var.get('name') == name ), {} )
+		v = self.pdic.get( name, var.get('v', False) )
+		set_val(self.checkbox_lane_stop, v)
 
 	def update(self):
 		update_func = self.gdic.get('update_func')
@@ -2463,7 +2615,7 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficRedLight(self, event):
 		self.pdic['traffic_light'] = 0
 		self.update()
-		
+
 	def OnTrafficGreenLight(self, event):
 		self.pdic['traffic_light'] = 1
 		self.update()
@@ -2471,10 +2623,9 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnTrafficLightRecognition(self, event):
 		pub = rospy.Publisher('/config/lane_stop', ConfigLaneStop, latch=True, queue_size=10)
 		msg = ConfigLaneStop()
-		if event.GetEventObject().GetValue():
-			msg.manual_detection = False
-		else:
-			msg.manual_detection = True
+		v = event.GetEventObject().GetValue()
+		self.pdic['lane_stop'] = v
+		msg.manual_detection = not v
 		pub.publish(msg)
 
 	def OnOk(self, event):
@@ -2490,6 +2641,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
 		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
+		set_size_gdic(self)
 
 		parent = self.panel_v
 		frame = self.GetParent()
@@ -2526,7 +2678,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		msg.filename = self.text_ctrl_path.GetValue()
 		msg.filter_res = str_to_float(v)
 		self.pub.publish(msg)
-		
+
 	def OnOk(self, event):
 		self.panel.detach_func()
 		self.EndModal(0)
@@ -2539,7 +2691,7 @@ class InfoBarLabel(wx.BoxSizer):
 		bt = wx.StaticText(parent, wx.ID_ANY, btm_txt) if btm_txt else None
 
 		self.Add(self.lb, 0, wx.ALIGN_CENTER_HORIZONTAL, 0)
-		if bar_orient == wx.VERTICAL:		
+		if bar_orient == wx.VERTICAL:
 			sz = self.bar.GetSize()
 			sz.SetWidth(20)
 			self.bar.SetMinSize(sz)
@@ -2563,7 +2715,7 @@ class InfoBarLabel(wx.BoxSizer):
 	def bar_set(self, prg):
 		(col1, col2) = (wx.Colour(0,0,250), wx.Colour(0,0,128))
 		if prg >= self.lmt_bar_prg:
-			(col1, col2) = (wx.Colour(250,0,0), wx.Colour(128,0,0)) 
+			(col1, col2) = (wx.Colour(250,0,0), wx.Colour(128,0,0))
 		self.bar.set_col(col1, col2)
 		self.bar.set(prg)
 
@@ -2775,6 +2927,15 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			tc.SetValue('')
 		return [ '--size=' + str(int(mb * 1024 * 1024)) ] if mb > 0 else []
 
+def set_size_gdic(dlg, gdic={}):
+	(w, h) = dlg.GetSize()
+	if not gdic:
+		gdic = getattr(dlg, 'gdic', {})
+	nw = gdic.get('dialog_width', w)
+	nh = gdic.get('dialog_height', h)
+	if (w, h) != (nw, nh):
+		dlg.SetSize((nw, nh))
+
 def file_dialog(parent, tc, path_inf_dic={}):
 	path = tc.GetValue()
 	path = get_top(path.split(','), path)
@@ -2790,7 +2951,7 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		dlg = wx.DirDialog(parent, defaultPath=path)
 	else:
 		st_dic = { 'save' : wx.FD_SAVE, 'multi' : wx.FD_MULTIPLE }
-		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn, 
+		dlg = wx.FileDialog(parent, defaultDir=dn, defaultFile=fn,
 				    style=st_dic.get(path_type, wx.FD_DEFAULT_STYLE))
 	ret = show_modal(dlg)
 	if ret == wx.ID_OK:
@@ -2800,6 +2961,24 @@ def file_dialog(parent, tc, path_inf_dic={}):
 		set_path(tc, path)
 	dlg.Destroy()
 	return ret
+
+def post_evt_toggle_obj(win, obj, v):
+	evt_id = {
+		CT.GenericTreeItem : CT.wxEVT_TREE_ITEM_CHECKED,
+		wx.CheckBox : wx.EVT_CHECKBOX.typeId,
+		wx.ToggleButton : wx.EVT_TOGGLEBUTTON.typeId,
+		wx.Button : wx.EVT_BUTTON.typeId,
+	}.get( type(obj) )
+
+	if evt_id == CT.wxEVT_TREE_ITEM_CHECKED:
+		evt = CT.TreeEvent( evt_id, win.GetId() )
+		evt.SetItem(obj)
+	else:
+		evt = wx.PyCommandEvent( evt_id, obj.GetId() )
+		evt.SetEventObject(obj)
+
+	set_val(obj, v)
+	wx.PostEvent(win, evt)
 
 def button_color_change(btn, v=None):
 	if v is None and type(btn) is wx.ToggleButton:
@@ -2812,7 +2991,7 @@ def button_color_change(btn, v=None):
 
 def OnButtonColorHdr(event):
 	btn = event.GetEventObject()
-	dic = { wx.EVT_TOGGLEBUTTON.typeId : None, 
+	dic = { wx.EVT_TOGGLEBUTTON.typeId : None,
 		wx.EVT_LEFT_DOWN.typeId	   : True,
 		wx.EVT_LEFT_UP.typeId	   : False }
 	v = dic.get(event.GetEventType(), '?')
@@ -2862,15 +3041,20 @@ def load_yaml(filename, def_ret=None):
 	return d
 
 def terminate_children(proc, sigint=False):
-	for child in psutil.Process(proc.pid).get_children():
-		terminate_children(child, sigint)
-		terminate(child, sigint)
+        for child in get_proc_children(proc):
+            terminate_children(child, sigint)
+            terminate(child, sigint)
 
 def terminate(proc, sigint=False):
 	if sigint:
 		proc.send_signal(signal.SIGINT)
 	else:
 		proc.terminate()
+
+def proc_wait_thread(ev, proc, obj):
+	proc.wait()
+	wx.CallAfter(enables_set, obj, 'proc_wait', True)
+	th_end((None, ev))
 
 def th_start(target, kwargs={}):
 	ev = threading.Event()
@@ -2881,6 +3065,10 @@ def th_start(target, kwargs={}):
 	return (th, ev)
 
 def th_end((th, ev)):
+	if not th:
+		th = threading.current_thread()
+		threading.Timer( 1.0, th_end, ((th, ev),) ).start()
+		return
 	ev.set()
 	th.join()
 
@@ -2963,7 +3151,7 @@ def static_box_sizer(parent, s, orient=wx.VERTICAL):
 	return wx.StaticBoxSizer(sb, orient)
 
 def wx_flag_get(flags):
-	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT, 
+	dic = { 'top' : wx.TOP, 'bottom' : wx.BOTTOM, 'left' : wx.LEFT, 'right' : wx.RIGHT,
 		'all' : wx.ALL, 'expand' : wx.EXPAND, 'fixed_minsize' : wx.FIXED_MINSIZE,
 		'center_v' : wx.ALIGN_CENTER_VERTICAL, 'center_h' : wx.ALIGN_CENTER_HORIZONTAL,
 		'passwd' : wx.TE_PASSWORD }
@@ -3004,10 +3192,14 @@ def set_val(obj, v):
 		button_color_change(obj)
 
 def enables_set(obj, k, en):
+	if hasattr(obj, 'enables_proxy'):
+		(obj, k) = obj.enables_proxy
 	d = attr_getset(obj, 'enabLes', {})
 	d[k] = en
 	d['last_key'] = k
-	obj.Enable( all( d.values() ) )
+	if hasattr(obj, 'Enable'):
+		obj.Enable( all( d.values() ) )
+	obj_refresh(obj)
 	if isinstance(obj, wx.HyperlinkCtrl):
 		if not hasattr(obj, 'coLor'):
 			obj.coLor = { True:obj.GetNormalColour(), False:'#808080' }
@@ -3102,6 +3294,12 @@ def path_expand_cmd(path):
 		path = '/'.join(lst)
 	return path
 
+def eval_if_str(self, v):
+	return eval(v) if type(v) is str else v
+
+def dic_eval_if_str(self, dic, key, def_ret=None):
+	return eval_if_str( self, dic.get(key, def_ret) )
+
 def prn_dict(dic):
 	for (k,v) in dic.items():
 		print (k, ':', v)
@@ -3150,11 +3348,37 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
+	
+# psutil 3.x to 1.x backward compatibility
+def get_cpu_count():
+	try:
+		return psutil.NUM_CPUS
+	except AttributeError:
+		return psutil.cpu_count()
+
+def get_proc_children(proc, r=False):
+	try:
+		return proc.get_children(recursive=r)
+	except AttributeError:
+		return proc.children(recursive=r)
+
+def get_proc_nice(proc):
+	try:
+		return proc.get_nice()
+	except AttributeError:
+		return proc.nice()
+
+def get_proc_cpu_affinity(proc):
+	try:
+		return proc.get_cpu_affinity()
+	except AttributeError:
+		return proc.cpu_affinity()
 
 if __name__ == "__main__":
 	gettext.install("app")
 
 	app = MyApp(0)
 	app.MainLoop()
+
 
 # EOF

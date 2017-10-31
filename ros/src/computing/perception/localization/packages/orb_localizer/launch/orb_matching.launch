@@ -1,0 +1,40 @@
+<launch>
+	<param name="use_sim_time" value="true" />
+
+	<arg name="orb_config" />
+	<arg name="map_file" />
+	<arg name="mask_image" default="$(find orb_localizer)/config/mask.png" />
+	<arg name="image_rate" default="15" />
+	<arg name="image_topic" default="/camera/image_raw" />
+	<arg name="odometry" default="0" />
+
+<!-- experimental: Odometry sensor fusion -->
+<!--	<node name="odometry" pkg="cartis_dead_reckoning" type="rear_wheels_odometry" args="$(find cartis_dead_reckoning)/data/param.txt" if="$(arg odometry)" /> -->
+
+	<node name="map_publisher" pkg="orb_localizer" type="map_publisher" args="$(arg map_file)" />
+
+	<node name="downsample" pkg="topic_tools" type="throttle" args="messages $(arg image_topic) $(arg image_rate) /camera/image_raw_d" />
+
+	<!--
+	0 = no process
+	1 = gamma adjustment
+	2 = to illuminati invariant
+	-->
+
+	<node name="imgprocx" pkg="orb_localizer" type="imgprocx" args="$(arg mask_image) 1" output="screen">
+		<param name="input_topic" value="/camera/image_raw_d" />
+		<param name="output_topic" value="/camera/image_hs" />
+	</node>
+
+
+	<node name="camera_localizer_1" pkg="orb_localizer" type="orb_matching" output="screen">
+		<param name="map_file"                    value="$(arg map_file)" />
+		<param name="configuration_file"          value="$(arg orb_config)" />
+		<param name="image_topic"                 value="/camera/image_hs" />
+		<param name="pose_topic"                  value="camera_pose" />
+		<param name="odometry_topic"              value="/odom" />
+	</node> 
+
+	<node name="framebuffer_view" pkg="rqt_image_view" type="rqt_image_view" args="/camera_localizer_1/framebuffer" />
+
+</launch>

@@ -71,6 +71,8 @@ class ProcManager:
 
 		try:
 			proc.set_nice(value)
+		except AttributeError:
+			proc.nice(value)
 		except Exception as e:
 			print("Error set_nice: {}".format(e))
 			return -1
@@ -88,8 +90,11 @@ class ProcManager:
 		print("[CPU affinity] Set pid:{}, CPUS: {}: ".format(proc.pid, cpus))
 
 		ret = 0
+
 		try:
 			proc.set_cpu_affinity(cpus)
+		except AttributeError:
+			proc.cpu_affinity(cpus)
 		except Exception:
 			ret = -1
 		return ret
@@ -280,6 +285,13 @@ def drop_capabilities():
 	for cap in range(0, cap_last_cap()+1):
 		if cap not in KEEP_CAPS:
 			libc.prctl(PR_CAPBSET_DROP, cap)
+
+def get_cpu_count():
+	try:
+		return psutil.NUM_CPUS
+	except AttributeError:
+		return psutil.cpu_count()
+	
 
 if __name__ == "__main__":
 	if os.getuid() != 0:

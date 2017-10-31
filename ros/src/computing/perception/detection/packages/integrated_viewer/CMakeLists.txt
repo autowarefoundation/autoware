@@ -1,16 +1,21 @@
 # cmake_minimum_required(VERSION 2.8.3)
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
+execute_process(
+  COMMAND rosversion -d
+  OUTPUT_VARIABLE ROS_VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
+#if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   roscpp
   sensor_msgs
   std_msgs
-  runtime_manager
-  points2image
   rviz
+  autoware_msgs
   )
 
 set(CMAKE_CXX_FLAGS
@@ -21,16 +26,45 @@ catkin_package(
   DEPENDS rviz
   )
 
-# We specify Qt4 will be used as RViz using them and 
-# Libraries conflict will be happen if we specify Qt5.
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-include(${QT_USE_FILE})
+if(rviz_QT_VERSION VERSION_LESS "5")
+	find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
+	include(${QT_USE_FILE})
+# Qt's user-interface compiler.
+	qt4_wrap_ui(UI_HEADERS
+			node/traffic_light_plugin/form.ui
+			node/image_viewer_plugin/image_viewer_form.ui
+		   )
+
+# Here we specify which header files need to be run through "moc",
+# Qt's meta-object compiler.
+	qt4_wrap_cpp(MOC_FILES
+			node/traffic_light_plugin/traffic_light_plugin.h
+			node/image_viewer_plugin/image_viewer_plugin.h
+  )
+else()
+	find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets Quick)
+	set(QT_LIBRARIES Qt5::Widgets)
+# Qt's user-interface compiler.
+	qt5_wrap_ui(UI_HEADERS
+			node/traffic_light_plugin/form.ui
+			node/image_viewer_plugin/image_viewer_form.ui
+		   )
+
+# Here we specify which header files need to be run through "moc",
+# Qt's meta-object compiler.
+	qt5_wrap_cpp(MOC_FILES
+			node/traffic_light_plugin/traffic_light_plugin.h
+			node/image_viewer_plugin/image_viewer_plugin.h
+  )
+endif()
 
 include_directories(
   lib/
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${catkin_INCLUDE_DIRS})
+  ${catkin_INCLUDE_DIRS}
+  include
+)
 
 link_directories(${catkin_LIBRARY_DIRS})
 
@@ -38,19 +72,6 @@ link_directories(${catkin_LIBRARY_DIRS})
 # etc because they can conflict with boost signals, so define QT_NO_KEYWORDS here.
 add_definitions(-DQT_NO_KEYWORDS)
 
-# Here we wpecify which ui files need to be run through "uic",
-# Qt's user-interface compiler.
-qt4_wrap_ui(UI_HEADERS
-  node/traffic_light_plugin/form.ui
-  node/image_viewer_plugin/image_viewer_form.ui
-  )
-
-# Here we specify which header files need to be run through "moc",
-# Qt's meta-object compiler.
-qt4_wrap_cpp(MOC_FILES
-  node/traffic_light_plugin/traffic_light_plugin.h
-  node/image_viewer_plugin/image_viewer_plugin.h
-  )
 
 # Here we specify the list of source files, including the output of
 # the previous command which is stored in ``${MOC_FILES}`` and ``${UI_HEADERS}``.
@@ -60,6 +81,7 @@ set(SOURCE_FILES
   node/image_viewer_plugin/image_viewer_plugin.cpp
   node/image_viewer_plugin/draw_rects.cpp
   node/image_viewer_plugin/draw_points.cpp
+  node/image_viewer_plugin/draw_lane.cpp
   ${MOC_FILES}
   ${UI_HEADERS})
 
@@ -68,7 +90,7 @@ set(SOURCE_FILES
 # "rviz_plugin_tutorials", or whatever your version of this project
 # is called) and specify the list of source files we collected above
 # in ``${SOURCE_FILES}``.
-# 
+#
 add_library(${PROJECT_NAME}
   ${SOURCE_FILES}
 )
@@ -98,7 +120,7 @@ install(TARGETS ${PROJECT_NAME}
 install(FILES rviz_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-add_dependencies(${PROJECT_NAME} 
-  runtime_manager_generate_messages_cpp
-  cv_tracker_generate_messages_cpp
-  points2image_generate_mssages_cpp)
+add_dependencies(${PROJECT_NAME}
+  ${catkin_EXPORTED_TARGETS} 
+)
+#endif()

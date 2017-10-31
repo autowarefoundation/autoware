@@ -48,9 +48,9 @@
 #include <geo_pos_conv.hh>
 
 #include "ros/ros.h"
-#include "tablet_socket/gear_cmd.h"
-#include "tablet_socket/mode_cmd.h"
-#include "tablet_socket/route_cmd.h"
+#include "tablet_socket_msgs/gear_cmd.h"
+#include "tablet_socket_msgs/mode_cmd.h"
+#include "tablet_socket_msgs/route_cmd.h"
 
 #define NODE_NAME	"tablet_receiver"
 #define TOPIC_NR	(5)
@@ -139,9 +139,9 @@ int main(int argc, char *argv[])
 
 	ros::init(argc, argv, NODE_NAME);
 	ros::NodeHandle node;
-	pub[0] = node.advertise<tablet_socket::gear_cmd>("gear_cmd", 1);
-	pub[1] = node.advertise<tablet_socket::mode_cmd>("mode_cmd", 1);
-	pub[2] = node.advertise<tablet_socket::route_cmd>("route_cmd", 1);
+	pub[0] = node.advertise<tablet_socket_msgs::gear_cmd>("gear_cmd", 1);
+	pub[1] = node.advertise<tablet_socket_msgs::mode_cmd>("mode_cmd", 1);
+	pub[2] = node.advertise<tablet_socket_msgs::route_cmd>("route_cmd", 1);
 	pub[3] = node.advertise<geometry_msgs::PoseStamped>("gnss_pose", 1);
 	pub[4] = node.advertise<std_msgs::Bool>("gnss_stat", 1);
 	node.param<int>("tablet_receiver/port", port, DEFAULT_PORT);
@@ -245,13 +245,13 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 
 	switch(info[0]) {
 	case 1: { // GEAR
-		tablet_socket::gear_cmd msg;
+		tablet_socket_msgs::gear_cmd msg;
 		msg.gear = info[1];
 		pub[0].publish(msg);
 		break;
 	}
 	case 2: { // MODE
-		tablet_socket::mode_cmd msg;
+		tablet_socket_msgs::mode_cmd msg;
 		msg.mode = info[1];
 		pub[1].publish(msg);
 		break;
@@ -284,8 +284,8 @@ static int getSensorValue(int sock, ros::Publisher pub[TOPIC_NR])
 			}
 		}
 
-		tablet_socket::route_cmd msg;
-		tablet_socket::Waypoint point;
+		tablet_socket_msgs::route_cmd msg;
+		tablet_socket_msgs::Waypoint point;
 		for (int i = 0; i < points_nr; i++) {
 			if (i % 2) {
 				point.lon = points[i];

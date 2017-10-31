@@ -10,7 +10,7 @@
 <!-- lane_stop -->
 <node pkg="lane_planner" type="lane_stop" name="lane_stop"/>
 
-<!-- ndt_pcl -->
-<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
+<!-- ndt_matching -->
+<node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching"/>
 
 </launch>

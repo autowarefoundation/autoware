@@ -2,7 +2,7 @@
 <launch>
 
 	<!-- rosrun waypoint_follower twist_filter -->
-	<node pkg="waypoint_follower" type="twist_filter" name="twist_filter" output="screen">
+	<node pkg="waypoint_follower" type="twist_filter" name="twist_filter" output="log">
 	</node>
 
 </launch>

@@ -6,10 +6,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <rviz/panel.h>
-#include <cv_tracker/image_obj.h>
-#include <cv_tracker/image_obj_ranged.h>
-#include <cv_tracker/image_obj_tracked.h>
-#include <points2image/PointsImage.h>
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/image_obj_ranged.h"
+#include "autoware_msgs/image_obj_tracked.h"
+#include "autoware_msgs/PointsImage.h"
 
 #include <string>
 #include <map>
@@ -25,6 +25,7 @@
 #include "ui_image_viewer_form.h"
 #include "draw_rects.h"
 #include "draw_points.h"
+#include "draw_lane.h"
 #endif
 
 namespace integrated_viewer
@@ -47,10 +48,11 @@ namespace integrated_viewer
     
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
-    void ImageObjCallback(const cv_tracker::image_obj::ConstPtr& msg);
-    void ImageObjRangedCallback(const cv_tracker::image_obj_ranged::ConstPtr& msg);
-    void ImageObjTrackedCallback(const cv_tracker::image_obj_tracked::ConstPtr& msg);
-    void PointCallback(const points2image::PointsImage::ConstPtr &msg);
+    void ImageObjCallback(const autoware_msgs::image_obj::ConstPtr& msg);
+    void ImageObjRangedCallback(const autoware_msgs::image_obj_ranged::ConstPtr& msg);
+    void ImageObjTrackedCallback(const autoware_msgs::image_obj_tracked::ConstPtr& msg);
+    void PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg);
+    void LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg);
 
    // The function to refrect modified image on UI
    void ShowImageOnUi(void);
@@ -59,6 +61,7 @@ namespace integrated_viewer
     static const QString kImageDataType;
     static const QString kRectDataTypeBase;
     static const QString kPointDataType;
+    static const QString kLaneDataType;
 
     // The blank topic name
     static const QString kBlankTopic;
@@ -74,6 +77,7 @@ namespace integrated_viewer
     ros::Subscriber image_sub_;
     ros::Subscriber rect_sub_;
     ros::Subscriber point_sub_;
+    ros::Subscriber lane_sub_;
 
   private:
     // The UI components
@@ -84,10 +88,11 @@ namespace integrated_viewer
     cv::Mat default_image_;
 
     // Data pointer to hold subscribed data
-    points2image::PointsImage::ConstPtr points_msg_;
-    cv_tracker::image_obj::ConstPtr image_obj_msg_;
-    cv_tracker::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
-    cv_tracker::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
+    autoware_msgs::PointsImage::ConstPtr points_msg_;
+    autoware_msgs::image_obj::ConstPtr image_obj_msg_;
+    autoware_msgs::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
+    autoware_msgs::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
+    autoware_msgs::ImageLaneObjects::ConstPtr lane_msg_;
 
     // data structure to hold topic information for detection result
     std::map<std::string, std::string> rect_topic_info_;
@@ -95,6 +100,7 @@ namespace integrated_viewer
     // The helper-class constructor for drawing
     DrawRects rects_drawer_;
     DrawPoints points_drawer_;
+    DrawLane lane_drawer_;
 
     // The flag to represent whether default image should be shown or not
     bool default_image_shown_;
@@ -106,6 +112,7 @@ namespace integrated_viewer
       void on_image_topic_combo_box__activated(int index);
       void on_rect_topic_combo_box__activated(int index);
       void on_point_topic_combo_box__activated(int index);
+      void on_lane_topic_combo_box__activated(int index);
 
   }; // end class ImageViewerPlugin
 

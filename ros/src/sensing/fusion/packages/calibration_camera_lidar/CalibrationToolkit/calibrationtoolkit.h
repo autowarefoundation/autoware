@@ -136,9 +136,9 @@ protected:
     cv::Size2i patternnum;
     cv::Size2f patternsize;
 
-    cv::vector<cv::Point3f> grid3dpoint;
-    cv::vector<cv::vector<cv::Point3f> > grid3dpoints;
-    cv::vector<cv::vector<cv::Point2f> > grid2dpoints;
+    std::vector<cv::Point3f> grid3dpoint;
+    std::vector<std::vector<cv::Point3f> > grid3dpoints;
+    std::vector<std::vector<cv::Point2f> > grid2dpoints;
 
     enum CHESSBOARDTYPE
     {
@@ -149,12 +149,12 @@ protected:
     QComboBox * chessboardtype;
 
     QTabWidget * chessboardtab;
-    cv::vector<cv::Mat> chessboardposes;
+    std::vector<cv::Mat> chessboardposes;
     QTabWidget * chessboardposeshow;
     double reprojectionerror;
     QLabel * reprojectionerrorshow;
 
-    cv::vector<cv::Mat> calibimages;
+    std::vector<cv::Mat> calibimages;
     QTabWidget * calibimagesshow;
 protected:
     bool removeCalibData();
@@ -163,7 +163,7 @@ protected:
     bool saveCalibResult(cv::FileStorage & fs);
 public:
     int getChessboardNum();
-    cv::vector<cv::Mat> getChessboardPoses();
+    std::vector<cv::Mat> getChessboardPoses();
     cv::Mat getChessboardPose(int id);
     cv::Mat getCalibImage(int id);
 };
@@ -191,7 +191,7 @@ public:
     {
         cv::Mat chessboardnormals;   //n*3
         cv::Mat chessboardpoints;    //n*3
-        cv::vector<cv::Mat> velodynepoints; //n*m*3
+        std::vector<cv::Mat> velodynepoints; //n*m*3
         cv::Mat velodynenormals;
         cv::Mat rotationresult;
     };

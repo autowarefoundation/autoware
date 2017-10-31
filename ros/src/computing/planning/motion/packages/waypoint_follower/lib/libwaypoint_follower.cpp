@@ -55,7 +55,7 @@ double WayPoints::getInterval() const
 geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 {
   geometry_msgs::Point p;
-  if (waypoint > getSize() - 1)
+  if (waypoint > getSize() - 1 || waypoint < 0)
     return p;
 
   p = current_waypoints_.waypoints[waypoint].pose.pose.position;
@@ -65,7 +65,7 @@ geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
 {
   geometry_msgs::Quaternion q;
-  if (waypoint > getSize() - 1)
+  if (waypoint > getSize() - 1 || waypoint < 0)
     return q;
 
   q = current_waypoints_.waypoints[waypoint].pose.pose.orientation;
@@ -75,7 +75,7 @@ geometry_msgs::Quaternion WayPoints::getWaypointOrientation(int waypoint) const
 geometry_msgs::Pose WayPoints::getWaypointPose(int waypoint) const
 {
   geometry_msgs::Pose pose;
-  if (waypoint > getSize() - 1)
+  if (waypoint > getSize() - 1 || waypoint < 0)
     return pose;
 
   pose = current_waypoints_.waypoints[waypoint].pose.pose;
@@ -84,7 +84,7 @@ geometry_msgs::Pose WayPoints::getWaypointPose(int waypoint) const
 
 double WayPoints::getWaypointVelocityMPS(int waypoint) const
 {
-  if (waypoint > getSize() - 1)
+  if (waypoint > getSize() - 1 || waypoint < 0)
     return 0;
 
   return current_waypoints_.waypoints[waypoint].twist.twist.linear.x;
@@ -172,7 +172,7 @@ double getRelativeAngle(geometry_msgs::Pose waypoint_pose, geometry_msgs::Pose v
 }
 
 // get closest waypoint from current pose
-int getClosestWaypoint(const waypoint_follower::lane &current_path, geometry_msgs::Pose current_pose)
+int getClosestWaypoint(const autoware_msgs::lane &current_path, geometry_msgs::Pose current_pose)
 {
   WayPoints wp;
   wp.setPath(current_path);

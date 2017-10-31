@@ -1,0 +1,6 @@
+Header header
+float32 distance_threshold_neighbor_lanes
+float32 lane_change_interval
+float32 lane_change_target_ratio
+float32 lane_change_target_minimum
+float32 vector_length_hermite_curve

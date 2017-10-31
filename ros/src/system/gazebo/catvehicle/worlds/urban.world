@@ -1,0 +1,526 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <world name="vrc_task_1">
+    <!-- ground -->
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+            <bounce/>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+    </model>
+    <!-- place user camera -->
+    <gui>
+      <camera name="user_camera">
+        <pose>-21.660200 -11.942800 12.053900 0.000000 0.443643 0.352194</pose>
+      </camera>
+    </gui>
+    <scene>
+      <ambient>0.2 0.2 0.2 1.0</ambient>
+      <grid>false</grid>
+    </scene>
+    <physics type="ode">
+      <gravity>0 0 -9.81</gravity>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>50</iters>
+          <sor>1.4</sor>
+        </solver>
+        <constraints>
+          <cfm>0.0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100.0</contact_max_correcting_vel>
+          <contact_surface_layer>0.0</contact_surface_layer>
+        </constraints>
+      </ode>
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+    </physics>
+    <!-- Light Source -->
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 100 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.9 0.9 0.9 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>0.2 0.2 -0.9</direction>
+    </light>
+    <light type="point" name="light_bulb">
+      <cast_shadows>false</cast_shadows>
+      <pose>-14 0 5 0 0 0</pose>
+      <diffuse>0.3 0.3 0.3 1</diffuse>
+      <specular>0.0 0.0 0.0 1</specular>
+      <attenuation>
+        <range>80</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+    </light>
+    <include>
+      <uri>model://construction_barrel</uri>
+      <name>barrel_1</name>
+      <pose>30 -1.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://construction_barrel</uri>
+      <name>barrel_2</name>
+      <pose>60 1.2 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://construction_barrel</uri>
+      <name>barrel_3</name>
+      <pose>108 5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://speed_limit_sign</uri>
+      <name>speed_sign_1</name>
+      <static>true</static>
+      <pose>15 -5 0 0 0 1.5707</pose>
+    </include>
+    <include>
+      <uri>model://speed_limit_sign</uri>
+      <name>speed_sign_2</name>
+      <static>true</static>
+      <pose>70 5 0 0 0 1.5707</pose>
+    </include>
+    <include>
+      <uri>model://speed_limit_sign</uri>
+      <name>speed_sign_3</name>
+      <static>true</static>
+      <pose>121 13 0 0 0 2.356</pose>
+    </include>
+    <include>
+      <uri>model://speed_limit_sign</uri>
+      <name>speed_sign_4</name>
+      <static>true</static>
+      <pose>155 68 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://speed_limit_sign</uri>
+      <name>speed_sign_5</name>
+      <static>true</static>
+      <pose>175 95 0 0 0 1.5707</pose>
+    </include>
+    <include>
+      <uri>model://house_1</uri>
+      <pose>12 9.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_1</uri>
+      <name>house_1_b</name>
+      <pose>129.5 46 0 0 0 1.5707</pose>
+    </include>
+    <include>
+      <uri>model://mailbox</uri>
+      <name>mailbox_0</name>
+      <static>true</static>
+      <pose>18 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://mailbox</uri>
+      <name>mailbox_1</name>
+      <static>true</static>
+      <pose>24.5 -4.45 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_2</uri>
+      <pose>30 -8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_2</uri>
+      <name>house_2_b</name>
+      <pose>77 8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_2</uri>
+      <name>house_2_c</name>
+      <pose>158 91 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_3</uri>
+      <pose>54 7 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://house_3</uri>
+      <name>house_3_b</name>
+      <pose>111 26 0 0 0 .78539</pose>
+    </include>
+    <include>
+      <uri>model://house_3</uri>
+      <name>house_3_c</name>
+      <pose>170 106 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://mailbox</uri>
+      <name>mailbox_2</name>
+      <static>true</static>
+      <pose>59 4.45 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://fast_food</uri>
+      <static>true</static>
+      <pose>95 7.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://dumpster</uri>
+      <static>true</static>
+      <pose>143 51.5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://gas_station</uri>
+      <static>true</static>
+      <pose>135 84.8 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_1</name>
+      <static>true</static>
+      <pose>24 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_2</name>
+      <static>true</static>
+      <pose>54 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_3</name>
+      <static>true</static>
+      <pose>84 4 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_4</name>
+      <static>true</static>
+      <pose>14 -4 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_5</name>
+      <static>true</static>
+      <pose>44 -4 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_6</name>
+      <static>true</static>
+      <pose>74 -4 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_7</name>
+      <static>true</static>
+      <pose>148 104 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_8</name>
+      <static>true</static>
+      <pose>178 104 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_10</name>
+      <static>true</static>
+      <pose>158 96 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_11</name>
+      <static>true</static>
+      <pose>188 96 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_12</name>
+      <static>true</static>
+      <pose>102 8 0 0 0 .785</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_13</name>
+      <static>true</static>
+      <pose>123 29 0 0 0 .785</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_14</name>
+      <static>true</static>
+      <pose>144 50 0 0 0 .785</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_15</name>
+      <static>true</static>
+      <pose>99 -4 0 0 0 3.1415</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_16</name>
+      <static>true</static>
+      <pose>120 14.5 0 0 0 -2.35</pose>
+    </include>
+    <include>
+      <uri>model://lamp_post</uri>
+      <name>lamp_post_17</name>
+      <static>true</static>
+      <pose>141 35.5 0 0 0 -2.35</pose>
+    </include>
+    <road name="main_street">
+      <width>7.34</width>
+      <point>0 0 0.01</point>
+      <point>100 0 0.01</point>
+      <point>150 50 0.01</point>
+      <point>150 100 0.01</point>
+      <point>200 100 0.01</point>
+    </road>
+    <model name='person_standing'>
+      <link name='link'>
+        <inertial>
+          <pose>0 -0.1 0.95 0 -0 0</pose>
+          <mass>80</mass>
+          <inertia>
+            <ixx>24.88</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>25.73</iyy>
+            <iyz>0</iyz>
+            <izz>2.48</izz>
+          </inertia>
+        </inertial>
+        <collision name='bottom'>
+          <pose>0 -0.1 0.01 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.5 0.35 0.02</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <collision name='person'>
+          <pose>0 0 0.02 0.04 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://person_standing/meshes/standing.dae</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <bounce/>
+            <friction>
+              <ode/>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <pose>0 0 0.02 0.04 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://person_standing/meshes/standing.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+      <pose>117 21 0 0 -0 0</pose>
+      <static>0</static>
+    </model>
+
+    <model name="road_boxes">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision_1">
+          <pose>51 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>102 7.34 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <collision name="collision_2">
+          <pose>125 25 0 0 0 0.78539</pose>
+          <geometry>
+            <box>
+              <size>72 7.34 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <collision name="collision_3">
+          <pose>150 75 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>7.34 53 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <collision name="collision_4">
+          <pose>173.5 100 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>54.5 7.34 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <collision name="collision_5">
+          <pose>198 106 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6 5 0.02</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+          </surface>
+        </collision>
+        <!--
+        <visual name="visual_1">
+          <pose>51 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>102 7.34 0.02</size>
+            </box>
+          </geometry>
+        </visual>
+        <visual name="visual_2">
+          <pose>125 25 0 0 0 0.78539</pose>
+          <geometry>
+            <box>
+              <size>74 7.34 0.02</size>
+            </box>
+          </geometry>
+        </visual>
+        <visual name="visual_3">
+          <pose>150 75 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>7.34 53 0.02</size>
+            </box>
+          </geometry>
+        </visual>
+        <visual name="visual_4">
+          <pose>173.5 100 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>54.5 7.34 0.02</size>
+            </box>
+          </geometry>
+        </visual>
+        <visual name="visual_5">
+          <pose>198 106 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>6 5 0.02</size>
+            </box>
+          </geometry>
+        </visual>
+-->
+      </link>
+    </model>
+
+  </world>
+</sdf>
+

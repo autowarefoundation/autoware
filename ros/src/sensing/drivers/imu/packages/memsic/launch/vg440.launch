@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+
+  <arg name="port" default="/dev/ttyUSB0" />
+  <arg name="baudrate" default="57600" />
+  
+  <node pkg="memsic_imu" type="vg440_node" name="vg440_node">
+    <param name="port" value="$(arg port)" />
+    <param name="baudrate" value="$(arg baudrate)" />
+  </node>
+  
+</launch>

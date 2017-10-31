@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+    <arg name="use_crosswalk_detection" default="true" />
+
+	<node pkg="lattice_planner" type="lattice_velocity_set" name="lattice_velocity_set" output="log">
+        <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
+
+	</node>
+
+</launch>

@@ -1,0 +1,58 @@
+name : LIDARs
+desc : LIDARs desc sample
+subs :
+  - name : Velodyne HDL-64e-S2
+    desc : Velodyne HDL-64e-S2 desc sample
+    run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
+    param: calibration_path
+    gui  :
+      flags : [ SIGTERM, kill_children ]
+      calibration :
+        prop  : 1
+        flags : [ center_v ]
+
+  - name : Velodyne HDL-64e-S3
+    desc : Velodyne HDL-64e-S3 desc sample
+    run  : roslaunch ~/Autoware/ros/src/data_preprocessor/scripts/velodyne_hdl64e_s3.launch
+    param: calibration_path
+    gui  :
+      flags : [ SIGTERM, kill_children ]
+      calibration :
+        prop  : 1
+        flags : [ center_v ]
+  - name : Velodyne HDL-32e
+    desc : Velodyne HDL-32e desc sample
+    run  : roslaunch velodyne_hdl32e.launch
+    param: calibration_path
+    gui  :
+      flags : [ SIGTERM, kill_children ]
+      calibration :
+        prop  : 1
+        flags : [ center_v ]
+  - name : Velodyne VLP-16
+    desc : Velodyne VLP-16 desc sample
+    run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
+    param: calibration_path
+    gui  :
+      flags : [ SIGTERM, kill_children ]
+      calibration :
+        prop  : 1
+        flags : [ center_v ]
+  - name : Hokuyo TOP-URG
+    desc : Hokuyo TOP-URG desc sample
+    run  : roslaunch hokuyo top_urg.launch
+  - name : Hokuyo 3D-URG
+    desc : Hokuyo 3D-URG desc sample
+    run  : roslaunch hokuyo hokuyo_3d.launch
+
+params :
+  - name  : calibration_path
+    vars  :
+    - name  : calibration
+      desc  : calibration desc sample
+      kind  : path
+      v     : ''
+      cmd_param :
+        dash : ''
+        delim: ':='
+        must : True

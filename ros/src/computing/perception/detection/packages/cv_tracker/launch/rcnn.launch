@@ -17,7 +17,7 @@
 	<arg name="pretrained_model_file" default="$(env HOME)/fast-rcnn/output/default/voc_2012_trainval"/>-->
 	
 	<!-- RCNN detection -->
-	<node pkg="cv_tracker" name="rcnn" type="rcnn_node" output="log">
+	<node pkg="cv_tracker" name="rcnn" type="rcnn_msr" output="log">
 		<remap from="/config/obj_car/rcnn" to="/config/car_rcnn"/>
 		
 		<param name="network_definition_file" type="str" value="$(arg network_definition_file)"/>

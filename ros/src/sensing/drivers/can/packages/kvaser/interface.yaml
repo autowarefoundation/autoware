@@ -1,0 +1,7 @@
+- name: can_converter
+  subscribe: [/can_raw]
+- name: can_draw
+  publish: [/can_status]
+  subscribe: [/can_raw]
+- name: can_listener
+  publish: [/can_raw]

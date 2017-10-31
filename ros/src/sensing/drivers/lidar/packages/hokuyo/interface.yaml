@@ -1,0 +1,2 @@
+- name: hokuyo_3d
+  publish: [/hokuyo_3d/hokuyo_cloud2, /hokuyo_3d/imu, /hokuyo_3d/mag]
