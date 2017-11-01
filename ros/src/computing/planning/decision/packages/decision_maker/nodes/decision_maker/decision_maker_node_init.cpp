@@ -1,8 +1,8 @@
 #include <ros/ros.h>
 #include <ros/spinner.h>
-#include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <tf/transform_listener.h>
@@ -62,15 +62,17 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // pub
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
+
+  // for visualize
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
+  Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
+  Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
+  Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
 
-  Pubs["state_local_diffdistance"] = nh_.advertise<std_msgs::Float64>("/state/val_diff_distance", 1);
-
-  Pubs["crossroad_visual"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
-  Pubs["crossroad_inside_visual"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
-  Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/bbox", 10);
+  // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);
-
+  Pubs["state_local_diffdistance"] = nh_.advertise<std_msgs::Float64>("/state/val_diff_distance", 1);
+  Pubs["exectime"] = nh_.advertise<std_msgs::Float64>("/state/exectime", 1);
   // message setup
   state_text_msg.text_size = 18;
   state_text_msg.line_width = 0;
@@ -89,7 +91,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   {
     std::cout << "wait for tf of map to world" << std::endl;
     tf::TransformListener tf;
-    
+
     tf.waitForTransform("map", "world", ros::Time(), ros::Duration(15));
     if (!ctx->TFInitialized())
       std::cerr << "failed initialization " << std::endl;
@@ -131,6 +133,7 @@ void DecisionMakerNode::initVectorMap(void)
             {
               if (area.slid <= line.lid && line.lid <= area.elid)
               {
+                geometry_msgs::Point _prev_point;
                 for (const auto &point : vMap_Points.data)
                 {
                   if (line.fpid <= point.pid && point.pid <= line.fpid)
@@ -140,17 +143,21 @@ void DecisionMakerNode::initVectorMap(void)
                     _point.y = point.bx;
                     _point.z = point.h;
 
+                    if (_prev_point.x == _point.x && _prev_point.y == _point.y)
+                      continue;
+
+                    _prev_point = _point;
+                    points_count++;
+                    carea.points.push_back(_point);
+
                     x_avg += _point.x;
                     y_avg += _point.y;
-
                     x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
                     x_max = (x_max == 0.0) ? _point.x : std::max(_point.x, x_max);
                     y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
                     y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
                     z = _point.z;
-                    points_count++;
 
-                    carea.points.push_back(_point);
                   }  // if pid
                 }    // points iter
               }      // if lid
@@ -168,6 +175,8 @@ void DecisionMakerNode::initVectorMap(void)
       }
     }
     vMap_mutex.unlock();
+    Subs["lane_waypoints_array"] =
+        nh_.subscribe("lane_waypoints_array", 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
   }
 }
 

@@ -17,18 +17,24 @@ public:
   int id;
   int area_id;
   std::vector<geometry_msgs::Point> points;
-
   jsk_recognition_msgs::BoundingBox bbox;
+
+  std::vector< autoware_msgs::waypoint> insideWaypoints;
+  std::vector<geometry_msgs::Point> insideWaypoint_points;
 
   CrossRoadArea(void)
   {
     id = 0;
     area_id = 0;
     points.clear();
+    insideWaypoints.clear();
+    insideWaypoint_points.clear();
   }
 
   static CrossRoadArea *findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
-                                             std::vector<CrossRoadArea> &intersects);
+		  std::vector<CrossRoadArea> &intersects);
+  static bool isInsideArea(const CrossRoadArea* _ClosestArea,
+                                             geometry_msgs::Point pt);
 };
 }
 

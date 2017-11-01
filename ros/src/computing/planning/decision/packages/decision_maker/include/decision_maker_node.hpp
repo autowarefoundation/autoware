@@ -6,6 +6,7 @@
 
 #include <autoware_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/lane.h>
+#include <autoware_msgs/LaneArray.h>
 #include <autoware_msgs/traffic_light.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -94,6 +95,9 @@ private:
 
   std::vector<geometry_msgs::Point> inside_points_;
 
+
+  autoware_msgs::LaneArray current_lane_array_;
+
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
@@ -141,7 +145,6 @@ private:
 
   // judge method
   // in near future, these methods will be deprecate to decision_maker library
-  bool isInsideArea(geometry_msgs::Point pt);
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
 
@@ -156,6 +159,7 @@ private:
   void callbackFromLaneChangeFlag(const std_msgs::Int32 &msg);
   void callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg);
   void callbackFromFinalWaypoint(const autoware_msgs::lane &msg);
+  void callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);

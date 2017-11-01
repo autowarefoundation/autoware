@@ -18,7 +18,6 @@ namespace decision_maker
 {
 // TODO for Decision_maker
 // - lane_change
-// - change substate class to state_context
 // - fix a light_color_changed
 // - disable/clear_subclassa
 // - object detection
@@ -52,7 +51,7 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 {
   ROS_INFO("Received forcing state changing request");
-  handleStateCmd((unsigned long long) 1 << msg.data);
+  handleStateCmd((unsigned long long)1 << msg.data);
 }
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
@@ -114,6 +113,32 @@ void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::Co
     Subs["points_raw"].shutdown();
 }
 
+// for based waypoint
+void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg)
+{
+  current_lane_array_ = msg;
+
+  for (auto &area : intersects)
+  {
+    for (auto &lane : msg.lanes)
+    {
+      for (auto &wp : lane.waypoints)
+      {
+        geometry_msgs::Point pp;
+        pp.x = wp.pose.pose.position.x;
+        pp.y = wp.pose.pose.position.y;
+        pp.z = wp.pose.pose.position.z;
+        if (CrossRoadArea::isInsideArea(&area, pp))
+        {
+          std::cout << "Add to" << area.area_id << ": point" << pp.x << "," << pp.y << std::endl;
+          area.insideWaypoint_points.push_back(pp);
+          area.insideWaypoints.push_back(wp);
+        }
+      }
+    }
+  }
+}
+
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
   if (!hasvMap())
@@ -126,21 +151,21 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
     std::cerr << "State is not DRIVE_STATE[" << ctx->getCurrentStateName() << "]" << std::endl;
     return;
   }
-
   // steering
   current_finalwaypoints_ = msg;
   ClosestArea_ = CrossRoadArea::findClosestCrossRoad(current_finalwaypoints_, intersects);
   double intersect_wayangle = calcIntersectWayAngle(current_finalwaypoints_, current_pose_);
-  // *Temporary implementation*
+
   // To straight/left/right recognition by using angle
   // between first-waypoint and end-waypoint in intersection area.
-  int temp = (int)std::floor(intersect_wayangle + 360.0) % 360;
-  if (std::abs(temp) <= ANGLE_STRAIGHT)
-    ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
-  else if (temp <= ANGLE_RIGHT)
-    ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-  else if (temp <= ANGLE_LEFT)
+  int temp = (int)std::floor(intersect_wayangle + 180.0) % 360;
+
+  if (temp <= ANGLE_LEFT)
     ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+  else if (temp >= ANGLE_RIGHT)
+    ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+  else
+    ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
 
   // velocity
   double _temp_sum = 0;
@@ -204,8 +229,8 @@ void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistSt
   current_velocity_ = mps2kmph(msg.twist.linear.x);
 }
 #if 0
-	void DecisionMakerNode::callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level){
-		ROS_INFO("Reconfigure Request: %d ", config.TARGET_WAYPOINT_COUNT);
-	}
+void DecisionMakerNode::callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level){
+	ROS_INFO("Reconfigure Request: %d ", config.TARGET_WAYPOINT_COUNT);
+}
 #endif
 }

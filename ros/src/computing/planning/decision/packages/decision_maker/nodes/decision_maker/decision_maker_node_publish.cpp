@@ -62,39 +62,33 @@ void DecisionMakerNode::displayMarker(void)
   crossroad_marker.lifetime = ros::Duration(0.3);
 
   inside_marker = crossroad_marker;
+  inside_marker.scale.x = scale / 3;
+  inside_marker.scale.y = scale / 3;
+  inside_marker.scale.z = 0.5;
   inside_marker.color.a = 0.5;
   inside_marker.color.r = 1.0;
-  inside_marker.color.g = 1.0;
+  inside_marker.color.g = 0.0;
   inside_marker.color.b = 0.0;
   inside_marker.ns = "inside";
   inside_marker.lifetime = ros::Duration();
 
   bbox_array.header = crossroad_marker.header;
 
+  inside_marker.points.clear();
+
   for (auto &area : intersects)
   {
-    for (const auto &p : area.points)
-    {
-      // if(isInsideArea(p))
-      // inside_marker.points.push_back(p);
-      crossroad_marker.points.push_back(p);
-    }
     area.bbox.header = crossroad_marker.header;
     bbox_array.boxes.push_back(area.bbox);
+    for (const auto &p : area.insideWaypoint_points)
+    {
+      inside_marker.points.push_back(p);
+    }
   }
 
   Pubs["crossroad_bbox"].publish(bbox_array);
   bbox_array.boxes.clear();
-
-  // marker_array.markers.push_back(inside_marker);
-  marker_array.markers.push_back(crossroad_marker);
-
-  Pubs["crossroad_visual"].publish(marker_array);
-
-  for (const auto &p : inside_points_)
-    inside_marker.points.push_back(p);
-
-  Pubs["crossroad_inside_visual"].publish(inside_marker);
+  Pubs["crossroad_inside_marker"].publish(inside_marker);
 
   marker_array.markers.clear();
 }

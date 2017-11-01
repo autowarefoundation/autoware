@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   tf
+  message_generation
   autoware_msgs
   geometry_msgs
   state
@@ -23,6 +24,17 @@ find_package(catkin REQUIRED COMPONENTS
   euc
 )
 
+add_message_files(
+	FILES
+	DebugDecisionMaker.msg
+)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  jsk_recognition_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -54,4 +66,4 @@ add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 set(SUBPROJECT_NAME planner_selector)
 add_executable(${SUBPROJECT_NAME}_node nodes/planner_selector/planner_selector_node.cpp)
 target_link_libraries(${SUBPROJECT_NAME}_node ${catkin_LIBRARIES})
-add_dependencies(${SUBPROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(${SUBPROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} )
