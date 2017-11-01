@@ -86,6 +86,8 @@ add_message_files(
   steer_cmd.msg
   traffic_light.msg
   state_cmd.msg
+  WaypointState.msg
+
 
 ## Sync
   Sync_time_monitor.msg
