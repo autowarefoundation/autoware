@@ -107,6 +107,9 @@ void CnnLidarDetector::Detect(const cv::Mat& in_image_intensity,
                               const cv::Mat& in_image_x,
                               const cv::Mat& in_image_y,
                               const cv::Mat& in_image_z,
+                              const cv::Mat& in_coordinates_x,
+                              const cv::Mat& in_coordinates_y,
+                              const cv::Mat& in_coordinates_z,
                               cv::Mat& out_objectness_image,
                               jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
@@ -130,7 +133,11 @@ void CnnLidarDetector::Detect(const cv::Mat& in_image_intensity,
 
 	net_->Forward();
 
-	GetNetworkResults(out_objectness_image, out_boxes);
+	GetNetworkResults(out_objectness_image,
+	                          in_coordinates_x,
+	                          in_coordinates_y,
+	                          in_coordinates_z,
+	                          out_boxes);
 
 }
 
@@ -206,9 +213,10 @@ void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<s
 		current_jsk_box.pose.position.z = (-1.7) / 2;
 
 		//rotation angle
-		float x_diff = in_box_corners[i][X_FrontLeft] - in_box_corners[i][X_BackRight];
-		float y_diff = in_box_corners[i][Y_FrontLeft] - in_box_corners[i][Y_BackRight];
-		float rotation_angle = atan2(y_diff, x_diff);
+		//float x_diff = in_box_corners[i][X_FrontLeft] - in_box_corners[i][X_BackRight];
+		//float y_diff = in_box_corners[i][Y_FrontLeft] - in_box_corners[i][Y_BackRight];
+		//float rotation_angle = atan2(y_diff, x_diff);
+		float rotation_angle = atan2(current_jsk_box.pose.position.y, current_jsk_box.pose.position.x);// kazuki fixed
 
 		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rotation_angle);
 		tf::quaternionTFToMsg(quat, current_jsk_box.pose.orientation);
@@ -257,6 +265,9 @@ void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<s
 }*/
 
 void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
+                                         const cv::Mat& in_coordinates_x,
+                                         const cv::Mat& in_coordinates_y,
+                                         const cv::Mat& in_coordinates_z,
                                          jsk_recognition_msgs::BoundingBoxArray& out_boxes)
 {
 	caffe::Blob<float>* boxes_blob = net_->output_blobs().at(0);//0 boxes
@@ -316,18 +327,52 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 			{
 				get_box_points_from_matrices(row, col, boxes_channels, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 0, 255);
+
+				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); //add point coordinates: kazuki fixed
+				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+
+				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+
 				cars_boxes.push_back(current_box);
 			}
 			if (objectness_channels[2].at<float>(row,col) > score_threshold_)
 			{
 				get_box_points_from_matrices(row, col, boxes_channels, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 255, 0);
+
+				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); // kazuki fixed
+				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
+
+				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
+
 				person_boxes.push_back(current_box);
 			}
+
 			if (objectness_channels[3].at<float>(row,col) > score_threshold_)
 			{
 				get_box_points_from_matrices(row, col, boxes_channels, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(255, 0, 0);
+
+				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); // kazuki fixed
+				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);
+				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);
+				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);
+
+				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);
+				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);
+				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);
+				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);
+
 				bike_boxes.push_back(current_box);
 			}
 		}
@@ -337,9 +382,7 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 	final_cars_boxes = Nms(cars_boxes, 0.1);
 	final_person_boxes = Nms(person_boxes, 0.1);
 	final_bike_boxes = Nms(bike_boxes, 0.1);
-	/*final_cars_boxes = cars_boxes;
-	final_person_boxes = person_boxes;
-	final_bike_boxes = bike_boxes;*/
+
 	//copy resulting boxes to output message
 	std::cout << "in_boxes_cars: " << cars_boxes.size() << ", after_nms:" << final_cars_boxes.size() << std::endl <<
 	             "in_boxes_person: " << person_boxes.size() << ", after_nms:" << final_person_boxes.size() << std::endl <<
