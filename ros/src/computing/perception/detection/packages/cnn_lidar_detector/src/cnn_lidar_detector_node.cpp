@@ -71,30 +71,30 @@ class RosLidarDetectorApp
 	CnnLidarDetector* lidar_detector_;
 
 	//Sets whether or not use GPU acceleration
-	bool            use_gpu_;
-	int             gpu_device_id_;
+	bool 			use_gpu_;
+	int 			gpu_device_id_;
 
-	float           horizontal_res_;
-	float           vertical_res_;
+	float 			horizontal_res_;
+	float 			vertical_res_;
 	size_t          image_width_;
 	size_t          image_height_;
-	size_t          image_height_off_;
+        size_t          image_height_off_;
 
 
-	double          score_threshold_;
+	double			score_threshold_;
 
-	size_t          sensor_res_; //16,32,64
+	size_t	sensor_res_; //16,32,64
 
-	cv::Mat         projection_mean_depth_;//single channel float image subtrahend for depth projection
-	cv::Mat         projection_mean_height_;//single channel float image subtrahend for height projection
+	cv::Mat			projection_mean_depth_;//single channel float image subtrahend for depth projection
+	cv::Mat			projection_mean_height_;//single channel float image subtrahend for height projection
 
-	cv::Mat         projection_std_dev_depth_;//double divisor for depth channel
-	cv::Mat         projection_std_dev_height_;//double divisor for height channel
+	cv::Mat			projection_std_dev_depth_;//double divisor for depth channel
+	cv::Mat			projection_std_dev_height_;//double divisor for height channel
 
 	float get_image_mean(const cv::Mat& in_image)
 	{
 		float mean = 0.;
-		size_t elements = in_image.rows * in_image.cols;
+                size_t elements = in_image.rows * in_image.cols;
 		for (unsigned int row = 0; row < in_image.rows; row++)
 		{
 			for (unsigned int col = 0; col < in_image.cols; col++)
@@ -112,7 +112,7 @@ class RosLidarDetectorApp
 	float get_image_stddev(const cv::Mat& in_image, float in_mean)
 	{
 		float std = 0.;
-		size_t elements = in_image.rows * in_image.cols;
+                size_t elements = in_image.rows*in_image.cols;
 		for (unsigned int row = 0; row < in_image.rows; row++)
 		{
 			for (unsigned int col = 0; col < in_image.cols; col++)
@@ -151,7 +151,7 @@ class RosLidarDetectorApp
 
 
 				size_t image_x = floor((theta/horizontal_res_) + image_width_/2);//250.5 = (501/2)
-				size_t image_y = floor((angle/vertical_res_) + image_height_off_);//71.0 = 90*0.78
+                                size_t image_y = floor((angle/vertical_res_) + image_height_off_);//71.0 = 90*0.78
 
 				if ( (image_x >= 0) && (image_x < image_width_) &&
 					 (image_y >= 0) && (image_y < image_height_)
@@ -178,7 +178,7 @@ class RosLidarDetectorApp
 		cv::Mat grayscale_cloud;
 		double min, max;
 		cv::minMaxIdx(in_image, &min, &max);
-		in_image.convertTo(grayscale_cloud,CV_8UC1, 255 / (max-min), -min);
+                in_image.convertTo(grayscale_cloud,CV_8UC1, 255 / (max-min), -min);
 
 		//Apply colormap:
 		applyColorMap(grayscale_cloud, out_image, cv::COLORMAP_JET);
@@ -235,10 +235,9 @@ class RosLidarDetectorApp
 		cv::Mat resulting_objectness;//objectness image
 
 		// for bounding box
-		cv::Mat coordinate_x(image_height_, image_width_, CV_32F, 0.);//x value image
-		cv::Mat coordinate_y(image_height_, image_width_, CV_32F, 0.);//y value image
-		cv::Mat coordinate_z(image_height_, image_width_, CV_32F, 0.);//z value image
-
+		cv::Mat projected_cloud_x_original(image_height_, image_width_, CV_32F, 0.);//x value image
+		cv::Mat projected_cloud_y_original(image_height_, image_width_, CV_32F, 0.);//y value image
+		cv::Mat projected_cloud_z_original(image_height_, image_width_, CV_32F, 0.);//z value image
 
 		std::vector<cv::Point2d> image_points;
 		std::vector<pcl::PointXYZI> cloud_points;
@@ -256,15 +255,9 @@ class RosLidarDetectorApp
 								image_points,
 								cloud_points);
 
-
-		projected_cloud_x.copyTo(coordinate_x);
-		projected_cloud_y.copyTo(coordinate_y);
-		projected_cloud_z.copyTo(coordinate_z);
-
-// debug
-//                std::cout<<"horizontal_res_: " << horizontal_res_ << std::endl;
-//                std::cout<<"vertical_res_: " << vertical_res_ << std::endl;
-//                std::cout<<"image_height_off_: " << image_height_off_ << std::endl;
+		projected_cloud_x.copyTo(projected_cloud_x_original);
+		projected_cloud_y.copyTo(projected_cloud_y_original);
+		projected_cloud_z.copyTo(projected_cloud_z_original);
 
 		// calculate mean, std, dev for each image, subtract and divide
 		float range_mean, x_mean, y_mean, z_mean, intensity_mean;//range, x, y ,z, intensity
@@ -295,13 +288,6 @@ class RosLidarDetectorApp
 		z_stddev = get_image_stddev(projected_cloud_z, z_mean);
 		divide_image(projected_cloud_z, z_stddev);
 
-		// subtract mean
-		//subtract_image(projected_cloud_range, projection_mean_depth_.at<float>(0));
-		//subtract_image(projected_cloud_z, projection_mean_height_.at<float>(0));//
-		// divide std devjsk_recognition_msgs::BoundingBoxArray objects_boxes;
-		//divide_image(projected_cloud_range, projection_std_dev_depth_.at<float>(0));
-		//divide_image(projected_cloud_z, projection_std_dev_height_.at<float>(0));
-		
 		//use image for CNN forward
 		jsk_recognition_msgs::BoundingBoxArray objects_boxes;
 
@@ -312,9 +298,9 @@ class RosLidarDetectorApp
 		                        projected_cloud_x,
 		                        projected_cloud_y,
 		                        projected_cloud_z,
-		                        coordinate_x, // kazuki fixed
-		                        coordinate_y, // kazuki fixed
-		                        coordinate_z, // kazuki fixed
+		                        projected_cloud_x_original, // kazuki fixed
+		                        projected_cloud_y_original, // kazuki fixed
+		                        projected_cloud_z_original, // kazuki fixed
 		                        resulting_objectness,
 		                        objects_boxes);
 
@@ -415,17 +401,17 @@ public:
 		std::string pretrained_model_file;
 		private_node_handle.param<std::string>("network_definition_file",
 							network_definition_file,
-							ros::package::getPath("cnn_lidar_detector")+"/data/lidar_detector.prototxt");
+							ros::package::getPath("cnn_lidar_detector")+"/data/lmnetv2_20171004.prototxt");
 		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
 
 		private_node_handle.param<std::string>("pretrained_model_file",
 							pretrained_model_file,
-							ros::package::getPath("cnn_lidar_detector")+"/data/lidar_detector.caffemodel");
+							ros::package::getPath("cnn_lidar_detector")+"/data/lmnetv2_20171004.caffemodel");
 		ROS_INFO("preprocess_mat_path: %s", preprocess_mat_path.c_str());
 
 		private_node_handle.param("use_gpu", use_gpu_, true);					ROS_INFO("use_gpu: %d", use_gpu_);
-		private_node_handle.param("gpu_device_id", gpu_device_id_, 0);			ROS_INFO("gpu_device_id: %d", gpu_device_id_);
-		private_node_handle.param("score_threshold", score_threshold_, 0.75);	ROS_INFO("score_threshold: %f", score_threshold_);
+                private_node_handle.param("gpu_device_id", gpu_device_id_, 0);			ROS_INFO("gpu_device_id: %d", gpu_device_id_);
+                private_node_handle.param("score_threshold", score_threshold_, 0.75);	ROS_INFO("score_threshold: %f", score_threshold_);
 
 		lidar_detector_ = new CnnLidarDetector(network_definition_file, pretrained_model_file, use_gpu_, gpu_device_id_, score_threshold_);
 
@@ -503,8 +489,8 @@ public:
 
 		horizontal_res_ = DEG2RAD(horizontal_res_sensor);//Angular Resolution in rads (Horizontal/Azimuth)
 		vertical_res_ 	= DEG2RAD(vertical_res_sensor);//Vertical Resolution HDL
-		image_width_ 	= 512;//512;//(horizontal_fov / horizontal_res_) + 1;//501
-		image_height_ 	= 64;//64;//(DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
+		image_width_ 	= 512;//(horizontal_fov / horizontal_res_) + 1;//501
+		image_height_ 	= 64;//(DEG2RAD(vertical_fov_sensor*3) / vertical_res_) + 1;//90
 		image_height_off_ =  floor((0.4694/vertical_res_)*(24.9/vertical_fov_sensor)); // vertical offset: kazuki fixed
 
 	}

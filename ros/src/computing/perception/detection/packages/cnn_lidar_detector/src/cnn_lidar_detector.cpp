@@ -32,24 +32,51 @@
 void CnnLidarDetector::get_box_points_from_matrices(size_t in_row,
                                                     size_t in_col,
                                                     const std::vector<cv::Mat>& in_boxes_channels,
+                                                    const cv::Mat& in_coordinates_x,
+                                                    const cv::Mat& in_coordinates_y,
                                                     std::vector<float>& out_box)
 {
-	CHECK_EQ(in_boxes_channels.size(), 24) << "Incorrect Number of points to form a bounding box, expecting 24, got: " << in_boxes_channels.size();
+	//                  (x,y,z)
+	//    top_front_left(0,1,2)      top_front_right(9,10,11)
+	//              ----------------
+	//             /               /
+	//            /               /
+	//           /               /
+	//          /               /
+	//         /               /
+	//        /               /
+	//       -----------------
+	//   top_back_left(3,4,5)     top_back_right(6,7,8)
+	CHECK_EQ(in_boxes_channels.size(), 24)
+		<< "Incorrect Number of points to form a bounding box, expecting 24, got: " << in_boxes_channels.size();
 
-	//bottom layer
+	//Extract coords from only the bottom layer of the box
 	out_box.clear();
 	out_box.resize(8);//8 points representing a rectangle in the XY plane
 	out_box[0] = in_boxes_channels[0].at<float>(in_row, in_col); //bottom_front_left X
 	out_box[1] = in_boxes_channels[1].at<float>(in_row, in_col); //bottom_front_left Y
 
-	out_box[2] = in_boxes_channels[3].at<float>(in_row, in_col); //bottom_back_right X
-	out_box[3] = in_boxes_channels[4].at<float>(in_row, in_col); //bottom_back_right Y
+	out_box[2] = in_boxes_channels[3].at<float>(in_row, in_col); //bottom_back_left X
+	out_box[3] = in_boxes_channels[4].at<float>(in_row, in_col); //bottom_back_left Y
 
 	out_box[4] = in_boxes_channels[6].at<float>(in_row, in_col); //bottom_back_right X
 	out_box[5] = in_boxes_channels[7].at<float>(in_row, in_col); //bottom_back_right Y
 
-	out_box[6] = in_boxes_channels[9].at<float>(in_row, in_col); //bottom_back_right X
-	out_box[7] = in_boxes_channels[10].at<float>(in_row, in_col); //bottom_back_right Y
+	out_box[6] = in_boxes_channels[9].at<float>(in_row, in_col); //bottom_front_right X
+	out_box[7] = in_boxes_channels[10].at<float>(in_row, in_col); //bottom_front_right Y
+
+	//coords from the neural network are relative to each object, therefore the original location must be added
+	out_box[X_FrontLeft]    += in_coordinates_x.at<float>(in_row, in_col); //add point coordinates: kazuki fixed
+	out_box[X_FrontRight]   += in_coordinates_x.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+
+	out_box[X_BackLeft]     += in_coordinates_x.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+	out_box[X_BackRight]    += in_coordinates_x.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+
+	out_box[Y_FrontLeft]    += in_coordinates_y.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+	out_box[Y_FrontRight]   += in_coordinates_y.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+
+	out_box[Y_BackLeft]     += in_coordinates_y.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
+	out_box[Y_BackRight]    += in_coordinates_y.at<float>(in_row, in_col);//add point coordinates: kazuki fixed
 
 	/*out_box.bottom_front_left.x = in_boxes_channels[0].at<float>(row,col);
 	out_box.bottom_front_left.y = in_boxes_channels[1].at<float>(row,col);
@@ -134,10 +161,10 @@ void CnnLidarDetector::Detect(const cv::Mat& in_image_intensity,
 	net_->Forward();
 
 	GetNetworkResults(out_objectness_image,
-	                          in_coordinates_x,
-	                          in_coordinates_y,
-	                          in_coordinates_z,
-	                          out_boxes);
+	                  in_coordinates_x,
+	                  in_coordinates_y,
+	                  in_coordinates_z,
+	                  out_boxes);
 
 }
 
@@ -210,13 +237,14 @@ void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<s
 		//centroid
 		current_jsk_box.pose.position.x = (in_box_corners[i][X_FrontLeft] + in_box_corners[i][X_BackRight]) / 2;
 		current_jsk_box.pose.position.y = (in_box_corners[i][Y_FrontLeft] + in_box_corners[i][Y_BackRight]) / 2;
-		current_jsk_box.pose.position.z = (-1.7) / 2;
+		current_jsk_box.pose.position.z = (1.5) / 2;
 
 		//rotation angle
 		//float x_diff = in_box_corners[i][X_FrontLeft] - in_box_corners[i][X_BackRight];
 		//float y_diff = in_box_corners[i][Y_FrontLeft] - in_box_corners[i][Y_BackRight];
 		//float rotation_angle = atan2(y_diff, x_diff);
 		float rotation_angle = atan2(current_jsk_box.pose.position.y, current_jsk_box.pose.position.x);// kazuki fixed
+
 
 		tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, rotation_angle);
 		tf::quaternionTFToMsg(quat, current_jsk_box.pose.orientation);
@@ -226,43 +254,6 @@ void CnnLidarDetector::AppendCornersVectorToJskBoundingBoxes(const std::vector<s
 		out_jsk_boxes.boxes.push_back(current_jsk_box);
 	}
 }
-
-
-/*void CnnLidarDetector::ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
-              size_t in_min_num_neighbors,
-              float in_min_neighbor_distance,
-              float in_min_box_distance,
-              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners)
-{
-	//calculate distance between each box in the input vector
-	//the distance is calculated using the euclidean distance between the points forming the longer diagonal in each box
-	size_t total_boxes = in_out_box_corners.size();
-	out_nms_box_corners.clear();
-	for (size_t i=0; i<total_boxes; i++)
-	{
-		in_out_box_corners[i].distance_candidates.resize(total_boxes);
-		for (size_t j=0; j<total_boxes; j++)
-		{
-			in_out_box_corners[i].distance_candidates[j] =  get_points_distance(in_out_box_corners[i].top_front_left,
-			                                                                    in_out_box_corners[j].top_front_left) +
-			                                                get_points_distance(in_out_box_corners[i].bottom_back_right,
-			                                                                    in_out_box_corners[j].bottom_back_right);
-			//if its not the same box and is closer than the minimum threshold for neighbors, add it as one
-			if (i != j && in_out_box_corners[i].distance_candidates[j] < in_min_neighbor_distance)
-				{in_out_box_corners[i].neighbor_indices.push_back(j);}
-		}
-	}
-	//keep only those who have only the minimum neighbors
-	for (size_t i=0; i<total_boxes; i++)
-	{
-		if (in_out_box_corners[i].neighbor_indices.size() >= in_min_num_neighbors)
-		{
-			out_nms_box_corners.push_back(in_out_box_corners[i]);
-		}
-	}
-
-	//for each group select one
-}*/
 
 void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
                                          const cv::Mat& in_coordinates_x,
@@ -325,68 +316,38 @@ void CnnLidarDetector::GetNetworkResults(cv::Mat& out_objectness_image,
 
 			if (objectness_channels[1].at<float>(row,col) > score_threshold_)
 			{
-				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				get_box_points_from_matrices(row, col, boxes_channels, in_coordinates_x, in_coordinates_y, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 0, 255);
-
-				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); //add point coordinates: kazuki fixed
-				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-
-				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-
 				cars_boxes.push_back(current_box);
 			}
 			if (objectness_channels[2].at<float>(row,col) > score_threshold_)
 			{
-				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				get_box_points_from_matrices(row, col, boxes_channels, in_coordinates_x, in_coordinates_y, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(0, 255, 0);
-
-				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); // kazuki fixed
-				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);//add point coordinates: kazuki fixed
-
-				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);//add point coordinates: kazuki fixed
-
 				person_boxes.push_back(current_box);
 			}
-
 			if (objectness_channels[3].at<float>(row,col) > score_threshold_)
 			{
-				get_box_points_from_matrices(row, col, boxes_channels, current_box);
+				get_box_points_from_matrices(row, col, boxes_channels, in_coordinates_x, in_coordinates_y, current_box);
 				bgr_channels.at<cv::Vec3b>(row,col) = cv::Vec3b(255, 0, 0);
-
-				current_box[X_FrontLeft] += in_coordinates_x.at<float>(row,col); // kazuki fixed
-				current_box[X_FrontRight] += in_coordinates_x.at<float>(row,col);
-				current_box[X_BackLeft] += in_coordinates_x.at<float>(row,col);
-				current_box[X_BackRight] += in_coordinates_x.at<float>(row,col);
-
-				current_box[Y_FrontLeft] += in_coordinates_y.at<float>(row,col);
-				current_box[Y_FrontRight] += in_coordinates_y.at<float>(row,col);
-				current_box[Y_BackLeft] += in_coordinates_y.at<float>(row,col);
-				current_box[Y_BackRight] += in_coordinates_y.at<float>(row,col);
-
 				bike_boxes.push_back(current_box);
 			}
 		}
 	}
 	//apply NMS to boxes
 	std::vector< std::vector<float> > final_cars_boxes, final_person_boxes, final_bike_boxes;
-	final_cars_boxes = Nms(cars_boxes, 0.1);
-	final_person_boxes = Nms(person_boxes, 0.1);
-	final_bike_boxes = Nms(bike_boxes, 0.1);
 
+	/*final_cars_boxes = Nms(cars_boxes, 0.3);
+	final_person_boxes = Nms(person_boxes, 0.3);
+	final_bike_boxes = Nms(bike_boxes, 0.3);
+	std::cout << "before nms (cars):" << cars_boxes.size() << " after nms:" << final_cars_boxes.size() << std::endl;
+	std::cout << "before nms (cars):" << person_boxes.size() << " after nms:" << final_person_boxes.size() << std::endl;
+	std::cout << "before nms (cars):" << bike_boxes.size() << " after nms:" << final_bike_boxes.size() << std::endl;*/
+
+	final_cars_boxes = cars_boxes;
+	final_person_boxes = person_boxes;
+	final_bike_boxes = bike_boxes;
 	//copy resulting boxes to output message
-	std::cout << "in_boxes_cars: " << cars_boxes.size() << ", after_nms:" << final_cars_boxes.size() << std::endl <<
-	             "in_boxes_person: " << person_boxes.size() << ", after_nms:" << final_person_boxes.size() << std::endl <<
-				 "in_boxes_bike: " << bike_boxes.size() << ", after_nms:" << final_bike_boxes.size() << std::endl ;
 	out_boxes.boxes.clear();
 
 	AppendCornersVectorToJskBoundingBoxes(final_cars_boxes, 1, out_boxes);
@@ -407,7 +368,6 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_image_intensity,
 	cv::Mat intensity_resized, range_resized;
 	cv::Mat x_resized, y_resized, z_resized;
 
-	//V2
 	intensity_resized = resize_image(in_image_intensity, input_geometry_);
 	range_resized = resize_image(in_image_range, input_geometry_);
 	x_resized = resize_image(in_image_x, input_geometry_);
@@ -415,15 +375,11 @@ void CnnLidarDetector::PreProcess(const cv::Mat& in_image_intensity,
 	z_resized = resize_image(in_image_z, input_geometry_);
 
 	//put each corrected mat geometry onto the correct input layer type pointers
-	/*intensity_resized.copyTo(in_out_channels->at(0));
+	intensity_resized.copyTo(in_out_channels->at(0));
 	range_resized.copyTo(in_out_channels->at(1));
 	x_resized.copyTo(in_out_channels->at(2));
 	y_resized.copyTo(in_out_channels->at(3));
-	z_resized.copyTo(in_out_channels->at(4));*/
-
-	//V1
-	range_resized.copyTo(in_out_channels->at(0));
-	z_resized.copyTo(in_out_channels->at(1));
+	z_resized.copyTo(in_out_channels->at(4));
 
 	//check that the pre processed and resized mat pointers correspond to the pointers of the input layers
 	CHECK(reinterpret_cast<float*>(in_out_channels->at(0).data) == net_->input_blobs()[0]->cpu_data())	<< "Input channels are not wrapping the input layer of the network.";

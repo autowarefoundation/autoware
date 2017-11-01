@@ -46,9 +46,9 @@ public:
 	            const cv::Mat& in_image_x,
 	            const cv::Mat& in_image_y,
 	            const cv::Mat& in_image_z,
-	            const cv::Mat& coordinates_x,
-	            const cv::Mat& coordinates_y,
-	            const cv::Mat& coordinates_z,
+	            const cv::Mat& in_coordinates_x,
+	            const cv::Mat& in_coordinates_y,
+	            const cv::Mat& in_coordinates_z,
 	            cv::Mat& out_objectness_image,
 	            jsk_recognition_msgs::BoundingBoxArray& out_boxes);
 
@@ -81,7 +81,10 @@ private:
 	void get_box_points_from_matrices(size_t in_row,
 	                                  size_t in_col,
 	                                  const std::vector<cv::Mat>& in_boxes_channels,
-	                                  std::vector<float>& out_bounding_box);
+	                                  const cv::Mat& in_original_projection_x,
+	                                  const cv::Mat& in_original_projection_y,
+	                                  std::vector<float>& out_box);
+
 	template<typename PointT> float get_points_distance(const PointT& in_p1, const PointT& in_p2);
 
 	cv::Mat resize_image(cv::Mat in_image, cv::Size in_geometry);
@@ -95,9 +98,9 @@ private:
 	                const cv::Mat& in_image_z,
 	                std::vector<cv::Mat>* in_out_channels);//match input images to input layer geometry
 	void GetNetworkResults(cv::Mat& out_objectness_image,
-                           const cv::Mat& coordinates_x,
-                           const cv::Mat& coordinates_y,
-                           const cv::Mat& coordinates_z,
+	                       const cv::Mat& in_coordinates_x,
+	                       const cv::Mat& in_coordinates_y,
+	                       const cv::Mat& in_coordinates_z,
 	                       jsk_recognition_msgs::BoundingBoxArray& out_boxes);//get objectness image and bounding boxes
 
 	void BoundingBoxCornersToJskBoundingBox(const CnnLidarDetector::BoundingBoxCorners& in_box_corners,
@@ -109,6 +112,11 @@ private:
 	                                           unsigned int in_class,
 	                                           jsk_recognition_msgs::BoundingBoxArray &out_jsk_boxes);
 
+	/*void ApplyNms(std::vector<CnnLidarDetector::BoundingBoxCorners>& in_out_box_corners,
+	              size_t in_min_num_neighbors,
+	              float in_min_neighbor_distance,
+	              float in_min_box_distance,
+	              std::vector<CnnLidarDetector::BoundingBoxCorners>& out_nms_box_corners);*/
 };
 
 #endif /* CNN_LIDAR_DETECTOR_HPP_ */
