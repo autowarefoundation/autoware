@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
   jsk_recognition_msgs
+  jsk_rviz_plugins
   tf
   autoware_msgs
 )
@@ -45,4 +46,3 @@ set(CAMERA_YAML "$ENV{HOME}/.ros/autoware/camera_lidar_2d.yaml")
 set_target_properties(pos_uploader
   PROPERTIES COMPILE_FLAGS
   "-DCAMERA_YAML=${CAMERA_YAML}")
-

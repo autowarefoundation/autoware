@@ -37,6 +37,7 @@ publish data as ractangular plane
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <visualization_msgs/Marker.h>
+#include <jsk_rviz_plugins/PictogramArray>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>

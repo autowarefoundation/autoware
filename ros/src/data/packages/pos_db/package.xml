@@ -8,8 +8,10 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>autoware_msgs</build_depend>
+  <build_depend>jsk_rviz_plugins</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>jsk_rviz_plugins</run_depend>
   <export>
   </export>
 </package>
