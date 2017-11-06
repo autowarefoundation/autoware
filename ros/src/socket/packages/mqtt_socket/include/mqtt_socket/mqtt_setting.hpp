@@ -1,5 +1,5 @@
 #define MQTT_NODE_NAME "mqtt_socket"
-#define MQTT_CONFIG_FILE_NAME "/mqtt_config.yaml"
+#define MQTT_CONFIG_FILE_NAME "/mqtt_config.yml"
 
 // MODE
 #define AUTO_MODE       1
