@@ -9,5 +9,6 @@ nvidia-docker run \
         --volume=$XAUTH:$XAUTH:rw \
         --env="XAUTHORITY=${XAUTH}" \
         --env="DISPLAY=${DISPLAY}" \
+        --privileged -v /dev/bus/usb:/dev/bus/usb \
         -u autoware \
         autoware-image

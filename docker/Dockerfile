@@ -85,6 +85,33 @@ RUN echo "source /opt/ros/indigo/setup.bash" >> /home/$USERNAME/.bashrc && \
         echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
         # cd to home on login
         echo "cd" >> /home/$USERNAME/.bashrc 
+        
+############
+##PT GREY FlyCaptureSDK
+############
+#download driver
+RUN wget http://ertl.jp/~amonrroy/flycapture2-2.6.3.4-amd64-pkg.tgz && \
+    tar -xvzf flycapture2-2.6.3.4-amd64-pkg.tgz
+##install dependencies
+RUN apt-get install -y libraw1394-11 libgtk2.0-0 libgtkmm-2.4-dev libglademm-2.4-dev libgtkglextmm-x11-1.2-dev libusb-1.0-0
+
+RUN cd flycapture2-2.6.3.4-amd64 && \
+    dpkg -i libflycapture-2* && \
+    dpkg -i libflycapturegui-2* && \
+    dpkg -i libflycapture-c-2* && \
+    dpkg -i libflycapturegui-c-2* && \
+    dpkg -i libmultisync-2* && \
+    dpkg -i flycap-2* && \
+    dpkg -i flycapture-doc-2* && \
+    dpkg -i updatorgui*
+
+#setup camera usb permissions
+ENV PGUDEVFILE /etc/udev/rules.d/40-pgr.rules
+RUN groupadd -f pgrimaging && \
+    usermod -a -G pgrimaging $USERNAME && \
+    echo "SUBSYSTEM==\"usb\", ATTR{idVendor}==\"1e10\", MODE=\"0666\", GROUP=\"pgrimaging\" " >> PGUDEVFILE && \
+    /etc/init.d/udev restart
+
 
 # Change user
 USER autoware
