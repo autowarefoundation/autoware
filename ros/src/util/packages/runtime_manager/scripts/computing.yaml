@@ -564,6 +564,8 @@ subs :
              prop  : 1
            decelerate :
                    flags : [nl ]
+           disableDecisionMaker :
+                   flags : [nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -2206,6 +2208,12 @@ params :
       min       : 0
       max       : 100
       v         : 0
+    - name      : number_of_smoothing_count
+      desc      : number_of_smoothing_count behind desc sample
+      label     : number_of_smoothing_count
+      min       : 0
+      max       : 10
+      v         : 0
 
   - name  : lane_stop
     topic : /light_color_managed
@@ -2727,6 +2735,14 @@ params :
       label     : 'disableDecisionMaker'
       kind      : checkbox
       v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disableVelocitySmoothing
+      desc      : sample.
+      label     : 'disableVelocitySmoothing'
+      kind      : checkbox
+      v         : false
       cmd_param :
         dash        : ''
         delim       : ':='
