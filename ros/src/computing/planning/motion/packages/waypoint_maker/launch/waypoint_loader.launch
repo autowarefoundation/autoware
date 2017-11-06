@@ -1,12 +1,14 @@
 <!-- -->
 <launch>
 	<arg name="multi_lane_csv" default="" />
-    <arg name="decelerate" default="1" />
+	<arg name="decelerate" default="1" />
+	<arg name="disableDecisionMaker" default="1" />
 
 	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
 	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen">
 	    <param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
         <param name="decelerate" value="$(arg decelerate)" />
+        <param name="disableDecisionMaker" value="$(arg disableDecisionMaker)" />
 	</node>
 		
 		

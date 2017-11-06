@@ -562,6 +562,8 @@ subs :
          gui  :
            lane_waypoint_csv :
              prop  : 1
+           decelerate :
+                   flags : [nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -2717,6 +2719,14 @@ params :
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disableDecisionMaker
+      desc      : if you not check this, you have to run a decisionmaker node.
+      label     : 'disableDecisionMaker'
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='

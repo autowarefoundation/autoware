@@ -48,13 +48,18 @@ WaypointLoaderNode::~WaypointLoaderNode()
 void WaypointLoaderNode::initPublisher()
 {
   // setup publisher
-  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 10, true);
+  if(disableDicisionMaker_){
+	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
+  }else{
+	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+  }
 }
 
 void WaypointLoaderNode::initParameter()
 {
   // parameter settings
   private_nh_.param<double>("decelerate", decelerate_, double(0));
+  private_nh_.param<bool>("disableDicisionMaker", disableDicisionMaker_, true);
   ROS_INFO_STREAM("decelerate :" << decelerate_);
   private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, MULTI_LANE_CSV);
 }
