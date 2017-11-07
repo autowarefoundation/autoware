@@ -10,8 +10,6 @@ $ sh build.sh indigo
 
 # Ubuntu 16.04 (Kinetic)
 $ sh build.sh kinetic
-or
-$ sh build.sh
 ```
 
 ## How to run
