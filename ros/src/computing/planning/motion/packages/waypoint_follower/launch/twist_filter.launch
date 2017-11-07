@@ -4,5 +4,7 @@
 	<!-- rosrun waypoint_follower twist_filter -->
 	<node pkg="waypoint_follower" type="twist_filter" name="twist_filter" output="log">
 	</node>
+	<node pkg="waypoint_follower" type="twist_gate" name="twist_gate" output="log">
+	</node>
 
 </launch>
