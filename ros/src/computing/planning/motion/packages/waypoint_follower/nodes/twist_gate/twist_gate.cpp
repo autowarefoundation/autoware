@@ -39,7 +39,7 @@
 #include <geometry_msgs/TwistStamped.h>
 
 #include "autoware_msgs/RemoteCmd.h"
-#include "autoware_msgs/TwistGate.h"
+#include "autoware_msgs/VehicleCmd.h"
 #include "tablet_socket_msgs/mode_cmd.h"
 #include "tablet_socket_msgs/gear_cmd.h"
 #include "autoware_msgs/accel_cmd.h"

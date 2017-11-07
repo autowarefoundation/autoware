@@ -29,7 +29,7 @@
 */
 
 #include <ros/ros.h>
-#include "autoware_msgs/TwistGate.h"
+#include "autoware_msgs/VehicleCmd.h"
 
 #include <iostream>
 #include <string>
@@ -72,7 +72,7 @@ void CommandData::reset()
 
 static CommandData command_data;
 
-static void twistGateCallback(const autoware_msgs::TwistGate& msg)
+static void vehicleCmdCallback(const autoware_msgs::VehicleCmd& msg)
 {
   command_data.linear_x = msg.twist_cmd.twist.linear.x;
   command_data.angular_z = msg.twist_cmd.twist.angular.z;
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub = nh.subscribe("/vehicle_cmd", 1, twistGateCallback);
+  ros::Subscriber sub = nh.subscribe("/vehicle_cmd", 1, vehicleCmdCallback);
 
   command_data.reset();
 
