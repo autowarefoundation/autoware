@@ -630,7 +630,7 @@ subs :
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
       param: planner_selector
-         
+
 
 
 buttons:
@@ -1574,7 +1574,7 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-    
+
     - name : enablePlannerDynamicSwitch
       desc : Enable Planner dynamical switch
       label: Enable Planner dynamical switch
@@ -1772,7 +1772,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
- 
+
   - name  : planner_selector
     topic : /config/PlannerSelector
     msg   : ConfigPlannerSelector
@@ -1799,7 +1799,7 @@ params :
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
-    vars  : 
+    vars  :
     - name : enable_force_state_change
       desc : enable force state change flag
       label: enable_force_state_change
@@ -1820,7 +1820,7 @@ params :
       - INITIAL_State
       - LOCATE_VEHICLE_State
       - DRIVE_State
-      - MISSION_COMPLETE_State 
+      - MISSION_COMPLETE_State
       - EMERGENCY_State
       v   : 0
     - name : SubState_Acc_ChangeFlag
@@ -2718,6 +2718,15 @@ params :
       label   : 'decelerate :'
       v         : 1.0
       cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_velocity_visualizer
+      desc      : velocity visualizer desc sample
+      label     : Velocity Visualizer
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        var_name    : use_velocity_visualizer
         dash        : ''
         delim       : ':='
 
