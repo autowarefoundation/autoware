@@ -61,7 +61,11 @@ const double g_local_alpha = 1.0;
 int _closest_waypoint = -1;
 visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
+
 bool g_config_manual_detection = true;
+bool g_use_velocity_visualize;
+double g_graph_height_ratio;
+std::vector<double> g_graph_color = {0.0, 1.0, 0.0, 0.5};
 
 enum class ChangeFlag : int32_t
 {
@@ -261,6 +265,60 @@ void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_msgs:
 
 }
 
+void createLocalVelocityBarGraphMarker(const autoware_msgs::lane &lane_waypoint)
+{
+  visualization_msgs::Marker velocity_bar_graph_marker;
+  velocity_bar_graph_marker.header.frame_id = "map";
+  velocity_bar_graph_marker.header.stamp = ros::Time();
+  velocity_bar_graph_marker.ns = "local_velocity_bar_graph_marker";
+  velocity_bar_graph_marker.type = visualization_msgs::Marker::CYLINDER;
+  velocity_bar_graph_marker.action = visualization_msgs::Marker::ADD;
+  velocity_bar_graph_marker.scale.x = 0.2;
+  velocity_bar_graph_marker.scale.y = 0.2;
+  velocity_bar_graph_marker.color.a = g_graph_color[3];
+  velocity_bar_graph_marker.color.r = g_graph_color[0];
+  velocity_bar_graph_marker.color.g = g_graph_color[1];
+  velocity_bar_graph_marker.color.b = g_graph_color[2];
+  velocity_bar_graph_marker.frame_locked = true;
+
+  unsigned int count = 0;
+  for (auto el : lane_waypoint.waypoints)
+  {
+    double bar_graph_height = g_graph_height_ratio * el.twist.twist.linear.x;
+    velocity_bar_graph_marker.id = count++;
+    velocity_bar_graph_marker.pose = el.pose.pose;
+    velocity_bar_graph_marker.pose.position.z += bar_graph_height / 2.0;
+    velocity_bar_graph_marker.scale.z = bar_graph_height;
+    if(velocity_bar_graph_marker.scale.z == 0.0)
+      velocity_bar_graph_marker.scale.z = DBL_MIN; //for visualize
+    g_local_waypoints_marker_array.markers.push_back(velocity_bar_graph_marker);
+  }
+}
+
+void createLocalVelocityLineGraphMarker(const autoware_msgs::lane &lane_waypoint)
+{
+  visualization_msgs::Marker velocity_line_graph_marker;
+  velocity_line_graph_marker.header.frame_id = "map";
+  velocity_line_graph_marker.header.stamp = ros::Time();
+  velocity_line_graph_marker.ns = "local_velocity_line_graph_marker";
+  velocity_line_graph_marker.type = visualization_msgs::Marker::LINE_STRIP;
+  velocity_line_graph_marker.action = visualization_msgs::Marker::ADD;
+  velocity_line_graph_marker.scale.x = 0.25;
+  velocity_line_graph_marker.color.a = g_graph_color[3];
+  velocity_line_graph_marker.color.r = g_graph_color[0];
+  velocity_line_graph_marker.color.g = g_graph_color[1];
+  velocity_line_graph_marker.color.b = g_graph_color[2];
+  velocity_line_graph_marker.frame_locked = true;
+
+  for (auto el : lane_waypoint.waypoints)
+  {
+    geometry_msgs::Point point = el.pose.pose.position;
+    point.z += g_graph_height_ratio * el.twist.twist.linear.x;
+    velocity_line_graph_marker.points.push_back(point);
+  }
+  g_local_waypoints_marker_array.markers.push_back(velocity_line_graph_marker);
+}
+
 void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
@@ -413,8 +471,12 @@ void finalCallback(const autoware_msgs::laneConstPtr &msg)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
+  if (g_use_velocity_visualize)
+  {
+    createLocalVelocityBarGraphMarker(*msg);
+    createLocalVelocityLineGraphMarker(*msg);
+  }
   publishLocalMarker();
-
 }
 
 void closestCallback(const std_msgs::Int32ConstPtr &msg)
@@ -428,6 +490,10 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "waypoints_marker_publisher");
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  private_nh.param<bool>("use_velocity_visualize", g_use_velocity_visualize, false);
+  private_nh.param<double>("graph_height_ratio", g_graph_height_ratio, 1.0);
+  private_nh.param<std::vector<double> >("velocity_bar_graph_color", g_graph_color, g_graph_color);
 
   //subscribe traffic light
   ros::Subscriber light_sub = nh.subscribe("light_color", 10, receiveAutoDetection);
