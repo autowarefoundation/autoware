@@ -1,0 +1,3 @@
+[submodule "ros/src/msgs/platform_automation_msgs"]
+	path = ros/src/msgs/platform_automation_msgs
+	url = https://github.com/astuff/platform_automation_msgs.git
