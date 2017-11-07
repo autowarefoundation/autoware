@@ -37,7 +37,7 @@ publish data as ractangular plane
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <visualization_msgs/Marker.h>
-#include <jsk_rviz_plugins/PictogramArray>
+#include <jsk_rviz_plugins/Pictogram>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -126,29 +126,29 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static void dbg_out_marker(visualization_msgs::Marker marker)
+static void dbg_out_marker(jsk_rviz_plugins::Pictogram pictogram)
 {
 #ifdef POS_DB_VERBOSE
   std::cout << marker.id << " : "
-	<< marker.pose.position.x << ","
-	<< marker.pose.position.y << ","
-	<< marker.pose.position.z << " : "
-	<< marker.pose.orientation.x << ","
-	<< marker.pose.orientation.y << ","
-	<< marker.pose.orientation.z << ","
-	<< marker.pose.orientation.w << std::endl;
+	<< pictogram.pose.position.x << ","
+	<< pictogram.pose.position.y << ","
+	<< pictogram.pose.position.z << " : "
+	<< pictogram.pose.orientation.x << ","
+	<< pictogram.pose.orientation.y << ","
+	<< pictogram.pose.orientation.z << ","
+	<< pictogram.pose.orientation.w << std::endl;
 #endif /* POS_DB_VERBOSE */
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
 		       geometry_msgs::Pose& pose, int diffmsec)
 {
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "/map";
-  marker.header.stamp = now;
+  jsk_rviz_plugins::Pictogram pictogram;
+  pictogram.header.frame_id = "/map";
+  pictogram.header.stamp = now;
   marker.ns = MARKERNAME;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose = pose;
+  pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
+  pictogram.pose = pose;
   if (is_current) {
 #ifdef CURRENT_CAR_DIRECTLY
     marker.id = id;
@@ -166,15 +166,15 @@ static void publish_car(int id, int is_current, ros::Time now,
 
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
-    tf::Quaternion q2(marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w);
+    tf::Quaternion q2(pictogram.pose.orientation.x, pictogram.pose.orientation.y, pictogram.pose.orientation.z, pictogram.pose.orientation.w);
     tf::Quaternion q3;
     q3 = q2 * q1;
 
-    marker.pose.position.z -= 2.0;
-    marker.pose.orientation.x = q3.x();
-    marker.pose.orientation.y = q3.y();
-    marker.pose.orientation.z = q3.z();
-    marker.pose.orientation.w = q3.w();
+    pictogram.pose.position.z -= 2.0;
+    pictogram.pose.orientation.x = q3.x();
+    pictogram.pose.orientation.y = q3.y();
+    pictogram.pose.orientation.z = q3.z();
+    pictogram.pose.orientation.w = q3.w();
 
     pub.publish(marker);
     dbg_out_marker(marker);
@@ -197,7 +197,7 @@ static void publish_car(int id, int is_current, ros::Time now,
     marker.scale.x = 2.0;
     marker.scale.y = 2.0;
     marker.scale.z = 2.0;
-    marker.pose.position.z += 0.5; // == #1/2
+    pictogram.pose.position.z += 0.5; // == #1/2
     pub.publish(marker);
     dbg_out_marker(marker);
   }
@@ -206,7 +206,7 @@ static void publish_car(int id, int is_current, ros::Time now,
 #ifndef CURRENT_CAR_DIRECTLY
 static void publish_car_summary(ros::Time now)
 {
-  visualization_msgs::Marker marker;
+  jsk_rviz_plugins::Pictogram pictogram;
   map<int, geometry_msgs::Pose>::iterator itr;
 
   for(itr = car_map.begin(); itr != car_map.end(); itr++) {
@@ -216,12 +216,12 @@ static void publish_car_summary(ros::Time now)
     if (prev_map.count(id) > 0 && cur <= prev_map[id]) {
       continue;
     }
-    marker.header.frame_id = "/map";
-    marker.header.stamp = cur;
+    pictogram.header.frame_id = "/map";
+    pictogram.header.stamp = cur;
     marker.ns = MARKERNAME;
-    marker.action = visualization_msgs::Marker::ADD;
+    pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
     marker.id = id;
-    marker.pose = pose;
+    pictogram.pose = pose;
     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
     marker.mesh_resource = "package://pos_db/model/prius_model.dae";
     marker.mesh_use_embedded_materials = true;
@@ -236,15 +236,15 @@ static void publish_car_summary(ros::Time now)
 
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
-    tf::Quaternion q2(marker.pose.orientation.x, marker.pose.orientation.y, marker.pose.orientation.z, marker.pose.orientation.w);
+    tf::Quaternion q2(pictogram.pose.orientation.x, pictogram.pose.orientation.y, pictogram.pose.orientation.z, pictogram.pose.orientation.w);
     tf::Quaternion q3;
     q3 = q2 * q1;
 
-    marker.pose.position.z -= 2.0;
-    marker.pose.orientation.x = q3.x();
-    marker.pose.orientation.y = q3.y();
-    marker.pose.orientation.z = q3.z();
-    marker.pose.orientation.w = q3.w();
+    pictogram.pose.position.z -= 2.0;
+    pictogram.pose.orientation.x = q3.x();
+    pictogram.pose.orientation.y = q3.y();
+    pictogram.pose.orientation.z = q3.z();
+    pictogram.pose.orientation.w = q3.w();
 
     pub.publish(marker);
     dbg_out_marker(marker);
@@ -258,11 +258,11 @@ static void publish_car_summary(ros::Time now)
 static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
 			      geometry_msgs::Pose& pose, int diffmsec)
 {
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "/map";
-  marker.header.stamp = now;
+  jsk_rviz_plugins::Pictogram pictogram;
+  pictogram.header.frame_id = "/map";
+  pictogram.header.stamp = now;
   marker.ns = MARKERNAME;
-  marker.action = visualization_msgs::Marker::ADD;
+  pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
   marker.type = visualization_msgs::Marker::CYLINDER;
   marker.lifetime = ros::Duration(life_time);
   marker.id = create_markerid(pose, 2);
@@ -281,8 +281,8 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   marker.scale.x = 0.6;
   marker.scale.y = 0.6;
   marker.scale.z = 1.2; // #1
-  marker.pose = pose;
-  marker.pose.position.z += 0.6; // == #1/2
+  pictogram.pose = pose;
+  pictogram.pose.position.z += 0.6; // == #1/2
   pub.publish(marker);
   dbg_out_marker(marker);
 
@@ -291,8 +291,8 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   marker.scale.x = 0.6; // #2
   marker.scale.y = 0.6;
   marker.scale.z = 0.6;
-  marker.pose = pose;
-  marker.pose.position.z += 1.2 + 0.3 + 0.1; // == #1 + #2/2 + alpha
+  pictogram.pose = pose;
+  pictogram.pose.position.z += 1.2 + 0.3 + 0.1; // == #1 + #2/2 + alpha
   pub.publish(marker);
   dbg_out_marker(marker);
 }
