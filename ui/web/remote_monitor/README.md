@@ -4,7 +4,6 @@
 
 - MQTT
 ```
-$ sudo add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
 $ sudo apt-get update
 $ sudo apt-get install mosquitto mosquitto-clients
 ```
@@ -13,7 +12,7 @@ $ sudo apt-get install mosquitto mosquitto-clients
 ```
 $ sudo apt-get install nodejs npm
 $ cd /ui/web/remote_monitor
-$ npm install
+$ sudo npm install
 ```
 
 - controler
@@ -21,7 +20,7 @@ $ npm install
 
 ## Running
 ```
-$ node app.js
+$ nodejs app.js
 
 # open http://localhost:9000/
 # default vehicle id is 1.
