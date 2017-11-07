@@ -50,7 +50,7 @@
 class TwistGate
 {
   using remote_msgs_t = autoware_msgs::RemoteCmd;
-  using twist_gate_msgs_t = autoware_msgs::TwistGate;
+  using vehicle_cmd_msg_t = autoware_msgs::VehicleCmd;
 
   public:
     TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
@@ -77,7 +77,7 @@ class TwistGate
     ros::Subscriber remote_cmd_sub_;
     std::map<std::string , ros::Subscriber> auto_cmd_sub_stdmap_;
 
-    twist_gate_msgs_t twist_gate_msg_;
+    vehicle_cmd_msg_t twist_gate_msg_;
     std_msgs::Bool emergency_stop_msg_;
     ros::Time remote_cmd_time_;
     ros::Duration timeout_period_;
@@ -96,7 +96,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
 {
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
-  vehicle_cmd_pub_ = nh_.advertise<twist_gate_msgs_t>("/vehicle_cmd", 1, true);
+  vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
 
   remote_cmd_sub_ = nh_.subscribe("/remote_cmd", 1, &TwistGate::remote_cmd_callback, this);
 
@@ -188,23 +188,23 @@ void TwistGate::watchdog_timer()
 void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 {
   command_mode_ = static_cast<CommandMode>(input_msg->control_mode);
-  emergency_stop_msg_.data = static_cast<bool>(input_msg->emergency);
+  emergency_stop_msg_.data = static_cast<bool>(input_msg->vehicle_cmd.emergency);
   remote_cmd_time_ = ros::Time::now();
 
   if(command_mode_ == CommandMode::REMOTE)
   {
-    twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
-    twist_gate_msg_.header.stamp = input_msg->header.stamp;
+    twist_gate_msg_.header.frame_id = input_msg->vehicle_cmd.header.frame_id;
+    twist_gate_msg_.header.stamp = input_msg->vehicle_cmd.header.stamp;
     twist_gate_msg_.header.seq++;
-    twist_gate_msg_.twist_cmd.twist = input_msg->twist_cmd.twist;
-    twist_gate_msg_.ctrl_cmd  = input_msg->ctrl_cmd;
-    twist_gate_msg_.accel_cmd = input_msg->accel_cmd;
-    twist_gate_msg_.brake_cmd = input_msg->brake_cmd;
-    twist_gate_msg_.steer_cmd = input_msg->steer_cmd;
-    twist_gate_msg_.gear = input_msg->gear;
-    twist_gate_msg_.lamp_cmd = input_msg->lamp_cmd;
-    twist_gate_msg_.mode = input_msg->mode;
-    twist_gate_msg_.emergency = input_msg->emergency;
+    twist_gate_msg_.twist_cmd.twist = input_msg->vehicle_cmd.twist_cmd.twist;
+    twist_gate_msg_.ctrl_cmd  = input_msg->vehicle_cmd.ctrl_cmd;
+    twist_gate_msg_.accel_cmd = input_msg->vehicle_cmd.accel_cmd;
+    twist_gate_msg_.brake_cmd = input_msg->vehicle_cmd.brake_cmd;
+    twist_gate_msg_.steer_cmd = input_msg->vehicle_cmd.steer_cmd;
+    twist_gate_msg_.gear = input_msg->vehicle_cmd.gear;
+    twist_gate_msg_.lamp_cmd = input_msg->vehicle_cmd.lamp_cmd;
+    twist_gate_msg_.mode = input_msg->vehicle_cmd.mode;
+    twist_gate_msg_.emergency = input_msg->vehicle_cmd.emergency;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }

@@ -140,37 +140,37 @@ static void MqttReceiver::on_message(struct mosquitto *mosq, void *obj, const st
 
     if(cmds.size() == 8) {
       autoware_msgs::RemoteCmd msg;
-      msg.steer_cmd.steer = stof(cmds[0]) * steer_max_val;
-      msg.accel_cmd.accel = stof(cmds[1]) * accel_max_val;
-      msg.brake_cmd.brake = stof(cmds[2]) * brake_max_val;
-      msg.gear = stoi(cmds[3]);
+      msg.vehicle_cmd.steer_cmd.steer = stof(cmds[0]) * steer_max_val;
+      msg.vehicle_cmd.accel_cmd.accel = stof(cmds[1]) * accel_max_val;
+      msg.vehicle_cmd.brake_cmd.brake = stof(cmds[2]) * brake_max_val;
+      msg.vehicle_cmd.gear = stoi(cmds[3]);
       // lamp
       switch(stoi(cmds[4])) {
-        msg.lamp_cmd.l = 0;
-        msg.lamp_cmd.r = 0;
+        msg.vehicle_cmd.lamp_cmd.l = 0;
+        msg.vehicle_cmd.lamp_cmd.r = 0;
         case 0:
           break;
         case 1:
-          msg.lamp_cmd.l = 1;
+          msg.vehicle_cmd.lamp_cmd.l = 1;
           break;
         case 2:
-          msg.lamp_cmd.r = 1;
+          msg.vehicle_cmd.lamp_cmd.r = 1;
           break;
         case 3:
-          msg.lamp_cmd.l = 1;
-          msg.lamp_cmd.r = 1;
+          msg.vehicle_cmd.lamp_cmd.l = 1;
+          msg.vehicle_cmd.lamp_cmd.r = 1;
           break;
         default:
           ROS_WARN("Invalid lamp_cmd");
           break;
       }
-      msg.twist_cmd.twist.linear.x = stof(cmds[1]) * linear_x_max_val;
-      msg.twist_cmd.twist.angular.z = stof(cmds[0]);
-      msg.ctrl_cmd.linear_velocity = stof(cmds[1]) * linear_x_max_val;
-      msg.ctrl_cmd.steering_angle = stof(cmds[0]) * steer_max_val;
-      msg.mode = stoi(cmds[5]);
+      msg.vehicle_cmd.twist_cmd.twist.linear.x = stof(cmds[1]) * linear_x_max_val;
+      msg.vehicle_cmd.twist_cmd.twist.angular.z = stof(cmds[0]);
+      msg.vehicle_cmd.ctrl_cmd.linear_velocity = stof(cmds[1]) * linear_x_max_val;
+      msg.vehicle_cmd.ctrl_cmd.steering_angle = stof(cmds[0]) * steer_max_val;
+      msg.vehicle_cmd.mode = stoi(cmds[5]);
+      msg.vehicle_cmd.emergency = stoi(cmds[7]);
       msg.control_mode = stoi(cmds[6]);
-      msg.emergency = stoi(cmds[7]);
       remote_cmd_pub.publish(msg);
     }
     else {

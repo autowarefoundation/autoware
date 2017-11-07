@@ -1,11 +1,3 @@
 Header header
-autoware_msgs/steer_cmd steer_cmd
-autoware_msgs/accel_cmd accel_cmd
-autoware_msgs/brake_cmd brake_cmd
-autoware_msgs/lamp_cmd lamp_cmd
-int32 gear
-int32 mode
-geometry_msgs/TwistStamped twist_cmd
-autoware_msgs/ControlCommand ctrl_cmd
+autoware_msgs/VehicleCmd vehicle_cmd
 int32 control_mode
-int32 emergency

@@ -47,7 +47,7 @@ add_message_files(
   vscan_tracked.msg
   vscan_tracked_array.msg
   waypoint.msg
-  TwistGate.msg
+  VehicleCmd.msg
 
 ## Runtime Manager ##
   ConfigApproximateNdtMapping.msg
