@@ -17,16 +17,27 @@ catkin_package(
   rosconsole
   )
 
+
+EXECUTE_PROCESS(
+	COMMAND uname -m
+	OUTPUT_VARIABLE ARCHITECTURE
+	OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+
+
+IF("${ARCHITECTURE}" STREQUAL "x86_64")
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   include
   )
 
-if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.1)
+IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.1)
 	set(LIB_VERSION 2.0) # _GLIBCXX_USE_CXX11_ABI is 1
 else()
 	set(LIB_VERSION 1.0) # _GLIBCXX_USE_CXX11_ABI is 0
-endif()
+ENDIF()
 
 find_library(ymc_can NAMES libymc_can_${LIB_VERSION}.a PATHS lib)
 
@@ -38,4 +49,4 @@ target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
   ${ymc_can}
   )
-
+ENDIF()
