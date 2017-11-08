@@ -1279,6 +1279,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : use_fast_pcl
+      desc      : use_fast_pcl desc sample
+      label     : Use Fast PCL
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : use_gpu
       desc      : use_gpu desc sample
       label     : Use GPU

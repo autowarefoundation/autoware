@@ -9,7 +9,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration ndt_gpu)
+SET(FAST_PCL_PACKAGES filters registration ndt_gpu ndt_cpu)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -62,6 +62,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
   CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
+  DEPENDS ndt_cpu
 #  DEPENDS ndt_tku
 #  DEPENDS system_lib
 )
@@ -99,6 +100,9 @@ target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
 endif()
 
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
+message("----------------------------------------------")
+message(${catkin_LIBRARIES})
+message("----------------------------------------------")
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})

@@ -64,15 +64,23 @@
 #include <fast_pcl/registration/ndt.h>
 #endif
 
+
 #ifndef USE_FAST_PCL
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/registration/ndt.h>
 #endif
 
+
 #include <autoware_msgs/ConfigNdtMapping.h>
 #include <autoware_msgs/ConfigNdtMappingOutput.h>
 
 #include <time.h>
+
+
+#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
+#include <fast_pcl/filters/voxel_grid.h> //??
+#include <fast_pcl/registration/ndt.h>	//??
+
 
 struct pose
 {
@@ -113,6 +121,10 @@ static pcl::PointCloud<pcl::PointXYZI> map;
 #ifdef CUDA_FOUND
 static gpu::GNormalDistributionsTransform gpu_ndt;
 #endif
+
+// Added for CPU ndt testing version
+static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> cpu_ndt;
+
 static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
 // end of adding
 
@@ -155,6 +167,8 @@ static bool _use_openmp = false;
 #ifdef CUDA_FOUND
 static bool _use_gpu = false;
 #endif
+
+static bool _use_fast_pcl = false;
 
 static bool _use_imu = false;
 static bool _use_odom = false;
@@ -519,11 +533,22 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   else
 #endif
   {
-    ndt.setTransformationEpsilon(trans_eps);
-    ndt.setStepSize(step_size);
-    ndt.setResolution(ndt_res);
-    ndt.setMaximumIterations(max_iter);
-    ndt.setInputSource(filtered_scan_ptr);
+	  if (!_use_fast_pcl)
+	  {
+		ndt.setTransformationEpsilon(trans_eps);
+		ndt.setStepSize(step_size);
+		ndt.setResolution(ndt_res);
+		ndt.setMaximumIterations(max_iter);
+		ndt.setInputSource(filtered_scan_ptr);
+	  }
+	  else
+	  {
+		cpu_ndt.setTransformationEpsilon(trans_eps);
+		cpu_ndt.setStepSize(step_size);
+		cpu_ndt.setResolution(ndt_res);
+		cpu_ndt.setMaximumIterations(max_iter);
+		cpu_ndt.setInputSource(filtered_scan_ptr);
+	  }
   }
   if (isMapUpdate == true)
   {
@@ -534,10 +559,24 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     else
     {
-      ndt.setInputTarget(map_ptr);
+    	if (!_use_fast_pcl)
+    	{
+    		ndt.setInputTarget(map_ptr);
+    	}
+		else
+		{
+			cpu_ndt.setInputTarget(map_ptr);
+		}
     }
 #else
-    ndt.setInputTarget(map_ptr);
+    	if (!_use_fast_pcl)
+    	{
+    		ndt.setInputTarget(map_ptr);
+    	}
+    	else
+    	{
+    		cpu_ndt.setInputTarget(map_ptr);
+    	}
 #endif
 
     isMapUpdate = false;
@@ -582,16 +621,16 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   t4_start = ros::Time::now();
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-  std::cout << "Start aligning" << std::endl;
 
 #ifdef CUDA_FOUND
+
   if (_use_gpu == true)
   {
     gpu_ndt.align(init_guess);
     t_localizer = gpu_ndt.getFinalTransformation();
     has_converged = gpu_ndt.hasConverged();
     fitness_score = gpu_ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
+    final_num_iteration = gpu_ndt.getFinalNumIteration();
   }
 #ifdef USE_FAST_PCL
   else if (_use_openmp == true)
@@ -605,16 +644,28 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #endif
   else
   {
-    ndt.align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
+	  if (!_use_fast_pcl)
+	  {
+		ndt.align(*output_cloud, init_guess);
+		t_localizer = ndt.getFinalTransformation();
+		has_converged = ndt.hasConverged();
+		fitness_score = ndt.getFitnessScore();
+		final_num_iteration = ndt.getFinalNumIteration();
+	  }
+	  else
+	  {
+		cpu_ndt.align(init_guess);
+		t_localizer = cpu_ndt.getFinalTransformation();
+		has_converged = cpu_ndt.hasConverged();
+		fitness_score = cpu_ndt.getFitnessScore();
+		final_num_iteration = cpu_ndt.getFinalNumIteration();
+	  }
   }
 #else
 #ifdef USE_FAST_PCL
   if (_use_openmp == true)
   {
+
     ndt.omp_align(*output_cloud, init_guess);
     t_localizer = ndt.getFinalTransformation();
     has_converged = ndt.hasConverged;
@@ -624,17 +675,28 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   else
   {
 #endif
-    // Added for GPU ndt
-    ndt.align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-// End of adding GPU ndt
+	  if (!_use_fast_pcl)
+	  {
+		ndt.align(*output_cloud, init_guess);
+		t_localizer = ndt.getFinalTransformation();
+		has_converged = ndt.hasConverged();
+		fitness_score = ndt.getFitnessScore();
+		final_num_iteration = ndt.getFinalNumIteration();
+	  }
+	  else
+	  {
+		cpu_ndt.align(init_guess);
+		t_localizer = cpu_ndt.getFinalTransformation();
+		has_converged = cpu_ndt.hasConverged();
+		fitness_score = cpu_ndt.getFitnessScore();
+		final_num_iteration = cpu_ndt.getFinalNumIteration();
+	  }
 #ifdef USE_FAST_PCL
   }
 #endif
 #endif
+
+
 
   t_base_link = t_localizer * tf_ltob;
 
@@ -869,6 +931,7 @@ int main(int argc, char** argv)
   offset_imu_odom_pitch = 0.0;
   offset_imu_odom_yaw = 0.0;
 
+  std::cout << "INITIALILZEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
   ros::init(argc, argv, "ndt_mapping");
 
   ros::NodeHandle nh;
@@ -883,6 +946,8 @@ int main(int argc, char** argv)
   private_nh.getParam("use_openmp", _use_openmp);
   std::cout << "use_openmp: " << _use_openmp << std::endl;
 #endif
+
+  private_nh.getParam("use_fast_pcl", _use_fast_pcl);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
