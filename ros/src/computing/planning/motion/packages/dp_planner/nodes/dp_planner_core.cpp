@@ -29,8 +29,6 @@
 #include "dp_planner_core.h"
 
 #include <visualization_msgs/MarkerArray.h>
-#include "geo_pos_conv.hh"
-
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/io/io.h>
@@ -771,7 +769,7 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 	if(msg->lanes.size() > 0)
 	{
 		m_WayPlannerPaths.clear();
-		bool bOldGlobalPath = m_LocalPlanner.m_TotalPath.size() == msg->lanes.size();
+		bool bOldGlobalPath = m_LocalPlanner.m_TotalOriginalPath.size() == msg->lanes.size();
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
 			std::vector<PlannerHNS::WayPoint> path;
@@ -851,7 +849,7 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 
 			if(bOldGlobalPath)
 			{
-				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(path, m_LocalPlanner.m_TotalPath.at(i));
+				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(path, m_LocalPlanner.m_TotalOriginalPath.at(i));
 			}
 		}
 
@@ -861,7 +859,7 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 			bWayPlannerPath = true;
 			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
 			//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
-			m_LocalPlanner.m_TotalPath = m_WayPlannerPaths;
+			m_LocalPlanner.m_TotalOriginalPath = m_WayPlannerPaths;
 
 			cout << "Global Lanes Size = " << msg->lanes.size() <<", Conv Size= " << m_WayPlannerPaths.size() << ", First Lane Size: " << m_WayPlannerPaths.at(0).size() << endl;
 
@@ -916,7 +914,7 @@ void PlannerX::PlannerMainLoop()
 		}
 
 		int iDirection = 0;
-		if(bInitPos && m_LocalPlanner.m_TotalPath.size()>0)
+		if(bInitPos && m_LocalPlanner.m_TotalOriginalPath.size()>0)
 		{
 //			bool bMakeNewPlan = false;
 //			double drift = hypot(m_LocalPlanner.state.pos.y-m_CurrentPos.pos.y, m_LocalPlanner.state .pos.x-m_CurrentPos.pos.x);
@@ -929,7 +927,8 @@ void PlannerX::PlannerMainLoop()
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
 			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
 
-			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, 1, m_Map, m_bEmergencyStop, m_bGreenLight, true);
+			std::vector<PlannerHNS::TrafficLight> trafficLight;
+			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, 1, m_Map, m_bEmergencyStop, trafficLight, true);
 
 			visualization_msgs::Marker behavior_rviz;
 

@@ -21,6 +21,7 @@ namespace SimulationNS
 #define DEBUG_TRACKER 0
 #define NEVER_GORGET_TIME -1000
 #define MIN_EVIDENCE_NUMBER 3
+#define TRACKING_HORIZON 150
 
 struct Kalman1dState
 {
@@ -133,12 +134,13 @@ public:
 		cv::setIdentity(m_filter.processNoiseCov, cv::Scalar::all(0.0001));
 		cv::setIdentity(m_filter.errorCovPost, cv::Scalar::all(0.075));
 
+
 		m_filter.predict();
 
 		errorSmoother.Update(a);
 	}
 
-	void UpdateTracking(double _dt, const double& x, const double& y, const double& a, double& x_new, double & y_new , double& a_new, double& v)
+	void UpdateTracking(double _dt, const PlannerHNS::DetectedObject& oldObj, PlannerHNS::DetectedObject& predObj)
 	{
 		dt = _dt;
 #if (CV_MAJOR_VERSION == 2)
@@ -152,50 +154,58 @@ public:
 				0	,0	,1	,0	,
 				0	,0	,0	,1	);
 #endif		
-		double a_old = a;
+		double a_old = oldObj.center.pos.a;
 
 		cv::Mat_<float> measurement(nMeasure,1);
 		cv::Mat_<float> prediction(nStates,1);
 
-		measurement(0) = x;
-		measurement(1) = y;
+		measurement(0) = oldObj.center.pos.x;
+		measurement(1) = oldObj.center.pos.y;
 
 		prediction = m_filter.correct(measurement);
 
-		x_new = prediction.at<float>(0);
-		y_new = prediction.at<float>(1);
+		predObj.center.pos.x = prediction.at<float>(0);
+		predObj.center.pos.y = prediction.at<float>(1);
 		double vx  = prediction.at<float>(2);
 		double vy  = prediction.at<float>(3);
 
-		if(m_iLife > 2)
+		if(m_iLife > 10)
 		{
-			v = sqrt(vx*vx+vy*vy);
-			double diff_y = y_new - prev_y;
-			double diff_x = x_new - prev_x;
-			if(hypot(diff_y, diff_x) > 0.5)
+			predObj.center.v = sqrt(vx*vx+vy*vy);
+			double diff_y = predObj.center.pos.y - prev_y;
+			double diff_x = predObj.center.pos.x - prev_x;
+			if(hypot(diff_y, diff_x) > 0.15)
 			{
-				prev_y = y;
-				prev_x = x;
-				a_new = atan2(diff_y, diff_x);
+				prev_y = oldObj.center.pos.y;
+				prev_x = oldObj.center.pos.x;
+				predObj.center.pos.a = atan2(diff_y, diff_x);
 			}
 			else
-				a_new = a;
+			{
+				predObj.center.pos.a = oldObj.center.pos.a;
+			}
+
+			//if(predObj.center.v > 0.1)
+			{
+				predObj.bDirection = true;
+				predObj.bVelocity = true;
+			}
+			predObj.acceleration = UtilityHNS::UtilityH::GetSign(predObj.center.v - oldObj.center.v);
 
 		}
 		else
 		{
-			v = 0;
-			a_new = a;
+			predObj.center.v = 0;
+			//predObj.center.pos.a = oldObj.center.pos.a;
+			predObj.center.pos.a = predObj.actual_yaw;
 		}
 
-		circ_angle = UtilityHNS::UtilityH::GetCircularAngle(circ_angle, UtilityHNS::UtilityH::FixNegativeAngle(a_old), UtilityHNS::UtilityH::FixNegativeAngle(a_new));
+		//circ_angle = UtilityHNS::UtilityH::GetCircularAngle(circ_angle, UtilityHNS::UtilityH::FixNegativeAngle(a_old), UtilityHNS::UtilityH::FixNegativeAngle(predObj.center.pos.a));
+		//circ_angle =  errorSmoother.Update(circ_angle).x;
+		//predObj.center.pos.a = UtilityHNS::UtilityH::SplitPositiveAngle(circ_angle);
 
-		circ_angle =  errorSmoother.Update(circ_angle).x;
-
-		a_new = UtilityHNS::UtilityH::SplitPositiveAngle(circ_angle);
-
-		if(v < 0.1)
-			v = 0;
+		if(predObj.center.v < 0.1)
+			predObj.center.v = 0;
 
 		//std::cout << "Track: Old (" << x << ", " << y << "), New (" << x_new << ", " << y_new << ")" << std::endl;
 		//std::cout << "Track: " << m_id << ", A: " << a << ", A_new:(" << circ_angle << "," <<  a_new << ") , V" << v << ", dt: " << dt << ", forget_time: " << forget_time << std::endl;
@@ -217,16 +227,16 @@ public:
 	double radius;
 	double forget_time;
 	std::vector<KFTrackV*> pTrackers;
-	InterestCircle* pPrevCircle;
-	InterestCircle* pNextCircle;
+//	InterestCircle* pPrevCircle;
+//	InterestCircle* pNextCircle;
 
 	InterestCircle(int _id)
 	{
 		id = _id;
 		radius = 0;
 		forget_time = NEVER_GORGET_TIME; // never forget
-		pPrevCircle = 0;
-		pNextCircle = 0;
+//		pPrevCircle = 0;
+//		pNextCircle = 0;
 	}
 };
 
@@ -249,6 +259,7 @@ class SimpleTracker
 public:
 	std::vector<InterestCircle*> m_InterestRegions;
 	std::vector<KFTrackV*> m_Tracks;
+	std::vector<KFTrackV> m_TrackSimply;
 	timespec m_TrackTimer;
 	long iTracksNumber;
 	PlannerHNS::WayPoint m_PrevState;
@@ -265,13 +276,15 @@ public:
 	void AssociateObjects();
 	void InitializeInterestRegions(double horizon, double init_raduis, double init_time, std::vector<InterestCircle*>& regions);
 	void AssociateAndTrack();
+	void AssociateSimply();
 	void AssociateToRegions(KFTrackV& detectedObject);
 	void CleanOldTracks();
 
 	void DoOneStep(const PlannerHNS::WayPoint& currPose, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
-	SimpleTracker(double horizon = 100);
+	SimpleTracker();
 	virtual ~SimpleTracker();
+	void InitSimpleTracker();
 
 public:
 	double m_DT;

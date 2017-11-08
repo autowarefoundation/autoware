@@ -8,14 +8,16 @@
 #ifndef POLYGONGENERATORSIMU_H_
 #define POLYGONGENERATORSIMU_H_
 
+#include "RoadNetwork.h"
+#include "PlanningHelpers.h"
+
+
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/Marker.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-
-#include <RoadNetwork.h>
 
 namespace OpenPlannerSimulatorNS
 {

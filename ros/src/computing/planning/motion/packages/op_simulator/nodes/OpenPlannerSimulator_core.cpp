@@ -29,7 +29,7 @@
 */
 #include "../include/OpenPlannerSimulator_core.h"
 
-#include "geo_pos_conv.hh"
+
 #include "UtilityH.h"
 #include "math.h"
 #include "MatrixOperations.h"
@@ -633,7 +633,8 @@ void OpenPlannerSimulator::PlannerMainLoop()
 			}
 
 			//Local Planning
-			currBehavior = m_LocalPlanner.DoOneStep(dt, currStatus, m_TrackedClusters, 1, m_Map, 0, 1, true);
+			std::vector<TrafficLight> trafficLight;
+			currBehavior = m_LocalPlanner.DoOneStep(dt, currStatus, m_TrackedClusters, 1, m_Map, 0, trafficLight, true);
 
 			 //Odometry Simulation and Update
 			m_LocalPlanner.SetSimulatedTargetOdometryReadings(desiredStatus.speed, desiredStatus.steer, desiredStatus.shift);

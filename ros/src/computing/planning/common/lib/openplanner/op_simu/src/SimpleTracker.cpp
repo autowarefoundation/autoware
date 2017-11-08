@@ -23,18 +23,22 @@ namespace SimulationNS
 
 using namespace PlannerHNS;
 
-SimpleTracker::SimpleTracker(double horizon)
+SimpleTracker::SimpleTracker()
 {
 	iTracksNumber = 1;
 	m_DT = 0.1;
 	m_MAX_ASSOCIATION_DISTANCE = 3.0;
 	m_MAX_TRACKS_AFTER_LOSING = 10;
-	m_MaxKeepTime = 15; // seconds
+	m_MaxKeepTime = 2; // seconds
 	m_bUseCenterOnly = true;
 	m_bFirstCall = true;
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+}
 
-	InitializeInterestRegions(horizon, 5, 5, m_InterestRegions);
+void SimpleTracker::InitSimpleTracker()
+{
+	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+	InitializeInterestRegions(TRACKING_HORIZON, 5, 5, m_InterestRegions);
 }
 
 SimpleTracker::~SimpleTracker()
@@ -63,9 +67,10 @@ void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis
 		if(regions.size() == 0)
 		{
 			pCir->radius = 5;
-			pCir->pPrevCircle = 0;
-			//pCir->forget_time = NEVER_GORGET_TIME;
+			//pCir->pPrevCircle = 0;
+			pCir->forget_time = NEVER_GORGET_TIME;
 			pCir->forget_time = m_MaxKeepTime*2.0;
+			pCir->forget_time = m_MaxKeepTime;
 			regions.push_back(pCir);
 			std::cout << "Region No: " << regions.size() << ", Radius: " << pCir->radius << ", F time: " << pCir->forget_time << std::endl;
 		}
@@ -77,9 +82,10 @@ void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis
 			else
 				pCir->radius = regions.at(iPrev)->radius + regions.at(iPrev)->radius;
 
-			regions.at(iPrev)->pNextCircle = pCir;
-			pCir->pPrevCircle = regions.at(iPrev);
+//			regions.at(iPrev)->pNextCircle = pCir;
+//			pCir->pPrevCircle = regions.at(iPrev);
 			pCir->forget_time = m_MaxKeepTime-iPrev-2;
+			pCir->forget_time = m_MaxKeepTime;
 			if(pCir->forget_time <= 0 )
 				pCir->forget_time = 0.2;
 			regions.push_back(pCir);
@@ -205,6 +211,50 @@ void SimpleTracker::AssociateAndTrack()
 	}
 }
 
+void SimpleTracker::AssociateSimply()
+{
+	std::vector<KFTrackV> newObjects;
+	for(unsigned int j = 0; j < m_DetectedObjects.size(); j++)
+	{
+		double iCloseset = 0;
+		double dCloseset = 9999999;
+		for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
+		{
+			double d = hypot(m_DetectedObjects.at(j).center.pos.y-m_TrackSimply.at(i).obj.center.pos.y, m_DetectedObjects.at(j).center.pos.x-m_TrackSimply.at(i).obj.center.pos.x);
+			if(d < dCloseset)
+			{
+				dCloseset = d;
+				iCloseset = i;
+			}
+		}
+
+		if(dCloseset <= m_MAX_ASSOCIATION_DISTANCE)
+		{
+			m_DetectedObjects.at(j).id = m_TrackSimply.at(iCloseset).obj.id;
+			m_DetectedObjects.at(j).center.pos.a = m_TrackSimply.at(iCloseset).obj.center.pos.a;
+			m_TrackSimply.at(iCloseset).obj = m_DetectedObjects.at(j);
+			newObjects.push_back(m_TrackSimply.at(iCloseset));
+		}
+		else
+		{
+			iTracksNumber = iTracksNumber + 1;
+			m_DetectedObjects.at(j).id = iTracksNumber;
+			KFTrackV track(m_DetectedObjects.at(j).center.pos.x, m_DetectedObjects.at(j).center.pos.y,m_DetectedObjects.at(j).center.pos.a, m_DetectedObjects.at(j).id, m_DT);
+			track.obj = m_DetectedObjects.at(j);
+			newObjects.push_back(track);
+		}
+	}
+
+	m_TrackSimply = newObjects;
+
+	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
+		m_TrackSimply.at(i).UpdateTracking(m_DT, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+
+	m_DetectedObjects.clear();
+	for(unsigned int i = 0; i< m_TrackSimply.size(); i++)
+		m_DetectedObjects.push_back(m_TrackSimply.at(i).obj);
+}
+
 void SimpleTracker::CreateTrackV2(DetectedObject& o)
 {
 	iTracksNumber = iTracksNumber + 1;
@@ -219,9 +269,7 @@ void SimpleTracker::TrackV2()
 {
 	for(unsigned int i =0; i< m_Tracks.size(); i++)
 	{
-		m_Tracks.at(i)->UpdateTracking(m_DT, m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
-				m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
-				m_Tracks.at(i)->obj.center.v);
+		m_Tracks.at(i)->UpdateTracking(m_DT, m_Tracks.at(i)->obj, m_Tracks.at(i)->obj);
 
 		//std::cout<< "Obj ID: " << m_Tracks.at(i)->GetTrackID() << ", Remaining Time: " <<  m_Tracks.at(i)->forget_time  << std::endl;
 	}
@@ -230,7 +278,7 @@ void SimpleTracker::TrackV2()
 void SimpleTracker::CleanOldTracks()
 {
 	m_DetectedObjects.clear();
-	for(int i = 0; i< m_Tracks.size(); i++)
+	for(int i = 0; i< (int)m_Tracks.size(); i++)
 	{
 		if(m_Tracks.at(i)->forget_time < 0 && m_Tracks.at(i)->forget_time > NEVER_GORGET_TIME)
 		{
@@ -255,25 +303,20 @@ void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<Detect
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
 
 	//std::cout << " Tracking Time : " << m_DT << std::endl;
-
 	m_DetectedObjects = obj_list;
 
-	AssociateAndTrack();
+	AssociateSimply();
 
-	TrackV2();
-
-	CleanOldTracks();
+//	AssociateAndTrack();
+//	TrackV2();
+//	CleanOldTracks();
 
 
 
 //	AssociateObjects();
-//
 //	Track(m_DetectedObjects);
-//
 //	m_PrevDetectedObjects = m_DetectedObjects;
-//
 //	m_PrevState = currPose;
-
 }
 
 void SimpleTracker::AssociateObjects()
@@ -361,8 +404,7 @@ void SimpleTracker::CreateTrack(DetectedObject& o)
 {
 	KFTrackV* pT = new KFTrackV(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id, m_DT);
 	o.id = pT->GetTrackID();
-	pT->UpdateTracking(m_DT, o.center.pos.x, o.center.pos.y, o.center.pos.a,
-			o.center.pos.x, o.center.pos.y,o.center.pos.a, o.center.v);
+	pT->UpdateTracking(m_DT, o, o);
 	m_Tracks.push_back(pT);
 }
 
@@ -386,9 +428,9 @@ void SimpleTracker::Track(std::vector<DetectedObject>& objects_list)
 			KFTrackV* pT = FindTrack(objects_list[i].id);
 			if(pT)
 			{
-				pT->UpdateTracking(m_DT, objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
-						objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
-						objects_list[i].center.v);
+//				pT->UpdateTracking(m_DT, objects_list[i].center.pos.x, objects_list//[i].center.pos.y, objects_list[i].center.pos.a,
+						//objects_list[i].center.pos.x, objects_list[i].center.pos.y, //objects_list[i].center.pos.a,
+//						objects_list[i].center.v);
 				//std::cout << "Update Current Track " << objects_list[i].id << std::endl;
 			}
 			else
