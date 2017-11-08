@@ -76,28 +76,27 @@ public:
 			camera_info_topic_str = name_space_str + camera_info_topic_str;
 			image_rect_str = name_space_str + image_rect_str;
 			image_flip_str = name_space_str + image_flip_str;
-
 		}
 
-		ROS_INFO("info_src: %s", camera_info_topic_str.c_str());
-		ROS_INFO("image_src: %s", image_raw_topic_str.c_str());
+		ROS_INFO("[camera_mirror_node]info_src: %s", camera_info_topic_str.c_str());
+		ROS_INFO("[camera_mirror_node]image_src: %s", image_raw_topic_str.c_str());
 
 
-		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
+		ROS_INFO("[camera_mirror_node]Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = private_node_handle.subscribe(image_raw_topic_str, 1, &RosCameraMirrorApp::ImageCallback, this);
 
-		ROS_INFO("Subscribing to... %s", camera_info_topic_str.c_str());
+		ROS_INFO("[camera_mirror_node]Subscribing to... %s", camera_info_topic_str.c_str());
 		subscriber_camera_info_ = private_node_handle.subscribe(camera_info_topic_str, 1, &RosCameraMirrorApp::InfoCallback, this);
 
 		publisher_image_rect_ = private_node_handle.advertise<sensor_msgs::Image>(image_rect_str, 1);
-		ROS_INFO("Publishing Rectified image in %s", image_rect_str.c_str());
+		ROS_INFO("[camera_mirror_node]Publishing Rectified image in %s", image_rect_str.c_str());
 
 		publisher_image_flip_ = private_node_handle.advertise<sensor_msgs::Image>(image_flip_str, 1);
-		ROS_INFO("Publishing Flipped image in %s", image_flip_str.c_str());
+		ROS_INFO("[camera_mirror_node]Publishing Flipped image in %s", image_flip_str.c_str());
 
-		ROS_INFO("Ready. Waiting for data...");
+		ROS_INFO("[camera_mirror_node]Ready. Waiting for data...");
 		ros::spin();
-		ROS_INFO("END rect");
+		ROS_INFO("[camera_mirror_node]END rect");
 	}
 
 	~RosCameraMirrorApp()
