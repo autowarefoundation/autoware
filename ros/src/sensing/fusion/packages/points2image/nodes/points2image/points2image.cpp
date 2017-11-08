@@ -81,7 +81,7 @@ static void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
 	if (cameraExtrinsicMat.empty() || cameraMat.empty() || distCoeff.empty() || imageSize.height == 0 || imageSize.width == 0)
 	{
-		ROS_INFO("Looks like /camera/camera_info or /projection_matrix are not being published.. Please check that both are running..");
+		ROS_INFO("Looks like /camera_info or /projection_matrix are not being published.. Please check that both are running..");
 		return;
 	}
 
@@ -140,8 +140,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		ROS_INFO("No camera info topic received, defaulting to /camera/camera_info, you can use _camera_info_topic:=YOUR_TOPIC");
-		camera_info_topic = "/camera/camera_info";
+		ROS_INFO("No camera info topic received, defaulting to /camera_info, you can use _camera_info_topic:=YOUR_TOPIC");
+		camera_info_topic = "/camera_info";
 	}
 
 	std::string projection_matrix_topic;
