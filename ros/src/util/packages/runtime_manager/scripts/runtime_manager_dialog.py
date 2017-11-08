@@ -70,6 +70,8 @@ from autoware_msgs.msg import ConfigRingFilter
 from autoware_msgs.msg import ConfigDistanceFilter
 from autoware_msgs.msg import ConfigRandomFilter
 from autoware_msgs.msg import ConfigRingGroundFilter
+from autoware_msgs.msg import ConfigRayGroundFilter
+from autoware_msgs.msg import ConfigPointsConcatFilter
 from autoware_msgs.msg import ConfigWaypointFollower
 from autoware_msgs.msg import ConfigTwistFilter
 from autoware_msgs.msg import ConfigVelocitySet
@@ -83,7 +85,6 @@ from autoware_msgs.msg import ConfigCarFusion
 from autoware_msgs.msg import ConfigPedestrianFusion
 from autoware_msgs.msg import ConfigPlannerSelector
 from autoware_msgs.msg import ConfigDecisionMaker
-from autoware_msgs.msg import ConfigRayGroundFilter
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
@@ -395,7 +396,7 @@ class MyFrame(rtmgr.MyFrame):
 			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
 
 		self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
-		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'auto_pilot'),
+		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'remote_control', 'auto_pilot'),
 						 ('qs', 'interface') )
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))

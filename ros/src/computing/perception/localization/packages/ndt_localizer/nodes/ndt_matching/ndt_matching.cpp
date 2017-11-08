@@ -63,14 +63,20 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#if defined(USE_FAST_PCL) && defined(CUDA_FOUND)
-#include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
-#include <fast_pcl/registration/ndt.h>
+#ifdef USE_FAST_PCL
+  #include <fast_pcl/registration/ndt.h>
+#else
+  #include <pcl/registration/ndt.h>
 #endif
 
 
-#ifndef USE_FAST_PCL
-#include <pcl/registration/ndt.h>
+#ifdef USE_FAST_PCL
+  #include <fast_pcl/registration/ndt.h>
+#else
+  #include <pcl/registration/ndt.h>
+#endif
+#ifdef CUDA_FOUND
+  #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
 
 //End of adding

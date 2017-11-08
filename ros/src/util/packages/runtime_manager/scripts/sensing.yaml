@@ -24,7 +24,7 @@ subs :
       - name : PointGrey Grasshoper 3 (USB1)
         desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
-        run  : roslaunch pointgrey grasshopper3.launch
+        run  : roslaunch autoware_pointgrey_drivers grasshopper3.launch
         param: calibration_path_grasshopper3
         gui  :
           CalibrationFile :
@@ -37,7 +37,7 @@ subs :
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
-        run  : roslaunch pointgrey ladybug.launch
+        run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: calibration_path_ladybug
         gui  :
           CalibrationFile :
@@ -222,6 +222,16 @@ cmds:
       desc : ray_ground_filter performs ground filtering using a radial-concentric based approach
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
+
+    - name : points_concat_filter
+      desc : points_concat_filter filter performs merging multiple lidar input
+      cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
+      param: points_concat_filter
+
+    - name : cloud_transformer
+      desc : Transforms cloud points' coordinates to the specified target frame
+      cmd  : roslaunch points_preprocessor cloud_transformer.launch
+      param: cloud_transformer
       
 buttons:
   calibration_toolkit :
@@ -459,6 +469,14 @@ params :
     topic : /config/ring_ground_filter
     msg   : ConfigRingGroundFilter
     vars  :
+    - name  : point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : sensor_model
       desc  : sensor_model desc sample
       label : Sensor Model
@@ -788,6 +806,59 @@ params :
       min   : 0.01
       max   : 1
       v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : points_concat_filter
+    topic : /config/points_concat_filter
+    msg   : ConfigPointsConcatFilter
+    vars  :
+    - name  : input0
+      desc  : 1st concatinated pointcloud topic
+      label : Lidar0 topic
+      kind  : str
+      v     : /lidar0/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : input1
+      desc  : 2nd concatinated pointcloud topic
+      label : Lidar1 topic
+      kind  : str
+      v     : /lidar1/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_frame
+      desc  : Concatinated pointcloud frame
+      label : output_frame
+      kind  : str
+      v     : lidar_frame
+
+  - name  : cloud_transformer
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, i.e. /points_raw
+      label : input_point_topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : target_frame
+      desc  : Target Frame to transform the Input Point Cloud
+      label : target_frame
+      kind  : str
+      v     : base_link
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_point_topic
+      desc  : Output PointCloud Topic name, /points_transformed
+      label : output_point_topic
+      kind  : str
+      v     : /points_transformed
       cmd_param :
         dash        : ''
         delim       : ':='

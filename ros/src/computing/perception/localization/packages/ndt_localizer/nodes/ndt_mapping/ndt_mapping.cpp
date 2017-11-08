@@ -58,16 +58,25 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#if defined(USE_FAST_PCL) && defined(CUDA_FOUND)
-#include <fast_pcl/filters/voxel_grid.h>
-#include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
-#include <fast_pcl/registration/ndt.h>
+#ifdef USE_FAST_PCL
+  #include <fast_pcl/filters/voxel_grid.h>
+  #include <fast_pcl/registration/ndt.h>
+#else
+  #include <pcl/filters/voxel_grid.h>
+  #include <pcl/registration/ndt.h>
 #endif
 
 
 #ifndef USE_FAST_PCL
-#include <pcl/filters/voxel_grid.h>
-#include <pcl/registration/ndt.h>
+  #include <fast_pcl/filters/voxel_grid.h>
+  #include <fast_pcl/registration/ndt.h>
+#else
+  #include <pcl/filters/voxel_grid.h>
+  #include <pcl/registration/ndt.h>
+#endif
+
+#ifdef CUDA_FOUND
+  #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
 
 
@@ -668,7 +677,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     ndt.omp_align(*output_cloud, init_guess);
     t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged;
+    has_converged = ndt.hasConverged();
     fitness_score = ndt.omp_getFitnessScore();
     final_num_iteration = ndt.getFinalNumIteration();
   }
