@@ -25,8 +25,11 @@ EXECUTE_PROCESS(
 )
 
 
-
-IF("${ARCHITECTURE}" STREQUAL "x86_64")
+IF("${ARCHITECTURE}" STREQUAL "aarch64")
+	set(LIB_ARCH _aarch64)
+ELSE()
+	unset(LIB_ARCH)
+ENDIF()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -35,12 +38,11 @@ include_directories(
 
 IF(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.1)
 	set(LIB_VERSION 2.0) # _GLIBCXX_USE_CXX11_ABI is 1
-else()
+ELSE()
 	set(LIB_VERSION 1.0) # _GLIBCXX_USE_CXX11_ABI is 0
 ENDIF()
 
-find_library(ymc_can NAMES libymc_can_${LIB_VERSION}.a PATHS lib)
-
+find_library(ymc_can NAMES libymc_can_${LIB_VERSION}${LIB_ARCH}.a PATHS lib)
 add_executable(g30esli_interface
   node/g30esli_interface/g30esli_interface.cpp
   )
@@ -49,4 +51,3 @@ target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
   ${ymc_can}
   )
-ENDIF()
