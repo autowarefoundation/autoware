@@ -49,17 +49,17 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_f
   return _area;
 }
 
-std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_ClosestArea)
+std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
 {
   std::vector<int> enablePoints;
 
   // Jarvis's March algorithm
   int l = 0;
-  for (auto i = begin(_ClosestArea->points); i != end(_ClosestArea->points); i++)
+  for (auto i = begin(_TargetArea->points); i != end(_TargetArea->points); i++)
   {
-    if (i->x < _ClosestArea->points.at(l).x)
+    if (i->x < _TargetArea->points.at(l).x)
     {
-      l = std::distance(begin(_ClosestArea->points), i);
+      l = std::distance(begin(_TargetArea->points), i);
     }
   }
 
@@ -68,12 +68,12 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_ClosestArea)
 
   do
   {
-    q = (p + 1) % _ClosestArea->points.size();
-    for (int i = 0; i < _ClosestArea->points.size(); i++)
+    q = (p + 1) % _TargetArea->points.size();
+    for (int i = 0; i < _TargetArea->points.size(); i++)
     {
-      geometry_msgs::Point pp = _ClosestArea->points.at(p);
-      geometry_msgs::Point pi = _ClosestArea->points.at(i);
-      geometry_msgs::Point pq = _ClosestArea->points.at(q);
+      geometry_msgs::Point pp = _TargetArea->points.at(p);
+      geometry_msgs::Point pi = _TargetArea->points.at(i);
+      geometry_msgs::Point pq = _TargetArea->points.at(q);
       if ((pi.y - pp.y) * (pq.x - pi.x) - (pi.x - pp.x) * (pq.y - pi.y) < 0)
       {
         q = i;
@@ -84,11 +84,11 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_ClosestArea)
   } while (p != l);
 
   std::vector<geometry_msgs::Point> point_arrays;
-  for (auto p = begin(_ClosestArea->points); p != end(_ClosestArea->points); p++)
+  for (auto p = begin(_TargetArea->points); p != end(_TargetArea->points); p++)
   {
     for (auto &en : enablePoints)
     {
-      if (std::distance(begin(_ClosestArea->points), p) == en)
+      if (std::distance(begin(_TargetArea->points), p) == en)
       {
         point_arrays.push_back(*p);
       }
@@ -97,9 +97,9 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_ClosestArea)
   return point_arrays;
 }
 
-bool CrossRoadArea::isInsideArea(const CrossRoadArea *_ClosestArea, geometry_msgs::Point pt)
+bool CrossRoadArea::isInsideArea(const CrossRoadArea *_TargetArea, geometry_msgs::Point pt)
 {
-  std::vector<geometry_msgs::Point> point_arrays = convhull(_ClosestArea);
+  std::vector<geometry_msgs::Point> point_arrays = convhull(_TargetArea);
 
   double rad = 0.0;
   for (auto it = begin(point_arrays); it != end(point_arrays); ++it)

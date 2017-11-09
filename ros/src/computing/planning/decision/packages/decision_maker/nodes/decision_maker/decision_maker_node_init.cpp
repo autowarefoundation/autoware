@@ -27,6 +27,11 @@
 
 namespace decision_maker
 {
+
+#define  TPNAME_BASED_LANE_WAYPOINTS_ARRAY "/based/lane_waypoints_array"
+#define  TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY "/lane_waypoints_array"
+
+
 void DecisionMakerNode::initStateMsgs(void)
 {
 }
@@ -62,6 +67,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // pub
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
+  Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
 
   // for visualize
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
@@ -114,6 +120,7 @@ void DecisionMakerNode::initVectorMap(void)
 
       int _index = 0;
 
+      // parse vmap
       for (const auto &cross_road : vMap_CrossRoads.data)
       {
         for (const auto &area : vMap_Areas.data)
@@ -127,8 +134,8 @@ void DecisionMakerNode::initVectorMap(void)
             double x_avg = 0.0, x_min = 0.0, x_max = 0.0;
             double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
             double z = 0.0;
-
             int points_count = 0;
+	    
             for (const auto &line : vMap_Lines.data)
             {
               if (area.slid <= line.lid && line.lid <= area.elid)
@@ -148,8 +155,9 @@ void DecisionMakerNode::initVectorMap(void)
 
                     _prev_point = _point;
                     points_count++;
-                    carea.points.push_back(_point);
+		    carea.points.push_back(_point);
 
+		    // calc a centroid point and about intersects size
                     x_avg += _point.x;
                     y_avg += _point.y;
                     x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
@@ -175,8 +183,7 @@ void DecisionMakerNode::initVectorMap(void)
       }
     }
     vMap_mutex.unlock();
-    Subs["lane_waypoints_array"] =
-        nh_.subscribe("lane_waypoints_array", 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
+    Subs["lane_waypoints_array"] = nh_.subscribe( TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
   }
 }
 

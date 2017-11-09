@@ -16,6 +16,8 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
+#include <visualization_msgs/MarkerArray.h>
+
 //#include <vector_map_server/GetCrossRoad.h>
 
 #include <vector_map_msgs/AreaArray.h>
@@ -96,7 +98,8 @@ private:
   std::vector<geometry_msgs::Point> inside_points_;
 
 
-  autoware_msgs::LaneArray current_lane_array_;
+  autoware_msgs::LaneArray current_based_lane_array_;
+  autoware_msgs::LaneArray current_controlled_lane_array_;
 
   // Current way/behavior status
   double current_velocity_;
@@ -111,9 +114,9 @@ private:
   // Param
   bool enableDisplayMarker;
   bool enableForceStateChange;
-  double param_convergence_threshold_;
   int param_convergence_count_;
   int param_target_waypoint_;
+  double param_convergence_threshold_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -142,15 +145,20 @@ private:
 
   void publishToVelocityArray();
   std::string createStateMessageText();
+  int createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale);
+
 
   // judge method
   // in near future, these methods will be deprecate to decision_maker library
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
-
   bool handleStateCmd(const unsigned long long _state_num);
+  double calcIntersectWayAngle(const CrossRoadArea& area);
 
-  double calcIntersectWayAngle(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
+  void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
+
+  void setWaypointState(autoware_msgs::LaneArray &lane_array);
+
 
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
@@ -169,9 +177,6 @@ private:
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);
   void callbackFromVectorMapLine(const vector_map_msgs::LineArray &msg);
   void callbackFromVectorMapCrossRoad(const vector_map_msgs::CrossRoadArray &msg);
-
-  // in near future, these methods will be deprecate to ADAS library
-  CrossRoadArea *findClosestCrossRoad(void);
 
 public:
   state_machine::StateContext *ctx;

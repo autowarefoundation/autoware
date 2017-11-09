@@ -67,10 +67,16 @@ void DecisionMakerNode::run(void)
     update();
     if (enableDisplayMarker)
       displayMarker();
+
+ 
+#ifdef DEBUG_PRINT
+    // debug status
     ros::Duration exec_time = ros::Time::now() - begin;
     std_msgs::Float64 exec_time_sec;
     exec_time_sec.data = exec_time.toSec();
     Pubs["exectime"].publish(exec_time_sec);
+#endif
+
     loop_rate.sleep();
   }
 }

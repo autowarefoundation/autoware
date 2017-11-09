@@ -19,7 +19,7 @@ public:
   std::vector<geometry_msgs::Point> points;
   jsk_recognition_msgs::BoundingBox bbox;
 
-  std::vector< autoware_msgs::waypoint> insideWaypoints;
+  std::vector<autoware_msgs::waypoint> insideWaypoints;
   std::vector<geometry_msgs::Point> insideWaypoint_points;
 
   CrossRoadArea(void)
@@ -33,8 +33,22 @@ public:
 
   static CrossRoadArea *findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
 		  std::vector<CrossRoadArea> &intersects);
-  static bool isInsideArea(const CrossRoadArea* _ClosestArea,
-                                             geometry_msgs::Point pt);
+  static bool isInsideArea(const CrossRoadArea* _TargetArea,
+ 		  geometry_msgs::Point pt);
+
+
+  static CrossRoadArea *getCrossRoadArea(std::vector<CrossRoadArea> &areas, int aid)
+  {
+	  CrossRoadArea *ret = nullptr;
+	  for( auto &area : areas){
+		  if(area.area_id == aid){
+			  ret = &area;
+			  break;
+		  }
+	  }
+	  return ret;
+  }
+
 };
 }
 

@@ -8,9 +8,6 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -22,18 +19,16 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map_msgs
   jsk_recognition_msgs
   euc
+  dynamic_reconfigure
 )
+
+generate_dynamic_reconfigure_options(cfg/debug_decision_dynconfig.cfg)
+
+
 
 add_message_files(
 	FILES
 	DebugDecisionMaker.msg
-)
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  sensor_msgs
-  jsk_recognition_msgs
 )
 
 catkin_package(

@@ -30,6 +30,28 @@ void DecisionMakerNode::update_pubsub(void)
   // this function will re-definition subscriber.
 }
 
+
+int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale){
+
+  crossroad_marker.header.frame_id = "/map";
+  crossroad_marker.header.stamp = ros::Time();
+  crossroad_marker.id = 1;
+  crossroad_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+  crossroad_marker.action = visualization_msgs::Marker::ADD;
+  crossroad_marker.ns = "crossroad";
+  
+  crossroad_marker.scale.x = scale;
+  crossroad_marker.scale.y = scale;
+  crossroad_marker.scale.z = 0.5;
+  crossroad_marker.color.a = 0.15;
+  crossroad_marker.color.r = 1.0;
+  crossroad_marker.color.g = 0.0;
+  crossroad_marker.color.b = 0.0;
+  crossroad_marker.frame_locked = true;
+  crossroad_marker.lifetime = ros::Duration(0.3);
+
+}
+
 void DecisionMakerNode::displayMarker(void)
 {
   // vector_map init
@@ -42,24 +64,9 @@ void DecisionMakerNode::displayMarker(void)
   static visualization_msgs::Marker crossroad_marker;
   static visualization_msgs::Marker inside_marker;
 
-  crossroad_marker.header.frame_id = "/map";
-  crossroad_marker.header.stamp = ros::Time();
-  crossroad_marker.id = 1;
-  crossroad_marker.type = visualization_msgs::Marker::SPHERE_LIST;
-  crossroad_marker.action = visualization_msgs::Marker::ADD;
-  crossroad_marker.ns = "crossroad";
 
   double scale = 3.0;
-  crossroad_marker.scale.x = scale;
-  crossroad_marker.scale.y = scale;
-  crossroad_marker.scale.z = 0.5;
-  crossroad_marker.color.a = 0.15;
-  crossroad_marker.color.r = 1.0;
-  crossroad_marker.color.g = 0.0;
-  /// www.sinet.ad.jp/aboutsinettd::cout << "x: "<< _point.x << std::endl;
-  crossroad_marker.color.b = 0.0;
-  crossroad_marker.frame_locked = true;
-  crossroad_marker.lifetime = ros::Duration(0.3);
+  createCrossRoadAreaMarker(crossroad_marker, scale);
 
   inside_marker = crossroad_marker;
   inside_marker.scale.x = scale / 3;
