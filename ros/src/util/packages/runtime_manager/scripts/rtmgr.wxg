@@ -309,6 +309,17 @@
                                                 <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
                                                 <border>4</border>
                                                 <option>1</option>
+                                                <object class="wxToggleButton" name="button_remote_control_qs" base="EditToggleButton">
+                                                    <label>Remote Control</label>
+                                                    <events>
+                                                        <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
+                                                    </events>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem">
+                                                <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                                                <border>4</border>
+                                                <option>1</option>
                                                 <object class="wxToggleButton" name="button_cloud_data_qs" base="EditToggleButton">
                                                     <label>Cloud Data</label>
                                                     <events>
@@ -1238,6 +1249,17 @@
                                                 <option>1</option>
                                                 <object class="wxToggleButton" name="button_vehicle_gateway_interface" base="EditToggleButton">
                                                     <label>Vehicle Gateway</label>
+                                                    <events>
+                                                        <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
+                                                    </events>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem">
+                                                <flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+                                                <border>4</border>
+                                                <option>1</option>
+                                                <object class="wxToggleButton" name="button_remote_control_interface" base="EditToggleButton">
+                                                    <label>Remote Control</label>
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>

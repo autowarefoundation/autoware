@@ -1,0 +1,50 @@
+
+.whiteBox {
+  padding: 10px;
+}
+
+progress[value] {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  width: 100%;
+  height: 0.6vw;
+}
+
+progress[value]::-webkit-progress-bar {
+  background-color: #FFFFFF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+progress[value]::-webkit-progress-value {
+  background-color: #00a3e0;
+}
+
+.seekbar {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 0.6vw;
+  border-radius: 10px;
+  background: #fff;
+}
+.seekbar .fill {
+  height: 30px;
+  border-radius: 10px;
+}
+.seekbar .handle {
+  width: 2%;
+  height: 0.4vw;
+  background: #00a3e0;
+  border-radius: 10px;
+  transform: scale(2);
+  transition: all 0.1s ease-in-out;
+}
+.container .seekbar .handle:hover {
+  background: #33bbff;
+  cursor: pointer;
+  transform: scale(2.5);
+}

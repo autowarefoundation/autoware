@@ -54,6 +54,9 @@ buttons :
   vehicle_gateway_qs :
     desc: vehicle_gateway_qs desc sample
     run : roslaunch runtime_manager vehicle_socket.launch
+  remote_control_qs :
+    desc: remote_control_qs desc sample
+    run : roslaunch runtime_manager mqtt_socket.launch
   cloud_data_qs :
     desc: cloud_data_qs desc sample
     run : rosrun obj_db obj_downloader
