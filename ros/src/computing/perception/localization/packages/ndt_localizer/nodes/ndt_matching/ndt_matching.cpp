@@ -69,12 +69,6 @@
   #include <pcl/registration/ndt.h>
 #endif
 
-
-#ifdef USE_FAST_PCL
-  #include <fast_pcl/registration/ndt.h>
-#else
-  #include <pcl/registration/ndt.h>
-#endif
 #ifdef CUDA_FOUND
   #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
