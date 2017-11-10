@@ -58,19 +58,15 @@ enum class E_ChangeFlags : int32_t
   UNKNOWN = -1,
 };
 
-template <class T>
-typename std::underlying_type<T>::type enumToInteger(T t)
-{
-  return static_cast<typename std::underlying_type<T>::type>(t);
-}
 inline bool hasvMap(void)
 {
   return true;
 }
 
-inline double mps2kmph(double _mpsval)
+template <class T>
+typename std::underlying_type<T>::type enumToInteger(T t)
 {
-  return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
+  return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
 class DecisionMakerNode

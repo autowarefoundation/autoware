@@ -116,10 +116,6 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
   // for debug
   //	ROS_INFO("\n***** EnableLattice = %d  **** \n",enableLattice_,msg.data);
 }
-inline double mps2kmph(double _mpsval)
-{
-  return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
-}
 
 void PlannerSelector::callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event)
 {

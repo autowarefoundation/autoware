@@ -8,6 +8,7 @@ using namespace std;
 
 namespace amathutils
 {
+
 class point
 {
 private:
@@ -28,6 +29,11 @@ public:
 };
 double find_distance(point *_a, point *_b);
 double find_angle(point *_a, point *_b);
+
+inline double mps2kmph(double _mpsval)
+{
+  return (_mpsval * 0.36 );// mps * 60secs * 60minutes / 1000m
+}
 
 } 
 

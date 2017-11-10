@@ -232,7 +232,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 	double _temp_sum = 0;
 	for (int i = 0; i < VEL_AVERAGE_COUNT; i++)
 	{
-		_temp_sum += mps2kmph(msg.waypoints[i].twist.twist.linear.x);
+		_temp_sum += amathutils::mps2kmph(msg.waypoints[i].twist.twist.linear.x);
 	}
 	average_velocity_ = _temp_sum / VEL_AVERAGE_COUNT;
 
@@ -287,7 +287,7 @@ void DecisionMakerNode::callbackFromVectorMapCrossRoad(const vector_map_msgs::Cr
 
 void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg)
 {
-	current_velocity_ = mps2kmph(msg.twist.linear.x);
+	current_velocity_ = amathutils::mps2kmph(msg.twist.linear.x);
 }
 #if 0
 void DecisionMakerNode::callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level){

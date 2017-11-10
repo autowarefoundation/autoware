@@ -134,7 +134,7 @@ void DecisionMakerNode::publishToVelocityArray()
 
   for (const auto &i : current_finalwaypoints_.waypoints)
   {
-    msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
+    msg.data.push_back(amathutils::mps2kmph(i.twist.twist.linear.x));
     if (++count >= 10)
       break;
   }

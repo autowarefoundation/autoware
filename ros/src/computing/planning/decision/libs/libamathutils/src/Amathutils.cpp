@@ -16,4 +16,6 @@ namespace amathutils
     return _angle * 360 / (2 * M_PI);
   }
 
+
+
 } 
