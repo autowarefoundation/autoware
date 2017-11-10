@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_rviz_plugins
   rosinterface
   cv_bridge
+  vector_map
   vector_map_server
 )
 
@@ -115,7 +116,7 @@ target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #Object Fusion
 add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
-add_dependencies(obj_fusion ${catkin_EXPORTED_TARGETS})
+add_dependencies(obj_fusion ${catkin_EXPORTED_TARGETS} vector_map_server_generate_messages_cpp)
 
 # Vscan Track
 execute_process(

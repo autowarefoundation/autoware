@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_msgs)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
 	message_generation
 	std_msgs
 	geometry_msgs
 	sensor_msgs
 	jsk_recognition_msgs
-	jsk_rviz_plugins
 )
 
 
@@ -48,12 +47,16 @@ add_message_files(
   vscan_tracked.msg
   vscan_tracked_array.msg
   waypoint.msg
+  VehicleCmd.msg
 
-## Runtime Manager ## 
+## Runtime Manager ##
+  ConfigApproximateNdtMapping.msg
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
+  ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
+  ConfigRingGroundFilter.msg
   ConfigICP.msg
   ConfigLaneRule.msg
   ConfigLaneSelect.msg
@@ -65,10 +68,13 @@ add_message_files(
   ConfigPedestrianDpm.msg
   ConfigPedestrianFusion.msg
   ConfigPedestrianKf.msg
+  ConfigPlannerSelector.msg
   ConfigPoints2Polygon.msg
+  ConfigPointsConcatFilter.msg
   ConfigRandomFilter.msg
   ConfigRcnn.msg
   ConfigRingFilter.msg
+  ConfigRayGroundFilter.msg
   ConfigSsd.msg
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
@@ -81,13 +87,15 @@ add_message_files(
   lamp_cmd.msg
   steer_cmd.msg
   traffic_light.msg
- 
+  state_cmd.msg
+
 ## Sync
   Sync_time_monitor.msg
   Sync_time_diff.msg
- 
-)
 
+## Remote Control
+  RemoteCmd.msg
+)
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -96,8 +104,13 @@ generate_messages(
   geometry_msgs
   sensor_msgs
   jsk_recognition_msgs
-  jsk_rviz_plugins
 )
+
 catkin_package(
-  CATKIN_DEPENDS std_msgs geometry_msgs
+  CATKIN_DEPENDS
+  message_runtime
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  jsk_recognition_msgs
 )

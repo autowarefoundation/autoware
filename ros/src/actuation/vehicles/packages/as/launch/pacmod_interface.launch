@@ -1,0 +1,14 @@
+<!-- -->
+<launch>
+
+	<arg name="acceleration_limit" default="3.0"/>
+	<arg name="deceleration_limit" default="3.0"/>
+	<arg name="max_curvature_rate" default="0.75"/>
+
+	<node pkg="as" type="pacmod_interface" name="pacmod_interface" output="log">
+		<param name="acceleration_limit" value="$(arg acceleration_limit)"/>
+		<param name="deceleration_limit" value="$(arg deceleration_limit)"/>
+		<param name="max_curvature_rate" value="$(arg max_curvature_rate)"/>
+	</node>
+
+</launch>

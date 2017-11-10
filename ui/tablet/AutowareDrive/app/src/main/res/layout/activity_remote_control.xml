@@ -1,0 +1,154 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:layout_weight="8"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal"
+        android:orientation="vertical" >
+
+        <!--<jp.tier4.autowaredrive.OverlayedPreviewView-->
+            <!--android:id="@+id/main_overrayed_preview"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="3"-->
+            <!--android:layout_margin="5dp"-->
+            <!--android:layout_marginBottom="5dp">-->
+        <!--</jp.tier4.autowaredrive.OverlayedPreviewView>-->
+
+        <ImageView
+            android:id="@+id/main_overrayed_preview"
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:layout_margin="5dp"
+            android:layout_marginBottom="5dp">
+        </ImageView>
+
+        <LinearLayout
+            android:gravity="center_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5"
+                android:layout_marginLeft="15dp"
+                android:orientation="vertical" >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <TextView
+                        android:id="@+id/accel_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/accel_label" />
+
+                    <ProgressBar
+                        android:id="@+id/accel_progressbar"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/brake_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/brake_label" />
+
+                    <ProgressBar
+                        android:id="@+id/brake_progressbar"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/steering_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/steering_label" />
+
+                    <SeekBar
+                        android:id="@+id/steering_seekbar"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/steering_image_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:layout_gravity="center"
+                    app:srcCompat="@drawable/steering" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:orientation="vertical" >
+
+                <!--<jp.tier4.autowaredrive.PitchHandle-->
+                <!--android:id="@+id/main_pitch_ring"-->
+                <!--android:layout_width="70dp"-->
+                <!--android:layout_height="70dp"-->
+                <!--android:gravity="center"/>-->
+
+                <ToggleButton
+                    android:id="@+id/emergency_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textOff="Emergency Button"
+                    android:textOn="Emergency"
+                    android:text="Emergency" />
+
+                <ToggleButton
+                    android:id="@+id/remote_control_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textOff="Auto"
+                    android:textOn="Remote"
+                    android:text="RemoteControl" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/accel_brake_button"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:layout_margin="5dp"
+        android:text="@string/accel_brake_label" />
+
+</LinearLayout>

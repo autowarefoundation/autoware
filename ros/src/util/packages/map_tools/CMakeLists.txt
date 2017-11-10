@@ -4,7 +4,7 @@ project(map_tools)
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   pcl_conversions
-#  runtime_manager
+  velodyne_pointcloud
 )
 
 ###################################
@@ -28,9 +28,11 @@ add_executable(pcd_binarizer nodes/pcd_binarizer/pcd_binarizer.cpp)
 add_executable(pcd_arealist nodes/pcd_arealist/pcd_arealist.cpp)
 add_executable(csv2pcd nodes/pcd_converter/csv2pcd.cpp)
 add_executable(pcd2csv nodes/pcd_converter/pcd2csv.cpp)
+add_executable(map_extender nodes/map_extender/map_extender.cpp)
 
 target_link_libraries(pcd_filter ${catkin_LIBRARIES})
 target_link_libraries(pcd_binarizer ${catkin_LIBRARIES})
 target_link_libraries(pcd_arealist ${catkin_LIBRARIES})
 target_link_libraries(csv2pcd ${catkin_LIBRARIES})
 target_link_libraries(pcd2csv ${catkin_LIBRARIES})
+target_link_libraries(map_extender ${catkin_LIBRARIES})
