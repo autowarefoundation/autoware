@@ -37,7 +37,6 @@ private:
   std::unordered_map<uint64_t, BaseState *> StateStores;
 
   bool enableForceSetState;
-  // unsigned long long ChangeStateFlags;
   std::queue<unsigned long long> ChangeStateFlags;
   std::atomic<bool> thread_loop;
 
@@ -86,18 +85,11 @@ public:
     {
       *p = nullptr;
     }
-#if 0
-    current_state_.MainState = nullptr;
-    current_state_.AccState = nullptr;
-    current_state_.StrState = nullptr;
-    current_state_.BehaviorState = nullptr;
-    current_state_.PerceptionState = nullptr;
-    current_state_.OtherState = nullptr;
-#endif
     thread_loop = true;
 
     this->InitContext();
   }
+
   ~StateContext()
   {
     thread_loop = false;

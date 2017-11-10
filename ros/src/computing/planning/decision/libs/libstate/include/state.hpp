@@ -75,7 +75,6 @@ protected:
 
 public:
   virtual void update(void){
-	std::cout << "update:"<< StateNum << std::endl;
 	if(StateCallbackFunc)
 		StateCallbackFunc();
   }
