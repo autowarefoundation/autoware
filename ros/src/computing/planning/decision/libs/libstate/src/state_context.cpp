@@ -7,7 +7,6 @@
 #include <cassert>
 #include <mutex>
 
-#include <euclidean_space.hpp>
 #include <state_context.hpp>
 
 #include <state.hpp>
@@ -212,33 +211,10 @@ bool StateContext::inState(unsigned long long _state_num)
   }
 }
 
-#define ANGLE_STRAIGHT 50.0
-#define ANGLE_LEFT 360.0
-#define ANGLE_RIGHT 180.0
 bool StateContext::handleIntersection(bool _hasIntersection, double _angle)
 {
-  if (_hasIntersection)
-  {
-    // *Temporary implementation*
-    // To straight/left/right recognition by using angle between
-    // first-waypoint
-    // and end-waypoint in intersection area.
-    int temp = (int)std::floor(_angle + 360.0) % 360;
-#if 0
-    if (std::abs(temp) <= ANGLE_STRAIGHT)
-      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_STRAIGHT_STATE]);
-    else if (temp <= ANGLE_RIGHT)
-      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_RIGHT_STATE]);
-    else if (temp <= ANGLE_LEFT)
-      return this->setCurrentState(StateStores[DRIVE_MOVEFWD_LEFT_STATE]);
-    else
-      return false;
-#endif
-  }
-  else
-  {
-    return false;
-  }
+    /* deprecated */
+	return false;
 }
 
 std::string StateContext::createStateMessageText(void)

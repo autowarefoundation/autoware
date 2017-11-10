@@ -29,7 +29,7 @@
 
 // lib
 #include <cross_road_area.hpp>
-#include <euclidean_space.hpp>
+#include <amathutils.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
 
@@ -153,7 +153,8 @@ private:
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
   bool handleStateCmd(const unsigned long long _state_num);
-  double calcIntersectWayAngle(const CrossRoadArea& area);
+  //double calcIntersectWayAngle(const CrossRoadArea& area);
+  double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
 
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
 

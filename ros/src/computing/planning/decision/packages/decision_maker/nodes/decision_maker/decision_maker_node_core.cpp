@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 // lib
-#include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
 

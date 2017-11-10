@@ -1,6 +1,6 @@
 #include <cmath>
 #include <cross_road_area.hpp>
-#include <euclidean_space.hpp>
+#include <amathutils.hpp>
 
 namespace decision_maker
 {
@@ -10,8 +10,8 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_f
 {
   CrossRoadArea *_area = nullptr;
 
-  euclidean_space::point _pa;
-  euclidean_space::point _pb;
+  amathutils::point _pa;
+  amathutils::point _pb;
 
   double _min_distance = DBL_MAX;
 
@@ -31,7 +31,7 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_f
 
     _pb.z = 0.0;
 
-    double __temp_dis = euclidean_space::EuclideanSpace::find_distance(&_pa, &_pb);
+    double __temp_dis = amathutils::find_distance(&_pa, &_pb);
 
     intersects[i].bbox.label = 0;
     if (_min_distance >= __temp_dis)

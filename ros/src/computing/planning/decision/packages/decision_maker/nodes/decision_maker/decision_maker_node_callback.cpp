@@ -10,7 +10,6 @@
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
-#include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
 
@@ -129,8 +128,13 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
 				if (CrossRoadArea::isInsideArea(&area, pp))
 				{ 
 					//area's
+					if(area.insideLanes.empty() ||  wp.gid  != area.insideLanes.back().waypoints.back().gid + 1 ){
+						autoware_msgs::lane nlane;;
+						area.insideLanes.push_back(nlane);
+					}
+					area.insideLanes.back().waypoints.push_back(wp);
 					area.insideWaypoint_points.push_back(pp); //geometry_msgs::point
-					area.insideWaypoints.push_back(wp);//autoware_msgs::waypoint
+					//area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::waypoint
 					//lane's wp
 					wp.wpstate.aid = area.area_id;
 				}
@@ -142,11 +146,11 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 {
 	for(auto &area : intersects){
+
+		for(auto &laneinArea : area.insideLanes){
 		// To straight/left/right recognition by using angle
 		// between first-waypoint and end-waypoint in intersection area.
-		//
-		//
-		int angle_deg = ((int)std::floor(calcIntersectWayAngle(area))); //normalized
+		int angle_deg = ((int)std::floor(calcIntersectWayAngle(laneinArea))); //normalized
 		int steering_state;
 
 		if (angle_deg <= ANGLE_LEFT)
@@ -168,6 +172,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 		}
 		fprintf(stderr,"%d: %d  angle_deg :%d\n",area.area_id, steering_state, angle_deg);
 	}
+}
 }
 
 

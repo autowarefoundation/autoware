@@ -19,7 +19,7 @@ public:
   std::vector<geometry_msgs::Point> points;
   jsk_recognition_msgs::BoundingBox bbox;
 
-  std::vector<autoware_msgs::waypoint> insideWaypoints;
+  std::vector<autoware_msgs::lane> insideLanes;
   std::vector<geometry_msgs::Point> insideWaypoint_points;
 
   CrossRoadArea(void)
@@ -27,7 +27,7 @@ public:
     id = 0;
     area_id = 0;
     points.clear();
-    insideWaypoints.clear();
+    insideLanes.clear();
     insideWaypoint_points.clear();
   }
 

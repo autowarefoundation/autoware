@@ -11,23 +11,22 @@
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
-#include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
 
 namespace decision_maker
 {
-	double DecisionMakerNode::calcIntersectWayAngle(const CrossRoadArea &area)
+	double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &laneinArea)
 	{
 		double diff = 0.0;
-		if(area.insideWaypoints.empty())
+		if(laneinArea.waypoints.empty())
 		{
 			ROS_INFO("Not inside CrossRoad");
 		}
 		else
 		{
-			const geometry_msgs::Pose InPose = area.insideWaypoints.front().pose.pose;
-			const geometry_msgs::Pose OutPose = area.insideWaypoints.back().pose.pose;
+			const geometry_msgs::Pose InPose = laneinArea.waypoints.front().pose.pose;
+			const geometry_msgs::Pose OutPose = laneinArea.waypoints.back().pose.pose;
 			double r, p, y, _y;
 
 			tf::Quaternion quat_end(OutPose.orientation.x, OutPose.orientation.y, OutPose.orientation.z,
@@ -35,11 +34,13 @@ namespace decision_maker
 			tf::Quaternion quat_in(InPose.orientation.x, InPose.orientation.y, InPose.orientation.z, InPose.orientation.w);
 			tf::Matrix3x3(quat_in).getRPY(r, p, y);
 			tf::Matrix3x3(quat_end).getRPY(r, p, _y);
-			diff = y - _y;
+			
+			// convert to [-pi : pi]
+			diff = std::fmod(y - _y, 2 * M_PI);
 			diff = diff > M_PI? 
 				diff - 2 * M_PI : diff < -M_PI?
-				2 * M_PI - diff : diff;
-			diff = (int)std::floor(diff *180/M_PI);
+				2 * M_PI + diff : diff;
+			diff = diff *180/M_PI;
 
 #ifdef DEBUG_PRINT
 			std::cout << "Yaw:" << _y << "-" << y << ":" << _y - y << std::endl;
@@ -62,8 +63,8 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
 		double _yaw)
 {
 	static int _init_count = 0;
-	static euclidean_space::point *a = new euclidean_space::point();
-	static euclidean_space::point *b = new euclidean_space::point();
+	static amathutils::point *a = new amathutils::point();
+	static amathutils::point *b = new amathutils::point();
 
 	static std::vector<double> distances;
 	static int distances_count = 0;
@@ -77,7 +78,7 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
 	b->y = _y;
 	b->z = _z;
 
-	distances.push_back(euclidean_space::EuclideanSpace::find_distance(a, b));
+	distances.push_back(amathutils::find_distance(a, b));
 	if (++distances_count > param_convergence_count_)
 	{
 		distances.erase(distances.begin());

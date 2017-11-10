@@ -18,12 +18,11 @@ find_package(catkin REQUIRED COMPONENTS
   state
   vector_map_msgs
   jsk_recognition_msgs
-  euc
+  amathutils
   dynamic_reconfigure
 )
 
-generate_dynamic_reconfigure_options(cfg/debug_decision_dynconfig.cfg)
-
+#generate_dynamic_reconfigure_options(cfg/debug_decision_dynconfig.cfg)
 
 
 add_message_files(
@@ -33,8 +32,8 @@ add_message_files(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES state_machine
-  CATKIN_DEPENDS roscpp  tf std_msgs geometry_msgs autoware_msgs state  vector_map_msgs jsk_recognition_msgs euc
+  #LIBRARIES 
+  CATKIN_DEPENDS roscpp  tf std_msgs geometry_msgs autoware_msgs state  vector_map_msgs jsk_recognition_msgs amathutils 
   DEPENDS system_lib
 )
 include_directories(
