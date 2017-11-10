@@ -42,18 +42,6 @@ namespace decision_maker
 				2 * M_PI + diff : diff;
 			diff = diff *180/M_PI;
 
-#ifdef DEBUG_PRINT
-			std::cout << "Yaw:" << _y << "-" << y << ":" << _y - y << std::endl;
-			std::cout << "In:" << InPose.position.x << "," << InPose.position.y << std::endl;
-			std::cout << "End:" << OutPose.position.x << "," << OutPose.position.y << std::endl;
-			if (diff <= ANGLE_LEFT)
-				std::cout << "LEFT :" << diff << std::endl;
-			else if (diff >= ANGLE_RIGHT)
-				std::cout << "RIGHT:" << diff << std::endl;
-			else
-				std::cout << "Straight:" << diff << std::endl;
-#endif
-		
 		}
 
 		return diff;

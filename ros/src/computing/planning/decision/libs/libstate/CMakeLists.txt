@@ -21,7 +21,6 @@ include_directories(
 
 set(TARGET ${PROJECT_NAME})
 set(TARGET_SRC 
-	# 	src/state.cpp
 	src/state_context.cpp
 	)
 

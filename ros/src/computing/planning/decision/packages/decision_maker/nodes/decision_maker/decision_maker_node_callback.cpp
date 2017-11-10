@@ -5,6 +5,7 @@
 #include <jsk_rviz_plugins/OverlayText.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
@@ -16,13 +17,6 @@
 
 namespace decision_maker
 {
-// TODO for Decision_maker
-// - lane_change
-// - fix a light_color_changed
-// - disable/clear_subclassa
-// - object detection
-// - changed subscribing waypoint topic to base_waypoints from final_waypoints
-//
 
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
@@ -34,9 +28,6 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
 	{
 		ROS_INFO("Localization was convergence");
 	}
-
-	// displacement_from_path_ =  getDisplacementFromPath(_pose.pose.position.x, _pose.pose.position.y,
-	// _pose.pose.position.z);
 }
 
 bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
@@ -53,7 +44,6 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 		int count = 0;
 		for (auto &lane : current_controlled_lane_array_.lanes)
 		{
-			fprintf(stderr,"%d \n", count++);
 			autoware_msgs::lane temp_lane = lane;
 				for(size_t wpi = 1; wpi < lane.waypoints.size(); wpi++){
 
@@ -85,10 +75,15 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 
 		}
 		Pubs["lane_waypoints_array"].publish(current_controlled_lane_array_);
-	}else{
-		fprintf(stderr,"not waypoint control\n");
 	}
 	return _ret;
+}
+
+void DecisionMakerNode::callbackFromSimPose(const geometry_msgs::PoseStamped &msg)
+{
+	ROS_INFO("Received system is going to simulation mode");
+	handleStateCmd(state_machine::DRIVE_STATE);
+	Subs["sim_pose"].shutdown();
 }
 
 void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
@@ -214,7 +209,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 				}
 			}
 		}
-		fprintf(stderr,"%d: %d  angle_deg :%d\n",area.area_id, steering_state, angle_deg);
+		ROS_INFO("%d: %d  angle_deg :%d\n",area.area_id, steering_state, angle_deg);
 	}
 }
 }
@@ -248,6 +243,17 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
 	Pubs["lane_waypoints_array"].publish(current_controlled_lane_array_);
 }
 
+state_machine::StateFlags getStateFlags(uint8_t msg_state)
+{
+	if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT)
+		return state_machine::DRIVE_STR_LEFT_STATE;
+	else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT)
+		return state_machine::DRIVE_STR_RIGHT_STATE;
+	else
+		return state_machine::DRIVE_STR_STRAIGHT_STATE;
+}
+
+
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
 	if (!hasvMap())
@@ -262,15 +268,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 	}
 	// steering
 	current_finalwaypoints_ = msg;
-
-	uint8_t steering_state = current_finalwaypoints_.waypoints.at(param_target_waypoint_).wpstate.steering_state;
-
-	if (steering_state == autoware_msgs::WaypointState::STR_LEFT)
-		ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-	else if (steering_state == autoware_msgs::WaypointState::STR_RIGHT)
-		ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-	else
-		ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
+	ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(param_target_waypoint_).wpstate.steering_state));
 
 #if 0
 	// velocity
@@ -288,6 +286,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 	else
 		ctx->setCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE);
 #endif
+
 	// for publish plan of velocity
 	publishToVelocityArray();
 

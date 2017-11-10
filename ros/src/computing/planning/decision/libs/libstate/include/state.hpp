@@ -41,10 +41,11 @@ class EmergencyState;
 class BaseState
 {
 protected:
-public:
   BaseState()
   {
   }
+public:
+  virtual void update(void) = 0;
   virtual void showStateName(void) = 0;
   virtual unsigned long long getStateTransMask() = 0;
   virtual unsigned long long getStateNum() = 0;
@@ -69,6 +70,12 @@ public:
     StateTransMask = (unsigned long long)STATE_END - 1;
     StateKind = UNKNOWN_STATE;
   }
+
+public:
+  virtual void update(void){
+	std::cout << "update:"<< StateNum << std::endl;
+  }
+
   void showStateName(void)
   {
     std::cout << StateName << "-";
@@ -98,67 +105,6 @@ public:
   {
     return StateNum;
   }
-};
-
-// StartState
-class StartState : public State<StartState>
-{
-private:
-  friend class State<StartState>;
-  StartState(void)
-  {
-    StateName = "Start";
-    StateNum = START_STATE;
-    StateTransMask = (unsigned long long)STATE_END - 1;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-
-// InitialState
-class InitialState : public State<InitialState>
-{
-private:
-  friend class State<InitialState>;
-  InitialState(void)
-  {
-    StateName = "Initial";
-    StateNum = StateTransMask = INITIAL_STATE;
-    StateTransMask |= START_STATE | EMERGENCY_STATE | MISSION_COMPLETE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-class LocateVehicleState : public State<LocateVehicleState>
-{
-private:
-  friend class State<LocateVehicleState>;
-  LocateVehicleState(void)
-  {
-    StateName = "Locate Vehicle";
-    StateNum = StateTransMask = INITIAL_LOCATEVEHICLE_STATE;
-    StateTransMask |= INITIAL_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-// MissionCompleteState
-class MissionCompleteState : public State<MissionCompleteState>
-{
-private:
-  friend class State<MissionCompleteState>;
-  MissionCompleteState(void)
-  {
-    StateName = "MissionComplete";
-    StateNum = MISSION_COMPLETE_STATE;
-    StateTransMask = DRIVE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
 };
 }
 

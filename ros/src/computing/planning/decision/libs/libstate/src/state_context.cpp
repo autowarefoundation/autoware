@@ -190,9 +190,7 @@ bool StateContext::disableCurrentState(unsigned long long _state_num)
 bool StateContext::isCurrentState(unsigned long long _state_num)
 {
   BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-  fprintf(stderr,"(*state_ptr)->getStateNum():%d:state_num=%d \n",(*state_ptr)?(*state_ptr)->getStateNum():false, _state_num);
   return (*state_ptr) ? (*state_ptr)->getStateNum() & _state_num ? true : false : false;
-  // return current_state_.MainState?current_state_.MainState->getStateNum() == _state_num?true:false:false;
 }
 
 bool StateContext::isState(BaseState *base, unsigned long long _state_num)

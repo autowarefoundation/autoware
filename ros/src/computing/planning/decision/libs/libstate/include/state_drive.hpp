@@ -12,6 +12,7 @@
 
 namespace state_machine
 {
+
 // DriveState
 class DriveState : public State<DriveState>
 {
@@ -130,8 +131,10 @@ private:
     StateTransMask = DRIVE_STATE;
     StateKind = STR_STATE;
   }
-
 public:
+  void update(void){
+
+  }
 };
 class DriveStrStraightState : public State<DriveStrStraightState>
 {

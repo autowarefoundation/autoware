@@ -8,7 +8,10 @@
 #include <mutex>
 #include <unordered_map>
 #include <utility>
+
+
 #include "state.hpp"
+#include "state_main.hpp"
 #include "state_drive.hpp"
 #include "state_emg.hpp"
 
@@ -17,6 +20,7 @@ namespace state_machine
 class StateContext
 {
 private:
+
   class StateHolder
   {
   public:
@@ -98,6 +102,8 @@ public:
   {
     thread_loop = false;
   }
+
+  void update(void);
   void stateDecider(void);
 
   bool isState(BaseState *base, unsigned long long _state_num);

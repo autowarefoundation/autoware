@@ -38,6 +38,7 @@ void DecisionMakerNode::initStateMsgs(void)
 void DecisionMakerNode::initROS(int argc, char **argv)
 {
   // status subscriber
+  Subs["sim_pose"] = nh_.subscribe("sim_pose", 20, &DecisionMakerNode::callbackFromSimPose, this);
   Subs["current_pose"] = nh_.subscribe("current_pose", 20, &DecisionMakerNode::callbackFromCurrentPose, this);
   Subs["current_velocity"] =
       nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);

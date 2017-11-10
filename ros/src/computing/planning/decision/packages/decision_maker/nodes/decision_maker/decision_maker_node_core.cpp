@@ -51,11 +51,12 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
 void DecisionMakerNode::update(void)
 {
   update_msgs();
+  if(ctx) ctx->update();
 }
 
 void DecisionMakerNode::run(void)
 {
-  ros::Rate loop_rate(0.3);
+  ros::Rate loop_rate(6);
 
   // for subscribe callback function
   ros::AsyncSpinner spinner(1);
