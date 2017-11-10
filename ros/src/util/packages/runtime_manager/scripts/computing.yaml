@@ -9,15 +9,17 @@ subs :
       subs :
       - name : fix2tfpose
         desc : fix2tfpose desc sample
-        cmd  : rosrun gnss_localizer fix2tfpose
+        cmd  : roslaunch gnss_localizer fix2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
       - name : nmea2tfpose
         desc : nmea2tfpose desc sample
-        #cmd  : rosrun gnss_localizer nmea2tfpose
         cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
+
     - name : ndt_localizer
       desc : ndt_localizer desc sample
       subs :
@@ -630,7 +632,7 @@ subs :
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
       param: planner_selector
-         
+
 
 
 buttons:
@@ -1143,6 +1145,18 @@ params :
       label   : 'use_gpu'
       kind    : checkbox
       v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : gnss
+    vars  :
+    - name    : plane
+      label   : 'Plane number: '
+      kind    : menu
+      choices : [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+      choices_type : str
+      v       : 7
       cmd_param :
         dash        : ''
         delim       : ':='
