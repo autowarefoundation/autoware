@@ -1,5 +1,5 @@
-#ifndef __EUCLIDEAN_SPACE_HPP
-#define __EUCLIDEAN_SPACE_HPP
+#ifndef __AMATHUTILS_HPP
+#define __AMATHUTILS_HPP
 
 #include <cmath>
 #include <iostream>
@@ -35,6 +35,22 @@ inline double mps2kmph(double _mpsval)
   return (_mpsval * 0.36 );// mps * 60secs * 60minutes / 1000m
 }
 
-} 
+#define G_MPSS 9.80665 // m/s^2
 
+
+inline double getGravityAcceleration(double acceleration_mpss)
+{
+	return acceleration_mpss /  G_MPSS;
+}
+
+inline double getAcceleration(double v0, double v, double x)
+{
+	return  (v * v - v0 * v0) / 2 / x;
+}
+
+inline double getTimefromAcceleration(double v0, double v, double a)
+{
+	return  (v - v0) / a;
+} 
+}
 #endif

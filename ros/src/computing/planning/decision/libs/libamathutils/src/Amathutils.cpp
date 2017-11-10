@@ -6,6 +6,10 @@ namespace amathutils
   {
     return std::hypot(std::hypot(_a->x - _b->x, _a->y - _b->y), _a->z - _b->z);
   }
+  double find_distance(point &_a, point &_b)
+  {
+    return std::hypot(std::hypot(_a.x - _b.x, _a.y - _b.y), _a.z - _b.z);
+  }
 
   double find_angle(point *_a, point *_b)
   {

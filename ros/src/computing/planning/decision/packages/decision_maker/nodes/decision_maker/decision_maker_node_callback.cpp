@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cmath>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_rviz_plugins/OverlayText.h>
@@ -44,6 +45,49 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 	ctx->setEnableForceSetState(true);
 	_ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
 	ctx->setEnableForceSetState(false);
+
+
+	if(ctx->isCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE) ||
+		ctx->isCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE)){
+		
+		int count = 0;
+		for (auto &lane : current_controlled_lane_array_.lanes)
+		{
+			fprintf(stderr,"%d \n", count++);
+			autoware_msgs::lane temp_lane = lane;
+				for(size_t wpi = 1; wpi < lane.waypoints.size(); wpi++){
+
+					double v0 =  temp_lane.waypoints.at(wpi-1).twist.twist.linear.x;
+					double v =  temp_lane.waypoints.at(wpi).twist.twist.linear.x;
+
+					amathutils::point p0(
+							temp_lane.waypoints.at(wpi).pose.pose.position.x,
+							temp_lane.waypoints.at(wpi).pose.pose.position.y,
+							temp_lane.waypoints.at(wpi).pose.pose.position.z);
+					amathutils::point p1(
+							temp_lane.waypoints.at(wpi-1).pose.pose.position.x,
+							temp_lane.waypoints.at(wpi-1).pose.pose.position.y,
+							temp_lane.waypoints.at(wpi-1).pose.pose.position.z);
+
+
+					double distance = amathutils::find_distance(&p0,&p1);
+					double _weight = distance * 0.05; 
+					if(ctx->isCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE)){
+						_weight *= 1;
+					}
+					else if(ctx->isCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE)){
+						_weight *= -1;
+					}
+					lane.waypoints.at(wpi).twist.twist.linear.x =  
+						lane.waypoints.at(wpi).twist.twist.linear.x + 
+						lane.waypoints.at(wpi).twist.twist.linear.x * _weight;
+				}
+
+		}
+		Pubs["lane_waypoints_array"].publish(current_controlled_lane_array_);
+	}else{
+		fprintf(stderr,"not waypoint control\n");
+	}
 	return _ret;
 }
 
@@ -228,6 +272,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 	else
 		ctx->setCurrentState(state_machine::DRIVE_STR_STRAIGHT_STATE);
 
+#if 0
 	// velocity
 	double _temp_sum = 0;
 	for (int i = 0; i < VEL_AVERAGE_COUNT; i++)
@@ -242,7 +287,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 		ctx->setCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE);
 	else
 		ctx->setCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE);
-
+#endif
 	// for publish plan of velocity
 	publishToVelocityArray();
 
