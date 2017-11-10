@@ -117,7 +117,6 @@ private:
     StateTransMask = DRIVE_STATE;
     StateKind = STR_STATE;
   }
-
 public:
 };
 class DriveStrRightState : public State<DriveStrRightState>
@@ -132,9 +131,6 @@ private:
     StateKind = STR_STATE;
   }
 public:
-  void update(void){
-
-  }
 };
 class DriveStrStraightState : public State<DriveStrStraightState>
 {

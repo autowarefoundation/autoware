@@ -23,12 +23,17 @@
 
 namespace state_machine
 {
-/**
- * @fn
- *
- * @brief
- * @return
- */
+void StateContext::update(void)
+{
+	for(auto &&p : HolderList){
+		if(*p){
+			(*p)->update();
+		}
+	}
+
+}
+
+
 void StateContext::showCurrentStateName(void)
 {
   for (auto &&p : HolderList)

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
+#include <functional>
 #include <state_flags.hpp>
 
 namespace state_machine
@@ -47,10 +47,11 @@ protected:
 public:
   virtual void update(void) = 0;
   virtual void showStateName(void) = 0;
-  virtual unsigned long long getStateTransMask() = 0;
-  virtual unsigned long long getStateNum() = 0;
-  virtual std::string getStateName() = 0;
-  virtual unsigned char getStateKind() = 0;
+  virtual unsigned long long getStateTransMask(void) = 0;
+  virtual unsigned long long getStateNum(void) = 0;
+  virtual std::string getStateName(void) = 0;
+  virtual unsigned char getStateKind(void) = 0;
+  virtual void setCallbackFunc(std::function<void(void)> _f)=0;
 };
 
 // Interface
@@ -63,7 +64,8 @@ protected:
   unsigned long long StateTransMask;
   unsigned char StateKind;
 
-public:
+  std::function<void(void)> StateCallbackFunc;
+  
   State()
   {
     StateNum = 0;
@@ -74,6 +76,12 @@ public:
 public:
   virtual void update(void){
 	std::cout << "update:"<< StateNum << std::endl;
+	if(StateCallbackFunc)
+		StateCallbackFunc();
+  }
+
+  virtual void setCallbackFunc(std::function<void(void)> _f){
+	StateCallbackFunc = _f;
   }
 
   void showStateName(void)

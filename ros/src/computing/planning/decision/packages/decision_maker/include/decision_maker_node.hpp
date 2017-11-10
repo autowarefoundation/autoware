@@ -157,6 +157,8 @@ private:
   void setWaypointState(autoware_msgs::LaneArray &lane_array);
 
 
+  void callbackStateSTR(int status);
+  void setupStateCallback(void);
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);

@@ -261,14 +261,18 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 		std::cerr << "Not found vmap subscribe" << std::endl;
 		return;
 	}
+	
 	if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
 	{
 		std::cerr << "State is not DRIVE_STATE[" << ctx->getCurrentStateName() << "]" << std::endl;
 		return;
 	}
-	// steering
+	//cached
 	current_finalwaypoints_ = msg;
-	ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(param_target_waypoint_).wpstate.steering_state));
+	
+	// steering
+	if(current_finalwaypoints_.waypoints.size() > param_target_waypoint_)
+		ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(param_target_waypoint_).wpstate.steering_state));
 
 #if 0
 	// velocity
