@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     std::vector<std::string> image_raw_topics;
     FILE *fp;
 
-    if(!(fp = popen("rostopic list | grep image_raw", "r"))) {
+    if(!(fp = popen("rostopic list", "r"))) {
       fprintf(stderr, "cannot get image_raw topic list\n");
       exit(EXIT_FAILURE);
     }
@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     char topic[256];
     while((fgets(topic, 256, fp)) != NULL)
     {
-     if ((strstr(topic, "image_raw")) != NULL)
+     //if ((strstr(topic, "image_raw")) != NULL)
      {
        strtok(topic, "\n\0");  // delete line feed code ('\n')
        image_raw_topics.push_back(std::string(topic));
