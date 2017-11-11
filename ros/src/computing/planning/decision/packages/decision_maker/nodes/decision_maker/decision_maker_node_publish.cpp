@@ -13,6 +13,7 @@
 #include <decision_maker_node.hpp>
 
 #include <autoware_msgs/lane.h>
+#include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -115,6 +116,13 @@ void DecisionMakerNode::update_msgs(void)
     state_string_msg.data = CurrentStateName;
     state_text_msg.text = createStateMessageText();
 
+    autoware_msgs::state state_msg;
+    state_msg.main_state = ctx->getCurrentStateName(state_machine::StateKinds::MAIN_STATE);
+    state_msg.acc_state = ctx->getCurrentStateName(state_machine::StateKinds::ACC_STATE);
+    state_msg.str_state = ctx->getCurrentStateName(state_machine::StateKinds::STR_STATE);
+    state_msg.behavior_state = ctx->getCurrentStateName(state_machine::StateKinds::BEHAVIOR_STATE);
+    
+    Pubs["states"].publish(state_msg);
     Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);
   }

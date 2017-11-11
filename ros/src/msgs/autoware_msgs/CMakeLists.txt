@@ -89,6 +89,7 @@ add_message_files(
   traffic_light.msg
   state_cmd.msg
   WaypointState.msg
+  state.msg
 
 
 ## Sync

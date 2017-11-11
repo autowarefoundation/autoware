@@ -46,6 +46,7 @@
 
 // User defined includes
 #include "autoware_msgs/LaneArray.h"
+#include "autoware_msgs/state.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/ConfigLaneSelect.h"
 #include "hermite_curve.h"
@@ -85,7 +86,7 @@ private:
   ros::Publisher vis_pub1_;
 
   // subscriber
-  ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_;
+  ros::Subscriber sub1_, sub2_, sub3_, sub4_, sub5_, sub6_;
 
   // variables
   int32_t current_lane_idx_;  // the index of the lane we are driving
@@ -109,6 +110,7 @@ private:
   void callbackFromPoseStamped(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromState(const std_msgs::StringConstPtr &msg);
+  void callbackFromStates(const autoware_msgs::stateConstPtr &msg);
   void callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg);
 
   // initializer

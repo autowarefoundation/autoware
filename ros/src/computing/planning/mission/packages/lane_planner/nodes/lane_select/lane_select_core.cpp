@@ -67,6 +67,7 @@ void LaneSelectNode::initForROS()
   sub3_ = nh_.subscribe("current_velocity", 1, &LaneSelectNode::callbackFromTwistStamped, this);
   sub4_ = nh_.subscribe("state", 1, &LaneSelectNode::callbackFromState, this);
   sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
+  sub6_ = nh_.subscribe("/decisionmaker/states", 1, &LaneSelectNode::callbackFromStates, this);
 
   
   bool enablePlannerDynamicSwitch;
@@ -667,6 +668,24 @@ void LaneSelectNode::callbackFromState(const std_msgs::StringConstPtr &msg)
   else
     processing();
 }
+void LaneSelectNode::callbackFromStates(const autoware_msgs::stateConstPtr &msg)
+{
+  is_current_state_subscribed_ = true;
+  
+  if(msg->behavior_state == "LaneChangeRight" || 
+		  msg->behavior_state == "LaneChangeLeft") 
+  {
+	  current_state_ = std::string("LANE_CHANGE");;
+  }else{
+	  current_state_ = msg->main_state;
+  }
+
+  if(current_lane_idx_ == -1)
+    initForLaneSelect();
+  else
+    processing();
+}
+
 
 void LaneSelectNode::callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg)
 {

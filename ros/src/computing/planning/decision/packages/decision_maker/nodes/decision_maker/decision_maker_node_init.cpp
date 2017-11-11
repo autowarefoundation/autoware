@@ -17,6 +17,7 @@
 
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/lamp_cmd.h>
+#include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -89,6 +90,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   // pub
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
+  Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
 
 
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
@@ -115,7 +117,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // initial publishing state message
   update_msgs();
-
 
   // setup a callback for state update();
   setupStateCallback();
