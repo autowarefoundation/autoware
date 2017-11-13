@@ -19,7 +19,6 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
-
     - name : ndt_localizer
       desc : ndt_localizer desc sample
       subs :
@@ -1154,9 +1153,9 @@ params :
     - name    : plane
       label   : 'Plane number: '
       kind    : menu
-      choices : [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 ]
+      choices : [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19' ]
       choices_type : str
-      v       : 7
+      v       : '7'
       cmd_param :
         dash        : ''
         delim       : ':='
