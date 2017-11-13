@@ -493,7 +493,7 @@ subs :
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : dp_planner (OpenPlanner)
+    - name : dp_planner (OpenPlanner) (old ver)
       desc : Local Planner for OpenPlanner
       subs :
       - name : dp_planner
@@ -504,6 +504,14 @@ subs :
         desc : Feedforward PID waypoint follower
         cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
         param: ff_waypoint_follower
+    - name : OpenPlanner - Local planning
+      desc : Local Planner for OpenPlanner
+      subs :
+      - name : op_trajectory_generator
+        desc : generating candidate rollout trajectory from global path
+        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
+        param: op_trajectory_generator
+
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
@@ -2641,14 +2649,60 @@ params :
       - Robot
       descs :
       - Simulation Mode
-      - ZMP Vehicle
+      - Vehicle
       - Autoware Other Nodes
       - Smaller Robot
       v   : 0
       cmd_param:
         dash     : ''
         delim    : ':='
-
+  - name  : op_trajectory_generator
+    vars  :
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingTipMargin
+      desc : Car Tip Initial Margin
+      label: Tip Margin
+      min  : 2.5
+      max  : 10.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingOutMargin
+      desc : Roll In Margin
+      label: Roll In Margin
+      min  : 5.0
+      max  : 30.0
+      v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutDensity
+      desc : Roll outs density
+      label: Horizontal Density
+      min  : 0.1
+      max  : 2.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutsNumber
+      desc : Number of roll outs
+      label: Rollouts Number
+      min  : 0
+      max  : 20
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
   - name  : waypoint_saver
     vars  :
     - name      : save_filename

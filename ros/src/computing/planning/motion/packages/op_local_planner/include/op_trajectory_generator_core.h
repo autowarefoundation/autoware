@@ -103,7 +103,7 @@ protected: // Callback function for subscriber.
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 
 protected: //Helper Functions
-  void UpdatePlanningParams();
+  void UpdatePlanningParams(ros::NodeHandle& _nh);
 
 public:
 	TrajectoryGen();

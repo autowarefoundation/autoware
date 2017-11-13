@@ -40,7 +40,8 @@ TrajectoryGen::TrajectoryGen()
 	bVehicleStatus = false;
 	bWayGlobalPath = false;
 
-	UpdatePlanningParams();
+	ros::NodeHandle _nh;
+	UpdatePlanningParams(_nh);
 
 	tf::StampedTransform transform;
 	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
@@ -56,7 +57,7 @@ TrajectoryGen::TrajectoryGen()
 	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&TrajectoryGen::callbackGetCurrentPose, 		this);
 
 	int bVelSource = 1;
-	nh.getParam("/velocitySource", bVelSource);
+	_nh.getParam("/op_trajectory_generator/velocitySource", bVelSource);
 	if(bVelSource == 0)
 		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&TrajectoryGen::callbackGetRobotOdom, 	this);
 	else if(bVelSource == 1)
@@ -72,49 +73,49 @@ TrajectoryGen::~TrajectoryGen()
 }
 
 
-void TrajectoryGen::UpdatePlanningParams()
+void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 {
-	nh.getParam("enableSwerving", m_PlanningParams.enableSwerving);
+	_nh.getParam("/op_trajectory_generator/enableSwerving", m_PlanningParams.enableSwerving);
 	if(m_PlanningParams.enableSwerving)
 		m_PlanningParams.enableFollowing = true;
 	else
-		nh.getParam("enableFollowing", m_PlanningParams.enableFollowing);
+		_nh.getParam("/op_trajectory_generator/enableFollowing", m_PlanningParams.enableFollowing);
 
-	nh.getParam("enableHeadingSmoothing", m_PlanningParams.enableHeadingSmoothing);
-	nh.getParam("enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
-	nh.getParam("enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
+	_nh.getParam("/op_trajectory_generator/enableHeadingSmoothing", m_PlanningParams.enableHeadingSmoothing);
+	_nh.getParam("/op_trajectory_generator/enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
+	_nh.getParam("/op_trajectory_generator/enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
 
-	nh.getParam("maxVelocity", m_PlanningParams.maxSpeed);
-	nh.getParam("minVelocity", m_PlanningParams.minSpeed);
-	nh.getParam("maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
-	nh.getParam("samplingTipMargin", m_PlanningParams.carTipMargin);
-	nh.getParam("samplingOutMargin", m_PlanningParams.rollInMargin);
-	nh.getParam("samplingSpeedFactor", m_PlanningParams.rollInSpeedFactor);
+	_nh.getParam("/op_trajectory_generator/maxVelocity", m_PlanningParams.maxSpeed);
+	_nh.getParam("/op_trajectory_generator/minVelocity", m_PlanningParams.minSpeed);
+	_nh.getParam("/op_trajectory_generator/maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
+	_nh.getParam("/op_trajectory_generator/samplingTipMargin", m_PlanningParams.carTipMargin);
+	_nh.getParam("/op_trajectory_generator/samplingOutMargin", m_PlanningParams.rollInMargin);
+	_nh.getParam("/op_trajectory_generator/samplingSpeedFactor", m_PlanningParams.rollInSpeedFactor);
 
-	nh.getParam("pathDensity", m_PlanningParams.pathDensity);
-	nh.getParam("rollOutDensity", m_PlanningParams.rollOutDensity);
+	_nh.getParam("/op_trajectory_generator/pathDensity", m_PlanningParams.pathDensity);
+	_nh.getParam("/op_trajectory_generator/rollOutDensity", m_PlanningParams.rollOutDensity);
 	if(m_PlanningParams.enableSwerving)
-		nh.getParam("rollOutsNumber", m_PlanningParams.rollOutNumber);
+		_nh.getParam("/op_trajectory_generator/rollOutsNumber", m_PlanningParams.rollOutNumber);
 	else
 		m_PlanningParams.rollOutNumber = 0;
 
-	nh.getParam("horizonDistance", m_PlanningParams.horizonDistance);
-	nh.getParam("minFollowingDistance", m_PlanningParams.minFollowingDistance);
-	nh.getParam("minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
-	nh.getParam("maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
-	nh.getParam("speedProfileFactor", m_PlanningParams.speedProfileFactor);
+	_nh.getParam("/op_trajectory_generator/horizonDistance", m_PlanningParams.horizonDistance);
+	_nh.getParam("/op_trajectory_generator/minFollowingDistance", m_PlanningParams.minFollowingDistance);
+	_nh.getParam("/op_trajectory_generator/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
+	_nh.getParam("/op_trajectory_generator/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
+	_nh.getParam("/op_trajectory_generator/speedProfileFactor", m_PlanningParams.speedProfileFactor);
 
-	nh.getParam("horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
-	nh.getParam("verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
+	_nh.getParam("/op_trajectory_generator/horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
+	_nh.getParam("/op_trajectory_generator/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
-	nh.getParam("enableLaneChange", m_PlanningParams.enableLaneChange);
-	nh.getParam("enabTrajectoryVelocities", m_PlanningParams.enabTrajectoryVelocities);
+	_nh.getParam("/op_trajectory_generator/enableLaneChange", m_PlanningParams.enableLaneChange);
+	_nh.getParam("/op_trajectory_generator/enabTrajectoryVelocities", m_PlanningParams.enabTrajectoryVelocities);
 
-	nh.getParam("width", m_CarInfo.width);
-	nh.getParam("length", m_CarInfo.length);
-	nh.getParam("wheelBaseLength", m_CarInfo.wheel_base);
-	nh.getParam("turningRadius", m_CarInfo.turning_radius);
-	nh.getParam("maxSteerAngle", m_CarInfo.max_steer_angle);
+	_nh.getParam("/op_trajectory_generator/width", m_CarInfo.width);
+	_nh.getParam("/op_trajectory_generator/length", m_CarInfo.length);
+	_nh.getParam("/op_trajectory_generator/wheelBaseLength", m_CarInfo.wheel_base);
+	_nh.getParam("/op_trajectory_generator/turningRadius", m_CarInfo.turning_radius);
+	_nh.getParam("/op_trajectory_generator/maxSteerAngle", m_CarInfo.max_steer_angle);
 	m_CarInfo.max_speed_forward = m_PlanningParams.maxSpeed;
 	m_CarInfo.min_speed_forward = m_PlanningParams.minSpeed;
 
