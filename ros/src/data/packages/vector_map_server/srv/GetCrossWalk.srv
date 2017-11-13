@@ -1,4 +1,4 @@
 geometry_msgs/PoseStamped pose
-waypoint_follower_msgs/lane waypoints
+autoware_msgs/lane waypoints
 ---
 vector_map_msgs/CrossWalkArray objects

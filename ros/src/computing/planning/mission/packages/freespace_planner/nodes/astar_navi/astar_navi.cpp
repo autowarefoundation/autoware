@@ -1,25 +1,25 @@
 #include "astar_search.h"
 #include "search_info_ros.h"
-#include "waypoint_follower_msgs/LaneArray.h"
+#include "autoware_msgs/LaneArray.h"
 
 namespace
 {
 
 void publishPathAsWaypoints(const ros::Publisher& pub, const nav_msgs::Path& path, const double waypoint_velocity_kmph)
 {
-  waypoint_follower_msgs::lane lane;
+  autoware_msgs::lane lane;
 
   lane.header = path.header;
   lane.increment = 0;
   for (const auto& pose : path.poses) {
-    waypoint_follower_msgs::waypoint wp;
+    autoware_msgs::waypoint wp;
     wp.pose = pose;
     wp.twist.twist.linear.x = waypoint_velocity_kmph / 3.6;
 
     lane.waypoints.push_back(wp);
   }
 
-  waypoint_follower_msgs::LaneArray lane_array;
+  autoware_msgs::LaneArray lane_array;
   lane_array.lanes.push_back(lane);
   pub.publish(lane_array);
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
   // ROS publishers
   ros::Publisher path_pub       = n.advertise<nav_msgs::Path>("astar_path", 1, true);
-  ros::Publisher waypoints_pub  = n.advertise<waypoint_follower_msgs::LaneArray>("lane_waypoints_array", 1, true);
+  ros::Publisher waypoints_pub  = n.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
   ros::Publisher debug_pose_pub = n.advertise<geometry_msgs::PoseArray>("debug_pose_array", 1, true);
 
   ros::Rate loop_rate(10);

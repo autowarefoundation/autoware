@@ -13,9 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  message_generation
-  runtime_manager
-  cv_tracker_msgs
+  autoware_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -28,7 +26,7 @@ catkin_package(
   LIBRARIES kf
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
-  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS autoware_msgs
 )
 
 ###########
@@ -50,5 +48,5 @@ target_link_libraries(kf
   ${OpenCV_LIBS}
 )
 
-add_dependencies(kf runtime_manager_generate_messages_cpp  cv_tracker_msgs_generate_messages_cpp)
+add_dependencies(kf ${catkin_EXPORTED_TARGETS})
 endif()

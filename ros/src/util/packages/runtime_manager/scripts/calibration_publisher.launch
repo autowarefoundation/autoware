@@ -2,7 +2,7 @@
   <arg name="file" default="" />
   <arg name="register_lidar2camera_tf" default="true"/>
   <arg name="publish_extrinsic_mat" default="true"/>
-  <arg name="publish_camera_info" default="false"/>
+  <arg name="publish_camera_info" default="true"/>
   <arg name="camera_id" default="/"/>
   <arg name="solo_camera" default="true"/>
 

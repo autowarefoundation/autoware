@@ -31,3 +31,18 @@ cmake-build-debug/
 # clang-format
 .clang-format
 
+# ROSBag files
+*.bag
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Autoware Resources
+*.pcd
+*.bag
+*.csv
+

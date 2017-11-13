@@ -29,37 +29,37 @@
 */
 
 #include <geometry_msgs/PoseStamped.h>
-#include <waypoint_follower_msgs/lane.h>
+#include "autoware_msgs/lane.h"
 #include <visualization_msgs/MarkerArray.h>
-#include <vector_map/vector_map.h>
+#include "vector_map/vector_map.h"
 
-#include <vector_map_server/GetDTLane.h>
-#include <vector_map_server/GetNode.h>
-#include <vector_map_server/GetLane.h>
-#include <vector_map_server/GetWayArea.h>
-#include <vector_map_server/GetRoadEdge.h>
-#include <vector_map_server/GetGutter.h>
-#include <vector_map_server/GetCurb.h>
-#include <vector_map_server/GetWhiteLine.h>
-#include <vector_map_server/GetStopLine.h>
-#include <vector_map_server/GetZebraZone.h>
-#include <vector_map_server/GetCrossWalk.h>
-#include <vector_map_server/GetRoadMark.h>
-#include <vector_map_server/GetRoadPole.h>
-#include <vector_map_server/GetRoadSign.h>
-#include <vector_map_server/GetSignal.h>
-#include <vector_map_server/GetStreetLight.h>
-#include <vector_map_server/GetUtilityPole.h>
-#include <vector_map_server/GetGuardRail.h>
-#include <vector_map_server/GetSideWalk.h>
-#include <vector_map_server/GetDriveOnPortion.h>
-#include <vector_map_server/GetCrossRoad.h>
-#include <vector_map_server/GetSideStrip.h>
-#include <vector_map_server/GetCurveMirror.h>
-#include <vector_map_server/GetWall.h>
-#include <vector_map_server/GetFence.h>
-#include <vector_map_server/GetRailCrossing.h>
-#include <vector_map_server/PositionState.h>
+#include "vector_map_server/GetDTLane.h"
+#include "vector_map_server/GetNode.h"
+#include "vector_map_server/GetLane.h"
+#include "vector_map_server/GetWayArea.h"
+#include "vector_map_server/GetRoadEdge.h"
+#include "vector_map_server/GetGutter.h"
+#include "vector_map_server/GetCurb.h"
+#include "vector_map_server/GetWhiteLine.h"
+#include "vector_map_server/GetStopLine.h"
+#include "vector_map_server/GetZebraZone.h"
+#include "vector_map_server/GetCrossWalk.h"
+#include "vector_map_server/GetRoadMark.h"
+#include "vector_map_server/GetRoadPole.h"
+#include "vector_map_server/GetRoadSign.h"
+#include "vector_map_server/GetSignal.h"
+#include "vector_map_server/GetStreetLight.h"
+#include "vector_map_server/GetUtilityPole.h"
+#include "vector_map_server/GetGuardRail.h"
+#include "vector_map_server/GetSideWalk.h"
+#include "vector_map_server/GetDriveOnPortion.h"
+#include "vector_map_server/GetCrossRoad.h"
+#include "vector_map_server/GetSideStrip.h"
+#include "vector_map_server/GetCurveMirror.h"
+#include "vector_map_server/GetWall.h"
+#include "vector_map_server/GetFence.h"
+#include "vector_map_server/GetRailCrossing.h"
+#include "vector_map_server/PositionState.h"
 
 using vector_map::VectorMap;
 using vector_map::Category;
@@ -345,7 +345,7 @@ std::vector<Lane> findNearLanes(const VectorMap& vmap, const std::vector<Lane>& 
   return near_lanes;
 }
 
-std::vector<Lane> createFineLanes(const VectorMap& vmap, const waypoint_follower_msgs::lane& waypoints, double radius,
+std::vector<Lane> createFineLanes(const VectorMap& vmap, const autoware_msgs::lane& waypoints, double radius,
                                   int loops)
 {
   std::vector<Lane> null_lanes;
@@ -532,7 +532,7 @@ private:
   ros::Publisher marker_array_pub_;
 
   std::vector<Lane> createTravelingRoute(const geometry_msgs::PoseStamped& pose,
-                                         const waypoint_follower_msgs::lane& waypoints)
+                                         const autoware_msgs::lane& waypoints)
   {
     std::vector<Lane> null_lanes;
 

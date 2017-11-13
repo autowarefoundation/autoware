@@ -30,7 +30,6 @@
 
 #include <string>
 #include <ros/ros.h>
-#include <cv_tracker_msgs/ImageObjects.h>
 
 extern int kf_main(int argc, char* argv[]);
 

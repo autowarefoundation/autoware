@@ -38,14 +38,14 @@
 #include "ros/ros.h"
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include "scan2image/ScanImage.h"
+#include "autoware_msgs/ScanImage.h"
 #include <sensor_msgs/CameraInfo.h>
 
 static char window_name[] = "SCAN_IMAGE_VIEWER";
 //for imageCallback
 static cv_bridge::CvImagePtr cv_image;
 static IplImage image;
-static scan2image::ScanImage scan_image;
+static autoware_msgs::ScanImage scan_image;
 static bool exist_image = false;
 static bool exist_scan = false;
 static cv::Mat colormap;
@@ -96,7 +96,7 @@ static void show()
     cvReleaseImage(&image_view);
 }
 
-static void scan_image_callback(const scan2image::ScanImage& scan_image_msg)
+static void scan_image_callback(const autoware_msgs::ScanImage& scan_image_msg)
 {
     scan_image = scan_image_msg;
     exist_scan = true;

@@ -41,7 +41,7 @@
 #include <tf/transform_datatypes.h>
 #include <unordered_map>
 
-#include "waypoint_follower_msgs/LaneArray.h"
+#include "autoware_msgs/LaneArray.h"
 
 namespace waypoint_maker
 {
@@ -96,19 +96,19 @@ private:
 
   // functions
 
-  void createLaneWaypoint(const std::string &file_path, waypoint_follower_msgs::lane *lane);
-  void createLaneArray(const std::vector<std::string> &paths, waypoint_follower_msgs::LaneArray *lane_array);
+  void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
+  void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
 
   FileFormat checkFileFormat(const char *filename);
   bool verifyFileConsistency(const char *filename);
-  void loadWaypointsForVer1(const char *filename, std::vector<waypoint_follower_msgs::waypoint> *wps);
-  void parseWaypointForVer1(const std::string &line, waypoint_follower_msgs::waypoint *wp);
-  void loadWaypointsForVer2(const char *filename, std::vector<waypoint_follower_msgs::waypoint> *wps);
-  void parseWaypointForVer2(const std::string &line, waypoint_follower_msgs::waypoint *wp);
-  void loadWaypoints(const char *filename, std::vector<waypoint_follower_msgs::waypoint> *wps);
+  void loadWaypointsForVer1(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
+  void parseWaypointForVer1(const std::string &line, autoware_msgs::waypoint *wp);
+  void loadWaypointsForVer2(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
+  void parseWaypointForVer2(const std::string &line, autoware_msgs::waypoint *wp);
+  void loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
   void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
-                            waypoint_follower_msgs::waypoint *wp);
-  void planningVelocity(std::vector<waypoint_follower_msgs::waypoint> *wps);
+                            autoware_msgs::waypoint *wp);
+  void planningVelocity(std::vector<autoware_msgs::waypoint> *wps);
   double decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps);
 
 };

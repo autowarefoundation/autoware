@@ -3,51 +3,6 @@ project(runtime_manager)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  std_msgs
-  geometry_msgs
-  message_generation
-)
-find_package(OpenCV REQUIRED)
-
-add_message_files(
-  FILES
-  ConfigRcnn.msg
-  ConfigSsd.msg
-  ConfigCarDpm.msg
-  ConfigPedestrianDpm.msg
-  ConfigNdt.msg
-  ConfigNdtMapping.msg
-  ConfigNdtMappingOutput.msg
-  ConfigICP.msg
-  ConfigVoxelGridFilter.msg
-  ConfigRingFilter.msg
-  ConfigDistanceFilter.msg
-  ConfigRandomFilter.msg
-  ConfigWaypointFollower.msg
-  ConfigTwistFilter.msg
-  ConfigVelocitySet.msg
-  ConfigLatticeVelocitySet.msg
-  ConfigCarKf.msg
-  ConfigPedestrianKf.msg
-  ConfigLaneRule.msg
-  ConfigLaneSelect.msg
-  ConfigLaneStop.msg
-  ConfigPoints2Polygon.msg
-  accel_cmd.msg
-  steer_cmd.msg
-  brake_cmd.msg
-  lamp_cmd.msg
-  indicator_cmd.msg
-  traffic_light.msg
-  ConfigCarFusion.msg
-  ConfigPedestrianFusion.msg
-  adjust_xy.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
 )
 
 catkin_package(

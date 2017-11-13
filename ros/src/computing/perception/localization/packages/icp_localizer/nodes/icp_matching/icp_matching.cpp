@@ -64,9 +64,9 @@
 #include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigICP.h>
+#include "autoware_msgs/ConfigICP.h"
 
-#include <icp_localizer/icp_stat.h>
+#include "autoware_msgs/icp_stat.h"
 
 #define PREDICT_POSE_THRESHOLD 0.5
 
@@ -159,7 +159,7 @@ static std_msgs::Float32 time_icp_matching;
 static int _queue_size = 1000;
 
 static ros::Publisher icp_stat_pub;
-static icp_localizer::icp_stat icp_stat_msg;
+static autoware_msgs::icp_stat icp_stat_msg;
 
 static double predict_pose_error = 0.0;
 
@@ -172,7 +172,7 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static std::ofstream ofs;
 static std::string filename;
 
-static void param_callback(const runtime_manager::ConfigICP::ConstPtr& input)
+static void param_callback(const autoware_msgs::ConfigICP::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {
@@ -755,7 +755,7 @@ int main(int argc, char** argv)
   estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
   time_icp_matching_pub = nh.advertise<std_msgs::Float32>("/time_icp_matching", 1000);
-  icp_stat_pub = nh.advertise<icp_localizer::icp_stat>("/icp_stat", 1000);
+  icp_stat_pub = nh.advertise<autoware_msgs::icp_stat>("/icp_stat", 1000);
 //  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
   // Subscribers

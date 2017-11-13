@@ -11,11 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   cv_bridge
-  message_generation
   sensor_msgs
   tf
   libvectormap
   runtime_manager
+  vector_map_server
+  geometry_msgs
+  waypoint_follower
+  cmake_modules
+  autoware_msgs
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
@@ -30,35 +34,26 @@ else()
   set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif()
 
-pkg_check_modules(Qt5Core REQUIRED Qt5Core)
-pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-## Generate added messages and services with any dependencies listed here
-add_message_files(FILES
-  ExtractedPosition.msg
-  Signals.msg
-  ValueSet.msg
-  ColorSet.msg
-  TunedResult.msg
-  )
-
-generate_messages(DEPENDENCIES
-  sensor_msgs
-  std_msgs
-  )
-
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
 )
 
 catkin_package(
   INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime libvectormap runtime_manager
+  CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -66,21 +61,27 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 ## Build ##
 ###########
+add_library(libcontext lib/Context.cpp)
+add_dependencies(libcontext
+  ${catkin_EXPORTED_TARGETS}
+)
+
+
 ### region_tlr ###
 add_executable(region_tlr
   nodes/region_tlr/region_tlr.cpp
   nodes/region_tlr/TrafficLightDetector.cpp
-  nodes/region_tlr/Context.cpp
   )
 
 target_link_libraries(region_tlr
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
+  libcontext
 )
 
 add_dependencies(region_tlr
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp)
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ### feat_proj ###
 include_directories(
@@ -97,13 +98,14 @@ target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
   ${libvectormap_LIBRARIES}
   ${OpenCV_LIBS}
+  vector_map
 )
 
 add_dependencies(feat_proj
-runtime_manager_generate_messages_cpp
-road_wizard_generate_messages_cpp
+  ${catkin_EXPORTED_TARGETS}
 )
 
+### tlr_tuner ###
 EXECUTE_PROCESS(
   COMMAND pkg-config --variable=host_bins Qt5Core
   OUTPUT_VARIABLE Qt5BIN
@@ -111,49 +113,135 @@ EXECUTE_PROCESS(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   include
   nodes/tlr_tuner/
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-add_custom_command(
-  OUTPUT ui_mainwindow.h
-  COMMAND
-  ${Qt5BIN}/uic
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/ui_mainwindow.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.ui"
-)
-add_custom_target(tlr_tuner_ui_mainwindow DEPENDS ui_mainwindow.h)
-
-add_custom_command(
-  OUTPUT mainwindow_moc.cpp
-  COMMAND
-  ${Qt5BIN}/moc
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow_moc.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.h"
-)
-add_custom_target(tlr_tuner_mainwindow_moc DEPENDS mainwindow_moc.cpp)
 
 add_executable(tlr_tuner
   nodes/tlr_tuner/tlr_tuner.cpp
   nodes/tlr_tuner/mainwindow.cpp
+  nodes/tlr_tuner/mainwindow.h
+  nodes/tlr_tuner/mainwindow.ui
   nodes/tlr_tuner/tunerBody.cpp
+  nodes/tlr_tuner/tunerBody.h
   )
 
 set_target_properties(tlr_tuner
   PROPERTIES COMPILE_FLAGS "-fPIC"
   )
 
-add_dependencies(tlr_tuner
-  tlr_tuner_ui_mainwindow
-  tlr_tuner_mainwindow_moc
-  )
-
 target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
   ${OpenCV_LIBS}
+  Qt5::Core
+  Qt5::Widgets
   )
+
+
+### roi_extractor ###
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  include
+)
+
+add_executable(roi_extractor
+  nodes/roi_extractor/roi_extractor.cpp
+  )
+
+target_link_libraries(roi_extractor
+  ${catkin_LIBRARIES}
+  libcontext
+)
+
+add_dependencies(region_tlr
+road_wizard_generate_messages_cpp)
+
+
+### label_maker ###
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+
+find_package(TinyXML REQUIRED)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${TinyXML_INCLUDE_DIRS}
+  nodes/label_maker/
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+  )
+
+file(GLOB SOURCES "nodes/label_maker/*.cpp")
+file(GLOB HEADERS "nodes/label_maker/*.h")
+file(GLOB UI_SOURCES "nodes/label_maker/*.ui")
+
+qt5_wrap_ui(UI_HEADERS ${UI_SOURCES})
+
+add_executable(label_maker
+  ${SOURCES}
+  ${HEADERS}
+  ${UI_HEADERS}
+  )
+
+set_target_properties(label_maker
+  PROPERTIES COMPILE_FLAGS "-fPIC"
+  )
+
+target_link_libraries(label_maker
+  ${catkin_LIBRARIES}
+  ${TinyXML_LIBRARIES}
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
+  )
+
+
+### region_tlr_ssd ###
+##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
+set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
+####################################################################################################
+if(EXISTS "${SSD_CAFFE_PATH}")
+
+find_package(CUDA)
+pkg_check_modules(HDF5 hdf5)
+
+if(HDF5_FOUND)
+  include_directories(${HDF5_INCLUDE_DIRS})
+endif()
+
+add_executable(region_tlr_ssd
+  nodes/region_tlr_ssd/region_tlr_ssd.cpp
+  nodes/region_tlr_ssd/traffic_light_recognizer.cpp
+  )
+
+target_link_libraries(region_tlr_ssd
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBS}
+  ${CUDA_LIBRARIES}
+  ${CUDA_CUBLAS_LIBRARIES}
+  ${CUDA_curand_LIBRARY}
+  ${SSD_CAFFE_PATH}/lib/libcaffe.so
+  glog
+  libcontext
+  )
+
+target_include_directories(region_tlr_ssd PRIVATE
+  ${SSD_CAFFE_PATH}/include
+  ${CUDA_INCLUDE_DIRS}
+  nodes/region_tlr_ssd/
+  )
+
+add_dependencies(region_tlr_ssd
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
+  message("'SSD/Caffe' is not installed. 'region_tlr_ssd' will not be built.")
+endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")

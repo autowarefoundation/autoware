@@ -1,6 +1,6 @@
 #include "ros/ros.h"
-#include "cv_tracker_msgs/obj_label.h"
-#include "lidar_tracker/centroids.h"
+#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/centroids.h"
 #include "visualization_msgs/MarkerArray.h"
 #include "sync.hpp"
 
@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     std::string pub1("/obj_label");
     std::string pub2("/cluster_centroids");
 
-    Synchronizer<cv_tracker_msgs::obj_label, lidar_tracker::centroids, visualization_msgs::MarkerArray> synchronizer(sub1, sub2, pub1, pub2, req, ns);
+    Synchronizer<autoware_msgs::obj_label, autoware_msgs::centroids, visualization_msgs::MarkerArray> synchronizer(sub1, sub2, pub1, pub2, req, ns);
     synchronizer.run();
 
     return 0;
@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
 #include <pthread.h>
 #include "t_sync_message.h"
 /* user header */
-#include "cv_tracker_msgs/obj_label.h"
-#include "lidar_tracker/centroids.h"
+#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/centroids.h"
 #include "visualization_msgs/MarkerArray.h"
 
 /* ----mode---- */
@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
 bool buf_flag;
 pthread_mutex_t mutex;
 /* user var */
-boost::circular_buffer<cv_tracker_msgs::obj_label> obj_label_ringbuf(10);
-boost::circular_buffer<lidar_tracker::centroids> cluster_centroids_ringbuf(10);
+boost::circular_buffer<autoware_msgs::obj_label> obj_label_ringbuf(10);
+boost::circular_buffer<autoware_msgs::centroids> cluster_centroids_ringbuf(10);
 ros::Publisher obj_label__pub;
 ros::Publisher cluster_centroids__pub;
 bool obj_pose_flag;
@@ -71,10 +71,10 @@ double get_time(const std_msgs::Header *timespec) {
 
 
 #if _REQ_PUB
-cv_tracker_msgs::obj_label* p_obj_label_buf;
-lidar_tracker::centroids* p_cluster_centroids_buf;
+autoware_msgs::obj_label* p_obj_label_buf;
+autoware_msgs::centroids* p_cluster_centroids_buf;
 
-void publish_msg(cv_tracker_msgs::obj_label* p_obj_label_buf, lidar_tracker::centroids* p_cluster_centroids_buf)
+void publish_msg(autoware_msgs::obj_label* p_obj_label_buf, autoware_msgs::centroids* p_cluster_centroids_buf)
 {
     ROS_INFO("publish");
     obj_label__pub.publish(*p_obj_label_buf);
@@ -98,7 +98,7 @@ bool publish() {
         // obj_label > cluster_centroids
         if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
             p_cluster_centroids_buf = &(cluster_centroids_ringbuf.front());
-            boost::circular_buffer<cv_tracker_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
+            boost::circular_buffer<autoware_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
             if (obj_label_ringbuf.size() == 1) {
                 p_obj_label_buf = &*it;
                 publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
@@ -125,7 +125,7 @@ bool publish() {
         // obj_label < cluster_centroids
         else {
             p_obj_label_buf = &(obj_label_ringbuf.front());
-            boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+            boost::circular_buffer<autoware_msgs::centroids>::iterator it = cluster_centroids_ringbuf.begin();
             if (cluster_centroids_ringbuf.size() == 1) {
                 p_cluster_centroids_buf = &*it;
                 publish_msg(p_obj_label_buf, p_cluster_centroids_buf);
@@ -163,7 +163,7 @@ bool publish() {
     }
 }
 
-void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_msg) {
+void obj_label_callback(const autoware_msgs::obj_label::ConstPtr& obj_label_msg) {
     pthread_mutex_lock(&mutex);
     obj_label_ringbuf.push_front(*obj_label_msg);
     //cluster_centroids is empty
@@ -182,7 +182,7 @@ void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_ms
     pthread_mutex_unlock(&mutex);
 }
 
-void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg) {
+void cluster_centroids_callback(const autoware_msgs::centroids::ConstPtr& cluster_centroids_msg) {
     pthread_mutex_lock(&mutex);
     cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
     //obj_label is empty
@@ -203,8 +203,8 @@ void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluste
 }
 
 #else
-cv_tracker_msgs::obj_label obj_label_buf;
-lidar_tracker::centroids cluster_centroids_buf;
+autoware_msgs::obj_label obj_label_buf;
+autoware_msgs::centroids cluster_centroids_buf;
 
 bool publish() {
     if (buf_flag) {
@@ -224,7 +224,7 @@ bool publish() {
     }
 }
 
-void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_msg) {
+void obj_label_callback(const autoware_msgs::obj_label::ConstPtr& obj_label_msg) {
     pthread_mutex_lock(&mutex);
     obj_label_ringbuf.push_front(*obj_label_msg);
 
@@ -240,7 +240,7 @@ void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_ms
     // obj_label > cluster_centroids
     if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
         cluster_centroids_buf = cluster_centroids_ringbuf.front();
-        boost::circular_buffer<cv_tracker_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
         if (obj_label_ringbuf.size() == 1) {
             obj_label_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -265,7 +265,7 @@ void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_ms
 
     } else {
         obj_label_buf = obj_label_ringbuf.front();
-        boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::centroids>::iterator it = cluster_centroids_ringbuf.begin();
         if (cluster_centroids_ringbuf.size() == 1) {
             cluster_centroids_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -292,7 +292,7 @@ void obj_label_callback(const cv_tracker_msgs::obj_label::ConstPtr& obj_label_ms
     pthread_mutex_unlock(&mutex);
 }
 
-void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluster_centroids_msg) {
+void cluster_centroids_callback(const autoware_msgs::centroids::ConstPtr& cluster_centroids_msg) {
     pthread_mutex_lock(&mutex);
     cluster_centroids_ringbuf.push_front(*cluster_centroids_msg);
     //obj_label is empty
@@ -307,7 +307,7 @@ void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluste
     // obj_label > cluster_centroids
     if (get_time(&(obj_label_ringbuf.front().header)) >= get_time(&(cluster_centroids_ringbuf.front().header))) {
         cluster_centroids_buf = cluster_centroids_ringbuf.front();
-        boost::circular_buffer<cv_tracker_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::obj_label>::iterator it = obj_label_ringbuf.begin();
         if (obj_label_ringbuf.size() == 1) {
             obj_label_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -332,7 +332,7 @@ void cluster_centroids_callback(const lidar_tracker::centroids::ConstPtr& cluste
 
     } else {
         obj_label_buf = obj_label_ringbuf.front();
-        boost::circular_buffer<lidar_tracker::centroids>::iterator it = cluster_centroids_ringbuf.begin();
+        boost::circular_buffer<autoware_msgs::centroids>::iterator it = cluster_centroids_ringbuf.begin();
         if (cluster_centroids_ringbuf.size() == 1) {
             cluster_centroids_buf = *it;
             pthread_mutex_unlock(&mutex);
@@ -409,8 +409,8 @@ int main(int argc, char **argv) {
 
     ros::Subscriber obj_label_sub = nh.subscribe("/obj_label", 1, obj_label_callback);
     ros::Subscriber cluster_centroids_sub = nh.subscribe("/cluster_centroids", 1, cluster_centroids_callback);
-    obj_label__pub = nh.advertise<cv_tracker_msgs::obj_label>("/sync_obj_fusion/obj_label", 5);
-    cluster_centroids__pub = nh.advertise<lidar_tracker::centroids>("/sync_obj_fusion/cluster_centroids", 5);
+    obj_label__pub = nh.advertise<autoware_msgs::obj_label>("/sync_obj_fusion/obj_label", 5);
+    cluster_centroids__pub = nh.advertise<autoware_msgs::centroids>("/sync_obj_fusion/cluster_centroids", 5);
     while (!buf_flag && ros::ok()) {
         ros::spinOnce();
         usleep(100000);

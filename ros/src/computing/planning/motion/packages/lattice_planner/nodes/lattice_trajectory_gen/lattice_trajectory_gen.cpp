@@ -49,10 +49,10 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "runtime_manager/ConfigWaypointFollower.h"
+#include "autoware_msgs/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
-#include "vehicle_socket/CanInfo.h"
+#include "autoware_msgs/CanInfo.h"
 //#include <dbw_mkz_msgs/SteeringReport.h>
 
 
@@ -102,7 +102,7 @@ static double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be
 
 static WayPoints g_current_waypoints;
 
-static void ConfigCallback(const runtime_manager::ConfigWaypointFollowerConstPtr &config)
+static void ConfigCallback(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)
 {
   g_param_flag = config->param_flag;
   g_lookahead_threshold = config->lookahead_distance;
@@ -124,7 +124,7 @@ static void currentVelCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   g_current_velocity = msg->twist.linear.x;
 }
 
-static void WayPointCallback(const waypoint_follower_msgs::laneConstPtr &msg)
+static void WayPointCallback(const autoware_msgs::laneConstPtr &msg)
 {
   g_current_waypoints.setPath(*msg);
   g_waypoint_set = true;
@@ -165,7 +165,7 @@ static double getLookAheadThreshold(int waypoint)
     return current_velocity_mps * g_look_ahead_threshold_calc_ratio;
 }
 
-static void canInfoCallback(const vehicle_socket::CanInfoConstPtr &msg)
+static void canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
 {
   double steering_wheel_angle = msg->angle;
   //g_current_velocity = (msg->speed)*(1000.00/3600);
