@@ -12,23 +12,16 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
+
 catkin_package(
   INCLUDE_DIRS include/rosinterface
   LIBRARIES rosinterface
   CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
 )
 
 ###########
@@ -41,8 +34,6 @@ EXECUTE_PROCESS(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
   include/rosinterface
   ${catkin_INCLUDE_DIRS}
@@ -60,9 +51,6 @@ target_link_libraries(rosinterface
   Qt5::Core
   Qt5::Widgets
 )
-
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
 
 #############
 ## Install ##
