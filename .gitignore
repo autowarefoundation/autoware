@@ -46,3 +46,5 @@ ENV/
 *.bag
 *.csv
 
+# Private Setting Files
+/ros/src/util/packages/autoware_rviz_plugins/config/google_static_map_api_key.yaml

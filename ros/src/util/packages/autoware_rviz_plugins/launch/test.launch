@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <rosparam command="load" file="$(find autoware_rviz_plugins)/config/google_static_map_api_key.yaml"/>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="" output="screen" respawn="true">
+  </node>
+
+  <node name="nmea_topic_driver" pkg="nmea_navsat_driver" type="nmea_topic_driver" args="" output="screen" respawn="true">
+  </node>
+
+  <node name="rosbag" pkg="rosbag" type="play" args="/home/$(env USER)/.autoware/sample_moriyama_150324.bag" output="screen" respawn="true">
+  </node>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf_broadcaster" args="0 0 0 0 0 0 map gps" />
+</launch>

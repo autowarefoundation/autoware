@@ -18,6 +18,10 @@ else()
   set(QT_LIBRARIES Qt5::Widgets)
 endif()
 
+find_package(PythonLibs)
+
+find_package(OpenCV REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -43,6 +47,8 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
 )
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
@@ -53,10 +59,12 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
+  src/overlay_gps_display/overlay_gps_display.cpp
+  src/overlay_gps_display/overlay_utils.cpp
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${PYTHON_LIBRARY} ${OpenCV_LIBRARIES})
 
 ## Install rules
 
