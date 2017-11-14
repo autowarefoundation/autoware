@@ -36,86 +36,84 @@
 #ifndef OVERLAY_UTIL_H_
 #define OVERLAY_UTIL_H_
 
-
-#include <OGRE/OgreMaterialManager.h>
-#include <OGRE/OgreTextureManager.h>
-#include <OGRE/OgreTexture.h>
-#include <OGRE/OgreTechnique.h>
 #include <OGRE/OgreHardwarePixelBuffer.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreTechnique.h>
+#include <OGRE/OgreTexture.h>
+#include <OGRE/OgreTextureManager.h>
 // see OGRE/OgrePrerequisites.h
-//#define OGRE_VERSION    ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR << 8) | OGRE_VERSION_PATCH)
+//#define OGRE_VERSION    ((OGRE_VERSION_MAJOR << 16) | (OGRE_VERSION_MINOR <<
+//8) | OGRE_VERSION_PATCH)
 #if OGRE_VERSION < ((1 << 16) | (9 << 8) | 0)
-  #include <OGRE/OgrePanelOverlayElement.h>
-  #include <OGRE/OgreOverlayElement.h>
-  #include <OGRE/OgreOverlayContainer.h>
-  #include <OGRE/OgreOverlayManager.h>
+#include <OGRE/OgreOverlayContainer.h>
+#include <OGRE/OgreOverlayElement.h>
+#include <OGRE/OgreOverlayManager.h>
+#include <OGRE/OgrePanelOverlayElement.h>
 #else
-  #include <OGRE/Overlay/OgrePanelOverlayElement.h>
-  #include <OGRE/Overlay/OgreOverlayElement.h>
-  #include <OGRE/Overlay/OgreOverlayContainer.h>
-  #include <OGRE/Overlay/OgreOverlayManager.h>
+#include <OGRE/Overlay/OgreOverlayContainer.h>
+#include <OGRE/Overlay/OgreOverlayElement.h>
+#include <OGRE/Overlay/OgreOverlayManager.h>
+#include <OGRE/Overlay/OgrePanelOverlayElement.h>
 #endif
 
-#include <QImage>
 #include <QColor>
+#include <QImage>
 
-namespace autoware_rviz_plugins
-{
-  class OverlayObject;
+namespace autoware_rviz_plugins {
+class OverlayObject;
 
-  class ScopedPixelBuffer
-  {
-  public:
-    ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer);
-    virtual ~ScopedPixelBuffer();
-    virtual Ogre::HardwarePixelBufferSharedPtr getPixelBuffer();
-    virtual QImage getQImage(unsigned int width, unsigned int height);
-    virtual QImage getQImage(OverlayObject& overlay);
-    virtual QImage getQImage(unsigned int width, unsigned int height, QColor& bg_color);
-    virtual QImage getQImage(OverlayObject& overlay, QColor& bg_color);
-  protected:
-    Ogre::HardwarePixelBufferSharedPtr pixel_buffer_;
-  private:
+class ScopedPixelBuffer {
+public:
+  ScopedPixelBuffer(Ogre::HardwarePixelBufferSharedPtr pixel_buffer);
+  virtual ~ScopedPixelBuffer();
+  virtual Ogre::HardwarePixelBufferSharedPtr getPixelBuffer();
+  virtual QImage getQImage(unsigned int width, unsigned int height);
+  virtual QImage getQImage(OverlayObject &overlay);
+  virtual QImage getQImage(unsigned int width, unsigned int height,
+                           QColor &bg_color);
+  virtual QImage getQImage(OverlayObject &overlay, QColor &bg_color);
 
-  };
+protected:
+  Ogre::HardwarePixelBufferSharedPtr pixel_buffer_;
 
+private:
+};
 
-  // this is a class for put overlay object on rviz 3D panel.
-  // This class suppose to be instantiated in onInitialize method
-  // of rviz::Display class.
-  class OverlayObject
-  {
-  public:
-    typedef boost::shared_ptr<OverlayObject> Ptr;
+// this is a class for put overlay object on rviz 3D panel.
+// This class suppose to be instantiated in onInitialize method
+// of rviz::Display class.
+class OverlayObject {
+public:
+  typedef boost::shared_ptr<OverlayObject> Ptr;
 
-    OverlayObject(const std::string& name);
-    virtual ~OverlayObject();
+  OverlayObject(const std::string &name);
+  virtual ~OverlayObject();
 
-    virtual std::string getName();
-    virtual void hide();
-    virtual void show();
-    virtual bool isTextureReady();
-    virtual bool updateTextureSize(unsigned int width, unsigned int height);
-    virtual ScopedPixelBuffer getBuffer();
-    virtual void setPosition(double left, double top);
-    virtual void setDimensions(double width, double height);
-    virtual bool isVisible();
-    virtual unsigned int getTextureWidth();
-    virtual unsigned int getTextureHeight();
-  protected:
-    const std::string name_;
-    Ogre::Overlay* overlay_;
-    Ogre::PanelOverlayElement* panel_;
-    Ogre::MaterialPtr panel_material_;
-    Ogre::TexturePtr texture_;
+  virtual std::string getName();
+  virtual void hide();
+  virtual void show();
+  virtual bool isTextureReady();
+  virtual bool updateTextureSize(unsigned int width, unsigned int height);
+  virtual ScopedPixelBuffer getBuffer();
+  virtual void setPosition(double left, double top);
+  virtual void setDimensions(double width, double height);
+  virtual bool isVisible();
+  virtual unsigned int getTextureWidth();
+  virtual unsigned int getTextureHeight();
 
-  private:
+protected:
+  const std::string name_;
+  Ogre::Overlay *overlay_;
+  Ogre::PanelOverlayElement *panel_;
+  Ogre::MaterialPtr panel_material_;
+  Ogre::TexturePtr texture_;
 
-  };
+private:
+};
 
-  // Ogre::Overlay* createOverlay(std::string name);
-  // Ogre::PanelOverlayElement* createOverlayPanel(Ogre::Overlay* overlay);
-  // Ogre::MaterialPtr createOverlayMaterial(Ogre::Overlay* overlay);
+// Ogre::Overlay* createOverlay(std::string name);
+// Ogre::PanelOverlayElement* createOverlayPanel(Ogre::Overlay* overlay);
+// Ogre::MaterialPtr createOverlayMaterial(Ogre::Overlay* overlay);
 }
 
 #endif

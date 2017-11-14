@@ -14,78 +14,80 @@
 
 #include "overlay_utils.h"
 
-//headers for ROS
-#include <ros/ros.h>
+// headers for ROS
 #include <ros/package.h>
+#include <ros/ros.h>
 
-//headers for Qt
+// headers for Qt
 #include <QWidget>
 
-//headers for rviz
+// headers for rviz
 #include <rviz/message_filter_display.h>
-#include <rviz/properties/int_property.h>
 #include <rviz/properties/float_property.h>
+#include <rviz/properties/int_property.h>
 //#include <rviz/properties/string_property.h>
 #include <rviz/properties/enum_property.h>
 #include <rviz/properties/status_property.h>
 #include <rviz/uniform_string_stream.h>
 
-//headers for opencv
+// headers for opencv
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
-//headers for messages
+// headers for messages
 #include <sensor_msgs/NavSatFix.h>
 
-//headers for python
+// headers for python
 #include <Python.h>
 
-//headers for stl
-#include <string>
+// headers for stl
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
+#include <string>
 
-//headers for boost
+// headers for boost
 #include <boost/circular_buffer.hpp>
 
-namespace autoware_rviz_plugins
-{
-  class OverlayGpsDisplay: public rviz::MessageFilterDisplay<sensor_msgs::NavSatFix>
-  {
-    Q_OBJECT
-    public:
-      OverlayGpsDisplay();
-      virtual ~OverlayGpsDisplay();
-    protected:
-      virtual void onInitialize();
-      virtual void reset();
-    private:
-      void processMessage(const sensor_msgs::NavSatFix::ConstPtr& msg);
-      bool download_map(std::string request_url);
-      void load_map_downloader_script();
-      bool build_request_url(const sensor_msgs::NavSatFix::ConstPtr& msg, std::string& request_url);
-      inline bool check_map_image_file();
-      rviz::IntProperty* zoom_property_;
-      rviz::IntProperty* width_property_;
-      rviz::IntProperty* height_property_;
-      rviz::IntProperty* scale_property_;
-      rviz::IntProperty* position_x_property_;
-      rviz::IntProperty* position_y_property_;
-      rviz::IntProperty* messages_per_plot_property_;
-      rviz::IntProperty* history_length_property_;
-      rviz::FloatProperty* alpha_property_;
-      //rviz::StringProperty* api_key_property_;
-      rviz::EnumProperty* maptype_property_;
-      boost::circular_buffer<sensor_msgs::NavSatFix> fix_buffer_;
-      PyObject* map_downloader_function_;
-      std::string map_image_path_,api_key_;
-      OverlayObject::Ptr overlay_;
-    private Q_SLOTS:
-      void updateGooleMapAPIProperty();
-      void updateDisplayProperty();
-      void updateHistoryLength();
-  };
+namespace autoware_rviz_plugins {
+class OverlayGpsDisplay
+    : public rviz::MessageFilterDisplay<sensor_msgs::NavSatFix> {
+  Q_OBJECT
+public:
+  OverlayGpsDisplay();
+  virtual ~OverlayGpsDisplay();
+
+protected:
+  virtual void onInitialize();
+  virtual void reset();
+
+private:
+  void processMessage(const sensor_msgs::NavSatFix::ConstPtr &msg);
+  bool download_map(std::string request_url);
+  void load_map_downloader_script();
+  bool build_request_url(const sensor_msgs::NavSatFix::ConstPtr &msg,
+                         std::string &request_url);
+  inline bool check_map_image_file();
+  rviz::IntProperty *zoom_property_;
+  rviz::IntProperty *width_property_;
+  rviz::IntProperty *height_property_;
+  rviz::IntProperty *scale_property_;
+  rviz::IntProperty *position_x_property_;
+  rviz::IntProperty *position_y_property_;
+  rviz::IntProperty *messages_per_plot_property_;
+  rviz::IntProperty *history_length_property_;
+  rviz::FloatProperty *alpha_property_;
+  // rviz::StringProperty* api_key_property_;
+  rviz::EnumProperty *maptype_property_;
+  boost::circular_buffer<sensor_msgs::NavSatFix> fix_buffer_;
+  PyObject *map_downloader_function_;
+  std::string map_image_path_, api_key_;
+  OverlayObject::Ptr overlay_;
+private Q_SLOTS:
+  void updateGooleMapAPIProperty();
+  void updateDisplayProperty();
+  void updateHistoryLength();
+};
 }
 #endif
