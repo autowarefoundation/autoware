@@ -15,8 +15,8 @@
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
-#include <autoware_msgs/lane.h>
 #include <autoware_msgs/lamp_cmd.h>
+#include <autoware_msgs/lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -27,33 +27,40 @@
 
 namespace decision_maker
 {
+#define TPNAME_BASED_LANE_WAYPOINTS_ARRAY "/based/lane_waypoints_array"
+#define TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY "/lane_waypoints_array"
 
-#define  TPNAME_BASED_LANE_WAYPOINTS_ARRAY "/based/lane_waypoints_array"
-#define  TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY "/lane_waypoints_array"
+void DecisionMakerNode::callbackStateSTR(int status)
+{
+  ROS_INFO("[%s]:%d\n", __func__, status);
+  autoware_msgs::lamp_cmd lamp_msg;
 
-void DecisionMakerNode::callbackStateSTR(int status){
-	ROS_INFO("[%s]:%d\n",__func__,status);
-	autoware_msgs::lamp_cmd lamp_msg;
-	
-	if(status == 0){
-		lamp_msg.l = 0; 
-		lamp_msg.r = 0;
-	}else if(status == 1){
-		lamp_msg.l = 1;
-		lamp_msg.r = 0;
-	}else if(status == 2){
-		lamp_msg.l = 0;
-		lamp_msg.r = 0;
-	}	
-	Pubs["lamp_cmd"].publish(lamp_msg);
-
+  if (status == 0)
+  {
+    lamp_msg.l = 0;
+    lamp_msg.r = 0;
+  }
+  else if (status == 1)
+  {
+    lamp_msg.l = 1;
+    lamp_msg.r = 0;
+  }
+  else if (status == 2)
+  {
+    lamp_msg.l = 0;
+    lamp_msg.r = 0;
+  }
+  Pubs["lamp_cmd"].publish(lamp_msg);
 }
 
 void DecisionMakerNode::setupStateCallback(void)
 {
-	ctx->getStateObject(state_machine::DRIVE_STR_LEFT_STATE)->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 1));
-	ctx->getStateObject(state_machine::DRIVE_STR_RIGHT_STATE)->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 2));
-	ctx->getStateObject(state_machine::DRIVE_STR_STRAIGHT_STATE)->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 0));
+  ctx->getStateObject(state_machine::DRIVE_STR_LEFT_STATE)
+      ->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 1));
+  ctx->getStateObject(state_machine::DRIVE_STR_RIGHT_STATE)
+      ->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 2));
+  ctx->getStateObject(state_machine::DRIVE_STR_STRAIGHT_STATE)
+      ->setCallbackFunc(std::bind(&DecisionMakerNode::callbackStateSTR, this, 0));
 }
 
 void DecisionMakerNode::initROS(int argc, char **argv)
@@ -90,9 +97,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
 
-
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
-  
+
   // for visualize
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
@@ -115,7 +121,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // initial publishing state message
   update_msgs();
-
 
   // setup a callback for state update();
   setupStateCallback();
@@ -163,7 +168,7 @@ void DecisionMakerNode::initVectorMap(void)
             double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
             double z = 0.0;
             int points_count = 0;
-	    
+
             for (const auto &line : vMap_Lines.data)
             {
               if (area.slid <= line.lid && line.lid <= area.elid)
@@ -183,9 +188,9 @@ void DecisionMakerNode::initVectorMap(void)
 
                     _prev_point = _point;
                     points_count++;
-		    carea.points.push_back(_point);
+                    carea.points.push_back(_point);
 
-		    // calc a centroid point and about intersects size
+                    // calc a centroid point and about intersects size
                     x_avg += _point.x;
                     y_avg += _point.y;
                     x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
@@ -211,7 +216,8 @@ void DecisionMakerNode::initVectorMap(void)
       }
     }
     vMap_mutex.unlock();
-    Subs["lane_waypoints_array"] = nh_.subscribe( TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
+    Subs["lane_waypoints_array"] =
+        nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
   }
 }
 

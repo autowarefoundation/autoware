@@ -1,6 +1,6 @@
+#include <amathutils.hpp>
 #include <cmath>
 #include <cross_road_area.hpp>
-#include <amathutils.hpp>
 
 namespace decision_maker
 {

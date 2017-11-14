@@ -29,16 +29,15 @@ void DecisionMakerNode::update_pubsub(void)
   // this function will re-definition subscriber.
 }
 
-
-int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale){
-
+int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale)
+{
   crossroad_marker.header.frame_id = "/map";
   crossroad_marker.header.stamp = ros::Time();
   crossroad_marker.id = 1;
   crossroad_marker.type = visualization_msgs::Marker::SPHERE_LIST;
   crossroad_marker.action = visualization_msgs::Marker::ADD;
   crossroad_marker.ns = "crossroad";
-  
+
   crossroad_marker.scale.x = scale;
   crossroad_marker.scale.y = scale;
   crossroad_marker.scale.z = 0.5;
@@ -48,7 +47,6 @@ int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &cro
   crossroad_marker.color.b = 0.0;
   crossroad_marker.frame_locked = true;
   crossroad_marker.lifetime = ros::Duration(0.3);
-
 }
 
 void DecisionMakerNode::displayMarker(void)
@@ -62,7 +60,6 @@ void DecisionMakerNode::displayMarker(void)
   static visualization_msgs::MarkerArray marker_array;
   static visualization_msgs::Marker crossroad_marker;
   static visualization_msgs::Marker inside_marker;
-
 
   double scale = 3.0;
   createCrossRoadAreaMarker(crossroad_marker, scale);

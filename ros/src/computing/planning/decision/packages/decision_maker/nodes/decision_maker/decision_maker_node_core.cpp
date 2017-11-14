@@ -21,7 +21,6 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 
-#define DEBUG_PRINT
 namespace decision_maker
 {
 bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg,
@@ -51,7 +50,8 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
 void DecisionMakerNode::update(void)
 {
   update_msgs();
-  if(ctx) ctx->update();
+  if (ctx)
+    ctx->update();
 }
 
 void DecisionMakerNode::run(void)
@@ -68,7 +68,6 @@ void DecisionMakerNode::run(void)
     if (enableDisplayMarker)
       displayMarker();
 
- 
 #ifdef DEBUG_PRINT
     // debug status
     ros::Duration exec_time = ros::Time::now() - begin;
