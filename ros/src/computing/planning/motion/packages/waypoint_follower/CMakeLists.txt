@@ -60,8 +60,13 @@ target_link_libraries(twist_filter ${catkin_LIBRARIES})
 add_dependencies(twist_filter
 ${catkin_EXPORTED_TARGETS} )
 
+add_executable(twist_gate nodes/twist_gate/twist_gate.cpp)
+target_link_libraries(twist_gate ${catkin_LIBRARIES})
+add_dependencies(twist_gate
+${catkin_EXPORTED_TARGETS} )
+
 ## Install executables and/or libraries
-install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter
+install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

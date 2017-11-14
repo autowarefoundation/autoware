@@ -56,7 +56,9 @@ See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
 % sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-flask python-requests
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev software-properties-common libyaml-cpp-dev python-flask python-requests
+% sudo add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
+% sudo apt-get install libmosquitto-dev
 ```
 
 **NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
@@ -65,7 +67,7 @@ See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/
 ```
 % sudo apt-get install ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
 % sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 python-flask python-requests
+% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
 ```
 
 **NOTE: Following packages are not supported in ROS Kinetic.**
@@ -158,19 +160,19 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ## Instruction Videos
 
 ### Quick Start
-[![Quick Start](http://img.youtube.com/vi/m-4U84K7lvg/mqdefault.jpg)](https://www.youtube.com/watch?v=m-4U84K7lvg)
+[![Quick Start](http://img.youtube.com/vi/NDNcy0C-Has/mqdefault.jpg)](https://www.youtube.com/watch?v=NDNcy0C-Has)
 
 ### Loading Map Data
-[![Loading Map Data](http://img.youtube.com/vi/EJa4PHnjdRY/mqdefault.jpg)](https://www.youtube.com/watch?v=EJa4PHnjdRY)
+[![Loading Map Data](http://img.youtube.com/vi/OpvTeTaiXo4/mqdefault.jpg)](https://www.youtube.com/watch?v=OpvTeTaiXo4)
 
 ### Localization with GNSS
-[![Localization with GNSS](http://img.youtube.com/vi/5bj7gkFlul0/mqdefault.jpg)](https://www.youtube.com/watch?v=5bj7gkFlul0)
+[![Localization with GNSS](http://img.youtube.com/vi/sul-osvg42A/mqdefault.jpg)](https://www.youtube.com/watch?v=sul-osvg42A)
 
 ### Localization without GNSS
 [![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/mqdefault.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
 
 ### Mapping
-[![Mapping](http://img.youtube.com/vi/HlQ0ohxvlgA/mqdefault.jpg)](https://www.youtube.com/watch?v=HlQ0ohxvlgA)
+[![Mapping](http://img.youtube.com/vi/ss6Blrz23h8/mqdefault.jpg)](https://www.youtube.com/watch?v=ss6Blrz23h8)
 
 ### Detection with SSD
 [![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
@@ -188,7 +190,7 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 [![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/mqdefault.jpg)](https://youtu.be/KmOdBms9r2w)
 
 ### Planning with ROSBAG
-[![Planning with ROSBAG](http://img.youtube.com/vi/LZTCDbcjIdw/mqdefault.jpg)](https://www.youtube.com/watch?v=LZTCDbcjIdw)
+[![Planning with ROSBAG](http://img.youtube.com/vi/B3UUKFM6Hqg/mqdefault.jpg)](https://www.youtube.com/watch?v=B3UUKFM6Hqg)
 
 ### Planning with wf_simulator
 [![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/mqdefault.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
@@ -198,6 +200,8 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
 ### Calibration Toolkit
 [![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
+
+See [https://github.com/CPFL/Autoware/wiki/Calibration(EN)](https://github.com/CPFL/Autoware/wiki/Calibration(EN))
 
 ### Data Processor for Bag File
 [![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)

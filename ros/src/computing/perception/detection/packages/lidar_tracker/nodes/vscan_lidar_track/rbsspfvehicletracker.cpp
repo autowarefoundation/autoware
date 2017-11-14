@@ -1,5 +1,4 @@
 #include "rbsspfvehicletracker.h"
-#include "moc_rbsspfvehicletracker.cpp"
 
 
 RBSSPFVehicleTrackerInstance::RBSSPFVehicleTrackerInstance(int vehicleID, QThread *thread)
@@ -114,7 +113,7 @@ void RBSSPFVehicleTracker::addTrackerData(LaserScan & scan, QVector<VehicleState
             }
         }
         else if(trackerthreadmap.size()>0)
-        {            
+        {
             initstatemap.clear();
             trackercount=trackerthreadmap.size();
             emit signalUpdateTracker(&initstatemap);

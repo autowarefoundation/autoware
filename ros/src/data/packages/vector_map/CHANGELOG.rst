@@ -2,6 +2,9 @@
 Changelog for package vector_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.1 (2017-09-25)
+------------------
+
 1.5.0 (2017-09-21)
 ------------------
 * static functions were never defined, so I removed them
