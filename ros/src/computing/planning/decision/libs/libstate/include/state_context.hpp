@@ -115,6 +115,8 @@ public:
   void showCurrentStateName(void);
   std::string createStateMessageText(void);
 
+  std::string getCurrentStateName(StateKinds en);
+
   bool setEnableForceSetState(bool force_flag);
   BaseState *getStateObject(unsigned long long _state_num);
   void InitContext(void);

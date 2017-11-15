@@ -36,8 +36,7 @@ void StateContext::update(void)
 
 void StateContext::showCurrentStateName(void)
 {
-  for (auto &&p : HolderList)
-  {
+  for (auto &&p : HolderList) {
     if (*p)
     {
       (*p)->showStateName();
@@ -53,10 +52,6 @@ void StateContext::showCurrentStateName(void)
   std::cout << std::endl;
 }
 
-std::string StateContext::getCurrentStateName(void)
-{
-  return current_state_.MainState->getStateName();
-}
 
 /**
  * @fn
@@ -136,6 +131,20 @@ bool StateContext::setEnableForceSetState(bool force_flag)
 {
   enableForceSetState = force_flag;
   return true;
+}
+
+std::string StateContext::getCurrentStateName(StateKinds en)
+{
+  for (auto &&p : HolderList)
+  {
+    if (*p && (*p)->getStateKind() == en)
+	      return (*p)->getStateName();
+  }
+  return std::string("");
+}
+std::string StateContext::getCurrentStateName(void)
+{
+	return this->getCurrentStateName(MAIN_STATE);
 }
 
 BaseState *StateContext::getCurrentMainState(void)

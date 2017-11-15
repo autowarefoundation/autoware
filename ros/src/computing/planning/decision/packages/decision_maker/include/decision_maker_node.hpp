@@ -52,8 +52,8 @@ enum class EControl : int32_t
 enum class E_ChangeFlags : int32_t
 {
   STRAIGHT,
-  LEFT,
   RIGHT,
+  LEFT,
 
   UNKNOWN = -1,
 };
