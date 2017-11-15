@@ -38,7 +38,7 @@ def root():
 def getVehicleModel(path):
     print("getVehicleModel", path)
     return send_from_directory(
-        directory='../../../ros/src/.config/model/', filename=path, as_attachment=True)
+        directory=env["PATH_AUTOWARE_DIR"] + "/ros/src/.config/model/", filename=path, as_attachment=True)
 
 
 @flask.route("/res/<type>/<path:path>", methods=["GET"])
