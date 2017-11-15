@@ -11,13 +11,6 @@ find_package( OpenMP )
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    add_definitions(-DOMP_FOUND)
-endif()
-
-find_package(CUDA)
-if(CUDA_FOUND)
-    add_definitions(-DCUDA_FOUND)
-    list(APPEND FAST_PCL_PACKAGES ndt_gpu)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -61,7 +54,6 @@ ENDIF(PCL_VERSION VERSION_LESS "1.7.2")
 
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
-add_executable(approximate_ndt_mapping nodes/approximate_ndt_mapping/approximate_ndt_mapping.cpp)
 add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 
@@ -70,14 +62,8 @@ add_executable(ndt_mapping_tku nodes/ndt_mapping_tku/ndt_mapping_tku.cpp)
 add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 
-if(CUDA_FOUND)
-target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
-target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
-endif()
-
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
-target_link_libraries(approximate_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 
