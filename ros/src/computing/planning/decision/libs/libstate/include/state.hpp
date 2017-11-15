@@ -47,6 +47,7 @@ protected:
 
 public:
   virtual void update(void) = 0;
+  virtual void changed(void) = 0;
   virtual void showStateName(void) = 0;
   virtual uint64_t getStateTransMask(void) = 0;
   virtual uint64_t getStateNum(void) = 0;
@@ -81,6 +82,12 @@ public:
   {
     if (StateUpdateFunc)
       StateUpdateFunc();
+  }
+
+  virtual void changed(void)
+  {
+    if (StateChangedFunc)
+	    StateChangedFunc();
   }
 
   virtual void setUpdateFunc(std::function<void(void)> _f)

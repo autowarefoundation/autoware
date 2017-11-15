@@ -92,6 +92,7 @@ public:
   }
 
   void update(void);
+  void changed(uint8_t _kind);
   void stateDecider(void);
 
   bool isState(BaseState *base, uint64_t _state_num);
@@ -106,14 +107,17 @@ public:
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
+  
+  BaseState **getCurrentStateHolderPtr(uint8_t _kind);
   BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
+  BaseState **getCurrentStateHolderPtr(BaseState *_state);
   void showCurrentStateName(void);
   std::string createStateMessageText(void);
 
   uint64_t getStateNum(BaseState *_state);
   uint64_t getStateTransMask(BaseState *_state);
   bool isEmptyMainState(void);
-  bool isDifferentState(BaseState *_state_a, BaseState *_state_b);
+  bool isDifferentState(BaseState *_state_a, BaseState **_state_b);
   uint8_t getStateKind(BaseState *_state);
   bool isMainState(BaseState *_state);
 
