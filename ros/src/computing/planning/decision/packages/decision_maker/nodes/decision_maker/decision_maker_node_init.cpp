@@ -29,28 +29,37 @@ namespace decision_maker
 {
 #define TPNAME_BASED_LANE_WAYPOINTS_ARRAY "/based/lane_waypoints_array"
 #define TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY "/lane_waypoints_array"
+#define LAMP_EMPTY  0
+#define LAMP_LEFT   1
+#define LAMP_RIGHT  2
+#define LAMP_HAZARD 3
+#define LAMP_ON 1
+#define LAMP_OFF 0
 
 void DecisionMakerNode::callbackStateSTR(int status)
 {
   ROS_INFO("[%s]:%d\n", __func__, status);
   autoware_msgs::lamp_cmd lamp_msg;
 
-  if (status == 0)
-  {
-    lamp_msg.l = 0;
-    lamp_msg.r = 0;
+  switch(status){
+	  case LAMP_LEFT:
+		  lamp_msg.l = LAMP_ON;
+		  lamp_msg.r = LAMP_OFF;
+		  break;
+	  case LAMP_RIGHT:
+		  lamp_msg.l = LAMP_OFF;
+		  lamp_msg.r = LAMP_ON;
+		  break;
+	  case LAMP_HAZARD:
+		  lamp_msg.l = LAMP_ON;
+		  lamp_msg.r = LAMP_ON;
+		  break;
+	  case LAMP_EMPTY:
+	  default:
+		  lamp_msg.l = LAMP_OFF;
+		  lamp_msg.r = LAMP_OFF;
+		  break;
   }
-  else if (status == 1)
-  {
-    lamp_msg.l = 1;
-    lamp_msg.r = 0;
-  }
-  else if (status == 2)
-  {
-    lamp_msg.l = 0;
-    lamp_msg.r = 0;
-  }
-  Pubs["lamp_cmd"].publish(lamp_msg);
 }
 
 void DecisionMakerNode::setupStateCallback(void)
@@ -179,8 +188,8 @@ void DecisionMakerNode::initVectorMap(void)
                   if (line.fpid <= point.pid && point.pid <= line.fpid)
                   {
                     geometry_msgs::Point _point;
-                    _point.x = point.ly;
-                    _point.y = point.bx;
+                    _point.x = point.bx;
+                    _point.y = point.ly;
                     _point.z = point.h;
 
                     if (_prev_point.x == _point.x && _prev_point.y == _point.y)
