@@ -54,8 +54,6 @@ void DecisionMakerNode::displayMarker(void)
 {
   // vector_map init
   // parse vectormap
-  initVectorMap();
-
   jsk_recognition_msgs::BoundingBoxArray bbox_array;
 
   static visualization_msgs::MarkerArray marker_array;

@@ -51,7 +51,8 @@ public:
   virtual unsigned long long getStateNum(void) = 0;
   virtual std::string getStateName(void) = 0;
   virtual unsigned char getStateKind(void) = 0;
-  virtual void setCallbackFunc(std::function<void(void)> _f)=0;
+  virtual void setUpdateFunc(std::function<void(void)> _f)=0;
+  virtual void setChangedFunc(std::function<void(void)> _f)=0;
 };
 
 // Interface
@@ -64,7 +65,8 @@ protected:
   unsigned long long StateTransMask;
   unsigned char StateKind;
 
-  std::function<void(void)> StateCallbackFunc;
+  std::function<void(void)> StateUpdateFunc;
+  std::function<void(void)> StateChangedFunc;
   
   State()
   {
@@ -75,12 +77,16 @@ protected:
 
 public:
   virtual void update(void){
-	if(StateCallbackFunc)
-		StateCallbackFunc();
+	if(StateUpdateFunc)
+		StateUpdateFunc();
   }
 
-  virtual void setCallbackFunc(std::function<void(void)> _f){
-	StateCallbackFunc = _f;
+  virtual void setUpdateFunc(std::function<void(void)> _f){
+	StateUpdateFunc = _f;
+  }
+
+  virtual void setChangedFunc(std::function<void(void)> _f){
+	StateChangedFunc = _f;
   }
 
   void showStateName(void)

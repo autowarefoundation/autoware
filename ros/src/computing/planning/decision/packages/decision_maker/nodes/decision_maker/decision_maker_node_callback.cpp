@@ -179,8 +179,18 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
   }
 }
 
+geometry_msgs::Point to_geoPoint(const vector_map_msgs::Point &vp)
+{
+  geometry_msgs::Point gp;
+  gp.x = vp.ly;
+  gp.y = vp.bx;
+  gp.z = vp.h;
+  return gp;
+}
+
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 {
+  // STR
   for (auto &area : intersects)
   {
     for (auto &laneinArea : area.insideLanes)
@@ -208,6 +218,42 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
         }
       }
       ROS_INFO("%d: %d  angle_deg :%d\n", area.area_id, steering_state, angle_deg);
+    }
+  }
+
+  // STOP
+  std::vector<StopLine> stoplines = g_vmap.findByFilter([](const StopLine &stopline) { return true; });
+  for (auto &lane : lane_array.lanes)
+  {
+    for (size_t wp_idx = 0; wp_idx < lane.waypoints.size() - 1; wp_idx++)
+    {
+      for (auto &stopline : stoplines)
+      {
+        if (g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type == vector_map_msgs::RoadSign::TYPE_STOP)
+        {
+          geometry_msgs::Point bp =
+              to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).bpid)));
+          geometry_msgs::Point fp =
+              to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
+	 
+
+          if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
+                                          lane.waypoints.at(wp_idx).pose.pose.position.y,
+                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
+          {
+	    geometry_msgs::Point center_point;
+	    center_point.x = (bp.x*2 + fp.x)/3;
+	    center_point.y = (bp.y*2 + fp.y)/3;
+
+	    if(isPointLeftFromLine){
+		    lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+		    lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+	    }
+
+	  }
+	}
+      }
     }
   }
 }

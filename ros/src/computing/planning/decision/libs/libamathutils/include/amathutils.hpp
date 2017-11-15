@@ -51,6 +51,13 @@ inline double getAcceleration(double v0, double v, double x)
 inline double getTimefromAcceleration(double v0, double v, double a)
 {
 	return  (v - v0) / a;
-} 
 }
+
+
+bool isIntersectLine(double p1x, double p1y, double p2x, double p2y,
+			double p3x, double p3y, double p4x, double p4y);
+
+}
+ int isPointLeftFromLine(double p1x, double p1y, double line_p1x, double line_p1y,
+		  double line_p2x, double line_p2y);
 #endif

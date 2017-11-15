@@ -18,12 +18,12 @@
 
 #include <visualization_msgs/MarkerArray.h>
 
-//#include <vector_map_server/GetCrossRoad.h>
-
 #include <vector_map_msgs/AreaArray.h>
 #include <vector_map_msgs/CrossRoadArray.h>
 #include <vector_map_msgs/LineArray.h>
 #include <vector_map_msgs/PointArray.h>
+
+#include <vector_map/vector_map.h>
 
 #include <geometry_msgs/Point.h>
 
@@ -32,14 +32,12 @@
 #include <amathutils.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
-
 #include <decision_maker_param.hpp>
-
-//#include <dynamic_reconfigure/server.h>
-//#include <decision_maker/decision_makerConfig.h>
 
 namespace decision_maker
 {
+using namespace vector_map;
+
 enum class EControl : int32_t
 {
   KEEP = -1,
@@ -93,9 +91,9 @@ private:
 
   std::vector<geometry_msgs::Point> inside_points_;
 
-
   autoware_msgs::LaneArray current_based_lane_array_;
   autoware_msgs::LaneArray current_controlled_lane_array_;
+
 
   // Current way/behavior status
   double current_velocity_;
@@ -157,7 +155,8 @@ private:
   void setWaypointState(autoware_msgs::LaneArray &lane_array);
 
 
-  void callbackStateSTR(int status);
+  void updateStateSTR(int status);
+  void updateStateStop(int status);
   void setupStateCallback(void);
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
@@ -179,6 +178,7 @@ private:
 
 public:
   state_machine::StateContext *ctx;
+  VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char **argv)
   {

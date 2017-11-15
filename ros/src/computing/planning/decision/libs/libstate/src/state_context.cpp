@@ -53,16 +53,110 @@ void StateContext::showCurrentStateName(void)
 }
 
 
-/**
- * @fn
- * set to current state
- * @brief standard out a state name
- * @param (state) Setting class
- * @return void
- */
+bool StateContext::isDifferentState(BaseState *_state_a, BaseState *_state_b)
+{
+	return _state_a == _state_b;
+}
+
+bool StateContext::isEmptyMainState(void){
+	if(current_state_.MainState)
+		return false;
+	return true;
+}
+
+unsigned char StateContext::getStateFlags(BaseState *_state)
+{
+	if(_state)
+		return _state->getStateKind();
+	else
+		return NULL_STATE;
+}
+
+unsigned long long StateContext::getStateTransMask(BaseState *_state)
+{
+	if(_state)
+		return _state->getStateTransMask();
+	else
+		return 0;
+}
+
+unsigned long long StateContext::getStateStateNum(BaseState *_state)
+{
+	if(_state)
+		return _state->getStateNum();
+	else
+		return 0;
+}
+
+
 bool StateContext::setCurrentState(BaseState *_state)
 {
   change_state_mutex.lock();
+
+  BaseState *prevState = current_state_.MainState;
+
+  if (isEmptyMainState() && _state )
+  {
+    current_state_.MainState = _state;
+    std::cout << "Successed to set state \""
+              << "NULL"
+              << "\" to \"" << _state->getStateName() << "\" : Mask is [" << _state->getStateTransMask() << "/"
+              << "NULL"
+              << "-" << _state->getStateNum() << "]" << std::endl;
+  }
+  else
+  {
+    if (_state && (enableForceSetState || (_state->getStateTransMask() & prevState->getStateNum())))
+    {
+      switch (getStateFlags(_state))
+      {
+        case MAIN_STATE:
+          current_state_.MainState = _state;
+          current_state_.AccState = nullptr;
+          current_state_.StrState = nullptr;
+          current_state_.BehaviorState = nullptr;
+          current_state_.PerceptionState = nullptr;
+          current_state_.OtherState = nullptr;
+          break;
+        case ACC_STATE:
+          current_state_.AccState = _state;
+          break;
+        case STR_STATE:
+          current_state_.StrState = _state;
+          break;
+        case BEHAVIOR_STATE:
+          current_state_.BehaviorState = _state;
+          break;
+        case PERCEPTION_STATE:
+          current_state_.PerceptionState = _state;
+          break;
+        case OTHER_STATE:
+          current_state_.OtherState = _state;
+          break;
+      }
+      std::cout << "Successed to set state \"" << prevState->getStateName() << "\" to \"" << _state->getStateName()
+                << "\" : Mask is [" << _state->getStateTransMask() << "/" << prevState->getStateNum() << "-"
+                << _state->getStateNum() << "]" << std::endl;
+    }
+    else
+    {
+      std::cerr << "Failed to set state \"" << current_state_.MainState->getStateName() << "\" to \""
+                << _state->getStateName() << "\" : Mask is [" << _state->getStateTransMask() << "/"
+                << current_state_.MainState->getStateNum() << "-" << _state->getStateNum() << "]" << std::endl;
+      prevState = nullptr;
+      change_state_mutex.unlock();
+      return false;
+    }
+  }
+  change_state_mutex.unlock();
+  return true;
+}
+
+#if 0
+bool StateContext::setCurrentState(BaseState *_state)
+{
+  change_state_mutex.lock();
+
   BaseState *prevState = current_state_.MainState;
 
   if (!prevState)
@@ -121,10 +215,12 @@ bool StateContext::setCurrentState(BaseState *_state)
   change_state_mutex.unlock();
   return true;
 }
+#endif
 
 bool StateContext::setCurrentState(StateFlags flag)
 {
-  this->setCurrentState(StateStores[flag]);
+  bool ret = this->setCurrentState(StateStores[flag]);
+  return ret;
 }
 
 bool StateContext::setEnableForceSetState(bool force_flag)
@@ -247,7 +343,7 @@ std::string StateContext::createStateMessageText(void)
 bool StateContext::handleTwistCmd(bool _hasTwistCmd)
 {
   if (_hasTwistCmd)
-    return this->setCurrentState(StateStores[DRIVE_STATE]);
+    return this->setCurrentState(DRIVE_STATE);
   else
     return false;
 }
@@ -255,28 +351,17 @@ bool StateContext::handleTwistCmd(bool _hasTwistCmd)
 void StateContext::stateDecider(void)
 {
   // not running
-  while (thread_loop)
-  {
-    if (!ChangeStateFlags.empty())
-    {
-      this->setCurrentState(StateStores[ChangeStateFlags.front()]);
-      ChangeStateFlags.pop();
-    }
-    std::this_thread::sleep_for(std::chrono::microseconds(1000));
-  }
-  std::cerr << "StateDecider thread will be closed" << std::endl;
-  return;
 }
 
 void StateContext::InitContext(void)
 {
   thr_state_dec = new std::thread(&StateContext::stateDecider, this);
   thr_state_dec->detach();
-  this->setCurrentState(StateStores[START_STATE]);
+  this->setCurrentState(START_STATE);
   return;
 }
 bool StateContext::TFInitialized(void)
 {
-  return this->setCurrentState(StateStores[INITIAL_STATE]);
+  return this->setCurrentState(INITIAL_STATE);
 }
 }

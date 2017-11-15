@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   state
   vector_map_msgs
+  vector_map
   jsk_recognition_msgs
   amathutils
   dynamic_reconfigure
@@ -33,7 +34,7 @@ add_message_files(
 catkin_package(
   INCLUDE_DIRS include
   #LIBRARIES 
-  CATKIN_DEPENDS roscpp  tf std_msgs geometry_msgs autoware_msgs state  vector_map_msgs jsk_recognition_msgs amathutils 
+  CATKIN_DEPENDS roscpp  tf std_msgs geometry_msgs autoware_msgs state vector_map vector_map_msgs jsk_recognition_msgs amathutils
   DEPENDS system_lib
 )
 include_directories(
@@ -47,6 +48,7 @@ set(TARGET_SRC  nodes/decision_maker/decision_maker_node.cpp
 		nodes/decision_maker/decision_maker_node_decision.cpp
 		nodes/decision_maker/decision_maker_node_init.cpp
 		nodes/decision_maker/decision_maker_node_callback.cpp
+		nodes/decision_maker/decision_maker_node_stateupdate.cpp
 		nodes/decision_maker/decision_maker_node_publish.cpp
 		nodes/decision_maker/cross_road_area.cpp
 	)

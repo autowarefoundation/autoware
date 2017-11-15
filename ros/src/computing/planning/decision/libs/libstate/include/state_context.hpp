@@ -41,14 +41,13 @@ private:
   std::atomic<bool> thread_loop;
 
   std::thread *thr_state_dec;
-
-
   std::mutex change_state_mutex;
 
   void showStateMove(unsigned long long _state_num)
   {
     std::cout << "State will be [" << StateStores[_state_num]->getStateName() << "]" << std::endl;
   }
+  bool setCurrentState(BaseState *state);
 
 
 public:
@@ -104,7 +103,6 @@ public:
   bool inState(unsigned long long _state_num);
 
   bool setCurrentState(StateFlags flag);
-  bool setCurrentState(BaseState *state);
   bool disableCurrentState(unsigned long long);
 
   BaseState *getCurrentMainState(void);
@@ -114,6 +112,12 @@ public:
   BaseState **getCurrentStateHolderPtr(unsigned long long _state_num);
   void showCurrentStateName(void);
   std::string createStateMessageText(void);
+
+  unsigned long long getStateStateNum(BaseState *_state);
+  unsigned long long getStateTransMask(BaseState *_state);
+  bool isEmptyMainState(void);
+  bool isDifferentState(BaseState *_state_a, BaseState *_state_b);
+  unsigned char getStateFlags(BaseState *_state);
 
   std::string getCurrentStateName(StateKinds en);
 

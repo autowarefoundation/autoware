@@ -19,6 +19,15 @@ namespace decision_maker
 #define ANGLE_CURVE 40
 #define ANGLE_LEFT  (ANGLE_NEUTRAL - ANGLE_CURVE)
 #define ANGLE_RIGHT (ANGLE_NEUTRAL + ANGLE_CURVE)
+
+#define TPNAME_BASED_LANE_WAYPOINTS_ARRAY "/based/lane_waypoints_array"
+#define TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY "/lane_waypoints_array"
+#define LAMP_EMPTY  0
+#define LAMP_LEFT   1
+#define LAMP_RIGHT  2
+#define LAMP_HAZARD 3
+#define LAMP_ON 1
+#define LAMP_OFF 0
 }
 
 #endif

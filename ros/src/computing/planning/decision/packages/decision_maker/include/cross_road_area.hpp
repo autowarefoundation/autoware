@@ -10,7 +10,7 @@
 
 namespace decision_maker
 {
-#define CROSS_ROAD 3232
+
 class CrossRoadArea
 {
 public:
