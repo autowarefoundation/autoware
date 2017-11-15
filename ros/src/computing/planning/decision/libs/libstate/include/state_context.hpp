@@ -3,24 +3,23 @@
 
 #include <atomic>
 #include <iostream>
+#include <map>
+#include <mutex>
 #include <queue>
 #include <thread>
-#include <mutex>
 #include <unordered_map>
 #include <utility>
 
-
 #include "state.hpp"
-#include "state_main.hpp"
 #include "state_drive.hpp"
 #include "state_emg.hpp"
+#include "state_main.hpp"
 
 namespace state_machine
 {
 class StateContext
 {
 private:
-
   class StateHolder
   {
   public:
@@ -32,23 +31,21 @@ private:
     BaseState *OtherState;
   } current_state_;
 
-  std::vector<BaseState **> HolderList;
-
+  std::map<uint8_t, BaseState **> HolderMap;
   std::unordered_map<uint64_t, BaseState *> StateStores;
 
   bool enableForceSetState;
-  std::queue<unsigned long long> ChangeStateFlags;
+  std::queue<uint64_t> ChangeStateFlags;
   std::atomic<bool> thread_loop;
 
   std::thread *thr_state_dec;
   std::mutex change_state_mutex;
 
-  void showStateMove(unsigned long long _state_num)
+  void showStateMove(uint64_t _state_num)
   {
     std::cout << "State will be [" << StateStores[_state_num]->getStateName() << "]" << std::endl;
   }
   bool setCurrentState(BaseState *state);
-
 
 public:
   StateContext(void)
@@ -73,16 +70,16 @@ public:
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
-    HolderList.push_back(&current_state_.MainState);
-    HolderList.push_back(&current_state_.AccState);
-    HolderList.push_back(&current_state_.StrState);
-    HolderList.push_back(&current_state_.BehaviorState);
-    HolderList.push_back(&current_state_.PerceptionState);
-    HolderList.push_back(&current_state_.OtherState);
+    HolderMap[MAIN_STATE] = &current_state_.MainState;
+    HolderMap[ACC_STATE] = &current_state_.AccState;
+    HolderMap[STR_STATE] = &current_state_.StrState;
+    HolderMap[BEHAVIOR_STATE] = &current_state_.BehaviorState;
+    HolderMap[PERCEPTION_STATE] = &current_state_.PerceptionState;
+    HolderMap[OTHER_STATE] = &current_state_.OtherState;
 
-    for (auto &&p : HolderList)
+    for (auto &p : HolderMap)
     {
-      *p = nullptr;
+      *p.second = nullptr;
     }
     thread_loop = true;
 
@@ -97,32 +94,33 @@ public:
   void update(void);
   void stateDecider(void);
 
-  bool isState(BaseState *base, unsigned long long _state_num);
-  bool isCurrentState(unsigned long long _state_num);
-  bool isCurrentState(unsigned char _state_kind, unsigned long long _state_num);
-  bool inState(unsigned long long _state_num);
+  bool isState(BaseState *base, uint64_t _state_num);
+  bool isCurrentState(uint64_t _state_num);
+  bool isCurrentState(uint8_t _state_kind, uint64_t _state_num);
+  bool inState(uint64_t _state_num);
 
-  bool setCurrentState(StateFlags flag);
-  bool disableCurrentState(unsigned long long);
+  bool setCurrentState(uint64_t flag);
+  bool disableCurrentState(uint64_t);
 
   BaseState *getCurrentMainState(void);
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
-  BaseState **getCurrentStateHolderPtr(unsigned long long _state_num);
+  BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
   void showCurrentStateName(void);
   std::string createStateMessageText(void);
 
-  unsigned long long getStateStateNum(BaseState *_state);
-  unsigned long long getStateTransMask(BaseState *_state);
+  uint64_t getStateNum(BaseState *_state);
+  uint64_t getStateTransMask(BaseState *_state);
   bool isEmptyMainState(void);
   bool isDifferentState(BaseState *_state_a, BaseState *_state_b);
-  unsigned char getStateFlags(BaseState *_state);
+  uint8_t getStateKind(BaseState *_state);
+  bool isMainState(BaseState *_state);
 
-  std::string getCurrentStateName(StateKinds en);
+  std::string getCurrentStateName(uint8_t kind);
 
   bool setEnableForceSetState(bool force_flag);
-  BaseState *getStateObject(unsigned long long _state_num);
+  BaseState *getStateObject(uint64_t _state_num);
   void InitContext(void);
 
   bool TFInitialized(void);

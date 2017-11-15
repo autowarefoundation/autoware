@@ -9,7 +9,6 @@
 
 namespace state_machine
 {
-
 // StartState
 class StartState : public State<StartState>
 {
@@ -19,11 +18,13 @@ private:
   {
     StateName = "Start";
     StateNum = START_STATE;
-    StateTransMask = (unsigned long long)STATE_END - 1;
+    StateTransMask = (uint64_t)STATE_END - 1;
     StateKind = MAIN_STATE;
   }
+
 public:
-  virtual void update (void) override{
+  virtual void update(void) override
+  {
   }
 };
 

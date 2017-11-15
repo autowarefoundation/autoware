@@ -1,11 +1,11 @@
 #ifndef __STATE_HPP__
 #define __STATE_HPP__
 
+#include <functional>
 #include <iostream>
 #include <memory>
-#include <vector>
-#include <functional>
 #include <state_flags.hpp>
+#include <vector>
 
 namespace state_machine
 {
@@ -44,15 +44,16 @@ protected:
   BaseState()
   {
   }
+
 public:
   virtual void update(void) = 0;
   virtual void showStateName(void) = 0;
-  virtual unsigned long long getStateTransMask(void) = 0;
-  virtual unsigned long long getStateNum(void) = 0;
+  virtual uint64_t getStateTransMask(void) = 0;
+  virtual uint64_t getStateNum(void) = 0;
   virtual std::string getStateName(void) = 0;
-  virtual unsigned char getStateKind(void) = 0;
-  virtual void setUpdateFunc(std::function<void(void)> _f)=0;
-  virtual void setChangedFunc(std::function<void(void)> _f)=0;
+  virtual uint8_t getStateKind(void) = 0;
+  virtual void setUpdateFunc(std::function<void(void)> _f) = 0;
+  virtual void setChangedFunc(std::function<void(void)> _f) = 0;
 };
 
 // Interface
@@ -61,32 +62,35 @@ class State : public BaseState
 {
 protected:
   std::string StateName = "Base";
-  unsigned long long StateNum;
-  unsigned long long StateTransMask;
-  unsigned char StateKind;
+  uint64_t StateNum;
+  uint64_t StateTransMask;
+  uint8_t StateKind;
 
   std::function<void(void)> StateUpdateFunc;
   std::function<void(void)> StateChangedFunc;
-  
+
   State()
   {
     StateNum = 0;
-    StateTransMask = (unsigned long long)STATE_END - 1;
+    StateTransMask = (uint64_t)STATE_END - 1;
     StateKind = UNKNOWN_STATE;
   }
 
 public:
-  virtual void update(void){
-	if(StateUpdateFunc)
-		StateUpdateFunc();
+  virtual void update(void)
+  {
+    if (StateUpdateFunc)
+      StateUpdateFunc();
   }
 
-  virtual void setUpdateFunc(std::function<void(void)> _f){
-	StateUpdateFunc = _f;
+  virtual void setUpdateFunc(std::function<void(void)> _f)
+  {
+    StateUpdateFunc = _f;
   }
 
-  virtual void setChangedFunc(std::function<void(void)> _f){
-	StateChangedFunc = _f;
+  virtual void setChangedFunc(std::function<void(void)> _f)
+  {
+    StateChangedFunc = _f;
   }
 
   void showStateName(void)
@@ -105,16 +109,16 @@ public:
     return std::string(StateName);
   }
 
-  unsigned char getStateKind(void)
+  uint8_t getStateKind(void)
   {
     return StateKind;
   }
 
-  unsigned long long getStateTransMask(void)
+  uint64_t getStateTransMask(void)
   {
     return StateTransMask;
   }
-  unsigned long long getStateNum(void)
+  uint64_t getStateNum(void)
   {
     return StateNum;
   }
