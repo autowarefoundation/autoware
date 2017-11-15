@@ -5,6 +5,7 @@ from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 from xml.dom import minidom
 from os import listdir
 from os.path import realpath
+from config.env import env
 
 
 def prettify(elem):
@@ -69,7 +70,7 @@ def create_initialization_launch_file(rosbag=True):
             "file": "$(find model_publisher)/launch/vehicle_model.launch",
         }
     )
-    SubElement(vehicle_model, "arg", {"name": "model_path", "value": realpath("../../../../ros/src/.config/model/default.urdf")})
+    SubElement(vehicle_model, "arg", {"name": "model_path", "value": env["PATH_AUTOWARE_DIR"] + "/ros/src/.config/model/default.urdf"})
 
 
     launch.append(Comment("tf2 web republisher"))

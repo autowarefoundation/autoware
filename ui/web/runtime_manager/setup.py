@@ -51,10 +51,12 @@ chdir("{}/app/controllers".format(rootpath))
 call(["python", "make_launch_files.py"])
 
 # env
-chdir("{}/app/views".format(rootpath))
-call(["ln", "-s", "../config/.env", ".env"])
 chdir("{}/app/config".format(rootpath))
 call(["ln", "-s", "sample.env", ".env"])
+chdir("{}/app/views".format(rootpath))
+call(["ln", "-s", "../config/.env", ".env"])
+chdir("{}/app/controllers".format(rootpath))
+call(["ln", "-s", "../config", "config"])
 
 # gulp browserify
 chdir("{}/app/views".format(rootpath))
