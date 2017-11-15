@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "moc_mainwindow.cpp"
 
 InitTrackerView::InitTrackerView(QWidget * parent)
     : QGraphicsView(parent)
@@ -209,7 +208,7 @@ void UpdateTrackerView::slotUpdateTrackerFinish(LaserScan scan, QMap<int, Tracke
     {
         bool flag=trackidlist.contains(curidlist[i]);
         if(!flag)
-        {            
+        {
             pathmap.remove(curidlist[i]);
         }
     }

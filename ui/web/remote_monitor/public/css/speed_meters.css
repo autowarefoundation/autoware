@@ -1,0 +1,293 @@
+/*
+$meter-bg-color: rgb(32,32,32);
+$ring-color: #eee;
+$grad-color: #9affff;
+*/
+@import url(https://fonts.googleapis.com/css?family=Coda:400|Roboto+Mono:400,400italic);
+* {
+  box-sizing: border-box;
+}
+
+.dashboard {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  padding: 2%;
+  background-color: white;
+  border-style: solid;
+  border-color: #00a3e0;
+  border-radius: 5%;
+  font-family: 'Coda', cursive;
+}
+
+.meter {
+  display: inline-block;
+  position: relative;
+  width: 10vw;
+  height: 10vw;
+  background-color: white;
+  border-radius: 50%;
+  margin: 0 0.5rem;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.16), inset 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+.meter:before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 107%;
+  left: -3.5%;
+  top: -3.5%;
+  bottom: -3.5%;
+  border-radius: 50%;
+  background: #333;
+  z-index: -1;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+          transform: translate3d(-50%, -50%, 0);
+  text-align: center;
+  color: #555;
+}
+.label.label-value {
+  color: #eee;
+}
+.label span {
+  text-transform: uppercase;
+}
+
+.label-unit {
+  top: 82.5%;
+}
+.label-unit div {
+  font-size: 1rem;
+}
+.meter--big-label .label-unit div {
+  font-size: 0;
+}
+
+.label-value {
+  top: 50%;
+  line-height: 1.25;
+}
+.label-value div, .label-value span {
+  font-size: 0;
+}
+.meter--big-label .label-value div, .meter--big-label .label-value span {
+  font-size: 2.5rem;
+}
+.label-value div {
+  font-family: 'Roboto Mono', monospace;
+  font-style: italic;
+}
+.meter--big-label .label-value span {
+  font-size: 1rem;
+}
+.label-value span {
+  display: block;
+  position: absolute;
+  left: 50%;
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+}
+
+.needle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 1.8%;
+  height: 48%;
+  -webkit-transform: translate3d(-50%, 0, 0);
+          transform: translate3d(-50%, 0, 0);
+  -webkit-transform-origin: 50% 0;
+          transform-origin: 50% 0;
+  background-color: #e30;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+.needle:before, .needle:after {
+  display: block;
+  position: absolute;
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+/*.needle:before {
+  left: -3px;
+  border-width: 0 3px 140px 0;
+  border-color: transparent #ff5122 transparent transparent;
+}
+.needle:after {
+  right: -3px;
+  border-width: 140px 3px 0 0;
+  border-color: #d52e00 transparent transparent transparent;
+}*/
+
+.needle-axle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: 15%;
+  height: 15%;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+          transform: translate3d(-50%, -50%, 0);
+  border-radius: 50%;
+  background-color: #333;
+  color: #eee;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  cursor: pointer;
+}
+.needle-axle:hover {
+  background-color: black;
+}
+.meter--big-label .needle-axle {
+  width: 37.5%;
+  height: 37.5%;
+}
+
+.grad {
+  position: absolute;
+  display: inline-block;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #555;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+          transform: translate3d(-50%, -50%, 0);
+  font-weight: bold;
+}
+.grad.redzone {
+  color: #e30;
+}
+.meter--rpm .grad {
+  font-size: 2rem;
+}
+
+.grad-tick.redzone,
+.grad-tick--half.redzone,
+.grad-tick--quarter.redzone {
+  background-color: #e30;
+}
+
+.grad-tick {
+  position: absolute;
+  display: block;
+  width: 4px;
+  height: 0.75em;
+  -webkit-transform-origin: 50% 0;
+          transform-origin: 50% 0;
+  background-color: #555;
+}
+
+.grad-tick--half {
+  width: 2px;
+  height: 0.5em;
+}
+
+.grad-tick--quarter {
+  width: 2px;
+  height: 0.25em;
+}
+
+.meter--gear {
+  width: 2vw;
+  height: 2vw;
+  margin: 0;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.16), inset 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+.meter--gear:before {
+  width: 128%;
+  height: 128%;
+  left: -14%;
+  top: -14%;
+  bottom: -14%;
+}
+.meter--gear div {
+  font-size: 2rem;
+  text-align: center;
+  line-height: 4rem;
+  font-family: 'Roboto Mono', monospace;
+  font-style: italic;
+  font-weight: bold;
+  color: #555;
+}
+.meter--gear div.redzone {
+  color: #e30;
+}
+
+.loader {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+          transform: translate3d(-50%, -50%, 0);
+  background: tomato;
+  color: white;
+  padding: 2rem;
+  text-transform: uppercase;
+}
+.loader.active {
+  display: inline-block;
+}
+
+.btn-volume {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.5rem;
+  height: 2.53rem;
+  line-height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  color: gray;
+  border: 4px solid;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.btn-volume.active {
+  color: tomato;
+  border-color: tomato;
+}
+
+body {
+  text-align: center;
+  /*	background:
+  		linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+  		linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+  		linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+  		linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+  		linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+  		linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+  		background-color: #131313;
+  		background-size: 20px 20px;
+  */
+}
+
+.head,
+.help {
+  padding: 1rem;
+  color: #888;
+  text-align: center;
+  font-style: italic;
+}
+
+.help {
+  border-top: 1px solid;
+}
+
+.head {
+  border-bottom: 1px solid;
+}
+
+h1 {
+  margin: 0;
+  font-weight: normal;
+  text-transform: uppercase;
+}
