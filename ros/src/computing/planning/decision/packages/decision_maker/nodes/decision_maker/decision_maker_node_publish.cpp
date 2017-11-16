@@ -112,13 +112,13 @@ void DecisionMakerNode::update_msgs(void)
     state_text_msg.text = createStateMessageText();
 
     autoware_msgs::state state_msg;
-    state_msg.main_state = ctx->getCurrentStateName(state_machine::StateKinds::MAIN_STATE);
-    state_msg.acc_state = ctx->getCurrentStateName(state_machine::StateKinds::ACC_STATE);
-    state_msg.str_state = ctx->getCurrentStateName(state_machine::StateKinds::STR_STATE);
-    state_msg.behavior_state = ctx->getCurrentStateName(state_machine::StateKinds::BEHAVIOR_STATE);
+    state_msg.main_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::MAIN_STATE);
+    state_msg.acc_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::ACC_STATE);
+    state_msg.str_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::STR_STATE);
+    state_msg.behavior_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::BEHAVIOR_STATE);
     
     Pubs["states"].publish(state_msg);
-    Pubs["state"].publish(state_string_msg);
+    //Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);
   }
   else

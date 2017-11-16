@@ -93,6 +93,7 @@ private:
 
   autoware_msgs::LaneArray current_based_lane_array_;
   autoware_msgs::LaneArray current_controlled_lane_array_;
+  autoware_msgs::LaneArray current_stopped_lane_array_;
 
 
   // Current way/behavior status
@@ -154,9 +155,18 @@ private:
 
   void setWaypointState(autoware_msgs::LaneArray &lane_array);
 
-
+  void publishStoppedLaneArray(void);
+  void publishControlledLaneArray(void);
+  void updateLaneWaypointsArray(void);
+  void changeVelocityBasedLane(void);
+  void changeVelocityLane(int dir);
+  
   void updateStateSTR(int status);
   void updateStateStop(int status);
+  void changedStateStop(int status);
+  void changedStateAcc(int status);
+  void changedStateDec(int status);
+  void changedStateKeep(int status);
   void setupStateCallback(void);
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
@@ -192,6 +202,7 @@ public:
     this->initROS(argc, argv);
 
     vector_map_init = false;
+
     vMap_Areas_flag = vMap_Lines_flag = vMap_Points_flag = vMap_CrossRoads_flag = false;
 
     ClosestArea_ = nullptr;

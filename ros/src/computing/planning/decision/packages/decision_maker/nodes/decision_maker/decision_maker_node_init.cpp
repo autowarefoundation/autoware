@@ -94,11 +94,11 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // to move initial state from start state
   // this part confirm broadcasting tf(map to world)
-  std::cout << "wait for tf of map to world" << std::endl;
-  tf::TransformListener tf;
-  tf.waitForTransform("map", "world", ros::Time(), ros::Duration(15));
-  if (!ctx->TFInitialized())
-	  std::cerr << "failed initialization " << std::endl;
+ // std::cout << "wait for tf of map to world" << std::endl;
+ // tf::TransformListener tf;
+ // tf.waitForTransform("map", "world", ros::Time(), ros::Duration(15));
+ // if (!ctx->TFInitialized())
+ //	  std::cerr << "failed initialization " << std::endl;
   g_vmap.subscribe(nh_, 
 		  Category::POINT |  Category::LINE |  Category::VECTOR | Category::AREA | Category::POLE | //basic class
 		  Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
@@ -108,14 +108,17 @@ void DecisionMakerNode::initROS(int argc, char **argv)
     if (enableDisplayMarker)
       displayMarker();
   }
+
+  ROS_INFO("Initialized OUT\n");
+  Subs["lane_waypoints_array"] =
+	  nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
 }
 
 void DecisionMakerNode::initVectorMap(void)
 {
       int _index = 0;
-      if(vector_map_init)
-	      return;
-
+      //if(vector_map_init)
+	//      return;
       std::vector<CrossRoad> crossroads = g_vmap.findByFilter([](const CrossRoad &crossroad){return true;});
       if(crossroads.empty()){
 	      ROS_INFO("crossroad have not found\n");
@@ -175,8 +178,6 @@ void DecisionMakerNode::initVectorMap(void)
 	intersects.push_back(carea);
       }
 
-      Subs["lane_waypoints_array"] =
-	      nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
 }
 
 bool DecisionMakerNode::initVectorMapClient()

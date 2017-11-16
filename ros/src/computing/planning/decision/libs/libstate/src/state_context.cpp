@@ -152,10 +152,8 @@ bool StateContext::setEnableForceSetState(bool force_flag)
 
 std::string StateContext::getCurrentStateName(uint8_t _kind)
 {
-	if(_kind<= NULL_STATE){
-		if (*HolderMap[_kind])
-			return (*HolderMap[_kind])->getStateName();
-	}
+	if (*HolderMap[_kind])
+		return (*HolderMap[_kind])->getStateName();
 	return std::string("");
 }
 std::string StateContext::getCurrentStateName(void)
