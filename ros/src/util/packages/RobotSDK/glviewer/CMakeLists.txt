@@ -12,18 +12,15 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
   INCLUDE_DIRS include/glviewer
   LIBRARIES glviewer
-#  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS system_lib
 )
 
 ###########
@@ -43,31 +40,31 @@ EXECUTE_PROCESS(
 )
 
 if("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "${ARCHITECTURE}" STREQUAL "aarch64")
-include_directories(
-  include/glviewer
-  ${catkin_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-)
+    include_directories(
+      include/glviewer
+      ${catkin_INCLUDE_DIRS}
+      ${CMAKE_CURRENT_SOURCE_DIR}
+      ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
-add_library(glviewer
-  GLViewer/glviewer.cpp
-  include/glviewer/glviewer.h
-)
+    add_library(glviewer
+      GLViewer/glviewer.cpp
+      include/glviewer/glviewer.h
+    )
 
-target_link_libraries(glviewer
-  ${catkin_LIBRARIES}
-  Qt5::Core
-  Qt5::Widgets
-  Qt5::OpenGL
-)
-#############
-## Install ##
-#############
+    target_link_libraries(glviewer
+      ${catkin_LIBRARIES}
+      Qt5::Core
+      Qt5::Widgets
+      Qt5::OpenGL
+    )
+    #############
+    ## Install ##
+    #############
 
-install(
-  DIRECTORY include/glviewer
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
+    install(
+      DIRECTORY include/glviewer
+      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+      FILES_MATCHING PATTERN "*.h"
 )
 endif()

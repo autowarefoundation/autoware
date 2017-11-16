@@ -36,7 +36,7 @@ class Index extends React.Component {
                     {from: 4, to: 5, physics: true,  label: "Mission Planning -> Motion Planning"},
                     {from: 1, to: 6, physics: true,  label: "Initialization -> Sensing"},
                     {from: 6, to: 3, physics: true,  label: "Sensing -> Localization"},
-                    {from: 6, to: 7, physics: true,  label: "Sensing -> Detection"},
+                    //{from: 6, to: 7, physics: true,  label: "Sensing -> Detection"},
                     {from: 7, to: 5, physics: false, label: "Detection -> Motion Planning"},
                     {from: 8, to: 9, physics: true,  label: "ROSBAG -> Play"},
                 ]
