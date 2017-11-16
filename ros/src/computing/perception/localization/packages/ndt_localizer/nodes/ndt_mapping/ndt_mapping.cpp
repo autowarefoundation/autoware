@@ -135,7 +135,6 @@ static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static bool isMapUpdate = true;
-static bool _use_openmp = false;
 static bool _use_imu = false;
 static bool _use_odom = false;
 static bool _imu_upside_down = false;
@@ -243,7 +242,7 @@ static void imu_odom_calc(ros::Time current_time)
   guess_pose_imu_odom.roll  = previous_pose.roll  + offset_imu_odom_roll;
   guess_pose_imu_odom.pitch = previous_pose.pitch + offset_imu_odom_pitch;
   guess_pose_imu_odom.yaw   = previous_pose.yaw   + offset_imu_odom_yaw;
- 
+
   previous_time = current_time;
 }
 
@@ -276,7 +275,7 @@ static void odom_calc(ros::Time current_time)
   guess_pose_odom.roll  = previous_pose.roll  + offset_odom_roll;
   guess_pose_odom.pitch = previous_pose.pitch + offset_odom_pitch;
   guess_pose_odom.yaw   = previous_pose.yaw   + offset_odom_yaw;
- 
+
   previous_time = current_time;
 }
 
@@ -325,7 +324,7 @@ static void imu_calc(ros::Time current_time)
   guess_pose_imu.z     = previous_pose.z     + offset_imu_z;
   guess_pose_imu.roll  = previous_pose.roll  + offset_imu_roll;
   guess_pose_imu.pitch = previous_pose.pitch + offset_imu_pitch;
-  guess_pose_imu.yaw   = previous_pose.yaw   + offset_imu_yaw;  
+  guess_pose_imu.yaw   = previous_pose.yaw   + offset_imu_yaw;
 
   previous_time = current_time;
 }
@@ -492,7 +491,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   voxel_grid_filter.filter(*filtered_scan_ptr);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
-  
+
   ndt.setTransformationEpsilon(trans_eps);
   ndt.setStepSize(step_size);
   ndt.setResolution(ndt_res);
@@ -547,18 +546,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 #ifdef USE_FAST_PCL
-  if (_use_openmp == true)
-  {
     ndt.omp_align(*output_cloud, init_guess);
     fitness_score = ndt.omp_getFitnessScore();
-  }
-  else
-  {
-#endif
+#else
     ndt.align(*output_cloud, init_guess);
     fitness_score = ndt.getFitnessScore();
-#ifdef USE_FAST_PCL
-  }
 #endif
 
   t_localizer = ndt.getFinalTransformation();
@@ -654,7 +646,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   previous_scan_time.sec = current_scan_time.sec;
   previous_scan_time.nsec = current_scan_time.nsec;
-  
+
 
   offset_imu_x = 0.0;
   offset_imu_y = 0.0;
@@ -676,7 +668,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   offset_imu_odom_roll = 0.0;
   offset_imu_odom_pitch = 0.0;
   offset_imu_odom_yaw = 0.0;
-  
+
   // Calculate the shift between added_pos and current_pos
   double shift = sqrt(pow(current_pose.x - added_pose.x, 2.0) + pow(current_pose.y - added_pose.y, 2.0));
   if (shift >= min_add_scan_shift)
@@ -803,13 +795,11 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
   // setting parameters
-  private_nh.getParam("use_openmp", _use_openmp);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
 
-  std::cout << "use_openmp: " << _use_openmp << std::endl;
   std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
