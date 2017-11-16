@@ -36,7 +36,6 @@ publish data as ractangular plane
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include <visualization_msgs/Marker.h>
 #include <jsk_rviz_plugins/Pictogram>
 #include <cstdio>
 #include <cstdlib>
@@ -57,7 +56,7 @@ publish data as ractangular plane
 #include <tf/transform_datatypes.h>
 
 #define MYNAME		"pos_downloader"
-#define MARKERNAME	"mo_marker"
+#define PICTOGRAMNAME "mo_pictogram"
 #define STARTTIME	(0)		// sec since 1970-01-01 (0==now)
 #define DELAYSEC	(0)		// delay sec for pos_uploader
 #define POSUP_DZ	(40)		// z offset of PosUp
@@ -69,8 +68,8 @@ publish data as ractangular plane
 #define TYPE_CAR	(2)
 #define TYPE_PEDESTRIAN	(3)
 
-#define ANON_MARKER_ID_MIN	(2)
-#define ANON_MARKER_ID_MAX	(0x7f000000)
+#define ANON_MARKER_ID_MIN     (2)
+#define ANON_MARKER_ID_MAX     (0x7f000000)
 
 using namespace std;
 
@@ -109,11 +108,6 @@ static double alpha_percent(int diffmsec)
   return (1.0 - diffmsec/TOTAL_LIFETIME/1000.0);
 }
 
-static int create_markerid(geometry_msgs::Pose& pose, int type)
-{
-  return (int)(pose.position.x*11 + pose.position.y*13 + pose.position.z + type*5) % ANON_MARKER_ID_MAX;
-}
-
 static std::vector<std::string> split(const string& input, char delimiter)
 {
     std::istringstream stream(input);
@@ -126,10 +120,10 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static void dbg_out_marker(jsk_rviz_plugins::Pictogram pictogram)
+static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram)
 {
 #ifdef POS_DB_VERBOSE
-  std::cout << marker.id << " : "
+  std::cout
 	<< pictogram.pose.position.x << ","
 	<< pictogram.pose.position.y << ","
 	<< pictogram.pose.position.z << " : "
@@ -146,23 +140,17 @@ static void publish_car(int id, int is_current, ros::Time now,
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
-  marker.ns = MARKERNAME;
   pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
   pictogram.pose = pose;
   if (is_current) {
 #ifdef CURRENT_CAR_DIRECTLY
-    marker.id = id;
-    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-    marker.mesh_resource = "package://pos_db/model/prius_model.dae";
-    marker.mesh_use_embedded_materials = true;
-    marker.lifetime = ros::Duration();
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = 0.0;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
+    pictogram.character = "fa-car";
+    // marker.lifetime = ros::Duration();
+    pictogram.color.r = 0.0;
+    pictogram.color.g = 0.0;
+    pictogram.color.b = 0.0;
+    pictogram.color.a = 0.0;
+    pictogram.size = 1.0;
 
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
@@ -176,8 +164,8 @@ static void publish_car(int id, int is_current, ros::Time now,
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    pub.publish(marker);
-    dbg_out_marker(marker);
+    pub.publish(pictogram);
+    dbg_out_pictogram(pictogram);
 #else /* CURRENT_CAR_DIRECTLY */
     ros::Time newnow = now - ros::Duration(diffmsec/1000.0);
     if (now_map.count(id) == 0 || newnow >= now_map[id]) {
@@ -187,19 +175,18 @@ static void publish_car(int id, int is_current, ros::Time now,
 #endif /* CURRENT_CAR_DIRECTLY */
 
   } else {
-    marker.id = create_markerid(pose, 1);
-    marker.type = visualization_msgs::Marker::SPHERE;
-    marker.lifetime = ros::Duration(life_time);
-    marker.color.r = 1.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = alpha_percent(diffmsec);
-    marker.scale.x = 2.0;
-    marker.scale.y = 2.0;
-    marker.scale.z = 2.0;
+    //marker.type = visualization_msgs::Marker::SPHERE;
+    // marker.lifetime = ros::Duration(life_time);
+    pictogram.character = "circle"
+    pictogram.ttl = life_time;
+    pictogram.color.r = 1.0;
+    pictogram.color.g = 0.0;
+    pictogram.color.b = 0.0;
+    pictogram.color.a = alpha_percent(diffmsec);
+    pictogram.size = 2;
     pictogram.pose.position.z += 0.5; // == #1/2
-    pub.publish(marker);
-    dbg_out_marker(marker);
+    pub.publish(pictogram);
+    dbg_out_pictogram(pictogram);
   }
 }
 
@@ -218,22 +205,15 @@ static void publish_car_summary(ros::Time now)
     }
     pictogram.header.frame_id = "/map";
     pictogram.header.stamp = cur;
-    marker.ns = MARKERNAME;
     pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
-    marker.id = id;
     pictogram.pose = pose;
-    marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-    marker.mesh_resource = "package://pos_db/model/prius_model.dae";
-    marker.mesh_use_embedded_materials = true;
-    marker.lifetime = ros::Duration();
-    marker.color.r = 0.0;
-    marker.color.g = 0.0;
-    marker.color.b = 0.0;
-    marker.color.a = 0.0;
-    marker.scale.x = 1.0;
-    marker.scale.y = 1.0;
-    marker.scale.z = 1.0;
-
+    pictogram.character = "fa-car";
+    // marker.lifetime = ros::Duration();
+    pictogram.color.r = 0.0;
+    pictogram.color.g = 0.0;
+    pictogram.color.b = 0.0;
+    pictogram.color.a = 0.0;
+    pictogram.size = 1;
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
     tf::Quaternion q2(pictogram.pose.orientation.x, pictogram.pose.orientation.y, pictogram.pose.orientation.z, pictogram.pose.orientation.w);
@@ -246,8 +226,8 @@ static void publish_car_summary(ros::Time now)
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    pub.publish(marker);
-    dbg_out_marker(marker);
+    pub.publish(pictogram);
+    dbg_out_pictogram(pictogram);
     prev_map[id] = cur;
   }
   car_map.clear();
@@ -261,43 +241,45 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
-  marker.ns = MARKERNAME;
   pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
-  marker.type = visualization_msgs::Marker::CYLINDER;
-  marker.lifetime = ros::Duration(life_time);
-  marker.id = create_markerid(pose, 2);
+  //marker.type = visualization_msgs::Marker::CYLINDER;
+  pictogram.character = "dot-circle-o"
+  // marker.lifetime = ros::Duration(life_time);
+  pictogram.ttl = life_time;
   if (is_pedestrian) {
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
+    pictogram.color.r = 0.0;
+    pictogram.color.g = 1.0;
+    pictogram.color.b = 1.0;
     pose.position.z += pedestrian_dz;
   } else {
-    marker.color.r = 1.0;
-    marker.color.g = 1.0;
-    marker.color.b = 1.0;
+    pictogram.color.r = 1.0;
+    pictogram.color.g = 1.0;
+    pictogram.color.b = 1.0;
     pose.position.z += posup_dz;
   }
-  marker.color.a = alpha_percent(diffmsec);
-  marker.scale.x = 0.6;
-  marker.scale.y = 0.6;
-  marker.scale.z = 1.2; // #1
+  pictogram.color.a = alpha_percent(diffmsec);
+  // marker.scale.x = 0.6;
+  // marker.scale.y = 0.6;
+  // marker.scale.z = 1.2; // #1
+  pictogram.size = 1;
   pictogram.pose = pose;
   pictogram.pose.position.z += 0.6; // == #1/2
-  pub.publish(marker);
-  dbg_out_marker(marker);
+  pub.publish(pictogram);
+  dbg_out_pictogram(pictogram);
 
-  marker.id = 1 + create_markerid(pose, 2);
-  marker.type = visualization_msgs::Marker::SPHERE;
-  marker.scale.x = 0.6; // #2
-  marker.scale.y = 0.6;
-  marker.scale.z = 0.6;
+  //marker.type = visualization_msgs::Marker::SPHERE;
+  pictogram.character = "circle"
+  // marker.scale.x = 0.6; // #2
+  // marker.scale.y = 0.6;
+  // marker.scale.z = 0.6;
+  pictogram.size = 1;
   pictogram.pose = pose;
   pictogram.pose.position.z += 1.2 + 0.3 + 0.1; // == #1 + #2/2 + alpha
-  pub.publish(marker);
-  dbg_out_marker(marker);
+  pub.publish(pictogram);
+  dbg_out_pictogram(pictogram);
 }
 
-static int result_to_marker(const string& idstr, ros::Time now,
+static int result_to_pictogram(const string& idstr, ros::Time now,
 			    geometry_msgs::Pose& pose, int type,
 			    int diffmsec, int is_swap)
 {
@@ -369,7 +351,7 @@ static int get_timeval(const char *tstr, time_t *sp, int *np)
   return 0;
 }
 
-static void marker_publisher(const std_msgs::String& msg, int is_swap)
+static void pictogram_publisher(const std_msgs::String& msg, int is_swap)
 {
   std::vector<std::string> db_data = split(msg.data, '\n');
   std::vector<std::string> cols;
@@ -435,7 +417,7 @@ static void marker_publisher(const std_msgs::String& msg, int is_swap)
     now_sec = now.toSec();
     now_nsec = now.toNSec()%(1000*1000*1000);
     get_timeval(cols[10].c_str(), &prv_sec, &prv_nsec);
-    result_to_marker(cols[0], now, pose, type,
+    result_to_pictogram(cols[0], now, pose, type,
       (now_sec-prv_sec)*1000+(now_nsec-prv_nsec)/1000/1000, is_swap);
   }
 
@@ -487,7 +469,7 @@ static void send_sql(time_t diff_sec)
     std::cout << "return data: \"" << db_response << "\"" << std::endl;
 #endif /* POS_DB_VERBOSE */
     msg.data = db_response.c_str();
-    marker_publisher(msg, 1);
+    pictogram_publisher(msg, 1);
   }
 }
 
@@ -533,7 +515,7 @@ int main(int argc, char **argv)
 
   string home_dir = getenv("HOME");
 
-  pub = nh.advertise<visualization_msgs::Marker>(MARKERNAME, 1);
+  pub = nh.advertise<jsk_rviz_plugins::Pictogram>(PICTOGRAMNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
   cout << "time=" << args[0] << endl;
   nh.param<double>(MYNAME "/delay", args[1], DELAYSEC);
