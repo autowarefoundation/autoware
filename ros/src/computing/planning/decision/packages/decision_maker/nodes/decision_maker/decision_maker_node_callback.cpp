@@ -35,43 +35,6 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
   ctx->setEnableForceSetState(true);
   _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
   ctx->setEnableForceSetState(false);
-
-#if 0
-  if (ctx->isCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE) ||
-      ctx->isCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE))
-  {
-    int count = 0;
-    for (auto &lane : current_controlled_lane_array_.lanes)
-    {
-      autoware_msgs::lane temp_lane = lane;
-      for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
-      {
-        double v0 = temp_lane.waypoints.at(wpi - 1).twist.twist.linear.x;
-        double v = temp_lane.waypoints.at(wpi).twist.twist.linear.x;
-
-        amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
-                             temp_lane.waypoints.at(wpi).pose.pose.position.y,
-                             temp_lane.waypoints.at(wpi).pose.pose.position.z);
-        amathutils::point p1(temp_lane.waypoints.at(wpi - 1).pose.pose.position.x,
-                             temp_lane.waypoints.at(wpi - 1).pose.pose.position.y,
-                             temp_lane.waypoints.at(wpi - 1).pose.pose.position.z);
-
-        double distance = amathutils::find_distance(&p0, &p1);
-        double _weight = distance * 0.05;
-        if (ctx->isCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE))
-        {
-          _weight *= 1;
-        }
-        else if (ctx->isCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE))
-        {
-          _weight *= -1;
-        }
-        lane.waypoints.at(wpi).twist.twist.linear.x =
-            lane.waypoints.at(wpi).twist.twist.linear.x + lane.waypoints.at(wpi).twist.twist.linear.x * _weight;
-      }
-    }
-  }
-#endif
   return _ret;
 }
 
@@ -96,6 +59,7 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
   else
   {
+	  fprintf(stderr,"disable lanechange\n");
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
   }
@@ -136,10 +100,8 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   {
     ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
-  // ctx->handleTrafficLight(CurrentTrafficlight);
 }
 
-//
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   if (ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
@@ -326,23 +288,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
   }
 
-#if 0
-	// velocity
-	double _temp_sum = 0;
-	for (int i = 0; i < VEL_AVERAGE_COUNT; i++)
-	{
-		_temp_sum += amathutils::mps2kmph(msg.waypoints[i].twist.twist.linear.x);
-	}
-	average_velocity_ = _temp_sum / VEL_AVERAGE_COUNT;
-
-	if (std::fabs(average_velocity_ - current_velocity_) <= 2.0)
-		ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
-	else if (average_velocity_ - current_velocity_)
-		ctx->setCurrentState(state_machine::DRIVE_ACC_ACCELERATION_STATE);
-	else
-		ctx->setCurrentState(state_machine::DRIVE_ACC_DECELERATION_STATE);
-#endif
-
   // for publish plan of velocity
   publishToVelocityArray();
 
@@ -389,9 +334,4 @@ void DecisionMakerNode::callbackFromCurrentVelocity(const geometry_msgs::TwistSt
 {
   current_velocity_ = amathutils::mps2kmph(msg.twist.linear.x);
 }
-#if 0
-void DecisionMakerNode::callbackFromDynamicReconfigure(decision_maker::decision_makerConfig &config, uint32_t level){
-	ROS_INFO("Reconfigure Request: %d ", config.TARGET_WAYPOINT_COUNT);
-}
-#endif
 }

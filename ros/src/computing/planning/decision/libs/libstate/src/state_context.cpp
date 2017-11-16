@@ -36,7 +36,7 @@ void StateContext::update(void)
 
 void StateContext::changed(uint8_t _kind)
 {
-	if(_kind >  NULL_STATE){
+	if(_kind >  UNKNOWN_STATE){
 		return;
 	}
 
@@ -77,7 +77,7 @@ uint8_t StateContext::getStateKind(BaseState *_state)
   if (_state)
     return _state->getStateKind();
   else
-    return NULL_STATE;
+    return UNKNOWN_STATE;
 }
 
 uint64_t StateContext::getStateTransMask(BaseState *_state)
@@ -156,6 +156,7 @@ std::string StateContext::getCurrentStateName(uint8_t _kind)
 		return (*HolderMap[_kind])->getStateName();
 	return std::string("");
 }
+
 std::string StateContext::getCurrentStateName(void)
 {
   return this->getCurrentStateName(MAIN_STATE);
@@ -172,12 +173,13 @@ BaseState *StateContext::getStateObject(uint64_t _state_num)
 }
 
 
+
 BaseState **StateContext::getCurrentStateHolderPtr(uint8_t _kind)
 {
-	if(_kind >  NULL_STATE){
+	if(_kind >  UNKNOWN_STATE){
 		return nullptr;
 	}
-  return HolderMap[_kind];
+	return HolderMap[_kind];
 }
 
 BaseState **StateContext::getCurrentStateHolderPtr(uint64_t _state_num)
@@ -195,22 +197,21 @@ BaseState **StateContext::getCurrentStateHolderPtr(BaseState *_state)
 
 bool StateContext::disableCurrentState(uint64_t _state_num)
 {
-  BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-  if (state_ptr && this->isState((*state_ptr), _state_num))
-  {
-    *state_ptr = nullptr;
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+	if(isMainState(getStateObject(_state_num))){
+		return false;
+	}
+	if(isCurrentState(_state_num)){
+		(*getCurrentStateHolderPtr(_state_num)) = nullptr;
+		return true;
+	}else{
+		return false;
+	}
 }
 
 bool StateContext::isCurrentState(uint64_t _state_num)
 {
-  BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-  return (*state_ptr) ? (*state_ptr)->getStateNum() & _state_num ? true : false : false;
+	  BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
+	  return  (state_ptr) ?isState(*state_ptr, _state_num):false;
 }
 
 bool StateContext::isState(BaseState *base, uint64_t _state_num)

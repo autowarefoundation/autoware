@@ -45,16 +45,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["change_flag"] = nh_.subscribe("change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
   Subs["state_cmd"] = nh_.subscribe("state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
 
-//  // vector map subscriber
-//  Subs["vector_map_area"] =
-//      nh_.subscribe("/vector_map_info/area", 1, &DecisionMakerNode::callbackFromVectorMapArea, this);
-//  Subs["vector_map_point"] =
-//      nh_.subscribe("/vector_map_info/point", 1, &DecisionMakerNode::callbackFromVectorMapPoint, this);
-//  Subs["vector_map_line"] =
-//      nh_.subscribe("/vector_map_info/line", 1, &DecisionMakerNode::callbackFromVectorMapLine, this);
-//  Subs["vector_map_crossroad"] =
-//      nh_.subscribe("/vector_map_info/cross_road", 1, &DecisionMakerNode::callbackFromVectorMapCrossRoad, this);
-//
   // Config subscriber
   Subs["config/decision_maker"] =
       nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
@@ -92,13 +82,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   // setup a callback for state update();
   setupStateCallback();
 
-  // to move initial state from start state
-  // this part confirm broadcasting tf(map to world)
- // std::cout << "wait for tf of map to world" << std::endl;
- // tf::TransformListener tf;
- // tf.waitForTransform("map", "world", ros::Time(), ros::Duration(15));
- // if (!ctx->TFInitialized())
- //	  std::cerr << "failed initialization " << std::endl;
   g_vmap.subscribe(nh_, 
 		  Category::POINT |  Category::LINE |  Category::VECTOR | Category::AREA | Category::POLE | //basic class
 		  Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
