@@ -95,7 +95,7 @@ static pose initial_pose, predict_pose, predict_pose_imu, predict_pose_odom, pre
     current_gnss_pose;
 
 static double offset_x, offset_y, offset_z, offset_yaw;  // current_pos - previous_pose
-static double offset_imu_x, offset_imu_y, offset_imu_z, offset_imu_roll, offset_imu_pitch, offset_imu_yaw; 
+static double offset_imu_x, offset_imu_y, offset_imu_z, offset_imu_roll, offset_imu_pitch, offset_imu_yaw;
 static double offset_odom_x, offset_odom_y, offset_odom_z, offset_odom_roll, offset_odom_pitch, offset_odom_yaw;
 static double offset_imu_odom_x, offset_imu_odom_y, offset_imu_odom_z, offset_imu_odom_roll, offset_imu_odom_pitch, offset_imu_odom_yaw;
 
@@ -198,7 +198,6 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
-static bool _use_openmp = false;
 static bool _get_height = false;
 static bool _use_local_transform = false;
 static bool _use_imu = false;
@@ -456,7 +455,7 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
     }
     current_pose.z = nearest_z;
   }
-  
+
   current_pose_imu = current_pose_odom = current_pose_imu_odom = current_pose;
   previous_pose.x = current_pose.x;
   previous_pose.y = current_pose.y;
@@ -521,7 +520,7 @@ static void imu_odom_calc(ros::Time current_time)
   predict_pose_imu_odom.roll  = previous_pose.roll  + offset_imu_odom_roll;
   predict_pose_imu_odom.pitch = previous_pose.pitch + offset_imu_odom_pitch;
   predict_pose_imu_odom.yaw   = previous_pose.yaw   + offset_imu_odom_yaw;
- 
+
   previous_time = current_time;
 }
 
@@ -554,7 +553,7 @@ static void odom_calc(ros::Time current_time)
   predict_pose_odom.roll  = previous_pose.roll  + offset_odom_roll;
   predict_pose_odom.pitch = previous_pose.pitch + offset_odom_pitch;
   predict_pose_odom.yaw   = previous_pose.yaw   + offset_odom_yaw;
- 
+
   previous_time = current_time;
 
 }
@@ -603,7 +602,7 @@ static void imu_calc(ros::Time current_time)
   predict_pose_imu.z     = previous_pose.z     + offset_imu_z;
   predict_pose_imu.roll  = previous_pose.roll  + offset_imu_roll;
   predict_pose_imu.pitch = previous_pose.pitch + offset_imu_pitch;
-  predict_pose_imu.yaw   = previous_pose.yaw   + offset_imu_yaw;  
+  predict_pose_imu.yaw   = previous_pose.yaw   + offset_imu_yaw;
 
   previous_time = current_time;
 }
@@ -763,7 +762,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       imu_calc(current_scan_time);
     if (_use_imu == false && _use_odom == true)
       odom_calc(current_scan_time);
-    
+
     pose predict_pose_for_ndt;
     if (_use_imu == true && _use_odom == true)
       predict_pose_for_ndt = predict_pose_imu_odom;
@@ -784,21 +783,15 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
 #ifdef USE_FAST_PCL
-    if (_use_openmp == true)
-    {
       align_start = std::chrono::system_clock::now();
       ndt.omp_align(*output_cloud, init_guess);
       align_end = std::chrono::system_clock::now();
-    }
-    else
-    {
-#endif
+#else
       align_start = std::chrono::system_clock::now();
       ndt.align(*output_cloud, init_guess);
       align_end = std::chrono::system_clock::now();
-#ifdef USE_FAST_PCL
-    }
 #endif
 
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
@@ -808,22 +801,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     t2 = t * tf_ltob;                  // base_link
 
     iteration = ndt.getFinalNumIteration();
+
 #ifdef USE_FAST_PCL
-    if (_use_openmp == true)
-    {
       getFitnessScore_start = std::chrono::system_clock::now();
       fitness_score = ndt.omp_getFitnessScore();
       getFitnessScore_end = std::chrono::system_clock::now();
-    }
-    else
-    {
-#endif
+#else
       getFitnessScore_start = std::chrono::system_clock::now();
       fitness_score = ndt.getFitnessScore();
       getFitnessScore_end = std::chrono::system_clock::now();
-#ifdef USE_FAST_PCL
-    }
 #endif
+
     getFitnessScore_time =
         std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() /
         1000.0;
@@ -1206,7 +1194,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       offset_z = 0.0;
       offset_yaw = 0.0;
     }
-   
+
     offset_imu_x = 0.0;
     offset_imu_y = 0.0;
     offset_imu_z = 0.0;
@@ -1269,7 +1257,6 @@ int main(int argc, char** argv)
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
-  private_nh.getParam("use_openmp", _use_openmp);
   private_nh.getParam("get_height", _get_height);
   private_nh.getParam("use_local_transform", _use_local_transform);
   private_nh.getParam("use_imu", _use_imu);
@@ -1318,7 +1305,6 @@ int main(int argc, char** argv)
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
-  std::cout << "use_openmp: " << _use_openmp << std::endl;
   std::cout << "get_height: " << _get_height << std::endl;
   std::cout << "use_local_transform: " << _use_local_transform << std::endl;
   std::cout << "use_imu: " << _use_imu << std::endl;
