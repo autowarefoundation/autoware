@@ -55,10 +55,10 @@ void DecisionMakerNode::displayMarker(void)
   // vector_map init
   // parse vectormap
   jsk_recognition_msgs::BoundingBoxArray bbox_array;
-
-  static visualization_msgs::MarkerArray marker_array;
-  static visualization_msgs::Marker crossroad_marker;
-  static visualization_msgs::Marker inside_marker;
+  visualization_msgs::MarkerArray marker_array;
+  visualization_msgs::Marker crossroad_marker;
+  visualization_msgs::Marker inside_marker;
+  visualization_msgs::Marker inside_line_marker;
 
   double scale = 3.0;
   createCrossRoadAreaMarker(crossroad_marker, scale);
@@ -75,8 +75,10 @@ void DecisionMakerNode::displayMarker(void)
   inside_marker.lifetime = ros::Duration();
 
   bbox_array.header = crossroad_marker.header;
-
   inside_marker.points.clear();
+  
+  inside_line_marker = inside_marker;
+  inside_line_marker.type = visualization_msgs::Marker::LINE_STRIP;
 
   for (auto &area : intersects)
   {
@@ -86,13 +88,26 @@ void DecisionMakerNode::displayMarker(void)
     {
       inside_marker.points.push_back(p);
     }
+
+    for (const auto &lane : area.insideLanes)
+    {
+	    inside_line_marker.points.clear();
+	    inside_line_marker.id +=1;
+	    int id = inside_line_marker.id;
+	    inside_line_marker.color.r = std::fmod(0.12345 * (id), 1.0);
+	    inside_line_marker.color.g = std::fmod(0.32345 * (5 - (id%5)), 1.0);
+	    inside_line_marker.color.b = std::fmod(0.52345 * (10- (id % 10)), 1.0);
+	    for(const auto &wp : lane.waypoints){
+		    inside_line_marker.points.push_back(wp.pose.pose.position);
+	    } 
+	    marker_array.markers.push_back(inside_line_marker);
+    }
   }
-
   Pubs["crossroad_bbox"].publish(bbox_array);
+  Pubs["crossroad_marker"].publish(marker_array);
   bbox_array.boxes.clear();
-  Pubs["crossroad_inside_marker"].publish(inside_marker);
-
-  marker_array.markers.clear();
+  //Pubs["crossroad_inside_marker"].publish(inside_marker);
+  Pubs["crossroad_inside_marker"].publish(inside_line_marker);
 }
 
 void DecisionMakerNode::update_msgs(void)

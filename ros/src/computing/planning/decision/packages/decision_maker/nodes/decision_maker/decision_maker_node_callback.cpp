@@ -170,19 +170,20 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
       else
         steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
-      for (auto &lane : lane_array.lanes)
+      for (auto &wp_lane : laneinArea.waypoints)
       {
-        for (auto &wp : lane.waypoints)
-        {
-          if (area.area_id == wp.wpstate.aid)
-          {
-            wp.wpstate.steering_state = steering_state;
-          }
-        }
+	      for (auto &lane : lane_array.lanes)
+	      {
+		      for(auto &wp : lane.waypoints){
+			      if(wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id){
+				      wp.wpstate.steering_state = steering_state;
+			      }
+		      }
+		      //lane.waypoints.at(wp_lane.lid).wpstate.steering_state = steering_state;
+	      }
       }
     }
   }
-
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine &stopline) { 
         return (g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type == (int)vector_map_msgs::RoadSign::TYPE_STOP);});
@@ -229,12 +230,12 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
   ROS_INFO("[%s]:LoadedWaypointLaneArray\n", __func__);
   current_based_lane_array_ = msg;  // cached based path
   // indexing
+  int gid = 0;
   for (auto &lane : current_based_lane_array_.lanes)
   {
-    int gid = 0;
+    int lid = 0;
     for (auto &wp : lane.waypoints)
     {
-      int lid = 0;
       wp.gid = gid++;
       wp.lid = lid++;
       wp.wpstate.aid = 0;
@@ -282,8 +283,15 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   size_t idx = current_finalwaypoints_.waypoints.size()-1 > param_target_waypoint_?
 	  param_target_waypoint_ : current_finalwaypoints_.waypoints.size()-1; 
   if(idx){
-	  ctx->setCurrentState(
+	  if(isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE)){
+		  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+	  }
+	  if(isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE)){
+		  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+	  }else{ 
+		  ctx->setCurrentState(
 			  getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
+	  }
 	  if(current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
 		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
   }
