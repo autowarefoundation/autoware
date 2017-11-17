@@ -363,6 +363,7 @@ int main (int argc, char **argv)
 			cv::resize(image,image,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
 			//
 			cv::transpose(image, image);
+			cv::flip(image, image, 1);
 
 			if (i==0)
 				image.copyTo(full_size);
