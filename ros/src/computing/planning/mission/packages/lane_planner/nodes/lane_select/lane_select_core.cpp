@@ -170,16 +170,23 @@ void LaneSelectNode::processing()
 
   if (current_state_ == "LANE_CHANGE")
   {
-    changeLane();
-    std::get<1>(lane_for_change_) =
-        getClosestWaypointNumber(std::get<0>(lane_for_change_), current_pose_.pose, current_velocity_.twist,
-                                 std::get<1>(lane_for_change_), distance_threshold_);
-    std::get<2>(lane_for_change_) =
-        static_cast<ChangeFlag>(std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
-    ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
-    publishLane(std::get<0>(lane_for_change_));
-    publishClosestWaypoint(std::get<1>(lane_for_change_));
-    publishChangeFlag(std::get<2>(lane_for_change_));
+    try
+    {
+	    changeLane();
+	    std::get<1>(lane_for_change_) =
+		    getClosestWaypointNumber(std::get<0>(lane_for_change_), current_pose_.pose, current_velocity_.twist,
+				    std::get<1>(lane_for_change_), distance_threshold_);
+	    std::get<2>(lane_for_change_) =
+		    static_cast<ChangeFlag>(std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
+	    ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
+	    publishLane(std::get<0>(lane_for_change_));
+	    publishClosestWaypoint(std::get<1>(lane_for_change_));
+	    publishChangeFlag(std::get<2>(lane_for_change_));
+    }
+    catch (std::out_of_range)
+    {
+      ROS_WARN("Failed to get closest waypoint num\n");
+    }
   }
   else
   {
