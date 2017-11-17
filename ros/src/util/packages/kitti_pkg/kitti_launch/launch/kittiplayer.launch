@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <arg name="date" value="2011_09_26" />
+
+    <arg name="kitti_data" value="$(arg date)_drive_0093_sync" />
+    <arg name="fps" default="1" />
+
+    <arg name="directory"
+         default="$(find kitti_player)/dataset/$(arg date)/$(arg kitti_data)/"
+         />
+
+    <!-- relay topic -->
+    <node pkg="topic_tools" type="relay" name="relay_points" args="/kitti_player/hdl64e /points_raw"/>
+    <node pkg="topic_tools" type="relay" name="relay_image" args="/kitti_player/color/left/image_rect /image_raw"/>
+
+    <!-- calibration publisher -->
+    <include file="$(find kitti_launch)/launch/xml/camera_lidar.xml" />
+
+    <include file="$(find kitti_launch)/launch/xml/points_raw.xml" />
+
+    <!-- viewer -->
+    <!--<node pkg="viewers" type="points_image_viewer" name="points_image_viewer">
+      <remap from="/image_raw" to="/kitti_player/color/left/image_rect"/>
+    </node>-->
+
+	<!-- publish anottation box-->
+    <node pkg="kitti_box_publisher" type="kitti_box_publisher.py" name="kitti_box_publisher" args="$(arg directory)/tracklet_labels.xml" output="screen"/>
+
+
+    <node name="kitti_player" pkg="kitti_player" type="kitti_player"
+          args= "-d $(arg directory) -f $(arg fps) -v -g -i -C -G -T"
+          />
+
+
+</launch>

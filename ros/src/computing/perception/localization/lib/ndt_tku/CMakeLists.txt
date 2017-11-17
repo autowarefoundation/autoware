@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_tku)
 
-find_package(catkin REQUIRED)
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -22,7 +20,7 @@ include_directories(
   include
 )
 
-add_library(ndt_tku src/algebra.cpp src/newton.cpp)
+add_library(ndt_tku src/algebra.cpp src/newton.cpp src/manage_ND.cpp)
 
 #############
 ## Install ##

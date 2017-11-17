@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1" />
+  <title>Autoware</title>
+  <link rel="shortcut icon" href="/img/autoware_icon.ico">
+
+  <link rel="stylesheet" href="/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/speed_meters.css" />
+  <link rel="stylesheet" href="/css/bar.css" />
+  <link rel="stylesheet" href="/css/button.css" />
+
+  <script src="/js/jquery-2.1.4.min.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
+  <script src="socket.io/socket.io.js"></script>
+  <script src="/js/webrtc_polyfill.js"></script>
+  <script src="/js/utility.js"></script>
+  <script src="/js/remote_ui.js"></script>
+  <script src="/js/gamepad.js"></script>
+  <script src="/js/vehicle_button.js"></script>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="navbar-static-top bs-docs-nav">
+    <div class="navbar-inner">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/"></a>
+        </div>
+        <ul class="nav navbar-nav navbar-right">
+          <li class="dropdown" id="ddJoinRoom">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" id="btnJoinRoom">CONNECT<b class="caret"></b></a>
+            <ul class="dropdown-menu" id="ddmJoinRoom" style="padding: 15px;min-width: 350px; height: 150px">
+              <li>
+                <div class="row">
+                  <div class="col-md-12">
+                    <form class="form" role="form" id="formJoinRoom">
+                      <div class="form-group">
+                        <label for="txtRoomName" class="control-label">CONNECT VEHICLE (Set Vehicle ID)</label>
+                        <input type="text" class="form-control" id="txtRoomName" required>
+                      </div>
+                      <div class="form-group">
+                        <button type="submit" class="btn btn-success btn-block">CONNECT</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <div id="maskPanel"></div>
+
+  <!-- UI -->
+  <div class="container" id="container">
+    <!-- First row -->
+    <div class="row row-eq-height row-top">
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <div align="left" style="margin-left: 5px">
+          <h2><u>Vehicle Info</u><h2>
+          <h3 id="text_speed">Speed: - km/h</h3>
+          <h3 id="text_target_speed">Target Speed: - km/h</h3>
+          <h3 id="text_next_target_speed">Next Target Speed: - km/h</h3>
+          <h3 id="text_state">State: -</h3>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+        <div class="streamItemContainer">
+          <video id="remoteView2"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <div class="streamItemContainer">
+          <video id="remoteView5"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <div class="streamItemContainer">
+          <video id="remoteView6"></video>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Second row -->
+    <div class="row row-eq-height row-center">
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <div class="streamItemContainer">
+          <video id="remoteView3"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+        <div class="streamItemContainer">
+          <video id="remoteView1"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <div class="streamItemContainer">
+          <video id="remoteView4"></video>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <div class="streamItemContainer">
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream1" data-no="1" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream1" data-no="1">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Operator Camera</span>
+          </button>
+          <video id="localView1"></video>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Third row -->
+    <div class="row row-eq-height row-bottom">
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <img id="vehicle_steering" src="/img/steering.png"></img>
+      </div>
+
+      <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+        <div class="dashboard">
+          <div class="meter meter--rpm meter--big-label"></div>
+          <div class="meter meter--gear"><div>1</div></div>
+          <div class="meter meter--speed"></div>
+        </div>
+      </div>
+
+      <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+        <div align="left" style="margin-left: 10px">
+          <h4 class="operator">Accel</h4>
+          <progress class="operator" id="accel_bar" value="0" max="100"></progress>
+          <h4 class="operator">Brake</h4>
+          <progress class="operator" id="brake_bar" value="0" max="100"></progress>
+          <h4 class="operator">Vehicle Steer</h4>
+          <div class="seekbar">
+            <div class="fill"></div>
+            <div class="handle"></div>
+          </div>
+          <h4 class="operator">Controller Accel</h4>
+          <progress class="operator" id="controller_accel_bar" value="0" max="100"></progress>
+          <h4 class="operator">Controller Brake</h4>
+          <progress class="operator" id="controller_brake_bar" value="0" max="100"></progress>
+          <h4 class="operator">Controller Steer</h4>
+          <div class="seekbar">
+            <div class="cfill"></div>
+            <div class="handle"></div>
+          </div>
+
+          <div class="select-wrap select-circle">
+            <h4 class="operator">Gear</h4>
+            <select name="gear" id="gear" onChange="select_gear(this);">
+              <option value="0">P</option>
+              <option value="1">D</option>
+              <option value="2">R</option>
+              <option value="3">N</option>
+              <option value="3">B</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+        <div class="onoffswitch">
+            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="emergencyswitch" checked onchange="select_emergency_button();">
+            <label class="onoffswitch-label" for="emergencyswitch">
+                <span class="emergencyswitch-inner"></span>
+            </label>
+        </div>
+
+        <div class="onoffswitch">
+          <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="modeswitch" checked onchange="select_mode_button();">
+          <label class="onoffswitch-label" for="modeswitch">
+              <span class="modeswitch-inner"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+            <input id="blinker_left" type="button" class="square_btn" value="◁" onclick="pushBlinker(1)">
+          </div>
+          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+            <input id="blinker_hazard" type="button" class="square_btn" value="△" onclick="pushBlinker(3)">
+          </div>
+          <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+            <input id="blinker_right" type="button" class="square_btn" value="▷" onclick="pushBlinker(2)">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select Dialog -->
+  <div class="modal fade" id="selectDeviceDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Select Capture Device</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group" id="othorSelectDevice">
+            <label for="ddDevices" class="control-label">Device</label>
+            <select class="input-large form-control" id="deviceList"></select>
+          </div>
+          <div class="form-group" id="firefoxSelectDevice">
+            <span id="ffMessage" class="control-label">Click the Select Device.<br /><button id="btnFfSelectDevice">Select Device</button></span>
+          </div>
+          <div class="form-group">
+            <label for="streamPreview control-label">Preview</label>
+            <div class="form-control" id="devicePreview">
+              <video id="streamPreview"></video>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnDialogAddStream" class="btn btn-primary">Add Stream</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message Dialog -->
+  <div class="modal fade" id="messageDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          VEHICLE ID: <input type="text" id="dialogRoomName" size="36" readonly />
+        </div>
+        <div class="modal-body">
+          <p id="messageText"></p>
+          <span id="waitingIcon" class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+        </div>
+        <div class="modal-footer" id="messageDialogFooter">
+          <button type="button" class="btn btn-default" data-dismiss="modal">CLOSE</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>

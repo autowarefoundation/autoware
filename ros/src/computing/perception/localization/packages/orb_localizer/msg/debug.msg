@@ -1,4 +1,4 @@
 Header header
-uint32 keyframe_id
+int32 keyframe_id
 float64 cputime
 bool tracking

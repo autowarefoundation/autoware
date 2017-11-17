@@ -5,7 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   gnss
   visualization_msgs
-  vehicle_socket
+  autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-   CATKIN_DEPENDS roscpp vehicle_socket
+   CATKIN_DEPENDS roscpp autoware_msgs
 )
 
 ###########
@@ -32,7 +32,7 @@ add_library(obj_db
 )
 
 add_executable(obj_downloader nodes/obj_downloader/obj_downloader.cpp)
-target_link_libraries(obj_downloader ${catkin_LIBRARIES} gnss obj_db)
+target_link_libraries(obj_downloader ${catkin_LIBRARIES} obj_db)
 
 add_executable(obj_uploader nodes/obj_uploader/obj_uploader.cpp)
 target_link_libraries(obj_uploader ${catkin_LIBRARIES} obj_db)
@@ -45,4 +45,4 @@ set_target_properties(obj_uploader
 
 add_executable(can_uploader nodes/can_uploader/can_uploader.cpp)
 target_link_libraries(can_uploader ${catkin_LIBRARIES} obj_db)
-add_dependencies(can_uploader vehicle_socket_generate_messages_cpp)
+add_dependencies(can_uploader autoware_msgs_generate_messages_cpp)

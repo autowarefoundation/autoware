@@ -42,13 +42,15 @@ buttons :
     run   : rosrun map_tools pcd_filter
     param : pcd_filter
     gui   :
-      show_order : [ path_pcd_filter, leaf_size ]
+      show_order : [ path_pcd_filter, point_type, leaf_size ]
       panel      : self.panel_pcd_filter
+      point_type : { border: 16, flags: [ right ] }
 
   pcd_binarizer :
     run   : rosrun map_tools pcd_binarizer
     param : pcd_binarizer
     gui   :
+      show_order : [ path_pcd_binarizer, point_type ]
       panel : self.panel_pcd_binarizer
 
 params :
@@ -96,6 +98,13 @@ params :
 
   - name  : pcd_filter
     vars  :
+    - name      : point_type
+      label     : 'Point Type:'
+      kind      : menu
+      choices   : [ PointXYZ, PointXYZI, PointXYZRGB ]
+      choices_type : str
+      v         : PointXYZ
+      cmd_param : { delim: '' }
     - name      : leaf_size
       label     : 'Leaf Size:'
       kind      : num
@@ -113,6 +122,13 @@ params :
 
   - name  : pcd_binarizer
     vars  :
+    - name      : point_type
+      label     : 'Point Type:'
+      kind      : menu
+      choices   : [ PointXYZ, PointXYZI, PointXYZRGB ]
+      choices_type : str
+      v         : PointXYZ
+      cmd_param : { delim: '' }
     - name      : path_pcd_binarizer
       kind      : path
       path_type : multi

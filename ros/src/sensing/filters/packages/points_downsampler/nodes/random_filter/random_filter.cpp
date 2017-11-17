@@ -34,11 +34,15 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <runtime_manager/ConfigRandomFilter.h>
+#include "autoware_msgs/ConfigRandomFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
 #include <chrono>
+
+#include "points_downsampler.h"
+
+#define MAX_MEASUREMENT_RANGE 200.0
 
 ros::Publisher filtered_points_pub;
 
@@ -53,9 +57,13 @@ static bool _output_log = false;
 static std::ofstream ofs;
 static std::string filename;
 
-static void config_callback(const runtime_manager::ConfigRandomFilter::ConstPtr& input)
+static std::string POINTS_TOPIC;
+static double measurement_range = MAX_MEASUREMENT_RANGE;
+
+static void config_callback(const autoware_msgs::ConfigRandomFilter::ConstPtr& input)
 {
   sample_num = input->sample_num;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -65,6 +73,10 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::fromROSMsg(*input, scan);
 
+  if(measurement_range != MAX_MEASUREMENT_RANGE){
+    scan = removePointsByRange(scan, 0, measurement_range);
+  }
+
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
   filtered_scan_ptr->header = scan.header;
 
@@ -73,12 +85,17 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   int points_num = scan.size();
   int step = points_num / sample_num;
 
-  for (int i = 0; i < points_num; i++)
+  if(scan.points.size() >= sample_num)
   {
-    if ((int)filtered_scan_ptr->size() < sample_num && i % step == 0)
+    for (int i = 0; i < points_num; i++)
     {
-      filtered_scan_ptr->points.push_back(scan.at(i));
+      if ((int)filtered_scan_ptr->size() < sample_num && i % step == 0)
+      {
+        filtered_scan_ptr->points.push_back(scan.at(i));
+      }
     }
+  }else{
+    filtered_scan_ptr = scan.makeShared();
   }
 
   sensor_msgs::PointCloud2 filtered_msg;
@@ -91,6 +108,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "random_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = points_num;
   points_downsampler_info_msg.filtered_points_size = filtered_scan_ptr->size();
   points_downsampler_info_msg.original_ring_size = 0;
@@ -124,6 +142,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
   if(_output_log == true){
 	  char buffer[80];
@@ -140,7 +159,7 @@ int main(int argc, char** argv)
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/random_filter", 10, config_callback);
-  ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
+  ros::Subscriber scan_sub = nh.subscribe(POINTS_TOPIC, 10, scan_callback);
 
   ros::spin();
 

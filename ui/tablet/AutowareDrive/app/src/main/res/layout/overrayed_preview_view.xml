@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <SurfaceView
+        android:id="@+id/preview_surface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.andrive.ui.GearBoxView
+        android:id="@+id/preview_gear_box"
+        android:layout_width="32dp"
+        android:layout_height="130dp"
+        android:layout_gravity="left|bottom"
+        android:layout_marginLeft="12dp"
+        android:layout_marginBottom="5dp" >
+    </com.andrive.ui.GearBoxView>
+
+    <ImageView
+        android:id="@+id/preview_gear_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:layout_marginLeft="48dp"
+        android:layout_marginBottom="16dp"        
+        android:src="@drawable/gear_index" />
+
+    <TextView
+        android:id="@+id/preview_speed_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_margin="15dp"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:text="Speed: xxxx" />
+    
+</FrameLayout>

@@ -37,11 +37,13 @@
 
 #include <velodyne_pointcloud/point_types.h>
 
-#include <runtime_manager/ConfigRingFilter.h>
+#include "autoware_msgs/ConfigRingFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
 #include <chrono>
+
+#define MAX_MEASUREMENT_RANGE 200.0
 
 ros::Publisher filtered_points_pub;
 
@@ -60,15 +62,18 @@ static bool _output_log = false;
 static std::ofstream ofs;
 static std::string filename;
 
-static void config_callback(const runtime_manager::ConfigRingFilter::ConstPtr& input)
+static std::string POINTS_TOPIC;
+static double measurement_range = MAX_MEASUREMENT_RANGE;
+
+static void config_callback(const autoware_msgs::ConfigRingFilter::ConstPtr& input)
 {
   ring_div = input->ring_div;
   voxel_leaf_size = input->voxel_leaf_size;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  pcl::PointXYZI p;
   pcl::PointCloud<pcl::PointXYZI> scan;
   pcl::PointCloud<velodyne_pointcloud::PointXYZIR> tmp;
   sensor_msgs::PointCloud2 filtered_msg;
@@ -80,13 +85,19 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   scan.points.clear();
 
+  double square_measurement_range = measurement_range*measurement_range;
+
   for (pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::const_iterator item = tmp.begin(); item != tmp.end(); item++)
   {
-    p.x = (double)item->x;
-    p.y = (double)item->y;
-    p.z = (double)item->z;
-    p.intensity = (double)item->intensity;
-    if (item->ring % ring_div == 0)
+    pcl::PointXYZI p;
+    p.x = item->x;
+    p.y = item->y;
+    p.z = item->z;
+    p.intensity = item->intensity;
+
+    double square_distance = p.x * p.x + p.y * p.y;
+
+    if (item->ring % ring_div == 0 && square_distance <= square_measurement_range)
     {
       scan.points.push_back(p);
     }
@@ -122,6 +133,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "ring_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = scan.size();
   if (voxel_leaf_size >= 0.1)
   {
@@ -162,6 +174,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
   if(_output_log == true){
 	  char buffer[80];
@@ -178,7 +191,7 @@ int main(int argc, char** argv)
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/ring_filter", 10, config_callback);
-  ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
+  ros::Subscriber scan_sub = nh.subscribe(POINTS_TOPIC, 10, scan_callback);
 
   ros::spin();
 

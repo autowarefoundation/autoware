@@ -30,15 +30,19 @@
 #include <string>
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
-//#include <runtime_manager/ConfigRcnn.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <cv_tracker/image_obj.h>
+#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/ConfigSsd.h"
 
 #include <rect_class_score.h>
 
-#include <opencv2/contrib/contrib.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
+
+#if (CV_MAJOR_VERSION <= 2)
+#include <opencv2/contrib/contrib.hpp>
+#endif
 
 #include "ssd_detector.h"
 
@@ -67,7 +71,7 @@ class RosSsdApp
 	//vector of indices of the classes to search for
 	std::vector<unsigned int> detect_classes_;
 
-	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, cv_tracker::image_obj& out_message, cv::Mat& in_image, std::string in_class)
+	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::image_obj& out_message, cv::Mat& in_image, std::string in_class)
 	{
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
@@ -79,7 +83,7 @@ class RosSsdApp
 				)//check if the score is larger than minimum required
 			{
 				//std::cout << in_objects[i].toString() << std::endl;
-				cv_tracker::image_rect rect;
+				autoware_msgs::image_rect rect;
 
 				rect.x = in_objects[i].x;
 				rect.y = in_objects[i].y;
@@ -118,8 +122,8 @@ class RosSsdApp
 		//std::cout << "Detection took: " << timer.getTimeMilli() << std::endl;
 
 		//Prepare Output message
-		cv_tracker::image_obj output_car_message;
-		cv_tracker::image_obj output_person_message;
+		autoware_msgs::image_obj output_car_message;
+		autoware_msgs::image_obj output_person_message;
 		output_car_message.header = image_source.header;
 		output_car_message.type = "car";
 
@@ -135,6 +139,11 @@ class RosSsdApp
 		publisher_person_objects_.publish(output_person_message);
 	}
 
+
+	void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
+	{
+		score_threshold_ 	= param->score_threshold;
+	}
 
 public:
 	void Run()
@@ -202,14 +211,15 @@ public:
 		}
 		ROS_INFO("SSD Detector initialized.");
 
-		publisher_car_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_car/image_obj", 1);
-		publisher_person_objects_ = node_handle_.advertise<cv_tracker::image_obj>("/obj_person/image_obj", 1);
+		publisher_car_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_car/image_obj", 1);
+		publisher_person_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_person/image_obj", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
 
-		/*std::string config_topic("/config");	config_topic += ros::this_node::getNamespace() + "/ssd";
-		subscriber_ssd_config_ =node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);*/
+		std::string config_topic("/config");
+		config_topic += "/ssd";
+		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
 
 		ros::spin();
 		ROS_INFO("END Ssd");

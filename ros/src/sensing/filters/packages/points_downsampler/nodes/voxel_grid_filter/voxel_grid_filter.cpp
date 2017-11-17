@@ -35,11 +35,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include <runtime_manager/ConfigVoxelGridFilter.h>
+#include "autoware_msgs/ConfigVoxelGridFilter.h"
 
 #include <points_downsampler/PointsDownsamplerInfo.h>
 
 #include <chrono>
+
+#include "points_downsampler.h"
+
+#define MAX_MEASUREMENT_RANGE 200.0
 
 ros::Publisher filtered_points_pub;
 
@@ -55,15 +59,24 @@ static bool _output_log = false;
 static std::ofstream ofs;
 static std::string filename;
 
-static void config_callback(const runtime_manager::ConfigVoxelGridFilter::ConstPtr& input)
+static std::string POINTS_TOPIC;
+static double measurement_range = MAX_MEASUREMENT_RANGE;
+
+static void config_callback(const autoware_msgs::ConfigVoxelGridFilter::ConstPtr& input)
 {
   voxel_leaf_size = input->voxel_leaf_size;
+  measurement_range = input->measurement_range;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
   pcl::PointCloud<pcl::PointXYZI> scan;
   pcl::fromROSMsg(*input, scan);
+
+  if(measurement_range != MAX_MEASUREMENT_RANGE){
+    scan = removePointsByRange(scan, 0, measurement_range);
+  }
+
   pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
   pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>());
 
@@ -79,7 +92,6 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
     voxel_grid_filter.setInputCloud(scan_ptr);
     voxel_grid_filter.filter(*filtered_scan_ptr);
-
     pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
   }
   else
@@ -94,6 +106,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   points_downsampler_info_msg.header = input->header;
   points_downsampler_info_msg.filter_name = "voxel_grid_filter";
+  points_downsampler_info_msg.measurement_range = measurement_range;
   points_downsampler_info_msg.original_points_size = scan.size();
   if (voxel_leaf_size >= 0.1)
   {
@@ -134,6 +147,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+  private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
   if(_output_log == true){
 	  char buffer[80];
@@ -150,7 +164,7 @@ int main(int argc, char** argv)
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/voxel_grid_filter", 10, config_callback);
-  ros::Subscriber scan_sub = nh.subscribe("points_raw", 10, scan_callback);
+  ros::Subscriber scan_sub = nh.subscribe(POINTS_TOPIC, 10, scan_callback);
 
   ros::spin();
 

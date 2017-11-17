@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   pcl_conversions
   velodyne_pointcloud
-  runtime_manager
   message_generation
 )
 

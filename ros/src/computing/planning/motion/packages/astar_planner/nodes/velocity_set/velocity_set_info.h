@@ -36,7 +36,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Int32.h>
 
-#include "runtime_manager/ConfigVelocitySet.h"
+#include "autoware_msgs/ConfigVelocitySet.h"
 
 class VelocitySetInfo
 {
@@ -52,22 +52,26 @@ class VelocitySetInfo
   double velocity_change_limit_;    // (m/s)
   double temporal_waypoints_size_;  // (meter)
 
+  // ROS param
+  double remove_points_upto_;
+
   pcl::PointCloud<pcl::PointXYZ> points_;
+  pcl::PointCloud<pcl::PointXYZ> obstacle_sim_points_;
   geometry_msgs::PoseStamped localizer_pose_;  // pose of sensor
   geometry_msgs::PoseStamped control_pose_;    // pose of base_link
-  int closest_waypoint_;
   bool set_pose_;
+  bool use_obstacle_sim_;
 
  public:
   VelocitySetInfo();
   ~VelocitySetInfo();
 
   // ROS Callback
-  void configCallback(const runtime_manager::ConfigVelocitySetConstPtr &msg);
+  void configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &msg);
   void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
-  void closestWaypointCallback(const std_msgs::Int32ConstPtr &msg);
+  void obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
 
   void clearPoints();
 
@@ -129,11 +133,6 @@ class VelocitySetInfo
   geometry_msgs::PoseStamped getLocalizerPose() const
   {
     return localizer_pose_;
-  }
-
-  int getClosestWaypoint() const
-  {
-    return closest_waypoint_;
   }
 
   bool getSetPose() const
