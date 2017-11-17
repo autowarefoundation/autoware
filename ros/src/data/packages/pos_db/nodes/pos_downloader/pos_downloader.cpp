@@ -36,7 +36,7 @@ publish data as ractangular plane
 
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-#include <jsk_rviz_plugins/Pictogram>
+#include <jsk_rviz_plugins/Pictogram.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -177,7 +177,7 @@ static void publish_car(int id, int is_current, ros::Time now,
   } else {
     //marker.type = visualization_msgs::Marker::SPHERE;
     // marker.lifetime = ros::Duration(life_time);
-    pictogram.character = "circle"
+    pictogram.character = "circle";
     pictogram.ttl = life_time;
     pictogram.color.r = 1.0;
     pictogram.color.g = 0.0;
@@ -243,7 +243,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   pictogram.header.stamp = now;
   pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
   //marker.type = visualization_msgs::Marker::CYLINDER;
-  pictogram.character = "dot-circle-o"
+  pictogram.character = "dot-circle-o";
   // marker.lifetime = ros::Duration(life_time);
   pictogram.ttl = life_time;
   if (is_pedestrian) {
@@ -268,7 +268,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   dbg_out_pictogram(pictogram);
 
   //marker.type = visualization_msgs::Marker::SPHERE;
-  pictogram.character = "circle"
+  pictogram.character = "circle";
   // marker.scale.x = 0.6; // #2
   // marker.scale.y = 0.6;
   // marker.scale.z = 0.6;
