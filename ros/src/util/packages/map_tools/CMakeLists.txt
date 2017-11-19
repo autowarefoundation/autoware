@@ -23,6 +23,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 
+add_executable(latlng2utm nodes/coordinate_transformer/latlng2utm.cpp nodes/coordinate_transformer/utm_converter.cpp)
 add_executable(pcd_filter nodes/pcd_filter/pcd_filter.cpp)
 add_executable(pcd_binarizer nodes/pcd_binarizer/pcd_binarizer.cpp)
 add_executable(pcd_arealist nodes/pcd_arealist/pcd_arealist.cpp)
@@ -30,6 +31,7 @@ add_executable(csv2pcd nodes/pcd_converter/csv2pcd.cpp)
 add_executable(pcd2csv nodes/pcd_converter/pcd2csv.cpp)
 add_executable(map_extender nodes/map_extender/map_extender.cpp)
 
+target_link_libraries(latlng2utm ${catkin_LIBRARIES})
 target_link_libraries(pcd_filter ${catkin_LIBRARIES})
 target_link_libraries(pcd_binarizer ${catkin_LIBRARIES})
 target_link_libraries(pcd_arealist ${catkin_LIBRARIES})
