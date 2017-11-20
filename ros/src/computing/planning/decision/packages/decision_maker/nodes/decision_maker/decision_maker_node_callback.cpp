@@ -281,15 +281,12 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 	  }
 
 	  if(current_finalwaypoints_.waypoints.at((int)idx/2).wpstate.stopline_state)
-		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
+		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
   }
 
   // for publish plan of velocity
   publishToVelocityArray();
 
-#ifdef DEBUG_PRINT
-  std::cout << "Velocity: " << current_velocity_ << " to " << average_velocity_ << std::endl;
-#endif
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {

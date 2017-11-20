@@ -109,8 +109,8 @@ private:
   // Param
   bool enableDisplayMarker;
   bool enableForceStateChange;
-  int param_convergence_count_;
-  int param_target_waypoint_;
+  uint32_t param_convergence_count_;
+  uint32_t param_target_waypoint_;
   double param_convergence_threshold_;
 
   // for vectormap server

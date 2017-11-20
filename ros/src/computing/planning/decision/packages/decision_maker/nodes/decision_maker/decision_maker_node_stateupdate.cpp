@@ -71,9 +71,6 @@ void DecisionMakerNode::changeVelocityLane(int dir)
 		autoware_msgs::lane temp_lane = lane;
 		for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
 		{
-			double v0 = temp_lane.waypoints.at(wpi - 1).twist.twist.linear.x;
-			double v = temp_lane.waypoints.at(wpi).twist.twist.linear.x;
-
 			amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
 					temp_lane.waypoints.at(wpi).pose.pose.position.y,
 					temp_lane.waypoints.at(wpi).pose.pose.position.z);
@@ -84,7 +81,7 @@ void DecisionMakerNode::changeVelocityLane(int dir)
 			double distance = amathutils::find_distance(&p0, &p1);
 			double _weight = distance * 0.05 * dir;
 			lane.waypoints.at(wpi).twist.twist.linear.x =
-				lane.waypoints.at(wpi).twist.twist.linear.x + lane.waypoints.at(wpi).twist.twist.linear.x * _weight;
+				lane.waypoints.at(wpi).twist.twist.linear.x + (lane.waypoints.at(wpi).twist.twist.linear.x * _weight);
 		}
 	}
 }

@@ -45,6 +45,7 @@ bool DecisionMakerNode::isCrossRoadByVectorMapServer(const autoware_msgs::lane &
     //   std::cout << "DEBUG" << cross_road_d.linkid << std::endl;
   }
 #endif
+  return false;
 }
 
 void DecisionMakerNode::update(void)

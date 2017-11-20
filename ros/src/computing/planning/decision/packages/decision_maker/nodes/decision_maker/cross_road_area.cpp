@@ -15,7 +15,6 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_f
 
   double _min_distance = DBL_MAX;
 
-  int _label = 1;
 
   if (!_finalwaypoints.waypoints.empty())
   {
@@ -54,7 +53,7 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
   std::vector<int> enablePoints;
 
   // Jarvis's March algorithm
-  int l = 0;
+  size_t l = 0;
   for (auto i = begin(_TargetArea->points); i != end(_TargetArea->points); i++)
   {
     if (i->x < _TargetArea->points.at(l).x)
@@ -63,13 +62,13 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
     }
   }
 
-  int p = l;
-  int q;
+  size_t p = l;
+  size_t q;
 
   do
   {
     q = (p + 1) % _TargetArea->points.size();
-    for (int i = 0; i < _TargetArea->points.size(); i++)
+    for (size_t i = 0; i < _TargetArea->points.size(); i++)
     {
       geometry_msgs::Point pp = _TargetArea->points.at(p);
       geometry_msgs::Point pi = _TargetArea->points.at(i);
