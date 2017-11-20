@@ -59,7 +59,6 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
   else
   {
-	  fprintf(stderr,"disable lanechange\n");
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
   }
