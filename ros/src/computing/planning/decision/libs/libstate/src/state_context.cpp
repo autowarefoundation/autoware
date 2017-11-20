@@ -129,7 +129,7 @@ bool StateContext::setCurrentState(BaseState *_state)
 		  *HolderMap[getStateKind(_state)] = _state;
 	  }
 	  change_state_mutex.unlock();
-	  if(ret && diff)
+	  if(ret && !diff)
 		  this->changed(getStateKind(_state));
   }else{
 	  change_state_mutex.unlock();

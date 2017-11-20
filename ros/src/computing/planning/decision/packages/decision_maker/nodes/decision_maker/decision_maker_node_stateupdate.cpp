@@ -99,9 +99,9 @@ void DecisionMakerNode::changedStateAcc(int status)
 }
 void DecisionMakerNode::updateStateStop(int status)
 {
+	static ros::Timer stopping_timer;
+	static bool timerflag = false;
 	if(status){
-		static ros::Timer stopping_timer;
-		static bool timerflag = false;
 		if(current_velocity_ == 0.0 && !timerflag){
 			stopping_timer = nh_.createTimer(ros::Duration(1), [&](const ros::TimerEvent&){ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE); ROS_INFO("Change state to keep from stop\n");timerflag=false; }, this, true);
 			timerflag = true;
