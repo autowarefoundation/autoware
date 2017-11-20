@@ -9,19 +9,17 @@ mainstate:
         EMERGENCY     : 6
 
 substate:
-        Accelerate : 7
-        Decelerate : 8
-        Keep : 9
-        Stop       : 10
-        Straight : 11
-        Left : 12
-        Right : 13
-        Lane Change Left : 14
-        Lane Change Right : 15
-        Obstacle Avoidance : 16
+        Accelerate : 10
+        Decelerate : 11
+        Keep       : 12
+        Stop       : 13
+        Stop_line  : 14
+        Straight   : 20
+        Left       : 21
+        Right      : 22
+
+        Lane Change Left     : 30
+        Lane Change Right    : 31
+        Obstacle Avoidance   : 32
         ClearB : 30
-        Detect Obstacle : 17
-        Detect Stop Line : 18
-        Traffic Light Red : 19
-        ClearP : 31
 

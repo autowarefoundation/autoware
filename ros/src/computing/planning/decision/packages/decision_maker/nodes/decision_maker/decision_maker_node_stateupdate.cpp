@@ -18,10 +18,14 @@ void DecisionMakerNode::setupStateCallback(void)
       ->setUpdateFunc(std::bind(&DecisionMakerNode::updateStateSTR, this, 2));
   ctx->getStateObject(state_machine::DRIVE_STR_STRAIGHT_STATE)
       ->setUpdateFunc(std::bind(&DecisionMakerNode::updateStateSTR, this, 0));
-  ctx->getStateObject(state_machine::DRIVE_ACC_STOP_STATE)
+  ctx->getStateObject(state_machine::DRIVE_ACC_STOPLINE_STATE)
        ->setUpdateFunc(std::bind(&DecisionMakerNode::updateStateStop, this, 1));
-  ctx->getStateObject(state_machine::DRIVE_ACC_STOP_STATE)
+  ctx->getStateObject(state_machine::DRIVE_ACC_STOPLINE_STATE)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateStop, this, 1));
+  ctx->getStateObject(state_machine::DRIVE_ACC_STOP_STATE)
+       ->setUpdateFunc(std::bind(&DecisionMakerNode::updateStateStop, this, 0));
+  ctx->getStateObject(state_machine::DRIVE_ACC_STOP_STATE)
+       ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateStop, this, 0));
   
   ctx->getStateObject(state_machine::DRIVE_ACC_KEEP_STATE)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateKeep, this, 1));
@@ -98,13 +102,14 @@ void DecisionMakerNode::changedStateAcc(int status)
 }
 void DecisionMakerNode::updateStateStop(int status)
 {
-	static ros::Timer stopping_timer;
-	static bool timerflag = false;
-	if(current_velocity_ == 0.0 && !timerflag){
-		stopping_timer = nh_.createTimer(ros::Duration(1), [&](const ros::TimerEvent&){ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE); ROS_INFO("Change state to keep from stop\n");timerflag=false; }, this, true);
-		timerflag = true;
+	if(status){
+		static ros::Timer stopping_timer;
+		static bool timerflag = false;
+		if(current_velocity_ == 0.0 && !timerflag){
+			stopping_timer = nh_.createTimer(ros::Duration(1), [&](const ros::TimerEvent&){ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE); ROS_INFO("Change state to keep from stop\n");timerflag=false; }, this, true);
+			timerflag = true;
+		}
 	}
-
 }
 
 void DecisionMakerNode::changedStateStop(int status)

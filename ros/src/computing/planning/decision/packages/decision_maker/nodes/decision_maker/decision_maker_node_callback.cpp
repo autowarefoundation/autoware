@@ -70,19 +70,6 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   ctx->setEnableForceSetState(msg.enable_force_state_change);
-  if (msg.enable_force_state_change)
-  {
-    if (msg.MainState_ChangeFlag)
-      handleStateCmd((unsigned long long)1 << msg.MainState_ChangeFlag);
-    if (msg.SubState_Acc_ChangeFlag)
-      handleStateCmd(state_machine::DRIVE_ACC_ACCELERATION_STATE << (msg.SubState_Acc_ChangeFlag - 1));
-    if (msg.SubState_Str_ChangeFlag)
-      handleStateCmd(state_machine::DRIVE_STR_STRAIGHT_STATE << (msg.SubState_Str_ChangeFlag - 1));
-    if (msg.SubState_Behavior_ChangeFlag)
-      handleStateCmd(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE << (msg.SubState_Behavior_ChangeFlag - 1));
-    if (msg.SubState_Perception_ChangeFlag)
-      handleStateCmd(state_machine::DRIVE_DETECT_OBSTACLE_STATE << (msg.SubState_Perception_ChangeFlag - 1));
-  }
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
@@ -94,11 +81,11 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   current_traffic_light = light->traffic_light;
   if (current_traffic_light == state_machine::E_RED || current_traffic_light == state_machine::E_YELLOW)
   {
-    ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+   // ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
   else
   {
-    ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+   //ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
 }
 
