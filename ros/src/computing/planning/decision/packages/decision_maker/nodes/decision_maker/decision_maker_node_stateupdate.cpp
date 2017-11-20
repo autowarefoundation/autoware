@@ -36,11 +36,13 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
 {
 	current_stopped_lane_array_ = current_controlled_lane_array_;
 	for(auto &lane : current_stopped_lane_array_.lanes)
+	{
+
 		for(auto &wp: lane.waypoints){
 			wp.twist.twist.linear.x = 0.0;
 			wp.wpstate.stopline_state = 0;
 		}
-
+	}
 }
 
 void DecisionMakerNode::publishControlledLaneArray(void)

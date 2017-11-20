@@ -283,16 +283,17 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   size_t idx = current_finalwaypoints_.waypoints.size()-1 > param_target_waypoint_?
 	  param_target_waypoint_ : current_finalwaypoints_.waypoints.size()-1; 
   if(idx){
-	  if(isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE)){
+	  if(ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE)){
 		  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
 	  }
-	  if(isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE)){
+	  if(ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE)){
 		  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
 	  }else{ 
 		  ctx->setCurrentState(
 			  getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
 	  }
-	  if(current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
+
+	  if(current_finalwaypoints_.waypoints.at((int)idx/2).wpstate.stopline_state)
 		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
   }
 
