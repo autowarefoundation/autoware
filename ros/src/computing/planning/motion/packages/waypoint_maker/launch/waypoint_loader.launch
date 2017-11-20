@@ -2,17 +2,28 @@
 <launch>
 	<arg name="multi_lane_csv" default="" />
 	<arg name="decelerate" default="1" />
+<<<<<<< HEAD
 	<arg name="use_velocity_visualizer" default="false" />
+=======
+	<arg name="use_velocity_visualize" default="false" />
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
 
 	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
 	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen">
 	<param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
         <param name="decelerate" value="$(arg decelerate)" />
 	</node>
+<<<<<<< HEAD
 
 
 	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher">
 	<param name="use_velocity_visualizer" value="$(arg use_velocity_visualizer)"/>
+=======
+		
+		
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher">
+	<param name="use_velocity_visualize" value="$(arg use_velocity_visualize)"/>
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
 	</node>
 
 

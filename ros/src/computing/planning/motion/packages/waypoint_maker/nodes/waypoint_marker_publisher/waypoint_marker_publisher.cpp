@@ -62,9 +62,15 @@ visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 
 bool g_config_manual_detection = true;
+<<<<<<< HEAD
 bool g_use_velocity_visualizer;
 double g_graph_height_ratio;
 std::vector<double> g_graph_color = { 0.0, 1.0, 0.0, 0.5 };
+=======
+bool g_use_velocity_visualize;
+double g_graph_height_ratio;
+std::vector<double> g_graph_color = {0.0, 1.0, 0.0, 0.5};
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
 
 enum class ChangeFlag : int32_t
 {
@@ -293,7 +299,41 @@ void createLocalVelocityBarGraphMarker(const autoware_msgs::lane& lane_waypoint)
   }
 }
 
+<<<<<<< HEAD
 void createLocalVelocityLineGraphMarker(const autoware_msgs::lane& lane_waypoint)
+=======
+void createLocalVelocityBarGraphMarker(const autoware_msgs::lane &lane_waypoint)
+{
+  visualization_msgs::Marker velocity_bar_graph_marker;
+  velocity_bar_graph_marker.header.frame_id = "map";
+  velocity_bar_graph_marker.header.stamp = ros::Time();
+  velocity_bar_graph_marker.ns = "local_velocity_bar_graph_marker";
+  velocity_bar_graph_marker.type = visualization_msgs::Marker::CYLINDER;
+  velocity_bar_graph_marker.action = visualization_msgs::Marker::ADD;
+  velocity_bar_graph_marker.scale.x = 0.2;
+  velocity_bar_graph_marker.scale.y = 0.2;
+  velocity_bar_graph_marker.color.a = g_graph_color[3];
+  velocity_bar_graph_marker.color.r = g_graph_color[0];
+  velocity_bar_graph_marker.color.g = g_graph_color[1];
+  velocity_bar_graph_marker.color.b = g_graph_color[2];
+  velocity_bar_graph_marker.frame_locked = true;
+
+  unsigned int count = 0;
+  for (auto el : lane_waypoint.waypoints)
+  {
+    double bar_graph_height = g_graph_height_ratio * el.twist.twist.linear.x;
+    velocity_bar_graph_marker.id = count++;
+    velocity_bar_graph_marker.pose = el.pose.pose;
+    velocity_bar_graph_marker.pose.position.z += bar_graph_height / 2.0;
+    velocity_bar_graph_marker.scale.z = bar_graph_height;
+    if(velocity_bar_graph_marker.scale.z == 0.0)
+      velocity_bar_graph_marker.scale.z = DBL_MIN; //for visualize
+    g_local_waypoints_marker_array.markers.push_back(velocity_bar_graph_marker);
+  }
+}
+
+void createLocalVelocityLineGraphMarker(const autoware_msgs::lane &lane_waypoint)
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
 {
   visualization_msgs::Marker velocity_line_graph_marker;
   velocity_line_graph_marker.header.frame_id = "map";
@@ -302,10 +342,17 @@ void createLocalVelocityLineGraphMarker(const autoware_msgs::lane& lane_waypoint
   velocity_line_graph_marker.type = visualization_msgs::Marker::LINE_STRIP;
   velocity_line_graph_marker.action = visualization_msgs::Marker::ADD;
   velocity_line_graph_marker.scale.x = 0.25;
+<<<<<<< HEAD
   velocity_line_graph_marker.color.r = g_graph_color[0];
   velocity_line_graph_marker.color.g = g_graph_color[1];
   velocity_line_graph_marker.color.b = g_graph_color[2];
   velocity_line_graph_marker.color.a = g_graph_color[3];
+=======
+  velocity_line_graph_marker.color.a = g_graph_color[3];
+  velocity_line_graph_marker.color.r = g_graph_color[0];
+  velocity_line_graph_marker.color.g = g_graph_color[1];
+  velocity_line_graph_marker.color.b = g_graph_color[2];
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
   velocity_line_graph_marker.frame_locked = true;
 
   for (auto el : lane_waypoint.waypoints)
@@ -317,7 +364,11 @@ void createLocalVelocityLineGraphMarker(const autoware_msgs::lane& lane_waypoint
   g_local_waypoints_marker_array.markers.push_back(velocity_line_graph_marker);
 }
 
+<<<<<<< HEAD
 void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane_waypoints_array)
+=======
+void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array)
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
 {
   visualization_msgs::MarkerArray tmp_marker_array;
   visualization_msgs::Marker lane_waypoint_marker;
@@ -467,7 +518,11 @@ void finalCallback(const autoware_msgs::laneConstPtr& msg)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
+<<<<<<< HEAD
   if (g_use_velocity_visualizer)
+=======
+  if (g_use_velocity_visualize)
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
   {
     createLocalVelocityBarGraphMarker(*msg);
     createLocalVelocityLineGraphMarker(*msg);
@@ -487,11 +542,19 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
+<<<<<<< HEAD
   private_nh.param<bool>("use_velocity_visualizer", g_use_velocity_visualizer, false);
   private_nh.param<double>("graph_height_ratio", g_graph_height_ratio, 1.0);
   private_nh.param<std::vector<double> >("velocity_bar_graph_color", g_graph_color, g_graph_color);
 
   // subscribe traffic light
+=======
+  private_nh.param<bool>("use_velocity_visualize", g_use_velocity_visualize, false);
+  private_nh.param<double>("graph_height_ratio", g_graph_height_ratio, 1.0);
+  private_nh.param<std::vector<double> >("velocity_bar_graph_color", g_graph_color, g_graph_color);
+
+  //subscribe traffic light
+>>>>>>> fef9b494e825ae400d43c73d64996c5294bda465
   ros::Subscriber light_sub = nh.subscribe("light_color", 10, receiveAutoDetection);
   ros::Subscriber light_managed_sub = nh.subscribe("light_color_managed", 10, receiveManualDetection);
 
