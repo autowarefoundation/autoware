@@ -34,12 +34,49 @@ void DecisionMakerNode::setupStateCallback(void)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateAcc, this, 1));
   ctx->getStateObject(state_machine::DRIVE_ACC_DECELERATION_STATE)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateAcc, this, -1));
+ 
+  ctx->getStateObject(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE)
+       ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateObstacleAvoid, this, -1));
 }
 
+void DecisionMakerNode::createShiftLane(void)
+{
+	autoware_msgs::lane shift_lane;
+	if(!current_controlled_lane_array_.lanes.empty()){
+		shift_lane = current_controlled_lane_array_.lanes.at(0);
+		for(auto &wp : shift_lane.waypoints){
+			double current_angle = getPoseAngle(wp.pose.pose);
+			wp.pose.pose.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
+			wp.pose.pose.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
+		}
+		auto it = current_controlled_lane_array_.lanes.insert(current_controlled_lane_array_.lanes.begin() + 1, shift_lane);
+
+		for(auto &wp : current_controlled_lane_array_.lanes.at(0).waypoints){
+			wp.change_flag = 1;
+		}
+	}
+
+}
 
 void DecisionMakerNode::updateLaneWaypointsArray(void)
 {
 	current_stopped_lane_array_ = current_controlled_lane_array_;
+#if 0
+	size_t idx	= current_finalwaypoints_.waypoints.at(0).gid;
+	for(auto &lane : current_stopped_lane_array_.lanes)
+	{
+		for(auto &wp: lane.waypoints){
+			fprintf(stderr,"%d:%d\n",idx, wp.gid);
+			if(idx - 5 <= wp.gid &&  wp.gid  < idx){
+				wp.twist.twist.linear.x /= 5 - (idx-wp.gid);
+			}else{
+				wp.twist.twist.linear.x = 0;
+			}
+			wp.wpstate.stopline_state = 0;
+		}
+	}
+#else
+
 	for(auto &lane : current_stopped_lane_array_.lanes)
 	{
 		for(auto &wp: lane.waypoints){
@@ -47,6 +84,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
 			wp.wpstate.stopline_state = 0;
 		}
 	}
+#endif
 }
 
 void DecisionMakerNode::publishControlledLaneArray(void)
@@ -58,6 +96,7 @@ void DecisionMakerNode::publishStoppedLaneArray(void)
   updateLaneWaypointsArray();
   Pubs["lane_waypoints_array"].publish(current_stopped_lane_array_);
 }
+
 
 void DecisionMakerNode::changeVelocityBasedLane(void)
 {
@@ -108,7 +147,11 @@ void DecisionMakerNode::updateStateStop(int status)
 		}
 	}
 }
-
+void DecisionMakerNode::changedStateObstacleAvoid(int status)
+{
+	createShiftLane();
+	publishControlledLaneArray();
+}
 void DecisionMakerNode::changedStateStop(int status)
 {
 	publishStoppedLaneArray();

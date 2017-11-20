@@ -165,6 +165,9 @@ private:
   void updateLaneWaypointsArray(void);
   void changeVelocityBasedLane(void);
   void changeVelocityLane(int dir);
+  void createShiftLane(void);
+  
+  void changedStateObstacleAvoid(int status);
   
   void updateStateSTR(int status);
   void updateStateStop(int status);
