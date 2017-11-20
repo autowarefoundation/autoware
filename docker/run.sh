@@ -30,4 +30,6 @@ nvidia-docker run \
     --env="XAUTHORITY=${XAUTH}" \
     --env="DISPLAY=${DISPLAY}" \
     -u autoware \
+    --privileged -v /dev/bus/usb:/dev/bus/usb \
+    --net=host \
     autoware-$1
