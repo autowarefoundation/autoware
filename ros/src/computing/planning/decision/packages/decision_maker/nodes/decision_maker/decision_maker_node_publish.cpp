@@ -94,8 +94,10 @@ void DecisionMakerNode::displayMarker(void)
     for (const auto &lane : area.insideLanes)
     {
 	    inside_line_marker.points.clear();
-	    inside_line_marker.id +=1;
 	    int id = inside_line_marker.id;
+	    inside_line_marker.id +=1;
+	    inside_marker.scale.x = scale / 3;
+	    inside_marker.scale.y = scale / 3;
 	    inside_line_marker.color.r = std::fmod(0.12345 * (id), 1.0);
 	    inside_line_marker.color.g = std::fmod(0.32345 * (5 - (id%5)), 1.0);
 	    inside_line_marker.color.b = std::fmod(0.52345 * (10- (id % 10)), 1.0);
@@ -104,6 +106,31 @@ void DecisionMakerNode::displayMarker(void)
 	    } 
 	    marker_array.markers.push_back(inside_line_marker);
     }
+  }
+  inside_line_marker.scale.x =0.3; //0.3;
+  inside_line_marker.scale.y =0.3;// 0.3;
+  int id = inside_line_marker.id;
+  inside_line_marker.color.r = 0;
+  inside_line_marker.color.g = 1;
+  inside_line_marker.color.b = 0.3;
+  inside_line_marker.color.a = 1;
+  inside_line_marker.ns = "shiftline";
+  for (const auto &lane : current_controlled_lane_array_.lanes)
+  {
+	  inside_line_marker.points.clear();
+	  for (size_t idx = 0; idx < lane.waypoints.size(); idx++){
+		  inside_line_marker.id +=1;
+
+		  geometry_msgs::Pose shift_p = lane.waypoints.at(idx).pose.pose;
+
+		  double current_angle = getPoseAngle(shift_p);
+
+		  shift_p.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
+		  shift_p.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
+
+		  inside_line_marker.points.push_back(shift_p.position);
+	  }
+	  marker_array.markers.push_back(inside_line_marker);
   }
   Pubs["crossroad_bbox"].publish(bbox_array);
   Pubs["crossroad_marker"].publish(marker_array);

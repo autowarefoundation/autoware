@@ -112,6 +112,8 @@ private:
   uint32_t param_convergence_count_;
   uint32_t param_target_waypoint_;
   double param_convergence_threshold_;
+  uint32_t param_stopline_target_waypoint_;
+  double param_shift_width_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -154,6 +156,9 @@ private:
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
 
   void setWaypointState(autoware_msgs::LaneArray &lane_array);
+  double calcPosesAngleDiff(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
+  double calcPosesAngleDiffN(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
+  double getPoseAngle(const geometry_msgs::Pose &p);
 
   void publishStoppedLaneArray(void);
   void publishControlledLaneArray(void);
@@ -197,6 +202,8 @@ public:
     param_convergence_threshold_ = DEFAULT_CONVERGENCE_THRESHOLD;
     param_convergence_count_ = DEFAULT_CONVERGENCE_COUNT;
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
+    param_shift_width_ = DEFAULT_SHIFT_WIDTH;
+    param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
 
     ctx = new state_machine::StateContext();
     this->initROS(argc, argv);

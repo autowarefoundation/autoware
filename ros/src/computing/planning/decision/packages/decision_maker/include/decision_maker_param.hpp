@@ -18,6 +18,9 @@ namespace decision_maker
 
 #define DEFAULT_STOP_DECELERATION 0.2
 #define DEFAULT_STOP_TIME 1 
+#define DEFAULT_STOPLINE_TARGET_WAYPOINT 10
+
+#define DEFAULT_SHIFT_WIDTH 1.0
 
 #define ANGLE_NEUTRAL 0
 #define ANGLE_CURVE 40

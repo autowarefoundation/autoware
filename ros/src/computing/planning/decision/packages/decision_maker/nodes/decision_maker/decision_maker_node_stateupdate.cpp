@@ -10,6 +10,7 @@
 namespace decision_maker
 {
 
+
 void DecisionMakerNode::setupStateCallback(void)
 {
   ctx->getStateObject(state_machine::DRIVE_STR_LEFT_STATE)
@@ -41,7 +42,6 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
 	current_stopped_lane_array_ = current_controlled_lane_array_;
 	for(auto &lane : current_stopped_lane_array_.lanes)
 	{
-
 		for(auto &wp: lane.waypoints){
 			wp.twist.twist.linear.x = 0.0;
 			wp.wpstate.stopline_state = 0;

@@ -13,7 +13,7 @@ substate:
         Decelerate : 11
         Keep       : 12
         Stop       : 13
-        Stop_line  : 14
+        Stop_pause : 14
         Straight   : 20
         Left       : 21
         Right      : 22

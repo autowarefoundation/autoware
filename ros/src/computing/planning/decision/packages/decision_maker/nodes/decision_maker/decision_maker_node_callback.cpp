@@ -70,6 +70,12 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;
   ctx->setEnableForceSetState(msg.enable_force_state_change);
+
+  param_target_waypoint_ = msg.target_waypoint;
+  param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
+  param_shift_width_ =  msg.shift_width;
+
+
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
@@ -279,8 +285,13 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 		  ctx->setCurrentState(
 			  getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
 	  }
+  }
 
-	  if(current_finalwaypoints_.waypoints.at((int)idx/2).wpstate.stopline_state)
+  idx = current_finalwaypoints_.waypoints.size()-1 > param_stopline_target_waypoint_?
+	  param_stopline_target_waypoint_ : current_finalwaypoints_.waypoints.size()-1;
+
+  if(idx){
+	  if(current_finalwaypoints_.waypoints.at((int)idx).wpstate.stopline_state)
 		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
   }
 
