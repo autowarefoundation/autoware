@@ -39,6 +39,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <memory>
 #include <pthread.h>
 
 #include <ros/ros.h>
@@ -115,7 +116,7 @@ static int _use_gnss = 1;
 static int init_pos_set = 0;
 
 #ifdef CUDA_FOUND
-static gpu::GNormalDistributionsTransform gpu_ndt;
+static std::shared_ptr<gpu::GNormalDistributionsTransform> gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
 #endif
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 
@@ -260,7 +261,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setResolution(ndt_res);
+      gpu_ndt_ptr->setResolution(ndt_res);
     }
     else
     {
@@ -276,7 +277,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setStepSize(step_size);
+      gpu_ndt_ptr->setStepSize(step_size);
     }
     else
     {
@@ -292,7 +293,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setTransformationEpsilon(trans_eps);
+      gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
     }
     else
     {
@@ -308,7 +309,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setMaximumIterations(max_iter);
+      gpu_ndt_ptr->setMaximumIterations(max_iter);
     }
     else
     {
@@ -426,19 +427,27 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_gpu_ndt;
-      new_gpu_ndt.setInputTarget(map_ptr);
-      new_gpu_ndt.setMaximumIterations(max_iter);
-      new_gpu_ndt.setResolution(ndt_res);
-      new_gpu_ndt.setStepSize(step_size);
-      new_gpu_ndt.setTransformationEpsilon(trans_eps);
-      new_gpu_ndt.align(Eigen::Matrix4f::Identity());
+      std::shared_ptr<gpu::GNormalDistributionsTransform> new_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
+      new_gpu_ndt_ptr->setInputTarget(map_ptr);
+      new_gpu_ndt_ptr->setMaximumIterations(max_iter);
+      new_gpu_ndt_ptr->setResolution(ndt_res);
+      new_gpu_ndt_ptr->setStepSize(step_size);
+      new_gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
+
+      pcl::PointCloud<pcl::PointXYZ>::Ptr dummy_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+      pcl::PointXYZ dummy_point;
+      dummy_scan_ptr->push_back(dummy_point);
+      new_gpu_ndt_ptr->setInputSource(dummy_scan_ptr);
+
+      new_gpu_ndt_ptr->align(Eigen::Matrix4f::Identity());
+
       pthread_mutex_lock(&mutex);
-      gpu_ndt = new_gpu_ndt;
+      gpu_ndt_ptr = new_gpu_ndt_ptr;
       pthread_mutex_unlock(&mutex);
+    }
     else
-    {
 #endif
+    {
       pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_ndt;
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
       new_ndt.setInputTarget(map_ptr);
@@ -456,9 +465,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       pthread_mutex_lock(&mutex);
       ndt = new_ndt;
       pthread_mutex_unlock(&mutex);
-#ifdef CUDA_FOUND
     }
-#endif
 
     map_loaded = 1;
   }
@@ -844,7 +851,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setInputSource(filtered_scan_ptr);
+      gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
     }
     else
     {
@@ -891,19 +898,19 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     if (_use_gpu == true)
     {
       align_start = std::chrono::system_clock::now();
-      gpu_ndt.align(init_guess);
+      gpu_ndt_ptr->align(init_guess);
       align_end = std::chrono::system_clock::now();
 
-      has_converged = gpu_ndt.hasConverged();
+      has_converged = gpu_ndt_ptr->hasConverged();
 
-      t = gpu_ndt.getFinalTransformation();
-      iteration = gpu_ndt.getFinalNumIteration();
+      t = gpu_ndt_ptr->getFinalTransformation();
+      iteration = gpu_ndt_ptr->getFinalNumIteration();
 
       getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = gpu_ndt.getFitnessScore();
+      fitness_score = gpu_ndt_ptr->getFitnessScore();
       getFitnessScore_end = std::chrono::system_clock::now();
 
-      trans_probability = gpu_ndt.getTransformationProbability();
+      trans_probability = gpu_ndt_ptr->getTransformationProbability();
     }
 #ifdef USE_FAST_PCL
     else if (_use_openmp == true)
