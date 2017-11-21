@@ -16,35 +16,31 @@
 
 namespace decision_maker
 {
-
 double DecisionMakerNode::getPoseAngle(const geometry_msgs::Pose &pose)
 {
-    double r, p, y;
+  double r, p, y;
 
-    tf::Quaternion quat(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-    tf::Matrix3x3(quat).getRPY(r, p, y);
+  tf::Quaternion quat(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
+  tf::Matrix3x3(quat).getRPY(r, p, y);
 
-    // convert to [-pi : pi]
-    return y;
-
+  // convert to [-pi : pi]
+  return y;
 }
 
 double DecisionMakerNode::calcPosesAngleDiffN(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to)
 {
-    // convert to [-pi : pi]
-    return getPoseAngle(p_from) - getPoseAngle(p_to);
+  // convert to [-pi : pi]
+  return getPoseAngle(p_from) - getPoseAngle(p_to);
 }
-
 
 double DecisionMakerNode::calcPosesAngleDiff(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to)
 {
-    // convert to [-pi : pi]
-    double diff = std::fmod(calcPosesAngleDiffN(p_from, p_to), 2 * M_PI);
-    diff = diff > M_PI ? diff - 2 * M_PI : diff < -M_PI ? 2 * M_PI + diff : diff;
-    diff = diff * 180 / M_PI;
-    return diff;
+  // convert to [-pi : pi]
+  double diff = std::fmod(calcPosesAngleDiffN(p_from, p_to), 2 * M_PI);
+  diff = diff > M_PI ? diff - 2 * M_PI : diff < -M_PI ? 2 * M_PI + diff : diff;
+  diff = diff * 180 / M_PI;
+  return diff;
 }
-
 
 double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &laneinArea)
 {
@@ -57,7 +53,7 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lanei
   {
     const geometry_msgs::Pose InPose = laneinArea.waypoints.front().pose.pose;
     const geometry_msgs::Pose OutPose = laneinArea.waypoints.back().pose.pose;
-    
+
     diff = calcPosesAngleDiff(InPose, OutPose);
   }
 
@@ -85,12 +81,13 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
   distances.push_back(amathutils::find_distance(a, b));
   if (++distances_count > param_convergence_count_)
   {
-	  distances.erase(distances.begin());
-	  distances_count--;
-	  avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
-	  if (avg_distances <= param_convergence_threshold_){
-		  return ctx->setCurrentState(state_machine::DRIVE_STATE);
-	  }
+    distances.erase(distances.begin());
+    distances_count--;
+    avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
+    if (avg_distances <= param_convergence_threshold_)
+    {
+      return ctx->setCurrentState(state_machine::DRIVE_STATE);
+    }
   }
   else
   {

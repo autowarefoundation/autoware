@@ -71,10 +71,8 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ctx->setEnableForceSetState(msg.enable_force_state_change);
 
   param_target_waypoint_ = msg.target_waypoint;
-  param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
-  param_shift_width_ =  msg.shift_width;
-
-
+  // param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
+  param_shift_width_ = msg.shift_width;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
@@ -86,11 +84,11 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   current_traffic_light = light->traffic_light;
   if (current_traffic_light == state_machine::E_RED || current_traffic_light == state_machine::E_YELLOW)
   {
-   // ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+    // ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
   else
   {
-   //ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+    // ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
   }
 }
 
@@ -121,7 +119,7 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           {
             autoware_msgs::lane nlane;
             area.insideLanes.push_back(nlane);
-	  }
+          }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
           // area.insideLanes.Waypoints.push_back(wp);//autoware_msgs::waypoint
@@ -164,56 +162,56 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 
       for (auto &wp_lane : laneinArea.waypoints)
       {
-	      for (auto &lane : lane_array.lanes)
-	      {
-		      for(auto &wp : lane.waypoints){
-			      if(wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id){
-				      wp.wpstate.steering_state = steering_state;
-			      }
-		      }
-		      //lane.waypoints.at(wp_lane.lid).wpstate.steering_state = steering_state;
-	      }
+        for (auto &lane : lane_array.lanes)
+        {
+          for (auto &wp : lane.waypoints)
+          {
+            if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id)
+            {
+              wp.wpstate.steering_state = steering_state;
+            }
+          }
+          // lane.waypoints.at(wp_lane.lid).wpstate.steering_state = steering_state;
+        }
       }
     }
   }
   // STOP
-  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine &stopline) { 
-        return (g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type == (int)vector_map_msgs::RoadSign::TYPE_STOP);});
-  
+  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine &stopline) {
+    return (g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type == (int)vector_map_msgs::RoadSign::TYPE_STOP);
+  });
+
   for (auto &lane : lane_array.lanes)
   {
     for (size_t wp_idx = 0; wp_idx < lane.waypoints.size() - 1; wp_idx++)
     {
       for (auto &stopline : stoplines)
       {
-          geometry_msgs::Point bp =
-              to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).bpid)));
-          geometry_msgs::Point fp =
-              to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
-	 
-          if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
-                                          lane.waypoints.at(wp_idx).pose.pose.position.y,
-                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
+        geometry_msgs::Point bp =
+            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).bpid)));
+        geometry_msgs::Point fp =
+            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
+
+        if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
+                                        lane.waypoints.at(wp_idx).pose.pose.position.y,
+                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
+        {
+          geometry_msgs::Point center_point;
+          center_point.x = (bp.x * 2 + fp.x) / 3;
+          center_point.y = (bp.y * 2 + fp.y) / 3;
+          if (amathutils::isPointLeftFromLine(
+                  center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
+                  lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                  lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
           {
-	    geometry_msgs::Point center_point;
-	    center_point.x = (bp.x*2 + fp.x)/3;
-	    center_point.y = (bp.y*2 + fp.y)/3;
-	    if(amathutils::isPointLeftFromLine( 
-				          center_point.x,
-					  center_point.y,
-           			          lane.waypoints.at(wp_idx).pose.pose.position.x,
-                                          lane.waypoints.at(wp_idx).pose.pose.position.y,
-                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.y)){
-		    lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
-		    //lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
-	    }
-	  }
+            lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+            // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+          }
+        }
       }
     }
   }
-
 }
 
 // for based waypoint
@@ -271,32 +269,36 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   // cached
   current_finalwaypoints_ = msg;
 
-  // steering
-  size_t idx = current_finalwaypoints_.waypoints.size()-1 > param_target_waypoint_?
-	  param_target_waypoint_ : current_finalwaypoints_.waypoints.size()-1; 
-  if(idx){
-	  if(ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE)){
-		  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-	  }
-	  if(ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE)){
-		  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-	  }else{ 
-		  ctx->setCurrentState(
-			  getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
-	  }
+  size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
+                   param_stopline_target_waypoint_ :
+                   current_finalwaypoints_.waypoints.size() - 1;
+  if (idx >= 0)
+  {
+    if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
+      ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
   }
-
-  idx = current_finalwaypoints_.waypoints.size()-1 > param_stopline_target_waypoint_?
-	  param_stopline_target_waypoint_ : current_finalwaypoints_.waypoints.size()-1;
-
-  if(idx){
-	  if(current_finalwaypoints_.waypoints.at((int)idx).wpstate.stopline_state)
-		  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+  // steering
+  idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
+            param_target_waypoint_ :
+            current_finalwaypoints_.waypoints.size() - 1;
+  if (idx >= 0)
+  {
+    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
+    {
+      ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+    }
+    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
+    {
+      ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+    }
+    else
+    {
+      ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
+    }
   }
 
   // for publish plan of velocity
   publishToVelocityArray();
-
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {

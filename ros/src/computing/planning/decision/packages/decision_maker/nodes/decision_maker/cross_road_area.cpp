@@ -15,7 +15,6 @@ CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_f
 
   double _min_distance = DBL_MAX;
 
-
   if (!_finalwaypoints.waypoints.empty())
   {
     _pa.x = _finalwaypoints.waypoints[TARGET_WAYPOINTS_NUM].pose.pose.position.x;

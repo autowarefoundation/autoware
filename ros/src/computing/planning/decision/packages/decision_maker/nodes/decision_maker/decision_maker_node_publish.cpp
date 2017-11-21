@@ -78,7 +78,7 @@ void DecisionMakerNode::displayMarker(void)
 
   bbox_array.header = crossroad_marker.header;
   inside_marker.points.clear();
-  
+
   inside_line_marker = inside_marker;
   inside_line_marker.type = visualization_msgs::Marker::LINE_STRIP;
 
@@ -93,22 +93,23 @@ void DecisionMakerNode::displayMarker(void)
 
     for (const auto &lane : area.insideLanes)
     {
-	    inside_line_marker.points.clear();
-	    int id = inside_line_marker.id;
-	    inside_line_marker.id +=1;
-	    inside_marker.scale.x = scale / 3;
-	    inside_marker.scale.y = scale / 3;
-	    inside_line_marker.color.r = std::fmod(0.12345 * (id), 1.0);
-	    inside_line_marker.color.g = std::fmod(0.32345 * (5 - (id%5)), 1.0);
-	    inside_line_marker.color.b = std::fmod(0.52345 * (10- (id % 10)), 1.0);
-	    for(const auto &wp : lane.waypoints){
-		    inside_line_marker.points.push_back(wp.pose.pose.position);
-	    } 
-	    marker_array.markers.push_back(inside_line_marker);
+      inside_line_marker.points.clear();
+      int id = inside_line_marker.id;
+      inside_line_marker.id += 1;
+      inside_marker.scale.x = scale / 3;
+      inside_marker.scale.y = scale / 3;
+      inside_line_marker.color.r = std::fmod(0.12345 * (id), 1.0);
+      inside_line_marker.color.g = std::fmod(0.32345 * (5 - (id % 5)), 1.0);
+      inside_line_marker.color.b = std::fmod(0.52345 * (10 - (id % 10)), 1.0);
+      for (const auto &wp : lane.waypoints)
+      {
+        inside_line_marker.points.push_back(wp.pose.pose.position);
+      }
+      marker_array.markers.push_back(inside_line_marker);
     }
   }
-  inside_line_marker.scale.x =0.1; //0.3;
-  inside_line_marker.scale.y =0.1;// 0.3;
+  inside_line_marker.scale.x = 0.1;  // 0.3;
+  inside_line_marker.scale.y = 0.1;  // 0.3;
   int id = inside_line_marker.id;
   inside_line_marker.color.r = 0;
   inside_line_marker.color.g = 1;
@@ -117,25 +118,26 @@ void DecisionMakerNode::displayMarker(void)
   inside_line_marker.ns = "shiftline";
   for (const auto &lane : current_controlled_lane_array_.lanes)
   {
-	  inside_line_marker.points.clear();
-	  for (size_t idx = 0; idx < lane.waypoints.size(); idx++){
-		  inside_line_marker.id +=1;
+    inside_line_marker.points.clear();
+    for (size_t idx = 0; idx < lane.waypoints.size(); idx++)
+    {
+      inside_line_marker.id += 1;
 
-		  geometry_msgs::Pose shift_p = lane.waypoints.at(idx).pose.pose;
+      geometry_msgs::Pose shift_p = lane.waypoints.at(idx).pose.pose;
 
-		  double current_angle = getPoseAngle(shift_p);
+      double current_angle = getPoseAngle(shift_p);
 
-		  shift_p.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
-		  shift_p.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
+      shift_p.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
+      shift_p.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
 
-		  inside_line_marker.points.push_back(shift_p.position);
-	  }
-	  marker_array.markers.push_back(inside_line_marker);
+      inside_line_marker.points.push_back(shift_p.position);
+    }
+    marker_array.markers.push_back(inside_line_marker);
   }
   Pubs["crossroad_bbox"].publish(bbox_array);
   Pubs["crossroad_marker"].publish(marker_array);
   bbox_array.boxes.clear();
-  //Pubs["crossroad_inside_marker"].publish(inside_marker);
+  // Pubs["crossroad_inside_marker"].publish(inside_marker);
   Pubs["crossroad_inside_marker"].publish(inside_line_marker);
 }
 
@@ -152,24 +154,19 @@ void DecisionMakerNode::update_msgs(void)
       update_pubsub();
     }
 
-
     autoware_msgs::state state_msg;
     state_msg.main_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::MAIN_STATE);
     state_msg.acc_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::ACC_STATE);
     state_msg.str_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::STR_STATE);
     state_msg.behavior_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::BEHAVIOR_STATE);
-    
-    state_string_msg.data = CurrentStateName;
-    //state_text_msg.text = createStateMessageText();
-    state_text_msg.text = state_msg.main_state + "\n"
-	    		 + state_msg.acc_state + "\n"
-	    		 + state_msg.str_state + "\n"
-	    		 + state_msg.behavior_state + "\n";
 
-    
+    state_string_msg.data = CurrentStateName;
+    // state_text_msg.text = createStateMessageText();
+    state_text_msg.text = state_msg.main_state + "\n" + state_msg.acc_state + "\n" + state_msg.str_state + "\n" +
+                          state_msg.behavior_state + "\n";
 
     Pubs["states"].publish(state_msg);
-    //Pubs["state"].publish(state_string_msg);
+    // Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);
   }
   else

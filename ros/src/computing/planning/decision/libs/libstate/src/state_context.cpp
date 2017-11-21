@@ -44,6 +44,18 @@ void StateContext::changed(uint8_t _kind)
 		(*HolderMap[_kind])->changed();
 }
 
+bool StateContext::setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+{
+	if(getStateObject(_state_num))
+			getStateObject(_state_num)->setUpdateFunc(_f);
+}
+bool StateContext::setChangedFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+{
+	if(getStateObject(_state_num))
+			getStateObject(_state_num)->setChangedFunc(_f);
+}
+
+
 
 void StateContext::showCurrentStateName(void)
 {

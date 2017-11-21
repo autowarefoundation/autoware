@@ -106,6 +106,9 @@ public:
   std::string getCurrentStateName(void);
   std::string getStateName(void);
   
+  bool setChangedFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+  bool setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+  
   BaseState **getCurrentStateHolderPtr(uint8_t _kind);
   BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
   BaseState **getCurrentStateHolderPtr(BaseState *_state);

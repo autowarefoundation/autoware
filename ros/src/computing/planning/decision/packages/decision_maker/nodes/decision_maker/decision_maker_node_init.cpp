@@ -15,9 +15,9 @@
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
+#include <autoware_msgs/lamp_cmd.h>
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/state.h>
-#include <autoware_msgs/lamp_cmd.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -28,7 +28,6 @@
 
 namespace decision_maker
 {
-
 void DecisionMakerNode::initROS(int argc, char **argv)
 {
   // status subscriber
@@ -82,9 +81,10 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   // setup a callback for state update();
   setupStateCallback();
 
-  g_vmap.subscribe(nh_, 
-		  Category::POINT |  Category::LINE |  Category::VECTOR | Category::AREA | Category::POLE | //basic class
-		  Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
+  g_vmap.subscribe(nh_,
+                   Category::POINT | Category::LINE | Category::VECTOR | Category::AREA |
+                       Category::POLE |  // basic class
+                       Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
   initVectorMap();
 
   {
@@ -94,90 +94,92 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   ROS_INFO("Initialized OUT\n");
   Subs["lane_waypoints_array"] =
-	  nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
+      nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
 }
 
 void DecisionMakerNode::initVectorMap(void)
 {
-      int _index = 0;
-      //if(vector_map_init)
-	//      return;
-      std::vector<CrossRoad> crossroads = g_vmap.findByFilter([](const CrossRoad &crossroad){return true;});
-      if(crossroads.empty()){
-	      ROS_INFO("crossroad have not found\n");
-	      return;
-      }
+  int _index = 0;
+  // if(vector_map_init)
+  //      return;
+  std::vector<CrossRoad> crossroads = g_vmap.findByFilter([](const CrossRoad &crossroad) { return true; });
+  if (crossroads.empty())
+  {
+    ROS_INFO("crossroad have not found\n");
+    return;
+  }
 
-      vector_map_init = true; //loaded flag
-      for(const auto &cross_road : crossroads)
+  vector_map_init = true;  // loaded flag
+  for (const auto &cross_road : crossroads)
+  {
+    Area area = g_vmap.findByKey(Key<Area>(cross_road.aid));
+    CrossRoadArea carea;
+    carea.id = _index++;
+    carea.area_id = area.aid;
+
+    double x_avg = 0.0, x_min = 0.0, x_max = 0.0;
+    double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
+    double z = 0.0;
+    int points_count = 0;
+
+    std::vector<Line> lines =
+        g_vmap.findByFilter([&area](const Line &line) { return area.slid <= line.lid && line.lid <= area.elid; });
+    for (const auto &line : lines)
+    {
+      geometry_msgs::Point _prev_point;
+      std::vector<Point> points =
+          g_vmap.findByFilter([&line](const Point &point) { return line.bpid == point.pid || point.pid == line.fpid; });
+      for (const auto &point : points)
       {
-	Area area = g_vmap.findByKey(Key<Area>(cross_road.aid));
-	CrossRoadArea carea;
-	carea.id = _index++;
-	carea.area_id = area.aid;
-	
-	double x_avg = 0.0, x_min = 0.0, x_max = 0.0;
-	double y_avg = 0.0, y_min = 0.0, y_max = 0.0;
-	double z = 0.0;
-	int points_count = 0;
+        geometry_msgs::Point _point;
+        _point.x = point.ly;
+        _point.y = point.bx;
+        _point.z = point.h;
 
-	std::vector<Line> lines = g_vmap.findByFilter([&area](const Line &line){return area.slid <= line.lid && line.lid <= area.elid;});
-	for (const auto &line : lines)
-	{
-		geometry_msgs::Point _prev_point;
-		std::vector<Point> points = g_vmap.findByFilter([&line](const Point &point){return line.bpid == point.pid || point.pid == line.fpid;});
-		for (const auto &point : points)
-		{
-			geometry_msgs::Point _point;
-			_point.x = point.ly;
-			_point.y = point.bx;
-			_point.z = point.h;
+        if (_prev_point.x == _point.x && _prev_point.y == _point.y)
+          continue;
 
-			if (_prev_point.x == _point.x && _prev_point.y == _point.y)
-				continue;
+        _prev_point = _point;
+        points_count++;
+        carea.points.push_back(_point);
 
-			_prev_point = _point;
-			points_count++;
-			carea.points.push_back(_point);
+        // calc a centroid point and about intersects size
+        x_avg += _point.x;
+        y_avg += _point.y;
+        x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
+        x_max = (x_max == 0.0) ? _point.x : std::max(_point.x, x_max);
+        y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
+        y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
+        z = _point.z;
 
-			// calc a centroid point and about intersects size
-			x_avg += _point.x;
-			y_avg += _point.y;
-			x_min = (x_min == 0.0) ? _point.x : std::min(_point.x, x_min);
-			x_max = (x_max == 0.0) ? _point.x : std::max(_point.x, x_max);
-			y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
-			y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
-			z = _point.z;
-
-		}    // points iter
-	}        // line iter
-	carea.bbox.pose.position.x = x_avg / (double)points_count;
-	carea.bbox.pose.position.y = y_avg / (double)points_count;
-	carea.bbox.pose.position.z = z;
-	carea.bbox.dimensions.x = x_max - x_min;
-	carea.bbox.dimensions.y = y_max - y_min;
-	carea.bbox.dimensions.z = 2;
-	carea.bbox.label = 1;
-	intersects.push_back(carea);
-      }
-
+      }  // points iter
+    }    // line iter
+    carea.bbox.pose.position.x = x_avg / (double)points_count;
+    carea.bbox.pose.position.y = y_avg / (double)points_count;
+    carea.bbox.pose.position.z = z;
+    carea.bbox.dimensions.x = x_max - x_min;
+    carea.bbox.dimensions.y = y_max - y_min;
+    carea.bbox.dimensions.z = 2;
+    carea.bbox.label = 1;
+    intersects.push_back(carea);
+  }
 }
 
 bool DecisionMakerNode::initVectorMapClient()
 {
 #ifdef USE_VMAP_SERVER  // This is not successfully run due to failing vmap
-	// server
+  // server
 
-	vector_map::VectorMap vmap;
-	vmap.subscribe(nh_, vector_map::Category::AREA, ros::Duration(0));
+  vector_map::VectorMap vmap;
+  vmap.subscribe(nh_, vector_map::Category::AREA, ros::Duration(0));
 
-	cross_road_srv.request.pose = current_pose_;
-	cross_road_srv.request.waypoints = current_finalwaypoints_;
+  cross_road_srv.request.pose = current_pose_;
+  cross_road_srv.request.waypoints = current_finalwaypoints_;
 
-	cross_road_cli = nh_.serviceClient<vector_map_server::GetCrossRoad>("vector_map_server/get_cross_road");
+  cross_road_cli = nh_.serviceClient<vector_map_server::GetCrossRoad>("vector_map_server/get_cross_road");
 
-	return cross_road_cli.call(cross_road_srv);
+  return cross_road_cli.call(cross_road_srv);
 #endif
-	return false;
+  return false;
 }
 }
