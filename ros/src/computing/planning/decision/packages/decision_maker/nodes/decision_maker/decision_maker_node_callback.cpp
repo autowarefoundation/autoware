@@ -239,7 +239,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
     }
   }
   setWaypointState(current_based_lane_array_);
-  current_controlled_lane_array_ = current_based_lane_array_;  // controlled path
+  current_controlled_lane_array_ = current_shifted_lane_array_ = current_based_lane_array_;  // controlled path
 
   publishControlledLaneArray();
   updateLaneWaypointsArray();

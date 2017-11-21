@@ -91,9 +91,10 @@ private:
 
   std::vector<geometry_msgs::Point> inside_points_;
 
-  autoware_msgs::LaneArray current_based_lane_array_;
-  autoware_msgs::LaneArray current_controlled_lane_array_;
-  autoware_msgs::LaneArray current_stopped_lane_array_;
+  autoware_msgs::LaneArray current_based_lane_array_; // with wpstate
+  autoware_msgs::LaneArray current_shifted_lane_array_; // with shiftedLane
+  autoware_msgs::LaneArray current_controlled_lane_array_; // modified lane
+  autoware_msgs::LaneArray current_stopped_lane_array_; // 0velocity
 
 
   // Current way/behavior status

@@ -27,7 +27,6 @@ void DecisionMakerNode::setupStateCallback(void)
        ->setUpdateFunc(std::bind(&DecisionMakerNode::updateStateStop, this, 0));
   ctx->getStateObject(state_machine::DRIVE_ACC_STOP_STATE)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateStop, this, 0));
-  
   ctx->getStateObject(state_machine::DRIVE_ACC_KEEP_STATE)
        ->setChangedFunc(std::bind(&DecisionMakerNode::changedStateKeep, this, 1));
   ctx->getStateObject(state_machine::DRIVE_ACC_ACCELERATION_STATE)
@@ -42,16 +41,19 @@ void DecisionMakerNode::setupStateCallback(void)
 void DecisionMakerNode::createShiftLane(void)
 {
 	autoware_msgs::lane shift_lane;
-	if(!current_controlled_lane_array_.lanes.empty()){
-		shift_lane = current_controlled_lane_array_.lanes.at(0);
+	if(!current_shifted_lane_array_.lanes.empty()){
+		shift_lane = current_shifted_lane_array_.lanes.at(0);
+		size_t idx = 0;
 		for(auto &wp : shift_lane.waypoints){
 			double current_angle = getPoseAngle(wp.pose.pose);
 			wp.pose.pose.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
 			wp.pose.pose.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
-		}
-		auto it = current_controlled_lane_array_.lanes.insert(current_controlled_lane_array_.lanes.begin() + 1, shift_lane);
+			wp.change_flag = current_based_lane_array.lanes.at(0).waypoints.at(idx++).change_flag;
 
-		for(auto &wp : current_controlled_lane_array_.lanes.at(0).waypoints){
+		}
+		auto it = current_shifted_lane_array_.lanes.insert(current_shifted_lane_array_.lanes.begin() + 1, shift_lane);
+
+		for(auto &wp : current_shifted_lane_array_.lanes.at(0).waypoints){
 			wp.change_flag = 1;
 		}
 	}
@@ -60,6 +62,7 @@ void DecisionMakerNode::createShiftLane(void)
 
 void DecisionMakerNode::updateLaneWaypointsArray(void)
 {
+	//current_stopped_lane_array_ = current_controlled_lane_array_;
 	current_stopped_lane_array_ = current_controlled_lane_array_;
 #if 0
 	size_t idx	= current_finalwaypoints_.waypoints.at(0).gid;
@@ -100,7 +103,8 @@ void DecisionMakerNode::publishStoppedLaneArray(void)
 
 void DecisionMakerNode::changeVelocityBasedLane(void)
 {
-	current_controlled_lane_array_ = current_based_lane_array_;
+	current_controlled_lane_array_ = current_shifted_lane_array_;
+	//current_controlled_lane_array_ = current_based_lane_array_;
 }
 
 void DecisionMakerNode::changeVelocityLane(int dir)
@@ -131,10 +135,15 @@ void DecisionMakerNode::changedStateKeep(int status)
 	publishControlledLaneArray();
 }
 
+
 void DecisionMakerNode::changedStateAcc(int status)
 {
 	changeVelocityLane(status);
 	publishControlledLaneArray();
+	
+	static ros::Timer stopping_timer;
+	static bool timerflag = false;
+	stopping_timer = nh_.createTimer(ros::Duration(1), [&](const ros::TimerEvent&){ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE); ROS_INFO("Change state to null from obstacle avoid\n"); }, this, true);
 }
 void DecisionMakerNode::updateStateStop(int status)
 {
