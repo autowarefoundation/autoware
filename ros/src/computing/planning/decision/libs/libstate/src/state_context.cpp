@@ -23,14 +23,15 @@
 
 namespace state_machine
 {
+
+
 void StateContext::update(void)
 {
   for (auto &p : HolderMap)
   {
-    if (*p.second)
-    {
-      (*p.second)->update();
-    }
+    if (p.second)
+	    if(getStateObject(p.second))
+		    getStateObject(p.second)->update();
   }
 }
 
@@ -39,9 +40,31 @@ void StateContext::changed(uint8_t _kind)
 	if(_kind >  UNKNOWN_STATE){
 		return;
 	}
+	if(getStateObject(HolderMap[_kind]))
+		getStateObject(HolderMap[_kind])->changed();
+}
 
-	if(*HolderMap[_kind])
-		(*HolderMap[_kind])->changed();
+
+BaseState *StateContext::getStateObject(const uint64_t &_state_num)
+{
+	uint64_t _state_num_MSB = _state_num;
+	if(_state_num){
+		if(StateStores[_state_num]){
+			return StateStores[_state_num];
+		}else{
+			for(uint64_t mask = STATE_END; mask > 0; mask>>=1){
+				if(mask & _state_num)
+				{
+					_state_num_MSB = mask;
+					break;
+				}
+			}
+			return StateStores[_state_num_MSB];
+
+		}
+
+	}
+	return nullptr;
 }
 
 bool StateContext::setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
@@ -55,55 +78,65 @@ bool StateContext::setChangedFunc(const uint64_t &_state_num, const std::functio
 			getStateObject(_state_num)->setChangedFunc(_f);
 }
 
+std::string StateContext::getStateName(const uint64_t &_state_num)
+{
+	if(getStateObject(_state_num)){
+		return getStateObject(_state_num)->getStateName();
+	}else 
+		return "";
+}
+
+uint64_t StateContext::getStateNum(BaseState *_state)
+{
+  if (_state){
+	  return _state->getStateNum();
+  }else
+	  return 0;
+}
+
+uint8_t StateContext::getStateKind(BaseState *_state)
+{
+	if (_state){
+		return _state->getStateKind();
+	}else
+		return UNKNOWN_STATE;
+}
+
+uint8_t StateContext::getStateKind(const uint64_t &_state_num)
+{
+	if (_state_num){
+		return getStateKind(getStateObject(_state_num));
+	}
+	return UNKNOWN_STATE;
+}
 
 
 void StateContext::showCurrentStateName(void)
 {
   for (auto &p : HolderMap)
   {
-    if (*p.second)
-    {
-      (*p.second)->showStateName();
-    }
+    if (p.second)
+	    if(getStateObject(p.second))
+		    getStateObject(p.second)->showStateName();
   }
 }
 
-bool StateContext::isDifferentState(BaseState *_state_a, BaseState **_state_b)
+bool StateContext::isDifferentState(uint64_t _state_a, uint64_t _state_b)
 {
-	if(_state_b){
-		return _state_a == *_state_b;
-	}else{
-		return false;
-	}
+	return _state_a == _state_b;
 }
 
 bool StateContext::isEmptyMainState(void)
 {
-  if (current_state_.MainState)
+  if (HolderMap[MAIN_STATE])
     return false;
   return true;
-}
-
-uint8_t StateContext::getStateKind(BaseState *_state)
-{
-  if (_state)
-    return _state->getStateKind();
-  else
-    return UNKNOWN_STATE;
 }
 
 uint64_t StateContext::getStateTransMask(BaseState *_state)
 {
   if (_state)
     return _state->getStateTransMask();
-  else
-    return 0;
-}
-
-uint64_t StateContext::getStateNum(BaseState *_state)
-{
-  if (_state)
-    return _state->getStateNum();
   else
     return 0;
 }
@@ -118,18 +151,19 @@ bool StateContext::setCurrentState(BaseState *_state)
   change_state_mutex.lock();
   bool ret = true;
   if(_state){
-	  bool diff = isDifferentState(_state, getCurrentStateHolderPtr(_state));
+	  bool diff = isDifferentState(getStateNum(_state), HolderMap[getStateKind(_state)]);
 	  if (isMainState(_state))
 	  {
 		  if (isEmptyMainState() || enableForceSetState ||
-				  (getStateTransMask(_state) & getStateNum(current_state_.MainState)))
+				  (getStateTransMask(_state) & HolderMap[MAIN_STATE]))
 		  {
-			  current_state_.MainState = _state;
-			  current_state_.AccState = nullptr;
-			  current_state_.StrState = nullptr;
-			  current_state_.BehaviorState = nullptr;
-			  current_state_.PerceptionState = nullptr;
-			  current_state_.OtherState = nullptr;
+			  for(auto &state : HolderMap){
+				  if(state.first == MAIN_STATE){
+					  state.second = getStateNum(_state);
+				  }else{
+					  state.second = 0ULL;
+				  }
+			  }
 		  }
 		  else
 		  {
@@ -138,7 +172,8 @@ bool StateContext::setCurrentState(BaseState *_state)
 	  }
 	  else
 	  {
-		  *HolderMap[getStateKind(_state)] = _state;
+		  fprintf(stderr,"[%s]:%lx:%s\n",__func__, getStateNum(_state), getStateName(getStateNum(_state)).c_str());
+		  HolderMap[getStateKind(_state)] = getStateNum(_state);
 	  }
 	  change_state_mutex.unlock();
 	  if(ret && !diff)
@@ -162,49 +197,22 @@ bool StateContext::setEnableForceSetState(bool force_flag)
   return true;
 }
 
-std::string StateContext::getCurrentStateName(uint8_t _kind)
-{
-	if (*HolderMap[_kind])
-		return (*HolderMap[_kind])->getStateName();
-	return std::string("");
-}
-
 std::string StateContext::getCurrentStateName(void)
 {
   return this->getCurrentStateName(MAIN_STATE);
 }
 
+std::string StateContext::getCurrentStateName(uint8_t _kind)
+{
+	if (HolderMap[_kind]){
+		return getStateName(HolderMap[_kind]);
+	}
+	return std::string("");
+}
+
 BaseState *StateContext::getCurrentMainState(void)
 {
-  return current_state_.MainState;
-}
-
-BaseState *StateContext::getStateObject(uint64_t _state_num)
-{
-  return StateStores[_state_num];
-}
-
-
-
-BaseState **StateContext::getCurrentStateHolderPtr(uint8_t _kind)
-{
-	if(_kind >  UNKNOWN_STATE){
-		return nullptr;
-	}
-	return HolderMap[_kind];
-}
-
-BaseState **StateContext::getCurrentStateHolderPtr(uint64_t _state_num)
-{
-  return getCurrentStateHolderPtr(getStateKind(getStateObject(_state_num)));
-}
-
-BaseState **StateContext::getCurrentStateHolderPtr(BaseState *_state)
-{
-	if(_state)
-		return getCurrentStateHolderPtr(getStateKind(_state));
-	else
-		return nullptr;
+	return getStateObject(HolderMap[MAIN_STATE]);
 }
 
 bool StateContext::disableCurrentState(uint64_t _state_num)
@@ -213,7 +221,7 @@ bool StateContext::disableCurrentState(uint64_t _state_num)
 		return false;
 	}
 	if(isCurrentState(_state_num)){
-		(*getCurrentStateHolderPtr(_state_num)) = nullptr;
+		HolderMap[getStateKind(_state_num)] &= _state_num;
 		return true;
 	}else{
 		return false;
@@ -222,8 +230,10 @@ bool StateContext::disableCurrentState(uint64_t _state_num)
 
 bool StateContext::isCurrentState(uint64_t _state_num)
 {
-	  BaseState **state_ptr = getCurrentStateHolderPtr(_state_num);
-	  return  (state_ptr) ?isState(*state_ptr, _state_num):false;
+	if(_state_num)
+	  return HolderMap[getStateKind(_state_num)] & _state_num;
+	else
+	  return false;
 }
 
 bool StateContext::isState(BaseState *base, uint64_t _state_num)
@@ -233,9 +243,9 @@ bool StateContext::isState(BaseState *base, uint64_t _state_num)
 
 bool StateContext::inState(uint64_t _state_num)
 {
-  if (current_state_.MainState)
+  if (HolderMap[MAIN_STATE])
   {
-    return ((current_state_.MainState->getStateNum() & _state_num) != 0) ? true : false;
+    return ((HolderMap[MAIN_STATE] & _state_num) != 0) ? true : false;
   }
   else
   {
@@ -255,9 +265,9 @@ std::string StateContext::createStateMessageText(void)
 
   for (auto &p : HolderMap)
   {
-    if (*p.second)
+    if (p.second)
     {
-      ret = ret + "\n" + (*p.second)->getStateName();
+      ret = ret + "\n" + getStateName(p.second);
     }
   }
   return ret;

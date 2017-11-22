@@ -20,18 +20,20 @@ namespace state_machine
 class StateContext
 {
 private:
+#if 0
   class StateHolder
   {
   public:
-    BaseState *MainState;
-    BaseState *AccState;
-    BaseState *StrState;
-    BaseState *BehaviorState;
-    BaseState *PerceptionState;
-    BaseState *OtherState;
+	  uint64_t MainState;
+	  uint64_t AccState;
+	  uint64_t StrState;
+	  uint64_t BehaviorState;
+	  uint64_t PerceptionState;
+	  uint64_t OtherState;
   } current_state_;
-
-  std::map<uint8_t, BaseState **> HolderMap;
+#endif
+  //std::map<uint8_t, BaseState **> HolderMap;
+  std::map<uint8_t, uint64_t> HolderMap;
   std::unordered_map<uint64_t, BaseState *> StateStores;
 
   bool enableForceSetState;
@@ -50,6 +52,7 @@ private:
 public:
   StateContext(void)
   {
+
     StateStores[START_STATE] = StartState::getInstance();
     StateStores[INITIAL_STATE] = InitialState::getInstance();
     StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
@@ -68,17 +71,13 @@ public:
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
-    HolderMap[MAIN_STATE] = &current_state_.MainState;
-    HolderMap[ACC_STATE] = &current_state_.AccState;
-    HolderMap[STR_STATE] = &current_state_.StrState;
-    HolderMap[BEHAVIOR_STATE] = &current_state_.BehaviorState;
-    HolderMap[PERCEPTION_STATE] = &current_state_.PerceptionState;
-    HolderMap[OTHER_STATE] = &current_state_.OtherState;
+    HolderMap[MAIN_STATE] 	=  0ULL;
+    HolderMap[ACC_STATE] 	=  0ULL;
+    HolderMap[STR_STATE] 	=  0ULL;
+    HolderMap[BEHAVIOR_STATE] 	=  0ULL;
+    HolderMap[PERCEPTION_STATE] =  0ULL;
+    HolderMap[OTHER_STATE] 	=  0ULL;
 
-    for (auto &p : HolderMap)
-    {
-      *p.second = nullptr;
-    }
     thread_loop = true;
 
     this->InitContext();
@@ -97,17 +96,23 @@ public:
   bool isCurrentState(uint64_t _state_num);
   bool isCurrentState(uint8_t _state_kind, uint64_t _state_num);
   bool inState(uint64_t _state_num);
+  bool isDifferentState(uint64_t _state_a, uint64_t _state_b);
 
   bool setCurrentState(uint64_t flag);
   bool disableCurrentState(uint64_t);
+
+  BaseState *getStateObject(const uint64_t &_state_num);
+  std::string getStateName(const uint64_t &_state_num); 
+  uint8_t getStateKind(const uint64_t &_state_num );
 
   BaseState *getCurrentMainState(void);
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
-  
+
   bool setChangedFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
   bool setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+  
   
   BaseState **getCurrentStateHolderPtr(uint8_t _kind);
   BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
@@ -118,14 +123,12 @@ public:
   uint64_t getStateNum(BaseState *_state);
   uint64_t getStateTransMask(BaseState *_state);
   bool isEmptyMainState(void);
-  bool isDifferentState(BaseState *_state_a, BaseState **_state_b);
   uint8_t getStateKind(BaseState *_state);
   bool isMainState(BaseState *_state);
 
   std::string getCurrentStateName(uint8_t kind);
 
   bool setEnableForceSetState(bool force_flag);
-  BaseState *getStateObject(uint64_t _state_num);
   void InitContext(void);
 
   bool TFInitialized(void);
