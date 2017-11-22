@@ -36,8 +36,7 @@ private:
   DriveAccAccelerationState(void)
   {
     StateName = "Accelerate";
-    StateNum = DRIVE_STATE | DRIVE_ACC_ACCELERATION_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_ACC_ACCELERATION_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -55,8 +54,7 @@ private:
   DriveAccDecelerationState(void)
   {
     StateName = "Decelerate";
-    StateNum = DRIVE_STATE | DRIVE_ACC_DECELERATION_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_ACC_DECELERATION_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -70,8 +68,7 @@ private:
   DriveAccKeepState(void)
   {
     StateName = "Keep";
-    StateNum = DRIVE_STATE | DRIVE_ACC_KEEP_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_ACC_KEEP_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -85,8 +82,7 @@ private:
   DriveAccStopState(void)
   {
     StateName = "Stop";
-    StateNum = DRIVE_STATE | DRIVE_ACC_STOP_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum =  DRIVE_ACC_STOP_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -100,8 +96,7 @@ private:
   DriveAccStopLineState(void)
   {
     StateName = "StopLine";
-    StateNum = DRIVE_STATE |  DRIVE_ACC_STOPLINE_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum =  DRIVE_ACC_STOPLINE_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -115,8 +110,7 @@ private:
   DriveStrLeftState(void)
   {
     StateName = "Left Turn";
-    StateNum = DRIVE_STATE | DRIVE_STR_LEFT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_LEFT_STATE;
     StateKind = STR_STATE;
   }
 
@@ -129,8 +123,7 @@ private:
   DriveStrRightState(void)
   {
     StateName = "Right Turn";
-    StateNum = DRIVE_STATE | DRIVE_STR_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_RIGHT_STATE;
     StateKind = STR_STATE;
   }
 
@@ -143,8 +136,7 @@ private:
   DriveStrStraightState(void)
   {
     StateName = "Straight";
-    StateNum = DRIVE_STATE | DRIVE_STR_STRAIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_STRAIGHT_STATE;
     StateKind = STR_STATE;
   }
 
@@ -158,8 +150,7 @@ private:
   DriveBehaviorLaneChangeLeftState(void)
   {
     StateName = "LaneChangeLeft";
-    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
@@ -173,8 +164,7 @@ private:
   DriveBehaviorLaneChangeRightState(void)
   {
     StateName = "LaneChangeRight";
-    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
@@ -188,7 +178,7 @@ private:
   DriveBehaviorObstacleAvoidanceState(void)
   {
     StateName = "ObstacleAvoidance";
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 

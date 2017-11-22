@@ -47,22 +47,10 @@ void StateContext::changed(uint8_t _kind)
 
 BaseState *StateContext::getStateObject(const uint64_t &_state_num)
 {
-	uint64_t _state_num_MSB = _state_num;
 	if(_state_num){
 		if(StateStores[_state_num]){
 			return StateStores[_state_num];
-		}else{
-			for(uint64_t mask = STATE_END; mask > 0; mask>>=1){
-				if(mask & _state_num)
-				{
-					_state_num_MSB = mask;
-					break;
-				}
-			}
-			return StateStores[_state_num_MSB];
-
 		}
-
 	}
 	return nullptr;
 }
@@ -172,8 +160,11 @@ bool StateContext::setCurrentState(BaseState *_state)
 	  }
 	  else
 	  {
-		  fprintf(stderr,"[%s]:%lx:%s\n",__func__, getStateNum(_state), getStateName(getStateNum(_state)).c_str());
-		  HolderMap[getStateKind(_state)] = getStateNum(_state);
+		  if(getStateKind(_state) == BEHAVIOR_STATE){
+			  HolderMap[getStateKind(_state)] |= getStateNum(_state);
+		  }else{
+			  HolderMap[getStateKind(_state)] = getStateNum(_state);
+		  }
 	  }
 	  change_state_mutex.unlock();
 	  if(ret && !diff)
@@ -187,8 +178,8 @@ bool StateContext::setCurrentState(BaseState *_state)
 
 bool StateContext::setCurrentState(uint64_t flag)
 {
-  bool ret = this->setCurrentState(StateStores[flag]);
-  return ret;
+	bool ret = this->setCurrentState(getStateObject(flag));
+	return ret;
 }
 
 bool StateContext::setEnableForceSetState(bool force_flag)
@@ -205,7 +196,22 @@ std::string StateContext::getCurrentStateName(void)
 std::string StateContext::getCurrentStateName(uint8_t _kind)
 {
 	if (HolderMap[_kind]){
-		return getStateName(HolderMap[_kind]);
+		if(_kind == BEHAVIOR_STATE){
+			uint64_t _current_state = HolderMap[_kind];
+			std::string ret = "";
+			for(uint64_t mask = STATE_SUB_END; _current_state != 0 && mask != 0; mask >>=1){
+				if(mask & _current_state){
+					ret += "\n" + getStateName(mask);
+					_current_state &= ~mask;
+					fprintf(stderr,"[%s]:::::%s\n",__func__,getStateName(mask).c_str());
+				}
+				fprintf(stderr,"[%s]:%lx:%lx\n",__func__,_current_state, mask);
+			}
+			return ret;
+
+		}else{
+			return getStateName(HolderMap[_kind]);
+		}
 	}
 	return std::string("");
 }
@@ -221,7 +227,7 @@ bool StateContext::disableCurrentState(uint64_t _state_num)
 		return false;
 	}
 	if(isCurrentState(_state_num)){
-		HolderMap[getStateKind(_state_num)] &= _state_num;
+		HolderMap[getStateKind(_state_num)] &= ~_state_num;
 		return true;
 	}else{
 		return false;
