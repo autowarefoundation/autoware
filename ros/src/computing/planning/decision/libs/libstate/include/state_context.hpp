@@ -20,19 +20,7 @@ namespace state_machine
 class StateContext
 {
 private:
-#if 0
-  class StateHolder
-  {
-  public:
-	  uint64_t MainState;
-	  uint64_t AccState;
-	  uint64_t StrState;
-	  uint64_t BehaviorState;
-	  uint64_t PerceptionState;
-	  uint64_t OtherState;
-  } current_state_;
-#endif
-  //std::map<uint8_t, BaseState **> HolderMap;
+  
   std::map<uint8_t, uint64_t> HolderMap;
   std::unordered_map<uint64_t, BaseState *> StateStores;
 
@@ -89,13 +77,13 @@ public:
   }
 
   void update(void);
-  void changed(uint8_t _kind);
+  void inState(uint8_t _kind, uint64_t _prev_state_num);
+  void OutState(uint8_t _kind);
   void stateDecider(void);
 
   bool isState(BaseState *base, uint64_t _state_num);
   bool isCurrentState(uint64_t _state_num);
   bool isCurrentState(uint8_t _state_kind, uint64_t _state_num);
-  bool inState(uint64_t _state_num);
   bool isDifferentState(uint64_t _state_a, uint64_t _state_b);
 
   bool setCurrentState(uint64_t flag);
@@ -110,8 +98,12 @@ public:
   std::string getCurrentStateName(void);
   std::string getStateName(void);
 
-  bool setChangedFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
-  bool setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+
+  std::vector<BaseState*> getMultipleStates(uint64_t _state_num_set);
+
+  bool setCallbackInFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+  bool setCallbackOutFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
+  bool setCallbackUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
   
   
   BaseState **getCurrentStateHolderPtr(uint8_t _kind);

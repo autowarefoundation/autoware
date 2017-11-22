@@ -97,6 +97,7 @@ private:
   autoware_msgs::LaneArray current_stopped_lane_array_; // 0velocity
 
 
+
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
@@ -128,6 +129,7 @@ private:
   bool vMap_CrossRoads_flag;
   bool SimulationMode;
   std::mutex vMap_mutex;
+  bool created_shift_lane_flag_;
 
   // initialization method
   void initROS(int argc, char **argv);
@@ -167,15 +169,19 @@ private:
   void changeVelocityBasedLane(void);
   void changeVelocityLane(int dir);
   void createShiftLane(void);
+  void changeShiftLane(void);
+  void removeShiftLane(void);
   
-  void changedStateObstacleAvoid(int status);
+  void callbackInStateObstacleAvoid(int status);
+  void callbackOutStateObstacleAvoid(int status);
+  void updateStateObstacleAvoid(int status);
   
   void updateStateSTR(int status);
   void updateStateStop(int status);
-  void changedStateStop(int status);
-  void changedStateAcc(int status);
-  void changedStateDec(int status);
-  void changedStateKeep(int status);
+  void callbackInStateStop(int status);
+  void callbackInStateAcc(int status);
+  void callbackInStateDec(int status);
+  void callbackInStateKeep(int status);
   void setupStateCallback(void);
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
@@ -213,6 +219,7 @@ public:
     this->initROS(argc, argv);
 
     vector_map_init = false;
+    created_shift_lane_flag_ = false;
 
     vMap_Areas_flag = vMap_Lines_flag = vMap_Points_flag = vMap_CrossRoads_flag = false;
 

@@ -24,24 +24,47 @@
 namespace state_machine
 {
 
+std::vector<BaseState *> StateContext::getMultipleStates(uint64_t _state_num_set)
+{
+	std::vector<BaseState *> ret;
+	for(uint64_t mask = STATE_SUB_END; _state_num_set!= 0 && mask != 0; mask >>=1){
+		if(mask & _state_num_set){
+			ret.push_back(getStateObject(mask));
+			_state_num_set &= ~mask;
+		}
+	}
+	return ret;
+}
 
 void StateContext::update(void)
 {
   for (auto &p : HolderMap)
   {
-    if (p.second)
-	    if(getStateObject(p.second))
-		    getStateObject(p.second)->update();
+    if (p.first == BEHAVIOR_STATE){
+	    for(auto &&state :  getMultipleStates(p.second)){
+			state->update();
+	    }
+    }else{
+	    if (p.second)
+		    if(getStateObject(p.second))
+			    getStateObject(p.second)->update();
+    }
   }
 }
 
-void StateContext::changed(uint8_t _kind)
+void StateContext::inState(uint8_t _kind, uint64_t _prev_state_num)
 {
 	if(_kind >  UNKNOWN_STATE){
 		return;
+	}else if(_kind == BEHAVIOR_STATE){
+	    for(auto &&state :  getMultipleStates(HolderMap[_kind])){
+	    	if(!(_prev_state_num & getStateNum(state)))
+		    state->inState();
+	    }
+	}else{
+		if(getStateObject(HolderMap[_kind]))
+			getStateObject(HolderMap[_kind])->inState();
 	}
-	if(getStateObject(HolderMap[_kind]))
-		getStateObject(HolderMap[_kind])->changed();
 }
 
 
@@ -55,16 +78,22 @@ BaseState *StateContext::getStateObject(const uint64_t &_state_num)
 	return nullptr;
 }
 
-bool StateContext::setUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+bool StateContext::setCallbackUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
 {
 	if(getStateObject(_state_num))
-			getStateObject(_state_num)->setUpdateFunc(_f);
+			getStateObject(_state_num)->setCallbackUpdateFunc(_f);
 }
-bool StateContext::setChangedFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+bool StateContext::setCallbackInFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
 {
 	if(getStateObject(_state_num))
-			getStateObject(_state_num)->setChangedFunc(_f);
+			getStateObject(_state_num)->setCallbackInFunc(_f);
 }
+bool StateContext::setCallbackOutFunc(const uint64_t &_state_num, const std::function<void(void)> &_f)
+{
+	if(getStateObject(_state_num))
+			getStateObject(_state_num)->setCallbackOutFunc(_f);
+}
+
 
 std::string StateContext::getStateName(const uint64_t &_state_num)
 {
@@ -111,7 +140,7 @@ void StateContext::showCurrentStateName(void)
 
 bool StateContext::isDifferentState(uint64_t _state_a, uint64_t _state_b)
 {
-	return _state_a == _state_b;
+	return !(_state_a & _state_b);
 }
 
 bool StateContext::isEmptyMainState(void)
@@ -139,7 +168,8 @@ bool StateContext::setCurrentState(BaseState *_state)
   change_state_mutex.lock();
   bool ret = true;
   if(_state){
-	  bool diff = isDifferentState(getStateNum(_state), HolderMap[getStateKind(_state)]);
+	  uint64_t prev_state = HolderMap[getStateKind(_state)];
+	  bool diff =  isDifferentState(getStateNum(_state), HolderMap[getStateKind(_state)]);
 	  if (isMainState(_state))
 	  {
 		  if (isEmptyMainState() || enableForceSetState ||
@@ -167,8 +197,14 @@ bool StateContext::setCurrentState(BaseState *_state)
 		  }
 	  }
 	  change_state_mutex.unlock();
-	  if(ret && !diff)
-		  this->changed(getStateKind(_state));
+	  if(ret && diff){
+		  this->inState(getStateKind(_state), prev_state);
+		  
+		  if(getStateKind(_state) == getStateKind(prev_state) && 
+				  getStateKind(_state)!= BEHAVIOR_STATE)
+			  if(getStateObject(prev_state))
+					  getStateObject(prev_state)->outState();
+	  }
   }else{
 	  change_state_mutex.unlock();
 	  ret = false;
@@ -203,9 +239,7 @@ std::string StateContext::getCurrentStateName(uint8_t _kind)
 				if(mask & _current_state){
 					ret += "\n" + getStateName(mask);
 					_current_state &= ~mask;
-					fprintf(stderr,"[%s]:::::%s\n",__func__,getStateName(mask).c_str());
 				}
-				fprintf(stderr,"[%s]:%lx:%lx\n",__func__,_current_state, mask);
 			}
 			return ret;
 
@@ -228,6 +262,8 @@ bool StateContext::disableCurrentState(uint64_t _state_num)
 	}
 	if(isCurrentState(_state_num)){
 		HolderMap[getStateKind(_state_num)] &= ~_state_num;
+		getStateObject(_state_num)->outState();
+		fprintf(stderr,"[%s]:%d:%lx\n",__func__,__LINE__,_state_num);
 		return true;
 	}else{
 		return false;
@@ -245,18 +281,6 @@ bool StateContext::isCurrentState(uint64_t _state_num)
 bool StateContext::isState(BaseState *base, uint64_t _state_num)
 {
   return base ? base->getStateNum() & _state_num ? true : false : false;
-}
-
-bool StateContext::inState(uint64_t _state_num)
-{
-  if (HolderMap[MAIN_STATE])
-  {
-    return ((HolderMap[MAIN_STATE] & _state_num) != 0) ? true : false;
-  }
-  else
-  {
-    return false;
-  }
 }
 
 bool StateContext::handleIntersection(bool _hasIntersection, double _angle)

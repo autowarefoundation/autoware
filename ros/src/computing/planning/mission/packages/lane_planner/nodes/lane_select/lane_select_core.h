@@ -82,7 +82,7 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub3_;
+  ros::Publisher pub1_, pub2_, pub3_, pub4_;
   ros::Publisher vis_pub1_;
 
   // subscriber
@@ -133,6 +133,7 @@ private:
   bool isAllTopicsSubscribed();
   void processing();
   void publishLane(const autoware_msgs::lane &lane);
+  void publishLaneID(const autoware_msgs::lane &lane);
   void publishClosestWaypoint(const int32_t clst_wp);
   void publishChangeFlag(const ChangeFlag flag);
   bool getClosestWaypointNumberForEachLanes();

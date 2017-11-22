@@ -85,6 +85,8 @@ void LaneSelectNode::initForROS()
   }
 
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
+  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id",1);
+
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
   // get from rosparam
@@ -182,6 +184,7 @@ void LaneSelectNode::processing()
           std::get<0>(lane_for_change_).waypoints.at(std::get<1>(lane_for_change_)).change_flag);
       ROS_INFO("closest: %d", std::get<1>(lane_for_change_));
       publishLane(std::get<0>(lane_for_change_));
+      publishLaneID(std::get<0>(lane_for_change_));
       publishClosestWaypoint(std::get<1>(lane_for_change_));
       publishChangeFlag(std::get<2>(lane_for_change_));
     }
@@ -608,6 +611,13 @@ void LaneSelectNode::publishLane(const autoware_msgs::lane &lane)
   pub1_.publish(lane);
 }
 
+void LaneSelectNode::publishLaneID(const autoware_msgs::lane &lane)
+{
+  std_msgs::Int32 msg;
+  msg.data = lane.lane_id;
+  pub4_.publish(msg);
+}
+
 void LaneSelectNode::publishClosestWaypoint(const int32_t clst_wp)
 {
   // publish closest waypoint
@@ -681,7 +691,7 @@ void LaneSelectNode::callbackFromStates(const autoware_msgs::stateConstPtr &msg)
 {
   is_current_state_subscribed_ = true;
 
-  if (msg->behavior_state == "LaneChangeRight" || msg->behavior_state == "LaneChangeLeft")
+  if (msg->behavior_state.find("LaneChange") != std::string::npos)
   {
     current_state_ = std::string("LANE_CHANGE");
     ;

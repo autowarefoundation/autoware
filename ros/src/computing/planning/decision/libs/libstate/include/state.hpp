@@ -47,14 +47,16 @@ protected:
 
 public:
   virtual void update(void) = 0;
-  virtual void changed(void) = 0;
+  virtual void inState(void) = 0;
+  virtual void outState(void) = 0;
   virtual void showStateName(void) = 0;
   virtual uint64_t getStateTransMask(void) = 0;
   virtual uint64_t getStateNum(void) = 0;
   virtual std::string getStateName(void) = 0;
   virtual uint8_t getStateKind(void) = 0;
-  virtual void setUpdateFunc(std::function<void(void)> _f) = 0;
-  virtual void setChangedFunc(std::function<void(void)> _f) = 0;
+  virtual void setCallbackUpdateFunc(std::function<void(void)> _f) = 0;
+  virtual void setCallbackInFunc(std::function<void(void)> _f) = 0;
+  virtual void setCallbackOutFunc(std::function<void(void)> _f) = 0;
 };
 
 // Interface
@@ -67,8 +69,9 @@ protected:
   uint64_t StateTransMask;
   uint8_t StateKind;
 
-  std::function<void(void)> StateUpdateFunc;
-  std::function<void(void)> StateChangedFunc;
+  std::function<void(void)> StateCallbackUpdateFunc;
+  std::function<void(void)> StateCallbackInFunc;
+  std::function<void(void)> StateCallbackOutFunc;
 
   State()
   {
@@ -80,24 +83,33 @@ protected:
 public:
   virtual void update(void)
   {
-    if (StateUpdateFunc)
-      StateUpdateFunc();
+    if (StateCallbackUpdateFunc)
+      StateCallbackUpdateFunc();
   }
 
-  virtual void changed(void)
+  virtual void inState(void)
   {
-    if (StateChangedFunc)
-	    StateChangedFunc();
+    if (StateCallbackInFunc)
+	    StateCallbackInFunc();
+  }
+  virtual void outState(void)
+  {
+    if (StateCallbackOutFunc)
+	    StateCallbackOutFunc();
+  }
+  virtual void setCallbackUpdateFunc(std::function<void(void)> _f)
+  {
+    StateCallbackUpdateFunc = _f;
   }
 
-  virtual void setUpdateFunc(std::function<void(void)> _f)
+  virtual void setCallbackOutFunc(std::function<void(void)> _f)
   {
-    StateUpdateFunc = _f;
+    StateCallbackOutFunc = _f;
   }
 
-  virtual void setChangedFunc(std::function<void(void)> _f)
+  virtual void setCallbackInFunc(std::function<void(void)> _f)
   {
-    StateChangedFunc = _f;
+    StateCallbackInFunc = _f;
   }
 
   void showStateName(void)

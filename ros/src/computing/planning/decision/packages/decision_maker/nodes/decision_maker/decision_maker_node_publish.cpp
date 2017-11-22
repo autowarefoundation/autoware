@@ -108,8 +108,8 @@ void DecisionMakerNode::displayMarker(void)
       marker_array.markers.push_back(inside_line_marker);
     }
   }
-  inside_line_marker.scale.x = 0.1;  // 0.3;
-  inside_line_marker.scale.y = 0.1;  // 0.3;
+  inside_line_marker.scale.x = 0.2;  // 0.3;
+  inside_line_marker.scale.y = 0.2;  // 0.3;
   int id = inside_line_marker.id;
   inside_line_marker.color.r = 0;
   inside_line_marker.color.g = 1;
