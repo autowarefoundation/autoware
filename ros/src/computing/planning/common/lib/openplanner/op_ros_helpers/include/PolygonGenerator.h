@@ -19,23 +19,21 @@
 namespace PlannerHNS
 {
 
-#define QUARTERS_NUMBER 8
-#define MIN_POINTS_PER_QUARTER 1
-#define MIN_DISTANCE_BETWEEN_CORNERS 0.5
-
 class QuarterView
 {
 public:
 	int id;
 	int min_ang;
 	int max_ang;
-	std::vector<WayPoint> vectorsFromCenter;
+	WayPoint max_from_center;
+	bool bFirst;
 
 	QuarterView(const int& min_a, const int& max_a, const int& index)
 	{
 		min_ang = min_a;
 		max_ang = max_a;
 		id = index;
+		bFirst = true;
 	}
 
 	void InitQuarterView(const int& min_a, const int& max_a, const int& index)
@@ -43,6 +41,12 @@ public:
 		min_ang = min_a;
 		max_ang = max_a;
 		id = index;
+		bFirst = true;
+	}
+
+	void ResetQuarterView()
+	{
+		bFirst = true;
 	}
 
 	bool UpdateQuarterView(const WayPoint& v)
@@ -50,44 +54,25 @@ public:
 		if(v.pos.a <= min_ang || v.pos.a > max_ang)
 			return false;
 
-		bool bGreaterFound = false;
-		unsigned int greaterIndex = 0;
-		for(unsigned int i=0; i< vectorsFromCenter.size(); i++)
+		if(bFirst)
 		{
-			if(vectorsFromCenter.at(i).cost > v.cost)
-			{
-				bGreaterFound = true;
-				greaterIndex = i;
-				break;
-			}
+			max_from_center = v;
+			bFirst = false;
 		}
-
-		if(bGreaterFound)
-		{
-			if(greaterIndex < vectorsFromCenter.size())
-				vectorsFromCenter.insert(vectorsFromCenter.begin()+greaterIndex, v);
-			else
-				vectorsFromCenter.push_back(v);
-		}
-		else
-			vectorsFromCenter.push_back(v);
+		else if(v.cost > max_from_center.cost)
+			max_from_center = v;
 
 		return true;
-
 	}
 
 	bool GetMaxPoint(WayPoint& maxPoint)
 	{
-		if(vectorsFromCenter.size()==0)
+		if(bFirst)
 			return false;
+		else
+			maxPoint = max_from_center;
 
-		maxPoint = vectorsFromCenter.at(vectorsFromCenter.size()-1);
-		return vectorsFromCenter.size();
-	}
-
-	int GetPointsNumber()
-	{
-		return vectorsFromCenter.size();
+		return true;
 	}
 };
 
@@ -97,12 +82,13 @@ class PolygonGenerator
 public:
 
 	GPSPoint m_Centroid;
-	PolygonGenerator();
+	std::vector<QuarterView> m_Quarters;
+	std::vector<GPSPoint> m_Polygon;
+
+	PolygonGenerator(int nQuarters);
 	virtual ~PolygonGenerator();
-	void CheckConvexPoligon(std::vector<WayPoint>& polygon);
-	GPSPoint CalculateCentroid(const pcl::PointCloud<pcl::PointXYZ>& cluster);
 	std::vector<QuarterView> CreateQuarterViews(const int& nResolution);
-	std::vector<GPSPoint> EstimateClusterPolygon(const pcl::PointCloud<pcl::PointXYZ>& cluster, const GPSPoint& original_centroid );
+	std::vector<GPSPoint> EstimateClusterPolygon(const pcl::PointCloud<pcl::PointXYZ>& cluster, const GPSPoint& original_centroid, GPSPoint& new_centroid, const double& polygon_resolution = 1.0);
 };
 
 } /* namespace PlannerXNS */

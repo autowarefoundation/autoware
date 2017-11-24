@@ -1415,7 +1415,6 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	PlannerHNS::PlannerH planner;
 	SimpleTracker obstacleTracking;
 	obstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 1;
-	obstacleTracking.m_MAX_TRACKS_AFTER_LOSING = 5;
 	obstacleTracking.m_bUseCenterOnly = true;
 
 	vector<string> behaviorsLogData;

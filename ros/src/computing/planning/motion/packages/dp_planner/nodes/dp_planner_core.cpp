@@ -68,8 +68,7 @@ PlannerX::PlannerX()
 	bKmlMapLoaded = false;
 	m_bEnableTracking = true;
 	m_ObstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 2.0;
-	m_ObstacleTracking.m_MAX_TRACKS_AFTER_LOSING = 5;
-	m_ObstacleTracking.m_DT = 0.12;
+	m_ObstacleTracking.m_dt = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 
 	enablePlannerDynamicSwitch = false;

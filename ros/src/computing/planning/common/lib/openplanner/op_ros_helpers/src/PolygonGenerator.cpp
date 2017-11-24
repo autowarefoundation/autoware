@@ -11,93 +11,85 @@
 namespace PlannerHNS
 {
 
-
-PolygonGenerator::PolygonGenerator() {
-	// TODO Auto-generated constructor stub
-
-}
-
-PolygonGenerator::~PolygonGenerator() {
-	// TODO Auto-generated destructor stub
-}
-
-GPSPoint PolygonGenerator::CalculateCentroid(const pcl::PointCloud<pcl::PointXYZ>& cluster)
+PolygonGenerator::PolygonGenerator(int nQuarters)
 {
-	GPSPoint c;
+	m_Quarters = CreateQuarterViews(nQuarters);
+}
 
+PolygonGenerator::~PolygonGenerator()
+{
+}
+
+std::vector<GPSPoint> PolygonGenerator::EstimateClusterPolygon(const pcl::PointCloud<pcl::PointXYZ>& cluster, const GPSPoint& original_centroid, GPSPoint& new_centroid, const double& polygon_resolution)
+{
+	for(unsigned int i=0; i < m_Quarters.size(); i++)
+			m_Quarters.at(i).ResetQuarterView();
+
+	WayPoint p;
 	for(unsigned int i=0; i< cluster.points.size(); i++)
 	{
-		c.x += cluster.points.at(i).x;
-		c.y += cluster.points.at(i).y;
-	}
-
-	c.x = c.x/cluster.points.size();
-	c.y = c.y/cluster.points.size();
-
-	return c;
-}
-
-std::vector<GPSPoint> PolygonGenerator::EstimateClusterPolygon(const pcl::PointCloud<pcl::PointXYZ>& cluster, const GPSPoint& original_centroid )
-{
-	std::vector<QuarterView> quarters = CreateQuarterViews(QUARTERS_NUMBER);
-
-
-	for(unsigned int i=0; i< cluster.points.size(); i++)
-	{
-		WayPoint p;
 		p.pos.x = cluster.points.at(i).x;
 		p.pos.y = cluster.points.at(i).y;
 		p.pos.z = original_centroid.z;
 
-		GPSPoint v(p.pos.x - original_centroid.x , p.pos.y - original_centroid.y,0,0);
+		GPSPoint v(p.pos.x - original_centroid.x , p.pos.y - original_centroid.y, 0, 0);
 		p.cost = pointNorm(v);
 		p.pos.a = UtilityHNS::UtilityH::FixNegativeAngle(atan2(v.y, v.x))*(180. / M_PI);
 
-		for(unsigned int j = 0 ; j < quarters.size(); j++)
+		for(unsigned int j = 0 ; j < m_Quarters.size(); j++)
 		{
-			if(quarters.at(j).UpdateQuarterView(p))
+			if(m_Quarters.at(j).UpdateQuarterView(p))
 				break;
 		}
 	}
 
-	std::vector<GPSPoint> polygon;
-
-	for(unsigned int j = 0 ; j < quarters.size(); j++)
+	m_Polygon.clear();
+	WayPoint wp;
+	for(unsigned int j = 0 ; j < m_Quarters.size(); j++)
 	{
-
-		WayPoint wp;
-		int nPoints = quarters.at(j).GetMaxPoint(wp);
-		if(nPoints >= MIN_POINTS_PER_QUARTER)
-		{
-			polygon.push_back(wp.pos);
-		}
+		if(m_Quarters.at(j).GetMaxPoint(wp))
+			m_Polygon.push_back(wp.pos);
 	}
 
 //	//Fix Resolution:
-//	bool bChange = true;
-//	while (bChange && polygon.size()>1)
-//	{
-//		bChange = false;
-//		GPSPoint p1 =  polygon.at(polygon.size()-1);
-//		for(unsigned int i=0; i< polygon.size(); i++)
-//		{
-//			GPSPoint p2 = polygon.at(i);
-//			double d = hypot(p2.y- p1.y, p2.x - p1.x);
-//			if(d > MIN_DISTANCE_BETWEEN_CORNERS)
-//			{
-//				GPSPoint center_p = p1;
-//				center_p.x = (p2.x + p1.x)/2.0;
-//				center_p.y = (p2.y + p1.y)/2.0;
-//				polygon.insert(polygon.begin()+i, center_p);
-//				bChange = true;
-//				break;
-//			}
-//
-//			p1 = p2;
-//		}
-//	}
+	bool bChange = true;
+	while (bChange && m_Polygon.size()>1)
+	{
+		bChange = false;
+		GPSPoint p1 =  m_Polygon.at(m_Polygon.size()-1);
+		for(unsigned int i=0; i< m_Polygon.size(); i++)
+		{
+			GPSPoint p2 = m_Polygon.at(i);
+			double d = hypot(p2.y- p1.y, p2.x - p1.x);
+			if(d > polygon_resolution)
+			{
+				GPSPoint center_p = p1;
+				center_p.x = (p2.x + p1.x)/2.0;
+				center_p.y = (p2.y + p1.y)/2.0;
+				m_Polygon.insert(m_Polygon.begin()+i, center_p);
+				bChange = true;
+				break;
+			}
 
-	return polygon;
+			p1 = p2;
+		}
+	}
+	GPSPoint sum_p;
+	for(unsigned int i = 0 ; i< m_Polygon.size(); i++)
+	{
+		sum_p.x += m_Polygon.at(i).x;
+		sum_p.y += m_Polygon.at(i).y;
+	}
+
+	new_centroid = original_centroid;
+
+	if(m_Polygon.size() > 0)
+	{
+		new_centroid.x = sum_p.x / (double)m_Polygon.size();
+		new_centroid.y = sum_p.y / (double)m_Polygon.size();
+	}
+
+	return m_Polygon;
 
 }
 
@@ -117,33 +109,6 @@ std::vector<QuarterView> PolygonGenerator::CreateQuarterViews(const int& nResolu
 	}
 
 	return quarters;
-}
-
-void CheckConvexPoligon(std::vector<WayPoint>& polygon)
-{
-
-//	if(polygon.size() <= 3)
-//		return;
-//
-//	WayPoint p1 = polygon.at(0);
-//	WayPoint p3;
-//	WayPoint p2;
-//
-//	for(int i=1; i< polygon.size()-1; i++)
-//	{
-//		p1 = polygon.at(i-1);
-//		if(i+2 == polygon.size())
-//		{
-//			p2 = polygon.at(polygon.size()-1);
-//			p3 = polygon.at(0);
-//		}
-//		else
-//		{
-//			p2 = polygon.at(i);
-//			p3 = polygon.at(i+1);
-//		}
-//
-//	}
 }
 
 } /* namespace PlannerXNS */

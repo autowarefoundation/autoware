@@ -50,6 +50,194 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 	}
 }
 
+visualization_msgs::Marker RosHelpers::CreateGenMarker(const double& x, const double& y, const double& z,const double& a,
+		const double& r, const double& g, const double& b, const double& scale, const int& id, const std::string& ns, const int& type)
+{
+	visualization_msgs::Marker mkr;
+	mkr.header.frame_id = "map";
+	mkr.header.stamp = ros::Time();
+	mkr.ns = ns;
+	mkr.type = type;
+	mkr.action = visualization_msgs::Marker::ADD;
+	mkr.scale.x = scale;
+	mkr.scale.y = scale;
+	mkr.scale.z = scale;
+	mkr.color.a = 0.8;
+	mkr.color.r = r;
+	mkr.color.g = g;
+	mkr.color.b = b;
+	mkr.pose.position.x = x;
+	mkr.pose.position.y = y;
+	mkr.pose.position.z = z;
+	mkr.pose.orientation = tf::createQuaternionMsgFromYaw(a);
+	mkr.id = id;
+	return mkr;
+}
+
+void RosHelpers::InitMarkers(const int& nMarkers,
+		visualization_msgs::MarkerArray& centers,
+		visualization_msgs::MarkerArray& dirs,
+		visualization_msgs::MarkerArray& text_info,
+		visualization_msgs::MarkerArray& polygons,
+		visualization_msgs::MarkerArray& trajectories)
+{
+	centers.markers.clear();
+	dirs.markers.clear();
+	text_info.markers.clear();
+	polygons.markers.clear();
+	trajectories.markers.clear();
+
+	for(int i=0; i<nMarkers; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"CenterMarker", visualization_msgs::Marker::SPHERE);
+		centers.markers.push_back(mkr);
+	}
+
+	for(int i=nMarkers; i<nMarkers*2; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"Directions", visualization_msgs::Marker::ARROW);
+		dirs.markers.push_back(mkr);
+	}
+
+	for(int i=nMarkers*2; i<nMarkers*3; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"InfoText", visualization_msgs::Marker::TEXT_VIEW_FACING);
+		text_info.markers.push_back(mkr);
+	}
+
+	for(int i=nMarkers*3; i<nMarkers*4; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"detected_polygons", visualization_msgs::Marker::LINE_STRIP);
+		polygons.markers.push_back(mkr);
+	}
+
+	for(int i=nMarkers*4; i<nMarkers*5; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"tracked_trajectories", visualization_msgs::Marker::LINE_STRIP);
+		trajectories.markers.push_back(mkr);
+	}
+}
+
+void RosHelpers::ConvertTrackedObjectsMarkers(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+		visualization_msgs::MarkerArray& centers_d,
+		visualization_msgs::MarkerArray& dirs_d,
+		visualization_msgs::MarkerArray& text_info_d,
+		visualization_msgs::MarkerArray& polygons_d,
+		visualization_msgs::MarkerArray& tracked_traj_d,
+		visualization_msgs::MarkerArray& centers,
+		visualization_msgs::MarkerArray& dirs,
+		visualization_msgs::MarkerArray& text_info,
+		visualization_msgs::MarkerArray& polygons,
+		visualization_msgs::MarkerArray& tracked_traj)
+{
+
+	centers = centers_d;
+	dirs = dirs_d;
+	text_info = text_info_d;
+	polygons = polygons_d;
+	tracked_traj = tracked_traj_d;
+
+	for(unsigned int i =0; i < trackedObstacles.size(); i++)
+	{
+		int speed = (trackedObstacles.at(i).center.v*3.6);
+
+		//Update Stage
+		visualization_msgs::Marker center_mkr = CreateGenMarker(trackedObstacles.at(i).center.pos.x,trackedObstacles.at(i).center.pos.y,trackedObstacles.at(i).center.pos.z,
+				trackedObstacles.at(i).center.pos.a,1,0,0,0.5,i,"CenterMarker", visualization_msgs::Marker::SPHERE);
+		if(i < centers.markers.size())
+			centers.markers.at(i) = center_mkr;
+		else
+			centers.markers.push_back(center_mkr);
+
+		if(trackedObstacles.at(i).bDirection)
+		{
+			visualization_msgs::Marker dir_mkr = CreateGenMarker(trackedObstacles.at(i).center.pos.x,trackedObstacles.at(i).center.pos.y,trackedObstacles.at(i).center.pos.z+0.5,
+					trackedObstacles.at(i).center.pos.a,0,1,0,0.1,centers.markers.size()+i,"Directions", visualization_msgs::Marker::ARROW);
+			dir_mkr.scale.x = 0.4;
+			if(i < dirs.markers.size())
+				dirs.markers.at(i) = dir_mkr;
+			else
+				dirs.markers.push_back(dir_mkr);
+		}
+
+
+		visualization_msgs::Marker text_mkr;
+		if(speed > 3.0)
+			text_mkr = CreateGenMarker(trackedObstacles.at(i).center.pos.x+0.5,trackedObstacles.at(i).center.pos.y+0.5,trackedObstacles.at(i).center.pos.z+1,
+					trackedObstacles.at(i).center.pos.a,1,0,0,0.75,centers.markers.size()*2+i,"InfoText", visualization_msgs::Marker::TEXT_VIEW_FACING);
+		else
+			text_mkr = CreateGenMarker(trackedObstacles.at(i).center.pos.x+0.5,trackedObstacles.at(i).center.pos.y+0.5,trackedObstacles.at(i).center.pos.z+1,
+								trackedObstacles.at(i).center.pos.a,1,1,1,0.75,centers.markers.size()*2+i,"InfoText", visualization_msgs::Marker::TEXT_VIEW_FACING);
+
+		std::ostringstream str_out;
+		str_out << trackedObstacles.at(i).id << " ( " << speed << " )";
+		text_mkr.text = str_out.str();
+
+		if(i < text_info.markers.size())
+			text_info.markers.at(i) = text_mkr;
+		else
+			text_info.markers.push_back(text_mkr);
+
+
+		visualization_msgs::Marker poly_mkr = CreateGenMarker(0,0,0,0, 0,0,1,0.1,centers.markers.size()*3+i,"detected_polygons", visualization_msgs::Marker::LINE_STRIP);
+
+		for(unsigned int p = 0; p < trackedObstacles.at(i).contour.size(); p++)
+		{
+			geometry_msgs::Point point;
+			point.x = trackedObstacles.at(i).contour.at(p).x;
+			point.y = trackedObstacles.at(i).contour.at(p).y;
+			point.z = trackedObstacles.at(i).contour.at(p).z;
+			poly_mkr.points.push_back(point);
+		}
+
+		if(trackedObstacles.at(i).contour.size()>0)
+		{
+			geometry_msgs::Point point;
+			point.x = trackedObstacles.at(i).contour.at(0).x;
+			point.y = trackedObstacles.at(i).contour.at(0).y;
+			point.z = trackedObstacles.at(i).contour.at(0).z;
+			poly_mkr.points.push_back(point);
+		}
+
+		if(i < polygons.markers.size())
+			polygons.markers.at(i) = poly_mkr;
+		else
+			polygons.markers.push_back(poly_mkr);
+
+
+		visualization_msgs::Marker traj_mkr = CreateGenMarker(0,0,0,0,1,1,0,0.1,centers.markers.size()*4+i,"tracked_trajectories", visualization_msgs::Marker::LINE_STRIP);
+
+		for(unsigned int p = 0; p < trackedObstacles.at(i).centers_list.size(); p++)
+		{
+			geometry_msgs::Point point;
+			point.x = trackedObstacles.at(i).centers_list.at(p).pos.x;
+			point.y = trackedObstacles.at(i).centers_list.at(p).pos.y;
+			point.z = trackedObstacles.at(i).centers_list.at(p).pos.z;
+			traj_mkr.points.push_back(point);
+		}
+
+
+		if(i < tracked_traj.markers.size())
+			tracked_traj.markers.at(i) = traj_mkr;
+		else
+			tracked_traj.markers.push_back(traj_mkr);
+
+	}
+}
+
+void RosHelpers::CreateCircleMarker(const PlannerHNS::WayPoint& _center, const double& radius, const int& start_id, visualization_msgs::Marker& circle_points)
+{
+	circle_points = CreateGenMarker(0,0,0,0,1,1,1,0.2,start_id,"Detection_Circles", visualization_msgs::Marker::LINE_STRIP);
+	for (float i = 0; i < M_PI*2.0+0.05; i+=0.05)
+	{
+		geometry_msgs::Point point;
+		point.x = _center.pos.x + (radius * cos(i));
+		point.y = _center.pos.y + (radius * sin(i));
+		point.z = _center.pos.z;
+		circle_points.points.push_back(point);
+	}
+}
+
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
 		autoware_msgs::lane& trajectory)
 {
@@ -139,7 +327,6 @@ void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<Pl
 	lane_waypoint_marker.color.b = 0.0;
 	lane_waypoint_marker.color.a = 0.6;
 
-	int id = 0;
 	for(unsigned int i = 0; i < safety_rect.size(); i++)
 	{
 		geometry_msgs::Point p;
@@ -287,7 +474,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 				lane_waypoint_marker.color.g = 1.0;
 			}
 
-			if(i == localPlanner.m_iSafeTrajectory && il == localPlanner.m_iCurrentTotalPathId)
+			if((int)i == localPlanner.m_iSafeTrajectory && (int)il == localPlanner.m_iCurrentTotalPathId)
 			{
 				lane_waypoint_marker.color.r = 1.0;
 				lane_waypoint_marker.color.g = 0.0;
@@ -652,56 +839,64 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 	}
 }
 
-void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
-		int& nOriginalPoints, int& nContourPoints)
+void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const double& car_width,
+		const double& car_length, const autoware_msgs::CloudClusterArray& clusters, vector<PlannerHNS::DetectedObject>& obstacles_list,
+		const double max_obj_size, const double& min_obj_size, const double& detection_radius,
+		const int& n_poly_quarters,const double& poly_resolution, int& nOriginalPoints, int& nContourPoints)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
 	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
 
 	int nPoints = 0;
 	int nOrPoints = 0;
+	double object_size = 0;
+	PlannerHNS::GPSPoint relative_point;
+	PlannerHNS::GPSPoint avg_center;
+	PolygonGenerator polyGen(n_poly_quarters);
+	PlannerHNS::DetectedObject obj;
+
 	for(unsigned int i =0; i < clusters.clusters.size(); i++)
 	{
-		PolygonGenerator polyGen;
-		PlannerHNS::DetectedObject obj;
-		obj.center.pos = GPSPoint(clusters.clusters.at(i).centroid_point.point.x,
-				clusters.clusters.at(i).centroid_point.point.y,
-				clusters.clusters.at(i).centroid_point.point.z,0);
-				//tf::getYaw(clusters.clusters.at(i).bounding_box.pose.orientation));
+		obj.id = clusters.clusters.at(i).id;
+		obj.label = clusters.clusters.at(i).label;
+
+		obj.center.pos.x = clusters.clusters.at(i).centroid_point.point.x;
+		obj.center.pos.y = clusters.clusters.at(i).centroid_point.point.y;
+		obj.center.pos.z = clusters.clusters.at(i).centroid_point.point.z;
+		obj.center.pos.a = 0;
+		obj.center.v = 0;
+		obj.actual_yaw = clusters.clusters.at(i).estimated_angle;
+
+		obj.w = clusters.clusters.at(i).dimensions.x;
+		obj.l = clusters.clusters.at(i).dimensions.y;
+		obj.h = clusters.clusters.at(i).dimensions.z;
 
 		pcl::PointCloud<pcl::PointXYZ> point_cloud;
 		pcl::fromROSMsg(clusters.clusters.at(i).cloud, point_cloud);
-		obj.contour = polyGen.EstimateClusterPolygon(point_cloud ,obj.center.pos);
-		obj.w = clusters.clusters.at(i).dimensions.y;
-		obj.l = clusters.clusters.at(i).dimensions.x;
-		obj.h = clusters.clusters.at(i).dimensions.z;
-		obj.id = 0;
+
+
+		obj.contour = polyGen.EstimateClusterPolygon(point_cloud ,obj.center.pos,avg_center, poly_resolution);
+
 		obj.distance_to_center = hypot(obj.center.pos.y-currState.pos.y, obj.center.pos.x-currState.pos.x);
 
+		object_size = hypot(obj.w, obj.l);
 
-		PlannerHNS::GPSPoint relative_point;
+		if(obj.distance_to_center > detection_radius || object_size < min_obj_size || object_size > max_obj_size)
+			continue;
+
 		relative_point = translationMat*obj.center.pos;
 		relative_point = rotationMat*relative_point;
 
-		double distance_x = fabs(relative_point.x - car_info.wheel_base/2.0);
+		double distance_x = fabs(relative_point.x - car_length/3.0);
 		double distance_y = fabs(relative_point.y);
 
-		double size = (obj.w+obj.l)/2.0;
-//		if(size <= 0.25 || size >= 5 || distance_y > 20.0 || distance_x > 20.0)
-//			continue;
-
-//		if(distance_y > 10.0 || distance_x > 10.0)
-//			continue;
-
-		if(distance_x  <= car_info.length/1.5 && distance_y <= car_info.width/1.5) // don't detect yourself
+		if(distance_x  <= car_length*0.5 && distance_y <= car_width*0.5) // don't detect yourself
 			continue;
 
-
+		//obj.center.pos = avg_center;
 		nOrPoints += point_cloud.points.size();
 		nPoints += obj.contour.size();
-		//std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << size << std::endl;
-
+		//std::cout << " Distance_X: " << distance_x << ", " << " Distance_Y: " << distance_y << ", " << " Size: " << object_size << std::endl;
 		obstacles_list.push_back(obj);
 	}
 

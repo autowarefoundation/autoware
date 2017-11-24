@@ -719,11 +719,13 @@ class DetectedObject
 {
 public:
 	int id;
+	std::string label;
 	OBSTACLE_TYPE t;
 	WayPoint center;
 	WayPoint predicted_center;
 	WayPoint noisy_center;
 	STATE_TYPE predicted_behavior;
+	std::vector<WayPoint> centers_list;
 	std::vector<GPSPoint> contour;
 	std::vector<std::vector<WayPoint> > predTrajectories;
 	std::vector<WayPoint*> pClosestWaypoints;

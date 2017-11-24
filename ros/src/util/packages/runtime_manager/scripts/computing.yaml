@@ -297,6 +297,12 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+
+      - name : kf_contour_tracker
+        desc : part of open planner perception package
+        cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
+        param: kf_contour_tracker
+        
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -1154,6 +1160,133 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : kf_contour_tracker
+    vars  :
+    - name : tracking_type
+      desc : select the type of tracking 
+      label: Tracking Type
+      kind : radio_box
+      choices:
+      - Associate Only
+      - Simple Tracker
+      - Contour Tracker
+      descs :
+      - Associate Only
+      - Simple Tracker
+      - Contour Tracker
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : vehicle_width
+      desc : Ego vehicle width
+      label: Vehicle Width
+      min  : 0
+      max  : 4
+      v    : 1.8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : vehicle_length
+      desc : Ego vehicle Length
+      label: Vehicle Length
+      min  : 0
+      max  : 20
+      v    : 4.2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizon
+      desc : Tracking horizon
+      label: Tracking Horizon
+      min  : 0
+      max  : 200
+      v    : 120
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : min_object_size
+      desc : Minimum Object Size Filter
+      label: Min Obj Size
+      min  : 0
+      max  : 1.0
+      v    : 0.1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_object_size
+      desc : Maximum Object Size Filter
+      label: Max Obj Size
+      min  : 0
+      max  : 40
+      v    : 20
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : polygon_quarters
+      desc : Number of Quarters
+      label: Quarters Number
+      min  : 4
+      max  : 32
+      v    : 8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : polygon_resolution
+      desc : Object Polygon Contour resolution
+      label: Polygon Resolution
+      min  : 0.25
+      max  : 5
+      v    : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_association_distance
+      desc : Maximum Distance for associating two objects
+      label: Association Distance 
+      min  : 0.5
+      max  : 10
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_association_size_diff
+      desc : Maximum Distance difference between object to match
+      label: Association Size Difference
+      min  : 0.0
+      max  : 5.0
+      v    : 1.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_remeber_time
+      desc : Object Remember time for contour tracking
+      label: Max Remember Time
+      min  : 0.0
+      max  : 10.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : trust_counter
+      desc : number of appearance for object to be truster
+      label: Trust Appearance Number
+      min  : 1
+      max  : 15
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : contours_circle_resolutions
+      desc : Contour minimum circle size
+      label: Contour Resolution
+      min  : 1.0
+      max  : 10
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : ndt
     topic : /config/ndt

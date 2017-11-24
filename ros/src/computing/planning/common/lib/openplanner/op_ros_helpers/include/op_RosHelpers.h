@@ -173,7 +173,57 @@ class RosHelpers
 public:
 	RosHelpers();
 	virtual ~RosHelpers();
+	/**
+	 * Used
+	 */
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
+
+	/**
+	 * Used
+	 */
+	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const double& car_width,
+			const double& car_length, const autoware_msgs::CloudClusterArray& clusters,
+			std::vector<PlannerHNS::DetectedObject>& impObstacles, const double max_obj_size, const double& min_obj_size, const double& detection_radius,
+			const int& n_poly_quarters,const double& poly_resolution, int& nOriginalPoints, int& nContourPoints);
+
+
+	/**
+	 * Used
+	 */
+	static visualization_msgs::Marker CreateGenMarker(const double& x, const double& y, const double& z,const double& a,
+			const double& r, const double& g, const double& b, const double& scale, const int& id, const std::string& ns, const int& type);
+
+	/**
+	 * Used
+	 */
+	static void InitMarkers(const int& nMarkers,
+			visualization_msgs::MarkerArray& centers,
+			visualization_msgs::MarkerArray& dirs,
+			visualization_msgs::MarkerArray& text_info,
+			visualization_msgs::MarkerArray& polygons,
+			visualization_msgs::MarkerArray& trajectories);
+
+
+	/**
+	 * Used
+	 */
+	static void ConvertTrackedObjectsMarkers(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+			visualization_msgs::MarkerArray& centers_d,
+			visualization_msgs::MarkerArray& dirs_d,
+			visualization_msgs::MarkerArray& text_info_d,
+			visualization_msgs::MarkerArray& polygons_d,
+			visualization_msgs::MarkerArray& tracked_traj_d,
+			visualization_msgs::MarkerArray& centers,
+			visualization_msgs::MarkerArray& dirs,
+			visualization_msgs::MarkerArray& text_info,
+			visualization_msgs::MarkerArray& polygons,
+			visualization_msgs::MarkerArray& tracked_traj);
+
+	/**
+	 * Used
+	 */
+	static void CreateCircleMarker(const PlannerHNS::WayPoint& _center, const double& radius, const int& start_id, visualization_msgs::Marker& circle_points);
+
 
 	static void TrajectoriesToMarkers(const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, visualization_msgs::MarkerArray& markerArray);
 
@@ -194,9 +244,7 @@ public:
 	static void ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 			std::vector<PlannerHNS::DetectedObject>& impObstacles);
 
-	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-			const autoware_msgs::CloudClusterArray& clusters,
-			std::vector<PlannerHNS::DetectedObject>& impObstacles, int& nOriginalPoints, int& nContourPoints);
+
 
 	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 			visualization_msgs::MarkerArray& detectedPolygons);

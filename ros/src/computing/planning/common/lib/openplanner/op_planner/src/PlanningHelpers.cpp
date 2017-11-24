@@ -1055,7 +1055,7 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 
 	if (path.size() <= 2 )
 	{
-		cout << "Can't Smooth Path, Path_in Size=" << path.size() << endl;
+		//cout << "Can't Smooth Path, Path_in Size=" << path.size() << endl;
 		return;
 	}
 
