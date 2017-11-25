@@ -91,8 +91,7 @@ void VelPoseConnectNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &m
   tw.twist.linear.x = kmph2mps(msg->speed);  // km/h -> m/s
 
   // angular velocity
-  if (v_info_.is_stored)
-    tw.twist.angular.z = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
+  tw.twist.angular.z = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
 
   pub1_.publish(tw);
 }
