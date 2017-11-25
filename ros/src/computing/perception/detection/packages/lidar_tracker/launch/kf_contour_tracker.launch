@@ -1,14 +1,14 @@
 <launch>
 	<arg name="vehicle_width" default="0.1" />
 	<arg name="vehicle_length" default="0.1" />
-	<arg name="horizon" default="4" />
+	<arg name="horizon" default="100" />
 	<arg name="min_object_size" default="0.1" />
 	<arg name="max_object_size" default="30.0" />
 	<arg name="polygon_quarters" default="8" />
 	<arg name="polygon_resolution" default="1.0" />
-	<arg name="tracking_type" default="2" /> <!-- 0 for association only, 1 for simple kf tracking, 2 for smart contour tracker -->
-	<arg name="max_association_distance" default="1.5" />
-	<arg name="max_association_size_diff" default="0.75" />
+	<arg name="tracking_type" default="0" /> <!-- 0 for association only, 1 for simple kf tracking, 2 for smart contour tracker -->
+	<arg name="max_association_distance" default="6.5" />
+	<arg name="max_association_size_diff" default="2.0" />
 	
 	<arg name="max_remeber_time" default="3" />
 	<arg name="trust_counter" default="4" />

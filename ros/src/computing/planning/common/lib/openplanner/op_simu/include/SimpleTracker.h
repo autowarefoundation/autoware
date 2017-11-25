@@ -421,20 +421,46 @@ public:
 class CostRecordSet
 {
 public:
-	int currobj;
-	int prevObj;
+	int i_obj;
+	int i_track;
 	double cost;
-	CostRecordSet(int curr_id, int prev_id, double _cost)
+	 double size_diff;
+	 double width_diff;
+	 double length_diff;
+	 double height_diff;
+	 double angle_diff;
+	 double distance_diff;
+	CostRecordSet(int obj_index, int track_index, double _distance_diff, double _size_diff, double _width_diff, double _length_diff, double _height_diff, double _angle_diff)
 	{
-		currobj = curr_id;
-		prevObj = prev_id;
-		cost = _cost;
+		i_obj = obj_index;
+		i_track = track_index;
+		size_diff = _size_diff;
+		angle_diff = _angle_diff;
+		distance_diff = _distance_diff;
+		width_diff = _width_diff;
+		length_diff = _length_diff;
+		height_diff = _height_diff;
+		cost = 0;
+	}
+
+	CostRecordSet()
+	{
+		i_obj = -1;
+		i_track = -1;
+		size_diff = 0;
+		angle_diff = 0;
+		distance_diff = 0;
+		width_diff = 0;
+		length_diff = 0;
+		height_diff = 0;
+		cost = 0;
 	}
 };
 
 class SimpleTracker
 {
 public:
+	std::vector<CostRecordSet> m_CostsLists;
 	std::vector<InterestCircle*> m_InterestRegions;
 	std::vector<KFTrackV*> m_Tracks;
 	std::vector<KFTrackV> m_TrackSimply;
@@ -475,6 +501,7 @@ private:
 	int InsidePolygon(const std::vector<PlannerHNS::GPSPoint>& polygon,const PlannerHNS::GPSPoint& p);
 
 	void MatchClosest();
+	void MatchClosestCost();
 
 };
 
