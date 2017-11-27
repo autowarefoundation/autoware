@@ -33,10 +33,13 @@ bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
 {
   bool _ret;
   ctx->setEnableForceSetState(true);
-  if(!ctx->isCurrentState(_state_num)){
-	  _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
-  }else{
-	  _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
+  if (!ctx->isCurrentState(_state_num))
+  {
+    _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
+  }
+  else
+  {
+    _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
   }
   ctx->setEnableForceSetState(false);
   return _ret;
@@ -57,19 +60,21 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
 {
-	if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT)){
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-		ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-	}
-	else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT)){
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-		ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-	}
-	else
-	{
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
-		ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
-	}
+  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
+  }
+  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
+  }
+  else
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
+  }
 }
 
 void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg)
