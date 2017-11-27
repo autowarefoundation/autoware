@@ -17,24 +17,24 @@ def kill_connection():
     pids = {}
     for proc in procs:
         for connection in proc["connections"]:
-            if env["AUTOWARE_WEB_UI_HOST"] == "localhost":
-                if connection.laddr[1] == int(env["AUTOWARE_WEB_UI_PORT"]):
-                    pids[proc["pid"]] = psutil.Process(pid=proc["pid"]);
-            else:
-                if connection.raddr == (socket.gethostbyname(env["AUTOWARE_WEB_UI_HOST"]), int(env["AUTOWARE_WEB_UI_PORT"])):
-                    pids[proc["pid"]] = psutil.Process(pid=proc["pid"]);
+            if connection.laddr == (
+            socket.gethostbyname(env["AUTOWARE_WEB_UI_HOST"]), int(env["AUTOWARE_WEB_UI_PORT"])):
+                pids[proc["pid"]] = psutil.Process(pid=proc["pid"]);
 
     if 0 < len(pids):
-        print(pids)
-
-    if len(pids.keys()) == 1:
-        pids.values()[0].kill()
-        pids.values()[0].wait()
+        for pid in pids.values():
+            print(pid)
+            pid.kill()
+            pid.wait()
 
 
 def kill_ros():
     call(["pkill", "-f", "ros"]);
     call(["pkill", "-f", "rosbag"]);
+
+
+def kill_web_video_server():
+    call(["pkill", "-f", "web_video_server"]);
 
 
 if __name__ == '__main__':

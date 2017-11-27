@@ -63,6 +63,9 @@ export default class ButtonRGL extends React.Component {
         }
         return buttons;
     }
+    componentWillMount() {
+        this.initializeButtonRGLState();
+    }
     render() {
         return (
             <ResponsiveReactGridLayout
@@ -75,6 +78,43 @@ export default class ButtonRGL extends React.Component {
             </ResponsiveReactGridLayout>
         );
     }
+    initializeButtonRGLState() {
+        const date = new Date();
+        const url = WEB_UI_URL+"/getRTMStatus?date="+date.getTime().toString();
+        console.log(url);
+        fetch(url)
+        .then((response) => {
+            if(!response.ok) {
+                throw Error(response.statusText);
+            }
+            return response.json();
+        })
+        .then((json) => {
+            for(const domain of Object.keys(json)){
+                for(const label of Object.keys(json[domain])){
+                    const index = this.props.structure.nodes.findIndex(function(x) { return x.domain == domain && x.label == label });
+                    const structure = this.props.structure;
+                    structure.nodes[index].physics = json[domain][label]["enable"];
+                    this.props.updateStructure(structure);
+                }
+            }
+            for(const domain of Object.keys(json)){
+                for(const label of Object.keys(json[domain])){
+                    const index = this.props.structure.nodes.findIndex(function(x) { return x.domain == domain && x.label == label });
+                    if(json[domain][label]["mode"]=="on"){
+                        const structure = this.props.structure;
+                        structure.nodes = this.getUpdatedNodes(
+                            this.props.structure.nodes[index].id,
+                            !this.props.structure.nodes[index].chosen,
+                            this.props.structure.nodes,
+                            this.props.structure.edges);
+                        this.props.updateStructure(structure);
+                    }
+                }
+            }
+        })
+        .catch((e) => { console.error(e);} );
+    }
     onClickButton(nodeId) {
         const index = this.props.structure.nodes.findIndex(node => node.id === nodeId);
         if(this.props.structure.nodes[index].physics) {
@@ -85,14 +125,20 @@ export default class ButtonRGL extends React.Component {
                 this.props.structure.nodes,
                 this.props.structure.edges);
 
+            const nodeDomain = structure.nodes[index].domain;
             const nodeLabel = structure.nodes[index].label;
             const nodeDisplay = structure.nodes[index].display;
-            const url = WEB_UI_URL+"/roslaunch/"+nodeLabel+"/"+(this.props.structure.nodes[index].chosen ? "on" : "off");
+            const url = WEB_UI_URL+"/roslaunch/"+nodeDomain+"/"+nodeLabel+"/"+(this.props.structure.nodes[index].chosen ? "on" : "off");
             structure.nodes[index].span = (<ROSLaunchRequest
                 url={url}
                 errorCallback={() => { return (<span>error</span>); }}
                 isLoadingCallback={() => { return (<span>{(this.props.structure.nodes[index].chosen ? "loading.." : "killing..")}</span>); }}
-                responseCallback={() => { return (<span>{nodeDisplay}</span>); }}
+                responseCallback={() => {
+                    if(index==0 && !this.props.structure.nodes[index].chosen) {
+                        location.reload();
+                    }
+                    return (<span>{nodeDisplay}</span>);
+                }}
                 defaultCallback={() => { return (<span>{nodeDisplay}</span>); }}
             />);
 
