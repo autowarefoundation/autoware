@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<launch>
+  <node args="pub /as/control_mode std_msgs/Bool 'data: true'" name="rostopic" pkg="rostopic" type="rostopic"/>
+</launch>

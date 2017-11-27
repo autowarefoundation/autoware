@@ -39,11 +39,13 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <memory>
+#include <pthread.h>
 
-#include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <nav_msgs/Odometry.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
@@ -114,7 +116,7 @@ static int _use_gnss = 1;
 static int init_pos_set = 0;
 
 #ifdef CUDA_FOUND
-static gpu::GNormalDistributionsTransform gpu_ndt;
+static std::shared_ptr<gpu::GNormalDistributionsTransform> gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
 #endif
 static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 
@@ -233,6 +235,10 @@ static nav_msgs::Odometry odom;
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
 
+static int points_map_num = 0;
+
+pthread_mutex_t mutex;
+
 static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
@@ -255,7 +261,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setResolution(ndt_res);
+      gpu_ndt_ptr->setResolution(ndt_res);
     }
     else
     {
@@ -271,7 +277,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setStepSize(step_size);
+      gpu_ndt_ptr->setStepSize(step_size);
     }
     else
     {
@@ -287,7 +293,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setTransformationEpsilon(trans_eps);
+      gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
     }
     else
     {
@@ -303,7 +309,7 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setMaximumIterations(max_iter);
+      gpu_ndt_ptr->setMaximumIterations(max_iter);
     }
     else
     {
@@ -388,8 +394,13 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 
 static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
-  if (map_loaded == 0)
+  // if (map_loaded == 0)
+  if (points_map_num != input->width)
   {
+    std::cout << "Update points_map." << std::endl;
+
+    points_map_num = input->width;
+
     // Convert the data type(from sensor_msgs to pcl).
     pcl::fromROSMsg(*input, map);
 
@@ -411,27 +422,51 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
+
 // Setting point cloud to be aligned to.
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setInputTarget(map_ptr);
-      gpu_ndt.setMaximumIterations(max_iter);
-      gpu_ndt.setResolution(ndt_res);
-      gpu_ndt.setStepSize(step_size);
-      gpu_ndt.setTransformationEpsilon(trans_eps);
+      std::shared_ptr<gpu::GNormalDistributionsTransform> new_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
+      new_gpu_ndt_ptr->setInputTarget(map_ptr);
+      new_gpu_ndt_ptr->setMaximumIterations(max_iter);
+      new_gpu_ndt_ptr->setResolution(ndt_res);
+      new_gpu_ndt_ptr->setStepSize(step_size);
+      new_gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
+
+      pcl::PointCloud<pcl::PointXYZ>::Ptr dummy_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>());
+      pcl::PointXYZ dummy_point;
+      dummy_scan_ptr->push_back(dummy_point);
+      new_gpu_ndt_ptr->setInputSource(dummy_scan_ptr);
+
+      new_gpu_ndt_ptr->align(Eigen::Matrix4f::Identity());
+
+      pthread_mutex_lock(&mutex);
+      gpu_ndt_ptr = new_gpu_ndt_ptr;
+      pthread_mutex_unlock(&mutex);
     }
     else
+#endif
     {
-#endif
-      ndt.setInputTarget(map_ptr);
-      ndt.setMaximumIterations(max_iter);
-      ndt.setResolution(ndt_res);
-      ndt.setStepSize(step_size);
-      ndt.setTransformationEpsilon(trans_eps);
-#ifdef CUDA_FOUND
+      pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_ndt;
+      pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+      new_ndt.setInputTarget(map_ptr);
+      new_ndt.setMaximumIterations(max_iter);
+      new_ndt.setResolution(ndt_res);
+      new_ndt.setStepSize(step_size);
+      new_ndt.setTransformationEpsilon(trans_eps);
+      #ifdef USE_FAST_PCL
+          if (_use_openmp == true)
+              new_ndt.omp_align(*output_cloud, Eigen::Matrix4f::Identity());
+          else
+      #endif
+              new_ndt.align(*output_cloud, Eigen::Matrix4f::Identity());
+
+      pthread_mutex_lock(&mutex);
+      ndt = new_ndt;
+      pthread_mutex_unlock(&mutex);
     }
-#endif
+
     map_loaded = 1;
   }
 }
@@ -812,10 +847,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         getFitnessScore_end;
     static double align_time, getFitnessScore_time = 0.0;
 
+    pthread_mutex_lock(&mutex);
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
-      gpu_ndt.setInputSource(filtered_scan_ptr);
+      gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
     }
     else
     {
@@ -862,19 +898,19 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     if (_use_gpu == true)
     {
       align_start = std::chrono::system_clock::now();
-      gpu_ndt.align(init_guess);
+      gpu_ndt_ptr->align(init_guess);
       align_end = std::chrono::system_clock::now();
 
-      has_converged = gpu_ndt.hasConverged();
+      has_converged = gpu_ndt_ptr->hasConverged();
 
-      t = gpu_ndt.getFinalTransformation();
-      iteration = gpu_ndt.getFinalNumIteration();
+      t = gpu_ndt_ptr->getFinalTransformation();
+      iteration = gpu_ndt_ptr->getFinalNumIteration();
 
       getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = gpu_ndt.getFitnessScore();
+      fitness_score = gpu_ndt_ptr->getFitnessScore();
       getFitnessScore_end = std::chrono::system_clock::now();
 
-      trans_probability = gpu_ndt.getTransformationProbability();
+      trans_probability = gpu_ndt_ptr->getTransformationProbability();
     }
 #ifdef USE_FAST_PCL
     else if (_use_openmp == true)
@@ -960,6 +996,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     getFitnessScore_time =
         std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() /
         1000.0;
+
+    pthread_mutex_unlock(&mutex);
 
     tf::Matrix3x3 mat_l;  // localizer
     mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
@@ -1376,9 +1414,25 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
+void* thread_func(void* args)
+{
+  ros::NodeHandle nh_map;
+  ros::CallbackQueue map_callback_queue;
+  nh_map.setCallbackQueue(&map_callback_queue);
+
+  ros::Subscriber map_sub = nh_map.subscribe("points_map", 10, map_callback);
+  ros::Rate ros_rate(10);
+  while (nh_map.ok())
+  {
+    map_callback_queue.callAvailable(ros::WallDuration());
+    ros_rate.sleep();
+  }
+}
+
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ndt_matching");
+  pthread_mutex_init(&mutex, NULL);
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
@@ -1507,11 +1561,14 @@ int main(int argc, char** argv)
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
   ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
-  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
+  //  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size * 10, odom_callback);
   ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size * 10, imu_callback);
+
+  pthread_t thread;
+  pthread_create(&thread, NULL, thread_func, NULL);
 
   ros::spin();
 
