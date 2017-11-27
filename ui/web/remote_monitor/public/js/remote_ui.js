@@ -39,10 +39,8 @@ function addOnload(func)
 }
 
 window.onload = function() {
-  setSteeringAngle(0);
-  setSpeed(0);
-  setRPM(0);
-  setGear("P");
+  setInitialVal();
+  setGamepadListener();
 
   var send_cmd = function(){
     if(remote_cmd["control_mode"] == MODE_REMOTE_CONTROL || remote_cmd["emergency"] == EMERGENCY_ON || publish_flag) {
@@ -51,6 +49,13 @@ window.onload = function() {
     }
   }
   setInterval(send_cmd, UPLOAD_INTERVAL);
+}
+
+function setInitialVal() {
+  setSteeringAngle(0);
+  setSpeed(0);
+  setRPM(0);
+  setGear("P");
 }
 
 function set_vehicle_info(msg) {
