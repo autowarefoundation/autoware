@@ -131,35 +131,5 @@ bool CrossRoadArea::isInsideArea(const CrossRoadArea *_TargetArea, geometry_msgs
   }
 
   return false;
-#if 0
-	// Winding Number Algorithm 
-	// not working
-	int wn = 0;
-	double vt;
-
-	double s = 0;
-
-	for(size_t i = _ClosestArea->points.size()-1; i > 0 ; i--){
-		auto it = _ClosestArea->points.at(i);
-		auto it_n = _ClosestArea->points.at(i-1);
-		std::cout << "point[" << i << "]:" << it.x << "," << it.y << std::endl;
-		if( (it.y <= pt.y ) && (it_n.y > pt.y)){
-			vt = (pt.y - it.y) / (it_n.y - pt.y);
-			if(pt.x < it.x + (vt * (it_n.x - it.x))){
-				++wn;
-			}
-		}
-		else if( (it.y > pt.y) && (it_n.y <= pt.y)) {
-			vt = (pt.y - it.y) / (it_n.y - pt.y);
-			if(pt.x < ( it.x + (vt * (it_n.x - it.x)))){
-				--wn;
-			}
-		}
-
-	}
-	if(wn > 0 ) return true;
-	else return false;
-
-#endif
 }
 }

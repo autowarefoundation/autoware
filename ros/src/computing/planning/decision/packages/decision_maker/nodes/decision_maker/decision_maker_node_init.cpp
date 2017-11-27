@@ -164,22 +164,4 @@ void DecisionMakerNode::initVectorMap(void)
     intersects.push_back(carea);
   }
 }
-
-bool DecisionMakerNode::initVectorMapClient()
-{
-#ifdef USE_VMAP_SERVER  // This is not successfully run due to failing vmap
-  // server
-
-  vector_map::VectorMap vmap;
-  vmap.subscribe(nh_, vector_map::Category::AREA, ros::Duration(0));
-
-  cross_road_srv.request.pose = current_pose_;
-  cross_road_srv.request.waypoints = current_finalwaypoints_;
-
-  cross_road_cli = nh_.serviceClient<vector_map_server::GetCrossRoad>("vector_map_server/get_cross_road");
-
-  return cross_road_cli.call(cross_road_srv);
-#endif
-  return false;
-}
 }

@@ -174,19 +174,12 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
         steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
       for (auto &wp_lane : laneinArea.waypoints)
-      {
         for (auto &lane : lane_array.lanes)
-        {
           for (auto &wp : lane.waypoints)
-          {
             if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id)
             {
               wp.wpstate.steering_state = steering_state;
             }
-          }
-          // lane.waypoints.at(wp_lane.lid).wpstate.steering_state = steering_state;
-        }
-      }
     }
   }
   // STOP
@@ -325,26 +318,18 @@ void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &
 
 void DecisionMakerNode::callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg)
 {
-  vMap_Areas = msg;
-  vMap_Areas_flag = true;
   initVectorMap();
 }
 void DecisionMakerNode::callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg)
 {
-  vMap_Points = msg;
-  vMap_Points_flag = true;
   initVectorMap();
 }
 void DecisionMakerNode::callbackFromVectorMapLine(const vector_map_msgs::LineArray &msg)
 {
-  vMap_Lines = msg;
-  vMap_Lines_flag = true;
   initVectorMap();
 }
 void DecisionMakerNode::callbackFromVectorMapCrossRoad(const vector_map_msgs::CrossRoadArray &msg)
 {
-  vMap_CrossRoads = msg;
-  vMap_CrossRoads_flag = true;
   initVectorMap();
 }
 

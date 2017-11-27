@@ -263,7 +263,6 @@ bool StateContext::disableCurrentState(uint64_t _state_num)
 	if(isCurrentState(_state_num)){
 		HolderMap[getStateKind(_state_num)] &= ~_state_num;
 		getStateObject(_state_num)->outState();
-		fprintf(stderr,"[%s]:%d:%lx\n",__func__,__LINE__,_state_num);
 		return true;
 	}else{
 		return false;
