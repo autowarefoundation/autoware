@@ -22,6 +22,11 @@
   <script src="/js/remote_ui.js"></script>
   <script src="/js/gamepad.js"></script>
   <script src="/js/vehicle_button.js"></script>
+  <script>
+    window.addEventListener('beforeunload', function(e) {
+      e.returnValue = 'Do you want to leave this page?';
+    }, false);
+  </script>
 </head>
 
 <body>

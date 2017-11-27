@@ -20,6 +20,11 @@
   <script src="/js/webrtc_polyfill.js"></script>
   <script src="/js/utility.js"></script>
   <script src="/js/remote_ui.js"></script>
+  <script>
+    window.addEventListener('beforeunload', function(e) {
+      e.returnValue = 'Do you want to leave this page?';
+    }, false);
+  </script>
 </head>
 
 <body>

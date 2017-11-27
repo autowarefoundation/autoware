@@ -62,6 +62,7 @@ mqtt_client.on('connect', function () {
 
 io.on('connection', function (socket) {
   socket.on('disconnect', function () {
+    console.log(socket.roomName + " is disconnect!");
     socket.broadcast.to(socket.roomName).send('leave remotePeer');
     delete socket.roomName;
   });

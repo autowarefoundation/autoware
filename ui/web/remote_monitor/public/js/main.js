@@ -17,6 +17,7 @@ var remotePositionNo = '0';
 var isFirefox = !!window.sidebar;
 var mediaSenders = [];
 var MAX_CAMERA_NUM = 6;
+var audioStream = null;
 
 othorSelectDevice.style.display = isFirefox ? 'none' : '';
 firefoxSelectDevice.style.display = isFirefox ? '' : 'none';
@@ -136,17 +137,29 @@ function setFocusDialogRoomName() {
 function deviceChange() {
   var deviceId = deviceList.value;
   clearStream(streamPreview);
+
   if (deviceId || isFirefox) {
+    // set audio device if fist device
+    if(audioStream == null) {
+      isUseAudio = true;
+    }
+    else {
+      isUseAudio = false
+    }
     deviceList.disabled = true;
     var constraints = {
-      audio: false,
+      audio: isUseAudio,
       video: {
-        optional: [{ sourceId: deviceId }],
+        optional: [{ sourceId: deviceId }]
       }
     };
   }
+  console.log(constraints);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function (stream) {
+      if(isUseAudio == true) {
+        audioStream = stream
+      }
       streamPreview.srcObject = stream;
       streamPreview.play();
       deviceList.disabled = false;
@@ -161,6 +174,9 @@ function removeStream() {
   localPositionNo = this.dataset.no;
   var stream = document.getElementById('localView' + localPositionNo).srcObject;
   // stream.stop();
+  if(audioStream.id == stream.id) {
+    audioStream = null;
+  }
   if (isFirefox) {
     mediaSenders.forEach(function (sender) {
       pc.removeTrack(sender);
@@ -189,7 +205,7 @@ function clearStream(video) {
 }
 
 function clearStreamAll() {
-  for (var i = 1; i <= 3; i++) {
+  for (var i = 1; i <=5; i++) {
     document.getElementById('btnAddStream' + i).style.display = '';
     document.getElementById('btnRemoveStream' + i).style.display = 'none';
     clearStream(document.getElementById('localView' + i));
