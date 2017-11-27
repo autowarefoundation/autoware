@@ -51,8 +51,18 @@ function loop(timestamp) {
       pushBlinker(1);
     }
     // hazard lamp
-    else if(gp.buttons[23].value == 1) {
+    else if(gp.buttons[3].value == 1) {
       pushBlinker(3);
+    }
+
+    // EMERGENCY
+    if(gp.buttons[23].value == 1) {
+      select_emergency_button();
+    }
+
+    // Control MODE
+    if(gp.buttons[24].value == 1) {
+      select_mode_button();
     }
   }
   requestAnimationFrame(loop);

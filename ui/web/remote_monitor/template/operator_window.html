@@ -163,19 +163,10 @@
       </div>
 
       <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-        <div class="onoffswitch">
-            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="emergencyswitch" checked onchange="select_emergency_button();">
-            <label class="onoffswitch-label" for="emergencyswitch">
-                <span class="emergencyswitch-inner"></span>
-            </label>
-        </div>
-
-        <div class="onoffswitch">
-          <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="modeswitch" checked onchange="select_mode_button();">
-          <label class="onoffswitch-label" for="modeswitch">
-              <span class="modeswitch-inner"></span>
-          </label>
-        </div>
+        <center>
+          <a href="#" class="bt-emergency" onclick="select_emergency_button();"><span id="emergency_button">EMEGENCY</span></a>
+          <a href="#" class="bt-controlmode" onclick="select_mode_button();"><span id="control_mode_button">AUTO</span></a>
+        </center>
 
         <div class="row">
           <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">

@@ -1,13 +1,12 @@
 let blinker_status = [0, 0, 0];
 let blinkers = ["blinker_left", "blinker_right", "blinker_hazard"];
 let lastUpdateTime = (new Date()).getTime();
-let switchInterval = 500;
 
 // blinker
 function pushBlinker(blinker_id) {
-  var currentUnixTime =  (new Date()).getTime();
+  let currentUnixTime =  (new Date()).getTime();
 
-  if (currentUnixTime - lastUpdateTime > switchInterval) {
+  if (currentUnixTime - lastUpdateTime > BUTTON_SWITCH_INTERVAL) {
     blinker_status[blinker_id - 1] = (blinker_status[blinker_id - 1] == 1) ? 0 : 1;
 
     if(blinker_status[blinker_id - 1] == 1) {

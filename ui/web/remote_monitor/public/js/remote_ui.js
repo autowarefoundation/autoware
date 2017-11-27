@@ -11,6 +11,10 @@ const TOPIC_CAN_INFO = "/can_info"
 const TOPIC_STATE = "/state"
 const TOPIC_CURRENT_VELOCITY = "/current_velocity"
 const TOPIC_TARGET_VELOCITY  = "/target_velocity"
+const BUTTON_SWITCH_INTERVAL = 500;
+
+let lastEmegencyUpdateTime = (new Date()).getTime();
+let lastControlModeUpdateTime = (new Date()).getTime();
 
 let remote_cmd = {
   "vehicle_id": 1,
@@ -92,15 +96,41 @@ function select_gear(obj) {
 }
 
 function select_emergency_button(obj) {
-  remote_cmd["emergency"] = remote_cmd["emergency"] == EMERGENCY_OFF ? EMERGENCY_ON : EMERGENCY_OFF;
-  console.log('select_emergency_button => ' + remote_cmd["emergency"]);
-  publish_flag = true;
+  let currentUnixTime =  (new Date()).getTime();
+
+  if (currentUnixTime - lastEmegencyUpdateTime > BUTTON_SWITCH_INTERVAL) {
+    remote_cmd["emergency"] = remote_cmd["emergency"] == EMERGENCY_OFF ? EMERGENCY_ON : EMERGENCY_OFF;
+    console.log('select_emergency_button => ' + remote_cmd["emergency"]);
+    if(remote_cmd["emergency"] == EMERGENCY_ON) {
+      document.getElementById("emergency_button").style.backgroundColor = "#FF0000";
+      document.getElementById("emergency_button").innerHTML = "EMERGENCY ON";
+    }
+    else if(remote_cmd["emergency"] == EMERGENCY_OFF) {
+      document.getElementById("emergency_button").style.backgroundColor = "#00a3e0";
+      document.getElementById("emergency_button").innerHTML = "EMERGENCY";
+    }
+    publish_flag = true;
+    lastEmegencyUpdateTime = currentUnixTime;
+  }
 }
 
 function select_mode_button(obj) {
-  remote_cmd["control_mode"] = remote_cmd["control_mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
-  console.log('select_mode_button => ' + remote_cmd["control_mode"]);
-  publish_flag = true;
+  let currentUnixTime =  (new Date()).getTime();
+
+  if (currentUnixTime - lastControlModeUpdateTime > BUTTON_SWITCH_INTERVAL) {
+    remote_cmd["control_mode"] = remote_cmd["control_mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
+    console.log('select_mode_button => ' + remote_cmd["control_mode"]);
+    if(remote_cmd["control_mode"] == MODE_AUTO_CONTROL) {
+      document.getElementById("control_mode_button").style.backgroundColor = "#00a3e0";
+      document.getElementById("control_mode_button").innerHTML = "AUTO";
+    }
+    else if(remote_cmd["control_mode"] == MODE_REMOTE_CONTROL) {
+      document.getElementById("control_mode_button").style.backgroundColor = "#008000";
+      document.getElementById("control_mode_button").innerHTML = "REMOTE";
+    }
+    publish_flag = true;
+    lastControlModeUpdateTime = currentUnixTime;
+  }
 }
 
 // Rotate Image
