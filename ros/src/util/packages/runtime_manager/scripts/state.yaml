@@ -20,6 +20,6 @@ substate:
 
         Lane Change Left     : 31
         Lane Change Right    : 32
-        Obstacle Avoidance   : 33
+        Obstacle Avoid       : 33
         ClearB : 50
 
