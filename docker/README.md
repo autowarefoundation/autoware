@@ -22,11 +22,35 @@ sudo dpkg -i /tmp/nvidia-docker*.deb && rm /tmp/nvidia-docker*.deb
 ```
 
 ## How to build
+Build a docker image with:
+```
+$/Autoware/docker/ ./build_demo.bash
+```
+
+## How to run
+Run the demo with
+```
+$/Autoware/docker/ ./run_demo.bash
+```
+
+#OLD!!
+
+## How to build
+First make sure that the file has the appropriate permissions:
+```
+chmod +x build.sh
+```
+Then build it with,
 ```
 sh build.sh
 ```
 
 ## How to run
+First make sure that the file has the appropriate permissions:
+```
+chmod +x run.sh
+```
+Then run it with,
 ```
 sh run.sh
 ```
