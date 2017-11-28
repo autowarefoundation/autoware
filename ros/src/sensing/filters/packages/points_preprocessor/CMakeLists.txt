@@ -61,28 +61,40 @@ target_link_libraries(ring_ground_filter
 
 
 # Ray Ground Filter
-add_executable(ray_ground_filter
-    nodes/ray_ground_filter/ray_ground_filter.cpp
-)
+add_library(ray_ground_filter_lib SHARED
+  nodes/ray_ground_filter/ray_ground_filter.cpp)
 
 if (OPENMP_FOUND)
-    set_target_properties(ray_ground_filter PROPERTIES
+    set_target_properties(ray_ground_filter_lib PROPERTIES
         COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
         LINK_FLAGS ${OpenMP_CXX_FLAGS}
     )
 endif()
 
-target_include_directories(ray_ground_filter PRIVATE
+target_include_directories(ray_ground_filter_lib PRIVATE
     ${OpenCV_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
+    nodes/ray_ground_filter/include
 )
 
-target_link_libraries(ray_ground_filter
+target_link_libraries(ray_ground_filter_lib
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
     ${OpenCV_LIBRARIES}
     ${Qt5Core_LIBRARIES}
 )
+
+add_executable(ray_ground_filter
+    nodes/ray_ground_filter/ray_ground_filter_main.cpp
+)
+
+target_include_directories(ray_ground_filter PRIVATE
+  nodes/ray_ground_filter/include)
+
+target_link_libraries(ray_ground_filter
+  ray_ground_filter_lib)
+
+
 
 # Points Concat filter
 add_executable(points_concat_filter
@@ -108,3 +120,15 @@ target_link_libraries(cloud_transformer
         ${PCL_LIBRARIES}
         ${Qt5Core_LIBRARIES}
 )
+
+### Unit Tests ###
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(test_points_preprocessor test/src/test_points_preprocessor.cpp)
+  target_include_directories(test_points_preprocessor PRIVATE
+    nodes/ray_ground_filter/include
+    test/include)
+  target_link_libraries(test_points_preprocessor
+    ray_ground_filter_lib
+    ${catkin_LIBRARIES})
+endif()
+
