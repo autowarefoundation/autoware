@@ -30,14 +30,15 @@ class ROSController(object):
     def __del__(self):
         self.__devnull.close()
 
-    def launch(self, on=True, target="map"):
-        if on:
-            self.__launches[target] = roslaunch.parent.ROSLaunchParent(
-                self.__uuid, [self.__path + "/res/{}/{}.launch".format(target, target)])
-            self.__launches[target].start()
-            print(self.__launches[target], dir(self.__launches[target]))
+    def launch(self, domain="map", target="map", mode="on"):
+        launch_id = "/".join([domain, target])
+        if mode == "on":
+            self.__launches[launch_id] = roslaunch.parent.ROSLaunchParent(
+                self.__uuid, [self.__path + "/res/{}/{}.launch".format(domain, target)])
+            self.__launches[launch_id].start()
         else:
-            self.__launches[target].shutdown()
+            if launch_id in self.__launches:
+                self.__launches[launch_id].shutdown()
         return True
 
     def killall(self):
@@ -74,3 +75,9 @@ class ROSController(object):
 
     def stop_rosbag(self):
         self.__rosbag.stop()
+
+    def gateway_on(self):
+        self.launch(domain="gateway", target="on")
+
+    def gateway_off(self):
+        self.launch(domain="gateway", target="off")
