@@ -68,7 +68,6 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
 
   static std::vector<double> distances;
   static uint32_t distances_count = 0;
-  double avg_distances = 0.0;
 
   a->x = b->x;
   a->y = b->y;
@@ -83,15 +82,12 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
   {
     distances.erase(distances.begin());
     distances_count--;
-    avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
+    double avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
     if (avg_distances <= param_convergence_threshold_)
     {
       return ctx->setCurrentState(state_machine::DRIVE_STATE);
     }
   }
-  else
-  {
-    return false;
-  }
+  return false;
 }
 }

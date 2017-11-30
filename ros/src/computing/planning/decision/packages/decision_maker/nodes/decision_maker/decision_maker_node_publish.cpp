@@ -110,7 +110,6 @@ void DecisionMakerNode::displayMarker(void)
   }
   inside_line_marker.scale.x = 0.2;  // 0.3;
   inside_line_marker.scale.y = 0.2;  // 0.3;
-  int id = inside_line_marker.id;
   inside_line_marker.color.r = 0;
   inside_line_marker.color.g = 1;
   inside_line_marker.color.b = 0.3;

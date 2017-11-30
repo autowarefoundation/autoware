@@ -51,15 +51,19 @@ void DecisionMakerNode::initROS(int argc, char **argv)
       nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
 
   // pub
+
+  // for controlling other planner
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
   Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
-
-  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
   Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color", 1);
 
-  // for visualize
-  Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
+  // for controlling vehicle
+  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
+  Pubs["emergency"] =
+
+      // for visualize status
+      Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
   Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
@@ -68,14 +72,24 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);
   Pubs["state_local_diffdistance"] = nh_.advertise<std_msgs::Float64>("/state/val_diff_distance", 1);
   Pubs["exectime"] = nh_.advertise<std_msgs::Float64>("/state/exectime", 1);
+
   // message setup
-  state_text_msg.text_size = 18;
-  state_text_msg.line_width = 0;
-  state_text_msg.font = "DejaVu Sans Mono";
-  state_text_msg.width = 500;
-  state_text_msg.height = 50;
+  state_text_msg.width = 400;
+  state_text_msg.height = 500;
   state_text_msg.top = 10;
   state_text_msg.left = 10;
+  state_text_msg.bg_color.r = 0;
+  state_text_msg.bg_color.g = 0;
+  state_text_msg.bg_color.b = 0;
+  state_text_msg.bg_color.a = 0.8;
+
+  state_text_msg.line_width = 2;
+  state_text_msg.text_size = 18;
+  state_text_msg.font = "DejaVu Sans Mono";
+  state_text_msg.fg_color.r = 0.1;
+  state_text_msg.fg_color.g = 1.0;
+  state_text_msg.fg_color.b = 0.94;
+  state_text_msg.fg_color.a = 0.8;
   state_text_msg.text = "UNDEFINED";
 
   // initial publishing state message

@@ -56,12 +56,17 @@ void DecisionMakerNode::setupStateCallback(void)
 
   // trraficlight
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
-                             [&](){ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);});
+                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE); });
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
-                             [&](){ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);});
-  
+                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
+
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
+  ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
+                             std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
+
+  ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
+                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
 }
@@ -76,55 +81,50 @@ void DecisionMakerNode::publishLightColor(int status)
 #define SHIFTED_LANE_FLAG -99999
 void DecisionMakerNode::createShiftLane(void)
 {
-  if (!created_shift_lane_flag_)
-  {
-    bool isRightShift = param_shift_width_ >= 0;
+  bool isRightShift = param_shift_width_ >= 0;
 
-    created_shift_lane_flag_ = true;
-    autoware_msgs::LaneArray shift_lanes = current_shifted_lane_array_ = current_based_lane_array_;
-    if (!current_shifted_lane_array_.lanes.empty())
+  autoware_msgs::LaneArray shift_lanes = current_shifted_lane_array_ = current_based_lane_array_;
+  if (!current_shifted_lane_array_.lanes.empty())
+  {
+    size_t lane_idx = 0;
+    for (auto &lane : shift_lanes.lanes)
     {
-      size_t lane_idx = 0;
-      for (auto &lane : shift_lanes.lanes)
+      lane.increment = SHIFTED_LANE_FLAG;
+      size_t wp_idx = 0;
+      for (auto &wp : lane.waypoints)
       {
-        lane.increment = SHIFTED_LANE_FLAG;
-        size_t wp_idx = 0;
-        for (auto &wp : lane.waypoints)
-        {
-          double angle = getPoseAngle(wp.pose.pose);
-          wp.pose.pose.position.x -= param_shift_width_ * cos(angle + M_PI / 2);
-          wp.pose.pose.position.y -= param_shift_width_ * sin(angle + M_PI / 2);
-          wp.change_flag = current_based_lane_array_.lanes.at(lane_idx).waypoints.at(wp_idx++).change_flag;
-        }
-        lane_idx++;
+        double angle = getPoseAngle(wp.pose.pose);
+        wp.pose.pose.position.x -= param_shift_width_ * cos(angle + M_PI / 2);
+        wp.pose.pose.position.y -= param_shift_width_ * sin(angle + M_PI / 2);
+        wp.change_flag = current_based_lane_array_.lanes.at(lane_idx).waypoints.at(wp_idx++).change_flag;
       }
+      lane_idx++;
     }
-    int insert_lane_idx_offset = isRightShift ? 1 : 0;
-    auto it_shift = begin(shift_lanes.lanes);
-    try
+  }
+  int insert_lane_idx_offset = isRightShift ? 1 : 0;
+  auto it_shift = begin(shift_lanes.lanes);
+  try
+  {
+    for (auto it = begin(current_shifted_lane_array_.lanes);
+         it != end(current_shifted_lane_array_.lanes) && it_shift != end(shift_lanes.lanes);)
     {
-      for (auto it = begin(current_shifted_lane_array_.lanes);
-           it != end(current_shifted_lane_array_.lanes) && it_shift != end(shift_lanes.lanes);)
+      for (auto &wp : it->waypoints)
       {
-        for (auto &wp : it->waypoints)
-        {
-          wp.change_flag = isRightShift ? 1 : 2;
-        }
-        it = current_shifted_lane_array_.lanes.insert(it + insert_lane_idx_offset, *(it_shift++));
+        wp.change_flag = isRightShift ? 1 : 2;
+      }
+      it = current_shifted_lane_array_.lanes.insert(it + insert_lane_idx_offset, *(it_shift++));
+      it++;
+      if (!isRightShift)
         it++;
-        if (!isRightShift)
-          it++;
-      }
     }
-    catch (std::length_error)
-    {
-    }
+  }
+  catch (std::length_error)
+  {
   }
 }
 
 void DecisionMakerNode::changeShiftLane(void)
 {
-  int inserted_lane_idx_offset = param_shift_width_ >= 0 ? -1 : +1;
   auto based_it = begin(current_shifted_lane_array_.lanes);
 
   for (auto &lane : current_shifted_lane_array_.lanes)
@@ -150,7 +150,6 @@ void DecisionMakerNode::changeShiftLane(void)
 void DecisionMakerNode::removeShiftLane(void)
 {
   current_shifted_lane_array_ = current_based_lane_array_;
-  created_shift_lane_flag_ = false;
 }
 
 void DecisionMakerNode::updateLaneWaypointsArray(void)
@@ -232,7 +231,6 @@ void DecisionMakerNode::callbackInStateAcc(int status)
 void DecisionMakerNode::updateStateStop(int status)
 {
   static ros::Timer stopping_timer;
-  static bool timerflag = false;
   if (status)
   {
     if (current_velocity_ == 0.0 && !timerflag)
@@ -255,41 +253,49 @@ void DecisionMakerNode::updateStateObstacleAvoid(int status)
 
 void DecisionMakerNode::callbackOutStateObstacleAvoid(int status)
 {
-  static ros::Timer avoidance_timer_2;
   changeShiftLane();
   changeVelocityBasedLane();
   publishControlledLaneArray();
-
   ros::Rate loop_rate(1);
   // wait for the start of lane change to the original lane
-  do
+  if (created_shift_lane_flag_)
   {
-    ros::spinOnce();
-    loop_rate.sleep();
-  } while (!ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE) &&
-           !ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE) && ros::ok());
-  // wait for the end of lane change
-  do
-  {
-    ros::spinOnce();
-    loop_rate.sleep();
-  } while ((ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE) ||
-            ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE) ||
-            ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE)) &&
-           ros::ok());
-
-  removeShiftLane();
+    do
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    } while (!ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE) &&
+             !ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE) && ros::ok());
+    // wait for the end of lane change
+    do
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    } while ((ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE) ||
+              ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE) ||
+              ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE)) &&
+             ros::ok());
+    removeShiftLane();
+    created_shift_lane_flag_ = false;
+  }
   changeVelocityBasedLane();  // rebased controlled lane
   publishControlledLaneArray();
-  return;
+return;
 }
 
 void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 {
-  // if car shoud stop before avoidance,
-  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+  // this state is temporary implementation.
+  // It means this state is desirable to use a way which enables the avoidance plannner such as astar, state lattice.
 
-  createShiftLane();
+  // if car shoud stop before avoidance,
+  if (!created_shift_lane_flag_)
+  {
+    created_shift_lane_flag_ = true;
+    ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+    createShiftLane();
+  }
+
   changeVelocityBasedLane();
 }
 void DecisionMakerNode::callbackInStateStop(int status)

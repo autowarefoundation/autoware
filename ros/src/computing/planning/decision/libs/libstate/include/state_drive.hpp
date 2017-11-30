@@ -96,7 +96,7 @@ private:
   DriveAccStopState(void)
   {
     StateName = "Stop";
-    StateNum =  DRIVE_ACC_STOP_STATE;
+    StateNum = DRIVE_ACC_STOP_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -110,7 +110,7 @@ private:
   DriveAccStopLineState(void)
   {
     StateName = "StopLine";
-    StateNum =  DRIVE_ACC_STOPLINE_STATE;
+    StateNum = DRIVE_ACC_STOPLINE_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -226,6 +226,5 @@ private:
 
 public:
 };
-
 }
 #endif

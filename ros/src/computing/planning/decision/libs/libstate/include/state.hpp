@@ -90,12 +90,12 @@ public:
   virtual void inState(void)
   {
     if (StateCallbackInFunc)
-	    StateCallbackInFunc();
+      StateCallbackInFunc();
   }
   virtual void outState(void)
   {
     if (StateCallbackOutFunc)
-	    StateCallbackOutFunc();
+      StateCallbackOutFunc();
   }
   virtual void setCallbackUpdateFunc(std::function<void(void)> _f)
   {

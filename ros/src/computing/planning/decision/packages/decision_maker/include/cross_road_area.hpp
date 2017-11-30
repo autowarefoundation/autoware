@@ -10,7 +10,6 @@
 
 namespace decision_maker
 {
-
 class CrossRoadArea
 {
 public:
@@ -32,23 +31,22 @@ public:
   }
 
   static CrossRoadArea *findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
-		  std::vector<CrossRoadArea> &intersects);
-  static bool isInsideArea(const CrossRoadArea* _TargetArea,
- 		  geometry_msgs::Point pt);
-
+                                             std::vector<CrossRoadArea> &intersects);
+  static bool isInsideArea(const CrossRoadArea *_TargetArea, geometry_msgs::Point pt);
 
   static CrossRoadArea *getCrossRoadArea(std::vector<CrossRoadArea> &areas, int aid)
   {
-	  CrossRoadArea *ret = nullptr;
-	  for( auto &area : areas){
-		  if(area.area_id == aid){
-			  ret = &area;
-			  break;
-		  }
-	  }
-	  return ret;
+    CrossRoadArea *ret = nullptr;
+    for (auto &area : areas)
+    {
+      if (area.area_id == aid)
+      {
+        ret = &area;
+        break;
+      }
+    }
+    return ret;
   }
-
 };
 }
 

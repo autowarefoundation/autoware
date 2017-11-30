@@ -54,7 +54,7 @@ void DecisionMakerNode::callbackFromSimPose(const geometry_msgs::PoseStamped &ms
 
 void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 {
-  ROS_INFO("Received forcing state changing request: %lx", 1ULL << (uint64_t)msg.data);
+  ROS_INFO("Received forcing state changing request: %llx", 1ULL << (uint64_t)msg.data);
   handleStateCmd((uint64_t)1ULL << (uint64_t)msg.data);
 }
 
@@ -86,13 +86,10 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   param_target_waypoint_ = msg.target_waypoint;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_shift_width_ = msg.shift_width;
-
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
 {
-  const ros::M_string &header = event.getConnectionHeader();
-  std::string topic = header.at("topic");
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 
   current_traffic_light_ = light->traffic_light;
@@ -281,29 +278,24 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
                    param_stopline_target_waypoint_ :
                    current_finalwaypoints_.waypoints.size() - 1;
-  if (idx >= 0)
-  {
-    if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
-      ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-  }
+  
+  if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
+	  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
   // steering
   idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
-  if (idx >= 0)
+  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
   {
-    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
-    {
-      ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-    }
-    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
-    {
-      ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-    }
-    else
-    {
-      ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
-    }
+	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+  }
+  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
+  {
+	  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+  }
+  else
+  {
+	  ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
   }
 
   // for publish plan of velocity

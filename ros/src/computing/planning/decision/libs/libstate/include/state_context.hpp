@@ -20,7 +20,6 @@ namespace state_machine
 class StateContext
 {
 private:
-  
   std::map<uint8_t, uint64_t> HolderMap;
   std::unordered_map<uint64_t, BaseState *> StateStores;
 
@@ -40,7 +39,6 @@ private:
 public:
   StateContext(void)
   {
-
     StateStores[START_STATE] = StartState::getInstance();
     StateStores[INITIAL_STATE] = InitialState::getInstance();
     StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
@@ -62,12 +60,12 @@ public:
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
-    HolderMap[MAIN_STATE] 	=  0ULL;
-    HolderMap[ACC_STATE] 	=  0ULL;
-    HolderMap[STR_STATE] 	=  0ULL;
-    HolderMap[BEHAVIOR_STATE] 	=  0ULL;
-    HolderMap[PERCEPTION_STATE] =  0ULL;
-    HolderMap[OTHER_STATE] 	=  0ULL;
+    HolderMap[MAIN_STATE] = 0ULL;
+    HolderMap[ACC_STATE] = 0ULL;
+    HolderMap[STR_STATE] = 0ULL;
+    HolderMap[BEHAVIOR_STATE] = 0ULL;
+    HolderMap[PERCEPTION_STATE] = 0ULL;
+    HolderMap[OTHER_STATE] = 0ULL;
 
     thread_loop = true;
 
@@ -93,22 +91,20 @@ public:
   bool disableCurrentState(uint64_t);
 
   BaseState *getStateObject(const uint64_t &_state_num);
-  std::string getStateName(const uint64_t &_state_num); 
-  uint8_t getStateKind(const uint64_t &_state_num );
+  std::string getStateName(const uint64_t &_state_num);
+  uint8_t getStateKind(const uint64_t &_state_num);
 
   BaseState *getCurrentMainState(void);
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
 
-
-  std::vector<BaseState*> getMultipleStates(uint64_t _state_num_set);
+  std::vector<BaseState *> getMultipleStates(uint64_t _state_num_set);
 
   bool setCallbackInFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
   bool setCallbackOutFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
   bool setCallbackUpdateFunc(const uint64_t &_state_num, const std::function<void(void)> &_f);
-  
-  
+
   BaseState **getCurrentStateHolderPtr(uint8_t _kind);
   BaseState **getCurrentStateHolderPtr(uint64_t _state_num);
   BaseState **getCurrentStateHolderPtr(BaseState *_state);

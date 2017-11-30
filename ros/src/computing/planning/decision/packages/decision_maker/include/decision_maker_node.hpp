@@ -5,8 +5,8 @@
 #include <unordered_map>
 
 #include <autoware_msgs/ConfigDecisionMaker.h>
-#include <autoware_msgs/lane.h>
 #include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -28,11 +28,11 @@
 #include <geometry_msgs/Point.h>
 
 // lib
-#include <cross_road_area.hpp>
 #include <amathutils.hpp>
+#include <cross_road_area.hpp>
+#include <decision_maker_param.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
-#include <decision_maker_param.hpp>
 
 namespace decision_maker
 {
@@ -91,12 +91,10 @@ private:
 
   std::vector<geometry_msgs::Point> inside_points_;
 
-  autoware_msgs::LaneArray current_based_lane_array_; // with wpstate
-  autoware_msgs::LaneArray current_shifted_lane_array_; // with shiftedLane
-  autoware_msgs::LaneArray current_controlled_lane_array_; // modified lane
-  autoware_msgs::LaneArray current_stopped_lane_array_; // 0velocity
-
-
+  autoware_msgs::LaneArray current_based_lane_array_;       // with wpstate
+  autoware_msgs::LaneArray current_shifted_lane_array_;     // with shiftedLane
+  autoware_msgs::LaneArray current_controlled_lane_array_;  // modified lane
+  autoware_msgs::LaneArray current_stopped_lane_array_;     // 0velocity
 
   // Current way/behavior status
   double current_velocity_;
@@ -149,14 +147,13 @@ private:
   std::string createStateMessageText();
   int createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale);
 
-
   // judge method
   // in near future, these methods will be deprecate to decision_maker library
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
   bool handleStateCmd(const uint64_t _state_num);
-  //double calcIntersectWayAngle(const CrossRoadArea& area);
-  double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
+  // double calcIntersectWayAngle(const CrossRoadArea& area);
+  double calcIntersectWayAngle(const autoware_msgs::lane &laneinArea);
 
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
 
@@ -173,7 +170,7 @@ private:
   void createShiftLane(void);
   void changeShiftLane(void);
   void removeShiftLane(void);
-  
+
   void publishLightColor(int status);
   void callbackInStateObstacleAvoid(int status);
   void callbackOutStateObstacleAvoid(int status);
