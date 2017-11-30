@@ -230,6 +230,7 @@ void DecisionMakerNode::callbackInStateAcc(int status)
 }
 void DecisionMakerNode::updateStateStop(int status)
 {
+  static bool timerflag;
   static ros::Timer stopping_timer;
   if (status)
   {
