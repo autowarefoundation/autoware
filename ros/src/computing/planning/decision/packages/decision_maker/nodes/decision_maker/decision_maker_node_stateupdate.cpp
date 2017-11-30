@@ -34,6 +34,10 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_KEEP_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateKeep, this, 1));
 
+  // crawl
+  ctx->setCallbackInFunc(state_machine::DRIVE_ACC_CRAWL_STATE,
+                         std::bind(&DecisionMakerNode::callbackInStateAcc, this, 0));
+
   // acceleration
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_ACCELERATION_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateAcc, this, 1));
@@ -49,6 +53,24 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::callbackInStateObstacleAvoid, this, -1));
   ctx->setCallbackOutFunc(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE,
                           std::bind(&DecisionMakerNode::callbackOutStateObstacleAvoid, this, 1));
+
+  // trraficlight
+  ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
+                             [&](){ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);});
+  ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
+                             [&](){ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);});
+  
+  ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
+                             std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
+  ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
+                             std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
+}
+
+void DecisionMakerNode::publishLightColor(int status)
+{
+  autoware_msgs::traffic_light msg;
+  msg.traffic_light = status;
+  Pubs["light_color"].publish(msg);
 }
 
 #define SHIFTED_LANE_FLAG -99999
@@ -56,41 +78,46 @@ void DecisionMakerNode::createShiftLane(void)
 {
   if (!created_shift_lane_flag_)
   {
-
     bool isRightShift = param_shift_width_ >= 0;
 
     created_shift_lane_flag_ = true;
     autoware_msgs::LaneArray shift_lanes = current_shifted_lane_array_ = current_based_lane_array_;
     if (!current_shifted_lane_array_.lanes.empty())
     {
-	    size_t lane_idx = 0;
-	    for(auto &lane : shift_lanes.lanes){
-		    lane.increment = SHIFTED_LANE_FLAG;
-		    size_t wp_idx = 0;
-		    for (auto &wp : lane.waypoints)
-		    {
-			    double angle = getPoseAngle(wp.pose.pose);
-			    wp.pose.pose.position.x -= param_shift_width_ * cos(angle + M_PI / 2);
-			    wp.pose.pose.position.y -= param_shift_width_ * sin(angle + M_PI / 2);
-			    wp.change_flag = current_based_lane_array_.lanes.at(lane_idx).waypoints.at(wp_idx++).change_flag;
-		    }
-		    lane_idx++;
-	    }
+      size_t lane_idx = 0;
+      for (auto &lane : shift_lanes.lanes)
+      {
+        lane.increment = SHIFTED_LANE_FLAG;
+        size_t wp_idx = 0;
+        for (auto &wp : lane.waypoints)
+        {
+          double angle = getPoseAngle(wp.pose.pose);
+          wp.pose.pose.position.x -= param_shift_width_ * cos(angle + M_PI / 2);
+          wp.pose.pose.position.y -= param_shift_width_ * sin(angle + M_PI / 2);
+          wp.change_flag = current_based_lane_array_.lanes.at(lane_idx).waypoints.at(wp_idx++).change_flag;
+        }
+        lane_idx++;
+      }
     }
     int insert_lane_idx_offset = isRightShift ? 1 : 0;
     auto it_shift = begin(shift_lanes.lanes);
-    try{
-    for(auto it = begin(current_shifted_lane_array_.lanes); it!=end(current_shifted_lane_array_.lanes) && it_shift != end(shift_lanes.lanes) ;){
-	    for(auto &wp : it->waypoints){
-		    wp.change_flag = isRightShift? 1:2;
-	    }
-	    it = current_shifted_lane_array_.lanes.insert(it + insert_lane_idx_offset,*(it_shift++));
-	    it++;
-	    if(!isRightShift)it++;
-    }
-    }catch(std::length_error)
+    try
     {
-
+      for (auto it = begin(current_shifted_lane_array_.lanes);
+           it != end(current_shifted_lane_array_.lanes) && it_shift != end(shift_lanes.lanes);)
+      {
+        for (auto &wp : it->waypoints)
+        {
+          wp.change_flag = isRightShift ? 1 : 2;
+        }
+        it = current_shifted_lane_array_.lanes.insert(it + insert_lane_idx_offset, *(it_shift++));
+        it++;
+        if (!isRightShift)
+          it++;
+      }
+    }
+    catch (std::length_error)
+    {
     }
   }
 }
@@ -100,44 +127,24 @@ void DecisionMakerNode::changeShiftLane(void)
   int inserted_lane_idx_offset = param_shift_width_ >= 0 ? -1 : +1;
   auto based_it = begin(current_shifted_lane_array_.lanes);
 
-  for(auto &lane : current_shifted_lane_array_.lanes){
-	  if(lane.increment == SHIFTED_LANE_FLAG){
-	    for(auto &wp : lane.waypoints){
-		wp.change_flag = param_shift_width_ >=  0 ? 2:1;
-	    }
-	  } else {
-            auto based_wp_it = begin(based_it++->waypoints);
-	    for(auto &wp : lane.waypoints){
-		wp.change_flag = based_wp_it++->change_flag;
-	    }
-	  }
-  }
-#if 0
-
-  try
+  for (auto &lane : current_shifted_lane_array_.lanes)
   {
-
-
-    for (size_t idx = 0; idx < current_shifted_lane_array_.lanes.size(); idx++)
+    if (lane.increment == SHIFTED_LANE_FLAG)
     {
-      if (current_shifted_lane_array_.lanes.at(idx).increment == SHIFTED_LANE_FLAG)
+      for (auto &wp : lane.waypoints)
       {
-        for (size_t wp_idx=0; wp_idx < current_shifted_lane_array_.lanes.at(idx).waypoints.size(); wp_idx++)
-        {
-	  current_shifted_lane_array_.lanes.at(idx + inserted_lane_idx_offset).waypoints.at(wp_idx).change_flag = 
-		  current_shifted_lane_array_.lanes.at(idx).waypoints.at(wp_idx).change_flag;
-
-	  current_shifted_lane_array_.lanes.at(idx).waypoints.at(wp_idx).change_flag = param_shift_width_ >= 0 ? 2:1;
-           
-        }
+        wp.change_flag = param_shift_width_ >= 0 ? 2 : 1;
+      }
+    }
+    else
+    {
+      auto based_wp_it = begin(based_it++->waypoints);
+      for (auto &wp : lane.waypoints)
+      {
+        wp.change_flag = based_wp_it++->change_flag;
       }
     }
   }
-  catch (std::out_of_range)
-  {
-    ROS_WARN("Failed create lane for returning to the original lane");
-  }
-#endif
 }
 
 void DecisionMakerNode::removeShiftLane(void)
@@ -177,23 +184,36 @@ void DecisionMakerNode::changeVelocityBasedLane(void)
 
 void DecisionMakerNode::changeVelocityLane(int dir)
 {
-  for (auto &lane : current_controlled_lane_array_.lanes)
+  if (dir != 0)
   {
-    autoware_msgs::lane temp_lane = lane;
-    for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
+    for (auto &lane : current_controlled_lane_array_.lanes)
     {
-      amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
-                           temp_lane.waypoints.at(wpi).pose.pose.position.y,
-                           temp_lane.waypoints.at(wpi).pose.pose.position.z);
-      amathutils::point p1(temp_lane.waypoints.at(wpi - 1).pose.pose.position.x,
-                           temp_lane.waypoints.at(wpi - 1).pose.pose.position.y,
-                           temp_lane.waypoints.at(wpi - 1).pose.pose.position.z);
+      autoware_msgs::lane temp_lane = lane;
+      for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
+      {
+        amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
+                             temp_lane.waypoints.at(wpi).pose.pose.position.y,
+                             temp_lane.waypoints.at(wpi).pose.pose.position.z);
+        amathutils::point p1(temp_lane.waypoints.at(wpi - 1).pose.pose.position.x,
+                             temp_lane.waypoints.at(wpi - 1).pose.pose.position.y,
+                             temp_lane.waypoints.at(wpi - 1).pose.pose.position.z);
 
-      double distance = amathutils::find_distance(&p0, &p1);
-      double _rate = 0.2;                       // accelerated/decelerated rate
-      double _weight = distance * _rate * dir;  //
-      lane.waypoints.at(wpi).twist.twist.linear.x =
-          lane.waypoints.at(wpi).twist.twist.linear.x + (lane.waypoints.at(wpi).twist.twist.linear.x * _weight);
+        double distance = amathutils::find_distance(&p0, &p1);
+        double _rate = 0.2;                       // accelerated/decelerated rate
+        double _weight = distance * _rate * dir;  //
+        lane.waypoints.at(wpi).twist.twist.linear.x =
+            lane.waypoints.at(wpi).twist.twist.linear.x + (lane.waypoints.at(wpi).twist.twist.linear.x * _weight);
+      }
+    }
+  }
+  else
+  {
+    for (auto &lane : current_controlled_lane_array_.lanes)
+    {
+      for (auto &wp : lane.waypoints)
+      {
+        wp.twist.twist.linear.x = amathutils::kmph2mps(param_crawl_velocity_);
+      }
     }
   }
 }
@@ -266,9 +286,9 @@ void DecisionMakerNode::callbackOutStateObstacleAvoid(int status)
 
 void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 {
-  //if car shoud stop before avoidance,
+  // if car shoud stop before avoidance,
   ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-  
+
   createShiftLane();
   changeVelocityBasedLane();
 }

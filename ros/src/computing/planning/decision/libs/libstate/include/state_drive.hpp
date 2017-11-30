@@ -75,6 +75,20 @@ private:
 public:
 };
 
+class DriveAccCrawlState : public State<DriveAccCrawlState>
+{
+private:
+  friend class State<DriveAccCrawlState>;
+  DriveAccCrawlState(void)
+  {
+    StateName = "Crawl";
+    StateNum = DRIVE_ACC_CRAWL_STATE;
+    StateKind = ACC_STATE;
+  }
+
+public:
+};
+
 class DriveAccStopState : public State<DriveAccStopState>
 {
 private:
@@ -184,6 +198,34 @@ private:
 
 public:
 };
-}
 
+class DriveBehaviorTrafficLightRedState : public State<DriveBehaviorTrafficLightRedState>
+{
+private:
+  friend class State<DriveBehaviorTrafficLightRedState>;
+  DriveBehaviorTrafficLightRedState(void)
+  {
+    StateName = "TrafficLightRed";
+    StateNum = DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
+class DriveBehaviorTrafficLightGreenState : public State<DriveBehaviorTrafficLightGreenState>
+{
+private:
+  friend class State<DriveBehaviorTrafficLightGreenState>;
+  DriveBehaviorTrafficLightGreenState(void)
+  {
+    StateName = "TrafficLightGreen";
+    StateNum = DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
+}
 #endif

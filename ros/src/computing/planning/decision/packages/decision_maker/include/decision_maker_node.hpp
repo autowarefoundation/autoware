@@ -101,7 +101,8 @@ private:
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
-  int current_traffic_light;
+  int current_traffic_light_;
+  int closest_waypoint_;
   CrossRoadArea *ClosestArea_;
   std::string CurrentStateName;
   std::string TextOffset;
@@ -116,6 +117,7 @@ private:
   double param_convergence_threshold_;
   uint32_t param_stopline_target_waypoint_;
   double param_shift_width_;
+  double param_crawl_velocity_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -152,7 +154,7 @@ private:
   // in near future, these methods will be deprecate to decision_maker library
   bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
-  bool handleStateCmd(const unsigned long long _state_num);
+  bool handleStateCmd(const uint64_t _state_num);
   //double calcIntersectWayAngle(const CrossRoadArea& area);
   double calcIntersectWayAngle(const autoware_msgs::lane& laneinArea);
 
@@ -172,10 +174,10 @@ private:
   void changeShiftLane(void);
   void removeShiftLane(void);
   
+  void publishLightColor(int status);
   void callbackInStateObstacleAvoid(int status);
   void callbackOutStateObstacleAvoid(int status);
   void updateStateObstacleAvoid(int status);
-  
   void updateStateSTR(int status);
   void updateStateStop(int status);
   void callbackInStateStop(int status);
@@ -186,6 +188,7 @@ private:
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
+  void callbackFromClosestWaypoint(const std_msgs::Int32 &msg);
   void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32 &msg);
   void callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg);
@@ -214,14 +217,14 @@ public:
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
     param_shift_width_ = DEFAULT_SHIFT_WIDTH;
     param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
+    param_crawl_velocity_ = DEFAULT_CRAWL_VELOCITY;
 
     ctx = new state_machine::StateContext();
     this->initROS(argc, argv);
 
     vector_map_init = false;
     created_shift_lane_flag_ = false;
-
-    vMap_Areas_flag = vMap_Lines_flag = vMap_Points_flag = vMap_CrossRoads_flag = false;
+    closest_waypoint_ = 0;
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;

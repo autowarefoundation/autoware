@@ -35,7 +35,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["current_pose"] = nh_.subscribe("current_pose", 20, &DecisionMakerNode::callbackFromCurrentPose, this);
   Subs["current_velocity"] =
       nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
-  Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
+  // Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
   Subs["light_color_managed"] =
       nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
   Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
@@ -43,6 +43,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
   Subs["change_flag"] = nh_.subscribe("change_flag", 1, &DecisionMakerNode::callbackFromLaneChangeFlag, this);
   Subs["state_cmd"] = nh_.subscribe("state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
+  Subs["closest_waypoint"] =
+      nh_.subscribe("closest_waypoint", 1, &DecisionMakerNode::callbackFromClosestWaypoint, this);
 
   // Config subscriber
   Subs["config/decision_maker"] =
@@ -54,6 +56,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
 
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
+  Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color", 1);
 
   // for visualize
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);

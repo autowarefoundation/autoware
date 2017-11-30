@@ -50,11 +50,14 @@ public:
     StateStores[DRIVE_ACC_KEEP_STATE] = DriveAccKeepState::getInstance();
     StateStores[DRIVE_ACC_STOP_STATE] = DriveAccStopState::getInstance();
     StateStores[DRIVE_ACC_STOPLINE_STATE] = DriveAccStopLineState::getInstance();
+    StateStores[DRIVE_ACC_CRAWL_STATE] = DriveAccCrawlState::getInstance();
     StateStores[DRIVE_STR_STRAIGHT_STATE] = DriveStrStraightState::getInstance();
     StateStores[DRIVE_STR_LEFT_STATE] = DriveStrLeftState::getInstance();
     StateStores[DRIVE_STR_RIGHT_STATE] = DriveStrRightState::getInstance();
     StateStores[DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE] = DriveBehaviorLaneChangeLeftState::getInstance();
     StateStores[DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE] = DriveBehaviorLaneChangeRightState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE] = DriveBehaviorTrafficLightRedState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE] = DriveBehaviorTrafficLightGreenState::getInstance();
     StateStores[DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE] = DriveBehaviorObstacleAvoidanceState::getInstance();
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();

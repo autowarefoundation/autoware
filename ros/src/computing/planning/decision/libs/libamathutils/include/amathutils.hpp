@@ -32,7 +32,12 @@ double find_angle(point *_a, point *_b);
 
 inline double mps2kmph(double _mpsval)
 {
-  return (_mpsval * 0.36 );// mps * 60secs * 60minutes / 1000m
+  return (_mpsval * 3.6 );// mps * 60sec * 60minutes / 1000m
+}
+
+inline double kmph2mps(double _kmphval)
+{
+  return (_kmphval * 1000 / 60 / 60 );// kmph * 1000m / 60sec / 60sec
 }
 
 #define G_MPSS 9.80665 // m/s^2

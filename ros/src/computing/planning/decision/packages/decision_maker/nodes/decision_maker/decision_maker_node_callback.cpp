@@ -29,7 +29,7 @@ void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped
   }
 }
 
-bool DecisionMakerNode::handleStateCmd(const unsigned long long _state_num)
+bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
 {
   bool _ret;
   ctx->setEnableForceSetState(true);
@@ -84,8 +84,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ctx->setEnableForceSetState(msg.enable_force_state_change);
 
   param_target_waypoint_ = msg.target_waypoint;
-  // param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
+  param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_shift_width_ = msg.shift_width;
+
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
@@ -94,14 +95,16 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   std::string topic = header.at("topic");
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 
-  current_traffic_light = light->traffic_light;
-  if (current_traffic_light == state_machine::E_RED || current_traffic_light == state_machine::E_YELLOW)
+  current_traffic_light_ = light->traffic_light;
+  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
   {
-    // ctx->setCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
   }
   else
   {
-    // ctx->disableCurrentState(state_machine::DRIVE_DETECT_TRAFFICLIGHT_RED_STATE);
+    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
   }
 }
 
@@ -314,6 +317,11 @@ void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &
     ctx->handleTwistCmd(false);
   else
     Twistflag = true;
+}
+
+void DecisionMakerNode::callbackFromClosestWaypoint(const std_msgs::Int32 &msg)
+{
+  closest_waypoint_ = msg.data;
 }
 
 void DecisionMakerNode::callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg)
