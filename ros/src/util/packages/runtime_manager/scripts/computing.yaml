@@ -3083,16 +3083,16 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : image_raw_topic_str
-      desc      : image_raw_topic_str desc sample
-      label     : image_raw_topic_str
+    - name      : image_src
+      desc      : Image Topic to be fed to the network for detection
+      label     : image_src
       kind      : str
       v         : /image_raw
       cmd_param :
         dash      : ''
         delim     : ':='
     - name     : network_definition_file
-      desc     : network_definition_file sample
+      desc     : Prototxt file which defines the network
       label    : 'network_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
@@ -3100,7 +3100,7 @@ params :
         dash     : ''
         delim    : ':='
     - name     : pretrained_model_file
-      desc     : pretrained_model_file sample
+      desc     : Trained Caffe model
       label    : 'pattern_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel
