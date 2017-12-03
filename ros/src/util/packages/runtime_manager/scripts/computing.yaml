@@ -9,13 +9,14 @@ subs :
       subs :
       - name : fix2tfpose
         desc : fix2tfpose desc sample
-        cmd  : rosrun gnss_localizer fix2tfpose
+        cmd  : roslaunch gnss_localizer fix2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
       - name : nmea2tfpose
         desc : nmea2tfpose desc sample
-        #cmd  : rosrun gnss_localizer nmea2tfpose
         cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
     - name : ndt_localizer
@@ -27,14 +28,14 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 400
+          dialog_width  : 700
           dialog_height : 450
-      - name : lazy_ndt_mapping
-        cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
-        param: ndt_mapping
+      - name : approximate_ndt_mapping
+        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 400
+          dialog_width  : 700
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
@@ -644,7 +645,7 @@ subs :
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
       param: planner_selector
-         
+
 
 
 buttons:
@@ -1288,6 +1289,18 @@ params :
         dash     : ''
         delim    : ':='
 
+  - name  : gnss
+    vars  :
+    - name    : plane
+      label   : 'Plane number: '
+      kind    : menu
+      choices : [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19' ]
+      choices_type : str
+      v       : '7'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : ndt
     topic : /config/ndt
     msg   : ConfigNdt
@@ -1415,6 +1428,14 @@ params :
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : Use GPU
       kind      : checkbox
       v         : False
       cmd_param :
@@ -2906,49 +2927,185 @@ params :
     flags : [ no_init_update ]
     vars  :
     - name      : resolution
-      desc      : resolution desc sample
+      desc      : Cell Size while mapping using ND (meters) (default 1.0)
       label     : Resolution
       min       : 0.0
       max       : 10.0
       v         : 1.0
     - name      : step_size
-      desc      : step_size desc sample
+      desc      : Increment value between iterations while matching (default 0.1)
       label     : Step Size
       min       : 0.0
       max       : 1.0
       v         : 0.1
     - name      : trans_epsilon
-      desc      : trans_epsilon desc sample
+      desc      : Value to decide convergence between iterations (meters) (default 0.01)
       label     : Transformation Epsilon
       min       : 0.0
       max       : 0.1
       v         : 0.01
     - name      : max_iterations
-      desc      : max_iterations desc sample
+      desc      : Maximum number of iterations before stopping matching (default 30)
       label     : Maximum Iterations
       min       : 1
       max       : 300
       v         : 30
     - name      : leaf_size
-      desc      : leaf_size desc sample
+      desc      : Voxel Grid Size of the input scan (downsampling) (default 1.0)
       label     : Leaf Size
       min       : 0.0
       max       : 10.0
       v         : 1.0
     - name      : min_scan_range
-      desc      : min_scan_range desc sample
+      desc      : Ignore points closer than this value (meters) (default 5.0)
       label     : Minimum Scan Range
       min       : 0.0
       max       : 30.0
       v         : 5.0
     - name      : min_add_scan_shift
-      desc      : min_add_scan_shift desc sample
+      desc      : Minimum distance between points to be added to the final map (default 1.0)
       label     : Minimum Add Scan Shift
       min       : 0.0
       max       : 10.0
       v         : 1.0
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_odom
+      desc      : Use Odometry to try to reduce errors (read from /odom_pose)
+      label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_upside_down
+      desc      : Check if the IMU coordinate system is pointing downwards
+      label     : Inverted IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
     - name      : use_openmp
-      desc      : use_openmp desc sample
+      desc      : Use OpenMP to accelerate computation
+      label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_gpu
+      desc      : Use GPU to accelerate computation
+      label     : Use GPU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+
+  - name  : approximate_ndt_mapping
+    topic : /config/approximate_ndt_mapping
+    msg   : ConfigApproximateNdtMapping
+    flags : [ no_init_update ]
+    vars  :
+    - name      : resolution
+      desc      : Cell Size while mapping using ND (meters) (default 1.0)
+      label     : Resolution
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : step_size
+      desc      : Increment value between iterations while matching (default 0.1)
+      label     : Step Size
+      min       : 0.0
+      max       : 1.0
+      v         : 0.1
+    - name      : trans_epsilon
+      desc      : Value to decide convergence between iterations (meters) (default 0.01)
+      label     : Transformation Epsilon
+      min       : 0.0
+      max       : 0.1
+      v         : 0.01
+    - name      : max_iterations
+      desc      : Maximum number of iterations before stopping matching (default 30)
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
+    - name      : leaf_size
+      desc      : Voxel Grid Size of the input scan (downsampling) (default 1.0)
+      label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : min_scan_range
+      desc      : Ignore points closer than this value (meters) (default 5.0)
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : Minimum distance between points to be added to the final map (default 1.0)
+      label     : Minimum Add Scan Shift
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : max_submap_size
+      desc      : SubMap Size in meters before dumping to file and release memory.
+      label     : Submap Size
+      min       : 0.0
+      max       : 1000
+      v         : 100.0
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_odom
+      desc      : Use Odometry to try to reduce errors (read from /odom_pose)
+      label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_upside_down
+      desc      : Check if the IMU coordinate system is pointing downwards
+      label     : Inverted IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_openmp
+      desc      : Use OpenMP to accelerate computation
       label     : Use OpenMP
       kind      : checkbox
       v         : False
@@ -3120,16 +3277,16 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : image_raw_topic_str
-      desc      : image_raw_topic_str desc sample
-      label     : image_raw_topic_str
+    - name      : image_src
+      desc      : Image Topic to be fed to the network for detection
+      label     : image_src
       kind      : str
       v         : /image_raw
       cmd_param :
         dash      : ''
         delim     : ':='
     - name     : network_definition_file
-      desc     : network_definition_file sample
+      desc     : Prototxt file which defines the network
       label    : 'network_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
@@ -3137,7 +3294,7 @@ params :
         dash     : ''
         delim    : ':='
     - name     : pretrained_model_file
-      desc     : pretrained_model_file sample
+      desc     : Trained Caffe model
       label    : 'pattern_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel

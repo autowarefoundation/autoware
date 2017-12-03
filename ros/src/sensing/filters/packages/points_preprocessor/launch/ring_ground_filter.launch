@@ -1,0 +1,31 @@
+<!-- Launch file for RingGround Filter -->
+<launch>
+
+        <arg name="point_topic" default="/points_raw" />
+        <arg name="remove_floor" default="true" />
+        <arg name="sensor_model" default="32" />
+        <arg name="sensor_height" default="1.72" />
+        <arg name="max_slope" default="20.0" />
+        <arg name="point_distance" default="0.05" />
+        <arg name="min_point" default="3" />
+        <arg name="clipping_thres" default="-0.5" />
+        <arg name="gap_thres" default="0.5" />
+        <arg name="no_ground_point_topic" default="/points_no_ground" />
+        <arg name="ground_point_topic" default="/points_ground" />
+
+        <!-- rosrun lidar_tracker ground_filter -->
+        <node pkg="points_preprocessor" type="ring_ground_filter" name="ring_ground_filter" output="log">
+                <param name="point_topic" value="$(arg point_topic)" />
+                <param name="remove_floor" value="$(arg remove_floor)" />
+                <param name="sensor_model" value="$(arg sensor_model)" />
+                <param name="sensor_height" value="$(arg sensor_height)" />
+                <param name="max_slope" value="$(arg max_slope)" />
+                <param name="point_distance" value="$(arg point_distance)" />
+                <param name="min_point" value="$(arg min_point)" />
+                <param name="clipping_thres" value="$(arg clipping_thres)" />
+                <param name="gap_thres" value="$(arg gap_thres)" />
+                <param name="no_ground_point_topic" value="$(arg no_ground_point_topic)" />
+                <param name="ground_point_topic" value="$(arg ground_point_topic)" />
+        </node>
+
+</launch>

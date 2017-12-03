@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<launch>
+  <!--pacmod_interface-->
+  <include file="$(find as)/launch/pacmod_interface.launch"/>
+</launch>

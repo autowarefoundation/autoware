@@ -29,7 +29,6 @@
 */
 
 #include "rosinterface.h"
-#include "rosinterface_moc.cpp"
 
 //using namespace RobotSDK;
 

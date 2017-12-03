@@ -29,7 +29,6 @@
 */
 
 #include "glviewer.h"
-#include "glviewer_moc.cpp"
 
 #define GL_PI 3.1415926535897932384626433832795
 
@@ -101,7 +100,7 @@ void GLViewer::paintGL()
     glClearColor(cameraparameters.background(0),cameraparameters.background(1),cameraparameters.background(2),0.0);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();   
+	glLoadIdentity();
     gluLookAt(eye(0),eye(1),eye(2),center(0),center(1),center(2),up(0),up(1),up(2));
 	glPushMatrix();
     int i,n=displaylist.size();

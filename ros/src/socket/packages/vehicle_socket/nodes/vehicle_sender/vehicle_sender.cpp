@@ -29,13 +29,7 @@
 */
 
 #include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <tablet_socket_msgs/mode_cmd.h>
-#include <tablet_socket_msgs/gear_cmd.h>
-#include "autoware_msgs/accel_cmd.h"
-#include "autoware_msgs/brake_cmd.h"
-#include "autoware_msgs/steer_cmd.h"
-#include "autoware_msgs/ControlCommandStamped.h"
+#include "autoware_msgs/VehicleCmd.h"
 
 #include <iostream>
 #include <string>
@@ -52,6 +46,7 @@ struct CommandData {
   double angular_z;
   int modeValue;
   int gearValue;
+  int lampValue;
   int accellValue;
   int brakeValue;
   int steerValue;
@@ -63,58 +58,43 @@ struct CommandData {
 
 void CommandData::reset()
 {
-  linear_x    = 0;
-  angular_z   = 0;
-  modeValue   = 0;
-  gearValue   = 0;
-  accellValue = 0;
-  brakeValue  = 0;
-  steerValue  = 0;
+  linear_x      = 0;
+  angular_z     = 0;
+  modeValue     = 0;
+  gearValue     = 0;
+  lampValue     = 0;
+  accellValue   = 0;
+  brakeValue    = 0;
+  steerValue    = 0;
   linear_velocity = -1;
   steering_angle = 0;
 }
 
 static CommandData command_data;
 
-static void twistCMDCallback(const geometry_msgs::TwistStamped& msg)
+static void vehicleCmdCallback(const autoware_msgs::VehicleCmd& msg)
 {
-  command_data.linear_x = msg.twist.linear.x;
-  command_data.angular_z = msg.twist.angular.z;
-}
-
-static void modeCMDCallback(const tablet_socket_msgs::mode_cmd& mode)
-{
-  if(mode.mode == -1 || mode.mode == 0){
-    command_data.reset();
+  command_data.linear_x = msg.twist_cmd.twist.linear.x;
+  command_data.angular_z = msg.twist_cmd.twist.angular.z;
+  command_data.modeValue = msg.mode;
+  command_data.gearValue = msg.gear;
+  if(msg.lamp_cmd.l == 0 && msg.lamp_cmd.r == 0) {
+    command_data.lampValue = 0;
   }
-
-  command_data.modeValue = mode.mode;
-}
-
-static void gearCMDCallback(const tablet_socket_msgs::gear_cmd& gear)
-{
-  command_data.gearValue = gear.gear;
-}
-
-static void accellCMDCallback(const autoware_msgs::accel_cmd& accell)
-{
-  command_data.accellValue = accell.accel;
-}
-
-static void steerCMDCallback(const autoware_msgs::steer_cmd& steer)
-{
-  command_data.steerValue = steer.steer;
-}
-
-static void brakeCMDCallback(const autoware_msgs::brake_cmd &brake)
-{
-  command_data.brakeValue = brake.brake;
-}
-
-static void ctrlCMDCallback(const autoware_msgs::ControlCommandStamped& msg)
-{
-  command_data.linear_velocity = msg.cmd.linear_velocity;
-  command_data.steering_angle = msg.cmd.steering_angle;
+  else if (msg.lamp_cmd.l == 1 && msg.lamp_cmd.r == 0) {
+    command_data.lampValue = 1;
+  }
+  else if (msg.lamp_cmd.l == 0 && msg.lamp_cmd.r == 1) {
+    command_data.lampValue = 2;
+  }
+  else if (msg.lamp_cmd.l == 1 && msg.lamp_cmd.r == 1) {
+    command_data.lampValue = 3;
+  }
+  command_data.accellValue = msg.accel_cmd.accel;
+  command_data.steerValue = msg.steer_cmd.steer;
+  command_data.brakeValue = msg.brake_cmd.brake;
+  command_data.linear_velocity = msg.ctrl_cmd.linear_velocity;
+  command_data.steering_angle = msg.ctrl_cmd.steering_angle;
 }
 
 static void *sendCommand(void *arg)
@@ -140,7 +120,7 @@ static void *sendCommand(void *arg)
     std::perror("write");
     return nullptr;
   }
-  
+
   if(close(client_sock) == -1){
     std::perror("close");
     return nullptr;
@@ -217,14 +197,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
 
   std::cout << "vehicle sender" << std::endl;
-  ros::Subscriber sub[7];
-  sub[0] = nh.subscribe("/twist_cmd", 1, twistCMDCallback);
-  sub[1] = nh.subscribe("/mode_cmd",  1, modeCMDCallback);
-  sub[2] = nh.subscribe("/gear_cmd",  1, gearCMDCallback);
-  sub[3] = nh.subscribe("/accel_cmd", 1, accellCMDCallback);
-  sub[4] = nh.subscribe("/steer_cmd", 1, steerCMDCallback);
-  sub[5] = nh.subscribe("/brake_cmd", 1, brakeCMDCallback);
-  sub[6] = nh.subscribe("/ctrl_cmd", 1, ctrlCMDCallback);
+  ros::Subscriber sub = nh.subscribe("/vehicle_cmd", 1, vehicleCmdCallback);
 
   command_data.reset();
 
