@@ -150,7 +150,15 @@ function deviceChange() {
     var constraints = {
       audio: isUseAudio,
       video: {
-        optional: [{ sourceId: deviceId }]
+        mandatory: {
+          maxWidth: 1280,
+          maxHeight: 720,
+          minWidth: 1280,
+          minHeight: 720
+        },
+        optional: [{
+          sourceId: deviceId
+        }]
       }
     };
   }
