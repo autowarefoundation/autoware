@@ -27,5 +27,7 @@
   <run_depend>cv_bridge</run_depend>
   <run_depend>velodyne_pointcloud</run_depend>
 
+  <test_depend>rosunit</test_depend>
+
   <export></export>
 </package>
