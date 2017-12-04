@@ -21,6 +21,7 @@ static bool isPublish_extrinsic;
 static bool isPublish_cameraInfo;
 
 static std::string camera_id_str;
+static std::string target_frame_;
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -44,8 +45,7 @@ void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 
   transform.setRotation(quaternion);
 
-  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", camera_id_str));
-  //broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
+  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, target_frame_, camera_id_str));
 }
 
 void projectionMatrix_sender(const cv::Mat  &projMat, const ros::Time& timeStamp)
@@ -143,8 +143,11 @@ int main(int argc, char* argv[])
   }
 
   if (!private_nh.getParam("publish_camera_info", isPublish_cameraInfo)) {
-    isPublish_extrinsic = false; /* doesn't publish camera_info in default */
+    isPublish_cameraInfo = false; /* doesn't publish camera_info in default */
   }
+
+  private_nh.param<std::string>("target_frame", target_frame_, "velodyne");
+  ROS_INFO("target_frame: %s", target_frame_.c_str());
 
   if (argc < 2)
     {
