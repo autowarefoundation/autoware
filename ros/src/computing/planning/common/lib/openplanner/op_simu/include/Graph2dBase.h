@@ -23,14 +23,14 @@ public:
 	double DrawGraph();
 	void InsertPoint(const double& x, const double& y);
 	void InsertPointTimeStamp(const timespec& tStamp, const double& y);
-	void InsertPointsList(const std::vector<PlannerHNS::POINT2D>& points);
+	void InsertPointsList(const std::vector<PlannerHNS::GPSPoint>& points);
 
 
 protected:
 	double w,h;
 	double nPoints;
-	std::vector<PlannerHNS::POINT2D> xy_arr;
-	std::vector<PlannerHNS::POINT2D> xy_arr_original;
+	std::vector<PlannerHNS::GPSPoint> xy_arr;
+	std::vector<PlannerHNS::GPSPoint> xy_arr_original;
 
 	double axes_color[3];
 	double graph_color[3];
@@ -38,8 +38,8 @@ protected:
 	std::string x_name;
 	std::string y_name;
 	std::string str_comment;
-	PlannerHNS::POINT2D max_point;
-	PlannerHNS::POINT2D min_point;
+	PlannerHNS::GPSPoint max_point;
+	PlannerHNS::GPSPoint min_point;
 
 	timespec m_PrevTimeStamp;
 };

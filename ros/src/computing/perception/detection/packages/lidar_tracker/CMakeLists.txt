@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   vector_map
   vector_map_server
+  op_ros_helpers
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -263,3 +264,9 @@ else()
 endif()
 
 add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
+
+
+#kl contour tracker
+add_executable(kf_contour_tracker nodes/kf_contour_tracker/kf_contour_tracker.cpp nodes/kf_contour_tracker/src/kf_contour_tracker_core.cpp)
+target_link_libraries(kf_contour_tracker ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(kf_contour_tracker ${catkin_EXPORTED_TARGETS})

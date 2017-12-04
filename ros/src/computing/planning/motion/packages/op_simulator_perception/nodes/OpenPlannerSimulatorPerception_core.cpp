@@ -29,7 +29,6 @@
 */
 #include "../include/OpenPlannerSimulatorPerception_core.h"
 
-#include "geo_pos_conv.hh"
 #include "UtilityH.h"
 #include "math.h"
 #include "MatrixOperations.h"

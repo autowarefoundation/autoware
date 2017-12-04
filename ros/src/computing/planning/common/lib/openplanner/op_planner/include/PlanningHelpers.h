@@ -25,7 +25,12 @@ namespace PlannerHNS {
 #define LANE_CHANGE_COST 3.0 // meters
 #define BACKUP_STRAIGHT_PLAN_DISTANCE 75 //meters
 
-class PlanningHelpers {
+class PlanningHelpers
+{
+
+public:
+	static std::vector<std::pair<GPSPoint, GPSPoint> > m_TestingClosestPoint;
+
 public:
 	PlanningHelpers();
 	virtual ~PlanningHelpers();
@@ -39,6 +44,7 @@ public:
 	 * @return true if success without errors, false otherwise
 	 */
 	static bool GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex = 0);
+
 
 	static bool GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, const double& searchDistance, RelativeInfo& info);
 
@@ -67,10 +73,15 @@ public:
 	 * @param prevIndex initial search index
 	 * @return index of the closest next point from trajectory
 	 */
-	static int GetClosestNextPointIndex(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+	static int GetClosestNextPointIndex_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 
-	static int GetClosestNextPointIndexDirection(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+	static int GetClosestNextPointIndexFast(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 
+	static int GetClosestNextPointIndexFastV2(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+
+	static int GetClosestNextPointIndexDirectionFast(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
+
+	static int GetClosestNextPointIndexDirectionFastV2(const std::vector<WayPoint>& trajectory, const WayPoint& p, const int& prevIndex = 0);
 
 	static int GetClosestPointIndex_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex = 0 );
 	static WayPoint GetPerpendicularOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const WayPoint& p, double& distance, const int& prevIndex = 0);
@@ -79,6 +90,9 @@ public:
 	static WayPoint GetNextPointOnTrajectory_obsolete(const std::vector<WayPoint>& trajectory, const double& distance, const int& currIndex = 0);
 	static double GetDistanceOnTrajectory_obsolete(const std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 
+
+	static void CreateManualBranch(std::vector<WayPoint>& path, const int& degree, const DIRECTION_TYPE& direction);
+	static void CreateManualBranchFromTwoPoints(WayPoint& p1,WayPoint& p2 , const double& distance, const DIRECTION_TYPE& direction, std::vector<WayPoint>& path);
 
 	static void FixPathDensity(std::vector<WayPoint>& path, const double& distanceDensity);
 	static void SmoothPath(std::vector<WayPoint>& path, double weight_data =0.25,double weight_smooth = 0.25,double tolerance = 0.01);
@@ -92,6 +106,9 @@ public:
 	static void ExtractPartFromPointToDistance(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
 			const double& pathDensity, std::vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance);
 
+	static void ExtractPartFromPointToDistanceFast(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
+				const double& pathDensity, std::vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance);
+
 	static void CalculateRollInTrajectories(const WayPoint& carPos, const double& speed, const std::vector<WayPoint>& originalCenter, int& start_index,
 			int& end_index, std::vector<double>& end_laterals ,
 			std::vector<std::vector<WayPoint> >& rollInPaths, const double& max_roll_distance,
@@ -101,10 +118,11 @@ public:
 			const double& SmoothTolerance, const bool& bHeadingSmooth,
 			std::vector<WayPoint>& sampledPoints);
 
-
 	static void SmoothSpeedProfiles(std::vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance	= 0.1);
 	static void SmoothCurvatureProfiles(std::vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance = 0.1);
 	static void SmoothWayPointsDirections(std::vector<WayPoint>& path_in, double weight_data, double weight_smooth, double tolerance	= 0.1);
+
+	static void SmoothGlobalPathSpeed(std::vector<WayPoint>& path);
 
 	static void GenerateRecommendedSpeed(std::vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor);
 //	static WayPoint* BuildPlanningSearchTree(Lane* l, const WayPoint& prevWayPointIndex,
@@ -125,6 +143,9 @@ public:
 
 	static int PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
 			std::vector<WayPoint*>& all_cells_to_delete, std::vector<WayPoint*>& end_waypoints);
+
+	static int PredictiveIgnorIdsDP(WayPoint* pStart, const double& DistanceLimit,
+				std::vector<WayPoint*>& all_cells_to_delete, std::vector<WayPoint*>& end_waypoints, std::vector<int>& lanes_ids);
 
 	static bool CheckLaneIdExits(const std::vector<int>& lanes, const Lane* pL);
 	static WayPoint* CheckLaneExits(const std::vector<WayPoint*>& nodes, const Lane* pL);
@@ -151,10 +172,12 @@ public:
 
 	static void CalcContourPointsForDetectedObjects(const WayPoint& currPose, std::vector<DetectedObject>& obj_list, const double& filterDistance = 100);
 
-	static double GetVelocityAhead(const std::vector<WayPoint>& path, const WayPoint& pose, const double& distance);
+	static double GetVelocityAhead(const std::vector<WayPoint>& path, const RelativeInfo& info,int& prev_index, const double& reasonable_brake_distance);
 	static bool CompareTrajectories(const std::vector<WayPoint>& path1, const std::vector<WayPoint>& path2);
 
 	static double GetDistanceToClosestStopLineAndCheck(const std::vector<WayPoint>& path, const WayPoint& p, int& stopLineID,int& stopSignID, int& trafficLightID, const int& prevIndex = 0);
+
+	static bool GetThreePointsInfo(const WayPoint& p0, const WayPoint& p1, const WayPoint& p2, WayPoint& perp_p, double& long_d, double lat_d);
 
 	static void WritePathToFile(const std::string& fileName, const std::vector<WayPoint>& path);
 

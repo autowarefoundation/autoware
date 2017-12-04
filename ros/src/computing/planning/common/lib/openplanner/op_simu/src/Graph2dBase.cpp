@@ -121,7 +121,7 @@ double Graph2dBase::DrawGraph()
 
 void Graph2dBase::InsertPointTimeStamp(const timespec& tStamp, const double& y)
 {
-	POINT2D p(0,y,0);
+	GPSPoint p(0,y,0,0);
 	if(xy_arr_original.size() == 0)
 	{
 		xy_arr_original.push_back(p);
@@ -188,7 +188,7 @@ void Graph2dBase::InsertPoint(const double& x, const double& y)
 
 }
 
-void Graph2dBase::InsertPointsList(const std::vector<PlannerHNS::POINT2D>& points)
+void Graph2dBase::InsertPointsList(const std::vector<PlannerHNS::GPSPoint>& points)
 {
 
 }
