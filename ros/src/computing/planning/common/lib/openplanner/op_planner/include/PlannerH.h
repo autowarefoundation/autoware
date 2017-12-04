@@ -6,7 +6,6 @@
  */
 
 #include "RSPlanner.h"
-#include "GridMap.h"
 
 #define START_POINT_MAX_DISTANCE 8 // meters
 #define GOAL_POINT_MAX_DISTANCE 8 // meters
@@ -23,18 +22,6 @@ class PlannerH
 public:
 	PlannerH();
 	virtual ~PlannerH(); 
-
-
-	/**
-	 * @brief Generates Trajectory using Reeds Shepp, this method will not try to avoid obstacles
-	 * @param start: Start position for the trajectory (x,y,theta)
-	 * @param goal:  Goal position (Destination point) (x,y,theta)
-	 * @param map:  2d grid map, ( cost map or occupancy grid.
-	 * @param generatedPath: pointer to return the smooth trajectory. - Better Not to use this
-	 * @return path length
-	 */
-	double PlanUsingReedSheppWithObstacleDetection(const WayPoint& start, const WayPoint& goal, GridMap& map, std::vector<WayPoint>& genSmoothedPath,
-			const double pathDensity = 0.25, const double smoothFactor = 12.0);
 
 	/**
 	 * @brief Generates Trajectory using Reeds Shepp, this method will not try to avoid obstacles , but if there an obstacle on the trajectory function will fail. , also this function does not guaranteed to generate trajectories
@@ -75,7 +62,7 @@ public:
 				const double& SmoothTolerance, const double& speedProfileFactor, const bool& bHeadingSmooth,
 				const int& iCurrGlobalPath, const int& iCurrLocalTraj,
 				std::vector<std::vector<std::vector<WayPoint> > >& rollOutsPaths,
-				std::vector<WayPoint>& sectionPath, std::vector<WayPoint>& sampledPoints);
+				std::vector<WayPoint>& sampledPoints);
 
 	/**
 	 * @brief Path planning for structured environment using dynamic programming
@@ -108,6 +95,10 @@ public:
 	 */
 	double PredictPlanUsingDP(Lane* lane, const WayPoint& carPos, const double& maxPlanningDistance,
 			std::vector<std::vector<WayPoint> >& paths);
+
+	double PredictPlanUsingDP(const WayPoint& startPose, WayPoint* closestWP, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths, const bool& bFindBranches = true);
+
+	double PredictTrajectoriesUsingDP(const WayPoint& startPose, std::vector<WayPoint*> closestWPs, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths, const bool& bFindBranches = true, const bool bDirectionBased = false);
 
 	void DeleteWaypoints(std::vector<WayPoint*>& wps);
 

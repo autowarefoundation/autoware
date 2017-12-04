@@ -20,6 +20,7 @@ using namespace std;
 namespace PlannerHNS {
 
 
+std::vector<std::pair<GPSPoint, GPSPoint> > PlanningHelpers::m_TestingClosestPoint;
 
 PlanningHelpers::PlanningHelpers()
 {
@@ -83,6 +84,7 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 	return true;
 }
 
+
 bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex )
 {
 	if(trajectory.size() < 2) return false;
@@ -99,7 +101,11 @@ bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, c
 	}
 	else
 	{
-		info.iFront = GetClosestNextPointIndex(trajectory, p, prevIndex);
+		info.iFront = GetClosestNextPointIndexFast(trajectory, p, prevIndex);
+//		WayPoint p2 = p;
+//		int old_index = GetClosestNextPointIndex(trajectory, p2, prevIndex);
+//		if(old_index != info.iFront)
+//			cout << " Alert Alert !!!! fast: " << info.iFront << ", slow: " << old_index  << endl;
 
 		if(info.iFront > 0)
 			info.iBack = info.iFront -1;
@@ -157,6 +163,49 @@ bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, c
 	return true;
 }
 
+bool PlanningHelpers::GetThreePointsInfo(const WayPoint& p0, const WayPoint& p1, const WayPoint& p2, WayPoint& perp_p, double& long_d, double lat_d)
+{
+
+	if(p0.pos.x == p1.pos.x && p0.pos.y == p1.pos.y) return false;
+	if(p0.pos.x == p2.pos.x && p0.pos.y == p2.pos.y) return false;
+	if(p1.pos.x == p2.pos.x && p1.pos.y == p2.pos.y) return false;
+
+	perp_p = p1;
+	WayPoint first_p = p0;
+	double angle_x = atan2(p1.pos.y-p0.pos.y, p1.pos.x-p0.pos.x);
+
+	Mat3 rotationMat(-angle_x);
+	Mat3 translationMat(-p2.pos.x, -p2.pos.y);
+	Mat3 invRotationMat(angle_x);
+	Mat3 invTranslationMat(p2.pos.x, p2.pos.y);
+
+	first_p.pos = translationMat*first_p.pos;
+	first_p.pos = rotationMat*first_p.pos;
+
+	perp_p.pos = translationMat*perp_p.pos;
+	perp_p.pos = rotationMat*perp_p.pos;
+
+	if(perp_p.pos.x-first_p.pos.x == 0) return false;
+
+	double m = (perp_p.pos.y-first_p.pos.y)/(perp_p.pos.x-first_p.pos.x);
+	lat_d = perp_p.pos.y - m*perp_p.pos.x; // solve for x = 0
+
+	if(isnan(lat_d) || isinf(lat_d)) return false;
+
+	if(perp_p.pos.x < 0)
+		return false;
+
+	perp_p.pos.x = 0; // on the same y axis of the car
+	perp_p.pos.y = lat_d; //perp distance between the car and the trajectory
+
+	perp_p.pos = invRotationMat  * perp_p.pos;
+	perp_p.pos = invTranslationMat  * perp_p.pos;
+
+	long_d = hypot(perp_p.pos.y - first_p.pos.y, perp_p.pos.x - first_p.pos.x);
+
+	return true;
+}
+
 WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>& trajectory, const RelativeInfo& init_p, const double& distance, unsigned int& point_index)
 {
 	WayPoint follow_point;
@@ -173,7 +222,7 @@ WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>
 		follow_point.pos.y = init_p.perp_point.pos.y + distance * sin(follow_point.pos.a);
 	}
 	//condition 2, if far after the last point on the trajectory
-	else if(init_p.iFront == trajectory.size() -1)
+	else if(init_p.iFront == (int)trajectory.size() - 1)
 	{
 		follow_point = trajectory.at(init_p.iFront);
 		follow_point.pos.x = init_p.perp_point.pos.x + distance * cos(follow_point.pos.a);
@@ -182,7 +231,7 @@ WayPoint PlanningHelpers::GetFollowPointOnTrajectory(const std::vector<WayPoint>
 	else
 	{
 		double d = init_p.to_front_distance;
-		while(local_i < trajectory.size()-1 && d < distance)
+		while(local_i < (int)trajectory.size()-1 && d < distance)
 		{
 			local_i++;
 			d += hypot(trajectory.at(local_i).pos.y - trajectory.at(local_i-1).pos.y, trajectory.at(local_i).pos.x - trajectory.at(local_i-1).pos.x);
@@ -211,7 +260,7 @@ double PlanningHelpers::GetExactDistanceOnTrajectory(const std::vector<WayPoint>
 	else if(p2.iBack >= p1.iFront)
 	{
 		double d_on_path = p1.to_front_distance + p2.from_back_distance;
-		for(unsigned int i = p1.iFront; i < p2.iBack; i++)
+		for(int i = p1.iFront; i < p2.iBack; i++)
 			d_on_path += hypot(trajectory.at(i+1).pos.y - trajectory.at(i).pos.y, trajectory.at(i+1).pos.x - trajectory.at(i).pos.x);
 
 		return d_on_path;
@@ -219,7 +268,7 @@ double PlanningHelpers::GetExactDistanceOnTrajectory(const std::vector<WayPoint>
 	else if(p2.iFront <= p1.iBack)
 	{
 		double d_on_path = p1.from_back_distance + p2.to_front_distance;
-		for(unsigned int i = p2.iFront; i < p1.iBack; i++)
+		for(int i = p2.iFront; i < p1.iBack; i++)
 			d_on_path += hypot(trajectory.at(i+1).pos.y - trajectory.at(i).pos.y, trajectory.at(i+1).pos.x - trajectory.at(i).pos.x);
 
 		return -d_on_path;
@@ -230,7 +279,7 @@ double PlanningHelpers::GetExactDistanceOnTrajectory(const std::vector<WayPoint>
 	}
 }
 
-int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+int PlanningHelpers::GetClosestNextPointIndex_obsolete(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
 {
 	if(trajectory.size() == 0 || prevIndex < 0) return 0;
 
@@ -247,14 +296,18 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 		}
 	}
 
+//	cout << "Slow=> Start: " << 0;
+//	cout << ", End: " << trajectory.size();
+//	cout << ", Minimum Before: " << min_index;
+
 	if(min_index < (int)trajectory.size()-2)
 	{
 		GPSPoint curr, next;
 		curr = trajectory.at(min_index).pos;
 		next = trajectory.at(min_index+1).pos;
-		POINT2D v_1(p.pos.x - curr.x   ,p.pos.y - curr.y);
+		GPSPoint v_1(p.pos.x - curr.x   ,p.pos.y - curr.y,0,0);
 		double norm1 = pointNorm(v_1);
-		POINT2D v_2(next.x - curr.x,next.y - curr.y);
+		GPSPoint v_2(next.x - curr.x,next.y - curr.y,0,0);
 		double norm2 = pointNorm(v_2);
 		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
 		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
@@ -262,20 +315,220 @@ int PlanningHelpers::GetClosestNextPointIndex(const vector<WayPoint>& trajectory
 			min_index = min_index+1;
 	}
 
+//	cout << ", Minimum After: " << min_index << ", Big O: " << trajectory.size() << endl;
+
 	return min_index;
 }
 
-int PlanningHelpers::GetClosestNextPointIndexDirection(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+int PlanningHelpers::GetClosestNextPointIndexFastV2(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex)
 {
-	if(trajectory.size() == 0 || prevIndex < 0) return 0;
+
+	int size = (int)trajectory.size();
+
+		if(size < 2 || prevIndex < 0) return 0;
+
+		double d = 0, minD = 9999999999;
+
+
+		double resolution = hypot(trajectory[1].pos.y -trajectory[0].pos.y , trajectory[1].pos.x -trajectory[0].pos.x);
+		double d_to_zero = hypot(p.pos.y -trajectory[0].pos.y , p.pos.x - trajectory[0].pos.x);
+		double d_to_size = hypot(trajectory[size-1].pos.y - p.pos.y , trajectory[size-1].pos.x - p.pos.x);
+
+		int iStart = d_to_zero / resolution;
+		WayPoint perp_p;
+		double lat_d = 0;
+		double long_d = 0;
+
+		if(iStart > 0 && iStart < size-1 &&  GetThreePointsInfo(trajectory.at(0), trajectory.at(iStart), p, perp_p, long_d, lat_d))
+		{
+	//		m_TestingClosestPoint.push_back(make_pair(trajectory.at(0).pos, p.pos));
+	//		m_TestingClosestPoint.push_back(make_pair(trajectory.at(iStart).pos, p.pos));
+			iStart = long_d / resolution;
+		}
+
+		if(iStart>0)
+			iStart--;
+
+		int iEnd = size - (d_to_size / resolution);
+
+		if(iEnd >= 0 && iEnd < size-2 &&  GetThreePointsInfo(trajectory.at(size-1), trajectory.at(iEnd), p, perp_p, long_d, lat_d))
+		{
+	//		m_TestingClosestPoint.push_back(make_pair(trajectory.at(size-1).pos, p.pos));
+	//		m_TestingClosestPoint.push_back(make_pair(trajectory.at(iEnd).pos, p.pos));
+			iEnd = size - (long_d / resolution);
+		}
+
+		if(iEnd < size-1)
+			iEnd++;
+
+	//	cout << "Fast=>";
+	//	cout << " Start: " << iStart;
+	//	cout << ", End: " << iEnd;
+
+		double d_from_start = d_to_zero;
+		if(iStart < size)
+			d_from_start = hypot(trajectory[iStart].pos.y - p.pos.y , trajectory[iStart].pos.x - p.pos.x);
+
+		double d_from_end = d_to_size;
+		if(iEnd >= 0)
+			d_from_end = hypot(trajectory[iEnd].pos.y - p.pos.y , trajectory[iEnd].pos.x - p.pos.x);
+
+		if(iStart >= size && iEnd < 0)
+		{
+			if(d_to_zero < d_to_size)
+			{
+				iStart = 0;
+				iEnd = size/2 -1;
+			}
+			else
+			{
+				iStart = size/2;
+				iEnd = size - 1;
+			}
+		}
+		else
+		{
+			if(iStart >=size || (d_from_start > d_to_zero))
+				iStart = 0;
+
+			if(iEnd < 0 || (d_from_end > d_to_size))
+				iEnd = size-1;
+		}
+
+		if(iStart > iEnd)
+			iEnd = size-1;
+
+		int min_index  =  iStart;
+
+		int ncout = 0;
+		for(int i=iStart; i<= iEnd; i++)
+		{
+			d  = distance2pointsSqr(trajectory[i].pos, p.pos);
+			if(d < minD)
+			{
+				min_index = i;
+				minD = d;
+			}
+			ncout++;
+		}
+
+	//	cout << ", Minimum Before: " << min_index;
+
+		if(min_index < size-2)
+		{
+			GPSPoint curr, next;
+			curr = trajectory[min_index].pos;
+			next = trajectory[min_index+1].pos;
+			GPSPoint v_1(p.pos.x - curr.x   ,p.pos.y - curr.y,0,0);
+			double norm1 = pointNorm(v_1);
+			GPSPoint v_2(next.x - curr.x,next.y - curr.y,0,0);
+			double norm2 = pointNorm(v_2);
+			double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
+			double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
+			if(a <= M_PI_2)
+				min_index = min_index+1;
+		}
+
+	//	m_TestingClosestPoint.push_back(make_pair(trajectory.at(min_index).pos, p.pos));
+
+	//	cout << ", Minimum After: " << min_index << ", Big O: " << ncout << endl;
+	//	cout << "d_zero: " << d_to_zero << ", d_start: " << d_from_start << endl;
+	//	cout << "d_size: " << d_to_size << ", d_end: " << d_from_end << endl;
+		return min_index;
+
+
+}
+
+int PlanningHelpers::GetClosestNextPointIndexFast(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+{
+	int size = (int)trajectory.size();
+
+		if(size < 2 || prevIndex < 0) return 0;
+
+		double d = 0, minD = 9999999999;
+		int min_index  = prevIndex;
+		int iStart = prevIndex;
+		int iEnd = size;
+		double resolution = hypot(trajectory[1].pos.y -trajectory[0].pos.y , trajectory[1].pos.x -trajectory[0].pos.x);
+
+		//divide every 5 meters
+		int skip_factor = 5;
+		int skip = skip_factor/resolution;
+
+		for(int i=0; i< size; i+=skip)
+		{
+			if(i+skip/2 < size)
+				d  = (distance2pointsSqr(trajectory[i].pos, p.pos) + distance2pointsSqr(trajectory[i+skip/2].pos, p.pos))/2.0;
+			else
+				d  = distance2pointsSqr(trajectory[i].pos, p.pos);
+			if(d < minD)
+			{
+				iStart = i-skip;
+				iEnd = i+skip;
+				minD = d;
+				min_index = i;
+			}
+		}
+
+		if((size - skip/2 - 1) > 0)
+			d  = (distance2pointsSqr(trajectory[size-1].pos, p.pos) + distance2pointsSqr(trajectory[size - skip/2 -1 ].pos, p.pos))/2.0;
+		else
+			d  = distance2pointsSqr(trajectory[size-1].pos, p.pos);
+
+		if(d < minD)
+		{
+			iStart = size-skip;
+			iEnd = size+skip;
+			minD = d;
+			min_index = size-1;
+		}
+
+		if(iStart < 0) iStart = 0;
+		if(iEnd >= size) iEnd = size -1;
+
+		for(int i=iStart; i< iEnd; i++)
+		{
+			d  = distance2pointsSqr(trajectory[i].pos, p.pos);
+			if(d < minD)
+			{
+				min_index = i;
+				minD = d;
+			}
+		}
+
+		if(min_index < size-2)
+		{
+			GPSPoint curr, next;
+			curr = trajectory[min_index].pos;
+			next = trajectory[min_index+1].pos;
+			GPSPoint v_1(p.pos.x - curr.x   ,p.pos.y - curr.y,0,0);
+			double norm1 = pointNorm(v_1);
+			GPSPoint v_2(next.x - curr.x,next.y - curr.y,0,0);
+			double norm2 = pointNorm(v_2);
+			double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
+			double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
+			if(a <= M_PI_2)
+				min_index = min_index+1;
+		}
+
+		//m_TestingClosestPoint.push_back(make_pair(trajectory.at(min_index).pos, p.pos));
+
+		return min_index;
+}
+
+int PlanningHelpers::GetClosestNextPointIndexDirectionFast(const vector<WayPoint>& trajectory, const WayPoint& p,const int& prevIndex )
+{
+	int size = (int)trajectory.size();
+
+	if(size < 2 || prevIndex < 0) return 0;
 
 	double d = 0, minD = 9999999999;
 	int min_index  = prevIndex;
 
-	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
+	for(unsigned int i=prevIndex; i< size; i++)
 	{
-		d  = distance2pointsSqr(trajectory.at(i).pos, p.pos);
-		double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(trajectory.at(i).pos.a, p.pos.a)*RAD2DEG;
+		d  = distance2pointsSqr(trajectory[i].pos, p.pos);
+		double angle_diff = UtilityH::AngleBetweenTwoAnglesPositive(trajectory[i].pos.a, p.pos.a)*RAD2DEG;
 
 		if(d < minD && angle_diff < 45)
 		{
@@ -289,9 +542,9 @@ int PlanningHelpers::GetClosestNextPointIndexDirection(const vector<WayPoint>& t
 		GPSPoint curr, next;
 		curr = trajectory.at(min_index).pos;
 		next = trajectory.at(min_index+1).pos;
-		POINT2D v_1(p.pos.x - curr.x   ,p.pos.y - curr.y);
+		GPSPoint v_1(p.pos.x - curr.x   ,p.pos.y - curr.y,0,0);
 		double norm1 = pointNorm(v_1);
-		POINT2D v_2(next.x - curr.x,next.y - curr.y);
+		GPSPoint v_2(next.x - curr.x,next.y - curr.y,0,0);
 		double norm2 = pointNorm(v_2);
 		double dot_pro = v_1.x*v_2.x + v_1.y*v_2.y;
 		double a = UtilityH::FixNegativeAngle(acos(dot_pro/(norm1*norm2)));
@@ -337,7 +590,7 @@ WayPoint PlanningHelpers::GetPerpendicularOnTrajectory_obsolete(const vector<Way
 	}
 	else
 	{
-		int next_index = GetClosestNextPointIndex(trajectory, p, prevIndex);
+		int next_index = GetClosestNextPointIndexFast(trajectory, p, prevIndex);
 
 		if(next_index == 0)
 		{
@@ -406,7 +659,7 @@ double PlanningHelpers::GetPerpDistanceToTrajectorySimple_obsolete(const vector<
 	}
 	else
 	{
-		next_index = GetClosestNextPointIndex(trajectory, p, prevIndex);
+		next_index = GetClosestNextPointIndexFast(trajectory, p, prevIndex);
 		if(next_index == 0)
 		{
 			p0 = trajectory[next_index];
@@ -508,7 +761,7 @@ WayPoint PlanningHelpers::GetNextPointOnTrajectory_obsolete(const vector<WayPoin
 	p2 = trajectory.at(local_currIndex);
 	p1 = trajectory.at(local_currIndex+1);
 
-	POINT2D uv(p1.pos.x - p2.pos.x, p1.pos.y - p2.pos.y);
+	GPSPoint uv(p1.pos.x - p2.pos.x, p1.pos.y - p2.pos.y ,0,0);
 	double v_norm = pointNorm(uv);
 
 	assert(v_norm != 0);
@@ -638,6 +891,115 @@ double PlanningHelpers::GetDistanceToClosestStopLineAndCheck(const std::vector<W
 	return -1;
 }
 
+void PlanningHelpers::CreateManualBranchFromTwoPoints(WayPoint& p1,WayPoint& p2 , const double& distance, const DIRECTION_TYPE& direction, std::vector<WayPoint>& path)
+{
+	WayPoint endWP, midWP;
+
+	double branch_angle = 0;
+	if(direction == FORWARD_RIGHT_DIR)
+	{
+		branch_angle = p1.pos.a-M_PI_2;
+	}
+	else if(direction == FORWARD_LEFT_DIR)
+	{
+		branch_angle = p1.pos.a+M_PI_2;
+	}
+	endWP.pos.y = p2.pos.y + distance*sin(branch_angle);
+	endWP.pos.x = p2.pos.x + distance*cos(branch_angle);
+
+	midWP = p2;
+	midWP.pos.x = (p1.pos.x+p2.pos.x)/2.0;
+	midWP.pos.y = (p1.pos.y+p2.pos.y)/2.0;
+	endWP.bDir = midWP.bDir = direction;
+
+	path.clear();
+	path.push_back(p1);
+	path.push_back(p2);
+	path.push_back(endWP);
+
+	PlanningHelpers::SmoothPath(path, 0.35, 0.25);
+	PlanningHelpers::FixPathDensity(path, 1.5);
+	PlanningHelpers::SmoothPath(path, 0.35, 0.25);
+	PlanningHelpers::FixPathDensity(path, 1);
+	PlanningHelpers::SmoothPath(path, 0.25, 0.35);
+
+
+	PlanningHelpers::CalcAngleAndCost(path);
+
+	for(unsigned int i=0; i < path.size(); i++)
+	{
+		if(direction == FORWARD_LEFT_DIR)
+		{
+			path.at(i).state = INITIAL_STATE;
+			path.at(i).beh_state = BEH_BRANCH_LEFT_STATE;
+			path.at(i).laneId = -1;
+		}
+		if(direction == FORWARD_RIGHT_DIR)
+		{
+			path.at(i).state = INITIAL_STATE;
+			path.at(i).beh_state = BEH_BRANCH_RIGHT_STATE;
+			path.at(i).laneId = -2;
+		}
+	}
+}
+
+void PlanningHelpers::CreateManualBranch(std::vector<WayPoint>& path, const int& degree, const DIRECTION_TYPE& direction)
+{
+	if(path.size() < 5) return;
+
+	//start branch point
+	WayPoint branch_start = path.at(path.size()-5);
+	WayPoint last_wp = path.at(path.size()-1);
+
+
+	WayPoint endWP;
+	vector<WayPoint> goal_path;
+	double branch_angle = 0;
+	if(direction == FORWARD_RIGHT_DIR)
+	{
+		branch_angle = last_wp.pos.a-M_PI_2;
+	}
+	else if(direction == FORWARD_LEFT_DIR)
+	{
+		branch_angle = last_wp.pos.a+M_PI_2;
+	}
+	endWP.pos.y = last_wp.pos.y + 10*sin(branch_angle);
+	endWP.pos.x = last_wp.pos.x + 10*cos(branch_angle);
+
+	WayPoint wp = last_wp;
+	wp.pos.x = (last_wp.pos.x+endWP.pos.x)/2.0;
+	wp.pos.y = (last_wp.pos.y+endWP.pos.y)/2.0;
+	endWP.bDir = wp.bDir = direction;
+	goal_path.push_back(wp);
+	goal_path.push_back(endWP);
+
+	goal_path.insert(goal_path.begin(), path.end()-5, path.end());
+	PlanningHelpers::SmoothPath(goal_path, 0.25, 0.25);
+	PlanningHelpers::FixPathDensity(goal_path, 0.75);
+	PlanningHelpers::SmoothPath(goal_path, 0.25, 0.35);
+
+	path.erase(path.end()-5, path.end());
+	path.insert(path.end(), goal_path.begin(), goal_path.end());
+
+	PlanningHelpers::CalcAngleAndCost(path);
+
+	for(unsigned int i=0; i < path.size(); i++)
+	{
+		if(direction == FORWARD_LEFT_DIR)
+		{
+			path.at(i).state = INITIAL_STATE;
+			path.at(i).beh_state = BEH_BRANCH_LEFT_STATE;
+		}
+		if(direction == FORWARD_RIGHT_DIR)
+		{
+			path.at(i).state = INITIAL_STATE;
+			path.at(i).beh_state = BEH_BRANCH_RIGHT_STATE;
+		}
+	}
+
+
+}
+
 void PlanningHelpers::FixPathDensity(vector<WayPoint>& path, const double& distanceDensity)
 {
 	if(path.size() == 0 || distanceDensity==0) return;
@@ -693,7 +1055,7 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 
 	if (path.size() <= 2 )
 	{
-		cout << "Can't Smooth Path, Path_in Size=" << path.size() << endl;
+		//cout << "Can't Smooth Path, Path_in Size=" << path.size() << endl;
 		return;
 	}
 
@@ -855,15 +1217,18 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 		const double& pathDensity, vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance)
 {
 	extractedPath.clear();
-	unsigned int close_index = GetClosestNextPointIndexDirection(originalPath, pos);
-	vector<WayPoint> tempPath;
+	unsigned int close_index = GetClosestNextPointIndexDirectionFast(originalPath, pos);
+//	int i_slow = GetClosestNextPointIndexDirection(originalPath, pos);
+//	if(close_index != i_slow)
+//		cout << "Aler Alert !!! fast: " << close_index << ", slow: " << i_slow  << endl;
+	//vector<WayPoint> tempPath;
 	double d_limit = 0;
 	if(close_index >= 5) close_index -=5;
 	else close_index = 0;
 
 	for(unsigned int i=close_index; i< originalPath.size(); i++)
 	{
-		tempPath.push_back(originalPath.at(i));
+		extractedPath.push_back(originalPath.at(i));
 
 		if(i>0)
 			d_limit += hypot(originalPath.at(i).pos.y - originalPath.at(i-1).pos.y, originalPath.at(i).pos.x - originalPath.at(i-1).pos.x);
@@ -872,19 +1237,59 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 			break;
 	}
 
-	if(tempPath.size() < 2)
+	if(extractedPath.size() < 2)
 	{
-		cout << endl << "### Planner Z . Extracted Rollout Path is too Small, Size = " << tempPath.size() << endl;
+		cout << endl << "### Planner Z . Extracted Rollout Path is too Small, Size = " << extractedPath.size() << endl;
 		return;
 	}
 
-	FixPathDensity(tempPath, pathDensity);
-	SmoothPath(tempPath, SmoothDataWeight, SmoothWeight , SmoothTolerance);
-	CalcAngleAndCost(tempPath);
+	FixPathDensity(extractedPath, pathDensity);
+	SmoothPath(extractedPath, SmoothDataWeight, SmoothWeight , SmoothTolerance);
+	CalcAngleAndCost(extractedPath);
 
-	extractedPath = tempPath;
+	//extractedPath = tempPath;
 	//tempPath.clear();
 	//TestQuadraticSpline(extractedPath, tempPath);
+}
+
+void PlanningHelpers::ExtractPartFromPointToDistanceFast(const vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
+		const double& pathDensity, vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance)
+{
+	extractedPath.clear();
+	RelativeInfo info;
+	GetRelativeInfo(originalPath, pos, info);
+	double d = 0;
+	if(info.iBack > 0)
+		info.iBack--;
+
+	for(int i=info.iBack; i >=  0; i--)
+	{
+		extractedPath.insert(extractedPath.begin(),  originalPath.at(i));
+		if(i < originalPath.size())
+			d += hypot(originalPath.at(i).pos.y - originalPath.at(i+1).pos.y, originalPath.at(i).pos.x - originalPath.at(i+1).pos.x);
+		if(d > 10)
+			break;
+	}
+
+	//extractedPath.push_back(info.perp_point);
+	d = 0;
+	for(int i=info.iBack+1; i < (int)originalPath.size(); i++)
+	{
+		extractedPath.push_back(originalPath.at(i));
+		if(i > 0)
+			d += hypot(originalPath.at(i).pos.y - originalPath.at(i-1).pos.y, originalPath.at(i).pos.x - originalPath.at(i-1).pos.x);
+		if(d > minDistance)
+			break;
+	}
+
+	if(extractedPath.size() < 2)
+	{
+		cout << endl << "### Planner Z . Extracted Rollout Path is too Small, Size = " << extractedPath.size() << endl;
+		return;
+	}
+
+	FixPathDensity(extractedPath, pathDensity);
+	CalcAngleAndCost(extractedPath);
 }
 
 void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const double& speed, const vector<WayPoint>& originalCenter, int& start_index,
@@ -923,8 +1328,8 @@ void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const 
 //	{
 //		unsigned int num_of_strait_points = carTipMargin / pathDensity;
 //		int closest_for_each_iteration = 0;
-//		WayPoint np = GetPerpendicularOnTrajectory(originalCenter, rearPos, dummyd, closest_for_each_iteration);
-//		np.pos = rearPos.pos;
+//		WayPoint np = GetPerpendicularOnTrajectory_obsolete(originalCenter, carPos, dummyd, closest_for_each_iteration);
+//		np.pos = carPos.pos;
 //
 //		RollOutStratPath.push_back(np);
 //		for(unsigned int i = 0; i < num_of_strait_points; i++)
@@ -932,12 +1337,12 @@ void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const 
 //			p = RollOutStratPath.at(i);
 //			p.pos.x = p.pos.x +  pathDensity*cos(p.pos.a);
 //			p.pos.y = p.pos.y +  pathDensity*sin(p.pos.a);
-//			np = GetPerpendicularOnTrajectory(originalCenter, p, dummyd, closest_for_each_iteration);
+//			np = GetPerpendicularOnTrajectory_obsolete(originalCenter, p, dummyd, closest_for_each_iteration);
 //			np.pos = p.pos;
 //			RollOutStratPath.push_back(np);
 //		}
 //
-//		initial_roll_in_distance = GetPerpDistanceToTrajectorySimple(originalCenter, RollOutStratPath.at(RollOutStratPath.size()-1), close_index);
+//		initial_roll_in_distance = GetPerpDistanceToTrajectorySimple_obsolete(originalCenter, RollOutStratPath.at(RollOutStratPath.size()-1), close_index);
 //	}
 	///***   -------------------------------- ***///
 
@@ -1290,35 +1695,42 @@ void PlanningHelpers::SmoothWayPointsDirections(vector<WayPoint>& path_in, doubl
 	path_in = newpath;
 }
 
+void PlanningHelpers::SmoothGlobalPathSpeed(vector<WayPoint>& path)
+{
+	CalcAngleAndCostAndCurvatureAnd2D(path);
+	SmoothSpeedProfiles(path, 0.45,0.25, 0.01);
+}
+
 void PlanningHelpers::GenerateRecommendedSpeed(vector<WayPoint>& path, const double& max_speed, const double& speedProfileFactor)
 {
-	FixPathDensity(path, 0.5);
-
 	CalcAngleAndCostAndCurvatureAnd2D(path);
-
-	SmoothCurvatureProfiles(path, 0.3, 0.49, 0.01);
+	SmoothCurvatureProfiles(path, 0.4, 0.3, 0.01);
+	double v = 0;
 
 	for(unsigned int i = 0 ; i < path.size(); i++)
 	{
 		double k_ratio = path.at(i).cost*10.0;
+		double local_max = (path.at(i).v >= 0 && max_speed > path.at(i).v) ? path.at(i).v : max_speed;
 
 		if(k_ratio >= 9.5)
-			path.at(i).v = max_speed;
+			v = local_max;
 		else if(k_ratio <= 8.5)
-			path.at(i).v = 1.0*speedProfileFactor;
+			v = 1.0*speedProfileFactor;
 		else
 		{
 			k_ratio = k_ratio - 8.5;
-			path.at(i).v = (max_speed - 1.0) * k_ratio + 1.0;
-			path.at(i).v = path.at(i).v*speedProfileFactor;
+			v = (local_max - 1.0) * k_ratio + 1.0;
+			v = v*speedProfileFactor;
 		}
 
-		if(path.at(i).v > max_speed)
-			path.at(i).v = max_speed;
+		if(v > local_max)
+			path.at(i).v = local_max;
+		else
+			path.at(i).v = v;
 
 	}
 
-	//SmoothSpeedProfiles(path, 0.15,0.45, 0.1);
+	SmoothSpeedProfiles(path, 0.4,0.3, 0.01);
 }
 
 WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
@@ -1471,6 +1883,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeStraight(WayPoint* pStart,
 	WayPoint* pZero = 0;
 	WayPoint* wp    = new WayPoint();
 	*wp = *pStart;
+	wp->cost = 0;
 	nextLeafToTrace.push_back(make_pair(pZero, wp));
 	all_cells_to_delete.push_back(wp);
 
@@ -1509,11 +1922,11 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeStraight(WayPoint* pStart,
 				double d = hypot(wp->pos.y - pH->pos.y, wp->pos.x - pH->pos.x);
 				distance += d;
 
-				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
-				{
-					//if(wp->actionCost.at(a).first == FORWARD_ACTION)
-						d += wp->actionCost.at(a).second;
-				}
+//				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
+//				{
+//					//if(wp->actionCost.at(a).first == FORWARD_ACTION)
+//						d += wp->actionCost.at(a).second;
+//				}
 
 				wp->cost = pH->cost + d;
 				wp->pBacks.push_back(pH);
@@ -1573,6 +1986,80 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeStraight(WayPoint* pStart,
 		nextLeafToTrace.pop_back();
 
 	return pGoalCell;
+}
+
+int PlanningHelpers::PredictiveIgnorIdsDP(WayPoint* pStart, const double& DistanceLimit,
+		vector<WayPoint*>& all_cells_to_delete,vector<WayPoint*>& end_waypoints, std::vector<int>& lanes_ids)
+{
+	if(!pStart) return 0;
+
+		vector<pair<WayPoint*, WayPoint*> >nextLeafToTrace;
+
+		WayPoint* pZero = 0;
+		WayPoint* wp    = new WayPoint();
+		*wp = *pStart;
+		wp->pLeft = 0;
+		wp->pRight = 0;
+		nextLeafToTrace.push_back(make_pair(pZero, wp));
+		all_cells_to_delete.push_back(wp);
+
+		double 		distance 		= 0;
+		end_waypoints.clear();
+		double 		nCounter 		= 0;
+
+		while(nextLeafToTrace.size()>0)
+		{
+			nCounter++;
+
+			WayPoint* pH 	= nextLeafToTrace.at(0).second;
+
+			assert(pH != 0);
+
+			nextLeafToTrace.erase(nextLeafToTrace.begin()+0);
+
+			for(unsigned int i =0; i< pH->pFronts.size(); i++)
+			{
+				if(pH->pFronts.at(i) && !CheckNodeExits(all_cells_to_delete, pH->pFronts.at(i)))
+				{
+					if(pH->cost < DistanceLimit)
+					{
+						wp = new WayPoint();
+						*wp = *pH->pFronts.at(i);
+
+						double d = distance2points(wp->pos, pH->pos);
+						distance += d;
+						wp->cost = pH->cost + d;
+						wp->pBacks.push_back(pH);
+						wp->pLeft = 0;
+						wp->pRight = 0;
+
+						bool bFoundLane = false;
+						for(unsigned int k = 0 ; k < lanes_ids.size(); k++)
+						{
+							if(wp->laneId == lanes_ids.at(k))
+							{
+								bFoundLane = true;
+								break;
+							}
+						}
+
+						if(!bFoundLane)
+							nextLeafToTrace.push_back(make_pair(pH, wp));
+						all_cells_to_delete.push_back(wp);
+					}
+					else
+					{
+						end_waypoints.push_back(pH);
+					}
+				}
+			}
+		}
+
+		while(nextLeafToTrace.size()!=0)
+			nextLeafToTrace.pop_back();
+		//closed_nodes.clear();
+
+		return end_waypoints.size();
 }
 
 int PlanningHelpers::PredictiveDP(WayPoint* pStart, const double& DistanceLimit,
@@ -1782,6 +2269,9 @@ WayPoint* PlanningHelpers::GetMinCostCell(const vector<WayPoint*>& cells, const 
 
 void PlanningHelpers::ExtractPlanAlernatives(const std::vector<WayPoint>& singlePath, std::vector<std::vector<WayPoint> >& allPaths)
 {
+	if(singlePath.size() == 0)
+		return;
+
 	allPaths.clear();
 	std::vector<WayPoint> path;
 	path.push_back(singlePath.at(0));
@@ -1957,23 +2447,31 @@ void PlanningHelpers::CalcContourPointsForDetectedObjects(const WayPoint& currPo
 	obj_list = res_list;
 }
 
-double PlanningHelpers::GetVelocityAhead(const std::vector<WayPoint>& path, const WayPoint& pose, const double& distance)
+double PlanningHelpers::GetVelocityAhead(const std::vector<WayPoint>& path, const RelativeInfo& info, int& prev_index, const double& reasonable_brake_distance)
 {
-	int iStart = GetClosestNextPointIndex(path, pose);
+	if(path.size()==0) return 0;
 
-	double d = 0;
-	double min_v = 99999;
-	for(unsigned int i=iStart; i< path.size(); i++)
+
+	double min_v = path.at(info.iBack).v;
+	double d = info.to_front_distance;
+
+	int local_i = info.iFront;
+	while(local_i < path.size()-1 && d < reasonable_brake_distance)
 	{
-		d  += distance2points(path.at(i).pos, pose.pos);
-
-		if(path.at(i).v < min_v)
-			min_v = path.at(i).v;
-
-		if(d >= distance)
-			return min_v;
+		local_i++;
+		d += hypot(path.at(local_i).pos.y - path.at(local_i-1).pos.y, path.at(local_i).pos.x - path.at(local_i-1).pos.x);
+		if(path.at(local_i).v < min_v)
+			min_v = path.at(local_i).v;
 	}
-	return 0;
+
+	if(local_i < prev_index && prev_index < path.size())
+	{
+		min_v = path.at(prev_index).v;
+	}
+	else
+		prev_index = local_i;
+
+	return min_v;
 }
 
 void PlanningHelpers::WritePathToFile(const string& fileName, const vector<WayPoint>& path)

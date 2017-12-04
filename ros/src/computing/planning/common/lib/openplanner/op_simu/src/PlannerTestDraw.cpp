@@ -14,6 +14,7 @@
 #include "SimpleTracker.h"
 #include "DataRW.h"
 #include "PlannerCommonDef.h"
+//#include <plib/js.h>
 
 
 using namespace std;
@@ -44,6 +45,7 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pVelocityGraph = 0;
 	planning_thread_tid = 0;
 	control_thread_tid = 0;
+	game_wheel_thread_tid = 0;
 	simulation_thread_tid = 0;
 	m_bCancelThread = false;
 	m_PlanningCycleTime = 0.01;
@@ -242,8 +244,6 @@ PlannerTestDraw::PlannerTestDraw()
 //	PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
 
 
-	m_pMap = new PlannerHNS::GridMap(0,0,60,60,5.0, true);
-
 	m_CarInfo.width = 2.0;
 	m_CarInfo.length = 4.2;
 	m_CarInfo.wheel_base = 2.5;
@@ -309,7 +309,8 @@ PlannerTestDraw::PlannerTestDraw()
 	m_pLateralErrGraph  = new Graph2dBase(20, 200,1000, 1.0, -1.0, "Lateral Error", "T s", "D meter", axes_color, graph_color );
 
 	pthread_create(&planning_thread_tid, NULL, &PlannerTestDraw::PlanningThreadStaticEntryPoint, this);
-	pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
+	//pthread_create(&control_thread_tid, NULL, &PlannerTestDraw::ControlThreadStaticEntryPoint, this);
+	//pthread_create(&game_wheel_thread_tid, NULL, &PlannerTestDraw::GameWheelThreadStaticEntryPoint, this);
 	//pthread_create(&simulation_thread_tid, NULL, &PlannerTestDraw::SimulationThreadStaticEntryPoint, this);
 	//InitStartAndGoal(2, -50, M_PI, 100, 100, M_PI_2);
 
@@ -476,11 +477,8 @@ PlannerTestDraw::~PlannerTestDraw()
 	if(simulation_thread_tid>0)
 		pthread_join(simulation_thread_tid, (void**)&pRet);
 
-	if(m_pMap)
-	{
-		delete m_pMap;
-		m_pMap = 0;
-	}
+	if(game_wheel_thread_tid>0)
+		pthread_join(game_wheel_thread_tid, (void**)&pRet);
 
 }
 
@@ -754,8 +752,6 @@ void PlannerTestDraw::DrawSimu()
 
 	DrawVectorMap();
 
-	//	if(m_pMap)
-	//		DrawingHelpers::DrawGrid(m_pMap->origin_x, m_pMap->origin_y, m_pMap->w, m_pMap->h, m_pMap->cell_l);
 
 	DrawPaths();
 	DrawStartsAndGoals();
@@ -941,7 +937,7 @@ void PlannerTestDraw::DrawPaths()
 
 	if(m_iStepNumber%4 == 0)
 	{
-		DrawingHelpers::DrawWidePath(m_LocalPlanner.m_PathSection, 0.08, 0.25, TotalPathColor);
+		//DrawingHelpers::DrawWidePath(m_LocalPlanner.m_PathSection, 0.08, 0.25, TotalPathColor);
 
 		//DrawingHelpers::DrawCostPath(m_all_cell_to_delete, 0.5, 0.5);
 
@@ -1419,7 +1415,6 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 	PlannerHNS::PlannerH planner;
 	SimpleTracker obstacleTracking;
 	obstacleTracking.m_MAX_ASSOCIATION_DISTANCE = 1;
-	obstacleTracking.m_MAX_TRACKS_AFTER_LOSING = 5;
 	obstacleTracking.m_bUseCenterOnly = true;
 
 	vector<string> behaviorsLogData;
@@ -1445,7 +1440,7 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			 */
 			int currIndexToGoal = 0;
 			if(pR->m_LocalPlanner.m_TotalPath.size()>0)
-				currIndexToGoal = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(pR->m_LocalPlanner.m_TotalPath.at(0), pR->m_LocalPlanner.state);
+				currIndexToGoal = PlannerHNS::PlanningHelpers::GetClosestNextPointIndexFast(pR->m_LocalPlanner.m_TotalPath.at(0), pR->m_LocalPlanner.state);
 //			int index_limit_total = pR->m_LocalPlanner.m_TotalPath.size() - 25;
 //			if(index_limit_total<=0)
 //				index_limit_total =  pR->m_LocalPlanner.m_TotalPath.size()/2.0;
@@ -1527,7 +1522,16 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 			if(pR->m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1 && pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
 				bEmergencyStop = true;
 
-			pR->m_CurrentBehavior = pR->m_LocalPlanner.DoOneStep(dt, currTargetState, obj_list, 1, pR->m_RoadMap, bEmergencyStop, pR->m_bGreenTrafficLight);
+			PlannerHNS::TrafficLight tl;
+			vector<PlannerHNS::TrafficLight> tls;
+			if(pR->m_bGreenTrafficLight)
+				tl.lightState = PlannerHNS::GREEN_LIGHT;
+			else
+				tl.lightState = PlannerHNS::RED_LIGHT;
+
+			tls.push_back(tl);
+
+			pR->m_CurrentBehavior = pR->m_LocalPlanner.DoOneStep(dt, currTargetState, obj_list, 1, pR->m_RoadMap, bEmergencyStop, tls);
 
 			PlannerHNS::PlanningHelpers::WritePathToFile("/home/hatem/SimuLogs/Test", pR->m_LocalPlanner.m_Path);
 
@@ -1811,6 +1815,60 @@ void* PlannerTestDraw::SimulationThreadStaticEntryPoint(void* pThis)
 	}
 
 	return 0;
+}
+
+
+void* PlannerTestDraw::GameWheelThreadStaticEntryPoint(void* pThis)
+{
+
+	PlannerTestDraw* pR = (PlannerTestDraw*)pThis;
+	/*jsJoystick* pWheel = new jsJoystick(0);
+	int nAxis = pWheel->getNumAxes();
+	float* pAxis = new float[nAxis];
+	int nButtons = pWheel->getNumButtons();
+	int* pButtons = new int[nButtons];
+
+	cout << "Axis Number: " << nAxis << endl;
+
+	while(!pR->m_bCancelThread)
+	{
+		pWheel->read(pButtons, pAxis);
+
+		if(pButtons[BUTTON_INDEX] == START_BUTTON_VALUE)
+			cout << "Start Button Value: " << 1 << endl;
+		else
+			cout << "Start Button Value: " << 0 << endl;
+
+		cout << "Steering Axis Value: " << -pAxis[STEERING_AXIS] << endl;
+		cout << "Acceleration Axis Value: " << 1 - pAxis[ACCELERATION_AXIS] << endl;
+		cout << "Braking Axis Value: " << 1 - pAxis[BRAKE_AXIS] << endl;
+
+		pR->m_SteeringAngle = -pAxis[STEERING_AXIS];
+		pR->m_Acceleration = 1 - pAxis[ACCELERATION_AXIS];
+		pR->m_Braking = 1 - pAxis[BRAKE_AXIS];
+
+		pthread_mutex_lock(&pR->control_mutex);
+		if(pR->m_Acceleration > 0)
+			pR->m_VehicleTargetState.shift = PlannerHNS::SHIFT_POS_DD;
+		pR->m_VehicleTargetState.speed = pR->m_LocalPlanner.m_CarInfo.max_speed_forward * pR->m_Acceleration;
+
+		if(pR->m_Braking > 0)
+			pR->m_VehicleTargetState.speed = 0;
+
+		pR->m_VehicleTargetState.steer = pR->m_SteeringAngle*pR->m_LocalPlanner.m_CarInfo.max_steer_angle;
+
+		pthread_mutex_unlock(&pR->control_mutex);
+
+		usleep(10000);
+	}
+
+	delete [] pAxis;
+	delete [] pButtons;
+	delete pWheel;
+
+	cout << "Exit Game Wheel Loop." << endl;
+	*/
+	return pR;
 }
 
 } /* namespace Graphics */
