@@ -86,10 +86,10 @@ BehaviorStateMachine* ForwardState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->currentGoalID != pCParams->prevGoalID)
-		return FindBehaviorState(GOAL_STATE);
+//	if(pCParams->currentGoalID != pCParams->prevGoalID)
+//		return FindBehaviorState(GOAL_STATE);
 
-	else if(m_pParams->enableSwerving
+	if(m_pParams->enableSwerving
 			&& pCParams->distanceToNext <= m_pParams->minDistanceToAvoid
 			&& !pCParams->bFullyBlock
 			&& (pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory || pCParams->iCurrSafeLane != pCParams->iPrevSafeLane)
@@ -230,14 +230,8 @@ BehaviorStateMachine* InitState::GetNextState()
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
 
-	if(pCParams->bOutsideControl == 1)
-	{
-		pCParams->prevGoalID = pCParams->currentGoalID;
-		return FindBehaviorState(FORWARD_STATE);
-	}
-
-	else
-		return FindBehaviorState(this->m_Behavior); // return and reset
+	pCParams->prevGoalID = pCParams->currentGoalID;
+	return FindBehaviorState(FORWARD_STATE);
 }
 
 BehaviorStateMachine* FollowState::GetNextState()

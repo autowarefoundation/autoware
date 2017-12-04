@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: ndt_tku
+Description: Description of ndt_tku
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/localization/lib/ndt_tku/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lndt_tku
+Requires: 

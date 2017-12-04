@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: op_planner
+Description: Description of op_planner
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/common/lib/openplanner/op_planner/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lop_planner
+Requires: op_utility

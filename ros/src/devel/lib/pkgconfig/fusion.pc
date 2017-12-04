@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: fusion
+Description: Description of fusion
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/detection/lib/fusion/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lfusion
+Requires: roscpp autoware_msgs

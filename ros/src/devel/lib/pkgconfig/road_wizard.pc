@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: road_wizard
+Description: Description of road_wizard
+Version: 1.5.1
+Cflags: -I/usr/include/eigen3
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs

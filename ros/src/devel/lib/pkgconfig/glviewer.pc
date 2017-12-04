@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: glviewer
+Description: Description of glviewer
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/util/packages/RobotSDK/glviewer/include/glviewer
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lglviewer
+Requires: 

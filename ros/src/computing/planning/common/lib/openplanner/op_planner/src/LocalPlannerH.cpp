@@ -160,7 +160,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	m_Path.clear();
 	m_RollOuts.clear();
 	m_pCurrentBehaviorState->m_Behavior = PlannerHNS::FORWARD_STATE;
-	m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
 	FirstLocalizeMe(start_pose);
 	LocalizeMe(0);
 }
@@ -501,6 +500,9 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
 
 	m_pCurrentBehaviorState = m_pCurrentBehaviorState->GetNextState();
+	if(m_pCurrentBehaviorState==0)
+		m_pCurrentBehaviorState = m_pInitState;
+
 	PlannerHNS::BehaviorState currentBehavior;
 
 	currentBehavior.state = m_pCurrentBehaviorState->m_Behavior;
@@ -762,6 +764,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 		const std::vector<TrafficLight>& trafficLight,
 		const bool& bLive)
 {
+	 PlannerHNS::BehaviorState beh;
 
 	 m_params.minFollowingDistance = m_InitialFollowingDistance + vehicleState.speed*1.5;
 
@@ -772,6 +775,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 
 
 	ExtractHorizonAndCalculateRecommendedSpeed();
+
 
 
 	m_PredictedTrajectoryObstacles = obj_list;
@@ -785,21 +789,14 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	m_CostCalculationTime = UtilityH::GetTimeDiffNow(t);
 
 
-
-
 	UtilityH::GetTickCount(t);
 	CalculateImportantParameterForDecisionMaking(vehicleState, goalID, bEmergencyStop, trafficLight, tc);
 
-
-
-	PlannerHNS::BehaviorState beh = GenerateBehaviorState(vehicleState);
+	beh = GenerateBehaviorState(vehicleState);
 	m_BehaviorGenTime = UtilityH::GetTimeDiffNow(t);
-
 
 	UtilityH::GetTickCount(t);
 	beh.bNewPlan = SelectSafeTrajectoryAndSpeedProfile(vehicleState);
-
-
 
 	m_RollOutsGenerationTime = UtilityH::GetTimeDiffNow(t);
 

@@ -36,6 +36,7 @@
 #include <pcl/point_types.h>
 
 #include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
@@ -224,8 +225,66 @@ public:
 	 */
 	static void CreateCircleMarker(const PlannerHNS::WayPoint& _center, const double& radius, const int& start_id, visualization_msgs::Marker& circle_points);
 
+	/**
+	 * Used
+	 */
+	static void InitPredMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths);
 
+	/**
+	 * Used
+	 */
+	static void InitCurbsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& curbs);
+
+	/**
+	 * Used
+	 */
+	static void ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<PlannerHNS::WayPoint> >& paths,visualization_msgs::MarkerArray& path_markers, visualization_msgs::MarkerArray& path_markers_d);
+
+	/**
+	 * Used
+	 */
+	static void ConvertCurbsMarkers(const std::vector<PlannerHNS::DetectedObject>& curbs, visualization_msgs::MarkerArray& curbs_markers, visualization_msgs::MarkerArray& curbs_markers_d);
+
+	/**
+	 * used
+	 */
+	static void ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::lane& trajectory);
+
+	/**
+	 * used
+	 */
+	static void ConvertFromAutowareLaneToLocalLane(const autoware_msgs::lane& trajectory, std::vector<PlannerHNS::WayPoint>& path);
+
+	/**
+	 * used
+	 */
+	static void ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(const PlannerHNS::DetectedObject& det_obj, autoware_msgs::DetectedObject& obj);
+
+	/**
+	 * used
+	 */
+	static void ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(const autoware_msgs::DetectedObject& det_obj, PlannerHNS::DetectedObject& obj);
+
+
+	/**
+	 *used
+	 */
 	static void TrajectoriesToMarkers(const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, visualization_msgs::MarkerArray& markerArray);
+
+	/**
+	 *used
+	 */
+	static void TrajectoriesToColoredMarkers(const std::vector<std::vector<PlannerHNS::WayPoint> >& paths,const std::vector<PlannerHNS::TrajectoryCost>& traj_costs, const int& iClosest, visualization_msgs::MarkerArray& markerArray);
+
+	/**
+	 * Used
+	 */
+	static void InitCollisionPointsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& col_points);
+
+	/**
+	 * Used
+	 */
+	static void ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::WayPoint>& col_pointss, visualization_msgs::MarkerArray& collision_markers, visualization_msgs::MarkerArray& collision_markers_d);
 
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
 				autoware_msgs::lane & trajectory);

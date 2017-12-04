@@ -1328,10 +1328,10 @@ void PlannerTestDraw::OnKeyboardPress(const SPECIAL_KEYS_TYPE& sKey, const unsig
 	switch(key)
 	{
 	case 's':
-		if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 0)
-			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
-		else if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1)
-			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 0;
+//		if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 0)
+//			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
+//		else if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1)
+//			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 0;
 		break;
 	case 'v':
 	{
@@ -1519,8 +1519,8 @@ void* PlannerTestDraw::PlanningThreadStaticEntryPoint(void* pThis)
 
 			bool bEmergencyStop = false;
 
-			if(pR->m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1 && pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
-				bEmergencyStop = true;
+//			if(pR->m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl == 1 && pR->m_CurrentBehavior.state != PlannerHNS::INITIAL_STATE)
+//				bEmergencyStop = true;
 
 			PlannerHNS::TrafficLight tl;
 			vector<PlannerHNS::TrafficLight> tls;

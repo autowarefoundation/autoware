@@ -27,8 +27,17 @@ public:
 			const WayPoint& currState, const int& currTrajectoryIndex, const int& currLaneIndex, const PlanningParams& params,
 			const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
+	TrajectoryCost DoOneStepStatic(const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths,
+			const WayPoint& currState, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
+			const std::vector<PlannerHNS::DetectedObject>& obj_list);
+
+	TrajectoryCost DoOneStepDynamic(const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths,
+			const WayPoint& currState, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
+			const std::vector<PlannerHNS::DetectedObject>& obj_list);
+
 public:
 	int m_PrevCostIndex;
+	int m_PrevIndex;
 	vector<TrajectoryCost> m_TrajectoryCosts;
 	PlanningParams m_Params;
 	PolygonShape m_SafetyBorder;
@@ -40,6 +49,7 @@ public:
 	double m_WeightLat;
 	double m_WeightLaneChange;
 	double m_LateralSkipDistance;
+	double m_CollisionTimeDiff;
 
 
 
@@ -48,8 +58,15 @@ private:
 	vector<TrajectoryCost> CalculatePriorityAndLaneChangeCosts(const vector<vector<WayPoint> >& laneRollOuts, const int& lane_index, const PlanningParams& params);
 	void NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts);
 	void CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost>& trajectoryCosts, const vector<vector<vector<WayPoint> > >& rollOuts, const vector<vector<WayPoint> >& totalPaths, const WayPoint& currState, const vector<WayPoint>& contourPoints, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState);
+	void CalculateLateralAndLongitudinalCostsStatic(vector<TrajectoryCost>& trajectoryCosts, const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths, const WayPoint& currState, const vector<WayPoint>& contourPoints, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState);
 	void CalculateTransitionCosts(vector<TrajectoryCost>& trajectoryCosts, const int& currTrajectoryIndex, const PlanningParams& params);
-	bool CalculateIntersectionVelocities(const std::vector<WayPoint>& path, const DetectedObject& obj, const WayPoint& currState,const CAR_BASIC_INFO& carInfo, WayPoint& collisionPoint);
+	void CalculateIntersectionVelocities(const std::vector<WayPoint>& path, const DetectedObject& obj, const WayPoint& currPose, const CAR_BASIC_INFO& carInfo, const double& c_lateral_d, WayPoint& collisionPoint, TrajectoryCost& trajectoryCosts);
+	int GetCurrentRollOutIndex(const std::vector<WayPoint>& path, const WayPoint& currState, const PlanningParams& params);
+	void InitializeCosts(const vector<vector<WayPoint> >& rollOuts, const PlanningParams& params);
+	void InitializeSafetyPolygon(const WayPoint& currState, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState, const double& c_lateral_d, const double& c_long_front_d, const double& c_long_back_d);
+	void CalculateLateralAndLongitudinalCostsDynamic(const std::vector<PlannerHNS::DetectedObject>& obj_list, const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths,
+			const WayPoint& currState, const PlanningParams& params, const CAR_BASIC_INFO& carInfo,
+			const VehicleState& vehicleState, const double& c_lateral_d, const double& c_long_front_d, const double& c_long_back_d );
 
 };
 

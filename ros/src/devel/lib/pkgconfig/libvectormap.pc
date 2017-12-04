@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: libvectormap
+Description: Description of libvectormap
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/detection/lib/libvectormap/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lvectormap
+Requires: vector_map

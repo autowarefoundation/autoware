@@ -1,0 +1,11 @@
+-I/usr/include/qt4
+-I/usr/include/qt4/QtGui
+-I/usr/include/qt4/QtCore
+-DROS_BUILD_SHARED_LIBS=1
+-DROS_PACKAGE_NAME="integrated_viewer"
+-DROSCONSOLE_BACKEND_LOG4CXX
+-DQT_GUI_LIB
+-DQT_CORE_LIB
+-o
+/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/detection/packages/integrated_viewer/node/traffic_light_plugin/moc_traffic_light_plugin.cxx
+/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/detection/packages/integrated_viewer/node/traffic_light_plugin/traffic_light_plugin.h

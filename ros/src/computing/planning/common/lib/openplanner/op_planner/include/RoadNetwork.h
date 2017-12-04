@@ -792,8 +792,6 @@ public:
 	bool 	enableTrafficLightBehavior;
 	bool 	enableStopSignBehavior;
 
-	bool 	enabTrajectoryVelocities;
-
 	PlanningParams()
 	{
 		maxSpeed 						= 3;
@@ -825,7 +823,6 @@ public:
 		enableTrafficLightBehavior		= false;
 		enableLaneChange 				= false;
 		enableStopSignBehavior			= false;
-		enabTrajectoryVelocities 		= false;
 	}
 };
 
@@ -886,8 +883,6 @@ public:
 	bool 				bRePlan;
 	double 				currentVelocity;
 	double				minStoppingDistance; //comfortably
-	int 				bOutsideControl; // 0 waiting, 1 start, 2 Green Traffic Light, 3 Red Traffic Light, 5 Emergency Stop
-	bool				bGreenOutsideControl;
 	std::vector<double> stoppingDistances;
 
 
@@ -909,8 +904,6 @@ public:
 		prevGoalID				= -1;
 		currentVelocity 		= 0;
 		minStoppingDistance		= 1;
-		bOutsideControl			= 0;
-		bGreenOutsideControl	= false;
 		//distance to stop
 		distanceToNext			= -1;
 		velocityOfNext			= 0;

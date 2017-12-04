@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: ndt_localizer
+Description: Description of ndt_localizer
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: std_msgs velodyne_pointcloud autoware_msgs filters registration ndt_tku

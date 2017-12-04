@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: lattice_planner
+Description: Description of lattice_planner
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/motion/packages/lattice_planner/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -llibtraj_gen
+Requires: roscpp std_msgs tf waypoint_follower vector_map autoware_msgs gnss

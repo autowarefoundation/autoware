@@ -53,8 +53,14 @@ include_directories(
 
 link_directories(lib)
 
+
 add_executable(op_trajectory_generator nodes/op_trajectory_generator/op_trajectory_generator.cpp nodes/op_trajectory_generator/op_trajectory_generator_core.cpp)
 target_link_libraries(op_trajectory_generator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(op_trajectory_generator 
-${catkin_EXPORTED_TARGETS}
-)
+
+add_executable(op_trajectory_evaluator nodes/op_trajectory_evaluator/op_trajectory_evaluator.cpp nodes/op_trajectory_evaluator/op_trajectory_evaluator_core.cpp)
+target_link_libraries(op_trajectory_evaluator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_executable(op_behavior_selector nodes/op_behavior_selector/op_behavior_selector.cpp nodes/op_behavior_selector/op_behavior_selector_core.cpp)
+target_link_libraries(op_behavior_selector ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_dependencies(op_trajectory_generator op_trajectory_evaluator op_behavior_selector ${catkin_EXPORTED_TARGETS})

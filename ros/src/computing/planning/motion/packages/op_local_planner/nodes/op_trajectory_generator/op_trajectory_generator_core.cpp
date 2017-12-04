@@ -49,9 +49,8 @@ TrajectoryGen::TrajectoryGen()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_LocalPath = nh.advertise<autoware_msgs::lane>("/final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("/base_waypoints", 100,true);
-	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
+	pub_LocalTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_trajectories", 1);
+	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_gen_rviz", 1);
 
 	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&TrajectoryGen::callbackGetInitPose, 		this);
 	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&TrajectoryGen::callbackGetCurrentPose, 		this);
@@ -71,7 +70,6 @@ TrajectoryGen::TrajectoryGen()
 TrajectoryGen::~TrajectoryGen()
 {
 }
-
 
 void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 {
@@ -109,13 +107,15 @@ void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 	_nh.getParam("/op_trajectory_generator/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
 	_nh.getParam("/op_trajectory_generator/enableLaneChange", m_PlanningParams.enableLaneChange);
-	_nh.getParam("/op_trajectory_generator/enabTrajectoryVelocities", m_PlanningParams.enabTrajectoryVelocities);
 
 	_nh.getParam("/op_trajectory_generator/width", m_CarInfo.width);
 	_nh.getParam("/op_trajectory_generator/length", m_CarInfo.length);
 	_nh.getParam("/op_trajectory_generator/wheelBaseLength", m_CarInfo.wheel_base);
 	_nh.getParam("/op_trajectory_generator/turningRadius", m_CarInfo.turning_radius);
 	_nh.getParam("/op_trajectory_generator/maxSteerAngle", m_CarInfo.max_steer_angle);
+	_nh.getParam("/op_trajectory_generator/maxAcceleration", m_CarInfo.max_acceleration);
+	_nh.getParam("/op_trajectory_generator/maxDeceleration", m_CarInfo.max_deceleration);
+
 	m_CarInfo.max_speed_forward = m_PlanningParams.maxSpeed;
 	m_CarInfo.min_speed_forward = m_PlanningParams.minSpeed;
 
@@ -145,7 +145,7 @@ void TrajectoryGen::callbackGetCurrentPose(const geometry_msgs::PoseStampedConst
 void TrajectoryGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
 {
 	m_VehicleStatus.speed = msg->twist.linear.x;
-
+	m_CurrentPos.v = m_VehicleStatus.speed;
 	if(fabs(msg->twist.linear.x) > 0.25)
 		m_VehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
@@ -272,13 +272,32 @@ void TrajectoryGen::MainLoop()
 								m_PlanningParams.pathDensity,
 								m_PlanningParams.rollOutDensity,
 								m_PlanningParams.rollOutNumber,
-								m_PlanningParams.smoothingDataWeight,
-								m_PlanningParams.smoothingSmoothWeight,
+								0.4,
+								0.45,
 								m_PlanningParams.smoothingToleranceError,
 								m_PlanningParams.speedProfileFactor,
 								m_PlanningParams.enableHeadingSmoothing,
 								-1 , -1,
 								m_RollOuts, sampledPoints_debug);
+
+			autoware_msgs::LaneArray local_lanes;
+			for(unsigned int i=0; i < m_RollOuts.size(); i++)
+			{
+				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
+				{
+					autoware_msgs::lane lane;
+					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
+					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
+					lane.closest_object_distance = 0;
+					lane.closest_object_velocity = 0;
+					lane.cost = 0;
+					lane.is_blocked = false;
+					lane.lane_index = i;
+					local_lanes.lanes.push_back(lane);
+				}
+			}
+
+			pub_LocalTrajectories.publish(local_lanes);
 		}
 		else
 			sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryGen::callbackGetGlobalPlannerPath, 	this);

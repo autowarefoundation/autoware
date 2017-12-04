@@ -1,5 +1,5 @@
 <launch>
-	
+	<!-- Trajectory Generation Specific Parameters -->
 	<arg name="samplingTipMargin" 		default="4"  /> 
 	<arg name="samplingOutMargin" 		default="16" /> 
 	<arg name="samplingSpeedFactor" 	default="0.25" />
@@ -18,16 +18,15 @@
 	<param name="rollOutsNumber" 			value="$(arg rollOutsNumber)"    />		
 	<param name="enableHeadingSmoothing" 	value="$(arg enableHeadingSmoothing)" />
 	
-	
-	
+	<!-- Common Parameters -->	
 	<param name="maxVelocity" 				value="6.0" />
-	<param name="minVelocity" 				value="0.0" />	
-	<param name="maxLocalPlanDistance" 		value="25" />	
+	<param name="minVelocity" 				value="0.1" />	
+	<param name="maxLocalPlanDistance" 		value="50" />	
 	<param name="horizonDistance" 			value="200"  />
 	
-	<param name="minFollowingDistance" 		value="20.0"  /> <!-- should be bigger than Distance to follow -->	
-	<param name="minDistanceToAvoid" 		value="10.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
-	<param name="maxDistanceToAvoid" 		value="3.0"  /> <!-- should be smaller than minDistanceToAvoid -->
+	<param name="minFollowingDistance" 		value="35.0"  /> <!-- should be bigger than Distance to follow -->	
+	<param name="minDistanceToAvoid" 		value="20.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
+	<param name="maxDistanceToAvoid" 		value="5.0"  /> <!-- should be smaller than minDistanceToAvoid -->
 	<param name="speedProfileFactor"		value="1"  />
 	
 	<param name="horizontalSafetyDistance"	value="1.2"  />
@@ -37,8 +36,7 @@
 	<param name="enableFollowing" 			value="true" />	
 	<param name="enableTrafficLightBehavior" value="false" />
 	<param name="enableStopSignBehavior" 	value="false" />	
-	<param name="enableLaneChange" 			value="false" />
-	<param name="enabTrajectoryVelocities"	value="true" /> <!-- enable when using autoware's pure pursuit node-->
+	<param name="enableLaneChange" 			value="false" />	
 	
 	<param name="width" 					value="1.85"  />
 	<param name="length" 					value="4.2"  />
@@ -49,10 +47,10 @@
 	<param name="steeringDelay" 			value="1.2" />
 	<param name="minPursuiteDistance" 		value="3.0"  />
 	
-	<param name="enableObjectTracking" 		value="true" /> <!-- use internal kalman filter for track obstacles " -->
-	<param name="enableOutsideControl" 		value="false" /> <!-- use internal kalman filter for track obstacles " -->	
-	<param name="velocitySource"			value="2" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info) "" -->
-	
+	<param name="maxAcceleration" 			value="3.0" />
+	<param name="maxDeceleration" 			value="-3.0" />
+			
+	<param name="velocitySource"			value="2" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info) "" -->	
 	<param name="mapSource" 				value="1" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
 	<param name="mapFileName" 				value="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
 			

@@ -413,7 +413,6 @@ void PlannerX::UpdatePlanningParams()
 	nh.getParam("/dp_planner/verticalSafetyDistance", params.verticalSafetyDistance);
 
 	nh.getParam("/dp_planner/enableLaneChange", params.enableLaneChange);
-	nh.getParam("/dp_planner/enabTrajectoryVelocities", params.enabTrajectoryVelocities);
 
 	nh.getParam("/dp_planner/enableObjectTracking", m_bEnableTracking);
 	nh.getParam("/dp_planner/enableOutsideControl", m_bEnableOutsideControl);
@@ -920,7 +919,6 @@ void PlannerX::PlannerMainLoop()
 //			if(drift > 10)
 //				bMakeNewPlan = true;
 
-			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 			m_LocalPlanner.state = m_CurrentPos;
 
 			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);

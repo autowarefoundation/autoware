@@ -1,0 +1,12 @@
+<launch>
+	<!-- Behavior selector specific parameters -->
+	
+	
+			
+	<node pkg="op_local_planner" type="op_behavior_selector" name="op_behavior_selector" output="screen">
+	
+					
+			
+	</node>				
+			
+</launch>

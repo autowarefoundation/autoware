@@ -80,15 +80,13 @@ protected: //ROS messages (topics)
 	ros::NodeHandle nh;
 
 	//define publishers
-	ros::Publisher pub_LocalPath;
-	ros::Publisher pub_LocalBasePath;
+	ros::Publisher pub_LocalTrajectories;
 	ros::Publisher pub_LocalTrajectoriesRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_initialpose			;
 	ros::Subscriber sub_current_pose 		;
 	ros::Subscriber sub_current_velocity	;
-	ros::Subscriber sub_vehicle_simu_status ;
 	ros::Subscriber sub_robot_odom			;
 	ros::Subscriber sub_can_info			;
 	ros::Subscriber sub_GlobalPlannerPaths	;

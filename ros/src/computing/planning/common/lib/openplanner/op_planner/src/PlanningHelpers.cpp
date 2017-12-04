@@ -84,7 +84,6 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 	return true;
 }
 
-
 bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex )
 {
 	if(trajectory.size() < 2) return false;
@@ -824,38 +823,6 @@ bool PlanningHelpers::CompareTrajectories(const std::vector<WayPoint>& path1, co
 
 double PlanningHelpers::GetDistanceToClosestStopLineAndCheck(const std::vector<WayPoint>& path, const WayPoint& p, int& stopLineID, int& stopSignID, int& trafficLightID, const int& prevIndex)
 {
-
-//	trafficLightID = stopSignID = stopLineID = -1;
-//
-//	RelativeInfo info;
-//	GetRelativeInfo(path, p, info);
-//
-//	for(unsigned int i=info.iBack; i<path.size(); i++)
-//	{
-//		if(path.at(i).pLane && path.at(i).pLane->stopLines.size() > 0)
-//		{
-//			stopSignID = path.at(i).pLane->stopLines.at(0).stopSignID;
-//			trafficLightID = path.at(i).pLane->stopLines.at(0).trafficLightID;
-//			return 1;
-////			for(unsigned int j = 0; j < path.at(i).pLane->stopLines.size(); j++)
-////			{
-////				RelativeInfo local_info;
-////				WayPoint stopLineWP;
-////				stopLineWP.pos = path.at(i).pLane->stopLines.at(j).points.at(0);
-////
-////				GetRelativeInfo(path, stopLineWP, local_info, i);
-////
-////				double d = GetExactDistanceOnTrajectory(path, info, local_info);
-////				if(d > 0)
-////				{
-////						stopSignID = path.at(i).pLane->stopLines.at(j).stopSignID;
-////						trafficLightID = path.at(i).pLane->stopLines.at(j).trafficLightID;
-////						return d;
-////				}
-////			}
-//		}
-//	}
-
 	trafficLightID = stopSignID = stopLineID = -1;
 
 	RelativeInfo info;
@@ -1101,32 +1068,31 @@ void PlanningHelpers::SmoothPath(vector<WayPoint>& path, double weight_data,
 	path = smoothPath_out;
 }
 
-//double PlanningHelpers::CalcAngleAndCostSimple(vector<WayPoint>& path, const double& lastCost)
-//{
-//	if(path.size() <= 2) return 0;
-//
-//	path[0].pos.a = atan2(path[1].pos.y - path[0].pos.y, path[1].pos.x - path[0].pos.x );
-//	path[0].cost = lastCost;
-//
-//	for(int j = 1; j < path.size()-1; j++)
-//	{
-//		path[j].pos.a 	= atan2(path[j+1].pos.y - path[j].pos.y, path[j+1].pos.x - path[j].pos.x );
-//		path[j].cost 	= path[j-1].cost +  hypot(path[j-1].pos.y- path[j].pos.y, path[j-1].pos.x- path[j].pos.x);
-//	}
-//
-//	int j = (int)path.size()-1;
-//
-//	path[j].pos.a 	= path[j-1].pos.a;
-//	path[j].cost 	= path[j-1].cost + hypot(path[j-1].pos.y- path[j].pos.y, path[j-1].pos.x- path[j].pos.x);
-//
-//	for(int j = 0; j < path.size()-1; j++)
-//	{
-//		if(path.at(j).pos.x == path.at(j+1).pos.x && path.at(j).pos.y == path.at(j+1).pos.y)
-//			path.at(j).pos.a = path.at(j+1).pos.a;
-//	}
-//
-//	return path[j].cost;
-//}
+void PlanningHelpers::PredictConstantTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& currPose, const double& minVelocity, const double& minDist)
+{
+	if(path.size() == 0) return;
+
+	for(unsigned int i = 0 ; i < path.size(); i++)
+		path.at(i).timeCost = -1;
+
+	if(currPose.v == 0 || currPose.v < minVelocity) return;
+
+	RelativeInfo info;
+	PlanningHelpers::GetRelativeInfo(path, currPose, info);
+
+	double total_distance = 0;
+	double accum_time = 0;
+
+	path.at(info.iFront).timeCost = 0;
+	if(info.iFront == 0 ) info.iFront++;
+
+	for(unsigned int i=info.iFront; i<path.size(); i++)
+	{
+		total_distance += hypot(path.at(i).pos.x- path.at(i-1).pos.x,path.at(i).pos.y- path.at(i-1).pos.y);
+		accum_time = total_distance/currPose.v;
+		path.at(i).timeCost = accum_time;
+	}
+}
 
 double PlanningHelpers::CalcAngleAndCost(vector<WayPoint>& path, const double& lastCost, const bool& bSmooth)
 {
@@ -1510,10 +1476,7 @@ void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const 
 //	}
 	///***   -------------------------------- ***///
 
-	for(unsigned int i=0; i< rollOutNumber+1 ; i++)
-	{
-		SmoothPath(rollInPaths.at(i), SmoothDataWeight, SmoothWeight, SmoothTolerance);
-	}
+
 
 	d_limit = 0;
 	for(unsigned int j = smoothing_end_index; j < originalCenter.size(); j++)
@@ -1542,6 +1505,11 @@ void PlanningHelpers::CalculateRollInTrajectories(const WayPoint& carPos, const 
 			  sampledPoints.push_back(p);
 		  }
 	  }
+
+	for(unsigned int i=0; i< rollOutNumber+1 ; i++)
+	{
+		SmoothPath(rollInPaths.at(i), SmoothDataWeight, SmoothWeight, SmoothTolerance);
+	}
 
 //	for(unsigned int i=0; i< rollInPaths.size(); i++)
 //		CalcAngleAndCost(rollInPaths.at(i));
