@@ -72,7 +72,7 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 			point.at<double>(2) = double(fp[2]);
 			point = point * invR.t() + invT.t();
 
-			if (point.at<double>(2) <= 2.5) {
+			if (point.at<double>(2) <= 1) {
 				continue;
 			}
 

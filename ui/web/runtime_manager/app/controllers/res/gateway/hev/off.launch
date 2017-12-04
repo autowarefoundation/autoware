@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<launch>
+  <node args="pub -1 /mode_cmd tablet_socket_msgs/mode_cmd 'mode: false'" name="rostopic" pkg="rostopic" type="rostopic"/>
+</launch>

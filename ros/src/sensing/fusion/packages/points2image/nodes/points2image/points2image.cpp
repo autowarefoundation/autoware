@@ -81,7 +81,7 @@ static void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
 	if (cameraExtrinsicMat.empty() || cameraMat.empty() || distCoeff.empty() || imageSize.height == 0 || imageSize.width == 0)
 	{
-		ROS_INFO("Looks like /camera/camera_info or /projection_matrix are not being published.. Please check that both are running..");
+		ROS_INFO("[points2image]Looks like camera_info or projection_matrix are not being published.. Please check that both are running..");
 		return;
 	}
 
@@ -89,10 +89,6 @@ static void callback(const sensor_msgs::PointCloud2ConstPtr& msg)
 		= pointcloud2_to_image(msg, cameraExtrinsicMat, cameraMat,
 				       distCoeff, imageSize);
 	pub.publish(pub_msg);
-
-	/*autoware_msgs::CameraExtrinsic cpub_msg
-		= pointcloud2_to_3d_calibration(msg, cameraExtrinsicMat);
-	cpub.publish(cpub_msg);*/
 }
 
 int main(int argc, char *argv[])
@@ -100,64 +96,48 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "points2image");
 	ros::NodeHandle n;
 
-	/*if(argc < 2){
-		std::cout<<"Need calibration filename as the first parameter.";
-		return 0;
-	}*/
-
-	/*cv::FileStorage fs(argv[1], cv::FileStorage::READ);
-	if(!fs.isOpened()){
-		std::cout<<"Invalid calibration filename.";
-		return 0;
-	}*/
-
-	/*fs[CAMERAEXTRINSICMAT] >> cameraExtrinsicMat;
-	fs[CAMERAMAT] >> cameraMat;
-	fs[DISTCOEFF] >> distCoeff;
-	fs[IMAGESIZE] >> imageSize;*/
-	//imageSize.width = IMAGE_WIDTH;
-	//imageSize.height = IMAGE_HEIGHT;
-
-	pub = n.advertise<autoware_msgs::PointsImage>("points_image", 10);
-	//cpub = n.advertise<autoware_msgs::CameraExtrinsic>("threeD_calibration", 1);
 	ros::NodeHandle private_nh("~");
+
+	std::string camera_info_topic_str;
+	std::string projection_matrix_topic;
+	std::string pub_topic_str="/points_image";
+
+	private_nh.param<std::string>("projection_matrix_topic", projection_matrix_topic, "/projection_matrix");
+	private_nh.param<std::string>("camera_info_topic", camera_info_topic_str, "/camera_info");
+
+	std::string name_space_str = ros::this_node::getNamespace();
+
+	if (name_space_str != "/") {
+		if (name_space_str.substr(0, 2) == "//") {
+			/* if name space obtained by ros::this::node::getNamespace()
+			   starts with "//", delete one of them */
+			name_space_str.erase(name_space_str.begin());
+		}
+		pub_topic_str = name_space_str + pub_topic_str;
+		projection_matrix_topic = name_space_str+projection_matrix_topic;
+		camera_info_topic_str = name_space_str + camera_info_topic_str;
+	}
 
 	std::string points_topic;
 	if (private_nh.getParam("points_node", points_topic))
 	{
-		ROS_INFO("Setting points node to %s", points_topic.c_str());
+		ROS_INFO("[points2image]Setting points node to %s", points_topic.c_str());
 	}
 	else
 	{
-		ROS_INFO("No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
-		points_topic = "points_raw";
+		ROS_INFO("[points2image]No points node received, defaulting to points_raw, you can use _points_node:=YOUR_TOPIC");
+		points_topic = "/points_raw";
 	}
 
-	std::string camera_info_topic;
-	if (private_nh.getParam("camera_info_topic", camera_info_topic))
-	{
-		ROS_INFO("Setting camera_info topic to %s", camera_info_topic.c_str());
-	}
-	else
-	{
-		ROS_INFO("No camera info topic received, defaulting to /camera/camera_info, you can use _camera_info_topic:=YOUR_TOPIC");
-		camera_info_topic = "/camera/camera_info";
-	}
-
-	std::string projection_matrix_topic;
-	if (private_nh.getParam("projection_matrix_topic", projection_matrix_topic))
-	{
-		ROS_INFO("Setting projection_matrix topic to %s", projection_matrix_topic.c_str());
-	}
-	else
-	{
-		ROS_INFO("No projection matrix topic received, defaulting to /projection_matrix, you can use _projection_matrix_topic:=YOUR_TOPIC");
-		projection_matrix_topic = "/projection_matrix";
-	}
+	ROS_INFO("[points2image]Publishing to... %s", pub_topic_str.c_str());
+	pub = n.advertise<autoware_msgs::PointsImage>(pub_topic_str, 10);
 
 	ros::Subscriber sub = n.subscribe(points_topic, 1, callback);
+
+	ROS_INFO("[points2image]Subscribing to... %s", projection_matrix_topic.c_str());
 	ros::Subscriber projection = n.subscribe(projection_matrix_topic, 1, projection_callback);
-	ros::Subscriber intrinsic = n.subscribe(camera_info_topic, 1, intrinsic_callback);
+	ROS_INFO("[points2image]Subscribing to... %s", camera_info_topic_str.c_str());
+	ros::Subscriber intrinsic = n.subscribe(camera_info_topic_str, 1, intrinsic_callback);
 
 	ros::spin();
 	return 0;

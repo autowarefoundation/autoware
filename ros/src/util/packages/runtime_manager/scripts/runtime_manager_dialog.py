@@ -62,12 +62,16 @@ from autoware_msgs.msg import ConfigCarDpm
 from autoware_msgs.msg import ConfigPedestrianDpm
 from autoware_msgs.msg import ConfigNdt
 from autoware_msgs.msg import ConfigNdtMapping
+from autoware_msgs.msg import ConfigApproximateNdtMapping
 from autoware_msgs.msg import ConfigNdtMappingOutput
 from autoware_msgs.msg import ConfigICP
 from autoware_msgs.msg import ConfigVoxelGridFilter
 from autoware_msgs.msg import ConfigRingFilter
 from autoware_msgs.msg import ConfigDistanceFilter
 from autoware_msgs.msg import ConfigRandomFilter
+from autoware_msgs.msg import ConfigRingGroundFilter
+from autoware_msgs.msg import ConfigRayGroundFilter
+from autoware_msgs.msg import ConfigPointsConcatFilter
 from autoware_msgs.msg import ConfigWaypointFollower
 from autoware_msgs.msg import ConfigTwistFilter
 from autoware_msgs.msg import ConfigVelocitySet
@@ -103,7 +107,7 @@ SCHED_RR = 2
 PROC_MANAGER_SOCK="/tmp/autoware_proc_manager"
 
 class MyFrame(rtmgr.MyFrame):
-		
+
 
 
 	def __init__(self, *args, **kwds):
@@ -392,7 +396,7 @@ class MyFrame(rtmgr.MyFrame):
 			[ [ self.obj_get('button_{}_{}'.format(bn, tn)) for tn in tab_names ] for bn in btn_names ] )
 
 		self.alias_grps = new_btn_grps( ('rosbag', 'rviz', 'rqt') )
-		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'auto_pilot'),
+		self.alias_grps += new_btn_grps( ('android_tablet', 'oculus_rift', 'vehicle_gateway', 'remote_control', 'auto_pilot'),
 						 ('qs', 'interface') )
 		for grp in self.alias_grps:
 			wx.CallAfter(self.alias_sync, get_top(grp))
@@ -486,7 +490,7 @@ class MyFrame(rtmgr.MyFrame):
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
-	
+
 
 		wx.CallAfter( self.boot_booted_cmds )
 
@@ -759,8 +763,8 @@ class MyFrame(rtmgr.MyFrame):
 		v = obj.GetValue()
 		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
 		pub.publish(mode_cmd(mode=v))
-	
-	
+
+
 
 	def radio_action(self, event, grp):
 		push = event.GetEventObject()
@@ -1165,7 +1169,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.OnChecked_obj(event.GetEventObject())
 
 	def OnRosbagRecord(self, event):
-		self.dlg_rosbag_record.Show()
+		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
 
@@ -1920,7 +1924,7 @@ class MyFrame(rtmgr.MyFrame):
 					self.new_link(item, name, pdic, gdic, pnl, 'app', items.get('param'), add_objs)
 				else:
 					self.add_cfg_info(item, item, name, None, gdic, False, None)
-				szr = sizer_wrap(add_objs, wx.HORIZONTAL, parent=pnl)
+				szr = sizer_wrap(add_objs, wx.HORIZONTAL, flag=wx.ALIGN_CENTER_VERTICAL, parent=pnl)
 				szr.Fit(pnl)
 				tree.SetItemWindow(item, pnl)
 
@@ -1932,6 +1936,8 @@ class MyFrame(rtmgr.MyFrame):
 		lkc = None
 		if 'no_link' not in gdic.get('flags', []):
 			lkc = wx.HyperlinkCtrl(pnl, wx.ID_ANY, link_str, "")
+			if hasattr(lkc, 'SetCanFocus'):
+				lkc.SetCanFocus(False)
 			fix_link_color(lkc)
 			self.Bind(wx.EVT_HYPERLINK, self.OnHyperlinked, lkc)
 			if len(add_objs) > 0:
@@ -2903,6 +2909,9 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 			self.cbs.append(obj)
 		szr.Layout()
 		panel.SetVirtualSize(szr.GetMinSize())
+
+	def show(self):
+		self.Show()
 		self.update_filename()
 
 	def update_filename(self):
@@ -2910,7 +2919,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		path = tc.GetValue()
 		(dn, fn) = os.path.split(path)
 		now = datetime.datetime.now()
-		fn = 'autoware-%04d%02d%02d%02d%02d%02d.rosbag' % (
+		fn = 'autoware-%04d%02d%02d%02d%02d%02d' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(dn, fn)
 		set_path(tc, path)
@@ -3348,7 +3357,7 @@ def set_scheduling_policy(proc, policy, priority):
 		"priority": priority,
 	}
 	return send_to_proc_manager(order)
-	
+
 # psutil 3.x to 1.x backward compatibility
 def get_cpu_count():
 	try:

@@ -269,7 +269,7 @@ LadybugError unlock_image( unsigned int bufferIndex )
 int main (int argc, char **argv)
 {
 	////ROS STUFF
-	ros::init(argc, argv, "lady_bug");
+	ros::init(argc, argv, "ladybug_camera");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
@@ -316,8 +316,8 @@ int main (int argc, char **argv)
 	}
 	else
 	{
-		ROS_INFO("Ladybug ImageScale scale must be (0,100]. Defaulting to 100 ");
-		image_scale=100;
+		ROS_INFO("Ladybug ImageScale scale must be (0,100]. Defaulting to 20 ");
+		image_scale=20;
 	}
 
 	ros::Publisher camera_info_pub;
@@ -358,11 +358,13 @@ int main (int argc, char **argv)
 			std::ostringstream out;
 			out << "image" << i;
 			cv::Mat rawImage(size, CV_8UC1, currentImage.pData + (i * size.width*size.height));
-			//cv::flip(mat, mat, -1);
 			cv::Mat image(size, CV_8UC3);
 			cv::cvtColor(rawImage, image, cv::COLOR_BayerBG2RGB);
 			cv::resize(image,image,cv::Size(size.width*image_scale/100, size.height*image_scale/100));
+			//
 			cv::transpose(image, image);
+			cv::flip(image, image, 1);
+
 			if (i==0)
 				image.copyTo(full_size);
 			else
@@ -375,18 +377,17 @@ int main (int argc, char **argv)
 		}
 		//publish stitched one
 		publishImage(full_size, pub[0], count);
-
 		ros::spinOnce();
 		loop_rate.sleep();
 		count++;
 	}
 
-	cout << "Stopping ladybug..." << endl;
+	cout << "Stopping ladybug_camera..." << endl;
 
 	// Shutdown
 	stop_camera();
 
-	ROS_INFO("ladybug stopped");
+	ROS_INFO("ladybug_camera stopped");
 
 	return 0;
 }

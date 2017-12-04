@@ -353,11 +353,11 @@ int main (int argc, char *argv[])
   ros::NodeHandle rosnode;
   ros::NodeHandle private_nh("~");
   std::string cameraInfo_topic_name;
-  private_nh.param<std::string>("camera_info_topic", cameraInfo_topic_name, "/camera/camera_info");
+  private_nh.param<std::string>("camera_info_topic", cameraInfo_topic_name, "/camera_info");
 
   /* get camera ID */
   camera_id_str = cameraInfo_topic_name;
-  camera_id_str.erase(camera_id_str.find("/camera/camera_info"));
+  camera_id_str.erase(camera_id_str.find("/camera_info"));
   if (camera_id_str == "/") {
     camera_id_str = "camera";
   }

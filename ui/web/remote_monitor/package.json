@@ -1,0 +1,25 @@
+{
+  "name": "autoware_remote_monitor",
+  "version": "1.0.0",
+  "description": "remote monitor",
+  "main": "app.js",
+  "dependencies": {
+    "debug": "^3.0.1",
+    "express": "^4.15.4",
+    "gulp": "^3.9.1",
+    "mqtt": "^2.13.0",
+    "socket.io": "^2.0.3"
+  },
+  "devDependencies": {
+    "gulp-babel": "^7.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Autoware",
+    "RemoteMonitor"
+  ],
+  "author": "Yuki Iida",
+  "license": "ISC"
+}

@@ -1,4 +1,0 @@
-# ignore auto-generated files in vehicle_tracker
-nodes/vscan_lidar_track/moc_mainwindow.cpp
-nodes/vscan_lidar_track/ui_mainwindow.h
-nodes/vscan_lidar_track/moc_rbsspfvehicletracker.cpp

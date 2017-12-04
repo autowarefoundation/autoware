@@ -1,0 +1,339 @@
+.flat_ss {
+  color: #484848;
+  display: inline-block;
+  height: 50px;
+  font-size: 25px;
+  vertical-align: middle;
+  background: #FFFFFF;
+  text-decoration: none;
+  margin: 1em;
+}
+
+.flat_ss .iconback {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  color: white;
+}
+
+.flat_ss .iconback .fa {
+  font-size: 25px;
+  line-height: 50px;
+}
+
+.flat_ss .iconback .fa {
+  transition: .3s;
+}
+
+.flat_ss .btnttl {
+  display: inline-block;
+  width: 300px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.flat_ss .car {
+  background: #00a3e0
+}
+
+.flat_ss .operator {
+  background: #00fa9a
+}
+
+.flat_ss .fdly {
+  background: #7ece46
+}
+
+.flat_ss .pkt {
+  background: #fd7171
+}
+
+.flat_ss:hover .iconback .fa {
+  -webkit-transform: rotateX(360deg);
+  -ms-transform: rotateX(360deg);
+  transform: rotateX(360deg);
+}
+
+/*CHECKBOX*/
+.onoffswitch {
+  position: relative;
+  width: 100%;
+  height: 20%;
+  margin-bottom: 10px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.onoffswitch-checkbox {
+  display: none;
+}
+
+.onoffswitch-label {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  height: 100%;
+  border: 2px solid #00a3e0;
+  border-radius: 20px;
+}
+
+.emergencyswitch-inner {
+  display: block;
+  width: 200%;
+  margin-left: -100%;
+  height: 100%;
+  transition: margin 0.3s ease-in 0s;
+}
+
+.emergencyswitch-inner:before, .emergencyswitch-inner:after {
+  display: block;
+  float: left;
+  width: 50%;
+  height: 100%;
+  padding: 0;
+  line-height: 2.5vh;
+  font-size: 30px;
+  color: white;
+  font-family: Trebuchet, Arial, sans-serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.emergencyswitch-inner:before {
+  content: "EMERGENCY OFF";
+  text-align: center;
+  background-color: #EEEEEE;
+  color: #999999;
+  height: 100%;
+}
+
+.emergencyswitch-inner:after {
+  content: "EMERGENCY";
+  text-align: center;
+  background-color: red;
+  color: #FFFFFF;
+  height: 100%;
+}
+
+.onoffswitch-switch {
+  display: block;
+  width: 18px;
+  margin: 6px;
+  background: #FFFFFF;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 56px;
+  border: 2px solid #999999;
+  border-radius: 20px;
+  transition: all 0.3s ease-in 0s;
+}
+
+.onoffswitch-checkbox:checked+.onoffswitch-label .emergencyswitch-inner {
+  margin-left: 0;
+}
+
+.onoffswitch-checkbox:checked+.onoffswitch-label .onoffswitch-switch {
+  right: 0px;
+}
+
+.modeswitch-inner {
+  display: block;
+  width: 200%;
+  margin-left: -100%;
+  height: 100%;
+  transition: margin 0.3s ease-in 0s;
+}
+
+.modeswitch-inner:before, .modeswitch-inner:after {
+  display: block;
+  float: left;
+  width: 50%;
+  height: 100%;
+  padding: 0;
+  line-height: 2.5vh;
+  font-size: 30px;
+  color: white;
+  font-family: Trebuchet, Arial, sans-serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.modeswitch-inner:before {
+  content: "Auto";
+  text-align: center;
+  background-color: #00a3e0;
+  color: #FFFFFF;
+  height: 100%;
+}
+
+.modeswitch-inner:after {
+  content: "Remote";
+  text-align: center;
+  background-color: #00cb65;
+  color: #FFFFFF;
+  height: 100%;
+}
+
+.onoffswitch-checkbox:checked+.onoffswitch-label .modeswitch-inner {
+  margin-left: 0;
+}
+
+/* Style The Dropdown Button */
+@font-face {
+  font-family: "IonIcons";
+  src: url("//code.ionicframework.com/ionicons/2.0.1/fonts/ionicons.eot?v=2.0.1");
+  src: url("//code.ionicframework.com/ionicons/2.0.1/fonts/ionicons.eot?v=2.0.1#iefix") format("embedded-opentype"), url("//code.ionicframework.com/ionicons/2.0.1/fonts/ionicons.ttf?v=2.0.1") format("truetype"), url("//code.ionicframework.com/ionicons/2.0.1/fonts/ionicons.woff?v=2.0.1") format("woff"), url("//code.ionicframework.com/ionicons/2.0.1/fonts/ionicons.svg?v=2.0.1#Ionicons") format("svg");
+  font-weight: normal;
+  font-style: normal
+}
+
+.pt20 {
+  padding-top: 20px;
+}
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap:before {
+  z-index: 1;
+  position: absolute;
+  right: 15px;
+  top: -40px;
+  content: "\f123";
+  font-family: "IonIcons";
+  line-height: 50px;
+  color: #fff;
+  pointer-events: none;
+  opacity: 0;
+  -webkit-transition: all 600ms cubic-bezier(1, 0, 0, 1);
+  -moz-transition: all 600ms cubic-bezier(1, 0, 0, 1);
+  -o-transition: all 600ms cubic-bezier(1, 0, 0, 1);
+  transition: all 600ms cubic-bezier(1, 0, 0, 1);
+  -webkit-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  -moz-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  -o-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  transition-timing-function: cubic-bezier(1, 0, 0, 1);
+}
+
+select {
+  outline: none;
+  -moz-appearance: none;
+  text-indent: 0.01px;
+  text-overflow: '';
+  background: none transparent;
+  vertical-align: middle;
+  font-size: inherit;
+  color: inherit;
+  -webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+select option {
+  background-color: #fff;
+  color: #333;
+  padding: 0;
+}
+
+select::-ms-expand {
+  display: none;
+}
+
+.select-wrap.select-circle>select {
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 25px;
+  margin: 0 auto;
+  display: block;
+  padding: 2px 0 2px 15px;
+  letter-spacing: 2em;
+  border: 1px solid #db1f46;
+  color: #fff;
+  background: #db1f46;
+  overflow: hidden;
+  -webkit-transition: all 400ms cubic-bezier(1, 0, 0, 1);
+  -moz-transition: all 400ms cubic-bezier(1, 0, 0, 1);
+  -o-transition: all 400ms cubic-bezier(1, 0, 0, 1);
+  transition: all 400ms cubic-bezier(1, 0, 0, 1);
+  -webkit-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  -moz-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  -o-transition-timing-function: cubic-bezier(1, 0, 0, 1);
+  transition-timing-function: cubic-bezier(1, 0, 0, 1);
+}
+
+@-moz-document url-prefix() {
+  .select-wrap.select-circle>select {
+    padding-left: 16px;
+  }
+}
+
+.select-wrap.select-circle:hover {
+  width: 100%;
+}
+
+.select-wrap.select-circle:hover>select, .select-wrap.select-circle>select:hover {
+  width: 100%;
+  border-radius: 25px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0;
+  padding: 8px 19px;
+}
+
+.select-wrap.select-circle:hover:before {
+  opacity: 1;
+  top: 0;
+}
+
+.select-wrap.select-circle>select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #fff;
+}
+
+.select-wrap.select-circle-arrow>select {
+  color: #db1f46;
+}
+
+.select-wrap.select-circle-arrow:before {
+  color: #fff;
+  opacity: 1;
+  text-align: center;
+  width: 100%;
+  top: 0;
+  right: 0;
+}
+
+.select-wrap.select-circle-arrow:hover>select, .select-wrap.select-circle-arrow>select:hover {
+  color: #fff;
+}
+
+.select-wrap.select-circle:hover:before {
+  opacity: 1;
+  top: 0;
+  right: 15px;
+  width: 20px;
+}
+
+/*Squre Button*/
+.square_btn {
+display: inline-block;
+padding: 0.3em 1em;
+text-decoration: none;
+color: #67c5ff;
+width: 90%;
+height: 3vw;
+text-align: center;
+border: solid 2px #67c5ff;
+border-radius: 3px;
+transition: .4s;
+background: white;
+}.square_btn:hover {
+background: yellow;
+color: black;
+}

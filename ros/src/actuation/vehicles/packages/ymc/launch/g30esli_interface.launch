@@ -1,0 +1,17 @@
+<launch>
+  <arg name="wheel_base" default="2.4"/>
+  <arg name="mode" default="8"/>
+  <arg name="device" default="can0"/>
+  <arg name="loop_rate" default="100"/>
+  <arg name="stop_time_sec" default="2"/>
+
+  <!-- Execute Autoware communicator -->
+  <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="log">
+    <param name="wheel_base" value="$(arg wheel_base)"/>
+    <param name="mode" value="$(arg mode)"/>
+    <param name="device" value="$(arg device)"/>
+    <param name="loop_rate" value="$(arg loop_rate)"/>
+    <param name="stop_time_sec" value="$(arg stop_time_sec)"/>
+  </node>
+
+</launch>

@@ -4,7 +4,6 @@
 #include <QtCore/QString>
 #include <QFileDialog>
 #include <QMessageBox>
-#include "mainwindow_moc.cpp"
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),

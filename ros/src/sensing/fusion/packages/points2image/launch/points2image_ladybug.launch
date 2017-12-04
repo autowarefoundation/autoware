@@ -1,0 +1,15 @@
+<launch>
+
+    <node pkg="points2image" type="points2image" name="points2image4" output="screen" ns="/camera4">
+    </node>
+    <node pkg="points2image" type="points2image" name="points2image3" output="screen" ns="/camera3">
+    </node>
+    <node pkg="points2image" type="points2image" name="points2image2" output="screen" ns="/camera2">
+    </node>
+    <node pkg="points2image" type="points2image" name="points2image6" output="screen" ns="/camera6">
+    </node>
+    <node pkg="points2image" type="points2image" name="points2image5" output="screen" ns="/camera5">
+    </node>
+
+</launch>
+

@@ -5,8 +5,6 @@ execute_process(
   OUTPUT_VARIABLE ROS_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
