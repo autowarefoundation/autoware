@@ -75,7 +75,7 @@ void DecisionMakerNode::publishLightColor(int status)
 {
   autoware_msgs::traffic_light msg;
   msg.traffic_light = status;
-  Pubs["light_color"].publish(msg);
+  //Pubs["light_color"].publish(msg);
 }
 
 #define SHIFTED_LANE_FLAG -99999
