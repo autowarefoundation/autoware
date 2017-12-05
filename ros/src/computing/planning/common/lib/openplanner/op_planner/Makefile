@@ -214,6 +214,30 @@ src/BehaviorStateMachine.cpp.s:
 	cd /home/hatem/autoware_openplanner/Autoware/ros/src && $(MAKE) -f computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/build.make computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/src/BehaviorStateMachine.cpp.s
 .PHONY : src/BehaviorStateMachine.cpp.s
 
+src/DecisionMaker.o: src/DecisionMaker.cpp.o
+.PHONY : src/DecisionMaker.o
+
+# target to build an object file
+src/DecisionMaker.cpp.o:
+	cd /home/hatem/autoware_openplanner/Autoware/ros/src && $(MAKE) -f computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/build.make computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/src/DecisionMaker.cpp.o
+.PHONY : src/DecisionMaker.cpp.o
+
+src/DecisionMaker.i: src/DecisionMaker.cpp.i
+.PHONY : src/DecisionMaker.i
+
+# target to preprocess a source file
+src/DecisionMaker.cpp.i:
+	cd /home/hatem/autoware_openplanner/Autoware/ros/src && $(MAKE) -f computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/build.make computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/src/DecisionMaker.cpp.i
+.PHONY : src/DecisionMaker.cpp.i
+
+src/DecisionMaker.s: src/DecisionMaker.cpp.s
+.PHONY : src/DecisionMaker.s
+
+# target to generate assembly for a file
+src/DecisionMaker.cpp.s:
+	cd /home/hatem/autoware_openplanner/Autoware/ros/src && $(MAKE) -f computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/build.make computing/planning/common/lib/openplanner/op_planner/CMakeFiles/op_planner.dir/src/DecisionMaker.cpp.s
+.PHONY : src/DecisionMaker.cpp.s
+
 src/LocalPlannerH.o: src/LocalPlannerH.cpp.o
 .PHONY : src/LocalPlannerH.o
 
@@ -426,6 +450,9 @@ help:
 	@echo "... src/BehaviorStateMachine.o"
 	@echo "... src/BehaviorStateMachine.i"
 	@echo "... src/BehaviorStateMachine.s"
+	@echo "... src/DecisionMaker.o"
+	@echo "... src/DecisionMaker.i"
+	@echo "... src/DecisionMaker.s"
 	@echo "... src/LocalPlannerH.o"
 	@echo "... src/LocalPlannerH.i"
 	@echo "... src/LocalPlannerH.s"

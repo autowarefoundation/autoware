@@ -94,6 +94,7 @@ protected: //ROS messages (topics)
 	ros::Publisher pub_LocalWeightedTrajectoriesRviz;
 	ros::Publisher pub_LocalWeightedTrajectories;
 	ros::Publisher pub_TrajectoryCost;
+	ros::Publisher pub_SafetyBorderRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_current_pose 		;
@@ -103,6 +104,7 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_GlobalPlannerPaths	;
 	ros::Subscriber sub_LocalPlannerPaths	;
 	ros::Subscriber sub_predicted_objects	;
+
 
 
 protected: // Callback function for subscriber.

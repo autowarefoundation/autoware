@@ -29,7 +29,7 @@ public:
 	double m_MaxLaneSearchDistance;
 	int m_iCurrentTotalPathId;
 	int m_iSafeTrajectory;
-	std::vector<std::vector<std::vector<WayPoint> > > m_RollOuts;
+	std::vector<std::vector<WayPoint> > m_RollOuts;
 	Lane* pLane;
 	int m_PrevBrakingWayPoint;
 

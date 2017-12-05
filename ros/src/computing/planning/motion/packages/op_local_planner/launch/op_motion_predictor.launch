@@ -6,7 +6,7 @@
 	<arg name="enableCurbObstacles" 	default="false" />
 	
 	
-	<node pkg="op_motion_predictor" type="op_motion_predictor" name="op_motion_predictor" output="screen">		
+	<node pkg="op_local_planner" type="op_motion_predictor" name="op_motion_predictor" output="screen">		
 			
 		<param name="max_distance_to_lane" 		value="$(arg max_distance_to_lane)"/>
 		<param name="prediction_distance" 		value="$(arg prediction_distance)"/>

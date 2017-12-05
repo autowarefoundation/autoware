@@ -235,7 +235,7 @@ void DecisionMaker::InitBehaviorStates()
  {
 	 PlannerHNS::Lane* pMapLane = 0;
 	PlannerHNS::Lane* pPathLane = 0;
-	pPathLane = MappingHelpers::GetLaneFromPath(state, m_Path);
+	pPathLane = MappingHelpers::GetLaneFromPath(state, m_TotalPath.at(m_iCurrentTotalPathId));
 	if(!pPathLane)
 	{
 		std::cout << "Performance Alert: Can't Find Lane Information in Global Path, Searching the Map :( " << std::endl;
@@ -282,12 +282,13 @@ void DecisionMaker::InitBehaviorStates()
 
 	preCalcPrams->iPrevSafeLane = preCalcPrams->iCurrSafeLane;
 
+
 	if(preCalcPrams->iPrevSafeLane >= 0
 			&& preCalcPrams->iPrevSafeLane < (int)m_RollOuts.size()
 			&& preCalcPrams->iPrevSafeTrajectory >= 0
-			&& preCalcPrams->iPrevSafeTrajectory < (int)m_RollOuts.at(preCalcPrams->iPrevSafeLane).size())
+			&& preCalcPrams->iPrevSafeTrajectory < (int)m_RollOuts.size())
 	{
-		m_Path = m_RollOuts.at(preCalcPrams->iPrevSafeLane).at(preCalcPrams->iPrevSafeTrajectory);
+		m_Path = m_RollOuts.at(preCalcPrams->iPrevSafeTrajectory);
 		bNewTrajectory = true;
 	}
 

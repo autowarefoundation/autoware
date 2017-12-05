@@ -41,6 +41,9 @@ BehaviorGen::BehaviorGen()
 	bNewLightStatus = false;
 	bNewLightSignal = false;
 	bBestCost = false;
+	bMap = false;
+	bRollOuts = false;
+
 
 	ros::NodeHandle _nh;
 	UpdatePlanningParams(_nh);
@@ -56,6 +59,7 @@ BehaviorGen::BehaviorGen()
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 1,true);
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
 	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 1);
+	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 
 	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&BehaviorGen::callbackGetCurrentPose, 		this);
 
@@ -81,57 +85,58 @@ BehaviorGen::~BehaviorGen()
 
 void BehaviorGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 {
-	_nh.getParam("/op_trajectory_generator/enableSwerving", m_PlanningParams.enableSwerving);
+	_nh.getParam("/op_common_params/enableSwerving", m_PlanningParams.enableSwerving);
 	if(m_PlanningParams.enableSwerving)
 		m_PlanningParams.enableFollowing = true;
 	else
-		_nh.getParam("/op_trajectory_generator/enableFollowing", m_PlanningParams.enableFollowing);
+		_nh.getParam("/op_common_params/enableFollowing", m_PlanningParams.enableFollowing);
 
-	_nh.getParam("/op_trajectory_generator/enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
-	_nh.getParam("/op_trajectory_generator/enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
+	_nh.getParam("/op_common_params/enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
+	_nh.getParam("/op_common_params/enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
 
-	_nh.getParam("/op_trajectory_generator/maxVelocity", m_PlanningParams.maxSpeed);
-	_nh.getParam("/op_trajectory_generator/minVelocity", m_PlanningParams.minSpeed);
-	_nh.getParam("/op_trajectory_generator/maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
+	_nh.getParam("/op_common_params/maxVelocity", m_PlanningParams.maxSpeed);
+	_nh.getParam("/op_common_params/minVelocity", m_PlanningParams.minSpeed);
+	_nh.getParam("/op_common_params/maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
 
-	_nh.getParam("/op_trajectory_generator/pathDensity", m_PlanningParams.pathDensity);
+	_nh.getParam("/op_common_params/pathDensity", m_PlanningParams.pathDensity);
 
-	_nh.getParam("/op_trajectory_generator/rollOutDensity", m_PlanningParams.rollOutDensity);
+	_nh.getParam("/op_common_params/rollOutDensity", m_PlanningParams.rollOutDensity);
 	if(m_PlanningParams.enableSwerving)
-		_nh.getParam("/op_trajectory_generator/rollOutsNumber", m_PlanningParams.rollOutNumber);
+		_nh.getParam("/op_common_params/rollOutsNumber", m_PlanningParams.rollOutNumber);
 	else
 		m_PlanningParams.rollOutNumber = 0;
 
-	_nh.getParam("/op_trajectory_generator/horizonDistance", m_PlanningParams.horizonDistance);
-	_nh.getParam("/op_trajectory_generator/minFollowingDistance", m_PlanningParams.minFollowingDistance);
-	_nh.getParam("/op_trajectory_generator/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
-	_nh.getParam("/op_trajectory_generator/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
-	_nh.getParam("/op_trajectory_generator/speedProfileFactor", m_PlanningParams.speedProfileFactor);
-	_nh.getParam("/op_trajectory_generator/enableHeadingSmoothing", m_PlanningParams.enableHeadingSmoothing);
+	std::cout << "Rolls Number: " << m_PlanningParams.rollOutNumber << std::endl;
+
+	_nh.getParam("/op_common_params/horizonDistance", m_PlanningParams.horizonDistance);
+	_nh.getParam("/op_common_params/minFollowingDistance", m_PlanningParams.minFollowingDistance);
+	_nh.getParam("/op_common_params/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
+	_nh.getParam("/op_common_params/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
+	_nh.getParam("/op_common_params/speedProfileFactor", m_PlanningParams.speedProfileFactor);
 
 	_nh.getParam("/op_trajectory_evaluator/horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
 	_nh.getParam("/op_trajectory_evaluator/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
-	_nh.getParam("/op_trajectory_generator/enableLaneChange", m_PlanningParams.enableLaneChange);
+	_nh.getParam("/op_common_params/enableLaneChange", m_PlanningParams.enableLaneChange);
 
-	_nh.getParam("/op_trajectory_generator/width", m_CarInfo.width);
-	_nh.getParam("/op_trajectory_generator/length", m_CarInfo.length);
-	_nh.getParam("/op_trajectory_generator/wheelBaseLength", m_CarInfo.wheel_base);
-	_nh.getParam("/op_trajectory_generator/turningRadius", m_CarInfo.turning_radius);
-	_nh.getParam("/op_trajectory_generator/maxSteerAngle", m_CarInfo.max_steer_angle);
-	_nh.getParam("/op_trajectory_generator/maxAcceleration", m_CarInfo.max_acceleration);
-	_nh.getParam("/op_trajectory_generator/maxDeceleration", m_CarInfo.max_deceleration);
+	_nh.getParam("/op_common_params/width", m_CarInfo.width);
+	_nh.getParam("/op_common_params/length", m_CarInfo.length);
+	_nh.getParam("/op_common_params/wheelBaseLength", m_CarInfo.wheel_base);
+	_nh.getParam("/op_common_params/turningRadius", m_CarInfo.turning_radius);
+	_nh.getParam("/op_common_params/maxSteerAngle", m_CarInfo.max_steer_angle);
+	_nh.getParam("/op_common_params/maxAcceleration", m_CarInfo.max_acceleration);
+	_nh.getParam("/op_common_params/maxDeceleration", m_CarInfo.max_deceleration);
 	m_CarInfo.max_speed_forward = m_PlanningParams.maxSpeed;
 	m_CarInfo.min_speed_forward = m_PlanningParams.minSpeed;
 
 	PlannerHNS::ControllerParams controlParams;
 	controlParams.Steering_Gain = PlannerHNS::PID_CONST(0.07, 0.02, 0.01);
 	controlParams.Velocity_Gain = PlannerHNS::PID_CONST(0.1, 0.005, 0.1);
-	nh.getParam("/op_trajectory_generator/steeringDelay", controlParams.SteeringDelay);
-	nh.getParam("/op_trajectory_generator/minPursuiteDistance", controlParams.minPursuiteDistance );
+	nh.getParam("/op_common_params/steeringDelay", controlParams.SteeringDelay);
+	nh.getParam("/op_common_params/minPursuiteDistance", controlParams.minPursuiteDistance );
 
 	int iSource = 0;
-	_nh.getParam("/op_trajectory_generator/mapSource" 			, iSource);
+	_nh.getParam("/op_common_params/mapSource" 			, iSource);
 	if(iSource == 0)
 		m_MapType = PlannerHNS::MAP_AUTOWARE;
 	else if (iSource == 1)
@@ -139,7 +144,7 @@ void BehaviorGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 	else if(iSource == 2)
 		m_MapType = PlannerHNS::MAP_KML_FILE;
 
-	_nh.getParam("/op_trajectory_generator/mapFileName" 		, m_MapPath);
+	_nh.getParam("/op_common_params/mapFileName" 		, m_MapPath);
 
 	m_BehaviorGenerator.Init(controlParams, m_PlanningParams, m_CarInfo);
 	m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
@@ -264,6 +269,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 			}
 
 			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
+
 			m_BehaviorGenerator.m_TotalOriginalPath = m_GlobalPaths;
 		}
 		else
@@ -287,26 +293,40 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayCons
 {
 	if(msg->lanes.size() > 0)
 	{
-		m_RollOuts.clear();
-		m_TrajectoryCosts.clear();
-
-		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
+		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndexFast(m_BehaviorGenerator.m_Path, m_BehaviorGenerator.state);
+		int index_limit = 0;//m_Path.size() - 20;
+		if(index_limit<=0)
+			index_limit =  m_BehaviorGenerator.m_Path.size()/2.0;
+		if(m_RollOuts.size() == 0
+				|| currIndex > index_limit
+				|| m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan
+				|| m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath
+				|| m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
 		{
-			std::vector<PlannerHNS::WayPoint> path;
-			PlannerHNS::TrajectoryCost traj_cost;
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
+			std::cout << "New Local Plan !! " << currIndex << ", "<< m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan << ", " << m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath  << std::endl;
+			m_RollOuts.clear();
+			m_TrajectoryCosts.clear();
+			for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
+			{
+				std::vector<PlannerHNS::WayPoint> path;
+				PlannerHNS::TrajectoryCost traj_cost;
+				PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
 
-			traj_cost.bBlocked = msg->lanes.at(i).is_blocked;
-			traj_cost.index = msg->lanes.at(i).lane_index;
-			traj_cost.cost = msg->lanes.at(i).cost;
-			traj_cost.closest_obj_distance = msg->lanes.at(i).closest_object_distance;
-			traj_cost.closest_obj_velocity = msg->lanes.at(i).closest_object_velocity;
+				traj_cost.bBlocked = msg->lanes.at(i).is_blocked;
+				traj_cost.index = msg->lanes.at(i).lane_index;
+				traj_cost.cost = msg->lanes.at(i).cost;
+				traj_cost.closest_obj_distance = msg->lanes.at(i).closest_object_distance;
+				traj_cost.closest_obj_velocity = msg->lanes.at(i).closest_object_velocity;
 
-			m_RollOuts.push_back(path);
-			m_TrajectoryCosts.push_back(traj_cost);
+				m_RollOuts.push_back(path);
+				m_TrajectoryCosts.push_back(traj_cost);
+			}
+
+			m_BehaviorGenerator.m_RollOuts = m_RollOuts;
+			bRollOuts = true;
+			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
+			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = false;
 		}
-
-		bRollOuts = true;
 	}
 }
 
@@ -336,6 +356,18 @@ void BehaviorGen::callbackGetTrafficLightSignals(const autoware_msgs::Signals& m
 
 		m_CurrTrafficLight.push_back(tl);
 	}
+}
+
+void BehaviorGen::VisualizeLocalPlanner()
+{
+	visualization_msgs::Marker behavior_rviz;
+	int iDirection = 0;
+	if(m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory > m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
+		iDirection = 1;
+	else if(m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory < m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
+		iDirection = -1;
+	PlannerHNS::RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, !m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bTrafficIsRed , iDirection, behavior_rviz, "beh_state");
+	pub_BehaviorStateRviz.publish(behavior_rviz);
 }
 
 void BehaviorGen::SendLocalPlanningTopics()
@@ -377,6 +409,7 @@ void BehaviorGen::SendLocalPlanningTopics()
 	PlannerHNS::RelativeInfo info;
 	PlannerHNS::PlanningHelpers::GetRelativeInfo(m_BehaviorGenerator.m_Path, m_BehaviorGenerator.state, info);
 	PlannerHNS::RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_BehaviorGenerator.m_Path, info.iBack, m_CurrentTrajectoryToSend);
+	//std::cout << "Path Size: " << m_BehaviorGenerator.m_Path.size() << ", Send Size: " << m_CurrentTrajectoryToSend << std::endl;
 
 	closest_waypoint.data = 1;
 	pub_ClosestIndex.publish(closest_waypoint);
@@ -445,6 +478,7 @@ void BehaviorGen::MainLoop()
 			m_CurrentBehavior = m_BehaviorGenerator.DoOneStep(dt, m_CurrentPos, m_VehicleStatus, 1, m_PrevTrafficLight, m_TrajectoryBestCost, 0 );
 
 			SendLocalPlanningTopics();
+			VisualizeLocalPlanner();
 		}
 		else
 			sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&BehaviorGen::callbackGetGlobalPlannerPath, 	this);

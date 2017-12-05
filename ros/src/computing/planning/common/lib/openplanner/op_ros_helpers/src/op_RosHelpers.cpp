@@ -1078,15 +1078,15 @@ std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& be
 	return str;
 }
 
-void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker)
+void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker, std::string ns,double size_factor)
 {
 	behaviorMarker.header.frame_id = "map";
 	behaviorMarker.header.stamp = ros::Time();
-	behaviorMarker.ns = "detected_polygons_velocity";
+	behaviorMarker.ns = ns;
 	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	behaviorMarker.scale.z = 1.0;
-	behaviorMarker.scale.x = 1.0;
-	behaviorMarker.scale.y = 1.0;
+	behaviorMarker.scale.z = 1.0*size_factor;
+	behaviorMarker.scale.x = 1.0*size_factor;
+	behaviorMarker.scale.y = 1.0*size_factor;
 	behaviorMarker.color.a = 0.9;
 	behaviorMarker.frame_locked = false;
 	if(bGreenLight)
@@ -1100,13 +1100,15 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 		behaviorMarker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
 		behaviorMarker.color.g = 0.1;// - trackedObstacles.at(i).center.v/16.0;
 		behaviorMarker.color.b = 0.1;
-		behaviorMarker.id = 0;
 	}
+
+	behaviorMarker.id = 0;
+
 	geometry_msgs::Point point;
 
 	point.x = currState.pos.x;
 	point.y = currState.pos.y;
-	point.z = currState.pos.z+2.0;
+	point.z = currState.pos.z+3.0;
 
 	behaviorMarker.pose.position = point;
 

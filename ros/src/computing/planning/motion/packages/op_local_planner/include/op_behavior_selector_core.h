@@ -118,7 +118,7 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_TrafficLightStatus  ;
 	ros::Subscriber sub_TrafficLightSignals ;
 	ros::Subscriber sub_Trajectory_Cost	    ;
-
+	ros::Publisher pub_BehaviorStateRviz;
 
 protected: // Callback function for subscriber.
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
@@ -134,6 +134,7 @@ protected: // Callback function for subscriber.
 protected: //Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);
   void SendLocalPlanningTopics();
+  void VisualizeLocalPlanner();
 
 public:
   BehaviorGen();
