@@ -147,20 +147,29 @@ function deviceChange() {
       isUseAudio = false
     }
     deviceList.disabled = true;
-    var constraints = {
-      audio: isUseAudio,
-      video: {
-        mandatory: {
-          maxWidth: 1280,
-          maxHeight: 720,
-          minWidth: 1280,
-          minHeight: 720
-        },
-        optional: [{
-          sourceId: deviceId
-        }]
-      }
-    };
+    console.log("RUN_TYPE " + RUN_TYPE);
+    if(RUN_TYPE == "vehicle") {
+      var constraints = {
+        audio: isUseAudio,
+        video: {
+          mandatory: {
+            maxWidth: 1280,
+            maxHeight: 720,
+            minWidth: 1280,
+            minHeight: 720
+          },
+          optional: [{
+            sourceId: deviceId
+          }]
+        }
+      };
+    }
+    else if(RUN_TYPE == "operator") {
+      var constraints = {
+        audio: true,
+        video: false
+      };
+    }
   }
   console.log(constraints);
   navigator.mediaDevices.getUserMedia(constraints)

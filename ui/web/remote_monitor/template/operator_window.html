@@ -18,6 +18,7 @@
   <script src="/js/bootstrap.min.js"></script>
   <script src="socket.io/socket.io.js"></script>
   <script src="/js/webrtc_polyfill.js"></script>
+  <script src="/js/operator.js"></script>
   <script src="/js/utility.js"></script>
   <script src="/js/remote_ui.js"></script>
   <script src="/js/gamepad.js"></script>
@@ -77,6 +78,15 @@
           <h3 id="text_target_speed">Target Speed: - km/h</h3>
           <h3 id="text_next_target_speed">Next Target Speed: - km/h</h3>
           <h3 id="text_state">State: -</h3>
+        </div>
+
+        <div class="streamAudioContainer">
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream6" data-no="6" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream6" data-no="6">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Audio</span>
+          </button>
+          <video id="localView6"></video>
         </div>
       </div>
 

@@ -208,6 +208,18 @@ img#vehicle_steering {
   border: solid #00a3e0;
 }
 
+.streamAudioContainer {
+  position: relative;
+  float: left;
+  margin: 2px;
+  width: 50%;
+  height: 20%;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .1) inset;
+  background: #FFFFFF;
+  border: solid #00a3e0;
+}
+
 video {
   position: absolute;
   max-width: calc(100% - 5px);
