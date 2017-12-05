@@ -37,6 +37,10 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <module_comm_msgs/SteerMode.h>
 #include <module_comm_msgs/SpeedMode.h>
+#include <platform_comm_msgs/TurnSignalCommand.h>
+#include <platform_comm_msgs/GearCommand.h>
+#include <platform_comm_msgs/Gear.h>
+
 #include <dbw_mkz_msgs/SteeringReport.h>
 
 namespace pacmod
@@ -57,6 +61,9 @@ private:
   // publisher
   ros::Publisher steer_mode_pub_;
   ros::Publisher speed_mode_pub_;
+  ros::Publisher turn_signal_pub_;
+  ros::Publisher gear_pub_;
+
   ros::Publisher current_twist_pub_;
 
   // subscriber

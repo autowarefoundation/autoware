@@ -11,6 +11,7 @@ find_package(
   std_msgs
   geometry_msgs
   module_comm_msgs
+  platform_comm_msgs
   dbw_mkz_msgs
 )
 
@@ -20,6 +21,7 @@ catkin_package(
   std_msgs
   geometry_msgs
   module_comm_msgs
+  platform_comm_msgs
   dbw_mkz_msgs
 )
 

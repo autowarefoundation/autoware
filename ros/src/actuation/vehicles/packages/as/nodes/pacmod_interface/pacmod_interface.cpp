@@ -60,6 +60,8 @@ void PacmodInterface::initForROS()
   // setup publisher
   steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
   speed_mode_pub_    = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 10);
+  turn_signal_pub_   = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_commands", 10);
+  gear_pub_          = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 10);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
 }
 
@@ -95,12 +97,30 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   steer_mode.curvature = msg->twist.linear.x <= 0 ? 0 : curvature;
   steer_mode.max_curvature_rate = 0.75;
 
+  platform_comm_msgs::TurnSignalCommand turn_signal;
+  turn_signal.header = msg-> header;
+  turn_signal.mode = mode;
+
+  platform_comm_msgs::GearCommand gear_comm;
+  gear_comm.header = msg->header;
+  gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
+
   std::cout << "mode: "  << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
   std::cout << "steer: " << steer_mode.curvature << std::endl;
 
   speed_mode_pub_.publish(speed_mode);
   steer_mode_pub_.publish(steer_mode);
+  turn_signal_pub_.publish(turn_signal);
+
+  // publish only when mode has changed
+  static int previous_mode = mode;
+  if (mode != previous_mode)
+  {
+    gear_pub_.publish(gear_comm);
+  }
+  previous_mode = mode;
+
 }
 
 void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr &msg)
