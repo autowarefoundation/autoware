@@ -423,8 +423,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	speedMeter = new Meter(document.querySelector(".meter--speed"), {
 		value: 0,
 		valueMin: 0,
-		valueMax: 220,
-		valueStep: 20,
+		valueMax: 100,
+		valueStep: 10,
 		valueUnit: "<span>Speed</span><div>Km/h</div>",
 		angleMin: 30,
 		angleMax: 330,
