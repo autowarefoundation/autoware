@@ -60,7 +60,7 @@ void PacmodInterface::initForROS()
   // setup publisher
   steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
   speed_mode_pub_    = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 10);
-  turn_signal_pub_   = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_commands", 10);
+  turn_signal_pub_   = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 10);
   gear_pub_          = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 10);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
 }
