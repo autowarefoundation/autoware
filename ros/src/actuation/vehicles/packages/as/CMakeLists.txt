@@ -32,11 +32,11 @@ include_directories(
 )
 
 
-add_executable(pacmod_interface
-  nodes/pacmod_interface/pacmod_interface_node.cpp
-  nodes/pacmod_interface/pacmod_interface.cpp
+add_executable(as_interface
+  nodes/as_interface/as_interface_node.cpp
+  nodes/as_interface/as_interface.cpp
   )
-target_link_libraries(pacmod_interface ${catkin_LIBRARIES})
-add_dependencies(pacmod_interface ${catkin_EXPORTED_TARGETS} )
+target_link_libraries(as_interface ${catkin_LIBRARIES})
+add_dependencies(as_interface ${catkin_EXPORTED_TARGETS} )
 
 endif()

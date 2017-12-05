@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "pacmod_interface.h"
+#include "as_interface.h"
 
 namespace pacmod
 {

@@ -31,11 +31,11 @@
 // ROS Includes
 #include <ros/ros.h>
 
-#include "pacmod_interface.h"
+#include "as_interface.h"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "pacmod_interface");
+  ros::init(argc, argv, "as_interface");
   pacmod::PacmodInterface pacmod_interface;
 
   pacmod_interface.run();
