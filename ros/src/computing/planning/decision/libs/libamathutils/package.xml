@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>euc</name>
+  <name>amathutils</name>
   <version>1.5.1</version>
-  <description>The libeuc package</description>
+  <description>The libamathutils package</description>
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
   <license>BSD</license>
   <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>

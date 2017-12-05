@@ -380,11 +380,21 @@ class MyFrame(rtmgr.MyFrame):
 		tab = self.tab_topics
 		self.all_tabs.append(tab)
 
+                #
+                # for State tab
+                #
+                tab = self.tab_states
+                self.all_tabs.append(tab)
+                
+                self.state_dic = self.load_yaml('state.yaml')
+                self.mainstate_dic = self.state_dic["mainstate"]
+                self.substate_dic = self.state_dic["substate"]
+
 		#
 		# for All
 		#
 		self.bitmap_logo.Destroy()
-		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_1.png'), 0.2)
+		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'images/autoware_logo_1.png'), 0.2)
 		self.bitmap_logo = wx.StaticBitmap(self, wx.ID_ANY, bm)
 
 		rtmgr.MyFrame.__do_layout(self)
@@ -486,7 +496,7 @@ class MyFrame(rtmgr.MyFrame):
 				subprocess.call([ 'mkdir', '-p', path ])
 
 		# icon
-		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'autoware_logo_2_white.png'), 0.5)
+		bm = scaled_bitmap(wx.Bitmap(rtmgr_src_dir() + 'images/autoware_logo_2_white.png'), 0.5)
 		icon = wx.EmptyIcon()
 		icon.CopyFromBitmap(bm)
 		self.SetIcon(icon)
@@ -1699,6 +1709,23 @@ class MyFrame(rtmgr.MyFrame):
 
 			if self.checkbox_topics_echo.GetValue():
 				wx.CallAfter(append_tc_limit, tc, s, rm_chars)
+        #
+        # State Tabs
+        #
+        def getStateId(self, s_text):
+                if(self.mainstate_dic.has_key(s_text)):
+                    return self.mainstate_dic[s_text]
+                elif(self.substate_dic.has_key(s_text)):
+                    return self.substate_dic[s_text]
+                else :
+                    return -99
+
+        def OnState(self, event):
+                pub = rospy.Publisher('state_cmd', std_msgs.msg.Int32, queue_size=10)
+                msg = std_msgs.msg.Int32()
+                clicked_event = event.GetEventObject()
+                msg.data = self.getStateId(clicked_event.GetLabel())
+                pub.publish(msg)
 
 	#
 	# Common Utils
@@ -2376,8 +2403,8 @@ class VarPanel(wx.Panel):
 
 		if self.has_slider or self.kind == 'num':
 			vszr = wx.BoxSizer(wx.VERTICAL)
-			vszr.Add( self.create_bmbtn("inc.png", self.OnIncBtn) )
-			vszr.Add( self.create_bmbtn("dec.png", self.OnDecBtn) )
+			vszr.Add( self.create_bmbtn("images/inc.png", self.OnIncBtn) )
+			vszr.Add( self.create_bmbtn("images/dec.png", self.OnDecBtn) )
 			szr.Add(vszr, 0, wx.ALIGN_CENTER_VERTICAL)
 
 		self.SetSizer(szr)
