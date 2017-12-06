@@ -38,6 +38,7 @@ namespace decision_maker
 {
 using namespace vector_map;
 
+
 enum class EControl : int32_t
 {
   KEEP = -1,
@@ -173,6 +174,10 @@ private:
   void changeShiftLane(void);
   void removeShiftLane(void);
 
+
+  void setAllStoplineStop(void);
+  void StoplinePlanIn(int status);
+  void StoplinePlanOut(int status);
   void publishLightColor(int status);
   void callbackInStateObstacleAvoid(int status);
   void callbackOutStateObstacleAvoid(int status);
@@ -231,6 +236,15 @@ public:
   }
 
   void run(void);
+  geometry_msgs::Point to_geoPoint(const vector_map_msgs::Point &vp)
+  {
+	  geometry_msgs::Point gp;
+	  gp.x = vp.ly;
+	  gp.y = vp.bx;
+	  gp.z = vp.h;
+	  return gp;
+  }
+
 };
 
 }  // namespace decision_maker
