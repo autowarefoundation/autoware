@@ -192,7 +192,7 @@ void DecisionMakerNode::setAllStoplineStop(void){
     return true;
   });
 
-  for (auto &lane : current_controlled_lane_array_.lanes)
+  for (auto &lane : current_shifted_lane_array_.lanes)
   {
     for (size_t wp_idx = 0; wp_idx < lane.waypoints.size() - 1; wp_idx++)
     {
@@ -216,7 +216,14 @@ void DecisionMakerNode::setAllStoplineStop(void){
                   lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
                   lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
           {
-            lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+		  amathutils::point *a = new amathutils::point();
+		  amathutils::point *b = new amathutils::point();
+		  a->x = center_point.x;
+		  a->y = center_point.y;
+		  b->x = lane.waypoints.at(wp_idx).pose.pose.position.x;
+		  b->y = lane.waypoints.at(wp_idx).pose.pose.position.y;
+		  if(amathutils::find_distance(a,b) <= 4)//
+			  lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
           }
         }
       }
@@ -226,9 +233,13 @@ void DecisionMakerNode::setAllStoplineStop(void){
 
 void DecisionMakerNode::StoplinePlanIn(int status){
 	setAllStoplineStop();
+	changeVelocityBasedLane();
+	publishControlledLaneArray();
 }
 void DecisionMakerNode::StoplinePlanOut(int status){
-	current_controlled_lane_array_ = current_based_lane_array_;
+	current_shifted_lane_array_ = current_based_lane_array_;
+	changeVelocityBasedLane();
+	publishControlledLaneArray();
 }
 
 void DecisionMakerNode::changeVelocityLane(int dir)
