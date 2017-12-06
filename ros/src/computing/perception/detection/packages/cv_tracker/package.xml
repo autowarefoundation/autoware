@@ -9,7 +9,7 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>libdpm_ocv</build_depend>
-  <build_depend>libdpm_ttic</build_depend>
+<!--  <build_depend>libdpm_ttic</build_depend> -->
   <build_depend>kf</build_depend>
   <build_depend>fusion</build_depend>
   <build_depend>klt</build_depend>
@@ -18,7 +18,7 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>libdpm_ocv</run_depend>
-  <run_depend>libdpm_ttic</run_depend>
+  <!--<run_depend>libdpm_ttic</run_depend>-->
   <run_depend>kf</run_depend>
   <run_depend>fusion</run_depend>
   <run_depend>klt</run_depend>

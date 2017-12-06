@@ -30,7 +30,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   std_msgs
   autoware_msgs
   sensor_msgs
-  libdpm_ttic
+#  libdpm_ttic
   fusion
   tf
 )
@@ -54,7 +54,9 @@ catkin_package(
 )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
-  CATKIN_DEPENDS libdpm_ttic fusion std_msgs geometry_msgs autoware_msgs
+  CATKIN_DEPENDS 
+#libdpm_ttic 
+fusion std_msgs geometry_msgs autoware_msgs
 )
 endif()
 ###########
@@ -81,33 +83,33 @@ message("CUDA is not installed. 'cv_tracker' package is not built.")
 ENDIF()
 
 ## dpm_ttic ##
-ADD_EXECUTABLE(dpm_ttic
-  nodes/dpm_ttic/dpm_ttic.cpp
-)
-
-TARGET_LINK_LIBRARIES(dpm_ttic
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
-)
-
-IF(CUDA_FOUND)
-SET_TARGET_PROPERTIES(dpm_ttic
-  PROPERTIES
-  COMPILE_FLAGS
-  "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-)
-ELSE()
-SET_TARGET_PROPERTIES(dpm_ttic
-  PROPERTIES
-  COMPILE_FLAGS
-  "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-)
-ENDIF()
-
-
-ADD_DEPENDENCIES(dpm_ttic
-  ${catkin_EXPORTED_TARGETS}
-)
+#ADD_EXECUTABLE(dpm_ttic
+#  nodes/dpm_ttic/dpm_ttic.cpp
+#)
+#
+#TARGET_LINK_LIBRARIES(dpm_ttic
+#  ${catkin_LIBRARIES}
+#  ${OpenCV_LIBS}
+#)
+#
+#IF(CUDA_FOUND)
+#SET_TARGET_PROPERTIES(dpm_ttic
+#  PROPERTIES
+#  COMPILE_FLAGS
+#  "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+#)
+#ELSE()
+#SET_TARGET_PROPERTIES(dpm_ttic
+#  PROPERTIES
+#  COMPILE_FLAGS
+#  "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
+#)
+#ENDIF()
+#
+#
+#ADD_DEPENDENCIES(dpm_ttic
+#  ${catkin_EXPORTED_TARGETS}
+#)
 
 ## dpm_ocv
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
