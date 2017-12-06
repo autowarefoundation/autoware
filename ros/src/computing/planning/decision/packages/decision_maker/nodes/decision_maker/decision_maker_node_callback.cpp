@@ -40,6 +40,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = true;
     }
+    }
   }
   else
   {
@@ -47,6 +48,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
     if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = false;
+    }
   }
   ctx->setEnableForceSetState(false);
 
