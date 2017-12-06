@@ -5,19 +5,6 @@
 
 namespace state_machine
 {
-// EmergencyState
-class EmergencyState : public State<EmergencyState>
-{
-private:
-  friend class State<EmergencyState>;
-  EmergencyState(void)
-  {
-    StateName = "Emergency";
-    StateTransMask = 0;
-  }
-
-public:
-};
 class EmergencyHWState : public State<EmergencyHWState>
 {
 private:

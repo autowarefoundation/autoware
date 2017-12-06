@@ -577,6 +577,10 @@ subs :
          gui  :
            lane_waypoint_csv :
              prop  : 1
+           decelerate :
+                   flags : [nl ]
+           disableDecisionMaker :
+                   flags : [nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -1964,59 +1968,6 @@ params :
       label: enable_display_marker
       kind : checkbox
       v    : False
-    - name : MainState_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: MainState_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - START_State
-      - INITIAL_State
-      - LOCATE_VEHICLE_State
-      - DRIVE_State
-      - MISSION_COMPLETE_State 
-      - EMERGENCY_State
-      v   : 0
-    - name : SubState_Acc_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Acc_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - ACC_ACCELERATION_State
-      - ACC_DECELERATION_State
-      - ACC_KEEP_State
-      v   : 0
-    - name : SubState_Str_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Str_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - STR_STRAIGHT_State
-      - STR_LEFT_State
-      - STR_RIGHT_State
-      v   : 0
-    - name : SubState_Behavior_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Behavior_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - BEHAVIOR_LANECHANGE_LEFT_State
-      - BEHAVIOR_LANECHANGE_RIGHT_State
-      - BEHAVIOR_LANECHANGE_OBSTACLE_AVOIDANCE_State
-      v   : 0
-    - name : SubState_Perception_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Perception_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - DETECT_OBSTACLE_STATE
-      - DETECT_STOPLINE_STATE
-      - DETECT_TRAFFICLIGHT_STATE
-      v   : 0
     - name : convergence_threshold
       desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
       label: convergence_threshold
@@ -2030,11 +1981,31 @@ params :
       max  : 30
       v    : 5
     - name : target_waypoint
-      desc : this target waypoint is used by judge turn angle.
+      desc : decision maker load wp_state except stopline by target_waypoint
       label: target_waypoint
       min  : 0
       max  : 50
       v    : 14
+    - name : stopline_target_waypoint
+      desc : stopline
+      label: stopline_target_waypoint
+      min  : 0
+      max  : 50
+      v    : 10
+    - name : shift_width
+      desc : lane shift width
+      label: shift_width
+      min  : -5.0
+      max  : 5.0
+      v    : 1.0
+    - name : points_topic
+      desc : points_topic
+      kind : str
+      v    : /points_lanes
+      cmd_param:
+              dash : ''
+              delim: ':='
+
 
   - name  : car_kf
     topic : /config/car_kf
@@ -2357,6 +2328,12 @@ params :
       label     : Number of Zeros Behind
       min       : 0
       max       : 100
+      v         : 0
+    - name      : number_of_smoothing_count
+      desc      : number_of_smoothing_count behind desc sample
+      label     : number_of_smoothing_count
+      min       : 0
+      max       : 10
       v         : 0
 
   - name  : lane_stop
@@ -2917,6 +2894,22 @@ params :
       desc      : decelerate   desc sample
       label   : 'decelerate :'
       v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disableDecisionMaker
+      desc      : if you not check this, you have to run a decisionmaker node.
+      label     : 'disableDecisionMaker'
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disableVelocitySmoothing
+      desc      : sample.
+      label     : 'disableVelocitySmoothing'
+      kind      : checkbox
+      v         : false
       cmd_param :
         dash        : ''
         delim       : ':='

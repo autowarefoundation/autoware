@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project (euc)
+project (amathutils) # autoware math utility
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	autoware_msgs
@@ -8,13 +8,13 @@ find_package(catkin REQUIRED COMPONENTS
 set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-set(TARGET euc)
-set(TARGET_SRC  src/main.cpp
+set(TARGET ${PROJECT_NAME})
+set(TARGET_SRC  src/Amathutils.cpp
 	)
 
 catkin_package(
 	INCLUDE_DIRS include
-	LIBRARIES euc
+	LIBRARIES amathutils
 	CATKIN_DEPENDS roscpp autoware_msgs
 )
 

@@ -1,5 +1,5 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package euc
+Changelog for package amathutils
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.5.1 (2017-09-25)
