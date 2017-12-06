@@ -24,5 +24,6 @@ substate:
         Obstacle Avoid       : 33
         TrafficLightRed      : 34
         TrafficLightGreen    : 35
+        StoplinePlan         : 36
         ClearB : 50
 
