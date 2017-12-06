@@ -157,6 +157,7 @@ private:
 public:
 };
 
+// Planning to change str state
 class DriveBehaviorLaneChangeLeftState : public State<DriveBehaviorLaneChangeLeftState>
 {
 private:
@@ -171,6 +172,7 @@ private:
 public:
 };
 
+// Planning to change str state
 class DriveBehaviorLaneChangeRightState : public State<DriveBehaviorLaneChangeRightState>
 {
 private:
@@ -235,6 +237,20 @@ private:
   {
     StateName = "STOPLINE_PLAN";
     StateNum = DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
+class DriveBehaviorAcceptLanechangeState : public State<DriveBehaviorAcceptLanechangeState>
+{
+private:
+  friend class State<DriveBehaviorAcceptLanechangeState>;
+  DriveBehaviorAcceptLanechangeState(void)
+  {
+    StateName = "AcceptLaneChange";
+    StateNum = DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
