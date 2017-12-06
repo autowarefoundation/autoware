@@ -11,7 +11,7 @@ struct regionCandidate {
   bool   isBlacked;
 };
 
-
+#define SHOW_DEBUG_INFO
 extern thresholdSet thSet;      // declared in traffic_light_lkf.cpp
 
 /*
