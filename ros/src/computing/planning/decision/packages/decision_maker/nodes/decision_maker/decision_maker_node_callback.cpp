@@ -36,12 +36,21 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   if (!ctx->isCurrentState(_state_num))
   {
     _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFIC_LIGHT_GREEN_STATE){
+	    isManualLight = true;
+    }
   }
   else
   {
     _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFIC_LIGHT_GREEN_STATE){
+	    isManualLight = false;
   }
   ctx->setEnableForceSetState(false);
+
+
   return _ret;
 }
 
@@ -89,19 +98,23 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
-{
+{    
   const autoware_msgs::traffic_light *light = event.getMessage().get();
-
-  current_traffic_light_ = light->traffic_light;
-  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
-  {
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-  }
-  else
-  {
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+//  const ros::M_string &header = event.getConnectionHeader();
+//  std::string topic = header.at("topic"); 
+  
+  if(!isManualLight){// && topic.find("manage") == std::string::npos){
+	  current_traffic_light_ = light->traffic_light;
+	  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
+	  {
+		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+	  }
+	  else
+	  {
+		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+	  }
   }
 }
 
