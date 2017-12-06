@@ -107,6 +107,8 @@ private:
   std::vector<CrossRoadArea> intersects;
   double displacement_from_path_;
 
+  bool isManualLight;
+
   // Param
   bool enableDisplayMarker;
   bool enableForceStateChange;
@@ -225,6 +227,7 @@ public:
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;
+    isManualLight = false;
   }
 
   void run(void);

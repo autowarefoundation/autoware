@@ -60,6 +60,7 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                          [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
 
+
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
@@ -75,7 +76,7 @@ void DecisionMakerNode::publishLightColor(int status)
 {
   autoware_msgs::traffic_light msg;
   msg.traffic_light = status;
-  //Pubs["light_color"].publish(msg);
+  Pubs["light_color"].publish(msg);
 }
 
 #define SHIFTED_LANE_FLAG -99999
