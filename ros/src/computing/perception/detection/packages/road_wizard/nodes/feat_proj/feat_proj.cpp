@@ -305,6 +305,7 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false)
 
 				vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
 			}
+			ROS_INFO("[feat_proj] VectorMapServer available. Publishing only TrafficSignals on the current lane");
 		}
 	}
 
@@ -384,7 +385,7 @@ int main(int argc, char *argv[])
 
 	/* Get Flag wheter vecter_map_server function will be used  */
 	private_nh.param<bool>("use_path_info", g_use_vector_map_server, false);
-
+	ROS_INFO("[feat_proj] Use VectorMapServer: %d", g_use_vector_map_server);
 	/* load vector map */
 	ros::Subscriber sub_point = rosnode.subscribe("vector_map_info/point",
 	                                              SUBSCRIBE_QUEUE_SIZE,
