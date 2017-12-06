@@ -224,37 +224,29 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 		{
 			case GREEN:
 				state_msg.traffic_light = TRAFFIC_LIGHT_GREEN;
-				state_string_msg.data = "green signal";
+				state_string_msg.data = TLR_GREEN_SIGNAL_STR;
 				break;
 			case YELLOW:
 			case RED:
 				state_msg.traffic_light = TRAFFIC_LIGHT_RED;
-				state_string_msg.data = "red signal";
+				state_string_msg.data = TLR_RED_SIGNAL_STR;
 				break;
 			case UNDEFINED:
 				state_msg.traffic_light = TRAFFIC_LIGHT_UNKNOWN;
-				state_string_msg.data = "";
+				state_string_msg.data = TLR_UNKNOWN_SIGNAL_STR;
 				break;
 		}
 
 		if (state_msg.traffic_light != TRAFFIC_LIGHT_UNKNOWN)
 			break;  // publish the first state in detector.contexts
 
-		autoware_msgs::TrafficLightResult tlr_result_msg;
-		tlr_result_msg.recognition_result = state_msg.traffic_light;
-		tlr_result_msg.recognition_result_str = state_string_msg.data;
-		tlr_result_msg.light_id = current_context.signalID;
-		tlr_result_msg.lane_id = current_context.closestLaneId;
-
-		tlr_result_array_msg.results.push_back(tlr_result_msg);
 	}
-
-	signal_state_array_publisher_.publish(tlr_result_array_msg);
 
 	if (state_msg.traffic_light != prev_state)
 	{
 		signalState_pub.publish(state_msg);
 		signalStateString_pub.publish(state_string_msg);
+
 	} else
 	{
 		state_string_msg.data = "";
@@ -291,6 +283,30 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 		Context ctx = detector.contexts.at(i);
 		visualization_msgs::MarkerArray signalSet;
 		visualization_msgs::Marker mk_red, mk_yellow, mk_green;
+
+		autoware_msgs::TrafficLightResult tlr_result_msg;
+		tlr_result_msg.recognition_result_str = state_string_msg.data;
+		tlr_result_msg.light_id = ctx.signalID;
+		tlr_result_msg.lane_id = ctx.closestLaneId;
+
+		switch (ctx.lightState)
+		{
+			case GREEN:
+				tlr_result_msg.recognition_result = TRAFFIC_LIGHT_GREEN;
+				tlr_result_msg.recognition_result_str = TLR_GREEN_SIGNAL_STR;
+				break;
+			case YELLOW:
+			case RED:
+				tlr_result_msg.recognition_result = TRAFFIC_LIGHT_RED;
+				tlr_result_msg.recognition_result_str = TLR_RED_SIGNAL_STR;
+				break;
+			case UNDEFINED:
+				tlr_result_msg.recognition_result = TRAFFIC_LIGHT_UNKNOWN;
+				tlr_result_msg.recognition_result_str = TLR_UNKNOWN_SIGNAL_STR;
+				break;
+		}
+
+		tlr_result_array_msg.results.push_back(tlr_result_msg);
 
 		/* Set the frame ID */
 		mk_red.header.frame_id = "map";
@@ -380,6 +396,7 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 
 		marker_pub.publish(signalSet);
 	}
+	signal_state_array_publisher_.publish(tlr_result_array_msg);
 
 	prev_state = state_msg.traffic_light;
 } /* static void extractedPos_cb() */
