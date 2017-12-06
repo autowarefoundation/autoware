@@ -70,12 +70,12 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
 {
-  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
   }
-  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
