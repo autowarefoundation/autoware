@@ -226,5 +226,19 @@ private:
 
 public:
 };
+
+class DriveBehaviorStoplinePlanState : public State<DriveBehaviorStoplinePlanState>
+{
+private:
+  friend class State<DriveBehaviorStoplinePlanState>;
+  DriveBehaviorStoplinePlanState(void)
+  {
+    StateName = "STOPLINE_PLAN";
+    StateNum = DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
 }
 #endif

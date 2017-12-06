@@ -158,15 +158,6 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
   }
 }
 
-geometry_msgs::Point to_geoPoint(const vector_map_msgs::Point &vp)
-{
-  geometry_msgs::Point gp;
-  gp.x = vp.ly;
-  gp.y = vp.bx;
-  gp.z = vp.h;
-  return gp;
-}
-
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 {
   insertPointWithinCrossRoad(intersects, lane_array);

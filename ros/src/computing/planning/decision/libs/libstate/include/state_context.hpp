@@ -57,6 +57,7 @@ public:
     StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE] = DriveBehaviorTrafficLightRedState::getInstance();
     StateStores[DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE] = DriveBehaviorTrafficLightGreenState::getInstance();
     StateStores[DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE] = DriveBehaviorObstacleAvoidanceState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE] = DriveBehaviorStoplinePlanState::getInstance();
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
