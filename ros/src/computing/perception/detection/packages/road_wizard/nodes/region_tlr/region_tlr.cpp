@@ -109,6 +109,10 @@ static void putResult_inText(cv::Mat *image, const std::vector<Context> &context
         label = "UNDEFINED";
         textColor = CV_RGB(0, 0, 0);
       }
+      if (ctx.leftTurnSignal)
+        {label+=" LEFT";}
+      if (ctx.rightTurnSignal)
+        {label+=" RIGHT";}
 
       cv::getTextSize(label,
 		      fontFace,
