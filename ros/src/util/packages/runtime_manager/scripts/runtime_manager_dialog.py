@@ -771,8 +771,8 @@ class MyFrame(rtmgr.MyFrame):
 		obj = event.GetEventObject()
 		self.alias_sync(obj)
 		v = obj.GetValue()
-		pub = rospy.Publisher('mode_cmd', mode_cmd, queue_size=10)
-		pub.publish(mode_cmd(mode=v))
+		pub = rospy.Publisher('/as/control_mode', Bool, queue_size=10)
+		pub.publish(Bool(data=v))
 
 
 
