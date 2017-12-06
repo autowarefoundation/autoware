@@ -61,13 +61,13 @@ void PacmodInterface::initForROS()
   steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
   speed_mode_pub_    = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 10);
   turn_signal_pub_   = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 10);
-  gear_pub_          = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 10);
+  gear_pub_          = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
 }
 
 void PacmodInterface::run()
 {
-  ros::spin();
+    ros::spin();
 }
 
 
@@ -102,8 +102,10 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   turn_signal.mode = mode;
 
   platform_comm_msgs::GearCommand gear_comm;
-  gear_comm.header = msg->header;
+  // gear_comm.header = msg->header;
+  gear_comm.header.stamp = ros::Time::now();
   gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
+  // gear_comm.command.gear = platform_comm_msgs::Gear::DRIVE;
 
   std::cout << "mode: "  << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
@@ -113,13 +115,17 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   steer_mode_pub_.publish(steer_mode);
   turn_signal_pub_.publish(turn_signal);
 
-  // publish only when mode has changed
-  static int previous_mode = mode;
-  if (mode != previous_mode)
-  {
-    gear_pub_.publish(gear_comm);
-  }
-  previous_mode = mode;
+  // // publish only when mode has changed
+  // //
+  //static int previous_mode = mode;
+  //if (mode != previous_mode)
+  //{
+    //std::cout << "changing gear: " << gear_comm.command.gear << "\n";
+  std::cout << "GEAR COMM: " << gear_comm << "\n";
+  gear_pub_.publish(gear_comm);
+   //gear_pub_.publish(gear_comm);
+  // }
+  // previous_mode = mode;
 
 }
 
