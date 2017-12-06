@@ -535,6 +535,14 @@ params :
         delim        : ':='
         only_enable  : True
         tail         : True
+    - name      : target_frame
+      desc      : Registers TF to this coordinate frame (default velodyne)
+      label     : target_frame
+      kind      : str
+      v         : 'velodyne'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : file
       desc      : file desc sample
       kind      : path

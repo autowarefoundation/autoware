@@ -17,6 +17,7 @@ namespace UtilityHNS
 
 std::string DataRW::LoggingMainfolderName 	= "/SimuLogs/";
 std::string DataRW::ControlLogFolderName 	= "ControlLogs/";
+std::string DataRW::GlobalPathLogFolderName = "GlobalPathLogs/";
 std::string DataRW::PathLogFolderName 		= "TrajectoriesLogs/";
 std::string DataRW::StatesLogFolderName 	= "BehaviorsLogs/";
 std::string DataRW::SimulationFolderName 	= "SimulationData/";
@@ -329,7 +330,7 @@ bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
-		if(lineData.at(0).size() < 5) return false;
+		if(lineData.at(0).size() < 6) return false;
 
 		data.x = strtod(lineData.at(0).at(0).c_str(), NULL);
 		data.y = strtod(lineData.at(0).at(1).c_str(), NULL);
@@ -337,6 +338,7 @@ bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
 		data.a = strtod(lineData.at(0).at(3).c_str(), NULL);
 		data.c = strtod(lineData.at(0).at(4).c_str(), NULL);
 		data.v = strtod(lineData.at(0).at(5).c_str(), NULL);
+		data.name = lineData.at(0).at(6);
 
 		return true;
 
@@ -817,6 +819,75 @@ int AisanVectorFileReader::ReadAllData(vector<AisanVector>& data_list)
 {
 	data_list.clear();
 	AisanVector data;
+	//double logTime = 0;
+	int count = 0;
+	while(ReadNextLine(data))
+	{
+		data_list.push_back(data);
+		count++;
+	}
+	return count;
+}
+
+bool AisanCurbFileReader::ReadNextLine(AisanCurb& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 6) return false;
+
+		data.ID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.LID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.Height = strtod(lineData.at(0).at(2).c_str(), NULL);
+		data.Width 	= strtod(lineData.at(0).at(3).c_str(), NULL);
+		data.dir 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+int AisanCurbFileReader::ReadAllData(vector<AisanCurb>& data_list)
+{
+	data_list.clear();
+	AisanCurb data;
+	//double logTime = 0;
+	int count = 0;
+	while(ReadNextLine(data))
+	{
+		data_list.push_back(data);
+		count++;
+	}
+	return count;
+}
+
+bool AisanRoadEdgeFileReader::ReadNextLine(AisanRoadEdge& data)
+{
+	vector<vector<string> > lineData;
+	if(ReadSingleLine(lineData))
+	{
+		if(lineData.size()==0) return false;
+		if(lineData.at(0).size() < 3) return false;
+
+		data.ID 	= strtol(lineData.at(0).at(0).c_str(), NULL, 10);
+		data.LID 	= strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+		data.LinkID = strtol(lineData.at(0).at(1).c_str(), NULL, 10);
+
+		return true;
+
+	}
+	else
+		return false;
+}
+
+int AisanRoadEdgeFileReader::ReadAllData(vector<AisanRoadEdge>& data_list)
+{
+	data_list.clear();
+	AisanRoadEdge data;
 	//double logTime = 0;
 	int count = 0;
 	while(ReadNextLine(data))

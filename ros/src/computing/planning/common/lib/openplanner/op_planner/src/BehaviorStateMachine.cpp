@@ -218,7 +218,7 @@ BehaviorStateMachine* WaitState::GetNextState()
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this;
 
-	PreCalculatedConditions* pCParams = GetCalcParams();
+	//PreCalculatedConditions* pCParams = GetCalcParams();
 
 	return FindBehaviorState(FORWARD_STATE);
 }
@@ -249,7 +249,18 @@ BehaviorStateMachine* FollowState::GetNextState()
 
 	//std::cout << "Following State >> followDistance: " << pCParams->distanceToNext << ", followSpeed: " << pCParams->velocityOfNext << std::endl;
 
-	if(pCParams->currentGoalID != pCParams->prevGoalID
+	if(m_pParams->enableTrafficLightBehavior
+				&& pCParams->currentTrafficLightID > 0
+				&& pCParams->bTrafficIsRed
+				&& pCParams->currentTrafficLightID != pCParams->prevTrafficLightID)
+			return FindBehaviorState(TRAFFIC_LIGHT_STOP_STATE);
+
+	else if(m_pParams->enableStopSignBehavior
+			&& pCParams->currentStopSignID > 0
+			&& pCParams->currentStopSignID != pCParams->prevStopSignID)
+			return FindBehaviorState(STOP_SIGN_STOP_STATE);
+
+	else if(pCParams->currentGoalID != pCParams->prevGoalID
 			|| !pCParams->bFullyBlock)
 		return FindBehaviorState(FORWARD_STATE);
 

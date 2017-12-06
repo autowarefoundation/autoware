@@ -7,7 +7,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <euclidean_space.hpp>
+#include <amathutils.hpp>
 #include <planner_selector.hpp>
 
 namespace decision_maker
@@ -51,7 +51,7 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
     autoware_msgs::waypoint dp_point = final_waypoints_dp_.waypoints.at(config_waypoints_num_);
     autoware_msgs::waypoint astar_point = final_waypoints_astar_.waypoints.at(config_waypoints_num_);
 
-    euclidean_space::point p_dp, p_astar;
+    amathutils::point p_dp, p_astar;
     p_dp.x = dp_point.pose.pose.position.x;
     p_dp.x = dp_point.pose.pose.position.y;
     p_dp.z = 0.0;
@@ -60,7 +60,7 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
     p_astar.x = astar_point.pose.pose.position.y;
     p_astar.z = 0.0;
 
-    _distance = euclidean_space::EuclideanSpace::find_distance(&p_dp, &p_astar);
+    _distance = amathutils::find_distance(&p_dp, &p_astar);
     //  ROS_INFO("distance=%f. %d:%d", _distance, dp_point.dtlane.dist,astar_point.dtlane.dist);
   }
   catch (const std::out_of_range &ex)
@@ -115,10 +115,6 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
 #endif
   // for debug
   //	ROS_INFO("\n***** EnableLattice = %d  **** \n",enableLattice_,msg.data);
-}
-inline double mps2kmph(double _mpsval)
-{
-  return (_mpsval * 60 * 60) / 1000;  // mps * 60sec * 60m / 1000m
 }
 
 void PlannerSelector::callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event)

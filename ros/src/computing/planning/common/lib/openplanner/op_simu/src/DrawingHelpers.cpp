@@ -356,7 +356,7 @@ void DrawingHelpers::DrawWidePath(const std::vector<PlannerHNS::WayPoint>& path_
 
 void DrawingHelpers::DrawLinePoygonline(const PlannerHNS::GPSPoint& p1, const PlannerHNS::GPSPoint& p2, const double& w)
 {
-	POINT2D center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
+	GPSPoint center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
 	double a = 0;
 
 	center.x = p1.x + (p2.x-p1.x)/2.0;
@@ -390,7 +390,7 @@ void DrawingHelpers::DrawLinePoygonFromCenterX(const PlannerHNS::WayPoint& p1, c
 		const PlannerHNS::WayPoint& p2, const double& z2, const double& w, const double& h,
 		PlannerHNS::WayPoint& prev_point)
 {
-	POINT2D center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
+	GPSPoint center, prev_center ,pa, pb, pc, pd, prev_pa,prev_pb;
 	double a = 0;
 	double prev_angle = 0;
 
@@ -615,7 +615,7 @@ void DrawingHelpers::DrawSimpleEllipse(float x, float y, float z, float outer_wi
 
 void DrawingHelpers::DrawPedal(float x, float y, float z, float width, float height, float inner_height, float color[3])
 {
-	POINT2D pa, pb, pc, pd;
+	GPSPoint pa, pb, pc, pd;
 	double w2 = width/2.0;
 	double h2 = height/2.0;
 

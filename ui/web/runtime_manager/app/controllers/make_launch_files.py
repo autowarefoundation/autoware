@@ -5,6 +5,7 @@ from xml.etree.ElementTree import Element, SubElement, Comment, tostring
 from xml.dom import minidom
 from os import listdir
 from os.path import realpath
+from config.env import env
 
 
 def prettify(elem):
@@ -69,7 +70,7 @@ def create_initialization_launch_file(rosbag=True):
             "file": "$(find model_publisher)/launch/vehicle_model.launch",
         }
     )
-    SubElement(vehicle_model, "arg", {"name": "model_path", "value": realpath("../../../../ros/src/.config/model/default.urdf")})
+    SubElement(vehicle_model, "arg", {"name": "model_path", "value": env["PATH_AUTOWARE_DIR"] + "/ros/src/.config/model/default.urdf"})
 
 
     launch.append(Comment("tf2 web republisher"))
@@ -94,9 +95,9 @@ def create_initialization_launch_file(rosbag=True):
     )
 
 
-    launch.append(Comment("web_vider_server"))
+    launch.append(Comment("web_video_server"))
     SubElement(
-        launch, "node", {"pkg": "web_video_server", "type": "web_video_server", "name": "web_vide_server"}
+        launch, "node", {"pkg": "web_video_server", "type": "web_video_server", "name": "web_video_server"}
     )
 
 
@@ -532,6 +533,53 @@ def create_motion_launch_file():
     return True
 
 
+def create_gateway_launch_file():
+    launch = Element("launch")
+
+    launch.append(Comment("pacmod_interface"))
+    SubElement(
+        launch,
+        "include",
+        {
+            "file": "$(find as)/launch/pacmod_interface.launch",
+        }
+    )
+
+    with open("./res/gateway/gateway.launch", "w") as f:
+        f.write(prettify(launch))
+    return True
+
+
+def create_gateway_on_launch_file():
+    launch = Element("launch")
+    params = "data: true"
+    SubElement(
+        launch, "node", {
+            "pkg": "rostopic", "type": "rostopic", "name": "rostopic",
+            "args": "pub /as/control_mode std_msgs/Bool '" + params + "'"
+        }
+    )
+
+    with open("./res/gateway/on.launch", "w") as f:
+        f.write(prettify(launch))
+    return True
+
+
+def create_gateway_off_launch_file():
+    launch = Element("launch")
+    params = "data: false"
+    SubElement(
+        launch, "node", {
+            "pkg": "rostopic", "type": "rostopic", "name": "rostopic",
+            "args": "pub /as/control_mode std_msgs/Bool '" + params + "'"
+        }
+    )
+
+    with open("./res/gateway/off.launch", "w") as f:
+        f.write(prettify(launch))
+    return True
+
+
 def create_rosbag_launch_file():
     launch = Element("launch")
 
@@ -539,19 +587,6 @@ def create_rosbag_launch_file():
         "pkg": "rosbag", "type": "play", "name": "rosbag_play",
         "args": "{} --clock --pause".format(
             get_file_paths("./res/rosbag/bagfile/", "bag")[0])})
-
-    with open("./res/rosbag/rosbag.launch", "w") as f:
-        f.write(prettify(launch))
-    return True
-
-
-def create_rosbag_pause_launch_files():
-    launch = Element("launch")
-
-    SubElement(launch, "service", {
-        "pkg": "rosbag", "type": "play", "name": "rosbag_play",
-        "args": "{} --clock --pause".format(
-            get_file_paths("./res/rosbag/bagfile/")[0])})
 
     with open("./res/rosbag/rosbag.launch", "w") as f:
         f.write(prettify(launch))
@@ -566,4 +601,7 @@ if __name__ == '__main__':
     create_sensing_launch_file()
     create_mission_launch_file()
     create_motion_launch_file()
+    create_gateway_launch_file()
+    create_gateway_on_launch_file()
+    create_gateway_off_launch_file()
     create_rosbag_launch_file()

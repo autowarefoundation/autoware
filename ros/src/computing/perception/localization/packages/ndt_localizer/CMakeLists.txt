@@ -16,7 +16,6 @@ find_package( OpenMP )
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    add_definitions(-DOMP_FOUND)
 endif()
 
 find_package(CUDA)
@@ -24,6 +23,7 @@ if(CUDA_FOUND)
     add_definitions(-DCUDA_FOUND)
     list(APPEND FAST_PCL_PACKAGES ndt_gpu)
 endif()
+
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 find_package(catkin REQUIRED COMPONENTS
   roscpp

@@ -64,7 +64,6 @@ If you need to use a SSD detector, please refer SSD readme.
     cd ~/
     git clone https://github.com/CPFL/Autoware.git
     cd Autoware
-    git checkout -b aarch64 origin/feature/aarch64
 
     cd ros
     ./catkin_make_release -j1

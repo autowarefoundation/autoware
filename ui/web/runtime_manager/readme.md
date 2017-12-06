@@ -1,5 +1,7 @@
 # Autoware Web UI
 
+[demo](https://autoware.blob.core.windows.net/web-ui-resouces/demo.mp4)
+
 ## Requirements
 
 - npm and node

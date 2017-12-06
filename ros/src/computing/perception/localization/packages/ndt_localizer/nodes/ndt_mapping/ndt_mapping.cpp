@@ -932,7 +932,6 @@ int main(int argc, char** argv)
   offset_imu_odom_pitch = 0.0;
   offset_imu_odom_yaw = 0.0;
 
-  std::cout << "INITIALILZEEEEEEEEEEEEEEEEEEEEEEEE" << std::endl;
   ros::init(argc, argv, "ndt_mapping");
 
   ros::NodeHandle nh;

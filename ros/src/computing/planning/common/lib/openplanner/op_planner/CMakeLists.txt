@@ -36,15 +36,13 @@ include_directories(${catkin_INCLUDE_DIRS}
 set(PLANNERH_SRC
 		src/BehaviorStateMachine.cpp
 		src/MappingHelpers.cpp
-		src/RSPlanner.cpp
-		src/GridMap.cpp
+		src/RSPlanner.cpp		
 		src/MatrixOperations.cpp
-		src/TrajectoryCosts.cpp
-		src/HMIStateMachine.cpp
-		src/PlannerH.cpp
-		src/geo_pos_conv.cpp
+		src/TrajectoryCosts.cpp		
+		src/PlannerH.cpp		
 		src/LocalPlannerH.cpp
 		src/PlanningHelpers.cpp
+		src/TrajectoryPrediction.cpp
 )
 
 ## Declare a cpp library
