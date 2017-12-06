@@ -25,5 +25,6 @@ substate:
         TrafficLightRed      : 34
         TrafficLightGreen    : 35
         StoplinePlan         : 36
+        AcceptLaneChange     : 37
         ClearB : 50
 
