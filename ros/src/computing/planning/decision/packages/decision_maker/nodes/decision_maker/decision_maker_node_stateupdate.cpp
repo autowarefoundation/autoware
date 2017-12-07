@@ -60,22 +60,29 @@ void DecisionMakerNode::setupStateCallback(void)
 
   // trraficlight
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
-                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-			 publishLightColor((int)state_machine::E_GREEN); });
+                         [&]() { 
+			 //debug
+			 fprintf(stderr,"[RED]callbackin\n");
+			 //
+			 ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+			 publishLightColor((int)state_machine::E_RED); });
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
-		  [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-		  publishLightColor((int)state_machine::E_RED); });
+		  [&]() { 
+		  fprintf(stderr,"[GREEN]callbackin\n");
+		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+		  publishLightColor((int)state_machine::E_GREEN); });
 
 #if 0
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
-#endif
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                          [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
+#endif
+
 }
 
 void DecisionMakerNode::publishLightColor(int status)
