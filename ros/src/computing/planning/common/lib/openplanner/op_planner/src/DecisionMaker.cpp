@@ -92,6 +92,7 @@ void DecisionMaker::InitBehaviorStates()
 	m_pGoToGoalState->InsertNextState(m_pAvoidObstacleState);
 	m_pGoToGoalState->InsertNextState(m_pTrafficLightStopState);
 	m_pGoToGoalState->InsertNextState(m_pStopSignStopState);
+	m_pGoToGoalState->decisionMakingCount = m_params.nReliableCount;
 
 	m_pStopState->InsertNextState(m_pGoToGoalState);
 
@@ -104,8 +105,9 @@ void DecisionMaker::InitBehaviorStates()
 	m_pFollowState->InsertNextState(m_pStopState);
 	m_pFollowState->InsertNextState(m_pTrafficLightStopState);
 	m_pFollowState->InsertNextState(m_pStopSignStopState);
+	m_pFollowState->decisionMakingCount = m_params.nReliableCount;
 
-	m_pAvoidObstacleState->decisionMakingTime = 0.1;
+	//m_pAvoidObstacleState->decisionMakingTime = 0.1;
 
 	m_pCurrentBehaviorState = m_pInitState;
 }
@@ -117,7 +119,6 @@ void DecisionMaker::InitBehaviorStates()
 		 double d = hypot(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x);
 		 if(d <= trafficLights.at(i).stoppingDistance)
 		 {
-			 //double a = UtilityH::FixNegativeAngle(atan2(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x));
 			 double a_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(UtilityHNS::UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , UtilityHNS::UtilityH::FixNegativeAngle(state.pos.a));
 
 			 if(a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId)
@@ -272,23 +273,12 @@ void DecisionMaker::InitBehaviorStates()
  bool DecisionMaker::SelectSafeTrajectory()
  {
 	 PlannerHNS::PreCalculatedConditions *preCalcPrams = m_pCurrentBehaviorState->GetCalcParams();
-
 	bool bNewTrajectory = false;
 
-	if(m_pCurrentBehaviorState->m_Behavior == OBSTACLE_AVOIDANCE_STATE)
-		preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCurrSafeTrajectory;
-	else
-		preCalcPrams->iPrevSafeTrajectory = preCalcPrams->iCentralTrajectory;
-
-	preCalcPrams->iPrevSafeLane = preCalcPrams->iCurrSafeLane;
-
-
-	if(preCalcPrams->iPrevSafeLane >= 0
-			&& preCalcPrams->iPrevSafeLane < (int)m_RollOuts.size()
-			&& preCalcPrams->iPrevSafeTrajectory >= 0
-			&& preCalcPrams->iPrevSafeTrajectory < (int)m_RollOuts.size())
+	if(preCalcPrams->iPrevSafeTrajectory >= 0 && preCalcPrams->iPrevSafeTrajectory < (int)m_RollOuts.size())
 	{
-		m_Path = m_RollOuts.at(preCalcPrams->iPrevSafeTrajectory);
+		m_Path = m_RollOuts.at(preCalcPrams->iCurrSafeTrajectory);
+		//std::cout << "Prev: " << preCalcPrams->iPrevSafeTrajectory << ", Curr: " << preCalcPrams->iCurrSafeTrajectory  << std::endl;
 		bNewTrajectory = true;
 	}
 
@@ -335,6 +325,7 @@ void DecisionMaker::InitBehaviorStates()
 	unsigned int point_index = 0;
 	double critical_long_front_distance = 2.0;
 
+
 	if(m_Path.size() <= 5)
 	{
 		double target_velocity = 0;
@@ -361,10 +352,13 @@ void DecisionMaker::InitBehaviorStates()
 		double targe_acceleration = -pow(CurrStatus.speed, 2)/(2.0*(beh.followDistance - critical_long_front_distance));
 		if(targe_acceleration <= 0 &&  targe_acceleration > m_CarInfo.max_deceleration/2.0)
 		{
-			double target_velocity = (targe_acceleration * dt) + CurrStatus.speed;
+//			double target_velocity = (targe_acceleration * dt) + CurrStatus.speed;
 
-			double e = target_velocity - CurrStatus.speed;
-			double desiredVelocity = m_pidVelocity.getPID(e);
+//			double e = target_velocity - CurrStatus.speed;
+//			double desiredVelocity = m_pidVelocity.getPID(e);
+
+			double e = beh.followDistance - m_params.minFollowingDistance;
+			double desiredVelocity = m_pidStopping.getPID(e);
 
 			for(unsigned int i = info.iBack; i < m_Path.size(); i++)
 			{
@@ -372,8 +366,9 @@ void DecisionMaker::InitBehaviorStates()
 					m_Path.at(i).v = desiredVelocity;
 			}
 
+			//std::cout << "Accelerate -> Target V: " << desiredVelocity << ", Brake D: " <<  average_braking_distance << ", Error: " << e << std::endl;
+
 			return desiredVelocity;
-			//cout << "Accelerate -> Target V: " << target_velocity << ", Brake D: " <<  average_braking_distance << ", Acceleration: " << targe_acceleration << endl;
 		}
 		else
 		{
@@ -388,8 +383,8 @@ void DecisionMaker::InitBehaviorStates()
 					m_Path.at(i).v = desiredVelocity;
 			}
 
+			//std::cout << "Decelerate -> Target V: " << desiredVelocity << ", Brake D: " <<  average_braking_distance << ", Error: " << e << std::endl;
 			return desiredVelocity;
-			//cout << "Decelerate -> Target V: " << target_velocity << ", Brake D: " <<  average_braking_distance << ", Start I" << info.iBack << endl;
 		}
 
 	}
@@ -421,7 +416,6 @@ void DecisionMaker::InitBehaviorStates()
 	return max_velocity;
  }
 
-
  PlannerHNS::BehaviorState DecisionMaker::DoOneStep(
 		const double& dt,
 		const PlannerHNS::WayPoint currPose,
@@ -444,6 +438,7 @@ void DecisionMaker::InitBehaviorStates()
 	beh.bNewPlan = SelectSafeTrajectory();
 
 	beh.maxVelocity = UpdateVelocityDirectlyToTrajectory(beh, vehicleState, dt);
+	beh.iTrajectory = m_iSafeTrajectory;
 
 	return beh;
  }

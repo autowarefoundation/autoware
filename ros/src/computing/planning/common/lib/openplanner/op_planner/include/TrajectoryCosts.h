@@ -29,11 +29,11 @@ public:
 
 	TrajectoryCost DoOneStepStatic(const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths,
 			const WayPoint& currState, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
-			const std::vector<PlannerHNS::DetectedObject>& obj_list);
+			const std::vector<PlannerHNS::DetectedObject>& obj_list, const int& iCurrentIndex = -1);
 
 	TrajectoryCost DoOneStepDynamic(const vector<vector<WayPoint> >& rollOuts, const vector<WayPoint>& totalPaths,
 			const WayPoint& currState, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
-			const std::vector<PlannerHNS::DetectedObject>& obj_list);
+			const std::vector<PlannerHNS::DetectedObject>& obj_list, const int& iCurrentIndex = -1);
 
 public:
 	int m_PrevCostIndex;

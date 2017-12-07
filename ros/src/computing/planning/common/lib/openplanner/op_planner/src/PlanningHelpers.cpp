@@ -1189,7 +1189,7 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 //		cout << "Aler Alert !!! fast: " << close_index << ", slow: " << i_slow  << endl;
 	//vector<WayPoint> tempPath;
 	double d_limit = 0;
-	if(close_index >= 5) close_index -=5;
+	if(close_index >= 2) close_index -=2;
 	else close_index = 0;
 
 	for(unsigned int i=close_index; i< originalPath.size(); i++)
@@ -1216,6 +1216,49 @@ void PlanningHelpers::ExtractPartFromPointToDistance(const vector<WayPoint>& ori
 	//extractedPath = tempPath;
 	//tempPath.clear();
 	//TestQuadraticSpline(extractedPath, tempPath);
+}
+
+void PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(const vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
+		const double& pathDensity, vector<WayPoint>& extractedPath)
+{
+	if(originalPath.size() < 2 ) return;
+
+	extractedPath.clear();
+
+	int close_index = GetClosestNextPointIndexDirectionFast(originalPath, pos);
+	double d = 0;
+
+	if(close_index + 1 >= originalPath.size())
+		close_index = originalPath.size() - 2;
+
+	for(int i=close_index; i >=  0; i--)
+	{
+		extractedPath.insert(extractedPath.begin(),  originalPath.at(i));
+		if(i < originalPath.size())
+			d += hypot(originalPath.at(i).pos.y - originalPath.at(i+1).pos.y, originalPath.at(i).pos.x - originalPath.at(i+1).pos.x);
+		if(d > 10)
+			break;
+	}
+
+	//extractedPath.push_back(info.perp_point);
+	d = 0;
+	for(int i=close_index+1; i < (int)originalPath.size(); i++)
+	{
+		extractedPath.push_back(originalPath.at(i));
+		if(i > 0)
+			d += hypot(originalPath.at(i).pos.y - originalPath.at(i-1).pos.y, originalPath.at(i).pos.x - originalPath.at(i-1).pos.x);
+		if(d > minDistance)
+			break;
+	}
+
+	if(extractedPath.size() < 2)
+	{
+		cout << endl << "### Planner Z . Extracted Rollout Path is too Small, Size = " << extractedPath.size() << endl;
+		return;
+	}
+
+	FixPathDensity(extractedPath, pathDensity);
+	CalcAngleAndCost(extractedPath);
 }
 
 void PlanningHelpers::ExtractPartFromPointToDistanceFast(const vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,

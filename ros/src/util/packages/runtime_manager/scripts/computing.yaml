@@ -489,13 +489,20 @@ subs :
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
         param: astar_navi
-    - name : way_planner (OpenPlanner)
+    - name : way_planner (OpenPlanner) (old ver)
       desc : Global planner for OpenPlanner
       subs :
       - name : way_planner
         desc : for global planning
         cmd  : roslaunch way_planner way_planner.launch
         param: way_planner
+    - name : OpenPlanner - Global Planning
+      desc : Global planner for OpenPlanner
+      subs :
+      - name : op_global_planner
+        desc : global planner node from OpenPlanner
+        cmd  : roslaunch op_global_planner op_global_planner.launch
+        param: op_global_planner
 
   - name : Motion Planning
     desc : Motion Planning desc sample
@@ -2561,6 +2568,91 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name  : op_global_planner
+    vars  :
+    - name : enableLaneChange
+      desc : global plan extended by lane changes
+      label: Enable Lane Changing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableReplan
+      desc : infinite replanning to multiple goals including the start position
+      label: Enable Replanning
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSmoothing
+      desc : smooth and fix global path
+      label: Enable Smoothing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableRvizInput
+      desc : Enable Destination selection by Rviz or from Log file
+      label: Rviz Goals
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash   : ''
+        delim  : ':='
+
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.75
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Autoware
+      - Folder
+      - KML
+      descs :
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : dp_planner
     vars  :
     - name : enabTrajectoryVelocities
@@ -3024,8 +3116,8 @@ params :
     - name : horizontalSafetyDistance
       desc : Horizontal Safety Distance
       label: Lateral Safety
-      min : 0.2
-      max : 2.0
+      min : 0.0
+      max : 3.0
       v   : 1.0
       cmd_param:
         dash     : ''
@@ -3033,8 +3125,8 @@ params :
     - name : verticalSafetyDistance
       desc : Vertical Safety Distance
       label: Longitudinal Safety
-      min : 0.5
-      max : 4.0
+      min : 0.0
+      max : 5.0
       v   : 1.0
       cmd_param:
         dash     : ''

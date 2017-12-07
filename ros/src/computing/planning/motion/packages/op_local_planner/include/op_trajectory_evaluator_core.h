@@ -82,6 +82,8 @@ protected: //Planning Related variables
   	PlannerHNS::PlanningParams m_PlanningParams;
   	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
 
+  	PlannerHNS::BehaviorState m_CurrentBehavior;
+
 
   	visualization_msgs::MarkerArray m_CollisionsDummy;
 	visualization_msgs::MarkerArray m_CollisionsActual;
@@ -104,6 +106,7 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_GlobalPlannerPaths	;
 	ros::Subscriber sub_LocalPlannerPaths	;
 	ros::Subscriber sub_predicted_objects	;
+	ros::Subscriber sub_current_behavior	;
 
 
 
@@ -115,6 +118,7 @@ protected: // Callback function for subscriber.
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg);
+	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr & msg);
 
 protected: //Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);

@@ -110,6 +110,8 @@ public:
 
 	static void ExtractPartFromPointToDistanceFast(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
 				const double& pathDensity, std::vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance);
+	static void ExtractPartFromPointToDistanceDirectionFast(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
+			const double& pathDensity, std::vector<WayPoint>& extractedPath);
 
 	static void CalculateRollInTrajectories(const WayPoint& carPos, const double& speed, const std::vector<WayPoint>& originalCenter, int& start_index,
 			int& end_index, std::vector<double>& end_laterals ,

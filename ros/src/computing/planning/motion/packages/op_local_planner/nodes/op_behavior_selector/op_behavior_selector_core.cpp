@@ -57,7 +57,7 @@ BehaviorGen::BehaviorGen()
 	pub_LocalPath = nh.advertise<autoware_msgs::lane>("final_waypoints", 1,true);
 	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("base_waypoints", 1,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 1,true);
-	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
+	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("op_behavior_state", 1);
 	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 1);
 	pub_BehaviorStateRviz = nh.advertise<visualization_msgs::Marker>("behavior_state", 1);
 
@@ -118,6 +118,8 @@ void BehaviorGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 	_nh.getParam("/op_trajectory_evaluator/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
 	_nh.getParam("/op_common_params/enableLaneChange", m_PlanningParams.enableLaneChange);
+
+	m_PlanningParams.nReliableCount = 50;
 
 	_nh.getParam("/op_common_params/width", m_CarInfo.width);
 	_nh.getParam("/op_common_params/length", m_CarInfo.length);
@@ -326,6 +328,18 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayCons
 			bRollOuts = true;
 			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
 			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = false;
+
+			PlannerHNS::PreCalculatedConditions* pCParams = m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams();
+
+			if(pCParams)
+			{
+				if(m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
+					pCParams->iPrevSafeTrajectory = pCParams->iCurrSafeTrajectory;
+				else
+					pCParams->iPrevSafeTrajectory = pCParams->iCentralTrajectory;
+
+				pCParams->iPrevSafeLane = pCParams->iCurrSafeLane;
+			}
 		}
 	}
 }
@@ -375,12 +389,12 @@ void BehaviorGen::SendLocalPlanningTopics()
 	//Send Behavior State
 	geometry_msgs::Twist t;
 	geometry_msgs::TwistStamped behavior;
-	t.linear.x = m_CurrentBehavior.followDistance;
-	t.linear.y = m_CurrentBehavior.stopDistance;
-	t.linear.z = (int)m_CurrentBehavior.indicator;
-	t.angular.x = m_CurrentBehavior.followVelocity;
-	t.angular.y = m_CurrentBehavior.maxVelocity;
-	t.angular.z = (int)m_CurrentBehavior.state;
+	t.linear.x = m_CurrentBehavior.bNewPlan;
+	t.linear.y = m_CurrentBehavior.followDistance;
+	t.linear.z = m_CurrentBehavior.followVelocity;
+	t.angular.x = (int)m_CurrentBehavior.indicator;
+	t.angular.y = (int)m_CurrentBehavior.state;
+	t.angular.z = m_CurrentBehavior.iTrajectory;
 	behavior.twist = t;
 	behavior.header.stamp = ros::Time::now();
 	pub_BehaviorState.publish(behavior);
@@ -408,7 +422,7 @@ void BehaviorGen::SendLocalPlanningTopics()
 	std_msgs::Int32 closest_waypoint;
 	PlannerHNS::RelativeInfo info;
 	PlannerHNS::PlanningHelpers::GetRelativeInfo(m_BehaviorGenerator.m_Path, m_BehaviorGenerator.state, info);
-	PlannerHNS::RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_BehaviorGenerator.m_Path, info.iBack, m_CurrentTrajectoryToSend);
+	PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_BehaviorGenerator.m_Path, m_CurrentTrajectoryToSend, info.iBack);
 	//std::cout << "Path Size: " << m_BehaviorGenerator.m_Path.size() << ", Send Size: " << m_CurrentTrajectoryToSend << std::endl;
 
 	closest_waypoint.data = 1;
@@ -451,14 +465,7 @@ void BehaviorGen::MainLoop()
 			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
 			{
 				t_centerTrajectorySmoothed.clear();
-				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceFast(m_GlobalPaths.at(i), m_CurrentPos,
-						m_PlanningParams.horizonDistance ,
-						m_PlanningParams.pathDensity ,
-						t_centerTrajectorySmoothed,
-						m_PlanningParams.smoothingDataWeight,
-						m_PlanningParams.smoothingSmoothWeight,
-						m_PlanningParams.smoothingToleranceError);
-
+				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance ,	m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
 				m_BehaviorGenerator.m_TotalPath.push_back(t_centerTrajectorySmoothed);
 			}
 

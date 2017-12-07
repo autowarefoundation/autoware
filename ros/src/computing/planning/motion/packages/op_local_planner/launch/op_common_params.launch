@@ -17,6 +17,9 @@
 	<arg name="maxDistanceToAvoid" 		default="5.0"  /> <!-- should be smaller than minDistanceToAvoid -->
 	<arg name="speedProfileFactor"		default="1"  />
 	
+	<arg name="smoothingDataWeight"			default="0.45"  />
+	<arg name="smoothingSmoothWeight"		default="0.4"  />	
+	
 	<arg name="horizontalSafetyDistance"	default="1.2"  />
 	<arg name="verticalSafetyDistance"	default="0.8"  />
 	
@@ -61,6 +64,9 @@
 	<param name="minDistanceToAvoid" 		value="$(arg minDistanceToAvoid)" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
 	<param name="maxDistanceToAvoid" 		value="$(arg maxDistanceToAvoid)"  /> <!-- should be smaller than minDistanceToAvoid -->
 	<param name="speedProfileFactor"		value="$(arg speedProfileFactor)"  />
+	
+	<param name="smoothingDataWeight"		value="$(arg smoothingDataWeight)"  />
+	<param name="smoothingSmoothWeight"		value="$(arg smoothingSmoothWeight)"  />
 	
 	<param name="horizontalSafetyDistance"	value="$(arg horizontalSafetyDistance)"  />
 	<param name="verticalSafetyDistance"	value="$(arg verticalSafetyDistance)"  />

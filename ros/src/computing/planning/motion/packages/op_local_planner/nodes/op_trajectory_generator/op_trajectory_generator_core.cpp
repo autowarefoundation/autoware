@@ -106,6 +106,9 @@ void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 	_nh.getParam("/op_common_params/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
 	_nh.getParam("/op_common_params/speedProfileFactor", m_PlanningParams.speedProfileFactor);
 
+	_nh.getParam("/op_common_params/smoothingDataWeight", m_PlanningParams.smoothingDataWeight);
+	_nh.getParam("/op_common_params/smoothingSmoothWeight", m_PlanningParams.smoothingSmoothWeight);
+
 	_nh.getParam("/op_common_params/horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
 	_nh.getParam("/op_common_params/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
@@ -220,8 +223,8 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 			bWayGlobalPath = true;
 			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
 			{
-				PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
-				PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
+				//PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
+				//PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
 
 				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
 				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
@@ -251,13 +254,16 @@ void TrajectoryGen::MainLoop()
 			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
 			{
 				t_centerTrajectorySmoothed.clear();
-				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceFast(m_GlobalPaths.at(i), m_CurrentPos,
-						m_PlanningParams.horizonDistance ,
-						m_PlanningParams.pathDensity ,
-						t_centerTrajectorySmoothed,
-						m_PlanningParams.smoothingDataWeight,
-						m_PlanningParams.smoothingSmoothWeight,
-						m_PlanningParams.smoothingToleranceError);
+				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance ,
+						m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
+
+//				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceFast(m_GlobalPaths.at(i), m_CurrentPos,
+//						m_PlanningParams.horizonDistance ,
+//						m_PlanningParams.pathDensity ,
+//						t_centerTrajectorySmoothed,
+//						m_PlanningParams.smoothingDataWeight,
+//						m_PlanningParams.smoothingSmoothWeight,
+//						m_PlanningParams.smoothingToleranceError);
 
 				m_GlobalPathSections.push_back(t_centerTrajectorySmoothed);
 			}
@@ -275,8 +281,8 @@ void TrajectoryGen::MainLoop()
 								m_PlanningParams.pathDensity,
 								m_PlanningParams.rollOutDensity,
 								m_PlanningParams.rollOutNumber,
-								0.4,
-								0.45,
+								m_PlanningParams.smoothingDataWeight,
+								m_PlanningParams.smoothingSmoothWeight,
 								m_PlanningParams.smoothingToleranceError,
 								m_PlanningParams.speedProfileFactor,
 								m_PlanningParams.enableHeadingSmoothing,

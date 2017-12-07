@@ -18,8 +18,8 @@ TrajectoryCosts::TrajectoryCosts()
 	m_PrevIndex = -1;
 	//m_WeightPriority = 0.125;
 	//m_WeightTransition = 0.13;
-	m_WeightPriority = 1.25;
-	m_WeightTransition = 0.75;
+	m_WeightPriority = 0.75;
+	m_WeightTransition = 1.25;
 	m_WeightLong = 1.0;
 	m_WeightLat = 1.0;
 	m_WeightLaneChange = 0.0;
@@ -34,7 +34,7 @@ TrajectoryCosts::~TrajectoryCosts()
 TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >& rollOuts,
 		const vector<WayPoint>& totalPaths, const WayPoint& currState,
 		const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
-		const std::vector<PlannerHNS::DetectedObject>& obj_list)
+		const std::vector<PlannerHNS::DetectedObject>& obj_list, const int& iCurrentIndex)
 {
 	TrajectoryCost bestTrajectory;
 	bestTrajectory.bBlocked = true;
@@ -46,7 +46,11 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 	double critical_long_front_distance =  carInfo.wheel_base/2.0 + carInfo.length/2.0 + params.verticalSafetyDistance;
 	double critical_long_back_distance 	=  carInfo.length/2.0 + params.verticalSafetyDistance - carInfo.wheel_base/2.0;
 
-	int currIndex = GetCurrentRollOutIndex(totalPaths, currState, params);
+	int currIndex = -1;
+	if(iCurrentIndex >=0 && iCurrentIndex < rollOuts.size())
+		currIndex  = iCurrentIndex;
+	else
+		currIndex = GetCurrentRollOutIndex(totalPaths, currState, params);
 
 	InitializeCosts(rollOuts, params);
 
@@ -63,10 +67,10 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 	double smallestDistance = 9999999999;
 	double velo_of_next = 0;
 
-	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
+	cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
 	for(unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++)
 	{
-		//cout << m_TrajectoryCosts.at(ic).ToString();
+		cout << m_TrajectoryCosts.at(ic).ToString();
 		if(!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost)
 		{
 			smallestCost = m_TrajectoryCosts.at(ic).cost;
@@ -79,7 +83,7 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 			velo_of_next = m_TrajectoryCosts.at(ic).closest_obj_velocity;
 		}
 	}
-	//cout << "Smallest Distance: " <<  smallestDistance << "------------------------------------------------------------- " << endl;
+	cout << "Smallest Distance: " <<  smallestDistance << "------------------------------------------------------------- " << endl;
 
 	if(smallestIndex == -1)
 	{
@@ -96,13 +100,14 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 
 	m_PrevIndex = currIndex;
 
+	//std::cout << "Current Selected Index : " << bestTrajectory.index << std::endl;
 	return bestTrajectory;
 }
 
 TrajectoryCost TrajectoryCosts::DoOneStepStatic(const vector<vector<WayPoint> >& rollOuts,
 		const vector<WayPoint>& totalPaths, const WayPoint& currState,
 		const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState,
-		const std::vector<PlannerHNS::DetectedObject>& obj_list)
+		const std::vector<PlannerHNS::DetectedObject>& obj_list, const int& iCurrentIndex)
 {
 	TrajectoryCost bestTrajectory;
 	bestTrajectory.bBlocked = true;

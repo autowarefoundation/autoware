@@ -27,6 +27,7 @@ public:
 	int m_currentStopSignID	;
 	int m_currentTrafficLightID ;
 	double decisionMakingTime;
+	int decisionMakingCount;
 	double m_zero_velocity;
 
 	PreCalculatedConditions* GetCalcParams()
@@ -52,6 +53,11 @@ public:
 	std::vector<BehaviorStateMachine*> pNextStates;
 
 	BehaviorStateMachine* FindBehaviorState(const STATE_TYPE& behavior);
+	void UpdateLogCount(BehaviorStateMachine* pState);
+	BehaviorStateMachine* FindBestState(int nMinCount);
+
+private:
+	std::vector<std::pair<BehaviorStateMachine*, int> > m_BehaviorsLog;
 };
 
 class ForwardState : public BehaviorStateMachine

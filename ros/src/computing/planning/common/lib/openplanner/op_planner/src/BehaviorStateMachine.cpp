@@ -24,6 +24,7 @@ BehaviorStateMachine::BehaviorStateMachine(PlanningParams* pParams, PreCalculate
 	m_currentStopSignID		= -1;
 	m_currentTrafficLightID	= -1;
 	decisionMakingTime		= 0.0;
+	decisionMakingCount		= 1;
 	m_zero_velocity 		= 0.2;
 
 	if(!pPreCalcVal)
@@ -50,6 +51,38 @@ void BehaviorStateMachine::InsertNextState(BehaviorStateMachine* nextState)
 		pNextStates.push_back(nextState);
 }
 
+void BehaviorStateMachine::UpdateLogCount(BehaviorStateMachine* pState)
+{
+	if(!pState) return;
+
+	bool bFound = false;
+	for(unsigned int i = 0; i < m_BehaviorsLog.size(); i++)
+	{
+		if(m_BehaviorsLog.at(i).first->m_Behavior == pState->m_Behavior)
+		{
+			m_BehaviorsLog.at(i).second++;
+			bFound = true;
+			break;
+		}
+	}
+
+	if(!bFound)
+	{
+		m_BehaviorsLog.push_back(std::make_pair(pState, 1));
+	}
+}
+
+BehaviorStateMachine* BehaviorStateMachine::FindBestState(int nMinCount)
+{
+	for(unsigned int i = 0; i < m_BehaviorsLog.size(); i++)
+	{
+		if(m_BehaviorsLog.at(i).second >= nMinCount)
+			return m_BehaviorsLog.at(i).first;
+	}
+
+	return 0;
+}
+
 BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& behavior)
 {
 	for(unsigned int i = 0 ; i < pNextStates.size(); i++)
@@ -57,6 +90,12 @@ BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& 
 		BehaviorStateMachine* pState = pNextStates.at(i);
 		if(pState && behavior == pState->m_Behavior )
 		{
+//			UpdateLogCount(pState);
+//			pState = FindBestState(decisionMakingCount);
+//
+//			if(pState == 0) return this;
+
+			m_BehaviorsLog.clear();
 			pState->ResetTimer();
 			return pState;
 		}
@@ -85,6 +124,8 @@ BehaviorStateMachine* ForwardState::GetNextState()
 		return this; //return this behavior only , without reset
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	//std::cout << "Forward: " << pCParams->distanceToNext << ", " << pCParams->bFullyBlock  << " , " <<  pCParams->iCurrSafeTrajectory << ", " << pCParams->iPrevSafeTrajectory << pCParams->iCurrSafeLane << ", " << pCParams->iPrevSafeLane << std::endl;
 
 //	if(pCParams->currentGoalID != pCParams->prevGoalID)
 //		return FindBehaviorState(GOAL_STATE);
@@ -268,6 +309,8 @@ BehaviorStateMachine* SwerveState::GetNextState()
 		return this;
 
 	PreCalculatedConditions* pCParams = GetCalcParams();
+
+//	std::cout << "Swerv: " << pCParams->distanceToNext << ", " << pCParams->bFullyBlock  << " , " <<  pCParams->iCurrSafeTrajectory << ", " << pCParams->iPrevSafeTrajectory << std::endl;
 
 	if(pCParams->distanceToNext > 0
 				&& pCParams->distanceToNext < m_pParams->minDistanceToAvoid
