@@ -131,11 +131,14 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
 
     for (int i = 0; i < (int)pcl_out.points.size(); i++)
     {
-      ofs << pcl_out.points[i].x << "," << pcl_out.points[i].y << "," << pcl_out.points[i].z << "," << pcl_out.points[i].intensity << std::endl;
+      ofs << std::fixed << std::setprecision(5) << pcl_out.points[i].x << ","
+          << std::fixed << std::setprecision(5) << pcl_out.points[i].y << ","
+          << std::fixed << std::setprecision(5) << pcl_out.points[i].z << ","
+          << pcl_out.points[i].intensity << std::endl;
     }
     std::cout << "Wrote " << pcl_out.size() << " points to " << filename << "." << std::endl;
     added_scan_num++;
-    if(added_scan_num == 50)
+    if(added_scan_num == 300)
     {
       added_scan_num = 0;
       map_id++;
