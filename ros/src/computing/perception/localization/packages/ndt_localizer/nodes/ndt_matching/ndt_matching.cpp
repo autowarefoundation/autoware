@@ -211,12 +211,8 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
-#ifdef CUDA_FOUND
 static bool _use_gpu = false;
-#endif
-#ifdef USE_FAST_PCL
 static bool _use_openmp = false;
-#endif
 
 static bool _get_height = false;
 static bool _use_local_transform = false;
@@ -456,11 +452,10 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       new_ndt.setStepSize(step_size);
       new_ndt.setTransformationEpsilon(trans_eps);
       #ifdef USE_FAST_PCL
-          if (_use_openmp == true)
               new_ndt.omp_align(*output_cloud, Eigen::Matrix4f::Identity());
-          else
-      #endif
+      #else
               new_ndt.align(*output_cloud, Eigen::Matrix4f::Identity());
+      #endif
 
       pthread_mutex_lock(&mutex);
       ndt = new_ndt;
@@ -522,8 +517,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   try
   {
     ros::Time now = ros::Time(0);
-    listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
-    listener.lookupTransform("/map", "world", now, transform);
+    listener.waitForTransform("/map", input->header.frame_id, now, ros::Duration(10.0));
+    listener.lookupTransform("/map", input->header.frame_id, now, transform);
   }
   catch (tf::TransformException& ex)
   {
@@ -894,100 +889,51 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
-#ifdef CUDA_FOUND
-    if (_use_gpu == true)
-    {
-      align_start = std::chrono::system_clock::now();
-      gpu_ndt_ptr->align(init_guess);
-      align_end = std::chrono::system_clock::now();
 
-      has_converged = gpu_ndt_ptr->hasConverged();
+    #ifdef CUDA_FOUND
+      if (_use_gpu == true)
+      {
+        align_start = std::chrono::system_clock::now();
+        gpu_ndt_ptr->align(init_guess);
+        align_end = std::chrono::system_clock::now();
 
-      t = gpu_ndt_ptr->getFinalTransformation();
-      iteration = gpu_ndt_ptr->getFinalNumIteration();
+        has_converged = gpu_ndt_ptr->hasConverged();
 
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = gpu_ndt_ptr->getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
+        t = gpu_ndt_ptr->getFinalTransformation();
+        iteration = gpu_ndt_ptr->getFinalNumIteration();
 
-      trans_probability = gpu_ndt_ptr->getTransformationProbability();
-    }
-#ifdef USE_FAST_PCL
-    else if (_use_openmp == true)
-    {
-      align_start = std::chrono::system_clock::now();
-      ndt.omp_align(*output_cloud, init_guess);
-      align_end = std::chrono::system_clock::now();
+        getFitnessScore_start = std::chrono::system_clock::now();
+        fitness_score = gpu_ndt_ptr->getFitnessScore();
+        getFitnessScore_end = std::chrono::system_clock::now();
 
-      has_converged = ndt.hasConverged();
+        trans_probability = gpu_ndt_ptr->getTransformationProbability();
+      }
+      else
+    #endif
+      {
+        align_start = std::chrono::system_clock::now();
+        #ifdef USE_FAST_PCL
+          ndt.omp_align(*output_cloud, init_guess);
+        #else
+          ndt.align(*output_cloud, init_guess);
+        align_end = std::chrono::system_clock::now();
+        #endif
 
-      t = ndt.getFinalTransformation();
-      iteration = ndt.getFinalNumIteration();
+        has_converged = ndt.hasConverged();
 
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = ndt.omp_getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
+        t = ndt.getFinalTransformation();
+        iteration = ndt.getFinalNumIteration();
 
-      trans_probability = ndt.getTransformationProbability();
-    }
-#endif
-    else
-    {
-      align_start = std::chrono::system_clock::now();
-      ndt.align(*output_cloud, init_guess);
-      align_end = std::chrono::system_clock::now();
+        getFitnessScore_start = std::chrono::system_clock::now();
+        #ifdef USE_FAST_PCL
+          fitness_score = ndt.omp_getFitnessScore();
+        #else
+          fitness_score = ndt.getFitnessScore();
+        #endif
+        getFitnessScore_end = std::chrono::system_clock::now();
 
-      has_converged = ndt.hasConverged();
-
-      t = ndt.getFinalTransformation();
-      iteration = ndt.getFinalNumIteration();
-
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = ndt.getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
-
-      trans_probability = ndt.getTransformationProbability();
-    }
-#else
-#ifdef USE_FAST_PCL
-    if (_use_openmp == true)
-    {
-      align_start = std::chrono::system_clock::now();
-      ndt.omp_align(*output_cloud, init_guess);
-      align_end = std::chrono::system_clock::now();
-
-      has_converged = ndt.hasConverged();
-
-      t = ndt.getFinalTransformation();
-      iteration = ndt.getFinalNumIteration();
-
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = ndt.omp_getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
-
-      trans_probability = ndt.getTransformationProbability();
-    }
-    else
-    {
-#endif
-      align_start = std::chrono::system_clock::now();
-      ndt.align(*output_cloud, init_guess);
-      align_end = std::chrono::system_clock::now();
-
-      has_converged = ndt.hasConverged();
-
-      t = ndt.getFinalTransformation();
-      iteration = ndt.getFinalNumIteration();
-
-      getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = ndt.getFitnessScore();
-      getFitnessScore_end = std::chrono::system_clock::now();
-
-      trans_probability = ndt.getTransformationProbability();
-#ifdef USE_FAST_PCL
-    }
-#endif
-#endif
+        trans_probability = ndt.getTransformationProbability();
+      }
 
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
@@ -1449,12 +1395,8 @@ int main(int argc, char** argv)
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
-#ifdef USE_FAST_PCL
   private_nh.getParam("use_openmp", _use_openmp);
-#endif
-#ifdef CUDA_FOUND
   private_nh.getParam("use_gpu", _use_gpu);
-#endif
   private_nh.getParam("get_height", _get_height);
   private_nh.getParam("use_local_transform", _use_local_transform);
   private_nh.getParam("use_imu", _use_imu);
@@ -1511,12 +1453,8 @@ int main(int argc, char** argv)
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
-#ifdef CUDA_FOUND
   std::cout << "use_gpu: " << _use_gpu << std::endl;
-#endif
-#ifdef USE_FAST_PCL
   std::cout << "use_openmp: " << _use_openmp << std::endl;
-#endif
   std::cout << "get_height: " << _get_height << std::endl;
   std::cout << "use_local_transform: " << _use_local_transform << std::endl;
   std::cout << "use_imu: " << _use_imu << std::endl;
