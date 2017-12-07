@@ -237,7 +237,8 @@ int main(int argc, char **argv)
           vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
           break;
         default:
-          continue;
+          vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
+          break;
         }
         if (isValidMarker(vector_marker))
         {

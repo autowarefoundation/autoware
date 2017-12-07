@@ -48,6 +48,8 @@ add_message_files(
   vscan_tracked_array.msg
   waypoint.msg
   VehicleCmd.msg
+  TrafficLightResult.msg
+  TrafficLightResultArray.msg
 
 ## Runtime Manager ##
   ConfigApproximateNdtMapping.msg

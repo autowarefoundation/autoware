@@ -13,11 +13,15 @@
 #define MAIN_WINDOW_NAME "Main"
 #define SETTINGS_WINDOW_NAME "Settings"
 
+#define TLR_GREEN_SIGNAL_STR "green signal"
+#define TLR_RED_SIGNAL_STR "red signal"
+#define TLR_UNKNOWN_SIGNAL_STR ""
+
 /* Functions declarations */
 void setContexts(TrafficLightDetector &detector, const autoware_msgs::Signals::ConstPtr& extractedPos);
 
 #define MINIMAM_RADIUS 3
-#define ROI_MARGINE 20
+#define ROI_MARGINE 25
 
 static inline bool IsNearlyZero(double x)
 {
