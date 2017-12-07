@@ -38,8 +38,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["current_velocity"] =
       nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
   Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
-  Subs["light_color_managed"] =
-      nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
+//  Subs["light_color_managed"] =
+  //    nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
   Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
   Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
   Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
@@ -58,7 +58,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
   Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
- //Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color", 1);
+  Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color_managed", 1);
 
   // for controlling vehicle
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
