@@ -36,12 +36,22 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   if (!ctx->isCurrentState(_state_num))
   {
     _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
+	    isManualLight = true;
+    }
   }
   else
   {
     _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
+	    isManualLight = false;
+    }
   }
   ctx->setEnableForceSetState(false);
+
+
   return _ret;
 }
 
@@ -60,12 +70,12 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
 {
-  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT))
+  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
   }
-  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT))
+  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
@@ -89,19 +99,23 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
-{
+{    
   const autoware_msgs::traffic_light *light = event.getMessage().get();
-
-  current_traffic_light_ = light->traffic_light;
-  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
-  {
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-  }
-  else
-  {
-    ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+//  const ros::M_string &header = event.getConnectionHeader();
+//  std::string topic = header.at("topic"); 
+  
+  if(!isManualLight){// && topic.find("manage") == std::string::npos){
+	  current_traffic_light_ = light->traffic_light;
+	  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
+	  {
+		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+	  }
+	  else
+	  {
+		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+	  }
   }
 }
 
@@ -142,15 +156,6 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
       }
     }
   }
-}
-
-geometry_msgs::Point to_geoPoint(const vector_map_msgs::Point &vp)
-{
-  geometry_msgs::Point gp;
-  gp.x = vp.ly;
-  gp.y = vp.bx;
-  gp.z = vp.h;
-  return gp;
 }
 
 void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)

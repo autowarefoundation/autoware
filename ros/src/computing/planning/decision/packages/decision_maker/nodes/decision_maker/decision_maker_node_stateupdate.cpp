@@ -30,6 +30,10 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_STOP_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateStop, this, 0));
 
+  ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE,
+                         std::bind(&DecisionMakerNode::StoplinePlanIn, this, 1));
+  ctx->setCallbackOutFunc(state_machine::DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE,
+                         std::bind(&DecisionMakerNode::StoplinePlanOut, this, 1));
   // speed keep(original speed) state
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_KEEP_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateKeep, this, 1));
@@ -56,26 +60,32 @@ void DecisionMakerNode::setupStateCallback(void)
 
   // trraficlight
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
-                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE); });
+                         [&]() { 
+			 ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+			 publishLightColor((int)state_machine::E_RED); });
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
-                         [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
+		  	 [&]() { 
+		  	 ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+		  	 publishLightColor((int)state_machine::E_GREEN); });
 
+#if 0
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
-
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                          [&]() { ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE); });
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
+#endif
+
 }
 
 void DecisionMakerNode::publishLightColor(int status)
 {
   autoware_msgs::traffic_light msg;
   msg.traffic_light = status;
-  //Pubs["light_color"].publish(msg);
+  Pubs["light_color"].publish(msg);
 }
 
 #define SHIFTED_LANE_FLAG -99999
@@ -179,6 +189,62 @@ void DecisionMakerNode::publishStoppedLaneArray(void)
 void DecisionMakerNode::changeVelocityBasedLane(void)
 {
   current_controlled_lane_array_ = current_shifted_lane_array_;
+}
+
+void DecisionMakerNode::setAllStoplineStop(void){
+  
+  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine &stopline) {
+    return true;
+  });
+
+  for (auto &lane : current_shifted_lane_array_.lanes)
+  {
+    for (size_t wp_idx = 0; wp_idx < lane.waypoints.size() - 1; wp_idx++)
+    {
+      for (auto &stopline : stoplines)
+      {
+        geometry_msgs::Point bp =
+            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).bpid)));
+        geometry_msgs::Point fp =
+            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
+
+        if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
+                                        lane.waypoints.at(wp_idx).pose.pose.position.y,
+                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
+        {
+          geometry_msgs::Point center_point;
+          center_point.x = (bp.x * 2 + fp.x) / 3;
+          center_point.y = (bp.y * 2 + fp.y) / 3;
+          if (amathutils::isPointLeftFromLine(
+                  center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
+                  lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                  lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
+          {
+		  amathutils::point *a = new amathutils::point();
+		  amathutils::point *b = new amathutils::point();
+		  a->x = center_point.x;
+		  a->y = center_point.y;
+		  b->x = lane.waypoints.at(wp_idx).pose.pose.position.x;
+		  b->y = lane.waypoints.at(wp_idx).pose.pose.position.y;
+		  if(amathutils::find_distance(a,b) <= 4)//
+			  lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+void DecisionMakerNode::StoplinePlanIn(int status){
+	setAllStoplineStop();
+	changeVelocityBasedLane();
+	publishControlledLaneArray();
+}
+void DecisionMakerNode::StoplinePlanOut(int status){
+	current_shifted_lane_array_ = current_based_lane_array_;
+	changeVelocityBasedLane();
+	publishControlledLaneArray();
 }
 
 void DecisionMakerNode::changeVelocityLane(int dir)
