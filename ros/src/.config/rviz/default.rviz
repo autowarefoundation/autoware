@@ -13,7 +13,7 @@ Panels:
         - /Local Rollouts1/Namespaces1
         - /GlobalPathAnimation1/Status1
       Splitter Ratio: 0.695804
-    Tree Height: 640
+    Tree Height: 651
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -22,7 +22,7 @@ Panels:
       - /2D Nav Goal1
       - /Publish Point1
     Name: Tool Properties
-    Splitter Ratio: 0.588679
+    Splitter Ratio: 0.588679016
   - Class: rviz/Views
     Expanded:
       - /Current View1
@@ -32,7 +32,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Points Map
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -42,7 +42,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: false
       Line Style:
-        Line Width: 0.03
+        Line Width: 0.0299999993
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -59,28 +59,16 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        map:
-          Value: true
-        velodyne:
-          Value: true
-        world:
-          Value: true
       Marker Scale: 5
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          map:
-            base_link:
-              velodyne:
-                {}
+        {}
       Update Interval: 0
       Value: true
-    - Alpha: 0.05
+    - Alpha: 0.0500000007
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -103,7 +91,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 2
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_map
       Unreliable: false
@@ -123,13 +111,12 @@ Visualization Manager:
       Image Rendering: overlay
       Image Topic: /image_raw
       Name: Camera
-      Overlay Alpha: 0.4
+      Overlay Alpha: 0.400000006
       Queue Size: 10
       Transport Hint: raw
       Unreliable: false
       Value: false
       Visibility:
-        "": true
         A* Sim Obstacle: true
         Behavior State: true
         Control Pose: true
@@ -139,11 +126,10 @@ Visualization Manager:
         Global Waypoints: true
         GlobalPathAnimation: true
         Grid: true
-        Laserscan Costmap: true
         Local Rollouts: true
         Local Waypoints: true
         Next Waypoint Mark: true
-        Object Pose: true
+        Occupancy Grid Map: true
         PP Trajectory Mark: true
         Points Cluster: true
         Points Map: true
@@ -157,6 +143,7 @@ Visualization Manager:
         Vector Map: true
         Vector Map CenterLines: true
         Vehicle Model: true
+        Velocity (km/h): true
         Vscan Points: true
         Waypoint Guide: true
       Zoom Factor: 1
@@ -183,7 +170,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 1
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_raw
       Unreliable: false
@@ -213,7 +200,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /vscan_points
       Unreliable: false
@@ -222,7 +209,7 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.1
+      Axes Radius: 0.100000001
       Class: rviz/Pose
       Color: 255; 25; 0
       Enabled: false
@@ -237,7 +224,7 @@ Visualization Manager:
       Value: false
     - Alpha: 1
       Axes Length: 1
-      Axes Radius: 0.1
+      Axes Radius: 0.100000001
       Class: rviz/Pose
       Color: 255; 170; 255
       Enabled: false
@@ -255,10 +242,7 @@ Visualization Manager:
       Marker Topic: /detection_range
       Name: Detection Range
       Namespaces:
-        Crosswalk Detection: true
-        Decelerate Detection: true
-        Stop Detection: true
-        Stop Line: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -295,7 +279,7 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
+        sim_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -329,7 +313,7 @@ Visualization Manager:
       Queue Size: 10
       Selectable: true
       Size (Pixels): 5
-      Size (m): 0.01
+      Size (m): 0.00999999978
       Style: Points
       Topic: /points_cluster
       Unreliable: false
@@ -338,20 +322,10 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /obj_car/obj_pose
-      Name: Object Pose
-      Namespaces:
-        {}
-      Queue Size: 100
-      Value: true
-    - Class: rviz/MarkerArray
-      Enabled: true
       Marker Topic: /local_waypoints_mark
       Name: Local Waypoints
       Namespaces:
-        local_path_marker: true
-        local_point_marker: true
-        local_waypoint_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -378,7 +352,7 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.699999988
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
@@ -386,6 +360,7 @@ Visualization Manager:
       Name: Occupancy Grid Map
       Topic: /grid_map_visualization/distance_transform
       Unreliable: false
+      Use Timestamp: false
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
@@ -449,10 +424,10 @@ Visualization Manager:
       Topic: /dp_planner_tracked_boxes
       Unreliable: false
       Value: true
-      alpha: 0.8
+      alpha: 0.800000012
       color: 25; 255; 0
       coloring: Value
-      line width: 0.01
+      line width: 0.00999999978
       only edge: false
       show coords: false
     - Buffer length: 100
@@ -467,7 +442,7 @@ Visualization Manager:
       background color: 0; 0; 0
       backround alpha: 0
       border: true
-      foreground alpha: 0.7
+      foreground alpha: 0.699999988
       foreground color: 85; 255; 0
       height: 80
       left: 40
@@ -478,7 +453,7 @@ Visualization Manager:
       show caption: true
       text size: 8
       top: 30
-      update interval: 0.04
+      update interval: 0.0399999991
       width: 80
   Enabled: true
   Global Options:
@@ -506,12 +481,13 @@ Visualization Manager:
       Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
-        Stereo Eye Separation: 0.06
+        Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Invert Z Axis: false
       Name: Current View
-      Near Clip Distance: 0.01
+      Near Clip Distance: 0.00999999978
       Scale: 10
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
@@ -523,10 +499,10 @@ Window Geometry:
     collapsed: false
   Displays:
     collapsed: false
-  Height: 873
+  Height: 900
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000016a000002c1fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006400fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc00000028000002c1000000dd00fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000006500fffffffb000000100044006900730070006c0061007900730100000000000001360000016a00fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb00000000000000000000000100000163000002c1fc0200000003fb0000000a005600690065007700730100000028000002c1000000b000fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000066d0000005cfc0100000002fb0000000800540069006d006501000000000000066d000002f600fffffffb0000000800540069006d0065010000000000000450000000000000000000000394000002c100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000179000002d2fc020000000dfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006600fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afc0000002e000002d2000000e300fffffffa000000020100000003fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000c00430061006d0065007200610000000000ffffffff0000007300fffffffb000000100044006900730070006c0061007900730100000000000001360000017900fffffffb0000000a0049006d006100670065010000028e000000d20000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb000000120049006d006100670065005f0072006100770000000000ffffffff0000000000000000fb0000000c00430061006d006500720061000000024e000001710000000000000000fb000000120049006d00610067006500200052006100770100000421000000160000000000000000fb0000000a0049006d00610067006501000002f4000000cb00000000000000000000000100000163000002d2fc0200000003fb0000000a00560069006500770073010000002e000002d2000000ba00fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000073f000000a8fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006400000005cfc0100000002fb0000000800540069006d00650100000000000006400000038300fffffffb0000000800540069006d0065010000000000000450000000000000000000000356000002d200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -535,6 +511,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1645
-  X: 1861
-  Y: 91
+  Width: 1600
+  X: 0
+  Y: 0
