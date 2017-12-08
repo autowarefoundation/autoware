@@ -303,7 +303,7 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
         param: kf_contour_tracker
-        
+
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -1169,7 +1169,7 @@ params :
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
-      desc : select the type of tracking 
+      desc : select the type of tracking
       label: Tracking Type
       kind : radio_box
       choices:
@@ -1249,7 +1249,7 @@ params :
         delim    : ':='
     - name : max_association_distance
       desc : Maximum Distance for associating two objects
-      label: Association Distance 
+      label: Association Distance
       min  : 0.5
       max  : 10
       v    : 4
@@ -1740,7 +1740,7 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-    
+
     - name : enablePlannerDynamicSwitch
       desc : Enable Planner dynamical switch
       label: Enable Planner dynamical switch
@@ -1938,7 +1938,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
- 
+
   - name  : planner_selector
     topic : /config/PlannerSelector
     msg   : ConfigPlannerSelector
@@ -1965,7 +1965,7 @@ params :
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
-    vars  : 
+    vars  :
     - name : enable_force_state_change
       desc : enable force state change flag
       label: enable_force_state_change
@@ -3005,6 +3005,14 @@ params :
     - name      : use_openmp
       desc      : Use OpenMP to accelerate computation
       label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_fast_pcl
+      desc      : use_fast_pcl desc sample
+      label     : Use Fast PCL
       kind      : checkbox
       v         : False
       cmd_param :
