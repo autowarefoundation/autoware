@@ -65,6 +65,8 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+#undef USE_FAST_PCL
+
 #ifdef USE_FAST_PCL
   #include <fast_pcl/registration/ndt.h>
 #else
