@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>log_tools</name>
-  <version>0.0.0</version>
+  <version>1.5.1</version>
   <description>The log_tools package</description>
   <maintainer email="akihito.ohsato@tier4.jp">Akihito Ohsato</maintainer>
-  <license>TODO</license>
+  <license>BSD</license>
   <!-- <url type="website">http://wiki.ros.org/log_tools</url> -->
   <author email="akihito.ohsato@tier4.jp">Akihito Ohsato</author>
   <buildtool_depend>catkin</buildtool_depend>
