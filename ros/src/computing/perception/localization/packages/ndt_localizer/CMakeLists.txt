@@ -9,7 +9,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration ndt_cpu)
+SET(FAST_PCL_PACKAGES filters registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -34,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
   ${FAST_PCL_PACKAGES}
   ndt_tku
+  ndt_cpu
 )
 elseif("${ROS_VERSION}" MATCHES "(kinetic)")
 find_package(catkin REQUIRED COMPONENTS
@@ -44,6 +45,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   velodyne_pointcloud
   ${FAST_PCL_PACKAGES}
+  ndt_cpu
 )
 endif()
 
@@ -55,7 +57,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
   CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
-  DEPENDS ndt_tku
+  DEPENDS ndt_tku ndt_cpu
 #  DEPENDS system_lib
 )
 elseif("${ROS_VERSION}" MATCHES "(kinetic)")
