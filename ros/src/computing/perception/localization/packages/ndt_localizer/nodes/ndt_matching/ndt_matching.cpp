@@ -225,7 +225,7 @@ static std_msgs::Float32 ndt_reliability;
 static bool _use_gpu = false;
 static bool _use_openmp = false;
 
-static bool _use_fast_pcl = true;
+static bool _use_fast_pcl = false;
 
 static bool _get_height = false;
 static bool _use_local_transform = false;
@@ -514,6 +514,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       new_ndt.setResolution(ndt_res);
       new_ndt.setStepSize(step_size);
       new_ndt.setTransformationEpsilon(trans_eps);
+
       #ifdef USE_FAST_PCL
         new_ndt.omp_align(*output_cloud, Eigen::Matrix4f::Identity());
       #else
