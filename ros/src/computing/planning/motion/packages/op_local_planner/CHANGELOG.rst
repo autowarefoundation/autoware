@@ -2,6 +2,22 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'feature/OpenPlanner' into develop
+* - Add user interface option in runtime manage for local_planner and op_trajectory_generator
+* - Update OpenPlanner libraries (plannerh, simuh, utilityh) with the latest modifications
+  - Fix inconsistency after library update, make sure old (way_planner, dp_planner) are working fine
+  - Create new package (op_local_planner)
+  - Create common launch file for local planning params
+  - Create new node (op_trajectory_generator)
+  - Create launch file for trajectory generation only
+  - Test generating trajectories (rollouts) in simulation with way_planner
+  - Test generating trajectories with real rosbag data with way_planner
+  - Test generating trajectories with real rosbag data and waypoints_loader
+* Contributors: Yamato ANDO, hatem-darweesh
+
 1.5.1 (2017-09-25)
 ------------------
 * fix build error for older indigo version

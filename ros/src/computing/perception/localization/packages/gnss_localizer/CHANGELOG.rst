@@ -2,6 +2,23 @@
 Changelog for package gnss_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* add fix2tfpose.launch
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

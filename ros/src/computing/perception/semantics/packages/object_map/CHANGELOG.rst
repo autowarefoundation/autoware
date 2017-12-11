@@ -2,6 +2,18 @@
 Changelog for package object_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* merge develop and fixed slow switching map
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
+* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 
