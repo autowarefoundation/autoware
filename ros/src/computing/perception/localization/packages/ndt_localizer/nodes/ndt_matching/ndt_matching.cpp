@@ -1004,8 +1004,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
           ndt.omp_align(*output_cloud, init_guess);
         #else
           ndt.align(*output_cloud, init_guess);
-        align_end = std::chrono::system_clock::now();
         #endif
+        align_end = std::chrono::system_clock::now();
 
         has_converged = ndt.hasConverged();
 
