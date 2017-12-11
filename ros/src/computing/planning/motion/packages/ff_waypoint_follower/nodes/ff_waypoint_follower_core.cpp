@@ -33,7 +33,6 @@
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-#include "geo_pos_conv.hh"
 #include "UtilityH.h"
 #include "math.h"
 
@@ -658,36 +657,36 @@ void FFSteerControl::PlannerMainLoop()
 				std::cout << "Record One Point To Path: " <<  m_CurrentPos.pos.ToString() << std::endl;
 			}
 
-			if(totalDistance > m_CmdParams.recordDistance || m_bOutsideControl != 0)
-			{
-				PlannerHNS::RoadNetwork roadMap;
-				PlannerHNS::RoadSegment segment;
-
-				segment.id = 1;
-
-				PlannerHNS::Lane lane;
-				lane.id = 1;
-				lane.num = 0;
-				lane.roadId = 1;
-				lane.points = path;
-
-				segment.Lanes.push_back(lane);
-				roadMap.roadSegments.push_back(segment);
-
-				ostringstream fileName;
-				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
-				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
-				fileName << "_RoadNetwork.kml";
-				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
-
-				PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
-
-										//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
-					//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
-
-				std::cout << " Mapped Saved Successfuly ... " << std::endl;
-				break;
-			}
+//			if(totalDistance > m_CmdParams.recordDistance || m_bOutsideControl != 0)
+//			{
+//				PlannerHNS::RoadNetwork roadMap;
+//				PlannerHNS::RoadSegment segment;
+//
+//				segment.id = 1;
+//
+//				PlannerHNS::Lane lane;
+//				lane.id = 1;
+//				lane.num = 0;
+//				lane.roadId = 1;
+//				lane.points = path;
+//
+//				segment.Lanes.push_back(lane);
+//				roadMap.roadSegments.push_back(segment);
+//
+//				ostringstream fileName;
+//				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
+//				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
+//				fileName << "_RoadNetwork.kml";
+//				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+//
+//				//PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
+//
+//										//string kml_fileToSave =UtilityH::GetHomeDirectory()+DataRW::LoggingMainfolderName + DataRW::KmlMapsFolderName+kmltargetFile;
+//					//PlannerHNS::MappingHelpers::WriteKML(kml_fileToSave, kml_templateFilePath, m_RoadMap);
+//
+//				std::cout << " Mapped Saved Successfuly ... " << std::endl;
+//				break;
+//			}
 		 }
 
 		loop_rate.sleep();

@@ -2,6 +2,28 @@
 Changelog for package model_publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* re added launch files for estima models (`#902 <https://github.com/CPFL/Autoware/issues/902>`_)
+  deleted by `#890 <https://github.com/CPFL/Autoware/issues/890>`_
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Added 2 more color models
+  Updated files and launch files
+* Added Estima model
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
+* Contributors: AMC, Abraham Monrroy, Yamato ANDO, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

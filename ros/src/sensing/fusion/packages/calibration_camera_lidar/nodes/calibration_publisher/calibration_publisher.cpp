@@ -11,6 +11,7 @@ static cv::Mat  CameraExtrinsicMat;
 static cv::Mat  CameraMat;
 static cv::Mat  DistCoeff;
 static cv::Size ImageSize;
+static std::string DistModel;
 
 static ros::Publisher camera_info_pub;
 static ros::Publisher projection_matrix_pub;
@@ -20,6 +21,7 @@ static bool isPublish_extrinsic;
 static bool isPublish_cameraInfo;
 
 static std::string camera_id_str;
+static std::string target_frame_;
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -43,43 +45,30 @@ void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 
   transform.setRotation(quaternion);
 
-  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, "velodyne", camera_id_str));
-  //broadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "velodyne", "camera"));
+  broadcaster.sendTransform(tf::StampedTransform(transform, timeStamp, target_frame_, camera_id_str));
 }
 
-
-static void image_raw_cb(const sensor_msgs::Image& image_msg)
+void projectionMatrix_sender(const cv::Mat  &projMat, const ros::Time& timeStamp)
 {
-  //ros::Time timeStampOfImage = image_msg.header.stamp;
+  autoware_msgs::projection_matrix projMsg;
 
-  ros::Time timeStampOfImage;
-  timeStampOfImage.sec = image_msg.header.stamp.sec;
-  timeStampOfImage.nsec = image_msg.header.stamp.nsec;
+  projMsg.header.frame_id=camera_id_str;
 
+  for (int row=0; row<4; row++) {
+    for (int col=0; col<4; col++) {
+      projMsg.projection_matrix[row * 4 + col] = projMat.at<double>(row, col);
 
-  /* create TF between velodyne and camera with time stamp of /image_raw */
-  tfRegistration(CameraExtrinsicMat, timeStampOfImage);
-
-}
-
-void projectionMatrix_sender(const cv::Mat  &projMat)
-{
-	autoware_msgs::projection_matrix projMsg;
-
-	projMsg.header.frame_id=camera_id_str;
-
-	for (int row=0; row<4; row++) {
-	      for (int col=0; col<4; col++) {
-	    	  	  projMsg.projection_matrix[row * 4 + col] = projMat.at<double>(row, col);
-
-	      }
-	}
-	projection_matrix_pub.publish(projMsg);
+    }
+  }
+  projMsg.header.stamp = timeStamp;
+  projection_matrix_pub.publish(projMsg);
 }
 
 void cameraInfo_sender(const cv::Mat  &camMat,
                        const cv::Mat  &distCoeff,
-                       const cv::Size &imgSize)
+                       const cv::Size &imgSize,
+                       const std::string& distModel,
+                       const ros::Time& timeStamp)
 {
   sensor_msgs::CameraInfo msg;
 
@@ -89,10 +78,10 @@ void cameraInfo_sender(const cv::Mat  &camMat,
   msg.width  = imgSize.width;
 
   for (int row=0; row<3; row++) {
-      for (int col=0; col<3; col++) {
-        msg.K[row * 3 + col] = camMat.at<double>(row, col);
-        }
+    for (int col=0; col<3; col++) {
+      msg.K[row * 3 + col] = camMat.at<double>(row, col);
     }
+  }
 
   for (int row=0; row<3; row++) {
     for (int col=0; col<4; col++) {
@@ -109,8 +98,33 @@ void cameraInfo_sender(const cv::Mat  &camMat,
       msg.D.push_back(distCoeff.at<double>(row, col));
     }
   }
+  msg.header.stamp = timeStamp;
+  msg.distortion_model = distModel;
 
   camera_info_pub.publish(msg);
+}
+
+static void image_raw_cb(const sensor_msgs::Image& image_msg)
+{
+  //ros::Time timeStampOfImage = image_msg.header.stamp;
+
+  ros::Time timeStampOfImage;
+  timeStampOfImage.sec = image_msg.header.stamp.sec;
+  timeStampOfImage.nsec = image_msg.header.stamp.nsec;
+
+
+  /* create TF between velodyne and camera with time stamp of /image_raw */
+  if (isRegister_tf) {
+    tfRegistration(CameraExtrinsicMat, timeStampOfImage);
+  }
+
+  if (isPublish_cameraInfo) {
+    cameraInfo_sender(CameraMat, DistCoeff, ImageSize, DistModel, timeStampOfImage);
+  }
+  if (isPublish_extrinsic) {
+    projectionMatrix_sender(CameraExtrinsicMat, timeStampOfImage);
+  }
+
 }
 
 
@@ -129,8 +143,11 @@ int main(int argc, char* argv[])
   }
 
   if (!private_nh.getParam("publish_camera_info", isPublish_cameraInfo)) {
-    isPublish_extrinsic = false; /* doesn't publish camera_info in default */
+    isPublish_cameraInfo = false; /* doesn't publish camera_info in default */
   }
+
+  private_nh.param<std::string>("target_frame", target_frame_, "velodyne");
+  ROS_INFO("target_frame: %s", target_frame_.c_str());
 
   if (argc < 2)
     {
@@ -149,9 +166,10 @@ int main(int argc, char* argv[])
   fs["CameraMat"] >> CameraMat;
   fs["DistCoeff"] >> DistCoeff;
   fs["ImageSize"] >> ImageSize;
+  fs["DistModel"] >> DistModel;
 
   std::string image_topic_name("/image_raw");
-  std::string camera_info_name("/camera/camera_info");
+  std::string camera_info_name("/camera_info");
   std::string projection_matrix_name("/projection_matrix");
 
   std::string name_space_str = ros::this_node::getNamespace();
@@ -169,19 +187,13 @@ int main(int argc, char* argv[])
   }
 
   ros::Subscriber image_sub;
-  if (isRegister_tf) {
-    image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
-  }
 
-  if (isPublish_cameraInfo) {
-    camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
-    cameraInfo_sender(CameraMat, DistCoeff, ImageSize);
-  }
+  image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
 
-  if (isPublish_extrinsic) {
-    projection_matrix_pub = n.advertise<autoware_msgs::projection_matrix>(projection_matrix_name, 10, true);
-    projectionMatrix_sender(CameraExtrinsicMat);
-  }
+  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, false);
+
+  projection_matrix_pub = n.advertise<autoware_msgs::projection_matrix>(projection_matrix_name, 10, false);
+
 
   ros::spin();
 

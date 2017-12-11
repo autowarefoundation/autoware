@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ndt_localizer</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>The ndt_localizer package</description>
   <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
   <license>BSD</license>
@@ -11,6 +11,8 @@
   <build_depend>velodyne_pointcloud</build_depend>
   <build_depend>filters</build_depend>
   <build_depend>registration</build_depend>
+  <build_depend>ndt_gpu</build_depend>
+  <build_depend>ndt_cpu</build_depend>
   <build_depend>ndt_tku</build_depend>
   <build_depend>autoware_msgs</build_depend>
   
@@ -18,6 +20,8 @@
   <run_depend>velodyne_pointcloud</run_depend>
   <run_depend>filters</run_depend>
   <run_depend>registration</run_depend>
+  <run_depend>ndt_gpu</run_depend>
+  <run_depend>ndt_cpu</run_depend>
   <run_depend>ndt_tku</run_depend>
   <run_depend>autoware_msgs</run_depend>
   

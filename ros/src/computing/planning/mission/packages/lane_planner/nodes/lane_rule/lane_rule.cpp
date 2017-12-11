@@ -48,6 +48,7 @@ double config_acceleration = 1; // m/s^2
 double config_stopline_search_radius = 1; // meter
 int config_number_of_zeros_ahead = 0;
 int config_number_of_zeros_behind = 0;
+int config_number_of_smoothing_count = 0;
 
 int waypoint_max;
 double search_radius; // meter
@@ -420,6 +421,23 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 			}
 		}
 
+		/* velocity smoothing */
+		for(int k = 0; k < config_number_of_smoothing_count; ++k){
+			autoware_msgs::lane temp_lane = lane;
+			if(lane.waypoints.size() >= 3){
+				for (size_t j = 1; j < lane.waypoints.size()-1; ++j) {
+					if(lane.waypoints.at(j).twist.twist.linear.x != 0)
+					{
+						lane.waypoints[j].twist.twist.linear.x = 
+							(temp_lane.waypoints.at(j-1).twist.twist.linear.x + 
+							 temp_lane.waypoints.at(j).twist.twist.linear.x + 
+							 temp_lane.waypoints.at(j+1).twist.twist.linear.x) / 3 ;
+					}
+				}
+			}
+		}
+
+
 		lane = apply_crossroad_acceleration(lane, config_acceleration);
 
 		traffic_waypoint.lanes.push_back(lane);
@@ -529,6 +547,7 @@ void config_parameter(const autoware_msgs::ConfigLaneRule& msg)
 	config_stopline_search_radius = msg.stopline_search_radius;
 	config_number_of_zeros_ahead = msg.number_of_zeros_ahead;
 	config_number_of_zeros_behind = msg.number_of_zeros_behind;
+	config_number_of_smoothing_count = msg.number_of_smoothing_count;
 
 	if (!cached_waypoint.lanes.empty()) {
 		autoware_msgs::LaneArray update_waypoint = cached_waypoint;

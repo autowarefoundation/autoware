@@ -14,6 +14,13 @@
 namespace PlannerHNS
 {
 
+enum MAP_SOURCE_TYPE
+{
+	MAP_AUTOWARE,
+	MAP_FOLDER,
+	MAP_KML_FILE
+};
+
 enum CAR_TYPE
 {
   Mv2Car, //!< Mv2Car

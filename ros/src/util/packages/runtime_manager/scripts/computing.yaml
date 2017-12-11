@@ -9,13 +9,14 @@ subs :
       subs :
       - name : fix2tfpose
         desc : fix2tfpose desc sample
-        cmd  : rosrun gnss_localizer fix2tfpose
+        cmd  : roslaunch gnss_localizer fix2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
       - name : nmea2tfpose
         desc : nmea2tfpose desc sample
-        #cmd  : rosrun gnss_localizer nmea2tfpose
         cmd  : roslaunch gnss_localizer nmea2tfpose.launch
+        param: gnss
         gui  :
           stat_topic : [ gnss ]
     - name : ndt_localizer
@@ -27,14 +28,14 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 400
+          dialog_width  : 700
           dialog_height : 450
-      - name : lazy_ndt_mapping
-        cmd  : roslaunch ndt_localizer lazy_ndt_mapping.launch
-        param: ndt_mapping
+      - name : approximate_ndt_mapping
+        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 400
+          dialog_width  : 700
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
@@ -297,6 +298,12 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+
+      - name : kf_contour_tracker
+        desc : part of open planner perception package
+        cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
+        param: kf_contour_tracker
+
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -493,7 +500,7 @@ subs :
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : dp_planner (OpenPlanner)
+    - name : dp_planner (OpenPlanner) (old ver)
       desc : Local Planner for OpenPlanner
       subs :
       - name : dp_planner
@@ -504,6 +511,14 @@ subs :
         desc : Feedforward PID waypoint follower
         cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
         param: ff_waypoint_follower
+    - name : OpenPlanner - Local planning
+      desc : Local Planner for OpenPlanner
+      subs :
+      - name : op_trajectory_generator
+        desc : generating candidate rollout trajectory from global path
+        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
+        param: op_trajectory_generator
+
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
@@ -562,6 +577,10 @@ subs :
          gui  :
            lane_waypoint_csv :
              prop  : 1
+           decelerate :
+                   flags : [nl ]
+           disableDecisionMaker :
+                   flags : [nl ]
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -630,7 +649,7 @@ subs :
       desc : planner_selector desc sample
       cmd  : roslaunch planner_selector planner_selector.launch
       param: planner_selector
-         
+
 
 
 buttons:
@@ -1147,6 +1166,145 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : kf_contour_tracker
+    vars  :
+    - name : tracking_type
+      desc : select the type of tracking
+      label: Tracking Type
+      kind : radio_box
+      choices:
+      - Associate Only
+      - Simple Tracker
+      - Contour Tracker
+      descs :
+      - Associate Only
+      - Simple Tracker
+      - Contour Tracker
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : vehicle_width
+      desc : Ego vehicle width
+      label: Vehicle Width
+      min  : 0
+      max  : 4
+      v    : 1.8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : vehicle_length
+      desc : Ego vehicle Length
+      label: Vehicle Length
+      min  : 0
+      max  : 20
+      v    : 4.2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizon
+      desc : Tracking horizon
+      label: Tracking Horizon
+      min  : 0
+      max  : 200
+      v    : 120
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : min_object_size
+      desc : Minimum Object Size Filter
+      label: Min Obj Size
+      min  : 0
+      max  : 1.0
+      v    : 0.1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_object_size
+      desc : Maximum Object Size Filter
+      label: Max Obj Size
+      min  : 0
+      max  : 40
+      v    : 20
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : polygon_quarters
+      desc : Number of Quarters
+      label: Quarters Number
+      min  : 4
+      max  : 32
+      v    : 8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : polygon_resolution
+      desc : Object Polygon Contour resolution
+      label: Polygon Resolution
+      min  : 0.25
+      max  : 5
+      v    : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_association_distance
+      desc : Maximum Distance for associating two objects
+      label: Association Distance
+      min  : 0.5
+      max  : 10
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_association_size_diff
+      desc : Maximum Distance difference between object to match
+      label: Association Size Difference
+      min  : 0.0
+      max  : 5.0
+      v    : 1.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_remeber_time
+      desc : Object Remember time for contour tracking
+      label: Max Remember Time
+      min  : 0.0
+      max  : 10.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : trust_counter
+      desc : number of appearance for object to be truster
+      label: Trust Appearance Number
+      min  : 1
+      max  : 15
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : contours_circle_resolutions
+      desc : Contour minimum circle size
+      label: Contour Resolution
+      min  : 1.0
+      max  : 10
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : gnss
+    vars  :
+    - name    : plane
+      label   : 'Plane number: '
+      kind    : menu
+      choices : [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19' ]
+      choices_type : str
+      v       : '7'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : ndt
     topic : /config/ndt
     msg   : ConfigNdt
@@ -1274,6 +1432,22 @@ params :
     - name      : use_openmp
       desc      : use_openmp desc sample
       label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_fast_pcl
+      desc      : use_fast_pcl desc sample
+      label     : Use Fast PCL
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_gpu
+      desc      : use_gpu desc sample
+      label     : Use GPU
       kind      : checkbox
       v         : False
       cmd_param :
@@ -1566,7 +1740,7 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-    
+
     - name : enablePlannerDynamicSwitch
       desc : Enable Planner dynamical switch
       label: Enable Planner dynamical switch
@@ -1764,7 +1938,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
- 
+
   - name  : planner_selector
     topic : /config/PlannerSelector
     msg   : ConfigPlannerSelector
@@ -1791,7 +1965,7 @@ params :
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
-    vars  : 
+    vars  :
     - name : enable_force_state_change
       desc : enable force state change flag
       label: enable_force_state_change
@@ -1802,59 +1976,6 @@ params :
       label: enable_display_marker
       kind : checkbox
       v    : False
-    - name : MainState_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: MainState_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - START_State
-      - INITIAL_State
-      - LOCATE_VEHICLE_State
-      - DRIVE_State
-      - MISSION_COMPLETE_State 
-      - EMERGENCY_State
-      v   : 0
-    - name : SubState_Acc_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Acc_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - ACC_ACCELERATION_State
-      - ACC_DECELERATION_State
-      - ACC_KEEP_State
-      v   : 0
-    - name : SubState_Str_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Str_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - STR_STRAIGHT_State
-      - STR_LEFT_State
-      - STR_RIGHT_State
-      v   : 0
-    - name : SubState_Behavior_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Behavior_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - BEHAVIOR_LANECHANGE_LEFT_State
-      - BEHAVIOR_LANECHANGE_RIGHT_State
-      - BEHAVIOR_LANECHANGE_OBSTACLE_AVOIDANCE_State
-      v   : 0
-    - name : SubState_Perception_ChangeFlag
-      desc : Forcibly change state if enable force change flags.
-      label: SubState_Perception_ChangeFlag
-      kind : radio_box
-      choices:
-      - NOT_CHANGE
-      - DETECT_OBSTACLE_STATE
-      - DETECT_STOPLINE_STATE
-      - DETECT_TRAFFICLIGHT_STATE
-      v   : 0
     - name : convergence_threshold
       desc : Convergence threshold to DRIVE_STATE from LOCATE_VEHICLE_STATE.(Meter)
       label: convergence_threshold
@@ -1868,11 +1989,31 @@ params :
       max  : 30
       v    : 5
     - name : target_waypoint
-      desc : this target waypoint is used by judge turn angle.
+      desc : decision maker load wp_state except stopline by target_waypoint
       label: target_waypoint
       min  : 0
       max  : 50
       v    : 14
+    - name : stopline_target_waypoint
+      desc : stopline
+      label: stopline_target_waypoint
+      min  : 0
+      max  : 50
+      v    : 10
+    - name : shift_width
+      desc : lane shift width
+      label: shift_width
+      min  : -5.0
+      max  : 5.0
+      v    : 1.0
+    - name : points_topic
+      desc : points_topic
+      kind : str
+      v    : /points_lanes
+      cmd_param:
+              dash : ''
+              delim: ':='
+
 
   - name  : car_kf
     topic : /config/car_kf
@@ -2195,6 +2336,12 @@ params :
       label     : Number of Zeros Behind
       min       : 0
       max       : 100
+      v         : 0
+    - name      : number_of_smoothing_count
+      desc      : number_of_smoothing_count behind desc sample
+      label     : number_of_smoothing_count
+      min       : 0
+      max       : 10
       v         : 0
 
   - name  : lane_stop
@@ -2641,14 +2788,60 @@ params :
       - Robot
       descs :
       - Simulation Mode
-      - ZMP Vehicle
+      - Vehicle
       - Autoware Other Nodes
       - Smaller Robot
       v   : 0
       cmd_param:
         dash     : ''
         delim    : ':='
-
+  - name  : op_trajectory_generator
+    vars  :
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingTipMargin
+      desc : Car Tip Initial Margin
+      label: Tip Margin
+      min  : 2.5
+      max  : 10.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingOutMargin
+      desc : Roll In Margin
+      label: Roll In Margin
+      min  : 5.0
+      max  : 30.0
+      v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutDensity
+      desc : Roll outs density
+      label: Horizontal Density
+      min  : 0.1
+      max  : 2.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutsNumber
+      desc : Number of roll outs
+      label: Rollouts Number
+      min  : 0
+      max  : 20
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
@@ -2712,6 +2905,22 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : disableDecisionMaker
+      desc      : if you not check this, you have to run a decisionmaker node.
+      label     : 'disableDecisionMaker'
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disableVelocitySmoothing
+      desc      : sample.
+      label     : 'disableVelocitySmoothing'
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
@@ -2719,49 +2928,193 @@ params :
     flags : [ no_init_update ]
     vars  :
     - name      : resolution
-      desc      : resolution desc sample
+      desc      : Cell Size while mapping using ND (meters) (default 1.0)
       label     : Resolution
       min       : 0.0
       max       : 10.0
       v         : 1.0
     - name      : step_size
-      desc      : step_size desc sample
+      desc      : Increment value between iterations while matching (default 0.1)
       label     : Step Size
       min       : 0.0
       max       : 1.0
       v         : 0.1
     - name      : trans_epsilon
-      desc      : trans_epsilon desc sample
+      desc      : Value to decide convergence between iterations (meters) (default 0.01)
       label     : Transformation Epsilon
       min       : 0.0
       max       : 0.1
       v         : 0.01
     - name      : max_iterations
-      desc      : max_iterations desc sample
+      desc      : Maximum number of iterations before stopping matching (default 30)
       label     : Maximum Iterations
       min       : 1
       max       : 300
       v         : 30
     - name      : leaf_size
-      desc      : leaf_size desc sample
+      desc      : Voxel Grid Size of the input scan (downsampling) (default 1.0)
       label     : Leaf Size
       min       : 0.0
       max       : 10.0
       v         : 1.0
     - name      : min_scan_range
-      desc      : min_scan_range desc sample
+      desc      : Ignore points closer than this value (meters) (default 5.0)
       label     : Minimum Scan Range
       min       : 0.0
       max       : 30.0
       v         : 5.0
     - name      : min_add_scan_shift
-      desc      : min_add_scan_shift desc sample
+      desc      : Minimum distance between points to be added to the final map (default 1.0)
       label     : Minimum Add Scan Shift
       min       : 0.0
       max       : 10.0
       v         : 1.0
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_odom
+      desc      : Use Odometry to try to reduce errors (read from /odom_pose)
+      label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_upside_down
+      desc      : Check if the IMU coordinate system is pointing downwards
+      label     : Inverted IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
     - name      : use_openmp
-      desc      : use_openmp desc sample
+      desc      : Use OpenMP to accelerate computation
+      label     : Use OpenMP
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_fast_pcl
+      desc      : use_fast_pcl desc sample
+      label     : Use Fast PCL
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_gpu
+      desc      : Use GPU to accelerate computation
+      label     : Use GPU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+
+  - name  : approximate_ndt_mapping
+    topic : /config/approximate_ndt_mapping
+    msg   : ConfigApproximateNdtMapping
+    flags : [ no_init_update ]
+    vars  :
+    - name      : resolution
+      desc      : Cell Size while mapping using ND (meters) (default 1.0)
+      label     : Resolution
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : step_size
+      desc      : Increment value between iterations while matching (default 0.1)
+      label     : Step Size
+      min       : 0.0
+      max       : 1.0
+      v         : 0.1
+    - name      : trans_epsilon
+      desc      : Value to decide convergence between iterations (meters) (default 0.01)
+      label     : Transformation Epsilon
+      min       : 0.0
+      max       : 0.1
+      v         : 0.01
+    - name      : max_iterations
+      desc      : Maximum number of iterations before stopping matching (default 30)
+      label     : Maximum Iterations
+      min       : 1
+      max       : 300
+      v         : 30
+    - name      : leaf_size
+      desc      : Voxel Grid Size of the input scan (downsampling) (default 1.0)
+      label     : Leaf Size
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : min_scan_range
+      desc      : Ignore points closer than this value (meters) (default 5.0)
+      label     : Minimum Scan Range
+      min       : 0.0
+      max       : 30.0
+      v         : 5.0
+    - name      : min_add_scan_shift
+      desc      : Minimum distance between points to be added to the final map (default 1.0)
+      label     : Minimum Add Scan Shift
+      min       : 0.0
+      max       : 10.0
+      v         : 1.0
+    - name      : max_submap_size
+      desc      : SubMap Size in meters before dumping to file and release memory.
+      label     : Submap Size
+      min       : 0.0
+      max       : 1000
+      v         : 100.0
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_odom
+      desc      : Use Odometry to try to reduce errors (read from /odom_pose)
+      label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_upside_down
+      desc      : Check if the IMU coordinate system is pointing downwards
+      label     : Inverted IMU
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_openmp
+      desc      : Use OpenMP to accelerate computation
       label     : Use OpenMP
       kind      : checkbox
       v         : False
@@ -2933,16 +3286,16 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : image_raw_topic_str
-      desc      : image_raw_topic_str desc sample
-      label     : image_raw_topic_str
+    - name      : image_src
+      desc      : Image Topic to be fed to the network for detection
+      label     : image_src
       kind      : str
       v         : /image_raw
       cmd_param :
         dash      : ''
         delim     : ':='
     - name     : network_definition_file
-      desc     : network_definition_file sample
+      desc     : Prototxt file which defines the network
       label    : 'network_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/deploy.prototxt
@@ -2950,7 +3303,7 @@ params :
         dash     : ''
         delim    : ':='
     - name     : pretrained_model_file
-      desc     : pretrained_model_file sample
+      desc     : Trained Caffe model
       label    : 'pattern_file (ssd)'
       kind     : path
       v        : ~/ssdcaffe/models/VGGNet/VOC0712Plus/SSD_300x300/VGG_VOC0712Plus_SSD_300x300_iter_240000.caffemodel

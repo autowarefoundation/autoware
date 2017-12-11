@@ -2,6 +2,20 @@
 Changelog for package cv_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#949 <https://github.com/CPFL/Autoware/issues/949>`_ from CPFL/fix/obj_reproj_multi_cam_support
+  Support for multi cameras in obj_reproj node
+* Support for multi cameras in pbj_reproj node
+* merge develop and fixed slow switching map
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 * Update README.md (`#813 <https://github.com/cpfl/autoware/issues/813>`_)

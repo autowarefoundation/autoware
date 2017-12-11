@@ -48,13 +48,19 @@ WaypointLoaderNode::~WaypointLoaderNode()
 void WaypointLoaderNode::initPublisher()
 {
   // setup publisher
-  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 10, true);
+  if(disableDecisionMaker_){
+	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
+  }else{
+	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+  }
 }
 
 void WaypointLoaderNode::initParameter()
 {
   // parameter settings
   private_nh_.param<double>("decelerate", decelerate_, double(0));
+  private_nh_.param<bool>("disableDecisionMaker", disableDecisionMaker_, true);
+  private_nh_.param<bool>("disableVelocitySmoothing", disableVelocitySmoothing_, false);
   ROS_INFO_STREAM("decelerate :" << decelerate_);
   private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, MULTI_LANE_CSV);
 }
@@ -257,10 +263,23 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
 
 void WaypointLoaderNode::planningVelocity(std::vector<autoware_msgs::waypoint> *wps)
 {
+
   for (size_t i = 0; i < wps->size(); ++i)
   {
     wps->at(i).twist.twist.linear.x = decelerate(
       wps->at(i).pose.pose.position, wps->at(wps->size() - 1).pose.pose.position, wps->at(i).twist.twist.linear.x);
+  }
+
+  if(!disableVelocitySmoothing_){
+	  std::vector<autoware_msgs::waypoint> temp = *wps;
+	  if(temp.size() > 3){
+		  for (size_t i = 1; i< wps->size()-1; ++i){
+			  wps->at(i).twist.twist.linear.x = 
+				  (temp.at(i-1).twist.twist.linear.x + 
+				   temp.at(i-1).twist.twist.linear.x + 
+				   temp.at(i-1).twist.twist.linear.x) / 3;
+		  }
+	  }
   }
 }
 

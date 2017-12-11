@@ -75,8 +75,10 @@ void RegionTlrSsdRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstP
   // If frame has not been prepared, abort this callback
   if (frame_.empty() ||
       frame_header_.stamp == previous_timestamp) {
+    std::cout << "No Image" << std::endl;
     return;
   }
+  //std::cout << "rois: " << extracted_pos->Signals.size() << std::endl;
 
   // Acquire signal posotion on the image
   Context::SetContexts(contexts_, extracted_pos, frame_.rows, frame_.cols);
@@ -89,8 +91,12 @@ void RegionTlrSsdRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstP
       continue;
     }
 
+    //std::cout << "roi inside: " << cv::Rect(context.topLeft, context.botRight) << std::endl;
     // extract region of interest from input image
     cv::Mat roi  = frame_(cv::Rect(context.topLeft, context.botRight)).clone();
+
+    //cv::imshow("ssd_tlr", roi);
+	//  cv::waitKey(200);
 
     // Get current state of traffic light from current frame
     LightState current_state = recognizer.RecognizeLightState(roi);

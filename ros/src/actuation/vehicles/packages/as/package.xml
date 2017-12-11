@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>as</name>
+  <version>1.6.0</version>
+  <description>The pacmod interface package</description>
+  <maintainer email="antm678@ertl.jp">T.Ando</maintainer>
+  <license>BSD</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>module_comm_msgs</build_depend>
+  <build_depend>dbw_mkz_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>module_comm_msgs</run_depend>
+  <run_depend>dbw_mkz_msgs</run_depend>
+
+  <export>
+  </export>
+
+</package>
