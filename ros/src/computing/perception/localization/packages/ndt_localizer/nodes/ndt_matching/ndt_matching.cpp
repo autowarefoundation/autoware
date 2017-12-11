@@ -466,9 +466,9 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     if (_use_gpu == true)
     {
       std::shared_ptr<gpu::GNormalDistributionsTransform> new_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
+      new_gpu_ndt_ptr->setResolution(ndt_res);
       new_gpu_ndt_ptr->setInputTarget(map_ptr);
       new_gpu_ndt_ptr->setMaximumIterations(max_iter);
-      new_gpu_ndt_ptr->setResolution(ndt_res);
       new_gpu_ndt_ptr->setStepSize(step_size);
       new_gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
 
@@ -488,9 +488,9 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     if (_use_fast_pcl)
     {
       cpu::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_cpu_ndt;
+      new_cpu_ndt.setResolution(ndt_res);
       new_cpu_ndt.setInputTarget(map_ptr);
       new_cpu_ndt.setMaximumIterations(max_iter);
-      new_cpu_ndt.setResolution(ndt_res);
       new_cpu_ndt.setStepSize(step_size);
       new_cpu_ndt.setTransformationEpsilon(trans_eps);
 
@@ -509,12 +509,11 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     {
       pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_ndt;
       pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+      new_ndt.setResolution(ndt_res);
       new_ndt.setInputTarget(map_ptr);
       new_ndt.setMaximumIterations(max_iter);
-      new_ndt.setResolution(ndt_res);
       new_ndt.setStepSize(step_size);
       new_ndt.setTransformationEpsilon(trans_eps);
-
       #ifdef USE_FAST_PCL
         new_ndt.omp_align(*output_cloud, Eigen::Matrix4f::Identity());
       #else
