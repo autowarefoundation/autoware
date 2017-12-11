@@ -119,8 +119,6 @@ void BehaviorGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 
 	_nh.getParam("/op_common_params/enableLaneChange", m_PlanningParams.enableLaneChange);
 
-	m_PlanningParams.nReliableCount = 50;
-
 	_nh.getParam("/op_common_params/width", m_CarInfo.width);
 	_nh.getParam("/op_common_params/length", m_CarInfo.length);
 	_nh.getParam("/op_common_params/wheelBaseLength", m_CarInfo.wheel_base);
@@ -147,6 +145,8 @@ void BehaviorGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 		m_MapType = PlannerHNS::MAP_KML_FILE;
 
 	_nh.getParam("/op_common_params/mapFileName" 		, m_MapPath);
+
+	_nh.getParam("/op_behavior_selector/evidence_tust_number", m_PlanningParams.nReliableCount);
 
 	m_BehaviorGenerator.Init(controlParams, m_PlanningParams, m_CarInfo);
 	m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
@@ -270,9 +270,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
 			}
 
-			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
-
-			m_BehaviorGenerator.m_TotalOriginalPath = m_GlobalPaths;
+			m_BehaviorGenerator.SetNewGlobalPath(m_GlobalPaths);
 		}
 		else
 		{
@@ -295,52 +293,15 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayCons
 {
 	if(msg->lanes.size() > 0)
 	{
-		int currIndex = PlannerHNS::PlanningHelpers::GetClosestNextPointIndexFast(m_BehaviorGenerator.m_Path, m_BehaviorGenerator.state);
-		int index_limit = 0;//m_Path.size() - 20;
-		if(index_limit<=0)
-			index_limit =  m_BehaviorGenerator.m_Path.size()/2.0;
-		if(m_RollOuts.size() == 0
-				|| currIndex > index_limit
-				|| m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan
-				|| m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath
-				|| m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
+		m_RollOuts.clear();
+		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			std::cout << "New Local Plan !! " << currIndex << ", "<< m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan << ", " << m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath  << std::endl;
-			m_RollOuts.clear();
-			m_TrajectoryCosts.clear();
-			for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
-			{
-				std::vector<PlannerHNS::WayPoint> path;
-				PlannerHNS::TrajectoryCost traj_cost;
-				PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
-
-				traj_cost.bBlocked = msg->lanes.at(i).is_blocked;
-				traj_cost.index = msg->lanes.at(i).lane_index;
-				traj_cost.cost = msg->lanes.at(i).cost;
-				traj_cost.closest_obj_distance = msg->lanes.at(i).closest_object_distance;
-				traj_cost.closest_obj_velocity = msg->lanes.at(i).closest_object_velocity;
-
-				m_RollOuts.push_back(path);
-				m_TrajectoryCosts.push_back(traj_cost);
-			}
-
-			m_BehaviorGenerator.m_RollOuts = m_RollOuts;
-			bRollOuts = true;
-			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bRePlan = false;
-			m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = false;
-
-			PlannerHNS::PreCalculatedConditions* pCParams = m_BehaviorGenerator.m_pCurrentBehaviorState->GetCalcParams();
-
-			if(pCParams)
-			{
-				if(m_BehaviorGenerator.m_pCurrentBehaviorState->m_Behavior == PlannerHNS::OBSTACLE_AVOIDANCE_STATE)
-					pCParams->iPrevSafeTrajectory = pCParams->iCurrSafeTrajectory;
-				else
-					pCParams->iPrevSafeTrajectory = pCParams->iCentralTrajectory;
-
-				pCParams->iPrevSafeLane = pCParams->iCurrSafeLane;
-			}
+			std::vector<PlannerHNS::WayPoint> path;
+			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
+			m_RollOuts.push_back(path);
 		}
+		m_BehaviorGenerator.m_RollOuts = m_RollOuts;
+		bRollOuts = true;
 	}
 }
 
@@ -460,15 +421,6 @@ void BehaviorGen::MainLoop()
 		PlannerHNS::TrajectoryCost tc;
 		if(bNewCurrentPos && m_GlobalPaths.size()>0)
 		{
-			m_BehaviorGenerator.m_TotalPath.clear();
-
-			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
-			{
-				t_centerTrajectorySmoothed.clear();
-				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance ,	m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
-				m_BehaviorGenerator.m_TotalPath.push_back(t_centerTrajectorySmoothed);
-			}
-
 			if(bNewLightSignal)
 			{
 				m_PrevTrafficLight = m_CurrTrafficLight;
@@ -482,7 +434,7 @@ void BehaviorGen::MainLoop()
 					m_PrevTrafficLight.at(itls).lightState = m_CurrLightStatus;
 			}
 
-			m_CurrentBehavior = m_BehaviorGenerator.DoOneStep(dt, m_CurrentPos, m_VehicleStatus, 1, m_PrevTrafficLight, m_TrajectoryBestCost, 0 );
+			m_CurrentBehavior = m_BehaviorGenerator.DoOneStep(dt, m_CurrentPos, m_VehicleStatus, -1, m_PrevTrafficLight, m_TrajectoryBestCost, 0 );
 
 			SendLocalPlanningTopics();
 			VisualizeLocalPlanner();

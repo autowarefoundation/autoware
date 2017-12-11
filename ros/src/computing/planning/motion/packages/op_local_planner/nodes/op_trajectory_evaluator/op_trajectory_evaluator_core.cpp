@@ -258,13 +258,7 @@ void TrajectoryEval::callbackGetPredictedObjects(const autoware_msgs::DetectedOb
 
 void TrajectoryEval::callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg)
 {
-	m_CurrentBehavior.bNewPlan =  msg->twist.linear.x;
-//	m_CurrentBehavior.followDistance = msg->twist.linear.y;
-//	m_CurrentBehavior.followVelocity = msg->twist.linear.z ;
-//	m_CurrentBehavior.indicator = msg->twist.angular.x ;
-//	m_CurrentBehavior.state = msg->twist.angular.y;
 	m_CurrentBehavior.iTrajectory = msg->twist.angular.z;
-
 }
 
 void TrajectoryEval::MainLoop()

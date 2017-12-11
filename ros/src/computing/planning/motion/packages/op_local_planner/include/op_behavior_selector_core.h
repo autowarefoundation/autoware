@@ -68,7 +68,6 @@ protected: //Planning Related variables
 	bool bVehicleStatus;
 
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPaths;
-	std::vector<PlannerHNS::WayPoint> t_centerTrajectorySmoothed;
 	bool bWayGlobalPath;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_RollOuts;
 	bool bRollOuts;
@@ -79,7 +78,7 @@ protected: //Planning Related variables
 	PlannerHNS::RoadNetwork m_Map;
 	bool bMap;
 
-	std::vector<PlannerHNS::TrajectoryCost> m_TrajectoryCosts;
+	//std::vector<PlannerHNS::TrajectoryCost> m_TrajectoryCosts;
 	PlannerHNS::TrajectoryCost m_TrajectoryBestCost;
 	bool bBestCost;
 

@@ -22,8 +22,6 @@ public:
 	CAR_BASIC_INFO m_CarInfo;
 	ControllerParams m_ControlParams;
 	std::vector<WayPoint> m_Path;
-	std::vector<std::vector<WayPoint> > m_TotalPath;
-	std::vector<std::vector<WayPoint> > m_TotalOriginalPath;
 	PlannerHNS::RoadNetwork m_Map;
 
 	double m_MaxLaneSearchDistance;
@@ -61,6 +59,7 @@ public:
 	void CalculateImportantParameterForDecisionMaking(const VehicleState& car_state,
 			const int& goalID, const bool& bEmergencyStop, const std::vector<TrafficLight>& detectedLights,
 			const TrajectoryCost& bestTrajectory);
+	void SetNewGlobalPath(const std::vector<std::vector<WayPoint> >& globalPath);
 
 	BehaviorState DoOneStep(
 			const double& dt,
@@ -77,10 +76,15 @@ private:
 	bool SelectSafeTrajectory();
 	BehaviorState GenerateBehaviorState(const VehicleState& vehicleState);
 	double UpdateVelocityDirectlyToTrajectory(const BehaviorState& beh, const VehicleState& CurrStatus, const double& dt);
+	bool ReachEndOfGlobalPath(const double& min_distance, const int& iGlobalPathIndex);
 
-	bool NoWayTest(const double& min_distance, const int& iGlobalPathIndex);
 
+private:
+	std::vector<PlannerHNS::WayPoint> t_centerTrajectorySmoothed;
+	std::vector<std::vector<WayPoint> > m_TotalOriginalPath;
+	std::vector<std::vector<WayPoint> > m_TotalPath;
 	PlannerHNS::PlanningParams m_params;
+
 };
 
 } /* namespace PlannerHNS */

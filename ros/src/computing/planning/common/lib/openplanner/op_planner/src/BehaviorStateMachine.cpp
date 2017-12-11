@@ -12,10 +12,8 @@
 using namespace UtilityHNS;
 
 
-namespace PlannerHNS {
-
-//PreCalculatedConditions* BehaviorStateMachine::m_pCalculatedValues = 0;
-//PlanningParams BehaviorStateMachine::m_PlanningParams;
+namespace PlannerHNS
+{
 
 BehaviorStateMachine::BehaviorStateMachine(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* nextState)
 {
@@ -90,10 +88,10 @@ BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& 
 		BehaviorStateMachine* pState = pNextStates.at(i);
 		if(pState && behavior == pState->m_Behavior )
 		{
-//			UpdateLogCount(pState);
-//			pState = FindBestState(decisionMakingCount);
-//
-//			if(pState == 0) return this;
+			UpdateLogCount(pState);
+			pState = FindBestState(decisionMakingCount);
+
+			if(pState == 0) return this;
 
 			m_BehaviorsLog.clear();
 			pState->ResetTimer();
@@ -165,9 +163,15 @@ BehaviorStateMachine* ForwardState::GetNextState()
 	}
 }
 
-BehaviorStateMachine* MissionAccomplishedState::GetNextState()
+BehaviorStateMachine* ForwardStateII::GetNextState()
 {
-	return FindBehaviorState(this->m_Behavior); // return and reset
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
+		return FindBehaviorState(GOAL_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior);
 }
 
 BehaviorStateMachine* StopState::GetNextState()
@@ -264,17 +268,6 @@ BehaviorStateMachine* WaitState::GetNextState()
 	return FindBehaviorState(FORWARD_STATE);
 }
 
-BehaviorStateMachine* InitState::GetNextState()
-{
-	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
-		return this;
-
-	PreCalculatedConditions* pCParams = GetCalcParams();
-
-	pCParams->prevGoalID = pCParams->currentGoalID;
-	return FindBehaviorState(FORWARD_STATE);
-}
-
 BehaviorStateMachine* FollowState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
@@ -322,6 +315,27 @@ BehaviorStateMachine* SwerveState::GetNextState()
 		return FindBehaviorState(FORWARD_STATE);
 }
 
+BehaviorStateMachine* InitState::GetNextState()
+{
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	pCParams->prevGoalID = pCParams->currentGoalID;
+	return FindBehaviorState(FORWARD_STATE);
+}
+
+BehaviorStateMachine* InitStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID > 0)
+		return FindBehaviorState(FORWARD_STATE);
+	else
+		return FindBehaviorState(this->m_Behavior);
+}
+
 BehaviorStateMachine* GoalState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
@@ -340,6 +354,30 @@ BehaviorStateMachine* GoalState::GetNextState()
 
 	else
 		return FindBehaviorState(this->m_Behavior); // return and reset
+}
+
+BehaviorStateMachine* GoalStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID == -1)
+		return FindBehaviorState(FINISH_STATE);
+
+	else
+	{
+		pCParams->prevGoalID = pCParams->currentGoalID;
+		return FindBehaviorState(FORWARD_STATE);
+	}
+}
+
+BehaviorStateMachine* MissionAccomplishedState::GetNextState()
+{
+	return FindBehaviorState(this->m_Behavior); // return and reset
+}
+
+BehaviorStateMachine* MissionAccomplishedStateII::GetNextState()
+{
+	return FindBehaviorState(this->m_Behavior);
 }
 
 } /* namespace PlannerHNS */

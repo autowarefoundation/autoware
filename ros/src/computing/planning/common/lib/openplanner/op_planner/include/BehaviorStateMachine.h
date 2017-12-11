@@ -69,12 +69,30 @@ public:
 	virtual BehaviorStateMachine* GetNextState();
 };
 
+class ForwardStateII : public BehaviorStateMachine
+{
+public:
+	ForwardStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FORWARD_STATE;}
+	virtual ~ForwardStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
 class MissionAccomplishedState : public BehaviorStateMachine
 {
 public:
 	MissionAccomplishedState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FINISH_STATE;}
 	virtual ~MissionAccomplishedState(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
+class MissionAccomplishedStateII : public BehaviorStateMachine
+{
+public:
+	MissionAccomplishedStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FINISH_STATE;}
+	virtual ~MissionAccomplishedStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 };
 
@@ -167,12 +185,31 @@ public:
 
 };
 
+class InitStateII : public BehaviorStateMachine
+{
+public:
+	InitStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = INITIAL_STATE;}
+	virtual ~InitStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
 class GoalState : public BehaviorStateMachine
 {
 public:
 	GoalState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = GOAL_STATE;}
 	virtual ~GoalState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class GoalStateII : public BehaviorStateMachine
+{
+public:
+	GoalStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = GOAL_STATE;}
+	virtual ~GoalStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };
