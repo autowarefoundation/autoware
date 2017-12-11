@@ -1,8 +1,8 @@
 Change history
 ==============
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge pull request `#846 <https://github.com/CPFL/Autoware/issues/846>`_ from CPFL/fix/hdl64e_new_param
   [Bugfix] Replace the paramter file for Velodyne HDL64e-S2
 * Merge branch 'develop' into feature/ndt_pcl_gpu

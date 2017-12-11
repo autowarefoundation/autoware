@@ -2,8 +2,8 @@
 Changelog for package cv_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge pull request `#949 <https://github.com/CPFL/Autoware/issues/949>`_ from CPFL/fix/obj_reproj_multi_cam_support
   Support for multi cameras in obj_reproj node
 * Support for multi cameras in pbj_reproj node

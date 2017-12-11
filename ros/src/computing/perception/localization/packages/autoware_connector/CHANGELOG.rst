@@ -2,8 +2,8 @@
 Changelog for package autoware_connector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch 'develop' into feature/ndt_pcl_gpu
 * Merge branch 'develop' into feature/OpenPlanner
   Conflicts:

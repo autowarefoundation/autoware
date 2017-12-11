@@ -2,8 +2,8 @@
 Changelog for package kitti_player
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch 'develop' into feature/OpenPlanner
   Conflicts:
   ros/src/util/packages/runtime_manager/scripts/computing.yaml

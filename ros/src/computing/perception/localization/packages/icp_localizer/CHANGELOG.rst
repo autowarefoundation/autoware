@@ -2,8 +2,8 @@
 Changelog for package icp_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id
   Use initialpose header.frame_id at initialposeCallback function
 * Merge pull request `#965 <https://github.com/CPFL/Autoware/issues/965>`_ from CPFL/fix/icp_matching

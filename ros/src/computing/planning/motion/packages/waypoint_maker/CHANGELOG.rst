@@ -2,8 +2,8 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch 'develop' into feature/tlr_turn
 * Merge branch 'develop' into feature/ndt_pcl_gpu
 * Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision

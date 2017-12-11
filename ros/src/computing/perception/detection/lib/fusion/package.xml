@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>fusion</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>The fusion package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <license>BSD</license>

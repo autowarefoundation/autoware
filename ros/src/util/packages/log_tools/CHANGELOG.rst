@@ -2,8 +2,8 @@
 Changelog for package log_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * adapted the version to the current version
 * Merge branch 'develop' into feature/ndt_pcl_gpu
 * Merge branch 'develop' into feature/OpenPlanner

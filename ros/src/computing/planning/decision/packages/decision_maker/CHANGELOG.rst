@@ -2,8 +2,8 @@
 Changelog for package decision_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch develop into feature/ndt_pcl_gpu
 * Merge branch 'develop' into feature/tlr_turn_support
 * Merge pull request `#954 <https://github.com/CPFL/Autoware/issues/954>`_ from CPFL/fix/tf_mapping

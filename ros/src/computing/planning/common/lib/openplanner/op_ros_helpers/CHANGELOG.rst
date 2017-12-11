@@ -2,8 +2,8 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch 'develop' into feature/ndt_pcl_gpu
 * Merge branch 'feature/OpenPlanner' into develop
 * - Add new Node for object polygon representation and tracking (kf_contour_tracker)

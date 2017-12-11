@@ -1,7 +1,7 @@
 <package>
 
   <name>velodyne</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>
     Basic ROS support for the Velodyne 3D LIDARs.
   </description>

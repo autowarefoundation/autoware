@@ -2,8 +2,8 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
   [bugfix]use qt5_wrap_ui instead of autouic
 * use qt5_wrap_ui instead of autouic

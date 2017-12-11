@@ -2,8 +2,8 @@
 Changelog for package xsens_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch 'develop' into feature/ndt_pcl_gpu
 * Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
 * Merge branch 'develop' into feature/OpenPlanner

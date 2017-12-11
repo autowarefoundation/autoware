@@ -2,8 +2,8 @@
 Changelog for package vector_map_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * Merge branch develop into feature/ndt_pcl_gpu
 * Merge pull request `#953 <https://github.com/CPFL/Autoware/issues/953>`_ from CPFL/feature/tlr_turn_support
   Feature/tlr turn support, multi traffic signal support

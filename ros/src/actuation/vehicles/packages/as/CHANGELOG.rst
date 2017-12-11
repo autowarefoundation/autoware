@@ -2,8 +2,8 @@
 Changelog for package as
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.0 (2017-12-11)
+------------------
 * adapted the version to the current version
 * Merge branch 'develop' into feature/OpenPlanner
   Conflicts:
