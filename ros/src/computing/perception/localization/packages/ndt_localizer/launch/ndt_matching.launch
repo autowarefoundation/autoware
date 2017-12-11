@@ -10,7 +10,7 @@
   <arg name="use_openmp" default="false" />
   <arg name="get_height" default="false" />
   <arg name="use_local_transform" default="false" />
-  <arg name="use_fast_pcl" default="true" />
+  <arg name="use_fast_pcl" default="false" />
   <arg name="use_gpu" default="false" />
   <arg name="sync" default="false" />
   <arg name="imu_topic" default="/imu_raw" />
@@ -24,6 +24,7 @@
     <param name="offset" value="$(arg offset)" />
     <param name="get_height" value="$(arg get_height)" />
     <param name="use_local_transform" value="$(arg use_local_transform)" />
+    <param name="use_fast_pcl" value="$(arg use_fast_pcl)" />
     <param name="use_gpu" value="$(arg use_gpu)" />
     <param name="use_openmp" value="$(arg use_openmp)" />
     <param name="imu_topic" value="$(arg imu_topic)" />
