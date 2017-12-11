@@ -8,7 +8,7 @@
     <group ns="obj_car">
 
       <arg name="projection_matrix_src_car" default="/projection_matrix"/>
-      <arg name="camera_info_src_car" default="/camera/camera_info"/>
+      <arg name="camera_info_src_car" default="/camera_info"/>
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
         <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_car)"/>
@@ -24,7 +24,7 @@
     <group ns="obj_person">
 
       <arg name="projection_matrix_src_pedestrian" default="/projection_matrix"/>
-      <arg name="camera_info_src_pedestrian" default="/camera/camera_info"/>
+      <arg name="camera_info_src_pedestrian" default="/camera_info"/>
 
       <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
         <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_pedestrian)"/>
