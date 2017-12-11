@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -205,13 +205,15 @@ if(EXISTS "/usr/local/cuda")
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 
+  qt5_wrap_ui(vscan_lidar_track_ui_mainwindow nodes/vscan_lidar_track/mainwindow.ui)
+
   add_executable(vscan_lidar_track
     nodes/vscan_lidar_track/main.cpp
     nodes/vscan_lidar_track/mainwindow.cpp
     nodes/vscan_lidar_track/mainwindow.h
-    nodes/vscan_lidar_track/mainwindow.ui
     nodes/vscan_lidar_track/rbsspfvehicletracker.cpp
     nodes/vscan_lidar_track/rbsspfvehicletracker.h
+    ${vscan_lidar_track_ui_mainwindow}
     )
 
   set_target_properties(vscan_lidar_track

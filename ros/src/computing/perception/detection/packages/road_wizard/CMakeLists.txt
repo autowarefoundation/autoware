@@ -120,13 +120,15 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+qt5_wrap_ui(tlr_tuner_ui_mainwindow nodes/tlr_tuner/mainwindow.ui)
+
 add_executable(tlr_tuner
   nodes/tlr_tuner/tlr_tuner.cpp
   nodes/tlr_tuner/mainwindow.cpp
   nodes/tlr_tuner/mainwindow.h
-  nodes/tlr_tuner/mainwindow.ui
   nodes/tlr_tuner/tunerBody.cpp
   nodes/tlr_tuner/tunerBody.h
+  ${tlr_tuner_ui_mainwindow}
   )
 
 set_target_properties(tlr_tuner
