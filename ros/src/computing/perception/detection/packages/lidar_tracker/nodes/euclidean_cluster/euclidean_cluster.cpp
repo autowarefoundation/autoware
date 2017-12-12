@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <limits>
+#include <cmath>
 
 #include <ros/ros.h>
 
@@ -54,15 +56,14 @@
 #include <grid_map_msgs/GridMap.h>
 #include <grid_map_cv/grid_map_cv.hpp>
 
+#include <vector_map/vector_map.h>
+
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <jsk_rviz_plugins/Pictogram.h>
 #include <jsk_rviz_plugins/PictogramArray.h>
 
 #include <tf/tf.h>
-
-#include <limits>
-#include <cmath>
 
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
@@ -745,7 +746,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 				final_clusters[i]->SetValidity(point_in_grid);
 
 			}
-			/timer.stop();
+			//timer.stop();
 			//std::cout << "vectormap filtering took " << timer.getTimeMilli() << " ms to check " << final_clusters.size() << std::endl;
 		}
 	}
