@@ -19,6 +19,10 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
   vector_map_server
   op_ros_helpers
+  vector_map
+  grid_map_ros
+  grid_map_cv
+  grid_map_msgs
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -28,6 +32,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(OpenMP)
 
 execute_process(
   COMMAND rosversion -d
@@ -265,8 +270,14 @@ else()
 
 endif()
 
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp vector_map)
 
+if (OPENMP_FOUND)
+    set_target_properties(euclidean_cluster PROPERTIES
+        COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
+        LINK_FLAGS ${OpenMP_CXX_FLAGS}
+    )
+endif()
 
 #kl contour tracker
 add_executable(kf_contour_tracker nodes/kf_contour_tracker/kf_contour_tracker.cpp nodes/kf_contour_tracker/src/kf_contour_tracker_core.cpp)

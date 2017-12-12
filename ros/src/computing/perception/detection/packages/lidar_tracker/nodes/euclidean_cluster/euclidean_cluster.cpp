@@ -1,3 +1,8 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+
 #include <ros/ros.h>
 
 #include <pcl_conversions/pcl_conversions.h>
@@ -45,7 +50,9 @@
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 
-#include <vector_map_server/PositionState.h>
+#include <grid_map_ros/grid_map_ros.hpp>
+#include <grid_map_msgs/GridMap.h>
+#include <grid_map_cv/grid_map_cv.hpp>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -61,20 +68,13 @@
 #include <opencv/highgui.h>
 #include <opencv2/core/version.hpp>
 #if (CV_MAJOR_VERSION == 3)
-#include "gencolors.cpp"
+	#include "gencolors.cpp"
 #else
-#include <opencv2/contrib/contrib.hpp>
+	#include <opencv2/contrib/contrib.hpp>
 #endif
 
-#include <iostream>
-#include <vector>
-#include <string>
-#include <sstream>
 
 #include "Cluster.h"
-
-//#include <vector_map/vector_map.h>
-//#include <vector_map_server/GetSignal.h>
 
 #ifdef GPU_CLUSTERING
 	#include "gpu_euclidean_clustering.h"
@@ -95,6 +95,8 @@ ros::Publisher _pub_points_lanes_cloud;
 ros::Publisher _pub_jsk_boundingboxes;
 ros::Publisher _pub_jsk_hulls;
 
+ros::Publisher _pub_grid_map;
+
 ros::ServiceClient _vectormap_server;
 
 std_msgs::Header _velodyne_header;
@@ -107,9 +109,13 @@ std::vector<double> _clustering_distances;
 tf::StampedTransform* _transform;
 tf::StampedTransform* _velodyne_output_transform;
 tf::TransformListener* _transform_listener;
+tf::TransformListener* _vectormap_transform_listener;
 
 std::string _output_frame;
 std::string _vectormap_frame;
+
+grid_map::GridMap* _wayarea_gridmap;
+
 static bool _velodyne_transform_available;
 static bool _downsample_cloud;
 static bool _pose_estimation;
@@ -134,8 +140,149 @@ static double _max_boundingbox_side;
 static double _remove_points_upto;
 static double _cluster_merge_threshold;
 
+std::vector<std::vector<geometry_msgs::Point>> _way_area_points;
+
 static bool _use_gpu;
 static std::chrono::system_clock::time_point _start, _end;
+
+tf::StampedTransform findTransform(const std::string& in_target_frame, const std::string& in_source_frame)
+{
+	tf::StampedTransform transform;
+
+	try
+	{
+		// What time should we use?
+		_vectormap_transform_listener->lookupTransform(in_target_frame, in_source_frame, ros::Time(0), transform);
+	}
+	catch (tf::TransformException ex)
+	{
+		ROS_ERROR("%s", ex.what());
+		return transform;
+	}
+
+	return transform;
+}
+
+geometry_msgs::Point transformPoint(const geometry_msgs::Point &point, const tf::Transform &tf)
+{
+	tf::Point tf_point;
+	tf::pointMsgToTF(point, tf_point);
+
+	tf_point = tf * tf_point;
+
+	geometry_msgs::Point ros_point;
+	tf::pointTFToMsg(tf_point, ros_point);
+
+	return ros_point;
+}
+
+bool checkPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image, const geometry_msgs::Point& in_point)
+{
+
+	// calculate out_grid_map position
+	grid_map::Position map_pos = in_grid_map.getPosition();
+	double origin_x_offset = in_grid_map.getLength().x() / 2.0 - map_pos.x();
+	double origin_y_offset = in_grid_map.getLength().y() / 2.0 - map_pos.y();
+	// coordinate conversion for cv image
+	double cv_x = (in_grid_map.getLength().y() - origin_y_offset - in_point.y) / in_grid_map.getResolution();
+	double cv_y = (in_grid_map.getLength().x() - origin_x_offset - in_point.x) / in_grid_map.getResolution();
+
+	//check coords are inside the gridmap
+	if(cv_x < 0 || cv_x > in_grid_image.cols
+			|| cv_y < 0 || cv_y > in_grid_image.rows)
+	{	return false;}
+
+	//Scalar(0) if road
+	if(0 == in_grid_image.at<uchar>(cv_y, cv_x))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void convertPointsToImage(grid_map::GridMap& out_grid_map, const std::vector<std::vector<geometry_msgs::Point>>& in_wayarea_points)
+{
+	if(!out_grid_map.exists("wayarea"))
+	{
+		out_grid_map.add("wayarea");
+	}
+	out_grid_map["wayarea"].setConstant(100);
+
+	cv::Mat original_image;
+	grid_map::GridMapCvConverter::toImage<unsigned char, 1>(out_grid_map, "wayarea", CV_8UC1, 0, 100, original_image);
+
+	cv::Mat filled_image = original_image.clone();
+	tf::StampedTransform tf = findTransform(_velodyne_header.frame_id, _vectormap_frame);
+
+	// calculate out_grid_map position
+	grid_map::Position map_pos = out_grid_map.getPosition();
+	double origin_x_offset = out_grid_map.getLength().x() / 2.0 - map_pos.x();
+	double origin_y_offset = out_grid_map.getLength().y() / 2.0 - map_pos.y();
+
+	for (const auto& points : in_wayarea_points)
+	{
+		std::vector<cv::Point> cv_points;
+
+		for (const auto& p : points)
+		{
+			geometry_msgs::Point tf_point = transformPoint(p, tf);
+			// coordinate conversion for cv image
+			double cv_x = (out_grid_map.getLength().y() - origin_y_offset - tf_point.y) / out_grid_map.getResolution();
+			double cv_y = (out_grid_map.getLength().x() - origin_x_offset - tf_point.x) / out_grid_map.getResolution();
+			cv_points.emplace_back(cv::Point(cv_x, cv_y));
+		}
+		cv::fillConvexPoly(filled_image, cv_points.data(), cv_points.size(), cv::Scalar(0));
+	}
+
+	// convert to ROS msg
+	grid_map::GridMapCvConverter::addLayerFromImage<unsigned char, 1>(filled_image, "wayarea", out_grid_map, 0, 100);
+}
+
+void getWayAreaPointsFromMap(const vector_map::Area& in_vmap_area, const vector_map::VectorMap& in_vectormap)
+{
+	std::vector<geometry_msgs::Point> area_points;
+
+	if (in_vmap_area.aid == 0)
+		return;
+
+	vector_map::Line line = in_vectormap.findByKey(vector_map::Key<vector_map::Line>(in_vmap_area.slid));
+	// must set beginning line
+	if (line.lid == 0 || line.blid != 0)
+		return;
+
+	// Search all lines in in_vmap_area
+	while (line.flid != 0)
+	{
+		vector_map::Point bp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.bpid));
+		if (bp.pid == 0)
+			return;
+
+		vector_map::Point fp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.fpid));
+		if (fp.pid == 0)
+			return;
+
+		// 2 points of line
+		area_points.push_back(vector_map::convertPointToGeomPoint(bp));
+		area_points.push_back(vector_map::convertPointToGeomPoint(fp));
+
+		line = in_vectormap.findByKey(vector_map::Key<vector_map::Line>(line.flid));
+		if (line.lid == 0)
+			return;
+	}
+
+	vector_map::Point bp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.bpid));
+	vector_map::Point fp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.fpid));
+	if (bp.pid == 0 || fp.pid == 0)
+		return;
+
+	area_points.push_back(vector_map::convertPointToGeomPoint(bp));
+	area_points.push_back(vector_map::convertPointToGeomPoint(fp));
+
+	_way_area_points.push_back(area_points);
+
+	return;
+}
 
 void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbox, jsk_recognition_msgs::BoundingBox& out_boundingbox, const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
@@ -567,56 +714,39 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 	tf::StampedTransform vectormap_transform;
 	if (_use_vector_map)
 	{
-		cv::TickMeter timer;
+		//cv::TickMeter timer;
 
-		try
+		if (_wayarea_gridmap!=NULL && _wayarea_gridmap->exists("wayarea"))
 		{
-			//if the frame of the vectormap is different than the input, obtain transform
-			if (_vectormap_frame != _velodyne_header.frame_id)
-			{
-				_transform_listener->lookupTransform(_vectormap_frame, _velodyne_header.frame_id, ros::Time(), vectormap_transform);
-			}
+			_wayarea_gridmap->setFrameId(_velodyne_header.frame_id);
+			convertPointsToImage(*_wayarea_gridmap, _way_area_points);
 
-			timer.reset();timer.start();
-
+			grid_map_msgs::GridMap message;
+			grid_map::GridMapRosConverter::toMessage(*_wayarea_gridmap, message);
+			_pub_grid_map.publish(message);
+			//timer.start();
 			//check if centroids are inside the drivable area
+			cv::Mat grid_image;
+			grid_map::GridMapCvConverter::toImage<unsigned char, 1>(*_wayarea_gridmap, "wayarea", CV_8UC1, 0, 100, grid_image);
+
+
+			#pragma omp for
 			for(unsigned int i=0; i<final_clusters.size(); i++)
 			{
-				//transform centroid points to vectormap frame
 				pcl::PointXYZ pcl_centroid = final_clusters[i]->GetCentroid();
-				tf::Vector3 vector_centroid (pcl_centroid.x, pcl_centroid.y, pcl_centroid.z);
-				tf::Vector3 transformed_centroid;
+				geometry_msgs::Point centroid_point;
+				centroid_point.x = pcl_centroid.x;
+				centroid_point.y = pcl_centroid.y;
+				centroid_point.z = pcl_centroid.z;
+				//no need to transform point since points from the sensor are the same as the recently created grid
 
-				if (_vectormap_frame != _velodyne_header.frame_id)
-					transformed_centroid = vectormap_transform*vector_centroid;
-				else
-					transformed_centroid = vector_centroid;
+				bool point_in_grid = checkPointInGrid(*_wayarea_gridmap, grid_image, centroid_point);
 
-				vector_map_server::PositionState position_state;
-				position_state.request.position.x = transformed_centroid.getX();
-				position_state.request.position.y = transformed_centroid.getY();
-				position_state.request.position.z = transformed_centroid.getZ();
+				final_clusters[i]->SetValidity(point_in_grid);
 
-
-				if (_vectormap_server.call(position_state))
-				{
-					final_clusters[i]->SetValidity(position_state.response.state);
-					/*std::cout << "Original:" << pcl_centroid.x << "," << pcl_centroid.y << "," << pcl_centroid.z <<
-							" Transformed:" << transformed_centroid.x() << "," << transformed_centroid.y() << "," << transformed_centroid.z() <<
-							" Validity:" << position_state.response.state << std::endl;*/
-				}
-				else
-				{
-					ROS_WARN_ONCE("vectormap_filtering: VectorMap Server Call failed. Make sure vectormap_server is running. No filtering performed.");
-					final_clusters[i]->SetValidity(true);
-				}
 			}
-			timer.stop();
-			//std::cout << "vm server took " << timer.getTimeMilli() << " ms to check " << final_clusters.size() << std::endl;
-		}
-		catch(tf::TransformException &ex)
-		{
-			ROS_INFO("vectormap_filtering: %s", ex.what());
+			/timer.stop();
+			//std::cout << "vectormap filtering took " << timer.getTimeMilli() << " ms to check " << final_clusters.size() << std::endl;
 		}
 	}
 	//Get final PointCloud to be published
@@ -1006,7 +1136,9 @@ int main (int argc, char** argv)
 
 	tf::StampedTransform transform;
 	tf::TransformListener listener;
+	tf::TransformListener vectormap_tf_listener;
 
+	_vectormap_transform_listener = &vectormap_tf_listener;
 	_transform = &transform;
 	_transform_listener = &listener;
 
@@ -1026,6 +1158,8 @@ int main (int argc, char** argv)
 	_pub_jsk_hulls = h.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls",1);
 	_pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters",1);
 	_pub_text_pictogram = h.advertise<jsk_rviz_plugins::PictogramArray>("cluster_ids", 10); ROS_INFO("output pictograms topic: %s", "cluster_id");
+
+	_pub_grid_map = h.advertise<grid_map_msgs::GridMap>("grid_map_wayarea", 1, true);
 
 	std::string points_topic;
 
@@ -1069,7 +1203,7 @@ int main (int argc, char** argv)
 	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
 
 	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
-	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _output_frame.c_str());
+	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _vectormap_frame.c_str());
 
 	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
@@ -1092,7 +1226,34 @@ int main (int argc, char** argv)
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
 	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
-	_vectormap_server = h.serviceClient<vector_map_server::PositionState>("vector_map_server/is_way_area");
+	//_vectormap_server = h.serviceClient<vector_map_server::PositionState>("vector_map_server/is_way_area");
+
+	ROS_INFO("[euclidean_cluster]: Creating GridMap for Wayarea...");
+	vector_map::VectorMap vector_map;
+	vector_map.subscribe(private_nh, vector_map::Category::POINT | vector_map::Category::LINE |
+			vector_map::Category::AREA | vector_map::Category::WAY_AREA);
+
+	// all true -> all data
+	std::vector<vector_map_msgs::WayArea> way_areas = vector_map.findByFilter([](const vector_map_msgs::WayArea& way_area){return true;});
+
+	grid_map::GridMap gridmap({"wayarea"});
+	_wayarea_gridmap = &gridmap;
+	_wayarea_gridmap->setGeometry(grid_map::Length(90, 30), 0.2);
+	_wayarea_gridmap->setPosition(grid_map::Position(20,0));
+
+	if (way_areas.empty())
+	{
+		ROS_WARN_STREAM("[euclidean_cluster]: The VectorMap is not being published or does not contain WAYAREA, not performing filtering.");
+	} else
+	{
+		ROS_INFO("[euclidean_cluster]: Found %lu wayareas.", way_areas.size());
+		for (const auto &way_area : way_areas)
+		{
+			vector_map::Area area = vector_map.findByKey(vector_map::Key<vector_map::Area>(way_area.aid));
+			getWayAreaPointsFromMap(area, vector_map);
+		}
+		ROS_INFO("[euclidean_cluster]: WayAreaPoints complete ");
+	}
 
 	_visualization_marker.header.frame_id = "velodyne";
 	_visualization_marker.header.stamp = ros::Time();
