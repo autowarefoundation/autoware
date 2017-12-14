@@ -75,7 +75,10 @@ BehaviorStateMachine* BehaviorStateMachine::FindBestState(int nMinCount)
 	for(unsigned int i = 0; i < m_BehaviorsLog.size(); i++)
 	{
 		if(m_BehaviorsLog.at(i).second >= nMinCount)
+		{
+			//std::cout << "Found Next Beh: " << m_BehaviorsLog.at(i).first->m_Behavior << ", Count: " << m_BehaviorsLog.at(i).second  << ", LogSize: " << m_BehaviorsLog.size() << std::endl;
 			return m_BehaviorsLog.at(i).first;
+		}
 	}
 
 	return 0;
@@ -161,17 +164,6 @@ BehaviorStateMachine* ForwardState::GetNextState()
 
 		return FindBehaviorState(this->m_Behavior); // return and reset
 	}
-}
-
-BehaviorStateMachine* ForwardStateII::GetNextState()
-{
-	PreCalculatedConditions* pCParams = GetCalcParams();
-
-	if(pCParams->currentGoalID != pCParams->prevGoalID)
-		return FindBehaviorState(GOAL_STATE);
-
-	else
-		return FindBehaviorState(this->m_Behavior);
 }
 
 BehaviorStateMachine* StopState::GetNextState()
@@ -326,16 +318,6 @@ BehaviorStateMachine* InitState::GetNextState()
 	return FindBehaviorState(FORWARD_STATE);
 }
 
-BehaviorStateMachine* InitStateII::GetNextState()
-{
-	PreCalculatedConditions* pCParams = GetCalcParams();
-
-	if(pCParams->currentGoalID > 0)
-		return FindBehaviorState(FORWARD_STATE);
-	else
-		return FindBehaviorState(this->m_Behavior);
-}
-
 BehaviorStateMachine* GoalState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
@@ -356,6 +338,81 @@ BehaviorStateMachine* GoalState::GetNextState()
 		return FindBehaviorState(this->m_Behavior); // return and reset
 }
 
+BehaviorStateMachine* MissionAccomplishedState::GetNextState()
+{
+	return FindBehaviorState(this->m_Behavior); // return and reset
+}
+
+BehaviorStateMachine* ForwardStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
+		return FindBehaviorState(GOAL_STATE);
+
+	else if(m_pParams->enableStopSignBehavior
+			&& pCParams->currentStopSignID > 0
+			&& pCParams->currentStopSignID != pCParams->prevStopSignID)
+		return FindBehaviorState(STOP_SIGN_STOP_STATE);
+
+	else if(m_pParams->enableFollowing && pCParams->bFullyBlock)
+		return FindBehaviorState(FOLLOW_STATE);
+
+	else if(m_pParams->enableSwerving
+			&& pCParams->distanceToNext <= m_pParams->minDistanceToAvoid
+			&& !pCParams->bFullyBlock
+			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
+		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior);
+}
+
+BehaviorStateMachine* FollowStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
+		return FindBehaviorState(GOAL_STATE);
+
+	else if(m_pParams->enableStopSignBehavior
+			&& pCParams->currentStopSignID > 0
+			&& pCParams->currentStopSignID != pCParams->prevStopSignID)
+		return FindBehaviorState(STOP_SIGN_STOP_STATE);
+
+	else if(m_pParams->enableSwerving
+			&& pCParams->distanceToNext <= m_pParams->minDistanceToAvoid
+			&& !pCParams->bFullyBlock
+			&& pCParams->iCurrSafeTrajectory != pCParams->iPrevSafeTrajectory)
+		return FindBehaviorState(OBSTACLE_AVOIDANCE_STATE);
+
+	else if(!pCParams->bFullyBlock)
+		return FindBehaviorState(FORWARD_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior); // return and reset
+}
+
+BehaviorStateMachine* SwerveStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	pCParams->iPrevSafeTrajectory = pCParams->iCurrSafeTrajectory;
+	pCParams->bRePlan = true;
+
+	return FindBehaviorState(FORWARD_STATE);
+}
+
+BehaviorStateMachine* InitStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID > 0)
+		return FindBehaviorState(FORWARD_STATE);
+	else
+		return FindBehaviorState(this->m_Behavior);
+}
+
 BehaviorStateMachine* GoalStateII::GetNextState()
 {
 	PreCalculatedConditions* pCParams = GetCalcParams();
@@ -370,14 +427,34 @@ BehaviorStateMachine* GoalStateII::GetNextState()
 	}
 }
 
-BehaviorStateMachine* MissionAccomplishedState::GetNextState()
-{
-	return FindBehaviorState(this->m_Behavior); // return and reset
-}
-
 BehaviorStateMachine* MissionAccomplishedStateII::GetNextState()
 {
 	return FindBehaviorState(this->m_Behavior);
 }
 
+BehaviorStateMachine* StopSignStopStateII::GetNextState()
+{
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	if(pCParams->currentGoalID != pCParams->prevGoalID)
+		return FindBehaviorState(GOAL_STATE);
+
+	else if(pCParams->currentVelocity < m_zero_velocity)
+		return FindBehaviorState(STOP_SIGN_WAIT_STATE);
+
+	else
+		return FindBehaviorState(this->m_Behavior); // return and reset
+}
+
+BehaviorStateMachine* StopSignWaitStateII::GetNextState()
+{
+	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
+		return this;
+
+	PreCalculatedConditions* pCParams = GetCalcParams();
+
+	pCParams->prevStopSignID = pCParams->currentStopSignID;
+
+	return FindBehaviorState(FORWARD_STATE);
+}
 } /* namespace PlannerHNS */

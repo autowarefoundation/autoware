@@ -30,15 +30,16 @@
 
 
 #include <ros/ros.h>
+#include "DataRW.h"
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "op_common_params");
 
+	UtilityHNS::DataRW::CreateLoggingFolder();
+
 	ros::NodeHandle nh;
-
 	ros::Rate loop_rate(1);
-
 	while (ros::ok())
 	{
 		ros::spinOnce();

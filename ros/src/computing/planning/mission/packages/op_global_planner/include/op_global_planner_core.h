@@ -67,7 +67,7 @@ namespace GlobalPlanningNS
 
 #define MAX_GLOBAL_PLAN_DISTANCE 10000
 #define _ENABLE_VISUALIZE_PLAN
-#define REPLANNING_DISTANCE 20
+#define REPLANNING_DISTANCE 30
 #define ARRIVE_DISTANCE 5
 
 class WayPlannerParams

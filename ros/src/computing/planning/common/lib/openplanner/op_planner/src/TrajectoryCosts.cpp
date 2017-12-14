@@ -18,10 +18,10 @@ TrajectoryCosts::TrajectoryCosts()
 	m_PrevIndex = -1;
 	//m_WeightPriority = 0.125;
 	//m_WeightTransition = 0.13;
-	m_WeightPriority = 0.75;
-	m_WeightTransition = 1.25;
+	m_WeightPriority = 0.9;
+	m_WeightTransition = 0.9;
 	m_WeightLong = 1.0;
-	m_WeightLat = 1.0;
+	m_WeightLat = 1.2;
 	m_WeightLaneChange = 0.0;
 	m_LateralSkipDistance = 50;
 	m_CollisionTimeDiff = 6.0; //seconds
@@ -66,11 +66,12 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 	double smallestCost = 9999999999;
 	double smallestDistance = 9999999999;
 	double velo_of_next = 0;
+	bool bAllFree = true;
 
-	cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
+	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
 	for(unsigned int ic = 0; ic < m_TrajectoryCosts.size(); ic++)
 	{
-		cout << m_TrajectoryCosts.at(ic).ToString();
+		//cout << m_TrajectoryCosts.at(ic).ToString();
 		if(!m_TrajectoryCosts.at(ic).bBlocked && m_TrajectoryCosts.at(ic).cost < smallestCost)
 		{
 			smallestCost = m_TrajectoryCosts.at(ic).cost;
@@ -82,8 +83,15 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 			smallestDistance = m_TrajectoryCosts.at(ic).closest_obj_distance;
 			velo_of_next = m_TrajectoryCosts.at(ic).closest_obj_velocity;
 		}
+
+		if(m_TrajectoryCosts.at(ic).bBlocked)
+			bAllFree = false;
 	}
-	cout << "Smallest Distance: " <<  smallestDistance << "------------------------------------------------------------- " << endl;
+	//cout << "Smallest Distance: " <<  smallestDistance << "------------------------------------------------------------- " << endl;
+
+	if(bAllFree && smallestIndex >=0)
+		smallestIndex = params.rollOutNumber/2;
+
 
 	if(smallestIndex == -1)
 	{
@@ -677,6 +685,7 @@ bool TrajectoryCosts::ValidateRollOutsInput(const vector<vector<vector<WayPoint>
 void TrajectoryCosts::CalculateIntersectionVelocities(const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::DetectedObject& obj, const WayPoint& currPose, const CAR_BASIC_INFO& carInfo, const double& c_lateral_d, WayPoint& collisionPoint, TrajectoryCost& trajectoryCosts)
 {
 	trajectoryCosts.bBlocked = false;
+	int closest_path_i = path.size();
 	for(unsigned int k = 0; k < obj.predTrajectories.size(); k++)
 	{
 		for(unsigned int j = 0; j < obj.predTrajectories.at(k).size(); j++)
@@ -686,11 +695,13 @@ void TrajectoryCosts::CalculateIntersectionVelocities(const std::vector<PlannerH
 				//if(path.at(i).timeCost > -1)
 				{
 					double collision_distance = hypot(path.at(i).pos.x-obj.predTrajectories.at(k).at(j).pos.x, path.at(i).pos.y-obj.predTrajectories.at(k).at(j).pos.y);
+					double collision_t = fabs(path.at(i).timeCost - obj.predTrajectories.at(k).at(j).timeCost);
 
-					if(collision_distance <= c_lateral_d  && fabs(path.at(i).timeCost - obj.predTrajectories.at(k).at(j).timeCost) < m_CollisionTimeDiff)
+					//if(collision_distance <= c_lateral_d && i < closest_path_i && collision_t < m_CollisionTimeDiff)
+					if(collision_distance <= c_lateral_d && i < closest_path_i)
 					{
-						std::cout << "Collision Time: " << obj.predTrajectories.at(k).at(j).timeCost << std::endl;
 
+						closest_path_i = i;
 						double a = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(path.at(i).pos.a, obj.predTrajectories.at(k).at(j).pos.a)/M_PI;
 						if(a < 0.25 && (currPose.v - obj.center.v) > 0)
 							trajectoryCosts.closest_obj_velocity = (currPose.v - obj.center.v);
@@ -698,8 +709,9 @@ void TrajectoryCosts::CalculateIntersectionVelocities(const std::vector<PlannerH
 							trajectoryCosts.closest_obj_velocity = currPose.v;
 
 						collisionPoint = path.at(i);
+						collisionPoint.collisionCost = collision_t;
+						collisionPoint.cost = collision_distance;
 						trajectoryCosts.bBlocked = true;
-						return ;
 					}
 				}
 			}
@@ -805,7 +817,6 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsDynamic(const std::vec
 				continue;
 		}
 
-
 		if(obj_list.at(i).bVelocity && obj_list.at(i).predTrajectories.size() > 0) // dynamic
 		{
 
@@ -819,11 +830,14 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsDynamic(const std::vec
 					RelativeInfo col_info;
 					PlanningHelpers::GetRelativeInfo(totalPaths, collisionPoint, col_info);
 					double longitudinalDist = PlanningHelpers::GetExactDistanceOnTrajectory(totalPaths, car_info, col_info);
+
 					if(col_info.iFront == 0 && longitudinalDist > 0)
 						longitudinalDist = -longitudinalDist;
 
-					if(longitudinalDist < -carInfo.length || longitudinalDist > params.minFollowingDistance)
+					if(longitudinalDist < -carInfo.length || longitudinalDist > params.minFollowingDistance || fabs(longitudinalDist) < carInfo.width/2.0)
 						continue;
+
+					//std::cout << "LongDistance: " << longitudinalDist << std::endl;
 
 					if(longitudinalDist >= -c_long_front_d && longitudinalDist < m_TrajectoryCosts.at(ir).closest_obj_distance)
 						m_TrajectoryCosts.at(ir).closest_obj_distance = longitudinalDist;
@@ -832,7 +846,6 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsDynamic(const std::vec
 					m_TrajectoryCosts.at(ir).bBlocked = true;
 
 					m_CollisionPoints.push_back(collisionPoint);
-
 				}
 			}
 		}

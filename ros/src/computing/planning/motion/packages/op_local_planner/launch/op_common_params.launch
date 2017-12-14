@@ -15,7 +15,7 @@
 	<arg name="minFollowingDistance" 		default="35.0"  /> <!-- should be bigger than Distance to follow -->	
 	<arg name="minDistanceToAvoid" 		default="20.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
 	<arg name="maxDistanceToAvoid" 		default="5.0"  /> <!-- should be smaller than minDistanceToAvoid -->
-	<arg name="speedProfileFactor"		default="1"  />
+	<arg name="speedProfileFactor"		default="1.2"  />
 	
 	<arg name="smoothingDataWeight"			default="0.45"  />
 	<arg name="smoothingSmoothWeight"		default="0.4"  />	

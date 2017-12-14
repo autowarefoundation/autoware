@@ -1296,6 +1296,15 @@ std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& be
 	case PlannerHNS::STOP_SIGN_WAIT_STATE:
 		str = "Sign Wait";
 		break;
+	case PlannerHNS::YIELDING_STATE:
+		str = "Yielding";
+		break;
+	case PlannerHNS::BRANCH_RIGHT_STATE:
+			str = "Right";
+			break;
+	case PlannerHNS::BRANCH_LEFT_STATE:
+			str = "LEFT";
+			break;
 	default:
 		str = "Unknown";
 		break;

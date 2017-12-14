@@ -50,6 +50,7 @@
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <autoware_msgs/traffic_light.h>
 #include <autoware_msgs/Signals.h>
+#include <autoware_msgs/ControlCommand.h>
 #include <visualization_msgs/MarkerArray.h>
 
 
@@ -67,6 +68,7 @@ protected: //Planning Related variables
 	PlannerHNS::VehicleState m_VehicleStatus;
 	bool bVehicleStatus;
 
+	std::vector<PlannerHNS::WayPoint> m_temp_path;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPaths;
 	bool bWayGlobalPath;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_RollOuts;
@@ -97,6 +99,10 @@ protected: //Planning Related variables
 	std::vector<PlannerHNS::TrafficLight> m_CurrTrafficLight;
 	std::vector<PlannerHNS::TrafficLight> m_PrevTrafficLight;
 
+	geometry_msgs::TwistStamped m_Twist_raw;
+	geometry_msgs::TwistStamped m_Twist_cmd;
+	autoware_msgs::ControlCommand m_Ctrl_cmd;
+
 protected: //ROS messages (topics)
 	ros::NodeHandle nh;
 
@@ -119,6 +125,10 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_Trajectory_Cost	    ;
 	ros::Publisher pub_BehaviorStateRviz;
 
+	ros::Subscriber sub_twist_cmd			;
+	ros::Subscriber sub_twist_raw			;
+	ros::Subscriber sub_ctrl_cmd			;
+
 protected: // Callback function for subscriber.
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
@@ -130,10 +140,15 @@ protected: // Callback function for subscriber.
 	void callbackGetTrafficLightStatus(const autoware_msgs::traffic_light & msg);
 	void callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg);
 
+	void callbackGetTwistCMD(const geometry_msgs::TwistStampedConstPtr& msg);
+	void callbackGetTwistRaw(const geometry_msgs::TwistStampedConstPtr& msg);
+	void callbackGetCommandCMD(const autoware_msgs::ControlCommandConstPtr& msg);
+
 protected: //Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);
   void SendLocalPlanningTopics();
   void VisualizeLocalPlanner();
+  void LogLocalPlanningInfo(double dt);
 
 public:
   BehaviorGen();

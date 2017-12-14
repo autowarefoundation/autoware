@@ -26,24 +26,23 @@ public:
 
 	double m_MaxLaneSearchDistance;
 	int m_iCurrentTotalPathId;
-	int m_iSafeTrajectory;
 	std::vector<std::vector<WayPoint> > m_RollOuts;
 	Lane* pLane;
-	int m_PrevBrakingWayPoint;
 
 	BehaviorStateMachine* 		m_pCurrentBehaviorState;
-	ForwardState * 				m_pGoToGoalState;
 	StopState* 					m_pStopState;
 	WaitState* 					m_pWaitState;
-	InitState* 					m_pInitState;
-	MissionAccomplishedState*	m_pMissionCompleteState;
-	GoalState*					m_pGoalState;
-	FollowState*				m_pFollowState;
-	SwerveState*				m_pAvoidObstacleState;
+	SwerveStateII*				m_pAvoidObstacleState;
 	TrafficLightStopState*		m_pTrafficLightStopState;
 	TrafficLightWaitState*		m_pTrafficLightWaitState;
-	StopSignStopState* 			m_pStopSignStopState;
-	StopSignWaitState* 			m_pStopSignWaitState;
+
+	ForwardStateII * 			m_pGoToGoalState;;
+	InitStateII* 				m_pInitState;
+	MissionAccomplishedStateII*	m_pMissionCompleteState;
+	GoalStateII*				m_pGoalState;
+	FollowStateII*				m_pFollowState;
+	StopSignStopStateII* 			m_pStopSignStopState;
+	StopSignWaitStateII* 			m_pStopSignWaitState;
 
 	void InitBehaviorStates();
 

@@ -3253,24 +3253,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : horizontalSafetyDistance
-      desc : Lateral safety distance for avoidance
-      label: Lateral Safety Distance
-      min  : 0.0
-      max  : 5.0
-      v    : 1.0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : verticalSafetyDistance
-      desc : Longitudinal Safety distance for avoidance 
-      label: Longitudinal Safety Distance
-      min  : 0.0
-      max  : 5.0
-      v    : 1.0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
   - name  : op_perception_simulator
     vars  :
     - name : simObjNumber

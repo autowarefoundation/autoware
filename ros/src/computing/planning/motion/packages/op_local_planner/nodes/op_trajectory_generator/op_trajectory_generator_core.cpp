@@ -178,57 +178,56 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 {
 	if(msg->lanes.size() > 0)
 	{
-
 		bool bOldGlobalPath = m_GlobalPaths.size() == msg->lanes.size();
 
 		m_GlobalPaths.clear();
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			std::vector<PlannerHNS::WayPoint> path;
-			for(unsigned int j = 0 ; j < msg->lanes.at(i).waypoints.size(); j++)
-			{
-				PlannerHNS::WayPoint wp(msg->lanes.at(i).waypoints.at(j).pose.pose.position.x,
-						msg->lanes.at(i).waypoints.at(j).pose.pose.position.y,
-						msg->lanes.at(i).waypoints.at(j).pose.pose.position.z,
-						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
-				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
-				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
-				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
-				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
-				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
+//			for(unsigned int j = 0 ; j < msg->lanes.at(i).waypoints.size(); j++)
+//			{
+//				PlannerHNS::WayPoint wp(msg->lanes.at(i).waypoints.at(j).pose.pose.position.x,
+//						msg->lanes.at(i).waypoints.at(j).pose.pose.position.y,
+//						msg->lanes.at(i).waypoints.at(j).pose.pose.position.z,
+//						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
+//				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
+//				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
+//				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
+//				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
+//				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
+//				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
+//
+//				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
+//					wp.bDir = PlannerHNS::FORWARD_DIR;
+//				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 1)
+//					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
+//				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 2)
+//					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
+//
+//				path.push_back(wp);
+//			}
+			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 
-				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
-					wp.bDir = PlannerHNS::FORWARD_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 1)
-					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 2)
-					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
-
-				path.push_back(wp);
-			}
-
-			PlannerHNS::PlanningHelpers::CalcAngleAndCost(path);
-			m_GlobalPaths.push_back(path);
+			PlannerHNS::PlanningHelpers::CalcAngleAndCost(m_temp_path);
+			m_GlobalPaths.push_back(m_temp_path);
 
 			if(bOldGlobalPath)
 			{
-				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(path, m_GlobalPaths.at(i));
+				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(m_temp_path, m_GlobalPaths.at(i));
 			}
 		}
 
 		if(!bOldGlobalPath)
 		{
 			bWayGlobalPath = true;
-			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
-			{
-				//PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
-				//PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
-
-				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
-				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
-			}
+//			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
+//			{
+//				//PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
+//				//PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
+//
+//				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
+//				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
+//			}
 		}
 		else
 		{
@@ -256,14 +255,6 @@ void TrajectoryGen::MainLoop()
 				t_centerTrajectorySmoothed.clear();
 				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance ,
 						m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
-
-//				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceFast(m_GlobalPaths.at(i), m_CurrentPos,
-//						m_PlanningParams.horizonDistance ,
-//						m_PlanningParams.pathDensity ,
-//						t_centerTrajectorySmoothed,
-//						m_PlanningParams.smoothingDataWeight,
-//						m_PlanningParams.smoothingSmoothWeight,
-//						m_PlanningParams.smoothingToleranceError);
 
 				m_GlobalPathSections.push_back(t_centerTrajectorySmoothed);
 			}

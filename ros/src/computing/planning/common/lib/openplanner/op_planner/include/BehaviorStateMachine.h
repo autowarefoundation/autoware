@@ -106,12 +106,32 @@ public:
 
 };
 
+class FollowStateII : public BehaviorStateMachine
+{
+public:
+	FollowStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FOLLOW_STATE;}
+	virtual ~FollowStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class SwerveState : public BehaviorStateMachine
 {
 public:
 	SwerveState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
 	virtual ~SwerveState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class SwerveStateII : public BehaviorStateMachine
+{
+public:
+	SwerveStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
+	virtual ~SwerveStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };
@@ -155,12 +175,32 @@ public:
 
 };
 
+class StopSignStopStateII : public BehaviorStateMachine
+{
+public:
+	StopSignStopStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_STOP_STATE;}
+	virtual ~StopSignStopStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class StopSignWaitState : public BehaviorStateMachine
 {
 public:
 	StopSignWaitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
 	virtual ~StopSignWaitState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class StopSignWaitStateII : public BehaviorStateMachine
+{
+public:
+	StopSignWaitStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
+	virtual ~StopSignWaitStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };

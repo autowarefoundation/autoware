@@ -120,6 +120,7 @@ void BehaviorPrediction::ExtractTrajectoriesFromMap(const std::vector<DetectedOb
 		if(old_list.at(found_index).bDirection && old_list.at(found_index).bVelocity)
 		{
 			old_list.at(found_index).pClosestWaypoints = MappingHelpers::GetClosestWaypointsListFromMap(old_list.at(found_index).center, map, m_MaxLaneDetectionDistance, old_list.at(found_index).bDirection);
+
 			planner.PredictTrajectoriesUsingDP(old_list.at(found_index).center, old_list.at(found_index).pClosestWaypoints, m_PredictionDistance, old_list.at(found_index).predTrajectories, m_bGenerateBranches, old_list.at(found_index).bDirection);
 		}
 		m_temp_list.push_back(old_list.at(found_index));
