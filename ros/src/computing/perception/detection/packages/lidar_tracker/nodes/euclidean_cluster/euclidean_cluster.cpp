@@ -918,7 +918,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
 	}
 	_end = std::chrono::system_clock::now();  // 計測終了時間
   double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(_end-_start).count(); //処理に要した時間をミリ秒に変換
-  ROS_INFO("Euclidean Clustering : %f", elapsed);
+  //ROS_INFO("Euclidean Clustering : %f", elapsed);
 }
 
 /*

@@ -24,7 +24,7 @@ subs :
       - name : PointGrey Grasshoper 3 (USB1)
         desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
-        run  : roslaunch pointgrey grasshopper3.launch
+        run  : roslaunch autoware_pointgrey_drivers grasshopper3.launch
         param: calibration_path_grasshopper3
         gui  :
           CalibrationFile :
@@ -37,7 +37,7 @@ subs :
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
-        run  : roslaunch pointgrey ladybug.launch
+        run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: calibration_path_ladybug
         gui  :
           CalibrationFile :
@@ -535,6 +535,14 @@ params :
         delim        : ':='
         only_enable  : True
         tail         : True
+    - name      : target_frame
+      desc      : Registers TF to this coordinate frame (default velodyne)
+      label     : target_frame
+      kind      : str
+      v         : 'velodyne'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : file
       desc      : file desc sample
       kind      : path

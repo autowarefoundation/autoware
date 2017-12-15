@@ -1,6 +1,6 @@
 <launch>
     <arg name="camera_id" default="/"/>
-    <arg name="camera_info_src" default="/camera/camera_info"/>
+    <arg name="camera_info_src" default="/camera_info"/>
     <arg name="projection_matrix_src" default="/projection_matrix"/>
     <arg name="sync" default="false" />
 

@@ -66,14 +66,18 @@
   #include <pcl/registration/ndt.h>
 #endif
 
+
 #ifdef CUDA_FOUND
   #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
+
+#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
 
 #include <autoware_msgs/ConfigNdtMapping.h>
 #include <autoware_msgs/ConfigNdtMappingOutput.h>
 
 #include <time.h>
+
 
 struct pose
 {
@@ -114,6 +118,10 @@ static pcl::PointCloud<pcl::PointXYZI> map;
 #ifdef CUDA_FOUND
 static gpu::GNormalDistributionsTransform gpu_ndt;
 #endif
+
+// Added for CPU ndt testing version
+static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> cpu_ndt;
+
 static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
 // end of adding
 
@@ -150,12 +158,10 @@ static Eigen::Matrix4f tf_btol, tf_ltob;
 
 static bool isMapUpdate = true;
 
-#ifdef USE_FAST_PCL
 static bool _use_openmp = false;
-#endif
-#ifdef CUDA_FOUND
 static bool _use_gpu = false;
-#endif
+
+static bool _use_fast_pcl = false;
 
 static bool _use_imu = false;
 static bool _use_odom = false;
@@ -508,24 +514,36 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
 
-#ifdef CUDA_FOUND
-  if (_use_gpu == true)
+  #ifdef CUDA_FOUND
+    if (_use_gpu == true)
+    {
+      gpu_ndt.setTransformationEpsilon(trans_eps);
+      gpu_ndt.setStepSize(step_size);
+      gpu_ndt.setResolution(ndt_res);
+      gpu_ndt.setMaximumIterations(max_iter);
+      gpu_ndt.setInputSource(filtered_scan_ptr);
+    }
+    else
+  #endif
   {
-    gpu_ndt.setTransformationEpsilon(trans_eps);
-    gpu_ndt.setStepSize(step_size);
-    gpu_ndt.setResolution(ndt_res);
-    gpu_ndt.setMaximumIterations(max_iter);
-    gpu_ndt.setInputSource(filtered_scan_ptr);
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setTransformationEpsilon(trans_eps);
+  		cpu_ndt.setStepSize(step_size);
+  		cpu_ndt.setResolution(ndt_res);
+  		cpu_ndt.setMaximumIterations(max_iter);
+  		cpu_ndt.setInputSource(filtered_scan_ptr);
+	  }
+	  else
+	  {
+        ndt.setTransformationEpsilon(trans_eps);
+		ndt.setStepSize(step_size);
+		ndt.setResolution(ndt_res);
+		ndt.setMaximumIterations(max_iter);
+		ndt.setInputSource(filtered_scan_ptr);
+	  }
   }
-  else
-#endif
-  {
-    ndt.setTransformationEpsilon(trans_eps);
-    ndt.setStepSize(step_size);
-    ndt.setResolution(ndt_res);
-    ndt.setMaximumIterations(max_iter);
-    ndt.setInputSource(filtered_scan_ptr);
-  }
+
   if (isMapUpdate == true)
   {
 #ifdef CUDA_FOUND
@@ -534,12 +552,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       gpu_ndt.setInputTarget(map_ptr);
     }
     else
-    {
-      ndt.setInputTarget(map_ptr);
-    }
-#else
-    ndt.setInputTarget(map_ptr);
 #endif
+    {
+    	if (_use_fast_pcl)
+    	{
+          cpu_ndt.setInputTarget(map_ptr);
+    	}
+		else
+		{
+          ndt.setInputTarget(map_ptr);
+		}
+    }
 
     isMapUpdate = false;
   }
@@ -583,59 +606,41 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   t4_start = ros::Time::now();
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-  std::cout << "Start aligning" << std::endl;
 
-#ifdef CUDA_FOUND
-  if (_use_gpu == true)
-  {
-    gpu_ndt.align(init_guess);
-    t_localizer = gpu_ndt.getFinalTransformation();
-    has_converged = gpu_ndt.hasConverged();
-    fitness_score = gpu_ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-  }
-#ifdef USE_FAST_PCL
-  else if (_use_openmp == true)
-  {
-    ndt.omp_align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.omp_getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-  }
-#endif
-  else
-  {
-    ndt.align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-  }
-#else
-#ifdef USE_FAST_PCL
-  if (_use_openmp == true)
-  {
-    ndt.omp_align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.omp_getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-  }
-  else
-  {
-#endif
-    // Added for GPU ndt
-    ndt.align(*output_cloud, init_guess);
-    t_localizer = ndt.getFinalTransformation();
-    has_converged = ndt.hasConverged();
-    fitness_score = ndt.getFitnessScore();
-    final_num_iteration = ndt.getFinalNumIteration();
-// End of adding GPU ndt
-#ifdef USE_FAST_PCL
-  }
-#endif
-#endif
+  #ifdef CUDA_FOUND
+    if (_use_gpu == true)
+    {
+      gpu_ndt.align(init_guess);
+      t_localizer = gpu_ndt.getFinalTransformation();
+      has_converged = gpu_ndt.hasConverged();
+      fitness_score = gpu_ndt.getFitnessScore();
+      final_num_iteration = ndt.getFinalNumIteration();
+    }
+    else
+  #endif
+    if (_use_fast_pcl)
+    {
+      cpu_ndt.align(init_guess);
+      t_localizer = cpu_ndt.getFinalTransformation();
+      has_converged = cpu_ndt.hasConverged();
+      fitness_score = cpu_ndt.getFitnessScore();
+      final_num_iteration = cpu_ndt.getFinalNumIteration();
+    }
+    else
+    {
+      #ifdef USE_FAST_PCL
+        ndt.omp_align(*output_cloud, init_guess);
+        fitness_score = ndt.omp_getFitnessScore();
+      #else
+        ndt.align(*output_cloud, init_guess);
+        fitness_score = ndt.getFitnessScore();
+      #endif
+      t_localizer = ndt.getFinalTransformation();
+      has_converged = ndt.hasConverged();
+      final_num_iteration = ndt.getFinalNumIteration();
+    }
+
+
 
   t_base_link = t_localizer * tf_ltob;
 
@@ -876,20 +881,18 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
 // setting parameters
-#ifdef CUDA_FOUND
   private_nh.getParam("use_gpu", _use_gpu);
-  std::cout << "use_gpu: " << _use_gpu << std::endl;
-#endif
-#ifdef USE_FAST_PCL
   private_nh.getParam("use_openmp", _use_openmp);
-  std::cout << "use_openmp: " << _use_openmp << std::endl;
-#endif
+  private_nh.getParam("use_fast_pcl", _use_fast_pcl);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
 
   std::cout << "use_imu: " << _use_imu << std::endl;
+  std::cout << "use_gpu: " << _use_gpu << std::endl;
+  std::cout << "use_openmp: " << _use_openmp << std::endl;
+  std::cout << "use_fast_pcl: " << _use_openmp << std::endl;
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;

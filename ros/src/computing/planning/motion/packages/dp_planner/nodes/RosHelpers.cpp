@@ -62,11 +62,11 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.pose.pose.position.z = path.at(i).pos.z;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
 		wp.twist.twist.linear.x = path.at(i).v;
-		if(path.at(i).bDir == FORWARD_DIR)
+		if(path.at(i).bDir == PlannerHNS::FORWARD_DIR)
 			wp.dtlane.dir = 0;
-		else if(path.at(i).bDir == FORWARD_LEFT_DIR)
+		else if(path.at(i).bDir == PlannerHNS::FORWARD_LEFT_DIR)
 			wp.dtlane.dir = 1;
-		else if(path.at(i).bDir == FORWARD_RIGHT_DIR)
+		else if(path.at(i).bDir == PlannerHNS::FORWARD_RIGHT_DIR)
 			wp.dtlane.dir = 2;
 		//PlannerHNS::GPSPoint p = path.at(i).pos;
 		//std::cout << p.ToString() << std::endl;
@@ -621,7 +621,7 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 	{
 		PolygonGenerator polyGen;
 		PlannerHNS::DetectedObject obj;
-		obj.center.pos = GPSPoint(clusters.clusters.at(i).centroid_point.point.x,
+		obj.center.pos = PlannerHNS::GPSPoint(clusters.clusters.at(i).centroid_point.point.x,
 				clusters.clusters.at(i).centroid_point.point.y,
 				clusters.clusters.at(i).centroid_point.point.z,0);
 				//tf::getYaw(clusters.clusters.at(i).bounding_box.pose.orientation));
@@ -839,10 +839,12 @@ void RosHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::R
 	std::vector<UtilityHNS::AisanStopLineFileReader::AisanStopLine> stop_line_data;
 	std::vector<UtilityHNS::AisanSignalFileReader::AisanSignal> signal_data;
 	std::vector<UtilityHNS::AisanVectorFileReader::AisanVector> vector_data;
+	std::vector<UtilityHNS::AisanCurbFileReader::AisanCurb> curb_data;
+	std::vector<UtilityHNS::AisanRoadEdgeFileReader::AisanRoadEdge> roadedge_data;
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data,conn_data, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data,curb_data, roadedge_data, conn_data, origin, out_map);
 }
 
 }
