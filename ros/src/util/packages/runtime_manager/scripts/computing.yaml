@@ -2912,6 +2912,8 @@ params :
       v         : False
       cmd_param :
         var_name    : use_velocity_visualizer
+        dash        : ''
+        delim       : ':='
     - name      : disableDecisionMaker
       desc      : if you not check this, you have to run a decisionmaker node.
       label     : 'disableDecisionMaker'
