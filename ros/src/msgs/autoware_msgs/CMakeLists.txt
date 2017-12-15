@@ -48,6 +48,8 @@ add_message_files(
   vscan_tracked_array.msg
   waypoint.msg
   VehicleCmd.msg
+  TrafficLightResult.msg
+  TrafficLightResultArray.msg
 
 ## Runtime Manager ##
   ConfigApproximateNdtMapping.msg
@@ -88,6 +90,9 @@ add_message_files(
   steer_cmd.msg
   traffic_light.msg
   state_cmd.msg
+  WaypointState.msg
+  state.msg
+
 
 ## Sync
   Sync_time_monitor.msg

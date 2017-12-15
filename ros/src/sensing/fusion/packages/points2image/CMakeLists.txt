@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -61,12 +61,14 @@ add_library(points_image
 )
 add_dependencies(points_image autoware_msgs_generate_messages_cpp)
 
+qt5_wrap_ui(points2vscan_ui_mainwindow nodes/points2vscan/mainwindow.ui)
+
 # points2vscan
 add_executable(points2vscan
   nodes/points2vscan/main.cpp
   nodes/points2vscan/mainwindow.cpp
   nodes/points2vscan/mainwindow.h
-  nodes/points2vscan/mainwindow.ui
+  ${points2vscan_ui_mainwindow}
 )
 
 set_target_properties(points2vscan

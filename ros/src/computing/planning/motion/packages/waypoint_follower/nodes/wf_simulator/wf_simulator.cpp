@@ -116,7 +116,7 @@ void getTransformFromTF(const std::string parent_frame, const std::string child_
 void initialposeCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input)
 {
   tf::StampedTransform transform;
-  getTransformFromTF(MAP_FRAME, "world", transform);
+  getTransformFromTF(MAP_FRAME, input->header.frame_id, transform);
 
   _initial_pose.position.x = input->pose.pose.position.x + transform.getOrigin().x();
   _initial_pose.position.y = input->pose.pose.position.y + transform.getOrigin().y();

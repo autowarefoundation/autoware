@@ -1,3 +1,7 @@
+# global id
+int32 gid 
+# local id
+int32 lid
 geometry_msgs/PoseStamped pose
 geometry_msgs/TwistStamped twist
 dtlane dtlane
@@ -20,3 +24,6 @@ uint32 direction
 
 float32 cost
 float32 time_cost
+
+WaypointState wpstate
+

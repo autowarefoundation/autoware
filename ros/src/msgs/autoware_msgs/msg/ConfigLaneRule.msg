@@ -3,3 +3,4 @@ float32 acceleration
 float32 stopline_search_radius
 int32 number_of_zeros_ahead
 int32 number_of_zeros_behind
+int32 number_of_smoothing_count

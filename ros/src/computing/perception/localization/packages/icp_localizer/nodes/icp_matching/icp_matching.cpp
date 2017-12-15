@@ -112,7 +112,6 @@ static geometry_msgs::PoseStamped predict_pose_msg;
 static ros::Publisher icp_pose_pub;
 static geometry_msgs::PoseStamped icp_pose_msg;
 
-static ros::Publisher current_pose_pub;
 static geometry_msgs::PoseStamped current_pose_msg;
 
 static ros::Publisher localizer_pose_pub;
@@ -302,8 +301,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   try
   {
     ros::Time now = ros::Time(0);
-    listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
-    listener.lookupTransform("/map", "world", now, transform);
+    listener.waitForTransform("/map", input->header.frame_id, now, ros::Duration(10.0));
+    listener.lookupTransform("/map", input->header.frame_id, now, transform);
   }
   catch (tf::TransformException& ex)
   {
@@ -537,7 +536,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     predict_pose_pub.publish(predict_pose_msg);
     icp_pose_pub.publish(icp_pose_msg);
-    current_pose_pub.publish(current_pose_msg);
     localizer_pose_pub.publish(localizer_pose_msg);
 
     // Send TF "/base_link" to "/map"
@@ -748,7 +746,6 @@ int main(int argc, char** argv)
   // Publishers
   predict_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 1000);
   icp_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/icp_pose", 1000);
-  // current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
   localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
   estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 1000);
   estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
@@ -756,7 +753,6 @@ int main(int argc, char** argv)
   estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
   time_icp_matching_pub = nh.advertise<std_msgs::Float32>("/time_icp_matching", 1000);
   icp_stat_pub = nh.advertise<autoware_msgs::icp_stat>("/icp_stat", 1000);
-//  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
 
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/icp", 10, param_callback);
