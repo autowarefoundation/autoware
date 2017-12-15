@@ -9,7 +9,6 @@
 #define AlternativeVisualizer_H_
 #include <iostream>
 #include "DrawObjBase.h"
-#include "GridMap.h"
 #include "RoadNetwork.h"
 #include "CarState.h"
 #include "DrawingHelpers.h"
@@ -40,7 +39,6 @@ public:
 
 public:
     PlannerHNS::RoadNetwork m_RoadMap;
-	PlannerHNS::GridMap* m_pMap;
 	PlannerHNS::WayPoint m_start;
 	PlannerHNS::WayPoint m_goal;
 	std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > > m_ReadyToDrawLanes;

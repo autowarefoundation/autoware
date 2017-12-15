@@ -24,7 +24,7 @@ subs :
       - name : PointGrey Grasshoper 3 (USB1)
         desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
-        run  : roslaunch pointgrey grasshopper3.launch
+        run  : roslaunch autoware_pointgrey_drivers grasshopper3.launch
         param: calibration_path_grasshopper3
         gui  :
           CalibrationFile :
@@ -37,7 +37,7 @@ subs :
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
-        run  : roslaunch pointgrey ladybug.launch
+        run  : roslaunch autoware_pointgrey_drivers ladybug.launch
         param: calibration_path_ladybug
         gui  :
           CalibrationFile :
@@ -210,9 +210,29 @@ cmds:
   - name : Points Preprocessor
     desc : Points Preprocessor desc sample
     subs :
-    - name : ground_filter
-      desc : ground_filter desc sample
-      cmd  : roslaunch points_preprocessor ground_filter.launch node_name:=ground_filter
+    - name : ring_ground_filter
+      desc : ring_ground_filter performs ground filtering using the ring number contained on each point
+      cmd  : roslaunch points_preprocessor ring_ground_filter.launch node_name:=ring_ground_filter
+      param: ring_ground_filter
+      gui  :
+        sync :
+          func : self.button_synchronization.GetValue()
+
+    - name : ray_ground_filter
+      desc : ray_ground_filter performs ground filtering using a radial-concentric based approach
+      cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
+      param: ray_ground_filter
+
+    - name : points_concat_filter
+      desc : points_concat_filter filter performs merging multiple lidar input
+      cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
+      param: points_concat_filter
+
+    - name : cloud_transformer
+      desc : Transforms cloud points' coordinates to the specified target frame
+      cmd  : roslaunch points_preprocessor cloud_transformer.launch
+      param: cloud_transformer
+      
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -445,6 +465,63 @@ params :
         delim       : ':='
         only_enable : True
 
+  - name  : ring_ground_filter
+    topic : /config/ring_ground_filter
+    msg   : ConfigRingGroundFilter
+    vars  :
+    - name  : point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : sensor_model
+      desc  : sensor_model desc sample
+      label : Sensor Model
+      kind  : radio_box
+      choices: [ '64', '32', '16' ]
+      descs  : [ 'HDL-64e', 'HDL-32e', 'VLP-16' ]
+      choices_type: str
+      v     : '32'
+    - name  : sensor_height
+      desc  : sensor_height desc sample
+      label : Sensor Height
+      min   : -3.0
+      max   : 3.0
+      v     : 1.72
+    - name  : max_slope
+      desc  : max_slope desc sample
+      label : Max Slope
+      min   : 0.0
+      max   : 40.0
+      v     : 20.0
+    - name  : point_distance
+      desc  : point_distance desc sample
+      label : Point Distance
+      min   : 0.0
+      max   : 1.0
+      v     : 0.05
+    - name  : min_point
+      desc  : min_point desc sample
+      label : Min Point
+      min   : 1
+      max   : 10
+      v     : 3
+    - name  : clipping_thres
+      desc  : clipping_thres desc sample
+      label : Clipping Thres
+      min   : -3.0
+      max   : 3.0
+      v     : -0.5
+    - name  : gap_thres
+      desc  : gap_thres desc sample
+      label : Gap Thres
+      min   : 0.0
+      max   : 3.0
+      v     : 0.5
+
   - name  : calibration_publisher
     vars  :
     - name         : camera_id
@@ -458,6 +535,14 @@ params :
         delim        : ':='
         only_enable  : True
         tail         : True
+    - name      : target_frame
+      desc      : Registers TF to this coordinate frame (default velodyne)
+      label     : target_frame
+      kind      : str
+      v         : 'velodyne'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : file
       desc      : file desc sample
       kind      : path
@@ -638,3 +723,150 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : ray_ground_filter
+    topic : /config/ray_ground_filter
+    msg   : ConfigRayGroundFilter
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, ground filtering will be performed.
+      label : 'input_point_topic'
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : sensor_height
+      desc  : Height of the sensor from the ground
+      label : sensor_height
+      min   : -5
+      max   : 5
+      v     : 1.8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : clipping_height
+      desc  : Remove Points above this height value (default 0.2 meters)
+      label : clipping_height
+      min   : -5
+      max   : 5
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_point_distance
+      desc  : Removes Points closer than this distance from the sensor origin (default 1.85 meters)
+      label : min_point_distance
+      min   : 0
+      max   : 5
+      v     : 1.85
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : radial_divider_angle
+      desc  : Angle of each Radial division on the XY Plane (default 0.08 degrees)
+      label : radial_divider_angle
+      min   : 0.01
+      max   : 5
+      v     : 0.08
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : concentric_divider_distance
+      desc  : Distance of each concentric division on the XY Plane (default 0.01 meters)
+      label : concentric_divider_distance
+      min   : 0.01
+      max   : 1
+      v     : 0.01
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : local_max_slope
+      desc  : Max Slope of the ground between Points (default 8 degrees)
+      label : local_max_slope
+      min   : 1
+      max   : 25
+      v     : 8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : general_max_slope
+      desc  : Max Slope of the ground in the entire PointCloud (default 5 degrees)
+      label : general_max_slope
+      min   : 1
+      max   : 25
+      v     : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_height_threshold
+      desc  : Minimum height threshold between points (default 0.05 meters)
+      label : min_height_threshold
+      min   : 0.01
+      max   : 0.5
+      v     : 0.05
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : reclass_distance_threshold
+      desc  : Distance between points at which re classification will occur (default 0.2 meters)
+      label : reclass_distance_threshold
+      min   : 0.01
+      max   : 1
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : points_concat_filter
+    topic : /config/points_concat_filter
+    msg   : ConfigPointsConcatFilter
+    vars  :
+    - name  : input0
+      desc  : 1st concatinated pointcloud topic
+      label : Lidar0 topic
+      kind  : str
+      v     : /lidar0/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : input1
+      desc  : 2nd concatinated pointcloud topic
+      label : Lidar1 topic
+      kind  : str
+      v     : /lidar1/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_frame
+      desc  : Concatinated pointcloud frame
+      label : output_frame
+      kind  : str
+      v     : lidar_frame
+
+  - name  : cloud_transformer
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, i.e. /points_raw
+      label : input_point_topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : target_frame
+      desc  : Target Frame to transform the Input Point Cloud
+      label : target_frame
+      kind  : str
+      v     : base_link
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_point_topic
+      desc  : Output PointCloud Topic name, /points_transformed
+      label : output_point_topic
+      kind  : str
+      v     : /points_transformed
+      cmd_param :
+        dash        : ''
+        delim       : ':='

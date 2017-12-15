@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>obj_db</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>The obj_db package</description>
   <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
   <license>BSD</license>

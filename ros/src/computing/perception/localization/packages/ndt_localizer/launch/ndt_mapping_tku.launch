@@ -2,7 +2,6 @@
 <launch>
 
   <!-- send table.xml to param server -->
-  <arg name="downsampler" default="voxel_grid" />
   <arg name="init_x" default="0.0" />
   <arg name="init_y" default="0.0" />
   <arg name="init_z" default="0.0" />  
@@ -10,8 +9,7 @@
   <arg name="init_pitch" default="0.0" />  
   <arg name="init_yaw" default="0.0" />  
   
-  <node pkg="ndt_localizer" type="ndt_matching_tku" name="ndt_matching_tku" output="screen">
-    <param name="downsampler" value="$(arg downsampler)" />
+  <node pkg="ndt_localizer" type="ndt_mapping_tku" name="ndt_mapping_tku" output="screen">
     <param name="init_x" value="$(arg init_x)" />
     <param name="init_y" value="$(arg init_y)" />
     <param name="init_z" value="$(arg init_z)" />

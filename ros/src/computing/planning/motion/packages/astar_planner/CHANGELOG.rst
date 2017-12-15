@@ -2,6 +2,32 @@
 Changelog for package astar_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* Merge pull request `#892 <https://github.com/CPFL/Autoware/issues/892>`_ from asimay/patch-1
+  launch file missing parameter setting.
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Update velocity_set.launch
+  set value to false
+* fix video settings
+* launch file missing parameter setting.
+  missing parameter setting, when launch motion plan, report error :enablePlannerDynamicSwitch arg to be set.
+  see :  https://github.com/CPFL/Autoware/issues/871
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
+* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
+* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, asimay, hatem-darweesh, hironari.yashiro, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

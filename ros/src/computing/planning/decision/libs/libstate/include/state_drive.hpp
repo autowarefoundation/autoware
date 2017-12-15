@@ -35,9 +35,8 @@ private:
   friend class State<DriveAccAccelerationState>;
   DriveAccAccelerationState(void)
   {
-    StateName = "Acceleration";
-    StateNum = DRIVE_STATE | DRIVE_ACC_ACCELERATION_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateName = "Accelerate";
+    StateNum = DRIVE_ACC_ACCELERATION_STATE;
     StateKind = ACC_STATE;
   }
 
@@ -54,17 +53,12 @@ private:
   friend class State<DriveAccDecelerationState>;
   DriveAccDecelerationState(void)
   {
-    StateName = "Deceleration";
-    StateNum = DRIVE_STATE | DRIVE_ACC_DECELERATION_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateName = "Decelerate";
+    StateNum = DRIVE_ACC_DECELERATION_STATE;
     StateKind = ACC_STATE;
   }
 
 public:
-  void ShowStateName(void)
-  {
-    std::cout << StateName << "-";
-  }
 };
 
 class DriveAccKeepState : public State<DriveAccKeepState>
@@ -74,16 +68,25 @@ private:
   DriveAccKeepState(void)
   {
     StateName = "Keep";
-    StateNum = DRIVE_STATE | DRIVE_ACC_KEEP_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_ACC_KEEP_STATE;
     StateKind = ACC_STATE;
   }
 
 public:
-  void ShowStateName(void)
+};
+
+class DriveAccCrawlState : public State<DriveAccCrawlState>
+{
+private:
+  friend class State<DriveAccCrawlState>;
+  DriveAccCrawlState(void)
   {
-    std::cout << StateName << "-";
+    StateName = "Crawl";
+    StateNum = DRIVE_ACC_CRAWL_STATE;
+    StateKind = ACC_STATE;
   }
+
+public:
 };
 
 class DriveAccStopState : public State<DriveAccStopState>
@@ -93,16 +96,25 @@ private:
   DriveAccStopState(void)
   {
     StateName = "Stop";
-    StateNum = DRIVE_STATE | DRIVE_ACC_STOP_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_ACC_STOP_STATE;
     StateKind = ACC_STATE;
   }
 
 public:
-  void ShowStateName(void)
+};
+
+class DriveAccStopLineState : public State<DriveAccStopLineState>
+{
+private:
+  friend class State<DriveAccStopLineState>;
+  DriveAccStopLineState(void)
   {
-    std::cout << StateName << "-";
+    StateName = "StopLine";
+    StateNum = DRIVE_ACC_STOPLINE_STATE;
+    StateKind = ACC_STATE;
   }
+
+public:
 };
 
 class DriveStrLeftState : public State<DriveStrLeftState>
@@ -112,8 +124,7 @@ private:
   DriveStrLeftState(void)
   {
     StateName = "Left Turn";
-    StateNum = DRIVE_STATE | DRIVE_STR_LEFT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_LEFT_STATE;
     StateKind = STR_STATE;
   }
 
@@ -126,8 +137,7 @@ private:
   DriveStrRightState(void)
   {
     StateName = "Right Turn";
-    StateNum = DRIVE_STATE | DRIVE_STR_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_RIGHT_STATE;
     StateKind = STR_STATE;
   }
 
@@ -140,14 +150,14 @@ private:
   DriveStrStraightState(void)
   {
     StateName = "Straight";
-    StateNum = DRIVE_STATE | DRIVE_STR_STRAIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_STR_STRAIGHT_STATE;
     StateKind = STR_STATE;
   }
 
 public:
 };
 
+// Planning to change str state
 class DriveBehaviorLaneChangeLeftState : public State<DriveBehaviorLaneChangeLeftState>
 {
 private:
@@ -155,14 +165,14 @@ private:
   DriveBehaviorLaneChangeLeftState(void)
   {
     StateName = "LaneChangeLeft";
-    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
+// Planning to change str state
 class DriveBehaviorLaneChangeRightState : public State<DriveBehaviorLaneChangeRightState>
 {
 private:
@@ -170,8 +180,7 @@ private:
   DriveBehaviorLaneChangeRightState(void)
   {
     StateName = "LaneChangeRight";
-    StateNum = DRIVE_STATE | DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE;
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
@@ -185,57 +194,67 @@ private:
   DriveBehaviorObstacleAvoidanceState(void)
   {
     StateName = "ObstacleAvoidance";
-    StateTransMask = DRIVE_STATE;
+    StateNum = DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-class DriveDetectObstacleState : public State<DriveDetectObstacleState>
+class DriveBehaviorTrafficLightRedState : public State<DriveBehaviorTrafficLightRedState>
 {
 private:
-  friend class State<DriveDetectObstacleState>;
-  DriveDetectObstacleState(void)
+  friend class State<DriveBehaviorTrafficLightRedState>;
+  DriveBehaviorTrafficLightRedState(void)
   {
-    StateName = "DetectObstacle";
-    StateNum = DRIVE_STATE | DRIVE_DETECT_OBSTACLE_STATE;
-    StateTransMask = DRIVE_STATE;
-    StateKind = PERCEPTION_STATE;
+    StateName = "TrafficLightRed";
+    StateNum = DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-class DriveDetectStoplineState : public State<DriveDetectStoplineState>
+class DriveBehaviorTrafficLightGreenState : public State<DriveBehaviorTrafficLightGreenState>
 {
 private:
-  friend class State<DriveDetectStoplineState>;
-  DriveDetectStoplineState(void)
+  friend class State<DriveBehaviorTrafficLightGreenState>;
+  DriveBehaviorTrafficLightGreenState(void)
   {
-    StateName = "DetectStopline";
-    StateNum = DRIVE_STATE | DRIVE_DETECT_STOPLINE_STATE;
-    StateTransMask = DRIVE_STATE;
-    StateKind = PERCEPTION_STATE;
+    StateName = "TrafficLightGreen";
+    StateNum = DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 
-class DriveDetectTrafficlightRedState : public State<DriveDetectTrafficlightRedState>
+class DriveBehaviorStoplinePlanState : public State<DriveBehaviorStoplinePlanState>
 {
 private:
-  friend class State<DriveDetectTrafficlightRedState>;
-  DriveDetectTrafficlightRedState(void)
+  friend class State<DriveBehaviorStoplinePlanState>;
+  DriveBehaviorStoplinePlanState(void)
   {
-    StateName = "DetectTrafficLightRed";
-    StateNum = DRIVE_STATE | DRIVE_DETECT_TRAFFICLIGHT_RED_STATE;
-    StateTransMask = DRIVE_STATE;
-    StateKind = PERCEPTION_STATE;
+    StateName = "STOPLINE_PLAN";
+    StateNum = DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
+class DriveBehaviorAcceptLanechangeState : public State<DriveBehaviorAcceptLanechangeState>
+{
+private:
+  friend class State<DriveBehaviorAcceptLanechangeState>;
+  DriveBehaviorAcceptLanechangeState(void)
+  {
+    StateName = "AcceptLaneChange";
+    StateNum = DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE;
+    StateKind = BEHAVIOR_STATE;
   }
 
 public:
 };
 }
-
 #endif

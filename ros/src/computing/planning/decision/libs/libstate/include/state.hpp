@@ -1,11 +1,11 @@
 #ifndef __STATE_HPP__
 #define __STATE_HPP__
 
+#include <functional>
 #include <iostream>
 #include <memory>
-#include <vector>
-
 #include <state_flags.hpp>
+#include <vector>
 
 namespace state_machine
 {
@@ -41,15 +41,22 @@ class EmergencyState;
 class BaseState
 {
 protected:
-public:
   BaseState()
   {
   }
+
+public:
+  virtual void update(void) = 0;
+  virtual void inState(void) = 0;
+  virtual void outState(void) = 0;
   virtual void showStateName(void) = 0;
-  virtual unsigned long long getStateTransMask() = 0;
-  virtual unsigned long long getStateNum() = 0;
-  virtual std::string getStateName() = 0;
-  virtual unsigned char getStateKind() = 0;
+  virtual uint64_t getStateTransMask(void) = 0;
+  virtual uint64_t getStateNum(void) = 0;
+  virtual std::string getStateName(void) = 0;
+  virtual uint8_t getStateKind(void) = 0;
+  virtual void setCallbackUpdateFunc(std::function<void(void)> _f) = 0;
+  virtual void setCallbackInFunc(std::function<void(void)> _f) = 0;
+  virtual void setCallbackOutFunc(std::function<void(void)> _f) = 0;
 };
 
 // Interface
@@ -58,17 +65,53 @@ class State : public BaseState
 {
 protected:
   std::string StateName = "Base";
-  unsigned long long StateNum;
-  unsigned long long StateTransMask;
-  unsigned char StateKind;
+  uint64_t StateNum;
+  uint64_t StateTransMask;
+  uint8_t StateKind;
 
-public:
+  std::function<void(void)> StateCallbackUpdateFunc;
+  std::function<void(void)> StateCallbackInFunc;
+  std::function<void(void)> StateCallbackOutFunc;
+
   State()
   {
     StateNum = 0;
-    StateTransMask = (unsigned long long)STATE_END - 1;
+    StateTransMask = (uint64_t)STATE_END - 1;
     StateKind = UNKNOWN_STATE;
   }
+
+public:
+  virtual void update(void)
+  {
+    if (StateCallbackUpdateFunc)
+      StateCallbackUpdateFunc();
+  }
+
+  virtual void inState(void)
+  {
+    if (StateCallbackInFunc)
+      StateCallbackInFunc();
+  }
+  virtual void outState(void)
+  {
+    if (StateCallbackOutFunc)
+      StateCallbackOutFunc();
+  }
+  virtual void setCallbackUpdateFunc(std::function<void(void)> _f)
+  {
+    StateCallbackUpdateFunc = _f;
+  }
+
+  virtual void setCallbackOutFunc(std::function<void(void)> _f)
+  {
+    StateCallbackOutFunc = _f;
+  }
+
+  virtual void setCallbackInFunc(std::function<void(void)> _f)
+  {
+    StateCallbackInFunc = _f;
+  }
+
   void showStateName(void)
   {
     std::cout << StateName << "-";
@@ -85,80 +128,19 @@ public:
     return std::string(StateName);
   }
 
-  unsigned char getStateKind(void)
+  uint8_t getStateKind(void)
   {
     return StateKind;
   }
 
-  unsigned long long getStateTransMask(void)
+  uint64_t getStateTransMask(void)
   {
     return StateTransMask;
   }
-  unsigned long long getStateNum(void)
+  uint64_t getStateNum(void)
   {
     return StateNum;
   }
-};
-
-// StartState
-class StartState : public State<StartState>
-{
-private:
-  friend class State<StartState>;
-  StartState(void)
-  {
-    StateName = "Start";
-    StateNum = START_STATE;
-    StateTransMask = (unsigned long long)STATE_END - 1;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-
-// InitialState
-class InitialState : public State<InitialState>
-{
-private:
-  friend class State<InitialState>;
-  InitialState(void)
-  {
-    StateName = "Initial";
-    StateNum = StateTransMask = INITIAL_STATE;
-    StateTransMask |= START_STATE | EMERGENCY_STATE | MISSION_COMPLETE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-class LocateVehicleState : public State<LocateVehicleState>
-{
-private:
-  friend class State<LocateVehicleState>;
-  LocateVehicleState(void)
-  {
-    StateName = "Locate Vehicle";
-    StateNum = StateTransMask = INITIAL_LOCATEVEHICLE_STATE;
-    StateTransMask |= INITIAL_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-// MissionCompleteState
-class MissionCompleteState : public State<MissionCompleteState>
-{
-private:
-  friend class State<MissionCompleteState>;
-  MissionCompleteState(void)
-  {
-    StateName = "MissionComplete";
-    StateNum = MISSION_COMPLETE_STATE;
-    StateTransMask = DRIVE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
 };
 }
 

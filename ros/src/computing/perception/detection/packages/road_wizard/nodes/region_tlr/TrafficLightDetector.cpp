@@ -11,7 +11,7 @@ struct regionCandidate {
   bool   isBlacked;
 };
 
-
+//#define SHOW_DEBUG_INFO
 extern thresholdSet thSet;      // declared in traffic_light_lkf.cpp
 
 /*
@@ -153,7 +153,8 @@ static bool checkExtinctionLight(const cv::Mat&  src_img,
 static cv::Mat signalDetect_inROI(const cv::Mat& roi,
                                   const cv::Mat&     src_img,
                                   const double       estimatedRadius,
-                                  const cv::Point roi_topLeft
+                                  const cv::Point roi_topLeft,
+                                  bool in_turn_signal //if true it will not try to mask by using "circularity""
                                   )
 {
   /* reduce noise */
@@ -253,7 +254,7 @@ static cv::Mat signalDetect_inROI(const cv::Mat& roi,
   // std::cerr << "before checkExtrinctionLight. candidates: " << candidates_num << std::endl;
 
   /* decrease candidates by checking existence of turned off light in their neighborhood */
-  if (candidates_num > 1)    /* if there are multipule candidates */
+  if (!in_turn_signal && candidates_num > 1)    /* if there are multipule candidates */
     {
       for (unsigned int i=0; i<candidates.size(); i++)
         {
@@ -298,7 +299,7 @@ static cv::Mat signalDetect_inROI(const cv::Mat& roi,
   // std::cerr << "after checkExtrinctionLight. candidates: " << candidates_num << std::endl;
 
   /* choose one candidate by comparing degree of circularity */
-  if (candidates_num > 1)       /* if there are still multiple candidates */
+  if (!in_turn_signal && candidates_num > 1)       /* if there are still multiple candidates */
     {
       double min_diff = DBL_MAX;
       unsigned int min_idx = 0;
@@ -387,7 +388,10 @@ void TrafficLightDetector::brightnessDetect(const cv::Mat &input) {
     cvtColor(roi, roi_HSV, CV_BGR2HSV);
 
     /* search the place where traffic signals seem to be */
-    cv::Mat    signalMask    = signalDetect_inROI(roi_HSV, input.clone(), context.lampRadius, context.topLeft);
+    cv::Mat    signalMask    = signalDetect_inROI(roi_HSV, input.clone(),
+                                                  context.lampRadius,
+                                                  context.topLeft,
+                                                  context.leftTurnSignal || context.rightTurnSignal);
 
     /* detect which color is dominant */
     cv::Mat extracted_HSV;
