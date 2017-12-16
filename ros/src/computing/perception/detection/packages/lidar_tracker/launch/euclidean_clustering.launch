@@ -22,6 +22,10 @@
 
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
+	<arg name="vectormap_grid_width" default="30" /><!--meters-->
+	<arg name="vectormap_grid_height" default="70" /><!--meters-->
+	<arg name="vectormap_grid_resolution" default="0.3" /><!--meters-->
+	<arg name="vectormap_grid_behind" default="20" /><!--meters-->
 
 	<arg name="output_frame" default="velodyne" />
 
