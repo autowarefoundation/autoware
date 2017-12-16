@@ -1052,16 +1052,16 @@ params :
         dash        : ''
         delim       : ':='
     - name    : clip_min_height
-      desc    : clip_min_height desc sample
+      desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_min_height (~sensor height)'
       min       : -5
       max       : 5
-      v       : -1.3
+      v       : -5
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : clip_max_height
-      desc    : clip_max_height desc sample
+      desc    : Remove points above this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_max_height (above sensor)'
       min       : 0
       max       : 5
@@ -1070,18 +1070,57 @@ params :
         dash        : ''
         delim       : ':='
     - name    : use_vector_map
-      desc    : use_vector_map desc sample
+      desc    : If checked, Localization and ADAS MAp with WAYAREA info should be published. Objects outside the road will be filtered.
       label   : 'use_vector_map'
       kind    : checkbox
-      v       : True
+      v       : false
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : vectormap_frame
-      desc    : vectormap_frame desc sample
+      desc    : Frame of the VectorMap according to TF. default. map
       label   : 'vectormap_frame'
       kind    : str
       v       : map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_width
+      desc    : Width Distance in Meters to create a filtering grid to the sides. Default. 30
+      label   : 'vectormap_grid_width'
+      min       : 10.0
+      max       : 100.0
+      v       : 30.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_height
+      desc    : Height Distance in Meters to create a filtering grid to the front. Default. 70
+      label   : 'vectormap_grid_height'
+      min       : 10.0
+      max       : 100.0
+      v       : 70.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_resolution
+      desc    : One Grid square is equivalent to this value in meters. Smaller Value provide better resolution at the cost of memory (Default. 0.3)
+      label   : 'vectormap_grid_resolution'
+      min       : 0.1
+      max       : 1.0
+      v       : 0.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_behind
+      desc    : Allows to perform filtering behind the vehicle. Moves the grid to filter objects behind the current position (Default. 20.0)
+      label   : 'vectormap_grid_behind'
+      min       : 0.0
+      max       : 50.0
+      v       : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : remove_points_upto
       desc    : remove_points_upto desc sample
       label   : 'remove_points_upto (ignore points up to this distance)'

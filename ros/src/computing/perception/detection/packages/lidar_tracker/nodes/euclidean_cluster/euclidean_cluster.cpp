@@ -141,6 +141,11 @@ static double _max_boundingbox_side;
 static double _remove_points_upto;
 static double _cluster_merge_threshold;
 
+static double _vectormap_grid_width;
+static double _vectormap_grid_height;
+static double _vectormap_grid_resolution;
+static double _vectormap_grid_behind;
+
 std::vector<std::vector<geometry_msgs::Point>> _way_area_points;
 
 static bool _use_gpu;
@@ -1199,12 +1204,16 @@ int main (int argc, char** argv)
 	private_nh.param("keep_lane_right_distance", _keep_lane_right_distance, 5.0);	ROS_INFO("keep_lane_right_distance: %f", _keep_lane_right_distance);
 	private_nh.param("clustering_thresholds", _clustering_thresholds);
 	private_nh.param("clustering_distances", _clustering_distances);
-	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);				ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
-	private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);			ROS_INFO("cluster_merge_threshold: %f", _cluster_merge_threshold);
-	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");			ROS_INFO("output_frame: %s", _output_frame.c_str());
+	private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);		ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
+	private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);	ROS_INFO("cluster_merge_threshold: %f", _cluster_merge_threshold);
+	private_nh.param<std::string>("output_frame", _output_frame, "velodyne");	ROS_INFO("output_frame: %s", _output_frame.c_str());
 
-	private_nh.param("use_vector_map", _use_vector_map, false);							ROS_INFO("use_vector_map: %d", _use_vector_map);
-	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");			ROS_INFO("vectormap_frame: %s", _vectormap_frame.c_str());
+	private_nh.param("use_vector_map", _use_vector_map, false);					ROS_INFO("use_vector_map: %d", _use_vector_map);
+	private_nh.param<std::string>("vectormap_frame", _vectormap_frame, "map");	ROS_INFO("vectormap_frame: %s", _vectormap_frame.c_str());
+	private_nh.param("vectormap_grid_width", _vectormap_grid_width, 30.0);	    ROS_INFO("vectormap_grid_width: %f", _vectormap_grid_width);
+	private_nh.param("vectormap_grid_height", _vectormap_grid_height, 70.0);	ROS_INFO("vectormap_grid_height: %f", _vectormap_grid_height);
+	private_nh.param("vectormap_grid_resolution", _vectormap_grid_resolution, 0.3);	ROS_INFO("vectormap_grid_resolution: %f", _vectormap_grid_resolution);
+	private_nh.param("vectormap_grid_behind", _vectormap_grid_behind, 20.0);	ROS_INFO("vectormap_grid_resolution: %f", _vectormap_grid_behind);
 
 	private_nh.param("remove_points_upto", _remove_points_upto, 0.0);		ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
@@ -1239,8 +1248,8 @@ int main (int argc, char** argv)
 
 	grid_map::GridMap gridmap({"wayarea"});
 	_wayarea_gridmap = &gridmap;
-	_wayarea_gridmap->setGeometry(grid_map::Length(90, 30), 0.2);
-	_wayarea_gridmap->setPosition(grid_map::Position(20,0));
+	_wayarea_gridmap->setGeometry(grid_map::Length(_vectormap_grid_height, _vectormap_grid_width), _vectormap_grid_resolution);
+	_wayarea_gridmap->setPosition(grid_map::Position(_vectormap_grid_behind,0));
 
 	if (way_areas.empty())
 	{
