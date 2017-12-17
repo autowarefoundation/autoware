@@ -300,7 +300,7 @@ void DecisionMakerNode::updateStateStop(int status)
   static ros::Timer stopping_timer;
   if (status)
   {
-    if (current_velocity_ == 0.0 && !timerflag)
+    if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
     {
       stopping_timer = nh_.createTimer(ros::Duration(1),
                                        [&](const ros::TimerEvent &) {
@@ -310,6 +310,9 @@ void DecisionMakerNode::updateStateStop(int status)
                                        },
                                        this, true);
       timerflag = true;
+    }else if(foundOtherVehicleForIntersectionStop_ && timerflag){
+	    stopping_timer.stop();
+	    timerflag = false;
     }
   }
 }
@@ -324,6 +327,7 @@ void DecisionMakerNode::callbackOutStateObstacleAvoid(int status)
   changeVelocityBasedLane();
   publishControlledLaneArray();
   ros::Rate loop_rate(1);
+  
   // wait for the start of lane change to the original lane
   if (created_shift_lane_flag_)
   {
@@ -347,7 +351,7 @@ void DecisionMakerNode::callbackOutStateObstacleAvoid(int status)
   }
   changeVelocityBasedLane();  // rebased controlled lane
   publishControlledLaneArray();
-return;
+  return;
 }
 
 void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
