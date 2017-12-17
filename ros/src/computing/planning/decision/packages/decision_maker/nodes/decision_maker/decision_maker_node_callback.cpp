@@ -3,12 +3,14 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_rviz_plugins/OverlayText.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/CloudClusterArray.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -96,6 +98,10 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   param_target_waypoint_ = msg.target_waypoint;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_shift_width_ = msg.shift_width;
+
+  param_crawl_velocity_ = msg.crawl_velocity;
+  param_detection_area_rate_ = msg.detection_area_rate;
+  param_baselink_tf_ = msg.baselink_tf;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
@@ -119,6 +125,37 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   }
 }
 
+void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg)
+{
+  // This function is a quick hack implementation.
+  // If detection result exists in DetectionArea, decisionmaker sets object detection flag(foundOthervehicleforintersectionstop).
+  // The flag is referenced in the stopline state, and if it is true it will continue to stop.
+  bool l_detection_flag = false;
+  if (ctx->isCurrentState(state_machine::DRIVE_STATE)){
+	  if(msg.clusters.size()){
+		  // if euclidean_cluster does not use wayarea, it may always founded.
+		  for(const auto cluster : msg.clusters){
+			  geometry_msgs::PoseStamped cluster_pose;
+			  geometry_msgs::PoseStamped baselink_pose;
+			  cluster_pose.pose = cluster.bounding_box.pose;
+			  cluster_pose.header = cluster.header;
+
+			  tflistener_baselink.transformPose(cluster.header.frame_id, cluster.header.stamp, cluster_pose,"base_link", baselink_pose);
+
+			  if(detectionArea_.x1 * param_detection_area_rate_ >=  baselink_pose.pose.position.x && 
+					  baselink_pose.pose.position.x >= detectionArea_.x2*param_detection_area_rate_ &&
+					  detectionArea_.y1 * param_detection_area_rate_ >= baselink_pose.pose.position.y &&
+					  baselink_pose.pose.position.y >= detectionArea_.y2*param_detection_area_rate_      ){
+				  l_detection_flag = true;
+				  break;
+			  }
+		  }
+	  }
+  }
+  foundOtherVehicleForIntersectionStop_ = l_detection_flag;
+   
+}
+
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
   if (ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
@@ -128,6 +165,7 @@ void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::Co
 void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects,
                                                    autoware_msgs::LaneArray &lane_array)
 {
+
   for (auto &lane : lane_array.lanes)
   {
     for (auto &wp : lane.waypoints)
@@ -146,6 +184,7 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           {
             autoware_msgs::lane nlane;
             area.insideLanes.push_back(nlane);
+	    area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point

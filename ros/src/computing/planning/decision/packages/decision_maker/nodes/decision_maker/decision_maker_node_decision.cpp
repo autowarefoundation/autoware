@@ -63,21 +63,23 @@ double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &lanei
 bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch,
                                                   double _yaw)
 {
-  static amathutils::point *a = new amathutils::point();
-  static amathutils::point *b = new amathutils::point();
+  static amathutils::point a;
+  static amathutils::point b;
 
   static std::vector<double> distances;
   static uint32_t distances_count = 0;
 
-  a->x = b->x;
-  a->y = b->y;
-  a->z = b->z;
+  bool ret = false;
 
-  b->x = _x;
-  b->y = _y;
-  b->z = _z;
+  a.x = b.x;
+  a.y = b.y;
+  a.z = b.z;
 
-  distances.push_back(amathutils::find_distance(a, b));
+  b.x = _x;
+  b.y = _y;
+  b.z = _z;
+
+  distances.push_back(amathutils::find_distance(&a, &b));
   if (++distances_count > param_convergence_count_)
   {
     distances.erase(distances.begin());
@@ -85,9 +87,10 @@ bool DecisionMakerNode::isLocalizationConvergence(double _x, double _y, double _
     double avg_distances = std::accumulate(distances.begin(), distances.end(), 0) / distances.size();
     if (avg_distances <= param_convergence_threshold_)
     {
-      return ctx->setCurrentState(state_machine::DRIVE_STATE);
+      ret =  ctx->setCurrentState(state_machine::DRIVE_STATE);
     }
   }
-  return false;
+  
+  return ret;
 }
 }

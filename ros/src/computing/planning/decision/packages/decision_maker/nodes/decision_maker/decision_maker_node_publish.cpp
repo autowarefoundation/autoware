@@ -61,13 +61,28 @@ void DecisionMakerNode::displayMarker(void)
   visualization_msgs::Marker crossroad_marker;
   visualization_msgs::Marker inside_marker;
   visualization_msgs::Marker inside_line_marker;
+  visualization_msgs::Marker detection_area_marker;
 
   double scale = 3.0;
   createCrossRoadAreaMarker(crossroad_marker, scale);
+  
+  detection_area_marker = crossroad_marker;
+  detection_area_marker.header.frame_id = param_baselink_tf_;
+  detection_area_marker.scale.x = (detectionArea_.x1 - detectionArea_.x2) * param_detection_area_rate_;
+  detection_area_marker.scale.y = (detectionArea_.y1 - detectionArea_.y2) * param_detection_area_rate_;
+  detection_area_marker.color.r = foundOtherVehicleForIntersectionStop_?0.0:1.0;
+  detection_area_marker.pose.position.x =  detection_area_marker.scale.x/2;
+  detection_area_marker.color.g = 1;
+  detection_area_marker.color.b = 0.3;
+  detection_area_marker.color.a = 0.5;
+  detection_area_marker.type = visualization_msgs::Marker::CUBE;
+  detection_area_marker.lifetime=ros::Duration();
+   
 
   inside_marker = crossroad_marker;
   inside_marker.scale.x = scale / 3;
   inside_marker.scale.y = scale / 3;
+  inside_marker.scale.z = 0.4;
   inside_marker.scale.z = 0.5;
   inside_marker.color.a = 0.5;
   inside_marker.color.r = 1.0;
@@ -133,6 +148,9 @@ void DecisionMakerNode::displayMarker(void)
     }
     marker_array.markers.push_back(inside_line_marker);
   }
+
+
+  Pubs["detection_area"].publish(detection_area_marker);
   Pubs["crossroad_bbox"].publish(bbox_array);
   Pubs["crossroad_marker"].publish(marker_array);
   bbox_array.boxes.clear();
