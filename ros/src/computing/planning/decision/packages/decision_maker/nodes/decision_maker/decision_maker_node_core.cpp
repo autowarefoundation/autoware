@@ -14,8 +14,8 @@
 
 #include <autoware_msgs/lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <random>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -35,7 +35,7 @@ void DecisionMakerNode::run(void)
   ros::Rate loop_rate(1);
 
   // for subscribe callback function
-  ros::AsyncSpinner spinner(1);
+  ros::AsyncSpinner spinner(3);
   spinner.start();
   while (ros::ok())
   {
