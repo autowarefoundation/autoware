@@ -1992,6 +1992,12 @@ params :
       min  : 0
       max  : 50
       v    : 10
+    - name : stopline_target_ratio
+      desc : stopline
+      label: stopline_target_ratio
+      min  : 0.0
+      max  : 0.99
+      v    : 0.0
     - name : shift_width
       desc : lane shift width
       label: shift_width

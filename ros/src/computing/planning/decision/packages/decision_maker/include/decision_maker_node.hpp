@@ -138,6 +138,7 @@ private:
   uint32_t param_target_waypoint_;
   double param_convergence_threshold_;
   uint32_t param_stopline_target_waypoint_;
+  double param_stopline_target_ratio_;
   double param_shift_width_;
   double param_crawl_velocity_;
   double param_detection_area_rate_;

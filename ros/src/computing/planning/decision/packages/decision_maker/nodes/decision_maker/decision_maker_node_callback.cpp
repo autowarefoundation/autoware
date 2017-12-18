@@ -97,6 +97,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 
   param_target_waypoint_ = msg.target_waypoint;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
+  param_stopline_target_ratio_ = msg.stopline_target_ratio;
   param_shift_width_ = msg.shift_width;
 
   param_crawl_velocity_ = msg.crawl_velocity;
@@ -133,30 +134,40 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
   // flag(foundOthervehicleforintersectionstop).
   // The flag is referenced in the stopline state, and if it is true it will
   // continue to stop.
+
+  static double setFlagTime = 0.0;
   bool l_detection_flag = false;
-  if (ctx->isCurrentState(state_machine::DRIVE_STATE)){
-	  if(msg.clusters.size()){
-		  // if euclidean_cluster does not use wayarea, it may always founded.
-		  for(const auto cluster : msg.clusters){
-			  geometry_msgs::PoseStamped cluster_pose;
-			  geometry_msgs::PoseStamped baselink_pose;
-			  cluster_pose.pose = cluster.bounding_box.pose;
-			  cluster_pose.header = cluster.header;
+  if (ctx->isCurrentState(state_machine::DRIVE_STATE))
+  {
+    if (msg.clusters.size())
+    {
+      // if euclidean_cluster does not use wayarea, it may always founded.
+      for (const auto cluster : msg.clusters)
+      {
+        geometry_msgs::PoseStamped cluster_pose;
+        geometry_msgs::PoseStamped baselink_pose;
+        cluster_pose.pose = cluster.bounding_box.pose;
+        cluster_pose.header = cluster.header;
 
-			  tflistener_baselink.transformPose(cluster.header.frame_id, cluster.header.stamp, cluster_pose,"base_link", baselink_pose);
+        tflistener_baselink.transformPose(cluster.header.frame_id, cluster.header.stamp, cluster_pose, "base_link",
+                                          baselink_pose);
 
-			  if(detectionArea_.x1 * param_detection_area_rate_ >=  baselink_pose.pose.position.x && 
-					  baselink_pose.pose.position.x >= detectionArea_.x2*param_detection_area_rate_ &&
-					  detectionArea_.y1 * param_detection_area_rate_ >= baselink_pose.pose.position.y &&
-					  baselink_pose.pose.position.y >= detectionArea_.y2*param_detection_area_rate_      ){
-				  l_detection_flag = true;
-				  break;
-			  }
-		  }
-	  }
+        if (detectionArea_.x1 * param_detection_area_rate_ >= baselink_pose.pose.position.x &&
+            baselink_pose.pose.position.x >= detectionArea_.x2 * param_detection_area_rate_ &&
+            detectionArea_.y1 * param_detection_area_rate_ >= baselink_pose.pose.position.y &&
+            baselink_pose.pose.position.y >= detectionArea_.y2 * param_detection_area_rate_)
+        {
+          l_detection_flag = true;
+          setFlagTime == ros::Time::now().toSec();
+	  break;
+        }
+      }
+    }
   }
-  foundOtherVehicleForIntersectionStop_ = l_detection_flag;
-   
+  /* The true state continues for more than 1 second. */
+  if(l_detection_flag || (ros::Time::now().toSec() - setFlagTime) >= 1.0/*1.0sec*/){
+	  foundOtherVehicleForIntersectionStop_ = l_detection_flag;
+  }
 }
 
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
@@ -336,6 +347,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
                    param_stopline_target_waypoint_ :
                    current_finalwaypoints_.waypoints.size() - 1;
+  
   if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
     ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
   if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP)
