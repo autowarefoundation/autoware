@@ -4,7 +4,7 @@ project(lidar_tracker)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-include(FindPkgConfig)
+
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
@@ -34,11 +34,8 @@ execute_process(
   OUTPUT_VARIABLE ROS_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-if ("${ROS_VERSION}" MATCHES "(kinetic)")
-	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
-else()
-	pkg_check_modules(OpenCV REQUIRED)
-endif()
+
+find_package(OpenCV REQUIRED)
 
 execute_process(
   COMMAND pkg-config --variable=host_bins Qt5Core
