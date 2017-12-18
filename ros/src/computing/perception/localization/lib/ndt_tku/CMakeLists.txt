@@ -7,7 +7,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 find_package(catkin REQUIRED)
 
 ###################################

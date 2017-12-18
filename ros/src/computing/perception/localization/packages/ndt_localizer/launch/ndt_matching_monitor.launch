@@ -1,0 +1,19 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="threshold_warn" default="1.0" />
+  <arg name="threshold_stop" default="2.0" />
+  <arg name="history_size" default="10.0" />
+  <arg name="max_speed" default="1.5" />
+  <arg name="speed_down_factor" default="0.5" />
+  
+  <node pkg="ndt_localizer" type="ndt_matching_monitor" name="ndt_matching_monitor" output="screen">
+    <param name="/ndt_monitor/threshold_warn" value="$(arg threshold_warn)" />
+    <param name="/ndt_monitor/threshold_stop" value="$(arg threshold_stop)" />
+    <param name="/ndt_monitor/history_size" value="$(arg history_size)" />
+    <param name="/ndt_monitor/max_speed" value="$(arg max_speed)" />
+    <param name="/ndt_monitor/speed_down_factor" value="$(arg speed_down_factor)" />
+  </node>
+  
+</launch>

@@ -5,9 +5,9 @@
 */
 
 // number of cells
-#define G_MAP_X 2600
-#define G_MAP_Y 2600
-#define G_MAP_Z 300
+#define G_MAP_X 2000
+#define G_MAP_Y 2000
+#define G_MAP_Z 200
 #define G_MAP_CELLSIZE 1.0
 
 #ifdef HAVE_CONFIG_H
@@ -222,18 +222,24 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
 
   if (_downsampler == "voxel_grid")
   {
-    pcl::PointCloud<pcl::PointXYZ> scan;
+    pcl::PointCloud<pcl::PointXYZI> scan;
+    pcl::PointXYZI pt;
 
     for (int i = 0; i < (int)msg->points.size(); i++)
     {
-      scan.points.push_back(pcl::PointXYZ(msg->points[i].x, msg->points[i].y, msg->points[i].z));
+      pt.x = msg->points[i].x;
+      pt.x = msg->points[i].y;
+      pt.x = msg->points[i].z;
+      pt.x = msg->points[i].intensity;
+      scan.points.push_back(pt);
+      //scan.points.push_back(pcl::PointXYZI(msg->points[i].x, msg->points[i].y, msg->points[i].z, msg->points[i].intensity));
     }
     scan.header = msg->header;
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(scan));
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr scan_ptr(new pcl::PointCloud<pcl::PointXYZI>(scan));
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
-    pcl::VoxelGrid<pcl::PointXYZ> voxel_grid_filter;
+    pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
     //voxel_grid_filter.setLeafSize(0.5, 0.5, 0.5);
     voxel_grid_filter.setLeafSize(_downsampler_res, _downsampler_res, _downsampler_res);
     voxel_grid_filter.setInputCloud(scan_ptr);
@@ -244,7 +250,8 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
       scan_points[j].x = filtered_scan_ptr->points[i].x + nrand(0.01);
       scan_points[j].y = filtered_scan_ptr->points[i].y + nrand(0.01);
       scan_points[j].z = filtered_scan_ptr->points[i].z + nrand(0.01);
-      scan_points_i[j] = 100;  // filterd_scan_ptr->points[i].intensity;
+      //scan_points_i[j] = 100;  // filterd_scan_ptr->points[i].intensity;
+      scan_points_i[j] = filtered_scan_ptr->points[i].intensity;
 
       double dist = scan_points[j].x * scan_points[j].x + scan_points[j].y * scan_points[j].y +
                     scan_points[j].z * scan_points[j].z;
@@ -252,6 +259,10 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &msg)
         continue;
 
       scan_points_weight[j] = 1;
+      //give higher weight to points closer to the ground (height <= 10cm)
+      if (scan_points[j].z <= 0.1) {
+        scan_points_weight[j] = 3;
+      }
       scan_points_totalweight += scan_points_weight[j];
       j++;
       if (j > 130000)
@@ -1094,7 +1105,7 @@ int main(int argc, char *argv[])
   printf(" 3D NDT scan matching \n");
   printf("----------------------\n");
 
-  ros::init(argc, argv, "ndt_matching_tku");
+  ros::init(argc, argv, "ndt_matching_tku_ground");
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");

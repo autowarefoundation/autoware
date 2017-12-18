@@ -52,6 +52,7 @@ double calc_summand3d(PointPtr p, NDPtr nd, PosturePtr pose, double *g, double H
   //  e = probability_on_ND(nd, p->x, p->y, p->z);
   e = probability_on_ND(nd, q[0], q[1], q[2]) * dist;
 
+  if(isnan(e)!=0)return 0.000000001;
   if (e < 0.000000001)
   {
     for (i = 0; i < 6; i++)

@@ -17,7 +17,7 @@
   <arg name="map_size_y" default="2000" />
   <arg name="map_size_z" default="200" />
   
-  <node pkg="ndt_localizer" type="ndt_mapping_tku" name="ndt_mapping_tku" output="screen">
+  <node pkg="ndt_localizer" type="ndt_mapping_tku_ground" name="ndt_mapping_tku_ground" output="screen">
     <param name="downsampler" value="$(arg downsampler)" />
     <param name="downsampler_res" value="$(arg downsampler_res)" />
     <param name="init_x" value="$(arg init_x)" />

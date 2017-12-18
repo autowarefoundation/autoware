@@ -12,7 +12,8 @@
   <arg name="get_height" default="false" />
   <arg name="use_local_transform" default="false" />
   <arg name="sync" default="false" />
-  <arg name="imu_topic" default="/imu_raw" />
+  <!--<arg name="imu_topic" default="/imu_raw" />-->
+  <arg name="imu_topic" default="/imu/data" />
   
   <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="use_gnss" value="$(arg use_gnss)" />
