@@ -22,6 +22,10 @@
 
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
+	<arg name="vectormap_grid_width" default="30" /><!--meters-->
+	<arg name="vectormap_grid_height" default="70" /><!--meters-->
+	<arg name="vectormap_grid_resolution" default="0.3" /><!--meters-->
+	<arg name="vectormap_grid_behind" default="20" /><!--meters-->
 
 	<arg name="output_frame" default="velodyne" />
 
@@ -55,6 +59,10 @@
 		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<param name="use_gpu" value="$(arg use_gpu)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+	</node>
+
+	<node pkg="grid_map_visualization" type="grid_map_visualization" name="clustering_grid_map_visualization" output="screen">
+		<rosparam command="load" file="$(find lidar_tracker)/launch/euclidean_cluster.config" />
 	</node>
 
 </launch>
