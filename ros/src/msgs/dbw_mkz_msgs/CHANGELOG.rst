@@ -36,6 +36,19 @@ Changelog for package dbw_mkz_msgs
 1.0.2 (2016-11-07)
 ------------------
 
+1.6.0 (2017-12-11)
+------------------
+* adapted the version to the current version
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
+* Merge pull request `#830 <https://github.com/CPFL/Autoware/issues/830>`_ from CPFL/feature/pacmod_interface
+  Add pacmod interface
+* Add pacmod interface
+* Contributors: TomohitoAndo, Yamato ANDO, Yuki Iida, Yusuke FUJII, hatem-darweesh
+
 1.0.1 (2016-10-10)
 ------------------
 

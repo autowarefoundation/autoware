@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ndt_tku</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>The ndt_tku package</description>
   <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
   <license>BSD</license>

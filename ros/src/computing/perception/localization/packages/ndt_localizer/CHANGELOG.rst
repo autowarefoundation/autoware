@@ -2,6 +2,78 @@
 Changelog for package ndt_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#971 <https://github.com/CPFL/Autoware/issues/971>`_ from CPFL/fix/ndt_fastpcl_memoryleak
+  modified setResolution to be called before setInputTarget is applied
+* modified setResolution to be called before setInputTarget is applied
+* Merge pull request `#970 <https://github.com/CPFL/Autoware/issues/970>`_ from CPFL/fix/ndt_fastpcl_memoryleak
+  Fix not to use NDT (fast_pcl) to leak memory
+* use_fast_pcl set default false
+* Merge pull request `#878 <https://github.com/CPFL/Autoware/issues/878>`_ from CPFL/feature/ndt_pcl_gpu
+  Feature/ndt pcl gpu
+* modified ndt_cpu complie option
+* Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id
+  Use initialpose header.frame_id at initialposeCallback function
+* fix typo
+* use header.frame_id included in initialpose topic
+* Merge branch develop into feature/ndt_pcl_gpu
+* Merge pull request `#956 <https://github.com/CPFL/Autoware/issues/956>`_ from CPFL/fix/ndt_merge_master_to_dev
+  Fix/ndt merge master to dev (ndt_localizer)
+* Merge branch master into develop (ndt_localizer)
+* Merge branch 'develop' into feature/tlr_turn_support
+* Merge pull request `#954 <https://github.com/CPFL/Autoware/issues/954>`_ from CPFL/fix/tf_mapping
+  Fix/tf mapping
+* fix tf_mapping regarding number of digits of pose
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Merge pull request `#913 <https://github.com/CPFL/Autoware/issues/913>`_ from CPFL/feature/ndt-multithread
+  switching the map by self position [ndt_matching]
+* fixed CMakeLists and compile error
+* merge develop and fixed slow switching map
+* Merge pull request `#904 <https://github.com/CPFL/Autoware/issues/904>`_ from CPFL/hotfix/ndt_separate_executable
+  [Bugfix] The NDT executable file was divided into two
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* separate executable
+* change specification according PCL ver.
+* Fix redeclaration error when compiling ndt_mapping.cpp and ndt_matching.cpp
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+  Conflicts:
+  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
+  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
+  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
+* Add ndt_cpu library
+* Merge branch 'master' into feature/decision
+* [fix] NDT_GPU ndt_localizer (`#854 <https://github.com/CPFL/Autoware/issues/854>`_)
+  * fix CMakeLists.txt of ndt_localizer
+  * Fixed CUDA/FAST_PCL conflict
+  * Fixed ndt_matching
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge pull request `#794 <https://github.com/CPFL/Autoware/issues/794>`_ from CPFL/feature/ndt_pcl_gpu
+  Feature/ndt pcl gpu
+* apply clang-format
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
+* remove inline functions
+* Merge for ndt_pcl_gpu
+* Merge pull request `#832 <https://github.com/CPFL/Autoware/issues/832>`_ from CPFL/fix/ndt_matching
+  fix calculation of ndt_pose from localizer_pose
+* fix calculation of ndt_pose from localizer_pose
+* merge develop
+* merge develop
+* add approximate_ndt_mapping (`#811 <https://github.com/CPFL/Autoware/issues/811>`_)
+* set use_gpu false by default
+* add ndt_gpu in fast_pcl library
+* add cuda inplementation of ndt algorithm in pcl
+* apply clang-format
+* bug fix
+* Add thread_func.]
+* Contributors: AMC, Akihito Ohsato, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, anhnv-3991, hatem-darweesh, kitsukawa, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

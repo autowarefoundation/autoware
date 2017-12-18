@@ -2,6 +2,34 @@
 Changelog for package lane_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge branch 'develop' into feature/tlr_turn
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision
+  Feature/decision: Enhancement decision maker node
+* Fixed:
+  - callback
+  - laneshift
+  Added:
+  - publisher for laneid
+  - new lanechange flag
+  - new param for decisionMaker
+* apply clang-format
+* merge develop and fixed slow switching map
+* fix a segv bug when currentpose was changed a lot
+* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
+* Support to lanechange similar to state_machine(old) package
+* add path velocity smoothing
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
+* Contributors: AMC, Yamato ANDO, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

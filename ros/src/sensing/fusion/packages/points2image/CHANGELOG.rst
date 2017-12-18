@@ -2,6 +2,39 @@
 Changelog for package points2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
+  [bugfix]use qt5_wrap_ui instead of autouic
+* use qt5_wrap_ui instead of autouic
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Merge pull request `#888 <https://github.com/CPFL/Autoware/issues/888>`_ from CPFL/feature/cmake_refactor
+  refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'feature/cmake_refactor' of github.com:cpfl/autoware into feature/decision
+* Fix feature/points2image bug multicam support (`#886 <https://github.com/CPFL/Autoware/issues/886>`_)
+  * pointgrey
+  * Added New Calibration node
+  * Added parameters, plane fitting
+  * added mirror node, etc
+  * Points2Image
+  Calibration Publisher
+  now works with multiple cameras using ros namespaces
+  * Including only points2image
+  * Added Launch file for points2 image specific for the ladybug camera
+* refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Contributors: Abraham Monrroy, Yamato ANDO, YamatoAndo, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

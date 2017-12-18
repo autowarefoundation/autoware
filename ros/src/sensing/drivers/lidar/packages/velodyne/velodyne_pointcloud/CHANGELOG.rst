@@ -1,6 +1,27 @@
 Change history
 ==============
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#846 <https://github.com/CPFL/Autoware/issues/846>`_ from CPFL/fix/hdl64e_new_param
+  [Bugfix] Replace the paramter file for Velodyne HDL64e-S2
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision
+* add param files for vlp16 hires (`#943 <https://github.com/CPFL/Autoware/issues/943>`_)
+* merge develop and fixed slow switching map
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Replace the paramter file for Velodyne HDL64e-S2
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Contributors: Akihito Ohsato, Yamato ANDO, Yuki Iida, Yusuke FUJII, christopherho-ApexAI, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 
