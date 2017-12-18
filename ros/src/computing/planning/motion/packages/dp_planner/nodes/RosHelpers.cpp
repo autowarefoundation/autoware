@@ -610,7 +610,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 
 void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
 		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
-		int& nOriginalPoints, int& nContourPoints)
+		int& nOriginalPoints, int& nContourPoints, double horizon)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);
 	PlannerHNS::Mat3 translationMat(-currState.pos.x, -currState.pos.y);
@@ -647,8 +647,8 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 //		if(size <= 0.25 || size >= 5 || distance_y > 20.0 || distance_x > 20.0)
 //			continue;
 
-//		if(distance_y > 10.0 || distance_x > 10.0)
-//			continue;
+		if(obj.distance_to_center > horizon || obj.distance_to_center > horizon)
+			continue;
 
 		if(distance_x  <= car_info.length/1.5 && distance_y <= car_info.width/1.5) // don't detect yourself
 			continue;

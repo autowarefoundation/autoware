@@ -263,14 +263,14 @@ public:
 	void CoordinateTransform(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::DetectedObject& obj);
 	void CoordinateTransformPoint(const PlannerHNS::WayPoint& refCoordinate, PlannerHNS::GPSPoint& obj);
 	void AssociateObjects();
-	void InitializeInterestRegions(double horizon, double init_raduis, double init_time, std::vector<InterestCircle*>& regions);
+	void InitializeInterestRegions(double horizon, std::vector<InterestCircle*>& regions);
 	void AssociateAndTrack();
 	void AssociateToRegions(KFTrackV& detectedObject);
 	void CleanOldTracks();
 
 	void DoOneStep(const PlannerHNS::WayPoint& currPose, const std::vector<PlannerHNS::DetectedObject>& obj_list);
 
-	SimpleTracker(double horizon = 100);
+	SimpleTracker(double horizon = 30, double lose_time = 5);
 	virtual ~SimpleTracker();
 
 public:

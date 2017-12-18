@@ -74,6 +74,8 @@ PlannerX::PlannerX()
 	m_ObstacleTracking.m_DT = 0.12;
 	m_ObstacleTracking.m_bUseCenterOnly = true;
 
+	m_ObstacleTracking.InitializeInterestRegions(30, m_ObstacleTracking.m_InterestRegions);
+
 	enablePlannerDynamicSwitch = false;
 
 
@@ -482,7 +484,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, height, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2, m_LocalPlanner.m_params.horizonDistance);
 	m_TrackedClusters = m_OriginalClusters;
 
 	pcl::PointCloud<pcl::PointXYZ> point_cloud;
@@ -650,7 +652,7 @@ void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayCo
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);
 
 	m_OriginalClusters.clear();
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints);
+	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints, m_LocalPlanner.m_params.horizonDistance);
 	if(m_bEnableTracking)
 	{
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters);

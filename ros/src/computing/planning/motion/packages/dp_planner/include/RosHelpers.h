@@ -194,7 +194,7 @@ public:
 
 	static void ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
 			const autoware_msgs::CloudClusterArray& clusters,
-			std::vector<PlannerHNS::DetectedObject>& impObstacles, int& nOriginalPoints, int& nContourPoints);
+			std::vector<PlannerHNS::DetectedObject>& impObstacles, int& nOriginalPoints, int& nContourPoints, double horizon);
 
 	static void ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 			visualization_msgs::MarkerArray& detectedPolygons);

@@ -23,18 +23,18 @@ namespace SimulationNS
 
 using namespace PlannerHNS;
 
-SimpleTracker::SimpleTracker(double horizon)
+SimpleTracker::SimpleTracker(double horizon, double lose_time )
 {
 	iTracksNumber = 1;
 	m_DT = 0.1;
 	m_MAX_ASSOCIATION_DISTANCE = 3.0;
 	m_MAX_TRACKS_AFTER_LOSING = 10;
-	m_MaxKeepTime = 15; // seconds
+	m_MaxKeepTime = lose_time; // seconds
 	m_bUseCenterOnly = true;
 	m_bFirstCall = true;
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
 
-	InitializeInterestRegions(horizon, 5, 5, m_InterestRegions);
+
 }
 
 SimpleTracker::~SimpleTracker()
@@ -53,7 +53,7 @@ SimpleTracker::~SimpleTracker()
 
 }
 
-void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis, double init_time, std::vector<InterestCircle*>& regions)
+void SimpleTracker::InitializeInterestRegions(double horizon, std::vector<InterestCircle*>& regions)
 {
 	//initialize interest regions
 	double distance = 0;

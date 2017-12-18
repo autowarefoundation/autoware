@@ -9,7 +9,7 @@
 	<arg name="pathDensity" 				default="0.75" />
 	<arg name="rollOutDensity" 				default="0.75" />
 	<arg name="rollOutsNumber" 				default="8"    />
-	<arg name="horizonDistance" 			default="100"  />
+	<arg name="horizonDistance" 			default="30"  />
 	
 	<arg name="minFollowingDistance" 		default="35.0"  /> <!-- should be bigger than Distance to follow -->	
 	<arg name="minDistanceToAvoid" 			default="15.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
@@ -27,14 +27,14 @@
 	<arg name="enableLaneChange" 			default="false" />
 	<arg name="enabTrajectoryVelocities"	default="true" /> <!-- enable when using autoware's pure pursuit node-->
 	
-	<arg name="width" 						default="1.85"  />
-	<arg name="length" 						default="4.2"  />
-	<arg name="wheelBaseLength" 			default="2.7"  />
-	<arg name="turningRadius"				default="5.2"  />
-	<arg name="maxSteerAngle" 				default="0.45" />
+	<arg name="width" 						default="0.6"  />
+	<arg name="length" 						default="0.8"  />
+	<arg name="wheelBaseLength" 			default="0.7"  />
+	<arg name="turningRadius"				default="1.0"  />
+	<arg name="maxSteerAngle" 				default="0.80" />
 	
 	<arg name="steeringDelay" 				default="1.2" />
-	<arg name="minPursuiteDistance" 		default="3.0"  />
+	<arg name="minPursuiteDistance" 		default="1.0"  />
 	
 	<arg name="enableObjectTracking" 		default="true" /> <!-- use internal kalman filter for track obstacles " -->
 	<arg name="enableOutsideControl" 		default="false" /> <!-- use internal kalman filter for track obstacles " -->	

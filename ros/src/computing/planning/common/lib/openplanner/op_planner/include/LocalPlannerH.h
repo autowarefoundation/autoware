@@ -121,6 +121,8 @@ public:
 
 	void SimulateOdoPosition(const double& dt, const VehicleState& vehicleState);
 
+	PlannerHNS::PlanningParams m_params;
+
 private:
 
 	//Obstacle avoidance functionalities
@@ -149,7 +151,7 @@ private:
 
 	bool NoWayTest(const double& min_distance, const int& iGlobalPathIndex);
 
-	PlannerHNS::PlanningParams m_params;
+
 };
 
 } /* namespace PlannerHNS */
