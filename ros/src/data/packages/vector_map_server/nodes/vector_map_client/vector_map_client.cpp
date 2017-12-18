@@ -233,11 +233,20 @@ int main(int argc, char **argv)
         case Signal::YELLOW:
           vector_marker = createVectorMarker("signal", id++, Color::YELLOW, vmap, vector);
           break;
+        case Signal::RED_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_RED, vmap, vector);
+          break;
+        case Signal::BLUE_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_GREEN, vmap, vector);
+          break;
+        case Signal::YELLOW_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_YELLOW, vmap, vector);
+          break;
         case Signal::OTHER:
           vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
           break;
         default:
-          vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
+          vector_marker = createVectorMarker("signal", id++, Color::GRAY, vmap, vector);
           break;
         }
         if (isValidMarker(vector_marker))

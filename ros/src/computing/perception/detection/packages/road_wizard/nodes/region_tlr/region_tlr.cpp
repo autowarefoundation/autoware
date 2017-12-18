@@ -92,7 +92,7 @@ static void putResult_inText(cv::Mat *image, const std::vector<Context> &context
 {
 	std::string label;
 	const int fontFace = cv::FONT_HERSHEY_COMPLEX_SMALL;
-	const float fontScale = 1.0f;
+	const float fontScale = 0.8f;
 	const int fontThickness = 1;
 	int baseline = 0;
 	CvPoint textOrg;
@@ -130,6 +130,8 @@ static void putResult_inText(cv::Mat *image, const std::vector<Context> &context
 		{
 			label += " RIGHT";
 		}
+		//add lane # text
+		label +=" " + std::to_string(ctx.closestLaneId);
 
 		cv::getTextSize(label,
 		                fontFace,
