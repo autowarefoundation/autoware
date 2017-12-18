@@ -1,3 +1,4 @@
+#include <mutex>
 #include <ros/ros.h>
 #include <ros/spinner.h>
 #include <std_msgs/Float64.h>
@@ -6,7 +7,6 @@
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <tf/transform_listener.h>
-#include <mutex>
 
 // lib
 #include <state.hpp>
@@ -19,8 +19,8 @@
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <random>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -38,8 +38,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["current_velocity"] =
       nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
   Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
-//  Subs["light_color_managed"] =
-  //    nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
   Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
   Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
   Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);

@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <cmath>
+#include <stdio.h>
 
 #include <geometry_msgs/PoseStamped.h>
-#include <jsk_rviz_plugins/OverlayText.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
+#include <jsk_rviz_plugins/OverlayText.h>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 
+#include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
-#include <autoware_msgs/CloudClusterArray.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -128,8 +128,11 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
 void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg)
 {
   // This function is a quick hack implementation.
-  // If detection result exists in DetectionArea, decisionmaker sets object detection flag(foundOthervehicleforintersectionstop).
-  // The flag is referenced in the stopline state, and if it is true it will continue to stop.
+  // If detection result exists in DetectionArea, decisionmaker sets object
+  // detection
+  // flag(foundOthervehicleforintersectionstop).
+  // The flag is referenced in the stopline state, and if it is true it will
+  // continue to stop.
   bool l_detection_flag = false;
   if (ctx->isCurrentState(state_machine::DRIVE_STATE)){
 	  if(msg.clusters.size()){
@@ -197,7 +200,12 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
   }
 }
 
-void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
+inline double getDistance(double ax, double ay, double bx, double by)
+{
+  return std::hypot(ax - bx, ay - by);
+}
+
+void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 {
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
@@ -228,7 +236,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
   }
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
-    return ((g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type & (autoware_msgs::WaypointState::TYPE_STOP | autoware_msgs::WaypointState::TYPE_STOPLINE))!=0);
+    return ((g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type &
+             (autoware_msgs::WaypointState::TYPE_STOP | autoware_msgs::WaypointState::TYPE_STOPLINE)) != 0);
   });
 
   for (auto &lane : lane_array.lanes)
@@ -242,21 +251,26 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
         geometry_msgs::Point fp =
             to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
 
-        if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
-                                        lane.waypoints.at(wp_idx).pose.pose.position.y,
-                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
+#define INTERSECT_CHECK_THRESHOLD 5.0
+        if (getDistance(bp.x, bp.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
+                        lane.waypoints.at(wp_idx).pose.pose.position.y) <= INTERSECT_CHECK_THRESHOLD)
         {
-          geometry_msgs::Point center_point;
-          center_point.x = (bp.x * 2 + fp.x) / 3;
-          center_point.y = (bp.y * 2 + fp.y) / 3;
-          if (amathutils::isPointLeftFromLine(
-                  center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
-                  lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                  lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
+          if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
+                                          lane.waypoints.at(wp_idx).pose.pose.position.y,
+                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                                          lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
           {
-            lane.waypoints.at(wp_idx).wpstate.stopline_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
-            // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+            geometry_msgs::Point center_point;
+            center_point.x = (bp.x * 2 + fp.x) / 3;
+            center_point.y = (bp.y * 2 + fp.y) / 3;
+            if (amathutils::isPointLeftFromLine(
+                    center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
+                    lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
+                    lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
+            {
+              lane.waypoints.at(wp_idx).wpstate.stopline_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
+              // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+            }
           }
         }
       }

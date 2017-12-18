@@ -357,7 +357,8 @@ void DecisionMakerNode::callbackOutStateObstacleAvoid(int status)
 void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 {
   // this state is temporary implementation.
-  // It means this state is desirable to use a way which enables the avoidance plannner such as astar, state lattice.
+  // It means this state is desirable to use a way which enables the avoidance
+  // plannner such as astar, state lattice.
 
   // if car shoud stop before avoidance,
   if (!created_shift_lane_flag_)
