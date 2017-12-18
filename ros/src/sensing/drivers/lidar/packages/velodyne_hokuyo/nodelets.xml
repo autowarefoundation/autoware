@@ -1,0 +1,31 @@
+<library path="lib/libvh_cloud_nodelet">
+  <class name="velodyne_pointcloud/vhCloudNodelet"
+         type="velodyne_pointcloud::vhCloudNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Aggregates points from multiple packets, publishing PointCloud2.
+    </description>
+  </class>
+</library>
+
+<library path="lib/libvh_ringcolors_nodelet">
+  <class name="velodyne_pointcloud/vhRingColorsNodelet"
+         type="velodyne_pointcloud::vhRingColorsNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Converts a Velodyne PointCloud2 to PointXYZRGB, assigning colors
+      for visualization of the laser rings.
+    </description>
+  </class>
+</library>
+
+<library path="lib/libvh_transform_nodelet">
+  <class name="velodyne_pointcloud/vhTransformNodelet"
+         type="velodyne_pointcloud::vhTransformNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Transforms packets into /odom frame, publishing multiple packets
+      as PointCloud2.
+    </description>
+  </class>
+</library>

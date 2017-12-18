@@ -1,0 +1,58 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <!-- parameters -->
+  <arg name="use_velodyne" default="True" />
+  <arg name="use_hokuyo" default="True" />
+  <arg name="use_velodyne_driver" default="False" />
+  <arg name="use_hokuyo_driver" default="False" />
+  <arg name="velodyne_type" default="3" />
+  <arg name="velodyne_calib_path" default="" />
+  <arg name="velodyne_topic" default="/points_raw" />
+  <arg name="use_ethernet" default="False" />
+  <arg name="ip_address" default="192.168.0.10"/>
+  <arg name="serial_port" default="/dev/ttyACM0"/>
+  <arg name="publish_intensity" default="true"/>
+  <arg name="hokuyo_topic" default="/scan" />
+  <arg name="output_topic" default="/vh/points_raw" />
+  <arg name="x" default="0.1" />
+  <arg name="y" default="0.0" />
+  <arg name="z" default="-1.0" />
+  <arg name="roll" default="0.0" />
+  <arg name="pitch" default="0.0" />
+  <arg name="yaw" default="0.0" />
+  <arg name="max_range" default="30.0" />
+
+  <!-- launch velodyne if selected -->
+	  <group if="$(arg use_velodyne_driver)">
+		<include file="$(find velodyne_hokuyo)/launch/velodyne_$(arg velodyne_type).launch">
+		  <arg name="calibration" value="$(arg velodyne_calib_path)"/>
+		  <arg name="topic_name" value="$(arg velodyne_topic)"/>
+		</include>
+	  </group>
+
+  <!-- launch hokuyo if selected -->
+	  <group if="$(arg use_hokuyo_driver)">
+		<include file="$(find velodyne_hokuyo)/launch/hokuyo_2D.launch">
+		  <arg name="use_ethernet" value="$(arg use_ethernet)"/>
+		  <arg name="ip_address" value="$(arg ip_address)"/>
+		  <arg name="serial_port" value="$(arg serial_port)"/>
+		  <arg name="publish_intensity" value="$(arg publish_intensity)"/>
+		  <arg name="hokuyo_topic" value="$(arg hokuyo_topic)"/>
+		</include>
+	  </group>
+
+  <!-- Set the coordinate transform -->
+  <node name="vel_hok_tf" pkg="tf" type="static_transform_publisher" args="$(arg x) $(arg y) $(arg z) $(arg roll) $(arg pitch) $(arg yaw) velodyne laser 10"/>
+
+  <!-- launch the sensor fusion -->  
+  <node pkg="velodyne_hokuyo" type="velodyne_hokuyo" name="velodyne_hokuyo" output="screen">
+    <param name="use_velodyne" value="$(arg use_velodyne)" />
+    <param name="use_hokuyo" value="$(arg use_hokuyo)" />
+    <param name="velodyne_topic" value="$(arg velodyne_topic)"/>
+    <param name="hokuyo_topic" value="$(arg hokuyo_topic)"/>
+    <param name="output_topic" value="$(arg output_topic)"/>
+    <param name="max_range" value="$(arg max_range)"/>
+    <remap from="velodyne_points" to="points_raw"/>
+  </node>
+
+</launch>

@@ -1,0 +1,46 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <!-- Replaced it with urg_node -->
+  <!-- declare arguments with default values -->
+    <arg name="ip_address" default=""/>
+    <arg name="serial_port" default="/dev/ttyACM0"/>
+    <arg name="serial_baud" default="115200"/>
+    <arg name="frame_id" default="/velodyne"/>
+    <arg name="calibrate_time" default="true"/>
+    <arg name="publish_intensity" default="true"/>
+    <arg name="publish_multiecho" default="false"/>
+    <arg name="angle_min" default="-1.5707963"/>
+    <arg name="angle_max" default="1.5707963"/>
+    <arg name="hokuyo_topic" default="/vh/laser_scan" />
+    <arg name="use_ethernet" default="False"/>
+
+  <group if="$(arg use_ethernet)">
+	  <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+		<param name="ip_address" value="$(arg ip_address)"/>
+		<param name="serial_port" value=""/>
+		<param name="serial_baud" value="$(arg serial_baud)"/>
+		<param name="frame_id" value="$(arg frame_id)"/>
+		<param name="calibrate_time" value="$(arg calibrate_time)"/>
+		<param name="publish_intensity" value="$(arg publish_intensity)"/>
+		<param name="publish_multiecho" value="$(arg publish_multiecho)"/>
+		<param name="angle_min" value="$(arg angle_min)"/>
+		<param name="angle_max" value="$(arg angle_max)"/>
+		<remap from="scan" to="$(arg hokuyo_topic)"/>
+	  </node>
+  </group>
+
+  <group unless="$(arg use_ethernet)">
+	  <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+		<param name="ip_address" value=""/>
+		<param name="serial_port" value="$(arg serial_port)"/>
+		<param name="serial_baud" value="$(arg serial_baud)"/>
+		<param name="frame_id" value="$(arg frame_id)"/>
+		<param name="calibrate_time" value="$(arg calibrate_time)"/>
+		<param name="publish_intensity" value="$(arg publish_intensity)"/>
+		<param name="publish_multiecho" value="$(arg publish_multiecho)"/>
+		<param name="angle_min" value="$(arg angle_min)"/>
+		<param name="angle_max" value="$(arg angle_max)"/>
+		<remap from="scan" to="$(arg hokuyo_topic)"/>
+	  </node>
+  </group>
+</launch>
