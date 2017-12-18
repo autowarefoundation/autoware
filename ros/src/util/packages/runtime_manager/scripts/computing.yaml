@@ -53,6 +53,13 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : ndt_monitor
+        desc : monitor for ndt_matching errors
+        cmd  : roslaunch ndt_localizer ndt_matching_monitor.launch
+        param: ndt_monitor
+        gui  :
+          dialog_height : 350
+          stat_topic : [ ndt_monitor ]
     - name : icp_localizer
       subs :
       - name : icp_matching
@@ -1288,6 +1295,59 @@ params :
         dash      : ''
         delim     : ':='
 
+  - name  : ndt_monitor
+    vars  :
+    - name      : threshold_warn
+      desc      : NDT matching score warning threshold
+      label     : Warning Threshold
+      min   : 0.1
+      max   : 1000
+      step  : 0.1
+      v     : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : threshold_stop
+      desc      : NDT matching score stop threshold
+      label     : Stop Threshold
+      min   : 0.1
+      max   : 1000
+      step  : 0.1
+      v     : 2.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : history_size
+      desc      : NDT matching pose history size
+      label     : History Size
+      min   : 1
+      max   : 1000
+      step  : 1
+      v     : 10
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : max_speed
+      desc      : Maximum robot speed
+      label     : Max. Speed (m/s)
+      min   : 0.1
+      max   : 10
+      step  : 0.01
+      v     : 1.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : speed_down_factor
+      desc      : Speed down factor on warning (0 -> stop)
+      label     : Speed down factor
+      min   : 0.0
+      max   : 1
+      step  : 0.01
+      v     : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : icp
     topic : /config/icp
     msg   : ConfigICP
@@ -2425,7 +2485,7 @@ params :
     - name : samplingTipMargin
       desc : Car Tip Initial Margin
       label: Tip Margin
-      min  : 2.5
+      min  : 0.0
       max  : 10.0
       v    : 4.0
       cmd_param:
@@ -2434,7 +2494,7 @@ params :
     - name : samplingOutMargin
       desc : Roll In Margin
       label: Roll In Margin
-      min  : 5.0
+      min  : 0.0
       max  : 30.0
       v    : 12.0
       cmd_param:
@@ -2477,7 +2537,7 @@ params :
     - name : minFollowingDistance
       desc : Distance to start follow Next Car
       label: Follow Distance
-      min  : 10.0
+      min  : 1.0
       max  : 50.0
       v    : 30.0
       cmd_param:
@@ -2486,7 +2546,7 @@ params :
     - name : minDistanceToAvoid
       desc : Avoidance and Following threshold Distance
       label: Avoiding Distance
-      min  : 6.0
+      min  : 0.5
       max  : 30.0
       v    : 15.0
       cmd_param:
@@ -2495,7 +2555,7 @@ params :
     - name : maxDistanceToAvoid
       desc : Distance to give up avoidance
       label: Avoidance Limit
-      min  : 1.0
+      min  : 0.5
       max  : 6.0
       v    : 4.0
       cmd_param:
@@ -2528,7 +2588,7 @@ params :
     - name : horizontalSafetyDistance
       desc : Horizontal Safety Distance
       label: Lateral Safety
-      min : 0.2
+      min : 0.0
       max : 2.0
       v   : 1.0
       cmd_param:
@@ -2537,7 +2597,7 @@ params :
     - name : verticalSafetyDistance
       desc : Vertical Safety Distance
       label: Longitudinal Safety
-      min : 0.5
+      min : 0.0
       max : 4.0
       v   : 1.0
       cmd_param:

@@ -151,6 +151,87 @@ subs :
           calibration :
             prop  : 1
             flags : [ center_v ]
+      - name : Velodyne + Hokuyo 2D URG
+        desc : Velodyne and Hokuyo 2D URG
+        run  : roslaunch velodyne_hokuyo velodyne_hokuyo.launch node_name:=velodyne_hokuyo
+        param: velodyne_hokuyo
+        gui  :
+          dialog_height : 550
+          use_velodyne  :
+            user_category : ''
+          use_hokuyo:
+            flags : [ nl ]
+          use_velodyne_driver :
+            depend : use_velodyne
+            depend_bool : 'lambda v : v == 1'
+            user_category : ''
+          use_hokuyo_driver :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          velodyne_type :
+            depend : use_velodyne
+            depend_bool : 'lambda v : v == 1'
+            user_category : ''
+          velodyne_calib_path :
+            depend : use_velodyne
+            depend_bool : 'lambda v : v == 1'
+          velodyne_topic :
+            depend : use_velodyne
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          use_hokuyo_driver :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          use_ethernet :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            user_category : ''
+            flags : [ nl ]
+          serial_port :
+            depend : use_ethernet
+            depend_bool : 'lambda v : v == 0'
+          ip_address :
+            depend : use_ethernet
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          publish_intensity :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          hokuyo_topic :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          x :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+          y :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+          z :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+          roll :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+          pitch :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+          yaw :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          max_range :
+            depend : use_hokuyo
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          output_topic :
+            user_category : ''
+          sync :
+            func : self.button_synchronization.GetValue()
+
       - name : Hokuyo TOP-URG
         desc : Hokuyo TOP-URG desc sample
         probe: 'lsusb -d 15d1: > /dev/null'
@@ -342,6 +423,170 @@ params :
 #      cmd_param :
 #        dash : ''
 #        delim: ':='
+  - name  : velodyne_hokuyo
+#    topic : /config/velodyne_hokuyo
+#    msg   : ConfigVelodyneHokuyo
+    vars  :
+    - name : use_velodyne
+      desc : Enable Velodyne sensor
+      label: Use Velodyne?
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : use_hokuyo
+      desc : Enable Hokuyo 2D sensor
+      label: Use Hokuyo?
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : use_velodyne_driver
+      desc : Launch velodyne driver?
+      label: Launch Vel. driver?
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : use_hokuyo_driver
+      desc : Launch hokuyo driver?
+      label: Launch Hok. driver?
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : velodyne_type
+      desc  : select velodyne type
+      label : Velodyne Type
+      kind  : menu
+      choices:
+      - HDL64eS2
+      - HDL64eS3
+      - HDL32e
+      - VLP16
+      descs :
+      - Velodyne HDL-64e-S2 type
+      - Velodyne HDL-64e-S3 type
+      - Velodyne HDL-32e type
+      - Velodyne VLP-16 type
+      v     : 3
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : velodyne_calib_path
+      desc  : select velodyne calibration path
+      label : Velodyne Calib. File
+      kind  : path
+      v     :
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : velodyne_topic
+      desc    : Velodyne topic
+      label   : Velodyne Topic
+      kind    : str
+      v       : /vh/velodyne_points
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : use_ethernet
+      desc  : Use Ethernet connection
+      label : Use Ethernet
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : serial_port
+      desc    : Hokuyo serial port
+      label   : Serial
+      kind    : str
+      v       : /dev/ttyACM0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : ip_address
+      desc    : Hokuyo IP address
+      label   : IP Addr.
+      kind    : str
+      v       : 192.168.0.10
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : publish_intensity
+      desc      : Enable laser intensity
+      label     : Enable intensity
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : hokuyo_topic
+      desc    : Hokuyo topic
+      label   : Hokuyo Topic
+      kind    : str
+      v       : /vh/scan
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : x
+      desc  : hokuyo's relative x coordinate
+      label : 'x:'
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : y
+      desc  : hokuyo's relative y coordinate
+      label : 'y:'
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : z
+      desc  : hokuyo's relative z coordinate
+      label : 'z:'
+      v     : 0.0
+    - name  : roll
+      desc  : hokuyo's relative roll angle
+      label : 'roll:'
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : pitch
+      desc  : hokuyo's relative pitch angle
+      label : 'pitch:'
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : yaw
+      desc  : hokuyo's relative yaw angle
+      label : 'yaw:'
+      v     : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : max_range
+      desc  : hokuyo's maximum range
+      label : 'max_range'
+      v     : 30.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_topic
+      desc    : Output topic
+      label   : Output Topic
+      kind    : str
+      v       : /vh/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : voxel_grid_filter
     topic : /config/voxel_grid_filter

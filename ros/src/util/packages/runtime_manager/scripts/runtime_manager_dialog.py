@@ -64,6 +64,7 @@ from autoware_msgs.msg import ConfigNdt
 from autoware_msgs.msg import ConfigNdtMapping
 from autoware_msgs.msg import ConfigNdtMappingOutput
 from autoware_msgs.msg import ConfigICP
+from autoware_msgs.msg import ConfigVelodyneHokuyo
 from autoware_msgs.msg import ConfigVoxelGridFilter
 from autoware_msgs.msg import ConfigRingFilter
 from autoware_msgs.msg import ConfigDistanceFilter
@@ -515,6 +516,9 @@ class MyFrame(rtmgr.MyFrame):
 	def OnClose(self, event):
 		if self.quit_select() != 'quit':
 			return
+
+		# save persistence data
+		rtmgr.MyFrame.save_persistence(self)
 
 		# kill_all
 		for proc in self.all_procs[:]: # copy
@@ -2365,7 +2369,8 @@ class VarPanel(wx.Panel):
 			self.ref = wx.Button(self, wx.ID_ANY, 'Ref')
 			self.Bind(wx.EVT_BUTTON, self.OnRef, self.ref)
 			button_color_hdr_setup(self.ref)
-			self.ref.SetMinSize((40,29))
+			#self.ref.SetMinSize((40,29)) #Very small on 4K
+			self.ref.SetSize(self.ref.GetTextExtent(self.ref.GetLabel())) #Proportional to font size
 			szr.Add(self.ref, 0, flag, 4)
 
 		if self.has_slider or self.kind == 'num':
