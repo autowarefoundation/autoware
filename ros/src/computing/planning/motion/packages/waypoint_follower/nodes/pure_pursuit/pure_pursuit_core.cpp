@@ -77,6 +77,7 @@ void PurePursuitNode::initForROS()
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
   pub2_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("ctrl_cmd", 10);
+  pub3_ = nh_.advertise<autoware_msgs::CurvatureCommandStamped>("curvature_cmd", 10);
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
@@ -105,6 +106,7 @@ void PurePursuitNode::run()
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
+    publishCurvatureCommandStamped(can_get_curvature, kappa);
 
     // for visualization with Rviz
     pub11_.publish(displayNextWaypoint(pp_.getPoseOfNextWaypoint()));
@@ -140,6 +142,18 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
   pub2_.publish(ccs);
+}
+
+void PurePursuitNode::publishCurvatureCommandStamped(const bool &can_get_curvature, const double &kappa) const
+{
+  // TODO: do we need the publishing flag?
+
+  autoware_msgs::CurvatureCommandStamped ccs;
+  ccs.header.stamp = ros::Time::now();
+  ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
+  ccs.cmd.curvature = can_get_curvature ? kappa : 0;
+
+  pub3_.publish(ccs);
 }
 
 double PurePursuitNode::computeLookaheadDistance() const
