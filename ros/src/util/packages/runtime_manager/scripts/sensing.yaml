@@ -367,6 +367,14 @@ params :
     topic : /config/voxel_grid_filter
     msg   : ConfigVoxelGridFilter
     vars  :
+    - name  : points_topic
+      desc  : input point topic to downsample
+      label : Points topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : voxel_leaf_size
       desc  : voxel_leaf_size desc sample
       label : Voxel Leaf Size
@@ -391,6 +399,14 @@ params :
     topic : /config/ring_filter
     msg   : ConfigRingFilter
     vars  :
+    - name  : points_topic
+      desc  : input point topic to downsample
+      label : Points topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : ring_div
       desc  : ring_div desc sample
       label : Ring Div
@@ -421,6 +437,14 @@ params :
     topic : /config/distance_filter
     msg   : ConfigDistanceFilter
     vars  :
+    - name  : points_topic
+      desc  : input point topic to downsample
+      label : Points topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : sample_num
       desc  : sample_num desc sample
       label : Sample Num
@@ -445,6 +469,14 @@ params :
     topic : /config/random_filter
     msg   : ConfigRandomFilter
     vars  :
+    - name  : points_topic
+      desc  : input point topic to downsample
+      label : Points topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name  : sample_num
       desc  : sample_num desc sample
       label : Sample Num
