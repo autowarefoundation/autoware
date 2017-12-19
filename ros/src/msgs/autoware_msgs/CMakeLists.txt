@@ -20,6 +20,7 @@ add_message_files(
   ColorSet.msg
   ControlCommand.msg
   CurvatureCommand.msg
+  CurvatureCommandStamped.msg
   DetectedObject.msg
   DetectedObjectArray.msg
   ExtractedPosition.msg
