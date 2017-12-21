@@ -350,7 +350,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
                    current_finalwaypoints_.waypoints.size() - 1;
   idx = idx + (current_velocity_ * param_stopline_target_ratio_);
   CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-  fprintf(stderr,"stopline_target = %d:%d-%d\n",CurrentStoplineTarget_.gid,idx, previous_idx);
   
   for(size_t i = (previous_idx>idx)?idx:previous_idx ; i <= idx; i++){
 	  if(i < current_finalwaypoints_.waypoints.size()){
