@@ -174,6 +174,15 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
       wp.wpstate.stopline_state = 0;
     }
   }
+  for (auto &lane : current_shifted_lane_array_.lanes)
+  {
+    for (auto &wp : lane.waypoints)
+    {
+	    // if stopped at stopline, to delete flags already used.
+	    if( CurrentStoplineTarget_.gid - 2 <= wp.gid && wp.gid <= CurrentStoplineTarget_.gid + 2)
+		    wp.wpstate.stopline_state = 0;
+    }
+  }
 }
 
 void DecisionMakerNode::publishControlledLaneArray(void)
