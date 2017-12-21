@@ -71,6 +71,7 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
   Pubs["detection_area"] = nh_.advertise<visualization_msgs::Marker>("/state/detection_area",1);
+  Pubs["stopline_target"] = nh_.advertise<visualization_msgs::Marker>("/state/stopline_target",1);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);

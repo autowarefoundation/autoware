@@ -7,6 +7,7 @@
 #include <autoware_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/waypoint.h>
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -112,6 +113,7 @@ private:
   std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
   double displacement_from_path_;
+  autoware_msgs::waypoint CurrentStoplineTarget_;
 
   bool foundOtherVehicleForIntersectionStop_; // In fact this should be defined as state.
   class DetectionArea
@@ -246,6 +248,7 @@ public:
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
     param_shift_width_ = DEFAULT_SHIFT_WIDTH;
     param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
+    param_stopline_target_ratio_ = 0.0;
     param_crawl_velocity_ = DEFAULT_CRAWL_VELOCITY;
     param_detection_area_rate_ = DEFAULT_DETECTION_AREA_RATE;
     param_baselink_tf_ = "base_link";

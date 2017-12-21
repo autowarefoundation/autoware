@@ -59,6 +59,7 @@ void DecisionMakerNode::displayMarker(void)
   jsk_recognition_msgs::BoundingBoxArray bbox_array;
   visualization_msgs::MarkerArray marker_array;
   visualization_msgs::Marker crossroad_marker;
+  visualization_msgs::Marker stopline_target_marker;
   visualization_msgs::Marker inside_marker;
   visualization_msgs::Marker inside_line_marker;
   visualization_msgs::Marker detection_area_marker;
@@ -74,9 +75,36 @@ void DecisionMakerNode::displayMarker(void)
   detection_area_marker.pose.position.x =  detection_area_marker.scale.x/2;
   detection_area_marker.color.g = 1;
   detection_area_marker.color.b = 0.3;
-  detection_area_marker.color.a = 0.5;
+  detection_area_marker.color.a = 0.3;
   detection_area_marker.type = visualization_msgs::Marker::CUBE;
   detection_area_marker.lifetime=ros::Duration();
+
+  stopline_target_marker = crossroad_marker;
+  stopline_target_marker.type = visualization_msgs::Marker::SPHERE;
+  stopline_target_marker.scale.x = 1;
+  stopline_target_marker.scale.y = 1;
+  stopline_target_marker.scale.z = 1;
+  stopline_target_marker.color.a = 1;
+  stopline_target_marker.color.r = 1.0;
+  stopline_target_marker.color.g = 0.0;
+  stopline_target_marker.color.b = 0.0;
+  stopline_target_marker.ns = "stopline_target";
+  stopline_target_marker.lifetime = ros::Duration();
+  stopline_target_marker.pose.position.x = CurrentStoplineTarget_.pose.pose.position.x;
+  stopline_target_marker.pose.position.y = CurrentStoplineTarget_.pose.pose.position.y;
+  stopline_target_marker.pose.position.z = CurrentStoplineTarget_.pose.pose.position.z;
+  
+  inside_marker = crossroad_marker;
+  inside_marker.scale.x = scale / 3;
+  inside_marker.scale.y = scale / 3;
+  inside_marker.scale.z = 0.4;
+  inside_marker.scale.z = 0.5;
+  inside_marker.color.a = 0.5;
+  inside_marker.color.r = 1.0;
+  inside_marker.color.g = 0.0;
+  inside_marker.color.b = 0.0;
+  inside_marker.ns = "inside";
+  inside_marker.lifetime = ros::Duration();
    
 
   inside_marker = crossroad_marker;
@@ -153,6 +181,7 @@ void DecisionMakerNode::displayMarker(void)
   Pubs["detection_area"].publish(detection_area_marker);
   Pubs["crossroad_bbox"].publish(bbox_array);
   Pubs["crossroad_marker"].publish(marker_array);
+  Pubs["stopline_target"].publish(stopline_target_marker);
   bbox_array.boxes.clear();
   // Pubs["crossroad_inside_marker"].publish(inside_marker);
   Pubs["crossroad_inside_marker"].publish(inside_line_marker);
