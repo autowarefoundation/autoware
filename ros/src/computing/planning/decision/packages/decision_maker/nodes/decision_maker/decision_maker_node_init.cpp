@@ -54,6 +54,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
 
   // pub
+  //
+  Pubs["state/stopline_wpidx"] = nh_.advertise<std_msgs::Int32>("/state/stopline_wpidx", 1, true);
 
   // for controlling other planner
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);

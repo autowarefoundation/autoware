@@ -170,6 +170,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
   {
     for (auto &wp : lane.waypoints)
     {
+
       wp.twist.twist.linear.x = 0.0;
       wp.wpstate.stopline_state = 0;
     }
@@ -191,8 +192,11 @@ void DecisionMakerNode::publishControlledLaneArray(void)
 }
 void DecisionMakerNode::publishStoppedLaneArray(void)
 {
-  updateLaneWaypointsArray();
-  Pubs["lane_waypoints_array"].publish(current_stopped_lane_array_);
+	std_msgs::Int32 msg;
+	msg.data = closest_stopline_waypoint_;
+	Pubs["state/stopline_wpidx"].publish(msg);
+  //updateLaneWaypointsArray();
+ // Pubs["lane_waypoints_array"].publish(current_stopped_lane_array_);
 }
 
 void DecisionMakerNode::changeVelocityBasedLane(void)
@@ -305,8 +309,10 @@ void DecisionMakerNode::callbackInStateAcc(int status)
 }
 void DecisionMakerNode::updateStateStop(int status)
 {
+  
   static bool timerflag;
   static ros::Timer stopping_timer;
+  
   if (status)
   {
     if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
@@ -316,12 +322,20 @@ void DecisionMakerNode::updateStateStop(int status)
                                          ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
                                          ROS_INFO("Change state to [KEEP] from [STOP]\n");
                                          timerflag = false;
+					 std_msgs::Int32 msg;
+					 msg.data = -1;
+					 Pubs["state/stopline_wpidx"].publish(msg);
                                        },
                                        this, true);
       timerflag = true;
-    }else if(foundOtherVehicleForIntersectionStop_ && timerflag){
-	    stopping_timer.stop();
-	    timerflag = false;
+    }else{
+	    if(foundOtherVehicleForIntersectionStop_ && timerflag){
+		    stopping_timer.stop();
+		    timerflag = false;
+	    }
+	    std_msgs::Int32 msg;
+	    msg.data = closest_stopline_waypoint_;
+	    Pubs["state/stopline_wpidx"].publish(msg);
     }
   }
 }
