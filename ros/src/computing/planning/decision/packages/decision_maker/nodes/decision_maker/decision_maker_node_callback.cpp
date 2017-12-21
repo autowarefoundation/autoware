@@ -345,12 +345,13 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   current_finalwaypoints_ = msg;
 
   static size_t previous_idx = 0;
-  size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
-                   param_stopline_target_waypoint_ :
-                   current_finalwaypoints_.waypoints.size() - 1;
-  idx = idx + (current_velocity_ * param_stopline_target_ratio_);
-  CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
   
+  size_t idx = param_stopline_target_waypoint_ +  (current_velocity_ * param_stopline_target_ratio_);
+  idx = current_finalwaypoints_.waypoints.size() - 1 > idx ?
+		idx : current_finalwaypoints_.waypoints.size() - 1;	  
+  
+
+  CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
   for(size_t i = (previous_idx>idx)?idx:previous_idx ; i <= idx; i++){
 	  if(i < current_finalwaypoints_.waypoints.size()){
 		  if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
