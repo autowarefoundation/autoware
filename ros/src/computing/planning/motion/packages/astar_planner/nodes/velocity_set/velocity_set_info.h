@@ -51,6 +51,7 @@ class VelocitySetInfo
   double decel_;                    // (m/s^2) deceleration
   double velocity_change_limit_;    // (m/s)
   double temporal_waypoints_size_;  // (meter)
+  int	wpidx_detectionResultByOtherNodes_; // waypoints index@finalwaypoints
 
   // ROS param
   double remove_points_upto_;
@@ -72,8 +73,15 @@ class VelocitySetInfo
   void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
+  void detectionCallback(const std_msgs::Int32 &msg);
 
   void clearPoints();
+
+
+  int 	getDetectionResultByOtherNodes() const
+  {
+	return wpidx_detectionResultByOtherNodes_;
+  }
 
   double getStopRange() const
   {

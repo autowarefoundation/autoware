@@ -49,7 +49,8 @@ VelocitySetInfo::VelocitySetInfo()
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
     set_pose_(false),
-    use_obstacle_sim_(false)
+    use_obstacle_sim_(false),
+    wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
@@ -103,6 +104,11 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
     joinPoints(obstacle_sim_points_, &points_);
     obstacle_sim_points_.clear();
   }
+}
+
+void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
+{
+    wpidx_detectionResultByOtherNodes_ = msg.data;
 }
 
 void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)

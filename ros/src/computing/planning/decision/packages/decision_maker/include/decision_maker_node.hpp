@@ -103,6 +103,8 @@ private:
 
   tf::TransformListener tflistener_baselink;
 
+  int closest_stopline_waypoint_;
+
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
@@ -265,6 +267,7 @@ public:
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;
     isManualLight = false;
+    closest_stopline_waypoint_ = -1;
   }
 
   void run(void);

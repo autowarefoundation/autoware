@@ -255,7 +255,7 @@ EControl crossWalkDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const 
 int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int closest_waypoint,
                        const autoware_msgs::lane& lane, const CrossWalk& crosswalk, double stop_range,
                        double points_threshold, const geometry_msgs::PoseStamped& localizer_pose,
-                       ObstaclePoints* obstacle_points)
+                       ObstaclePoints* obstacle_points, const int wpidx_detection_result_by_other_nodes)
 {
   int stop_obstacle_waypoint = -1;
   // start search from the closest waypoint
@@ -264,6 +264,13 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
     // reach the end of waypoints
     if (i >= static_cast<int>(lane.waypoints.size()))
       break;
+
+    // detection another nodes
+    if (wpidx_detection_result_by_other_nodes >= 0 && 
+		    lane.waypoints.at(i).gid == wpidx_detection_result_by_other_nodes){
+	    stop_obstacle_waypoint = i;
+	    break;
+    }
 
     // Detection for cross walk
     if (i == crosswalk.getDetectionWaypoint())
@@ -370,12 +377,12 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
                          const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info,
                          int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
-  if (points.empty() == true || closest_waypoint < 0)
+  if (/*points.empty() == true ||*/ closest_waypoint < 0)
     return EControl::KEEP;
 
   int stop_obstacle_waypoint =
       detectStopObstacle(points, closest_waypoint, lane, crosswalk, vs_info.getStopRange(),
-                         vs_info.getPointsThreshold(), vs_info.getLocalizerPose(), obstacle_points);
+                         vs_info.getPointsThreshold(), vs_info.getLocalizerPose(), obstacle_points, vs_info.getDetectionResultByOtherNodes());
 
   // skip searching deceleration range
   if (vs_info.getDecelerationRange() < 0.01)
@@ -530,12 +537,15 @@ int main(int argc, char** argv)
   ros::Subscriber current_vel_sub =
       nh.subscribe("current_velocity", 1, &VelocitySetPath::currentVelocityCallback, &vs_path);
 
+
+
   // velocity set info subscriber
   ros::Subscriber config_sub = nh.subscribe("config/velocity_set", 1, &VelocitySetInfo::configCallback, &vs_info);
   ros::Subscriber points_sub = nh.subscribe(points_topic, 1, &VelocitySetInfo::pointsCallback, &vs_info);
   ros::Subscriber localizer_sub = nh.subscribe("localizer_pose", 1, &VelocitySetInfo::localizerPoseCallback, &vs_info);
   ros::Subscriber control_pose_sub = nh.subscribe("current_pose", 1, &VelocitySetInfo::controlPoseCallback, &vs_info);
   ros::Subscriber obstacle_sim_points_sub = nh.subscribe("obstacle_sim_pointcloud", 1, &VelocitySetInfo::obstacleSimCallback, &vs_info);
+  ros::Subscriber detectionresult_sub = nh.subscribe("/state/stopline_wpidx", 1, &VelocitySetInfo::detectionCallback, &vs_info);
 
   // vector map subscriber
   ros::Subscriber sub_dtlane = nh.subscribe("vector_map_info/cross_walk", 1, &CrossWalk::crossWalkCallback, &crosswalk);
