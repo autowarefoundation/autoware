@@ -94,8 +94,8 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
   speed_mode.header = msg.header;
   speed_mode.mode = mode;
   speed_mode.speed = msg.cmd.linear_velocity;
-  speed_mode.acceleration_limit = 3.0;
-  speed_mode.deceleration_limit = 3.0;
+  speed_mode.acceleration_limit = acceleration_limit_;
+  speed_mode.deceleration_limit = deceleration_limit_;
 
   module_comm_msgs::SteerMode steer_mode;
   steer_mode.header = msg.header;
@@ -151,8 +151,8 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   speed_mode.header = msg->header;
   speed_mode.mode = mode;
   speed_mode.speed = msg->twist.linear.x;
-  speed_mode.acceleration_limit = 3.0;
-  speed_mode.deceleration_limit = 3.0;
+  speed_mode.acceleration_limit = acceleration_limit_;
+  speed_mode.deceleration_limit = deceleration_limit_;
 
   module_comm_msgs::SteerMode steer_mode;
   steer_mode.header = msg->header;
