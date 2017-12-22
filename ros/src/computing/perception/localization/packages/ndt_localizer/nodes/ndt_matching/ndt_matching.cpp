@@ -272,20 +272,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setResolution(ndt_res);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setResolution(ndt_res);
-		}
-		else
-		{
-          ndt.setResolution(ndt_res);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setResolution(ndt_res);
+	  }
+	  else
+	  {
+        ndt.setResolution(ndt_res);
+	  }
     }
-#endif
   }
+
   if (input->step_size != step_size)
   {
     step_size = input->step_size;
@@ -295,20 +294,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setStepSize(step_size);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setStepSize(step_size);
-		}
-		else
-		{
-          ndt.setStepSize(step_size);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setStepSize(step_size);
+	  }
+	  else
+	  {
+        ndt.setStepSize(step_size);
+	  }
     }
-#endif
   }
+
   if (input->trans_epsilon != trans_eps)
   {
     trans_eps = input->trans_epsilon;
@@ -318,20 +316,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setTransformationEpsilon(trans_eps);
-		}
-		else
-		{
-          ndt.setTransformationEpsilon(trans_eps);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setTransformationEpsilon(trans_eps);
+	  }
+	  else
+	  {
+        ndt.setTransformationEpsilon(trans_eps);
+	  }
     }
-#endif
   }
+
   if (input->max_iterations != max_iter)
   {
     max_iter = input->max_iterations;
@@ -341,19 +338,17 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setMaximumIterations(max_iter);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setMaximumIterations(max_iter);
-		}
-		else
-		{
-          ndt.setMaximumIterations(max_iter);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setMaximumIterations(max_iter);
+	  }
+	  else
+	  {
+        ndt.setMaximumIterations(max_iter);
+	  }
     }
-#endif
   }
 
   if (_use_gnss == 0 && init_pos_set == 0)
