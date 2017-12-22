@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_cv
   grid_map_msgs
   autoware_msgs
+  vector_map
 )
 find_package( OpenMP )
 if (OPENMP_FOUND)
@@ -23,7 +24,7 @@ endif()
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs autoware_msgs
+  CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs autoware_msgs vector_map
 )
 
 ###########
@@ -49,3 +50,15 @@ target_link_libraries(potential_field ${catkin_LIBRARIES})
 
 add_executable(dist_transform nodes/dist_transform/dist_transform.cpp)
 target_link_libraries(dist_transform ${catkin_LIBRARIES})
+
+add_executable(grid_map_filter
+  nodes/grid_map_filter/grid_map_filter.cpp
+  nodes/grid_map_filter/grid_map_filter_node.cpp
+)
+target_link_libraries(grid_map_filter ${catkin_LIBRARIES} vector_map)
+
+add_executable(wayarea2grid
+  nodes/wayarea2grid/wayarea2grid.cpp
+  nodes/wayarea2grid/wayarea2grid_node.cpp
+)
+target_link_libraries(wayarea2grid ${catkin_LIBRARIES} vector_map)
