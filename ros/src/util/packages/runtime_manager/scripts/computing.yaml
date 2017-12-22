@@ -1757,7 +1757,7 @@ params :
       desc  : deceleration desc sample
       label : Deceleration (m/s^2)
       min   : 0
-      max   : 5
+      max   : 20
       v     : 0.7
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample

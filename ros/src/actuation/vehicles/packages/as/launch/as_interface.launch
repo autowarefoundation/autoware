@@ -2,7 +2,7 @@
 <launch>
 
 	<arg name="acceleration_limit" default="3.0"/>
-	<arg name="deceleration_limit" default="3.0"/>
+	<arg name="deceleration_limit" default="6.0"/>
 	<arg name="max_curvature_rate" default="0.75"/>
 	<arg name="useCurvatureCmd" default="true"/>
 
