@@ -212,6 +212,7 @@ private:
   void updateStateObstacleAvoid(int status);
   void updateStateSTR(int status);
   void updateStateStop(int status);
+  void callbackOutStateStop(int status);
   void callbackInStateStop(int status);
   void callbackInStateAcc(int status);
   void callbackInStateDec(int status);
