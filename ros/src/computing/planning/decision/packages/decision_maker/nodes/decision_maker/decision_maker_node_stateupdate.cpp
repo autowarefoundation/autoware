@@ -23,6 +23,8 @@ void DecisionMakerNode::setupStateCallback(void)
                              std::bind(&DecisionMakerNode::updateStateStop, this, 1));
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_STOPLINE_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateStop, this, 1));
+  ctx->setCallbackOutFunc(state_machine::DRIVE_ACC_STOPLINE_STATE,
+                         std::bind(&DecisionMakerNode::callbackOutStateStop, this, 1));
 
   // stopping state
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_ACC_STOP_STATE,
@@ -396,6 +398,12 @@ void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 void DecisionMakerNode::callbackInStateStop(int status)
 {
   publishStoppedLaneArray();
+}
+void DecisionMakerNode::callbackOutStateStop(int status)
+{
+	std_msgs::Int32 msg;
+	msg.data = -1;
+	Pubs["state/stopline_wpidx"].publish(msg);
 }
 
 void DecisionMakerNode::updateStateSTR(int status)
