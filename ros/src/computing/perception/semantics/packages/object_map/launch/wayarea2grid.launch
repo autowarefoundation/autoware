@@ -1,0 +1,27 @@
+<launch>
+  <!-- node parameters -->
+  <arg name="sensor_frame" default="velodyne" />
+  <arg name="map_frame" default="map" />
+  <arg name="map_resolution" default="0.2" />
+  <arg name="map_length_x" default="150" />
+  <arg name="map_length_y" default="30" />
+  <arg name="map_position_x" default="20" />
+  <arg name="map_position_y" default="0" />
+
+  <!-- Launch node -->
+  <node pkg="object_map" type="wayarea2grid" name="wayarea2grid" output="log">
+    <param name="sensor_frame" value="$(arg sensor_frame)" />
+    <param name="map_frame" value="$(arg map_frame)" />
+    <param name="map_resolution" value="$(arg map_resolution)" />
+    <param name="map_length_x" value="$(arg map_length_x)" />
+    <param name="map_length_y" value="$(arg map_length_y)" />
+    <param name="map_position_x" value="$(arg map_position_x)" />
+    <param name="map_position_y" value="$(arg map_position_y)" />
+  </node>
+
+<!-- Launch the grid map visualizer -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="wayarea2grid_visualization" output="screen">
+    <rosparam command="load" file="$(find object_map)/config/wayarea2grid.yaml" />
+  </node>
+
+</launch>
