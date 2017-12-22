@@ -452,6 +452,28 @@ subs :
       cmd  : roslaunch object_map potential_field.launch
       param: potential_field
 
+    - name : grid_map_filter
+      desc : filter OccupancyGrid with some functions
+      cmd  : roslaunch object_map grid_map_filter.launch
+      param: grid_map_filter
+      gui  :
+        map_topic :
+          flags : [nl ]
+        use_wayarea :
+          flags : [nl ]
+        dist_transform_distance:
+          depend : use_dist_transform
+          depend_bool : 'lambda v : v == 1'
+        fill_circle_cost_threshold:
+          depend : use_fill_circle
+          depend_bool : 'lambda v : v == 1'
+        circle_radius:
+          depend : use_fill_circle
+          depend_bool : 'lambda v : v == 1'
+        map_frame:
+          depend : use_wayarea
+          depend_bool : 'lambda v : v == 1'
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -3475,3 +3497,72 @@ params :
         dash      : ''
         delim     : ':='
 
+  - name : grid_map_filter
+    vars :
+    - name      : map_topic
+      desc      : Subscribing topic (OccupancyGrid message)
+      label     : Input OccupancyGrid Topic
+      kind      : str
+      v         : /realtime_cost_map
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name : use_dist_transform
+      desc : apply distance transform to OccupancyGrid
+      label: Use Distance Transform
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : dist_transform_distance
+      desc      : max distance for distance transform
+      label     : Max Distance
+      min       : 0.0
+      max       : 10.0
+      v         : 2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name : use_fill_circle
+      desc : fill occupied cells with circle
+      label: Use Fill Circle
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : fill_circle_cost_threshold
+      desc      : cells above this value are occupied (0 ~ 100)
+      label     : Cost Threshold
+      min       : 0
+      max       : 100
+      v         : 20
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : circle_radius
+      desc      : radius of circles
+      label     : Circle Radius [m]
+      min       : 0.0
+      max       : 10.0
+      v         : 1.7
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name : use_wayarea
+      desc : use wayarea in Vector Map
+      label: Use Wayarea
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : map_frame
+      desc      : frame of Vector Map
+      label     : Vector Map Frame
+      kind      : str
+      v         : map
+      cmd_param :
+        dash      : ''
+        delim     : ':='
