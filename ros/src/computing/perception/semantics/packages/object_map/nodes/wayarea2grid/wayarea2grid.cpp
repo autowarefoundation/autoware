@@ -6,7 +6,6 @@ namespace object_map
 
 // Constructor
 WayareaToGrid::WayareaToGrid() :
-    nh_("~"),
     private_nh_("~")
 {
   initForROS();

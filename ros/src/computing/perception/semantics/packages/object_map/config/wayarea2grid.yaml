@@ -1,4 +1,4 @@
-grid_map_topic: /wayarea2grid/wayarea_grid_map
+grid_map_topic: /wayarea_grid_map
 grid_map_visualizations:
   - name: wayarea
     type: occupancy_grid
