@@ -474,6 +474,11 @@ subs :
           depend : use_wayarea
           depend_bool : 'lambda v : v == 1'
 
+    - name : wayarea2grid
+      desc : convert wayarea to OccupancyGrid
+      cmd  : roslaunch object_map wayarea2grid.launch
+      param: wayarea2grid
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -3563,6 +3568,70 @@ params :
       label     : Vector Map Frame
       kind      : str
       v         : map
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : wayarea2grid
+    vars :
+    - name      : sensor_frame
+      desc      : origin of OccupancyGrid
+      label     : Grid Map Frame
+      kind      : str
+      v         : velodyne
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_frame
+      desc      : frame of Vector Map
+      label     : Vector Map Frame
+      kind      : str
+      v         : map
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_resolution
+      desc      : Map resolution [meter]
+      label     : Resolution [m]
+      min       : 0.0
+      max       : 5.0
+      v         : 0.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_length_x
+      desc      : map length x [meter]
+      label     : Map Length x [m]
+      min       : 0
+      max       : 1000
+      v         : 150
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_length_y
+      desc      : map length y [meter]
+      label     : Map Length y [m]
+      min       : 0
+      max       : 1000
+      v         : 30
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_position_x
+      desc      : map position x [meter]
+      label     : Map Position x [m]
+      min       : -500
+      max       : 500
+      v         : 20
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_position_y
+      desc      : map position y [meter]
+      label     : Map Position y [m]
+      min       : -500
+      max       : 500
+      v         : 0.0
       cmd_param :
         dash      : ''
         delim     : ':='
