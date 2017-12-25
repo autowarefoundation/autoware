@@ -734,6 +734,13 @@ void VectorMap::subscribe(ros::NodeHandle& nh, category_t category)
 
 void VectorMap::subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout)
 {
+  // wait for clock
+  ros::Rate wait_rate(10);
+  while (ros::ok() && ros::Time::now().isZero())
+  {
+    wait_rate.sleep();
+  }
+
   registerSubscriber(nh, category);
   ros::Rate rate(1);
   ros::Time end = ros::Time::now() + timeout;
