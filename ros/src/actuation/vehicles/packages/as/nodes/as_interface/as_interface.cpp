@@ -147,18 +147,21 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
     mode = 0;
   }
 
+  double _minimum_linear_x = 1e-6;
+  double _speed = msg->twist.linear.x >= _minimum_linear_x? msg->twist.linear.x : _minimum_linear_x;
+  double _curvature = msg->twist.angular.z / _speed;
+
   module_comm_msgs::SpeedMode speed_mode;
   speed_mode.header = msg->header;
   speed_mode.mode = mode;
-  speed_mode.speed = msg->twist.linear.x;
+  speed_mode.speed = _speed;
   speed_mode.acceleration_limit = acceleration_limit_;
   speed_mode.deceleration_limit = deceleration_limit_;
 
   module_comm_msgs::SteerMode steer_mode;
   steer_mode.header = msg->header;
   steer_mode.mode = mode;
-  double curvature = msg->twist.linear.x?msg->twist.angular.z / msg->twist.linear.x:0.0;
-  steer_mode.curvature = msg->twist.linear.x <= 0 ? 0 : curvature;
+  steer_mode.curvature = _curvature;
   steer_mode.max_curvature_rate = 0.75;
 
   platform_comm_msgs::TurnSignalCommand turn_signal;
