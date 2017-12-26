@@ -43,6 +43,8 @@ set(PLANNERH_SRC
 		src/LocalPlannerH.cpp
 		src/PlanningHelpers.cpp
 		src/TrajectoryPrediction.cpp
+		src/BehaviorPrediction.cpp
+		src/DecisionMaker.cpp
 )
 
 ## Declare a cpp library

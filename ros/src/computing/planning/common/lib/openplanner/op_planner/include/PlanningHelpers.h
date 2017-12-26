@@ -101,6 +101,8 @@ public:
 	//static double CalcAngleAndCostSimple(std::vector<WayPoint>& path, const double& lastCost = 0);
 	static double CalcAngleAndCostAndCurvatureAnd2D(std::vector<WayPoint>& path, const double& lastCost = 0);
 
+	static void PredictConstantTimeCostForTrajectory(std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& currPose, const double& minVelocity, const double& minDist);
+
 	static double GetAccurateDistanceOnTrajectory(std::vector<WayPoint>& path, const int& start_index, const WayPoint& p);
 
 	static void ExtractPartFromPointToDistance(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
@@ -108,6 +110,8 @@ public:
 
 	static void ExtractPartFromPointToDistanceFast(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
 				const double& pathDensity, std::vector<WayPoint>& extractedPath, const double& SmoothDataWeight, const double& SmoothWeight, const double& SmoothTolerance);
+	static void ExtractPartFromPointToDistanceDirectionFast(const std::vector<WayPoint>& originalPath, const WayPoint& pos, const double& minDistance,
+			const double& pathDensity, std::vector<WayPoint>& extractedPath);
 
 	static void CalculateRollInTrajectories(const WayPoint& carPos, const double& speed, const std::vector<WayPoint>& originalCenter, int& start_index,
 			int& end_index, std::vector<double>& end_laterals ,

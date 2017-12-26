@@ -223,7 +223,7 @@ void OpenPlannerSimulator::InitializeSimuCar(PlannerHNS::WayPoint start_pose)
 	m_LocalPlanner.m_TotalPath.clear();
 	m_LocalPlanner.m_Path.clear();
 	m_LocalPlanner.m_pCurrentBehaviorState->m_Behavior = PlannerHNS::INITIAL_STATE;
-	m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = 1;
+
 	m_LocalPlanner.FirstLocalizeMe(start_pose);
 	m_LocalPlanner.LocalizeMe(0);
 

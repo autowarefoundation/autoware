@@ -698,6 +698,7 @@ public:
 	double followDistance;
 	LIGHT_INDICATOR indicator;
 	bool bNewPlan;
+	int iTrajectory;
 
 
 	BehaviorState()
@@ -710,6 +711,7 @@ public:
 		followDistance = 0;
 		indicator  = INDICATOR_NONE;
 		bNewPlan = false;
+		iTrajectory = -1;
 
 	}
 
@@ -785,14 +787,14 @@ public:
 	double verticalSafetyDistance;
 	double horizontalSafetyDistancel;
 
+	int nReliableCount;
+
 	bool 	enableLaneChange;
 	bool 	enableSwerving;
 	bool 	enableFollowing;
 	bool 	enableHeadingSmoothing;
 	bool 	enableTrafficLightBehavior;
 	bool 	enableStopSignBehavior;
-
-	bool 	enabTrajectoryVelocities;
 
 	PlanningParams()
 	{
@@ -815,9 +817,11 @@ public:
 		smoothingSmoothWeight			= 0.2;
 		smoothingToleranceError			= 0.05;
 
-		additionalBrakingDistance		= 10.0;
+		additionalBrakingDistance		= 1.0;
 		verticalSafetyDistance 			= 0.0;
 		horizontalSafetyDistancel		= 0.0;
+
+		nReliableCount					= 2;
 
 		enableHeadingSmoothing			= false;
 		enableSwerving 					= false;
@@ -825,7 +829,6 @@ public:
 		enableTrafficLightBehavior		= false;
 		enableLaneChange 				= false;
 		enableStopSignBehavior			= false;
-		enabTrajectoryVelocities 		= false;
 	}
 };
 
@@ -886,8 +889,6 @@ public:
 	bool 				bRePlan;
 	double 				currentVelocity;
 	double				minStoppingDistance; //comfortably
-	int 				bOutsideControl; // 0 waiting, 1 start, 2 Green Traffic Light, 3 Red Traffic Light, 5 Emergency Stop
-	bool				bGreenOutsideControl;
 	std::vector<double> stoppingDistances;
 
 
@@ -909,8 +910,6 @@ public:
 		prevGoalID				= -1;
 		currentVelocity 		= 0;
 		minStoppingDistance		= 1;
-		bOutsideControl			= 0;
-		bGreenOutsideControl	= false;
 		//distance to stop
 		distanceToNext			= -1;
 		velocityOfNext			= 0;
@@ -1044,15 +1043,15 @@ public:
 	{
 		std::ostringstream str;
 		str.precision(4);
-		str << "LaneIndex    : " << lane_index;
-		str << ", Index      : " << relative_index;
-		str << ", TotalCost  : " << cost;
-		str << ", Priority   : " << priority_cost;
-		str << ", Transition : " << transition_cost;
-		str << ", Lateral    : " << lateral_cost;
-		str << ", Longitu    : " << longitudinal_cost;
-		str << ", LaneChange : " << lane_change_cost;
-		str << ", Blocked    : " << bBlocked;
+		str << "LI   : " << lane_index;
+		str << ", In : " << relative_index;
+		str << ", Co : " << cost;
+		str << ", Pr : " << priority_cost;
+		str << ", Tr : " << transition_cost;
+		str << ", La : " << lateral_cost;
+		str << ", Lo : " << longitudinal_cost;
+		str << ", Ln : " << lane_change_cost;
+		str << ", Bl : " << bBlocked;
 		str << "\n";
 		for (unsigned int i=0; i<lateral_costs.size(); i++ )
 		{
