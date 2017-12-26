@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: kvaser
+Description: Description of kvaser
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: message_runtime std_msgs visualization_msgs

@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: points_downsampler
+Description: Description of points_downsampler
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/devel/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: sensor_msgs

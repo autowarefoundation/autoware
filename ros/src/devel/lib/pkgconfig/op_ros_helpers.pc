@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: op_ros_helpers
+Description: Description of op_ros_helpers
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/common/lib/openplanner/op_ros_helpers/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lop_ros_helpers
+Requires: roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu waypoint_follower

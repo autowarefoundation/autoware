@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: op_simulation_package
+Description: Description of op_simulation_package
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/motion/packages/op_simulation_package/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu op_ros_helpers waypoint_follower

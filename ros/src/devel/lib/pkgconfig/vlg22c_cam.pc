@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: vlg22c_cam
+Description: Description of vlg22c_cam
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lvlg22c_cam
+Requires: 

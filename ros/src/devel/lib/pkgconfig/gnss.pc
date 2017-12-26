@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: gnss
+Description: Description of gnss
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/localization/lib/gnss/include/gnss
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lgnss
+Requires: 

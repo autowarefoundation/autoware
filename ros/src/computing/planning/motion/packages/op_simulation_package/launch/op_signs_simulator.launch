@@ -1,0 +1,19 @@
+<!-- -->
+<launch>
+	<arg name="FirstSignsListIds"			default=",9,10," />
+	<arg name="FirstGreenTime"				default="15" />
+	<arg name="SecondSignsListIds"			default=",7,8," />
+	<arg name="SecondGreenTime"				default="15" />
+	<arg name="FirstYellowTime"				default="5" />
+	<arg name="SecondYellowTime"			default="5" />
+		
+	<node pkg="op_simulation_package" type="op_signs_simulator" name="op_signs_simulator" output="screen">		
+		<param name="FirstSignsListIds" 			value="$(arg FirstSignsListIds)" />		
+		<param name="SecondSignsListIds" 			value="$(arg SecondSignsListIds)" />		
+		<param name="FirstGreenTime" 				value="$(arg FirstGreenTime)" />
+		<param name="SecondGreenTime" 				value="$(arg SecondGreenTime)" />
+		<param name="FirstYellowTime" 				value="$(arg FirstYellowTime)" />
+		<param name="SecondYellowTime" 				value="$(arg SecondYellowTime)" />
+	</node>
+
+</launch>

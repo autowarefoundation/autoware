@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: registration
+Description: Description of registration
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/perception/localization/lib/fast_pcl/registration/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -lfast_pcl_registration
+Requires: 

@@ -1,0 +1,12 @@
+<launch>
+	<!-- Behavior selector specific parameters -->
+	
+	<arg name="evidence_tust_number" 	default="25"/>
+			
+	<node pkg="op_local_planner" type="op_behavior_selector" name="op_behavior_selector" output="screen">
+	
+	<param name="evidence_tust_number" 	value="$(arg evidence_tust_number)"/>				
+			
+	</node>				
+			
+</launch>

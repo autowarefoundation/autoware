@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: lidar_tracker
+Description: Description of lidar_tracker
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: rosinterface

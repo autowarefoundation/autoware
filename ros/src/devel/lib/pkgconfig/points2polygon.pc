@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: points2polygon
+Description: Description of points2polygon
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: autoware_msgs

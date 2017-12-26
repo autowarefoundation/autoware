@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: synchronization
+Description: Description of synchronization
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: autoware_msgs points2image message_runtime std_msgs

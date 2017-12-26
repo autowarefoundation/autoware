@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: ff_waypoint_follower
+Description: Description of ff_waypoint_follower
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/motion/packages/ff_waypoint_follower/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: roscpp geometry_msgs runtime_manager map_file op_utility op_planner op_simu waypoint_follower

@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: cv_tracker
+Description: Description of cv_tracker
+Version: 1.5.1
+Cflags: 
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: libdpm_ocv libdpm_ttic fusion kf std_msgs geometry_msgs autoware_msgs

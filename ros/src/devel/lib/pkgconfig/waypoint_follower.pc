@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: waypoint_follower
+Description: Description of waypoint_follower
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/motion/packages/waypoint_follower/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib -llibwaypoint_follower
+Requires: roscpp tf autoware_msgs

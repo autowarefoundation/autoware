@@ -6,4 +6,24 @@ geometry_msgs/PoseStamped pose
 geometry_msgs/TwistStamped twist
 dtlane dtlane
 int32 change_flag
+
+uint32 lane_id
+uint32 left_lane_id
+uint32 right_lane_id
+uint32 stop_line_id
+
+# Lane Direction
+# FORWARD				= 0
+# FORWARD_LEFT	 		= 1
+# FORWARD_RIGHT			= 2
+# BACKWARD				= 3 
+# BACKWARD_LEFT			= 4
+# BACKWARD_RIGHT		= 5
+# STANDSTILL	 		= 6
+uint32 direction
+
+float32 cost
+float32 time_cost
+
 WaypointState wpstate
+

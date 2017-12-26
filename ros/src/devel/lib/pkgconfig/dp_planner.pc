@@ -1,0 +1,8 @@
+prefix=/home/hatem/autoware_openplanner/Autoware/ros/src/devel
+
+Name: dp_planner
+Description: Description of dp_planner
+Version: 1.5.1
+Cflags: -I/home/hatem/autoware_openplanner/Autoware/ros/src/computing/planning/motion/packages/dp_planner/include
+Libs: -L/home/hatem/autoware_openplanner/Autoware/ros/src/devel/lib 
+Requires: roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu waypoint_follower
