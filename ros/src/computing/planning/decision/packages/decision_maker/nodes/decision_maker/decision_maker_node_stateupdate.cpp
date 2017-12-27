@@ -18,7 +18,7 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_STR_RIGHT_STATE,
                              std::bind(&DecisionMakerNode::updateStateSTR, this, 2));
 
-  // temporary stopping state
+  // stopline stop state
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_ACC_STOPLINE_STATE,
                              std::bind(&DecisionMakerNode::updateStateStop, this, 1));
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_STOPLINE_STATE,
@@ -36,6 +36,7 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::StoplinePlanIn, this, 1));
   ctx->setCallbackOutFunc(state_machine::DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE,
                          std::bind(&DecisionMakerNode::StoplinePlanOut, this, 1));
+ 
   // speed keep(original speed) state
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_KEEP_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateKeep, this, 1));
@@ -88,6 +89,13 @@ void DecisionMakerNode::publishLightColor(int status)
   autoware_msgs::traffic_light msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
+}
+
+void DecisionMakerNode::publishStoplineWaypointIdx(int wp_idx)
+{
+  std_msgs::Int32 msg;
+  msg.data = wp_idx;
+  Pubs["state/stopline_wpidx"].publish(msg);
 }
 
 #define SHIFTED_LANE_FLAG -99999
@@ -194,11 +202,8 @@ void DecisionMakerNode::publishControlledLaneArray(void)
 }
 void DecisionMakerNode::publishStoppedLaneArray(void)
 {
-	std_msgs::Int32 msg;
-	msg.data = closest_stopline_waypoint_;
-	Pubs["state/stopline_wpidx"].publish(msg);
-  //updateLaneWaypointsArray();
- // Pubs["lane_waypoints_array"].publish(current_stopped_lane_array_);
+  updateLaneWaypointsArray();
+  Pubs["lane_waypoints_array"].publish(current_stopped_lane_array_);
 }
 
 void DecisionMakerNode::changeVelocityBasedLane(void)
@@ -251,12 +256,16 @@ void DecisionMakerNode::setAllStoplineStop(void){
   }
 }
 
-void DecisionMakerNode::StoplinePlanIn(int status){
+
+
+void DecisionMakerNode::StoplinePlanIn(int status)
+{
 	setAllStoplineStop();
 	changeVelocityBasedLane();
 	publishControlledLaneArray();
 }
-void DecisionMakerNode::StoplinePlanOut(int status){
+void DecisionMakerNode::StoplinePlanOut(int status)
+{
 	current_shifted_lane_array_ = current_based_lane_array_;
 	changeVelocityBasedLane();
 	publishControlledLaneArray();
@@ -309,6 +318,8 @@ void DecisionMakerNode::callbackInStateAcc(int status)
   changeVelocityLane(status);
   publishControlledLaneArray();
 }
+
+// for stopping state(stopline/stop)
 void DecisionMakerNode::updateStateStop(int status)
 {
   
@@ -324,9 +335,6 @@ void DecisionMakerNode::updateStateStop(int status)
                                          ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
                                          ROS_INFO("Change state to [KEEP] from [STOP]\n");
                                          timerflag = false;
-					 std_msgs::Int32 msg;
-					 msg.data = -1;
-					 Pubs["state/stopline_wpidx"].publish(msg);
                                        },
                                        this, true);
       timerflag = true;
@@ -335,12 +343,25 @@ void DecisionMakerNode::updateStateStop(int status)
 		    stopping_timer.stop();
 		    timerflag = false;
 	    }
-	    std_msgs::Int32 msg;
-	    msg.data = closest_stopline_waypoint_;
-	    Pubs["state/stopline_wpidx"].publish(msg);
+	    publishStoplineWaypointIdx(closest_stopline_waypoint_);
     }
   }
 }
+void DecisionMakerNode::callbackInStateStop(int status)
+{
+  if(!status)/*not a stopline*/
+	publishStoppedLaneArray();
+  else /* handling stopline */
+	publishStoplineWaypointIdx(closest_stopline_waypoint_);
+}
+void DecisionMakerNode::callbackOutStateStop(int status)
+{
+  if(status){
+	closest_stopline_waypoint_= -1;
+	publishStoplineWaypointIdx(closest_stopline_waypoint_);
+  }
+}
+
 
 void DecisionMakerNode::updateStateObstacleAvoid(int status)
 {
@@ -395,17 +416,6 @@ void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 
   changeVelocityBasedLane();
 }
-void DecisionMakerNode::callbackInStateStop(int status)
-{
-  publishStoppedLaneArray();
-}
-void DecisionMakerNode::callbackOutStateStop(int status)
-{
-	std_msgs::Int32 msg;
-	msg.data = -1;
-	Pubs["state/stopline_wpidx"].publish(msg);
-}
-
 void DecisionMakerNode::updateStateSTR(int status)
 {
   autoware_msgs::lamp_cmd lamp_msg;
