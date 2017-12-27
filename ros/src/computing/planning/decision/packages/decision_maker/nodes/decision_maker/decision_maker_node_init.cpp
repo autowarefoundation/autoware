@@ -65,10 +65,9 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // for controlling vehicle
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
-  Pubs["emergency"] =
 
-      // for visualize status
-      Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
+  // for visualize status
+  Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
   Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
