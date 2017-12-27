@@ -529,7 +529,7 @@ __global__ void computeHessianListS0(float *trans_x, float *trans_y, float *tran
 													double *icov00, double *icov01, double *icov02,
 													double *icov10, double *icov11, double *icov12,
 													double *icov20, double *icov21, double *icov22,
-													double *point_gradients0, double *point_gradients1, double *point_gradients2,
+													double *point_gradients,
 													double *tmp_hessian,
 													int valid_voxel_num)
 {
@@ -538,12 +538,12 @@ __global__ void computeHessianListS0(float *trans_x, float *trans_y, float *tran
 	int col = blockIdx.y;
 
 	if (col < 6) {
-		double *tmp_pg0 = point_gradients0 + col * valid_points_num;
-		double *tmp_pg1 = point_gradients1 + 6 * valid_points_num;
-		double *tmp_pg2 = point_gradients2 + 6 * valid_points_num;
+		double *tmp_pg0 = point_gradients + col * valid_points_num;
+		double *tmp_pg1 = tmp_pg0 + 6 * valid_points_num;
+		double *tmp_pg2 = tmp_pg1 + 6 * valid_points_num;
 		double *tmp_h = tmp_hessian + col * valid_voxel_num;
 
-		for (int i = id; i < valid_points_num && col < 6; i += stride) {
+		for (int i = id; i < valid_points_num; i += stride) {
 			int pid = valid_points[i];
 			double d_x = static_cast<double>(trans_x[pid]);
 			double d_y = static_cast<double>(trans_y[pid]);
@@ -876,7 +876,7 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
 												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
 												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
-												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
+												point_gradients,
 												tmp_hessian, valid_voxel_num);
 		checkCudaErrors(cudaGetLastError());
 		grid.z = 6;
@@ -1495,7 +1495,7 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
 												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
 												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
-												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
+												point_gradients,
 												tmp_hessian, valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
 
