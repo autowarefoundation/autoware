@@ -193,6 +193,7 @@ private:
   double calcPosesAngleDiffN(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
   double getPoseAngle(const geometry_msgs::Pose &p);
 
+  /* for planning according to state*/
   void publishStoppedLaneArray(void);
   void publishControlledLaneArray(void);
   void updateLaneWaypointsArray(void);
@@ -201,9 +202,11 @@ private:
   void createShiftLane(void);
   void changeShiftLane(void);
   void removeShiftLane(void);
-
-
   void setAllStoplineStop(void);
+  void publishStoplineWaypointIdx(int wp_idx);
+
+
+  // callback by state
   void StoplinePlanIn(int status);
   void StoplinePlanOut(int status);
   void publishLightColor(int status);
