@@ -108,10 +108,8 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
   turn_signal.mode = mode;
 
   platform_comm_msgs::GearCommand gear_comm;
-  // gear_comm.header = msg->header;
   gear_comm.header.stamp = ros::Time::now();
   gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
-  // gear_comm.command.gear = platform_comm_msgs::Gear::DRIVE;
 
   std::cout << "mode: "  << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
@@ -121,18 +119,8 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
   steer_mode_pub_.publish(steer_mode);
   turn_signal_pub_.publish(turn_signal);
 
-  // // publish only when mode has changed
-  // //
-  //static int previous_mode = mode;
-  //if (mode != previous_mode)
-  //{
-    //std::cout << "changing gear: " << gear_comm.command.gear << "\n";
   std::cout << "GEAR COMM: " << gear_comm << "\n";
   gear_pub_.publish(gear_comm);
-   //gear_pub_.publish(gear_comm);
-  // }
-  // previous_mode = mode;
-
 }
 
 void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg)
@@ -169,10 +157,8 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   turn_signal.mode = mode;
 
   platform_comm_msgs::GearCommand gear_comm;
-  // gear_comm.header = msg->header;
   gear_comm.header.stamp = ros::Time::now();
   gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
-  // gear_comm.command.gear = platform_comm_msgs::Gear::DRIVE;
 
   std::cout << "mode: "  << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
@@ -182,18 +168,8 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   steer_mode_pub_.publish(steer_mode);
   turn_signal_pub_.publish(turn_signal);
 
-  // // publish only when mode has changed
-  // //
-  //static int previous_mode = mode;
-  //if (mode != previous_mode)
-  //{
-    //std::cout << "changing gear: " << gear_comm.command.gear << "\n";
   std::cout << "GEAR COMM: " << gear_comm << "\n";
   gear_pub_.publish(gear_comm);
-   //gear_pub_.publish(gear_comm);
-  // }
-  // previous_mode = mode;
-
 }
 
 void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr &msg)
