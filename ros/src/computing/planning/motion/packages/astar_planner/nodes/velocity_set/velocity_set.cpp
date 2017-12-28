@@ -266,7 +266,7 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
       break;
 
     // detection another nodes
-    if (wpidx_detection_result_by_other_nodes >= 0 && 
+    if (wpidx_detection_result_by_other_nodes >= 0 &&
 		    lane.waypoints.at(i).gid == wpidx_detection_result_by_other_nodes){
 	    stop_obstacle_waypoint = i;
 	    break;
@@ -377,7 +377,8 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
                          const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info,
                          int* obstacle_waypoint, ObstaclePoints* obstacle_points)
 {
-  if (/*points.empty() == true ||*/ closest_waypoint < 0)
+  // no input for detection || no closest waypoint
+  if ((points.empty() == true && vs_info.getDetectionResultByOtherNodes() == -1) || closest_waypoint < 0)
     return EControl::KEEP;
 
   int stop_obstacle_waypoint =
