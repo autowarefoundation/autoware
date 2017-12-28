@@ -78,9 +78,9 @@ class VelocitySetInfo
   void clearPoints();
 
 
-  int 	getDetectionResultByOtherNodes() const
+  int getDetectionResultByOtherNodes() const
   {
-	return wpidx_detectionResultByOtherNodes_;
+	  return wpidx_detectionResultByOtherNodes_;
   }
 
   double getStopRange() const
