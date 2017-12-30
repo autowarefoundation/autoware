@@ -140,6 +140,30 @@ void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZ
 	}
 }
 
+void GNormalDistributionsTransform::setInputTarget(pcl::PointXYZI *input, int size)
+{
+	// Copy input map data from the host memory to the GPU memory
+	GRegistration::setInputTarget(input, size);
+
+	// Build the voxel grid
+	if (target_points_number_ != 0) {
+		voxel_grid_.setLeafSize(resolution_, resolution_, resolution_);
+		voxel_grid_.setInput(target_x_, target_y_, target_z_, target_points_number_);
+	}
+}
+
+void GNormalDistributionsTransform::setInputTarget(pcl::PointXYZ *input, int size)
+{
+	// Copy input map data from the host memory to the GPU memory
+	GRegistration::setInputTarget(input, size);
+
+	// Build the voxel grid
+	if (target_points_number_ != 0) {
+		voxel_grid_.setLeafSize(resolution_, resolution_, resolution_);
+		voxel_grid_.setInput(target_x_, target_y_, target_z_, target_points_number_);
+	}
+}
+
 void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess)
 {
 
@@ -220,19 +244,18 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 }
 
 /* First step of computing point gradients */
-__global__ void computePointGradients(float *x, float *y, float *z, int points_num,
+__global__ void computePointGradients0(float *x, float *y, float *z, int points_num,
 													int *valid_points, int valid_points_num,
 													double *dj_ang,
 													double *pg00, double *pg11, double *pg22,
-													double *pg13, double *pg23, double *pg04, double *pg14,
-													double *pg24, double *pg05, double *pg15, double *pg25)
+													double *pg13, double *pg23, double *pg04, double *pg14)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
-	__shared__ double j_ang[24];
+	__shared__ double j_ang[12];
 
 
-	if (threadIdx.x < 24) {
+	if (threadIdx.x < 12) {
 		j_ang[threadIdx.x] = dj_ang[threadIdx.x];
 	}
 
@@ -256,11 +279,40 @@ __global__ void computePointGradients(float *x, float *y, float *z, int points_n
 		pg23[i] = o_x * j_ang[3] + o_y * j_ang[4] + o_z * j_ang[5];
 		pg04[i] = o_x * j_ang[6] + o_y * j_ang[7] + o_z * j_ang[8];
 		pg14[i] = o_x * j_ang[9] + o_y * j_ang[10] + o_z * j_ang[11];
+	}
+}
 
-		pg24[i] = o_x * j_ang[12] + o_y * j_ang[13] + o_z * j_ang[14];
-		pg05[i] = o_x * j_ang[15] + o_y * j_ang[16] + o_z * j_ang[17];
-		pg15[i] = o_x * j_ang[18] + o_y * j_ang[19] + o_z * j_ang[20];
-		pg25[i] = o_x * j_ang[21] + o_y * j_ang[22] + o_z * j_ang[23];
+/* Second step of computing point gradients */
+__global__ void computePointGradients1(float *x, float *y, float *z, int points_num,
+													int *valid_points, int valid_points_num,
+													double *dj_ang,
+													double *pg24, double *pg05, double *pg15, double *pg25)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+	int stride = blockDim.x * gridDim.x;
+	__shared__ double j_ang[12];
+
+
+	if (threadIdx.x < 12) {
+		j_ang[threadIdx.x] = dj_ang[threadIdx.x + 12];
+	}
+
+	__syncthreads();
+
+	for (int i = id; i < valid_points_num; i += stride) {
+		int pid = valid_points[i];
+
+		//Orignal coordinates
+		double o_x = static_cast<double>(x[pid]);
+		double o_y = static_cast<double>(y[pid]);
+		double o_z = static_cast<double>(z[pid]);
+
+		//Compute point derivatives
+
+		pg24[i] = o_x * j_ang[0] + o_y * j_ang[1] + o_z * j_ang[2];
+		pg05[i] = o_x * j_ang[3] + o_y * j_ang[4] + o_z * j_ang[5];
+		pg15[i] = o_x * j_ang[6] + o_y * j_ang[7] + o_z * j_ang[8];
+		pg25[i] = o_x * j_ang[9] + o_y * j_ang[10] + o_z * j_ang[11];
 	}
 }
 
@@ -763,7 +815,7 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 
 	dim3 grid;
 
-	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
 												dj_ang_.buffer(),
 												point_gradients,
@@ -772,7 +824,12 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 												point_gradients + valid_points_num * 9,
 												point_gradients + valid_points_num * 15,
 												point_gradients + valid_points_num * 4,
-												point_gradients + valid_points_num * 10,
+												point_gradients + valid_points_num * 10);
+	checkCudaErrors(cudaGetLastError());
+
+	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+												valid_points, valid_points_num,
+												dj_ang_.buffer(),
 												point_gradients + valid_points_num * 16,
 												point_gradients + valid_points_num * 5,
 												point_gradients + valid_points_num * 11,
@@ -1406,7 +1463,7 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 	int grid_x = (valid_points_num - 1) / block_x + 1;
 	dim3 grid;
 
-	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
 												dj_ang_.buffer(),
 												point_gradients,
@@ -1415,7 +1472,12 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 												point_gradients + valid_points_num * 9,
 												point_gradients + valid_points_num * 15,
 												point_gradients + valid_points_num * 4,
-												point_gradients + valid_points_num * 10,
+												point_gradients + valid_points_num * 10);
+	checkCudaErrors(cudaGetLastError());
+
+	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+												valid_points, valid_points_num,
+												dj_ang_.buffer(),
 												point_gradients + valid_points_num * 16,
 												point_gradients + valid_points_num * 5,
 												point_gradients + valid_points_num * 11,
@@ -1588,6 +1650,7 @@ __global__ void gpuSum(T *input, int size, int half_size)
 
 double GNormalDistributionsTransform::getFitnessScore(double max_range)
 {
+	printf("TESTTTTTTTTTTTTTTTTTTT");
 	double fitness_score = 0.0;
 
 	float *trans_x, *trans_y, *trans_z;
