@@ -12,3 +12,8 @@ float64 crawl_velocity
 float64 detection_area_rate
 
 string baselink_tf
+
+float64 detection_area_x1
+float64 detection_area_x2
+float64 detection_area_y1
+float64 detection_area_y2

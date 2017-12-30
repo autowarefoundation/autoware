@@ -124,11 +124,7 @@ private:
       double x1,x2;
       double y1,y2;
 
-      DetectionArea(){ //need to change to setting by param
-	      x1 =  80.0;
-	      x2 =   0.0;
-	      y1 =  50.0;
-	      y2 = -50.0;
+      DetectionArea(){
       }
   };
   DetectionArea detectionArea_;
@@ -258,6 +254,10 @@ public:
     param_crawl_velocity_ = DEFAULT_CRAWL_VELOCITY;
     param_detection_area_rate_ = DEFAULT_DETECTION_AREA_RATE;
     param_baselink_tf_ = "base_link";
+    detectionArea_.x1 = DEFAULT_DETECTION_AREA_X1;
+    detectionArea_.x2 = DEFAULT_DETECTION_AREA_X2;
+    detectionArea_.y1 = DEFAULT_DETECTION_AREA_Y1;
+    detectionArea_.y2 = DEFAULT_DETECTION_AREA_Y2;
 
     ctx = new state_machine::StateContext();
     this->initROS(argc, argv);
