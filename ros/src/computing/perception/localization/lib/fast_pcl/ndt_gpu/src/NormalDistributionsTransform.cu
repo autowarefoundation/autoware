@@ -1626,7 +1626,6 @@ __global__ void gpuSum(T *input, int size, int half_size)
 
 double GNormalDistributionsTransform::getFitnessScore(double max_range)
 {
-	printf("TESTTTTTTTTTTTTTTTTTTT");
 	double fitness_score = 0.0;
 
 	float *trans_x, *trans_y, *trans_z;
