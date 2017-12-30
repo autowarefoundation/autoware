@@ -140,30 +140,6 @@ void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZ
 	}
 }
 
-void GNormalDistributionsTransform::setInputTarget(pcl::PointXYZI *input, int size)
-{
-	// Copy input map data from the host memory to the GPU memory
-	GRegistration::setInputTarget(input, size);
-
-	// Build the voxel grid
-	if (target_points_number_ != 0) {
-		voxel_grid_.setLeafSize(resolution_, resolution_, resolution_);
-		voxel_grid_.setInput(target_x_, target_y_, target_z_, target_points_number_);
-	}
-}
-
-void GNormalDistributionsTransform::setInputTarget(pcl::PointXYZ *input, int size)
-{
-	// Copy input map data from the host memory to the GPU memory
-	GRegistration::setInputTarget(input, size);
-
-	// Build the voxel grid
-	if (target_points_number_ != 0) {
-		voxel_grid_.setLeafSize(resolution_, resolution_, resolution_);
-		voxel_grid_.setInput(target_x_, target_y_, target_z_, target_points_number_);
-	}
-}
-
 void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess)
 {
 
