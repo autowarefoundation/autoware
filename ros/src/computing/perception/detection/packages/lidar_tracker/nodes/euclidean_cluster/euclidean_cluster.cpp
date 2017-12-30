@@ -196,7 +196,9 @@ bool checkPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_gr
 	//check coords are inside the gridmap
 	if(cv_x < 0 || cv_x > in_grid_image.cols
 			|| cv_y < 0 || cv_y > in_grid_image.rows)
-	{	return false;}
+	{	
+	  return false;
+	}
 
 	//Scalar(0) if road
 	if(0 == in_grid_image.at<uchar>(cv_y, cv_x))
@@ -250,23 +252,31 @@ void getWayAreaPointsFromMap(const vector_map::Area& in_vmap_area, const vector_
 	std::vector<geometry_msgs::Point> area_points;
 
 	if (in_vmap_area.aid == 0)
+	  {
 		return;
+	  }
 
 	vector_map::Line line = in_vectormap.findByKey(vector_map::Key<vector_map::Line>(in_vmap_area.slid));
 	// must set beginning line
 	if (line.lid == 0 || line.blid != 0)
+	  {
 		return;
+	  }
 
 	// Search all lines in in_vmap_area
 	while (line.flid != 0)
 	{
 		vector_map::Point bp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.bpid));
 		if (bp.pid == 0)
+		  {
 			return;
+		  }
 
 		vector_map::Point fp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.fpid));
 		if (fp.pid == 0)
+		  {
 			return;
+		  }
 
 		// 2 points of line
 		area_points.push_back(vector_map::convertPointToGeomPoint(bp));
@@ -274,13 +284,17 @@ void getWayAreaPointsFromMap(const vector_map::Area& in_vmap_area, const vector_
 
 		line = in_vectormap.findByKey(vector_map::Key<vector_map::Line>(line.flid));
 		if (line.lid == 0)
+		  {
 			return;
+		  }
 	}
 
 	vector_map::Point bp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.bpid));
 	vector_map::Point fp = in_vectormap.findByKey(vector_map::Key<vector_map::Point>(line.fpid));
 	if (bp.pid == 0 || fp.pid == 0)
+	  {
 		return;
+	  }
 
 	area_points.push_back(vector_map::convertPointToGeomPoint(bp));
 	area_points.push_back(vector_map::convertPointToGeomPoint(fp));
@@ -463,7 +477,9 @@ std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>:
 	int size = in_cloud_ptr->points.size();
 
 	if (size == 0)
+	  {
 		return clusters;
+	  }
 
 	float *tmp_x, *tmp_y, *tmp_z;
 
