@@ -36,6 +36,11 @@ namespace decision_maker
 #define LAMP_HAZARD 3
 #define LAMP_ON 1
 #define LAMP_OFF 0
+
+#define DEFAULT_DETECTION_AREA_X1 80.0
+#define DEFAULT_DETECTION_AREA_X2 0.0
+#define DEFAULT_DETECTION_AREA_Y1 50.0
+#define DEFAULT_DETECTION_AREA_Y2 -50.0
 }
 
 #endif

@@ -103,6 +103,11 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   param_crawl_velocity_ = msg.crawl_velocity;
   param_detection_area_rate_ = msg.detection_area_rate;
   param_baselink_tf_ = msg.baselink_tf;
+
+  detectionArea_.x1 = msg.detection_area_x1;
+  detectionArea_.x2 = msg.detection_area_x2;
+  detectionArea_.y1 = msg.detection_area_y1;
+  detectionArea_.y2 = msg.detection_area_y2;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
