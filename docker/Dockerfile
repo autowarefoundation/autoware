@@ -101,6 +101,18 @@ RUN apt-get install -y \
         # where on of the stages is: nvidia/cuda:8.0-devel-ubuntu14.04
 RUN apt-get update && apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-0 libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
 
+# dbus related, workaround to make dbus work
+#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
+#RUN apt-get -y install dbus-x11
+
+#######################################
+# dbus related, workaround to make dbus work
+# the last line suppresses dbus warning due to X forwarding
+#######################################
+#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
+RUN apt-get -y install dbus-x11
+RUN echo "export NO_AT_BRIDGE=1" >> /etc/bash.bashrc
+
 RUN wget https://github.com/opencv/opencv/archive/2.4.13.zip && \
     unzip 2.4.13.zip && \
     rm 2.4.13.zip && \
@@ -144,13 +156,20 @@ RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash \
  && catkin_init_workspace \
  && cd ../; ./catkin_make_release'
 
-RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
-#RUN echo "export NO_AT_BRIDGE=1" >> /home/$USERNAME/.bashrc #  https://bugs.launchpad.net/ubuntu/+source/at-spi2-core/+bug/1193236
 
 # Change Terminal Color
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#FFFFFF"
+
+#######################################
+# dbus related, workaround to make dbus work https://store.docker.com/community/images/jchavas/saucy-base/dockerfile
+# the last line suppresses dbus warning due to X forwarding
+#######################################
+#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
+#RUN apt-get -y install dbus-x11
+#RUN echo "export NO_AT_BRIDGE=1" >> /home/$USERNAME/.bashrc #  https://bugs.launchpad.net/ubuntu/+source/at-spi2-core/+bug/1193236
+#RUN export NO_AT_BRIDGE=1
 
 # Default CMD
 CMD ["gnome-terminal" ]
