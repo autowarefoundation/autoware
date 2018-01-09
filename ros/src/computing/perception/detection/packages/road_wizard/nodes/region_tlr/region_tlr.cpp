@@ -340,15 +340,15 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 		mk_red.pose.orientation.x = 0.0;
 		mk_red.pose.orientation.y = 0.0;
 		mk_red.pose.orientation.y = 0.0;
-		mk_red.pose.orientation.w = 0.0;
+		mk_red.pose.orientation.w = 1.0;
 		mk_yellow.pose.orientation.x = 0.0;
 		mk_yellow.pose.orientation.y = 0.0;
 		mk_yellow.pose.orientation.y = 0.0;
-		mk_yellow.pose.orientation.w = 0.0;
+		mk_yellow.pose.orientation.w = 1.0;
 		mk_green.pose.orientation.x = 0.0;
 		mk_green.pose.orientation.y = 0.0;
 		mk_green.pose.orientation.y = 0.0;
-		mk_green.pose.orientation.w = 0.0;
+		mk_green.pose.orientation.w = 1.0;
 
 		/* Set the scale of the marker -- We assume lamp radius as 30cm */
 		mk_red.scale.x = (double) 0.3;

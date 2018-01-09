@@ -434,6 +434,7 @@ void displayDetectionRange(const int &crosswalk_id, const int &num, const EContr
   crosswalk_marker.id = 0;
   crosswalk_marker.type = visualization_msgs::Marker::SPHERE_LIST;
   crosswalk_marker.action = visualization_msgs::Marker::ADD;
+  crosswalk_marker.pose.orientation.w = 1.0;
   waypoint_marker_stop = crosswalk_marker;
   waypoint_marker_decelerate = crosswalk_marker;
   stop_line = crosswalk_marker;

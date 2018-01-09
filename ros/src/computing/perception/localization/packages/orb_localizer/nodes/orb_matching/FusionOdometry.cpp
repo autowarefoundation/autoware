@@ -214,6 +214,7 @@ FusionOdometry::publish ()
 	pfPoints.scale.x = 0.1;
 	pfPoints.scale.y = 0.1;
 	pfPoints.scale.z = 0.1;
+	pfPoints.pose.orientation.w = 1.0;
 
 	for (auto state: pfStates) {
 		geometry_msgs::Point ppf;

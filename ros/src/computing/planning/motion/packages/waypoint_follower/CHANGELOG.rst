@@ -2,6 +2,11 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-09)
+------------------
+* Fixed uninitialized quaternion of visualization marker
+* Contributors: Yusuke FUJII
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id

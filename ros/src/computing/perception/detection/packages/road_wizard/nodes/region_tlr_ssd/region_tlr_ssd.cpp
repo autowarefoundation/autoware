@@ -328,7 +328,7 @@ void RegionTlrSsdRosNode::PublishMarkerArray(std::vector<Context> contexts) {
     red_light.pose.orientation.x = 0.0;
     red_light.pose.orientation.y = 0.0;
     red_light.pose.orientation.z = 0.0;
-    red_light.pose.orientation.w = 0.0;
+    red_light.pose.orientation.w = 1.0;
 
     yellow_light.pose.position.x = ctx.yellowCenter3d.x;
     yellow_light.pose.position.y = ctx.yellowCenter3d.y;
@@ -336,7 +336,7 @@ void RegionTlrSsdRosNode::PublishMarkerArray(std::vector<Context> contexts) {
     yellow_light.pose.orientation.x = 0.0;
     yellow_light.pose.orientation.y = 0.0;
     yellow_light.pose.orientation.z = 0.0;
-    yellow_light.pose.orientation.w = 0.0;
+    yellow_light.pose.orientation.w = 1.0;
 
     green_light.pose.position.x = ctx.greenCenter3d.x;
     green_light.pose.position.y = ctx.greenCenter3d.y;
@@ -344,7 +344,7 @@ void RegionTlrSsdRosNode::PublishMarkerArray(std::vector<Context> contexts) {
     green_light.pose.orientation.x = 0.0;
     green_light.pose.orientation.y = 0.0;
     green_light.pose.orientation.z = 0.0;
-    green_light.pose.orientation.w = 0.0;
+    green_light.pose.orientation.w = 1.0;
 
     // Set the scale of the markers. We assume lamp radius is 30cm in real world
     red_light.scale.x = 0.3;

@@ -2,6 +2,11 @@
 Changelog for package cv_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-09)
+------------------
+* Fixed uninitialized quaternion of visualization marker
+* Contributors: Yusuke FUJII
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#949 <https://github.com/CPFL/Autoware/issues/949>`_ from CPFL/fix/obj_reproj_multi_cam_support

@@ -2,6 +2,11 @@
 Changelog for package decision_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-09)
+------------------
+* Fixed uninitialized quaternion of visualization marker
+* Contributors: Yusuke FUJII
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge branch develop into feature/ndt_pcl_gpu

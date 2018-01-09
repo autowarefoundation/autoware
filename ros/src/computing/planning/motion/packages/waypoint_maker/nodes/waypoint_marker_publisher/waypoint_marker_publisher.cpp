@@ -124,6 +124,7 @@ void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_wa
       relative_p.y = 0.5;
       velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, lane.waypoints[i].pose.pose);
       velocity_marker.pose.position.z += 0.2;
+      velocity_marker.pose.orientation.w = 1.0;
 
       // double to string
       std::string vel = std::to_string(mps2kmph(lane.waypoints[i].twist.twist.linear.x));
@@ -166,6 +167,7 @@ void createGlobalLaneArrayChangeFlagMarker(const autoware_msgs::LaneArray &lane_
       relative_p.x = -0.1;
       marker.pose.position = calcAbsoluteCoordinate(relative_p, lane.waypoints[i].pose.pose);
       marker.pose.position.z += 0.2;
+      marker.pose.orientation.w = 1.0;
 
       // double to string
       std::string str = "";
@@ -219,6 +221,7 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_wa
     relative_p.y = -0.65;
     velocity.pose.position = calcAbsoluteCoordinate(relative_p, lane_waypoint.waypoints[i].pose.pose);
     velocity.pose.position.z += 0.2;
+    velocity.pose.orientation.w = 1.0;
 
     // double to string
     std::ostringstream oss;
@@ -239,6 +242,7 @@ void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_msgs:
   lane_waypoint_marker.ns = "global_lane_array_marker";
   lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.pose.orientation.w = 1.0;
   lane_waypoint_marker.scale.x = 1.0;
   lane_waypoint_marker.color = color;
   lane_waypoint_marker.frame_locked = true;
@@ -269,6 +273,7 @@ void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane
   lane_waypoint_marker.header.stamp = ros::Time();
   lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.pose.orientation.w = 1.0;
   lane_waypoint_marker.scale.x = 0.25;
   lane_waypoint_marker.scale.y = 0.05;
   lane_waypoint_marker.scale.z = 0.05;
@@ -303,6 +308,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::lane 
   lane_waypoint_marker.id = 0;
   lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
   lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.pose.orientation.w = 1.0;
   lane_waypoint_marker.scale.x = 0.2;
   lane_waypoint_marker.color = color;
   lane_waypoint_marker.frame_locked = true;
@@ -330,7 +336,8 @@ void createLocalPointMarker(const autoware_msgs::lane &lane_waypoint)
   lane_waypoint_marker.scale.y = 0.2;
   lane_waypoint_marker.scale.z = 0.2;
   lane_waypoint_marker.color.r = 1.0;
-   lane_waypoint_marker.color.a = 1.0;
+  lane_waypoint_marker.color.a = 1.0;
+  lane_waypoint_marker.pose.orientation.w = 1.0;
   lane_waypoint_marker.frame_locked = true;
 
   for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)

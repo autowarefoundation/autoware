@@ -63,6 +63,7 @@ void debugKeyframeSelection ()
 		kfMarker.scale.x = 0.01;
 		kfMarker.scale.y = 0.02;
 		kfMarker.scale.z = 0;
+		kfMarker.pose.orientation.w = 1.0;
 
 		tf::Matrix3x3 mtkf (kfPose.getRotation());
 		float

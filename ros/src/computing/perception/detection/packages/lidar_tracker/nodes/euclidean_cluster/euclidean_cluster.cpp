@@ -1107,6 +1107,7 @@ int main (int argc, char** argv)
 	_visualization_marker.color.r = 0.0;
 	_visualization_marker.color.g = 0.0;
 	_visualization_marker.color.b = 1.0;
+	_visualization_marker.pose.orientation.w = 1.0;
 	// marker.lifetime = ros::Duration(0.1);
 	_visualization_marker.frame_locked = true;
 
