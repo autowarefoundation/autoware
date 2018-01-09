@@ -2,8 +2,8 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.1 (2018-01-09)
+------------------
 * Fixed uninitialized quaternion of visualization marker
 * Contributors: Yusuke FUJII
 
