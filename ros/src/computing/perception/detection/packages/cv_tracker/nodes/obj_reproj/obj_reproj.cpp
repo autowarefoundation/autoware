@@ -160,6 +160,7 @@ static visualization_msgs::MarkerArray convert_marker_array(const autoware_msgs:
 
         /* set pose of marker  */
         marker.pose.position = reproj_pos;
+	marker.pose.orientation.w = 1.0;
 
         /* set scale of marker */
         marker.scale.x = (double)1.5;
@@ -174,6 +175,7 @@ static visualization_msgs::MarkerArray convert_marker_array(const autoware_msgs:
 
         /* set pose of marker  */
         marker.pose.position = reproj_pos;
+	marker.pose.orientation.w = 1.0;
 
         /* set scale of marker */
         marker.scale.x = (double)0.7;
@@ -206,6 +208,7 @@ static jsk_recognition_msgs::BoundingBoxArray convertJskBoundingBoxArray(const a
       bounding_box.header.frame_id = "map";
 
       bounding_box.pose.position = reproj_pos;
+      bounding_box.pose.orientation.w = 1.0;
 
       bounding_box.dimensions.x = 1.5;
       bounding_box.dimensions.y = 1.5;

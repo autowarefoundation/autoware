@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     _linelist.color.r = 0.0;
     _linelist.color.g = 1.0;
     _linelist.color.b = 0.0;
+    _linelist.pose.orientation.w = 1.0;
     
     ros::spin();
     return 0;

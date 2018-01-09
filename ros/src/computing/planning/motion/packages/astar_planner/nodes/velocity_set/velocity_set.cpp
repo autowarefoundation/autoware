@@ -63,8 +63,7 @@ void displayObstacle(const EControl& kind, const ObstaclePoints& obstacle_points
   {
     marker.pose.position = prev_obstacle_point;
   }
-  geometry_msgs::Quaternion quat;
-  marker.pose.orientation = quat;
+  marker.pose.orientation.w = 1.0;
 
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
@@ -103,6 +102,7 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
   crosswalk_marker.id = 0;
   crosswalk_marker.type = visualization_msgs::Marker::SPHERE_LIST;
   crosswalk_marker.action = visualization_msgs::Marker::ADD;
+  crosswalk_marker.pose.orientation.w = 1.0;
   waypoint_marker_stop = crosswalk_marker;
   waypoint_marker_decelerate = crosswalk_marker;
   stop_line = crosswalk_marker;

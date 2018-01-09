@@ -46,6 +46,7 @@ int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &cro
   crossroad_marker.color.r = 1.0;
   crossroad_marker.color.g = 0.0;
   crossroad_marker.color.b = 0.0;
+  crossroad_marker.pose.orientation.w = 1.0;
   crossroad_marker.frame_locked = true;
   crossroad_marker.lifetime = ros::Duration(0.3);
 
@@ -73,6 +74,7 @@ void DecisionMakerNode::displayMarker(void)
   inside_marker.color.r = 1.0;
   inside_marker.color.g = 0.0;
   inside_marker.color.b = 0.0;
+  inside_marker.pose.orientation.w = 1.0;
   inside_marker.ns = "inside";
   inside_marker.lifetime = ros::Duration();
 

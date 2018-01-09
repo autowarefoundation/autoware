@@ -770,6 +770,12 @@ void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Mar
 
 	m.header.stamp = ros::Time::now();
 	m.action = visualization_msgs::Marker::ADD;
+	
+       	//no-rotate
+	m.pose.orientation.w = 1.0;
+	m.pose.orientation.x = 0.0;
+	m.pose.orientation.y = 0.0;
+	m.pose.orientation.z = 0.0;
 
 	pub.publish(m);
 }
@@ -783,6 +789,12 @@ void publish_delete_marker(const ros::Publisher& pub, const visualization_msgs::
 
 	m.header.stamp = ros::Time::now();
 	m.action = visualization_msgs::Marker::DELETE;
+	
+       	//no-rotate
+	m.pose.orientation.w = 1.0;
+	m.pose.orientation.x = 0.0;
+	m.pose.orientation.y = 0.0;
+	m.pose.orientation.z = 0.0;
 
 	pub.publish(m);
 }

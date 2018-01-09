@@ -109,7 +109,7 @@ void cluster_cb(
     marker_textlabel.pose.orientation.x = 0.0;
     marker_textlabel.pose.orientation.y = 0.0;
     marker_textlabel.pose.orientation.y = 0.0;
-    marker_textlabel.pose.orientation.w = 0.0;
+    marker_textlabel.pose.orientation.w = 1.0;
     marker_textlabel.pose.position.z += 1.5;
     marker_textlabel.color = color_white;
     marker_textlabel.lifetime = ros::Duration(0.2);

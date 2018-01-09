@@ -44,6 +44,7 @@ visualization_msgs::Marker displayNextWaypoint(geometry_msgs::Point position)
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.position = position;
+  marker.pose.orientation.w = 1.0;
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
   marker.scale.z = 1.0;
@@ -66,6 +67,7 @@ visualization_msgs::Marker displayNextTarget(geometry_msgs::Point target)
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.position = target;
+  marker.pose.orientation.w = 1.0;
   std_msgs::ColorRGBA green;
   green.a = 1.0;
   green.b = 0.0;
@@ -176,6 +178,7 @@ visualization_msgs::Marker displayTrajectoryCircle(std::vector<geometry_msgs::Po
       traj_circle.colors.push_back(white);
     }
 
+  traj_circle.pose.orientation.w = 1.0;
   traj_circle.scale.x = 0.1;
   traj_circle.color.a = 0.3;
   traj_circle.color.r = 1.0;
@@ -196,6 +199,7 @@ visualization_msgs::Marker displaySearchRadius(geometry_msgs::Point current_pose
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
   marker.pose.position = current_pose;
+  marker.pose.orientation.w = 1.0;
   marker.scale.x = search_radius * 2;
   marker.scale.y = search_radius * 2;
   marker.scale.z = 1.0;
