@@ -2,6 +2,11 @@
 Changelog for package vector_map
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed uninitialized quaternion of visualization marker
+* Contributors: Yusuke FUJII
+
 1.6.0 (2017-12-11)
 ------------------
 * merge develop and fixed slow switching map

@@ -2,6 +2,11 @@
 Changelog for package state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fixed uninitialized quaternion of visualization marker
+* Contributors: Yusuke FUJII
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge branch develop into feature/ndt_pcl_gpu

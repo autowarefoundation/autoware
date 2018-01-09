@@ -2,6 +2,9 @@
 Changelog for package obj_db
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.0 (2017-12-11)
 ------------------
 * merge develop and fixed slow switching map

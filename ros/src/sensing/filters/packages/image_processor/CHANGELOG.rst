@@ -2,6 +2,9 @@
 Changelog for package image_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.6 (2017-11-15)
+Forthcoming
+-----------
+
+1.0.0 (2017-11-15)
 ------------------
 Initial release
