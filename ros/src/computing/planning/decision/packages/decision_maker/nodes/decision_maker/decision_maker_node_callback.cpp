@@ -279,29 +279,39 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   // cached
   current_finalwaypoints_ = msg;
+  if(current_finalwaypoints_.waypoints.size()){
 
-  size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
-                   param_stopline_target_waypoint_ :
-                   current_finalwaypoints_.waypoints.size() - 1;
+    size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_stopline_target_waypoint_ ?
+                     param_stopline_target_waypoint_ :
+                     current_finalwaypoints_.waypoints.size() - 1;
+    
+    if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
+  	  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+    // steering
+    idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
+              param_target_waypoint_ :
+              current_finalwaypoints_.waypoints.size() - 1;
   
-  if (current_finalwaypoints_.waypoints.at(idx).wpstate.stopline_state)
-	  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-  // steering
-  idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
-            param_target_waypoint_ :
-            current_finalwaypoints_.waypoints.size() - 1;
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
-  {
-	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
-  }
-  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
-  {
-	  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
-  }
-  else
-  {
-	  ctx->setCurrentState(getStateFlags(current_finalwaypoints_.waypoints.at(idx).wpstate.steering_state));
-  }
+    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
+    {
+  	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
+    }
+    if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE))
+    {
+  	  ctx->setCurrentState(state_machine::DRIVE_STR_RIGHT_STATE);
+    }
+    else
+    {
+	  state_machine::StateFlags _TargetStateFlag;
+  	  for(size_t i = idx; i>0; i--){
+		  _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
+		  if(_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE){
+			 break;
+		  }
+ 	  }
+  	  ctx->setCurrentState(_TargetStateFlag);
+    }
+}
 
   // for publish plan of velocity
   publishToVelocityArray();
