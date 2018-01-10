@@ -267,7 +267,8 @@ int detectStopObstacle(const pcl::PointCloud<pcl::PointXYZ>& points, const int c
 
     // detection another nodes
     if (wpidx_detection_result_by_other_nodes >= 0 &&
-		    lane.waypoints.at(i).gid == wpidx_detection_result_by_other_nodes){
+		    lane.waypoints.at(i).gid == wpidx_detection_result_by_other_nodes)
+    {
 	    stop_obstacle_waypoint = i;
 	    break;
     }
@@ -479,29 +480,29 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // STOP for obstacle
     // stop_waypoint is about stop_distance meter away from obstacles
     int stop_waypoint =
-        calcWaypointIndexReverse(vs_path->getPrevWaypoints(), obstacle_waypoint, vs_info.getStopDistance());
+        calcWaypointIndexReverse(vs_path->getPrevWaypoints(), obstacle_waypoint, vs_info.getStopDistanceObstacle());
 
     // change waypoints to stop by the stop_waypoint
-    vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, vs_info.getDeceleration());
-    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
+    vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, vs_info.getDecelerationObstacle());
+    vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
   else if (detection_result == EControl::DECELERATE)
   {  // DECELERATE for obstacles
     vs_path->initializeNewWaypoints();
-    vs_path->changeWaypointsForDeceleration(vs_info.getDeceleration(), closest_waypoint, obstacle_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
-    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
+    vs_path->changeWaypointsForDeceleration(vs_info.getDecelerationObstacle(), closest_waypoint, obstacle_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
+    vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
   else
   {  // ACCELERATE or KEEP
     vs_path->initializeNewWaypoints();
-    vs_path->avoidSuddenAcceleration(vs_info.getDeceleration(), closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDeceleration(), closest_waypoint);
+    vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }

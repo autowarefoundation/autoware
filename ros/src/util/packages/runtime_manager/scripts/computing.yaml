@@ -303,7 +303,7 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
         param: kf_contour_tracker
-        
+
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -1169,7 +1169,7 @@ params :
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
-      desc : select the type of tracking 
+      desc : select the type of tracking
       label: Tracking Type
       kind : radio_box
       choices:
@@ -1249,7 +1249,7 @@ params :
         delim    : ':='
     - name : max_association_distance
       desc : Maximum Distance for associating two objects
-      label: Association Distance 
+      label: Association Distance
       min  : 0.5
       max  : 10
       v    : 4
@@ -1678,12 +1678,18 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : others_distance
-      desc  : others_distance desc sample
-      label : Others Distance (m)
+    - name  : stop_distance_obstacle
+      desc  : stop_distance_obstacle desc sample
+      label : Stop Distance for Obstacle (m)
       min   : 0
       max   : 50
       v     : 15.0
+    - name  : stop_distance_stopline
+      desc  : stop_distance_stopline desc sample
+      label : Stop Distance for Stopline(m)
+      min   : 0
+      max   : 50
+      v     : 5.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1714,12 +1720,18 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
-    - name  : deceleration
-      desc  : deceleration desc sample
-      label : Deceleration (m/s^2)
+    - name  : deceleration_obstacle
+      desc  : deceleration_obstacle desc sample
+      label : Deceleration for Obstacle (m/s^2)
       min   : 0
       max   : 5
       v     : 0.7
+    - name  : deceleration_stopline
+      desc  : deceleration_stopline desc sample
+      label : Deceleration for Stopline (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 0.3
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
@@ -1732,7 +1744,7 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-    
+
     - name : enablePlannerDynamicSwitch
       desc : Enable Planner dynamical switch
       label: Enable Planner dynamical switch
@@ -1930,7 +1942,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
- 
+
   - name  : planner_selector
     topic : /config/PlannerSelector
     msg   : ConfigPlannerSelector
@@ -1957,7 +1969,7 @@ params :
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
-    vars  : 
+    vars  :
     - name : enable_force_state_change
       desc : enable force state change flag
       label: enable_force_state_change
