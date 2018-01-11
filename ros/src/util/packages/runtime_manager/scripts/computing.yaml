@@ -533,6 +533,8 @@ subs :
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 400
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
