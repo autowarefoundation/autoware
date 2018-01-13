@@ -64,7 +64,7 @@ elseif("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
+  CATKIN_DEPENDS roscpp velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
   DEPENDS ndt_cpu
 #  DEPENDS ndt_tku
 #  DEPENDS system_lib
