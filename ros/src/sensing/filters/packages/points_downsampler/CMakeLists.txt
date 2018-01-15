@@ -3,6 +3,7 @@ project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  autoware_msgs
   pcl_ros
   sensor_msgs
   pcl_conversions
@@ -21,7 +22,7 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS sensor_msgs
+  CATKIN_DEPENDS pcl_ros pcl_conversions message_runtime
 )
 
 ###########
