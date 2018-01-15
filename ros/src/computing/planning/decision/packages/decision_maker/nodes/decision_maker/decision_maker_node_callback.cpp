@@ -163,7 +163,7 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
             baselink_pose.pose.position.y >= detectionArea_.y2 * param_detection_area_rate_)
         {
           l_detection_flag = true;
-          setFlagTime == ros::Time::now().toSec();
+          setFlagTime = ros::Time::now().toSec();
 	  break;
         }
       }
