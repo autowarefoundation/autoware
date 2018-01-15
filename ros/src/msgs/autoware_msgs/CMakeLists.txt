@@ -19,6 +19,8 @@ add_message_files(
   CloudClusterArray.msg
   ColorSet.msg
   ControlCommand.msg
+  CurvatureCommand.msg
+  CurvatureCommandStamped.msg
   DetectedObject.msg
   DetectedObjectArray.msg
   ExtractedPosition.msg

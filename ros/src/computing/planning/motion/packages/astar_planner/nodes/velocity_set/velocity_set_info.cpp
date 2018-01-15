@@ -44,12 +44,15 @@ VelocitySetInfo::VelocitySetInfo()
     points_threshold_(10),
     detection_height_top_(0.2),
     detection_height_bottom_(-1.7),
-    stop_distance_(10),
-    decel_(0.8),
+    stop_distance_obstacle_(10),
+    stop_distance_stopline_(5),
+    deceleration_obstacle_(0.8),
+    deceleration_stopline_(0.6),
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
     set_pose_(false),
-    use_obstacle_sim_(false)
+    use_obstacle_sim_(false),
+    wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
@@ -66,12 +69,14 @@ void VelocitySetInfo::clearPoints()
 
 void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
 {
-  stop_distance_ = config->others_distance;
+  stop_distance_obstacle_ = config->stop_distance_obstacle;
+  stop_distance_stopline_ = config->stop_distance_stopline;
   stop_range_ = config->detection_range;
   points_threshold_ = config->threshold_points;
   detection_height_top_ = config->detection_height_top;
   detection_height_bottom_ = config->detection_height_bottom;
-  decel_ = config->deceleration;
+  deceleration_obstacle_ = config->deceleration_obstacle;
+  deceleration_stopline_ = config->deceleration_stopline;
   velocity_change_limit_ = config->velocity_change_limit / 3.6; // kmph -> mps
   deceleration_range_ = config->deceleration_range;
   temporal_waypoints_size_ = config->temporal_waypoints_size;
@@ -103,6 +108,11 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
     joinPoints(obstacle_sim_points_, &points_);
     obstacle_sim_points_.clear();
   }
+}
+
+void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
+{
+    wpidx_detectionResultByOtherNodes_ = msg.data;
 }
 
 void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)

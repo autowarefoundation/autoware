@@ -303,7 +303,7 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
         param: kf_contour_tracker
-        
+
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch lidar_tracker obj_fusion.launch
@@ -533,6 +533,8 @@ subs :
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 400
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1052,16 +1054,16 @@ params :
         dash        : ''
         delim       : ':='
     - name    : clip_min_height
-      desc    : clip_min_height desc sample
+      desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_min_height (~sensor height)'
       min       : -5
       max       : 5
-      v       : -1.3
+      v       : -5
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : clip_max_height
-      desc    : clip_max_height desc sample
+      desc    : Remove points above this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_max_height (above sensor)'
       min       : 0
       max       : 5
@@ -1070,18 +1072,57 @@ params :
         dash        : ''
         delim       : ':='
     - name    : use_vector_map
-      desc    : use_vector_map desc sample
+      desc    : If checked, Localization and ADAS MAp with WAYAREA info should be published. Objects outside the road will be filtered.
       label   : 'use_vector_map'
       kind    : checkbox
-      v       : True
+      v       : false
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : vectormap_frame
-      desc    : vectormap_frame desc sample
+      desc    : Frame of the VectorMap according to TF. default. map
       label   : 'vectormap_frame'
       kind    : str
       v       : map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_width
+      desc    : Width Distance in Meters to create a filtering grid to the sides. Default. 30
+      label   : 'vectormap_grid_width'
+      min       : 10.0
+      max       : 100.0
+      v       : 30.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_height
+      desc    : Height Distance in Meters to create a filtering grid to the front. Default. 70
+      label   : 'vectormap_grid_height'
+      min       : 10.0
+      max       : 100.0
+      v       : 70.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_resolution
+      desc    : One Grid square is equivalent to this value in meters. Smaller Value provide better resolution at the cost of memory (Default. 0.3)
+      label   : 'vectormap_grid_resolution'
+      min       : 0.1
+      max       : 1.0
+      v       : 0.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_grid_behind
+      desc    : Allows to perform filtering behind the vehicle. Moves the grid to filter objects behind the current position (Default. 20.0)
+      label   : 'vectormap_grid_behind'
+      min       : 0.0
+      max       : 50.0
+      v       : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : remove_points_upto
       desc    : remove_points_upto desc sample
       label   : 'remove_points_upto (ignore points up to this distance)'
@@ -1169,7 +1210,7 @@ params :
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
-      desc : select the type of tracking 
+      desc : select the type of tracking
       label: Tracking Type
       kind : radio_box
       choices:
@@ -1249,7 +1290,7 @@ params :
         delim    : ':='
     - name : max_association_distance
       desc : Maximum Distance for associating two objects
-      label: Association Distance 
+      label: Association Distance
       min  : 0.5
       max  : 10
       v    : 4
@@ -1678,12 +1719,18 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : others_distance
-      desc  : others_distance desc sample
-      label : Others Distance (m)
+    - name  : stop_distance_obstacle
+      desc  : stop_distance_obstacle desc sample
+      label : Stop Distance for Obstacle (m)
       min   : 0
       max   : 50
       v     : 15.0
+    - name  : stop_distance_stopline
+      desc  : stop_distance_stopline desc sample
+      label : Stop Distance for Stopline(m)
+      min   : 0
+      max   : 50
+      v     : 5.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1714,12 +1761,18 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
-    - name  : deceleration
-      desc  : deceleration desc sample
-      label : Deceleration (m/s^2)
+    - name  : deceleration_obstacle
+      desc  : deceleration_obstacle desc sample
+      label : Deceleration for Obstacle (m/s^2)
       min   : 0
       max   : 5
       v     : 0.7
+    - name  : deceleration_stopline
+      desc  : deceleration_stopline desc sample
+      label : Deceleration for Stopline (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 0.3
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
@@ -1732,7 +1785,7 @@ params :
       min   : 0
       max   : 150
       v     : 100.0
-    
+
     - name : enablePlannerDynamicSwitch
       desc : Enable Planner dynamical switch
       label: Enable Planner dynamical switch
@@ -1930,7 +1983,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
- 
+
   - name  : planner_selector
     topic : /config/PlannerSelector
     msg   : ConfigPlannerSelector
@@ -1957,7 +2010,7 @@ params :
   - name  : decision_maker
     topic : /config/decision_maker
     msg   : ConfigDecisionMaker
-    vars  : 
+    vars  :
     - name : enable_force_state_change
       desc : enable force state change flag
       label: enable_force_state_change
@@ -1992,16 +2045,66 @@ params :
       min  : 0
       max  : 50
       v    : 10
+    - name : stopline_target_ratio
+      desc : stopline
+      label: stopline_target_ratio
+      min  : 0.0
+      max  : 0.99
+      v    : 0.0
     - name : shift_width
       desc : lane shift width
       label: shift_width
       min  : -5.0
       max  : 5.0
       v    : 1.0
+    - name : detection_area_rate
+      desc : detection_area_rate
+      label: detection_area_rate
+      min  : 0.0
+      max  : 3.0
+      v    : 1.0
+    - name : crawl_velocity
+      desc : crawl_velocity
+      label: crawl_velocity
+      min  : 0.0
+      max  : 10.0
+      v    : 4.0
+    - name : detection_area_x1
+      desc : detection_area_x1
+      label: detection_area_x1
+      min  : -200.0
+      max  : 200.0
+      v    : 80.0
+    - name : detection_area_x2
+      desc : detection_area_x2
+      label: detection_area_x2
+      min  : -200.0
+      max  : 200.0
+      v    : 0.0
+    - name : detection_area_y1
+      desc : detection_area_y1
+      label: detection_area_y1
+      min  : -200.0
+      max  : 200.0
+      v    : 50.0
+    - name : detection_area_y2
+      desc : detection_area_y2
+      label: detection_area_y2
+      min  : -200.0
+      max  : 200.0
+      v    : -50.0
+
     - name : points_topic
       desc : points_topic
       kind : str
       v    : /points_lanes
+      cmd_param:
+              dash : ''
+              delim: ':='
+    - name : baselink_tf
+      desc : baselnk_tf
+      kind : str
+      v    : base_link
       cmd_param:
               dash : ''
               delim: ':='

@@ -17,8 +17,17 @@ enum class EControl
 {
   KEEP = -1,
   STOP = 1,
-  DECELERATE = 2,
-  OTHERS = 3,
+  STOPLINE = 2,
+  DECELERATE = 3,
+  OTHERS = 4,
+};
+
+enum class EObstacleType
+{
+  NONE = -1,
+  ON_WAYPOINTS = 1,
+  ON_CROSSWALK = 2,
+  STOPLINE = 3,
 };
 
 struct CrossWalkPoints

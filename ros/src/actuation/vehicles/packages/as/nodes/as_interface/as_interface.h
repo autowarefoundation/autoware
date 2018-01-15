@@ -42,6 +42,7 @@
 #include <platform_comm_msgs/Gear.h>
 
 #include <dbw_mkz_msgs/SteeringReport.h>
+#include <autoware_msgs/CurvatureCommandStamped.h>
 
 namespace pacmod
 {
@@ -70,16 +71,19 @@ private:
   ros::Subscriber twist_cmd_sub_;
   ros::Subscriber control_mode_sub_;
   ros::Subscriber speed_sub_;
+  ros::Subscriber curvature_cmd_sub_;
 
   // ros param
   double acceleration_limit_;
   double deceleration_limit_;
   double max_curvature_rate_;
+  bool   use_curvature_cmd_;
 
   // variables
   bool control_mode_;
 
   // callbacks
+  void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped &msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr &msg);
   void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr &msg);
