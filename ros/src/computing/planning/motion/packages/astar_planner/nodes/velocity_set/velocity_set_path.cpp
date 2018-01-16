@@ -227,6 +227,7 @@ void VelocitySetPath::resetFlag()
   set_path_ = false;
 }
 
+
 void VelocitySetPath::waypointsCallback(const autoware_msgs::laneConstPtr& msg)
 {
   prev_waypoints_ = *msg;
