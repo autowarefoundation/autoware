@@ -10,7 +10,6 @@
 
   <build_depend>roscpp</build_depend>
   <build_depend>pcl_ros</build_depend>
-  <build_depend>pcl_conversions</build_depend>
   <build_depend>velodyne_pointcloud</build_depend>
   <build_depend>message_generation</build_depend>
 
