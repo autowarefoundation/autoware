@@ -333,12 +333,6 @@ bool StateContext::isState(BaseState *base, uint64_t _state_num)
   return base ? base->getStateNum() & _state_num ? true : false : false;
 }
 
-bool StateContext::handleIntersection(bool _hasIntersection, double _angle)
-{
-  /* deprecated */
-  return false;
-}
-
 std::string StateContext::createStateMessageText(void)
 {
   std::string ret;
@@ -353,14 +347,6 @@ std::string StateContext::createStateMessageText(void)
   return ret;
 }
 
-bool StateContext::handleTwistCmd(bool _hasTwistCmd)
-{
-  if (_hasTwistCmd)
-    return this->setCurrentState(DRIVE_STATE);
-  else
-    return false;
-}
-
 void StateContext::stateDecider(void)
 {
   // not running
@@ -372,9 +358,5 @@ void StateContext::InitContext(void)
   thr_state_dec->detach();
   this->setCurrentState(START_STATE);
   return;
-}
-bool StateContext::TFInitialized(void)
-{
-  return this->setCurrentState(INITIAL_STATE);
 }
 }

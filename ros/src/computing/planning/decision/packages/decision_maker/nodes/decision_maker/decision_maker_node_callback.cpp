@@ -415,12 +415,6 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {
-  static bool Twistflag = false;
-
-  if (Twistflag)
-    ctx->handleTwistCmd(false);
-  else
-    Twistflag = true;
 }
 
 void DecisionMakerNode::callbackFromClosestWaypoint(const std_msgs::Int32 &msg)

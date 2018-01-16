@@ -125,15 +125,6 @@ public:
 
   bool setEnableForceSetState(bool force_flag);
   void InitContext(void);
-
-  bool TFInitialized(void);
-
-  void handleTrafficLight(uint32_t _light_color);
-  bool handleCurrentPose(double x, double y, double z, double roll, double pitch, double yaw);
-  bool handlePointsRaw(bool _hasLidarData);
-
-  bool handleIntersection(bool _hasIntersection, double _angle);
-  bool handleTwistCmd(bool _hasTwistCmd);
 };
 }
 
