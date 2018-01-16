@@ -78,6 +78,26 @@ void StateContext::inState(uint8_t _kind, uint64_t _prev_state_num)
   }
 }
 
+bool StateContext::reCallCurrentStateInCallback(void)
+{
+  for (auto &p : HolderMap)
+  {
+    if (p.first == BEHAVIOR_STATE)
+    {
+      for (auto &&state : getMultipleStates(p.second))
+      {
+        state->inState();
+      }
+    }
+    else
+    {
+      if (p.second)
+        if (getStateObject(p.second))
+          getStateObject(p.second)->inState();
+    }
+  }
+}
+
 BaseState *StateContext::getStateObject(const uint64_t &_state_num)
 {
   if (_state_num)

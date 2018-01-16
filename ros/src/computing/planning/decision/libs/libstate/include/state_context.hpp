@@ -102,6 +102,7 @@ public:
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
+  bool reCallCurrentStateInCallback(void);
 
   std::vector<BaseState *> getMultipleStates(uint64_t _state_num_set);
 

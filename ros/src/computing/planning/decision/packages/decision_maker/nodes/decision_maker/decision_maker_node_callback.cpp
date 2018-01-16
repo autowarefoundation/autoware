@@ -309,6 +309,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 // for based waypoint
 void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg)
 {
+  static bool isFirstTimeCallback = true;
+
   ROS_INFO("[%s]:LoadedWaypointLaneArray\n", __func__);
   current_based_lane_array_ = msg;  // cached based path
   // indexing
@@ -331,8 +333,16 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
   setWaypointState(current_based_lane_array_);
   current_controlled_lane_array_ = current_shifted_lane_array_ = current_based_lane_array_;  // controlled path
 
-  publishControlledLaneArray();
-  updateLaneWaypointsArray();
+  if (isFirstTimeCallback)
+  {
+    publishControlledLaneArray();
+    updateLaneWaypointsArray();
+  }
+  else
+  {
+    ctx->reCallCurrentStateInCallback();
+  }
+  isFirstTimeCallback = false;
 }
 
 state_machine::StateFlags getStateFlags(uint8_t msg_state)
@@ -347,17 +357,12 @@ state_machine::StateFlags getStateFlags(uint8_t msg_state)
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
-  if (!hasvMap())
-  {
-    std::cerr << "Not found vmap subscribe" << std::endl;
-    return;
-  }
-
   if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
   {
     ROS_DEBUG("State is not DRIVE_STATE[%s]", ctx->getCurrentStateName().c_str());
     return;
   }
+
   // cached
   current_finalwaypoints_ = msg;
 
