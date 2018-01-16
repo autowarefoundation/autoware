@@ -131,8 +131,6 @@ private:
 
   bool isManualLight;
 
-  bool isManualLight;
-
   // Param
   bool enableDisplayMarker;
   bool enableForceStateChange;
@@ -205,7 +203,6 @@ private:
 
 
   // callback by state context
-  void setAllStoplineStop(void);
   void StoplinePlanIn(int status);
   void StoplinePlanOut(int status);
   void publishLightColor(int status);
