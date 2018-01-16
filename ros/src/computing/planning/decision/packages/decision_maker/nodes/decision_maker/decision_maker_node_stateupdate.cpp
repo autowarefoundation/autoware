@@ -106,20 +106,6 @@ void DecisionMakerNode::callbackOutStateLaneChange(int status)
   }
 }
 
-void DecisionMakerNode::publishLightColor(int status)
-{
-  autoware_msgs::traffic_light msg;
-  msg.traffic_light = status;
-  Pubs["light_color"].publish(msg);
-}
-
-void DecisionMakerNode::publishStoplineWaypointIdx(int wp_idx)
-{
-  std_msgs::Int32 msg;
-  msg.data = wp_idx;
-  Pubs["state/stopline_wpidx"].publish(msg);
-}
-
 #define SHIFTED_LANE_FLAG -99999
 void DecisionMakerNode::createShiftLane(void)
 {
@@ -485,8 +471,7 @@ void DecisionMakerNode::updateStateDrive(int status)
   {
     if (!transition2missioncomplete)
     {
-      for (size_t i = 0; current_finalwaypoints_.waypoints.size() > 10 ? current_finalwaypoints_.waypoints.size() : 10;
-           i++)
+      for (size_t i = 0; (i < current_finalwaypoints_.waypoints.size()) && (i < 10); i++)
       {
         if (current_finalwaypoints_.waypoints.at(i).wpstate.event_state ==
             autoware_msgs::WaypointState::TYPE_EVENT_GOAL)
@@ -495,6 +480,10 @@ void DecisionMakerNode::updateStateDrive(int status)
           goal_waypoint_ = current_finalwaypoints_.waypoints.at(i).gid;
           publishStoplineWaypointIdx(goal_waypoint_);
           break;
+        }
+        else
+        {
+          goal_waypoint_ = -1;
         }
       }
     }
@@ -505,6 +494,7 @@ void DecisionMakerNode::updateStateDrive(int status)
         goal_waypoint_ = -1;
         publishStoplineWaypointIdx(goal_waypoint_);
         ctx->setCurrentState(state_machine::MISSION_COMPLETE_STATE);
+        ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
         transition2missioncomplete = false;
       }
     }
