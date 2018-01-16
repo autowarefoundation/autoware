@@ -12,23 +12,6 @@
 
 namespace state_machine
 {
-// DriveState
-class DriveState : public State<DriveState>
-{
-private:
-  friend class State<DriveState>;
-
-  DriveState(void)
-  {
-    StateName = "Drive";
-    StateNum = StateTransMask = DRIVE_STATE;
-    StateTransMask |= INITIAL_LOCATEVEHICLE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-
 class DriveAccAccelerationState : public State<DriveAccAccelerationState>
 {
 private:

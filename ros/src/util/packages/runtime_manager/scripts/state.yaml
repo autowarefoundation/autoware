@@ -2,11 +2,13 @@ mainstate:
         START         : 1
         INIT          : 2
         LOCATE        : 3
-        DRIVE         : 4
+        READY_V       : 4
+        READY_D       : 5
+        DRIVE         : 6
         Remote-DRIVE  : 99
         Auto-DRIVE    : 99
-        GOAL          : 5
-        EMERGENCY     : 6
+        GOAL          : 7
+        EMERGENCY     : 8
 
 substate:
         Accelerate : 11

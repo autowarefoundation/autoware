@@ -10,6 +10,15 @@ namespace decision_maker
 {
 void DecisionMakerNode::setupStateCallback(void)
 {
+  // MISSION(MAIN) STATE GROUP
+  ctx->setCallbackUpdateFunc(state_machine::VEHICLE_READY_STATE,
+                             std::bind(&DecisionMakerNode::updateStateVehicleReady, this, 0));
+  ctx->setCallbackUpdateFunc(state_machine::DRIVE_READY_STATE,
+                             std::bind(&DecisionMakerNode::updateStateDriveReady, this, 0));
+  ctx->setCallbackUpdateFunc(state_machine::DRIVE_STATE, std::bind(&DecisionMakerNode::updateStateDrive, this, 0));
+  ctx->setCallbackUpdateFunc(state_machine::MISSION_COMPLETE_STATE,
+                             std::bind(&DecisionMakerNode::updateStateMissionComplete, this, 0));
+
   // steering state. these state's update function change lamp
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_STR_STRAIGHT_STATE,
                              std::bind(&DecisionMakerNode::updateStateSTR, this, 0));
@@ -459,5 +468,49 @@ void DecisionMakerNode::updateStateSTR(int status)
       break;
   }
   Pubs["lamp_cmd"].publish(lamp_msg);
+}
+
+void DecisionMakerNode::updateStateVehicleReady(int status)
+{
+  ctx->setCurrentState(state_machine::DRIVE_READY_STATE);
+}
+void DecisionMakerNode::updateStateDriveReady(int status)
+{
+  ctx->setCurrentState(state_machine::DRIVE_STATE);
+}
+void DecisionMakerNode::updateStateDrive(int status)
+{
+  static bool transition2missioncomplete = false;
+  if (current_finalwaypoints_.waypoints.size())
+  {
+    if (!transition2missioncomplete)
+    {
+      for (size_t i = 0; current_finalwaypoints_.waypoints.size() > 10 ? current_finalwaypoints_.waypoints.size() : 10;
+           i++)
+      {
+        if (current_finalwaypoints_.waypoints.at(i).wpstate.event_state ==
+            autoware_msgs::WaypointState::TYPE_EVENT_GOAL)
+        {
+          transition2missioncomplete = true;
+          goal_waypoint_ = current_finalwaypoints_.waypoints.at(i).gid;
+          publishStoplineWaypointIdx(goal_waypoint_);
+          break;
+        }
+      }
+    }
+    else
+    {
+      if (current_velocity_ == 0.0)
+      {
+        goal_waypoint_ = -1;
+        publishStoplineWaypointIdx(goal_waypoint_);
+        ctx->setCurrentState(state_machine::MISSION_COMPLETE_STATE);
+        transition2missioncomplete = false;
+      }
+    }
+  }
+}
+void DecisionMakerNode::updateStateMissionComplete(int status)
+{
 }
 }

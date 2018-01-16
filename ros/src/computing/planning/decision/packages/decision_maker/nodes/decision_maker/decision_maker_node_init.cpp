@@ -1,4 +1,3 @@
-#include <mutex>
 #include <ros/ros.h>
 #include <ros/spinner.h>
 #include <std_msgs/Float64.h>
@@ -7,6 +6,7 @@
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <tf/transform_listener.h>
+#include <mutex>
 
 // lib
 #include <state.hpp>
@@ -19,8 +19,8 @@
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <random>
 #include <visualization_msgs/MarkerArray.h>
+#include <random>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -45,13 +45,11 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["state_cmd"] = nh_.subscribe("state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
   Subs["closest_waypoint"] =
       nh_.subscribe("closest_waypoint", 1, &DecisionMakerNode::callbackFromClosestWaypoint, this);
-  Subs["cloud_clusters"] =
-      nh_.subscribe("cloud_clusters", 1, &DecisionMakerNode::callbackFromObjectDetector, this);
+  Subs["cloud_clusters"] = nh_.subscribe("cloud_clusters", 1, &DecisionMakerNode::callbackFromObjectDetector, this);
 
   // Config subscriber
   Subs["config/decision_maker"] =
       nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
-
 
   // pub
   //
@@ -71,8 +69,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
   Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
-  Pubs["detection_area"] = nh_.advertise<visualization_msgs::Marker>("/state/detection_area",1);
-  Pubs["stopline_target"] = nh_.advertise<visualization_msgs::Marker>("/state/stopline_target",1);
+  Pubs["detection_area"] = nh_.advertise<visualization_msgs::Marker>("/state/detection_area", 1);
+  Pubs["stopline_target"] = nh_.advertise<visualization_msgs::Marker>("/state/stopline_target", 1);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);
@@ -104,10 +102,25 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   // setup a callback for state update();
   setupStateCallback();
 
-  g_vmap.subscribe(nh_,
-                   Category::POINT | Category::LINE | Category::VECTOR | Category::AREA |
-                       Category::POLE |  // basic class
-                       Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
+  bool vmap_loaded = false;
+  do
+  {
+    g_vmap.subscribe(nh_,
+                     Category::POINT | Category::LINE | Category::VECTOR | Category::AREA |
+                         Category::POLE |  // basic class
+                         Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD,
+                     ros::Duration(5.0));
+
+    vmap_loaded =
+        g_vmap.hasSubscribed(Category::POINT | Category::LINE | Category::VECTOR | Category::AREA | Category::POLE |
+                             Category::DTLANE | Category::STOP_LINE | Category::ROAD_SIGN | Category::CROSS_ROAD);
+    if (!vmap_loaded)
+    {
+      ROS_WARN("Necessary vectormap have not been loaded");
+    }
+
+  } while (!vmap_loaded);
+
   initVectorMap();
 
   {
@@ -116,8 +129,8 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   }
 
   ROS_INFO("Initialized OUT\n");
-  ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
-  
+  ctx->setCurrentState(state_machine::LOCATEVEHICLE_STATE);
+
   Subs["lane_waypoints_array"] =
       nh_.subscribe(TPNAME_BASED_LANE_WAYPOINTS_ARRAY, 100, &DecisionMakerNode::callbackFromLaneWaypoint, this);
 }
@@ -152,8 +165,7 @@ void DecisionMakerNode::initVectorMap(void)
         g_vmap.findByFilter([&area](const Line &line) { return area.slid <= line.lid && line.lid <= area.elid; });
     for (const auto &line : lines)
     {
-      std::vector<Point> points =
-          g_vmap.findByFilter([&line](const Point &point) { return line.bpid == point.pid;});
+      std::vector<Point> points = g_vmap.findByFilter([&line](const Point &point) { return line.bpid == point.pid; });
       for (const auto &point : points)
       {
         geometry_msgs::Point _point;
@@ -178,7 +190,7 @@ void DecisionMakerNode::initVectorMap(void)
         z = _point.z;
       }  // points iter
     }    // line iter
-    carea.bbox.pose.position.x = x_avg / (double)points_count * 1.5/* expanding rate */;
+    carea.bbox.pose.position.x = x_avg / (double)points_count * 1.5 /* expanding rate */;
     carea.bbox.pose.position.y = y_avg / (double)points_count * 1.5;
     carea.bbox.pose.position.z = z;
     carea.bbox.dimensions.x = x_max - x_min;

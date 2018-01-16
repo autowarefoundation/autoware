@@ -41,7 +41,9 @@ public:
   {
     StateStores[START_STATE] = StartState::getInstance();
     StateStores[INITIAL_STATE] = InitialState::getInstance();
-    StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
+    StateStores[LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
+    StateStores[VEHICLE_READY_STATE] = VehicleReadyState::getInstance();
+    StateStores[DRIVE_READY_STATE] = DriveReadyState::getInstance();
     StateStores[DRIVE_STATE] = DriveState::getInstance();
     StateStores[DRIVE_ACC_ACCELERATION_STATE] = DriveAccAccelerationState::getInstance();
     StateStores[DRIVE_ACC_DECELERATION_STATE] = DriveAccDecelerationState::getInstance();

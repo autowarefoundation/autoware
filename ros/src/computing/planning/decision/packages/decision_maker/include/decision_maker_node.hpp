@@ -4,12 +4,12 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <autoware_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
+#include <autoware_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/waypoint.h>
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/waypoint.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
@@ -40,8 +40,6 @@
 namespace decision_maker
 {
 using namespace vector_map;
-
-
 enum class EControl : int32_t
 {
   KEEP = -1,
@@ -70,7 +68,6 @@ typename std::underlying_type<T>::type enumToInteger(T t)
 {
   return static_cast<typename std::underlying_type<T>::type>(t);
 }
-
 
 class DecisionMakerNode
 {
@@ -104,6 +101,7 @@ private:
   tf::TransformListener tflistener_baselink;
 
   int closest_stopline_waypoint_;
+  int goal_waypoint_;
 
   // Current way/behavior status
   double current_velocity_;
@@ -117,15 +115,16 @@ private:
   double displacement_from_path_;
   autoware_msgs::waypoint CurrentStoplineTarget_;
 
-  bool foundOtherVehicleForIntersectionStop_; // In fact this should be defined as state.
+  bool foundOtherVehicleForIntersectionStop_;  // In fact this should be defined as state.
   class DetectionArea
   {
-    public:
-      double x1,x2;
-      double y1,y2;
+  public:
+    double x1, x2;
+    double y1, y2;
 
-      DetectionArea(){
-      }
+    DetectionArea()
+    {
+    }
   };
   DetectionArea detectionArea_;
 
@@ -201,7 +200,6 @@ private:
   void setAllStoplineStop(void);
   void publishStoplineWaypointIdx(int wp_idx);
 
-
   // callback by state context
   void StoplinePlanIn(int status);
   void StoplinePlanOut(int status);
@@ -218,7 +216,12 @@ private:
   void callbackInStateKeep(int status);
   void callbackOutStateLaneChange(int status);
   void setupStateCallback(void);
-  
+
+  void updateStateVehicleReady(int status);
+  void updateStateDriveReady(int status);
+  void updateStateDrive(int status);
+  void updateStateMissionComplete(int status);
+
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
@@ -267,8 +270,8 @@ public:
     vector_map_init = false;
     created_shift_lane_flag_ = false;
     closest_waypoint_ = 0;
-    
-    foundOtherVehicleForIntersectionStop_ = false; 
+
+    foundOtherVehicleForIntersectionStop_ = false;
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;
@@ -279,13 +282,12 @@ public:
   void run(void);
   geometry_msgs::Point to_geoPoint(const vector_map_msgs::Point &vp)
   {
-	  geometry_msgs::Point gp;
-	  gp.x = vp.ly;
-	  gp.y = vp.bx;
-	  gp.z = vp.h;
-	  return gp;
+    geometry_msgs::Point gp;
+    gp.x = vp.ly;
+    gp.y = vp.bx;
+    gp.z = vp.h;
+    return gp;
   }
-
 };
 
 }  // namespace decision_maker
