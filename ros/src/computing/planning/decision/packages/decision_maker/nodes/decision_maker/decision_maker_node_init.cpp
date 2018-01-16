@@ -126,13 +126,14 @@ void DecisionMakerNode::initVectorMap(void)
   std::vector<CrossRoad> crossroads = g_vmap.findByFilter([](const CrossRoad &crossroad) { return true; });
   if (crossroads.empty())
   {
-    ROS_INFO("crossroad have not found\n");
+    ROS_INFO("crossroads have not found\n");
     return;
   }
 
   vector_map_init = true;  // loaded flag
   for (const auto &cross_road : crossroads)
   {
+    geometry_msgs::Point _prev_point;
     Area area = g_vmap.findByKey(Key<Area>(cross_road.aid));
     CrossRoadArea carea;
     carea.id = _index++;
@@ -147,9 +148,8 @@ void DecisionMakerNode::initVectorMap(void)
         g_vmap.findByFilter([&area](const Line &line) { return area.slid <= line.lid && line.lid <= area.elid; });
     for (const auto &line : lines)
     {
-      geometry_msgs::Point _prev_point;
       std::vector<Point> points =
-          g_vmap.findByFilter([&line](const Point &point) { return line.bpid == point.pid || point.pid == line.fpid; });
+          g_vmap.findByFilter([&line](const Point &point) { return line.bpid == point.pid;});
       for (const auto &point : points)
       {
         geometry_msgs::Point _point;
@@ -172,7 +172,6 @@ void DecisionMakerNode::initVectorMap(void)
         y_min = (y_min == 0.0) ? _point.y : std::min(_point.y, y_min);
         y_max = (y_max == 0.0) ? _point.y : std::max(_point.y, y_max);
         z = _point.z;
-
       }  // points iter
     }    // line iter
     carea.bbox.pose.position.x = x_avg / (double)points_count;
