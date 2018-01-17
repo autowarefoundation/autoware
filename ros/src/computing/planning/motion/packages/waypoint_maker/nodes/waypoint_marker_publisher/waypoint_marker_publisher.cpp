@@ -121,8 +121,6 @@ void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_wa
     velocity_marker.ns = "global_velocity_lane_" + std::to_string(count);
     for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)
     {
-      // std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " <<
-      // _waypoints[i].GetVelocity_kmh() << std::endl;
       velocity_marker.id = i;
       geometry_msgs::Point relative_p;
       relative_p.y = 0.5;
@@ -164,8 +162,6 @@ void createGlobalLaneArrayChangeFlagMarker(const autoware_msgs::LaneArray& lane_
     marker.ns = "global_change_flag_lane_" + std::to_string(count);
     for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)
     {
-      // std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " <<
-      // _waypoints[i].GetVelocity_kmh() << std::endl;
       marker.id = i;
       geometry_msgs::Point relative_p;
       relative_p.x = -0.1;
@@ -226,8 +222,6 @@ void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_wa
 
     // double to string
     std::ostringstream oss;
-    // oss << std::fixed << std::setprecision(2) << mps2kmph(lane_waypoint.waypoints[i].twist.twist.linear.x) << "
-    // km/h";
     oss << std::fixed << std::setprecision(1) << mps2kmph(lane_waypoint.waypoints[i].twist.twist.linear.x);
     velocity.text = oss.str();
 
@@ -454,7 +448,6 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
 {
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
-  // createGlobalLaneArrayMarker(_global_color, *msg);
   createGlobalLaneArrayOrientationMarker(*msg);
   createGlobalLaneArrayChangeFlagMarker(*msg);
   publishGlobalMarker();
