@@ -2,6 +2,7 @@
 <launch>
 	<arg name="multi_lane_csv" default="" />
 	<arg name="decelerate" default="1" />
+	<arg name="use_velocity_visualizer" default="false" />
 	<arg name="disableDecisionMaker" default="1" />
 	<arg name="disableVelocitySmoothing" default="0" />
 
@@ -12,8 +13,9 @@
         <param name="disableDecisionMaker" value="$(arg disableDecisionMaker)" />
         <param name="disableVelocitySmoothing" value="$(arg disableVelocitySmoothing)" />
 	</node>
-		
-	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher"/>
 
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher">
+	<param name="use_velocity_visualizer" value="$(arg use_velocity_visualizer)"/>
+	</node>
 
 </launch>
