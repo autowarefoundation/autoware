@@ -194,9 +194,10 @@ bool checkPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_gr
 	double cv_y = (in_grid_map.getLength().x() - origin_x_offset - in_point.x) / in_grid_map.getResolution();
 
 	//check coords are inside the gridmap
-	if(cv_x < 0 || cv_x > in_grid_image.cols
-			|| cv_y < 0 || cv_y > in_grid_image.rows)
-	{	return false;}
+	if(cv_x < 0 || cv_x > in_grid_image.cols || cv_y < 0 || cv_y > in_grid_image.rows)
+	{
+		return false;
+	}
 
 	//Scalar(0) if road
 	if(0 == in_grid_image.at<uchar>(cv_y, cv_x))
@@ -213,7 +214,7 @@ void convertPointsToImage(grid_map::GridMap& out_grid_map, const std::vector<std
 	{
 		out_grid_map.add("wayarea");
 	}
-	out_grid_map["wayarea"].setConstant(100);
+	out_grid_map["wayarea"].setConstant(100);//fill with gray color
 
 	cv::Mat original_image;
 	grid_map::GridMapCvConverter::toImage<unsigned char, 1>(out_grid_map, "wayarea", CV_8UC1, 0, 100, original_image);
@@ -1235,13 +1236,16 @@ int main (int argc, char** argv)
 
 	// Create a ROS subscriber for the input point cloud
 	ros::Subscriber sub = h.subscribe (points_topic, 1, velodyne_callback);
-	//ros::Subscriber sub_vectormap = h.subscribe ("vector_map", 1, vectormap_callback);
-	//_vectormap_server = h.serviceClient<vector_map_server::PositionState>("vector_map_server/is_way_area");
+
+
+	vector_map::VectorMap vector_map;
 
 	ROS_INFO("[euclidean_cluster]: Creating GridMap for Wayarea...");
-	vector_map::VectorMap vector_map;
-	vector_map.subscribe(private_nh, vector_map::Category::POINT | vector_map::Category::LINE |
-			vector_map::Category::AREA | vector_map::Category::WAY_AREA);
+	vector_map.subscribe(private_nh,
+	                     vector_map::Category::POINT | vector_map::Category::LINE |
+	                     vector_map::Category::AREA | vector_map::Category::WAY_AREA,
+	                     10 //abort after 10 times, either vector map or wayarea not available
+	);
 
 	// all true -> all data
 	std::vector<vector_map_msgs::WayArea> way_areas = vector_map.findByFilter([](const vector_map_msgs::WayArea& way_area){return true;});
@@ -1254,6 +1258,7 @@ int main (int argc, char** argv)
 	if (way_areas.empty())
 	{
 		ROS_WARN_STREAM("[euclidean_cluster]: The VectorMap is not being published or does not contain WAYAREA, not performing filtering.");
+		_wayarea_gridmap = NULL;
 	} else
 	{
 		ROS_INFO("[euclidean_cluster]: Found %lu wayareas.", way_areas.size());
