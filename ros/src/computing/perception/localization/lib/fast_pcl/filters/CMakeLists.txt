@@ -9,7 +9,6 @@ message("fast_pcl requires PCL 1.7.2 or higher versions")
 ELSE(PCL_VERSION VERSION_LESS "1.7.2")
 set(SUBSYS_NAME filters)
 set(SUBSYS_DESC "Point cloud filters library")
-
 set(LIB_NAME "fast_pcl_filters")
 
 
