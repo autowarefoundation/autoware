@@ -28,7 +28,6 @@ if (CUDA_FOUND)
 
   set(SUBSYS_NAME ndt_gpu)
   set(SUBSYS_DESC "Point cloud ndt gpu library")
-  set(SUBSYS_DEPS common)
   set(LIB_NAME "fast_pcl_ndt_gpu")
 
   catkin_package(

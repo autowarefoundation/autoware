@@ -9,6 +9,5 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>libpcl-all-dev</build_depend>
-  <run_depend>common</run_depend>
   <run_depend>libpcl-all</run_depend>
 </package>
