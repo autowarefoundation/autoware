@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_localizer)
-execute_process(
-  COMMAND rosversion -d
-  OUTPUT_VARIABLE ROS_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+
+# get ros version
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(PCL REQUIRED)
-
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration)
+  SET(FAST_PCL_PACKAGES filters registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
