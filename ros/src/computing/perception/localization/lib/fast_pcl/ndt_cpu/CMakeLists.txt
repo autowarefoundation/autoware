@@ -1,22 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_cpu)
 
-find_package(catkin REQUIRED COMPONENTS
-	velodyne_pointcloud
-)
 find_package(PCL REQUIRED)
 
-    
-	
 set(SUBSYS_NAME ndt_cpu)
 set(SUBSYS_DESC "Point cloud ndt cpu library for testing")
 set(SUBSYS_DEPS common)
 set(LIB_NAME "fast_pcl_ndt_cpu")
-	
+
 catkin_package(
-	DEPENDS ${SUBSYS_DEPS}
-	INCLUDE_DIRS include
-	LIBRARIES ${LIB_NAME}
+    DEPENDS ${SUBSYS_DEPS}
+    INCLUDE_DIRS include
+    LIBRARIES ${LIB_NAME} "${LIB_NAME}"
 )
 
 include_directories(
@@ -40,6 +35,10 @@ set(incs
 )
 
 add_library("${LIB_NAME}" ${incs} ${srcs})
-		
-target_link_libraries("${LIB_NAME}" ${PCL_LIBRRIES})
 
+target_link_libraries("${LIB_NAME}" ${PCL_LIBRRIES} ${catkin_LIBRARIES})
+
+install(TARGETS "${LIB_NAME}"
+ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
