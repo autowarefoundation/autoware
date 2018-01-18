@@ -1,0 +1,11 @@
+<!-- -->
+<launch>
+	<!-- <arg name="multi_lane_csv" default="" /> -->
+
+	<node pkg="waypoint_maker" type="waypoint_velocity_vizualizer" name="waypoint_velocity_vizualizer" output="screen">
+	<!-- <param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
+        <param name="decelerate" value="$(arg decelerate)" />
+        <param name="disableDecisionMaker" value="$(arg disableDecisionMaker)" />
+        <param name="disableVelocitySmoothing" value="$(arg disableVelocitySmoothing)" /> -->
+	</node>
+</launch>

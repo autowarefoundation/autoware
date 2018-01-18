@@ -59,22 +59,10 @@ const double g_global_alpha = 0.2;
 const double g_local_alpha = 1.0;
 int _closest_waypoint = -1;
 
-bool g_current_pose_subscribed = false;
-bool g_current_vel_subscribed = false;
-bool g_command_vel_subscribed = false;
-geometry_msgs::PoseStamped g_current_pose;
-geometry_msgs::TwistStamped g_current_vel, g_command_vel;
-autoware_msgs::lane g_current_vel_array, g_command_vel_array;
-
 visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
 
 bool g_config_manual_detection = true;
-bool g_use_velocity_visualizer;
-double g_graph_height_ratio;
-std::vector<double> g_local_vel_graph_color = { 0.0, 1.0, 0.0, 0.5 };
-std::vector<double> g_current_vel_graph_color = { 1.0, 0.0, 0.0, 0.5 };
-std::vector<double> g_command_vel_graph_color = { 0.0, 0.0, 1.0, 0.5 };
 
 enum class ChangeFlag : int32_t
 {
@@ -268,59 +256,6 @@ void createGlobalLaneArrayMarker(std_msgs::ColorRGBA color, const autoware_msgs:
   }
 }
 
-void createVelocityBarGraphMarker(const autoware_msgs::lane& lane_waypoint, const std::string str_name_space, const std::vector<double>& flat_color)
-{
-  visualization_msgs::Marker velocity_bar_graph_marker;
-  velocity_bar_graph_marker.header.frame_id = "map";
-  velocity_bar_graph_marker.header.stamp = ros::Time::now();
-  velocity_bar_graph_marker.ns = str_name_space + "_velocity_bar_graph_marker";
-  velocity_bar_graph_marker.type = visualization_msgs::Marker::CYLINDER;
-  velocity_bar_graph_marker.action = visualization_msgs::Marker::ADD;
-  velocity_bar_graph_marker.scale.x = 0.2;
-  velocity_bar_graph_marker.scale.y = 0.2;
-  velocity_bar_graph_marker.color.r = flat_color[0];
-  velocity_bar_graph_marker.color.g = flat_color[1];
-  velocity_bar_graph_marker.color.b = flat_color[2];
-  velocity_bar_graph_marker.color.a = flat_color[3];
-  velocity_bar_graph_marker.frame_locked = true;
-
-  unsigned int count = 0;
-  for (auto el : lane_waypoint.waypoints)
-  {
-    double bar_graph_height = g_graph_height_ratio * el.twist.twist.linear.x;
-    velocity_bar_graph_marker.id = count++;
-    velocity_bar_graph_marker.pose = el.pose.pose;
-    velocity_bar_graph_marker.pose.position.z += bar_graph_height / 2.0;
-    // When the the cylinder height is 0 or less, a warning occurs in RViz.
-    velocity_bar_graph_marker.scale.z = fabs(bar_graph_height) + 1e-6;
-    g_local_waypoints_marker_array.markers.push_back(velocity_bar_graph_marker);
-  }
-}
-
-void createVelocityLineGraphMarker(const autoware_msgs::lane& lane_waypoint, const std::string str_name_space, const std::vector<double>& flat_color)
-{
-  visualization_msgs::Marker velocity_line_graph_marker;
-  velocity_line_graph_marker.header.frame_id = "map";
-  velocity_line_graph_marker.header.stamp = ros::Time::now();
-  velocity_line_graph_marker.ns = str_name_space + "_velocity_line_graph_marker";
-  velocity_line_graph_marker.type = visualization_msgs::Marker::LINE_STRIP;
-  velocity_line_graph_marker.action = visualization_msgs::Marker::ADD;
-  velocity_line_graph_marker.scale.x = 0.25;
-  velocity_line_graph_marker.color.r = flat_color[0];
-  velocity_line_graph_marker.color.g = flat_color[1];
-  velocity_line_graph_marker.color.b = flat_color[2];
-  velocity_line_graph_marker.color.a = flat_color[3];
-  velocity_line_graph_marker.frame_locked = true;
-
-  for (auto el : lane_waypoint.waypoints)
-  {
-    geometry_msgs::Point point = el.pose.pose.position;
-    point.z += g_graph_height_ratio * el.twist.twist.linear.x;
-    velocity_line_graph_marker.points.push_back(point);
-  }
-  g_local_waypoints_marker_array.markers.push_back(velocity_line_graph_marker);
-}
-
 void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane_waypoints_array)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
@@ -470,87 +405,7 @@ void finalCallback(const autoware_msgs::laneConstPtr& msg)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
-  if (g_use_velocity_visualizer)
-  {
-    createVelocityBarGraphMarker(*msg, "local", g_local_vel_graph_color);
-    createVelocityLineGraphMarker(*msg, "local", g_local_vel_graph_color);
-
-    createVelocityBarGraphMarker(g_current_vel_array, "current", g_current_vel_graph_color);
-    createVelocityLineGraphMarker(g_current_vel_array, "current", g_current_vel_graph_color);
-
-    createVelocityBarGraphMarker(g_command_vel_array, "command", g_command_vel_graph_color);
-    createVelocityLineGraphMarker(g_command_vel_array, "command", g_command_vel_graph_color);
-  }
   publishLocalMarker();
-}
-
-const bool isSyncTimeOn10Hz()
-{
-  ros::Duration duration_diff[3];
-  ros::Time cpose_stamp = g_current_pose.header.stamp;
-  ros::Time cvel_stamp = g_current_vel.header.stamp;
-  ros::Time pvel_stamp = g_command_vel.header.stamp;
-  duration_diff[0] = cpose_stamp - cvel_stamp;
-  duration_diff[1] = cpose_stamp - pvel_stamp;
-  duration_diff[2] = cvel_stamp - pvel_stamp;
-  for(int i=0;i<3;i++)
-  {
-    double diff_sec = fabs(1e-9 * duration_diff[i].nsec + duration_diff[i].sec);
-    if(diff_sec >= 0.2)return false;//rejecting over 0.2sec delay
-  }
-  return true;
-}
-
-void pushVelocityArray()
-{
-  const unsigned int pose_and_velocity_array_limits = 100;
-  std::vector<autoware_msgs::waypoint>& cwp_array = g_current_vel_array.waypoints;
-  std::vector<autoware_msgs::waypoint>& pwp_array = g_command_vel_array.waypoints;
-
-  autoware_msgs::waypoint current_wp, command_wp;
-  current_wp.pose = command_wp.pose = g_current_pose;
-  current_wp.twist = g_current_vel;
-  command_wp.twist = g_command_vel;
-  cwp_array.push_back(current_wp);
-  pwp_array.push_back(command_wp);
-  if(cwp_array.size() > pose_and_velocity_array_limits)cwp_array.erase(cwp_array.begin());
-  if(pwp_array.size() > pose_and_velocity_array_limits)pwp_array.erase(pwp_array.begin());
-}
-
-void currentPoseCallback(const geometry_msgs::PoseStamped& pose)
-{
-  g_current_pose = pose;
-  g_current_pose_subscribed = true;
-
-  bool is_sync_pose_and_velocity = (g_current_pose_subscribed && g_current_vel_subscribed && g_command_vel_subscribed);
-  if(!is_sync_pose_and_velocity)return;
-  if(!isSyncTimeOn10Hz())return;
-  pushVelocityArray();
-  g_current_pose_subscribed = g_current_vel_subscribed = g_command_vel_subscribed =false;
-}
-
-void currentVelocityCallback(const geometry_msgs::TwistStamped& vel)
-{
-  g_current_vel = vel;
-  g_current_vel_subscribed = true;
-
-  bool is_sync_pose_and_velocity = (g_current_pose_subscribed && g_current_vel_subscribed && g_command_vel_subscribed);
-  if(!is_sync_pose_and_velocity)return;
-  if(!isSyncTimeOn10Hz())return;
-  pushVelocityArray();
-  g_current_pose_subscribed = g_current_vel_subscribed = g_command_vel_subscribed =false;
-}
-
-void commandVelocityCallback(const geometry_msgs::TwistStamped& vel)
-{
-  g_command_vel = vel;
-  g_command_vel_subscribed = true;
-
-  bool is_sync_pose_and_velocity = (g_current_pose_subscribed && g_current_vel_subscribed && g_command_vel_subscribed);
-  if(!is_sync_pose_and_velocity)return;
-  if(!isSyncTimeOn10Hz())return;
-  pushVelocityArray();
-  g_current_pose_subscribed = g_current_vel_subscribed = g_command_vel_subscribed =false;
 }
 
 void closestCallback(const std_msgs::Int32ConstPtr& msg)
@@ -565,12 +420,6 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-  private_nh.param<bool>("use_velocity_visualizer", g_use_velocity_visualizer, false);
-  private_nh.param<double>("graph_height_ratio", g_graph_height_ratio, 1.0);
-  private_nh.param<std::vector<double> >("local_velocity_graph_color", g_local_vel_graph_color, g_local_vel_graph_color);
-  private_nh.param<std::vector<double> >("current_velocity_graph_color", g_current_vel_graph_color, g_current_vel_graph_color);
-  private_nh.param<std::vector<double> >("command_velocity_graph_color", g_command_vel_graph_color, g_command_vel_graph_color);
-
   // subscribe traffic light
   ros::Subscriber light_sub = nh.subscribe("light_color", 10, receiveAutoDetection);
   ros::Subscriber light_managed_sub = nh.subscribe("light_color_managed", 10, receiveManualDetection);
@@ -582,13 +431,6 @@ int main(int argc, char** argv)
   // subscribe local waypoints
   ros::Subscriber final_sub = nh.subscribe("final_waypoints", 10, finalCallback);
   ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, closestCallback);
-
-  // subscribe current pose & velocity
-  ros::Subscriber current_pose_sub = nh.subscribe("current_pose", 10, currentPoseCallback);
-  ros::Subscriber current_vel_sub = nh.subscribe("current_velocity", 10, currentVelocityCallback);
-
-  // subscribe velocity command
-  ros::Subscriber command_vel_sub = nh.subscribe("twist_cmd", 10, commandVelocityCallback);
 
   // subscribe config
   ros::Subscriber config_sub = nh.subscribe("config/lane_stop", 10, configParameter);

@@ -49,3 +49,8 @@ add_executable(waypoint_marker_publisher nodes/waypoint_marker_publisher/waypoin
 target_link_libraries(waypoint_marker_publisher ${catkin_LIBRARIES})
 add_dependencies(waypoint_marker_publisher
   autoware_msgs_generate_messages_cpp)
+
+add_executable(waypoint_velocity_vizualizer nodes/waypoint_velocity_vizualizer/waypoint_velocity_vizualizer.cpp)
+target_link_libraries(waypoint_velocity_vizualizer ${catkin_LIBRARIES})
+add_dependencies(waypoint_velocity_vizualizer
+  autoware_msgs_generate_messages_cpp)
