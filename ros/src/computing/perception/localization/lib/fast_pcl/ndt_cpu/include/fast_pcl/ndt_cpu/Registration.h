@@ -3,7 +3,6 @@
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
-#include <velodyne_pointcloud/point_types.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 

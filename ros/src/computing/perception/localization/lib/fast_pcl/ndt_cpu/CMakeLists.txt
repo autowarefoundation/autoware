@@ -5,13 +5,12 @@ find_package(PCL REQUIRED)
 
 set(SUBSYS_NAME ndt_cpu)
 set(SUBSYS_DESC "Point cloud ndt cpu library for testing")
-set(SUBSYS_DEPS common)
 set(LIB_NAME "fast_pcl_ndt_cpu")
 
 catkin_package(
-    DEPENDS ${SUBSYS_DEPS}
     INCLUDE_DIRS include
-    LIBRARIES ${LIB_NAME} "${LIB_NAME}"
+    LIBRARIES ${LIB_NAME}
+    DEPENDS PCL
 )
 
 include_directories(
@@ -42,3 +41,8 @@ install(TARGETS "${LIB_NAME}"
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
