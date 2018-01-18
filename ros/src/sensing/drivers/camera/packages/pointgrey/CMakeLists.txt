@@ -11,6 +11,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(OpenCV REQUIRED)
 
+catkin_package()
+
 ###########
 ## Build ##
 ###########
@@ -30,6 +32,13 @@ if(EXISTS "/usr/include/flycapture")
 		${OpenCV_LIBS}
 		flycapture
 	)
+
+        ## Install executables and/or libraries
+        install(TARGETS grasshopper3_camera
+                ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 else()
 	message("'FlyCapture SDK' is not installed. 'grasshopper3_camera' will not be built.")
 endif()
@@ -59,7 +68,17 @@ if(EXISTS "/usr/include/ladybug")
 		${OpenCV_LIBS}
                 ${XercesC_LIBRARIES}
 		ladybug
+
+        ## Install executables and/or libraries
+        install(TARGETS ladybug_camera
+                ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 	)
 else()
 	message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
 endif()
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+PATTERN ".svn" EXCLUDE)
