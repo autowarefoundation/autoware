@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_cpu)
 
+find_package(catkin REQUIRED COMPONENTS)
 find_package(PCL REQUIRED)
 
 set(SUBSYS_NAME ndt_cpu)
