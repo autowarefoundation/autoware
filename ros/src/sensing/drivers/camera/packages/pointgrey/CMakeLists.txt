@@ -4,8 +4,7 @@ project(autoware_pointgrey_drivers)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
-	std_msgs
-	message_generation
+        std_msgs
 	tf
 )
 
@@ -23,8 +22,7 @@ if(EXISTS "/usr/include/flycapture")
 	include_directories(
 		/usr/include/flycapture
 		${catkin_INCLUDE_DIRS}
-		${OpenCV_INCLUDE_DIRS}
-		${catkin_INCLUDE_DIRS}
+                ${OpenCV_INCLUDE_DIRS}
 	)
 	add_executable(grasshopper3_camera
 		nodes/grasshopper3/grasshopper3.cpp
