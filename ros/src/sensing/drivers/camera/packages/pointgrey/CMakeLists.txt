@@ -11,8 +11,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(OpenCV REQUIRED)
 
-catkin_package()
-
 ###########
 ## Build ##
 ###########
@@ -46,8 +44,7 @@ if(EXISTS "/usr/include/ladybug")
 	endif()
 
 	include_directories(
-		/usr/include/ladybug
-		nodes/ladybug
+                /usr/include/ladybug
 		${catkin_INCLUDE_DIRS}
 		${OpenCV_INCLUDE_DIRS}
 		${XercesC_INCLUDE_DIRS}
@@ -60,8 +57,7 @@ if(EXISTS "/usr/include/ladybug")
 	target_link_libraries(ladybug_camera
 		${catkin_LIBRARIES}
 		${OpenCV_LIBS}
-		${XercesC_LIBRARIES}
-		flycapture
+                ${XercesC_LIBRARIES}
 		ladybug
 	)
 else()
