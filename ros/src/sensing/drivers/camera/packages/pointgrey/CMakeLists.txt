@@ -4,8 +4,7 @@ project(autoware_pointgrey_drivers)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
-        std_msgs
-	tf
+        sensor_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
