@@ -79,6 +79,6 @@ else()
 	message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
 endif()
 
-install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+install(DIRECTORY scripts/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
 PATTERN ".svn" EXCLUDE)
