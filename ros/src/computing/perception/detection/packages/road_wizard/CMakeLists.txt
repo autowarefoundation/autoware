@@ -102,7 +102,6 @@ add_dependencies(region_tlr
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
-  ${libvectormap_INCLUDE_DIRS}
 )
 
 add_executable(feat_proj
@@ -111,9 +110,7 @@ add_executable(feat_proj
 
 target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
-  ${libvectormap_LIBRARIES}
   ${OpenCV_LIBS}
-  vector_map
 )
 
 add_dependencies(feat_proj
