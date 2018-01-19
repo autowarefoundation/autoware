@@ -6,10 +6,13 @@ find_package(catkin REQUIRED COMPONENTS)
 catkin_package(
     INCLUDE_DIRS include
     LIBRARIES ndt_tku
+    DEPENDS glut
 )
 
 include_directories(
-  include ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${GLUT_INCLUDE_DIRS}
 )
 
 add_library(ndt_tku
@@ -22,7 +25,10 @@ add_library(ndt_tku
 #  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #  FILES_MATCHING PATTERN "*.hh"
 #)
-target_link_libraries(ndt_tku ${catkin_LIBRARIES})
+target_link_libraries(ndt_tku
+${catkin_LIBRARIES}
+${GLUT_LIBRARY})
+
 install(TARGETS ndt_tku
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
