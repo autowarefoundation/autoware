@@ -5,23 +5,25 @@ project(road_wizard)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
+
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  cv_bridge
-  sensor_msgs
-  tf
-  libvectormap
-  runtime_manager
-  vector_map_server
-  geometry_msgs
-  waypoint_follower
-  cmake_modules
-  autoware_msgs
-  visualization_msgs
+        autoware_msgs
+        cmake_modules
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
+
 if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
   find_package(cmake_modules REQUIRED)
@@ -51,8 +53,23 @@ include_directories(
 )
 
 catkin_package(
-  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
+    INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
+    CATKIN_DEPENDS
+        autoware_msgs
+        cmake_modules
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        message_runtime
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+
+    LIBRARIES libcontext
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
