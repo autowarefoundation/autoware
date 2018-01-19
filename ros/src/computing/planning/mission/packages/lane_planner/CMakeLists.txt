@@ -1,23 +1,38 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lane_planner)
 
+# c++11
+set(CMAKE_CXX_STANDARD 11)
+
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  tablet_socket
-  waypoint_follower
-  vector_map
-  gnss
-  autoware_msgs
+        autoware_msgs
+        geometry_msgs
+        gnss
+        roscpp
+        std_msgs
+        tablet_socket
+        tablet_socket_msgs
+        tf
+        vector_map
+        visualization_msgs
+        waypoint_follower
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES vmap
-  CATKIN_DEPENDS tablet_socket waypoint_follower vector_map autoware_msgs
-  DEPENDS gnss
+    INCLUDE_DIRS include
+    LIBRARIES vmap
+    CATKIN_DEPENDS
+        autoware_msgs
+        geometry_msgs
+        roscpp
+        std_msgs
+        tablet_socket
+        tablet_socket_msgs
+        tf
+        vector_map
+        visualization_msgs
+        waypoint_follower
+    DEPENDS gnss
 )
 
 include_directories(
@@ -54,3 +69,18 @@ target_link_libraries(lane_select ${catkin_LIBRARIES})
 add_dependencies(lane_select
   autoware_msgs_generate_messages_cpp
 )
+install(TARGETS lane_navi lane_rule lane_stop lane_select
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS vmap
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)
