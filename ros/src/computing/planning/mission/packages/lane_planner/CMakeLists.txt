@@ -16,7 +16,6 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map
         visualization_msgs
         waypoint_follower
-        waypoint_maker
 )
 
 catkin_package(
@@ -33,7 +32,6 @@ catkin_package(
         vector_map
         visualization_msgs
         waypoint_follower
-        waypoint_maker
     DEPENDS gnss
 )
 
