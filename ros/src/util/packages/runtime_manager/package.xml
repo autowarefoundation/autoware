@@ -10,20 +10,26 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>rosgraph</build_depend>
   <build_depend>rosnode</build_depend>
-
   <build_depend>rospy</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tablet_socket_msgs</build_depend>
+
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
   <run_depend>calibration_camera_lidar</run_depend>
   <run_depend>car_detector</run_depend>
   <run_depend>cv_tracker</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>gnss_localizer</run_depend>
+  <run_depend>rosgraph</run_depend>
+  <run_depend>rosnode</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tablet_socket_msgs</run_depend>
+
+<!-- enable these -->
+<!--  <run_depend>gnss_localizer</run_depend>
   <run_depend>javad</run_depend>
   <run_depend>lane_planner</run_depend>
   <run_depend>map_file</run_depend>
-
   <run_depend>message_runtime</run_depend>
   <run_depend>mqtt_socket</run_depend>
   <run_depend>ndt_localizer</run_depend>
@@ -34,17 +40,12 @@
   <run_depend>python-psutil</run_depend>
   <run_depend>python-yaml</run_depend>
   <run_depend>road_wizard</run_depend>
-  <run_depend>rosgraph</run_depend>
-  <run_depend>rosnode</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>std_msgs</run_depend>
   <run_depend>synchronization</run_depend>
   <run_depend>tablet_socket</run_depend>
-  <run_depend>tablet_socket_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>topic_tools</run_depend>
   <run_depend>uvc_camera</run_depend>
   <run_depend>vehicle_socket</run_depend>
   <run_depend>velodyne</run_depend>
-  <run_depend>waypoint_follower</run_depend>
+  <run_depend>waypoint_follower</run_depend>-->
 </package>
