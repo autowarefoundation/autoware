@@ -1,19 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tablet_socket)
 
+set(CMAKE_CXX_STANDARD 11)
+
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tf
-  gnss
-  tablet_socket_msgs
   autoware_msgs
+  geometry_msgs
+  gnss
+  roscpp
+  std_msgs
+  tablet_socket_msgs
+  tf
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 catkin_package(
-  CATKIN_DEPENDS tf tablet_socket_msgs autoware_msgs
-  DEPENDS gnss
+    CATKIN_DEPENDS autoware_msgs geometry_msgs gnss roscpp std_msgs tablet_socket_msgs tf
 )
 
 include_directories(
@@ -23,11 +24,14 @@ include_directories(
 
 add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)
 target_link_libraries(tablet_receiver ${catkin_LIBRARIES})
-add_dependencies(tablet_receiver tablet_socket_msgs_generate_messages_cpp)
+add_dependencies(tablet_receiver ${catkin_EXPORTED_TARGETS})
 
 add_executable(tablet_sender nodes/tablet_sender/tablet_sender.cpp)
 target_link_libraries(tablet_sender ${catkin_LIBRARIES})
-add_dependencies(tablet_sender
-  tablet_socket_msgs_generate_messages_cpp
-  autoware_msgs_generate_messages_cpp
+add_dependencies(tablet_sender ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS tablet_receiver tablet_sender
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
