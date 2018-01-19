@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   waypoint_follower
   cmake_modules
   autoware_msgs
+  visualization_msgs
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
