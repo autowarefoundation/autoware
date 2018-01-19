@@ -4,14 +4,21 @@ project(runtime_manager)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
+  autoware_msgs
+  tablet_socket_msgs
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES runtime_manager
-  CATKIN_DEPENDS rospy std_msgs message_runtime
-#  DEPENDS system_lib
+  LIBRARIES runtime_manager
+  CATKIN_DEPENDS rospy std_msgs autoware_msgs tablet_socket_msgs
 )
+
+target_link_libraries("runtime_manager ${catkin_LIBRARIES})
+add_dependencies(runtime_manager ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 #add_executable(runtime_manager scripts/runtime_manager.py)
 #add_dependencies(runtime_manager runtime_manager_generate_messages_cpp)
+
+#install(DIRECTORY launch/
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+#  PATTERN ".svn" EXCLUDE)
