@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(road_wizard)
-execute_process(
-  COMMAND rosversion -d
-  OUTPUT_VARIABLE ROS_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+
+# get ros version
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
