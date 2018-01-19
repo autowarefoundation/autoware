@@ -6,6 +6,4 @@
   <maintainer email="tomo@axe.bz">Tomomi HORII</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <export>
-  </export>
 </package>
