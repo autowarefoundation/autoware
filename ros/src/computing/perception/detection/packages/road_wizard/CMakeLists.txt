@@ -252,6 +252,28 @@ add_dependencies(region_tlr_ssd
   ${catkin_EXPORTED_TARGETS}
   )
 
+install(TARGETS region_tlr_ssd
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
   message("'SSD/Caffe' is not installed. 'region_tlr_ssd' will not be built.")
 endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
+
+
+install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)
