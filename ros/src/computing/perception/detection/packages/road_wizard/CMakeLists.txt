@@ -60,7 +60,6 @@ catkin_package(
         cv_bridge
         geometry_msgs
         libvectormap
-        message_runtime
         roscpp
         sensor_msgs
         std_msgs
@@ -173,10 +172,6 @@ target_link_libraries(roi_extractor
   ${catkin_LIBRARIES}
   libcontext
 )
-
-add_dependencies(region_tlr
-road_wizard_generate_messages_cpp)
-
 
 ### label_maker ###
 find_package(Qt5Core REQUIRED)
