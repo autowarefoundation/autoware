@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map
         visualization_msgs
         waypoint_follower
+        waypoint_maker
 )
 
 catkin_package(
@@ -32,6 +33,7 @@ catkin_package(
         vector_map
         visualization_msgs
         waypoint_follower
+        waypoint_maker
     DEPENDS gnss
 )
 
@@ -73,5 +75,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 install(DIRECTORY launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-  PATTERN ".svn" EXCLUDE)
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn"
+        EXCLUDE 
+)
