@@ -16,9 +16,6 @@
 
   <run_depend>autoware_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
-  <run_depend>calibration_camera_lidar</run_depend>
-  <run_depend>car_detector</run_depend>
-  <run_depend>cv_tracker</run_depend>
   <run_depend>rosgraph</run_depend>
   <run_depend>rosnode</run_depend>
   <run_depend>rospy</run_depend>
@@ -27,6 +24,9 @@
 
 <!-- enable these -->
 <!--  <run_depend>gnss_localizer</run_depend>
+  <run_depend>calibration_camera_lidar</run_depend>
+  <run_depend>car_detector</run_depend>
+  <run_depend>cv_tracker</run_depend>
   <run_depend>javad</run_depend>
   <run_depend>lane_planner</run_depend>
   <run_depend>map_file</run_depend>
