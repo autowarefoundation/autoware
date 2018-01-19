@@ -6,6 +6,4 @@
   <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
   <license>BSD</license>
   <buildtool_depend>catkin</buildtool_depend>
-  <export>
-  </export>
 </package>
