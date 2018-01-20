@@ -4,12 +4,13 @@ project(gnss)
 find_package(catkin REQUIRED)
 
 catkin_package(
-    INCLUDE_DIRS include/gnss
+    INCLUDE_DIRS include
     LIBRARIES gnss
 )
 
 include_directories(
-  include/gnss ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_library(gnss
@@ -25,6 +26,7 @@ install(
 
 ## Install executables and/or libraries
 install(TARGETS gnss
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
