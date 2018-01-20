@@ -2,6 +2,9 @@
 Changelog for package vector_map_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge branch 'develop' into feature/tlr_turn

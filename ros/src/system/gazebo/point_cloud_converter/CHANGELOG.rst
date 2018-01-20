@@ -2,6 +2,9 @@
 Changelog for package point_cloud_converter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.1 (2017-09-25)
 ------------------
 

@@ -2,6 +2,9 @@
 Changelog for package lane_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge branch 'develop' into feature/tlr_turn

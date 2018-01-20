@@ -2,6 +2,9 @@
 Changelog for package points_downsampler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.5.1 (2017-09-25)
 ------------------
 

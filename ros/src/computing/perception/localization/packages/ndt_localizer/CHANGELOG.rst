@@ -2,6 +2,9 @@
 Changelog for package ndt_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#971 <https://github.com/CPFL/Autoware/issues/971>`_ from CPFL/fix/ndt_fastpcl_memoryleak
