@@ -75,8 +75,10 @@ void RegionTlrSsdRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstP
   // If frame has not been prepared, abort this callback
   if (frame_.empty() ||
       frame_header_.stamp == previous_timestamp) {
+    std::cout << "No Image" << std::endl;
     return;
   }
+  //std::cout << "rois: " << extracted_pos->Signals.size() << std::endl;
 
   // Acquire signal posotion on the image
   Context::SetContexts(contexts_, extracted_pos, frame_.rows, frame_.cols);
@@ -89,8 +91,12 @@ void RegionTlrSsdRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstP
       continue;
     }
 
+    //std::cout << "roi inside: " << cv::Rect(context.topLeft, context.botRight) << std::endl;
     // extract region of interest from input image
     cv::Mat roi  = frame_(cv::Rect(context.topLeft, context.botRight)).clone();
+
+    //cv::imshow("ssd_tlr", roi);
+	//  cv::waitKey(200);
 
     // Get current state of traffic light from current frame
     LightState current_state = recognizer.RecognizeLightState(roi);
@@ -403,7 +409,7 @@ void RegionTlrSsdRosNode::PublishImage(std::vector<Context> contexts) {
   // Define information for written label
   std::string  label;
   const int    kFontFace      = cv::FONT_HERSHEY_COMPLEX_SMALL;
-  const double kFontScale     = 1.0;
+  const double kFontScale     = 0.8;
   int          font_baseline  = 0;
   CvScalar     label_color;
 
@@ -431,6 +437,17 @@ void RegionTlrSsdRosNode::PublishImage(std::vector<Context> contexts) {
       label = "UNKNOWN";
       label_color = CV_RGB(0, 0, 0);
     }
+
+    if (ctx.leftTurnSignal)
+    {
+      label += " LEFT";
+    }
+    if (ctx.rightTurnSignal)
+    {
+      label += " RIGHT";
+    }
+    //add lane # text
+    label +=" " + std::to_string(ctx.closestLaneId);
 
     cv::Point label_origin = cv::Point(ctx.topLeft.x, ctx.botRight.y + font_baseline);
 

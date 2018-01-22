@@ -49,11 +49,6 @@ void AlternativeVisualizer::LoadMaterials()
 
 AlternativeVisualizer::~AlternativeVisualizer()
 {
-	if(m_pMap)
-	{
-		delete m_pMap;
-		m_pMap = 0;
-	}
 }
 
 bool AlternativeVisualizer::IsInitState()
@@ -192,21 +187,21 @@ void AlternativeVisualizer::DrawGPSData()
 	}
 
 	// 4- Convert to Cartesian and scale Up
-	MappingHelpers::llaToxyz(origin, GPSPoint());
-	GPSPoint prevP = origin;
-	vector<double> x_signal;
-	vector<double> y_signal;
-	for(unsigned int i = 0 ; i < gpsDataPath.size(); i++)
-	{
-		MappingHelpers::llaToxyz(gpsDataPath.at(i).pos, origin);
-		gpsDataPath.at(i).pos.x = gpsDataPath.at(i).pos.x * 100000;
-		gpsDataPath.at(i).pos.y = gpsDataPath.at(i).pos.y * 100000;
-
-		x_signal.push_back(gpsDataPath.at(i).pos.x);
-		y_signal.push_back(gpsDataPath.at(i).pos.y);
-
-		prevP = gpsDataPath.at(i).pos;
-	}
+//	MappingHelpers::llaToxyz(origin, GPSPoint());
+//	GPSPoint prevP = origin;
+//	vector<double> x_signal;
+//	vector<double> y_signal;
+//	for(unsigned int i = 0 ; i < gpsDataPath.size(); i++)
+//	{
+//		MappingHelpers::llaToxyz(gpsDataPath.at(i).pos, origin);
+//		gpsDataPath.at(i).pos.x = gpsDataPath.at(i).pos.x * 100000;
+//		gpsDataPath.at(i).pos.y = gpsDataPath.at(i).pos.y * 100000;
+//
+//		x_signal.push_back(gpsDataPath.at(i).pos.x);
+//		y_signal.push_back(gpsDataPath.at(i).pos.y);
+//
+//		prevP = gpsDataPath.at(i).pos;
+//	}
 
 
 	// 5- using cojugate grandient
@@ -219,21 +214,21 @@ void AlternativeVisualizer::DrawGPSData()
 
 	// 6- using kalman filter
 	vector<WayPoint> gpsDataPathSmoothedKalman = gpsDataPath;
-	KFTrackV kf(origin.x, origin.y, origin.a, 0, 1);
+/*	KFTrackV kf(origin.x, origin.y, origin.a, 0, 1);
 	for(unsigned int i = 0 ; i < gpsDataPathSmoothedKalman.size(); i++)
 	{
 		GPSPoint p = gpsDataPathSmoothedKalman.at(i).pos;
 		kf.UpdateTracking(0.1, p.x, p.y, p.a, p.x, p.y, p.a, gpsDataPathSmoothedKalman.at(i).v);
 		gpsDataPathSmoothedKalman.at(i).pos = p;
 	}
-
+*/
 	// 7- using median filter with order n
 	vector<double> x_signal_res;
 	vector<double> y_signal_res;
 	vector<WayPoint> gpsDataPathSmoothedMedian;
 
-	medianfilter(x_signal, x_signal_res, 3);
-	medianfilter(y_signal, y_signal_res, 3);
+	//medianfilter(x_signal, x_signal_res, 3);
+	//medianfilter(y_signal, y_signal_res, 3);
 
 	for(unsigned int i =0 ; i < x_signal_res.size(); i++)
 	{
@@ -273,9 +268,6 @@ void AlternativeVisualizer::DrawGPSData()
 	glPopMatrix();
 
 	glEnable(GL_LIGHTING);
-
-
-
 
 }
 
@@ -336,8 +328,10 @@ void AlternativeVisualizer::DrawVectorMap()
 
 void AlternativeVisualizer::DrawSimu()
 {
+
+
 	//DrawGPSData();
-	DrawVectorMap();
+	//DrawVectorMap();
 	float color[] = {0, 1, 0};
 	DrawingHelpers::DrawWidePath(m_GeneratedPath, 0.5, 0.5, color);
 }

@@ -2,6 +2,39 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
+  [bugfix]use qt5_wrap_ui instead of autouic
+* use qt5_wrap_ui instead of autouic
+* Merge branch develop into feature/ndt_pcl_gpu
+* Merge pull request `#953 <https://github.com/CPFL/Autoware/issues/953>`_ from CPFL/feature/tlr_turn_support
+  Feature/tlr turn support, multi traffic signal support
+* Changed the publishing time of all the signals
+* Added support to publish result of multiple traffic signals according to the lane
+  VectorMapServer Support to publish signals on current lane if current_pose and final_waypoints available
+* Initial modifications to feat_proj, tlr, context and vector_map loader, server and client to support different types of traffic signals
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Support for multi cameras in feat_proj node (`#930 <https://github.com/CPFL/Autoware/issues/930>`_)
+  [fix] feat_proj node multi cam support
+* merge develop and fixed slow switching map
+* Merge pull request `#888 <https://github.com/CPFL/Autoware/issues/888>`_ from CPFL/feature/cmake_refactor
+  refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'feature/cmake_refactor' of github.com:cpfl/autoware into feature/decision
+* refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
+* Contributors: AMC, Abraham Monrroy, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

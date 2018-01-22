@@ -2,6 +2,34 @@
 Changelog for package lidar_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
+  [bugfix]use qt5_wrap_ui instead of autouic
+* use qt5_wrap_ui instead of autouic
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* Merge branch 'feature/OpenPlanner' into develop
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* - Test Tracking
+  - Add missing parameter to lunch file and runtime manager
+* - Add new Node for object polygon representation and tracking (kf_contour_tracker)
+  - Add launch file and tune tracking parameters
+  - Test with Moriyama rosbag
+* merge develop and fixed slow switching map
+* Merge pull request `#888 <https://github.com/CPFL/Autoware/issues/888>`_ from CPFL/feature/cmake_refactor
+  refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'feature/cmake_refactor' of github.com:cpfl/autoware into feature/decision
+* refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Merge branch 'master' into feature/decision
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* Merge for ndt_pcl_gpu
+* merge develop
+* merge develop
+* Contributors: Yamato ANDO, YamatoAndo, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

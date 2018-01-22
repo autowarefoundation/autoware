@@ -10,7 +10,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <euclidean_space.hpp>
+#include <amathutils.hpp>
 
 namespace decision_maker
 {

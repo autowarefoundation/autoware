@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>viewers</name>
-  <version>1.5.1</version>
+  <version>1.6.0</version>
   <description>The viewers package</description>
   <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
   <license>BSD</license>

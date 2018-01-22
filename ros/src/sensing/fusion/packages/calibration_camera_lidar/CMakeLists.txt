@@ -24,7 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -108,11 +108,15 @@ target_link_libraries(calibration_test
 endif()
 ## 3D
 if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
+
+qt5_wrap_ui(calibration_toolkit_ui_mainwindow nodes/calibration_toolkit/mainwindow.ui)
+
+
 add_executable(calibration_toolkit
   nodes/calibration_toolkit/main.cpp
   nodes/calibration_toolkit/mainwindow.cpp
   nodes/calibration_toolkit/mainwindow.h
-  nodes/calibration_toolkit/mainwindow.ui
+  ${calibration_toolkit_ui_mainwindow}
 )
 
 set_target_properties(calibration_toolkit

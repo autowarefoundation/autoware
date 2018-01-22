@@ -4,8 +4,6 @@
 #include <iostream>
 #include <pcl/common/transforms.h>
 
-#define V2_ 1
-
 namespace gpu {
 
 GNormalDistributionsTransform::GNormalDistributionsTransform()
@@ -30,55 +28,13 @@ GNormalDistributionsTransform::GNormalDistributionsTransform()
 	transformation_epsilon_ = 0.1;
 	max_iterations_ = 35;
 
-	j_ang_a_ = MatrixHost(3, 1);
-	j_ang_b_ = MatrixHost(3, 1);
-	j_ang_c_ = MatrixHost(3, 1);
-	j_ang_d_ = MatrixHost(3, 1);
-	j_ang_e_ = MatrixHost(3, 1);
-	j_ang_f_ = MatrixHost(3, 1);
-	j_ang_g_ = MatrixHost(3, 1);
-	j_ang_h_ = MatrixHost(3, 1);
+	j_ang_ = MatrixHost(24, 1);
 
-	h_ang_a2_ = MatrixHost(3, 1);
-	h_ang_a3_ = MatrixHost(3, 1);
-	h_ang_b2_ = MatrixHost(3, 1);
-	h_ang_b3_ = MatrixHost(3, 1);
-	h_ang_c2_ = MatrixHost(3, 1);
-	h_ang_c3_ = MatrixHost(3, 1);
-	h_ang_d1_ = MatrixHost(3, 1);
-	h_ang_d2_ = MatrixHost(3, 1);
-	h_ang_d3_ = MatrixHost(3, 1);
-	h_ang_e1_ = MatrixHost(3, 1);
-	h_ang_e2_ = MatrixHost(3, 1);
-	h_ang_e3_ = MatrixHost(3, 1);
-	h_ang_f1_ = MatrixHost(3, 1);
-	h_ang_f2_ = MatrixHost(3, 1);
-	h_ang_f3_ = MatrixHost(3, 1);
+	h_ang_ = MatrixHost(45, 1);
 
-	dj_ang_a_ = MatrixDevice(3, 1);
-	dj_ang_b_ = MatrixDevice(3, 1);
-	dj_ang_c_ = MatrixDevice(3, 1);
-	dj_ang_d_ = MatrixDevice(3, 1);
-	dj_ang_e_ = MatrixDevice(3, 1);
-	dj_ang_f_ = MatrixDevice(3, 1);
-	dj_ang_g_ = MatrixDevice(3, 1);
-	dj_ang_h_ = MatrixDevice(3, 1);
+	dj_ang_ = MatrixDevice(24, 1);
 
-	dh_ang_a2_ = MatrixDevice(3, 1);
-	dh_ang_a3_ = MatrixDevice(3, 1);
-	dh_ang_b2_ = MatrixDevice(3, 1);
-	dh_ang_b3_ = MatrixDevice(3, 1);
-	dh_ang_c2_ = MatrixDevice(3, 1);
-	dh_ang_c3_ = MatrixDevice(3, 1);
-	dh_ang_d1_ = MatrixDevice(3, 1);
-	dh_ang_d2_ = MatrixDevice(3, 1);
-	dh_ang_d3_ = MatrixDevice(3, 1);
-	dh_ang_e1_ = MatrixDevice(3, 1);
-	dh_ang_e2_ = MatrixDevice(3, 1);
-	dh_ang_e3_ = MatrixDevice(3, 1);
-	dh_ang_f1_ = MatrixDevice(3, 1);
-	dh_ang_f2_ = MatrixDevice(3, 1);
-	dh_ang_f3_ = MatrixDevice(3, 1);
+	dh_ang_ = MatrixDevice(45, 1);
 
 	real_iterations_ = 0;
 }
@@ -90,52 +46,10 @@ GNormalDistributionsTransform::GNormalDistributionsTransform(const GNormalDistri
 
 	outlier_ratio_ = other.outlier_ratio_;
 
-	j_ang_a_ = other.j_ang_a_;
-	j_ang_b_ = other.j_ang_b_;
-	j_ang_c_ = other.j_ang_c_;
-	j_ang_d_ = other.j_ang_d_;
-	j_ang_e_ = other.j_ang_e_;
-	j_ang_f_ = other.j_ang_f_;
-	j_ang_g_ = other.j_ang_g_;
-	j_ang_h_ = other.j_ang_h_;
-
-	h_ang_a2_ = other.h_ang_a2_;
-	h_ang_a3_ = other.h_ang_a3_;
-	h_ang_b2_ = other.h_ang_b2_;
-	h_ang_b3_ = other.h_ang_b3_;
-	h_ang_c2_ = other.h_ang_c2_;
-	h_ang_c3_ = other.h_ang_c3_;
-	h_ang_d1_ = other.h_ang_d2_;
-	h_ang_d2_ = other.h_ang_d2_;
-	h_ang_d3_ = other.h_ang_d3_;
-	h_ang_e1_ = other.h_ang_e1_;
-	h_ang_e2_ = other.h_ang_e2_;
-	h_ang_f1_ = other.h_ang_f1_;
-	h_ang_f2_ = other.h_ang_f2_;
-	h_ang_f3_ = other.h_ang_f3_;
-
-	dj_ang_a_ = other.dj_ang_a_;
-	dj_ang_b_ = other.dj_ang_b_;
-	dj_ang_c_ = other.dj_ang_c_;
-	dj_ang_e_ = other.dj_ang_e_;
-	dj_ang_f_ = other.dj_ang_f_;
-	dj_ang_g_ = other.dj_ang_g_;
-	dj_ang_h_ = other.dj_ang_h_;
-
-	dh_ang_a2_ = other.dh_ang_a2_;
-	dh_ang_a3_ = other.dh_ang_a3_;
-	dh_ang_b2_ = other.dh_ang_b2_;
-	dh_ang_b3_ = other.dh_ang_b3_;
-	dh_ang_c2_ = other.dh_ang_c2_;
-	dh_ang_c3_ = other.dh_ang_c3_;
-	dh_ang_d1_ = other.dh_ang_d2_;
-	dh_ang_d2_ = other.dh_ang_d2_;
-	dh_ang_d3_ = other.dh_ang_d3_;
-	dh_ang_e1_ = other.dh_ang_e1_;
-	dh_ang_e2_ = other.dh_ang_e2_;
-	dh_ang_f1_ = other.dh_ang_f1_;
-	dh_ang_f2_ = other.dh_ang_f2_;
-	dh_ang_f3_ = other.dh_ang_f3_;
+	j_ang_ = other.j_ang_;
+	h_ang_ = other.h_ang_;
+	dj_ang_ = other.dj_ang_;
+	dh_ang_ = other.dh_ang_;
 
 	step_size_ = other.step_size_;
 	resolution_ = other.resolution_;
@@ -147,32 +61,9 @@ GNormalDistributionsTransform::GNormalDistributionsTransform(const GNormalDistri
 
 GNormalDistributionsTransform::~GNormalDistributionsTransform()
 {
-	dj_ang_a_.memFree();
-	dj_ang_b_.memFree();
-	dj_ang_c_.memFree();
-	dj_ang_d_.memFree();
-	dj_ang_e_.memFree();
-	dj_ang_f_.memFree();
-	dj_ang_g_.memFree();
-	dj_ang_h_.memFree();
+	dj_ang_.memFree();
+	dh_ang_.memFree();
 
-	dh_ang_a2_.memFree();
-	dh_ang_a3_.memFree();
-	dh_ang_b2_.memFree();
-	dh_ang_b3_.memFree();
-	dh_ang_c2_.memFree();
-	dh_ang_c3_.memFree();
-	dh_ang_d1_.memFree();
-	dh_ang_d2_.memFree();
-	dh_ang_d3_.memFree();
-	dh_ang_e1_.memFree();
-	dh_ang_e2_.memFree();
-	dh_ang_e3_.memFree();
-	dh_ang_f1_.memFree();
-	dh_ang_f2_.memFree();
-	dh_ang_f3_.memFree();
-
-	//voxel_grid_.~GVoxelGrid();
 }
 
 void GNormalDistributionsTransform::setStepSize(double step_size)
@@ -251,7 +142,6 @@ void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZ
 
 void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess)
 {
-	struct timeval start, end;
 
 	nr_iterations_ = 0;
 	converged_ = false;
@@ -270,7 +160,6 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 		transformPointCloud(x_, y_, z_, trans_x_, trans_y_, trans_z_, points_number_, guess);
 	}
 
-
 	Eigen::Transform<float, 3, Eigen::Affine, Eigen::ColMajor> eig_transformation;
 	eig_transformation.matrix() = final_transformation_;
 
@@ -285,11 +174,10 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 	double score = 0;
 	double delta_p_norm;
 
-	gettimeofday(&start, NULL);
 	score = computeDerivatives(score_gradient, hessian, trans_x_, trans_y_, trans_z_, points_number_, p);
-	gettimeofday(&end, NULL);
 
-	gettimeofday(&start, NULL);
+	int loop_time = 0;
+
 	while (!converged_) {
 		previous_transformation_ = transformation_;
 
@@ -308,6 +196,7 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 
 		delta_p.normalize();
 		delta_p_norm = computeStepLengthMT(p, delta_p, delta_p_norm, step_size_, transformation_epsilon_ / 2, score, score_gradient, hessian, trans_x_, trans_y_, trans_z_, points_number_);
+
 		delta_p *= delta_p_norm;
 
 		transformation_ = (Eigen::Translation<float, 3>(static_cast<float>(delta_p(0)), static_cast<float>(delta_p(1)), static_cast<float>(delta_p(2))) *
@@ -323,20 +212,31 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 			converged_ = true;
 
 		nr_iterations_++;
+
+		loop_time++;
 	}
-	gettimeofday(&end, NULL);
 
 	trans_probability_ = score / static_cast<double>(points_number_);
 }
 
 /* First step of computing point gradients */
-extern "C" __global__ void computePointGradients0(float *x, float *y, float *z, int points_num,
+__global__ void computePointGradients(float *x, float *y, float *z, int points_num,
 													int *valid_points, int valid_points_num,
-													MatrixDevice j_ang_a, MatrixDevice j_ang_b, MatrixDevice j_ang_c, MatrixDevice j_ang_d,
-													double *point_gradients)
+													double *dj_ang,
+													double *pg00, double *pg11, double *pg22,
+													double *pg13, double *pg23, double *pg04, double *pg14,
+													double *pg24, double *pg05, double *pg15, double *pg25)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
+	__shared__ double j_ang[24];
+
+
+	if (threadIdx.x < 24) {
+		j_ang[threadIdx.x] = dj_ang[threadIdx.x];
+	}
+
+	__syncthreads();
 
 	for (int i = id; i < valid_points_num; i += stride) {
 		int pid = valid_points[i];
@@ -345,58 +245,45 @@ extern "C" __global__ void computePointGradients0(float *x, float *y, float *z, 
 		double o_x = static_cast<double>(x[pid]);
 		double o_y = static_cast<double>(y[pid]);
 		double o_z = static_cast<double>(z[pid]);
-
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
 
 		//Set the 3x3 block start from (0, 0) to identity matrix
-		pg(0, 0) = 1;
-		pg(1, 1) = 1;
-		pg(2, 2) = 1;
+		pg00[i] = 1;
+		pg11[i] = 1;
+		pg22[i] = 1;
 
 		//Compute point derivatives
-		pg(1, 3) = o_x * j_ang_a(0) + o_y * j_ang_a(1) + o_z * j_ang_a(2);
-		pg(2, 3) = o_x * j_ang_b(0) + o_y * j_ang_b(1) + o_z * j_ang_b(2);
-		pg(0, 4) = o_x * j_ang_c(0) + o_y * j_ang_c(1) + o_z * j_ang_c(2);
-		pg(1, 4) = o_x * j_ang_d(0) + o_y * j_ang_d(1) + o_z * j_ang_d(2);
+		pg13[i] = o_x * j_ang[0] + o_y * j_ang[1] + o_z * j_ang[2];
+		pg23[i] = o_x * j_ang[3] + o_y * j_ang[4] + o_z * j_ang[5];
+		pg04[i] = o_x * j_ang[6] + o_y * j_ang[7] + o_z * j_ang[8];
+		pg14[i] = o_x * j_ang[9] + o_y * j_ang[10] + o_z * j_ang[11];
+
+		pg24[i] = o_x * j_ang[12] + o_y * j_ang[13] + o_z * j_ang[14];
+		pg05[i] = o_x * j_ang[15] + o_y * j_ang[16] + o_z * j_ang[17];
+		pg15[i] = o_x * j_ang[18] + o_y * j_ang[19] + o_z * j_ang[20];
+		pg25[i] = o_x * j_ang[21] + o_y * j_ang[22] + o_z * j_ang[23];
 	}
 }
 
-/* Second step of computing point gradients */
-extern "C" __global__ void computePointGradients1(float *x, float *y, float *z, int points_num,
-										int *valid_points, int valid_points_num,
-										MatrixDevice j_ang_e, MatrixDevice j_ang_f, MatrixDevice j_ang_g, MatrixDevice j_ang_h,
-										double *point_gradients)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-
-	for (int i = id; i < valid_points_num; i += stride) {
-		int pid = valid_points[i];
-
-		//Orignal coordinates
-		double o_x = static_cast<double>(x[pid]);
-		double o_y = static_cast<double>(y[pid]);
-		double o_z = static_cast<double>(z[pid]);
-
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
-
-		//Compute point derivatives
-		pg(2, 4) = o_x * j_ang_e(0) + o_y * j_ang_e(1) + o_z * j_ang_e(2);
-		pg(0, 5) = o_x * j_ang_f(0) + o_y * j_ang_f(1) + o_z * j_ang_f(2);
-		pg(1, 5) = o_x * j_ang_g(0) + o_y * j_ang_g(1) + o_z * j_ang_g(2);
-		pg(2, 5) = o_x * j_ang_h(0) + o_y * j_ang_h(1) + o_z * j_ang_h(2);
-	}
-}
 
 /* First step of computing point hessians */
-extern "C" __global__ void computePointHessian0(float *x, float *y, float *z, int points_num,
+__global__ void computePointHessian0(float *x, float *y, float *z, int points_num,
 												int *valid_points, int valid_points_num,
-												MatrixDevice h_ang_a2, MatrixDevice h_ang_a3,
-												MatrixDevice h_ang_b2, MatrixDevice h_ang_b3,
-												double *point_hessians)
+												double *dh_ang,
+												double *ph93, double *ph103, double *ph113,
+												double *ph123, double *ph94, double *ph133,
+												double *ph104, double *ph143, double *ph114,
+												double *ph153, double *ph95, double *ph163,
+												double *ph105, double *ph173, double *ph115)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
+	__shared__ double h_ang[18];
+
+	if (threadIdx.x < 18) {
+		h_ang[threadIdx.x] = dh_ang[threadIdx.x];
+	}
+
+	__syncthreads();
 
 	for (int i = id; i < valid_points_num; i += stride) {
 		int pid = valid_points[i];
@@ -406,29 +293,38 @@ extern "C" __global__ void computePointHessian0(float *x, float *y, float *z, in
 		double o_y = static_cast<double>(y[pid]);
 		double o_z = static_cast<double>(z[pid]);
 
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
 
-		ph(9, 3) = 0;
-		ph(10, 3) = o_x * h_ang_a2(0) + o_y * h_ang_a2(1) + o_z * h_ang_a2(2);
-		ph(11, 3) = o_x * h_ang_a3(0) + o_y * h_ang_a3(1) + o_z * h_ang_a3(2);
+		ph93[i] = 0;
+		ph103[i] = o_x * h_ang[0] + o_y * h_ang[1] + o_z * h_ang[2];
+		ph113[i] = o_x * h_ang[3] + o_y * h_ang[4] + o_z * h_ang[5];
 
-		ph(12, 3) = ph(9, 4) = 0;
-		ph(13, 3) = ph(10, 4) = o_x * h_ang_b2(0) + o_y * h_ang_b2(1) + o_z * h_ang_b2(2);
-		ph(14, 3) = ph(11, 4) = o_x * h_ang_b3(0) + o_y * h_ang_b3(1) + o_z * h_ang_b3(2);
+		ph123[i] = ph94[i] = 0;
+		ph133[i] = ph104[i] = o_x * h_ang[6] + o_y * h_ang[7] + o_z * h_ang[8];
+		ph143[i] = ph114[i] = o_x * h_ang[9] + o_y * h_ang[10] + o_z * h_ang[11];
+
+		ph153[i] = ph95[i] = 0;
+		ph163[i] = ph105[i] = o_x * h_ang[12] + o_y * h_ang[13] + o_z * h_ang[14];
+		ph173[i] = ph115[i] = o_x * h_ang[15] + o_y * h_ang[16] + o_z * h_ang[17];
 
 	}
 }
 
-/* Second step of computing point hessians */
-extern "C" __global__ void computePointHessian1(float *x, float *y, float *z, int points_num,
+__global__ void computePointHessian1(float *x, float *y, float *z, int points_num,
 												int *valid_points, int valid_points_num,
-												MatrixDevice h_ang_c2, MatrixDevice h_ang_c3,
-												MatrixDevice h_ang_d1, MatrixDevice h_ang_d2,
-												MatrixDevice h_ang_d3,
-												double *point_hessians)
+												double *dh_ang,
+												double *ph124, double *ph134, double *ph144,
+												double *ph154, double *ph125, double *ph164,
+												double *ph135, double *ph174, double *ph145)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
+	__shared__ double h_ang[18];
+
+	if (threadIdx.x < 18) {
+		h_ang[threadIdx.x] = dh_ang[18 + threadIdx.x];
+	}
+
+	__syncthreads();
 
 	for (int i = id; i < valid_points_num; i += stride) {
 		int pid = valid_points[i];
@@ -438,27 +334,30 @@ extern "C" __global__ void computePointHessian1(float *x, float *y, float *z, in
 		double o_y = static_cast<double>(y[pid]);
 		double o_z = static_cast<double>(z[pid]);
 
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
+		ph124[i] = o_x * h_ang[0] + o_y * h_ang[1] + o_z * h_ang[2];
+		ph134[i] = o_x * h_ang[3] + o_y * h_ang[4] + o_z * h_ang[5];
+		ph144[i] = o_x * h_ang[6] + o_y * h_ang[7] + o_z * h_ang[8];
 
-		ph(15, 3) = ph(9, 5) = 0;
-		ph(16, 3) = ph(10, 5) = o_x * h_ang_c2(0) + o_y * h_ang_c2(1) + o_z * h_ang_c2(2);
-		ph(17, 3) = ph(11, 5) = o_x * h_ang_c3(0) + o_y * h_ang_c3(1) + o_z * h_ang_c3(2);
-
-		ph(12, 4) = o_x * h_ang_d1(0) + o_y * h_ang_d1(1) + o_z * h_ang_d1(2);
-		ph(13, 4) = o_x * h_ang_d2(0) + o_y * h_ang_d2(1) + o_z * h_ang_d2(2);
-		ph(14, 4) = o_x * h_ang_d3(0) + o_y * h_ang_d3(1) + o_z * h_ang_d3(2);
+		ph154[i] = ph125[i] = o_x * h_ang[9] + o_y * h_ang[10] + o_z * h_ang[11];
+		ph164[i] = ph135[i] = o_x * h_ang[12] + o_y * h_ang[13] + o_z * h_ang[14];
+		ph174[i] = ph145[i] = o_x * h_ang[15] + o_y * h_ang[16] + o_z * h_ang[17];
 	}
 }
 
-/* Final step of computing point hessians */
-extern "C" __global__ void computePointHessian2(float *x, float *y, float *z, int points_num,
+__global__ void computePointHessian2(float *x, float *y, float *z, int points_num,
 												int *valid_points, int valid_points_num,
-												MatrixDevice h_ang_e1, MatrixDevice h_ang_e2, MatrixDevice h_ang_e3,
-												MatrixDevice h_ang_f1, MatrixDevice h_ang_f2, MatrixDevice h_ang_f3,
-												double *point_hessians)
+												double *dh_ang,
+												double *ph155, double *ph165, double *ph175)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
+	__shared__ double h_ang[9];
+
+	if (threadIdx.x < 9) {
+		h_ang[threadIdx.x] = dh_ang[36 + threadIdx.x];
+	}
+
+	__syncthreads();
 
 	for (int i = id; i < valid_points_num; i += stride) {
 		int pid = valid_points[i];
@@ -468,22 +367,17 @@ extern "C" __global__ void computePointHessian2(float *x, float *y, float *z, in
 		double o_y = static_cast<double>(y[pid]);
 		double o_z = static_cast<double>(z[pid]);
 
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
+		ph155[i] = o_x * h_ang[0] + o_y * h_ang[1] + o_z * h_ang[2];
+		ph165[i] = o_x * h_ang[3] + o_y * h_ang[4] + o_z * h_ang[5];
+		ph175[i] = o_x * h_ang[6] + o_y * h_ang[7] + o_z * h_ang[8];
 
-		ph(15, 4) = ph(12, 5) = o_x * h_ang_e1(0) + o_y * h_ang_e1(1) + o_z * h_ang_e1(2);
-		ph(16, 4) = ph(13, 5) = o_x * h_ang_e2(0) + o_y * h_ang_e2(1) + o_z * h_ang_e2(2);
-		ph(17, 4) = ph(14, 5) = o_x * h_ang_e3(0) + o_y * h_ang_e3(1) + o_z * h_ang_e3(2);
-
-		ph(15, 5) = o_x * h_ang_f1(0) + o_y * h_ang_f1(1) + o_z * h_ang_f1(2);
-		ph(16, 5) = o_x * h_ang_f2(0) + o_y * h_ang_f2(1) + o_z * h_ang_f2(2);
-		ph(17, 5) = o_x * h_ang_f3(0) + o_y * h_ang_f3(1) + o_z * h_ang_f3(2);
 	}
 }
 
 /* compute score_inc list for input points.
  * The final score_inc is calculated by a reduction sum
  * on this score_inc list. */
-extern "C" __global__ void computeScoreList(int *starting_voxel_id, int *voxel_id, int valid_points_num,
+__global__ void computeScoreList(int *starting_voxel_id, int *voxel_id, int valid_points_num,
 												double *e_x_cov_x, double gauss_d1, double *score)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -494,7 +388,6 @@ extern "C" __global__ void computeScoreList(int *starting_voxel_id, int *voxel_i
 		double score_inc = 0;
 
 		for (int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
 			double tmp_ex = e_x_cov_x[vid];
 
 			score_inc += (tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex) ? 0 : -gauss_d1 * tmp_ex;
@@ -505,10 +398,11 @@ extern "C" __global__ void computeScoreList(int *starting_voxel_id, int *voxel_i
 }
 
 /* First step to compute score gradient list for input points */
-extern "C" __global__ void computeScoreGradientList(float *trans_x, float *trans_y, float *trans_z,
+__global__ void computeScoreGradientList(float *trans_x, float *trans_y, float *trans_z,
 														int *valid_points,
 														int *starting_voxel_id, int *voxel_id, int valid_points_num,
-														double *centroid, int voxel_num, double *e_x_cov_x,
+														double *centroid_x, double *centroid_y, double *centroid_z,
+														int voxel_num, double *e_x_cov_x,
 														double *cov_dxd_pi, double gauss_d1, int valid_voxel_num,
 														double *score_gradients)
 {
@@ -516,108 +410,73 @@ extern "C" __global__ void computeScoreGradientList(float *trans_x, float *trans
 	int stride = blockDim.x * gridDim.x;
 	int col = blockIdx.y;
 
-	for (int i = id; i < valid_points_num && col < 6; i += stride) {
-		int pid = valid_points[i];
+	if (col < 6) {
+		double *sg = score_gradients + col * valid_points_num;
+		double *cov_dxd_pi_mat0 = cov_dxd_pi + col * valid_voxel_num;
+		double *cov_dxd_pi_mat1 = cov_dxd_pi_mat0 + 6 * valid_voxel_num;
+		double *cov_dxd_pi_mat2 = cov_dxd_pi_mat1 + 6 * valid_voxel_num;
 
-		MatrixDevice sg(6, 1, valid_points_num, score_gradients + i);		//6x1 Matrix
+		for (int i = id; i < valid_points_num; i += stride) {
+			int pid = valid_points[i];
+			double d_x = static_cast<double>(trans_x[pid]);
+			double d_y = static_cast<double>(trans_y[pid]);
+			double d_z = static_cast<double>(trans_z[pid]);
 
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_x = static_cast<double>(trans_x[pid]);
-			double t_y = static_cast<double>(trans_y[pid]);
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice cov_dxd_pi_mat(3, 6, valid_voxel_num, cov_dxd_pi + vid);
+			double tmp_sg = 0.0;
 
-			t_x -= centr(0);
-			t_y -= centr(1);
-			t_z -= centr(2);
+			for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+				int vid = voxel_id[j];
+				double tmp_ex = e_x_cov_x[j];
 
-			double tmp_ex = e_x_cov_x[vid];
+				if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
+					tmp_ex *= gauss_d1;
 
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-
-				sg(col) += (t_x * cov_dxd_pi_mat(0, col) + t_y * cov_dxd_pi_mat(1, col) + t_z * cov_dxd_pi_mat(2, col)) * tmp_ex;
+					tmp_sg += ((d_x - centroid_x[vid]) * cov_dxd_pi_mat0[j] + (d_y - centroid_y[vid]) * cov_dxd_pi_mat1[j] + (d_z - centroid_z[vid]) * cov_dxd_pi_mat2[j]) * tmp_ex;
+				}
 			}
-		}
-	}
-}
 
-/* Second step to compute score gradient list */
-extern "C" __global__ void computeScoreGradientListS2(float *trans_x, float *trans_y, float *trans_z,
-														int *valid_points,
-														int *starting_voxel_id, int *voxel_id, int valid_points_num,
-														double *centroid, int voxel_num, double *e_x_cov_x,
-														double *cov_dxd_pi, double gauss_d1, int valid_voxel_num,
-														double *score_gradients)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-
-	for (int i = id; i < valid_points_num; i += stride) {
-		int pid = valid_points[i];
-
-		MatrixDevice sg(6, 1, valid_points_num, score_gradients + i);		//6x1 Matrix
-
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_x = static_cast<double>(trans_x[pid]);
-			double t_y = static_cast<double>(trans_y[pid]);
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice cov_dxd_pi_mat(3, 6, valid_voxel_num, cov_dxd_pi + vid);
-
-			t_x -= centr(0);
-			t_y -= centr(1);
-			t_z -= centr(2);
-
-			double tmp_ex = e_x_cov_x[vid];
-
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-
-				for (int col = 0; col < 6; col++)
-					sg(col) += (t_x * cov_dxd_pi_mat(0, col) + t_y * cov_dxd_pi_mat(1, col) + t_z * cov_dxd_pi_mat(2, col)) * tmp_ex;
-			}
+			sg[i] = tmp_sg;
 		}
 	}
 }
 
 /* Intermediate step to compute e_x_cov_x */
-extern "C" __global__ void computeExCovX(float *trans_x, float *trans_y, float *trans_z, int *valid_points,
+__global__ void computeExCovX(float *trans_x, float *trans_y, float *trans_z, int *valid_points,
 											int *starting_voxel_id, int *voxel_id, int valid_points_num,
-											double *centroid, double *inverse_covariance, int voxel_num,
+											double *centr_x, double *centr_y, double *centr_z,
 											double gauss_d1, double gauss_d2,
-											double *e_x_cov_x)
+											double *e_x_cov_x,
+											double *icov00, double *icov01, double *icov02,
+											double *icov10, double *icov11, double *icov12,
+											double *icov20, double *icov21, double *icov22)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
 
 	for (int i = id; i < valid_points_num; i += stride) {
 		int pid = valid_points[i];
+		double d_x = static_cast<double>(trans_x[pid]);
+		double d_y = static_cast<double>(trans_y[pid]);
+		double d_z = static_cast<double>(trans_z[pid]);
+		double t_x, t_y, t_z;
 
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_x = static_cast<double>(trans_x[pid]);
-			double t_y = static_cast<double>(trans_y[pid]);
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + voxel_id[vid]);	//3x3 matrix
 
-			t_x -= centr(0);
-			t_y -= centr(1);
-			t_z -= centr(2);
+		for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+			int vid = voxel_id[j];
 
-			e_x_cov_x[vid] =  exp(-gauss_d2 * ((t_x * icov(0, 0) + t_y * icov(0, 1) + t_z * icov(0, 2)) * t_x
-										+ ((t_x * icov(1, 0) + t_y * icov(1, 1) + t_z * icov(1, 2)) * t_y)
-										+ ((t_x * icov(2, 0) + t_y * icov(2, 1) + t_z * icov(2, 2)) * t_z)) / 2.0);
+			t_x = d_x - centr_x[vid];
+			t_y = d_y - centr_y[vid];
+			t_z = d_z - centr_z[vid];
+
+			e_x_cov_x[j] =  exp(-gauss_d2 * ((t_x * icov00[vid] + t_y * icov01[vid] + t_z * icov02[vid]) * t_x
+										+ ((t_x * icov10[vid] + t_y * icov11[vid] + t_z * icov12[vid]) * t_y)
+										+ ((t_x * icov20[vid] + t_y * icov21[vid] + t_z * icov22[vid]) * t_z)) / 2.0);
 		}
 	}
 }
 
 /* update e_x_cov_x - Reusable portion of Equation 6.12 and 6.13 [Magnusson 2009] */
-extern "C" __global__ void updateExCovX(double *e_x_cov_x, double gauss_d2, int valid_voxel_num)
+__global__ void updateExCovX(double *e_x_cov_x, double gauss_d2, int valid_voxel_num)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
@@ -628,7 +487,7 @@ extern "C" __global__ void updateExCovX(double *e_x_cov_x, double gauss_d2, int 
 }
 
 /* compute cov_dxd_pi as reusable portion of Equation 6.12 and 6.13 [Magnusson 2009]*/
-extern "C" __global__ void computeCovDxdPi(int *valid_points, int *starting_voxel_id, int *voxel_id, int valid_points_num,
+__global__ void computeCovDxdPi(int *valid_points, int *starting_voxel_id, int *voxel_id, int valid_points_num,
 											double *inverse_covariance, int voxel_num,
 											double gauss_d1, double gauss_d2, double *point_gradients,
 											double *cov_dxd_pi, int valid_voxel_num)
@@ -638,127 +497,81 @@ extern "C" __global__ void computeCovDxdPi(int *valid_points, int *starting_voxe
 	int row = blockIdx.y;
 	int col = blockIdx.z;
 
-	for (int i = id; i < valid_points_num && row < 3 && col < 6; i += stride) {
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
+	if (row < 3 && col < 6) {
+		double *icov0 = inverse_covariance + row * 3 * voxel_num;
+		double *icov1 = icov0 + voxel_num;
+		double *icov2 = icov1 + voxel_num;
+		double *cov_dxd_pi_tmp = cov_dxd_pi + (row * 6 + col) * valid_voxel_num;
+		double *pg_tmp0 = point_gradients + col * valid_points_num;
+		double *pg_tmp1 = pg_tmp0 + 6 * valid_points_num;
+		double *pg_tmp2 = pg_tmp1 + 6 * valid_points_num;
 
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + voxel_id[vid]);	//3x3 matrix
-			MatrixDevice cov_dxd_pi_mat(3, 6, valid_voxel_num, cov_dxd_pi + vid);
+		for (int i = id; i < valid_points_num; i += stride) {
+			double pg0 = pg_tmp0[i];
+			double pg1 = pg_tmp1[i];
+			double pg2 = pg_tmp2[i];
 
-			cov_dxd_pi_mat(row, col) = icov(row, 0) * pg(0, col) + icov(row, 1) * pg(1, col) + icov(row, 2) * pg(2, col);
-		}
+			for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+				int vid = voxel_id[j];
+
+				cov_dxd_pi_tmp[j] = icov0[vid] * pg0 + icov1[vid] * pg1 + icov2[vid] * pg2;
+			}
+	}
 	}
 }
+
 
 /* First step to compute hessian list for input points */
-extern "C" __global__ void computeHessianListS0(float *trans_x, float *trans_y, float *trans_z,
+__global__ void computeHessianListS0(float *trans_x, float *trans_y, float *trans_z,
 													int *valid_points,
 													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_gradients,
-													double *tmp_hessian, int valid_voxel_num)
+													double *centroid_x, double *centroid_y, double *centroid_z,
+													double *icov00, double *icov01, double *icov02,
+													double *icov10, double *icov11, double *icov12,
+													double *icov20, double *icov21, double *icov22,
+													double *point_gradients0, double *point_gradients1, double *point_gradients2,
+													double *tmp_hessian,
+													int valid_voxel_num)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
 	int col = blockIdx.y;
 
-	for (int i = id; i < valid_points_num && col < 6; i += stride) {
-		int pid = valid_points[i];
+	if (col < 6) {
+		double *tmp_pg0 = point_gradients0 + col * valid_points_num;
+		double *tmp_pg1 = point_gradients1 + 6 * valid_points_num;
+		double *tmp_pg2 = point_gradients2 + 6 * valid_points_num;
+		double *tmp_h = tmp_hessian + col * valid_voxel_num;
 
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
+		for (int i = id; i < valid_points_num && col < 6; i += stride) {
+			int pid = valid_points[i];
+			double d_x = static_cast<double>(trans_x[pid]);
+			double d_y = static_cast<double>(trans_y[pid]);
+			double d_z = static_cast<double>(trans_z[pid]);
 
-		for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
-			//Transformed coordinates
-			int vid = voxel_id[j];
-			double t_x = static_cast<double>(trans_x[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + vid);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + vid);	//3x3 matrix
-			MatrixDevice tmp(6, 1, valid_voxel_num, tmp_hessian + j);
+			double pg0 = tmp_pg0[i];
+			double pg1 = tmp_pg1[i];
+			double pg2 = tmp_pg2[i];
 
-			t_x -= centr(0);
+			for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+				int vid = voxel_id[j];
 
-			tmp(col) = t_x * (icov(0, 0) * pg(0, col) + icov(0, 1) * pg(1, col) + icov(0, 2) * pg(2, col));
-		}
+				tmp_h[j] = (d_x - centroid_x[vid]) * (icov00[vid] * pg0 + icov01[vid] * pg1 + icov02[vid] * pg2)
+							+ (d_y - centroid_y[vid]) * (icov10[vid] * pg0 + icov11[vid] * pg1 + icov12[vid] * pg2)
+							+ (d_z - centroid_z[vid]) * (icov20[vid] * pg0 + icov21[vid] * pg1 + icov22[vid] * pg2);
+			}
 	}
-}
-
-/* Second step to compute hessian list for input points */
-extern "C" __global__ void computeHessianListS1(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_gradients,
-													double *tmp_hessian, int valid_voxel_num)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	int col = blockIdx.y;
-
-	for (int i = id; i < valid_points_num && col < 6; i += stride) {
-		int pid = valid_points[i];
-
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
-
-		for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
-			//Transformed coordinates
-			int vid = voxel_id[j];
-			double t_y = static_cast<double>(trans_y[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + vid);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + vid);	//3x3 matrix
-			MatrixDevice tmp(6, 1, valid_voxel_num, tmp_hessian + j);
-
-			t_y -= centr(1);
-
-			tmp(col) += t_y * (icov(1, 0) * pg(0, col) + icov(1, 1) * pg(1, col) + icov(1, 2) * pg(2, col));
-		}
-	}
-}
-
-
-/* Third step to compute hessian list for input points */
-extern "C" __global__ void computeHessianListS2(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_gradients,
-													double *tmp_hessian, int valid_voxel_num)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	int col = blockIdx.y;
-
-	for (int i = id; i < valid_points_num && col < 6; i += stride) {
-		int pid = valid_points[i];
-
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);		//3x6 Matrix
-
-		for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
-			//Transformed coordinates
-			int vid = voxel_id[j];
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + vid);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + vid);	//3x3 matrix
-			MatrixDevice tmp(6, 1, valid_voxel_num, tmp_hessian + j);
-
-			t_z -= centr(2);
-
-			tmp(col) += t_z * (icov(2, 0) * pg(0, col) + icov(2, 1) * pg(1, col) + icov(2, 2) * pg(2, col));
-		}
 	}
 }
 
 /* Fourth step to compute hessian list */
-extern "C" __global__ void computeHessianListS3(float *trans_x, float *trans_y, float *trans_z,
+__global__ void computeHessianListS1(float *trans_x, float *trans_y, float *trans_z,
 												int *valid_points,
 												int *starting_voxel_id, int *voxel_id, int valid_points_num,
-												double *centroid, int voxel_num,
-												double gauss_d1, double gauss_d2,
-												double *hessians,
+												double *centroid_x, double *centroid_y, double *centroid_z,
+												double gauss_d1, double gauss_d2, double *hessians,
 												double *e_x_cov_x, double *tmp_hessian, double *cov_dxd_pi,
+												double *point_gradients,
 												int valid_voxel_num)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -766,198 +579,107 @@ extern "C" __global__ void computeHessianListS3(float *trans_x, float *trans_y, 
 	int row = blockIdx.y;
 	int col = blockIdx.z;
 
-	for (int i = id; i < valid_points_num && row < 6 && col < 6; i += stride) {
-		int pid = valid_points[i];
+	if (row < 6 && col < 6) {
+		double *cov_dxd_pi_mat0 = cov_dxd_pi + row * valid_voxel_num;
+		double *cov_dxd_pi_mat1 = cov_dxd_pi_mat0 + 6 * valid_voxel_num;
+		double *cov_dxd_pi_mat2 = cov_dxd_pi_mat1 + 6 * valid_voxel_num;
+		double *tmp_h = tmp_hessian + col * valid_voxel_num;
+		double *h = hessians + (row * 6 + col) * valid_points_num;
+		double *tmp_pg0 = point_gradients + col * valid_points_num;
+		double *tmp_pg1 = tmp_pg0 + 6 * valid_points_num;
+		double *tmp_pg2 = tmp_pg1 + 6 * valid_points_num;
 
-		MatrixDevice h(6, 6, valid_points_num, hessians + i);				//6x6 Matrix
+		for (int i = id; i < valid_points_num; i += stride) {
+			int pid = valid_points[i];
+			double d_x = static_cast<double>(trans_x[pid]);
+			double d_y = static_cast<double>(trans_y[pid]);
+			double d_z = static_cast<double>(trans_z[pid]);
 
-		for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
-			//Transformed coordinates
-			double t_x = static_cast<double>(trans_x[pid]);
-			double t_y = static_cast<double>(trans_y[pid]);
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[j]);
-			MatrixDevice tmp(6, 1, valid_voxel_num, tmp_hessian + j);
-			MatrixDevice cov_dxd_pi_mat(3, 6, valid_voxel_num, cov_dxd_pi + j);
+			double pg0 = tmp_pg0[i];
+			double pg1 = tmp_pg1[i];
+			double pg2 = tmp_pg2[i];
 
-			t_x -= centr(0);
-			t_y -= centr(1);
-			t_z -= centr(2);
+			double final_hessian = 0.0;
 
-			double tmp_ex, tmp_cov_dxd_x, tmp_cov_dxd_y, tmp_cov_dxd_z;
+			for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+				//Transformed coordinates
+				int vid = voxel_id[j];
 
-			tmp_ex = e_x_cov_x[j];
+				double tmp_ex = e_x_cov_x[j];
 
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
+				if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
+					double cov_dxd0 = cov_dxd_pi_mat0[j];
+					double cov_dxd1 = cov_dxd_pi_mat1[j];
+					double cov_dxd2 = cov_dxd_pi_mat2[j];
 
-				tmp_cov_dxd_x = cov_dxd_pi_mat(0, row);
-				tmp_cov_dxd_y = cov_dxd_pi_mat(1, row);
-				tmp_cov_dxd_z = cov_dxd_pi_mat(2, row);
+					tmp_ex *= gauss_d1;
 
-				h(row, col) += -gauss_d2 * (t_x * tmp_cov_dxd_x + t_y * tmp_cov_dxd_y + t_z * tmp_cov_dxd_z) * tmp(col) * tmp_ex;
+					final_hessian += -gauss_d2 * ((d_x - centroid_x[vid]) * cov_dxd0 + (d_y - centroid_y[vid]) * cov_dxd1 + (d_z - centroid_z[vid]) * cov_dxd2) * tmp_h[j] * tmp_ex;
+					final_hessian += (pg0 * cov_dxd0 + pg1 * cov_dxd1 + pg2 * cov_dxd2) * tmp_ex;
+				}
 			}
+
+			h[i] = final_hessian;
 		}
 	}
 }
 
-/* Fifth step to compute hessian list */
-extern "C" __global__ void computeHessianListS4(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_hessians, double *hessians,
-													double *e_x_cov_x)
+__global__ void computeHessianListS2(float *trans_x, float *trans_y, float *trans_z,
+												int *valid_points,
+												int *starting_voxel_id, int *voxel_id, int valid_points_num,
+												double *centroid_x, double *centroid_y, double *centroid_z,
+												double gauss_d1, double *e_x_cov_x,
+												double *icov00, double *icov01, double *icov02,
+												double *icov10, double *icov11, double *icov12,
+												double *icov20, double *icov21, double *icov22,
+												double *point_hessians, double *hessians,
+												int valid_voxel_num)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
 	int row = blockIdx.y;
 	int col = blockIdx.z;
 
-	for (int i = id; i < valid_points_num && row < 6 && col < 6; i += stride) {
-		int pid = valid_points[i];
+	if (row < 6 && col < 6) {
+		double *h = hessians + (row * 6 + col) * valid_points_num;
+		double *tmp_ph0 = point_hessians + ((3 * row) * 6 + col) * valid_points_num;
+		double *tmp_ph1 = tmp_ph0 + 6 * valid_points_num;
+		double *tmp_ph2 = tmp_ph1 + 6 * valid_points_num;
 
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
-		MatrixDevice h(6, 6, valid_points_num, hessians + i);				//6x6 Matrix
+		for (int i = id; i < valid_points_num; i += stride) {
+			int pid = valid_points[i];
+			double d_x = static_cast<double>(trans_x[pid]);
+			double d_y = static_cast<double>(trans_y[pid]);
+			double d_z = static_cast<double>(trans_z[pid]);
+			double ph0 = tmp_ph0[i];
+			double ph1 = tmp_ph1[i];
+			double ph2 = tmp_ph2[i];
 
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_x = static_cast<double>(trans_x[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + voxel_id[vid]);	//3x3 matrix
+			double final_hessian = h[i];
 
-			t_x -= centr(0);
+			for ( int j = starting_voxel_id[i]; j < starting_voxel_id[i + 1]; j++) {
+				//Transformed coordinates
+				int vid = voxel_id[j];
+				double tmp_ex = e_x_cov_x[j];
 
-			double tmp_ex = e_x_cov_x[vid];	//e_x_cov_x
+				if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
+					tmp_ex *= gauss_d1;
 
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-						//Compute hessian
-				h(row, col) += t_x * (icov(0, 0) * ph(3 * row, col) + icov(0, 1) * ph(3 * row + 1, col) + icov(0, 2) * ph(3 * row + 2, col)) * tmp_ex;
+					final_hessian += (d_x - centroid_x[vid]) * (icov00[vid] * ph0 + icov01[vid] * ph1 + icov02[vid] * ph2) * tmp_ex;
+					final_hessian += (d_y - centroid_y[vid]) * (icov10[vid] * ph0 + icov11[vid] * ph1 + icov12[vid] * ph2) * tmp_ex;
+					final_hessian += (d_z - centroid_z[vid]) * (icov20[vid] * ph0 + icov21[vid] * ph1 + icov22[vid] * ph2) * tmp_ex;
+
+				}
 			}
+
+			h[i] = final_hessian;
 		}
 	}
 }
 
-/* Sixth step to compute hessian list */
-extern "C" __global__ void computeHessianListS5(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_hessians, double *hessians,
-													double *e_x_cov_x)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int row = blockIdx.y;
-	int col = blockIdx.z;
-	int stride = blockDim.x * gridDim.x;
-
-	for (int i = id; i < valid_points_num && row < 6 && col < 6; i += stride) {
-		int pid = valid_points[i];
-
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
-		MatrixDevice h(6, 6, valid_points_num, hessians + i);				//6x6 Matrix
-
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_y = static_cast<double>(trans_y[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + voxel_id[vid]);	//3x3 matrix
-
-			t_y -= centr(1);
-
-			double tmp_ex = e_x_cov_x[vid];	//e_x_cov_x
-
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-				//Compute hessian
-				h(row, col) += t_y * (icov(1, 0) * ph(3 * row, col) + icov(1, 1) * ph(3 * row + 1, col) + icov(1, 2) * ph(3 * row + 2, col)) * tmp_ex;
-			}
-		}
-	}
-}
-
-/* Seventh step to compute hessian list */
-extern "C" __global__ void computeHessianListS6(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double *centroid, double *inverse_covariance, int voxel_num,
-													double gauss_d1, double gauss_d2,
-													double *point_hessians, double *hessians,
-													double *e_x_cov_x)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	int row = blockIdx.y;
-	int col = blockIdx.z;
-
-	for (int i = id; i < valid_points_num && row < 6 && col < 6; i += stride) {
-		int pid = valid_points[i];
-
-		MatrixDevice ph(18, 6, valid_points_num, point_hessians + i);		//18x6 Matrix
-		MatrixDevice h(6, 6, valid_points_num, hessians + i);				//6x6 Matrix
-
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			//Transformed coordinates
-			double t_z = static_cast<double>(trans_z[pid]);
-			MatrixDevice centr(3, 1, voxel_num, centroid + voxel_id[vid]);
-			MatrixDevice icov(3, 3, voxel_num, inverse_covariance + voxel_id[vid]);	//3x3 matrix
-
-			t_z -= centr(2);
-
-			double tmp_ex = e_x_cov_x[vid];	//e_x_cov_x
-
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-				//Compute hessian
-				h(row, col) += t_z * (icov(2, 0) * ph(3 * row, col) + icov(2, 1) * ph(3 * row + 1, col) + icov(2, 2) * ph(3 * row + 2, col)) * tmp_ex;
-			}
-		}
-	}
-}
-
-/* Eighth step to compute hessian list */
-extern "C" __global__ void computeHessianListS7(float *trans_x, float *trans_y, float *trans_z,
-													int *valid_points,
-													int *starting_voxel_id, int *voxel_id, int valid_points_num,
-													double gauss_d1, double gauss_d2,
-													double *point_gradients, double *hessians,
-													double *e_x_cov_x,
-													double *cov_dxd_pi, int valid_voxel_num)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	int row = blockIdx.y;
-	int col = blockIdx.z;
-
-	for (int i = id; i < valid_points_num && row < 6 && col < 6; i += stride) {
-		MatrixDevice pg(3, 6, valid_points_num, point_gradients + i);
-		MatrixDevice h(6, 6, valid_points_num, hessians + i);				//6x6 Matrix
-
-		for ( int vid = starting_voxel_id[i]; vid < starting_voxel_id[i + 1]; vid++) {
-			MatrixDevice cov_dxd_pi_mat(3, 6, valid_voxel_num, cov_dxd_pi + vid);
-			//Transformed coordinates
-			double tmp_ex = e_x_cov_x[vid];
-			double tmp_cov_dxd_x, tmp_cov_dxd_y, tmp_cov_dxd_z;
-
-			if (!(tmp_ex > 1 || tmp_ex < 0 || tmp_ex != tmp_ex)) {
-				tmp_ex *= gauss_d1;
-
-				tmp_cov_dxd_x = cov_dxd_pi_mat(0, row);
-				tmp_cov_dxd_y = cov_dxd_pi_mat(1, row);
-				tmp_cov_dxd_z = cov_dxd_pi_mat(2, row);
-
-				//Compute hessian
-				h(row, col) += (pg(0, col) * tmp_cov_dxd_x + pg(1, col) * tmp_cov_dxd_y + pg(2, col) * tmp_cov_dxd_z) * tmp_ex;
-			}
-		}
-	}
-}
 
 /* Compute sum of a list of matrices */
-extern "C" __global__ void matrixSum(double *matrix_list, int full_size, int half_size, int rows, int cols, int offset)
+__global__ void matrixSum(double *matrix_list, int full_size, int half_size, int rows, int cols, int offset)
 {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
@@ -976,7 +698,7 @@ extern "C" __global__ void matrixSum(double *matrix_list, int full_size, int hal
 }
 
 /* Compute sum of score_inc list */
-extern "C" __global__ void sumScore(double *score, int full_size, int half_size)
+__global__ void sumScore(double *score, int full_size, int half_size)
 {
 	int index = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
@@ -1025,18 +747,15 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 	double *gradients, *hessians, *point_gradients, *point_hessians, *score;
 
 	checkCudaErrors(cudaMalloc(&gradients, sizeof(double) * valid_points_num * 6));
-	checkCudaErrors(cudaMemset(gradients, 0, sizeof(double) * valid_points_num * 6));
-
 	checkCudaErrors(cudaMalloc(&hessians, sizeof(double) * valid_points_num * 6 * 6));
-	checkCudaErrors(cudaMemset(hessians, 0, sizeof(double) * valid_points_num * 6 * 6));
-
 	checkCudaErrors(cudaMalloc(&point_gradients, sizeof(double) * valid_points_num * 3 * 6));
-	checkCudaErrors(cudaMemset(point_gradients, 0, sizeof(double) * valid_points_num * 3 * 6));
-
 	checkCudaErrors(cudaMalloc(&point_hessians, sizeof(double) * valid_points_num * 18 * 6));
-	checkCudaErrors(cudaMemset(point_hessians, 0, sizeof(double) * valid_points_num * 18 * 6));
-
 	checkCudaErrors(cudaMalloc(&score, sizeof(double) * valid_points_num));
+
+	checkCudaErrors(cudaMemset(gradients, 0, sizeof(double) * valid_points_num * 6));
+	checkCudaErrors(cudaMemset(hessians, 0, sizeof(double) * valid_points_num * 6 * 6));
+	checkCudaErrors(cudaMemset(point_gradients, 0, sizeof(double) * valid_points_num * 3 * 6));
+	checkCudaErrors(cudaMemset(point_hessians, 0, sizeof(double) * valid_points_num * 18 * 6));
 
 	int block_x = (valid_points_num > BLOCK_SIZE_X) ? BLOCK_SIZE_X : valid_points_num;
 
@@ -1044,41 +763,52 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 
 	dim3 grid;
 
-	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dj_ang_a_, dj_ang_b_, dj_ang_c_, dj_ang_d_,
-												point_gradients);
-	checkCudaErrors(cudaGetLastError());
-
-	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
-												valid_points, valid_points_num,
-												dj_ang_e_, dj_ang_f_, dj_ang_g_, dj_ang_h_,
-												point_gradients);
+												dj_ang_.buffer(),
+												point_gradients,
+												point_gradients + valid_points_num * 7,
+												point_gradients + valid_points_num * 14,
+												point_gradients + valid_points_num * 9,
+												point_gradients + valid_points_num * 15,
+												point_gradients + valid_points_num * 4,
+												point_gradients + valid_points_num * 10,
+												point_gradients + valid_points_num * 16,
+												point_gradients + valid_points_num * 5,
+												point_gradients + valid_points_num * 11,
+												point_gradients + valid_points_num * 17);
 	checkCudaErrors(cudaGetLastError());
 
 	if (compute_hessian) {
 		computePointHessian0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_a2_, dh_ang_a3_,
-												dh_ang_b2_, dh_ang_b3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 57, point_hessians + valid_points_num * 63, point_hessians + valid_points_num * 69,
+												point_hessians + valid_points_num * 75, point_hessians + valid_points_num * 58, point_hessians + valid_points_num * 81,
+												point_hessians + valid_points_num * 64, point_hessians + valid_points_num * 87, point_hessians + valid_points_num * 70,
+												point_hessians + valid_points_num * 93, point_hessians + valid_points_num * 59, point_hessians + valid_points_num * 99,
+												point_hessians + valid_points_num * 65, point_hessians + valid_points_num * 105, point_hessians + valid_points_num * 71);
+
 		checkCudaErrors(cudaGetLastError());
 
 		computePointHessian1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_c2_, dh_ang_c3_,
-												dh_ang_d1_, dh_ang_d2_, dh_ang_d3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 76, point_hessians + valid_points_num * 82, point_hessians + valid_points_num * 88,
+												point_hessians + valid_points_num * 94, point_hessians + valid_points_num * 77, point_hessians + valid_points_num * 100,
+												point_hessians + valid_points_num * 83, point_hessians + valid_points_num * 106, point_hessians + valid_points_num * 89);
 		checkCudaErrors(cudaGetLastError());
 
 		computePointHessian2<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_e1_, dh_ang_e2_, dh_ang_e3_,
-												dh_ang_f1_, dh_ang_f2_, dh_ang_f3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 95, point_hessians + valid_points_num * 101, point_hessians + valid_points_num * 107);
 		checkCudaErrors(cudaGetLastError());
+
 	}
+
 	checkCudaErrors(cudaDeviceSynchronize());
+
 
 	double *tmp_hessian;
 
@@ -1094,9 +824,12 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 
 	computeExCovX<<<grid_x, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 										starting_voxel_id, voxel_id, valid_points_num,
-										centroid, inverse_covariance, voxel_num,
+										centroid, centroid + voxel_num, centroid + 2 * voxel_num,
 										gauss_d1_, gauss_d2_,
-										e_x_cov_x);
+										e_x_cov_x,
+										inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+										inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+										inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num);
 	checkCudaErrors(cudaGetLastError());
 
 	computeScoreList<<<grid_x, block_x>>>(starting_voxel_id, voxel_id, valid_points_num, e_x_cov_x, gauss_d1_, score);
@@ -1121,76 +854,52 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 	grid.x = grid_x;
 	grid.y = 6;
 	grid.z = 1;
+
 	computeScoreGradientList<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, voxel_num, e_x_cov_x,
+													centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+													voxel_num, e_x_cov_x,
 													cov_dxd_pi, gauss_d1_, valid_voxel_num, gradients);
+
 	checkCudaErrors(cudaGetLastError());
 
+
 	if (compute_hessian) {
+
 		grid.y = 6;
 		grid.z = 1;
+
+
 		computeHessianListS0<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_gradients, tmp_hessian, valid_voxel_num);
+												starting_voxel_id, voxel_id, valid_points_num,
+												centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
+												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
+												tmp_hessian, valid_voxel_num);
 		checkCudaErrors(cudaGetLastError());
+		grid.z = 6;
 
 		computeHessianListS1<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_gradients, tmp_hessian, valid_voxel_num);
+													centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+													gauss_d1_, gauss_d2_, hessians,
+													e_x_cov_x, tmp_hessian, cov_dxd_pi,
+													point_gradients,
+													valid_voxel_num);
 		checkCudaErrors(cudaGetLastError());
 
 		computeHessianListS2<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_gradients, tmp_hessian, valid_voxel_num);
+													centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+													gauss_d1_, e_x_cov_x,
+													inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+													inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+													inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
+													point_hessians, hessians, valid_voxel_num);
 		checkCudaErrors(cudaGetLastError());
 
-		grid.z = 6;
-		computeHessianListS3<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, voxel_num,
-													gauss_d1_, gauss_d2_,
-													hessians,
-													e_x_cov_x, tmp_hessian, cov_dxd_pi,
-													valid_voxel_num);
-		checkCudaErrors(cudaGetLastError());
-
-		computeHessianListS4<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_hessians, hessians,
-													e_x_cov_x);
-		checkCudaErrors(cudaGetLastError());
-
-		computeHessianListS5<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-														starting_voxel_id, voxel_id, valid_points_num,
-														centroid, inverse_covariance, voxel_num,
-														gauss_d1_, gauss_d2_,
-														point_hessians, hessians,
-														e_x_cov_x);
-		checkCudaErrors(cudaGetLastError());
-
-		computeHessianListS6<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-														starting_voxel_id, voxel_id, valid_points_num,
-														centroid, inverse_covariance, voxel_num,
-														gauss_d1_, gauss_d2_,
-														point_hessians, hessians,
-														e_x_cov_x);
-		checkCudaErrors(cudaGetLastError());
-
-		computeHessianListS7<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													gauss_d1_, gauss_d2_,
-													point_gradients, hessians,
-													e_x_cov_x, cov_dxd_pi, valid_voxel_num);
-		checkCudaErrors(cudaGetLastError());
 	}
 
 	int full_size = valid_points_num;
@@ -1290,123 +999,105 @@ void GNormalDistributionsTransform::computeAngleDerivatives(MatrixHost pose, boo
 		sz = sin(pose(5));
 	}
 
-	j_ang_a_(0) = -sx * sz + cx * sy * cz;
-	j_ang_a_(1) = -sx * cz - cx * sy * sz;
-	j_ang_a_(2) = -cx * cy;
 
-	j_ang_b_(0) = cx * sz + sx * sy * cz;
-	j_ang_b_(1) = cx * cz - sx * sy * sz;
-	j_ang_b_(2) = -sx * cy;
+	j_ang_(0) = -sx * sz + cx * sy * cz;
+	j_ang_(1) = -sx * cz - cx * sy * sz;
+	j_ang_(2) = -cx * cy;
 
-	j_ang_c_(0) = -sy * cz;
-	j_ang_c_(1) = sy * sz;
-	j_ang_c_(2) = cy;
+	j_ang_(3) = cx * sz + sx * sy * cz;
+	j_ang_(4) = cx * cz - sx * sy * sz;
+	j_ang_(5) = -sx * cy;
 
-	j_ang_d_(0) = sx * cy * cz;
-	j_ang_d_(1) = -sx * cy * sz;
-	j_ang_d_(2) = sx * sy;
+	j_ang_(6) = -sy * cz;
+	j_ang_(7) = sy * sz;
+	j_ang_(8) = cy;
 
-	j_ang_e_(0) = -cx * cy * cz;
-	j_ang_e_(1) = cx * cy * sz;
-	j_ang_e_(2) = -cx * sy;
+	j_ang_(9) = sx * cy * cz;
+	j_ang_(10) = -sx * cy * sz;
+	j_ang_(11) = sx * sy;
 
-	j_ang_f_(0) = -cy * sz;
-	j_ang_f_(1) = -cy * cz;
-	j_ang_f_(2) = 0;
+	j_ang_(12) = -cx * cy * cz;
+	j_ang_(13) = cx * cy * sz;
+	j_ang_(14) = -cx * sy;
 
-	j_ang_g_(0) = cx * cz - sx * sy * sz;
-	j_ang_g_(1) = -cx * sz - sx * sy * cz;
-	j_ang_g_(2) = 0;
+	j_ang_(15) = -cy * sz;
+	j_ang_(16) = -cy * cz;
+	j_ang_(17) = 0;
 
-	j_ang_h_(0) = sx * cz + cx * sy * sz;
-	j_ang_h_(1) = cx * sy * cz - sx * sz;
-	j_ang_h_(2) = 0;
+	j_ang_(18) = cx * cz - sx * sy * sz;
+	j_ang_(19) = -cx * sz - sx * sy * cz;
+	j_ang_(20) = 0;
 
-	j_ang_a_.moveToGpu(dj_ang_a_);
-	j_ang_b_.moveToGpu(dj_ang_b_);
-	j_ang_c_.moveToGpu(dj_ang_c_);
-	j_ang_d_.moveToGpu(dj_ang_d_);
-	j_ang_e_.moveToGpu(dj_ang_e_);
-	j_ang_f_.moveToGpu(dj_ang_f_);
-	j_ang_g_.moveToGpu(dj_ang_g_);
-	j_ang_h_.moveToGpu(dj_ang_h_);
+	j_ang_(21) = sx * cz + cx * sy * sz;
+	j_ang_(22) = cx * sy * cz - sx * sz;
+	j_ang_(23) = 0;
+
+	j_ang_.moveToGpu(dj_ang_);
 
 	if (compute_hessian) {
-		h_ang_a2_(0) = -cx * sz - sx * sy * cz;
-		h_ang_a2_(1) = -cx * cz + sx * sy * sz;
-		h_ang_a2_(2) = sx * cy;
 
-		h_ang_a3_(0) = -sx * sz + cx * sy * cz;
-		h_ang_a3_(1) = -cx * sy * sz - sx * cz;
-		h_ang_a3_(2) = -cx * cy;
+		h_ang_(0) = -cx * sz - sx * sy * cz;
+		h_ang_(1) = -cx * cz + sx * sy * sz;
+		h_ang_(2) = sx * cy;
 
-		h_ang_b2_(0) = cx * cy * cz;
-		h_ang_b2_(1) = -cx * cy * sz;
-		h_ang_b2_(2) = cx * sy;
+		h_ang_(3) = -sx * sz + cx * sy * cz;
+		h_ang_(4) = -cx * sy * sz - sx * cz;
+		h_ang_(5) = -cx * cy;
 
-		h_ang_b3_(0) = sx * cy * cz;
-		h_ang_b3_(1) = -sx * cy * sz;
-		h_ang_b3_(2) = sx * sy;
+		h_ang_(6) = cx * cy * cz;
+		h_ang_(7) = -cx * cy * sz;
+		h_ang_(8) = cx * sy;
 
-		h_ang_c2_(0) = -sx * cz - cx * sy * sz;
-		h_ang_c2_(1) = sx * sz - cx * sy * cz;
-		h_ang_c2_(2) = 0;
+		h_ang_(9) = sx * cy * cz;
+		h_ang_(10) = -sx * cy * sz;
+		h_ang_(11) = sx * sy;
 
-		h_ang_c3_(0) = cx * cz - sx * sy * sz;
-		h_ang_c3_(1) = -sx * sy * cz - cx * sz;
-		h_ang_c3_(2) = 0;
+		h_ang_(12) = -sx * cz - cx * sy * sz;
+		h_ang_(13) = sx * sz - cx * sy * cz;
+		h_ang_(14) = 0;
 
-		h_ang_d1_(0) = -cy * cz;
-		h_ang_d1_(1) = cy * sz;
-		h_ang_d1_(2) = sy;
+		h_ang_(15) = cx * cz - sx * sy * sz;
+		h_ang_(16) = -sx * sy * cz - cx * sz;
+		h_ang_(17) = 0;
 
-		h_ang_d2_(0) = -sx * sy * cz;
-		h_ang_d2_(1) = sx * sy * sz;
-		h_ang_d2_(2) = sx * cy;
+		h_ang_(18) = -cy * cz;
+		h_ang_(19) = cy * sz;
+		h_ang_(20) = sy;
 
-		h_ang_d3_(0) = cx * sy * cz;
-		h_ang_d3_(1) = -cx * sy * sz;
-		h_ang_d3_(2) = -cx * cy;
+		h_ang_(21) = -sx * sy * cz;
+		h_ang_(22) = sx * sy * sz;
+		h_ang_(23) = sx * cy;
 
-		h_ang_e1_(0) = sy * sz;
-		h_ang_e1_(1) = sy * cz;
-		h_ang_e1_(2) = 0;
+		h_ang_(24) = cx * sy * cz;
+		h_ang_(25) = -cx * sy * sz;
+		h_ang_(26) = -cx * cy;
 
-		h_ang_e2_(0) = -sx * cy * sz;
-		h_ang_e2_(1) = -sx * cy * cz;
-		h_ang_e2_(2) = 0;
+		h_ang_(27) = sy * sz;
+		h_ang_(28) = sy * cz;
+		h_ang_(29) = 0;
 
-		h_ang_e3_(0) = cx * cy * sz;
-		h_ang_e3_(1) = cx * cy * cz;
-		h_ang_e3_(2) = 0;
+		h_ang_(30) = -sx * cy * sz;
+		h_ang_(31) = -sx * cy * cz;
+		h_ang_(32) = 0;
 
-		h_ang_f1_(0) = -cy * cz;
-		h_ang_f1_(1) = cy * sz;
-		h_ang_f1_(2) = 0;
+		h_ang_(33) = cx * cy * sz;
+		h_ang_(34) = cx * cy * cz;
+		h_ang_(35) = 0;
 
-		h_ang_f2_(0) = -cx * sz - sx * sy * cz;
-		h_ang_f2_(1) = -cx * cz + sx * sy * sz;
-		h_ang_f2_(2) = 0;
+		h_ang_(36) = -cy * cz;
+		h_ang_(37) = cy * sz;
+		h_ang_(38) = 0;
 
-		h_ang_f3_(0) = -sx * sz + cx * sy * cz;
-		h_ang_f3_(1) = -cx * sy * sz - sx * cz;
-		h_ang_f3_(2) = 0;
+		h_ang_(39) = -cx * sz - sx * sy * cz;
+		h_ang_(40) = -cx * cz + sx * sy * sz;
+		h_ang_(41) = 0;
 
-		h_ang_a2_.moveToGpu(dh_ang_a2_);
-		h_ang_a3_.moveToGpu(dh_ang_a3_);
-		h_ang_b2_.moveToGpu(dh_ang_b2_);
-		h_ang_b3_.moveToGpu(dh_ang_b3_);
-		h_ang_c2_.moveToGpu(dh_ang_c2_);
-		h_ang_c3_.moveToGpu(dh_ang_c3_);
-		h_ang_d1_.moveToGpu(dh_ang_d1_);
-		h_ang_d2_.moveToGpu(dh_ang_d2_);
-		h_ang_d3_.moveToGpu(dh_ang_d3_);
-		h_ang_e1_.moveToGpu(dh_ang_e1_);
-		h_ang_e2_.moveToGpu(dh_ang_e2_);
-		h_ang_e3_.moveToGpu(dh_ang_e3_);
-		h_ang_f1_.moveToGpu(dh_ang_f1_);
-		h_ang_f2_.moveToGpu(dh_ang_f2_);
-		h_ang_f3_.moveToGpu(dh_ang_f3_);
+		h_ang_(42) = -sx * sz + cx * sy * cz;
+		h_ang_(43) = -cx * sy * sz - sx * cz;
+		h_ang_(44) = 0;
+
+
+		h_ang_.moveToGpu(dh_ang_);
 	}
 
 }
@@ -1414,7 +1105,7 @@ void GNormalDistributionsTransform::computeAngleDerivatives(MatrixHost pose, boo
 
 
 
-extern "C" __global__ void gpuTransform(float *in_x, float *in_y, float *in_z,
+__global__ void gpuTransform(float *in_x, float *in_y, float *in_z,
 										float *trans_x, float *trans_y, float *trans_z,
 										int point_num, MatrixDevice transform)
 {
@@ -1702,49 +1393,58 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 	double *hessians, *point_gradients, *point_hessians;
 
 	checkCudaErrors(cudaMalloc(&hessians, sizeof(double) * valid_points_num * 6 * 6));
-	checkCudaErrors(cudaMemset(hessians, 0, sizeof(double) * valid_points_num * 6 * 6));
 
 	checkCudaErrors(cudaMalloc(&point_gradients, sizeof(double) * valid_points_num * 3 * 6));
-	checkCudaErrors(cudaMemset(point_gradients, 0, sizeof(double) * valid_points_num * 3 * 6));
 
 	checkCudaErrors(cudaMalloc(&point_hessians, sizeof(double) * valid_points_num * 18 * 6));
+
+	checkCudaErrors(cudaMemset(hessians, 0, sizeof(double) * valid_points_num * 6 * 6));
+	checkCudaErrors(cudaMemset(point_gradients, 0, sizeof(double) * valid_points_num * 3 * 6));
 	checkCudaErrors(cudaMemset(point_hessians, 0, sizeof(double) * valid_points_num * 18 * 6));
 
 	int block_x = (valid_points_num > BLOCK_SIZE_X) ? BLOCK_SIZE_X : valid_points_num;
 	int grid_x = (valid_points_num - 1) / block_x + 1;
 	dim3 grid;
 
-	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dj_ang_a_, dj_ang_b_, dj_ang_c_, dj_ang_d_,
-												point_gradients);
+												dj_ang_.buffer(),
+												point_gradients,
+												point_gradients + valid_points_num * 7,
+												point_gradients + valid_points_num * 14,
+												point_gradients + valid_points_num * 9,
+												point_gradients + valid_points_num * 15,
+												point_gradients + valid_points_num * 4,
+												point_gradients + valid_points_num * 10,
+												point_gradients + valid_points_num * 16,
+												point_gradients + valid_points_num * 5,
+												point_gradients + valid_points_num * 11,
+												point_gradients + valid_points_num * 17);
 	checkCudaErrors(cudaGetLastError());
 
-	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
-												valid_points, valid_points_num,
-												dj_ang_e_, dj_ang_f_, dj_ang_g_, dj_ang_h_,
-												point_gradients);
-	checkCudaErrors(cudaGetLastError());
 
 	computePointHessian0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_a2_, dh_ang_a3_,
-												dh_ang_b2_, dh_ang_b3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 57, point_hessians + valid_points_num * 63, point_hessians + valid_points_num * 69,
+												point_hessians + valid_points_num * 75, point_hessians + valid_points_num * 58, point_hessians + valid_points_num * 81,
+												point_hessians + valid_points_num * 64, point_hessians + valid_points_num * 87, point_hessians + valid_points_num * 70,
+												point_hessians + valid_points_num * 93, point_hessians + valid_points_num * 59, point_hessians + valid_points_num * 99,
+												point_hessians + valid_points_num * 65, point_hessians + valid_points_num * 105, point_hessians + valid_points_num * 71);
 	checkCudaErrors(cudaGetLastError());
 
 	computePointHessian1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_c2_, dh_ang_c3_,
-												dh_ang_d1_, dh_ang_d2_, dh_ang_d3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 76, point_hessians + valid_points_num * 82, point_hessians + valid_points_num * 88,
+												point_hessians + valid_points_num * 94, point_hessians + valid_points_num * 77, point_hessians + valid_points_num * 100,
+												point_hessians + valid_points_num * 83, point_hessians + valid_points_num * 106, point_hessians + valid_points_num * 89);
 	checkCudaErrors(cudaGetLastError());
 
 	computePointHessian2<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
-												dh_ang_e1_, dh_ang_e2_, dh_ang_e3_,
-												dh_ang_f1_, dh_ang_f2_, dh_ang_f3_,
-												point_hessians);
+												dh_ang_.buffer(),
+												point_hessians + valid_points_num * 95, point_hessians + valid_points_num * 101, point_hessians + valid_points_num * 107);
 	checkCudaErrors(cudaGetLastError());
 
 	double *tmp_hessian;
@@ -1761,9 +1461,13 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 
 	computeExCovX<<<grid_x, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 										starting_voxel_id, voxel_id, valid_points_num,
-										centroid, inverse_covariance, voxel_num,
+										centroid, centroid + voxel_num, centroid + 2 * voxel_num,
 										gauss_d1_, gauss_d2_,
-										e_x_cov_x);
+										e_x_cov_x,
+										inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+										inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+										inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num);
+
 	checkCudaErrors(cudaGetLastError());
 
 	grid.x = grid_x;
@@ -1778,73 +1482,44 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 	int block_x2 = (valid_voxel_num > BLOCK_SIZE_X) ? BLOCK_SIZE_X : valid_voxel_num;
 	int grid_x2 = (valid_voxel_num - 1) / block_x2 + 1;
 
+
 	updateExCovX<<<grid_x2, block_x2>>>(e_x_cov_x, gauss_d2_, valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
 
 	grid.y = 6;
 	grid.z = 1;
-	computeHessianListS0<<<grid_x, block_x>>>(trans_x, trans_y, trans_z, valid_points,
+
+	computeHessianListS0<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 												starting_voxel_id, voxel_id, valid_points_num,
-												centroid, inverse_covariance, voxel_num,
-												gauss_d1_, gauss_d2_,
-												point_gradients, tmp_hessian, valid_voxel_num);
+												centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
+												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
+												tmp_hessian, valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
+
+	grid.z = 6;
 
 	computeHessianListS1<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 												starting_voxel_id, voxel_id, valid_points_num,
-												centroid, inverse_covariance, voxel_num,
-												gauss_d1_, gauss_d2_,
-												point_gradients, tmp_hessian, valid_voxel_num);
+												centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+												gauss_d1_, gauss_d2_, hessians,
+												e_x_cov_x, tmp_hessian, cov_dxd_pi,
+												point_gradients,
+												valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
 
 	computeHessianListS2<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
 												starting_voxel_id, voxel_id, valid_points_num,
-												centroid, inverse_covariance, voxel_num,
-												gauss_d1_, gauss_d2_,
-												point_gradients, tmp_hessian, valid_voxel_num);
+												centroid, centroid + voxel_num, centroid + 2 * voxel_num,
+												gauss_d1_, e_x_cov_x,
+												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
+												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
+												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
+												point_hessians, hessians, valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
 
-	grid.z = 6;
-	computeHessianListS3<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-												starting_voxel_id, voxel_id, valid_points_num,
-												centroid, voxel_num,
-												gauss_d1_, gauss_d2_,
-												hessians,
-												e_x_cov_x, tmp_hessian, cov_dxd_pi,
-												valid_voxel_num);
-	checkCudaErrors(cudaGetLastError());
-
-
-	computeHessianListS4<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-												starting_voxel_id, voxel_id, valid_points_num,
-												centroid, inverse_covariance, voxel_num,
-												gauss_d1_, gauss_d2_,
-												point_hessians, hessians,
-												e_x_cov_x);
-	checkCudaErrors(cudaGetLastError());
-
-	computeHessianListS5<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_hessians, hessians,
-													e_x_cov_x);
-	checkCudaErrors(cudaGetLastError());
-
-	computeHessianListS6<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-													starting_voxel_id, voxel_id, valid_points_num,
-													centroid, inverse_covariance, voxel_num,
-													gauss_d1_, gauss_d2_,
-													point_hessians, hessians,
-													e_x_cov_x);
-	checkCudaErrors(cudaGetLastError());
-
-	computeHessianListS7<<<grid, block_x>>>(trans_x, trans_y, trans_z, valid_points,
-												starting_voxel_id, voxel_id, valid_points_num,
-												gauss_d1_, gauss_d2_,
-												point_gradients, hessians,
-												e_x_cov_x, cov_dxd_pi, valid_voxel_num);
-	checkCudaErrors(cudaGetLastError());
 
 	int full_size = valid_points_num;
 	int half_size = (full_size - 1) / 2 + 1;

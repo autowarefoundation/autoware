@@ -42,8 +42,8 @@
     sudo apt-get install -y libswresample-ffmpeg1=7:2.8.11-0ubuntu0.16.04.1
     sudo apt-get install -y libavformat-ffmpeg56=7:2.8.11-0ubuntu0.16.04.1
     sudo apt-get install -y libswscale-ffmpeg3=7:2.8.11-0ubuntu0.16.04.1
-    sudo apt-get install -y libssl1.0.0=1.0.2g-1ubuntu4.6
-    sudo apt-get install -y libssl-dev=1.0.2g-1ubuntu4.6
+    sudo apt-get install -y libssl1.0.0=1.0.2g-1ubuntu4.9
+    sudo apt-get install -y libssl-dev=1.0.2g-1ubuntu4.9
     sudo apt-get install -y ros-kinetic-desktop-full
     sudo apt-get install -y ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
     sudo apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
@@ -64,7 +64,6 @@ If you need to use a SSD detector, please refer SSD readme.
     cd ~/
     git clone https://github.com/CPFL/Autoware.git
     cd Autoware
-    git checkout -b aarch64 origin/feature/aarch64
 
     cd ros
     ./catkin_make_release -j1

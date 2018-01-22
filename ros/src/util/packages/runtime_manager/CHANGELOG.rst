@@ -2,6 +2,129 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.0 (2017-12-11)
+------------------
+* Merge pull request `#878 <https://github.com/CPFL/Autoware/issues/878>`_ from CPFL/feature/ndt_pcl_gpu
+  Feature/ndt pcl gpu
+* Merge branch develop into feature/ndt_pcl_gpu
+* Merge branch 'develop' into feature/tlr_turn_support
+* Merge pull request `#954 <https://github.com/CPFL/Autoware/issues/954>`_ from CPFL/fix/tf_mapping
+  Fix/tf mapping
+* add new state button on runtime manager
+* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
+* Merge branch 'develop' into feature/tlr_turn
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+* add new state for gui
+* Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision
+  Feature/decision: Enhancement decision maker node
+* Added support to Image Publisher for frames different than only "velodyne". (`#946 <https://github.com/CPFL/Autoware/issues/946>`_)
+* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
+* Merge branch 'feature/OpenPlanner' into develop
+* Merge branch 'develop' into feature/OpenPlanner
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/computing.yaml
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision
+* [fix] Image src correctly set in the config file of runtime manager for ssd node (`#939 <https://github.com/CPFL/Autoware/issues/939>`_)
+* Fixed misalignment on state tab with Ubuntu14.04
+* tweak state tab
+* update and add state for gui
+* update gui
+* - Add new Node for object polygon representation and tracking (kf_contour_tracker)
+  - Add launch file and tune tracking parameters
+  - Test with Moriyama rosbag
+* Fixed:
+  - callback
+  - laneshift
+  Added:
+  - publisher for laneid
+  - new lanechange flag
+  - new param for decisionMaker
+* add to insert shift lane
+* update state and remove detection state
+* change state button
+* merge develop and fixed slow switching map
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* - Add user interface option in runtime manage for local_planner and op_trajectory_generator
+* fix computing.yaml
+* add app dialog for fix2tfpose and nmea2tfpose (WIP)
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Fix feature/points2image bug multicam support (`#886 <https://github.com/CPFL/Autoware/issues/886>`_)
+  * pointgrey
+  * Added New Calibration node
+  * Added parameters, plane fitting
+  * added mirror node, etc
+  * Points2Image
+  Calibration Publisher
+  now works with multiple cameras using ros namespaces
+  * Including only points2image
+  * Added Launch file for points2 image specific for the ladybug camera
+* [feature] Added NDT Mapping Descriptions and checkboxes to Runtime Manager UI (`#882 <https://github.com/CPFL/Autoware/issues/882>`_)
+  * Added Descriptions and checkboxes to Runtime Manager UI
+  * Added also approximate ndt mapping descriptions
+* remove unnecessary gui
+* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Merge branch 'develop' into feature/ndt_pcl_gpu
+  Conflicts:
+  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
+  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
+  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
+* Add ndt_cpu library
+* Merge pull request `#844 <https://github.com/CPFL/Autoware/issues/844>`_ from CPFL/feature/remote_monitor
+  Feature/remote monitor
+* add path velocity smoothing
+* add waypoint relay
+* Runtime manager updated to new package names (`#870 <https://github.com/CPFL/Autoware/issues/870>`_)
+  [fix] Runtime manager updated to new pgrey package names
+* Merge branch 'master' into feature/decision
+* Feature/fusion_filter - fusion multiple lidar (`#842 <https://github.com/CPFL/Autoware/issues/842>`_)
+  * Add fusion_filter to merge multiple lidar pointclouds
+  * Refactor fusion_filter
+  * Apply clang-format and rebase develop
+  * Add fusion_filter launch and runtime_manager config
+  * Fix names, fusion_filter -> points_concat_filter
+  * Fix build error in ros-indigo
+  * Fix some default message/frame names
+  * Refactor code and apply clang-format
+  * Add configrations for runtime_manager
+  * Fix CMake
+* Feature/cloud transformer (`#860 <https://github.com/CPFL/Autoware/issues/860>`_)
+  * Added Cloud transformer node
+  transforms pointcloud to a target frame
+  * Added support for XYZIR point type
+  * Added error checks when transformation unavailable
+* Merge branch 'master' of github.com:cpfl/autoware into develop
+* add commonly buttons
+* rename state tabs
+* add select state tab
+* moved images
+* Merge pull request `#794 <https://github.com/CPFL/Autoware/issues/794>`_ from CPFL/feature/ndt_pcl_gpu
+  Feature/ndt pcl gpu
+* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
+* add use_gpu option for ndt_matching and ndt_mapping in app dialog
+* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
+* Merge pull request `#833 <https://github.com/CPFL/Autoware/issues/833>`_ from CPFL/feature/rtmgr_fix_checkbox_tree
+  Runtime Manager, fix wrong scrolling when checked on kinetic
+* Runtime Manager, fix wrong scrolling when checked on kinetic and hlink layout
+* Merge for ndt_pcl_gpu
+* Merge pull request `#831 <https://github.com/CPFL/Autoware/issues/831>`_ from CPFL/feature/rtmgr_update_rosbag_rec
+  Runtime Manager, rosbag filename update when ROSBAG button on
+* merge develop
+* Runtime Manager, rosbag filename update when ROSBAG button on, and fix unnecessary ext.
+* Merge pull request `#826 <https://github.com/CPFL/Autoware/issues/826>`_ from CPFL/feature/ray_ground_filter
+  Feature/ray ground filter
+* Merge branch 'develop' into feature/ray_ground_filter
+  Conflicts:
+  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
+* Add ground_filter config for runtime_manager (`#828 <https://github.com/CPFL/Autoware/issues/828>`_)
+* Added descriptions to the params in launch file
+* Ray Ground Filter Initial Commit
+* merge develop
+* add approximate_ndt_mapping (`#811 <https://github.com/CPFL/Autoware/issues/811>`_)
+* fix bug and refactor code
+* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
+* add new button for remote monitor to runtime_manager
+* Contributors: AMC, Abraham Monrroy, Akihito Ohsato, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, anhnv-3991, hatem-darweesh, kondoh, kondoh2, yukikitsukawa
+
 1.5.1 (2017-09-25)
 ------------------
 

@@ -7,13 +7,13 @@
 #include <tf/transform_listener.h>
 
 // lib
-#include <euclidean_space.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
 
 #include <decision_maker_node.hpp>
 
 #include <autoware_msgs/lane.h>
+#include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <random>
@@ -30,18 +30,8 @@ void DecisionMakerNode::update_pubsub(void)
   // this function will re-definition subscriber.
 }
 
-void DecisionMakerNode::displayMarker(void)
+int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker &crossroad_marker, double scale)
 {
-  // vector_map init
-  // parse vectormap
-  initVectorMap();
-
-  jsk_recognition_msgs::BoundingBoxArray bbox_array;
-
-  static visualization_msgs::MarkerArray marker_array;
-  static visualization_msgs::Marker crossroad_marker;
-  static visualization_msgs::Marker inside_marker;
-
   crossroad_marker.header.frame_id = "/map";
   crossroad_marker.header.stamp = ros::Time();
   crossroad_marker.id = 1;
@@ -49,54 +39,105 @@ void DecisionMakerNode::displayMarker(void)
   crossroad_marker.action = visualization_msgs::Marker::ADD;
   crossroad_marker.ns = "crossroad";
 
-  double scale = 3.0;
   crossroad_marker.scale.x = scale;
   crossroad_marker.scale.y = scale;
   crossroad_marker.scale.z = 0.5;
   crossroad_marker.color.a = 0.15;
   crossroad_marker.color.r = 1.0;
   crossroad_marker.color.g = 0.0;
-  /// www.sinet.ad.jp/aboutsinettd::cout << "x: "<< _point.x << std::endl;
   crossroad_marker.color.b = 0.0;
   crossroad_marker.frame_locked = true;
   crossroad_marker.lifetime = ros::Duration(0.3);
 
+  return 0;
+}
+
+void DecisionMakerNode::displayMarker(void)
+{
+  // vector_map init
+  // parse vectormap
+  jsk_recognition_msgs::BoundingBoxArray bbox_array;
+  visualization_msgs::MarkerArray marker_array;
+  visualization_msgs::Marker crossroad_marker;
+  visualization_msgs::Marker inside_marker;
+  visualization_msgs::Marker inside_line_marker;
+
+  double scale = 3.0;
+  createCrossRoadAreaMarker(crossroad_marker, scale);
+
   inside_marker = crossroad_marker;
+  inside_marker.scale.x = scale / 3;
+  inside_marker.scale.y = scale / 3;
+  inside_marker.scale.z = 0.5;
   inside_marker.color.a = 0.5;
   inside_marker.color.r = 1.0;
-  inside_marker.color.g = 1.0;
+  inside_marker.color.g = 0.0;
   inside_marker.color.b = 0.0;
   inside_marker.ns = "inside";
   inside_marker.lifetime = ros::Duration();
 
   bbox_array.header = crossroad_marker.header;
+  inside_marker.points.clear();
+
+  inside_line_marker = inside_marker;
+  inside_line_marker.type = visualization_msgs::Marker::LINE_STRIP;
 
   for (auto &area : intersects)
   {
-    for (const auto &p : area.points)
-    {
-      // if(isInsideArea(p))
-      // inside_marker.points.push_back(p);
-      crossroad_marker.points.push_back(p);
-    }
     area.bbox.header = crossroad_marker.header;
     bbox_array.boxes.push_back(area.bbox);
+    for (const auto &p : area.insideWaypoint_points)
+    {
+      inside_marker.points.push_back(p);
+    }
+
+    for (const auto &lane : area.insideLanes)
+    {
+      inside_line_marker.points.clear();
+      int id = inside_line_marker.id;
+      inside_line_marker.id += 1;
+      inside_marker.scale.x = scale / 3;
+      inside_marker.scale.y = scale / 3;
+      inside_line_marker.color.r = std::fmod(0.12345 * (id), 1.0);
+      inside_line_marker.color.g = std::fmod(0.32345 * (5 - (id % 5)), 1.0);
+      inside_line_marker.color.b = std::fmod(0.52345 * (10 - (id % 10)), 1.0);
+      for (const auto &wp : lane.waypoints)
+      {
+        inside_line_marker.points.push_back(wp.pose.pose.position);
+      }
+      marker_array.markers.push_back(inside_line_marker);
+    }
   }
+  inside_line_marker.scale.x = 0.2;  // 0.3;
+  inside_line_marker.scale.y = 0.2;  // 0.3;
+  inside_line_marker.color.r = 0;
+  inside_line_marker.color.g = 1;
+  inside_line_marker.color.b = 0.3;
+  inside_line_marker.color.a = 1;
+  inside_line_marker.ns = "shiftline";
+  for (const auto &lane : current_controlled_lane_array_.lanes)
+  {
+    inside_line_marker.points.clear();
+    for (size_t idx = 0; idx < lane.waypoints.size(); idx++)
+    {
+      inside_line_marker.id += 1;
 
+      geometry_msgs::Pose shift_p = lane.waypoints.at(idx).pose.pose;
+
+      double current_angle = getPoseAngle(shift_p);
+
+      shift_p.position.x -= param_shift_width_ * cos(current_angle + M_PI / 2);
+      shift_p.position.y -= param_shift_width_ * sin(current_angle + M_PI / 2);
+
+      inside_line_marker.points.push_back(shift_p.position);
+    }
+    marker_array.markers.push_back(inside_line_marker);
+  }
   Pubs["crossroad_bbox"].publish(bbox_array);
+  Pubs["crossroad_marker"].publish(marker_array);
   bbox_array.boxes.clear();
-
-  // marker_array.markers.push_back(inside_marker);
-  marker_array.markers.push_back(crossroad_marker);
-
-  Pubs["crossroad_visual"].publish(marker_array);
-
-  for (const auto &p : inside_points_)
-    inside_marker.points.push_back(p);
-
-  Pubs["crossroad_inside_visual"].publish(inside_marker);
-
-  marker_array.markers.clear();
+  // Pubs["crossroad_inside_marker"].publish(inside_marker);
+  Pubs["crossroad_inside_marker"].publish(inside_line_marker);
 }
 
 void DecisionMakerNode::update_msgs(void)
@@ -112,10 +153,19 @@ void DecisionMakerNode::update_msgs(void)
       update_pubsub();
     }
 
-    state_string_msg.data = CurrentStateName;
-    state_text_msg.text = createStateMessageText();
+    autoware_msgs::state state_msg;
+    state_msg.main_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::MAIN_STATE);
+    state_msg.acc_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::ACC_STATE);
+    state_msg.str_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::STR_STATE);
+    state_msg.behavior_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::BEHAVIOR_STATE);
 
-    Pubs["state"].publish(state_string_msg);
+    state_string_msg.data = CurrentStateName;
+    // state_text_msg.text = createStateMessageText();
+    state_text_msg.text = state_msg.main_state + "\n" + state_msg.acc_state + "\n" + state_msg.str_state + "\n" +
+                          state_msg.behavior_state + "\n";
+
+    Pubs["states"].publish(state_msg);
+    // Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);
   }
   else
@@ -134,7 +184,7 @@ void DecisionMakerNode::publishToVelocityArray()
 
   for (const auto &i : current_finalwaypoints_.waypoints)
   {
-    msg.data.push_back(mps2kmph(i.twist.twist.linear.x));
+    msg.data.push_back(amathutils::mps2kmph(i.twist.twist.linear.x));
     if (++count >= 10)
       break;
   }
