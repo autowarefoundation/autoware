@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>amathutils</name>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <description>The libamathutils package</description>
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
   <license>BSD</license>
