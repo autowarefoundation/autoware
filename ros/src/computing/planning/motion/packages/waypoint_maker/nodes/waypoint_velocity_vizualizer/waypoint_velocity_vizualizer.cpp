@@ -86,6 +86,7 @@ private:
   int control_buffer_size_ = 100;
   double plot_height_ratio_ = 1.0;
   double plot_height_shift_ = 0.2;
+  double plot_metric_interval_ = 1.0;
   std::vector<double> base_waypoints_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
   std::vector<double> final_waypoints_rgba_ = { 0.0, 1.0, 0.0, 0.5 };
   std::vector<double> current_twist_rgba_ = { 0.0, 0.0, 1.0, 0.5 };
@@ -127,6 +128,7 @@ WaypointVelocityVizualizer::WaypointVelocityVizualizer() : node_handle_(), priva
   private_node_handle_.param<int>("control_buffer_size", control_buffer_size_, control_buffer_size_);
   private_node_handle_.param<double>("plot_height_ratio", plot_height_ratio_, plot_height_ratio_);
   private_node_handle_.param<double>("plot_height_shift", plot_height_shift_, plot_height_shift_);
+  private_node_handle_.param<double>("plot_metric_interval", plot_metric_interval_, plot_metric_interval_);
   private_node_handle_.param<std::vector<double> >("base_waypoints_rgba", base_waypoints_rgba_, base_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("final_waypoints_rgba", final_waypoints_rgba_, final_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("current_twist_rgba", current_twist_rgba_, current_twist_rgba_);
@@ -187,6 +189,14 @@ void WaypointVelocityVizualizer::closestWaypointCallback(const std_msgs::Int32::
 
 void WaypointVelocityVizualizer::controlCallback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg, const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg, const geometry_msgs::TwistStamped::ConstPtr& command_twist_msg)
 {
+  if (plot_metric_interval_ > 0 && current_pose_buf_.size() > 0)
+  {
+    tf::Vector3 p1, p2;
+    tf::pointMsgToTF(current_pose_buf_.back().pose.position, p1);
+    tf::pointMsgToTF(current_pose_msg->pose.position, p2);
+    if (!(p1.distance(p2) > plot_metric_interval_)) return; // skipping plot
+  }
+  // if plot_metric_interval <= 0, velocity is plotted by each callback.
   current_pose_buf_.push_back(*current_pose_msg);
   current_twist_buf_.push_back(*current_twist_msg);
   command_twist_buf_.push_back(*command_twist_msg);

@@ -13,6 +13,7 @@
   <arg name="control_buffer_size" default="100" />
   <arg name="plot_height_ratio" default="1.0" />
   <arg name="plot_height_shift" default="0.2" />
+  <arg name="plot_metric_interval" default="1.0" />
   <arg name="base_waypoints_rgba" default="[1.0, 1.0, 1.0, 0.5]" />
   <arg name="final_waypoints_rgba" default="[0.0, 1.0, 0.0, 0.5]" />
   <arg name="current_twist_rgba" default="[0.0, 0.0, 1.0, 0.5]" />
@@ -31,6 +32,7 @@
     <param name="control_buffer_size" value="$(arg control_buffer_size)" />
     <param name="plot_height_ratio" value="$(arg plot_height_ratio)" />
     <param name="plot_height_shift" value="$(arg plot_height_shift)" />
+    <param name="plot_metric_interval" value="$(arg plot_metric_interval)" />
 		<rosparam param="base_waypoints_rgba" subst_value="True">$(arg base_waypoints_rgba)</rosparam>
 		<rosparam param="final_waypoints_rgba" subst_value="True">$(arg final_waypoints_rgba)</rosparam>
 		<rosparam param="current_twist_rgba" subst_value="True">$(arg current_twist_rgba)</rosparam>
