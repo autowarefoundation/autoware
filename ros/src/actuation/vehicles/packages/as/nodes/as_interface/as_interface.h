@@ -34,6 +34,7 @@
 // ROS includes
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <module_comm_msgs/SteerMode.h>
 #include <module_comm_msgs/SpeedMode.h>
@@ -79,14 +80,23 @@ private:
   double max_curvature_rate_;
   bool use_curvature_cmd_;
 
+  // constants
+  static constexpr double minimum_linear_x_ = 1e-6;
+
   // variables
-  bool control_mode_;
+  bool control_mode_ = false;
+  double speed_ = 0.0;
+  double curvature_ = 0.0;
+  std_msgs::Header header_;
 
   // callbacks
-  void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped& msg);
+  void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStampedConstPtr& msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
   void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg);
+  
+  // publisher
+  void publishToPacmod();
 
   // initializer
   void initForROS();

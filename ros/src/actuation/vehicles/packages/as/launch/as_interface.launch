@@ -7,9 +7,9 @@
 	<arg name="use_curvature_cmd" default="true"/>
 
 	<node pkg="as" type="as_interface" name="as_interface" output="log">
-		<param name="acceleration_limit" value="$(arg acceleration_limit)"/>
-		<param name="deceleration_limit" value="$(arg deceleration_limit)"/>
-		<param name="max_curvature_rate" value="$(arg max_curvature_rate)"/>
+		<param name="acceleration_limit" value="$(arg acceleration_limit)" />
+		<param name="deceleration_limit" value="$(arg deceleration_limit)" />
+		<param name="max_curvature_rate" value="$(arg max_curvature_rate)" />
 		<param name="use_curvature_cmd" value="$(arg use_curvature_cmd)" />
 	</node>
 
