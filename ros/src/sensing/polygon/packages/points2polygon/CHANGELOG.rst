@@ -2,6 +2,9 @@
 Changelog for package points2polygon
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+
 1.6.0 (2017-12-11)
 ------------------
 * merge develop and fixed slow switching map

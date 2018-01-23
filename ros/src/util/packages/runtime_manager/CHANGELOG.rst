@@ -2,6 +2,9 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#878 <https://github.com/CPFL/Autoware/issues/878>`_ from CPFL/feature/ndt_pcl_gpu
