@@ -98,11 +98,14 @@ private:
   std_msgs::ColorRGBA current_twist_color_;
   std_msgs::ColorRGBA command_twist_color_;
 
+  ros::Time previous_time_;
   boost::circular_buffer<geometry_msgs::PoseStamped> current_pose_buf_;
   boost::circular_buffer<geometry_msgs::TwistStamped> current_twist_buf_;
   boost::circular_buffer<geometry_msgs::TwistStamped> command_twist_buf_;
 
   std_msgs::ColorRGBA vector2color(const std::vector<double>& v);
+  void deleteMarkers();
+  void resetBuffers();
 
   void baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
   void finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
@@ -150,6 +153,8 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
   current_twist_color_ = vector2color(current_twist_rgba_);
   command_twist_color_ = vector2color(command_twist_rgba_);
 
+  previous_time_ = ros::Time::now();
+
   current_pose_buf_.set_capacity(control_buffer_size_);
   current_twist_buf_.set_capacity(control_buffer_size_);
   command_twist_buf_.set_capacity(control_buffer_size_);
@@ -167,7 +172,7 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
                                                                        *current_twist_sub_, *command_twist_sub_);
   control_sync_->registerCallback(boost::bind(&WaypointVelocityVisualizer::controlCallback, this, _1, _2, _3));
 
-  velocity_marker_pub_ = node_handle_.advertise<visualization_msgs::MarkerArray>("waypoints_velocity", 10, true);
+  velocity_marker_pub_ = node_handle_.advertise<visualization_msgs::MarkerArray>("waypoints_velocity", 10);
 }
 
 WaypointVelocityVisualizer::~WaypointVelocityVisualizer()
@@ -182,6 +187,22 @@ std_msgs::ColorRGBA WaypointVelocityVisualizer::vector2color(const std::vector<d
   c.b = v[2];
   c.a = v[3];
   return c;
+}
+
+void WaypointVelocityVisualizer::deleteMarkers()
+{
+  velocity_marker_array_.markers.clear();
+  visualization_msgs::Marker marker;
+  marker.action = visualization_msgs::Marker::DELETEALL;
+  velocity_marker_array_.markers.push_back(marker);
+  velocity_marker_pub_.publish(velocity_marker_array_);
+}
+
+void WaypointVelocityVisualizer::resetBuffers()
+{
+  current_pose_buf_.clear();
+  current_twist_buf_.clear();
+  command_twist_buf_.clear();
 }
 
 void WaypointVelocityVisualizer::baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
@@ -202,6 +223,17 @@ void WaypointVelocityVisualizer::controlCallback(const geometry_msgs::PoseStampe
                                                  const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg,
                                                  const geometry_msgs::TwistStamped::ConstPtr& command_twist_msg)
 {
+  // buffers are reset when time goes back, e.g. playback rosbag
+  ros::Time current_time = ros::Time::now();
+  if (previous_time_ > current_time)
+  {
+    ROS_WARN("Detected jump back in time of %.3fs. Clearing markers and buffers.",
+             (previous_time_ - current_time).toSec());
+    deleteMarkers();  // call 'DELETEALL'
+    resetBuffers();   // clear circular buffers
+  }
+  previous_time_ = current_time;
+  // if plot_metric_interval <= 0, velocity is plotted by each callback.
   if (plot_metric_interval_ > 0 && current_pose_buf_.size() > 0)
   {
     tf::Vector3 p1, p2;
@@ -210,7 +242,6 @@ void WaypointVelocityVisualizer::controlCallback(const geometry_msgs::PoseStampe
     if (!(p1.distance(p2) > plot_metric_interval_))
       return;  // skipping plot
   }
-  // if plot_metric_interval <= 0, velocity is plotted by each callback.
   current_pose_buf_.push_back(*current_pose_msg);
   current_twist_buf_.push_back(*current_twist_msg);
   command_twist_buf_.push_back(*command_twist_msg);
@@ -258,7 +289,7 @@ void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::lane&
                                                       visualization_msgs::MarkerArray& markers)
 {
   std::vector<nav_msgs::Odometry> waypoints;
-  for (auto wp : lane.waypoints)
+  for (const auto& wp : lane.waypoints)
   {
     nav_msgs::Odometry odom;
     odom.pose.pose = wp.pose.pose;
@@ -291,17 +322,16 @@ void WaypointVelocityVisualizer::createVelocityBarMarker(const std::vector<nav_m
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
+  marker.header.stamp = ros::Time();
   marker.ns = ns + "/bar";
   marker.type = visualization_msgs::Marker::CYLINDER;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = 0.1;
   marker.scale.y = 0.1;
   marker.color = color;
-  marker.frame_locked = true;
 
   unsigned int count = 0;
-  for (auto wp : waypoints)
+  for (const auto& wp : waypoints)
   {
     double h = plot_height_ratio_ * wp.twist.twist.linear.x;
     marker.id = count++;
@@ -319,15 +349,14 @@ void WaypointVelocityVisualizer::createVelocityLineMarker(const std::vector<nav_
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
+  marker.header.stamp = ros::Time();
   marker.ns = ns + "/line";
   marker.type = visualization_msgs::Marker::LINE_STRIP;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.x = 0.1;
   marker.color = color;
-  marker.frame_locked = true;
 
-  for (auto wp : waypoints)
+  for (const auto& wp : waypoints)
   {
     geometry_msgs::Point p = wp.pose.pose.position;
     p.z += plot_height_ratio_ * wp.twist.twist.linear.x;
@@ -342,16 +371,15 @@ void WaypointVelocityVisualizer::createVelocityTextMarker(const std::vector<nav_
 {
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
+  marker.header.stamp = ros::Time();
   marker.ns = ns + "/text";
   marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
   marker.action = visualization_msgs::Marker::ADD;
   marker.scale.z = 0.2;
   marker.color = color;
-  marker.frame_locked = true;
 
   unsigned int count = 0;
-  for (auto wp : waypoints)
+  for (const auto& wp : waypoints)
   {
     marker.id = count++;
     geometry_msgs::Point p = wp.pose.pose.position;

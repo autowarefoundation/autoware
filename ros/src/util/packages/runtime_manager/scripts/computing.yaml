@@ -2991,6 +2991,13 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : plot_metric_interval
+      desc      : if interval <= 0, velocity is plotted by each callback
+      label     : Metric interval [m]
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
