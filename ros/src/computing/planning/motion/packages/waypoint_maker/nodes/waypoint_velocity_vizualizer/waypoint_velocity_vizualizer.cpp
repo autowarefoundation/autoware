@@ -82,6 +82,7 @@ private:
 
   int control_buffer_size_ = 100;
   double plot_height_ratio_ = 1.0;
+  double plot_height_shift_ = 0.2;
   std::vector<double> base_waypoints_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
   std::vector<double> final_waypoints_rgba_ = { 0.0, 1.0, 0.0, 0.5 };
   std::vector<double> current_twist_rgba_ = { 1.0, 0.0, 0.0, 0.5 };
@@ -112,6 +113,7 @@ private:
 
   void createVelocityBarMarker(const std::vector<nav_msgs::Odometry>& waypoints, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
   void createVelocityLineMarker(const std::vector<nav_msgs::Odometry>& waypoints, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
+  void createVelocityTextMarker(const std::vector<nav_msgs::Odometry>& waypoints, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
 };
 
 WaypointVelocityVizualizer::WaypointVelocityVizualizer() : node_handle_(), private_node_handle_("~")
@@ -139,7 +141,7 @@ WaypointVelocityVizualizer::WaypointVelocityVizualizer() : node_handle_(), priva
   current_pose_sub_ = new message_filters::Subscriber<geometry_msgs::PoseStamped>(node_handle_, "current_pose", 1);
   current_twist_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(node_handle_, "current_velocity", 1);
   command_twist_sub_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(node_handle_, "twist_cmd", 1);
-  control_sync_ = new message_filters::Synchronizer<ControlSyncPolicy>(ControlSyncPolicy(100), *current_pose_sub_, *current_twist_sub_, *command_twist_sub_);
+  control_sync_ = new message_filters::Synchronizer<ControlSyncPolicy>(ControlSyncPolicy(10), *current_pose_sub_, *current_twist_sub_, *command_twist_sub_);
   control_sync_->registerCallback(boost::bind(&WaypointVelocityVizualizer::controlCallback, this, _1, _2, _3));
 
   velocity_marker_pub_ = node_handle_.advertise<visualization_msgs::MarkerArray>("waypoints_velocity", 10, true);
@@ -202,6 +204,7 @@ void WaypointVelocityVizualizer::createVelocityMarker(const std::vector<nav_msgs
 {
   createVelocityBarMarker(waypoints, ns, color, markers);
   createVelocityLineMarker(waypoints, ns, color, markers);
+  createVelocityTextMarker(waypoints, ns, color, markers);
 }
 
 void WaypointVelocityVizualizer::createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers)
@@ -276,6 +279,32 @@ void WaypointVelocityVizualizer::createVelocityLineMarker(const std::vector<nav_
     marker.points.push_back(p);
   }
   markers.markers.push_back(marker);
+}
+
+void WaypointVelocityVizualizer::createVelocityTextMarker(const std::vector<nav_msgs::Odometry>& waypoints, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers)
+{
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time::now();
+  marker.ns = ns + "/text";
+  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.z = 0.2;
+  marker.color = color;
+  marker.frame_locked = true;
+
+  unsigned int count = 0;
+  for (auto wp : waypoints)
+  {
+    marker.id = count++;
+    geometry_msgs::Point p = wp.pose.pose.position;
+    p.z += plot_height_ratio_ * wp.twist.twist.linear.x + plot_height_shift_;
+    marker.pose.position = p;
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(1) << mps2kmph(wp.twist.twist.linear.x);
+    marker.text = oss.str();
+    markers.markers.push_back(marker);
+  }
 }
 
 int main(int argc, char** argv)
