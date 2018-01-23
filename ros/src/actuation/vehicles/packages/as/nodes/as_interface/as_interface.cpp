@@ -50,6 +50,8 @@ void PacmodInterface::initForROS()
   private_nh_.param<double>("deceleration_limit", deceleration_limit_, 3.0);
   private_nh_.param<double>("max_curvature_rate", max_curvature_rate_, 0.75);
   private_nh_.param<bool>("use_curvature_cmd", use_curvature_cmd_, true);
+  private_nh_.param<bool>("use_timer_publisher", use_timer_publisher_, false);
+  private_nh_.param<double>("publish_frequency", publish_frequency_, 10.0);
 
   // setup subscriber
   if (!use_curvature_cmd_)
@@ -63,6 +65,12 @@ void PacmodInterface::initForROS()
 
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
   speed_sub_ = nh_.subscribe("/vehicle/steering_report", 1, &PacmodInterface::callbackFromSteeringReport, this);
+
+  // setup timer
+  if (use_timer_publisher_)
+  {
+    pacmod_timer_ = nh_.createTimer(ros::Rate(publish_frequency_), &PacmodInterface::callbackPacmodTimer, this);
+  }
 
   // setup publisher
   steer_mode_pub_ = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 1);
@@ -82,7 +90,8 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
   header_ = msg->header;
   speed_ = msg->cmd.linear_velocity;
   curvature_ = msg->cmd.curvature;
-  publishToPacmod();
+  if (!use_timer_publisher_)
+    publishToPacmod();
 }
 
 void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg)
@@ -90,7 +99,8 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   header_ = msg->header;
   speed_ = msg->twist.linear.x >= minimum_linear_x_ ? msg->twist.linear.x : minimum_linear_x_;
   curvature_ = msg->twist.angular.z / speed_;
-  publishToPacmod();
+  if (!use_timer_publisher_)
+    publishToPacmod();
 }
 
 void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr& msg)
@@ -107,6 +117,11 @@ void PacmodInterface::callbackFromSteeringReport(const dbw_mkz_msgs::SteeringRep
   ts.twist.linear.x = msg->speed;  // [m/sec]
   // Can we get angular velocity?
   current_twist_pub_.publish(ts);
+}
+
+void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
+{
+  publishToPacmod();
 }
 
 void PacmodInterface::publishToPacmod()

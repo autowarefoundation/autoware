@@ -74,11 +74,16 @@ private:
   ros::Subscriber speed_sub_;
   ros::Subscriber curvature_cmd_sub_;
 
+  // timer
+  ros::Timer pacmod_timer_;
+
   // ros param
   double acceleration_limit_;
   double deceleration_limit_;
   double max_curvature_rate_;
   bool use_curvature_cmd_;
+  bool use_timer_publisher_;
+  double publish_frequency_;
 
   // constants
   static constexpr double minimum_linear_x_ = 1e-6;
@@ -94,7 +99,8 @@ private:
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
   void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg);
-  
+  void callbackPacmodTimer(const ros::TimerEvent& event);
+
   // publisher
   void publishToPacmod();
 
