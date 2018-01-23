@@ -153,10 +153,10 @@ void PacmodInterface::publishToPacmod()
   turn_signal_pub_.publish(turn_signal);
   gear_pub_.publish(gear_comm);
 
-  std::cout << "mode: " << speed_mode.mode << std::endl;
-  std::cout << "speed: " << speed_mode.speed << std::endl;
-  std::cout << "steer: " << steer_mode.curvature << std::endl;
-  std::cout << "gear: " << gear_comm.command.gear << std::endl;
+  ROS_INFO_STREAM("mode: " << speed_mode.mode << ", "
+                           << "speed: " << speed_mode.speed << ", "
+                           << "steer: " << steer_mode.curvature << ", "
+                           << "gear: " << (int)gear_comm.command.gear);
 }
 
 }  // pacmod
