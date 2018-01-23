@@ -17,8 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
-pkg_check_modules(Qt5Core REQUIRED Qt5Core)
-pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -35,7 +40,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 EXECUTE_PROCESS(
   COMMAND pkg-config --variable=host_bins Qt5Core
@@ -44,10 +49,10 @@ EXECUTE_PROCESS(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   include
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 # library
@@ -56,45 +61,24 @@ add_library(points_image
 )
 add_dependencies(points_image autoware_msgs_generate_messages_cpp)
 
+qt5_wrap_ui(points2vscan_ui_mainwindow nodes/points2vscan/mainwindow.ui)
+
 # points2vscan
-add_custom_command(
-  OUTPUT ui_mainwindow.h
-  COMMAND
-  ${Qt5BIN}/uic
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/points2vscan/ui_mainwindow.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/points2vscan/mainwindow.ui"
-)
-add_custom_target(points2vscan_ui_mainwindow DEPENDS ui_mainwindow.h)
-
-add_custom_command(
-  OUTPUT mainwindow_moc.cpp
-  COMMAND
-  ${Qt5BIN}/moc
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/points2vscan/mainwindow_moc.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/points2vscan/mainwindow.h"
-)
-add_custom_target(points2vscan_mainwindow_moc DEPENDS mainwindow_moc.cpp)
-
-## Declare a cpp executable
 add_executable(points2vscan
   nodes/points2vscan/main.cpp
   nodes/points2vscan/mainwindow.cpp
+  nodes/points2vscan/mainwindow.h
+  ${points2vscan_ui_mainwindow}
 )
 
 set_target_properties(points2vscan
   PROPERTIES COMPILE_FLAGS "-fPIC"
 )
 
-add_dependencies(points2vscan
-  points2vscan_ui_mainwindow
-  points2vscan_mainwindow_moc
-)
-
 target_link_libraries(points2vscan
   ${catkin_LIBRARIES}
-  nlopt
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
+  Qt5::Core
+  Qt5::Widgets
 )
 
 # points2image

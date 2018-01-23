@@ -7,7 +7,6 @@
 
 #include "SimpleTracker.h"
 #include "MatrixOperations.h"
-#include "PlanningHelpers.h"
 #include "UtilityH.h"
 
 #include <iostream>
@@ -23,18 +22,26 @@ namespace SimulationNS
 
 using namespace PlannerHNS;
 
-SimpleTracker::SimpleTracker(double horizon)
+SimpleTracker::SimpleTracker()
 {
 	iTracksNumber = 1;
-	m_DT = 0.1;
-	m_MAX_ASSOCIATION_DISTANCE = 3.0;
-	m_MAX_TRACKS_AFTER_LOSING = 10;
-	m_MaxKeepTime = 15; // seconds
+	m_dt = 0.1;
+	m_MAX_ASSOCIATION_DISTANCE = 2.0;
+	m_MAX_ASSOCIATION_SIZE_DIFF = 1.0;
+	m_MAX_ASSOCIATION_ANGLE_DIFF = 0.44;
+	m_MaxKeepTime = 2; // seconds
 	m_bUseCenterOnly = true;
 	m_bFirstCall = true;
+	m_nMinTrustAppearances = 5;
+	m_Horizon = 100.0;
+	m_CirclesResolution = 5.0;
 	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+}
 
-	InitializeInterestRegions(horizon, 5, 5, m_InterestRegions);
+void SimpleTracker::InitSimpleTracker()
+{
+	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+	InitializeInterestRegions(m_InterestRegions);
 }
 
 SimpleTracker::~SimpleTracker()
@@ -53,42 +60,367 @@ SimpleTracker::~SimpleTracker()
 
 }
 
-void SimpleTracker::InitializeInterestRegions(double horizon, double init_raduis, double init_time, std::vector<InterestCircle*>& regions)
+void SimpleTracker::InitializeInterestRegions(std::vector<InterestCircle*>& regions)
 {
 	//initialize interest regions
-	double distance = 0;
-	while(distance <= horizon)
+	double next_raduis = m_CirclesResolution;
+	double next_foget_time = m_MaxKeepTime;
+	while(1)
 	{
 		InterestCircle* pCir = new InterestCircle(regions.size()+1);
 		if(regions.size() == 0)
 		{
-			pCir->radius = 5;
-			pCir->pPrevCircle = 0;
-			//pCir->forget_time = NEVER_GORGET_TIME;
-			pCir->forget_time = m_MaxKeepTime*2.0;
+			pCir->radius = next_raduis;
+			pCir->forget_time = next_foget_time;
 			regions.push_back(pCir);
 			std::cout << "Region No: " << regions.size() << ", Radius: " << pCir->radius << ", F time: " << pCir->forget_time << std::endl;
 		}
 		else
 		{
-			int iPrev = regions.size()-1;
-			if(regions.size() > 1)
-				pCir->radius = regions.at(iPrev)->radius + regions.at(iPrev-1)->radius;
-			else
-				pCir->radius = regions.at(iPrev)->radius + regions.at(iPrev)->radius;
-
-			regions.at(iPrev)->pNextCircle = pCir;
-			pCir->pPrevCircle = regions.at(iPrev);
-			pCir->forget_time = m_MaxKeepTime-iPrev-2;
-			if(pCir->forget_time <= 0 )
-				pCir->forget_time = 0.2;
+			pCir->radius = next_raduis;
+			pCir->forget_time = next_foget_time;
 			regions.push_back(pCir);
 
 			std::cout << "Region No: " << regions.size() << ", Radius: " << pCir->radius << ", F time: " << pCir->forget_time << std::endl;
 		}
 
-		distance = pCir->radius;
+		if(next_raduis >= m_Horizon)
+			break;
+
+		next_raduis += next_raduis * 0.8;
+		if(next_raduis > m_Horizon)
+			next_raduis = m_Horizon;
+		next_foget_time -= next_foget_time * 0.25;
+		if(next_foget_time < 0.1)
+			next_foget_time = 0.1;
 	}
+}
+
+void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<DetectedObject>& obj_list, const TRACKING_TYPE& type)
+{
+	if(!m_bFirstCall)
+	{
+		m_dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_TrackTimer);
+		m_StateDiff.pos.x = m_PrevState.pos.x - currPose.pos.x ;
+		m_StateDiff.pos.y = m_PrevState.pos.y - currPose.pos.y;
+		m_StateDiff.pos.a = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(currPose.pos.a, m_PrevState.pos.a) * UtilityHNS::UtilityH::GetSign(m_PrevState.pos.a - currPose.pos.a);
+		//std::cout << "(" << m_StateDiff.pos.x << ", " << m_StateDiff.pos.y << ", " << m_StateDiff.pos.a << std::endl;
+	}
+	else
+		m_bFirstCall = false;
+
+	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+
+	m_DetectedObjects = obj_list;
+
+	if(type == ASSOCIATE_ONLY)
+	{
+		AssociateOnly();
+	}
+	else if (type == SIMPLE_TRACKER)
+	{
+		AssociateSimply();
+	}
+	else
+	{
+		AssociateAndTrack();
+		CleanOldTracks();
+	}
+
+	m_PrevState = currPose;
+
+}
+
+void SimpleTracker::MatchClosest()
+{
+	newObjects.clear();
+
+	std::cout << std::endl << std::endl  << std::endl;
+	while(m_DetectedObjects.size() > 0)
+	{
+		double iCloseset_track = -1;
+		double iCloseset_obj = -1;
+		double dCloseset = 99999999;
+		bool bFoundMatch = false;
+
+		double size_diff = -1;
+		std::cout << std::endl;
+
+		m_CostsLists.clear();
+
+		for(unsigned int jj = 0; jj < m_DetectedObjects.size(); jj++)
+		{
+			double object_size = sqrt(m_DetectedObjects.at(jj).w*m_DetectedObjects.at(jj).w + m_DetectedObjects.at(jj).l*m_DetectedObjects.at(jj).l + m_DetectedObjects.at(jj).h*m_DetectedObjects.at(jj).h);
+
+			for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
+			{
+				double d = hypot(m_DetectedObjects.at(jj).center.pos.y-m_TrackSimply.at(i).obj.center.pos.y, m_DetectedObjects.at(jj).center.pos.x-m_TrackSimply.at(i).obj.center.pos.x);
+				double old_size = sqrt(m_TrackSimply.at(i).obj.w*m_TrackSimply.at(i).obj.w + m_TrackSimply.at(i).obj.l*m_TrackSimply.at(i).obj.l + m_TrackSimply.at(i).obj.h*m_TrackSimply.at(i).obj.h);
+				double obj_diff = fabs(object_size - old_size);
+
+				bool bInsidePolygon = (InsidePolygon(m_TrackSimply.at(i).obj.contour, m_DetectedObjects.at(jj).center.pos) == 1 || InsidePolygon(m_DetectedObjects.at(jj).contour, m_TrackSimply.at(i).obj.center.pos) == 1);
+
+				if(obj_diff < m_MAX_ASSOCIATION_SIZE_DIFF &&  bInsidePolygon)
+				 {
+					 bFoundMatch = true;
+					 iCloseset_track = i;
+					 iCloseset_obj = jj;
+					 size_diff = obj_diff;
+					 std::cout << "Polygon Size Match" << std::endl;
+					 break;
+				 }
+
+				if(obj_diff < m_MAX_ASSOCIATION_SIZE_DIFF && d < dCloseset)
+				{
+					dCloseset = d;
+					iCloseset_track = i;
+					iCloseset_obj = jj;
+					size_diff = obj_diff;
+					size_diff = obj_diff;
+				}
+			}
+
+			if(bFoundMatch)
+				break;
+		}
+
+		if(iCloseset_obj != -1 && iCloseset_track != -1 && (dCloseset <= m_MAX_ASSOCIATION_DISTANCE || bFoundMatch == true))
+		{
+			std::cout << "MatchObj: " << m_TrackSimply.at(iCloseset_track).obj.id << ", MinD: " << dCloseset << ", SizeDiff: (" << size_diff <<  ")" << ", ObjI" << iCloseset_obj <<", TrackI: " << iCloseset_track << ", CMatch: " << bFoundMatch << std::endl;
+
+			m_DetectedObjects.at(iCloseset_obj).id = m_TrackSimply.at(iCloseset_track).obj.id;
+			MergeObjectAndTrack(m_TrackSimply.at(iCloseset_track), m_DetectedObjects.at(iCloseset_obj));
+			newObjects.push_back(m_TrackSimply.at(iCloseset_track));
+			m_TrackSimply.erase(m_TrackSimply.begin()+iCloseset_track);
+			m_DetectedObjects.erase(m_DetectedObjects.begin()+iCloseset_obj);
+		}
+		else
+		{
+			iTracksNumber = iTracksNumber + 1;
+			if(iCloseset_obj != -1)
+			{
+				m_DetectedObjects.at(iCloseset_obj).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(iCloseset_obj).center.pos.x, m_DetectedObjects.at(iCloseset_obj).center.pos.y,m_DetectedObjects.at(iCloseset_obj).actual_yaw, m_DetectedObjects.at(iCloseset_obj).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(iCloseset_obj);
+				newObjects.push_back(track);
+				//std::cout << "NewObj: " << iTracksNumber  << ", MinD: " << dCloseset << ", MinS: " << min_size << ", ObjI:" << iCloseset_obj <<", TrackI: " << iCloseset_track << ", ContMatch: " << bFoundMatch << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+iCloseset_obj);
+			}
+			else
+			{
+				m_DetectedObjects.at(0).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(0).center.pos.x, m_DetectedObjects.at(0).center.pos.y,m_DetectedObjects.at(0).actual_yaw, m_DetectedObjects.at(0).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(0);
+				newObjects.push_back(track);
+				//std::cout << "NewObj: " << iTracksNumber  << ", MinD: " << dCloseset << ", MinS: " << min_size << ", ObjI:" << 0 <<", TrackI: " << iCloseset_track << ", ContMatch: " << bFoundMatch << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+0);
+			}
+		}
+	}
+
+	m_TrackSimply = newObjects;
+}
+
+void SimpleTracker::MatchClosestCost()
+{
+	newObjects.clear();
+
+	//std::cout << std::endl << std::endl  << std::endl;
+	while(m_DetectedObjects.size() > 0)
+	{
+		//std::cout << std::endl;
+		double max_d = -1;
+		double min_d = 999999999;
+		double max_s = -1;
+		double min_s = 999999999;
+		double max_a = -1;
+		double min_a = 999999999;
+		double max_w = -1;
+		double min_w = 999999999;
+		double max_l = -1;
+		double min_l = 999999999;
+		double max_h = -1;
+		double min_h = 999999999;
+
+		m_CostsLists.clear();
+
+		for(unsigned int jj = 0; jj < m_DetectedObjects.size(); jj++)
+		{
+			double object_size = sqrt(m_DetectedObjects.at(jj).w*m_DetectedObjects.at(jj).w + m_DetectedObjects.at(jj).l*m_DetectedObjects.at(jj).l + m_DetectedObjects.at(jj).h*m_DetectedObjects.at(jj).h);
+
+			for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
+			{
+				double d = hypot(m_DetectedObjects.at(jj).center.pos.y-m_TrackSimply.at(i).obj.center.pos.y, m_DetectedObjects.at(jj).center.pos.x-m_TrackSimply.at(i).obj.center.pos.x);
+				double old_size = sqrt(m_TrackSimply.at(i).obj.w*m_TrackSimply.at(i).obj.w + m_TrackSimply.at(i).obj.l*m_TrackSimply.at(i).obj.l + m_TrackSimply.at(i).obj.h*m_TrackSimply.at(i).obj.h);
+				double obj_diff = fabs(object_size - old_size);
+				double w_diff = fabs(m_TrackSimply.at(i).obj.w - m_DetectedObjects.at(jj).w);
+				double h_diff = fabs(m_TrackSimply.at(i).obj.h - m_DetectedObjects.at(jj).h);
+				double l_diff = fabs(m_TrackSimply.at(i).obj.l - m_DetectedObjects.at(jj).l);
+
+				bool bDirectionMatch = false;
+				bool bSimilarSize = false;
+				double a_diff = M_PI;
+				if(m_TrackSimply.at(i).obj.bDirection)
+				{
+					double diff_y = m_DetectedObjects.at(jj).center.pos.y - m_TrackSimply.at(i).obj.center.pos.y;
+					double diff_x = m_DetectedObjects.at(jj).center.pos.x - m_TrackSimply.at(i).obj.center.pos.x ;
+					if(hypot(diff_y, diff_x) > 0.2)
+					{
+						double a = UtilityHNS::UtilityH::FixNegativeAngle(atan2(diff_y, diff_x));
+						a_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(a,m_TrackSimply.at(i).obj.center.pos.a);
+						if(a_diff < m_MAX_ASSOCIATION_ANGLE_DIFF)
+							bDirectionMatch = true;
+					}
+				}
+
+				if(w_diff < m_MAX_ASSOCIATION_SIZE_DIFF/3.0 && h_diff < m_MAX_ASSOCIATION_SIZE_DIFF/3.0 && l_diff < m_MAX_ASSOCIATION_SIZE_DIFF/3.0)
+					bSimilarSize = true;
+
+				if(d > max_d) max_d = d; if(d < min_d) min_d = d;
+				if(obj_diff > max_s) max_s = obj_diff; if(obj_diff < min_s) min_s = obj_diff;
+				if(w_diff > max_w) max_w = w_diff; if(w_diff < min_w) min_w = w_diff;
+				if(l_diff > max_l) max_l = l_diff; if(l_diff < min_l) min_l = l_diff;
+				if(h_diff > max_h) max_h = h_diff; if(h_diff < min_h) min_h = h_diff;
+				if(a_diff > max_a) max_a = a_diff; if(a_diff < min_a) min_a = a_diff;
+
+				m_CostsLists.push_back(CostRecordSet(jj, i, d, obj_diff, w_diff, l_diff, h_diff, a_diff));
+
+			//	std::cout << "Test: " << m_TrackSimply.at(i).obj.id << ", MinD: " << d << ", ObjS: " << obj_diff << ", Angle: " << a_diff << ", ObjI: " << jj << ", TrackI: " << i << std::endl;
+			}
+
+		}
+
+		// Normalize and find the minimum
+		std::vector<double> vs;
+
+		double d_v = max_d - min_d;
+		double w_v = max_w - min_w;
+		double l_v = max_l - min_l;
+		double h_v = max_h - min_h;
+		double a_v = max_a - min_a;
+		double s_v = max_s - min_s;
+
+		for(unsigned int ic = 0 ; ic < m_CostsLists.size() ; ic++)
+		{
+			int actual_count = 0;
+			if(d_v != 0)
+			{
+				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).distance_diff/d_v;
+				actual_count++;
+			}
+
+			if(w_v != 0)
+			{
+				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).width_diff/w_v;
+				actual_count++;
+			}
+
+			if(l_v != 0)
+			{
+				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).length_diff/l_v;
+				actual_count++;
+			}
+
+			if(h_v != 0)
+			{
+				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).height_diff/h_v;
+				actual_count++;
+			}
+
+			if(a_v != 0 && m_CostsLists.at(ic).angle_diff < M_PI_2)
+			{
+				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).angle_diff/a_v;
+				actual_count++;
+			}
+			else
+				m_CostsLists.at(ic).angle_diff = 0;
+
+//			if(s_v != 0 )
+//			{
+//				m_CostsLists.at(ic).cost += m_CostsLists.at(ic).size_diff/s_v;
+//				actual_count++;
+//			}
+
+
+			if(actual_count > 0)
+				m_CostsLists.at(ic).cost = m_CostsLists.at(ic).cost / (double)actual_count;
+		//	std::cout << "Cost = " << m_CostsLists.at(ic).cost << std::endl;
+		}
+
+		CostRecordSet min_set;
+		min_set.cost = 99999999;
+
+		for(unsigned int ic = 0 ; ic < m_CostsLists.size() ; ic++)
+		{
+			if(m_CostsLists.at(ic).cost < min_set.cost)
+				min_set = m_CostsLists.at(ic);
+		}
+
+
+		if(min_set.i_obj != -1 && min_set.i_track != -1 &&  min_set.distance_diff <= m_MAX_ASSOCIATION_DISTANCE && min_set.size_diff < m_MAX_ASSOCIATION_SIZE_DIFF && min_set.angle_diff < m_MAX_ASSOCIATION_ANGLE_DIFF)
+		{
+		//	std::cout << "MatchObj: " << m_TrackSimply.at(min_set.i_track).obj.id << ", MinD: " << min_set.distance_diff << ", SizeDiff: (" << min_set.size_diff << ")" << ", AngDiff: " << min_set.angle_diff  << ", ObjI" << min_set.i_obj <<", TrackI: " << min_set.i_track << std::endl;
+
+			m_DetectedObjects.at(min_set.i_obj).id = m_TrackSimply.at(min_set.i_track).obj.id;
+			MergeObjectAndTrack(m_TrackSimply.at(min_set.i_track), m_DetectedObjects.at(min_set.i_obj));
+			newObjects.push_back(m_TrackSimply.at(min_set.i_track));
+			m_TrackSimply.erase(m_TrackSimply.begin()+min_set.i_track);
+			m_DetectedObjects.erase(m_DetectedObjects.begin()+min_set.i_obj);
+		}
+		else
+		{
+			iTracksNumber = iTracksNumber + 1;
+
+			if(min_set.i_obj != -1)
+			{
+				m_DetectedObjects.at(min_set.i_obj).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(min_set.i_obj).center.pos.x, m_DetectedObjects.at(min_set.i_obj).center.pos.y,m_DetectedObjects.at(min_set.i_obj).actual_yaw, m_DetectedObjects.at(min_set.i_obj).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(min_set.i_obj);
+				newObjects.push_back(track);
+
+				//std::cout << "NewMatch: " << iTracksNumber << ", "<< ", MinD: " << min_set.distance_diff << ", SizeDiff: (" << min_set.size_diff << ")" << ", AngDiff: " << min_set.angle_diff << ", ObjI" << min_set.i_obj <<", TrackI: " << min_set.i_track << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+min_set.i_obj);
+			}
+			else
+			{
+				m_DetectedObjects.at(0).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(0).center.pos.x, m_DetectedObjects.at(0).center.pos.y,m_DetectedObjects.at(0).actual_yaw, m_DetectedObjects.at(0).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(0);
+				newObjects.push_back(track);
+				//std::cout << "NewObj: " << iTracksNumber << ", "<< ", MinD: " << min_set.distance_diff << ", SizeDiff: (" << min_set.size_diff << ")" << ", AngDiff: " << min_set.angle_diff << ", ObjI" << min_set.i_obj <<", TrackI: " << min_set.i_track << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+0);
+			}
+		}
+	}
+
+	m_TrackSimply = newObjects;
+}
+
+void SimpleTracker::AssociateOnly()
+{
+	MatchClosestCost();
+
+	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
+		m_TrackSimply.at(i).UpdateAssociateOnly(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+
+	m_DetectedObjects.clear();
+	for(unsigned int i = 0; i< m_TrackSimply.size(); i++)
+		m_DetectedObjects.push_back(m_TrackSimply.at(i).obj);
+}
+
+void SimpleTracker::AssociateSimply()
+{
+	for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
+		m_TrackSimply.at(i).m_bUpdated = false;
+
+	MatchClosestCost();
+
+	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
+		m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+
+	m_DetectedObjects.clear();
+	for(unsigned int i = 0; i< m_TrackSimply.size(); i++)
+		m_DetectedObjects.push_back(m_TrackSimply.at(i).obj);
 }
 
 void SimpleTracker::AssociateToRegions(KFTrackV& detectedObject)
@@ -100,7 +432,6 @@ void SimpleTracker::AssociateToRegions(KFTrackV& detectedObject)
 		{
 			detectedObject.region_id = m_InterestRegions.at(i)->id;
 			detectedObject.forget_time = m_InterestRegions.at(i)->forget_time;
-			//std::cout << "Associate Object: " << detectedObject.obj.id << ", With Region: " << detectedObject.region_id << ", And Time: " << detectedObject.forget_time << std::endl;
 			return;
 		}
 	}
@@ -109,316 +440,179 @@ void SimpleTracker::AssociateToRegions(KFTrackV& detectedObject)
 	{
 		detectedObject.region_id = m_InterestRegions.at(m_InterestRegions.size()-1)->id;
 		detectedObject.forget_time = m_InterestRegions.at(m_InterestRegions.size()-1)->forget_time;
-		//std::cout << "Associate Object: " << detectedObject.obj.id << ", With Region: " << detectedObject.region_id << ", And Time: " << detectedObject.forget_time << std::endl;
 	}
 }
 
 void SimpleTracker::AssociateAndTrack()
 {
-	DetectedObject* prev_obj;
-	DetectedObject* curr_obj;
+	for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
+		m_TrackSimply.at(i).m_bUpdated = false;
 
-	std::vector<CostRecordSet> matching_matrix;
 
-	for(unsigned int i = 0 ; i < m_DetectedObjects.size(); i++)
+	std::cout << std::endl;
+	while(m_DetectedObjects.size() > 0)
 	{
-		double minCost = 99999999;
-		double minID = -1;
-
-		curr_obj = &m_DetectedObjects.at(i);
-		curr_obj->center.cost = 0;
-
-		matching_matrix.push_back(CostRecordSet(i, -1, 0));
-
-		for(unsigned int j = 0; j < m_Tracks.size(); j++)
+		double iCloseset_track = -1;
+		double iCloseset_obj = -1;
+		double dCloseset = 99999999;
+		bool bFoundMatch = false;
+		double min_size = -1;
+		std::cout << "DetObjSize: " <<  m_DetectedObjects.size() <<  ", TracksSize: " << m_TrackSimply.size() << std::endl;
+		for(unsigned int jj = 0; jj < m_DetectedObjects.size(); jj++)
 		{
-			prev_obj = &m_Tracks.at(j)->obj;
-			double expected_d = prev_obj->center.v * m_DT;
+			double object_size = hypot(m_DetectedObjects.at(jj).w, m_DetectedObjects.at(jj).l);
 
-			if(m_bUseCenterOnly)
+			for(unsigned int i = 0; i < m_TrackSimply.size(); i++)
 			{
-				curr_obj->center.cost = fabs(hypot(curr_obj->center.pos.y- prev_obj->center.pos.y, curr_obj->center.pos.x- prev_obj->center.pos.x) - expected_d);
-			}
-			else
-			{
-				for(unsigned int k = 0; k < curr_obj->contour.size(); k++)
-					for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
-						curr_obj->center.cost += fabs(hypot(curr_obj->contour.at(k).y -prev_obj->contour.at(pk).y, curr_obj->contour.at(k).x -prev_obj->contour.at(pk).x) - expected_d);
+				double old_size = hypot(m_TrackSimply.at(i).obj.w, m_TrackSimply.at(i).obj.l);
+				double obj_diff = fabs(object_size - old_size);
+				double d = hypot(m_DetectedObjects.at(jj).center.pos.y-m_TrackSimply.at(i).obj.center.pos.y, m_DetectedObjects.at(jj).center.pos.x-m_TrackSimply.at(i).obj.center.pos.x);
 
-				curr_obj->center.cost = curr_obj->center.cost/(double)(curr_obj->contour.size()*prev_obj->contour.size());
-			}
+				std::cout << "Test: " << m_TrackSimply.at(i).obj.id << ", MinD: " << d << ", ObjS: " << object_size << ", ObjI: " << jj << ", TrackS: " << old_size << ", TrackI: " << i << std::endl;
 
-			if(DEBUG_TRACKER)
-				std::cout << "Cost Cost (" << i << "), " << prev_obj->center.pos.ToString() << ","
-						<< curr_obj->center.cost <<  ", contour: " << curr_obj->contour.size()
-						<< ", " << curr_obj->center.pos.ToString() << std::endl;
+				if(obj_diff < m_MAX_ASSOCIATION_SIZE_DIFF && (InsidePolygon(m_TrackSimply.at(i).obj.contour, m_DetectedObjects.at(jj).center.pos) == 1 || InsidePolygon(m_DetectedObjects.at(jj).contour, m_TrackSimply.at(i).obj.center.pos) == 1) )
+				 {
+					 bFoundMatch = true;
+					 iCloseset_track = i;
+					 iCloseset_obj = jj;
+					 break;
+				 }
 
-			if(curr_obj->center.cost < minCost)
-			{
-				minCost = curr_obj->center.cost;
-				minID = j;
-			}
-		}
-
-		bool bSkip = false;
-
-		for(unsigned int k = 0; k < matching_matrix.size(); k++)
-		{
-			if(matching_matrix.at(k).prevObj == minID)
-			{
-				if(minCost < matching_matrix.at(k).cost)
+				if(obj_diff < m_MAX_ASSOCIATION_SIZE_DIFF && d < dCloseset)
 				{
-					matching_matrix.at(k).prevObj = minID;
-					matching_matrix.at(k).cost = minCost;
+					dCloseset = d;
+					iCloseset_track = i;
+					iCloseset_obj = jj;
+					min_size = obj_diff;
 				}
-				bSkip = true;
-				break;
 			}
+
+			if(bFoundMatch)
+				break;
 		}
 
-		if(!bSkip && minID >= 0 && minCost <= m_MAX_ASSOCIATION_DISTANCE)
+		if(iCloseset_obj != -1 && iCloseset_track != -1 && (dCloseset <= m_MAX_ASSOCIATION_DISTANCE || bFoundMatch == true))
 		{
-			matching_matrix.at(i).prevObj = minID;
-			matching_matrix.at(i).cost = minCost;
-		}
-	}
-
-	for(unsigned int i = 0 ; i < matching_matrix.size(); i ++)
-	{
-		curr_obj =  &m_DetectedObjects.at(matching_matrix.at(i).currobj);
-
-		if(matching_matrix.at(i).prevObj == -1)
-		{
-			 CreateTrackV2(*curr_obj);
-			if(DEBUG_TRACKER)
-				std::cout << "New Matching Index: " << matching_matrix.at(i).currobj << ", "<< matching_matrix.at(i).cost<< ", " << iTracksNumber << std::endl;
+			std::cout << "MatchObj: " << m_TrackSimply.at(iCloseset_track).obj.id << ", MinD: " << dCloseset << ", MinS: " << min_size << ", ObjI" << iCloseset_obj <<", TrackI: " << iCloseset_track << ", ContourMatch: " << bFoundMatch << std::endl;
+			m_DetectedObjects.at(iCloseset_obj).id = m_TrackSimply.at(iCloseset_track).obj.id;
+			MergeObjectAndTrack(m_TrackSimply.at(iCloseset_track), m_DetectedObjects.at(iCloseset_obj));
+			AssociateToRegions(m_TrackSimply.at(iCloseset_track));
+			m_DetectedObjects.erase(m_DetectedObjects.begin()+iCloseset_obj);
 		}
 		else
 		{
-			curr_obj->id = m_Tracks.at(matching_matrix.at(i).prevObj)->obj.id;
-			curr_obj->center.pos.a = m_Tracks.at(matching_matrix.at(i).prevObj)->obj.center.pos.a;
-			m_Tracks.at(matching_matrix.at(i).prevObj)->obj = *curr_obj;
-			AssociateToRegions(*m_Tracks.at(matching_matrix.at(i).prevObj));
-			if(DEBUG_TRACKER)
-				std::cout << "ObjIndex: " <<  matching_matrix.at(i).currobj <<  ", Matched with ID  " << prev_obj->id << ", "<< matching_matrix.at(i).cost << std::endl;
+			iTracksNumber = iTracksNumber + 1;
+			if(iCloseset_obj != -1)
+			{
+				m_DetectedObjects.at(iCloseset_obj).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(iCloseset_obj).center.pos.x, m_DetectedObjects.at(iCloseset_obj).center.pos.y,m_DetectedObjects.at(iCloseset_obj).actual_yaw, m_DetectedObjects.at(iCloseset_obj).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(iCloseset_obj);
+				AssociateToRegions(track);
+				m_TrackSimply.push_back(track);
+				std::cout << "UnMachedObj: " << iTracksNumber  << ", MinD: " << dCloseset << ", MinS: " << min_size << ", ObjI:" << iCloseset_obj <<", TrackI: " << iCloseset_track << ", ContMatch: " << bFoundMatch << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+iCloseset_obj);
+			}
+			else
+			{
+				m_DetectedObjects.at(0).id = iTracksNumber;
+				KFTrackV track(m_DetectedObjects.at(0).center.pos.x, m_DetectedObjects.at(0).center.pos.y,m_DetectedObjects.at(0).actual_yaw, m_DetectedObjects.at(0).id, m_dt, m_nMinTrustAppearances);
+				track.obj = m_DetectedObjects.at(0);
+				AssociateToRegions(track);
+				m_TrackSimply.push_back(track);
+				std::cout << "NewObj: " << iTracksNumber  << ", MinD: " << dCloseset << ", MinS: " << min_size << ", ObjI:" << 0 <<", TrackI: " << iCloseset_track << ", ContMatch: " << bFoundMatch << std::endl;
+				m_DetectedObjects.erase(m_DetectedObjects.begin()+0);
+			}
 		}
 	}
-}
 
-void SimpleTracker::CreateTrackV2(DetectedObject& o)
-{
-	iTracksNumber = iTracksNumber + 1;
-	o.id = iTracksNumber;
-	KFTrackV* pT = new KFTrackV(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id, m_DT);
-	pT->obj = o;
-	AssociateToRegions(*pT);
-	m_Tracks.push_back(pT);
-}
-
-void SimpleTracker::TrackV2()
-{
-	for(unsigned int i =0; i< m_Tracks.size(); i++)
+	for(unsigned int i =0; i< m_TrackSimply.size(); i++)
 	{
-		m_Tracks.at(i)->UpdateTracking(m_DT, m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
-				m_Tracks.at(i)->obj.center.pos.x, m_Tracks.at(i)->obj.center.pos.y, m_Tracks.at(i)->obj.center.pos.a,
-				m_Tracks.at(i)->obj.center.v);
-
-		//std::cout<< "Obj ID: " << m_Tracks.at(i)->GetTrackID() << ", Remaining Time: " <<  m_Tracks.at(i)->forget_time  << std::endl;
+		//if(m_TrackSimply.at(i).m_bUpdated)
+			m_TrackSimply.at(i).UpdateTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+//		else
+//		{
+////			double dx = 0;
+////			double dy = 0;
+////
+////			if(m_TrackSimply.at(i).obj.bVelocity && m_TrackSimply.at(i).obj.center.v > 3)
+////			{
+////				dx = m_TrackSimply.at(i).obj.center.v * cos(m_TrackSimply.at(i).obj.center.pos.a) * m_dt;
+////				dy = m_TrackSimply.at(i).obj.center.v * sin(m_TrackSimply.at(i).obj.center.pos.a) * m_dt;
+////			}
+////
+////			m_TrackSimply.at(i).obj.center.pos.x += dx;
+////			m_TrackSimply.at(i).obj.center.pos.y += dy;
+////
+////			for(unsigned int k=0; k < m_TrackSimply.at(i).obj.contour.size(); k++)
+////			{
+////				m_TrackSimply.at(i).obj.contour.at(k).x += dx;
+////				m_TrackSimply.at(i).obj.contour.at(k).y += dy;
+////			}
+//
+//			m_TrackSimply.at(i).PredictTracking(m_dt, m_TrackSimply.at(i).obj, m_TrackSimply.at(i).obj);
+//		}
 	}
 }
 
 void SimpleTracker::CleanOldTracks()
 {
 	m_DetectedObjects.clear();
-	for(int i = 0; i< m_Tracks.size(); i++)
+	for(int i = 0; i< (int)m_TrackSimply.size(); i++)
 	{
-		if(m_Tracks.at(i)->forget_time < 0 && m_Tracks.at(i)->forget_time > NEVER_GORGET_TIME)
+		if(m_TrackSimply.at(i).forget_time < 0 && m_TrackSimply.at(i).forget_time != NEVER_GORGET_TIME)
 		{
-			delete m_Tracks.at(i);
-			m_Tracks.erase(m_Tracks.begin()+i);
+			m_TrackSimply.erase(m_TrackSimply.begin()+i);
 			i--;
 		}
-		else if(m_Tracks.at(i)->m_iLife > MIN_EVIDENCE_NUMBER)
+		else if(m_TrackSimply.at(i).m_iLife > m_nMinTrustAppearances)
 		{
-			m_DetectedObjects.push_back(m_Tracks.at(i)->obj);
+			m_DetectedObjects.push_back(m_TrackSimply.at(i).obj);
 		}
 	}
 }
 
-void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<DetectedObject>& obj_list)
+void SimpleTracker::MergeObjectAndTrack(KFTrackV& track, PlannerHNS::DetectedObject& obj)
 {
-	if(!m_bFirstCall)
-		m_DT = UtilityHNS::UtilityH::GetTimeDiffNow(m_TrackTimer);
+	obj.centers_list = track.obj.centers_list;
+	track.obj = obj;
+	track.m_bUpdated = true;
+}
+
+int SimpleTracker::InsidePolygon(const std::vector<GPSPoint>& polygon,const GPSPoint& p)
+{
+	int counter = 0;
+	int i;
+	double xinters;
+	GPSPoint p1,p2;
+	int N = polygon.size();
+	if(N <=0 ) return -1;
+
+	p1 = polygon.at(0);
+	for (i=1;i<=N;i++)
+	{
+		p2 = polygon.at(i % N);
+
+		if (p.y > MIN(p1.y,p2.y))
+		{
+			if (p.y <= MAX(p1.y,p2.y))
+			{
+				if (p.x <= MAX(p1.x,p2.x))
+				{
+					if (p1.y != p2.y)
+					{
+						xinters = (p.y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
+						if (p1.x == p2.x || p.x <= xinters)
+							counter++;
+					}
+				}
+			}
+		}
+		p1 = p2;
+	}
+
+	if (counter % 2 == 0)
+		return 0;
 	else
-		m_bFirstCall = false;
-
-	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
-
-	//std::cout << " Tracking Time : " << m_DT << std::endl;
-
-	m_DetectedObjects = obj_list;
-
-	AssociateAndTrack();
-
-	TrackV2();
-
-	CleanOldTracks();
-
-
-
-//	AssociateObjects();
-//
-//	Track(m_DetectedObjects);
-//
-//	m_PrevDetectedObjects = m_DetectedObjects;
-//
-//	m_PrevState = currPose;
-
+		return 1;
 }
-
-void SimpleTracker::AssociateObjects()
-{
-	std::vector<DetectedObject> hidden_list;
-	DetectedObject* prev_obj;
-	DetectedObject* curr_obj;
-
-	for(unsigned int i = 0 ; i < m_DetectedObjects.size(); i++)
-	{
-		double minCost = 99999999;
-		double minID = -1;
-
-		curr_obj = &m_DetectedObjects.at(i);
-		curr_obj->center.cost = 0;
-
-		for(unsigned int j = 0; j < m_PrevDetectedObjects.size(); j++)
-		{
-			prev_obj = &m_PrevDetectedObjects.at(j);
-
-			if(m_bUseCenterOnly)
-			{
-				curr_obj->center.cost = hypot(curr_obj->center.pos.y- prev_obj->center.pos.y, curr_obj->center.pos.x- prev_obj->center.pos.x);
-			}
-			else
-			{
-				for(unsigned int k = 0; k < curr_obj->contour.size(); k++)
-					for(unsigned int pk = 0; pk < prev_obj->contour.size(); pk++)
-						curr_obj->center.cost += hypot(curr_obj->contour.at(k).y -prev_obj->contour.at(pk).y, curr_obj->contour.at(k).x -prev_obj->contour.at(pk).x);
-
-				curr_obj->center.cost = curr_obj->center.cost/(double)(curr_obj->contour.size()*prev_obj->contour.size());
-			}
-
-//			if(DEBUG_TRACKER)
-//				std::cout << "Cost (" << i << "), " << prev_obj->center.pos.ToString() << ", Cost: "
-//						<< curr_obj->center.cost <<  ", contour: " << curr_obj->contour.size()
-//						<< ", " << curr_obj->center.pos.ToString() << std::endl;
-
-			if(curr_obj->center.cost < minCost)
-			{
-				minCost = curr_obj->center.cost;
-				minID = prev_obj->id;
-			}
-		}
-
-		if(minID <= 0 || minCost > m_MAX_ASSOCIATION_DISTANCE) // new Object enter the scene
-		{
-			iTracksNumber = iTracksNumber + 1;
-			 curr_obj->id = iTracksNumber;
-			if(DEBUG_TRACKER)
-				std::cout << "New Matching " << curr_obj->id << ", "<< minCost<< ", " << iTracksNumber << std::endl;
-		}
-		else
-		{
-			 curr_obj->id = minID;
-			if(DEBUG_TRACKER)
-				std::cout << "Matched with ID  " << curr_obj->id << ", "<< minCost<< std::endl;
-		}
-	}
-
-	for(unsigned int i = 0 ; i < m_PrevDetectedObjects.size(); i++)
-	{
-		prev_obj = &m_PrevDetectedObjects.at(i);
-		bool bFound = false;
-		for(unsigned int j = 0; j < m_DetectedObjects.size(); j++)
-		{
-			if(prev_obj->id == m_DetectedObjects.at(j).id)
-			{
-				bFound = true;
-				break;
-			}
-		}
-
-		if(!bFound && prev_obj->predicted_center.cost < m_MAX_TRACKS_AFTER_LOSING)
-		{
-			prev_obj->predicted_center.cost++;
-			hidden_list.push_back(*prev_obj);
-		}
-	}
-
-	m_DetectedObjects.insert(m_DetectedObjects.begin(), hidden_list.begin(), hidden_list.end());
 }
-
-void SimpleTracker::CreateTrack(DetectedObject& o)
-{
-	KFTrackV* pT = new KFTrackV(o.center.pos.x, o.center.pos.y,o.center.pos.a, o.id, m_DT);
-	o.id = pT->GetTrackID();
-	pT->UpdateTracking(m_DT, o.center.pos.x, o.center.pos.y, o.center.pos.a,
-			o.center.pos.x, o.center.pos.y,o.center.pos.a, o.center.v);
-	m_Tracks.push_back(pT);
-}
-
-KFTrackV* SimpleTracker::FindTrack(long index)
-{
-	for(unsigned int i=0; i< m_Tracks.size(); i++)
-	{
-		if(m_Tracks[i]->GetTrackID() == index)
-			return m_Tracks[i];
-	}
-
-	return 0;
-}
-
-void SimpleTracker::Track(std::vector<DetectedObject>& objects_list)
-{
-	for(unsigned int i =0; i<objects_list.size(); i++)
-	{
-		if(objects_list[i].id >= 0)
-		{
-			KFTrackV* pT = FindTrack(objects_list[i].id);
-			if(pT)
-			{
-				pT->UpdateTracking(m_DT, objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
-						objects_list[i].center.pos.x, objects_list[i].center.pos.y, objects_list[i].center.pos.a,
-						objects_list[i].center.v);
-				//std::cout << "Update Current Track " << objects_list[i].id << std::endl;
-			}
-			else
-			{
-				CreateTrack(objects_list[i]);
-				//std::cout << "Create New Track " << objects_list[i].id << std::endl;
-			}
-		}
-	}
-}
-
-void SimpleTracker::CoordinateTransform(const WayPoint& refCoordinate, DetectedObject& obj)
-{
-	Mat3 rotationMat(-refCoordinate.pos.a);
-	Mat3 translationMat(-refCoordinate.pos.x, -refCoordinate.pos.y);
-	obj.center.pos = translationMat*obj.center.pos;
-	obj.center.pos = rotationMat*obj.center.pos;
-	for(unsigned int j = 0 ; j < obj.contour.size(); j++)
-	{
-		obj.contour.at(j) = translationMat*obj.contour.at(j);
-		obj.contour.at(j) = rotationMat*obj.contour.at(j);
-	}
-}
-
-void SimpleTracker::CoordinateTransformPoint(const WayPoint& refCoordinate, GPSPoint& obj)
-{
-	Mat3 rotationMat(-refCoordinate.pos.a);
-	Mat3 translationMat(-refCoordinate.pos.x, -refCoordinate.pos.y);
-	obj = translationMat*obj;
-	obj = rotationMat*obj;
-}
-
-} /* namespace BehaviorsNS */

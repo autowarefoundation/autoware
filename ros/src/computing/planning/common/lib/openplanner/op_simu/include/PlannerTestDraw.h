@@ -9,7 +9,6 @@
 #define PLANNERTESTDRAW_H_
 #include <iostream>
 #include "DrawObjBase.h"
-#include "GridMap.h"
 #include "RoadNetwork.h"
 #include "CarState.h"
 #include "DrawingHelpers.h"
@@ -20,6 +19,12 @@
 
 namespace Graphics
 {
+
+#define STEERING_AXIS 0
+#define ACCELERATION_AXIS 1
+#define BRAKE_AXIS 2
+#define BUTTON_INDEX 0
+#define START_BUTTON_VALUE 512
 
 class PlannerTestDraw : public DrawObjBase
 {
@@ -41,6 +46,7 @@ public:
 	 static void* PlanningThreadStaticEntryPoint(void* pThis);
 	 static void* ControlThreadStaticEntryPoint(void* pThis);
 	 static void* SimulationThreadStaticEntryPoint(void* pThis);
+	 static void* GameWheelThreadStaticEntryPoint(void* pThis);
 
 
 	 void InitStartAndGoal(const double& x1,const double& y1, const double& a1, const double& x2,const double& y2, const double& a2);
@@ -48,13 +54,13 @@ public:
 
 public:
 	 PlannerHNS::RoadNetwork m_RoadMap;
-	PlannerHNS::GridMap* m_pMap;
+
 	std::vector<PlannerHNS::WayPoint> m_goals;
 	int m_iCurrentGoal;
 	PlannerHNS::WayPoint m_start;
 	bool				 m_bMakeNewPlan;
-	bool 				m_bResetForSimulation;
-	bool			m_bGreenTrafficLight;
+	bool 				 m_bResetForSimulation;
+	bool				 m_bGreenTrafficLight;
 //	PlannerHNS::WayPoint m_SlowDown;
 //	PlannerHNS::WayPoint m_GoNormal;
 	bool m_bStartSlow;
@@ -66,6 +72,8 @@ public:
 	pthread_t planning_thread_tid;
 	pthread_t control_thread_tid;
 	pthread_t simulation_thread_tid;
+	pthread_t game_wheel_thread_tid;
+
 	bool m_bCancelThread;
 	PlannerHNS::ControllerParams m_ControlParams;
 	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
@@ -95,7 +103,11 @@ public:
 
 	std::vector<PlannerHNS::WayPoint*> m_all_cell_to_delete;
 
-
+	//Game Wheel Controller
+	double m_SteeringAngle;
+	double m_Acceleration;
+	double m_Braking;
+	bool   m_bStart;
 
 private:
 	void PrepareVectorMapForDrawing();

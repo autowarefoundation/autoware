@@ -51,8 +51,8 @@ void getPointAndVectorFromPose(const geometry_msgs::Pose &pose, Element2D *point
 }
 
 std::vector<autoware_msgs::waypoint> generateHermiteCurveForROS(const geometry_msgs::Pose &start,
-                                                                    const geometry_msgs::Pose &end,
-                                                                    const double velocity_mps, const double vlength)
+                                                                const geometry_msgs::Pose &end,
+                                                                const double velocity_mps, const double vlength)
 {
   std::vector<autoware_msgs::waypoint> wps;
   Element2D p0(0, 0), v0(0, 0), p1(0, 0), v1(0, 0);
@@ -70,10 +70,10 @@ std::vector<autoware_msgs::waypoint> generateHermiteCurveForROS(const geometry_m
     wp.twist.twist.linear.x = velocity_mps;
 
     // height
-    wp.pose.pose.position.z = (i == 0) ? start.position.z : (i == result.size() - 1)
-                                       ? end.position.z : start.position.z < end.position.z
-                                       ? start.position.z + height_d * i / result.size()
-                                       : start.position.z - height_d * i / result.size();
+    wp.pose.pose.position.z =
+        (i == 0) ? start.position.z : (i == result.size() - 1) ? end.position.z : start.position.z < end.position.z ?
+                                                                 start.position.z + height_d * i / result.size() :
+                                                                 start.position.z - height_d * i / result.size();
 
     // orientation
     if (i != result.size() - 1)

@@ -387,11 +387,11 @@ int main(int argc, char **argv){
   std::string projectionMat_topic_name;
   private_nh.param<std::string>("projection_matrix_topic", projectionMat_topic_name, "/projection_matrix");
   std::string camera_info_topic_name;
-  private_nh.param<std::string>("camera_info_topic", camera_info_topic_name, "/camera/camera_info");
+  private_nh.param<std::string>("camera_info_topic", camera_info_topic_name, "/camera_info");
 
   //get camera ID
   camera_id_str = camera_info_topic_name;
-  camera_id_str.erase(camera_id_str.find("/camera/camera_info"));
+  camera_id_str.erase(camera_id_str.find("/camera_info"));
   if (camera_id_str == "/") {
     camera_id_str = "camera";
   }

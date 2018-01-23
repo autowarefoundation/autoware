@@ -10,7 +10,7 @@
 
   <!-- run region_tlr_ssd node -->
   <!-- <node pkg="road_wizard" name="region_tlr_ssd" type="region_tlr_ssd" launch-prefix="xterm -e gdb -args"> -->
-  <node pkg="road_wizard" name="region_tlr_ssd" type="region_tlr_ssd">
+  <node pkg="road_wizard" name="region_tlr_ssd" type="region_tlr_ssd" output="log">
     <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)" />
     <param name="network_definition_file" type="str" value="$( arg network_definition_file)" />
     <param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)" />

@@ -89,6 +89,8 @@ private:
   // variables
   std::string multi_lane_csv_;
   double decelerate_;
+  bool disableDecisionMaker_;
+  bool disableVelocitySmoothing_;
 
   // initializer
   void initPublisher();

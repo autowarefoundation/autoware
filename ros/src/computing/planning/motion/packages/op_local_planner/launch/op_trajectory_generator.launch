@@ -1,0 +1,61 @@
+<launch>
+	
+	<arg name="samplingTipMargin" 		default="4"  /> 
+	<arg name="samplingOutMargin" 		default="16" /> 
+	<arg name="samplingSpeedFactor" 	default="0.25" />
+	<arg name="pathhDensity" 			default="0.5" />
+	<arg name="rollOutDensity" 			default="0.5" />
+	<arg name="rollOutsNumber" 			default="6"    />		
+	<arg name="enableHeadingSmoothing" 	default="false" />
+			
+	<node pkg="op_local_planner" type="op_trajectory_generator" name="op_trajectory_generator" output="screen">
+	
+	<param name="samplingTipMargin" 		value="$(arg samplingTipMargin)"  /> 
+	<param name="samplingOutMargin" 		value="$(arg samplingOutMargin)" /> 
+	<param name="samplingSpeedFactor" 		value="$(arg samplingSpeedFactor)" />
+	<param name="pathhDensity" 				value="$(arg pathhDensity)" />
+	<param name="rollOutDensity" 			value="$(arg rollOutDensity)" />
+	<param name="rollOutsNumber" 			value="$(arg rollOutsNumber)"    />		
+	<param name="enableHeadingSmoothing" 	value="$(arg enableHeadingSmoothing)" />
+	
+	
+	
+	<param name="maxVelocity" 				value="6.0" />
+	<param name="minVelocity" 				value="0.0" />	
+	<param name="maxLocalPlanDistance" 		value="25" />	
+	<param name="horizonDistance" 			value="200"  />
+	
+	<param name="minFollowingDistance" 		value="20.0"  /> <!-- should be bigger than Distance to follow -->	
+	<param name="minDistanceToAvoid" 		value="10.0" /> <!-- should be smaller than minFollowingDistance and larger than maxDistanceToAvoid -->
+	<param name="maxDistanceToAvoid" 		value="3.0"  /> <!-- should be smaller than minDistanceToAvoid -->
+	<param name="speedProfileFactor"		value="1"  />
+	
+	<param name="horizontalSafetyDistance"	value="1.2"  />
+	<param name="verticalSafetyDistance"	value="0.8"  />
+	
+	<param name="enableSwerving" 			value="true"  />
+	<param name="enableFollowing" 			value="true" />	
+	<param name="enableTrafficLightBehavior" value="false" />
+	<param name="enableStopSignBehavior" 	value="false" />	
+	<param name="enableLaneChange" 			value="false" />
+	<param name="enabTrajectoryVelocities"	value="true" /> <!-- enable when using autoware's pure pursuit node-->
+	
+	<param name="width" 					value="1.85"  />
+	<param name="length" 					value="4.2"  />
+	<param name="wheelBaseLength" 			value="2.7"  />
+	<param name="turningRadius"				value="5.2"  />
+	<param name="maxSteerAngle" 			value="0.45" />
+
+	<param name="steeringDelay" 			value="1.2" />
+	<param name="minPursuiteDistance" 		value="3.0"  />
+	
+	<param name="enableObjectTracking" 		value="true" /> <!-- use internal kalman filter for track obstacles " -->
+	<param name="enableOutsideControl" 		value="false" /> <!-- use internal kalman filter for track obstacles " -->	
+	<param name="velocitySource"			value="2" /> <!-- read velocities from (0- Odometry, 1- autoware current_velocities, 2- car_info) "" -->
+	
+	<param name="mapSource" 				value="1" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+	<param name="mapFileName" 				value="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+			
+	</node>				
+			
+</launch>
