@@ -24,10 +24,8 @@ def publish_current_pose(msg):
     current_pose.pose.orientation.y = float(current_pose_array[4])
     current_pose.pose.orientation.z = float(current_pose_array[5])
     current_pose.pose.orientation.w = float(current_pose_array[6])
-
-    # print current_pose
-    # mqtt_publisher.publish(current_pose)
-
+    
+    mqtt_publisher.publish(current_pose)
     return current_pose
 
 def publish_tf(current_pose):
