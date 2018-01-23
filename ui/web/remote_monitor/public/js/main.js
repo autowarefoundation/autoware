@@ -18,6 +18,7 @@ var isFirefox = !!window.sidebar;
 var mediaSenders = [];
 var MAX_CAMERA_NUM = 6;
 var audioStream = null;
+var firstDevice = "";
 
 othorSelectDevice.style.display = isFirefox ? 'none' : '';
 firefoxSelectDevice.style.display = isFirefox ? '' : 'none';
@@ -149,20 +150,41 @@ function deviceChange() {
     deviceList.disabled = true;
     console.log("RUN_TYPE " + RUN_TYPE);
     if(RUN_TYPE == "vehicle") {
-      var constraints = {
-        audio: isUseAudio,
-        video: {
-          mandatory: {
-            maxWidth: 1280,
-            maxHeight: 720,
-            minWidth: 1280,
-            minHeight: 720
-          },
-          optional: [{
-            sourceId: deviceId
-          }]
-        }
-      };
+      if(firstDevice == "" || firstDevice == deviceId) {
+        console.log("FrontCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              maxWidth: 1280,
+              maxHeight: 720,
+              minWidth: 1280,
+              minHeight: 720
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
+        firstDevice = deviceId;
+      }
+      else {
+        console.log("OtherCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              maxWidth: 854,
+              maxHeight: 480,
+              minWidth: 320,
+              minHeight: 180
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
+      }
     }
     else if(RUN_TYPE == "operator") {
       var constraints = {
