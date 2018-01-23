@@ -1,0 +1,41 @@
+<!-- -->
+<launch>
+	<arg name="base_waypoints" default="base_waypoints" />
+  <arg name="final_waypoints" default="final_waypoints" />
+	<arg name="current_pose" default="current_pose" />
+  <arg name="current_velocity" default="current_velocity" />
+  <arg name="twist_cmd" default="twist_cmd" />
+
+	<arg name="use_bar_plot" default="false" />
+  <arg name="use_line_plot" default="true" />
+  <arg name="use_text_plot" default="true" />
+
+  <arg name="control_buffer_size" default="100" />
+  <arg name="plot_height_ratio" default="1.0" />
+  <arg name="plot_height_shift" default="0.2" />
+  <arg name="plot_metric_interval" default="1.0" />
+
+  <arg name="base_waypoints_rgba" default="[1.0, 1.0, 1.0, 0.5]" />
+  <arg name="final_waypoints_rgba" default="[0.0, 1.0, 0.0, 0.5]" />
+  <arg name="current_twist_rgba" default="[0.0, 0.0, 1.0, 0.5]" />
+  <arg name="command_twist_rgba" default="[1.0, 0.0, 0.0, 0.5]" />
+
+	<node pkg="waypoint_maker" type="waypoint_velocity_visualizer" name="waypoint_velocity_visualizer" output="screen">
+		<remap from="base_waypoints" to="$(arg base_waypoints)" />
+		<remap from="final_waypoints" to="$(arg final_waypoints)" />
+		<remap from="current_pose" to="$(arg current_pose)" />
+		<remap from="current_velocity" to="$(arg current_velocity)" />
+		<remap from="twist_cmd" to="$(arg twist_cmd)" />
+    <param name="use_bar_plot" value="$(arg use_bar_plot)" />
+    <param name="use_line_plot" value="$(arg use_line_plot)" />
+    <param name="use_text_plot" value="$(arg use_text_plot)" />
+    <param name="control_buffer_size" value="$(arg control_buffer_size)" />
+    <param name="plot_height_ratio" value="$(arg plot_height_ratio)" />
+    <param name="plot_height_shift" value="$(arg plot_height_shift)" />
+    <param name="plot_metric_interval" value="$(arg plot_metric_interval)" />
+		<rosparam param="base_waypoints_rgba" subst_value="True">$(arg base_waypoints_rgba)</rosparam>
+		<rosparam param="final_waypoints_rgba" subst_value="True">$(arg final_waypoints_rgba)</rosparam>
+		<rosparam param="current_twist_rgba" subst_value="True">$(arg current_twist_rgba)</rosparam>
+		<rosparam param="command_twist_rgba" subst_value="True">$(arg command_twist_rgba)</rosparam>
+	</node>
+</launch>
