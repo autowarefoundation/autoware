@@ -128,9 +128,9 @@ WaypointVelocityVizualizer::WaypointVelocityVizualizer() : node_handle_(), priva
   current_twist_color_ = vector2color(current_twist_rgba_);
   command_twist_color_ = vector2color(command_twist_rgba_);
 
-  current_pose_buf_.resize(control_buffer_size_);
-  current_twist_buf_.resize(control_buffer_size_);
-  command_twist_buf_.resize(control_buffer_size_);
+  current_pose_buf_.set_capacity(control_buffer_size_);
+  current_twist_buf_.set_capacity(control_buffer_size_);
+  command_twist_buf_.set_capacity(control_buffer_size_);
 
   base_waypoints_sub_ = node_handle_.subscribe("base_waypoints", 1, &WaypointVelocityVizualizer::baseWaypointsCallback, this);
   final_waypoints_sub_ = node_handle_.subscribe("final_waypoints", 1, &WaypointVelocityVizualizer::finalWaypointsCallback, this);
