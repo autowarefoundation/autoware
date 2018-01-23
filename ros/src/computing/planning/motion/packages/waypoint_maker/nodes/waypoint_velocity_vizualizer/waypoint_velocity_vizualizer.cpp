@@ -80,13 +80,16 @@ private:
   visualization_msgs::MarkerArray current_twist_marker_array_;
   visualization_msgs::MarkerArray command_twist_marker_array_;
 
+  bool use_bar_plot_ = false;
+  bool use_line_plot_ = true;
+  bool use_text_plot_ = true;
   int control_buffer_size_ = 100;
   double plot_height_ratio_ = 1.0;
   double plot_height_shift_ = 0.2;
   std::vector<double> base_waypoints_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
   std::vector<double> final_waypoints_rgba_ = { 0.0, 1.0, 0.0, 0.5 };
-  std::vector<double> current_twist_rgba_ = { 1.0, 0.0, 0.0, 0.5 };
-  std::vector<double> command_twist_rgba_ = { 0.0, 0.0, 1.0, 0.5 };
+  std::vector<double> current_twist_rgba_ = { 0.0, 0.0, 1.0, 0.5 };
+  std::vector<double> command_twist_rgba_ = { 1.0, 0.0, 0.0, 0.5 };
 
   std_msgs::ColorRGBA base_waypoints_color_;
   std_msgs::ColorRGBA final_waypoints_color_;
@@ -118,8 +121,12 @@ private:
 
 WaypointVelocityVizualizer::WaypointVelocityVizualizer() : node_handle_(), private_node_handle_("~")
 {
+  private_node_handle_.param<bool>("use_bar_plot", use_bar_plot_, use_bar_plot_);
+  private_node_handle_.param<bool>("use_line_plot", use_line_plot_, use_line_plot_);
+  private_node_handle_.param<bool>("use_text_plot", use_text_plot_, use_text_plot_);
   private_node_handle_.param<int>("control_buffer_size", control_buffer_size_, control_buffer_size_);
   private_node_handle_.param<double>("plot_height_ratio", plot_height_ratio_, plot_height_ratio_);
+  private_node_handle_.param<double>("plot_height_shift", plot_height_shift_, plot_height_shift_);
   private_node_handle_.param<std::vector<double> >("base_waypoints_rgba", base_waypoints_rgba_, base_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("final_waypoints_rgba", final_waypoints_rgba_, final_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("current_twist_rgba", current_twist_rgba_, current_twist_rgba_);
@@ -202,9 +209,9 @@ void WaypointVelocityVizualizer::publishVelocityMarker()
 
 void WaypointVelocityVizualizer::createVelocityMarker(const std::vector<nav_msgs::Odometry> waypoints, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers)
 {
-  createVelocityBarMarker(waypoints, ns, color, markers);
-  createVelocityLineMarker(waypoints, ns, color, markers);
-  createVelocityTextMarker(waypoints, ns, color, markers);
+  if (use_bar_plot_) createVelocityBarMarker(waypoints, ns, color, markers);
+  if (use_line_plot_) createVelocityLineMarker(waypoints, ns, color, markers);
+  if (use_text_plot_) createVelocityTextMarker(waypoints, ns, color, markers);
 }
 
 void WaypointVelocityVizualizer::createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers)
