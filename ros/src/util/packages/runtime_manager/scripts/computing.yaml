@@ -594,17 +594,10 @@ subs :
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
          param: waypoint_clicker
-       - name : waypoint_velocity_vizualizer
-         desc : waypoint_velocity_vizualizer desc sample
-         cmd  : roslaunch waypoint_maker waypoint_velocity_vizualizer.launch
-         param: waypoint_velocity_vizualizer
-         gui  :
-           lane_waypoint_csv :
-             prop  : 1
-           decelerate :
-                   flags : [nl ]
-           disableDecisionMaker :
-                   flags : [nl ]
+       - name : waypoint_velocity_visualizer
+         desc : waypoint_velocity_visualizer desc sample
+         cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
+         param: waypoint_velocity_visualizer
     - name : waypoint_follower
       desc : waypoint_follower desc sample
       subs :
@@ -2968,6 +2961,33 @@ params :
       label     : 'disableVelocitySmoothing'
       kind      : checkbox
       v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : waypoint_velocity_visualizer
+    vars  :
+    - name      : use_bar_plot
+      desc      : use_bar_plot desc sample
+      label     : Bar plot
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_line_plot
+      desc      : use_line_plot desc sample
+      label     : Line plot
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_text_plot
+      desc      : use_text_plot desc sample
+      label     : Text plot
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='

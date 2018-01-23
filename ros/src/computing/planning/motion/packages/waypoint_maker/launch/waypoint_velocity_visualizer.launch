@@ -2,7 +2,6 @@
 <launch>
 	<arg name="base_waypoints" default="base_waypoints" />
   <arg name="final_waypoints" default="final_waypoints" />
-  <arg name="closest_waypoint" default="closest_waypoint" />
 	<arg name="current_pose" default="current_pose" />
   <arg name="current_velocity" default="current_velocity" />
   <arg name="twist_cmd" default="twist_cmd" />
@@ -10,19 +9,20 @@
 	<arg name="use_bar_plot" default="false" />
   <arg name="use_line_plot" default="true" />
   <arg name="use_text_plot" default="true" />
+
   <arg name="control_buffer_size" default="100" />
   <arg name="plot_height_ratio" default="1.0" />
   <arg name="plot_height_shift" default="0.2" />
   <arg name="plot_metric_interval" default="1.0" />
+
   <arg name="base_waypoints_rgba" default="[1.0, 1.0, 1.0, 0.5]" />
   <arg name="final_waypoints_rgba" default="[0.0, 1.0, 0.0, 0.5]" />
   <arg name="current_twist_rgba" default="[0.0, 0.0, 1.0, 0.5]" />
   <arg name="command_twist_rgba" default="[1.0, 0.0, 0.0, 0.5]" />
 
-	<node pkg="waypoint_maker" type="waypoint_velocity_vizualizer" name="waypoint_velocity_vizualizer" output="screen">
+	<node pkg="waypoint_maker" type="waypoint_velocity_visualizer" name="waypoint_velocity_visualizer" output="screen">
 		<remap from="base_waypoints" to="$(arg base_waypoints)" />
 		<remap from="final_waypoints" to="$(arg final_waypoints)" />
-		<remap from="closest_waypoint" to="$(arg closest_waypoint)" />
 		<remap from="current_pose" to="$(arg current_pose)" />
 		<remap from="current_velocity" to="$(arg current_velocity)" />
 		<remap from="twist_cmd" to="$(arg twist_cmd)" />
