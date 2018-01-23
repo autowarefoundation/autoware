@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>velodyne_compression</name>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <description>The velodyne_compression package</description>
 
   <maintainer email="tu.chenxi@g.sp.m.is.nagoya-u.ac.jp">etake</maintainer>

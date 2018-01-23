@@ -2,6 +2,9 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id

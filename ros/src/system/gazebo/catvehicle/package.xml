@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>catvehicle</name>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <description>The catvehicle package (formerly known as azcar_sim)</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
