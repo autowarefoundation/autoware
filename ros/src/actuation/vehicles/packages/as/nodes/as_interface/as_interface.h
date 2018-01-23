@@ -77,16 +77,16 @@ private:
   double acceleration_limit_;
   double deceleration_limit_;
   double max_curvature_rate_;
-  bool   use_curvature_cmd_;
+  bool use_curvature_cmd_;
 
   // variables
   bool control_mode_;
 
   // callbacks
-  void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped &msg);
-  void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromControlMode(const std_msgs::BoolConstPtr &msg);
-  void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr &msg);
+  void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped& msg);
+  void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
+  void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
+  void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg);
 
   // initializer
   void initForROS();

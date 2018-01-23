@@ -33,9 +33,7 @@
 namespace pacmod
 {
 // Constructor
-PacmodInterface::PacmodInterface() :
-    private_nh_("~"),
-    control_mode_(false)
+PacmodInterface::PacmodInterface() : private_nh_("~"), control_mode_(false)
 {
   initForROS();
 }
@@ -51,36 +49,38 @@ void PacmodInterface::initForROS()
   private_nh_.param<double>("acceleration_limit", acceleration_limit_, 3.0);
   private_nh_.param<double>("deceleration_limit", deceleration_limit_, 3.0);
   private_nh_.param<double>("max_curvature_rate", max_curvature_rate_, 0.75);
-  private_nh_.param<bool>("use_curvature_cmd_", use_curvature_cmd_, true);
+  private_nh_.param<bool>("use_curvature_cmd", use_curvature_cmd_, true);
 
   // setup subscriber
-  if(!use_curvature_cmd_){
-	  twist_cmd_sub_    = nh_.subscribe("twist_cmd", 1, &PacmodInterface::callbackFromTwistCmd, this);
-  }else{
-	  curvature_cmd_sub_ = nh_.subscribe("curvature_cmd", 1, &PacmodInterface::callbackFromCurvatureCmd, this);
+  if (!use_curvature_cmd_)
+  {
+    twist_cmd_sub_ = nh_.subscribe("twist_cmd", 1, &PacmodInterface::callbackFromTwistCmd, this);
+  }
+  else
+  {
+    curvature_cmd_sub_ = nh_.subscribe("curvature_cmd", 1, &PacmodInterface::callbackFromCurvatureCmd, this);
   }
 
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
-  speed_sub_        = nh_.subscribe("/vehicle/steering_report", 1, &PacmodInterface::callbackFromSteeringReport, this);
+  speed_sub_ = nh_.subscribe("/vehicle/steering_report", 1, &PacmodInterface::callbackFromSteeringReport, this);
 
   // setup publisher
-  steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 1);
-  speed_mode_pub_    = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
-  turn_signal_pub_   = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
-  gear_pub_          = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
+  steer_mode_pub_ = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 1);
+  speed_mode_pub_ = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
+  turn_signal_pub_ = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
+  gear_pub_ = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
-
 }
 
 void PacmodInterface::run()
 {
-    ros::spin();
+  ros::spin();
 }
 
-void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped &msg)
+void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStamped& msg)
 {
   int mode;
-  
+
   if (control_mode_)
   {
     mode = 1;
@@ -109,9 +109,10 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
 
   platform_comm_msgs::GearCommand gear_comm;
   gear_comm.header.stamp = ros::Time::now();
-  gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
+  gear_comm.command.gear =
+      mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE;  // Drive if auto mode is enabled
 
-  std::cout << "mode: "  << mode << std::endl;
+  std::cout << "mode: " << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
   std::cout << "steer: " << steer_mode.curvature << std::endl;
 
@@ -123,7 +124,7 @@ void PacmodInterface::callbackFromCurvatureCmd(const autoware_msgs::CurvatureCom
   gear_pub_.publish(gear_comm);
 }
 
-void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg)
+void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   int mode;
   if (control_mode_)
@@ -136,7 +137,7 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   }
 
   double _minimum_linear_x = 1e-6;
-  double _speed = msg->twist.linear.x >= _minimum_linear_x? msg->twist.linear.x : _minimum_linear_x;
+  double _speed = msg->twist.linear.x >= _minimum_linear_x ? msg->twist.linear.x : _minimum_linear_x;
   double _curvature = msg->twist.angular.z / _speed;
 
   module_comm_msgs::SpeedMode speed_mode;
@@ -153,14 +154,15 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   steer_mode.max_curvature_rate = 0.75;
 
   platform_comm_msgs::TurnSignalCommand turn_signal;
-  turn_signal.header = msg-> header;
+  turn_signal.header = msg->header;
   turn_signal.mode = mode;
 
   platform_comm_msgs::GearCommand gear_comm;
   gear_comm.header.stamp = ros::Time::now();
-  gear_comm.command.gear = mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE; // Drive if auto mode is enabled
+  gear_comm.command.gear =
+      mode ? platform_comm_msgs::Gear::DRIVE : platform_comm_msgs::Gear::NONE;  // Drive if auto mode is enabled
 
-  std::cout << "mode: "  << mode << std::endl;
+  std::cout << "mode: " << mode << std::endl;
   std::cout << "speed: " << speed_mode.speed << std::endl;
   std::cout << "steer: " << steer_mode.curvature << std::endl;
 
@@ -172,18 +174,18 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
   gear_pub_.publish(gear_comm);
 }
 
-void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr &msg)
+void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr& msg)
 {
   control_mode_ = msg->data;
 }
 
-void PacmodInterface::callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr &msg)
+void PacmodInterface::callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg)
 {
   geometry_msgs::TwistStamped ts;
   std_msgs::Header header;
   header.stamp = ros::Time::now();
   ts.header = header;
-  ts.twist.linear.x = msg->speed; // [m/sec]
+  ts.twist.linear.x = msg->speed;  // [m/sec]
   // Can we get angular velocity?
 
   current_twist_pub_.publish(ts);

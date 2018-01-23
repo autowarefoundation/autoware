@@ -33,7 +33,7 @@
 
 #include "as_interface.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "as_interface");
   pacmod::PacmodInterface pacmod_interface;
