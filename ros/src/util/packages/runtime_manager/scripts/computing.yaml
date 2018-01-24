@@ -594,6 +594,10 @@ subs :
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
          param: waypoint_clicker
+       - name : waypoint_velocity_visualizer
+         desc : waypoint_velocity_visualizer desc sample
+         cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
+         param: waypoint_velocity_visualizer
     - name : waypoint_follower
       desc : waypoint_follower desc sample
       subs :
@@ -2944,15 +2948,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : use_velocity_visualizer
-      desc      : velocity visualizer desc sample
-      label     : Velocity Visualizer
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        var_name    : use_velocity_visualizer
-        dash        : ''
-        delim       : ':='
     - name      : disableDecisionMaker
       desc      : if you not check this, you have to run a decisionmaker node.
       label     : 'disableDecisionMaker'
@@ -2966,6 +2961,40 @@ params :
       label     : 'disableVelocitySmoothing'
       kind      : checkbox
       v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : waypoint_velocity_visualizer
+    vars  :
+    - name      : use_bar_plot
+      desc      : use_bar_plot desc sample
+      label     : Bar plot
+      kind      : checkbox
+      v         : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_line_plot
+      desc      : use_line_plot desc sample
+      label     : Line plot
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_text_plot
+      desc      : use_text_plot desc sample
+      label     : Text plot
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : plot_metric_interval
+      desc      : if interval <= 0, velocity is plotted by each callback
+      label     : Metric interval [m]
+      v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
