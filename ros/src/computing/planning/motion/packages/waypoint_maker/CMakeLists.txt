@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
   lane_planner
   autoware_msgs
+geometry_msgs
+visualization_msgs
+message_filters
 )
 
 ###################################
