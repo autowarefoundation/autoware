@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   waypoint_follower
   autoware_msgs 
   vector_map
+  geometry_msgs
+  nav_msgs
+  visualization_msgs
 )
 
 ###################################
