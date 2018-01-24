@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_tracker)
 
+# get ros version
+set(ROS_VERSION $ENV{ROS_DISTRO})
+
+# cpp -11
+set(CMAKE_CXX_STANDARD 11)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -19,6 +25,9 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
   vector_map_server
   op_ros_helpers
+  visualization_msgs
+  geometry_msgs
+  message_filters
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -28,13 +37,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-
-execute_process(
-  COMMAND rosversion -d
-  OUTPUT_VARIABLE ROS_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 find_package(OpenCV REQUIRED)
 
 execute_process(
@@ -43,12 +45,10 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 # catkin_python_setup()
-
 
 ###################################
 ## catkin specific configuration ##
@@ -86,7 +86,6 @@ target_link_libraries (svm_lidar_detect PRIVATE
 #	svm
 	${OpenCV_LIBRARIES}
 )
-
 #target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
 add_dependencies(svm_lidar_detect ${catkin_EXPORTED_TARGETS})
 
@@ -127,8 +126,6 @@ execute_process(
   OUTPUT_VARIABLE ARCHITECTURE
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-
-#set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 if(EXISTS "/usr/local/cuda")
   include_directories(
