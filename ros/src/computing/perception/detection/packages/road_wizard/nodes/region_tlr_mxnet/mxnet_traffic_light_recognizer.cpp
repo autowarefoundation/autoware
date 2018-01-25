@@ -6,6 +6,7 @@ MxNetTrafficLightRecognizer::MxNetTrafficLightRecognizer()
 
 MxNetTrafficLightRecognizer::~MxNetTrafficLightRecognizer()
 {
+	MXPredFree(prediction_handle_);
 }
 
 void MxNetTrafficLightRecognizer::Init(const char* in_network_definition_buffer,
@@ -89,6 +90,11 @@ LightState MxNetTrafficLightRecognizer::RecognizeLightState(const cv::Mat &in_im
 {
 	LightState result = LightState::UNDEFINED;
 
+	if (in_image.empty())
+	{
+		return result;
+	}
+
 	int image_size = width_ * height_ * num_channels_;
 	std::vector<mx_float> mx_image_data = std::vector<mx_float>(image_size);
 
@@ -113,13 +119,22 @@ LightState MxNetTrafficLightRecognizer::RecognizeLightState(const cv::Mat &in_im
 
 	MXPredGetOutput(prediction_handle_, output_index, &(output_data[0]), size);
 
-	MXPredFree(prediction_handle_);
+	int highest_score_index = std::distance(output_data.begin(), std::max_element(output_data.begin(), output_data.end()));
 
-
-	std::cout << "Output results:" << std::endl;
-	for (size_t i=0; i < output_data.size(); i++)
+	switch(highest_score_index)
 	{
-		std::cout << "[" << i << "]: " << output_data[i] << std::endl;
+		case NetworkResults::Green:
+			result = LightState::GREEN;
+			break;
+		case NetworkResults::Yellow:
+			result = LightState::YELLOW;
+			break;
+		case NetworkResults::Red:
+			result = LightState::RED;
+			break;
+		default:
+			result = LightState::UNDEFINED;
+			break;
 	}
 
 	return result;
