@@ -7,7 +7,11 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_ros
     pcl_conversions
     cv_bridge
+    tf
+    message_filters
     velodyne_pointcloud
+    autoware_msgs
+    sensor_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
