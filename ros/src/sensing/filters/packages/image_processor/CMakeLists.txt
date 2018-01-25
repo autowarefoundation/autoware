@@ -1,76 +1,66 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(image_processor)
 
+
+set(CMAKE_CXX_STANDARD 11)
+
 find_package(catkin REQUIRED COMPONENTS
+    cv_bridge
     roscpp
     std_msgs
-    cv_bridge
-    sensor_msgs
-)
-
-catkin_package(CATKIN_DEPENDS
     sensor_msgs
 )
 
 find_package(OpenCV REQUIRED)
 
-###########
-## Build ##
-###########
+catkin_package(
+    CATKIN_DEPENDS cv_bridge roscpp sensor_msgs
+)
 
 include_directories(
     ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIR}
     include
 )
-
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Image rotator
 add_executable(image_rotator
     nodes/image_rotator/image_rotator_node.cpp
 )
-
-target_include_directories(image_rotator PRIVATE
-    ${OpenCV_INCLUDE_DIR}
-)
-
 target_link_libraries(image_rotator
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
 )
+add_dependencies(image_rotator ${catkin_EXPORTED_TARGETS})
 
 #Image rectifier
 add_executable(image_rectifier
     nodes/image_rectifier/image_rectifier_node.cpp
 )
-
-target_include_directories(image_rectifier PRIVATE
-    ${OpenCV_INCLUDE_DIR}
-)
-
 target_link_libraries(image_rectifier
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
 )
+add_dependencies(image_rectifier ${catkin_EXPORTED_TARGETS})
 
-#Image Stitcher
-
-#Image Blender
-
-#############
-## Install ##
-#############
 
 install(TARGETS image_rotator image_rectifier
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(FILES
-    launch/image_rotator.launch
-    launch/image_rotator_ladybug.launch
-    launch/image_rectifier.launch
-    launch/image_rectifier_ladybug.launch
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)
+
+
+
+
+#target_include_directories(image_rotator PRIVATE
+#    ${OpenCV_INCLUDE_DIR}
+#)
+
+#target_include_directories(image_rectifier PRIVATE
+#    ${OpenCV_INCLUDE_DIR}
+#)
