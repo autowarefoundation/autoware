@@ -11,6 +11,7 @@
 #include "Context.h"
 
 class MxNetTrafficLightRecognizer {
+	enum NetworkResults {Green, Yellow, Red, None};
 	int width_;
 	int height_;
 	int num_channels_;

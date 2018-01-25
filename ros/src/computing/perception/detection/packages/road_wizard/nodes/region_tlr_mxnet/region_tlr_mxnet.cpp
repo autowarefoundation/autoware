@@ -53,6 +53,7 @@ void RegionTlrMxNetRosNode::RunRecognition()
 	                gpu_id_);
 
 	StartSubscribersAndPublishers();
+	ROS_INFO("Node initialized, waiting for signals from feat_proj...");
 	ros::spin();
 }
 
