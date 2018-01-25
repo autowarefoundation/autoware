@@ -25,7 +25,6 @@
 
   <run_depend>autoware_msgs</run_depend>
   <run_depend>cv_bridge</run_depend>
-  <run_depend>lidar_tracker</run_depend>
   <run_depend>message_filters</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>pcl_conversions</run_depend>
