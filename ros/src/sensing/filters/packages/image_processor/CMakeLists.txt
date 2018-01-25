@@ -18,9 +18,9 @@ catkin_package(
 )
 
 include_directories(
+    include
     ${catkin_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIR}
-    include
 )
 
 #Image rotator
@@ -53,14 +53,3 @@ install(TARGETS image_rotator image_rectifier
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   PATTERN ".svn" EXCLUDE)
-
-
-
-
-#target_include_directories(image_rotator PRIVATE
-#    ${OpenCV_INCLUDE_DIR}
-#)
-
-#target_include_directories(image_rectifier PRIVATE
-#    ${OpenCV_INCLUDE_DIR}
-#)
