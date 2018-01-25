@@ -309,7 +309,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
       state_machine::StateFlags _TargetStateFlag, temp, temp_log;
       _TargetStateFlag = temp = state_machine::DRIVE_STR_STRAIGHT_STATE;
       int flag_count = 0;
-      for (size_t i = 0; i <= idx; i++)
+      for (size_t i = 0; i <= idx / 2; i++)
       {
         _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
         if (_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE && temp != _TargetStateFlag)
@@ -322,7 +322,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
       int start_idx = 0;
       if (flag_count >= 2)
       {
-        start_idx = 4;
+        start_idx = idx < 1 ? idx : 1;
       }
 
       for (size_t i = start_idx; i <= idx; i++)
