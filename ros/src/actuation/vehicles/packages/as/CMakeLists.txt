@@ -4,10 +4,6 @@ project(as)
 # cpp11
 set(CMAKE_CXX_STANDARD 11)
 
-# If submodule is not cloned this project will not be build.
-set(AS_MSG_PATH "${CMAKE_SOURCE_DIR}/msgs/platform_automation_msgs/module_comm_msgs")
-if(EXISTS "${AS_MSG_PATH}")
-
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -46,4 +42,3 @@ install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   PATTERN ".svn" EXCLUDE)
 
-endif()
