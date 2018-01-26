@@ -144,6 +144,16 @@ void updateWayArea(std::map<Key<WayArea>, WayArea>& map, const WayAreaArray& msg
     map.insert(std::make_pair(Key<WayArea>(item.waid), item));
   }
 }
+void updateDetectionArea(std::map<Key<DetectionArea>, DetectionArea>& map, const DetectionAreaArray& msg)
+{
+  map = std::map<Key<DetectionArea>, DetectionArea>();
+  for (const auto& item : msg.data)
+  {
+    if (item.daid == 0)
+      continue;
+    map.insert(std::make_pair(Key<DetectionArea>(item.daid), item));
+  }
+}
 
 void updateRoadEdge(std::map<Key<RoadEdge>, RoadEdge>& map, const RoadEdgeArray& msg)
 {
@@ -386,7 +396,7 @@ void updateRailCrossing(std::map<Key<RailCrossing>, RailCrossing>& map, const Ra
     map.insert(std::make_pair(Key<RailCrossing>(item.id), item));
   }
 }
-} // namespace
+}  // namespace
 
 bool VectorMap::hasSubscribed(category_t category) const
 {
@@ -605,6 +615,11 @@ void VectorMap::registerSubscriber(ros::NodeHandle& nh, category_t category)
     way_area_.registerSubscriber(nh, "/vector_map_info/way_area");
     way_area_.registerUpdater(updateWayArea);
   }
+  if (category & DETECTION_AREA)
+  {
+    detection_area_.registerSubscriber(nh, "/vector_map_info/detection_area");
+    detection_area_.registerUpdater(updateDetectionArea);
+  }
   if (category & ROAD_EDGE)
   {
     road_edge_.registerSubscriber(nh, "/vector_map_info/road_edge");
@@ -794,6 +809,11 @@ WayArea VectorMap::findByKey(const Key<WayArea>& key) const
   return way_area_.findByKey(key);
 }
 
+DetectionArea VectorMap::findByKey(const Key<DetectionArea>& key) const
+{
+  return detection_area_.findByKey(key);
+}
+
 RoadEdge VectorMap::findByKey(const Key<RoadEdge>& key) const
 {
   return road_edge_.findByKey(key);
@@ -952,6 +972,11 @@ std::vector<Lane> VectorMap::findByFilter(const Filter<Lane>& filter) const
 std::vector<WayArea> VectorMap::findByFilter(const Filter<WayArea>& filter) const
 {
   return way_area_.findByFilter(filter);
+}
+
+std::vector<DetectionArea> VectorMap::findByFilter(const Filter<DetectionArea>& filter) const
+{
+  return detection_area_.findByFilter(filter);
 }
 
 std::vector<RoadEdge> VectorMap::findByFilter(const Filter<RoadEdge>& filter) const
@@ -1114,6 +1139,11 @@ void VectorMap::registerCallback(const Callback<WayAreaArray>& cb)
   way_area_.registerCallback(cb);
 }
 
+void VectorMap::registerCallback(const Callback<DetectionAreaArray>& cb)
+{
+  detection_area_.registerCallback(cb);
+}
+
 void VectorMap::registerCallback(const Callback<RoadEdgeArray>& cb)
 {
   road_edge_.registerCallback(cb);
@@ -1240,72 +1270,72 @@ std_msgs::ColorRGBA createColorRGBA(Color color)
 
   switch (color)
   {
-  case BLACK:
-    break;
-  case GRAY:
-    color_rgba.r = COLOR_VALUE_MEDIAN;
-    color_rgba.g = COLOR_VALUE_MEDIAN;
-    color_rgba.b = COLOR_VALUE_MEDIAN;
-    break;
-  case LIGHT_RED:
-    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
-    break;
-  case LIGHT_GREEN:
-    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
-    break;
-  case LIGHT_BLUE:
-    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
-    break;
-  case LIGHT_YELLOW:
-    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.b = COLOR_VALUE_LIGHT_LOW;
-    break;
-  case LIGHT_CYAN:
-    color_rgba.r = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
-    break;
-  case LIGHT_MAGENTA:
-    color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
-    color_rgba.g = COLOR_VALUE_LIGHT_LOW;
-    color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
-    break;
-  case RED:
-    color_rgba.r = COLOR_VALUE_MAX;
-    break;
-  case GREEN:
-    color_rgba.g = COLOR_VALUE_MAX;
-    break;
-  case BLUE:
-    color_rgba.b = COLOR_VALUE_MAX;
-    break;
-  case YELLOW:
-    color_rgba.r = COLOR_VALUE_MAX;
-    color_rgba.g = COLOR_VALUE_MAX;
-    break;
-  case CYAN:
-    color_rgba.g = COLOR_VALUE_MAX;
-    color_rgba.b = COLOR_VALUE_MAX;
-    break;
-  case MAGENTA:
-    color_rgba.r = COLOR_VALUE_MAX;
-    color_rgba.b = COLOR_VALUE_MAX;
-    break;
-  case WHITE:
-    color_rgba.r = COLOR_VALUE_MAX;
-    color_rgba.g = COLOR_VALUE_MAX;
-    color_rgba.b = COLOR_VALUE_MAX;
-    break;
-  default:
-    color_rgba.a = COLOR_VALUE_MIN; // hide color from view
-    break;
+    case BLACK:
+      break;
+    case GRAY:
+      color_rgba.r = COLOR_VALUE_MEDIAN;
+      color_rgba.g = COLOR_VALUE_MEDIAN;
+      color_rgba.b = COLOR_VALUE_MEDIAN;
+      break;
+    case LIGHT_RED:
+      color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.b = COLOR_VALUE_LIGHT_LOW;
+      break;
+    case LIGHT_GREEN:
+      color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.b = COLOR_VALUE_LIGHT_LOW;
+      break;
+    case LIGHT_BLUE:
+      color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
+      break;
+    case LIGHT_YELLOW:
+      color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.b = COLOR_VALUE_LIGHT_LOW;
+      break;
+    case LIGHT_CYAN:
+      color_rgba.r = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.g = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
+      break;
+    case LIGHT_MAGENTA:
+      color_rgba.r = COLOR_VALUE_LIGHT_HIGH;
+      color_rgba.g = COLOR_VALUE_LIGHT_LOW;
+      color_rgba.b = COLOR_VALUE_LIGHT_HIGH;
+      break;
+    case RED:
+      color_rgba.r = COLOR_VALUE_MAX;
+      break;
+    case GREEN:
+      color_rgba.g = COLOR_VALUE_MAX;
+      break;
+    case BLUE:
+      color_rgba.b = COLOR_VALUE_MAX;
+      break;
+    case YELLOW:
+      color_rgba.r = COLOR_VALUE_MAX;
+      color_rgba.g = COLOR_VALUE_MAX;
+      break;
+    case CYAN:
+      color_rgba.g = COLOR_VALUE_MAX;
+      color_rgba.b = COLOR_VALUE_MAX;
+      break;
+    case MAGENTA:
+      color_rgba.r = COLOR_VALUE_MAX;
+      color_rgba.b = COLOR_VALUE_MAX;
+      break;
+    case WHITE:
+      color_rgba.r = COLOR_VALUE_MAX;
+      color_rgba.g = COLOR_VALUE_MAX;
+      color_rgba.b = COLOR_VALUE_MAX;
+      break;
+    default:
+      color_rgba.a = COLOR_VALUE_MIN;  // hide color from view
+      break;
   }
 
   return color_rgba;
@@ -1429,7 +1459,7 @@ visualization_msgs::Marker createAreaMarker(const std::string& ns, int id, Color
   Line line = vmap.findByKey(Key<Line>(area.slid));
   if (line.lid == 0)
     return marker;
-  if (line.blid != 0) // must set beginning line
+  if (line.blid != 0)  // must set beginning line
     return marker;
 
   while (line.flid != 0)
@@ -1613,8 +1643,8 @@ Point convertGeomPointToPoint(const geometry_msgs::Point& geom_point)
 
 geometry_msgs::Quaternion convertVectorToGeomQuaternion(const Vector& vector)
 {
-  double pitch = convertDegreeToRadian(vector.vang - 90); // convert vertical angle to pitch
-  double yaw = convertDegreeToRadian(-vector.hang + 90); // convert horizontal angle to yaw
+  double pitch = convertDegreeToRadian(vector.vang - 90);  // convert vertical angle to pitch
+  double yaw = convertDegreeToRadian(-vector.hang + 90);   // convert horizontal angle to yaw
   return tf::createQuaternionMsgFromRollPitchYaw(0, pitch, yaw);
 }
 
@@ -1628,320 +1658,209 @@ Vector convertGeomQuaternionToVector(const geometry_msgs::Quaternion& geom_quate
   vector.hang = -convertRadianToDegree(yaw) + 90;
   return vector;
 }
-} // namespace vector_map
+}  // namespace vector_map
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Point& obj)
 {
-  os << obj.pid << ","
-     << obj.b << ","
-     << obj.l << ","
-     << obj.h << ","
-     << obj.bx << ","
-     << obj.ly << ","
-     << obj.ref << ","
-     << obj.mcode1 << ","
-     << obj.mcode2 << ","
-     << obj.mcode3;
+  os << obj.pid << "," << obj.b << "," << obj.l << "," << obj.h << "," << obj.bx << "," << obj.ly << "," << obj.ref
+     << "," << obj.mcode1 << "," << obj.mcode2 << "," << obj.mcode3;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Vector& obj)
 {
-  os << obj.vid << ","
-     << obj.pid << ","
-     << obj.hang << ","
-     << obj.vang;
+  os << obj.vid << "," << obj.pid << "," << obj.hang << "," << obj.vang;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Line& obj)
 {
-  os << obj.lid << ","
-     << obj.bpid << ","
-     << obj.fpid << ","
-     << obj.blid << ","
-     << obj.flid;
+  os << obj.lid << "," << obj.bpid << "," << obj.fpid << "," << obj.blid << "," << obj.flid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Area& obj)
 {
-  os << obj.aid << ","
-     << obj.slid << ","
-     << obj.elid;
+  os << obj.aid << "," << obj.slid << "," << obj.elid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Pole& obj)
 {
-  os << obj.plid << ","
-     << obj.vid << ","
-     << obj.length << ","
-     << obj.dim;
+  os << obj.plid << "," << obj.vid << "," << obj.length << "," << obj.dim;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Box& obj)
 {
-  os << obj.bid << ","
-     << obj.pid1 << ","
-     << obj.pid2 << ","
-     << obj.pid3 << ","
-     << obj.pid4 << ","
-     << obj.height;
+  os << obj.bid << "," << obj.pid1 << "," << obj.pid2 << "," << obj.pid3 << "," << obj.pid4 << "," << obj.height;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::DTLane& obj)
 {
-  os << obj.did << ","
-     << obj.dist << ","
-     << obj.pid << ","
-     << obj.dir << ","
-     << obj.apara << ","
-     << obj.r << ","
-     << obj.slope << ","
-     << obj.cant << ","
-     << obj.lw << ","
-     << obj.rw;
+  os << obj.did << "," << obj.dist << "," << obj.pid << "," << obj.dir << "," << obj.apara << "," << obj.r << ","
+     << obj.slope << "," << obj.cant << "," << obj.lw << "," << obj.rw;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Node& obj)
 {
-  os << obj.nid << ","
-     << obj.pid;
+  os << obj.nid << "," << obj.pid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Lane& obj)
 {
-  os << obj.lnid << ","
-     << obj.did << ","
-     << obj.blid << ","
-     << obj.flid << ","
-     << obj.bnid << ","
-     << obj.fnid << ","
-     << obj.jct << ","
-     << obj.blid2 << ","
-     << obj.blid3 << ","
-     << obj.blid4 << ","
-     << obj.flid2 << ","
-     << obj.flid3 << ","
-     << obj.flid4 << ","
-     << obj.clossid << ","
-     << obj.span << ","
-     << obj.lcnt << ","
-     << obj.lno << ","
-     << obj.lanetype << ","
-     << obj.limitvel << ","
-     << obj.refvel << ","
-     << obj.roadsecid << ","
-     << obj.lanecfgfg << ","
+  os << obj.lnid << "," << obj.did << "," << obj.blid << "," << obj.flid << "," << obj.bnid << "," << obj.fnid << ","
+     << obj.jct << "," << obj.blid2 << "," << obj.blid3 << "," << obj.blid4 << "," << obj.flid2 << "," << obj.flid3
+     << "," << obj.flid4 << "," << obj.clossid << "," << obj.span << "," << obj.lcnt << "," << obj.lno << ","
+     << obj.lanetype << "," << obj.limitvel << "," << obj.refvel << "," << obj.roadsecid << "," << obj.lanecfgfg << ","
      << obj.linkwaid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::WayArea& obj)
 {
-  os << obj.waid << ","
-     << obj.aid;
+  os << obj.waid << "," << obj.aid;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const vector_map::DetectionArea& obj)
+{
+  os << obj.daid << "," << obj.aid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::RoadEdge& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Gutter& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Curb& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.height << ","
-     << obj.width << ","
-     << obj.dir << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.height << "," << obj.width << "," << obj.dir << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::WhiteLine& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.width << ","
-     << obj.color << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.width << "," << obj.color << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::StopLine& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.tlid << ","
-     << obj.signid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.tlid << "," << obj.signid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::ZebraZone& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::CrossWalk& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.type << ","
-     << obj.bdid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.type << "," << obj.bdid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::RoadMark& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::RoadPole& obj)
 {
-  os << obj.id << ","
-     << obj.plid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.plid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::RoadSign& obj)
 {
-  os << obj.id << ","
-     << obj.vid << ","
-     << obj.plid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.vid << "," << obj.plid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Signal& obj)
 {
-  os << obj.id << ","
-     << obj.vid << ","
-     << obj.plid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.vid << "," << obj.plid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::StreetLight& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.plid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.plid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::UtilityPole& obj)
 {
-  os << obj.id << ","
-     << obj.plid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.plid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::GuardRail& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::SideWalk& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::DriveOnPortion& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::CrossRoad& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::SideStrip& obj)
 {
-  os << obj.id << ","
-     << obj.lid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.lid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::CurveMirror& obj)
 {
-  os << obj.id << ","
-     << obj.vid << ","
-     << obj.plid << ","
-     << obj.type << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.vid << "," << obj.plid << "," << obj.type << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Wall& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::Fence& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const vector_map::RailCrossing& obj)
 {
-  os << obj.id << ","
-     << obj.aid << ","
-     << obj.linkid;
+  os << obj.id << "," << obj.aid << "," << obj.linkid;
   return os;
 }
 
@@ -2137,6 +2056,19 @@ std::istream& operator>>(std::istream& is, vector_map::WayArea& obj)
     columns.push_back(column);
   }
   obj.waid = std::stoi(columns[0]);
+  obj.aid = std::stoi(columns[1]);
+  return is;
+}
+
+std::istream& operator>>(std::istream& is, vector_map::DetectionArea& obj)
+{
+  std::vector<std::string> columns;
+  std::string column;
+  while (std::getline(is, column, ','))
+  {
+    columns.push_back(column);
+  }
+  obj.daid = std::stoi(columns[0]);
   obj.aid = std::stoi(columns[1]);
   return is;
 }
