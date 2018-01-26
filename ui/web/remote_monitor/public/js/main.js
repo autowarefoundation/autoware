@@ -18,7 +18,7 @@ var isFirefox = !!window.sidebar;
 var mediaSenders = [];
 var MAX_CAMERA_NUM = 6;
 var audioStream = null;
-var firstDevice = "";
+var useDevices = {"front": null, "back": null};
 
 othorSelectDevice.style.display = isFirefox ? 'none' : '';
 firefoxSelectDevice.style.display = isFirefox ? '' : 'none';
@@ -150,23 +150,38 @@ function deviceChange() {
     deviceList.disabled = true;
     console.log("RUN_TYPE " + RUN_TYPE);
     if(RUN_TYPE == "vehicle") {
-      if(firstDevice == "" || firstDevice == deviceId) {
+      if(useDevices["front"] == null || useDevices["front"] == deviceId) {
         console.log("FrontCamera: " + deviceId)
         var constraints = {
           audio: isUseAudio,
           video: {
             mandatory: {
-              maxWidth: 1280,
-              maxHeight: 720,
-              minWidth: 1280,
-              minHeight: 720
+              minAspectRatio: 1.777, maxAspectRatio: 1.778
             },
             optional: [{
               sourceId: deviceId
             }]
           }
         };
-        firstDevice = deviceId;
+        useDevices["front"] = deviceId;
+      }
+      else if((useDevices["front"] != null && useDevices["back"] == null) || useDevices["back"] == deviceId) {
+        console.log("BackCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              minAspectRatio: 1.777,
+              maxAspectRatio: 1.778,
+              maxWidth: 768,
+              maxHeight: 432
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
+        useDevices["back"] = deviceId;
       }
       else {
         console.log("OtherCamera: " + deviceId)
