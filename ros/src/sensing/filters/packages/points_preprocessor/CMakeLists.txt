@@ -146,21 +146,3 @@ if (CATKIN_ENABLE_TESTING)
     ray_ground_filter_lib
     ${catkin_LIBRARIES})
 endif()
-
-#link_directories(${PCL_LIBRARY_DIRS})
-#target_include_directories(ring_ground_filter PRIVATE
-#    ${PCL_INCLUDE_DIRS}
-#)
-
-#target_include_directories(ray_ground_filter_lib PRIVATE
-#    ${OpenCV_INCLUDE_DIRS}
-#    ${PCL_INCLUDE_DIRS}
-#    nodes/ray_ground_filter/include
-#)
-
-#target_include_directories(ray_ground_filter PRIVATE
-#  nodes/ray_ground_filter/include)
-
-#target_include_directories(cloud_transformer PRIVATE
-#        ${PCL_INCLUDE_DIRS}
-#)
