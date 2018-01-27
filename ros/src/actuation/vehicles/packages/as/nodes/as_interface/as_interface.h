@@ -44,6 +44,7 @@
 
 #include <dbw_mkz_msgs/SteeringReport.h>
 #include <autoware_msgs/CurvatureCommandStamped.h>
+#include <autoware_msgs/lamp_cmd.h>
 
 namespace pacmod
 {
@@ -73,6 +74,7 @@ private:
   ros::Subscriber control_mode_sub_;
   ros::Subscriber speed_sub_;
   ros::Subscriber curvature_cmd_sub_;
+  ros::Subscriber lamp_cmd_sub_;
 
   // timer
   ros::Timer pacmod_timer_;
@@ -93,6 +95,7 @@ private:
   double speed_ = 0.0;
   double curvature_ = 0.0;
   std_msgs::Header header_;
+  autoware_msgs::lamp_cmd lamp_cmd_;
 
   // callbacks
   void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStampedConstPtr& msg);
@@ -100,6 +103,7 @@ private:
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
   void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg);
   void callbackPacmodTimer(const ros::TimerEvent& event);
+  void callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg);
 
   // publisher
   void publishToPacmod();

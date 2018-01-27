@@ -65,6 +65,7 @@ void PacmodInterface::initForROS()
 
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
   speed_sub_ = nh_.subscribe("/vehicle/steering_report", 1, &PacmodInterface::callbackFromSteeringReport, this);
+  lamp_cmd_sub_ = nh_.subscribe("/lamp_cmd", 1, &PacmodInterface::callbackFromLampCmd, this);
 
   // setup timer
   if (use_timer_publisher_)
@@ -108,6 +109,11 @@ void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr& msg)
   control_mode_ = msg->data;
 }
 
+ void PacmodInterface::callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg)
+{
+  lamp_cmd_ = *msg;
+}
+
 void PacmodInterface::callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg)
 {
   geometry_msgs::TwistStamped ts;
@@ -142,6 +148,18 @@ void PacmodInterface::publishToPacmod()
   platform_comm_msgs::TurnSignalCommand turn_signal;
   turn_signal.header = header_;
   turn_signal.mode = speed_mode.mode;
+  if (lamp_cmd_.l == 1)
+    {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
+    }
+  else if   (lamp_cmd_.r == 1)
+    {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+    }
+  else
+    {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
+    }
 
   platform_comm_msgs::GearCommand gear_comm;
   gear_comm.header.stamp = ros::Time::now();
@@ -156,7 +174,8 @@ void PacmodInterface::publishToPacmod()
   ROS_INFO_STREAM("mode: " << speed_mode.mode << ", "
                            << "speed: " << speed_mode.speed << ", "
                            << "steer: " << steer_mode.curvature << ", "
-                           << "gear: " << (int)gear_comm.command.gear);
+		           << "gear: " << (int)gear_comm.command.gear << ", " 
+                           << "turn_signal: " << (int)turn_signal.turn_signal);
 }
 
 }  // pacmod
