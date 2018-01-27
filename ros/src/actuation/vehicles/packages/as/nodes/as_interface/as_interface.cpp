@@ -64,10 +64,10 @@ void PacmodInterface::initForROS()
   }
 
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
-  speed_sub_ = nh_.subscribe("/vehicle/steering_report", 1, &PacmodInterface::callbackFromSteeringReport, this);
+  speed_sub_ = nh_.subscribe("/as/velocity_accel", 1, &PacmodInterface::callbackFromVelocityAccel, this);
   lamp_cmd_sub_ = nh_.subscribe("/lamp_cmd", 1, &PacmodInterface::callbackFromLampCmd, this);
 
-  // setup timer
+  // sease_link"up timer
   if (use_timer_publisher_)
   {
     pacmod_timer_ = nh_.createTimer(ros::Rate(publish_frequency_), &PacmodInterface::callbackPacmodTimer, this);
@@ -78,7 +78,7 @@ void PacmodInterface::initForROS()
   speed_mode_pub_ = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
   turn_signal_pub_ = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
   gear_pub_ = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
-  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
+  velocity_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_velocity", 10);
 }
 
 void PacmodInterface::run()
@@ -109,20 +109,20 @@ void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr& msg)
   control_mode_ = msg->data;
 }
 
- void PacmodInterface::callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg)
+void PacmodInterface::callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg)
 {
   lamp_cmd_ = *msg;
 }
 
-void PacmodInterface::callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg)
+void PacmodInterface::callbackFromVelocityAccel(const module_comm_msgs::VelocityAccelConstPtr& msg)
 {
   geometry_msgs::TwistStamped ts;
   std_msgs::Header header;
-  header.stamp = ros::Time::now();
-  ts.header = header;
-  ts.twist.linear.x = msg->speed;  // [m/sec]
+  ts.header.stamp = ros::Time::now();
+  ts.header.frame_id = "base_link";
+  ts.twist.linear.x = msg->velocity;  // [m/sec]
   // Can we get angular velocity?
-  current_twist_pub_.publish(ts);
+  velocity_pub_.publish(ts);
 }
 
 void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
@@ -149,17 +149,17 @@ void PacmodInterface::publishToPacmod()
   turn_signal.header = header_;
   turn_signal.mode = speed_mode.mode;
   if (lamp_cmd_.l == 1)
-    {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
-    }
-  else if   (lamp_cmd_.r == 1)
-    {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
-    }
+  {
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
+  }
+  else if (lamp_cmd_.r == 1)
+  {
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+  }
   else
-    {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
-    }
+  {
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
+  }
 
   platform_comm_msgs::GearCommand gear_comm;
   gear_comm.header.stamp = ros::Time::now();
@@ -174,7 +174,7 @@ void PacmodInterface::publishToPacmod()
   ROS_INFO_STREAM("mode: " << speed_mode.mode << ", "
                            << "speed: " << speed_mode.speed << ", "
                            << "steer: " << steer_mode.curvature << ", "
-		           << "gear: " << (int)gear_comm.command.gear << ", " 
+                           << "gear: " << (int)gear_comm.command.gear << ", "
                            << "turn_signal: " << (int)turn_signal.turn_signal);
 }
 

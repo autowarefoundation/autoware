@@ -38,6 +38,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <module_comm_msgs/SteerMode.h>
 #include <module_comm_msgs/SpeedMode.h>
+#include <module_comm_msgs/VelocityAccel.h>
 #include <platform_comm_msgs/TurnSignalCommand.h>
 #include <platform_comm_msgs/GearCommand.h>
 #include <platform_comm_msgs/Gear.h>
@@ -67,7 +68,7 @@ private:
   ros::Publisher turn_signal_pub_;
   ros::Publisher gear_pub_;
 
-  ros::Publisher current_twist_pub_;
+  ros::Publisher velocity_pub_;
 
   // subscriber
   ros::Subscriber twist_cmd_sub_;
@@ -101,7 +102,7 @@ private:
   void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStampedConstPtr& msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
-  void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr& msg);
+  void callbackFromVelocityAccel(const module_comm_msgs::VelocityAccelConstPtr& msg);
   void callbackPacmodTimer(const ros::TimerEvent& event);
   void callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg);
 
