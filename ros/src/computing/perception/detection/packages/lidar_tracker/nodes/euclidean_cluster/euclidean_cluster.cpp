@@ -1355,7 +1355,7 @@ int main(int argc, char** argv)
   vector_map.subscribe(private_nh,
                        vector_map::Category::POINT | vector_map::Category::LINE | vector_map::Category::AREA |
                            vector_map::Category::WAY_AREA | vector_map::Category::DETECTION_AREA,
-                       10  // abort after 10 times, either vector map or wayarea not available
+                       ros::Duration(10)  // abort after 10 times, either vector map or wayarea not available
                        );
 
   // all true -> all data
