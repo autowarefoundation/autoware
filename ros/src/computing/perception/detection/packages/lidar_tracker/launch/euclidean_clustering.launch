@@ -64,5 +64,8 @@
 	<node pkg="grid_map_visualization" type="grid_map_visualization" name="clustering_grid_map_visualization" output="screen">
 		<rosparam command="load" file="$(find lidar_tracker)/launch/euclidean_cluster.config" />
 	</node>
+	<node pkg="grid_map_visualization" type="grid_map_visualization" name="clustering_d_grid_map_visualization" output="screen">
+		<rosparam command="load" file="$(find lidar_tracker)/launch/euclidean_cluster_darea.config" />
+	</node>
 
 </launch>
