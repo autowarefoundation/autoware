@@ -16,7 +16,7 @@
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"geometry
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
@@ -36,14 +36,19 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
 #include <module_comm_msgs/SteerMode.h>
 #include <module_comm_msgs/SpeedMode.h>
 #include <module_comm_msgs/VelocityAccel.h>
+#include <platform_comm_msgs/CurvatureFeedback.h>
 #include <platform_comm_msgs/TurnSignalCommand.h>
 #include <platform_comm_msgs/GearCommand.h>
 #include <platform_comm_msgs/Gear.h>
 
-#include <dbw_mkz_msgs/SteeringReport.h>
 #include <autoware_msgs/CurvatureCommandStamped.h>
 #include <autoware_msgs/lamp_cmd.h>
 
@@ -58,6 +63,8 @@ public:
   void run();
 
 private:
+  typedef message_filters::sync_policies::ApproximateTime<module_comm_msgs::VelocityAccel, platform_comm_msgs::CurvatureFeedback> CurrentTwistSyncPolicy;
+
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -67,15 +74,18 @@ private:
   ros::Publisher speed_mode_pub_;
   ros::Publisher turn_signal_pub_;
   ros::Publisher gear_pub_;
-
-  ros::Publisher velocity_pub_;
+  ros::Publisher current_twist_pub_;
 
   // subscriber
   ros::Subscriber twist_cmd_sub_;
   ros::Subscriber control_mode_sub_;
-  ros::Subscriber speed_sub_;
   ros::Subscriber curvature_cmd_sub_;
   ros::Subscriber lamp_cmd_sub_;
+  ros::Subscriber speed_sub_;
+
+  message_filters::Subscriber<module_comm_msgs::VelocityAccel>* current_velocity_sub_;
+  message_filters::Subscriber<platform_comm_msgs::CurvatureFeedback>* current_curvature_sub_;
+  message_filters::Synchronizer<CurrentTwistSyncPolicy>* current_twist_sync_;
 
   // timer
   ros::Timer pacmod_timer_;
@@ -102,7 +112,7 @@ private:
   void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStampedConstPtr& msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
-  void callbackFromVelocityAccel(const module_comm_msgs::VelocityAccelConstPtr& msg);
+  void callbackFromSyncedCurrentTwist(const module_comm_msgs::VelocityAccelConstPtr& msg_velocity, const platform_comm_msgs::CurvatureFeedbackConstPtr& msg_curvature);
   void callbackPacmodTimer(const ros::TimerEvent& event);
   void callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg);
 

@@ -63,8 +63,12 @@ void PacmodInterface::initForROS()
     curvature_cmd_sub_ = nh_.subscribe("curvature_cmd", 1, &PacmodInterface::callbackFromCurvatureCmd, this);
   }
 
+  current_velocity_sub_ = new message_filters::Subscriber<module_comm_msgs::VelocityAccel>(nh_, "/as/velocity_accel", 1);
+  current_curvature_sub_ = new message_filters::Subscriber<platform_comm_msgs::CurvatureFeedback>(nh_, "/as/curvature_feedback", 1);
+  current_twist_sync_ = new message_filters::Synchronizer<CurrentTwistSyncPolicy>(CurrentTwistSyncPolicy(10), *current_velocity_sub_, *current_curvature_sub_);
+  current_twist_sync_->registerCallback(boost::bind(&PacmodInterface::callbackFromSyncedCurrentTwist, this, _1, _2));
+
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
-  speed_sub_ = nh_.subscribe("/as/velocity_accel", 1, &PacmodInterface::callbackFromVelocityAccel, this);
   lamp_cmd_sub_ = nh_.subscribe("/lamp_cmd", 1, &PacmodInterface::callbackFromLampCmd, this);
 
   // sease_link"up timer
@@ -78,7 +82,8 @@ void PacmodInterface::initForROS()
   speed_mode_pub_ = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
   turn_signal_pub_ = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
   gear_pub_ = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
-  velocity_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_velocity", 10);
+
+  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
 }
 
 void PacmodInterface::run()
@@ -114,15 +119,14 @@ void PacmodInterface::callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr&
   lamp_cmd_ = *msg;
 }
 
-void PacmodInterface::callbackFromVelocityAccel(const module_comm_msgs::VelocityAccelConstPtr& msg)
+void PacmodInterface::callbackFromSyncedCurrentTwist(const module_comm_msgs::VelocityAccelConstPtr& msg_velocity, const platform_comm_msgs::CurvatureFeedbackConstPtr& msg_curvature)
 {
   geometry_msgs::TwistStamped ts;
-  std_msgs::Header header;
   ts.header.stamp = ros::Time::now();
   ts.header.frame_id = "base_link";
-  ts.twist.linear.x = msg->velocity;  // [m/sec]
-  // Can we get angular velocity?
-  velocity_pub_.publish(ts);
+  ts.twist.linear.x = msg_velocity->velocity;  // [m/sec]
+  ts.twist.angular.z = msg_curvature->curvature * ts.twist.linear.x; // [rad/sec]
+  current_twist_pub_.publish(ts);
 }
 
 void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
