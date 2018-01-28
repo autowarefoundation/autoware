@@ -162,7 +162,8 @@ subs :
       - name : SICK LMS511
         desc : SICK LMS511 desc sample
         probe:
-        run  :
+        run  : roslaunch sick lms511.launch
+        param: sick_lms511
       - name : IBEO 8L Single
         desc : IBEO 8L Single desc sample
         probe:
@@ -312,6 +313,18 @@ params :
       desc  : calibration desc sample
       kind  : path
       v     : ''
+      cmd_param :
+        dash : ''
+        delim: ':='
+        must : True
+
+  - name  : sick_lms511
+    vars  :
+    - name  : ip
+      label : IP
+      desc  : IP address of SICK LMS511
+      kind  : str
+      v     : 192.168.1.1
       cmd_param :
         dash : ''
         delim: ':='
