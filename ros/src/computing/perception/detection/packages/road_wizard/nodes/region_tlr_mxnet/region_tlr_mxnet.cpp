@@ -93,12 +93,11 @@ void RegionTlrMxNetRosNode::RoiSignalCallback(const autoware_msgs::Signals::Cons
 		cv::Mat roi = frame_(cv::Rect(context.topLeft, context.botRight)).clone();
 
 		// Get current state of traffic light from current frame
-		LightState current_state = recognizer.RecognizeLightState(roi);
+		LightState current_state = recognizer.RecognizeLightState(roi, score_threshold_);
 
-		// Determine the final state by referring previous state
-		context.lightState = DetermineState(context.lightState, // previous state
-		                                    current_state,      // current state
-		                                    &(context.stateJudgeCount)); // counter to record how many times does state recognized
+		// The state of the traffic light WON'T be changed
+		// unless the new state is found at least change_state_threshold_ times
+		DetermineState(current_state, context);
 	}
 
 	// Publish recognition result as some topic format
@@ -116,10 +115,19 @@ void RegionTlrMxNetRosNode::GetRosParam()
 	ros::NodeHandle private_node_handle("~");
 
 	private_node_handle.param<std::string>("image_raw_topic", image_topic_name_, "/image_raw");
+	ROS_INFO("image_raw_topic: %s", image_topic_name_.c_str());
 	private_node_handle.param<std::string>("network_definition_file", network_definition_file_name_, "");
+	ROS_INFO("network_definition_file: %s", network_definition_file_name_.c_str());
 	private_node_handle.param<std::string>("pretrained_model_file", pretrained_model_file_name_, "");
+	ROS_INFO("pretrained_model_file: %s", pretrained_model_file_name_.c_str());
 	private_node_handle.param<bool>("use_gpu", use_gpu_, false);
+	ROS_INFO("use_gpu: %d", use_gpu_);
 	private_node_handle.param<int>("gpu_id", gpu_id_, 0);
+	ROS_INFO("gpu_id: %d", gpu_id_);
+	private_node_handle.param<double>("score_threshold", score_threshold_, 0.9);
+	ROS_INFO("score_threshold: %f", score_threshold_);
+	private_node_handle.param<int>("change_state_threshold", change_state_threshold_, 2);
+	ROS_INFO("change_state_threshold: %d", change_state_threshold_);
 
 	// If network-definition-file or pretrained-model-file are not specified,
 	// terminate program with error status
@@ -159,26 +167,36 @@ void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 
 } // RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 
-
-LightState RegionTlrMxNetRosNode::DetermineState(LightState previous_state,
-                                                 LightState current_state,
-                                                 int *state_judge_count)
+/*!
+ * DetermineState works as a latch to reduce the chance of sudden changes in the state of the traffic light, caused by
+ * mis classifications in the detector. To change the traffic light state, the new candidate should be found at
+ * least kChangeStateThreshold times.
+ * @param current_state the current state of the traffic light as reported by the classifier.
+ * @param in_out_signal_context the object containing the data of the current Traffic Light instance.
+ */
+void RegionTlrMxNetRosNode::DetermineState(LightState in_current_state,
+                                           Context& in_out_signal_context)
 {
-	// Get a candidate which considering state transition of traffic light
-	LightState transition_candidate = kStateTransitionMatrix[previous_state][current_state];
-
-	// If state change happens more than threshold times, accept that change
-	if (*state_judge_count > kChangeStateThreshold)
+	//if reported state by classifier is different than the previously stored
+	if (in_current_state != in_out_signal_context.lightState)
 	{
-		*state_judge_count = 0;
-		return transition_candidate;
-	} else
-	{
-		if (transition_candidate != previous_state)
+		//and also different from the previous difference
+		if (in_current_state != in_out_signal_context.newCandidateLightState)
 		{
-			(*state_judge_count)++;
+			//set classifier result as a candidate
+			in_out_signal_context.newCandidateLightState = in_current_state;
+			in_out_signal_context.stateJudgeCount = 0;
 		}
-		return previous_state;
+		else
+		{
+			//if classifier returned the same result previously increase its confidence
+			in_out_signal_context.stateJudgeCount++;
+		}
+	}
+	//if new candidate has been found enough times, change state to the new candidate
+	if (in_out_signal_context.stateJudgeCount >= change_state_threshold_)
+	{
+		in_out_signal_context.lightState = in_current_state;
 	}
 
 } // LightState RegionTlrMxNetRosNode::DetermineState()

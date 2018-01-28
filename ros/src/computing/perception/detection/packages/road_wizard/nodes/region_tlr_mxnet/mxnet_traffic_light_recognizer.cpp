@@ -86,7 +86,7 @@ void MxNetTrafficLightRecognizer::PreProcessImage(const cv::Mat& in_image,
 	}
 }
 
-LightState MxNetTrafficLightRecognizer::RecognizeLightState(const cv::Mat &in_image)
+LightState MxNetTrafficLightRecognizer::RecognizeLightState(const cv::Mat &in_image, double in_score_threshold)
 {
 	LightState result = LightState::UNDEFINED;
 
@@ -120,6 +120,11 @@ LightState MxNetTrafficLightRecognizer::RecognizeLightState(const cv::Mat &in_im
 	MXPredGetOutput(prediction_handle_, output_index, &(output_data[0]), size);
 
 	int highest_score_index = std::distance(output_data.begin(), std::max_element(output_data.begin(), output_data.end()));
+
+	if (output_data[highest_score_index] < in_score_threshold)
+	{
+		return LightState::UNDEFINED;
+	}
 
 	switch(highest_score_index)
 	{
