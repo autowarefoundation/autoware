@@ -91,7 +91,8 @@ private:
 
 	void StartSubscribersAndPublishers();
 
-	LightState DetermineState(LightState previous_state, LightState current_state, int *state_judge_count);
+	void DetermineState(LightState in_current_state,
+                        Context& in_out_signal_context);
 
 	void PublishTrafficLight(std::vector<Context> contexts);
 
@@ -107,6 +108,9 @@ private:
 	std::string pretrained_model_file_name_;
 	bool use_gpu_;
 	int gpu_id_;
+	double score_threshold_;
+
+	int change_state_threshold_;// The threshold of state detected times to accept the state change
 
 	// Subscribers
 	ros::Subscriber image_subscriber;
@@ -129,9 +133,6 @@ private:
 
 	// The instance of the core class of traffic light recognition
 	MxNetTrafficLightRecognizer recognizer;
-
-	// The threshold of state detected times to accept the state change
-	const int kChangeStateThreshold = 10;
 
 	// constant values to pass recognition states to other nodes
 	const int32_t kTrafficLightRed;

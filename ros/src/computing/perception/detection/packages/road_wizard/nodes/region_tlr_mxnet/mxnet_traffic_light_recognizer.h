@@ -30,7 +30,7 @@ public:
 	          const bool in_use_gpu,
 	          const unsigned int in_gpu_id);
 
-	LightState RecognizeLightState(const cv::Mat& in_image);
+	LightState RecognizeLightState(const cv::Mat& in_image, double in_score_threshold);
 
 
 

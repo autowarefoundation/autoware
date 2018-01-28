@@ -36,6 +36,7 @@ public:
 	cv::Point   topLeft;
 	cv::Point   botRight;
 	LightState  lightState;
+	LightState  newCandidateLightState;
 	int         signalID;
 	int         stateJudgeCount;
 	bool        leftTurnSignal;
