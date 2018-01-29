@@ -159,10 +159,11 @@ subs :
         desc : Hokuyo 3D-URG desc sample
         probe:
         run  : roslaunch hokuyo hokuyo_3d.launch
-      - name : SICK LMS511
-        desc : SICK LMS511 desc sample
+      - name : Sick LMS511
+        desc : Initializes the Sick LMS511 driver
         probe:
-        run  :
+        run  : roslaunch sick_driver lms511.launch
+        param: sick_lms511
       - name : IBEO 8L Single
         desc : IBEO 8L Single desc sample
         probe:
@@ -312,6 +313,18 @@ params :
       desc  : calibration desc sample
       kind  : path
       v     : ''
+      cmd_param :
+        dash : ''
+        delim: ':='
+        must : True
+
+  - name  : sick_lms511
+    vars  :
+    - name  : ip
+      label : IP
+      desc  : IP address of SICK LMS511
+      kind  : str
+      v     : 192.168.1.1
       cmd_param :
         dash : ''
         delim: ':='
