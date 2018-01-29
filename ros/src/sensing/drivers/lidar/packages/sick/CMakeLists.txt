@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(sick)
 
-find_package(catkin REQUIRED COMPONENTS message_generation tf roscpp rospy std_msgs genmsg)
-
- generate_messages(
-   DEPENDENCIES
-   std_msgs
-)
+find_package(catkin REQUIRED COMPONENTS message_generation tf roscpp rospy std_msgs)
 
 catkin_package(
   INCLUDE_DIRS nodes/lms511/include
   LIBRARIES sick
-  CATKIN_DEPENDS generate_msgs roscpp rospy
-  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp rospy
 )
 
 include_directories(
