@@ -1571,26 +1571,26 @@ int main(int argc, char** argv)
   initial_pose.yaw = 0.0;
 
   // Publishers
-  predict_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 1000);
-  predict_pose_imu_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_imu", 1000);
-  predict_pose_odom_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_odom", 1000);
-  predict_pose_imu_odom_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_imu_odom", 1000);
-  ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 1000);
-  // current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 1000);
-  localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 1000);
-  estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 1000);
-  estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 1000);
-  estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 1000);
-  estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 1000);
-  time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 1000);
-  ndt_stat_pub = nh.advertise<autoware_msgs::ndt_stat>("/ndt_stat", 1000);
-  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 1000);
+  predict_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose", 10);
+  predict_pose_imu_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_imu", 10);
+  predict_pose_odom_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_odom", 10);
+  predict_pose_imu_odom_pub = nh.advertise<geometry_msgs::PoseStamped>("/predict_pose_imu_odom", 10);
+  ndt_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/ndt_pose", 10);
+  // current_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/current_pose", 10);
+  localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 10);
+  estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist", 10);
+  estimated_vel_mps_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_mps", 10);
+  estimated_vel_kmph_pub = nh.advertise<std_msgs::Float32>("/estimated_vel_kmph", 10);
+  estimated_vel_pub = nh.advertise<geometry_msgs::Vector3Stamped>("/estimated_vel", 10);
+  time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 10);
+  ndt_stat_pub = nh.advertise<autoware_msgs::ndt_stat>("/ndt_stat", 10);
+  ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 10);
 
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
   ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
-  //  ros::Subscriber map_sub = nh.subscribe("points_map", 10, map_callback);
-  ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 1000, initialpose_callback);
+  //  ros::Subscriber map_sub = nh.subscribe("points_map", 1, map_callback);
+  ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 10, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size * 10, odom_callback);
   ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size * 10, imu_callback);
