@@ -156,7 +156,10 @@ function deviceChange() {
           audio: isUseAudio,
           video: {
             mandatory: {
-              minAspectRatio: 1.777, maxAspectRatio: 1.778
+              minAspectRatio: 1.777,
+              maxAspectRatio: 1.778,
+              minWidth: 768,
+              minHeight: 432
             },
             optional: [{
               sourceId: deviceId
