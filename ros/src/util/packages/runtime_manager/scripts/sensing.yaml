@@ -58,6 +58,10 @@ subs :
         desc : Baumer VLG-22 desc sample
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
+      - name : IDS UI-3060CP
+        desc : IDS UI-3060CP
+        probe:
+        run  : roslaunch ueye nodelets.launch
 
   - name : GNSS
     desc : GNSS desc sample
