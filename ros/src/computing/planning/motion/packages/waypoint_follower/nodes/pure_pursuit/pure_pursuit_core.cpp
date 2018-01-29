@@ -48,6 +48,7 @@ PurePursuitNode::PurePursuitNode()
   , const_velocity_(5.0)
   , lookahead_distance_ratio_(2.0)
   , minimum_lookahead_distance_(6.0)
+  , curvature_shift_(0.0)
 {
   initForROS();
 
@@ -104,6 +105,8 @@ void PurePursuitNode::run()
 
     double kappa = 0;
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
+    kappa += curvature_shift_;  // tuning for each vehicle
+
     publishTwistStamped(can_get_curvature, kappa);
     publishControlCommandStamped(can_get_curvature, kappa);
     publishCurvatureCommandStamped(can_get_curvature, kappa);
@@ -184,6 +187,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  curvature_shift_ = config->curvature_shift;
   is_config_set_ = true;
 }
 

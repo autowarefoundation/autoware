@@ -97,6 +97,7 @@ private:
   double const_velocity_;            // km/h
   double lookahead_distance_ratio_;
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
+  double curvature_shift_;  // radian/meter
 
   // callbacks
   void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
