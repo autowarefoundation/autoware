@@ -1111,8 +1111,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     estimated_vel_mps.data = current_velocity;
     estimated_vel_kmph.data = current_velocity * 3.6;
 
-    estimated_vel_mps_pub.publish(estimated_vel_mps);
-    estimated_vel_kmph_pub.publish(estimated_vel_kmph);
+    //estimated_vel_mps_pub.publish(estimated_vel_mps);
+    //estimated_vel_kmph_pub.publish(estimated_vel_kmph);
 
     // Set values for publishing pose
     predict_q.setRPY(predict_pose.roll, predict_pose.pitch, predict_pose.yaw);
@@ -1154,7 +1154,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_imu_msg.pose.orientation.y = predict_q_imu.y();
     predict_pose_imu_msg.pose.orientation.z = predict_q_imu.z();
     predict_pose_imu_msg.pose.orientation.w = predict_q_imu.w();
-    predict_pose_imu_pub.publish(predict_pose_imu_msg);
+    //predict_pose_imu_pub.publish(predict_pose_imu_msg);
 
     tf::Quaternion predict_q_odom;
     predict_q_odom.setRPY(predict_pose_odom.roll, predict_pose_odom.pitch, predict_pose_odom.yaw);
@@ -1167,7 +1167,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_odom_msg.pose.orientation.y = predict_q_odom.y();
     predict_pose_odom_msg.pose.orientation.z = predict_q_odom.z();
     predict_pose_odom_msg.pose.orientation.w = predict_q_odom.w();
-    predict_pose_odom_pub.publish(predict_pose_odom_msg);
+    //predict_pose_odom_pub.publish(predict_pose_odom_msg);
 
     tf::Quaternion predict_q_imu_odom;
     predict_q_imu_odom.setRPY(predict_pose_imu_odom.roll, predict_pose_imu_odom.pitch, predict_pose_imu_odom.yaw);
@@ -1180,7 +1180,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     predict_pose_imu_odom_msg.pose.orientation.y = predict_q_imu_odom.y();
     predict_pose_imu_odom_msg.pose.orientation.z = predict_q_imu_odom.z();
     predict_pose_imu_odom_msg.pose.orientation.w = predict_q_imu_odom.w();
-    predict_pose_imu_odom_pub.publish(predict_pose_imu_odom_msg);
+    //predict_pose_imu_odom_pub.publish(predict_pose_imu_odom_msg);
 
     ndt_q.setRPY(ndt_pose.roll, ndt_pose.pitch, ndt_pose.yaw);
     if (_use_local_transform == true)
@@ -1252,7 +1252,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       localizer_pose_msg.pose.orientation.w = localizer_q.w();
     }
 
-    predict_pose_pub.publish(predict_pose_msg);
+    //predict_pose_pub.publish(predict_pose_msg);
     ndt_pose_pub.publish(ndt_pose_msg);
     // current_pose is published by vel_pose_mux
     //    current_pose_pub.publish(current_pose_msg);
@@ -1286,12 +1286,12 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     estimate_twist_msg.twist.angular.y = 0.0;
     estimate_twist_msg.twist.angular.z = angular_velocity;
 
-    estimate_twist_pub.publish(estimate_twist_msg);
+    //estimate_twist_pub.publish(estimate_twist_msg);
 
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
     estimate_vel_msg.vector.x = current_velocity;
-    estimated_vel_pub.publish(estimate_vel_msg);
+    //estimated_vel_pub.publish(estimate_vel_msg);
 
     // Set values for /ndt_stat
     ndt_stat_msg.header.stamp = current_scan_time;
@@ -1302,11 +1302,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_stat_msg.acceleration = current_accel;
     ndt_stat_msg.use_predict_pose = 0;
 
-    ndt_stat_pub.publish(ndt_stat_msg);
+    //ndt_stat_pub.publish(ndt_stat_msg);
     /* Compute NDT_Reliability */
     ndt_reliability.data = Wa * (exe_time / 100.0) * 100.0 + Wb * (iteration / 10.0) * 100.0 +
                            Wc * ((2.0 - trans_probability) / 2.0) * 100.0;
-    ndt_reliability_pub.publish(ndt_reliability);
+    //ndt_reliability_pub.publish(ndt_reliability);
 
     // Write log
     if (!ofs)
@@ -1316,39 +1316,39 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     static ros::Time start_time = input->header.stamp;
 
-    ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
-        << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
-        << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
-        << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
-        << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
-        << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
-        << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
-        << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
-        << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
-        << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
-        << std::endl;
+    // ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
+    //     << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
+    //     << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
+    //     << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
+    //     << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
+    //     << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
+    //     << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
+    //     << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
+    //     << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
+    //     << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
+    //     << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
+    //     << std::endl;
 
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << "Sequence: " << input->header.seq << std::endl;
-    std::cout << "Timestamp: " << input->header.stamp << std::endl;
-    std::cout << "Frame ID: " << input->header.frame_id << std::endl;
-    //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
-    std::cout << "Number of Filtered Scan Points: " << scan_points_num << " points." << std::endl;
-    std::cout << "NDT has converged: " << has_converged << std::endl;
-    std::cout << "Fitness Score: " << fitness_score << std::endl;
-    std::cout << "Transformation Probability: " << trans_probability << std::endl;
-    std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
-    std::cout << "Number of Iterations: " << iteration << std::endl;
-    std::cout << "NDT Reliability: " << ndt_reliability.data << std::endl;
-    std::cout << "(x,y,z,roll,pitch,yaw): " << std::endl;
-    std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
-              << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
-    std::cout << "Transformation Matrix: " << std::endl;
-    std::cout << t << std::endl;
-    std::cout << "Align time: " << align_time << std::endl;
-    std::cout << "Get fitness score time: " << getFitnessScore_time << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
+    // std::cout << "-----------------------------------------------------------------" << std::endl;
+    // std::cout << "Sequence: " << input->header.seq << std::endl;
+    // std::cout << "Timestamp: " << input->header.stamp << std::endl;
+    // std::cout << "Frame ID: " << input->header.frame_id << std::endl;
+    // //		std::cout << "Number of Scan Points: " << scan_ptr->size() << " points." << std::endl;
+    // std::cout << "Number of Filtered Scan Points: " << scan_points_num << " points." << std::endl;
+    // std::cout << "NDT has converged: " << has_converged << std::endl;
+    // std::cout << "Fitness Score: " << fitness_score << std::endl;
+    // std::cout << "Transformation Probability: " << trans_probability << std::endl;
+    // std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
+    // std::cout << "Number of Iterations: " << iteration << std::endl;
+    // std::cout << "NDT Reliability: " << ndt_reliability.data << std::endl;
+    // std::cout << "(x,y,z,roll,pitch,yaw): " << std::endl;
+    // std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
+    //           << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;
+    // std::cout << "Transformation Matrix: " << std::endl;
+    // std::cout << t << std::endl;
+    // std::cout << "Align time: " << align_time << std::endl;
+    // std::cout << "Get fitness score time: " << getFitnessScore_time << std::endl;
+    // std::cout << "-----------------------------------------------------------------" << std::endl;
 
     // Update offset
     if (_offset == "linear")
