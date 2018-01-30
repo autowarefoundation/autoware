@@ -28,17 +28,14 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// ROS Includes
 #include <ros/ros.h>
 
-#include "as_interface.h"
+#include "deadreckoner.h"
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "as_interface");
-  pacmod::PacmodInterface pacmod_interface;
-
-  pacmod_interface.run();
-
+  ros::init(argc, argv, "deadreckoner");
+  DeadRecokner node;
+  ros::spin();
   return 0;
 }

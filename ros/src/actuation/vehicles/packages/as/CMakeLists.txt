@@ -8,6 +8,7 @@ if(EXISTS "${AS_MSG_PATH}")
 find_package(
   catkin REQUIRED COMPONENTS
   roscpp
+  message_filters
   std_msgs
   geometry_msgs
   module_comm_msgs

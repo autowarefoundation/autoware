@@ -16,7 +16,7 @@
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"geometry
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
@@ -28,17 +28,23 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// ROS Includes
+#ifndef DEADRECKONER_H
+#define DEADRECKONER_H
+
 #include <ros/ros.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/TwistStamped.h>
 
-#include "as_interface.h"
-
-int main(int argc, char** argv)
+class DeadRecokner
 {
-  ros::init(argc, argv, "as_interface");
-  pacmod::PacmodInterface pacmod_interface;
-
-  pacmod_interface.run();
-
-  return 0;
-}
+public:
+  DeadRecokner();
+  ~DeadRecokner();
+private:
+  ros::NodeHandle nh_, private_nh_;
+  ros::Subscriber twist_sub_;
+  ros::Publisher odom_pub_;
+  
+  void callbackFromCurrentTwist(const geometry_msgs::TwistStampedConstPtr& msg);
+};
+#endif  // DEADRECKONER_H
