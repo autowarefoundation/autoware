@@ -55,6 +55,10 @@
 		<param name="output_frame" value="$(arg output_frame)" />
 		<param name="use_vector_map" value="$(arg use_vector_map)" />
 		<param name="vectormap_frame" value="$(arg vectormap_frame)" />
+		<param name="vectormap_grid_width" value="$(arg vectormap_grid_width)" />
+		<param name="vectormap_grid_height" value="$(arg vectormap_grid_height)" />
+		<param name="vectormap_grid_resolution" value="$(arg vectormap_grid_resolution)" />
+		<param name="vectormap_grid_behind" value="$(arg vectormap_grid_behind)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
 		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<param name="use_gpu" value="$(arg use_gpu)" />
