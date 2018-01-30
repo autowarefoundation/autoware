@@ -38,7 +38,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   if (!ctx->isCurrentState(_state_num))
   {
     _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = true;
     }
@@ -46,7 +46,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   else
   {
     _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = false;
     }
@@ -98,6 +98,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   param_target_waypoint_ = msg.target_waypoint;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_stopline_target_ratio_ = msg.stopline_target_ratio;
+  param_stopline_pause_time_ = msg.stopline_pause_time;
   param_shift_width_ = msg.shift_width;
 
   param_crawl_velocity_ = msg.crawl_velocity;
@@ -111,11 +112,11 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
-{    
+{
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 //  const ros::M_string &header = event.getConnectionHeader();
-//  std::string topic = header.at("topic"); 
-  
+//  std::string topic = header.at("topic");
+
   if(!isManualLight){// && topic.find("manage") == std::string::npos){
 	  current_traffic_light_ = light->traffic_light;
 	  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
@@ -350,13 +351,13 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   current_finalwaypoints_ = msg;
 
   static size_t previous_idx = 0;
-  
+
   size_t idx = param_stopline_target_waypoint_ +  (current_velocity_ * param_stopline_target_ratio_);
   idx = current_finalwaypoints_.waypoints.size() - 1 > idx ?
-		idx : current_finalwaypoints_.waypoints.size() - 1;	  
+		idx : current_finalwaypoints_.waypoints.size() - 1;
 
   CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-  
+
   for(size_t i = (previous_idx>idx)?idx:previous_idx ; i <= idx; i++){
 	  if(i < current_finalwaypoints_.waypoints.size()){
 		  if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE){
