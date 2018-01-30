@@ -1645,6 +1645,12 @@ params :
       min   : 0
       max   : 90
       v     : 0
+    - name  : curvature_shift
+      desc  : curvature_shift desc sample
+      label : curvature_shift
+      min   : -0.1
+      max   : 0.1
+      v     : 0
     - name    : is_linear_interpolation
       desc    : linear_interpolate_mode desc sample
       label   : 'Linear Interpolation'
