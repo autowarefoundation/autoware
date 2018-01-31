@@ -10,7 +10,8 @@
 
   <url type="website">https://github.com/pangfumin/lms511_laser</url>
 
-  <build_depend>catkin</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
 
