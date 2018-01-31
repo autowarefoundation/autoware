@@ -59,7 +59,7 @@ subs :
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
       - name : IDS UI-3060CP
-        desc : IDS UI-3060CP
+        desc : IDS UI-3060CP (Requires official ueye package)
         probe:
         run  : roslaunch ueye nodelets.launch
 
