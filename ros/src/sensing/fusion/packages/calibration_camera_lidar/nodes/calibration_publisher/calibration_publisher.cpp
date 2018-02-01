@@ -22,6 +22,7 @@ static bool isPublish_cameraInfo;
 
 static std::string camera_id_str;
 static std::string target_frame_;
+static std::string image_topic_name_;
 
 void tfRegistration (const cv::Mat &camExtMat, const ros::Time& timeStamp)
 {
@@ -149,6 +150,9 @@ int main(int argc, char* argv[])
   private_nh.param<std::string>("target_frame", target_frame_, "velodyne");
   ROS_INFO("target_frame: %s", target_frame_.c_str());
 
+  private_nh.param<std::string>("image_topic_name", image_topic_name_, "image_raw");
+  ROS_INFO("image_topic_name: %s", image_topic_name_.c_str());
+
   if (argc < 2)
     {
       std::cout << "Usage: calibration_publisher <calibration-file>." << std::endl;
@@ -168,14 +172,13 @@ int main(int argc, char* argv[])
   fs["ImageSize"] >> ImageSize;
   fs["DistModel"] >> DistModel;
 
-  std::string image_topic_name("/image_raw");
   std::string camera_info_name("/camera_info");
   std::string projection_matrix_name("/projection_matrix");
 
   std::string name_space_str = ros::this_node::getNamespace();
   camera_id_str = "camera";
   if (name_space_str != "/") {
-    image_topic_name = name_space_str + image_topic_name;
+    image_topic_name_ = name_space_str + image_topic_name_;
     camera_info_name = name_space_str + camera_info_name;
     projection_matrix_name = name_space_str + projection_matrix_name;
     if (name_space_str.substr(0, 2) == "//") {
@@ -188,7 +191,7 @@ int main(int argc, char* argv[])
 
   ros::Subscriber image_sub;
 
-  image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
+  image_sub = n.subscribe(image_topic_name_, 10, image_raw_cb);
 
   camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, false);
 
