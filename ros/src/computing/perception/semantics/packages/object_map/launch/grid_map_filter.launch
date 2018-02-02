@@ -10,7 +10,7 @@
   <arg name="circle_radius" default="1.7" />
 
   <!-- Launch node -->
-  <node pkg="object_map" type="grid_map_filter" name="grid_map_filter" output="log">
+  <node pkg="object_map" type="grid_map_filter" name="grid_map_filter" output="screen">
     <param name="map_frame" value="$(arg map_frame)" />
     <param name="map_topic" value="$(arg map_topic)" />
     <param name="dist_transform_distance" value="$(arg dist_transform_distance)" />

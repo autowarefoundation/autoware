@@ -1111,39 +1111,28 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : vectormap_grid_width
-      desc    : Width Distance in Meters to create a filtering grid to the sides. Default. 30
-      label   : 'vectormap_grid_width'
-      min       : 10.0
-      max       : 100.0
-      v       : 30.0
+    - name    : wayarea_gridmap_topic
+      desc    : Topic name of the wayarea grid_map, this is published by wayarea2grid node in Computing/Semantics. default. grid_map_wayarea
+      label   : 'wayarea_gridmap_topic'
+      kind    : str
+      v       : grid_map_wayarea
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : vectormap_grid_height
-      desc    : Height Distance in Meters to create a filtering grid to the front. Default. 70
-      label   : 'vectormap_grid_height'
-      min       : 10.0
-      max       : 100.0
-      v       : 70.0
+    - name    : wayarea_gridmap_layer
+      desc    : Name of the layer inside the GridMap containing the wayarea. default. wayarea
+      label   : 'wayarea_gridmap_topic'
+      kind    : str
+      v       : wayarea
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : vectormap_grid_resolution
-      desc    : One Grid square is equivalent to this value in meters. Smaller Value provide better resolution at the cost of memory (Default. 0.3)
-      label   : 'vectormap_grid_resolution'
-      min       : 0.1
-      max       : 1.0
-      v       : 0.3
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : vectormap_grid_behind
-      desc    : Allows to perform filtering behind the vehicle. Moves the grid to filter objects behind the current position (Default. 20.0)
-      label   : 'vectormap_grid_behind'
-      min       : 0.0
-      max       : 50.0
-      v       : 20.0
+    - name    : wayarea_road_value
+      desc    : Name of the layer inside the GridMap containing the wayarea. default. wayarea
+      label   : 'wayarea_road_value'
+      min       : 0
+      max       : 255
+      v       : 255
       cmd_param :
         dash        : ''
         delim       : ':='
