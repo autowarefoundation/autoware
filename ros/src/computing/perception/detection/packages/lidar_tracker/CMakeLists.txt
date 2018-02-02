@@ -4,7 +4,7 @@ project(lidar_tracker)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-include(FindPkgConfig)
+
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros
@@ -19,6 +19,10 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
   vector_map_server
   op_ros_helpers
+  vector_map
+  grid_map_ros
+  grid_map_cv
+  grid_map_msgs
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -28,17 +32,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(OpenMP)
 
 execute_process(
   COMMAND rosversion -d
   OUTPUT_VARIABLE ROS_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-if ("${ROS_VERSION}" MATCHES "(kinetic)")
-	pkg_check_modules(OpenCV REQUIRED opencv-3.2.0-dev)
-else()
-	pkg_check_modules(OpenCV REQUIRED)
-endif()
+
+find_package(OpenCV REQUIRED)
 
 execute_process(
   COMMAND pkg-config --variable=host_bins Qt5Core
@@ -265,8 +267,14 @@ else()
 
 endif()
 
-add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp)
+add_dependencies(euclidean_cluster lidar_tracker_generate_messages_cpp vector_map_server_generate_messages_cpp vector_map)
 
+if (OPENMP_FOUND)
+    set_target_properties(euclidean_cluster PROPERTIES
+        COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
+        LINK_FLAGS ${OpenMP_CXX_FLAGS}
+    )
+endif()
 
 #kl contour tracker
 add_executable(kf_contour_tracker nodes/kf_contour_tracker/kf_contour_tracker.cpp nodes/kf_contour_tracker/src/kf_contour_tracker_core.cpp)

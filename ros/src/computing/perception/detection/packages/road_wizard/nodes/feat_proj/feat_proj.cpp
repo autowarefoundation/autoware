@@ -309,9 +309,9 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false)
 		}
 	}
 
-	for (unsigned int i = 1; i <= vmap.signals.size(); i++)
+	for (const auto& signal_map : vmap.signals)
 	{
-		Signal signal = vmap.signals[i];
+		const Signal signal = signal_map.second;
 		int pid = vmap.vectors[signal.vid].pid;
 
 		Point3 signalcenter = vmap.getPoint(pid);

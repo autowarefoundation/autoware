@@ -744,6 +744,18 @@ void VectorMap::subscribe(ros::NodeHandle& nh, category_t category, const ros::D
   }
 }
 
+void VectorMap::subscribe(ros::NodeHandle& nh, category_t category, const size_t max_retries)
+{
+  size_t tries = 0;
+  registerSubscriber(nh, category);
+  ros::Rate rate(1);
+  while (ros::ok() && !hasSubscribed(category) && tries++ < max_retries)
+  {
+    ros::spinOnce();
+    rate.sleep();
+  }
+}
+
 Point VectorMap::findByKey(const Key<Point>& key) const
 {
   return point_.findByKey(key);
