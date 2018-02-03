@@ -719,13 +719,12 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnes
 	double distance;
 	int nr = 0;
 
-
 	for (int i = 0; i < trans_cloud.points.size(); i++) {
 		PointSourceType q = trans_cloud.points[i];
 
 		distance = voxel_grid_.nearestNeighborDistance(q, max_range);
 
-		if (distance <= max_range) {
+		if (distance < max_range) {
 			fitness_score += distance;
 			nr++;
 		}
@@ -735,6 +734,14 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnes
 		return (fitness_score / nr);
 
 	return DBL_MAX;
+}
+
+
+template <typename PointSourceType, typename PointTargetType>
+void NormalDistributionsTransform<PointSourceType, PointTargetType>::update(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud)
+{
+	// Update voxel grid
+	voxel_grid_.update(new_cloud);
 }
 
 template class NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>;
