@@ -18,6 +18,7 @@ namespace cpu {
 #define MAX_BY_ (128)
 #define MAX_BZ_ (32)
 
+#define INCREMENTAL_UPDATE_ 1
 
 template <typename PointSourceType>
 VoxelGrid<PointSourceType>::VoxelGrid():
@@ -322,13 +323,16 @@ void VoxelGrid<PointSourceType>::computeCentroidAndCovariance()
 template <typename PointSourceType>
 void VoxelGrid<PointSourceType>::setInput(typename pcl::PointCloud<PointSourceType>::Ptr input_cloud)
 {
+#ifdef INCREMENTAL_UPDATE_
 	if (voxel_num_ > 0) {
 		/* If a voxel grid has already existed,
 		 * only set the source_cloud_ pointer to
 		 * point to new input cloud
 		 */
 		source_cloud_ = input_cloud;
-	} else if (input_cloud->points.size() > 0) {
+	} else
+#endif
+		if (input_cloud->points.size() > 0) {
 		/* If no voxel grid was created, then
 		 * build the initial voxel grid and octree
 		 */
