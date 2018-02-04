@@ -3745,7 +3745,7 @@ params :
       desc      : output layer in the published GridMap object
       label     : output_layer_name
       kind      : str
-      v         : wayarea
+      v         : road_status
       cmd_param :
         dash      : ''
         delim     : ':='

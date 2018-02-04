@@ -290,8 +290,8 @@ void RosRoadOccupancyProcessorApp::PointsCallback(const sensor_msgs::PointCloud2
 			}
 		}
 	}
-	cv::imshow("result", current_road_mat);
-	cv::waitKey(10);
+	//cv::imshow("result", current_road_mat);
+	//cv::waitKey(10);
 	LoadRoadLayerFromMat(output_gridmap, current_road_mat);
 
 	PublishGridMap(output_gridmap, output_layer_name_);

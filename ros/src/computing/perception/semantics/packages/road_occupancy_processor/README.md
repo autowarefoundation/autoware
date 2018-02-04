@@ -45,6 +45,21 @@ From a sourced terminal in the workspace:
 
 `roslaunch road_occupancy_processor road_occupancy_processor.launch`
 
+### Quick Setup
+
+**This is only a quick guide, each node must be properly configured**
+
+1. Load PointCloud Map (Map tab)
+1. Load VectorMap with wayareas available (Map tab)
+1. Load TF between map and world frames (Map tab)
+1. Load TF between base_link and Localizer (Setup tab)
+1. Launch voxel_grid_filter (Sensing tab/Points Downsampler)
+1. Launch ray_ground_filter (Sensing tab/Points Preprocessor)
+1. Launch ndt_matching (Computing tab/Localization)
+1. Initialize NDT pose
+1. Launch wayarea2grid (Computing tab/Localization)
+1. Launch road_occupancy_processor (Computing tab/Localization)
+
 ### Configuration parameters
 `points_ground_src` (default=`"points_ground"`)
 
