@@ -108,7 +108,7 @@ grid_map::GridMap   _wayarea_gridmap;
 
 const int           _grid_min_value = 0;
 const int           _grid_max_value = 255;
-static int          _gridmap_road_value;
+static int          _gridmap_no_road_value;
 
 static bool         _velodyne_transform_available;
 static bool         _downsample_cloud;
@@ -197,8 +197,8 @@ bool checkPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_gr
 		return false;
 	}
 
-	//_gridmap_road_value if road
-	if(in_grid_image.at<uchar>(cv_y, cv_x) != _gridmap_road_value)
+	//_gridmap_no_road_value if road
+	if(in_grid_image.at<uchar>(cv_y, cv_x) != _gridmap_no_road_value)
 	{
 		return true;
 	}
@@ -1183,8 +1183,8 @@ int main (int argc, char** argv)
 	ROS_INFO("wayarea_gridmap_topic: %s", gridmap_topic.c_str());
 	private_nh.param<std::string>("wayarea_gridmap_layer", _gridmap_layer, "wayarea");
 	ROS_INFO("wayarea_gridmap_layer: %s", _gridmap_layer.c_str());
-	private_nh.param<int>("wayarea_road_value", _gridmap_road_value, _grid_max_value);
-	ROS_INFO("wayarea_road_value: %ds", _gridmap_road_value);
+	private_nh.param<int>("wayarea_no_road_value", _gridmap_no_road_value, _grid_max_value);
+	ROS_INFO("wayarea_no_road_value: %ds", _gridmap_no_road_value);
 	ros::Subscriber wayarea_sub = h.subscribe (gridmap_topic, 1, wayarea_gridmap_callback);
 
 

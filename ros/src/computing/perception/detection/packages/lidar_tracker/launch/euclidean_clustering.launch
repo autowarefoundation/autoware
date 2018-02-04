@@ -24,7 +24,7 @@
 	<arg name="vectormap_frame" default="map" />
 	<arg name="wayarea_gridmap_topic" default="grid_map_wayarea" />
 	<arg name="wayarea_gridmap_layer" default="wayarea" />
-	<arg name="wayarea_road_value" default="255" />
+	<arg name="wayarea_no_road_value" default="255" />
 
 	<arg name="output_frame" default="velodyne" />
 
@@ -56,7 +56,7 @@
 		<param name="vectormap_frame" value="$(arg vectormap_frame)" />
 		<param name="wayarea_gridmap_topic" value="$(arg wayarea_gridmap_topic)" />
 		<param name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)" />
-		<param name="wayarea_road_value" value="$(arg wayarea_road_value)" />
+		<param name="wayarea_no_road_value" value="$(arg wayarea_no_road_value)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
 		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<param name="use_gpu" value="$(arg use_gpu)" />

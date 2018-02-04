@@ -1127,9 +1127,9 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : wayarea_road_value
-      desc    : Name of the layer inside the GridMap containing the wayarea. default. wayarea
-      label   : 'wayarea_road_value'
+    - name    : wayarea_no_road_value
+      desc    : Value in the cccupancy grid to define non road cells. Default 255
+      label   : 'wayarea_no_road_value'
       min       : 0
       max       : 255
       v       : 255
