@@ -479,6 +479,11 @@ subs :
       cmd  : roslaunch object_map wayarea2grid.launch
       param: wayarea2grid
 
+    - name : road_occupancy_processor
+      desc : Generates the occupancy grid indicating the status of the road
+      cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
+      param: road_occupancy_processor
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -3648,7 +3653,7 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_frame
+    - name      : grid_frame
       desc      : frame of Vector Map
       label     : Vector Map Frame
       kind      : str
@@ -3656,8 +3661,8 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_resolution
-      desc      : Map resolution [meter]
+    - name      : grid_resolution
+      desc      : Grid resolution [meter]
       label     : Resolution [m]
       min       : 0.0
       max       : 5.0
@@ -3665,39 +3670,118 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_length_x
-      desc      : map length x [meter]
-      label     : Map Length x [m]
+    - name      : grid_length_x
+      desc      : Grid Width [meter]
+      label     : Grid Length x [m]
       min       : 0
       max       : 1000
       v         : 150
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_length_y
-      desc      : map length y [meter]
-      label     : Map Length y [m]
+    - name      : grid_length_y
+      desc      : Grid Height [meter]
+      label     : Grid Length y [m]
       min       : 0
       max       : 1000
       v         : 30
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_position_x
-      desc      : map position x [meter]
-      label     : Map Position x [m]
+    - name      : grid_position_x
+      desc      : Grid position x [meter]
+      label     : Grid Position x [m]
       min       : -500
       max       : 500
       v         : 20
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : map_position_y
-      desc      : map position y [meter]
-      label     : Map Position y [m]
+    - name      : grid_position_y
+      desc      : grid position y [meter]
+      label     : Grid Position y [m]
       min       : -500
       max       : 500
       v         : 0.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name : road_occupancy_processor
+    vars :
+    - name      : points_ground_src
+      desc      : PointCloud topic containing only the ground
+      label     : points_ground_src
+      kind      : str
+      v         : points_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : points_no_ground_src
+      desc      : PointCloud source topic containing only the obstacle points
+      label     : points_no_ground_src
+      kind      : str
+      v         : points_no_ground
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : wayarea_topic_src
+      desc      : Name of the topic containing the grid_map_msgs:GridMap containing the road areas.
+      label     : wayarea_topic_src
+      kind      : str
+      v         : grid_map_wayarea
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : wayarea_layer_name
+      desc      : Name of the layer in the topic wayarea_topic_src that containes the road areas.
+      label     : wayarea_layer_name
+      kind      : str
+      v         : wayarea
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : output_layer_name
+      desc      : output layer in the published GridMap object
+      label     : output_layer_name
+      kind      : str
+      v         : wayarea
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : road_unknown_value
+      desc      : Value to fill in the occupancy grid when a cell is **UNKNOWN**
+      label     : road_unknown_value
+      min       : 0
+      max       : 255
+      v         : 128
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : road_free_value
+      desc      : Value to fill in the occupancy grid when a cell is **FREE**
+      label     : road_free_value
+      min       : 0
+      max       : 255
+      v         : 75
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : road_occupied_value
+      desc      : Value to fill in the occupancy grid when a cell is **OCCUPIED**
+      label     : road_occupied_value
+      min       : 0
+      max       : 255
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : no_road_value
+      desc      : Value to fill in the occupancy grid when a cell is **NO ROAD**
+      label     : no_road_value
+      min       : 0
+      max       : 255
+      v         : 255
       cmd_param :
         dash      : ''
         delim     : ':='
