@@ -187,6 +187,13 @@ void geo_pos_conv::set_plane(int num)
     lat_deg = 154;
     lat_min = 0;
   }
+  else if (num == 99)
+  {
+    lon_deg = 36;
+    lon_min = 0;
+    lat_deg = -123; //139-262
+    lat_min = 50;
+  }
 
   // swap longitude and latitude
   m_PLo = M_PI * ((double)lat_deg + (double)lat_min / 60.0) / 180.0;
