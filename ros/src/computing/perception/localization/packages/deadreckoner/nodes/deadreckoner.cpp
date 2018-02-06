@@ -28,17 +28,23 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// ROS Includes
-#include <ros/ros.h>
+#include "deadreckoner.h"
 
-#include "as_interface.h"
-
-int main(int argc, char** argv)
+DeadRecokner::DeadRecokner() : nh_(), private_nh_("~")
 {
-  ros::init(argc, argv, "as_interface");
-  pacmod::PacmodInterface pacmod_interface;
+  twist_sub_ = nh_.subscribe("current_twist", 10, &DeadRecokner::callbackFromCurrentTwist, this);
+  odom_pub_ = nh_.advertise<nav_msgs::Odometry>("current_odom", 10);
+}
 
-  pacmod_interface.run();
+DeadRecokner::~DeadRecokner()
+{
+}
 
-  return 0;
+void DeadRecokner::callbackFromCurrentTwist(const geometry_msgs::TwistStampedConstPtr& msg)
+{
+  // TODO: calurate odom.pose.pose by accumulating
+  nav_msgs::Odometry odom;
+  odom.header = msg->header;
+  odom.twist.twist = msg->twist;
+  odom_pub_ .publish(odom);
 }

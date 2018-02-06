@@ -41,6 +41,7 @@
 #include "autoware_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/lane.h"
 #include "autoware_msgs/ControlCommandStamped.h"
+#include "autoware_msgs/CurvatureCommandStamped.h"
 #include "pure_pursuit_viz.h"
 #include "pure_pursuit.h"
 
@@ -77,7 +78,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_;
+  ros::Publisher pub1_, pub2_, pub3_, pub11_, pub12_, pub13_, pub14_, pub15_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -96,6 +97,7 @@ private:
   double const_velocity_;            // km/h
   double lookahead_distance_ratio_;
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
+  double curvature_shift_;  // radian/meter
 
   // callbacks
   void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
@@ -109,6 +111,7 @@ private:
   // functions
   void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
+  void publishCurvatureCommandStamped(const bool &can_get_curvature, const double &kappa) const;
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
