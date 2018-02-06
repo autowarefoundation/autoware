@@ -128,6 +128,24 @@ function addStream() {
   }
   localView.srcObject = stream;
   localView.play();
+
+  // Set Camera ID
+  console.log("ADD Strean");
+  console.log(deviceList.value);
+  deviceId = deviceList.value
+  if(RUN_TYPE == "vehicle") {
+    if(useDevices["front"] == null || useDevices["front"] == deviceId) {
+      console.log("FrontCamera: " + deviceId)
+      useDevices["front"] = deviceId;
+    }
+    else if((useDevices["front"] != null && useDevices["back"] == null) || useDevices["back"] == deviceId) {
+      console.log("BackCamera: " + deviceId)
+      useDevices["back"] = deviceId;
+    }
+    else {
+      console.log("OtherCamera: " + deviceId)
+    }
+  }
 }
 
 function setFocusDialogRoomName() {
@@ -166,7 +184,6 @@ function deviceChange() {
             }]
           }
         };
-        useDevices["front"] = deviceId;
       }
       else if((useDevices["front"] != null && useDevices["back"] == null) || useDevices["back"] == deviceId) {
         console.log("BackCamera: " + deviceId)
@@ -184,7 +201,6 @@ function deviceChange() {
             }]
           }
         };
-        useDevices["back"] = deviceId;
       }
       else {
         console.log("OtherCamera: " + deviceId)
@@ -339,12 +355,6 @@ function start() {
   pc.onicecandidate = function (evt) {
     if (evt.candidate)
       signalingChannel.send(JSON.stringify({ candidate: evt.candidate }));
-    try {
-      console.log('candidate', evt.candidate);
-      console.log(pc.getConfiguration());
-    }
-    catch (e) {
-    }
   };
 
   pc.onnegotiationneeded = function () {

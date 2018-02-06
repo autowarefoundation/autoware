@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
-var io = require('socket.io')(http, {'pingInterval': 2000, 'pingTimeout': 5000});
+var io = require('socket.io')(http, {'pingInterval': 1000, 'pingTimeout': 10000});
 var mqtt = require('mqtt');
 var mqtt_client  = mqtt.connect('mqtt://localhost:1883');
 var mqtt_subscribe_topics = ["/can_info", "/state", "/target_velocity", "/current_velocity"];
