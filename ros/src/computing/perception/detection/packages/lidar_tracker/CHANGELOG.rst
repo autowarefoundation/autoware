@@ -2,6 +2,13 @@
 Changelog for package lidar_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+* Merge pull request `#984 <https://github.com/cpfl/autoware/issues/984>`_ from CPFL/hotfix/lidar_tracker_OpenCV_error
+  [hotfix] fix build error with OpenCV 3.3
+* fix build error with OpenCV 3.3
+* Contributors: Yamato ANDO, daifuku07
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic

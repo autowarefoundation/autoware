@@ -1,5 +1,6 @@
-# Autoware
+<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
 
+# Autoware
 Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
 - 3D Localization

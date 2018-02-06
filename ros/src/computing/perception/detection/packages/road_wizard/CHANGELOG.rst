@@ -2,6 +2,9 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+
 1.6.0 (2017-12-11)
 ------------------
 * Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
