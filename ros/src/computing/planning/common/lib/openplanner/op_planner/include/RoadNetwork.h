@@ -1,9 +1,9 @@
-/*
- * RoadNetwork.h
- *
- *  Created on: May 19, 2016
- *      Author: hatem
- */
+
+/// \file RoadNetwork.h
+/// \brief Definition of OpenPlanner's data types
+/// \author Hatem Darweesh
+/// \date May 19, 2016
+
 
 #ifndef ROADNETWORK_H_
 #define ROADNETWORK_H_
@@ -55,24 +55,6 @@ public:
 		tStamp.tv_sec = 0;
 	}
 };
-
-//class POINT2D
-//{
-//public:
-//    double x;
-//    double y;
-//    double z;
-//    POINT2D()
-//    {
-//      x=0;y=0;z=0;
-//    }
-//    POINT2D(double px, double py, double pz = 0)
-//    {
-//      x = px;
-//      y = py;
-//      z = pz;
-//    }
-//};
 
 class GPSPoint
 {
@@ -368,6 +350,7 @@ public:
 	double 		laneChangeCost;
 	int 		laneId;
 	int 		id;
+	int			gid;
 	int 		LeftLaneId;
 	int 		RightLaneId;
 	int 		stopLineID;
@@ -387,6 +370,7 @@ public:
 
 	WayPoint()
 	{
+		gid = 0;
 		id = 0;
 		v = 0;
 		cost = 0;
@@ -414,6 +398,7 @@ public:
 		pos.z = z;
 		pos.a = a;
 
+		gid = 0;
 		id = 0;
 		v = 0;
 		cost = 0;
@@ -549,9 +534,6 @@ public:
 		value		= 0;
 		fromValue	= 0;
 		toValue		= 0;
-//		timeValue	= 0;
-//		fromTimeValue = 0;
-//		toTimeValue	= 0;
 		pLane 		= 0;
 	}
 };
@@ -782,6 +764,7 @@ public:
 	double 	smoothingSmoothWeight;
 	double 	smoothingToleranceError;
 
+	double stopSignStopTime;
 
 	double additionalBrakingDistance;
 	double verticalSafetyDistance;
@@ -816,6 +799,8 @@ public:
 		smoothingDataWeight				= 0.47;
 		smoothingSmoothWeight			= 0.2;
 		smoothingToleranceError			= 0.05;
+
+		stopSignStopTime 				= 2.0;
 
 		additionalBrakingDistance		= 1.0;
 		verticalSafetyDistance 			= 0.0;

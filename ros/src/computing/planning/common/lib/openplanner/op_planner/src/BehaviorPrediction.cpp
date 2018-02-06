@@ -1,9 +1,10 @@
-/*
- * BehaviorPrediction.cpp
- *
- *  Created on: Jul 6, 2017
- *      Author: user
- */
+
+/// \file  BehaviorPrediction.cpp
+/// \brief Predict detected vehicles's possible trajectories, these trajectories extracted from the vector map.
+/// \author Hatem Darweesh
+/// \date Jul 6, 2017
+
+
 
 #include "BehaviorPrediction.h"
 #include "MappingHelpers.h"
@@ -73,7 +74,7 @@ void BehaviorPrediction::FilterObservations(const std::vector<DetectedObject>& o
 
 void BehaviorPrediction::DoOneStep(const std::vector<DetectedObject>& obj_list, const WayPoint& currPose, const double& minSpeed, const double& maxDeceleration, RoadNetwork& map)
 {
-	if(!m_bUseFixedPrediction)
+	if(!m_bUseFixedPrediction && maxDeceleration !=0)
 		m_PredictionDistance = -pow(currPose.v, 2)/(maxDeceleration);
 
 	ExtractTrajectoriesFromMap(obj_list, map, m_PredictedObjects);

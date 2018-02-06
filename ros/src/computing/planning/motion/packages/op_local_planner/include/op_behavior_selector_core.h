@@ -31,11 +31,7 @@
 #ifndef OP_BEHAVIOR_SELECTOR_CORE
 #define OP_BEHAVIOR_SELECTOR_CORE
 
-// ROS includes
 #include <ros/ros.h>
-#include "PlannerCommonDef.h"
-#include "TrajectoryCosts.h"
-#include "DecisionMaker.h"
 
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
@@ -52,6 +48,10 @@
 #include <autoware_msgs/Signals.h>
 #include <autoware_msgs/ControlCommand.h>
 #include <visualization_msgs/MarkerArray.h>
+
+#include "PlannerCommonDef.h"
+#include "TrajectoryCosts.h"
+#include "DecisionMaker.h"
 
 
 namespace BehaviorGeneratorNS
@@ -70,7 +70,9 @@ protected: //Planning Related variables
 
 	std::vector<PlannerHNS::WayPoint> m_temp_path;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPaths;
+	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPathsToUse;
 	bool bWayGlobalPath;
+	bool bWayGlobalPathLogs;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_RollOuts;
 	bool bRollOuts;
 
@@ -103,7 +105,7 @@ protected: //Planning Related variables
 	geometry_msgs::TwistStamped m_Twist_cmd;
 	autoware_msgs::ControlCommand m_Ctrl_cmd;
 
-protected: //ROS messages (topics)
+	//ROS messages (topics)
 	ros::NodeHandle nh;
 
 	//define publishers
@@ -112,24 +114,25 @@ protected: //ROS messages (topics)
 	ros::Publisher pub_ClosestIndex;
 	ros::Publisher pub_BehaviorState;
 	ros::Publisher pub_SimuBoxPose;
+	ros::Publisher pub_SelectedPathRviz;
 
 	// define subscribers.
-	ros::Subscriber sub_current_pose 		;
-	ros::Subscriber sub_current_velocity	;
-	ros::Subscriber sub_robot_odom			;
-	ros::Subscriber sub_can_info			;
-	ros::Subscriber sub_GlobalPlannerPaths	;
-	ros::Subscriber sub_LocalPlannerPaths	;
-	ros::Subscriber sub_TrafficLightStatus  ;
-	ros::Subscriber sub_TrafficLightSignals ;
-	ros::Subscriber sub_Trajectory_Cost	    ;
+	ros::Subscriber sub_current_pose;
+	ros::Subscriber sub_current_velocity;
+	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_can_info;
+	ros::Subscriber sub_GlobalPlannerPaths;
+	ros::Subscriber sub_LocalPlannerPaths;
+	ros::Subscriber sub_TrafficLightStatus;
+	ros::Subscriber sub_TrafficLightSignals;
+	ros::Subscriber sub_Trajectory_Cost;
 	ros::Publisher pub_BehaviorStateRviz;
 
-	ros::Subscriber sub_twist_cmd			;
-	ros::Subscriber sub_twist_raw			;
-	ros::Subscriber sub_ctrl_cmd			;
+	ros::Subscriber sub_twist_cmd;
+	ros::Subscriber sub_twist_raw;
+	ros::Subscriber sub_ctrl_cmd;
 
-protected: // Callback function for subscriber.
+	// Callback function for subscriber.
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
@@ -144,7 +147,7 @@ protected: // Callback function for subscriber.
 	void callbackGetTwistRaw(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCommandCMD(const autoware_msgs::ControlCommandConstPtr& msg);
 
-protected: //Helper Functions
+	//Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);
   void SendLocalPlanningTopics();
   void VisualizeLocalPlanner();

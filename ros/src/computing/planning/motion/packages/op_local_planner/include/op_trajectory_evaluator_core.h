@@ -1,5 +1,5 @@
 /*
-// *  Copyright (c) 2016, Nagoya University
+// *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,7 @@
 #ifndef OP_TRAJECTORY_EVALUATOR_CORE
 #define OP_TRAJECTORY_EVALUATOR_CORE
 
-// ROS includes
 #include <ros/ros.h>
-#include "PlannerCommonDef.h"
-#include "TrajectoryCosts.h"
-
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -47,12 +43,15 @@
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include "PlannerCommonDef.h"
+#include "TrajectoryCosts.h"
+
 namespace TrajectoryEvaluatorNS
 {
 
 class TrajectoryEval
 {
-protected: //Planning Related variables
+protected:
 
 	PlannerHNS::TrajectoryCosts m_TrajectoryCostsCalculator;
 	bool m_bUseMoveingObjectsPrediction;
@@ -67,9 +66,11 @@ protected: //Planning Related variables
 
 	std::vector<PlannerHNS::WayPoint> m_temp_path;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPaths;
+	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPathsToUse;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GlobalPathSections;
 	std::vector<PlannerHNS::WayPoint> t_centerTrajectorySmoothed;
 	bool bWayGlobalPath;
+	bool bWayGlobalPathToUse;
 	std::vector<std::vector<PlannerHNS::WayPoint> > m_GeneratedRollOuts;
 	bool bRollOuts;
 
@@ -89,7 +90,7 @@ protected: //Planning Related variables
   	visualization_msgs::MarkerArray m_CollisionsDummy;
 	visualization_msgs::MarkerArray m_CollisionsActual;
 
-protected: //ROS messages (topics)
+	//ROS messages (topics)
 	ros::NodeHandle nh;
 
 	//define publishers
@@ -100,18 +101,18 @@ protected: //ROS messages (topics)
 	ros::Publisher pub_SafetyBorderRviz;
 
 	// define subscribers.
-	ros::Subscriber sub_current_pose 		;
-	ros::Subscriber sub_current_velocity	;
-	ros::Subscriber sub_robot_odom			;
-	ros::Subscriber sub_can_info			;
-	ros::Subscriber sub_GlobalPlannerPaths	;
-	ros::Subscriber sub_LocalPlannerPaths	;
-	ros::Subscriber sub_predicted_objects	;
-	ros::Subscriber sub_current_behavior	;
+	ros::Subscriber sub_current_pose;
+	ros::Subscriber sub_current_velocity;
+	ros::Subscriber sub_robot_odom;
+	ros::Subscriber sub_can_info;
+	ros::Subscriber sub_GlobalPlannerPaths;
+	ros::Subscriber sub_LocalPlannerPaths;
+	ros::Subscriber sub_predicted_objects;
+	ros::Subscriber sub_current_behavior;
 
 
 
-protected: // Callback function for subscriber.
+	// Callback function for subscriber.
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
@@ -121,7 +122,7 @@ protected: // Callback function for subscriber.
 	void callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr & msg);
 
-protected: //Helper Functions
+	//Helper Functions
   void UpdatePlanningParams(ros::NodeHandle& _nh);
 
 public:

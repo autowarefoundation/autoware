@@ -38,6 +38,7 @@ TrajectoryEval::TrajectoryEval()
 	bNewCurrentPos = false;
 	bVehicleStatus = false;
 	bWayGlobalPath = false;
+	bWayGlobalPathToUse = false;
 	m_bUseMoveingObjectsPrediction = false;
 
 	ros::NodeHandle _nh;
@@ -49,27 +50,27 @@ TrajectoryEval::TrajectoryEval()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_CollisionPointsRviz			= nh.advertise<visualization_msgs::MarkerArray>("dynamic_collision_points_rviz", 1);
+	pub_CollisionPointsRviz = nh.advertise<visualization_msgs::MarkerArray>("dynamic_collision_points_rviz", 1);
 	pub_LocalWeightedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_eval_rviz", 1);
-	pub_LocalWeightedTrajectories	  = nh.advertise<autoware_msgs::LaneArray>("local_weighted_trajectories", 1);
-	pub_TrajectoryCost				= nh.advertise<autoware_msgs::lane>("local_trajectory_cost", 1);
-	pub_SafetyBorderRviz  = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
+	pub_LocalWeightedTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_weighted_trajectories", 1);
+	pub_TrajectoryCost = nh.advertise<autoware_msgs::lane>("local_trajectory_cost", 1);
+	pub_SafetyBorderRviz = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 
-	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&TrajectoryEval::callbackGetCurrentPose, 		this);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryEval::callbackGetCurrentPose, this);
 
 	int bVelSource = 1;
 	_nh.getParam("/op_trajectory_evaluator/velocitySource", bVelSource);
 	if(bVelSource == 0)
-		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&TrajectoryEval::callbackGetRobotOdom, 	this);
+		sub_robot_odom = nh.subscribe("/odom", 10, &TrajectoryEval::callbackGetRobotOdom, this);
 	else if(bVelSource == 1)
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&TrajectoryEval::callbackGetVehicleStatus, 	this);
+		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryEval::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&TrajectoryEval::callbackGetCanInfo, 	this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCanInfo, this);
 
-	sub_GlobalPlannerPaths 	= nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryEval::callbackGetGlobalPlannerPath, 	this);
-	sub_LocalPlannerPaths 	= nh.subscribe("/local_trajectories", 	1,		&TrajectoryEval::callbackGetLocalPlannerPath, 	this);
-	sub_predicted_objects	= nh.subscribe("/predicted_objects", 	1,		&TrajectoryEval::callbackGetPredictedObjects, 	this);
-	sub_current_behavior    = nh.subscribe("/current_behavior", 1, &TrajectoryEval::callbackGetBehaviorState, this);
+	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryEval::callbackGetGlobalPlannerPath, this);
+	sub_LocalPlannerPaths = nh.subscribe("/local_trajectories", 1, &TrajectoryEval::callbackGetLocalPlannerPath, this);
+	sub_predicted_objects = nh.subscribe("/predicted_objects", 1, &TrajectoryEval::callbackGetPredictedObjects, this);
+	sub_current_behavior = nh.subscribe("/current_behavior", 1, &TrajectoryEval::callbackGetBehaviorState, this);
 
 	PlannerHNS::RosHelpers::InitCollisionPointsMarkers(25, m_CollisionsDummy);
 }
@@ -105,8 +106,6 @@ void TrajectoryEval::UpdatePlanningParams(ros::NodeHandle& _nh)
 		_nh.getParam("/op_common_params/rollOutsNumber", m_PlanningParams.rollOutNumber);
 	else
 		m_PlanningParams.rollOutNumber = 0;
-
-	std::cout << "Rolls Number: " << m_PlanningParams.rollOutNumber << std::endl;
 
 	_nh.getParam("/op_common_params/horizonDistance", m_PlanningParams.horizonDistance);
 	_nh.getParam("/op_common_params/minFollowingDistance", m_PlanningParams.minFollowingDistance);
@@ -188,14 +187,7 @@ void TrajectoryEval::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArray
 		if(!bOldGlobalPath)
 		{
 			bWayGlobalPath = true;
-//			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
-//			{
-//				//PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
-//				//PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
-//
-//				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
-//				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
-//			}
+			std::cout << "Received New Global Path Evaluator! " << std::endl;
 		}
 		else
 		{
@@ -209,12 +201,28 @@ void TrajectoryEval::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayC
 	if(msg->lanes.size() > 0)
 	{
 		m_GeneratedRollOuts.clear();
+		int globalPathId_roll_outs = -1;
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
 			std::vector<PlannerHNS::WayPoint> path;
 			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
 			m_GeneratedRollOuts.push_back(path);
+			if(path.size() > 0)
+				globalPathId_roll_outs = path.at(0).gid;
+		}
+
+		if(bWayGlobalPath && m_GlobalPaths.size() > 0 && m_GlobalPaths.at(0).size() > 0)
+		{
+			int globalPathId = m_GlobalPaths.at(0).at(0).gid;
+			std::cout << "Before Synchronization At Trajectory Evaluator: GlobalID: " <<  globalPathId << ", LocalID: " << globalPathId_roll_outs << std::endl;
+
+			if(globalPathId_roll_outs == globalPathId)
+			{
+				bWayGlobalPath = false;
+				m_GlobalPathsToUse = m_GlobalPaths;
+				std::cout << "Synchronization At Trajectory Evaluator: GlobalID: " <<  globalPathId << ", LocalID: " << globalPathId_roll_outs << std::endl;
+			}
 		}
 
 		bRollOuts = true;
@@ -254,10 +262,10 @@ void TrajectoryEval::MainLoop()
 		{
 			m_GlobalPathSections.clear();
 
-			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
+			for(unsigned int i = 0; i < m_GlobalPathsToUse.size(); i++)
 			{
 				t_centerTrajectorySmoothed.clear();
-				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance , m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
+				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPathsToUse.at(i), m_CurrentPos, m_PlanningParams.horizonDistance , m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
 				m_GlobalPathSections.push_back(t_centerTrajectorySmoothed);
 			}
 
@@ -294,13 +302,16 @@ void TrajectoryEval::MainLoop()
 
 				pub_LocalWeightedTrajectories.publish(local_lanes);
 			}
+			else
+			{
+				ROS_ERROR("m_TrajectoryCosts.size() Not Equal m_GeneratedRollOuts.size()");
+			}
 
 			if(m_TrajectoryCostsCalculator.m_TrajectoryCosts.size()>0)
 			{
 				visualization_msgs::MarkerArray all_rollOuts;
 				PlannerHNS::RosHelpers::TrajectoriesToColoredMarkers(m_GeneratedRollOuts, m_TrajectoryCostsCalculator.m_TrajectoryCosts, m_CurrentBehavior.iTrajectory, all_rollOuts);
 				pub_LocalWeightedTrajectoriesRviz.publish(all_rollOuts);
-
 
 				PlannerHNS::RosHelpers::ConvertCollisionPointsMarkers(m_TrajectoryCostsCalculator.m_CollisionPoints, m_CollisionsActual, m_CollisionsDummy);
 				pub_CollisionPointsRviz.publish(m_CollisionsActual);

@@ -1,9 +1,9 @@
-/*
- * BehaviorStateMachine.cpp
- *
- *  Created on: Jun 19, 2016
- *      Author: hatem
- */
+
+/// \file BehaviorStateMachine.cpp
+/// \author Hatem Darweesh
+/// \brief OpenPlanner's state machine implementation for different driving behaviors
+/// \date Jun 19, 2016
+
 
 #include "BehaviorStateMachine.h"
 #include "UtilityH.h"
@@ -81,7 +81,7 @@ BehaviorStateMachine* BehaviorStateMachine::FindBestState(int nMinCount)
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& behavior)
@@ -102,7 +102,7 @@ BehaviorStateMachine* BehaviorStateMachine::FindBehaviorState(const STATE_TYPE& 
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 void BehaviorStateMachine::Init()
@@ -254,8 +254,6 @@ BehaviorStateMachine* WaitState::GetNextState()
 {
 	if(UtilityH::GetTimeDiffNow(m_StateTimer) < decisionMakingTime)
 		return this;
-
-	//PreCalculatedConditions* pCParams = GetCalcParams();
 
 	return FindBehaviorState(FORWARD_STATE);
 }

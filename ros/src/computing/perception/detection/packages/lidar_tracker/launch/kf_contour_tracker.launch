@@ -24,7 +24,7 @@
 		<param name="max_object_size" value="$(arg max_object_size)" />
 		<param name="polygon_quarters" value="$(arg polygon_quarters)" />
 		<param name="polygon_resolution" value="$(arg polygon_resolution)" />
-		<param name="tracking_type" value="$(arg tracking_type)" /> <!-- 0 for association only, 1 for simple kf tracking, 2 for smart contour tracker -->
+		<param name="tracking_type" value="$(arg tracking_type)" /> 
 		<param name="max_association_distance" value="$(arg max_association_distance)" />
 		<param name="max_association_size_diff" value="$(arg max_association_size_diff)" />
 		

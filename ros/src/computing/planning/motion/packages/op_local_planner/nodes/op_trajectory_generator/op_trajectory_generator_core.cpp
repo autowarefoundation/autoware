@@ -52,19 +52,19 @@ TrajectoryGen::TrajectoryGen()
 	pub_LocalTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_trajectories", 1);
 	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_gen_rviz", 1);
 
-	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&TrajectoryGen::callbackGetInitPose, 		this);
-	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&TrajectoryGen::callbackGetCurrentPose, 		this);
+	sub_initialpose = nh.subscribe("/initialpose", 1, &TrajectoryGen::callbackGetInitPose, this);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryGen::callbackGetCurrentPose, this);
 
 	int bVelSource = 1;
 	_nh.getParam("/op_trajectory_generator/velocitySource", bVelSource);
 	if(bVelSource == 0)
-		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&TrajectoryGen::callbackGetRobotOdom, 	this);
+		sub_robot_odom = nh.subscribe("/odom", 10,	&TrajectoryGen::callbackGetRobotOdom, this);
 	else if(bVelSource == 1)
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&TrajectoryGen::callbackGetVehicleStatus, 	this);
+		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryGen::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&TrajectoryGen::callbackGetCanInfo, 	this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCanInfo, this);
 
-	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryGen::callbackGetGlobalPlannerPath, 	this);
+	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryGen::callbackGetGlobalPlannerPath, this);
 }
 
 TrajectoryGen::~TrajectoryGen()
@@ -97,8 +97,6 @@ void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 		_nh.getParam("/op_common_params/rollOutsNumber", m_PlanningParams.rollOutNumber);
 	else
 		m_PlanningParams.rollOutNumber = 0;
-
-	std::cout << "Rolls Number: " << m_PlanningParams.rollOutNumber << std::endl;
 
 	_nh.getParam("/op_common_params/horizonDistance", m_PlanningParams.horizonDistance);
 	_nh.getParam("/op_common_params/minFollowingDistance", m_PlanningParams.minFollowingDistance);
@@ -184,28 +182,6 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-//			for(unsigned int j = 0 ; j < msg->lanes.at(i).waypoints.size(); j++)
-//			{
-//				PlannerHNS::WayPoint wp(msg->lanes.at(i).waypoints.at(j).pose.pose.position.x,
-//						msg->lanes.at(i).waypoints.at(j).pose.pose.position.y,
-//						msg->lanes.at(i).waypoints.at(j).pose.pose.position.z,
-//						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
-//				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
-//				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
-//				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
-//				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-//				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
-//				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
-//
-//				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
-//					wp.bDir = PlannerHNS::FORWARD_DIR;
-//				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 1)
-//					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
-//				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 2)
-//					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
-//
-//				path.push_back(wp);
-//			}
 			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(m_temp_path);
@@ -220,14 +196,7 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 		if(!bOldGlobalPath)
 		{
 			bWayGlobalPath = true;
-//			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
-//			{
-//				//PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
-//				//PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
-//
-//				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
-//				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
-//			}
+			std::cout << "Received New Global Path Generator ! " << std::endl;
 		}
 		else
 		{
@@ -296,7 +265,6 @@ void TrajectoryGen::MainLoop()
 					local_lanes.lanes.push_back(lane);
 				}
 			}
-
 			pub_LocalTrajectories.publish(local_lanes);
 		}
 		else

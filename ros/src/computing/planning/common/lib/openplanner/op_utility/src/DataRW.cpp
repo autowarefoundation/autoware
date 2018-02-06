@@ -1,9 +1,10 @@
-/*
- * DataRW.cpp
- *
- *  Created on: Jun 23, 2016
- *      Author: hatem
- */
+
+/// \file DataRW.cpp
+/// \brief File operations for loading vector map files, loading kml map files and writing log .csv files
+/// \author Hatem Darweesh
+/// \date Jun 23, 2016
+
+
 
 #include "DataRW.h"
 #include <stdlib.h>
@@ -56,9 +57,6 @@ void DataRW::CreateLoggingFolder()
 	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::SimulationFolderName;
 	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
-	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::SimulationFolderName;
-	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
 	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar1";
 	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
@@ -72,7 +70,7 @@ void DataRW::CreateLoggingFolder()
 	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar5";
-		dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
 void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData)

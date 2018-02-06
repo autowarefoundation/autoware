@@ -1,9 +1,8 @@
-/*
- * PolygonGenerator.h
- *
- *  Created on: Nov 2, 2016
- *      Author: ai-driver
- */
+
+/// \file  PolygonGenerator.h
+/// \brief Generate convex hull from point cloud cluster of detected object
+/// \author Hatem Darweesh
+/// \date Nov 2, 2016
 
 #ifndef POLYGONGENERATOR_H_
 #define POLYGONGENERATOR_H_

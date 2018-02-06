@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Nagoya University
+ *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -40,16 +40,17 @@ GlobalPlanner::GlobalPlanner()
 	m_iCurrentGoalIndex = 0;
 	m_bKmlMap = false;
 	m_bFirstStart = false;
+	m_GlobalPathID = 1;
 
-	nh.getParam("/op_global_planner/pathDensity" 			, m_params.pathDensity);
-	nh.getParam("/op_global_planner/enableSmoothing" 		, m_params.bEnableSmoothing);
-	nh.getParam("/op_global_planner/enableLaneChange" 	, m_params.bEnableLaneChange);
-	nh.getParam("/op_global_planner/enableRvizInput" 		, m_params.bEnableRvizInput);
-	nh.getParam("/op_global_planner/enableReplan" 		, m_params.bEnableReplanning);
-	nh.getParam("/op_global_planner/mapFileName" 			, m_params.KmlMapPath);
+	nh.getParam("/op_global_planner/pathDensity" , m_params.pathDensity);
+	nh.getParam("/op_global_planner/enableSmoothing" , m_params.bEnableSmoothing);
+	nh.getParam("/op_global_planner/enableLaneChange" , m_params.bEnableLaneChange);
+	nh.getParam("/op_global_planner/enableRvizInput" , m_params.bEnableRvizInput);
+	nh.getParam("/op_global_planner/enableReplan" , m_params.bEnableReplanning);
+	nh.getParam("/op_global_planner/mapFileName" , m_params.KmlMapPath);
 
 	int iSource = 0;
-	nh.getParam("/op_global_planner/mapSource" 			, iSource);
+	nh.getParam("/op_global_planner/mapSource", iSource);
 	if(iSource == 0)
 		m_params.mapSource = PlannerHNS::MAP_AUTOWARE;
 	else if (iSource == 1)
@@ -69,30 +70,30 @@ GlobalPlanner::GlobalPlanner()
 	pub_StartPointRviz = nh.advertise<visualization_msgs::Marker>("Global_StartPoint_rviz", 1, true);
 	pub_GoalPointRviz = nh.advertise<visualization_msgs::MarkerArray>("Global_GoalPoints_rviz", 1, true);
 	pub_NodesListRviz = nh.advertise<visualization_msgs::MarkerArray>("Goal_Nodes_Points_rviz", 1, true);
-	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 100, true);
+	pub_MapRviz  = nh.advertise<visualization_msgs::MarkerArray>("vector_map_center_lines_rviz", 1, true);
 	pub_TrafficInfoRviz = nh.advertise<visualization_msgs::MarkerArray>("Traffic_Lights_rviz", 1, true);
 	pub_GoalsListRviz = nh.advertise<visualization_msgs::MarkerArray>("op_destinations_rviz", 1, true);
 
 	if(m_params.bEnableRvizInput)
 	{
-		sub_start_pose 	= nh.subscribe("/initialpose", 					1, &GlobalPlanner::callbackGetStartPose, 		this);
-		sub_goal_pose 	= nh.subscribe("move_base_simple/goal", 		1, &GlobalPlanner::callbackGetGoalPose, 		this);
+		sub_start_pose = nh.subscribe("/initialpose", 1, &GlobalPlanner::callbackGetStartPose, this);
+		sub_goal_pose = nh.subscribe("move_base_simple/goal", 1, &GlobalPlanner::callbackGetGoalPose, this);
 	}
 	else
 	{
 		LoadSimulationData();
 	}
 
-	sub_current_pose 		= nh.subscribe("/current_pose", 			100,	&GlobalPlanner::callbackGetCurrentPose, 		this);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &GlobalPlanner::callbackGetCurrentPose, this);
 
 	int bVelSource = 1;
 	nh.getParam("/op_global_planner/velocitySource", bVelSource);
 	if(bVelSource == 0)
-		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&GlobalPlanner::callbackGetRobotOdom, 	this);
+		sub_robot_odom = nh.subscribe("/odom", 10, &GlobalPlanner::callbackGetRobotOdom, this);
 	else if(bVelSource == 1)
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&GlobalPlanner::callbackGetVehicleStatus, 	this);
+		sub_current_velocity = nh.subscribe("/current_velocity", 10, &GlobalPlanner::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&GlobalPlanner::callbackGetCanInfo, 	this);
+		sub_can_info = nh.subscribe("/can_info", 10, &GlobalPlanner::callbackGetCanInfo, this);
 
 }
 
@@ -124,7 +125,8 @@ void GlobalPlanner::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.twist.linear.x;
 	m_CurrentPose.v = m_VehicleState.speed;
-	m_VehicleState.steer += atan(2.7 * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
+	if(fabs(msg->twist.twist.linear.x) > 0.25)
+		m_VehicleState.steer += atan(2.7 * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 }
 
 void GlobalPlanner::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
@@ -173,6 +175,14 @@ bool GlobalPlanner::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, Planner
 		for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 		{
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(generatedTotalPaths.at(i));
+			if(m_GlobalPathID > 10000)
+				m_GlobalPathID = 1;
+
+			for(unsigned int j=0; j < generatedTotalPaths.at(i).size(); j++)
+				generatedTotalPaths.at(i).at(j).gid = m_GlobalPathID;
+
+			m_GlobalPathID++;
+
 			std::cout << "New DP Path -> " << generatedTotalPaths.at(i).size() << std::endl;
 		}
 		return true;
@@ -204,7 +214,6 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 	PlannerHNS::RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
 	PlannerHNS::RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
 	PlannerHNS::RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
-	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	if((m_bFirstStart && m_params.bEnableHMI) || !m_params.bEnableHMI)
 		pub_Paths.publish(lane_array);
@@ -318,7 +327,7 @@ int GlobalPlanner::LoadSimulationData()
 
 void GlobalPlanner::MainLoop()
 {
-	ros::Rate loop_rate(10);
+	ros::Rate loop_rate(25);
 	timespec animation_timer;
 	UtilityHNS::UtilityH::GetTickCount(animation_timer);
 

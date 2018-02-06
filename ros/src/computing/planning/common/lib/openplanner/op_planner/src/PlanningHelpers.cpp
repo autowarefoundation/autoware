@@ -1,24 +1,20 @@
-/*
- * PlanningHelpers.cpp
- *
- *  Created on: Jun 16, 2016
- *      Author: hatem
- */
+
+/// \file PlanningHelpers.cpp
+/// \brief Helper functions for planning algorithms
+/// \author Hatem Darweesh
+/// \date Jun 16, 2016
+
 
 #include "PlanningHelpers.h"
 #include "MatrixOperations.h"
 #include <string>
-//#include "spline.hpp"
-
-
+#include <float.h>
 
 using namespace UtilityHNS;
 using namespace std;
 
-
-
-namespace PlannerHNS {
-
+namespace PlannerHNS
+{
 
 std::vector<std::pair<GPSPoint, GPSPoint> > PlanningHelpers::m_TestingClosestPoint;
 
@@ -55,7 +51,7 @@ bool PlanningHelpers::GetRelativeInfoRange(const std::vector<std::vector<WayPoin
 		return true;
 	}
 
-	double minCost = 9999999999;
+	double minCost = DBL_MAX;
 	int min_index = 0;
 
 	for(unsigned int i=0 ; i< infos.size(); i++)
@@ -282,7 +278,7 @@ int PlanningHelpers::GetClosestNextPointIndex_obsolete(const vector<WayPoint>& t
 {
 	if(trajectory.size() == 0 || prevIndex < 0) return 0;
 
-	double d = 0, minD = 9999999999;
+	double d = 0, minD = DBL_MAX;
 	int min_index  = prevIndex;
 
 	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
@@ -326,7 +322,7 @@ int PlanningHelpers::GetClosestNextPointIndexFastV2(const vector<WayPoint>& traj
 
 		if(size < 2 || prevIndex < 0) return 0;
 
-		double d = 0, minD = 9999999999;
+		double d = 0, minD = DBL_MAX;
 
 
 		double resolution = hypot(trajectory[1].pos.y -trajectory[0].pos.y , trajectory[1].pos.x -trajectory[0].pos.x);
@@ -444,7 +440,7 @@ int PlanningHelpers::GetClosestNextPointIndexFast(const vector<WayPoint>& trajec
 
 		if(size < 2 || prevIndex < 0) return 0;
 
-		double d = 0, minD = 9999999999;
+		double d = 0, minD = DBL_MAX;
 		int min_index  = prevIndex;
 		int iStart = prevIndex;
 		int iEnd = size;
@@ -521,7 +517,7 @@ int PlanningHelpers::GetClosestNextPointIndexDirectionFast(const vector<WayPoint
 
 	if(size < 2 || prevIndex < 0) return 0;
 
-	double d = 0, minD = 9999999999;
+	double d = 0, minD = DBL_MAX;
 	int min_index  = prevIndex;
 
 	for(unsigned int i=prevIndex; i< size; i++)
@@ -558,7 +554,7 @@ int PlanningHelpers::GetClosestPointIndex_obsolete(const vector<WayPoint>& traje
 {
 	if(trajectory.size() == 0 || prevIndex < 0) return 0;
 
-	double d = 0, minD = 9999999999;
+	double d = 0, minD = DBL_MAX;
 	int min_index  = prevIndex;
 
 	for(unsigned int i=prevIndex; i< trajectory.size(); i++)
@@ -1771,7 +1767,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 		nCounter++;
 
 		unsigned int min_cost_index = 0;
-		double min_cost = 99999999999;
+		double min_cost = DBL_MAX;
 
 		for(unsigned int i=0; i < nextLeafToTrace.size(); i++)
 		{
@@ -1907,7 +1903,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeStraight(WayPoint* pStart,
 		nCounter++;
 
 		unsigned int min_cost_index = 0;
-		double min_cost = 99999999999;
+		double min_cost = DBL_MAX;
 
 		for(unsigned int i=0; i < nextLeafToTrace.size(); i++)
 		{
@@ -2151,7 +2147,7 @@ bool PlanningHelpers::CheckLaneIdExits(const std::vector<int>& lanes, const Lane
 
 WayPoint* PlanningHelpers::CheckLaneExits(const vector<WayPoint*>& nodes, const Lane* pL)
 {
-	if(nodes.size()==0) return 0;
+	if(nodes.size()==0) return nullptr;
 
 	for(unsigned int i=0; i< nodes.size(); i++)
 	{
@@ -2159,12 +2155,12 @@ WayPoint* PlanningHelpers::CheckLaneExits(const vector<WayPoint*>& nodes, const 
 			return nodes.at(i);
 	}
 
-	return 0;
+	return nullptr;
 }
 
 WayPoint* PlanningHelpers::CheckNodeExits(const vector<WayPoint*>& nodes, const WayPoint* pL)
 {
-	if(nodes.size()==0) return 0;
+	if(nodes.size()==0) return nullptr;
 
 	for(unsigned int i=0; i< nodes.size(); i++)
 	{
@@ -2172,14 +2168,14 @@ WayPoint* PlanningHelpers::CheckNodeExits(const vector<WayPoint*>& nodes, const 
 			return nodes.at(i);
 	}
 
-	return 0;
+	return nullptr;
 }
 
 WayPoint* PlanningHelpers::CreateLaneHeadCell(Lane* pLane, WayPoint* pLeft, WayPoint* pRight,
 		WayPoint* pBack)
 {
-	if(!pLane) return 0;
-	if(pLane->points.size()==0) return 0;
+	if(!pLane) return nullptr;
+	if(pLane->points.size()==0) return nullptr;
 
 	WayPoint* c = new WayPoint;
 	c->pLane 		= pLane;

@@ -1,9 +1,9 @@
-/*
- * CarState.h
- *
- *  Created on: Dec 14, 2016
- *      Author: hatem
- */
+
+/// \file DecisionMaker.h
+/// \brief Initialize behaviors state machine, and calculate required parameters for the state machine transition conditions
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef BEHAVIOR_DECISION_MAKER
 #define BEHAVIOR_DECISION_MAKER
@@ -49,6 +49,7 @@ public:
 	//For Simulation
 	UtilityHNS::PIDController 	m_pidVelocity;
 	UtilityHNS::PIDController 	m_pidStopping;
+	UtilityHNS::PIDController 	m_pidFollowing;
 
 public:
 

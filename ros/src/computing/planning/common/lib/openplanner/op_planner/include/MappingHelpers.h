@@ -1,9 +1,10 @@
-/*
- * MappingHelpers.h
- *
- *  Created on: Jul 2, 2016
- *      Author: Hatem
- */
+
+/// \file MappingHelpers.h
+/// \brief Helper functions for mapping operation such as (load and initialize vector maps , convert map from one format to another, .. )
+/// \author Hatem Darweesh
+/// \date Jul 2, 2016
+
+
 
 #ifndef MAPPINGHELPERS_H_
 #define MAPPINGHELPERS_H_

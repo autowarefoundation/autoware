@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "../include/op_signs_simulator_core.h"
+#include "op_signs_simulator_core.h"
 
 
 #include "UtilityH.h"
@@ -41,13 +41,13 @@ namespace SignsSimulatorNS
 OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 {
 	std::string first_str, second_str;
-	nh.getParam("/op_simulator_signs/FirstSignsListIds" 	, first_str);
-	nh.getParam("/op_simulator_signs/SecondSignsListIds" 	, second_str);
+	nh.getParam("/op_simulator_signs/FirstSignsListIds" , first_str);
+	nh.getParam("/op_simulator_signs/SecondSignsListIds" , second_str);
 
-	nh.getParam("/op_simulator_signs/FirstGreenTime" 	, m_Params.firstGreenTime);
-	nh.getParam("/op_simulator_signs/SecondGreenTime" 	, m_Params.secondGreenTime);
-	nh.getParam("/op_simulator_signs/FirstYellowTime" 	, m_Params.firstyellowTime);
-	nh.getParam("/op_simulator_signs/SecondYellowTime" 	, m_Params.secondyellowTime);
+	nh.getParam("/op_simulator_signs/FirstGreenTime" , m_Params.firstGreenTime);
+	nh.getParam("/op_simulator_signs/SecondGreenTime" , m_Params.secondGreenTime);
+	nh.getParam("/op_simulator_signs/FirstYellowTime" , m_Params.firstyellowTime);
+	nh.getParam("/op_simulator_signs/SecondYellowTime" , m_Params.secondyellowTime);
 
 	m_Params.SetCommandParams(first_str, second_str);
 

@@ -35,14 +35,12 @@ include_directories(${catkin_INCLUDE_DIRS}
 
 set(PLANNERH_SRC
 		src/BehaviorStateMachine.cpp
-		src/MappingHelpers.cpp
-		src/RSPlanner.cpp		
+		src/MappingHelpers.cpp		
 		src/MatrixOperations.cpp
 		src/TrajectoryCosts.cpp		
 		src/PlannerH.cpp		
 		src/LocalPlannerH.cpp
-		src/PlanningHelpers.cpp
-		src/TrajectoryPrediction.cpp
+		src/PlanningHelpers.cpp		
 		src/BehaviorPrediction.cpp
 		src/DecisionMaker.cpp
 )

@@ -73,25 +73,25 @@ namespace GlobalPlanningNS
 class WayPlannerParams
 {
 public:
-	std::string 	KmlMapPath;
-	bool 			bEnableSmoothing;
-	bool 			bEnableLaneChange;
-	bool 			bEnableHMI;
-	bool 			bEnableRvizInput;
-	bool 			bEnableReplanning;
-	double 			pathDensity;
+	std::string KmlMapPath;
+	bool bEnableSmoothing;
+	bool bEnableLaneChange;
+	bool bEnableHMI;
+	bool bEnableRvizInput;
+	bool bEnableReplanning;
+	double pathDensity;
 	PlannerHNS::MAP_SOURCE_TYPE	mapSource;
 
 
 	WayPlannerParams()
 	{
-		bEnableReplanning	= false;
-		bEnableHMI			= false;
-		bEnableSmoothing 	= false;
-		bEnableLaneChange 	= false;
-		bEnableRvizInput 	= true;
-		pathDensity			= 0.5;
-		mapSource 			= PlannerHNS::MAP_KML_FILE;
+		bEnableReplanning = false;
+		bEnableHMI = false;
+		bEnableSmoothing = false;
+		bEnableLaneChange = false;
+		bEnableRvizInput = true;
+		pathDensity = 0.5;
+		mapSource = PlannerHNS::MAP_KML_FILE;
 	}
 };
 
@@ -109,6 +109,8 @@ protected:
 	geometry_msgs::Pose m_OriginPos;
 	PlannerHNS::VehicleState m_VehicleState;
 
+	int m_GlobalPathID;
+
 	bool m_bFirstStart;
 
 	ros::NodeHandle nh;
@@ -123,12 +125,12 @@ protected:
 	ros::Publisher pub_NodesListRviz;
 	ros::Publisher pub_GoalsListRviz;
 
-	ros::Subscriber sub_robot_odom			;
+	ros::Subscriber sub_robot_odom;
 	ros::Subscriber sub_start_pose;
 	ros::Subscriber sub_goal_pose;
 	ros::Subscriber sub_current_pose;
 	ros::Subscriber sub_current_velocity;
-	ros::Subscriber sub_can_info			;
+	ros::Subscriber sub_can_info;
 
 public:
 	GlobalPlanner();
@@ -136,6 +138,7 @@ public:
   void MainLoop();
 
 private:
+  PlannerHNS::WayPoint* m_pCurrGoal;
 
   void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 
@@ -158,11 +161,6 @@ private:
   	void VisualizeDestinations(std::vector<PlannerHNS::WayPoint>& destinations, const int& iSelected);
   	void SaveSimulationData();
   	int LoadSimulationData();
-
-
-  private: //debug variables
-  	PlannerHNS::WayPoint* m_pCurrGoal;
-
 };
 
 }

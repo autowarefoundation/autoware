@@ -1,12 +1,13 @@
-/*
- * TrajectoryCosts.cpp
- *
- *  Created on: Dec 14, 2016
- *      Author: user
- */
+
+/// \file TrajectoryCosts.cpp
+/// \brief Calculate collision costs for roll out trajectory for free trajectory evaluation
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #include "TrajectoryCosts.h"
 #include "MatrixOperations.h"
+#include "float.h"
 
 namespace PlannerHNS
 {
@@ -63,8 +64,8 @@ TrajectoryCost TrajectoryCosts::DoOneStepDynamic(const vector<vector<WayPoint> >
 	NormalizeCosts(m_TrajectoryCosts);
 
 	int smallestIndex = -1;
-	double smallestCost = 9999999999;
-	double smallestDistance = 9999999999;
+	double smallestCost = DBL_MAX;
+	double smallestDistance = DBL_MAX;
 	double velo_of_next = 0;
 	bool bAllFree = true;
 
@@ -172,8 +173,8 @@ TrajectoryCost TrajectoryCosts::DoOneStepStatic(const vector<vector<WayPoint> >&
 	NormalizeCosts(m_TrajectoryCosts);
 
 	int smallestIndex = -1;
-	double smallestCost = 9999999999;
-	double smallestDistance = 9999999999;
+	double smallestCost = DBL_MAX;
+	double smallestDistance = DBL_MAX;
 	double velo_of_next = 0;
 
 	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
@@ -261,8 +262,8 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	NormalizeCosts(m_TrajectoryCosts);
 
 	int smallestIndex = -1;
-	double smallestCost = 9999999999;
-	double smallestDistance = 9999999999;
+	double smallestCost = DBL_MAX;
+	double smallestDistance = DBL_MAX;
 	double velo_of_next = 0;
 
 	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
@@ -384,7 +385,7 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsStatic(vector<Trajecto
 					longitudinalDist = -longitudinalDist;
 
 				double direct_distance = hypot(obj_info.perp_point.pos.y-contourPoints.at(icon).pos.y, obj_info.perp_point.pos.x-contourPoints.at(icon).pos.x);
-				if(contourPoints.at(icon).v < 0.1 && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
+				if(contourPoints.at(icon).v < params.minSpeed && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
 				{
 					skip_id = contourPoints.at(icon).id;
 					continue;
@@ -418,8 +419,11 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsStatic(vector<Trajecto
 					trajectoryCosts.at(iCostIndex).bBlocked = true;
 
 
-				trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
-				trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
+				if(lateralDist != 0)
+					trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
+
+				if(longitudinalDist != 0)
+					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
 
 
 				if(longitudinalDist >= -critical_long_front_distance && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
@@ -509,7 +513,7 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 						longitudinalDist = -longitudinalDist;
 
 					double direct_distance = hypot(obj_info.perp_point.pos.y-contourPoints.at(icon).pos.y, obj_info.perp_point.pos.x-contourPoints.at(icon).pos.x);
-					if(contourPoints.at(icon).v < 0.1 && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
+					if(contourPoints.at(icon).v < params.minSpeed && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
 					{
 						skip_id = contourPoints.at(icon).id;
 						continue;
@@ -543,8 +547,11 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 						trajectoryCosts.at(iCostIndex).bBlocked = true;
 
 
-					trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
-					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
+					if(lateralDist != 0)
+						trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
+
+					if(longitudinalDist != 0)
+						trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
 
 
 					if(longitudinalDist >= -critical_long_front_distance && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
@@ -888,8 +895,11 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCostsDynamic(const std::vec
 						m_CollisionPoints.push_back(obj_info.perp_point);
 					}
 
-					m_TrajectoryCosts.at(it).lateral_cost += 1.0/lateralDist;
-					m_TrajectoryCosts.at(it).longitudinal_cost += 1.0/fabs(longitudinalDist);
+					if(lateralDist != 0)
+						m_TrajectoryCosts.at(it).lateral_cost += 1.0/lateralDist;
+
+					if(longitudinalDist != 0)
+						m_TrajectoryCosts.at(it).longitudinal_cost += 1.0/fabs(longitudinalDist);
 
 					if(longitudinalDist >= -c_long_front_d && longitudinalDist < m_TrajectoryCosts.at(it).closest_obj_distance)
 					{

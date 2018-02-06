@@ -1,9 +1,9 @@
-/*
- * CarState.cpp
- *
- *  Created on: Jun 20, 2016
- *      Author: hatem
- */
+
+/// \file LocalPlannerH.cpp
+/// \brief OpenPlanner's local planing functions combines in one process, used in simulation vehicle and OpenPlanner old implementation like dp_planner node.
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #include "LocalPlannerH.h"
 #include "UtilityH.h"
@@ -266,7 +266,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 		 double d = hypot(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x);
 		 if(d <= trafficLights.at(i).stoppingDistance)
 		 {
-			 //double a = UtilityH::FixNegativeAngle(atan2(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x));
 			 double a_diff = UtilityH::AngleBetweenTwoAnglesPositive(UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , UtilityH::FixNegativeAngle(state.pos.a));
 
 			 if(a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId)
@@ -288,7 +287,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	PreCalculatedConditions* pValues = m_pCurrentBehaviorState->GetCalcParams();
 
  	double critical_long_front_distance =  m_CarInfo.wheel_base/2.0 + m_CarInfo.length/2.0 + m_params.verticalSafetyDistance;
-	//double critical_long_back_distance =  m_CarInfo.length/2.0 + m_params.verticalSafetyDistance - m_CarInfo.wheel_base/2.0;
 
  	pValues->minStoppingDistance = -pow(car_state.speed, 2)/(m_CarInfo.max_deceleration);
 
@@ -304,7 +302,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	pValues->currentVelocity 		= car_state.speed;
  	pValues->bTrafficIsRed 			= false;
  	pValues->currentTrafficLightID 	= -1;
-// 	pValues->currentStopSignID		= -1;
  	pValues->bRePlan 				= false;
  	pValues->bFullyBlock 			= false;
 
@@ -336,12 +333,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 
  	m_iSafeTrajectory = pValues->iCurrSafeTrajectory;
  	m_iCurrentTotalPathId = pValues->iCurrSafeLane;
-
-
-// 	if(bestTrajectory.index == -1 && pValues->distanceToNext < m_pCurrentBehaviorState->m_pParams->minFollowingDistance)
-// 		pValues->bFullyBlock = true;
-
-
 
  	int stopLineID = -1;
  	int stopSignID = -1;
@@ -522,110 +513,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 	return currentBehavior;
  }
 
-// double LocalPlannerH::UpdateVelocityDirectlyToTrajectory(const BehaviorState& beh, const VehicleState& CurrStatus, const double& dt)
-// {
-//	RelativeInfo info, total_info;
-//	PlanningHelpers::GetRelativeInfo(m_TotalPath.at(m_iCurrentTotalPathId), state, total_info);
-//	PlanningHelpers::GetRelativeInfo(m_Path, state, info);
-//	double average_braking_distance = -pow(CurrStatus.speed, 2)/(m_CarInfo.max_deceleration);
-//	double max_velocity	= PlannerHNS::PlanningHelpers::GetVelocityAhead(m_TotalPath.at(m_iCurrentTotalPathId), total_info, average_braking_distance);
-//
-//	unsigned int point_index = 0;
-//	double critical_long_front_distance = 2.0;
-//
-//	if(m_Path.size() <= 5)
-//	{
-//		double target_velocity = 0;
-//		for(unsigned int i = 0; i < m_Path.size(); i++)
-//			m_Path.at(i).v = target_velocity;
-//	}
-//	else if(beh.state == TRAFFIC_LIGHT_STOP_STATE || beh.state == STOP_SIGN_STOP_STATE || beh.state == STOP_SIGN_WAIT_STATE || beh.state == TRAFFIC_LIGHT_WAIT_STATE)
-//	{
-//		PlanningHelpers::GetFollowPointOnTrajectory(m_Path, info, beh.stopDistance - critical_long_front_distance, point_index);
-//
-//		double inc = CurrStatus.speed;
-//		int iRange = point_index - info.iBack;
-//		if(iRange > 0)
-//			inc = inc / (double)iRange;
-//		else
-//			inc = 0;
-//
-//		double target_velocity = CurrStatus.speed - inc;
-//		for(unsigned int i =  info.iBack; i < point_index; i++)
-//		{
-//			 if(i < m_Path.size() && i >= 0)
-//				 m_Path.at(i).v = target_velocity;
-//			 target_velocity -= inc;
-//		}
-//	}
-//	else if(beh.state == FOLLOW_STATE)
-//	{
-//		double targe_acceleration = -pow(CurrStatus.speed, 2)/(2.0*(beh.followDistance - critical_long_front_distance));
-//		if(targe_acceleration <= 0 &&  targe_acceleration > m_CarInfo.max_deceleration/2.0)
-//		{
-//			double target_velocity = (targe_acceleration * dt) + CurrStatus.speed;
-//			for(unsigned int i = 0; i < m_Path.size(); i++)
-//			{
-//				if(m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory == m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
-//					m_Path.at(i).v = target_velocity;
-//				else
-//					m_Path.at(i).v = target_velocity*AVOIDANCE_SPEED_FACTOR;
-//			}
-//
-//			//cout << "Accelerate -> Target V: " << target_velocity << ", Brake D: " <<  average_braking_distance << ", Acceleration: " << targe_acceleration << endl;
-//		}
-//		else
-//		{
-//			WayPoint pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(m_Path, info, beh.followDistance - critical_long_front_distance, point_index);
-//			double inc = CurrStatus.speed;
-//			int iRange = point_index - info.iBack;
-//
-//			if(iRange > 0)
-//				inc = inc / (double)iRange;
-//			else
-//				inc = 0;
-//
-//			double target_velocity = CurrStatus.speed - inc;
-//			for(unsigned int i =  info.iBack; i < point_index; i++)
-//			{
-//				 if(i < m_Path.size() && i >= 0)
-//				 {
-//					 target_velocity = target_velocity < 0 ? 0 : target_velocity;
-//					 if(m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory == m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
-//						 m_Path.at(i).v = target_velocity;
-//					 else
-//						 m_Path.at(i).v = target_velocity*AVOIDANCE_SPEED_FACTOR;
-//				 }
-//
-//				 target_velocity -= inc;
-//			}
-//
-//			//cout << "Decelerate -> Target V: " << target_velocity << ", Brake D: " <<  average_braking_distance << ", Start I" << info.iBack << endl;
-//		}
-//
-//	}
-//	else if(beh.state == FORWARD_STATE || beh.state == OBSTACLE_AVOIDANCE_STATE )
-//	{
-//		double target_velocity = max_velocity;
-//
-//		for(unsigned int i = 0; i < m_Path.size(); i++)
-//		{
-//			if(m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory == m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
-//				m_Path.at(i).v = target_velocity;
-//			else
-//				m_Path.at(i).v = target_velocity*AVOIDANCE_SPEED_FACTOR;
-//		}
-//	}
-//	else
-//	{
-//		double target_velocity = 0;
-//		for(unsigned int i = 0; i < m_Path.size(); i++)
-//			m_Path.at(i).v = target_velocity;
-//	}
-//
-//	return max_velocity;
-// }
-
  double LocalPlannerH::UpdateVelocityDirectlyToTrajectory(const BehaviorState& beh, const VehicleState& CurrStatus, const double& dt)
  {
 	if(m_TotalOriginalPath.size() ==0 ) return 0;
@@ -779,7 +666,6 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
 
 
 	m_PredictedTrajectoryObstacles = obj_list;
-	//m_TrajectoryPredictionForMovingObstacles.DoOneStep(map, vehicleState, state, m_TotalPath.at(m_iCurrentTotalPathId), m_PredictedTrajectoryObstacles, m_params.minFollowingDistance);
 
 	timespec t;
 	UtilityH::GetTickCount(t);

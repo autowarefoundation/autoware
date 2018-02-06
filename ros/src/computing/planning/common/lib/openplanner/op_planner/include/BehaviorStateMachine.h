@@ -1,9 +1,9 @@
-/*
- * BehaviorStateMachine.h
- *
- *  Created on: Jun 19, 2016
- *      Author: hatem
- */
+
+/// \file BehaviorStateMachine.h
+/// \author Hatem Darweesh
+/// \brief OpenPlanner's state machine implementation for different driving behaviors
+/// \date Jun 19, 2016
+
 
 #ifndef BEHAVIORSTATEMACHINE_H_
 #define BEHAVIORSTATEMACHINE_H_

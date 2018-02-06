@@ -1,9 +1,9 @@
-/*
- * CarState.h
- *
- *  Created on: Dec 14, 2016
- *      Author: hatem
- */
+
+/// \file LocalPlannerH.h
+/// \brief OpenPlanner's local planing functions combines in one process, used in simulation vehicle and OpenPlanner old implementation like dp_planner node.
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef LOCALPLANNERH_H_
 #define LOCALPLANNERH_H_
@@ -12,7 +12,6 @@
 #include "PlannerCommonDef.h"
 #include "RoadNetwork.h"
 #include "TrajectoryCosts.h"
-#include "TrajectoryPrediction.h"
 
 #define AVOIDANCE_SPEED_FACTOR 0.75
 namespace PlannerHNS
@@ -61,7 +60,6 @@ public:
 	StopSignWaitState* 			m_pStopSignWaitState;
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
-	TrajectoryPrediction m_TrajectoryPredictionForMovingObstacles;
 
 	//for debugging
 
@@ -133,22 +131,6 @@ public:
 	void SimulateOdoPosition(const double& dt, const VehicleState& vehicleState);
 
 private:
-
-	//Obstacle avoidance functionalities
-//	bool CalculateObstacleCosts(RoadNetwork& map, const VehicleState& vstatus, const std::vector<DetectedObject>& obj_list);
-//
-//	double PredictTimeCostForTrajectory(std::vector<WayPoint>& path,
-//			const VehicleState& vstatus,
-//			const WayPoint& currState);
-//
-//	void PredictObstacleTrajectory(RoadNetwork& map,
-//			const WayPoint& pos,
-//			const double& predTime,
-//			std::vector<std::vector<WayPoint> >& paths);
-//
-//	bool CalculateIntersectionVelocities(std::vector<WayPoint>& path,
-//			std::vector<std::vector<WayPoint> >& predctedPath,
-//			const DetectedObject& obj);
 
 	bool GetNextTrafficLight(const int& prevTrafficLightId, const std::vector<TrafficLight>& trafficLights, TrafficLight& trafficL);
 	void UpdateCurrentLane(RoadNetwork& map, const double& search_distance);

@@ -27,11 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "../include/op_perception_simulator_core.h"
-
-#include "UtilityH.h"
-#include "math.h"
-#include "MatrixOperations.h"
+#include "op_perception_simulator_core.h"
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/io/io.h>
@@ -39,6 +35,10 @@
 #include <pcl/point_types.h>
 #include <boost/random.hpp>
 #include <boost/math/distributions/normal.hpp>
+
+#include "UtilityH.h"
+#include "math.h"
+#include "MatrixOperations.h"
 
 namespace PerceptionSimulatorNS
 {
@@ -49,10 +49,10 @@ typedef boost::variate_generator<ENG, NormalDIST> VariatGEN;
 
 OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 {
-	nh.getParam("/op_perception_simulator/simObjNumber" 			, m_DecParams.nSimuObjs);
-	nh.getParam("/op_perception_simulator/GuassianErrorFactor" 	, m_DecParams.errFactor);
+	nh.getParam("/op_perception_simulator/simObjNumber" , m_DecParams.nSimuObjs);
+	nh.getParam("/op_perception_simulator/GuassianErrorFactor" , m_DecParams.errFactor);
 
-	pub_DetectedObjects 	= nh.advertise<autoware_msgs::CloudClusterArray>("cloud_clusters",1);
+	pub_DetectedObjects = nh.advertise<autoware_msgs::CloudClusterArray>("cloud_clusters",1);
 
 	for(int i=1; i <= m_DecParams.nSimuObjs; i++)
 	{
@@ -62,12 +62,12 @@ OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 		std::cout << "Subscribe to Topic : " <<  str_pose.str() <<  std::endl;
 
 		ros::Subscriber _sub;
-		_sub =  nh.subscribe(str_pose.str(), 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, 		this);
+		_sub =  nh.subscribe(str_pose.str(), 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, this);
 		sub_objs.push_back(_sub);
 	}
 
 	ros::Subscriber _sub;
-	_sub =  nh.subscribe("/sim_box_pose_ego", 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, 		this);
+	_sub =  nh.subscribe("/sim_box_pose_ego", 10, &OpenPlannerSimulatorPerception::callbackGetSimuData, this);
 	sub_objs.push_back(_sub);
 
 	std::cout << "OpenPlannerSimulatorPerception initialized successfully " << std::endl;

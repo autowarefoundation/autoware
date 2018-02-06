@@ -1,9 +1,9 @@
-/*
- * PlannerCommonDef.h
- *
- *  Created on: Dec 14, 2016
- *      Author: hatem
- */
+
+/// \file PlannerCommonDef.h
+/// \brief Definition file for control related data types
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef PLANNERCOMMONDEF_H_
 #define PLANNERCOMMONDEF_H_

@@ -42,6 +42,8 @@ MotionPrediction::MotionPrediction()
 	bVehicleStatus = false;
 	bTrackedObjects = false;
 	m_bEnableCurbObstacles = false;
+	m_DistanceBetweenCurbs = 1.0;
+	m_VisualizationTime = 0.25;
 
 	ros::NodeHandle _nh;
 	UpdatePlanningParams(_nh);
@@ -54,19 +56,19 @@ MotionPrediction::MotionPrediction()
 
 	pub_predicted_objects_trajectories = nh.advertise<autoware_msgs::DetectedObjectArray>("/predicted_objects", 1);
 	pub_PredictedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("/predicted_trajectories_rviz", 1);
-	pub_CurbsRviz					= nh.advertise<visualization_msgs::MarkerArray>("/map_curbs_rviz", 1);
+	pub_CurbsRviz = nh.advertise<visualization_msgs::MarkerArray>("/map_curbs_rviz", 1);
 
-	sub_tracked_objects	= nh.subscribe("/tracked_objects", 			1,		&MotionPrediction::callbackGetTrackedObjects, 		this);
-	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&MotionPrediction::callbackGetCurrentPose, 		this);
+	sub_tracked_objects	= nh.subscribe("/tracked_objects", 1, &MotionPrediction::callbackGetTrackedObjects, this);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &MotionPrediction::callbackGetCurrentPose, this);
 
 	int bVelSource = 1;
 	_nh.getParam("/op_motion_predictor/velocitySource", bVelSource);
 	if(bVelSource == 0)
-		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&MotionPrediction::callbackGetRobotOdom, 	this);
+		sub_robot_odom = nh.subscribe("/odom", 10, &MotionPrediction::callbackGetRobotOdom, this);
 	else if(bVelSource == 1)
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&MotionPrediction::callbackGetVehicleStatus, 	this);
+		sub_current_velocity = nh.subscribe("/current_velocity", 10, &MotionPrediction::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&MotionPrediction::callbackGetCanInfo, 	this);
+		sub_can_info = nh.subscribe("/can_info", 10, &MotionPrediction::callbackGetCanInfo, this);
 
 	UtilityHNS::UtilityH::GetTickCount(m_VisualizationTimer);
 	PlannerHNS::RosHelpers::InitPredMarkers(100, m_PredictedTrajectoriesDummy);
@@ -102,8 +104,6 @@ void MotionPrediction::UpdatePlanningParams(ros::NodeHandle& _nh)
 	else
 		m_PlanningParams.rollOutNumber = 0;
 
-	std::cout << "Rolls Number: " << m_PlanningParams.rollOutNumber << std::endl;
-
 	_nh.getParam("/op_common_params/horizonDistance", m_PlanningParams.horizonDistance);
 	_nh.getParam("/op_common_params/minFollowingDistance", m_PlanningParams.minFollowingDistance);
 	_nh.getParam("/op_common_params/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
@@ -126,7 +126,7 @@ void MotionPrediction::UpdatePlanningParams(ros::NodeHandle& _nh)
 	m_CarInfo.min_speed_forward = m_PlanningParams.minSpeed;
 
 	int iSource = 0;
-	_nh.getParam("/op_common_params/mapSource" 			, iSource);
+	_nh.getParam("/op_common_params/mapSource" , iSource);
 	if(iSource == 0)
 		m_MapType = PlannerHNS::MAP_AUTOWARE;
 	else if (iSource == 1)
@@ -134,12 +134,15 @@ void MotionPrediction::UpdatePlanningParams(ros::NodeHandle& _nh)
 	else if(iSource == 2)
 		m_MapType = PlannerHNS::MAP_KML_FILE;
 
-	_nh.getParam("/op_common_params/mapFileName" 		, m_MapPath);
+	_nh.getParam("/op_common_params/mapFileName" , m_MapPath);
 
-	_nh.getParam("/op_motion_predictor/enableGenrateBranches" 		, m_PredictBeh.m_bGenerateBranches);
-	_nh.getParam("/op_motion_predictor/max_distance_to_lane" 		, m_PredictBeh.m_MaxLaneDetectionDistance);
-	_nh.getParam("/op_motion_predictor/prediction_distance" 		, m_PredictBeh.m_PredictionDistance);
-	_nh.getParam("/op_motion_predictor/enableCurbObstacles"			, m_bEnableCurbObstacles);
+	_nh.getParam("/op_motion_predictor/enableGenrateBranches" , m_PredictBeh.m_bGenerateBranches);
+	_nh.getParam("/op_motion_predictor/max_distance_to_lane" , m_PredictBeh.m_MaxLaneDetectionDistance);
+	_nh.getParam("/op_motion_predictor/prediction_distance" , m_PredictBeh.m_PredictionDistance);
+	_nh.getParam("/op_motion_predictor/enableCurbObstacles"	, m_bEnableCurbObstacles);
+	_nh.getParam("/op_motion_predictor/distanceBetweenCurbs", m_DistanceBetweenCurbs);
+	_nh.getParam("/op_motion_predictor/visualizationTime", m_VisualizationTime);
+
 
 	UtilityHNS::UtilityH::GetTickCount(m_SensingTimer);
 }
@@ -192,7 +195,6 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 
 	if(bMap)
 	{
-
 		m_PredictBeh.DoOneStep(m_TrackedObjects, m_CurrentPos, m_PlanningParams.minSpeed, m_CarInfo.max_deceleration,  m_Map);
 
 		m_PredictedResultsResults.objects.clear();
@@ -233,7 +235,7 @@ void MotionPrediction::GenerateCurbsObstacles(std::vector<PlannerHNS::DetectedOb
 			if(curb_obstacles.size()>0)
 			{
 				double distance_to_prev = hypot(curb_obstacles.at(curb_obstacles.size()-1).center.pos.y-obj.center.pos.y, curb_obstacles.at(curb_obstacles.size()-1).center.pos.x-obj.center.pos.x);
-				if(distance_to_prev < 1.5)
+				if(distance_to_prev < m_DistanceBetweenCurbs)
 					continue;
 			}
 
@@ -290,12 +292,13 @@ void MotionPrediction::MainLoop()
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_MapPath, m_Map, true);
 		}
 
-		if(UtilityHNS::UtilityH::GetTimeDiffNow(m_VisualizationTimer) > 0.25)
+		if(UtilityHNS::UtilityH::GetTimeDiffNow(m_VisualizationTimer) > m_VisualizationTime)
 		{
 			VisualizePrediction();
 			UtilityHNS::UtilityH::GetTickCount(m_VisualizationTimer);
 		}
 
+		//For the debugging of prediction
 //		if(UtilityHNS::UtilityH::GetTimeDiffNow(m_SensingTimer) > 5)
 //		{
 //			ROS_INFO("op_motion_prediction sensing timeout, can't receive tracked object data ! Reset .. Reset");

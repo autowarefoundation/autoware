@@ -1,9 +1,8 @@
-/*
- * RosHelpers.cpp
- *
- *  Created on: Jun 30, 2016
- *      Author: ai-driver
- */
+
+/// \file  RosHelpers.cpp
+/// \brief Helper functions for rviz visualization
+/// \author Hatem Darweesh
+/// \date Jun 30, 2016
 
 #include "op_RosHelpers.h"
 
@@ -349,6 +348,8 @@ void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS
 		wp.right_lane_id = path.at(i).RightLaneId;
 		wp.time_cost = path.at(i).timeCost;
 
+		wp.gid = path.at(i).gid;
+
 		if(path.at(i).actionCost.size()>0)
 			wp.direction = path.at(i).actionCost.at(0).first;
 
@@ -388,6 +389,7 @@ void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::lane& t
 
 		wp.v = trajectory.waypoints.at(i).twist.twist.linear.x;
 
+		wp.gid = trajectory.waypoints.at(i).gid;
 		wp.laneId = trajectory.waypoints.at(i).lane_id;
 		wp.stopLineID = trajectory.waypoints.at(i).stop_line_id;
 		wp.LeftLaneId = trajectory.waypoints.at(i).left_lane_id;

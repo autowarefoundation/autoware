@@ -1,9 +1,9 @@
-/*
- * TrajectoryCosts.h
- *
- *  Created on: Dec 14, 2016
- *      Author: user
- */
+
+/// \file TrajectoryCosts.h
+/// \brief Calculate collision costs for roll out trajectory for free trajectory evaluation
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef TRAJECTORYCOSTS_H_
 #define TRAJECTORYCOSTS_H_
