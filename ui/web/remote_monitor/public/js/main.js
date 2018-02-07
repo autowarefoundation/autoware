@@ -176,8 +176,9 @@ function deviceChange() {
             mandatory: {
               minAspectRatio: 1.777,
               maxAspectRatio: 1.778,
-              minWidth: 768,
-              minHeight: 432
+              minWidth: 320,
+              minHeight: 180,
+              minFrameRate: 30
             },
             optional: [{
               sourceId: deviceId
@@ -194,7 +195,8 @@ function deviceChange() {
               minAspectRatio: 1.777,
               maxAspectRatio: 1.778,
               maxWidth: 768,
-              maxHeight: 432
+              maxHeight: 432,
+              minFrameRate: 30
             },
             optional: [{
               sourceId: deviceId
@@ -208,10 +210,11 @@ function deviceChange() {
           audio: isUseAudio,
           video: {
             mandatory: {
-              maxWidth: 854,
+              maxWidth: 640,
               maxHeight: 480,
               minWidth: 320,
-              minHeight: 180
+              minHeight: 240,
+              minFrameRate: 30
             },
             optional: [{
               sourceId: deviceId

@@ -124,8 +124,8 @@ io.on('connection', function (socket) {
         }
       }
       else {
-        console.log("[NULL] " + topic + ": " + message.toString());
-        console.log("roomName: " + socket.roomName);
+        // console.log("[NULL] " + topic + ": " + message.toString());
+        // console.log("roomName: " + socket.roomName);
       }
     }
     catch (e) {
