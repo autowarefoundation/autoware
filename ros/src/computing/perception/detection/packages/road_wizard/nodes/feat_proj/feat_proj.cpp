@@ -413,7 +413,7 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
 			if (isRange(-50, 50, signal_angle - 90))
 			{
 				signalsInFrame.Signals.push_back(sign);
-      }
+			}
 		}
 	}
 	signalsInFrame.header.stamp = ros::Time::now();
@@ -540,11 +540,10 @@ int main(int argc, char *argv[])
 		if (prev_orientation.vec() != orientation.vec()  &&
 		    prev_position != position)
 		{
-            echoSignals2(signalPublisher, false);
+			echoSignals2(signalPublisher, false);
 		}
 		prev_orientation = orientation;
 		prev_position = position;
 		loop.sleep();
 	}
-
 }
