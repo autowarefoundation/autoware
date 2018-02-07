@@ -8,6 +8,9 @@
   we need to regenerate filtered signal data filteredsignaldata.csv -->
   <arg name="use_filtered_signal_map" default="false"/>
   <arg name="filtered_signal_map_name" default="$(find demo_scripts)/config/filteredsignaldata.csv"/>
+  <!--
+  filteredsignaldata.csv is created manually. This file has the information of signals which are on the lane of our waypoints.
+  These required signal information can be derived from vector_map_server -->
 
   <node pkg="road_wizard" type="feat_proj" name="feature_projection" output="screen">
     <param name="camera_info_topic" type="str" value="$(arg camera_id)$(arg camera_info_src)"/>
