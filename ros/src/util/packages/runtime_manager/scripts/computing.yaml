@@ -2350,10 +2350,27 @@ params :
       desc    : use_path_info desc sample
       label   : 'Use Path Info'
       kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : use_filtered_signal_map
+      desc    : use_filtered_signal_map desc sample
+      label   : 'Use Filtered Signal Map'
+      kind    : checkbox
       v       : True
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : filtered_signal_map
+      desc      : filtered signal map file
+      label     : filtered signal map
+      kind      : path
+      path_type : multi
+      v         : /tmp/filtered_signal_map.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu

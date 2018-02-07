@@ -26,7 +26,6 @@
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
 #include <autoware_msgs/lane.h>
-#include <chrono>
 
 typedef std::vector<std::vector<std::string>> Tbl;
 
@@ -36,8 +35,6 @@ static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1000;
 
 static int adjust_proj_x = 0;
 static int adjust_proj_y = 0;
-
-static auto stop_l = std::chrono::high_resolution_clock::now();
 
 typedef struct
 {
@@ -532,10 +529,6 @@ int main(int argc, char *argv[])
 	Eigen::Quaternionf prev_orientation(0,0,0,0);
 	while (true)
 	{
-        auto start_l = std::chrono::high_resolution_clock::now();
-        std::cout << "loop time: " << std::chrono::duration_cast<std::chrono::milliseconds>(start_l-stop_l).count() << "\n";
-        stop_l = start_l;
-
 		ros::spinOnce();
 
 		try
@@ -549,10 +542,7 @@ int main(int argc, char *argv[])
 		if (prev_orientation.vec() != orientation.vec()  &&
 		    prev_position != position)
 		{
-            auto start_s=std::chrono::high_resolution_clock::now();
             echoSignals2(signalPublisher, false);
-            auto stop_s=std::chrono::high_resolution_clock::now();
-            std::cout << "exec time: " << std::chrono::duration_cast<std::chrono::microseconds>(stop_s-start_s).count() << "us\n";
 		}
 		prev_orientation = orientation;
 		prev_position = position;

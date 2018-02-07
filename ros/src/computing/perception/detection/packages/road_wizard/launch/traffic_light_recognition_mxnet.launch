@@ -1,6 +1,6 @@
 <launch>
   <!-- argument list -->
-  <arg name="camera_id" default="/"/>
+  <arg name="camera_id" default="/camera0"/>
   <arg name="image_src" default="/image_rotated" />
   <arg name="network_definition_file" default=" " />
   <arg name="pretrained_model_file" default=" " />
