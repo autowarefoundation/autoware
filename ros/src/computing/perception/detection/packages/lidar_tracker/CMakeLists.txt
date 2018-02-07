@@ -4,7 +4,7 @@ project(lidar_tracker)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-
+include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   pcl_ros

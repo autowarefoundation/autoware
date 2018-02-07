@@ -6,12 +6,14 @@
   <arg name="camera_id" default="/"/>
   <arg name="solo_camera" default="true"/>
   <arg name="target_frame" default="velodyne"/>
-
+  <arg name="image_topic_name" default="image_rotated"/>
+  
   <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" args="$(arg file)" ns="$(arg camera_id)">
     <param name="register_lidar2camera_tf" type="bool" value="$(arg register_lidar2camera_tf)"/>
     <param name="publish_extrinsic_mat" type="bool" value="$(arg publish_extrinsic_mat)"/>
     <param name="publish_camera_info" type="bool" value="$(arg publish_camera_info)"/>
     <param name="target_frame" type="str" value="$(arg target_frame)"/>
+    <param name="image_topic_name" type="str" value="/$(arg image_topic_name)"/>
   </node>
 
   <group if="$(arg solo_camera)">

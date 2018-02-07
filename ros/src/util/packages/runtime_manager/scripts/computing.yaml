@@ -346,6 +346,18 @@ subs :
             border : 16
             flags : [ all ]
 
+      - name : region_tlr_mxnet
+        desc : region_tlr_mxnet desc sample
+        cmd  : roslaunch demo_scripts traffic_light_recognition_mxnet.launch
+        param: region_tlr_mxnet
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
       - name : region_tlr_ssd
         desc : region_tlr_ssd desc sample
         cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
@@ -2334,6 +2346,31 @@ params :
       min  : -100
       max  : 100
       v    : 0
+    - name    : use_path_info
+      desc    : use_path_info desc sample
+      label   : 'Use Path Info'
+      kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : use_filtered_signal_map
+      desc    : use_filtered_signal_map desc sample
+      label   : 'Use Filtered Signal Map'
+      kind    : checkbox
+      v       : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : filtered_signal_map
+      desc      : filtered signal map file
+      label     : filtered signal map
+      kind      : path
+      path_type : multi
+      v         : /tmp/filtered_signal_map.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu
@@ -2354,6 +2391,44 @@ params :
       label : Display superimpose result
       kind  : checkbox
       v     : False
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+
+  - name : region_tlr_mxnet
+    topic: /config/superimpose
+    msg  : Bool
+    vars :
+    - name  : data
+      desc  : data desc sample
+      label : Display superimpose result
+      kind  : checkbox
+      v     : False
+    - name      : score_threshold
+      desc      : score threshold for a positive label
+      label     : score_threshold
+      min       : 0
+      max       : 1.0
+      v         : 0.8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : change_state_threshold
+      desc      : state change threshold
+      label     : change_state_threshold
+      min       : 0
+      max       : 100
+      v         : 2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu

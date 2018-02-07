@@ -7,6 +7,7 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <ros/ros.h>
 #include "Rate.h"
 #include "libvectormap/vector_map.h"
@@ -25,6 +26,8 @@
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
 #include <autoware_msgs/lane.h>
+
+typedef std::vector<std::vector<std::string>> Tbl;
 
 static std::string camera_id_str;
 
@@ -54,6 +57,10 @@ static float fx,
 static tf::StampedTransform trf;
 
 static bool g_use_vector_map_server; // Switch flag whether vecter-map-server function will be used
+static bool g_use_filtered_signal_map; // flag to indicate if filtered map will be used
+
+static std::string filter_signal_map_path;
+
 static ros::ServiceClient g_ros_client;
 
 #define SignalLampRadius 0.3
@@ -270,44 +277,101 @@ double GetSignalAngleInCameraSystem(double hang, double vang)
 	return ConvertRadianToDegree(signal_pitch_in_cam);   // holizontal angle of camera is represented by pitch
 }  // double GetSignalAngleInCameraSystem()
 
-
-void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false)
+// This function reads the data from a csv file
+// take from sample_vector_map.cpp
+Tbl read_csv(const char* filename, int* max_id)
 {
-	int countPoint = 0;
-	autoware_msgs::Signals signalsInFrame;
+  std::ifstream ifs(filename);
+  std::string line;
+  std::getline(ifs, line); // Remove first line
 
-	/* Get signals on the path if vecter_map_server is enabled */
-	if (g_use_vector_map_server)
-	{
-		vector_map_server::GetSignal service;
-		/* Set server's request */
-		service.request.pose = g_vector_map_client.pose();
-		service.request.waypoints = g_vector_map_client.waypoints();
+  Tbl tbl;
 
-		/* Get server's response*/
-		if (g_ros_client.call(service))
-		{
-			/* Reset signal data container */
-			vmap.signals.clear();
+  *max_id = -1;
+  while (std::getline(ifs, line)) {
+    std::istringstream ss(line);
 
-			/* Newle insert signal data on the path */
-			for (const auto &response: service.response.objects.data)
-			{
-				if (response.id == 0)
-					continue;
+    std::vector<std::string> columns;
+    std::string column;
+    while (std::getline(ss, column, ',')) {
+      columns.push_back(column);
+    }
+    tbl.push_back(columns);
 
-				Signal signal;
-				signal.id = response.id;
-				signal.vid = response.vid;
-				signal.plid = response.plid;
-				signal.type = response.type;
-				signal.linkid = response.linkid;
+    int id = std::stoi(columns[0]);
+    if (id > *max_id) {
+      *max_id = id;
+    }
+  }
+  return tbl;
+}
 
-				vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
-			}
-			ROS_INFO("[feat_proj] VectorMapServer available. Publishing only TrafficSignals on the current lane");
-		}
-	}
+void read_signaldata(const char *filename, std::vector<Signal>&ret)
+{
+  int max_id;
+  Tbl tbl = read_csv(filename, &max_id);
+  size_t i, n = tbl.size();\
+  std::cout << "n: " << n << "\n";
+  for (i=0; i<n; i++) {
+    Signal signal;
+    int id = std::stoi(tbl[i][0]);
+    signal.id = id;
+    signal.vid = std::stoi(tbl[i][1]);
+    signal.plid = std::stoi(tbl[i][2]);
+    signal.type = std::stoi(tbl[i][3]);
+    signal.linkid = std::stoi(tbl[i][4]);
+
+    ret.push_back(signal);
+  }
+}
+
+void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
+  int countPoint = 0;
+  autoware_msgs::Signals signalsInFrame;
+
+  /* Get signals on the path if vecter_map_server is enabled */
+  if (g_use_vector_map_server) {
+    vector_map_server::GetSignal service;
+    /* Set server's request */
+    service.request.pose = g_vector_map_client.pose();
+    service.request.waypoints = g_vector_map_client.waypoints();
+
+    /* Get server's response*/
+    if (g_ros_client.call(service)) {
+      /* Reset signal data container */
+      vmap.signals.clear();
+
+      /* Newle insert signal data on the path */
+      for (const auto &response: service.response.objects.data) {
+        if (response.id == 0)
+          continue;
+
+        Signal signal;
+        signal.id = response.id;
+        signal.vid = response.vid;
+        signal.plid = response.plid;
+        signal.type = response.type;
+        signal.linkid = response.linkid;
+
+        vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
+      }
+      ROS_INFO("[feat_proj] VectorMapServer available. Publishing only TrafficSignals on the current lane");
+    }
+  }
+
+  // use the filtered signal map
+  if (g_use_filtered_signal_map)
+  {
+    vmap.signals.clear();
+    std::vector<Signal> signal_vec;
+    read_signaldata(filter_signal_map_path.c_str(), signal_vec);
+
+    for (const auto &signal : signal_vec) {
+      vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
+    }
+
+    //std::cout << "vmap size: " << vmap.signals.size() << "\n";
+  }
 
 	for (unsigned int i = 1; i <= vmap.signals.size(); i++)
 	{
@@ -386,6 +450,14 @@ int main(int argc, char *argv[])
 	/* Get Flag wheter vecter_map_server function will be used  */
 	private_nh.param<bool>("use_path_info", g_use_vector_map_server, false);
 	ROS_INFO("[feat_proj] Use VectorMapServer: %d", g_use_vector_map_server);
+
+  // get the flag to use filtered map
+  private_nh.param<bool>("use_filtered_signal_map", g_use_filtered_signal_map, false);
+	ROS_INFO("[feat_proj] Use FilteredSignalMap: %d", g_use_filtered_signal_map);
+
+  // get the filtered signal map
+  private_nh.param<std::string>("filtered_signal_map", filter_signal_map_path, "");
+
 	/* load vector map */
 	ros::Subscriber sub_point = rosnode.subscribe("vector_map_info/point",
 	                                              SUBSCRIBE_QUEUE_SIZE,
@@ -474,5 +546,4 @@ int main(int argc, char *argv[])
 		prev_position = position;
 		loop.sleep();
 	}
-
 }
