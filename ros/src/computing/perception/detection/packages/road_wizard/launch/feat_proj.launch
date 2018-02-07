@@ -1,5 +1,5 @@
 <launch>
-  <arg name="camera_id" default="/"/>
+  <arg name="camera_id" default="/camera0"/>
   <arg name="camera_info_src" default="/camera_info"/>
   <arg name="use_path_info" default="false"/> <!-- USE VectorMap Server to publish only TrafficSignals on current lane-->
   <arg name="use_filtered_signal_map" default="false"/>

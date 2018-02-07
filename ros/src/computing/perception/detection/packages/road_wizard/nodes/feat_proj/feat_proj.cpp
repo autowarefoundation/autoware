@@ -350,8 +350,6 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
         signal.linkid = response.linkid;
 
         vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
-        std::cout << "signal_id: " << signal.id << " signal.vid: " << signal.vid << " signal.plid: " << signal.plid
-                  << " signal.type: " << signal.type << "signal.linkid: " << signal.linkid << "\n";
       }
       ROS_INFO("[feat_proj] VectorMapServer available. Publishing only TrafficSignals on the current lane");
     }
@@ -364,14 +362,11 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
     std::vector<Signal> signal_vec;
     read_signaldata(filter_signal_map_path.c_str(), signal_vec);
 
-    std::cout << signal_vec.size() << "\n";
     for (const auto &signal : signal_vec) {
       vmap.signals.insert(std::map<int, Signal>::value_type(signal.id, signal));
-      std::cout << "signal_id: " << signal.id << " signal.vid: " << signal.vid << " signal.plid: " << signal.plid
-              << " signal.type: " << signal.type << "signal.linkid: " << signal.linkid << "\n";
     }
 
-    std::cout << "vmap size: " << vmap.signals.size() << "\n";
+    //std::cout << "vmap size: " << vmap.signals.size() << "\n";
   }
 
 	for (unsigned int i = 1; i <= vmap.signals.size(); i++)
@@ -414,8 +409,7 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
 			if (isRange(-50, 50, signal_angle - 90))
 			{
 				signalsInFrame.Signals.push_back(sign);
-                 std::cout << "signal_id: " << signal.id << " signal.vid: " << signal.vid << " signal.plid: " << signal.plid << " signal.type: " << signal.type << "signal.linkid: " << signal.linkid << "\n";
-			}
+      }
 		}
 	}
 	signalsInFrame.header.stamp = ros::Time::now();
