@@ -2,6 +2,10 @@
   <arg name="camera_id" default="/camera0"/>
   <arg name="camera_info_src" default="/camera_info"/>
   <arg name="use_path_info" default="false"/> <!-- USE VectorMap Server to publish only TrafficSignals on current lane-->
+  <!-- using path_info will use vector_map_server to determine which lane we are in, this service is very slow and block the feat_proj.
+  we go around the problem by providing a list of signal lights that are on our waypoints.
+  Note: This is a semi-hack that will only work for our demo. If we record different waypoints on different lanes,
+  we need to regenerate filtered signal data filteredsignaldata.csv -->
   <arg name="use_filtered_signal_map" default="false"/>
   <arg name="filtered_signal_map_name" default="$(find demo_scripts)/config/filteredsignaldata.csv"/>
 

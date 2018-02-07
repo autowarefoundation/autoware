@@ -277,6 +277,8 @@ double GetSignalAngleInCameraSystem(double hang, double vang)
 	return ConvertRadianToDegree(signal_pitch_in_cam);   // holizontal angle of camera is represented by pitch
 }  // double GetSignalAngleInCameraSystem()
 
+// This function reads the data from a csv file
+// take from sample_vector_map.cpp
 Tbl read_csv(const char* filename, int* max_id)
 {
   std::ifstream ifs(filename);
@@ -297,7 +299,9 @@ Tbl read_csv(const char* filename, int* max_id)
     tbl.push_back(columns);
 
     int id = std::stoi(columns[0]);
-    if (id > *max_id) *max_id = id;
+    if (id > *max_id) {
+      *max_id = id;
+    }
   }
   return tbl;
 }
