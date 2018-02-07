@@ -244,7 +244,7 @@ endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
 ### region_tlr_mxnet ###
 ##############################MXNET with CPP_PACKAGE NEEDS TO BE PREVIOUSLY COMPILED################
 #############Please follow README file for instructions#############################################
-set(MXNET_PATH "$ENV{HOME}/apex_ws/mxnet/")
+set(MXNET_PATH "$ENV{HOME}/mxnet/")
 ####################################################################################################
 if(EXISTS "${MXNET_PATH}")
 
