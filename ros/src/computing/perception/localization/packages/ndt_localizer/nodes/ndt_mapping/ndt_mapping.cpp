@@ -506,10 +506,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     initial_scan_loaded = 1;
   }
 
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
-
-  struct timeval start, end;
-
   // Apply voxelgrid filter
   pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
   voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
@@ -518,7 +514,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
 
-  gettimeofday(&start, NULL);
   #ifdef CUDA_FOUND
     if (_use_gpu == true)
     {
@@ -548,11 +543,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		ndt.setInputSource(filtered_scan_ptr);
 	  }
   }
-    gettimeofday(&end, NULL);
 
-    std::cout << "Set input cloud = " << timeDiff(start, end) << std::endl;
-
-    gettimeofday(&start, NULL);
   if (isMapUpdate == true)
   {
 #ifdef CUDA_FOUND
@@ -575,8 +566,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     isMapUpdate = false;
   }
-  gettimeofday(&end, NULL);
-  std::cout << "Set input target = " << timeDiff(start, end) << std::endl;
 
   guess_pose.x = previous_pose.x + diff_x;
   guess_pose.y = previous_pose.y + diff_y;
@@ -631,19 +620,12 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   #endif
     if (_use_fast_pcl)
     {
-    	gettimeofday(&start, NULL);
       cpu_ndt.align(init_guess);
-      gettimeofday(&end, NULL);
 
-      std::cout << "Align = " << timeDiff(start, end) << std::endl;
       t_localizer = cpu_ndt.getFinalTransformation();
       has_converged = cpu_ndt.hasConverged();
-      gettimeofday(&start, NULL);
       fitness_score = cpu_ndt.getFitnessScore();
 
-      gettimeofday(&end, NULL);
-
-      std::cout << "Get fitness score = " << timeDiff(start, end) << std::endl;
       final_num_iteration = cpu_ndt.getFinalNumIteration();
     }
     else
@@ -652,14 +634,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         ndt.omp_align(*output_cloud, init_guess);
         fitness_score = ndt.omp_getFitnessScore();
       #else
-        gettimeofday(&start, NULL);
         ndt.align(*output_cloud, init_guess);
-        gettimeofday(&end, NULL);
-        std::cout << "Align = " << timeDiff(start, end) << std::endl;
-        gettimeofday(&start, NULL);
         fitness_score = ndt.getFitnessScore();
-        gettimeofday(&end, NULL);
-        std::cout << "Get fitness score = " << timeDiff(start, end) << std::endl;
       #endif
       t_localizer = ndt.getFinalTransformation();
       has_converged = ndt.hasConverged();
@@ -786,19 +762,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   double shift = sqrt(pow(current_pose.x - added_pose.x, 2.0) + pow(current_pose.y - added_pose.y, 2.0));
   if (shift >= min_add_scan_shift)
   {
-	  gettimeofday(&start, NULL);
-	  // Update the current ndt structure
+	// Update the current ndt structure
 	if (_use_fast_pcl && !_use_gpu)
 	{
-	std::cout << "UPDATE VOXEL GRID" << std::endl;
 	  cpu_ndt.update(transformed_scan_ptr);
 	}
-
-	gettimeofday(&end, NULL);
-
-	  std::cout << "Update = " << timeDiff(start, end) << std::endl;
-
-
 
     map += *transformed_scan_ptr;
     added_pose.x = current_pose.x;

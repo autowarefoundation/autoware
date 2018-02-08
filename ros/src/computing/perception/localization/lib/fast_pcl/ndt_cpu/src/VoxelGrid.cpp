@@ -55,48 +55,21 @@ VoxelGrid<PointSourceType>::VoxelGrid():
 template <typename PointSourceType>
 void VoxelGrid<PointSourceType>::initialize()
 {
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
-
-	struct timeval start, end;
-
-	gettimeofday(&start, NULL);
 	centroid_.resize(voxel_num_);
-	gettimeofday(&end, NULL);
 
-	std::cout << "Resize centroid = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	covariance_.resize(voxel_num_);
-	gettimeofday(&end, NULL);
 
-	std::cout << "Resize covariance = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	icovariance_.resize(voxel_num_);
-	gettimeofday(&end, NULL);
 
-	std::cout << "Resize icovariance = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	points_id_.resize(voxel_num_);
-	gettimeofday(&end, NULL);
 
-	std::cout << "Resize points id = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	points_per_voxel_.resize(voxel_num_);
-	gettimeofday(&end, NULL);
 
-	std::cout << "Resize points per voxel = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	// Reset the number of points in all voxels to zero
 	std::fill(points_per_voxel_.begin(), points_per_voxel_.end(), 0);
-	gettimeofday(&end, NULL);
-
-	std::cout << "Filling points per voxel = " << timeDiff(start, end) << std::endl;
 
 	tmp_centroid_.resize(voxel_num_);
+
 	tmp_cov_.resize(voxel_num_);
 }
 
@@ -338,31 +311,13 @@ void VoxelGrid<PointSourceType>::setInput(typename pcl::PointCloud<PointSourceTy
 		 */
 		source_cloud_ = input_cloud;
 
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
-
-		struct timeval start, end;
-
-		gettimeofday(&start, NULL);
 		findBoundaries();
-		gettimeofday(&end, NULL);
 
-		std::cout << "Find boundaries = " << timeDiff(start, end) << std::endl;
-
-		gettimeofday(&start, NULL);
 		initialize();
-		gettimeofday(&end, NULL);
 
-		std::cout << "Initialize = " << timeDiff(start, end) << std::endl;
-
-		gettimeofday(&start, NULL);
 		scatterPointsToVoxelGrid();
-		gettimeofday(&end, NULL);
 
-		std::cout << "Scatter points = " << timeDiff(start, end) << std::endl;
-
-		gettimeofday(&start, NULL);
 		computeCentroidAndCovariance();
-		gettimeofday(&end, NULL);
 	}
 }
 
@@ -793,18 +748,8 @@ void VoxelGrid<PointSourceType>::update(typename pcl::PointCloud<PointSourceType
 	float new_min_x, new_min_y, new_min_z;
 	int shift_x, shift_y, shift_z;
 
-#define timeDiff(start, end) ((end.tv_sec - start.tv_sec) * 1000000 + end.tv_usec - start.tv_usec)
-
-	struct timeval start, end;
-
-	gettimeofday(&start, NULL);
 	// Find boundaries of the new point cloud
 	findBoundaries(new_cloud, new_max_x, new_max_y, new_max_z, new_min_x, new_min_y, new_min_z);
-	gettimeofday(&end, NULL);
-
-	std::cout << "Find boundaries = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 
 	/* Update current boundaries of the voxel grid
 	 * Also allocate buffer for new voxel grid and
@@ -813,18 +758,10 @@ void VoxelGrid<PointSourceType>::update(typename pcl::PointCloud<PointSourceType
 	 */
 	updateBoundaries(new_max_x, new_max_y, new_max_z, new_min_x, new_min_y, new_min_z);
 
-	gettimeofday(&end, NULL);
-
-	std::cout << "Update boundaries = " << timeDiff(start, end) << std::endl;
-
-	gettimeofday(&start, NULL);
 	/* Update changed voxels (voxels that contains new points).
 	 * Update centroids of voxels and their covariance matrixes
 	 * as well as inverse covariance matrixes */
 	updateVoxelContent(new_cloud);
-	gettimeofday(&end, NULL);
-
-	std::cout << "Update voxel content = " << timeDiff(start, end) << std::endl;
 }
 
 template <typename PointSourceType>
