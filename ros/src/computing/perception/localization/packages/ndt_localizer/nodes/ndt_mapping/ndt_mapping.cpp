@@ -892,7 +892,7 @@ int main(int argc, char** argv)
   std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "use_gpu: " << _use_gpu << std::endl;
   std::cout << "use_openmp: " << _use_openmp << std::endl;
-  std::cout << "use_fast_pcl: " << _use_openmp << std::endl;
+  std::cout << "use_fast_pcl: " << _use_fast_pcl << std::endl;
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;
