@@ -5,7 +5,7 @@
   <arg name="use_imu" default="false" />
   <arg name="use_odom" default="false" />
   <arg name="imu_upside_down" default="false" />
-  <arg name="queue_size" default="1" />
+  <arg name="queue_size" default="10" />
   <arg name="offset" default="linear" />
   <arg name="use_openmp" default="false" />
   <arg name="get_height" default="false" />
