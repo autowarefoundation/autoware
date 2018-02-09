@@ -156,12 +156,11 @@ static double min_add_scan_shift = 1.0;
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
-static bool isMapUpdate = true;
-
 static bool _use_openmp = false;
 static bool _use_gpu = false;
 
 static bool _use_fast_pcl = false;
+static bool _incremental_voxel_update = false;
 
 static bool _use_imu = false;
 static bool _use_odom = false;
@@ -544,7 +543,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	  }
   }
 
-  if (isMapUpdate == true)
+  static bool is_first_map = true;
+  if (is_first_map == true)
   {
 #ifdef CUDA_FOUND
     if (_use_gpu == true)
@@ -554,17 +554,16 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     else
 #endif
     {
-    	if (_use_fast_pcl)
+    	if (_use_fast_pcl == true)
     	{
-          cpu_ndt.setInputTarget(map_ptr);
+            cpu_ndt.setInputTarget(map_ptr);
     	}
 		else
 		{
           ndt.setInputTarget(map_ptr);
 		}
     }
-
-    isMapUpdate = false;
+    is_first_map = false;
   }
 
   guess_pose.x = previous_pose.x + diff_x;
@@ -762,12 +761,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   double shift = sqrt(pow(current_pose.x - added_pose.x, 2.0) + pow(current_pose.y - added_pose.y, 2.0));
   if (shift >= min_add_scan_shift)
   {
-	// Update the current ndt structure
-	if (_use_fast_pcl && !_use_gpu)
-	{
-	  cpu_ndt.update(transformed_scan_ptr);
-	}
-
     map += *transformed_scan_ptr;
     added_pose.x = current_pose.x;
     added_pose.y = current_pose.y;
@@ -775,7 +768,27 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     added_pose.roll = current_pose.roll;
     added_pose.pitch = current_pose.pitch;
     added_pose.yaw = current_pose.yaw;
-    isMapUpdate = true;
+
+    #ifdef CUDA_FOUND
+        if (_use_gpu == true)
+        {
+          gpu_ndt.setInputTarget(map_ptr);
+        }
+        else
+    #endif
+        {
+        	if (_use_fast_pcl == true)
+        	{
+              if(_incremental_voxel_update == true)
+                cpu_ndt.updateVoxelGrid(transformed_scan_ptr);
+              else
+                cpu_ndt.setInputTarget(map_ptr);
+        	}
+    		else
+    		{
+              ndt.setInputTarget(map_ptr);
+    		}
+        }
   }
 
 
@@ -899,6 +912,7 @@ int main(int argc, char** argv)
   private_nh.getParam("use_odom", _use_odom);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
+  private_nh.getParam("incremental_voxel_update", _incremental_voxel_update);
 
   std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "use_gpu: " << _use_gpu << std::endl;
@@ -907,6 +921,7 @@ int main(int argc, char** argv)
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;
+  std::cout << "incremental_voxel_update: " << _incremental_voxel_update << std::endl;
 
   if (nh.getParam("tf_x", _tf_x) == false)
   {

@@ -738,7 +738,7 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnes
 
 
 template <typename PointSourceType, typename PointTargetType>
-void NormalDistributionsTransform<PointSourceType, PointTargetType>::update(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud)
+void NormalDistributionsTransform<PointSourceType, PointTargetType>::updateVoxelGrid(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud)
 {
 	// Update voxel grid
 	voxel_grid_.update(new_cloud);
