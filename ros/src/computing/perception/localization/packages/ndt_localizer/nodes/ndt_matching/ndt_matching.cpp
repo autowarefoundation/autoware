@@ -105,8 +105,7 @@ struct pose
 };
 
 static pose initial_pose, predict_pose, predict_pose_imu, predict_pose_odom, predict_pose_imu_odom, previous_pose,
-    ndt_pose, current_pose, current_pose_imu, current_pose_odom, current_pose_imu_odom, localizer_pose,
-    previous_gnss_pose, current_gnss_pose;
+    ndt_pose, current_pose, current_pose_imu, current_pose_odom, current_pose_imu_odom, localizer_pose;
 
 static double offset_x, offset_y, offset_z, offset_yaw;  // current_pos - previous_pose
 static double offset_imu_x, offset_imu_y, offset_imu_z, offset_imu_roll, offset_imu_pitch, offset_imu_yaw;
@@ -273,20 +272,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setResolution(ndt_res);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setResolution(ndt_res);
-		}
-		else
-		{
-          ndt.setResolution(ndt_res);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setResolution(ndt_res);
+	  }
+	  else
+	  {
+        ndt.setResolution(ndt_res);
+	  }
     }
-#endif
   }
+
   if (input->step_size != step_size)
   {
     step_size = input->step_size;
@@ -296,20 +294,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setStepSize(step_size);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setStepSize(step_size);
-		}
-		else
-		{
-          ndt.setStepSize(step_size);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setStepSize(step_size);
+	  }
+	  else
+	  {
+        ndt.setStepSize(step_size);
+	  }
     }
-#endif
   }
+
   if (input->trans_epsilon != trans_eps)
   {
     trans_eps = input->trans_epsilon;
@@ -319,20 +316,19 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setTransformationEpsilon(trans_eps);
-		}
-		else
-		{
-          ndt.setTransformationEpsilon(trans_eps);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setTransformationEpsilon(trans_eps);
+	  }
+	  else
+	  {
+        ndt.setTransformationEpsilon(trans_eps);
+	  }
     }
-#endif
   }
+
   if (input->max_iterations != max_iter)
   {
     max_iter = input->max_iterations;
@@ -342,19 +338,17 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
       gpu_ndt_ptr->setMaximumIterations(max_iter);
     }
     else
+#endif
     {
-#endif
-		if (_use_fast_pcl)
-		{
-          cpu_ndt.setMaximumIterations(max_iter);
-		}
-		else
-		{
-          ndt.setMaximumIterations(max_iter);
-		}
-#ifdef CUDA_FOUND
+	  if (_use_fast_pcl)
+	  {
+        cpu_ndt.setMaximumIterations(max_iter);
+	  }
+	  else
+	  {
+        ndt.setMaximumIterations(max_iter);
+	  }
     }
-#endif
   }
 
   if (_use_gnss == 0 && init_pos_set == 0)
@@ -534,10 +528,14 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
                         input->pose.orientation.w);
   tf::Matrix3x3 gnss_m(gnss_q);
+
+  pose current_gnss_pose;
   current_gnss_pose.x = input->pose.position.x;
   current_gnss_pose.y = input->pose.position.y;
   current_gnss_pose.z = input->pose.position.z;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
+
+  static pose previous_gnss_pose = current_gnss_pose;
 
   if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
   {
