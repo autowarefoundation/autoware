@@ -44,6 +44,7 @@ ros::Publisher traffic_pub;
 
 autoware_msgs::LaneArray current_red_lane;
 autoware_msgs::LaneArray current_green_lane;
+autoware_msgs::LaneArray current_tl_stop_lane;
 
 const autoware_msgs::LaneArray *previous_lane = &current_red_lane;
 
@@ -52,7 +53,7 @@ void select_current_lane(const autoware_msgs::traffic_light& msg)
 	const autoware_msgs::LaneArray *current;
 	switch (msg.traffic_light) {
 	case lane_planner::vmap::TRAFFIC_LIGHT_RED:
-		current = &current_red_lane;
+		current = &current_tl_stop_lane;
 		break;
 	case lane_planner::vmap::TRAFFIC_LIGHT_GREEN:
 		current = &current_green_lane;
@@ -97,6 +98,11 @@ void cache_green_lane(const autoware_msgs::LaneArray& msg)
 	current_green_lane = msg;
 }
 
+void cache_tl_stop_lane(const autoware_msgs::LaneArray& msg)
+{
+      current_tl_stop_lane = msg;
+}
+
 void config_parameter(const autoware_msgs::ConfigLaneStop& msg)
 {
 	config_manual_detection = msg.manual_detection;
@@ -129,6 +135,7 @@ int main(int argc, char **argv)
 							receive_manual_detection);
 	ros::Subscriber red_sub = n.subscribe("/red_waypoints_array", sub_waypoint_queue_size, cache_red_lane);
 	ros::Subscriber green_sub = n.subscribe("/green_waypoints_array", sub_waypoint_queue_size, cache_green_lane);
+ 	ros::Subscriber tl_stop_sub = n.subscribe("/tl_stop_waypoints_array", sub_waypoint_queue_size, cache_tl_stop_lane);
 	ros::Subscriber config_sub = n.subscribe("/config/lane_stop", sub_config_queue_size, config_parameter);
 
 	ros::spin();
