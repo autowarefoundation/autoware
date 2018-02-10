@@ -42,6 +42,10 @@
 
 #include <lane_planner/vmap.hpp>
 
+// defines the type of traffic light
+#define TRAFFIC_LIGHT_STOP_LINES 1
+#define STOP_LINES 2
+
 namespace {
 
 double config_acceleration = 1; // m/s^2
@@ -60,6 +64,7 @@ std::string frame_id;
 ros::Publisher traffic_pub;
 ros::Publisher red_pub;
 ros::Publisher green_pub;
+ros::Publisher tl_stop_pub;
 
 lane_planner::vmap::VectorMap all_vmap;
 lane_planner::vmap::VectorMap lane_vmap;
@@ -225,11 +230,59 @@ std::vector<vector_map::Point> create_stop_points(const lane_planner::vmap::Vect
 	return stop_points;
 }
 
+// creates the stop points for the traffic lights
+std::vector<vector_map::Point> create_tl_stop_points(const lane_planner::vmap::VectorMap& vmap)
+{
+	std::vector<vector_map::Point> stop_points;
+	for (const vector_map::StopLine& s : vmap.stoplines) {
+                // only if the stop line is associated to the traffic light
+		if (s.tlid != 0) {
+			for (const vector_map::Lane &l : vmap.lanes) {
+				if (l.lnid != s.linkid)
+					continue;
+				for (const vector_map::Node &n : vmap.nodes) {
+					if (n.nid != l.bnid)
+						continue;
+					for (const vector_map::Point &p : vmap.points) {
+						if (p.pid != n.pid)
+							continue;
+						bool hit = false;
+						for (const vector_map::Point &sp : stop_points) {
+							if (sp.pid == p.pid) {
+								hit = true;
+								break;
+							}
+						}
+						if (!hit) {
+							stop_points.push_back(p);
+						}
+					}
+				}
+			}
+		}
+	}
+
+  return stop_points;
+}
+
 std::vector<size_t> create_stop_indexes(const lane_planner::vmap::VectorMap& vmap,
-					const autoware_msgs::lane& lane, double stopline_search_radius)
+					const autoware_msgs::lane& lane, double stopline_search_radius, int stop_line_type)
 {
 	std::vector<size_t> stop_indexes;
-	for (const vector_map::Point& p : create_stop_points(vmap)) {
+
+	std::vector<vector_map::Point> st_points;
+	if (stop_line_type == STOP_LINES)
+	{
+		st_points = create_stop_points(vmap);
+	} else if (stop_line_type == TRAFFIC_LIGHT_STOP_LINES)
+	{
+		st_points = create_tl_stop_points(vmap);
+	}
+
+	for (auto it= st_points.begin(); it!= st_points.end(); it++) {
+
+		auto & p = *it;
+
 		size_t index = SIZE_MAX;
 		double distance = DBL_MAX;
 		for (size_t i = 0; i < lane.waypoints.size(); ++i) {
@@ -245,17 +298,19 @@ std::vector<size_t> create_stop_indexes(const lane_planner::vmap::VectorMap& vma
 			stop_indexes.push_back(index);
 		}
 	}
+
 	std::sort(stop_indexes.begin(), stop_indexes.end());
 
 	return stop_indexes;
 }
 
 autoware_msgs::lane apply_stopline_acceleration(const autoware_msgs::lane& lane, double acceleration,
-						    double stopline_search_radius, size_t ahead_cnt, size_t behind_cnt)
+				    double stopline_search_radius, size_t ahead_cnt, size_t behind_cnt, int stop_line_type)
 {
 	autoware_msgs::lane l = lane;
 
-	std::vector<size_t> indexes = create_stop_indexes(lane_vmap, l, stopline_search_radius);
+        std::vector <size_t> indexes = create_stop_indexes(lane_vmap, l, stopline_search_radius, stop_line_type);
+
 	if (indexes.empty())
 		return l;
 
@@ -369,7 +424,7 @@ std_msgs::ColorRGBA create_color(int index)
 
 void create_waypoint(const autoware_msgs::LaneArray& msg)
 {
-	std_msgs::Header header;
+  	std_msgs::Header header;
 	header.stamp = ros::Time::now();
 	header.frame_id = frame_id;
 
@@ -377,6 +432,7 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 	cached_waypoint.lanes.shrink_to_fit();
 	for (const autoware_msgs::lane& l : msg.lanes)
 		cached_waypoint.lanes.push_back(create_new_lane(l, header));
+
 	if (all_vmap.points.empty() || all_vmap.lanes.empty() || all_vmap.nodes.empty() ||
 	    all_vmap.stoplines.empty() || all_vmap.dtlanes.empty()) {
 		traffic_pub.publish(cached_waypoint);
@@ -387,30 +443,41 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 	marker_cnt = msg.lanes.size();
 #endif // DEBUG
 
+
 	autoware_msgs::LaneArray traffic_waypoint;
 	autoware_msgs::LaneArray red_waypoint;
 	autoware_msgs::LaneArray green_waypoint;
+  	autoware_msgs::LaneArray tl_stop_waypoint;
+
 	for (size_t i = 0; i < msg.lanes.size(); ++i) {
 		autoware_msgs::lane lane = create_new_lane(msg.lanes[i], header);
 
 		lane_planner::vmap::VectorMap coarse_vmap =
 			lane_planner::vmap::create_coarse_vmap_from_lane(lane);
+
+
 		if (coarse_vmap.points.size() < 2) {
 			traffic_waypoint.lanes.push_back(lane);
 			continue;
 		}
 
+
 		lane_planner::vmap::VectorMap fine_vmap =
 			lane_planner::vmap::create_fine_vmap(lane_vmap, lane_planner::vmap::LNO_ALL, coarse_vmap,
 							     search_radius, waypoint_max);
+
+
 		if (fine_vmap.points.size() < 2 || !is_fine_vmap(fine_vmap, lane)) {
 			traffic_waypoint.lanes.push_back(lane);
 			green_waypoint.lanes.push_back(lane);
-			lane = apply_stopline_acceleration(lane, config_acceleration, config_stopline_search_radius,
-							   config_number_of_zeros_ahead,
-							   config_number_of_zeros_behind);
-			red_waypoint.lanes.push_back(lane);
-			continue;
+      			autoware_msgs::lane red_lane = apply_stopline_acceleration(lane, config_acceleration, config_stopline_search_radius,
+							   config_number_of_zeros_ahead, config_number_of_zeros_behind, STOP_LINES);
+			red_waypoint.lanes.push_back(red_lane);
+
+			autoware_msgs::lane tl_lane = apply_stopline_acceleration(lane, config_acceleration, config_stopline_search_radius,
+                 					   config_number_of_zeros_ahead, config_number_of_zeros_behind, TRAFFIC_LIGHT_STOP_LINES);
+		        tl_stop_waypoint.lanes.push_back(tl_lane);
+		        continue;
 		}
 
 		for (size_t j = 0; j < lane.waypoints.size(); ++j) {
@@ -463,6 +530,7 @@ void create_waypoint(const autoware_msgs::LaneArray& msg)
 	traffic_pub.publish(traffic_waypoint);
 	red_pub.publish(red_waypoint);
 	green_pub.publish(green_waypoint);
+  	tl_stop_pub.publish(tl_stop_waypoint);
 }
 
 void update_values()
@@ -592,6 +660,8 @@ int main(int argc, char **argv)
 	red_pub = n.advertise<autoware_msgs::LaneArray>("/red_waypoints_array", pub_waypoint_queue_size,
 							    pub_waypoint_latch);
 	green_pub = n.advertise<autoware_msgs::LaneArray>("/green_waypoints_array", pub_waypoint_queue_size,
+							      pub_waypoint_latch);
+	tl_stop_pub = n.advertise<autoware_msgs::LaneArray>("/tl_stop_waypoints_array", pub_waypoint_queue_size,
 							      pub_waypoint_latch);
 
 #ifdef DEBUG
