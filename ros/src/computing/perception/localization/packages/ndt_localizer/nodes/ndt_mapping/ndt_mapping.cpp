@@ -58,7 +58,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#ifdef USE_FAST_PCL
+#ifdef USE_PCL_OPENMP
   #include <fast_pcl/filters/voxel_grid.h>
   #include <fast_pcl/registration/ndt.h>
 #else
@@ -88,6 +88,15 @@ struct pose
   double pitch;
   double yaw;
 };
+
+enum class MethodType
+{
+    PCL_GENERIC = 0,
+    PCL_ANH = 1,
+    PCL_ANH_GPU = 2,
+    PCL_OPENMP = 3,
+};
+static MethodType _method_type = MethodType::PCL_GENERIC;
 
 // global variables
 static pose previous_pose, guess_pose, guess_pose_imu, guess_pose_odom, guess_pose_imu_odom, current_pose,
@@ -156,15 +165,11 @@ static double min_add_scan_shift = 1.0;
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
 static Eigen::Matrix4f tf_btol, tf_ltob;
 
-static bool _use_openmp = false;
-static bool _use_gpu = false;
-
-static bool _use_fast_pcl = false;
-static bool _incremental_voxel_update = false;
-
 static bool _use_imu = false;
 static bool _use_odom = false;
 static bool _imu_upside_down = false;
+
+static bool _incremental_voxel_update = false;
 
 static std::string _imu_topic = "/imu_raw";
 
@@ -514,7 +519,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
 
   #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt.setTransformationEpsilon(trans_eps);
       gpu_ndt.setStepSize(step_size);
@@ -525,7 +530,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     else
   #endif
   {
-	  if (_use_fast_pcl)
+	  if (_method_type == MethodType::PCL_ANH)
 	  {
         cpu_ndt.setTransformationEpsilon(trans_eps);
   		cpu_ndt.setStepSize(step_size);
@@ -547,14 +552,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   if (is_first_map == true)
   {
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt.setInputTarget(map_ptr);
     }
     else
 #endif
     {
-    	if (_use_fast_pcl == true)
+    	if (_method_type == MethodType::PCL_ANH)
     	{
             cpu_ndt.setInputTarget(map_ptr);
     	}
@@ -607,7 +612,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
   #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt.align(init_guess);
       t_localizer = gpu_ndt.getFinalTransformation();
@@ -617,7 +622,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     else
   #endif
-    if (_use_fast_pcl)
+    if (_method_type == MethodType::PCL_ANH)
     {
       cpu_ndt.align(init_guess);
 
@@ -629,7 +634,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     else
     {
-      #ifdef USE_FAST_PCL
+      #ifdef USE_PCL_OPENMP
         ndt.omp_align(*output_cloud, init_guess);
         fitness_score = ndt.omp_getFitnessScore();
       #else
@@ -770,14 +775,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     added_pose.yaw = current_pose.yaw;
 
     #ifdef CUDA_FOUND
-        if (_use_gpu == true)
+        if (_method_type == MethodType::PCL_ANH_GPU)
         {
           gpu_ndt.setInputTarget(map_ptr);
         }
         else
     #endif
         {
-        	if (_use_fast_pcl == true)
+        	if (_method_type == MethodType::PCL_ANH)
         	{
               if(_incremental_voxel_update == true)
                 cpu_ndt.updateVoxelGrid(transformed_scan_ptr);
@@ -905,21 +910,17 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
 // setting parameters
-  private_nh.getParam("use_gpu", _use_gpu);
-  private_nh.getParam("use_openmp", _use_openmp);
-  private_nh.getParam("use_fast_pcl", _use_fast_pcl);
-  private_nh.getParam("use_imu", _use_imu);
-  private_nh.getParam("use_odom", _use_odom);
+  int method_type_tmp = 0;
+  private_nh.getParam("method_type", method_type_tmp);
+  _method_type = static_cast<MethodType>(method_type_tmp);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
   private_nh.getParam("incremental_voxel_update", _incremental_voxel_update);
 
-  std::cout << "use_imu: " << _use_imu << std::endl;
-  std::cout << "use_gpu: " << _use_gpu << std::endl;
-  std::cout << "use_openmp: " << _use_openmp << std::endl;
-  std::cout << "use_fast_pcl: " << _use_openmp << std::endl;
-  std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
+  std::cout << "method_type: " << static_cast<int>(_method_type) << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
+  std::cout << "use_imu: " << _use_imu << std::endl;
+  std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;
   std::cout << "incremental_voxel_update: " << _incremental_voxel_update << std::endl;
 
@@ -953,14 +954,6 @@ int main(int argc, char** argv)
     std::cout << "tf_yaw is not set." << std::endl;
     return 1;
   }
-
-#if defined(CUDA_FOUND) && defined(USE_FAST_PCL)
-  if (_use_gpu == true && _use_openmp == true)
-  {
-    std::cout << "use_gpu and use_openmp are exclusive. Set use_gpu true and use_openmp false." << std::endl;
-    _use_openmp = false;
-  }
-#endif
 
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;

@@ -29,7 +29,15 @@ subs :
         gui  :
           dialog : MyDialogNdtMapping
           dialog_width  : 700
-          dialog_height : 450
+          dialog_height : 600
+          incremental_voxel_update:
+            depend : method_type
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          use_odom:
+            flags : [ nl ]
+          imu_topic:
+            flags : [ nl ]
       - name : approximate_ndt_mapping
         cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
@@ -42,7 +50,7 @@ subs :
         cmd  : roslaunch ndt_localizer ndt_matching.launch
         param: ndt
         gui  :
-          dialog_height : 350
+          dialog_height : 550
           stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
           x  :
             user_category : ''
@@ -51,6 +59,12 @@ subs :
           max:
             user_category : ''
           layer:
+            flags : [ nl ]
+          method_type:
+            flags : [ nl ]
+          use_odom:
+            flags : [ nl ]
+          imu_topic:
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
@@ -1461,34 +1475,53 @@ params :
 #      min   : -2.0
 #      max   : 2.0
 #      v     : 0
-    - name      : sync
-      kind      : hide
-      v         : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-        only_enable : True
-    - name      : use_openmp
-      desc      : use_openmp desc sample
-      label     : Use OpenMP
+    - name  : method_type
+      desc  : Method Type
+      label : Method Type
+      kind  : radio_box
+      choices:
+      - pcl_generic
+      - pcl_anh
+      - pcl_anh_gpu
+      - pcl_openmp
+      descs :
+      - PCL Generic Implementation
+      - PCL ANH Implementation
+      - PCL ANH GPU Implementation
+      - PCL OpenMP  Implementation
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : use_odom
+      desc      : Use Odometry to try to reduce errors (read from /odom_pose)
+      label     : Use Odometry
       kind      : checkbox
       v         : False
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : use_fast_pcl
-      desc      : use_fast_pcl desc sample
-      label     : Use Fast PCL
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
       kind      : checkbox
       v         : False
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : use_gpu
-      desc      : use_gpu desc sample
-      label     : Use GPU
+    - name      : imu_upside_down
+      desc      : Check if the IMU coordinate system is pointing downwards
+      label     : Inverted IMU
       kind      : checkbox
       v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -1500,6 +1533,13 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
 
   - name  : icp
     topic : /config/icp
@@ -2964,7 +3004,6 @@ params :
   - name  : ndt_mapping
     topic : /config/ndt_mapping
     msg   : ConfigNdtMapping
-    flags : [ no_init_update ]
     vars  :
     - name      : resolution
       desc      : Cell Size while mapping using ND (meters) (default 1.0)
@@ -3008,25 +3047,43 @@ params :
       min       : 0.0
       max       : 10.0
       v         : 1.0
-    - name      : use_imu
-      desc      : Use IMU to try to reduce errors
-      label     : Use IMU
+    - name  : method_type
+      desc  : Method Type
+      label : Method Type
+      kind  : radio_box
+      choices:
+      - pcl_generic
+      - pcl_anh
+      - pcl_anh_gpu
+      - pcl_openmp
+      descs :
+      - PCL Generic Implementation
+      - PCL ANH Implementation
+      - PCL ANH GPU Implementation
+      - PCL OpenMP  Implementation
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : incremental_voxel_update
+      desc      : incremental voxel update
+      label     : Incremental Voxel Update
       kind      : checkbox
       v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : imu_topic
-      desc      : IMU raw data source topic
-      label     : imu_topic
-      v         : /imu_raw
-      kind      : str
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : use_odom
       desc      : Use Odometry to try to reduce errors (read from /odom_pose)
       label     : Use Odometry
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_imu
+      desc      : Use IMU to try to reduce errors
+      label     : Use IMU
       kind      : checkbox
       v         : False
       cmd_param :
@@ -3040,31 +3097,15 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : imu_topic
+      desc      : IMU raw data source topic
+      label     : imu_topic
+      v         : /imu_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
-    - name      : use_openmp
-      desc      : Use OpenMP to accelerate computation
-      label     : Use OpenMP
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : use_fast_pcl
-      desc      : use_fast_pcl desc sample
-      label     : Use Fast PCL
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : use_gpu
-      desc      : Use GPU to accelerate computation
-      label     : Use GPU
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
 
 
   - name  : approximate_ndt_mapping

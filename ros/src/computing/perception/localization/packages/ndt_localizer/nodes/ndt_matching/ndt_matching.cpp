@@ -65,7 +65,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#ifdef USE_FAST_PCL
+#ifdef USE_PCL_OPENMP
   #include <fast_pcl/registration/ndt.h>
 #else
   #include <pcl/registration/ndt.h>
@@ -103,6 +103,15 @@ struct pose
   double pitch;
   double yaw;
 };
+
+enum class MethodType
+{
+    PCL_GENERIC = 0,
+    PCL_ANH = 1,
+    PCL_ANH_GPU = 2,
+    PCL_OPENMP = 3,
+};
+static MethodType _method_type = MethodType::PCL_GENERIC;
 
 static pose initial_pose, predict_pose, predict_pose_imu, predict_pose_odom, predict_pose_imu_odom, previous_pose,
     ndt_pose, current_pose, current_pose_imu, current_pose_odom, current_pose_imu_odom, localizer_pose,
@@ -222,11 +231,6 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static ros::Publisher ndt_reliability_pub;
 static std_msgs::Float32 ndt_reliability;
 
-static bool _use_gpu = false;
-static bool _use_openmp = false;
-
-static bool _use_fast_pcl = false;
-
 static bool _get_height = false;
 static bool _use_local_transform = false;
 static bool _use_imu = false;
@@ -268,14 +272,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     ndt_res = input->resolution;
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt_ptr->setResolution(ndt_res);
     }
     else
     {
 #endif
-		if (_use_fast_pcl)
+		if (_method_type == MethodType::PCL_ANH)
 		{
           cpu_ndt.setResolution(ndt_res);
 		}
@@ -291,14 +295,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     step_size = input->step_size;
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt_ptr->setStepSize(step_size);
     }
     else
     {
 #endif
-		if (_use_fast_pcl)
+		if (_method_type == MethodType::PCL_ANH)
 		{
           cpu_ndt.setStepSize(step_size);
 		}
@@ -314,14 +318,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     trans_eps = input->trans_epsilon;
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt_ptr->setTransformationEpsilon(trans_eps);
     }
     else
     {
 #endif
-		if (_use_fast_pcl)
+		if (_method_type == MethodType::PCL_ANH)
 		{
           cpu_ndt.setTransformationEpsilon(trans_eps);
 		}
@@ -337,14 +341,14 @@ static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
   {
     max_iter = input->max_iterations;
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt_ptr->setMaximumIterations(max_iter);
     }
     else
     {
 #endif
-		if (_use_fast_pcl)
+		if (_method_type == MethodType::PCL_ANH)
 		{
           cpu_ndt.setMaximumIterations(max_iter);
 		}
@@ -463,7 +467,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 // Setting point cloud to be aligned to.
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       std::shared_ptr<gpu::GNormalDistributionsTransform> new_gpu_ndt_ptr = std::make_shared<gpu::GNormalDistributionsTransform>();
       new_gpu_ndt_ptr->setResolution(ndt_res);
@@ -485,7 +489,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
     else
 #endif
-    if (_use_fast_pcl)
+    if (_method_type == MethodType::PCL_ANH)
     {
       cpu::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> new_cpu_ndt;
       new_cpu_ndt.setResolution(ndt_res);
@@ -514,7 +518,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       new_ndt.setMaximumIterations(max_iter);
       new_ndt.setStepSize(step_size);
       new_ndt.setTransformationEpsilon(trans_eps);
-      #ifdef USE_FAST_PCL
+      #ifdef USE_PCL_OPENMP
         new_ndt.omp_align(*output_cloud, Eigen::Matrix4f::Identity());
       #else
         new_ndt.align(*output_cloud, Eigen::Matrix4f::Identity());
@@ -907,14 +911,14 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pthread_mutex_lock(&mutex);
 #ifdef CUDA_FOUND
-    if (_use_gpu == true)
+    if (_method_type == MethodType::PCL_ANH_GPU)
     {
       gpu_ndt_ptr->setInputSource(filtered_scan_ptr);
     }
     else
     {
 #endif
-		if (_use_fast_pcl)
+		if (_method_type == MethodType::PCL_ANH)
 		{
           cpu_ndt.setInputSource(filtered_scan_ptr);
 		}
@@ -961,7 +965,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 
     #ifdef CUDA_FOUND
-      if (_use_gpu == true)
+      if (_method_type == MethodType::PCL_ANH_GPU)
       {
         align_start = std::chrono::system_clock::now();
         gpu_ndt_ptr->align(init_guess);
@@ -980,7 +984,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       }
       else
     #endif
-      if (_use_fast_pcl)
+      if (_method_type == MethodType::PCL_ANH)
       {
         align_start = std::chrono::system_clock::now();
         cpu_ndt.align(init_guess);
@@ -1000,7 +1004,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       else
       {
         align_start = std::chrono::system_clock::now();
-        #ifdef USE_FAST_PCL
+        #ifdef USE_PCL_OPENMP
           ndt.omp_align(*output_cloud, init_guess);
         #else
           ndt.align(*output_cloud, init_guess);
@@ -1013,7 +1017,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         iteration = ndt.getFinalNumIteration();
 
         getFitnessScore_start = std::chrono::system_clock::now();
-        #ifdef USE_FAST_PCL
+        #ifdef USE_PCL_OPENMP
           fitness_score = ndt.omp_getFitnessScore();
         #else
           fitness_score = ndt.getFitnessScore();
@@ -1480,26 +1484,18 @@ int main(int argc, char** argv)
   ofs.open(filename.c_str(), std::ios::app);
 
   // Geting parameters
+  int method_type_tmp = 0;
+  private_nh.getParam("method_type", method_type_tmp);
+  _method_type = static_cast<MethodType>(method_type_tmp);
   private_nh.getParam("use_gnss", _use_gnss);
   private_nh.getParam("queue_size", _queue_size);
   private_nh.getParam("offset", _offset);
-  private_nh.getParam("use_openmp", _use_openmp);
-  private_nh.getParam("use_gpu", _use_gpu);
-  private_nh.getParam("use_fast_pcl", _use_fast_pcl);
   private_nh.getParam("get_height", _get_height);
   private_nh.getParam("use_local_transform", _use_local_transform);
   private_nh.getParam("use_imu", _use_imu);
   private_nh.getParam("use_odom", _use_odom);
   private_nh.getParam("imu_upside_down", _imu_upside_down);
   private_nh.getParam("imu_topic", _imu_topic);
-
-#if defined(CUDA_FOUND) && defined(USE_FAST_PCL)
-  if (_use_gpu == true && _use_openmp == true)
-  {
-    std::cout << "use_gpu and use_openmp are exclusive. Set use_gpu true and use_openmp false." << std::endl;
-    _use_openmp = false;
-  }
-#endif
 
   if (nh.getParam("localizer", _localizer) == false)
   {
@@ -1539,19 +1535,17 @@ int main(int argc, char** argv)
 
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Log file: " << filename << std::endl;
+  std::cout << "method_type: " << static_cast<int>(_method_type) << std::endl;
   std::cout << "use_gnss: " << _use_gnss << std::endl;
   std::cout << "queue_size: " << _queue_size << std::endl;
   std::cout << "offset: " << _offset << std::endl;
-  std::cout << "use_gpu: " << _use_gpu << std::endl;
-  std::cout << "use_openmp: " << _use_openmp << std::endl;
-  std::cout << "use_fast_pcl: " << _use_fast_pcl << std::endl;
   std::cout << "get_height: " << _get_height << std::endl;
   std::cout << "use_local_transform: " << _use_local_transform << std::endl;
-  std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "use_odom: " << _use_odom << std::endl;
+  std::cout << "use_imu: " << _use_imu << std::endl;
   std::cout << "imu_upside_down: " << _imu_upside_down << std::endl;
-  std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "imu_topic: " << _imu_topic << std::endl;
+  std::cout << "localizer: " << _localizer << std::endl;
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
   std::cout << "-----------------------------------------------------------------" << std::endl;

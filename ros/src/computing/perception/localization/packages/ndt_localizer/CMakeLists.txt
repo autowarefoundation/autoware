@@ -9,7 +9,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES filters registration)
+SET(PCL_OPENMP_PACKAGES filters registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -21,7 +21,7 @@ endif()
 find_package(CUDA)
 if(CUDA_FOUND)
     add_definitions(-DCUDA_FOUND)
-    list(APPEND FAST_PCL_PACKAGES ndt_gpu)
+    list(APPEND PCL_OPENMP_PACKAGES ndt_gpu)
 endif()
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
@@ -32,7 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   pcl_conversions
   velodyne_pointcloud
-  ${FAST_PCL_PACKAGES}
+  ${PCL_OPENMP_PACKAGES}
   ndt_tku
   ndt_cpu
 )
@@ -44,7 +44,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   pcl_conversions
   velodyne_pointcloud
-  ${FAST_PCL_PACKAGES}
+  ${PCL_OPENMP_PACKAGES}
   ndt_cpu
 )
 endif()
@@ -56,7 +56,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
+  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${PCL_OPENMP_PACKAGES}
   DEPENDS ndt_tku ndt_cpu
 #  DEPENDS system_lib
 )
@@ -64,7 +64,7 @@ elseif("${ROS_VERSION}" MATCHES "(kinetic)")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${FAST_PCL_PACKAGES}
+  CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ${PCL_OPENMP_PACKAGES}
   DEPENDS ndt_cpu
 #  DEPENDS ndt_tku
 #  DEPENDS system_lib
@@ -100,8 +100,8 @@ if(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
   add_dependencies(ndt_matching_omp autoware_msgs_generate_messages_cpp)
   add_dependencies(ndt_mapping_omp autoware_msgs_generate_messages_cpp)
 
-  set_target_properties(ndt_matching_omp  PROPERTIES COMPILE_DEFINITIONS "USE_FAST_PCL")
-  set_target_properties(ndt_mapping_omp   PROPERTIES COMPILE_DEFINITIONS "USE_FAST_PCL")
+  set_target_properties(ndt_matching_omp  PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
+  set_target_properties(ndt_mapping_omp   PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
 
   if(CUDA_FOUND)
     target_include_directories(ndt_matching_omp PRIVATE ${CUDA_INCLUDE_DIRS})
