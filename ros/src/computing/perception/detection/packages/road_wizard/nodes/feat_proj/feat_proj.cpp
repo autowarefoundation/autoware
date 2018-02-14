@@ -501,7 +501,6 @@ int main(int argc, char *argv[])
 	std::cout << "Loaded." << std::endl;
 
 	ros::Subscriber cameraInfoSubscriber = rosnode.subscribe(cameraInfo_topic_name, 100, cameraInfoCallback);
-	ros::Subscriber cameraImage = rosnode.subscribe(cameraInfo_topic_name, 100, cameraInfoCallback);
 	ros::Subscriber adjust_xySubscriber = rosnode.subscribe("/config/adjust_xy", 100, adjust_xyCallback);
 	ros::Subscriber current_pose_subscriber;
 	ros::Subscriber waypoint_subscriber;
@@ -535,11 +534,8 @@ int main(int argc, char *argv[])
 		{
 		}
 
-		if (prev_orientation.vec() != orientation.vec()  &&
-		    prev_position != position)
-		{
-			echoSignals2(signalPublisher, false);
-		}
+		echoSignals2(signalPublisher, false);
+
 		prev_orientation = orientation;
 		prev_position = position;
 		loop.sleep();
