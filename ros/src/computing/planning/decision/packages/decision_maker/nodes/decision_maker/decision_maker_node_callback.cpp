@@ -111,11 +111,11 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
-{    
+{
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 //  const ros::M_string &header = event.getConnectionHeader();
 //  std::string topic = header.at("topic"); 
-  
+
   if(!isManualLight){// && topic.find("manage") == std::string::npos){
 	  current_traffic_light_ = light->traffic_light;
 	  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
@@ -123,11 +123,15 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
 		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
 		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
 	  }
-	  else
+	  else if (current_traffic_light_ == state_machine::E_GREEN)
 	  {
 		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
 		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
 	  }
+         else // fall back else
+         {
+                 // this will not update the state, which means the previous state will be continued
+         }
   }
 }
 
