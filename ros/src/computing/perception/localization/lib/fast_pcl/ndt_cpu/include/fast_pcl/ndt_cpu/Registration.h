@@ -40,6 +40,8 @@ public:
 
 	bool hasConverged() const;
 
+	void updateInputTarget(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud);
+
 	virtual ~Registration();
 
 protected:
