@@ -58,20 +58,14 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#ifdef USE_PCL_OPENMP
-  #include <fast_pcl/filters/voxel_grid.h>
-  #include <fast_pcl/registration/ndt.h>
-#else
-  #include <pcl/filters/voxel_grid.h>
-  #include <pcl/registration/ndt.h>
-#endif
-
-
+#include <pcl/registration/ndt.h>
+#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
 #ifdef CUDA_FOUND
   #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
 #endif
-
-#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
+#ifdef USE_PCL_OPENMP
+  #include <pcl_omp/registration/ndt.h>
+#endif
 
 #include <autoware_msgs/ConfigNdtMapping.h>
 #include <autoware_msgs/ConfigNdtMappingOutput.h>
@@ -123,16 +117,16 @@ static double current_velocity_imu_z = 0.0;
 
 static pcl::PointCloud<pcl::PointXYZI> map;
 
-// Added for GPU ndt
+static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
+static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> anh_ndt;
 #ifdef CUDA_FOUND
-static gpu::GNormalDistributionsTransform gpu_ndt;
+static gpu::GNormalDistributionsTransform anh_gpu_ndt;
+#endif
+#ifdef USE_PCL_OPENMP
+static pcl_omp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> omp_ndt;
 #endif
 
-// Added for CPU ndt testing version
-static cpu::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> cpu_ndt;
 
-static pcl::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> ndt;
-// end of adding
 
 // Default values
 static int max_iter = 30;        // Maximum iterations
@@ -518,56 +512,59 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZI>(map));
 
-  #ifdef CUDA_FOUND
-    if (_method_type == MethodType::PCL_ANH_GPU)
-    {
-      gpu_ndt.setTransformationEpsilon(trans_eps);
-      gpu_ndt.setStepSize(step_size);
-      gpu_ndt.setResolution(ndt_res);
-      gpu_ndt.setMaximumIterations(max_iter);
-      gpu_ndt.setInputSource(filtered_scan_ptr);
-    }
-    else
-  #endif
+  if (_method_type == MethodType::PCL_GENERIC)
   {
-	  if (_method_type == MethodType::PCL_ANH)
-	  {
-        cpu_ndt.setTransformationEpsilon(trans_eps);
-  		cpu_ndt.setStepSize(step_size);
-  		cpu_ndt.setResolution(ndt_res);
-  		cpu_ndt.setMaximumIterations(max_iter);
-  		cpu_ndt.setInputSource(filtered_scan_ptr);
-	  }
-	  else
-	  {
-        ndt.setTransformationEpsilon(trans_eps);
-		ndt.setStepSize(step_size);
-		ndt.setResolution(ndt_res);
-		ndt.setMaximumIterations(max_iter);
-		ndt.setInputSource(filtered_scan_ptr);
-	  }
+    ndt.setTransformationEpsilon(trans_eps);
+    ndt.setStepSize(step_size);
+    ndt.setResolution(ndt_res);
+    ndt.setMaximumIterations(max_iter);
+    ndt.setInputSource(filtered_scan_ptr);
   }
+  else if (_method_type == MethodType::PCL_ANH)
+  {
+    anh_ndt.setTransformationEpsilon(trans_eps);
+    anh_ndt.setStepSize(step_size);
+    anh_ndt.setResolution(ndt_res);
+    anh_ndt.setMaximumIterations(max_iter);
+    anh_ndt.setInputSource(filtered_scan_ptr);
+  }
+#ifdef CUDA_FOUND
+  else if (_method_type == MethodType::PCL_ANH_GPU)
+  {
+    anh_gpu_ndt.setTransformationEpsilon(trans_eps);
+    anh_gpu_ndt.setStepSize(step_size);
+    anh_gpu_ndt.setResolution(ndt_res);
+    anh_gpu_ndt.setMaximumIterations(max_iter);
+    anh_gpu_ndt.setInputSource(filtered_scan_ptr);
+  }
+#endif
+#ifdef USE_PCL_OPENMP
+  else if (_method_type == MethodType::PCL_OPENMP)
+  {
+    omp_ndt.setTransformationEpsilon(trans_eps);
+    omp_ndt.setStepSize(step_size);
+    omp_ndt.setResolution(ndt_res);
+    omp_ndt.setMaximumIterations(max_iter);
+    omp_ndt.setInputSource(filtered_scan_ptr);
+  }
+#endif
+
 
   static bool is_first_map = true;
   if (is_first_map == true)
   {
+    if (_method_type == MethodType::PCL_GENERIC)
+      ndt.setInputTarget(map_ptr);
+    else if (_method_type == MethodType::PCL_ANH)
+      anh_ndt.setInputTarget(map_ptr);
 #ifdef CUDA_FOUND
-    if (_method_type == MethodType::PCL_ANH_GPU)
-    {
-      gpu_ndt.setInputTarget(map_ptr);
-    }
-    else
+    else if (_method_type == MethodType::PCL_ANH_GPU)
+      anh_gpu_ndt.setInputTarget(map_ptr);
 #endif
-    {
-    	if (_method_type == MethodType::PCL_ANH)
-    	{
-            cpu_ndt.setInputTarget(map_ptr);
-    	}
-		else
-		{
-          ndt.setInputTarget(map_ptr);
-		}
-    }
+#ifdef USE_PCL_OPENMP
+    else if (_method_type == MethodType::PCL_OPENMP)
+      omp_ndt.setInputTarget(map_ptr);
+#endif
     is_first_map = false;
   }
 
@@ -611,42 +608,43 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-  #ifdef CUDA_FOUND
-    if (_method_type == MethodType::PCL_ANH_GPU)
-    {
-      gpu_ndt.align(init_guess);
-      t_localizer = gpu_ndt.getFinalTransformation();
-      has_converged = gpu_ndt.hasConverged();
-      fitness_score = gpu_ndt.getFitnessScore();
-      final_num_iteration = ndt.getFinalNumIteration();
-    }
-    else
-  #endif
-    if (_method_type == MethodType::PCL_ANH)
-    {
-      cpu_ndt.align(init_guess);
 
-      t_localizer = cpu_ndt.getFinalTransformation();
-      has_converged = cpu_ndt.hasConverged();
-      fitness_score = cpu_ndt.getFitnessScore();
-
-      final_num_iteration = cpu_ndt.getFinalNumIteration();
-    }
-    else
-    {
-      #ifdef USE_PCL_OPENMP
-        ndt.omp_align(*output_cloud, init_guess);
-        fitness_score = ndt.omp_getFitnessScore();
-      #else
-        ndt.align(*output_cloud, init_guess);
-        fitness_score = ndt.getFitnessScore();
-      #endif
-      t_localizer = ndt.getFinalTransformation();
-      has_converged = ndt.hasConverged();
-      final_num_iteration = ndt.getFinalNumIteration();
-    }
-
-
+  if (_method_type == MethodType::PCL_GENERIC)
+  {
+    ndt.align(*output_cloud, init_guess);
+    fitness_score = ndt.getFitnessScore();
+    t_localizer = ndt.getFinalTransformation();
+    has_converged = ndt.hasConverged();
+    final_num_iteration = ndt.getFinalNumIteration();
+  }
+  else if (_method_type == MethodType::PCL_ANH)
+  {
+    anh_ndt.align(init_guess);
+    fitness_score = anh_ndt.getFitnessScore();
+    t_localizer = anh_ndt.getFinalTransformation();
+    has_converged = anh_ndt.hasConverged();
+    final_num_iteration = anh_ndt.getFinalNumIteration();
+  }
+#ifdef CUDA_FOUND
+  else if (_method_type == MethodType::PCL_ANH_GPU)
+  {
+    anh_gpu_ndt.align(init_guess);
+    fitness_score = anh_gpu_ndt.getFitnessScore();
+    t_localizer = anh_gpu_ndt.getFinalTransformation();
+    has_converged = anh_gpu_ndt.hasConverged();
+    final_num_iteration = anh_gpu_ndt.getFinalNumIteration();
+  }
+#endif
+#ifdef USE_PCL_OPENMP
+  else if (_method_type == MethodType::PCL_OPENMP)
+  {
+    omp_ndt.align(*output_cloud, init_guess);
+    fitness_score = omp_ndt.getFitnessScore();
+    t_localizer = omp_ndt.getFinalTransformation();
+    has_converged = omp_ndt.hasConverged();
+    final_num_iteration = omp_ndt.getFinalNumIteration();
+  }
+#endif
 
   t_base_link = t_localizer * tf_ltob;
 
@@ -774,26 +772,23 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     added_pose.pitch = current_pose.pitch;
     added_pose.yaw = current_pose.yaw;
 
-    #ifdef CUDA_FOUND
-        if (_method_type == MethodType::PCL_ANH_GPU)
-        {
-          gpu_ndt.setInputTarget(map_ptr);
-        }
-        else
-    #endif
-        {
-        	if (_method_type == MethodType::PCL_ANH)
-        	{
-              if(_incremental_voxel_update == true)
-                cpu_ndt.updateVoxelGrid(transformed_scan_ptr);
-              else
-                cpu_ndt.setInputTarget(map_ptr);
-        	}
-    		else
-    		{
-              ndt.setInputTarget(map_ptr);
-    		}
-        }
+    if (_method_type == MethodType::PCL_GENERIC)
+      ndt.setInputTarget(map_ptr);
+    else if (_method_type == MethodType::PCL_ANH)
+    {
+      if(_incremental_voxel_update == true)
+        anh_ndt.updateVoxelGrid(transformed_scan_ptr);
+      else
+        anh_ndt.setInputTarget(map_ptr);
+    }
+#ifdef CUDA_FOUND
+    else if (_method_type == MethodType::PCL_ANH_GPU)
+      anh_gpu_ndt.setInputTarget(map_ptr);
+#endif
+#ifdef USE_PCL_OPENMP
+    else if (_method_type == MethodType::PCL_OPENMP)
+      omp_ndt.setInputTarget(map_ptr);
+#endif
   }
 
 
@@ -957,6 +952,25 @@ int main(int argc, char** argv)
 
   std::cout << "(tf_x,tf_y,tf_z,tf_roll,tf_pitch,tf_yaw): (" << _tf_x << ", " << _tf_y << ", " << _tf_z << ", "
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
+
+#ifndef CUDA_FOUND
+  if(_method_type == MethodType::PCL_ANH_GPU)
+  {
+    std::cerr << "**************************************************************" << std::endl;
+    std::cerr << "[ERROR]PCL_ANH_GPU is not built. Please use other method type." << std::endl;
+    std::cerr << "**************************************************************" << std::endl;
+    exit(1);
+  }
+#endif
+#ifndef USE_PCL_OPENMP
+  if(_method_type == MethodType::PCL_OPENMP)
+  {
+    std::cerr << "**************************************************************" << std::endl;
+    std::cerr << "[ERROR]PCL_OPENMP is not built. Please use other method type." << std::endl;
+    std::cerr << "**************************************************************" << std::endl;
+    exit(1);
+  }
+#endif
 
   Eigen::Translation3f tl_btol(_tf_x, _tf_y, _tf_z);                 // tl: translation
   Eigen::AngleAxisf rot_x_btol(_tf_roll, Eigen::Vector3f::UnitX());  // rot: rotation

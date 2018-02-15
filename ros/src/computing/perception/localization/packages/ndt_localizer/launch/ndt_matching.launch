@@ -13,21 +13,7 @@
   <arg name="use_local_transform" default="false" />
   <arg name="sync" default="false" />
 
-  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log" if="$(eval method_type != 3)">
-    <param name="method_type" value="$(arg method_type)" />
-    <param name="use_gnss" value="$(arg use_gnss)" />
-    <param name="use_odom" value="$(arg use_odom)" />
-    <param name="use_imu" value="$(arg use_imu)" />
-    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
-    <param name="imu_topic" value="$(arg imu_topic)" />
-    <param name="queue_size" value="$(arg queue_size)" />
-    <param name="offset" value="$(arg offset)" />
-    <param name="get_height" value="$(arg get_height)" />
-    <param name="use_local_transform" value="$(arg use_local_transform)" />
-    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
-  </node>
-
-  <node pkg="ndt_localizer" type="ndt_matching_omp" name="ndt_matching_omp" output="log" if="$(eval method_type == 3)">
+  <node pkg="ndt_localizer" type="ndt_matching" name="ndt_matching" output="log">
     <param name="method_type" value="$(arg method_type)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="use_odom" value="$(arg use_odom)" />

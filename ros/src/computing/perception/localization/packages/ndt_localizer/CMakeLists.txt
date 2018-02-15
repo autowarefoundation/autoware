@@ -9,7 +9,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(PCL_OPENMP_PACKAGES filters registration)
+SET(PCL_OPENMP_PACKAGES pcl_omp_registration)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -93,21 +93,8 @@ endif()
 
 
 if(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-  add_executable(ndt_matching_omp nodes/ndt_matching/ndt_matching.cpp)
-  add_executable(ndt_mapping_omp nodes/ndt_mapping/ndt_mapping.cpp)
-  target_link_libraries(ndt_matching_omp ${catkin_LIBRARIES})
-  target_link_libraries(ndt_mapping_omp ${catkin_LIBRARIES})
-  add_dependencies(ndt_matching_omp autoware_msgs_generate_messages_cpp)
-  add_dependencies(ndt_mapping_omp autoware_msgs_generate_messages_cpp)
-
-  set_target_properties(ndt_matching_omp  PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
-  set_target_properties(ndt_mapping_omp   PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
-
-  if(CUDA_FOUND)
-    target_include_directories(ndt_matching_omp PRIVATE ${CUDA_INCLUDE_DIRS})
-    target_include_directories(ndt_mapping_omp PRIVATE ${CUDA_INCLUDE_DIRS})
-  endif()
-
+  set_target_properties(ndt_matching  PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
+  set_target_properties(ndt_mapping   PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
 endif(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 
