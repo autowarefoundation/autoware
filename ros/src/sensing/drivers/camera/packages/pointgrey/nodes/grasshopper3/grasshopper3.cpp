@@ -51,6 +51,16 @@
 
 #include <signal.h>
 
+// ---- Apex-specific settings ----
+#define APEX_MODE FlyCapture2::MODE_1
+#define APEX_PIXEL_FORMAT FlyCapture2::PIXEL_FORMAT_RAW8
+#define APEX_OFFSET_X 0
+#define APEX_OFFSET_Y 0
+#define APEX_IMAGE_WIDTH 1368
+#define APEX_IMAGE_HEIGHT 1096
+#define APEX_PACKET_SIZE 5096U
+// ---- End of Apex-specific settings ----
+
 static volatile int running = 1;
 
 static void signalHandler(int)
@@ -115,6 +125,22 @@ static void print_camera_info(FlyCapture2::CameraInfo* info)
 		  << std::endl;
 }
 
+const void print_image_settings(
+	const FlyCapture2::Format7ImageSettings & image_settings,
+	const unsigned int & packet_size,
+	const float & percentage
+	)
+{
+	std::cout << "Image settings: " << std::endl;
+	std::cout << "\tMode: " << image_settings.mode << std::endl;
+	std::cout << "\tPixel Format: 0x" << std::hex << image_settings.pixelFormat << std::dec << std::endl;
+	std::cout << "\tOffset X: " << image_settings.offsetX << std::endl;
+	std::cout << "\tOffset Y: " << image_settings.offsetY << std::endl;
+	std::cout << "\tWidth: " << image_settings.width << std::endl;
+	std::cout << "\tHeight: " << image_settings.height << std::endl;
+	std::cout << "Packet size: " << packet_size << " (" << percentage << "%)" << std::endl;
+}
+
 static std::vector<FlyCapture2::Camera*>
 initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 {
@@ -167,6 +193,105 @@ initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 		}
 
 		print_camera_info(&camera_info);
+
+		// ---- Apex-specific Settings ----
+		// Check video mode
+		//   Should be Format7, configure it accordingly if not
+		FlyCapture2::VideoMode video_mode;
+		FlyCapture2::FrameRate frame_rate;
+
+		error = camera->GetVideoModeAndFrameRate(&video_mode, &frame_rate);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			std::exit(-1);
+		}
+
+		std::cout << "Video Mode: " << video_mode << std::endl;
+		std::cout << "Frame Rate: " << frame_rate << std::endl;
+
+		if (video_mode != FlyCapture2::VIDEOMODE_FORMAT7 || frame_rate != FlyCapture2::FRAMERATE_FORMAT7)
+		{
+			bool supported = false;
+			video_mode = FlyCapture2::VIDEOMODE_FORMAT7;
+			frame_rate = FlyCapture2::FRAMERATE_FORMAT7;
+			error = camera->GetVideoModeAndFrameRateInfo(video_mode, frame_rate, &supported);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+			if(!supported) {
+			std::cerr << "[ERROR] Format7 not supported on camera with index "
+				<< i << "Exiting." << std::endl;
+			std::exit(-1);
+			}
+			error = camera->SetVideoModeAndFrameRate(video_mode, frame_rate);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+		}
+
+		// check current Format7 image settings
+		FlyCapture2::Format7ImageSettings image_settings;
+		unsigned int packet_size;
+		float percentage;
+		error = camera->GetFormat7Configuration(&image_settings, &packet_size, &percentage);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			std::exit(-1);
+		}
+
+		std::cout << "Settings before:" << std::endl;
+		print_image_settings(image_settings, packet_size, percentage);
+
+		if (packet_size != APEX_PACKET_SIZE ||
+			image_settings.mode  != APEX_MODE ||
+			image_settings.pixelFormat != APEX_PIXEL_FORMAT ||
+			image_settings.offsetX != APEX_OFFSET_X ||
+			image_settings.offsetY != APEX_OFFSET_Y ||
+			image_settings.width != APEX_IMAGE_WIDTH ||
+			image_settings.height != APEX_IMAGE_HEIGHT
+		) {
+			image_settings.mode = APEX_MODE;
+			image_settings.pixelFormat = APEX_PIXEL_FORMAT;
+			image_settings.offsetX = APEX_OFFSET_X;
+			image_settings.offsetY = APEX_OFFSET_Y;
+			image_settings.width = APEX_IMAGE_WIDTH;
+			image_settings.height = APEX_IMAGE_HEIGHT;
+			FlyCapture2::Format7PacketInfo packet_info;
+			bool valid_settings = false;
+			error = camera->ValidateFormat7Settings(&image_settings, &valid_settings, &packet_info);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+			packet_size = packet_info.recommendedBytesPerPacket;
+
+			error = camera->SetFormat7Configuration(&image_settings, packet_size);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+		}
+
+		// Verify Settings
+		error = camera->GetFormat7Configuration(&image_settings, &packet_size, &percentage);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			std::exit(-1);
+		}
+
+		std::cout << "Settings after: " << std::endl;
+		print_image_settings(image_settings, packet_size, percentage);
+                // ---- End of Apex-specific Settings ----
+
 		cameras.push_back(camera);
 	}
 
