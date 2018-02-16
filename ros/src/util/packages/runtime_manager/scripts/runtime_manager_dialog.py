@@ -292,6 +292,8 @@ class MyFrame(rtmgr.MyFrame):
 			panel = ParamPanel(self.panel_interface_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_interface_cc.SetSizer(szr)
+                self.all_sensors_proc = None
+                self.lidar_tracker_proc = None
 
 		#
 		# for Database tab
@@ -1842,6 +1844,30 @@ class MyFrame(rtmgr.MyFrame):
 			self.dlg_rosbag_record.OnStart(None)
 		else:
 			self.dlg_rosbag_record.OnStop(None)
+
+        def OnRunAllSensors(self, event):
+                self.all_sensors_proc = self.launch_kill(
+                        not self.all_sensors_proc,
+                        'do_shell_exec ' \
+                        'source ~/autoware/ros/devel/setup.bash;' \
+                        'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend;'\
+                        'roslaunch demo_scripts all_sensors.launch;',
+                        self.all_sensors_proc,
+                        obj=self.button_run_all_sensors,
+                        kill_children=True)
+
+        def OnRunLidarTracker(self, event):
+                self.lidar_tracker_proc = self.launch_kill(
+                        not self.lidar_tracker_proc,
+                        'do_shell_exec ' \
+                        'ssh salus@10.31.32.250 .local/bin/ade enter "source /opt/apex_ws/install.bash; ros2 run lidar_tracking lidar_tracker_exe" &'\
+                        'source ~/autoware/ros/devel/setup.bash;' \
+                        'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend;'\
+                        'source ~/ros1_bridge/install/setup.bash;'\
+                        'ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics',
+                        self.lidar_tracker_proc,
+                        obj=self.button_run_lidar_tracker,
+                        kill_children=True)
 
 	def stdout_file_search(self, file, k):
 		s = ''
