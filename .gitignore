@@ -1,0 +1,6 @@
+*.pyc
+*.tar.gz
+*~
+*.user
+doc
+TAGS
