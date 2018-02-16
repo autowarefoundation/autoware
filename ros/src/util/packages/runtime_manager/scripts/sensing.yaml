@@ -148,7 +148,7 @@ subs :
       - name : Velodyne HDL-32C
         desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
+        run  : roslaunch velodyne_pointcloud velodyne_hdl32c.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
