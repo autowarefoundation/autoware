@@ -310,8 +310,8 @@ void read_signaldata(const char *filename, std::vector<Signal>&ret)
 {
   int max_id;
   Tbl tbl = read_csv(filename, &max_id);
-  size_t i, n = tbl.size();\
-  std::cout << "n: " << n << "\n";
+  size_t i, n = tbl.size();
+
   for (i=0; i<n; i++) {
     Signal signal;
     int id = std::stoi(tbl[i][0]);
@@ -418,8 +418,6 @@ void echoSignals2(ros::Publisher &pub, bool useOpenGLCoord = false) {
 	}
 	signalsInFrame.header.stamp = ros::Time::now();
 	pub.publish(signalsInFrame);
-
-	std::cout << "There are " << signalsInFrame.Signals.size() << " signals in range" << std::endl;
 }
 
 
