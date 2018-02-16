@@ -1847,8 +1847,8 @@ class MyFrame(rtmgr.MyFrame):
 
         def OnRunAllSensors(self, event):
                 cmd = 'do_shell_exec ' \
-                      'source ~/autoware/ros/devel/setup.bash;' \
-                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend;'\
+                      'source ~/autoware/ros/devel/setup.bash; ' \
+                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
                       'roslaunch demo_scripts all_sensors.launch;'
                 self.all_sensors_proc = self.launch_kill(
                         not self.all_sensors_proc,
@@ -1860,10 +1860,10 @@ class MyFrame(rtmgr.MyFrame):
 
         def OnRunLidarTracker(self, event):
                 cmd = 'do_shell_exec ' \
-                      'ssh salus@10.31.32.250 .local/bin/ade enter "source /opt/apex_ws/install.bash; ros2 run lidar_tracking lidar_tracker_exe" &'\
-                      'source ~/autoware/ros/devel/setup.bash;' \
-                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend;'\
-                      'source ~/ros1_bridge/install/setup.bash;'\
+                      'ssh salus@10.31.32.250 .local/bin/ade enter "source /opt/apex_ws/install.bash; ros2 run lidar_tracking lidar_tracker_exe" & '\
+                      'source ~/autoware/ros/devel/setup.bash; ' \
+                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
+                      'source ~/ros1_bridge/install/setup.bash; '\
                       'ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics'
                 self.lidar_tracker_proc = self.launch_kill(
                         not self.lidar_tracker_proc,
