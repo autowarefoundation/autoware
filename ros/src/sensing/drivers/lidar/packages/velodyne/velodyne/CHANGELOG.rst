@@ -1,25 +1,12 @@
 Change history
 ==============
 
-1.6.1 (2018-01-20)
+1.3.0 (2017-11-10)
 ------------------
-
-1.6.0 (2017-12-11)
-------------------
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
-
-1.5.1 (2017-09-25)
-------------------
-
-1.5.0 (2017-09-21)
-------------------
+* Merge pull request `#110 <https://github.com/ros-drivers/velodyne/issues/110>`_ from kmhallen/master
+  Added velodyne_laserscan package
+* Added velodyne_laserscan package and inserted into existing launch files
+* Contributors: Jack O'Quin, Joshua Whitley, Kevin Hallenbeck
 
 1.2.0 (2014-08-06)
 ------------------

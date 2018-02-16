@@ -1,2 +1,0 @@
-- name: velodyne_node
-  publish: [/velodyne_packets]
