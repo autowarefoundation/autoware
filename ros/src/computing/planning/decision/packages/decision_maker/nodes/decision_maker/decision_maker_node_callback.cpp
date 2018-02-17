@@ -96,6 +96,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ctx->setEnableForceSetState(msg.enable_force_state_change);
 
   param_target_waypoint_ = msg.target_waypoint;
+  str_wp_ahead_of_curvature_ = msg.str_wp_ahead_of_curvature;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_stopline_target_ratio_ = msg.stopline_target_ratio;
   param_shift_width_ = msg.shift_width;
@@ -245,14 +246,29 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
       else
         steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
-      for (auto &wp_lane : laneinArea.waypoints)
-        for (auto &lane : lane_array.lanes)
-          for (auto &wp : lane.waypoints)
-            if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id)
-            {
-              wp.wpstate.steering_state = steering_state;
-            }
-    }
+      bool once = true;
+      for (auto &wp_lane : laneinArea.waypoints) {
+          for (auto &lane : lane_array.lanes) {
+              for (auto i = 0; i< lane.waypoints.size(); i++) {
+                  auto wp = lane.waypoints[i];
+                  if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id) {
+                      if (once)
+                      {
+                          once = false;    // reset the flag
+                          // add the steering state to the waypoints before
+                          for (auto j=i-1; (j > 0 && (i-j) < str_wp_ahead_of_curvature_); j--)
+                          {
+                              lane.waypoints[j].wpstate.steering_state = steering_state;
+                          }
+                      }
+                      // add steering state to the original points in the intersection
+                      lane.waypoints[i].wpstate.steering_state = steering_state;
+                  }
+              }
+          }
+      }
+
+     }
   }
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
@@ -329,12 +345,15 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
 
 state_machine::StateFlags getStateFlags(uint8_t msg_state)
 {
-  if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT)
+  if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT) {
     return state_machine::DRIVE_STR_LEFT_STATE;
-  else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT)
+  }
+  else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT) {
     return state_machine::DRIVE_STR_RIGHT_STATE;
-  else
+  }
+  else {
     return state_machine::DRIVE_STR_STRAIGHT_STATE;
+  }
 }
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
@@ -357,7 +376,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   
   size_t idx = param_stopline_target_waypoint_ +  (current_velocity_ * param_stopline_target_ratio_);
   idx = current_finalwaypoints_.waypoints.size() - 1 > idx ?
-		idx : current_finalwaypoints_.waypoints.size() - 1;	  
+		idx : current_finalwaypoints_.waypoints.size() - 1;
 
   CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
   
@@ -377,6 +396,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
+
   if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
   {
 	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);
