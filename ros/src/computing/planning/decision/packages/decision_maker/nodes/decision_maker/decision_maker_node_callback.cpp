@@ -96,6 +96,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ctx->setEnableForceSetState(msg.enable_force_state_change);
 
   param_target_waypoint_ = msg.target_waypoint;
+  str_wp_ahead_of_curvature_ = msg.str_wp_ahead_of_curvature;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_stopline_target_ratio_ = msg.stopline_target_ratio;
   param_shift_width_ = msg.shift_width;
@@ -255,7 +256,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
                       {
                           once = false;    // reset the flag
                           // add the steering state to the waypoints before
-                          for (auto j=i-1; (j > 0 && (i-j)<30); j--)
+                          for (auto j=i-1; (j > 0 && (i-j) < str_wp_ahead_of_curvature_); j--)
                           {
                               lane.waypoints[j].wpstate.steering_state = steering_state;
                           }
