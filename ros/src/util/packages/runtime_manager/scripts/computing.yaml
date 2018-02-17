@@ -2057,6 +2057,12 @@ params :
       min  : 0
       max  : 50
       v    : 14
+    - name : str_wp_ahead_of_curvature
+      desc : no waypoints ahead of which the blinker should start
+      label: str_wp_ahead_of_curvature
+      min  : 0
+      max  : 100
+      v    : 25
     - name : stopline_target_waypoint
       desc : stopline
       label: stopline_target_waypoint
