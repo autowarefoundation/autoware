@@ -137,20 +137,20 @@ void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
 void PacmodInterface::publishToPacmod()
 {
   module_comm_msgs::SpeedMode speed_mode;
-  speed_mode.header = header_;
+  speed_mode.header.stamp = ros::Time::now();
   speed_mode.mode = control_mode_ ? 1 : 0;
   speed_mode.speed = speed_;
   speed_mode.acceleration_limit = acceleration_limit_;
   speed_mode.deceleration_limit = deceleration_limit_;
 
   module_comm_msgs::SteerMode steer_mode;
-  steer_mode.header = header_;
+  steer_mode.header.stamp = ros::Time::now();
   steer_mode.mode = speed_mode.mode;
   steer_mode.curvature = curvature_;
   steer_mode.max_curvature_rate = max_curvature_rate_;
 
   platform_comm_msgs::TurnSignalCommand turn_signal;
-  turn_signal.header = header_;
+  turn_signal.header.stamp = ros::Time::now();
   turn_signal.mode = speed_mode.mode;
   if (lamp_cmd_.l == 1)
   {

@@ -38,7 +38,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   if (!ctx->isCurrentState(_state_num))
   {
     _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = true;
     }
@@ -46,7 +46,7 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   else
   {
     _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE
+    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
 		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
 	    isManualLight = false;
     }
@@ -96,6 +96,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   ctx->setEnableForceSetState(msg.enable_force_state_change);
 
   param_target_waypoint_ = msg.target_waypoint;
+  str_wp_ahead_of_curvature_ = msg.str_wp_ahead_of_curvature;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_stopline_target_ratio_ = msg.stopline_target_ratio;
   param_stopline_pause_time_ = msg.stopline_pause_time;
@@ -115,7 +116,7 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
 {
   const autoware_msgs::traffic_light *light = event.getMessage().get();
 //  const ros::M_string &header = event.getConnectionHeader();
-//  std::string topic = header.at("topic");
+//  std::string topic = header.at("topic"); 
 
   if(!isManualLight){// && topic.find("manage") == std::string::npos){
 	  current_traffic_light_ = light->traffic_light;
@@ -124,11 +125,15 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
 		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
 		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
 	  }
-	  else
+	  else if (current_traffic_light_ == state_machine::E_GREEN)
 	  {
 		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
 		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
 	  }
+         else // fall back else
+         {
+                 // this will not update the state, which means the previous state will be continued
+         }
   }
 }
 
@@ -242,14 +247,29 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
       else
         steering_state = autoware_msgs::WaypointState::STR_STRAIGHT;
 
-      for (auto &wp_lane : laneinArea.waypoints)
-        for (auto &lane : lane_array.lanes)
-          for (auto &wp : lane.waypoints)
-            if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id)
-            {
-              wp.wpstate.steering_state = steering_state;
-            }
-    }
+      bool once = true;
+      for (auto &wp_lane : laneinArea.waypoints) {
+          for (auto &lane : lane_array.lanes) {
+              for (auto i = 0; i< lane.waypoints.size(); i++) {
+                  auto wp = lane.waypoints[i];
+                  if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id) {
+                      if (once)
+                      {
+                          once = false;    // reset the flag
+                          // add the steering state to the waypoints before
+                          for (auto j=i-1; (j > 0 && (i-j) < str_wp_ahead_of_curvature_); j--)
+                          {
+                              lane.waypoints[j].wpstate.steering_state = steering_state;
+                          }
+                      }
+                      // add steering state to the original points in the intersection
+                      lane.waypoints[i].wpstate.steering_state = steering_state;
+                  }
+              }
+          }
+      }
+
+     }
   }
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
@@ -326,12 +346,15 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
 
 state_machine::StateFlags getStateFlags(uint8_t msg_state)
 {
-  if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT)
+  if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_LEFT) {
     return state_machine::DRIVE_STR_LEFT_STATE;
-  else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT)
+  }
+  else if (msg_state == (uint8_t)autoware_msgs::WaypointState::STR_RIGHT) {
     return state_machine::DRIVE_STR_RIGHT_STATE;
-  else
+  }
+  else {
     return state_machine::DRIVE_STR_STRAIGHT_STATE;
+  }
 }
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
@@ -351,13 +374,13 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   current_finalwaypoints_ = msg;
 
   static size_t previous_idx = 0;
-
+  
   size_t idx = param_stopline_target_waypoint_ +  (current_velocity_ * param_stopline_target_ratio_);
   idx = current_finalwaypoints_.waypoints.size() - 1 > idx ?
 		idx : current_finalwaypoints_.waypoints.size() - 1;
 
   CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-
+  
   for(size_t i = (previous_idx>idx)?idx:previous_idx ; i <= idx; i++){
 	  if(i < current_finalwaypoints_.waypoints.size()){
 		  if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE){
@@ -374,6 +397,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
+
   if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
   {
 	  ctx->setCurrentState(state_machine::DRIVE_STR_LEFT_STATE);

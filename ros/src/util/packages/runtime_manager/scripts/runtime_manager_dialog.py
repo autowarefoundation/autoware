@@ -292,6 +292,20 @@ class MyFrame(rtmgr.MyFrame):
 			panel = ParamPanel(self.panel_interface_cc, frame=self, pdic=pdic, gdic=gdic, prm=prm)
 			szr.Add(panel, 0, wx.EXPAND)
 		self.panel_interface_cc.SetSizer(szr)
+                self.all_sensors_proc = None
+                self.lidar_tracker_proc = None
+                choices = [
+                    'ghost obstacle',
+                    'accident took over',
+                    'end of run',
+                    'blocking obstacle',
+                    'fw obstacle not detected',
+                    'missed stop',
+                    'sw driver crash',
+                    'steering overshoot',
+                ]
+                for choice in choices:
+                    self.apex_report_text.Append(choice)
 
 		#
 		# for Database tab
@@ -1834,6 +1848,56 @@ class MyFrame(rtmgr.MyFrame):
 		self.ftrace_proc_ = self.launch_kill(v, cmd,
 			None if v else self.ftrace_proc_, obj=obj)
 
+	def OnRosbagToggle(self, event):
+		obj = event.GetEventObject()
+		if obj.GetValue():
+			self.dlg_rosbag_record.update_filename()
+			self.dlg_rosbag_record.refresh()
+			self.dlg_rosbag_record.OnStart(None)
+		else:
+			self.dlg_rosbag_record.OnStop(None)
+
+        def OnRunAllSensors(self, event):
+                cmd = 'do_shell_exec ' \
+                      'source ~/autoware/ros/devel/setup.bash; ' \
+                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
+                      'roslaunch demo_scripts all_sensors.launch;'
+                self.all_sensors_proc = self.launch_kill(
+                        not self.all_sensors_proc,
+                        cmd,
+                        self.all_sensors_proc,
+                        obj=self.button_run_all_sensors,
+                        kill_children=True)
+		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
+
+        def OnRunLidarTracker(self, event):
+                cmd = 'do_shell_exec ' \
+                      'ssh salus@10.31.32.250 .local/bin/ade enter "source /opt/apex_ws/install.bash; ros2 run lidar_tracking lidar_tracker_exe" & '\
+                      'source ~/autoware/ros/devel/setup.bash; ' \
+                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
+                      'source ~/ros1_bridge/install/setup.bash; '\
+                      'ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics'
+                self.lidar_tracker_proc = self.launch_kill(
+                        not self.lidar_tracker_proc,
+                        cmd,
+                        self.lidar_tracker_proc,
+                        obj=self.button_run_lidar_tracker,
+                        kill_children=True)
+		self.interface_cmd[ self.button_run_lidar_tracker ] = (cmd, self.lidar_tracker_proc)
+
+        def OnApexReportSelected(self, event):
+                pass
+
+        def OnApexReportSend(self, event):
+                value = self.apex_report_text.GetValue()
+		subprocess.Popen([
+                    'rostopic',
+                    'pub',
+                    '-1',
+                    '/apex/report',
+                    'std_msgs/String',
+                    value ])
+
 	def stdout_file_search(self, file, k):
 		s = ''
 		while True:
@@ -2871,10 +2935,24 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.cmd_dic = kwds.pop('cmd_dic')
 		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
+		self.basedir = '.'
+		self.topics = []
+		self.load_preset()
 		self.refresh()
 		self.parent = self.GetParent()
 		self.cmd_dic[ self.button_start ] = ('rosbag record', None)
 		self.toggles = [ self.button_start, self.button_stop ]
+
+	def load_preset(self):
+		homedir = os.path.expanduser('~')
+		filename = os.path.join(homedir, 'runtime-manager-topics.yaml')
+		try:
+			with open(filename) as f:
+				dct = yaml.load(f.read())
+				self.basedir = dct['basedir']
+				self.topics = dct['topics']
+		except (IOError, KeyError, TypeError):
+			pass
 
 	def OnRef(self, event):
 		tc = self.text_ctrl
@@ -2909,6 +2987,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		proc = self.parent.launch_kill(True, cmd, proc, add_args=args, obj=key_obj, kill_children=True)
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.parent.toggle_enables(self.toggles)
+		set_val(self.parent.button_rosbag_toggle, True)
 
 	def OnStop(self, event):
 		key_obj = self.button_start
@@ -2917,6 +2996,18 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.cmd_dic[ key_obj ] = (cmd, proc)
 		self.parent.toggle_enables(self.toggles)
 		self.Hide()
+		set_val(self.parent.button_rosbag_toggle, False)
+
+	def OnSavePreset(self, event):
+		homedir = os.path.expanduser('~')
+		with open(os.path.join(homedir, 'runtime-manager-topics.yaml'), 'w') as f:
+			self.basedir = os.path.dirname(self.text_ctrl.GetValue().encode('utf8'))
+			self.topics = [x.GetLabel().encode('utf8') for x in self.cbs if x.GetValue()]
+			s = yaml.dump({
+				'topics': self.topics,
+				'basedir': self.basedir,
+			}, default_flow_style=False)
+			f.write(s)
 
 	def OnRefresh(self, event):
 		self.refresh()
@@ -2931,6 +3022,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 		self.cbs = []
 		for topic in lst:
 			obj = wx.CheckBox(panel, wx.ID_ANY, topic)
+			obj.SetValue(topic in self.topics)
 			bdr = 4 if topic == 'All' else 4 * 4
 			szr.Add(obj, 0, wx.LEFT, bdr)
 			self.cbs.append(obj)
@@ -2940,15 +3032,14 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def show(self):
 		self.Show()
 		self.update_filename()
+		self.refresh()
 
 	def update_filename(self):
 		tc = self.text_ctrl
-		path = tc.GetValue()
-		(dn, fn) = os.path.split(path)
 		now = datetime.datetime.now()
 		fn = 'autoware-%04d%02d%02d%02d%02d%02d' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
-		path = os.path.join(dn, fn)
+		path = os.path.join(self.basedir, fn)
 		set_path(tc, path)
 
 	def size_arg_get(self):

@@ -2057,6 +2057,12 @@ params :
       min  : 0
       max  : 50
       v    : 14
+    - name : str_wp_ahead_of_curvature
+      desc : no waypoints ahead of which the blinker should start
+      label: str_wp_ahead_of_curvature
+      min  : 0
+      max  : 100
+      v    : 25
     - name : stopline_target_waypoint
       desc : stopline
       label: stopline_target_waypoint
@@ -2356,10 +2362,27 @@ params :
       desc    : use_path_info desc sample
       label   : 'Use Path Info'
       kind    : checkbox
+      v       : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : use_filtered_signal_map
+      desc    : use_filtered_signal_map desc sample
+      label   : 'Use Filtered Signal Map'
+      kind    : checkbox
       v       : True
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : filtered_signal_map
+      desc      : filtered signal map file
+      label     : filtered signal map
+      kind      : path
+      path_type : multi
+      v         : /tmp/filtered_signal_map.csv
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu
@@ -2400,6 +2423,24 @@ params :
       label : Display superimpose result
       kind  : checkbox
       v     : False
+    - name      : score_threshold
+      desc      : score threshold for a positive label
+      label     : score_threshold
+      min       : 0
+      max       : 1.0
+      v         : 0.8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : change_state_threshold
+      desc      : state change threshold
+      label     : change_state_threshold
+      min       : 0
+      max       : 100
+      v         : 2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu
@@ -2410,6 +2451,24 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+    - name      : network_definition_file
+      desc      : network_definition json file
+      label     : network_definition json file
+      kind      : path
+      path_type : multi
+      v         : /tmp/network_definition.json
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : pretrained_model_file
+      desc      : pretrained_model params file
+      label     : pretrained_model params file
+      kind      : path
+      path_type : multi
+      v         : /tmp/network_definition.params
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name : region_tlr_ssd
     vars :

@@ -136,6 +136,7 @@ private:
   bool enableForceStateChange;
   uint32_t param_convergence_count_;
   uint32_t param_target_waypoint_;
+  uint32_t str_wp_ahead_of_curvature_;
   double param_convergence_threshold_;
   uint32_t param_stopline_target_waypoint_;
   double param_stopline_target_ratio_;
@@ -249,6 +250,7 @@ public:
     param_convergence_threshold_ = DEFAULT_CONVERGENCE_THRESHOLD;
     param_convergence_count_ = DEFAULT_CONVERGENCE_COUNT;
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
+    str_wp_ahead_of_curvature_ = DEFAULT_STR_WAYPOINTS_AHEAD;
     param_shift_width_ = DEFAULT_SHIFT_WIDTH;
     param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
     param_stopline_target_ratio_ = 0.0;
