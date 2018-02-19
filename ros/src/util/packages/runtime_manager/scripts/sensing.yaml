@@ -177,7 +177,6 @@ subs :
             flags : [ center_v ]
       - name : Hokuyo 2D URG
         desc : urg_node supports SCIP 2.2 or earlier compliant laser range-finders.
-        probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
         param: hokuyo_urg
 
