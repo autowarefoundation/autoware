@@ -249,14 +249,14 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
       bool once = true;
       for (auto &wp_lane : laneinArea.waypoints) {
           for (auto &lane : lane_array.lanes) {
-              for (auto i = 0; i< lane.waypoints.size(); i++) {
+              for (size_t i = 0; i< lane.waypoints.size(); i++) {
                   auto wp = lane.waypoints[i];
                   if (wp.gid == wp_lane.gid && wp.wpstate.aid == area.area_id) {
                       if (once)
                       {
                           once = false;    // reset the flag
                           // add the steering state to the waypoints before
-                          for (auto j=i-1; (j > 0 && (i-j) < str_wp_ahead_of_curvature_); j--)
+                          for (size_t j=i-1; (j > 0 && (i-j) < str_wp_ahead_of_curvature_); j--)
                           {
                               lane.waypoints[j].wpstate.steering_state = steering_state;
                           }
@@ -270,6 +270,46 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 
      }
   }
+
+    // add the steering state to the points at the end turn (with out intersection) explicitly
+    for (auto &lane : lane_array.lanes){
+
+        // check if the waypoints in the end have a turn
+        size_t size = lane.waypoints.size();
+        auto last_wp = lane.waypoints[size -1];
+
+        // if there are enough waypoints for turn in the end
+        if (size > 20 + str_wp_ahead_of_curvature_) {
+            int steering_state;
+
+            // reference 20th waypoint from end
+            auto ref_wp = lane.waypoints[size - 1 -20];
+
+            // get the yaw diff for the points in the end
+            int diff = ((int)std::floor(calcPosesAngleDiff(ref_wp.pose.pose, last_wp.pose.pose)));
+
+            // update the steering state
+          if (diff <= ANGLE_LEFT)
+          {
+              steering_state = autoware_msgs::WaypointState::STR_LEFT;
+          }
+          else if (diff >= ANGLE_RIGHT) {
+              steering_state = autoware_msgs::WaypointState::STR_RIGHT;
+          }
+            // if there is a turn
+            if (steering_state == autoware_msgs::WaypointState::STR_LEFT || steering_state == autoware_msgs::WaypointState::STR_RIGHT)
+            {
+                for (size_t i=size; (i > 0 && (size-i) < (str_wp_ahead_of_curvature_+20)); i--)
+                {
+                    // update the state
+                    lane.waypoints[i].wpstate.steering_state = steering_state;
+                    std::cerr << i << " ";
+                }
+
+            }
+        }
+    }
+
   // STOP
   std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
     return ((g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type &
