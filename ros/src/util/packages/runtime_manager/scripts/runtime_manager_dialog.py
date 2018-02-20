@@ -1886,10 +1886,16 @@ class MyFrame(rtmgr.MyFrame):
 		self.interface_cmd[ self.button_run_lidar_tracker ] = (cmd, self.lidar_tracker_proc)
 
         def OnApexReportSelected(self, event):
-                pass
+                self.apex_report_custom.SetValue('')
+
+        def OnApexReportCustom(self, event):
+                if self.apex_report_custom.GetValue():
+                    self.apex_report_text.SetSelection(-1)
 
         def OnApexReportSend(self, event):
-                value = self.apex_report_text.GetValue()
+                value = self.apex_report_custom.GetValue()
+                if not value:
+                    value = self.apex_report_text.GetString(self.apex_report_text.GetSelection())
 		subprocess.Popen([
                     'rostopic',
                     'pub',
