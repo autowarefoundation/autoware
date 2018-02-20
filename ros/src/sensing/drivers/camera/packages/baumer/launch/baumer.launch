@@ -8,6 +8,7 @@
 	<node pkg="vlg22c_cam" type="vlg22c_cam_node" name="vlg22c" cwd="node" output="screen">
 		<param name="fps" value="$(arg fps)"/>
 		<param name="scale" value="$(arg scale)"/>
+		<param name="brightness" value="$(arg brightness)"/>
 		<param name="calibrationfile" value="$(arg CalibrationFile)"/>
 	</node>
 </launch>
