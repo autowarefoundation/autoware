@@ -1,5 +1,40 @@
 # Autoware Docker
 
+## Docker
+
+## car_demo
+To begin the port car_demo into Autoware, and leave the nvidia image base, we copied the docker files in the car_demo stack. This had to be done, because ros-kinetic does not build with gazebo 8 by default. So, the dollowing is
+### How to build
+First make sure that the file has the appropriate permissions:
+```
+chmod +x build.sh
+```
+Then build it with,
+```
+./build.sh
+```
+### How to run
+First make sure that the file has the appropriate permissions:
+```
+chmod +x run.sh
+```
+Then run it with,
+```
+./run.sh
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Install docker
 ```
 sudo apt-get install apt-transport-https ca-certificates
@@ -34,23 +69,3 @@ $/Autoware/docker/ ./run_demo.bash
 ```
 
 #OLD!!
-
-## How to build
-First make sure that the file has the appropriate permissions:
-```
-chmod +x build.sh
-```
-Then build it with,
-```
-sh build.sh
-```
-
-## How to run
-First make sure that the file has the appropriate permissions:
-```
-chmod +x run.sh
-```
-Then run it with,
-```
-sh run.sh
-```

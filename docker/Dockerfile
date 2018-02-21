@@ -1,6 +1,9 @@
-# Note this is the car_demo docker file extracted
 # https://github.com/CPFL/Autoware/blob/master/docker/generic/Dockerfile.kinetic
 # FROM nvidia/cuda:8.0-devel-ubuntu16.04
+
+# then to test switching to an nvidia image -> uncommented line 2 and comment line 12.
+
+# Note this is the car_demo docker file extracted
 ################################################################################
 # https://github.com/CPFL/Autoware/blob/master/docker/generic/Dockerfile.kinetic
 ################################################################################
@@ -121,15 +124,15 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
 
 
 RUN mkdir -p /tmp/workspace/src
-COPY ../car_demo/prius_description /tmp/workspace/src/prius_description
-COPY ../car_demo/prius_msgs /tmp/workspace/src/prius_msgs
-COPY ../car_demo/car_demo /tmp/workspace/src/car_demo
+COPY car_demo/prius_description /tmp/workspace/src/prius_description
+COPY car_demo/prius_msgs /tmp/workspace/src/prius_msgs
+COPY car_demo/car_demo /tmp/workspace/src/car_demo
 RUN /bin/bash -c 'cd /tmp/workspace \
  && source /opt/ros/kinetic/setup.bash \
  && catkin_make'
 
 
-CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch car_demo demo.launch"] # H.F. comment out
+CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch car_demo demo.launch"]
 ############################################################  END
 #https://github.com/osrf/car_demo/blob/master/Dockerfile
 ##############################################################

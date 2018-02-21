@@ -1,0 +1,524 @@
+Use test
+Sending build context to Docker daemon  107.6MB
+Step 1/44 : FROM nvidia/cuda:8.0-devel-ubuntu16.04
+8.0-devel-ubuntu16.04: Pulling from nvidia/cuda
+1be7f2b886e8: Pulling fs layer
+6fbc4a21b806: Pulling fs layer
+c71a6f8e1378: Pulling fs layer
+4be3072e5a37: Pulling fs layer
+06c6d2f59700: Pulling fs layer
+7bdef929a7da: Pulling fs layer
+249339766b13: Pulling fs layer
+f98560d0479d: Pulling fs layer
+0a3a3c0ae06e: Pulling fs layer
+06c6d2f59700: Waiting
+7bdef929a7da: Waiting
+249339766b13: Waiting
+f98560d0479d: Waiting
+0a3a3c0ae06e: Waiting
+4be3072e5a37: Waiting
+c71a6f8e1378: Download complete
+6fbc4a21b806: Download complete
+4be3072e5a37: Download complete
+06c6d2f59700: Verifying Checksum
+06c6d2f59700: Download complete
+7bdef929a7da: Download complete
+f98560d0479d: Verifying Checksum
+f98560d0479d: Download complete
+1be7f2b886e8: Verifying Checksum
+1be7f2b886e8: Download complete
+1be7f2b886e8: Pull complete
+6fbc4a21b806: Pull complete
+c71a6f8e1378: Pull complete
+4be3072e5a37: Pull complete
+06c6d2f59700: Pull complete
+7bdef929a7da: Pull complete
+249339766b13: Download complete
+0a3a3c0ae06e: Verifying Checksum
+0a3a3c0ae06e: Download complete
+249339766b13: Pull complete
+f98560d0479d: Pull complete
+0a3a3c0ae06e: Pull complete
+Digest: sha256:6c158926215177eb4e738bb4f85f08454ab154cb712f7ed7f9b03e2168f3c415
+Status: Downloaded newer image for nvidia/cuda:8.0-devel-ubuntu16.04
+ ---> 97292f407ed8
+Step 2/44 : RUN apt-get update && apt-get install -y --no-install-recommends     dirmngr     gnupg2     && rm -rf /var/lib/apt/lists/*
+ ---> Running in e94eae960b25
+Ign:1 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  InRelease
+Get:2 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Release [564 B]
+Get:3 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Release.gpg [801 B]
+Get:4 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Packages [100 kB]
+Get:5 http://archive.ubuntu.com/ubuntu xenial InRelease [247 kB]
+Get:6 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB]
+Get:7 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [72.8 kB]
+Get:8 http://archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:9 http://archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:10 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [576 kB]
+Get:11 http://archive.ubuntu.com/ubuntu xenial/universe Sources [9802 kB]
+Get:12 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [12.7 kB]
+Get:13 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [400 kB]
+Get:14 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3486 B]
+Get:15 http://archive.ubuntu.com/ubuntu xenial/main amd64 Packages [1558 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial/restricted amd64 Packages [14.1 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [9827 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [176 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/universe Sources [240 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [942 kB]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [13.1 kB]
+Get:22 http://archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [757 kB]
+Get:23 http://archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [18.5 kB]
+Get:24 http://archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [5153 B]
+Get:25 http://archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7172 B]
+Fetched 25.1 MB in 3s (8202 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  gnupg-agent libasn1-8-heimdal libassuan0 libffi6 libgnutls30
+  libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhogweed4 libhx509-5-heimdal libidn11
+  libkrb5-26-heimdal libksba8 libldap-2.4-2 libnettle6 libnpth0 libp11-kit0
+  libroken18-heimdal libsasl2-2 libsasl2-modules-db libsqlite3-0 libtasn1-6
+  libwind0-heimdal pinentry-curses
+Suggested packages:
+  gnupg-doc parcimonie xloadimage gnutls-bin pinentry-doc
+Recommended packages:
+  libsasl2-modules
+The following NEW packages will be installed:
+  dirmngr gnupg-agent gnupg2 libasn1-8-heimdal libassuan0 libffi6 libgnutls30
+  libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhogweed4 libhx509-5-heimdal libidn11
+  libkrb5-26-heimdal libksba8 libldap-2.4-2 libnettle6 libnpth0 libp11-kit0
+  libroken18-heimdal libsasl2-2 libsasl2-modules-db libsqlite3-0 libtasn1-6
+  libwind0-heimdal pinentry-curses
+0 upgraded, 27 newly installed, 0 to remove and 35 not upgraded.
+Need to get 3801 kB of archives.
+After this operation, 11.7 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu xenial/main amd64 libsqlite3-0 amd64 3.11.0-1ubuntu1 [396 kB]
+Get:2 http://archive.ubuntu.com/ubuntu xenial/main amd64 libassuan0 amd64 2.4.2-2 [34.6 kB]
+Get:3 http://archive.ubuntu.com/ubuntu xenial/main amd64 pinentry-curses amd64 0.9.7-3 [31.2 kB]
+Get:4 http://archive.ubuntu.com/ubuntu xenial/main amd64 libnpth0 amd64 1.2-3 [7998 B]
+Get:5 http://archive.ubuntu.com/ubuntu xenial/main amd64 gnupg-agent amd64 2.1.11-6ubuntu2 [239 kB]
+Get:6 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libksba8 amd64 1.3.3-1ubuntu0.16.04.1 [90.2 kB]
+Get:7 http://archive.ubuntu.com/ubuntu xenial/main amd64 gnupg2 amd64 2.1.11-6ubuntu2 [756 kB]
+Get:8 http://archive.ubuntu.com/ubuntu xenial/main amd64 libffi6 amd64 3.2.1-4 [17.8 kB]
+Get:9 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libnettle6 amd64 3.2-1ubuntu0.16.04.1 [93.5 kB]
+Get:10 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libhogweed4 amd64 3.2-1ubuntu0.16.04.1 [136 kB]
+Get:11 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libidn11 amd64 1.32-3ubuntu1.2 [46.5 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libp11-kit0 amd64 0.23.2-5~ubuntu16.04.1 [105 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libtasn1-6 amd64 4.7-3ubuntu0.16.04.3 [43.5 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgnutls30 amd64 3.4.10-4ubuntu1.4 [548 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libroken18-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [41.4 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libasn1-8-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [174 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libhcrypto4-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [85.0 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libheimbase1-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [29.3 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libwind0-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [47.8 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libhx509-5-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [107 kB]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libkrb5-26-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [202 kB]
+Get:22 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libheimntlm0-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [15.1 kB]
+Get:23 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgssapi3-heimdal amd64 1.7~git20150920+dfsg-4ubuntu1.16.04.1 [96.1 kB]
+Get:24 http://archive.ubuntu.com/ubuntu xenial/main amd64 libsasl2-modules-db amd64 2.1.26.dfsg1-14build1 [14.5 kB]
+Get:25 http://archive.ubuntu.com/ubuntu xenial/main amd64 libsasl2-2 amd64 2.1.26.dfsg1-14build1 [48.7 kB]
+Get:26 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libldap-2.4-2 amd64 2.4.42+dfsg-2ubuntu3.2 [160 kB]
+Get:27 http://archive.ubuntu.com/ubuntu xenial/main amd64 dirmngr amd64 2.1.11-6ubuntu2 [235 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 3801 kB in 1s (2853 kB/s)
+Selecting previously unselected package libsqlite3-0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11141 files and directories currently installed.)
+Preparing to unpack .../libsqlite3-0_3.11.0-1ubuntu1_amd64.deb ...
+Unpacking libsqlite3-0:amd64 (3.11.0-1ubuntu1) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libsqlite3-0:amd64 (3.11.0-1ubuntu1) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Selecting previously unselected package libassuan0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11147 files and directories currently installed.)
+Preparing to unpack .../libassuan0_2.4.2-2_amd64.deb ...
+Unpacking libassuan0:amd64 (2.4.2-2) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libassuan0:amd64 (2.4.2-2) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Selecting previously unselected package pinentry-curses.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11152 files and directories currently installed.)
+Preparing to unpack .../pinentry-curses_0.9.7-3_amd64.deb ...
+Unpacking pinentry-curses (0.9.7-3) ...
+Setting up pinentry-curses (0.9.7-3) ...
+Selecting previously unselected package libnpth0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11160 files and directories currently installed.)
+Preparing to unpack .../libnpth0_1.2-3_amd64.deb ...
+Unpacking libnpth0:amd64 (1.2-3) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libnpth0:amd64 (1.2-3) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Selecting previously unselected package gnupg-agent.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11165 files and directories currently installed.)
+Preparing to unpack .../gnupg-agent_2.1.11-6ubuntu2_amd64.deb ...
+Unpacking gnupg-agent (2.1.11-6ubuntu2) ...
+Setting up gnupg-agent (2.1.11-6ubuntu2) ...
+Selecting previously unselected package libksba8:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11189 files and directories currently installed.)
+Preparing to unpack .../libksba8_1.3.3-1ubuntu0.16.04.1_amd64.deb ...
+Unpacking libksba8:amd64 (1.3.3-1ubuntu0.16.04.1) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libksba8:amd64 (1.3.3-1ubuntu0.16.04.1) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Selecting previously unselected package gnupg2.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11197 files and directories currently installed.)
+Preparing to unpack .../gnupg2_2.1.11-6ubuntu2_amd64.deb ...
+Unpacking gnupg2 (2.1.11-6ubuntu2) ...
+Setting up gnupg2 (2.1.11-6ubuntu2) ...
+Selecting previously unselected package libffi6:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11260 files and directories currently installed.)
+Preparing to unpack .../libffi6_3.2.1-4_amd64.deb ...
+Unpacking libffi6:amd64 (3.2.1-4) ...
+Selecting previously unselected package libnettle6:amd64.
+Preparing to unpack .../libnettle6_3.2-1ubuntu0.16.04.1_amd64.deb ...
+Unpacking libnettle6:amd64 (3.2-1ubuntu0.16.04.1) ...
+Selecting previously unselected package libhogweed4:amd64.
+Preparing to unpack .../libhogweed4_3.2-1ubuntu0.16.04.1_amd64.deb ...
+Unpacking libhogweed4:amd64 (3.2-1ubuntu0.16.04.1) ...
+Selecting previously unselected package libidn11:amd64.
+Preparing to unpack .../libidn11_1.32-3ubuntu1.2_amd64.deb ...
+Unpacking libidn11:amd64 (1.32-3ubuntu1.2) ...
+Selecting previously unselected package libp11-kit0:amd64.
+Preparing to unpack .../libp11-kit0_0.23.2-5~ubuntu16.04.1_amd64.deb ...
+Unpacking libp11-kit0:amd64 (0.23.2-5~ubuntu16.04.1) ...
+Selecting previously unselected package libtasn1-6:amd64.
+Preparing to unpack .../libtasn1-6_4.7-3ubuntu0.16.04.3_amd64.deb ...
+Unpacking libtasn1-6:amd64 (4.7-3ubuntu0.16.04.3) ...
+Selecting previously unselected package libgnutls30:amd64.
+Preparing to unpack .../libgnutls30_3.4.10-4ubuntu1.4_amd64.deb ...
+Unpacking libgnutls30:amd64 (3.4.10-4ubuntu1.4) ...
+Selecting previously unselected package libroken18-heimdal:amd64.
+Preparing to unpack .../libroken18-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libroken18-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libasn1-8-heimdal:amd64.
+Preparing to unpack .../libasn1-8-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libasn1-8-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libhcrypto4-heimdal:amd64.
+Preparing to unpack .../libhcrypto4-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libhcrypto4-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libheimbase1-heimdal:amd64.
+Preparing to unpack .../libheimbase1-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libheimbase1-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libwind0-heimdal:amd64.
+Preparing to unpack .../libwind0-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libwind0-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libhx509-5-heimdal:amd64.
+Preparing to unpack .../libhx509-5-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libhx509-5-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libkrb5-26-heimdal:amd64.
+Preparing to unpack .../libkrb5-26-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libkrb5-26-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libheimntlm0-heimdal:amd64.
+Preparing to unpack .../libheimntlm0-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libheimntlm0-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libgssapi3-heimdal:amd64.
+Preparing to unpack .../libgssapi3-heimdal_1.7~git20150920+dfsg-4ubuntu1.16.04.1_amd64.deb ...
+Unpacking libgssapi3-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../libsasl2-modules-db_2.1.26.dfsg1-14build1_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.26.dfsg1-14build1) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../libsasl2-2_2.1.26.dfsg1-14build1_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.26.dfsg1-14build1) ...
+Selecting previously unselected package libldap-2.4-2:amd64.
+Preparing to unpack .../libldap-2.4-2_2.4.42+dfsg-2ubuntu3.2_amd64.deb ...
+Unpacking libldap-2.4-2:amd64 (2.4.42+dfsg-2ubuntu3.2) ...
+Selecting previously unselected package dirmngr.
+Preparing to unpack .../dirmngr_2.1.11-6ubuntu2_amd64.deb ...
+Unpacking dirmngr (2.1.11-6ubuntu2) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libffi6:amd64 (3.2.1-4) ...
+Setting up libnettle6:amd64 (3.2-1ubuntu0.16.04.1) ...
+Setting up libhogweed4:amd64 (3.2-1ubuntu0.16.04.1) ...
+Setting up libidn11:amd64 (1.32-3ubuntu1.2) ...
+Setting up libp11-kit0:amd64 (0.23.2-5~ubuntu16.04.1) ...
+Setting up libtasn1-6:amd64 (4.7-3ubuntu0.16.04.3) ...
+Setting up libgnutls30:amd64 (3.4.10-4ubuntu1.4) ...
+Setting up libroken18-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libasn1-8-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libhcrypto4-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libheimbase1-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libwind0-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libhx509-5-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libkrb5-26-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libheimntlm0-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libgssapi3-heimdal:amd64 (1.7~git20150920+dfsg-4ubuntu1.16.04.1) ...
+Setting up libsasl2-modules-db:amd64 (2.1.26.dfsg1-14build1) ...
+Setting up libsasl2-2:amd64 (2.1.26.dfsg1-14build1) ...
+Setting up libldap-2.4-2:amd64 (2.4.42+dfsg-2ubuntu3.2) ...
+Setting up dirmngr (2.1.11-6ubuntu2) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+ ---> 096701aeb931
+Removing intermediate container e94eae960b25
+Step 3/44 : RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 421C365BD9FF1F717815A3895523BAEEB01FA116
+ ---> Running in 864e4f2c1e4a
+Executing: /tmp/tmp.80UVGrfRpO/gpg.1.sh --keyserver
+hkp://keyserver.ubuntu.com:80
+--recv-keys
+421C365BD9FF1F717815A3895523BAEEB01FA116
+[91mgpg: requesting key B01FA116 from hkp server keyserver.ubuntu.com
+[0m[91mgpg: key B01FA116: public key "ROS Builder <rosbuild@ros.org>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+[0m ---> 5d2f4d84dc96
+Removing intermediate container 864e4f2c1e4a
+Step 4/44 : RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list
+ ---> Running in e94297021575
+ ---> 30c6c4f97f27
+Removing intermediate container e94297021575
+Step 5/44 : RUN apt-get update && apt-get install --no-install-recommends -y     python-rosdep     python-rosinstall     python-vcstools     && rm -rf /var/lib/apt/lists/*
+ ---> Running in 5f7ded85e638
+Get:1 http://packages.ros.org/ros/ubuntu xenial InRelease [4037 B]
+Get:2 http://packages.ros.org/ros/ubuntu xenial/main amd64 Packages [522 kB]
+Ign:3 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  InRelease
+Get:4 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Release [564 B]
+Get:5 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Release.gpg [801 B]
+Get:6 http://archive.ubuntu.com/ubuntu xenial InRelease [247 kB]
+Get:7 http://security.ubuntu.com/ubuntu xenial-security InRelease [102 kB]
+Get:8 http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64  Packages [100 kB]
+Get:9 http://security.ubuntu.com/ubuntu xenial-security/universe Sources [72.8 kB]
+Get:10 http://archive.ubuntu.com/ubuntu xenial-updates InRelease [102 kB]
+Get:11 http://security.ubuntu.com/ubuntu xenial-security/main amd64 Packages [576 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial-backports InRelease [102 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial/universe Sources [9802 kB]
+Get:14 http://security.ubuntu.com/ubuntu xenial-security/restricted amd64 Packages [12.7 kB]
+Get:15 http://security.ubuntu.com/ubuntu xenial-security/universe amd64 Packages [400 kB]
+Get:16 http://security.ubuntu.com/ubuntu xenial-security/multiverse amd64 Packages [3486 B]
+Get:17 http://archive.ubuntu.com/ubuntu xenial/main amd64 Packages [1558 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial/restricted amd64 Packages [14.1 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial/universe amd64 Packages [9827 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial/multiverse amd64 Packages [176 kB]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-updates/universe Sources [240 kB]
+Get:22 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 Packages [942 kB]
+Get:23 http://archive.ubuntu.com/ubuntu xenial-updates/restricted amd64 Packages [13.1 kB]
+Get:24 http://archive.ubuntu.com/ubuntu xenial-updates/universe amd64 Packages [757 kB]
+Get:25 http://archive.ubuntu.com/ubuntu xenial-updates/multiverse amd64 Packages [18.5 kB]
+Get:26 http://archive.ubuntu.com/ubuntu xenial-backports/main amd64 Packages [5153 B]
+Get:27 http://archive.ubuntu.com/ubuntu xenial-backports/universe amd64 Packages [7172 B]
+Fetched 25.6 MB in 2s (8878 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  bzr ca-certificates dh-python distro-info-data docutils-common git git-core
+  git-man libapr1 libaprutil1 libcurl3-gnutls liberror-perl libexpat1
+  libgssapi-krb5-2 libjs-excanvas libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libmpdec2 libpython-stdlib libpython2.7-minimal
+  libpython2.7-stdlib libpython3-stdlib libpython3.5-minimal
+  libpython3.5-stdlib librtmp1 libserf-1-1 libssl1.0.0 libsvn1 libyaml-0-2
+  lsb-release mercurial mercurial-common mime-support openssl python
+  python-bzrlib python-catkin-pkg python-catkin-pkg-modules python-configobj
+  python-dateutil python-docutils python-minimal python-pkg-resources
+  python-pyparsing python-roman python-rosdistro python-rosdistro-modules
+  python-rospkg python-rospkg-modules python-setuptools python-six
+  python-wstool python-yaml python2.7 python2.7-minimal python3
+  python3-minimal python3.5 python3.5-minimal sgml-base subversion tzdata ucf
+  xml-core
+Suggested packages:
+  bzr-doc bzrtools python-bzrlib.tests gettext-base git-daemon-run
+  | git-daemon-sysvinit git-doc git-el git-email git-gui gitk gitweb git-arch
+  git-cvs git-mediawiki git-svn krb5-doc krb5-user lsb qct kdiff3 | kdiff3-qt
+  | kompare | meld | tkcvs | mgdiff wish python-mysqldb python-pygments
+  python-openssl python-doc python-tk python-bzrlib-dbg python-gpgme
+  python-kerberos python-paramiko python-pycurl xdg-utils python-configobj-doc
+  texlive-latex-recommended texlive-latex-base texlive-lang-french
+  fonts-linuxlibertine | ttf-linux-libertine python-setuptools-doc
+  python2.7-doc binfmt-support python3-doc python3-tk python3-venv
+  python3.5-venv python3.5-doc sgml-base-doc db5.3-util subversion-tools
+  debhelper
+Recommended packages:
+  python-gpgme less rsync ssh-client javascript-common krb5-locales
+  openssh-client file python-launchpadlib ssh-client | python-paramiko
+  python-pil python-pygments libpaper-utils docutils-doc
+The following NEW packages will be installed:
+  bzr ca-certificates dh-python distro-info-data docutils-common git git-core
+  git-man libapr1 libaprutil1 libcurl3-gnutls liberror-perl libexpat1
+  libgssapi-krb5-2 libjs-excanvas libk5crypto3 libkeyutils1 libkrb5-3
+  libkrb5support0 libmpdec2 libpython-stdlib libpython2.7-minimal
+  libpython2.7-stdlib libpython3-stdlib libpython3.5-minimal
+  libpython3.5-stdlib librtmp1 libserf-1-1 libssl1.0.0 libsvn1 libyaml-0-2
+  lsb-release mercurial mercurial-common mime-support openssl python
+  python-bzrlib python-catkin-pkg python-catkin-pkg-modules python-configobj
+  python-dateutil python-docutils python-minimal python-pkg-resources
+  python-pyparsing python-roman python-rosdep python-rosdistro
+  python-rosdistro-modules python-rosinstall python-rospkg
+  python-rospkg-modules python-setuptools python-six python-vcstools
+  python-wstool python-yaml python2.7 python2.7-minimal python3
+  python3-minimal python3.5 python3.5-minimal sgml-base subversion tzdata ucf
+  xml-core
+0 upgraded, 69 newly installed, 0 to remove and 35 not upgraded.
+Need to get 21.5 MB of archives.
+After this operation, 109 MB of additional disk space will be used.
+Get:1 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-catkin-pkg-modules all 0.4.1-1 [35.3 kB]
+Get:2 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-catkin-pkg all 0.4.1-100 [2424 B]
+Get:3 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rospkg-modules all 1.1.4-1 [22.5 kB]
+Get:4 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rospkg all 1.1.4-100 [3540 B]
+Get:5 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rosdistro-modules all 0.6.6-1 [29.7 kB]
+Get:6 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rosdistro all 0.6.6-100 [6002 B]
+Get:7 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rosdep all 0.12.1-1 [46.4 kB]
+Get:8 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-vcstools all 0.1.40-1 [29.5 kB]
+Get:9 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-wstool all 0.1.17-1 [42.4 kB]
+Get:10 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libssl1.0.0 amd64 1.0.2g-1ubuntu4.10 [1083 kB]
+Get:11 http://packages.ros.org/ros/ubuntu xenial/main amd64 python-rosinstall all 0.7.8-1 [23.7 kB]
+Get:12 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libpython3.5-minimal amd64 3.5.2-2ubuntu0~16.04.4 [523 kB]
+Get:13 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libexpat1 amd64 2.1.0-7ubuntu0.16.04.3 [71.2 kB]
+Get:14 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python3.5-minimal amd64 3.5.2-2ubuntu0~16.04.4 [1597 kB]
+Get:15 http://archive.ubuntu.com/ubuntu xenial/main amd64 python3-minimal amd64 3.5.1-3 [23.3 kB]
+Get:16 http://archive.ubuntu.com/ubuntu xenial/main amd64 mime-support all 3.59ubuntu1 [31.0 kB]
+Get:17 http://archive.ubuntu.com/ubuntu xenial/main amd64 libmpdec2 amd64 2.4.2-1 [82.6 kB]
+Get:18 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libpython3.5-stdlib amd64 3.5.2-2ubuntu0~16.04.4 [2132 kB]
+Get:19 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python3.5 amd64 3.5.2-2ubuntu0~16.04.4 [165 kB]
+Get:20 http://archive.ubuntu.com/ubuntu xenial/main amd64 libpython3-stdlib amd64 3.5.1-3 [6818 B]
+Get:21 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 dh-python all 2.20151103ubuntu1.1 [74.1 kB]
+Get:22 http://archive.ubuntu.com/ubuntu xenial/main amd64 python3 amd64 3.5.1-3 [8710 B]
+Get:23 http://archive.ubuntu.com/ubuntu xenial/main amd64 sgml-base all 1.26+nmu4ubuntu1 [12.5 kB]
+Get:24 http://archive.ubuntu.com/ubuntu xenial/main amd64 libapr1 amd64 1.5.2-3 [86.0 kB]
+Get:25 http://archive.ubuntu.com/ubuntu xenial/main amd64 libaprutil1 amd64 1.5.4-1build1 [77.1 kB]
+Get:26 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libkrb5support0 amd64 1.13.2+dfsg-5ubuntu2 [30.8 kB]
+Get:27 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libk5crypto3 amd64 1.13.2+dfsg-5ubuntu2 [81.2 kB]
+Get:28 http://archive.ubuntu.com/ubuntu xenial/main amd64 libkeyutils1 amd64 1.5.9-8ubuntu1 [9904 B]
+Get:29 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libkrb5-3 amd64 1.13.2+dfsg-5ubuntu2 [273 kB]
+Get:30 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libgssapi-krb5-2 amd64 1.13.2+dfsg-5ubuntu2 [120 kB]
+Get:31 http://archive.ubuntu.com/ubuntu xenial/main amd64 libserf-1-1 amd64 1.3.8-1 [45.5 kB]
+Get:32 http://archive.ubuntu.com/ubuntu xenial/main amd64 libyaml-0-2 amd64 0.1.6-3 [47.6 kB]
+Get:33 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libpython2.7-minimal amd64 2.7.12-1ubuntu0~16.04.3 [340 kB]
+Get:34 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python2.7-minimal amd64 2.7.12-1ubuntu0~16.04.3 [1261 kB]
+Get:35 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python-minimal amd64 2.7.12-1~16.04 [28.1 kB]
+Get:36 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libpython2.7-stdlib amd64 2.7.12-1ubuntu0~16.04.3 [1880 kB]
+Get:37 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python2.7 amd64 2.7.12-1ubuntu0~16.04.3 [224 kB]
+Get:38 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libpython-stdlib amd64 2.7.12-1~16.04 [7768 B]
+Get:39 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python amd64 2.7.12-1~16.04 [137 kB]
+Get:40 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 tzdata all 2017c-0ubuntu0.16.04 [166 kB]
+Get:41 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 distro-info-data all 0.28ubuntu0.7 [4334 B]
+Get:42 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 lsb-release all 9.20160110ubuntu0.2 [11.8 kB]
+Get:43 http://archive.ubuntu.com/ubuntu xenial/main amd64 ucf all 3.0036 [52.9 kB]
+Get:44 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 openssl amd64 1.0.2g-1ubuntu4.10 [492 kB]
+Get:45 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 ca-certificates all 20170717~16.04.1 [168 kB]
+Get:46 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d-1ubuntu0.1 [54.4 kB]
+Get:47 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libcurl3-gnutls amd64 7.47.0-1ubuntu2.6 [184 kB]
+Get:48 http://archive.ubuntu.com/ubuntu xenial/main amd64 xml-core all 0.13+nmu2 [23.3 kB]
+Get:49 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-six all 1.10.0-3 [10.9 kB]
+Get:50 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-configobj all 5.0.6-2 [34.2 kB]
+Get:51 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python-bzrlib amd64 2.7.0-2ubuntu3.1 [1390 kB]
+Get:52 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 bzr all 2.7.0-2ubuntu3.1 [37.3 kB]
+Get:53 http://archive.ubuntu.com/ubuntu xenial/main amd64 docutils-common all 0.12+dfsg-1 [141 kB]
+Get:54 http://archive.ubuntu.com/ubuntu xenial/main amd64 liberror-perl all 0.17-1.2 [19.6 kB]
+Get:55 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 git-man all 1:2.7.4-0ubuntu1.3 [736 kB]
+Get:56 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 git amd64 1:2.7.4-0ubuntu1.3 [3102 kB]
+Get:57 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 git-core all 1:2.7.4-0ubuntu1.3 [1460 B]
+Get:58 http://archive.ubuntu.com/ubuntu xenial/universe amd64 libjs-excanvas all 0.r3-4 [45.2 kB]
+Get:59 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 libsvn1 amd64 1.9.3-2ubuntu1.1 [1170 kB]
+Get:60 http://archive.ubuntu.com/ubuntu xenial/universe amd64 mercurial-common all 3.7.3-1ubuntu1 [1833 kB]
+Get:61 http://archive.ubuntu.com/ubuntu xenial/universe amd64 mercurial amd64 3.7.3-1ubuntu1 [46.3 kB]
+Get:62 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-roman all 2.0.0-2 [8062 B]
+Get:63 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-docutils all 0.12+dfsg-1 [348 kB]
+Get:64 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-dateutil all 2.4.2-1 [42.5 kB]
+Get:65 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 python-pyparsing all 2.0.3+dfsg1-1ubuntu0.1 [35.4 kB]
+Get:66 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-pkg-resources all 20.7.0-1 [108 kB]
+Get:67 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-yaml amd64 3.11-3build1 [105 kB]
+Get:68 http://archive.ubuntu.com/ubuntu xenial/main amd64 python-setuptools all 20.7.0-1 [169 kB]
+Get:69 http://archive.ubuntu.com/ubuntu xenial-updates/main amd64 subversion amd64 1.9.3-2ubuntu1.1 [308 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 21.5 MB in 2s (8810 kB/s)
+Selecting previously unselected package libssl1.0.0:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 11403 files and directories currently installed.)
+Preparing to unpack .../libssl1.0.0_1.0.2g-1ubuntu4.10_amd64.deb ...
+Unpacking libssl1.0.0:amd64 (1.0.2g-1ubuntu4.10) ...
+Selecting previously unselected package libpython3.5-minimal:amd64.
+Preparing to unpack .../libpython3.5-minimal_3.5.2-2ubuntu0~16.04.4_amd64.deb ...
+Unpacking libpython3.5-minimal:amd64 (3.5.2-2ubuntu0~16.04.4) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../libexpat1_2.1.0-7ubuntu0.16.04.3_amd64.deb ...
+Unpacking libexpat1:amd64 (2.1.0-7ubuntu0.16.04.3) ...
+Selecting previously unselected package python3.5-minimal.
+Preparing to unpack .../python3.5-minimal_3.5.2-2ubuntu0~16.04.4_amd64.deb ...
+Unpacking python3.5-minimal (3.5.2-2ubuntu0~16.04.4) ...
+Selecting previously unselected package python3-minimal.
+Preparing to unpack .../python3-minimal_3.5.1-3_amd64.deb ...
+Unpacking python3-minimal (3.5.1-3) ...
+Selecting previously unselected package mime-support.
+Preparing to unpack .../mime-support_3.59ubuntu1_all.deb ...
+Unpacking mime-support (3.59ubuntu1) ...
+Selecting previously unselected package libmpdec2:amd64.
+Preparing to unpack .../libmpdec2_2.4.2-1_amd64.deb ...
+Unpacking libmpdec2:amd64 (2.4.2-1) ...
+Selecting previously unselected package libpython3.5-stdlib:amd64.
+Preparing to unpack .../libpython3.5-stdlib_3.5.2-2ubuntu0~16.04.4_amd64.deb ...
+Unpacking libpython3.5-stdlib:amd64 (3.5.2-2ubuntu0~16.04.4) ...
+Selecting previously unselected package python3.5.
+Preparing to unpack .../python3.5_3.5.2-2ubuntu0~16.04.4_amd64.deb ...
+Unpacking python3.5 (3.5.2-2ubuntu0~16.04.4) ...
+Selecting previously unselected package libpython3-stdlib:amd64.
+Preparing to unpack .../libpython3-stdlib_3.5.1-3_amd64.deb ...
+Unpacking libpython3-stdlib:amd64 (3.5.1-3) ...
+Selecting previously unselected package dh-python.
+Preparing to unpack .../dh-python_2.20151103ubuntu1.1_all.deb ...
+Unpacking dh-python (2.20151103ubuntu1.1) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libssl1.0.0:amd64 (1.0.2g-1ubuntu4.10) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up libpython3.5-minimal:amd64 (3.5.2-2ubuntu0~16.04.4) ...
+Setting up libexpat1:amd64 (2.1.0-7ubuntu0.16.04.3) ...
+Setting up python3.5-minimal (3.5.2-2ubuntu0~16.04.4) ...
+Setting up python3-minimal (3.5.1-3) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Selecting previously unselected package python3.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 12373 files and directories currently installed.)
+Preparing to unpack .../python3_3.5.1-3_amd64.deb ...
+Unpacking python3 (3.5.1-3) ...
+Selecting previously unselected package sgml-base.
+Preparing to unpack .../sgml-base_1.26+nmu4ubuntu1_all.deb ...
+Unpacking sgml-base (1.26+nmu4ubuntu1) ...
+Selecting previously unselected package libapr1:amd64.
+Preparing to unpack .../libapr1_1.5.2-3_amd64.deb ...
+Unpacking libapr1:amd64 (1.5.2-3) ...
+Selecting previously unselected package libaprutil1:amd64.
+Preparing to unpack .../libaprutil1_1.5.4-1build1_amd64.deb ...
+Unpacking libaprutil1:amd64 (1.5.4-1build1) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../libkrb5support0_1.13.2+dfsg-5ubuntu2_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.13.2+dfsg-5ubuntu2) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../libk5crypto3_1.13.2+dfsg-5ubuntu2_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.13.2+dfsg-5ubuntu2) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../libkeyutils1_1.5.9-8ubuntu1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.5.9-8ubuntu1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../libkrb5-3_1.13.2+dfsg-5ubuntu2_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.13.2+dfsg-5ubuntu2) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../libgssapi-krb5-2_1.13.2+dfsg-5ubuntu2_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.13.2+dfsg-5ubuntu2) ...
+Selecting previously unselected package libserf-1-1:amd64.
+Preparing to unpack .../libserf-1-1_1.3.8-1_amd64.deb ...
+Unpacking libserf-1-1:amd64 (1.3.8-1) ...
+Selecting previously unselected package libyaml-0-2:amd64.
+Preparing to unpack .../libyaml-0-2_0.1.6-3_amd64.deb ...
+Unpacking libyaml-0-2:amd64 (0.1.6-3) ...
+Selecting previously unselected package libpython2.7-minimal:amd64.
+Preparing to unpack .../libpython2.7-minimal_2.7.12-1ubuntu0~16.04.3_amd64.deb ...
+Unpacking libpython2.7-minimal:amd64 (2.7.12-1ubuntu0~16.04.3) ...
+Selecting previously unselected package python2.7-minimal.
+Preparing to unpack .../python2.7-minimal_2.7.12-1ubuntu0~16.04.3_amd64.deb ...
+Unpacking python2.7-minimal (2.7.12-1ubuntu0~16.04.3) ...
+Selecting previously unselected package python-minimal.
+Preparing to unpack .../python-minimal_2.7.12-1~16.04_amd64.deb ...
+Unpacking python-minimal (2.7.12-1~16.04) ...
+Selecting previously unselected package libpython2.7-stdlib:amd64.
+Preparing to unpack .../libpython2.7-stdlib_2.7.12-1ubuntu0~16.04.3_amd64.deb ...
+Unpacking libpython2.7-stdlib:amd64 (2.7.12-1ubuntu0~16.04.3) ...
+Selecting previously unselected package python2.7.
+Preparing to unpack .../python2.7_2.7.12-1ubuntu0~16.04.3_amd64.deb ...
+Unpacking python2.7 (2.7.12-1ubuntu0~16.04.3) ...
+Selecting previously unselected package libpython-stdlib:amd64.
+Preparing to unpack .../libpython-stdlib_2.7.12-1~16.04_amd64.deb ...
+Unpacking libpython-stdlib:amd64 (2.7.12-1~16.04) ...
+Processing triggers for libc-bin (2.23-0ubuntu10) ...
+Setting up libpython2.7-minimal:amd64 (2.7.12-1ubuntu0~16.04.3) ...
+Setting up python2.7-minimal (2.7.12-1ubuntu0~16.04.3) ...
