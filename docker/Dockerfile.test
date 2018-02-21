@@ -147,7 +147,7 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
 # H.F.: Install some missing dependencies
 RUN sudo apt-get update && sudo apt-get install -y openni2-doc openni2-utils openni-doc openni-utils
 RUN sudo apt-get install -y libopenni0 libopenni-sensor-pointclouds0 libopenni2-0 libopenni-sensor-pointclouds-dev
-RUN sudo apt-get install -y libopenni2-dev libopenni-dev
+RUN sudo apt-get install -y libopenni2-dev libopenni-dev rand
 
 # libopencv-3.2.0-dev  https://github.com/BVLC/caffe/wiki/OpenCV-3.2-Installation-Guide-on-Ubuntu-16.04
 
@@ -220,7 +220,7 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
         echo "cd" >> /home/$USERNAME/.bashrc
 
-RUN echo 2
+RUN echo rand -N 1 # H.F. make sure we do not use the cache file 
 # Change user
 USER autoware
 
