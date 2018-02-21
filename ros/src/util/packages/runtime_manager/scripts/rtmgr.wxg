@@ -1661,7 +1661,7 @@
                                         <flag>wxALL</flag>
                                         <border>0</border>
                                         <option>1</option>
-                                        <object class="wxButton" name="button_run_lidar_tracker_copy" base="EditButton">
+                                        <object class="wxButton" name="button_run_lidar_tracker" base="EditButton">
                                             <label>Run LidarTracker</label>
                                             <events>
                                                 <handler event="EVT_BUTTON">OnRunLidarTracker</handler>
