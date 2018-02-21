@@ -1,0 +1,1000 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="prius">
+  <!--- Surface properties must come first? -->
+  <gazebo reference="front_left_wheel">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+  </gazebo>
+  <gazebo reference="front_right_wheel">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+  </gazebo>
+  <gazebo reference="rear_left_wheel">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+  </gazebo>
+  <gazebo reference="rear_right_wheel">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+    <minDepth>0.005</minDepth>
+    <kp>1e8</kp>
+  </gazebo>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="base_link_connection" type="fixed">
+    <parent link="base_link"/>
+    <child link="chassis"/>
+    <origin xyz="1.45 0 0" rpy="0 0 1.57"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <link name="chassis">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/hybrid_body.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+
+    <collision name="chassis">
+      <origin xyz="0.0 0.05 0.625" rpy="0 0 0"/>
+      <geometry>
+        <box size="1.7526 2.1 0.95"/>
+      </geometry>
+    </collision>
+
+    <collision name="front_bumper">
+      <origin xyz="0.0 -2.0 0.458488" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.337282 0.48 0.566691"/>
+      </geometry>
+    </collision>
+
+    <collision name="hood">
+      <origin xyz="0.0 -1.900842 0.676305" rpy="0.341247 0 0"/>
+      <geometry>
+        <box size="1.597968 0.493107 0.265468"/>
+      </geometry>
+    </collision>
+
+    <collision name="windshield">
+      <origin xyz="0.0 -0.875105 1.032268" rpy="0.335476 0 0"/>
+      <geometry>
+        <box size="1.168381 1.654253 0.272347"/>
+      </geometry>
+    </collision>
+
+    <collision name="top_front">
+      <origin xyz="0.0 0.161236 1.386042" rpy="0.135030 0 0"/>
+      <geometry>
+        <box size="1.279154 0.625988 0.171868"/>
+      </geometry>
+    </collision>
+
+    <collision name="top_rear">
+      <origin xyz="0.0 0.817696 1.360069" rpy="-0.068997 0 0"/>
+      <geometry>
+        <box size="1.285130 0.771189 0.226557"/>
+      </geometry>
+    </collision>
+
+    <collision name="rear_window">
+      <origin xyz="0.0 1.640531 1.175126" rpy="-0.262017 0 0"/>
+      <geometry>
+        <box size="1.267845 1.116344 0.244286"/>
+      </geometry>
+    </collision>
+
+    <collision name="trunk">
+      <origin xyz="0.0 1.637059 0.888180" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.788064 1.138988 0.482746"/>
+      </geometry>
+    </collision>
+
+    <collision name="back_bumper">
+      <origin xyz="0.0 2.054454 0.577870" rpy="0.0 0 0"/>
+      <geometry>
+        <box size="1.781650 0.512093 0.581427"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="1356.0"/>
+      <origin xyz="0 0 0.48" rpy="0 0 1.5708"/>
+      <inertia ixx="2581.13354740" ixy="0.0" ixz="0.0" iyy="591.30846112" iyz="0.0" izz="2681.95008628"/>
+    </inertial>
+  </link>
+  <link name="fl_axle">
+    <inertial>
+      <mass value="1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
+    </inertial>
+  </link>
+  <link name="fr_axle">
+    <inertial>
+      <mass value="1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.004" ixy="0.0" ixz="0.0" iyy="0.004" iyz="0.0" izz="0.004"/>
+    </inertial>
+  </link>
+  <link name="front_left_wheel">
+    <inertial>
+      <mass value="11"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
+    </inertial>
+    <collision name="front_left_wheel_collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="front_right_wheel">
+    <inertial>
+      <mass value="11"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
+    </inertial>
+    <collision name="front_right_wheel_collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="rear_left_wheel">
+    <inertial>
+      <mass value="11"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
+    </inertial>
+    <collision name="rear_left_wheel_collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="rear_right_wheel">
+    <inertial>
+      <mass value="11"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.58631238" ixy="0.0" ixz="0.0" iyy="0.33552910" iyz="0.0" izz="0.33552910"/>
+    </inertial>
+    <collision name="rear_right_wheel_collision">
+      <geometry>
+        <sphere radius="0.31265"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="steering_wheel">
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="0.14583300" ixy="0.0" ixz="0.0" iyy="0.14583300" iyz="0.0" izz="0.125"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.302101 0 0"/>
+      <geometry>
+        <mesh filename="package://prius_description/meshes/steering_wheel.obj" scale="0.01 0.01 0.01"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="steering_joint" type="continuous">
+    <origin xyz="0.357734 -0.627868 0.988243" rpy="-1.302101 0 0"/>
+    <parent link="chassis"/>
+    <child link="steering_wheel"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-7.85" upper="7.85" effort="10000000" velocity="1000000"/>
+  </joint>
+
+  <joint name="front_left_steer_joint" type="continuous">
+    <parent link="chassis"/>
+    <child link="fl_axle"/>
+    <origin xyz="0.767 -1.41 0.3" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.8727" upper="0.8727" effort="10000000" velocity="1000000"/>
+  </joint>
+  <joint name="front_right_steer_joint" type="continuous">
+    <parent link="chassis"/>
+    <child link="fr_axle"/>
+    <origin xyz="-0.767 -1.41 0.3" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.8727" upper="0.8727" effort="10000000" velocity="1000000"/>
+  </joint>
+  <joint name="front_left_wheel_joint" type="continuous">
+    <parent link="fl_axle"/>
+    <child link="front_left_wheel"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+  <joint name="front_right_wheel_joint" type="continuous">
+    <parent link="fr_axle"/>
+    <child link="front_right_wheel"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+  <joint name="rear_left_wheel_joint" type="continuous">
+    <parent link="chassis"/>
+    <child link="rear_left_wheel"/>
+    <origin xyz="0.793 1.45 0.3" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+  <joint name="rear_right_wheel_joint" type="continuous">
+    <parent link="chassis"/>
+    <child link="rear_right_wheel"/>
+    <origin xyz="-0.793 1.45 0.3" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+
+  <!-- Sensor links and fixed joints -->
+  <link name="center_laser_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="center_laser_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="center_laser_link"/>
+    <origin xyz="0 0.4 1.8" rpy="0 0 -1.5707"/>
+  </joint>
+
+  <link name="front_left_laser_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_left_laser_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_left_laser_link"/>
+    <origin xyz="1 -2.3 0.5" rpy="0 0.05 0"/>
+  </joint>
+
+  <link name="front_right_laser_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_right_laser_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_right_laser_link"/>
+    <origin xyz="-1 -2.3 0.5" rpy="0 0.05 3.14"/>
+  </joint>
+
+  <gazebo reference="base_link_connection">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <link name="front_camera_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_camera_link"/>
+    <origin xyz="0 -0.4 1.4" rpy="0 0.05 -1.5707"/>
+  </joint>
+
+  <link name="back_camera_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="back_camera_link"/>
+    <origin xyz="0 1.45 1.4" rpy="0 0.05 1.5707"/>
+  </joint>
+
+  <link name="left_camera_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="left_camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="left_camera_link"/>
+    <origin xyz="1 -0.7 1.0" rpy="0 0.05 1.0"/>
+  </joint>
+
+  <link name="right_camera_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="right_camera_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="right_camera_link"/>
+    <origin xyz="-1 -0.7 1.0" rpy="0 0.05 2.1416"/>
+  </joint>
+
+  <link name="back_left_far_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_left_far_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="back_left_far_sonar_link"/>
+    <origin xyz="0.7 2.4 0.5" rpy="0 0 1.5707"/>
+  </joint>
+
+  <link name="back_left_middle_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_left_middle_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="back_left_middle_sonar_link"/>
+    <origin xyz="0.24 2.4 0.5" rpy="0 0 1.5707"/>
+  </joint>
+
+  <link name="back_right_far_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_right_far_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="back_right_far_sonar_link"/>
+    <origin xyz="-0.7 2.4 0.5" rpy="0 0 1.5707"/>
+  </joint>
+
+  <link name="back_right_middle_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="back_right_middle_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="back_right_middle_sonar_link"/>
+    <origin xyz="-0.24 2.4 0.5" rpy="0 0 1.5707"/>
+  </joint>
+
+  <link name="front_left_far_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_left_far_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_left_far_sonar_link"/>
+    <origin xyz="0.7 -2.1 0.5" rpy="0 0 -1.5707"/>
+  </joint>
+
+  <link name="front_left_middle_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_left_middle_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_left_middle_sonar_link"/>
+    <origin xyz="0.24 -2.3 0.5" rpy="0 0 -1.5707"/>
+  </joint>
+
+  <link name="front_right_far_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_right_far_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_right_far_sonar_link"/>
+    <origin xyz="-0.7 -2.1 0.5" rpy="0 0 -1.5707"/>
+  </joint>
+
+  <link name="front_right_middle_sonar_link">
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </link>
+  <joint name="front_right_middle_sonar_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="front_right_middle_sonar_link"/>
+    <origin xyz="-0.24 -2.3 0.5" rpy="0 0 -1.5707"/>
+  </joint>
+
+  <gazebo>
+    <plugin name="pruis_hybrid_drive" filename="libPriusHybridPlugin.so">
+      <chassis>chassis</chassis>
+      <front_left_wheel>front_left_wheel_joint</front_left_wheel>
+      <front_right_wheel>front_right_wheel_joint</front_right_wheel>
+      <front_left_wheel_steering>front_left_steer_joint</front_left_wheel_steering>
+      <front_right_wheel_steering>front_right_steer_joint</front_right_wheel_steering>
+      <back_left_wheel>rear_left_wheel_joint</back_left_wheel>
+      <back_right_wheel>rear_right_wheel_joint</back_right_wheel>
+      <steering_wheel>steering_joint</steering_wheel>
+      <chassis_aero_force_gain>0.63045</chassis_aero_force_gain>
+      <front_torque>859.4004393000001</front_torque>
+      <back_torque>0</back_torque>
+      <front_brake_torque>1031.28052716</front_brake_torque>
+      <back_brake_torque>687.5203514400001</back_brake_torque>
+      <max_speed>37.998337013956565</max_speed>
+      <min_gas_flow>8.981854013171626e-05</min_gas_flow>
+      <gas_efficiency>0.371</gas_efficiency>
+      <battery_charge_watt_hours>291</battery_charge_watt_hours>
+      <battery_discharge_watt_hours>214</battery_discharge_watt_hours>
+      <max_steer>0.6458</max_steer>
+      <flwheel_steering_p_gain>1e4</flwheel_steering_p_gain>
+      <frwheel_steering_p_gain>1e4</frwheel_steering_p_gain>
+      <flwheel_steering_i_gain>0</flwheel_steering_i_gain>
+      <frwheel_steering_i_gain>0</frwheel_steering_i_gain>
+      <flwheel_steering_d_gain>3e2</flwheel_steering_d_gain>
+      <frwheel_steering_d_gain>3e2</frwheel_steering_d_gain>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+      <!-- <robotNamespace>/prius</robotNamespace> -->
+      <jointName>rear_right_wheel_joint, rear_left_wheel_joint, front_right_wheel_joint, front_left_wheel_joint, front_right_steer_joint, front_left_steer_joint, steering_joint</jointName>
+      <updateRate>100.0</updateRate>
+      <alwaysOn>true</alwaysOn>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="p3d" filename="libgazebo_ros_p3d.so">
+      <!-- <robotNamespace>/prius</robotNamespace> -->
+      <bodyName>base_link</bodyName>
+      <topicName>base_pose_ground_truth</topicName>
+      <frameName>map</frameName>
+      <updateRate>100.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <gazebo reference="center_laser_link">
+    <sensor name='center_laser_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>512</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14</min_angle>
+            <max_angle>3.14</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>16</samples>
+            <min_angle>-0.1</min_angle>
+            <max_angle>-0.35</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>30</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name='center_laser' filename='libgazebo_ros_block_laser.so'>
+        <topicName>/prius/center_laser/scan</topicName>
+        <frameName>center_laser_link</frameName>
+      </plugin>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_left_laser_link">
+    <sensor name='front_left_laser_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.26889</min_angle>
+            <max_angle>2.2689</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>30</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name='front_left_laser' filename='libgazebo_ros_laser.so'>
+        <topicName>/prius/front_left_laser/scan</topicName>
+        <frameName>front_left_laser_link</frameName>
+      </plugin>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_right_laser_link">
+    <sensor name='front_right_laser_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.26889</min_angle>
+            <max_angle>2.2689</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>30</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name='front_right_laser' filename='libgazebo_ros_laser.so'>
+        <topicName>/prius/front_right_laser/scan</topicName>
+        <frameName>front_right_laser_link</frameName>
+      </plugin>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_camera_link">
+    <sensor type="camera" name="front_camera_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="front_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="front_camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>/prius/front_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/prius/front_camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="back_camera_link">
+    <sensor type="camera" name="back_camera_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="back_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="back_camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>/prius/back_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/prius/back_camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="left_camera_link">
+    <sensor type="camera" name="left_camera_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="left_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="left_camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>/prius/left_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/prius/left_camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="right_camera_link">
+    <sensor type="camera" name="right_camera_sensor">
+      <update_rate>30.0</update_rate>
+      <camera name="right_camera">
+        <horizontal_fov>1.3962634</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="right_camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>false</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>/prius/right_camera</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>/prius/right_camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+  <gazebo reference="back_left_far_sonar_link">
+    <sensor name='back_left_far_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='back_left_far_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/back_sonar/left_far_range</topicName>
+        <frameName>back_left_far_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="back_left_middle_sonar_link">
+    <sensor name='back_left_middle_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='back_left_middle_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/back_sonar/left_middle_range</topicName>
+        <frameName>back_left_middle_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="back_right_far_sonar_link">
+    <sensor name='back_right_far_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='back_right_far_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/back_sonar/right_far_range</topicName>
+        <frameName>back_right_far_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="back_right_middle_sonar_link">
+    <sensor name='back_right_middle_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='back_right_middle_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/back_sonar/right_middle_range</topicName>
+        <frameName>back_right_middle_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_left_far_sonar_link">
+    <sensor name='front_left_far_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='front_left_far_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/front_sonar/left_far_range</topicName>
+        <frameName>front_left_far_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_left_middle_sonar_link">
+    <sensor name='front_left_middle_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='front_left_middle_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/front_sonar/left_middle_range</topicName>
+        <frameName>front_left_middle_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_right_far_sonar_link">
+    <sensor name='front_right_far_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='front_right_far_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/front_sonar/right_far_range</topicName>
+        <frameName>front_right_far_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="front_right_middle_sonar_link">
+    <sensor name='front_right_middle_sonar_sensor' type='ray'>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>0.2</min>
+          <max>5</max>
+          <resolution>0.1</resolution>
+        </range>
+      </ray>
+      <plugin name='front_right_middle_sonar_sensor' filename='libgazebo_ros_range.so'>
+        <topicName>/prius/front_sonar/right_middle_range</topicName>
+        <frameName>front_right_middle_sonar_link</frameName>
+      </plugin>
+      <always_on>false</always_on>
+      <update_rate>5</update_rate>
+      <visualize>0</visualize>
+    </sensor>
+  </gazebo>
+</robot>
