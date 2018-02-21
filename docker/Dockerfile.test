@@ -128,10 +128,10 @@ RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` 
  && apt-get clean
 
 
-RUN mkdir -p /tmp/workspace/src
-COPY car_demo/prius_description /tmp/workspace/src/prius_description
-COPY car_demo/prius_msgs /tmp/workspace/src/prius_msgs
-COPY car_demo/car_demo /tmp/workspace/src/car_demo
+#RUN mkdir -p /tmp/workspace/src                                         # H.F. comment out
+#COPY car_demo/prius_description /tmp/workspace/src/prius_description    # H.F. comment out
+#COPY car_demo/prius_msgs /tmp/workspace/src/prius_msgs                   # H.F. comment out
+#COPY car_demo/car_demo /tmp/workspace/src/car_demo                        # H.F. comment out
 
 
 # RUN /bin/bash -c 'cd /tmp/workspace \       # H.F. comment out
@@ -232,8 +232,16 @@ RUN sudo rm -rf /etc/ros/rosdep/sources.list.d/* \
 
 # Install Autoware
 RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
+
+# copy car_demo into Autoware
+#RUN mkdir -p /home/$USERNAME/Autoware/ros/src/system/car_demo
+#COPY car_demo/prius_description /home/$USERNAME/Autoware/ros/src/system/car_demo/prius_description
+#COPY car_demo/prius_msgs /home/$USERNAME/Autoware/ros/src/system/car_demo/prius_msgs
+#COPY car_demo/car_demo /home/$USERNAME/Autoware/ros/src/system/car_demo/car_demo
+
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
+
 
 # Setting
 ENV LANG="en_US.UTF-8"
