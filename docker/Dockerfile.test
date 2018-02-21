@@ -220,6 +220,7 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
         echo "cd" >> /home/$USERNAME/.bashrc
 
+RUN echo 2
 # Change user
 USER autoware
 
@@ -231,7 +232,8 @@ RUN sudo rm -rf /etc/ros/rosdep/sources.list.d/* \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
 # Install Autoware
-# RUN rm -r /home/$USERNAME/Autoware # H.F.
+#RUN rm -r /home/$USERNAME/Autoware # H.F.
+
 RUN git clone https://github.com/huckl3b3rry87/Autoware.git -b feature/port_car_demo /home/$USERNAME/Autoware
 
 RUN rosdep install --from-paths /home/$USERNAME/Autoware/ros/src --ignore-src --rosdistro kinetic -y
