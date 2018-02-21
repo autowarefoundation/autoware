@@ -1,175 +1,135 @@
-FROM osrf/ros:kinetic-desktop
+# Note this is the car_demo docker file extracted
+# https://github.com/CPFL/Autoware/blob/master/docker/generic/Dockerfile.kinetic
 # FROM nvidia/cuda:8.0-devel-ubuntu16.04
+################################################################################
+# https://github.com/CPFL/Autoware/blob/master/docker/generic/Dockerfile.kinetic
+################################################################################
+# This is an auto generated Dockerfile for ros:ros-core
+# generated from docker_images/create_ros_core_image.Dockerfile.em
+FROM ubuntu:xenial
+# install packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    dirmngr \
+    gnupg2 \
+    && rm -rf /var/lib/apt/lists/*
 
-# for testing; to save time consider having travis build this: https://docs.travis-ci.com/user/docker/
+# setup keys
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 421C365BD9FF1F717815A3895523BAEEB01FA116
 
-# to get ride of warning: https://github.com/phusion/baseimage-docker/issues/58
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+# setup sources.list
+RUN echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list
 
-MAINTAINER Yuki Iida <aiueo.0409@gmail.com>
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
+    && rm -rf /var/lib/apt/lists/*
 
-LABEL com.nvidia.volumes.needed="nvidia_driver"
-ENV PATH /usr/local/nvidia/bin:${PATH}
-ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+# bootstrap rosdep
+RUN rosdep init \
+    && rosdep update
+
+# install ros packages
+ENV ROS_DISTRO kinetic
+RUN apt-get update && apt-get install -y \
+    ros-kinetic-ros-core=1.3.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+
+# setup entrypoint
+COPY ./ros_entrypoint.sh /
+
+#ENTRYPOINT ["/ros_entrypoint.sh"]  # H.F. comment out
+#CMD ["bash"]                       # H.F. comment out
+################################################################################  END
+#https://github.com/CPFL/Autoware/blob/master/docker/generic/Dockerfile.kinetic
+################################################################################
+#%%%%%%%%
+##############################################################
+# This is an auto generated Dockerfile for ros:ros-base
+# generated from docker_images/create_ros_image.Dockerfile.em
+# FROM ros:kinetic-ros-core-xenial  # H.F. comment out
+
+# install ros packages
+RUN apt-get update && apt-get install -y \
+    ros-kinetic-ros-base=1.3.1-0* \
+&& rm -rf /var/lib/apt/lists/*
+############################################################  END
+#%%%%%%%%
+############################################################  START
+#https://github.com/osrf/docker_images/blob/5399f380af0a7735405a4b6a07c6c40b867563bd/ros/kinetic/ubuntu/xenial/robot/Dockerfile
+##############################################################
+# This is an auto generated Dockerfile for ros:robot
+# generated from docker_images/create_ros_image.Dockerfile.em
+# FROM ros:kinetic-ros-base-xenial  # H.F. comment out
+
+# install ros packages
+RUN apt-get update && apt-get install -y \
+    ros-kinetic-robot=1.3.1-0* \
+&& rm -rf /var/lib/apt/lists/*
+############################################################  END
+#https://github.com/osrf/docker_images/blob/5399f380af0a7735405a4b6a07c6c40b867563bd/ros/kinetic/ubuntu/xenial/robot/Dockerfile
+##############################################################
+#%%%%%%%%
+############################################################ START
+#https://github.com/osrf/docker_images/blob/master/ros/kinetic/ubuntu/xenial/desktop/Dockerfile
+##############################################################
+# This is an auto generated Dockerfile for ros:desktop
+# generated from docker_images/create_ros_image.Dockerfile.em
+# FROM ros:kinetic-robot-xenial   # H.F. comment out
+
+# install ros packages
+RUN apt-get update && apt-get install -y \
+    ros-kinetic-desktop=1.3.1-0* \
+&& rm -rf /var/lib/apt/lists/*
+############################################################  END
+#https://github.com/osrf/docker_images/blob/master/ros/kinetic/ubuntu/xenial/desktop/Dockerfile
+##############################################################
+#%%%%%%%%
+############################################################ START
+#https://github.com/osrf/car_demo/blob/master/Dockerfile
+##############################################################
+# FROM osrf/ros:kinetic-desktop     # H.F. comment out
+
+#LABEL com.nvidia.volumes.needed="nvidia_driver"  # H.F. comment out
+#ENV PATH /usr/local/nvidia/bin:${PATH}  # H.F. comment out
+#ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64:${LD_LIBRARY_PATH}  # H.F. comment out
 
 RUN apt-get update \
  && apt-get install -y \
-        software-properties-common \
-        wget \
-        lsb-release \
-        sudo \
-        mesa-utils \
-        curl \
-        git \
-        cmake \
-        cmake-curses-gui \
-        apt-utils \
+    wget \
+    lsb-release \
+    sudo \
+    mesa-utils \
  && apt-get clean
 
- # Get gazebo binaries
- RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list \
-  && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add - \
-  && apt-get update \
-  && apt-get install -y \
-     gazebo8 \
-     ros-kinetic-gazebo8-ros-pkgs \
-     ros-kinetic-fake-localization \
-     ros-kinetic-joy \
-  && apt-get clean
 
- # Install other ROS packages
- RUN apt-get install -y \
-     ros-kinetic-nmea-msgs \
-     ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play \
-     ros-kinetic-jsk-visualization \
-     ros-kinetic-perception-pcl \
-     ros-kinetic-openni-launch \
-     ros-kinetic-velocity-controllers  ros-kinetic-grid-map \
-     ros-kinetic-gps-common \
-     ros-kinetic-ros-control ros-kinetic-ros-controllers \
-  && apt-get clean
-
-  # currently these packages are causing errors:
-          #ros-kinetic-turtlebot-simulator \
-          #ros-jade-sicktoolbox ros-jade-sicktoolbox-wrapper \
-          #ros-kinetic-gazebo-ros-control \
-
-# Install other packages
-RUN apt-get install -y \
-    libnlopt-dev freeglut3-dev qtbase5-dev \
-    libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu \
-    libglew-dev \
-    libopenni2-dev \
-&& apt-get clean
-# added:  libopenni2-dev to fix: ** WARNING ** visualization features related to openni2 will be disabled
-
-# Update ros dependencies
-# NOTE: OK to ignore the warning
-# Warning: running 'rosdep update' as root is not recommended.
-#  You should run 'sudo rosdep fix-permissions' and invoke 'rosdep update' again without sudo.
-# as per; https://answers.ros.org/question/241112/how-to-run-rosdep-init-and-update-in-dockerfile/
-# RUN rosdep init \  # TODO: make sure this has already been done, if it has and this command is run, an error will be produced.
-#        && rosdep update \
-RUN rosdep update \
-        && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
-
-# Develop
-RUN apt-get install -y \
-        libboost-all-dev \
-        libflann-dev \
-        libgsl0-dev \
-        libgoogle-perftools-dev \
-        libeigen3-dev
-
-# Install some basic GUI and sound libs
-RUN apt-get install -y \
-                xz-utils file locales dbus-x11 pulseaudio dmz-cursor-theme \
-                fonts-dejavu fonts-liberation hicolor-icon-theme \
-                libcanberra-gtk3-0 libcanberra-gtk-module libcanberra-gtk3-module \
-                libasound2 libgtk2.0-0 libdbus-glib-1-2 libxt6 libexif12 \
-                libgl1-mesa-glx libgl1-mesa-dri \
-        && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX
-
-# Install some basic GUI tools
-RUN apt-get install -y \
-        cmake-qt-gui \
-        gnome-terminal
-
-# Install OpenCV  #TODO: fix depreciation warnings, probably due to the fact that the version of NVIDIA that is being used is not:
- # FROM nvidia/cuda:8.0-devel-ubuntu14.04
- # To fix, might try and have multiple build stages as: https://docs.docker.com/engine/userguide/eng-image/multistage-build/#name-your-build-stages
-        # where on of the stages is: nvidia/cuda:8.0-devel-ubuntu14.04
-RUN apt-get update && apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-0 libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
-
-# dbus related, workaround to make dbus work
-#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
-#RUN apt-get -y install dbus-x11
-
-#######################################
-# dbus related, workaround to make dbus work
-# the last line suppresses dbus warning due to X forwarding
-#######################################
-#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
-RUN apt-get -y install dbus-x11
-RUN echo "export NO_AT_BRIDGE=1" >> /etc/bash.bashrc
-
-RUN wget https://github.com/opencv/opencv/archive/2.4.13.zip && \
-    unzip 2.4.13.zip && \
-    rm 2.4.13.zip && \
-    cd opencv-2.4.13/ && \
-    mkdir build && \
-    cd build/ && \
-    cmake -D WITH_TBB=ON -D BUILD_NEW_PYTHON_SUPPORT=ON -D WITH_V4L=ON -D CUDA_GENERATION=Auto -D WITH_QT=ON -D WITH_OPENGL=ON -D WITH_VTK=ON .. && \
-    make -j8 && \
-    make install
-ENV PKG_CONFIG_PATH $PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
-
-# Add basic user
-# Replace 1000 with your user/group id
-ENV USERNAME autoware
-ENV PULSE_SERVER /run/pulse/native
-RUN useradd -m $USERNAME && \
-        echo "$USERNAME:$USERNAME" | chpasswd && \
-        usermod --shell /bin/bash $USERNAME && \
-        usermod -aG sudo $USERNAME && \
-        echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME && \
-        chmod 0440 /etc/sudoers.d/$USERNAME && \
-        usermod  --uid 1000 $USERNAME && \
-        groupmod --gid 1000 $USERNAME
-
-# Setup .bashrc for ROS
-# Fix for qt and X server errors
-# echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
-# cd to home on login
-# echo "cd" >> /home/$USERNAME/.bashrc
-RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
-        echo "export QT_X11_NO_MITSHM=1" >> /home/$USERNAME/.bashrc && \
-        echo "cd" >> /home/$USERNAME/.bashrc
-
-# Change user
-USER autoware
-
-# Install Autoware
-RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash \
- && cd /home/$USERNAME/Autoware/ros/src \
- && catkin_init_workspace \
- && cd ../; ./catkin_make_release'
+# Get gazebo binaries
+RUN echo "deb http://packages.osrfoundation.org/gazebo/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list \
+ && wget http://packages.osrfoundation.org/gazebo.key -O - | apt-key add - \
+ && apt-get update \
+ && apt-get install -y \
+    gazebo8 \
+    ros-kinetic-gazebo8-ros-pkgs \
+    ros-kinetic-fake-localization \
+    ros-kinetic-joy \
+ && apt-get clean
 
 
-# Change Terminal Color
-RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
-RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
-RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#FFFFFF"
+RUN mkdir -p /tmp/workspace/src
+COPY ../car_demo/prius_description /tmp/workspace/src/prius_description
+COPY ../car_demo/prius_msgs /tmp/workspace/src/prius_msgs
+COPY ../car_demo/car_demo /tmp/workspace/src/car_demo
+RUN /bin/bash -c 'cd /tmp/workspace \
+ && source /opt/ros/kinetic/setup.bash \
+ && catkin_make'
 
-#######################################
-# dbus related, workaround to make dbus work https://store.docker.com/community/images/jchavas/saucy-base/dockerfile
-# the last line suppresses dbus warning due to X forwarding
-#######################################
-#RUN dpkg-divert --local --rename --add /sbin/initctl && ln -s /bin/true /sbin/initctl
-#RUN apt-get -y install dbus-x11
-#RUN echo "export NO_AT_BRIDGE=1" >> /home/$USERNAME/.bashrc #  https://bugs.launchpad.net/ubuntu/+source/at-spi2-core/+bug/1193236
-#RUN export NO_AT_BRIDGE=1
 
-# Default CMD
-CMD ["gnome-terminal" ]
+CMD ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /tmp/workspace/devel/setup.bash && roslaunch car_demo demo.launch"] # H.F. comment out
+############################################################  END
+#https://github.com/osrf/car_demo/blob/master/Dockerfile
+##############################################################
