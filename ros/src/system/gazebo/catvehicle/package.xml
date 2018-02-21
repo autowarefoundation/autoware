@@ -46,13 +46,13 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>controller_manager</build_depend>
-  <build_depend>gazebo_ros_control</build_depend>
+  <build_depend>gazebo_ros</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>position_controllers</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>sicktoolbox</build_depend>
+  <!--build_depend>sicktoolbox</build_depend-->
   <!--build_depend>sicktoolbox_wrapper</build_depend-->
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
@@ -60,13 +60,13 @@
   <build_depend>velocity_controllers</build_depend>
   <build_depend>velodyne_pointcloud</build_depend>
   <run_depend>controller_manager</run_depend>
-  <run_depend>gazebo_ros_control</run_depend>
+  <run_depend>gazebo_ros</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>position_controllers</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>sensor_msgs</run_depend>
-  <run_depend>sicktoolbox</run_depend>
+  <!--run_depend>sicktoolbox</run_depend-->
   <!--run_depend>sicktoolbox_wrapper</run_depend-->
   <run_depend>std_msgs</run_depend>
   <!--run_depend>obstaclestopper</run_depend-->

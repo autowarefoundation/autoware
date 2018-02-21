@@ -9,14 +9,14 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>glviewer</build_depend>
-  <build_depend>nlopt</build_depend>
+  <!--build_depend>nlopt</build_depend-->
   <build_depend>rosinterface</build_depend>
   <build_depend>autoware_msgs</build_depend>
   <run_depend>rosinterface</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>glviewer</run_depend>
-  <run_depend>nlopt</run_depend>
+  <!--run_depend>nlopt</run_depend-->
   <run_depend>autoware_msgs</run_depend>
   <export>
   </export>

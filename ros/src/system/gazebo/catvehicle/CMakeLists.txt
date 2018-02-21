@@ -12,7 +12,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   controller_manager
-  gazebo_ros_control
+#  gazebo_ros_control
   geometry_msgs
   position_controllers
   roscpp
