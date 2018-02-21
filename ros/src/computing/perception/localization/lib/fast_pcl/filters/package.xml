@@ -10,7 +10,7 @@
   <run_depend>sample_consensus</run_depend>
   <run_depend>search</run_depend>
   <run_depend>kdtree</run_depend>
-  <run_depend>octree</run_depend>
+  <!--run_depend>octree</run_depend-->
   <export>
   </export>
 </package>

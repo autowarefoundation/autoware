@@ -231,13 +231,13 @@ RUN sudo rm -rf /etc/ros/rosdep/sources.list.d/* \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
 # Install Autoware
-RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
+RUN rm -r /home/$USERNAME/Autoware
+RUN git clone https://github.com/huckl3b3rry87/Autoware.git -b feature/port_car_demo /home/$USERNAME/Autoware
 
-# copy car_demo into Autoware
-#RUN mkdir -p /home/$USERNAME/Autoware/ros/src/system/car_demo
-#COPY car_demo/prius_description /home/$USERNAME/Autoware/ros/src/system/car_demo/prius_description
-#COPY car_demo/prius_msgs /home/$USERNAME/Autoware/ros/src/system/car_demo/prius_msgs
-#COPY car_demo/car_demo /home/$USERNAME/Autoware/ros/src/system/car_demo/car_demo
+RUN rosdep install --from-paths /home/$USERNAME/Autoware/ros/src --ignore-src --rosdistro kinetic -y
+
+# H.F.
+# ./catkin_make_release -DCATKIN_BLACKLIST_PACKAGES="lattice_planner;kf;cv_tracker;catvehicle;data_preprocessor;fusion;filters;registration;velodyne_compression;viewers"
 
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
