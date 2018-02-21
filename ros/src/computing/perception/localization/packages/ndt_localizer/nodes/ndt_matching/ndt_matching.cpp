@@ -241,7 +241,7 @@ static nav_msgs::Odometry odom;
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
 
-static int points_map_num = 0;
+static unsigned int points_map_num = 0;
 
 pthread_mutex_t mutex;
 
@@ -1485,6 +1485,8 @@ void* thread_func(void* args)
     map_callback_queue.callAvailable(ros::WallDuration());
     ros_rate.sleep();
   }
+  
+  return nullptr;
 }
 
 int main(int argc, char** argv)
