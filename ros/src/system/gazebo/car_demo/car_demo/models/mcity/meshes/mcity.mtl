@@ -1,0 +1,224 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 26.01.2017 22:00:22
+
+newmtl Road_DoubleYellowLine
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Road_DoubleYellowLine.png
+  map_Kd ../materials/textures/Road_DoubleYellowLine.png
+
+newmtl Road_Blank
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Road_Blank.png
+  map_Kd ../materials/textures/Road_Blank.png
+
+newmtl Road_Blank_Light
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Road_Blank_Light.png
+  map_Kd ../materials/textures/Road_Blank_Light.png
+
+newmtl Road_DoubleYellowLine_Light
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Road_DoubleYellowLine_Light.png
+  map_Kd ../materials/textures/Road_DoubleYellowLine_Light.png
+
+newmtl Road_SingleWhiteLine
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Road_SingleWhiteLine.png
+  map_Kd ../materials/textures/Road_SingleWhiteLine.png
+
+newmtl Crosswalk
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Crosswalk.png
+  map_Kd ../materials/textures/Crosswalk.png
+
+newmtl Asphalt
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Asphalt.png
+  map_Kd ../materials/textures/Asphalt.png
+
+newmtl Gravel
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Gravel.png
+  map_Kd ../materials/textures/Gravel.png
+
+newmtl Material__590
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5880 0.5880 0.5880
+  Kd 0.5880 0.5880 0.5880
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+
+newmtl Grass
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Grass.png
+  map_Kd ../materials/textures/Grass.png
+
+newmtl Curb
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Curb.png
+  map_Kd ../materials/textures/Curb.png
+
+newmtl Concrete_Ground
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Concrete_Ground.png
+  map_Kd ../materials/textures/Concrete_Ground.png
+
+newmtl Colors
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.2510 0.2706 0.4235
+  Kd 0.2510 0.2706 0.4235
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Colors.png
+  map_Kd ../materials/textures/Colors.png
+
+newmtl Buildings
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 1.0000 1.0000 1.0000
+  Kd 1.0000 1.0000 1.0000
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Buildings.png
+  map_Kd ../materials/textures/Buildings.png
+
+newmtl Brick
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.5882 0.5882 0.5882
+  Kd 0.5882 0.5882 0.5882
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Brick.png
+  map_Kd ../materials/textures/Brick.png
+
+newmtl Tunnel
+  Ns 10.0000
+  Ni 1.5000
+  d 1.0000
+  Tr 0.0000
+  Tf 1.0000 1.0000 1.0000
+  illum 2
+  Ka 0.7529 0.7686 0.5686
+  Kd 0.7529 0.7686 0.5686
+  Ks 0.0000 0.0000 0.0000
+  Ke 0.0000 0.0000 0.0000
+  map_Ka ../materials/textures/Tunnel.png
+  map_Kd ../materials/textures/Tunnel.png

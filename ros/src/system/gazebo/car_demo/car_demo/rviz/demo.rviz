@@ -1,0 +1,567 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+      Splitter Ratio: 0.5
+    Tree Height: 466
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.588679016
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: Front Left Laser
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.0299999993
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 0.5
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        back_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        back_left_far_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        back_left_middle_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        back_right_far_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        back_right_middle_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        center_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        chassis:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fl_axle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        fr_axle:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_left_far_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_left_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_left_middle_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        front_right_far_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_right_laser_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_right_middle_sonar_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        front_right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        left_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        rear_left_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        rear_right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        right_camera_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        steering_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: robot_description
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        back_camera_link:
+          Value: true
+        back_left_far_sonar_link:
+          Value: true
+        back_left_middle_sonar_link:
+          Value: true
+        back_right_far_sonar_link:
+          Value: true
+        back_right_middle_sonar_link:
+          Value: true
+        base_link:
+          Value: true
+        center_laser_link:
+          Value: true
+        chassis:
+          Value: true
+        fl_axle:
+          Value: true
+        fr_axle:
+          Value: true
+        front_camera_link:
+          Value: true
+        front_left_far_sonar_link:
+          Value: true
+        front_left_laser_link:
+          Value: true
+        front_left_middle_sonar_link:
+          Value: true
+        front_left_wheel:
+          Value: true
+        front_right_far_sonar_link:
+          Value: true
+        front_right_laser_link:
+          Value: true
+        front_right_middle_sonar_link:
+          Value: true
+        front_right_wheel:
+          Value: true
+        left_camera_link:
+          Value: true
+        map:
+          Value: true
+        odom:
+          Value: true
+        rear_left_wheel:
+          Value: true
+        rear_right_wheel:
+          Value: true
+        right_camera_link:
+          Value: true
+        steering_wheel:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        map:
+          {}
+        odom:
+          base_link:
+            chassis:
+              back_camera_link:
+                {}
+              back_left_far_sonar_link:
+                {}
+              back_left_middle_sonar_link:
+                {}
+              back_right_far_sonar_link:
+                {}
+              back_right_middle_sonar_link:
+                {}
+              center_laser_link:
+                {}
+              fl_axle:
+                front_left_wheel:
+                  {}
+              fr_axle:
+                front_right_wheel:
+                  {}
+              front_camera_link:
+                {}
+              front_left_far_sonar_link:
+                {}
+              front_left_laser_link:
+                {}
+              front_left_middle_sonar_link:
+                {}
+              front_right_far_sonar_link:
+                {}
+              front_right_laser_link:
+                {}
+              front_right_middle_sonar_link:
+                {}
+              left_camera_link:
+                {}
+              rear_left_wheel:
+                {}
+              rear_right_wheel:
+                {}
+              right_camera_link:
+                {}
+              steering_wheel:
+                {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 0
+      Min Color: 0; 0; 0
+      Min Intensity: -5.35824821e-22
+      Name: Front Right Laser
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.100000001
+      Style: Flat Squares
+      Topic: /prius/front_right_laser/scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 7.00649232e-45
+      Min Color: 0; 0; 0
+      Min Intensity: -5.35824821e-22
+      Name: Front Left Laser
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.100000001
+      Style: Flat Squares
+      Topic: /prius/front_left_laser/scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /prius/front_camera/image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: front_camera
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /prius/back_camera/image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: back_camera
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /prius/left_camera/image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: left_camera
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Class: rviz/Image
+      Enabled: true
+      Image Topic: /prius/right_camera/image_raw
+      Max Value: 1
+      Median window: 5
+      Min Value: 0
+      Name: right_camera
+      Normalize Range: true
+      Queue Size: 2
+      Transport Hint: raw
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: back_left_far
+      Queue Size: 100
+      Topic: /prius/back_sonar/left_far_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: back_left_mid
+      Queue Size: 100
+      Topic: /prius/back_sonar/left_middle_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: back_right_mid
+      Queue Size: 100
+      Topic: /prius/back_sonar/right_middle_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: back_right_far
+      Queue Size: 100
+      Topic: /prius/back_sonar/right_far_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: front_left_far
+      Queue Size: 100
+      Topic: /prius/front_sonar/left_far_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: front_left_mid
+      Queue Size: 100
+      Topic: /prius/front_sonar/left_middle_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: front_right_mid
+      Queue Size: 100
+      Topic: /prius/front_sonar/right_middle_range
+      Unreliable: false
+      Value: true
+    - Alpha: 0.5
+      Buffer Length: 1
+      Class: rviz/Range
+      Color: 255; 255; 255
+      Enabled: true
+      Name: front_right_far
+      Queue Size: 100
+      Topic: /prius/front_sonar/right_far_range
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 1.45408225
+        Min Value: -0.172303915
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: center_laser
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.0299999993
+      Style: Flat Squares
+      Topic: /prius/center_laser/scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: chassis
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/Orbit
+      Distance: 33.6682205
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.0599999987
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: -0.247934818
+        Y: 1.01060522
+        Z: -0.0640852451
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.0500000007
+      Name: Current View
+      Near Clip Distance: 0.00999999978
+      Pitch: 1.19539833
+      Target Frame: <Fixed Frame>
+      Value: Orbit (rviz)
+      Yaw: 3.12358236
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1388
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000002a6000004d4fc020000000afb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003a0000025a000000c600fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb00000016006c006500660074005f00630061006d006500720061010000029a000001360000001600fffffffb0000001800720069006700680074005f00630061006d00650072006101000003d6000001380000001600ffffff0000000100000146000004d4fc0200000005fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003a000002640000009e00fffffffb0000001800660072006f006e0074005f00630061006d00650072006101000002a4000001310000001600fffffffb00000016006200610063006b005f00630061006d00650072006101000003db000001330000001600fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000009bf0000003efc0100000002fb0000000800540069006d00650100000000000009bf0000024400fffffffb0000000800540069006d00650100000000000004500000000000000000000005c7000004d400000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 2495
+  X: 65
+  Y: 24
+  back_camera:
+    collapsed: false
+  front_camera:
+    collapsed: false
+  left_camera:
+    collapsed: false
+  right_camera:
+    collapsed: false
