@@ -4,7 +4,7 @@
 	<arg name="FPS" default="15"/>
 	<arg name="CalibrationFile" default=""/>
 
-	<node pkg="pointgrey" type="grasshopper3" name="grasshopper">
+	<node pkg="autoware_pointgrey_drivers" type="grasshopper3_camera" name="grasshopper" output="screen">
 		<param name="fps" value="$(arg FPS)"/>
 		<param name="calibrationfile" value="$(arg CalibrationFile)"/>
 	</node>

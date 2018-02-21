@@ -4,7 +4,6 @@ project(state)
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	autoware_msgs
-	euc
 )
 
 catkin_package(
@@ -20,9 +19,8 @@ include_directories(
 	${catkin_INCLUDE_DIRS}
 	)
 
-set(TARGET state)
+set(TARGET ${PROJECT_NAME})
 set(TARGET_SRC 
-	# 	src/state.cpp
 	src/state_context.cpp
 	)
 

@@ -18,8 +18,8 @@ from jsk_recognition_msgs.msg import BoundingBoxArray
 from jsk_rviz_plugins.msg import Pictogram
 from jsk_rviz_plugins.msg import PictogramArray
 #from calibration_camera_lidar.msg import projection_matrix
-from cv_tracker.msg import image_obj
-from cv_tracker.msg import image_rect
+from autoware_msgs.msg import image_obj
+from autoware_msgs.msg import image_rect
 
 import os.path #Autoware
 from numpy import dtype
@@ -237,13 +237,12 @@ def run():
 	#projection_publisher = rospy.Publisher('projection_matrix', projection_matrix, queue_size=1, latch=True)
 	rospy.Subscriber("/kitti_player/hdl64e", PointCloud2, callback)
 	
-	
 	rospy.spin()
 
 if __name__ == "__main__":
 	argv = sys.argv
 	
-	if len(argv) > 1:	
+	if len(argv) > 1:
 		xml_file = argv[1]
 		publishProjectionMatrix(os.path.dirname(os.path.dirname(xml_file))) #Get parent directory
 		kitti_data, auto_boxes, pictogram_texts = readXML(xml_file)
@@ -251,4 +250,5 @@ if __name__ == "__main__":
 
 	else :
 		print "[Usage] image.py tracklet_labels.xml"
+
 

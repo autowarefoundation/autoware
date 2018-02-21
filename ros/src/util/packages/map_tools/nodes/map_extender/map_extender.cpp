@@ -92,7 +92,7 @@ static ros::Publisher ndt_map_pub;
 static bool _get_height = false;
 static bool hasMapSet = false;
 
-static std::string input_pcd;
+static std::string input_pcd, output_pcd, output_pcd_rgb;
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
@@ -104,8 +104,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   try
   {
     ros::Time now = ros::Time(0);
-    listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
-    listener.lookupTransform("/map", "world", now, transform);
+    listener.waitForTransform("/map", input->header.frame_id, now, ros::Duration(10.0));
+    listener.lookupTransform("/map", input->header.frame_id, now, transform);
   }
   catch (tf::TransformException& ex)
   {
@@ -157,15 +157,9 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   msg_ptr->header.frame_id = "/map";
   ndt_map_pub.publish(*msg_ptr);
 
-  // Writing Point Cloud data to PCD file
-  int tmp = input_pcd.find_last_of("/");
-  std::string prefix = "extended_";
-  std::string prefix_rgb = "extended_rgb_";
-  std::string output = input_pcd.insert(tmp+1, prefix);
-  std::string output_rgb = input_pcd.insert(tmp+1, prefix_rgb);
 
-  pcl::io::savePCDFileBinary(output, *transformed_additional_map_ptr);
-  std::cout << "Saved " << output << ": " << transformed_additional_map_ptr->points.size() << " points." << std::endl;
+  pcl::io::savePCDFileBinary(output_pcd, *transformed_additional_map_ptr);
+  std::cout << "Saved " << output_pcd << ": " << transformed_additional_map_ptr->points.size() << " points." << std::endl;
 
   pcl::PointCloud<pcl::PointXYZRGB> cloud_rgb;
   cloud_rgb.width = transformed_additional_map_ptr->width;
@@ -179,8 +173,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
     cloud_rgb.points[i].rgb = 255 << 16 | 255 << 8 | 255;
   }
 
-  pcl::io::savePCDFileBinary(output_rgb, cloud_rgb);
-  std::cout << "Saved " << output_rgb << ": " <<  cloud_rgb.points.size() << " points." << std::endl;
+  pcl::io::savePCDFileBinary(output_pcd_rgb, cloud_rgb);
+  std::cout << "Saved " << output_pcd_rgb << ": " <<  cloud_rgb.points.size() << " points." << std::endl;
 
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Sequence number: " << input->header.seq << std::endl;
@@ -219,7 +213,15 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "map_extender");
     ros::NodeHandle n;
 
-    input_pcd = argv[1];
+    input_pcd = output_pcd = output_pcd_rgb = argv[1];
+    int tmp = input_pcd.find_last_of("/");
+    std::string prefix = "extended_";
+    std::string prefix_rgb = "extended_rgb_";
+    output_pcd.insert(tmp+1, prefix);
+    output_pcd_rgb.insert(tmp+1, prefix_rgb);
+    std::cout << input_pcd << std::endl;
+    std::cout << output_pcd << std::endl;
+    std::cout << output_pcd_rgb << std::endl;
 
     if(pcl::io::loadPCDFile<pcl::PointXYZI> (input_pcd, *additional_map_ptr) == -1){
       std::cout << "Couldn't read " << input_pcd << "." << std::endl;

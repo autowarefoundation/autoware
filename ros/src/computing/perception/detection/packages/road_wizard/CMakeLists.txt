@@ -34,17 +34,21 @@ else()
   set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif()
 
-pkg_check_modules(Qt5Core REQUIRED Qt5Core)
-pkg_check_modules(Qt5Widgets REQUIRED Qt5Widgets)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  include
 )
 
 catkin_package(
@@ -59,7 +63,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ###########
 add_library(libcontext lib/Context.cpp)
 add_dependencies(libcontext
-  ${catkin_EXPORTED_TARGETS})
+  ${catkin_EXPORTED_TARGETS}
+)
 
 
 ### region_tlr ###
@@ -108,51 +113,33 @@ EXECUTE_PROCESS(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   include
   nodes/tlr_tuner/
-  ${Qt5Core_INCLUDE_DIRS}
-  ${Qt5Widgets_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_custom_command(
-  OUTPUT ui_mainwindow.h
-  COMMAND
-  ${Qt5BIN}/uic
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/ui_mainwindow.h"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.ui"
-)
-add_custom_target(tlr_tuner_ui_mainwindow DEPENDS ui_mainwindow.h)
-
-add_custom_command(
-  OUTPUT mainwindow_moc.cpp
-  COMMAND
-  ${Qt5BIN}/moc
-  "-o" "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow_moc.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/nodes/tlr_tuner/mainwindow.h"
-)
-add_custom_target(tlr_tuner_mainwindow_moc DEPENDS mainwindow_moc.cpp)
+qt5_wrap_ui(tlr_tuner_ui_mainwindow nodes/tlr_tuner/mainwindow.ui)
 
 add_executable(tlr_tuner
   nodes/tlr_tuner/tlr_tuner.cpp
   nodes/tlr_tuner/mainwindow.cpp
+  nodes/tlr_tuner/mainwindow.h
   nodes/tlr_tuner/tunerBody.cpp
+  nodes/tlr_tuner/tunerBody.h
+  ${tlr_tuner_ui_mainwindow}
   )
 
 set_target_properties(tlr_tuner
   PROPERTIES COMPILE_FLAGS "-fPIC"
   )
 
-add_dependencies(tlr_tuner
-  tlr_tuner_ui_mainwindow
-  tlr_tuner_mainwindow_moc
-  )
-
 target_link_libraries(tlr_tuner
   ${catkin_LIBRARIES}
-  ${Qt5Core_LIBRARIES}
-  ${Qt5Widgets_LIBRARIES}
   ${OpenCV_LIBS}
+  Qt5::Core
+  Qt5::Widgets
   )
 
 
