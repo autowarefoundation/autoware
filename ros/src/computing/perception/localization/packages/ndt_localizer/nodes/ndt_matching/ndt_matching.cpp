@@ -168,8 +168,6 @@ static geometry_msgs::PoseStamped localizer_pose_msg;
 static ros::Publisher estimate_twist_pub;
 static geometry_msgs::TwistStamped estimate_twist_msg;
 
-static ros::Time current_scan_time;
-static ros::Time previous_scan_time;
 static ros::Duration scan_duration;
 
 static double exe_time = 0.0;
@@ -534,6 +532,8 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
   static pose previous_gnss_pose = current_gnss_pose;
+  ros::Time current_gnss_time = input->header.stamp;
+  static ros::Time previous_gnss_time = current_gnss_time;
 
   if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
   {
@@ -553,10 +553,23 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
     current_pose_imu = current_pose_odom = current_pose_imu_odom = current_pose;
 
-    offset_x = current_pose.x - previous_pose.x;
-    offset_y = current_pose.y - previous_pose.y;
-    offset_z = current_pose.z - previous_pose.z;
-    offset_yaw = current_pose.yaw - previous_pose.yaw;
+    diff_x = current_pose.x - previous_pose.x;
+    diff_y = current_pose.y - previous_pose.y;
+    diff_z = current_pose.z - previous_pose.z;
+    diff_yaw = current_pose.yaw - previous_pose.yaw;
+    diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
+
+    const double diff_time = (current_gnss_time - previous_gnss_time).toSec();
+    current_velocity   = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
+    current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
+    current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
+    angular_velocity   = (diff_time > 0) ? (diff_yaw / diff_time) : 0;
+
+    current_accel   = 0.0;
+    current_accel_x = 0.0;
+    current_accel_y = 0.0;
+    current_accel_z = 0.0;
 
     init_pos_set = 1;
   }
@@ -567,6 +580,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   previous_gnss_pose.roll = current_gnss_pose.roll;
   previous_gnss_pose.pitch = current_gnss_pose.pitch;
   previous_gnss_pose.yaw = current_gnss_pose.yaw;
+  previous_gnss_time = current_gnss_time;
 }
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
@@ -626,6 +640,17 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   previous_pose.pitch = current_pose.pitch;
   previous_pose.yaw = current_pose.yaw;
 
+  current_velocity   = 0.0;
+  current_velocity_x = 0.0;
+  current_velocity_y = 0.0;
+  current_velocity_z = 0.0;
+  angular_velocity   = 0.0;
+
+  current_accel   = 0.0;
+  current_accel_x = 0.0;
+  current_accel_y = 0.0;
+  current_accel_z = 0.0;
+
   offset_x = 0.0;
   offset_y = 0.0;
   offset_z = 0.0;
@@ -651,6 +676,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   offset_imu_odom_roll = 0.0;
   offset_imu_odom_pitch = 0.0;
   offset_imu_odom_yaw = 0.0;
+
+  init_pos_set = 1;
 }
 
 static void imu_odom_calc(ros::Time current_time)
@@ -766,7 +793,7 @@ static void imu_calc(ros::Time current_time)
   previous_time = current_time;
 }
 
-static const double wrapToPm(double a_num, const double a_max)
+static double wrapToPm(double a_num, const double a_max)
 {
   if (a_num >= a_max)
   {
@@ -775,9 +802,19 @@ static const double wrapToPm(double a_num, const double a_max)
   return a_num;
 }
 
-static const double wrapToPmPi(double a_angle_rad)
+static double wrapToPmPi(const double a_angle_rad)
 {
   return wrapToPm(a_angle_rad, M_PI);
+}
+
+static double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
+{
+  double diff_rad = lhs_rad - rhs_rad;
+  if(diff_rad >= M_PI)
+     diff_rad = diff_rad - 2*M_PI;
+  else if(diff_rad < -M_PI)
+     diff_rad = diff_rad + 2*M_PI;
+  return diff_rad;
 }
 
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
@@ -832,20 +869,9 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
   imu_yaw = wrapToPmPi(imu_yaw);
 
   static double previous_imu_roll = imu_roll, previous_imu_pitch = imu_pitch, previous_imu_yaw = imu_yaw;
-  const double diff_imu_roll = imu_roll - previous_imu_roll;
-
-  const double diff_imu_pitch = imu_pitch - previous_imu_pitch;
-
-  double diff_imu_yaw;
-  if (fabs(imu_yaw - previous_imu_yaw) > M_PI)
-  {
-    if (imu_yaw > 0)
-      diff_imu_yaw = (imu_yaw - previous_imu_yaw) - M_PI * 2;
-    else
-      diff_imu_yaw = -M_PI * 2 - (imu_yaw - previous_imu_yaw);
-  }
-  else
-    diff_imu_yaw = imu_yaw - previous_imu_yaw;
+  const double diff_imu_roll = calcDiffForRadian(imu_roll, previous_imu_roll);
+  const double diff_imu_pitch = calcDiffForRadian(imu_pitch, previous_imu_pitch);
+  const double diff_imu_yaw = calcDiffForRadian(imu_yaw, previous_imu_yaw);
 
   imu.header = input->header;
   imu.linear_acceleration.x = input->linear_acceleration.x;
@@ -888,7 +914,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     pcl::PointXYZ p;
     pcl::PointCloud<pcl::PointXYZ> filtered_scan;
 
-    current_scan_time = input->header.stamp;
+    ros::Time current_scan_time = input->header.stamp;
+    static ros::Time previous_scan_time = current_scan_time;
 
     pcl::fromROSMsg(*input, filtered_scan);
     pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_scan_ptr(new pcl::PointCloud<pcl::PointXYZ>(filtered_scan));
@@ -917,6 +944,30 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #endif
 
     // Guess the initial gross estimation of the transformation
+    double diff_time = (current_scan_time - previous_scan_time).toSec();
+
+    if (_offset == "linear")
+    {
+      offset_x = current_velocity_x * diff_time;
+      offset_y = current_velocity_y * diff_time;
+      offset_z = current_velocity_z * diff_time;
+      offset_yaw = angular_velocity * diff_time;
+    }
+    else if (_offset == "quadratic")
+    {
+      offset_x = (current_velocity_x + current_accel_x * diff_time) * diff_time;
+      offset_y = (current_velocity_y + current_accel_y * diff_time) * diff_time;
+      offset_z = current_velocity_z * diff_time;
+      offset_yaw = angular_velocity * diff_time;
+    }
+    else if (_offset == "zero")
+    {
+      offset_x = 0.0;
+      offset_y = 0.0;
+      offset_z = 0.0;
+      offset_yaw = 0.0;
+    }
+
     predict_pose.x = previous_pose.x + offset_x;
     predict_pose.y = previous_pose.y + offset_y;
     predict_pose.z = previous_pose.z + offset_z;
@@ -1089,19 +1140,17 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
 
     // Compute the velocity and acceleration
-    scan_duration = current_scan_time - previous_scan_time;
-    double secs = scan_duration.toSec();
     diff_x = current_pose.x - previous_pose.x;
     diff_y = current_pose.y - previous_pose.y;
     diff_z = current_pose.z - previous_pose.z;
-    diff_yaw = current_pose.yaw - previous_pose.yaw;
+    diff_yaw = calcDiffForRadian(current_pose.yaw, previous_pose.yaw);
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
-    current_velocity = diff / secs;
-    current_velocity_x = diff_x / secs;
-    current_velocity_y = diff_y / secs;
-    current_velocity_z = diff_z / secs;
-    angular_velocity = diff_yaw / secs;
+    current_velocity   = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
+    current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
+    current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
+    angular_velocity   = (diff_time > 0) ? (diff_yaw / diff_time) : 0;
 
     current_pose_imu.x = current_pose.x;
     current_pose_imu.y = current_pose.y;
@@ -1134,10 +1183,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       current_velocity_smooth = 0.0;
     }
 
-    current_accel = (current_velocity - previous_velocity) / secs;
-    current_accel_x = (current_velocity_x - previous_velocity_x) / secs;
-    current_accel_y = (current_velocity_y - previous_velocity_y) / secs;
-    current_accel_z = (current_velocity_z - previous_velocity_z) / secs;
+    current_accel   = (diff_time > 0) ? ((current_velocity - previous_velocity) / diff_time) : 0;
+    current_accel_x = (diff_time > 0) ? ((current_velocity_x - previous_velocity_x) / diff_time) : 0;
+    current_accel_y = (diff_time > 0) ? ((current_velocity_y - previous_velocity_y) / diff_time) : 0;
+    current_accel_z = (diff_time > 0) ? ((current_velocity_z - previous_velocity_z) / diff_time) : 0;
 
     estimated_vel_mps.data = current_velocity;
     estimated_vel_kmph.data = current_velocity * 3.6;
@@ -1381,29 +1430,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Get fitness score time: " << getFitnessScore_time << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
 
-    // Update offset
-    if (_offset == "linear")
-    {
-      offset_x = diff_x;
-      offset_y = diff_y;
-      offset_z = diff_z;
-      offset_yaw = diff_yaw;
-    }
-    else if (_offset == "quadratic")
-    {
-      offset_x = (current_velocity_x + current_accel_x * secs) * secs;
-      offset_y = (current_velocity_y + current_accel_y * secs) * secs;
-      offset_z = diff_z;
-      offset_yaw = diff_yaw;
-    }
-    else if (_offset == "zero")
-    {
-      offset_x = 0.0;
-      offset_y = 0.0;
-      offset_z = 0.0;
-      offset_yaw = 0.0;
-    }
-
     offset_imu_x = 0.0;
     offset_imu_y = 0.0;
     offset_imu_z = 0.0;
@@ -1433,8 +1459,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     previous_pose.pitch = current_pose.pitch;
     previous_pose.yaw = current_pose.yaw;
 
-    previous_scan_time.sec = current_scan_time.sec;
-    previous_scan_time.nsec = current_scan_time.nsec;
+    previous_scan_time = current_scan_time;
 
     previous_previous_velocity = previous_velocity;
     previous_velocity = current_velocity;
