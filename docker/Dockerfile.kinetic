@@ -232,6 +232,7 @@ RUN sudo rm -rf /etc/ros/rosdep/sources.list.d/* \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
 # Install Autoware
+RUN rand -N 1 # in case source was modified make sure it gets the latest code.  H.F.
 RUN git clone https://github.com/huckl3b3rry87/Autoware.git -b feature/port_car_demo /home/$USERNAME/Autoware
 
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash \
@@ -255,7 +256,6 @@ RUN sudo apt-get -y install vim tmux
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_colors" --type bool false
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/background_color" --type string "#000000"
-
 
 #ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /home/$USERNAME/Autoware/ros/devel/setup.bash && cd ~/Autoware/ros && ./run"]
 #ENTRYPOINT ["/bin/bash", "-c", "source /opt/ros/kinetic/setup.bash && source /home/$USERNAME/Autoware/ros/devel/setup.bash"]
