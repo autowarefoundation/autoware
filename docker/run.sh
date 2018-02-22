@@ -7,7 +7,7 @@ HOST_DIR=/home/$USER/shared_dir
 
 if [ "$1" = "kinetic" ] || [ "$1" = "indigo" ] || [ "$1" = "test" ]
 then
-    echo "Use $1"
+    echo "Using $1"
 else
     echo "Select distribution, kinetic|indigo|test"
     exit

@@ -29,7 +29,7 @@ Then build it with,
 ### How to run
 Make sure that the file has the appropriate permissions:
 ```
-chmod +x run.sh
+chmod +x run.sh 
 ```
 
 Run it with,
