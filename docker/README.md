@@ -1,8 +1,24 @@
 # Autoware Docker
 
 
+## Install docker
+To use Docker, it must be first installed on your machine:
+```
+sudo apt-get install apt-transport-https ca-certificates
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
+# For Ubuntu 14.04
+Repo = "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+# For Ubuntu 16.04
+Repo = "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
+
+echo $Repo | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install docker-engine
+```
+
 ### How to build
-First make sure that the file has the appropriate permissions:
+Make sure that the file has the appropriate permissions:
 ```
 chmod +x build.sh
 ```
@@ -11,15 +27,17 @@ Then build it with,
 ./build.sh kinetic
 ```
 ### How to run
-First make sure that the file has the appropriate permissions:
+Make sure that the file has the appropriate permissions:
 ```
 chmod +x run.sh
 ```
-Then run it with,
+
+Run it with,
 ```
 febbo@febbo-HP-ZBook-17-G2:~/Documents/workspace/Autoware/docker$ ./run.sh kinetic
 ```
-Next,
+
+Now that we have changed users, we can run ``Autoware`` with:
 ```
 autoware@febbo-HP-ZBook-17-G2:~$ cd Autoware/ros/
 autoware@febbo-HP-ZBook-17-G2:~/Autoware/ros$ ./run
@@ -39,20 +57,6 @@ To begin the port car_demo into Autoware, and leave the nvidia image base, then 
 
 
 
-## Install docker
-```
-sudo apt-get install apt-transport-https ca-certificates
-sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-
-# For Ubuntu 14.04
-Repo = "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
-# For Ubuntu 16.04
-Repo = "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
-
-echo $Repo | sudo tee /etc/apt/sources.list.d/docker.list
-sudo apt-get update
-sudo apt-get install docker-engine
-```
 
 ## Install NVIDIA Docker
 ```
