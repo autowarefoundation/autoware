@@ -1100,7 +1100,7 @@ int main(int argc, char** argv)
     }
     else if (file_name == "wayarea.csv")
     {
-      way_area_pub.publish(createObjectArray<DetectionArea, DetectionAreaArray>(file_path));
+      way_area_pub.publish(createObjectArray<WayArea, WayAreaArray>(file_path));
       category |= Category::WAY_AREA;
     }
     else if (file_name == "detectionarea.csv")

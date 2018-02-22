@@ -1331,9 +1331,10 @@ int main(int argc, char** argv)
   {
     _clustering_distances = { 15, 30, 45, 60 };  // maximum distance from sensor origin to separate segments
   }
+
   if (_clustering_thresholds.size() != 5)
   {
-    _clustering_thresholds = { 0.5, 1.1, 1.6, 2.1, 2.6 };  // Nearest neighbor distance threshold for each segment
+    _clustering_thresholds = { 0.1, 0.3, 0.5, 0.7, 0.9 };  // Nearest neighbor distance threshold for each segment
   }
 
   std::cout << "_clustering_thresholds: ";
