@@ -1,7 +1,7 @@
 ## Baumer Package
 
 This package allows to obtain an image stream from Baumer cameras.
-It was testes successfully on a VLG22C.
+It was tested successfully on a VLG22C.
 
 ### Requirements
 

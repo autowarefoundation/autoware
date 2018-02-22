@@ -260,20 +260,22 @@ void adjust_exposure(BGAPI::Camera* camera_pointer,
 
 	if (current_brightness < threshold_brightness)
 	{
-		ROS_INFO("increasing exposure");
-		exposure = prev_exposure + exposure_delta;
-		if (exposure >= VLG22_MAX_EXPOSURE)
-			exposure = VLG22_MAX_EXPOSURE;
-		baumer_change_exposure(camera_pointer, exposure);
+		if (exposure <= VLG22_MAX_EXPOSURE)
+		{
+			exposure = prev_exposure + exposure_delta;
+			ROS_INFO("Increasing exposure");
+			baumer_change_exposure(camera_pointer, exposure);
+		}
 	}
 
 	if (current_brightness == 1.0)
 	{
-		ROS_INFO("reducing exposure");
-		exposure = prev_exposure - exposure_delta;
-		if (exposure <= VLG22_MIN_EXPOSURE)
-			exposure = VLG22_MIN_EXPOSURE;
-		baumer_change_exposure(camera_pointer, exposure);
+		if (exposure >= VLG22_MIN_EXPOSURE)
+		{
+			exposure = prev_exposure - exposure_delta;
+			ROS_INFO("Reducing exposure");
+			baumer_change_exposure(camera_pointer, exposure);
+		}
 	}
 	prev_exposure = exposure;
 }

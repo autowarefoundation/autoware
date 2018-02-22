@@ -25,27 +25,19 @@ subs :
         desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
         run  : roslaunch autoware_pointgrey_drivers grasshopper3.launch
-        param: calibration_path_grasshopper3
-        gui  :
-          CalibrationFile :
-            prop  : 1
-            flags : [ center_v ]
+        param: grasshopper3_params
+
       - name : PointGrey Generic
         desc : PointGrey Generic desc sample
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
+
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
         run  : roslaunch autoware_pointgrey_drivers ladybug.launch
-        param: calibration_path_ladybug
-        gui  :
-          CalibrationFile :
-            prop  : 1
-            flags : [ center_v ]
-          Scale :
-            prop  : 1
-            flags : [ center_v ]
+        param: ladybug_params
+
       - name : USB Generic
         desc : USB Generic desc sample
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
@@ -358,27 +350,65 @@ params :
         delim: ':='
         must : True
 
-  - name  : calibration_path_grasshopper3
+  - name  : grasshopper3_params
     vars  :
     - name  : CalibrationFile
-      desc  : CalibrationFile desc sample
+      label : CalibrationFile
+      desc  : Path to Autoware format calibration file
       kind  : path
       v     : ''
       cmd_param :
         dash        : ''
         delim       : ':='
         only_enable : True
-  - name  : calibration_path_ladybug
+    - name  : mode
+      label : mode
+      desc  : Camera mode (0,1,2,3,....). Default 0
+      min   : 0
+      max   : 32
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : format
+      label : format
+      desc  : Pixel format ("raw" or "rgb")
+      kind  : str
+      v     : 'raw'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : fps
+      label : fps
+      desc  : Frames per second to try to acquire. Default 20
+      min   : 1
+      max   : 24
+      v     : 20
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : ladybug_params
     vars  :
+    - name  : SCALE
+      label : SCALE
+      desc  : scale, resize downsample ratio (0.1 - 1.0) Default 0.2
+      min   : 0.1
+      max   : 1.0
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
     - name  : CalibrationFile
-      desc  : CalibrationFile desc sample
+      label : CalibrationFile
+      desc  : Path to Autoware format calibration file
       kind  : path
       v     : ''
       cmd_param :
         dash        : ''
         delim       : ':='
         only_enable : True
-        must        : True
 
 #  - name  : points_image
 #    vars  :
