@@ -1,9 +1,6 @@
 # Autoware Docker
 
-## Docker
 
-## car_demo
-To begin the port car_demo into Autoware, and leave the nvidia image base, we copied the docker files in the car_demo stack. This had to be done, because ros-kinetic does not build with gazebo 8 by default. So, the dollowing is
 ### How to build
 First make sure that the file has the appropriate permissions:
 ```
@@ -11,7 +8,7 @@ chmod +x build.sh
 ```
 Then build it with,
 ```
-./build.sh
+./build.sh kinetic
 ```
 ### How to run
 First make sure that the file has the appropriate permissions:
@@ -20,10 +17,17 @@ chmod +x run.sh
 ```
 Then run it with,
 ```
-./run.sh
+febbo@febbo-HP-ZBook-17-G2:~/Documents/workspace/Autoware/docker$ ./run.sh kinetic
 ```
+Next,
+```
+autoware@febbo-HP-ZBook-17-G2:~$ cd Autoware/ros/
+autoware@febbo-HP-ZBook-17-G2:~/Autoware/ros$ ./run
+```
+Then car_demo can be launched by clicking on the ``Simulation`` tab and then the ``Gazebo`` tab.
 
-
+### Notes
+To begin the port car_demo into Autoware, and leave the nvidia image base, then the docker files where copied in the car_demo stack. This had to be done, because ros-kinetic does not build with gazebo 8 by default.
 
 
 
