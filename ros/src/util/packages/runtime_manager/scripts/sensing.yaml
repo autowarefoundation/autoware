@@ -54,6 +54,10 @@ subs :
         desc : IDS UI-3060CP (Requires official ueye package)
         probe:
         run  : roslaunch ueye nodelets.launch
+      - name : Sekonix 3322/3323 GMSLCamera
+        desc : gmsl camera. run on PX2 only
+        probe:
+        run  : roslaunch autoware_driveworks_interface gmsl_interface
 
   - name : GNSS
     desc : GNSS desc sample

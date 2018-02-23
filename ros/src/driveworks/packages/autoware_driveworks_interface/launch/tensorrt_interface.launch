@@ -1,0 +1,9 @@
+<launch>
+	<arg name="image_source" default="image_raw" />
+	<arg name="tensorRT_model" default="/usr/local/driveworks/data/samples/detector/tensorRT_model.bin" />
+
+	<node pkg="autoware_driveworks_interface" type="tensorrt_interface" name="tensorrt_interface" output="screen">
+		<param name="image_source" value="$(arg image_source)" />
+		<param name="tensorRT_model" value="$(arg tensorRT_model)" />
+	</node>
+</launch>
