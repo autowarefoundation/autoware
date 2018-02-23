@@ -782,11 +782,15 @@ class MyFrame(rtmgr.MyFrame):
 		pub.publish(msg)
 
 	def OnAutoPilot(self, event):
-		obj = event.GetEventObject()
-		self.alias_sync(obj)
-		v = obj.GetValue()
-		pub = rospy.Publisher('/as/control_mode', Bool, queue_size=10)
-		pub.publish(Bool(data=v))
+                pub = rospy.Publisher('/as/control_mode', Bool, queue_size=1)
+                obj = event.GetEventObject()
+                self.alias_sync(obj)
+                v = obj.GetValue()
+                ## this allows some time before publisher is constructed
+                ## see issue: https://gitlab.apex.ai/ApexAI/grand_central/issues/930
+                rospy.sleep(0.2)
+                pub.publish(Bool(data=v))
+
 
 
 
