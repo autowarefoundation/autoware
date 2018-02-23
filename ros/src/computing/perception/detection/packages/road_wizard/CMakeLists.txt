@@ -244,7 +244,7 @@ endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
 ### region_tlr_mxnet ###
 ##############################MXNET with CPP_PACKAGE NEEDS TO BE PREVIOUSLY COMPILED################
 #############Please follow README file for instructions#############################################
-set(MXNET_PATH "$ENV{HOME}/mxnet/")
+set(MXNET_PATH "$ENV{HOME}/autoware/mxnet/")
 ####################################################################################################
 if(EXISTS "${MXNET_PATH}")
 
