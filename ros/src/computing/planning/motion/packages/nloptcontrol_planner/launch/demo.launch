@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find nloptcontrol_planner)/config/mavs_control.yaml" command="load"/>
+
+  <!-- Obstacle Avoidance-->
+  <node name="obstacle_avoidance" pkg="nloptcontrol_planner" type="obstacle_avoidance.jl" output="screen"/>
+
+</launch>
