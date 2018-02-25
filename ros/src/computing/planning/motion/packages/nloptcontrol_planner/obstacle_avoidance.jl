@@ -8,7 +8,6 @@ using geometry_msgs.msg
 using nloptcontrol_planner.msg
 
 using NLOptControl
-using DataFrames
 using MAVs
 using PyCall
 @pyimport tf.transformations as tf
@@ -55,7 +54,10 @@ function main()
           msg.sa = n.r.X[:,6]
           msg.vx = n.r.X[:,7]
           # TODO consider buffering the message here..
+          print(msg)
+
           publish(pub,msg)
+          rossleep(loop_rate) # NOTE might not want to do this ...
 
           # if the vehicle is very close to the goal sometimes the optimization returns with a small final time
           # and it can even be negative (due to tolerances in NLP solver). If this is the case, the goal is slightly
@@ -76,9 +78,6 @@ function main()
              println("Goal Attained! \n"); n.mpc.goal_reached=true;
              break;
           end
-         # if checkCrash(n,c,c.m.sm2;(:plant=>true))
-        #    warn(" \n The vehicle crashed -> stopping simulation! \n"); break;
-         # end
         end
     end
 end
