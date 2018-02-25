@@ -18,23 +18,20 @@ function main()
   # message for solution to optimal control problem
   const pub = Publisher{Control}("/nloptcontrol_planner/optimal_control", queue_size=10)
 
-
-  #linkName = "base_footprint"  # TODO make this a parameter
-
-#  modelName = RobotOS.get_param("robotName")
-
   # TODO pass this!
-  c=defineCase(;(:mode=>:autoGazebo));
+  #c=defineCase(;(:mode=>:autoGazebo)); TODO figure out why this is broken
 
+  c = defineCase(;(:mode=>:RTPP))
+  c.o = defineObs(:s1)
+  setMisc!(c; N=40, solver=:Ipopt, integrationScheme=:trapezoidal)
+  setSolverSettings!(c)
 
   n=initializeAutonomousControl(c);
-  driveStraight!(n)
+  driveStraight!(n)  # NOTE probably get rid of this
 
   loop_rate = Rate(2.0)
 
   while !is_shutdown()
-  c=defineCase(;(:mode=>:autoGazebo));
-
 
   n=initializeAutonomousControl(c);
   driveStraight!(n)
