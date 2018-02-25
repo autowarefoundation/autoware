@@ -54,7 +54,6 @@ function main()
           msg.sa = n.r.X[:,6]
           msg.vx = n.r.X[:,7]
           # TODO consider buffering the message here..
-          print(msg)
 
           publish(pub,msg)
           rossleep(loop_rate) # NOTE might not want to do this ...
