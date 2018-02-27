@@ -42,6 +42,7 @@
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
+#include "waypoint_filter.h"
 
 namespace waypoint_maker
 {
@@ -88,9 +89,9 @@ private:
 
   // variables
   std::string multi_lane_csv_;
-  double decelerate_;
-  bool disableDecisionMaker_;
-  bool disableVelocitySmoothing_;
+  bool disable_decision_maker_;
+  bool disable_filtering_;
+  WaypointFilter filter_;
 
   // initializer
   void initPublisher();
@@ -100,6 +101,7 @@ private:
 
   void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
   void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
+  void saveLaneArray(const std::vector<std::string> &paths, const autoware_msgs::LaneArray &lane_array);
 
   FileFormat checkFileFormat(const char *filename);
   bool verifyFileConsistency(const char *filename);
@@ -110,11 +112,9 @@ private:
   void loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
   void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
                             autoware_msgs::waypoint *wp);
-  void planningVelocity(std::vector<autoware_msgs::waypoint> *wps);
-  double decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps);
-
 };
 
+const std::string addFileSuffix(std::string file_path, std::string suffix);
 void parseColumns(const std::string &line, std::vector<std::string> *columns);
 size_t countColumns(const std::string& line);
 

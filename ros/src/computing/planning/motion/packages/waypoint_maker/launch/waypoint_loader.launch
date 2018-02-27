@@ -1,17 +1,30 @@
 <!-- -->
 <launch>
 	<arg name="multi_lane_csv" default="" />
-	<arg name="decelerate" default="1" />
-	<arg name="use_velocity_visualizer" default="false" />
-	<arg name="disableDecisionMaker" default="1" />
-	<arg name="disableVelocitySmoothing" default="0" />
+	<arg name="disable_decision_maker" default="true" />
+	<arg name="disable_filtering" default="false" />
+	<arg name="velocity_max" default="40.0" />
+	<arg name="velocity_min" default="4.0" />
+	<arg name="accel_limit" default="1.5" />
+	<arg name="decel_limit" default="1.5" />
+	<arg name="radius_max" default="20.0" />
+	<arg name="radius_min" default="6.0" />
+	<arg name="lookup_curve_width" default="5" />
+	<arg name="resample_interval" default="1.0" />
 
-	<!-- rosrun waypoint_maker waypoint_loader _filename:="path file" -->
+	<!-- rosrun waypoint_maker waypoint_loader _multi_lane_csv:="path file" -->
 	<node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen">
 	<param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
-        <param name="decelerate" value="$(arg decelerate)" />
-        <param name="disableDecisionMaker" value="$(arg disableDecisionMaker)" />
-        <param name="disableVelocitySmoothing" value="$(arg disableVelocitySmoothing)" />
+        <param name="disable_decision_maker" value="$(arg disable_decision_maker)" />
+        <param name="disable_filtering" value="$(arg disable_filtering)" />
+        <param name="velocity_max" value="$(arg velocity_max)" />
+        <param name="velocity_min" value="$(arg velocity_min)" />
+        <param name="accel_limit" value="$(arg accel_limit)" />
+        <param name="decel_limit" value="$(arg decel_limit)" />
+        <param name="radius_max" value="$(arg radius_max)" />
+        <param name="radius_min" value="$(arg radius_min)" />
+        <param name="lookup_curve_width" value="$(arg lookup_curve_width)" />
+        <param name="resample_interval" value="$(arg resample_interval)" />
 	</node>
 
 	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />

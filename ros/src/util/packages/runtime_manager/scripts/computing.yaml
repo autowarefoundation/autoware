@@ -2997,14 +2997,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate
-      desc      : decelerate   desc sample
-      label   : 'decelerate :'
-      v         : 1.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : disableDecisionMaker
+    - name      : disable_decision_maker
       desc      : if you not check this, you have to run a decisionmaker node.
       label     : 'disableDecisionMaker'
       kind      : checkbox
@@ -3012,14 +3005,57 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disableVelocitySmoothing
-      desc      : sample.
-      label     : 'disableVelocitySmoothing'
+    - name      : disable_filtering
+      desc      : if you don't need both filtering or saving files, please check this.
+      label     : 'disable filtering'
       kind      : checkbox
-      v         : false
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : resample_interval
+      desc      : please set resample interval [m] for new waypoint 
+      label     : resample interval [m]
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : velocity_max
+      desc      : maximum value of velocity on all waypoints[km/h]
+      label     : velocity max [km/h]
+      min       : 10.0
+      max       : 100.0
+      v         : 40.0
+    - name      : velocity_min
+      desc      : minimum value of velocity on all waypoints[km/h]
+      label     : velocity min [km/h]
+      min       : 0.0
+      max       : 10.0
+      v         : 4.0
+    - name      : accel_limit
+      desc      : maximum value of acceleration on all waypoints[km/h]
+      label     : accel limit [m/s^2]
+      min       : 0.0
+      max       : 1.5
+      v         : 5.0
+    - name      : deceleration
+      desc      : maximum value of deceleration on all waypoints[km/h]
+      label     : decel limit [m/s^2]
+      min       : 0.0
+      max       : 1.5
+      v         : 5.0
+    - name      : radius_max
+      desc      : if this parameter < rotate_radius_of_waypoints, vehicle will be in the curve.
+      label     : radius max threshold for curve recognition [m]
+      min       : 10.0
+      max       : 100.0
+      v         : 20.0
+    - name      : radius_min
+      desc      : minimum value of rotate radius [m] for using on velocity control.
+      label     : radius min for controling velocity[m]
+      min       : 4.0
+      max       : 10.0
+      v         : 6.0
 
   - name  : waypoint_velocity_visualizer
     vars  :
