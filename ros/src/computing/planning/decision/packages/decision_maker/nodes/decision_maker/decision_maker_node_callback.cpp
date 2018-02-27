@@ -152,8 +152,6 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
   {
     if (msg.clusters.size())
     {
-      std::cerr <<"clusters are found: " << msg.clusters.size() << "\n";
-
       // if euclidean_cluster does not use wayarea, it may always founded.
       for (const auto cluster : msg.clusters)
       {
@@ -172,7 +170,6 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
         {
           l_detection_flag = true;
           setFlagTime = ros::Time::now().toSec();
-          std::cerr << "obstacle in detection area\n";
 	      break;
         }
       }
@@ -181,7 +178,6 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
   /* The true state continues for more than 1 second. */
   if(l_detection_flag || (ros::Time::now().toSec() - setFlagTime) >= 1.0/*1.0sec*/){
 	  foundOtherVehicleForIntersectionStop_ = l_detection_flag;
-    std::cerr << "foundOtherVehicleForIntersectionStop_ set: " << foundOtherVehicleForIntersectionStop_ << "\n";
   }
 }
 
