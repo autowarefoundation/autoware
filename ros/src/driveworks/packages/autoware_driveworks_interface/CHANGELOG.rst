@@ -1,23 +1,20 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package dbw_mkz_msgs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package autoware_driveworks_interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
 * Update CHANGELOG
+* add gmsl button to runtime manager
+* update version description
+* add to support driveworks feature
 * Contributors: Yusuke FUJII
 
 1.6.1 (2018-01-20)
 ------------------
-* update CHANGELOG
-* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Prepare release for 1.6.0
-* adapted the version to the current version
-* Add pacmod interface
-* Contributors: TomohitoAndo, Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
