@@ -332,7 +332,7 @@ void DecisionMakerNode::updateStateStop(int status)
   static bool timerflag;
   static ros::Timer stopping_timer;
 
-  if (status)
+  if (status)  // stopline process
   {
     if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
     {
@@ -355,25 +355,43 @@ void DecisionMakerNode::updateStateStop(int status)
       publishStoplineWaypointIdx(closest_stopline_waypoint_);
     }
   }
+  else  // stop process
+  {
+    publishStoplineWaypointIdx(closest_waypoint_ + 1);
+  }
 }
 void DecisionMakerNode::callbackInStateStop(int status)
 {
+  int _sendWaypointIdx;
   if (!status) /*not a stopline*/
   {
-    publishStoppedLaneArray();
+    if (!closest_stop_waypoint_)
+    {
+      _sendWaypointIdx = closest_waypoint_ + 1;
+    }
+    else
+    {
+      _sendWaypointIdx = closest_stop_waypoint_;
+    }
   }
   else /* handling stopline */
   {
-    publishStoplineWaypointIdx(closest_stopline_waypoint_);
+    _sendWaypointIdx = closest_stopline_waypoint_;
   }
+  publishStoplineWaypointIdx(_sendWaypointIdx);
 }
 void DecisionMakerNode::callbackOutStateStop(int status)
 {
+  int _sendWaypointIdx = -1;
   if (status)
   {
     closest_stopline_waypoint_ = -1;
-    publishStoplineWaypointIdx(closest_stopline_waypoint_);
   }
+  else
+  {
+    closest_stop_waypoint_ = -1;
+  }
+  publishStoplineWaypointIdx(_sendWaypointIdx);
 }
 
 void DecisionMakerNode::updateStateObstacleAvoid(int status)
