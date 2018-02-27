@@ -2,34 +2,43 @@
 Changelog for package cv_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#949 <https://github.com/CPFL/Autoware/issues/949>`_ from CPFL/fix/obj_reproj_multi_cam_support
-  Support for multi cameras in obj_reproj node
+* Prepare release for 1.6.0
 * Support for multi cameras in pbj_reproj node
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+* Contributors: Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
 * Update README.md (`#813 <https://github.com/cpfl/autoware/issues/813>`_)
   Added instructions to compile compatible version of SSD with Autoware
-* Contributors: Abraham Monrroy
+* Contributors: Abraham Monrroy, Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -37,9 +46,6 @@ Changelog for package cv_tracker
 1.3.0 (2017-07-14)
 ------------------
 * fix build issues due to autoware_msgs
-* Resolved merge conflict by new feature
-* Merge pull request `#713 <https://github.com/CPFL/Autoware/issues/713>`_ from CPFL/fix/ssd_build_redefinition_std
-  fix redefinition error@yolo
 * fix redefinition error
 * Enable building nodes on the kinetic setup
   -road_wizard
@@ -57,7 +63,6 @@ Changelog for package cv_tracker
 * updated yolo2 for compatibility with commit 56d69e73aba37283ea7b9726b81afd2f79cd1134 @pjreddie pjreddie committed 4 hours ago
 * Added Readme
 * Changes to code to adapt to new cv_tracker messages structure
-* Merge remote-tracking branch 'origin/develop' into feature/yolo2
 * Yolo 2 Node completed
 * Yolo OK
 * fixed compile issue for ssd node
@@ -152,45 +157,11 @@ Changelog for package cv_tracker
   * Make it possible to obtain camera ID in each node to subscribe topics
   under camera name space selectively
   * Get image size from sensor_msgs::Image instead of CameraInfo
-* Merge branch 'master' of ssh://localhost:8443/CPFL/Autoware into apply_multi_camera
-  WARNING: This commit contains unresolved conflict.
-  Unresolved conflicts are contained in...:
-  *
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  * ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  * ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ocv.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ttic.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/kf_tracking.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/reprojection.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/computing/perception/detection/packages/viewers/nodes/scan_image_viewer/scan_image_viewer.cpp
-  ros/src/sensing/fusion/packages/calibration_camera_lidar/CalibrationToolkit/calibrationtoolkit.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  ros/src/util/packages/runtime_manager/scripts/points2image.launch
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  ros/src/util/packages/runtime_manager/scripts/vscan.launch
 * Removed *.orig files
-* Merge remote-tracking branch 'origin/master' into synchrogazed
 * Add sleep command to decrease CPU occupancy
 * modify launch files in perception to add a pedestrian mode in the sync packege
 * modify correct timestamp and timing to publish
 * fixed a bug in obj_reprojection when it occured conflict
-* Merge remote-tracking branch 'origin/fix_timestamp' into synchrogazed
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-* Merge remote-tracking branch 'origin/resolve_conflict' into synchrogazed
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/ranging.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
 * Correct calibration_camera_lidar dependnecy about message header
 * Correct runtime manager dependencies
 * Correct cv_tracker building
@@ -247,15 +218,12 @@ Changelog for package cv_tracker
 * KLT based Multi Tracking
   -Added Launch file access from RTM
   -Modified ImageViewer to show circles instead of rectangles
-* Merge branch 'master' of https://github.com/CPFL/Autoware into klt_continued
 * Fix include path and linked library setting issue on Ubuntu 15.04
   Paths of header files and libraries of libhdf5 and CUDA on Ubuntu 15.04 are
   different from Ubuntu 14.04. And those paths are set explicitly at compiling
   time on Ubuntu 15.04.
   And clean up CMake codes by using CMake and pkg-config features instead of
   absolute paths.
-* Merge pull request `#81 <https://github.com/CPFL/Autoware/issues/81>`_ from CPFL/rcnn
-  Integration of RCNN object detection on Autoware
 * Updated to compile rcnn only if caffe and fast rcnn are installed
 * klt changes
 * changes

@@ -2,28 +2,40 @@
 Changelog for package kf
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+* Prepare release for 1.6.0
+* Contributors: Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -61,13 +73,6 @@ Changelog for package kf
 1.0.0 (2016-12-22)
 ------------------
 * Fix to KF caused from synchro changes
-* Merge remote-tracking branch 'origin/resolve_conflict' into synchrogazed
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/ranging.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
 * Unify how to receive /image_raw
   In order to use both rgb8 and bayer image format of /image_raw
 * kf and klt modified as asked.

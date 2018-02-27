@@ -2,30 +2,41 @@
 Changelog for package scan2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+* Prepare release for 1.6.0
+* Contributors: Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * Fixed zero division in scan2image
-* Contributors: Yukihiro.Saito
+* Contributors: Yukihiro.Saito, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -63,9 +74,6 @@ Changelog for package scan2image
 * Fix for rosjava installed platform
   Some packages don't declare package dependencies correctly.
   This makes message jar files built failure.
-* Merge remote-tracking branch 'origin/master' into synchrogazed
-  Conflicts:
-  ros/src/sensing/fusion/packages/scan2image/CMakeLists.txt
 * Correct calibration_camera_lidar dependnecy about message header
 * Fix compile error in the scan2image package
 * Change init function from memset to fill_n

@@ -2,34 +2,42 @@
 Changelog for package icp_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id
-  Use initialpose header.frame_id at initialposeCallback function
-* Merge pull request `#965 <https://github.com/CPFL/Autoware/issues/965>`_ from CPFL/fix/icp_matching
-  remove currnet_pose publisher in icp_matching
+* Prepare release for 1.6.0
 * remove currnet_pose publisher
 * use header.frame_id included in initialpose topic
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+* Contributors: Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------

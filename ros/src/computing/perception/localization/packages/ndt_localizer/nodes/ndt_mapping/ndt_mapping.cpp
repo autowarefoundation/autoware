@@ -367,6 +367,15 @@ static double wrapToPmPi(double a_angle_rad)
   return wrapToPm(a_angle_rad, M_PI);
 }
 
+static double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
+{
+  double diff_rad = lhs_rad - rhs_rad;
+  if(diff_rad >= M_PI)
+     diff_rad = diff_rad - 2*M_PI;
+  else if(diff_rad < -M_PI)
+     diff_rad = diff_rad + 2*M_PI;
+  return diff_rad;
+}
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
   // std::cout << __func__ << std::endl;
@@ -419,20 +428,9 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
   imu_yaw = wrapToPmPi(imu_yaw);
 
   static double previous_imu_roll = imu_roll, previous_imu_pitch = imu_pitch, previous_imu_yaw = imu_yaw;
-  const double diff_imu_roll = imu_roll - previous_imu_roll;
-
-  const double diff_imu_pitch = imu_pitch - previous_imu_pitch;
-
-  double diff_imu_yaw;
-  if (fabs(imu_yaw - previous_imu_yaw) > M_PI)
-  {
-    if (imu_yaw > 0)
-      diff_imu_yaw = (imu_yaw - previous_imu_yaw) - M_PI * 2;
-    else
-      diff_imu_yaw = -M_PI * 2 - (imu_yaw - previous_imu_yaw);
-  }
-  else
-    diff_imu_yaw = imu_yaw - previous_imu_yaw;
+  const double diff_imu_roll = calcDiffForRadian(imu_roll, previous_imu_roll);
+  const double diff_imu_pitch = calcDiffForRadian(imu_pitch, previous_imu_pitch);
+  const double diff_imu_yaw = calcDiffForRadian(imu_yaw, previous_imu_yaw);
 
   imu.header = input->header;
   imu.linear_acceleration.x = input->linear_acceleration.x;
@@ -696,7 +694,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   diff_x = current_pose.x - previous_pose.x;
   diff_y = current_pose.y - previous_pose.y;
   diff_z = current_pose.z - previous_pose.z;
-  diff_yaw = current_pose.yaw - previous_pose.yaw;
+  diff_yaw = calcDiffForRadian(current_pose.yaw, previous_pose.yaw);
   diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
   current_velocity_x = diff_x / secs;
