@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>scan2image</name>
-  <version>1.6.0</version>
+  <version>1.6.1</version>
   <description>The scan2image package</description>
   <maintainer email="kondoh@axe-inc.co.jp">kondoh</maintainer>
   <license>BSD</license>

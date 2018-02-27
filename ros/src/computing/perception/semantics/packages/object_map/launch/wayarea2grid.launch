@@ -1,0 +1,22 @@
+<launch>
+  <!-- node parameters -->
+  <arg name="sensor_frame" default="velodyne" />
+  <arg name="grid_frame" default="map" />
+  <arg name="grid_resolution" default="0.3" />
+  <arg name="grid_length_x" default="150" />
+  <arg name="grid_length_y" default="150" />
+  <arg name="grid_position_x" default="0" />
+  <arg name="grid_position_y" default="0" />
+
+  <!-- Launch node -->
+  <node pkg="object_map" type="wayarea2grid" name="wayarea2grid" output="screen">
+    <param name="sensor_frame" value="$(arg sensor_frame)" />
+    <param name="grid_frame" value="$(arg grid_frame)" />
+    <param name="grid_resolution" value="$(arg grid_resolution)" />
+    <param name="grid_length_x" value="$(arg grid_length_x)" />
+    <param name="grid_length_y" value="$(arg grid_length_y)" />
+    <param name="grid_position_x" value="$(arg grid_position_x)" />
+    <param name="grid_position_y" value="$(arg grid_position_y)" />
+  </node>
+
+</launch>

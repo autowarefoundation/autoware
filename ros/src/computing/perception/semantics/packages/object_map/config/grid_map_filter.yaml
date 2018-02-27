@@ -1,0 +1,26 @@
+grid_map_topic: /filtered_grid_map
+grid_map_visualizations:
+  - name: original
+    type: occupancy_grid
+    params:
+     layer: original
+     data_min: 0
+     data_max: 255
+  - name: distance_transform
+    type: occupancy_grid
+    params:
+     layer: distance_transform
+     data_min: 0
+     data_max: 255
+  - name: dist_wayarea
+    type: occupancy_grid
+    params:
+     layer: dist_wayarea
+     data_min: 0
+     data_max: 255
+  - name: circle
+    type: occupancy_grid
+    params:
+     layer: circle
+     data_min: 0
+     data_max: 255

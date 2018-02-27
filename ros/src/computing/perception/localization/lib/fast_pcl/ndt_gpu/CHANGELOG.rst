@@ -2,6 +2,9 @@
 Changelog for package ndt_gpu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.1 (2018-01-20)
+------------------
+
 1.6.0 (2017-12-11)
 ------------------
 * adapted the version to the current version
