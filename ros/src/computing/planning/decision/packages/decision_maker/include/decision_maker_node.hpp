@@ -140,6 +140,7 @@ private:
   double param_convergence_threshold_;
   uint32_t param_stopline_target_waypoint_;
   double param_stopline_target_ratio_;
+  double param_stopline_pause_time_;
   double param_shift_width_;
   double param_crawl_velocity_;
   double param_detection_area_rate_;
@@ -253,6 +254,7 @@ public:
     param_shift_width_ = DEFAULT_SHIFT_WIDTH;
     param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
     param_stopline_target_ratio_ = 0.0;
+    param_stopline_pause_time_ = DEFAULT_STOPLINE_PAUSE_TIME;
     param_crawl_velocity_ = DEFAULT_CRAWL_VELOCITY;
     param_detection_area_rate_ = DEFAULT_DETECTION_AREA_RATE;
     param_baselink_tf_ = "base_link";
@@ -267,8 +269,8 @@ public:
     vector_map_init = false;
     created_shift_lane_flag_ = false;
     closest_waypoint_ = 0;
-    
-    foundOtherVehicleForIntersectionStop_ = false; 
+
+    foundOtherVehicleForIntersectionStop_ = false;
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;

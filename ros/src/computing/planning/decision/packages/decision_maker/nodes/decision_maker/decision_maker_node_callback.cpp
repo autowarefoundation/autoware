@@ -99,6 +99,7 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   str_wp_ahead_of_curvature_ = msg.str_wp_ahead_of_curvature;
   param_stopline_target_waypoint_ = msg.stopline_target_waypoint;
   param_stopline_target_ratio_ = msg.stopline_target_ratio;
+  param_stopline_pause_time_ = msg.stopline_pause_time;
   param_shift_width_ = msg.shift_width;
 
   param_crawl_velocity_ = msg.crawl_velocity;
@@ -169,7 +170,7 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
         {
           l_detection_flag = true;
           setFlagTime = ros::Time::now().toSec();
-	  break;
+	      break;
         }
       }
     }

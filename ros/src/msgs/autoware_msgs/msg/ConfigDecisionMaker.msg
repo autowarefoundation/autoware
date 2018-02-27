@@ -7,6 +7,7 @@ uint32 target_waypoint
 uint32 str_wp_ahead_of_curvature
 uint32 stopline_target_waypoint
 float64 stopline_target_ratio
+float64 stopline_pause_time
 float64 shift_width
 
 float64 crawl_velocity
