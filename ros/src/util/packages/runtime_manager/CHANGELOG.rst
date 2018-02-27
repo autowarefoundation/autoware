@@ -2,8 +2,8 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.2 (2018-02-27)
+------------------
 * Update CHANGELOG
 * add gmsl button to runtime manager
 * Contributors: Yusuke FUJII

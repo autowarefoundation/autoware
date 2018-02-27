@@ -2,8 +2,8 @@
 Changelog for package points2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.2 (2018-02-27)
+------------------
 * Update CHANGELOG
 * Contributors: Yusuke FUJII
 

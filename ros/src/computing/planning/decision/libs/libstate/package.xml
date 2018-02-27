@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>state</name>
-  <version>1.6.1</version>
+  <version>1.6.2</version>
   <description>The libstate package</description>
 
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>

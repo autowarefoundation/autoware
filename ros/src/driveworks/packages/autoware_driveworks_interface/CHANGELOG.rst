@@ -2,8 +2,8 @@
 Changelog for package autoware_driveworks_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.2 (2018-02-27)
+------------------
 * Update CHANGELOG
 * add gmsl button to runtime manager
 * update version description
