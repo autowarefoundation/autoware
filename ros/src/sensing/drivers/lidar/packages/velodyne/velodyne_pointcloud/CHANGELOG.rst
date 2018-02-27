@@ -1,5 +1,11 @@
-Change history
-==============
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package velodyne_pointcloud
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.3.0 (2017-11-10)
 -------------------
@@ -127,75 +133,22 @@ Change history
 * fixed a calibration file parsing bug
 * Contributors: Adam Stambler, Alex Rodrigues, Alexander Schaefer, Andreas Wachaja, Bo Li, Daniel Jartoux, Gabor Meszaros, Jack OQuin, Jose Luis Blanco-Claraco, Joshua Whitley, Kevin Hallenbeck, Kris Kozak, Kun Li, Micho Radovnikovich, Scott K Logan, Thomas Solatges, Todor Stoyanov, William Woodall, jack.oquin, libo24, phussey, piyushk, pomerlef
 
-1.2.0 (2014-08-06)
+1.2.0 (2017-06-07)
 ------------------
 
-* velodyne_pointcloud: remove model-dependent "constants" from
-  rawdata.h (`#28
-  <https://github.com/ros-drivers/velodyne/issues/28>`_)
-* velodyne_pointcloud: change default min_range to 0.9 meters (`#25
-  <https://github.com/ros-drivers/velodyne/issues/25>`_)
-* Added support for YAML-CPP 0.5+ (`#23
-  <https://github.com/ros-drivers/velodyne/pull/23>`_).
-* Add dynamic_reconfigure feature.
-* Add angular limits to the output point cloud, useful for omitting
-  part of it. (`#22 <https://github.com/ros-drivers/velodyne/pull/22>`_).
-* Contributors: Jack OQuin, Scott K Logan, Thomas Solatges
+1.1.2 (2017-02-27 23:10)
+------------------------
 
-1.1.2 (2013-11-05)
+1.1.1 (2017-02-27 22:25)
+------------------------
+
+1.1.0 (2017-02-24)
 ------------------
 
- * Move unit test data to download.ros.org (`#18`_).
- * Install missing gen_calibration.py script (`#20`_).
-
-1.1.1 (2013-07-30)
+1.0.1 (2017-01-14)
 ------------------
 
- * Fix lost frame_id transform problem caused by PCL 1.7 fix (`#13`_).
- * Add support for HDL-64E S2 and S2.1 models, which were not working
-   before (`#11`_), thanks to Gabor Meszaros (`#12`_).
- * Add additional parameters to launch files (`#14`_).
- * Contributors: Gabor Meszaros, Jack OQuin
-
-1.1.0 (2013-07-16)
-------------------
-
- * Fix build problems due to PCL 1.7 API incompatibilities (`#8`_),
-   thanks to William Woodall.  This version also works with Groovy, as
-   long as the correct ``pcl_conversions`` is installed.
- * Fix errors with Mac OSX compiler (`#8`_).
- * Install ``pluginlib`` XML files (`#9`_).
- * Install some launch and parameter files.
- * Enable unit tests when ``CATKIN_ENABLE_TESTING`` is set (`#10`_).
-
-1.0.1 (2013-06-15)
-------------------
-
- * Declare explicit ``pluginlib`` dependency (`#4`_).
-
-1.0.0 (2013-06-14)
-------------------
-
- * Convert to catkin (`#1`_).
- * Release to Hydro.
-
-0.9.2 (2013-07-08)
-------------------
-
- * Fix Groovy build problem (`#7`_).
-
-0.9.1 (2012-06-05)
-------------------
-
- * Only include "enabled" lasers in YAML calibration file.
- * New param subdirectory for parameter files.
- * Add launch file for the HDL-32E.
- * Add rviz_points.vcg file for viewing Velodyne point clouds with rviz.
- * Fix bug when reading configuration with default minIntensity.
- * Add unit tests with 32E data.
- * Released to Electric, Fuerte and Groovy.
-
-0.9.0 (2012-04-03)
+1.0.0 (2016-12-22)
 ------------------
 
  * Completely revised API, anticipating a 1.0.0 release.

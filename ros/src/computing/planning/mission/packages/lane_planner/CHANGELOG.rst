@@ -2,15 +2,19 @@
 Changelog for package lane_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/tlr_turn
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision
-  Feature/decision: Enhancement decision maker node
+* Prepare release for 1.6.0
 * Fixed:
   - callback
   - laneshift
@@ -19,30 +23,31 @@ Changelog for package lane_planner
   - new lanechange flag
   - new param for decisionMaker
 * apply clang-format
-* merge develop and fixed slow switching map
 * fix a segv bug when currentpose was changed a lot
-* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
 * Support to lanechange similar to state_machine(old) package
 * add path velocity smoothing
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
-* Contributors: AMC, Yamato ANDO, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, yukikitsukawa
+* Contributors: Yamato ANDO, Yusuke FUJII
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * Add decision packages into runtime_manager
 * Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -153,26 +158,14 @@ Changelog for package lane_planner
 * Rewrite lane_navi by new API
 * Add new API for multiple lanes
 * Change two lanes in lane_select
-* Merge branch 'master' into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/waypoint_follower/CMakeLists.txt
 * Add number_of_zeros_behind parameter
 * Rename number_of_zeros parameter
 * Use c++11 option instead of c++0x
   We can use newer compilers which support 'c++11' option
-* Merge branch 'master' of https://github.com/CPFL/Autoware into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/driving_planner/nodes/velocity_set/velocity_set.cpp
-  ros/src/util/packages/runtime_manager/msg/ConfigVelocitySet.msg
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
 * Make any pramaters configurable
 * Support direction angle
 * Move error variable declaration
 * Add utility for direction angle
-* Merge branch 'master' into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/driving_planner/launch/velocity_set.launch
-  ros/src/computing/planning/motion/packages/driving_planner/nodes/velocity_set/velocity_set.cpp
 * Fix velocity computation on crossroads
 * changed topic name
 * Fix subscribing topic names
@@ -180,4 +173,4 @@ Changelog for package lane_planner
 * Publish without change in default of vmap
 * Smooth acceleration and deceleration at crossroads
 * Initial commit for public release
-* Contributors: Hiroki Ohta, Shinpei Kato, Syohei YOSHIDA, TomohitoAndo, USUDA Hisashi, syouji
+* Contributors: Hiroki Ohta, Shinpei Kato, Syohei YOSHIDA, USUDA Hisashi, syouji

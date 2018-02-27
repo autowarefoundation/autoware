@@ -2,32 +2,24 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* add gmsl button to runtime manager
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#878 <https://github.com/CPFL/Autoware/issues/878>`_ from CPFL/feature/ndt_pcl_gpu
-  Feature/ndt pcl gpu
-* Merge branch develop into feature/ndt_pcl_gpu
-* Merge branch 'develop' into feature/tlr_turn_support
-* Merge pull request `#954 <https://github.com/CPFL/Autoware/issues/954>`_ from CPFL/fix/tf_mapping
-  Fix/tf mapping
+* Prepare release for 1.6.0
 * add new state button on runtime manager
-* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'develop' into feature/tlr_turn
-* Merge branch 'develop' into feature/ndt_pcl_gpu
 * add new state for gui
-* Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision
-  Feature/decision: Enhancement decision maker node
-* Added support to Image Publisher for frames different than only "velodyne". (`#946 <https://github.com/CPFL/Autoware/issues/946>`_)
-* Merge branch 'feature/decision' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'feature/OpenPlanner' into develop
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision
-* [fix] Image src correctly set in the config file of runtime manager for ssd node (`#939 <https://github.com/CPFL/Autoware/issues/939>`_)
+* Added support to Image Publisher for frames different than only "velodyne". (`#946 <https://github.com/cpfl/autoware/issues/946>`_)
+* [fix] Image src correctly set in the config file of runtime manager for ssd node (`#939 <https://github.com/cpfl/autoware/issues/939>`_)
 * Fixed misalignment on state tab with Ubuntu14.04
 * tweak state tab
 * update and add state for gui
@@ -45,13 +37,10 @@ Changelog for package runtime_manager
 * add to insert shift lane
 * update state and remove detection state
 * change state button
-* merge develop and fixed slow switching map
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
 * - Add user interface option in runtime manage for local_planner and op_trajectory_generator
 * fix computing.yaml
 * add app dialog for fix2tfpose and nmea2tfpose (WIP)
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Fix feature/points2image bug multicam support (`#886 <https://github.com/CPFL/Autoware/issues/886>`_)
+* Fix feature/points2image bug multicam support (`#886 <https://github.com/cpfl/autoware/issues/886>`_)
   * pointgrey
   * Added New Calibration node
   * Added parameters, plane fitting
@@ -61,25 +50,16 @@ Changelog for package runtime_manager
   now works with multiple cameras using ros namespaces
   * Including only points2image
   * Added Launch file for points2 image specific for the ladybug camera
-* [feature] Added NDT Mapping Descriptions and checkboxes to Runtime Manager UI (`#882 <https://github.com/CPFL/Autoware/issues/882>`_)
+* [feature] Added NDT Mapping Descriptions and checkboxes to Runtime Manager UI (`#882 <https://github.com/cpfl/autoware/issues/882>`_)
   * Added Descriptions and checkboxes to Runtime Manager UI
   * Added also approximate ndt mapping descriptions
 * remove unnecessary gui
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
 * Add ndt_cpu library
-* Merge pull request `#844 <https://github.com/CPFL/Autoware/issues/844>`_ from CPFL/feature/remote_monitor
-  Feature/remote monitor
 * add path velocity smoothing
 * add waypoint relay
-* Runtime manager updated to new package names (`#870 <https://github.com/CPFL/Autoware/issues/870>`_)
+* Runtime manager updated to new package names (`#870 <https://github.com/cpfl/autoware/issues/870>`_)
   [fix] Runtime manager updated to new pgrey package names
-* Merge branch 'master' into feature/decision
-* Feature/fusion_filter - fusion multiple lidar (`#842 <https://github.com/CPFL/Autoware/issues/842>`_)
+* Feature/fusion_filter - fusion multiple lidar (`#842 <https://github.com/cpfl/autoware/issues/842>`_)
   * Add fusion_filter to merge multiple lidar pointclouds
   * Refactor fusion_filter
   * Apply clang-format and rebase develop
@@ -90,51 +70,38 @@ Changelog for package runtime_manager
   * Refactor code and apply clang-format
   * Add configrations for runtime_manager
   * Fix CMake
-* Feature/cloud transformer (`#860 <https://github.com/CPFL/Autoware/issues/860>`_)
+* Feature/cloud transformer (`#860 <https://github.com/cpfl/autoware/issues/860>`_)
   * Added Cloud transformer node
   transforms pointcloud to a target frame
   * Added support for XYZIR point type
   * Added error checks when transformation unavailable
-* Merge branch 'master' of github.com:cpfl/autoware into develop
 * add commonly buttons
 * rename state tabs
 * add select state tab
 * moved images
-* Merge pull request `#794 <https://github.com/CPFL/Autoware/issues/794>`_ from CPFL/feature/ndt_pcl_gpu
-  Feature/ndt pcl gpu
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
 * add use_gpu option for ndt_matching and ndt_mapping in app dialog
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
-* Merge pull request `#833 <https://github.com/CPFL/Autoware/issues/833>`_ from CPFL/feature/rtmgr_fix_checkbox_tree
-  Runtime Manager, fix wrong scrolling when checked on kinetic
 * Runtime Manager, fix wrong scrolling when checked on kinetic and hlink layout
-* Merge for ndt_pcl_gpu
-* Merge pull request `#831 <https://github.com/CPFL/Autoware/issues/831>`_ from CPFL/feature/rtmgr_update_rosbag_rec
-  Runtime Manager, rosbag filename update when ROSBAG button on
-* merge develop
 * Runtime Manager, rosbag filename update when ROSBAG button on, and fix unnecessary ext.
-* Merge pull request `#826 <https://github.com/CPFL/Autoware/issues/826>`_ from CPFL/feature/ray_ground_filter
-  Feature/ray ground filter
-* Merge branch 'develop' into feature/ray_ground_filter
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-* Add ground_filter config for runtime_manager (`#828 <https://github.com/CPFL/Autoware/issues/828>`_)
+* Add ground_filter config for runtime_manager (`#828 <https://github.com/cpfl/autoware/issues/828>`_)
 * Added descriptions to the params in launch file
 * Ray Ground Filter Initial Commit
-* merge develop
-* add approximate_ndt_mapping (`#811 <https://github.com/CPFL/Autoware/issues/811>`_)
+* add approximate_ndt_mapping (`#811 <https://github.com/cpfl/autoware/issues/811>`_)
 * fix bug and refactor code
-* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
 * add new button for remote monitor to runtime_manager
-* Contributors: AMC, Abraham Monrroy, Akihito Ohsato, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, anhnv-3991, hatem-darweesh, kondoh, kondoh2, yukikitsukawa
+* Contributors: AMC, Abraham Monrroy, Akihito Ohsato, Yamato ANDO, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, anhnv-3991, hatem-darweesh, kondoh, yukikitsukawa
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
-* Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
-  [WIP]Feature/decision maker `#807 <https://github.com/cpfl/autoware/issues/807>`_
+* Update changelog
 * update decision maker config
 * Add to support dynamical parameter for decision_maker
 * Change default value of decision maker config
@@ -154,8 +121,11 @@ Changelog for package runtime_manager
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
 * Publish initial light color as green
-* Contributors: TomohitoAndo
+* Change yaml file in runtime_manager
+* Contributors: Dejan Pangercic, Patiphon Narksri, TomohitoAndo
 
 1.3.1 (2017-07-16)
 ------------------
@@ -163,10 +133,6 @@ Changelog for package runtime_manager
 1.3.0 (2017-07-14)
 ------------------
 * fix a build issue due to autoware_msgs on the Indigo
-* Resolved merge conflict by new feature
-* Merge branch 'develop' into feature/TLR_by_machine_learning
-* Merge pull request `#721 <https://github.com/CPFL/Autoware/issues/721>`_ from CPFL/feature/astar_planner
-  Feature/astar planner
 * Add obstacle_avoid parameters
 * Add parameters for points2costmap
 * Add checkbox for dist_transform node in Computing tab
@@ -183,18 +149,10 @@ Changelog for package runtime_manager
 
 1.2.0 (2017-06-07)
 ------------------
-* Merge pull request `#669 <https://github.com/CPFL/Autoware/issues/669>`_ from CPFL/feature/yolo2
-  Feature/yolo2
-* Merge pull request `#671 <https://github.com/CPFL/Autoware/issues/671>`_ from CPFL/feature/ndt_imu
-  Feature/ndt imu
 * Added Video to Main Readme, added in Runtime Manager
-* Merge remote-tracking branch 'origin/develop' into feature/yolo2
 * Yolo 2 Node completed
 * add can2odom.launch
 * Change OpenPlanner stand alone libraries names.
-* Merge branch 'develop' into feature/lidar_segmentation
-* Merge pull request `#618 <https://github.com/CPFL/Autoware/issues/618>`_ from CPFL/feature/rtmgr_booted_cmds
-  Runtime Manager, add booted_cmd to param.yaml and select dialog at boot
 * Add OpenPlanner to Develop Branch, add OpenPlanner to Runtime Manager, and modify rviz default config file
   fix map loading options
   automatic replanning simulation and traffic light stop and go
@@ -241,16 +199,10 @@ Changelog for package runtime_manager
 * Runtime Manager, add do_shell_exec keyword for shell=True arg in Popen()
 * Runtime Manager Sensing tab, add param for Memsic VG440
 * Runtime Manager Sensing tab, rename from Crossbow vg440 to Memsic VG440
-* Merge pull request `#637 <https://github.com/CPFL/Autoware/issues/637>`_ from CPFL/feature/kinetic
-  Add Kinetic support
-  resolve `#503 <https://github.com/CPFL/Autoware/issues/503>`_
 * add psutil 3.x to 1.x backward compatibility
 * add measurement_range
   refactoring
 * Runtime Manager, fix error at calibration_publisher button off
-* Merge branch 'develop' into feature/lidar_segmentation
-* Merge pull request `#621 <https://github.com/CPFL/Autoware/issues/621>`_ from CPFL/feature/rtmgr_for_wrong_scroll
-  Runtime Manager, update for tree checkbox, for wrong scrolling at che…
 * follow api change in psutil
 * fix runtime_manager dependency (on tablet_socket_msgs)
 * Update for kinetic
@@ -261,39 +213,19 @@ Changelog for package runtime_manager
 * Runtime Manager, add Enable/Disable booted_cmds to quit_select
 * fix, remove boot_cmds at no booted cmds, and add using label
 * Runtime Manager, add booted_cmd to param.yaml and select dialog at boot
-* Merge pull request `#616 <https://github.com/CPFL/Autoware/issues/616>`_ from CPFL/feature/rtmgr_quit_select
-  Runtime Manager, add quit_select() and reload_computing_yaml()
 * Runtime Manager, add proc_wait_thread() for async kill proc
 * Runtime Manager, add quit_select() and reload_computing_yaml()
-* Merge remote-tracking branch 'origin/develop' into feature/lidar_segmentation
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
 * Kf Added
   Euclidean Cluster improved
 * Fixes
-* Merge branch 'master' into lidar_segmentation
-* Merge branch 'master' into lidar_segmentation
-  Conflicts:
-  ros/src/computing/perception/detection/packages/lidar_tracker/nodes/euclidean_cluster/euclidean_cluster.cpp
-* Added SVM python node
-  Merge branch 'master' into lidar_segmentation
-  Conflicts:
-  ros/src/computing/perception/detection/packages/lidar_tracker/launch/euclidean_clustering.launch
-  ros/src/computing/perception/detection/packages/lidar_tracker/nodes/euclidean_cluster/euclidean_cluster.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge branch 'master' into lidar_segmentation
-* Merge branch 'master' into lidar_segmentation
-* Merge branch 'master' into lidar_segmentation
-* Merge branch 'master' into lidar_segmentation
 * Added VectorMap Server support
 * Lidar tracker restructuration
 * Added output_frame param
   Allows to transform output coordinate frame of the bounding boxes and CloudClusterArray messages
-* Merge remote-tracking branch 'origin/master' into lidar_segmentation
 * Added Ground removal as optional.
   Removed unused params
 * Parametrization of Clustering params
-* Contributors: AMC, Shohei Fujii, Yukihiro Saito, Yusuke FUJII, hatem-darweesh, kondoh, kondoh2, tange, yukikitsukawa
+* Contributors: AMC, Shohei Fujii, Yukihiro Saito, Yusuke FUJII, hatem-darweesh, kondoh, tange, yukikitsukawa
 
 1.1.2 (2017-02-27 23:10)
 ------------------------
@@ -304,53 +236,33 @@ Changelog for package runtime_manager
 1.1.0 (2017-02-24)
 ------------------
 * Fix app display for vel_pose_connect
-* Merge pull request `#599 <https://github.com/CPFL/Autoware/issues/599>`_ from CPFL/feature/add_max_iterations
-  Feature/add max iterations
 * size adjustment of config window
 * add set_size_gdic() for adjust dialog size
 * add max_iterations, min_scan_range and min_add_scan_shift
-* Merge pull request `#592 <https://github.com/CPFL/Autoware/issues/592>`_ from CPFL/feature/autoware-connector
-  Add autoware_connector instead of vel_pose_mux
 * add max_iterations
-* Merge branch 'develop' into fix/map_tools
 * Runtime Manager Map tab, add Point Type to PCD Filter and PCD Binarizer
 * Add euclidean lidar track
-* Merge branch 'develop' into feature/update_obj_fusion
 * Add dummy tracking node
 * Add autoware_connector instead of vel_pose_mux
-* Merge pull request `#590 <https://github.com/CPFL/Autoware/issues/590>`_ from CPFL/feature/modify-lane-select
-  Feature/modify lane select
 * Fix computing.yaml
 * Change Parameter range and initial value
 * parameter from runtime manager
-* Merge pull request `#564 <https://github.com/CPFL/Autoware/issues/564>`_ from CPFL/feature/twist_filter
-  Feature/twist filter
 * Update sensing.yaml
-* Merge branch 'develop' into feature/simulator-with-errors
-* Merge branch 'develop' into feature/twist_filter
 * Add param bar of twist filter node in runtime manager
-* Merge branch 'develop' into feature/state-machine
 * add Gazebo button on Simulation tab
 * Use integer size with temporal waypoints
-* Merge branch 'develop' into feature/potential_field
 * Add state_machine on runtime manager
-* Merge pull request `#571 <https://github.com/CPFL/Autoware/issues/571>`_ from CPFL/feature/refactor_velocity_set
-  Feature/refactor velocity set
 * New simulator with angle and position errors
 * Change minimun and maximum value of parameters of pure pursuit
 * Change the default parameter
-* Merge pull request `#568 <https://github.com/CPFL/Autoware/issues/568>`_ from CPFL/feature/dev-waypoint-follower
-  Bug fix for linear interpolation flag and command velocity
 * Bug fix for linear interpolation flag and command velocity
-* Merge pull request `#567 <https://github.com/CPFL/Autoware/issues/567>`_ from CPFL/feature/auto-lane-change
-  Feature/auto lane change
 * Add potential field in runtime manager
 * Add topic publisher for steering robot
 * Change parameter name in app tab
 * Rewrite to change local planning to global planning
 * Edit computing.yaml for lane_select and fix typo
 * Add support for multi lane files
-* Contributors: Hiroki Ohta, TomohitoAndo, Yuki Kitsukawa, Yukihiro Saito, h_ohta, kondoh, pdsljp, yukikitsukawa
+* Contributors: TomohitoAndo, Yukihiro Saito, h_ohta, kondoh, pdsljp, yukikitsukawa
 
 1.0.1 (2017-01-14)
 ------------------
@@ -362,8 +274,6 @@ Changelog for package runtime_manager
 * Add dialog in Runtime Manager
 * Runtime Manager Computing tab, fix euclidean_cluster default data
 * Modify to launch the node in Runtime Manager
-* Merge pull request `#523 <https://github.com/CPFL/Autoware/issues/523>`_ from CPFL/fix_lane_stop_checkbox
-  add checkbox value of lane_stop parameter to pdic
 * add checkbox value of lane_stop parameter to pdic
 * Added param to ignore points closer than a threshold
 * Fix for using the twist of MKZ as current velocity
@@ -371,26 +281,22 @@ Changelog for package runtime_manager
 * Node Name Change for cv tracker
 * Added SSD node to CV Tracker
 * Rename variables.
-* Lidar segmentation (`#499 <https://github.com/CPFL/Autoware/issues/499>`_)
+* Lidar segmentation (`#499 <https://github.com/cpfl/autoware/issues/499>`_)
   * Lidar tracker restructuration
   * Added points_preprocessor package, including; ground filtering and space filtering.
 * Separate motion planning package
-* Merge pull request `#491 <https://github.com/CPFL/Autoware/issues/491>`_ from CPFL/add-get-height
-  Add get height
-  If 'Get Height' checkbox is enabled on ndt_matching, you get height of initial pose by 2D Pose Estimate.
-  This is height of nearest point in /points_map.
 * Add get height
   If 'Get Height' checkbox is enabled on ndt_matching, you get height of initial pose by 2D Pose Estimate.
   This is height of nearest point in /points_map.
 * Added output_frame param
   Allows to transform output coordinate frame of the bounding boxes and CloudClusterArray messages
-* Lidar segmentation (`#486 <https://github.com/CPFL/Autoware/issues/486>`_)
+* Lidar segmentation (`#486 <https://github.com/cpfl/autoware/issues/486>`_)
   Added CloudCluster and CloudClusterArray Message
   Clusters and its feats can now be accessed from outside the clustering node.
   Refer to the messages definition
 * Update the check.launch for the tablet_socket because the node ndt_pcl change to ndt_matching
 * Add parameter for subscribing topic
-* Lidar segmentation (`#482 <https://github.com/CPFL/Autoware/issues/482>`_)
+* Lidar segmentation (`#482 <https://github.com/cpfl/autoware/issues/482>`_)
   * Added Cluster class
   * Parametrization of Clustering params
 * Added params for Cloud clipping
@@ -404,19 +310,12 @@ Changelog for package runtime_manager
 * Define vehicle acceleration
 * Fix bug for changing the name of variables
 * Runtime Manager Simulation tab, add rosbag info thread
-* Merge pull request `#467 <https://github.com/CPFL/Autoware/issues/467>`_ from CPFL/develop-planner
-  Develop planner
 * Runtime Manager Map tab, update to more simple implements
 * Runtime Manager Computing tab, add use_crosswalk_detection to velocity_set
 * Remove unused parameters
 * Change variable name in ConfigWaypointFollower, calculate function for lookahead distance
 * Runtime Manager, changed wx.Color to wx.Colour for wxPython3
 * Runtime Manager, fix rosbag record stop
-* Merge branch 'add_ftrace'
-  Conflicts:
-  ros/src/.config/rviz/cmd.sh
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
 * Rewrite comment
   translate comment message from Japanese to English.
 * Modify ftrace scale display
@@ -459,15 +358,11 @@ Changelog for package runtime_manager
 * Runtime Manager Quick Start tab, fix Map load OK label
 * Runtime Manager Computing tab, add use_openmp arg to ndt
 * Add module graph tool
-* Merge pull request `#343 <https://github.com/CPFL/Autoware/issues/343>`_ from CPFL/add_desc
-  Runtime Manager, Add desc
 * add obj_enables utils for widget enable/disable
 * refactoring config_dic search, add param sys
 * Runtime Manager, add utils for dict and list
 * Add lazy_ndt_mapping.
   Add checkbox for lazy_ndt_mapping in Computing tab.
-* Merge pull request `#323 <https://github.com/CPFL/Autoware/issues/323>`_ from CPFL/add_icp_localizer
-  Add icp_localizer.
 * Add checkbox of icp_matching to Computing tab.
   Add ConfigICP.msg.
 * Runtime Manager Map tab, add 1GB check for .pcd files
@@ -485,8 +380,6 @@ Changelog for package runtime_manager
 * Show UVC camera ID
   If clicking USB Generic checkbox, regard UVC camera ID as /camera0.
 * Add icp_localizer package.
-* Merge pull request `#308 <https://github.com/CPFL/Autoware/issues/308>`_ from CPFL/integrate_filter
-  Separate downsampling of points_raw from ndt_matching.
 * Changed directory structure.
   Add PointsFilterInfo.msg.
   Modified to publish points_filter_info.
@@ -531,55 +424,13 @@ Changelog for package runtime_manager
   under camera name space selectively
   * Get image size from sensor_msgs::Image instead of CameraInfo
 * Runtime Manager, resolved conflicts apply_multi_camera
-* Merge branch 'master' of ssh://localhost:8443/CPFL/Autoware into apply_multi_camera
-  WARNING: This commit contains unresolved conflict.
-  Unresolved conflicts are contained in...:
-  *
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  * ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  * ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ocv.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ttic.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/kf_tracking.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/reprojection.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/computing/perception/detection/packages/viewers/nodes/scan_image_viewer/scan_image_viewer.cpp
-  ros/src/sensing/fusion/packages/calibration_camera_lidar/CalibrationToolkit/calibrationtoolkit.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  ros/src/util/packages/runtime_manager/scripts/points2image.launch
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  ros/src/util/packages/runtime_manager/scripts/vscan.launch
 * Runtime Manager, fix dialog showing after closeing by close box
 * Removed *.orig files
-* Merge remote-tracking branch 'origin/master' into synchrogazed
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/launch/ndt_matching.launch
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
 * Change a subscribing topic  in points2image and vscan2points when synchronization is enabled
 * Runtime Manager Setup tab, move rosparam tf_xxx setting from setup_tf.launch
 * Runtime Manager Setup tab, add enable/disable toggle to radio box
 * Runtime Manager Setup tab, add localizer radio box
-* Merge remote-tracking branch 'origin/master' into synchrogazed
-  Conflicts:
-  ros/src/sensing/fusion/packages/scan2image/CMakeLists.txt
-* Merge remote-tracking branch 'origin/fix_timestamp' into synchrogazed
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-* Merge pull request `#231 <https://github.com/CPFL/Autoware/issues/231>`_ from CPFL/fix-pure-pursuit
-  Fix pure pursuit
 * Change initial value
-* Merge remote-tracking branch 'origin/resolve_conflict' into synchrogazed
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/ranging.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
 * Publish ConfigLaneStop message
 * Rename /traffic_light topic
 * Runtime Manager Computing tab, modify lane_stop gui handler name
@@ -593,7 +444,7 @@ Changelog for package runtime_manager
 * Runtime Manager Computing tab, fix obj_reproj launch
 * Runtime Manager Computing tab, fix obj_reproj, obj_fusion launch
 * Runtime Manager Computing tab, add Synchronization button
-* merged master `#123 <https://github.com/CPFL/Autoware/issues/123>`_, for lost cmd args
+* merged master `#123 <https://github.com/cpfl/autoware/issues/123>`_, for lost cmd args
 * Runtime Manager, add select camera dialog
 * Runtime Manager, update Calibration Publisher for multi cameras
 * Add function , 'verify whether vehicle is following correctly or not'
@@ -618,10 +469,6 @@ Changelog for package runtime_manager
 * Create lane_navi.launch
 * Change to get rosparams as the arguments when booting
 * Modify launch files to specify source camera
-* Merge pull request `#166 <https://github.com/CPFL/Autoware/issues/166>`_ from CPFL/develop-multi-lane
-  Develop multi lane
-* Merge pull request `#161 <https://github.com/CPFL/Autoware/issues/161>`_ from CPFL/accelerate_euclidean_cluster
-  Accelerate euclidean cluster
 * Runtime Manager, add Autoware logo, update Icon
 * ndt_matching supports setup tab.
 * Add new parameters
@@ -647,8 +494,6 @@ Changelog for package runtime_manager
   Now we can specify parameters value from launch file
 * Fix package name which has velodyne launch files
 * Runtime Manager Map tab, fix pcd load OK msg at filed
-* Merge pull request `#99 <https://github.com/CPFL/Autoware/issues/99>`_ from CPFL/driving-planner
-  Update driving_planner and computing.yaml
 * Runtime Manager, fix bottom area height
 * Runtime Manager Computing tab, fix remain link at item hide
 * Runtime Manager Computing tab, fix cmd_param drop
@@ -673,22 +518,11 @@ Changelog for package runtime_manager
 * Show message box when calibration_path is none.
   Sensingタブの[config]でパスを設定していない場合、センサノードを起動しない
   でMessageBoxを出すようにしました。
-* Merge branch 'master' into driving-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/driving_planner/nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge branch 'master' into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/waypoint_follower/CMakeLists.txt
 * Runtime Manager Computing tab, modify ndt_matching config dialog
 * Runtime Manager Computing tab, update ndt_matching config dialog
 * Runtime Manager Computing tab, add children setting, modify default nice val
 * Runtime Manager Computing tab, add sys link and cpu settings
-* Merge pull request `#103 <https://github.com/CPFL/Autoware/issues/103>`_ from CPFL/add-number-of-zeros-behind-parameter
-  Add number of zeros behind parameter
 * Add number_of_zeros_behind parameter
-* Merge pull request `#81 <https://github.com/CPFL/Autoware/issues/81>`_ from CPFL/rcnn
-  Integration of RCNN object detection on Autoware
 * Rename number_of_zeros parameter
 * Remove unused message
 * Runtime Manger, chaged icon, RTM to RUN
@@ -697,11 +531,6 @@ Changelog for package runtime_manager
 * renamed ConfigLaneFollower.msg to ConfigWaypointFollower.msg
 * modified somethings in computing tab
 * Change parameter order
-* Merge branch 'master' of https://github.com/CPFL/Autoware into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/driving_planner/nodes/velocity_set/velocity_set.cpp
-  ros/src/util/packages/runtime_manager/msg/ConfigVelocitySet.msg
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
 * added velocity_source parameter on waypoint_saver
 * Add new parameters
 * As suggested by @syohex
@@ -721,8 +550,6 @@ Changelog for package runtime_manager
   **Modified Range fusion, it will not execute unnecesary fusions.
   **Added Configuration Messages to Runtime manager and RCNN node launch files
 * Runtime Manager, fix bottom top5 showing from thread
-* Merge pull request `#63 <https://github.com/CPFL/Autoware/issues/63>`_ from CPFL/develop-sensor-gnss
-  Develop sensor gnss
 * Update sensing.yaml
   Added support for ros pgrey "native "driver
 * Add new parameters for velocity_set
@@ -736,24 +563,16 @@ Changelog for package runtime_manager
 * added path_select
 * Runtime Manager Status tab, update top command results font
 * modified sensing.yaml
-* Merge branch 'master' into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/driving_planner/nodes/velocity_set/velocity_set.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
 * Runtime Manager, brushup about link color setting
 * Runtime Manager, brushup about wx.BoxSizer
 * Runtime Manager Status tab, que clear at Stdout OFF and Stderr OFF
 * Runtime Manager Sensing Tab, add config to Javad
-* Merge pull request `#56 <https://github.com/CPFL/Autoware/issues/56>`_ from CPFL/mod_dpm_ocv
-  Mod dpm ocv
 * Add velocity_set dialog to Runtime Manager Computing tab
 * Add ConfigVelocitySet.msg
 * added twist filter node
 * Runtime Manager, update about ndt_stat
 * Show lane_stop configurations
 * modified velocity_set
-* Merge pull request `#29 <https://github.com/CPFL/Autoware/issues/29>`_ from CPFL/bug-fix
-  fix typo
 * fix typo
 * Modified dpm_ocv so that making executing CPU, GPU, car detection and pedestrian detection selectable
 * Runtime Manager, update red alert condition
@@ -771,4 +590,4 @@ Changelog for package runtime_manager
 * Runtime Manager, add bar to system load info
 * Add the state lattice motion planning features
 * Initial commit for public release
-* Contributors: AMC, Abraham, Abraham Monrroy, Hiroki Ohta, Manato Hirabayashi, Matthew O'Kelly, Shinpei Kato, Syohei YOSHIDA, TomohitoAndo, USUDA Hisashi, W. Gustavo Cevallos, Yuki Kitsukawa, Yukihiro Saito, h_ohta, kondoh, kondoh2, niwasaki, pdsljp, syouji, yukikitsukawa
+* Contributors: AMC, Abraham, Abraham Monrroy, Hiroki Ohta, Manato Hirabayashi, Matthew O'Kelly, Shinpei Kato, Syohei YOSHIDA, TomohitoAndo, USUDA Hisashi, W. Gustavo Cevallos, Yukihiro Saito, h_ohta, kondoh, niwasaki, pdsljp, syouji, yukikitsukawa
