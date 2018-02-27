@@ -28,15 +28,15 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/synchronizer.h>
+#include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <tf/transform_datatypes.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <fstream>
 
@@ -133,9 +133,9 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose, double ve
   // first subscribe
   if (!receive_once)
   {
-    ofs << "x,y,z,yaw,velocity,change_flag" << std::endl;
+    ofs << "x,y,z,yaw,velocity,change_flag, steering_flag, accel_flag, stop_flag, event_flag" << std::endl;
     ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << ",0,0" << std::endl;
+        << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << ",0,0,0,0,0,0" << std::endl;
     receive_once = true;
     displayMarker(current_pose, 0);
     previous_pose = current_pose;
@@ -149,7 +149,8 @@ void WaypointSaver::outputProcessing(geometry_msgs::Pose current_pose, double ve
     if (distance > interval_)
     {
       ofs << std::fixed << std::setprecision(4) << current_pose.position.x << "," << current_pose.position.y << ","
-          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << "," << velocity << ",0" << std::endl;
+          << current_pose.position.z << "," << tf::getYaw(current_pose.orientation) << "," << velocity << ",0,0,0,0,0"
+          << std::endl;
 
       displayMarker(current_pose, velocity);
       previous_pose = current_pose;
