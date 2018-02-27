@@ -84,6 +84,7 @@ $ git clone https://github.com/CPFL/Autoware.git
 $ cd ~/Autoware/ros/src
 $ catkin_init_workspace
 $ cd ../
+$ rosdep install --from-paths src --ignore-src -r -y
 $ ./catkin_make_release
 ```
 ###Caffe based object detectors
