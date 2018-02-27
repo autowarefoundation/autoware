@@ -2,101 +2,75 @@
 Changelog for package ndt_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#971 <https://github.com/CPFL/Autoware/issues/971>`_ from CPFL/fix/ndt_fastpcl_memoryleak
-  modified setResolution to be called before setInputTarget is applied
+* Prepare release for 1.6.0
 * modified setResolution to be called before setInputTarget is applied
-* Merge pull request `#970 <https://github.com/CPFL/Autoware/issues/970>`_ from CPFL/fix/ndt_fastpcl_memoryleak
-  Fix not to use NDT (fast_pcl) to leak memory
 * use_fast_pcl set default false
-* Merge pull request `#878 <https://github.com/CPFL/Autoware/issues/878>`_ from CPFL/feature/ndt_pcl_gpu
-  Feature/ndt pcl gpu
 * modified ndt_cpu complie option
-* Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id
-  Use initialpose header.frame_id at initialposeCallback function
 * fix typo
 * use header.frame_id included in initialpose topic
-* Merge branch develop into feature/ndt_pcl_gpu
-* Merge pull request `#956 <https://github.com/CPFL/Autoware/issues/956>`_ from CPFL/fix/ndt_merge_master_to_dev
-  Fix/ndt merge master to dev (ndt_localizer)
-* Merge branch master into develop (ndt_localizer)
-* Merge branch 'develop' into feature/tlr_turn_support
-* Merge pull request `#954 <https://github.com/CPFL/Autoware/issues/954>`_ from CPFL/fix/tf_mapping
-  Fix/tf mapping
 * fix tf_mapping regarding number of digits of pose
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge pull request `#913 <https://github.com/CPFL/Autoware/issues/913>`_ from CPFL/feature/ndt-multithread
-  switching the map by self position [ndt_matching]
 * fixed CMakeLists and compile error
-* merge develop and fixed slow switching map
-* Merge pull request `#904 <https://github.com/CPFL/Autoware/issues/904>`_ from CPFL/hotfix/ndt_separate_executable
-  [Bugfix] The NDT executable file was divided into two
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
 * separate executable
 * change specification according PCL ver.
 * Fix redeclaration error when compiling ndt_mapping.cpp and ndt_matching.cpp
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
 * Add ndt_cpu library
-* Merge branch 'master' into feature/decision
-* [fix] NDT_GPU ndt_localizer (`#854 <https://github.com/CPFL/Autoware/issues/854>`_)
+* [fix] NDT_GPU ndt_localizer (`#854 <https://github.com/cpfl/autoware/issues/854>`_)
   * fix CMakeLists.txt of ndt_localizer
   * Fixed CUDA/FAST_PCL conflict
   * Fixed ndt_matching
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge pull request `#794 <https://github.com/CPFL/Autoware/issues/794>`_ from CPFL/feature/ndt_pcl_gpu
-  Feature/ndt pcl gpu
 * apply clang-format
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
 * remove inline functions
-* Merge for ndt_pcl_gpu
-* Merge pull request `#832 <https://github.com/CPFL/Autoware/issues/832>`_ from CPFL/fix/ndt_matching
-  fix calculation of ndt_pose from localizer_pose
 * fix calculation of ndt_pose from localizer_pose
-* merge develop
-* merge develop
-* add approximate_ndt_mapping (`#811 <https://github.com/CPFL/Autoware/issues/811>`_)
+* add approximate_ndt_mapping (`#811 <https://github.com/cpfl/autoware/issues/811>`_)
 * set use_gpu false by default
 * add ndt_gpu in fast_pcl library
 * add cuda inplementation of ndt algorithm in pcl
 * apply clang-format
 * bug fix
 * Add thread_func.]
-* Contributors: AMC, Akihito Ohsato, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, anhnv-3991, hatem-darweesh, kitsukawa, yukikitsukawa
+* Contributors: Akihito Ohsato, Yamato ANDO, Yuki Kitsukawa, anhnv-3991, kitsukawa, yukikitsukawa
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * add map_extender
-* Contributors: yukikitsukawa
+* Contributors: Yusuke FUJII, yukikitsukawa
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
 
 1.3.0 (2017-07-14)
 ------------------
-* Resolved merge conflict by new feature
 * ndt_mapping ndt_matching, fix typo
 * convert to autoware_msgs
-* Contributors: YamatoAndo, Yusuke FUJII
+* Contributors: YamatoAndo
 
 1.2.0 (2017-06-07)
 ------------------
@@ -162,9 +136,6 @@ Changelog for package ndt_localizer
 * Switch use_openmp true/false in ndt_matching.launch
 * Prallelized ndt_matching
 * Add module graph tool
-* Merge pull request `#335 <https://github.com/CPFL/Autoware/issues/335>`_ from CPFL/new_integrate_pcl
-  Add fast_pcl library.
-  Use normal pcl if pcl version is 1.7.1 or less and use fast_pcl if pcl version is 1.7.2.
 * Use fast_pcl only when pcl 1.7.2 or higher version is installed
   pcl package of Ubuntu 14.04 is version 1.7.1 and some header files
   which are included in fast_pcl are missed in pcl 1.7.1.
@@ -195,10 +166,6 @@ Changelog for package ndt_localizer
   Some packages don't declare package dependencies correctly.
   This makes message jar files built failure.
 * No publish /current_pose, Publish estimated_vel(geometry_msgs/Vector3Stamped)
-* Merge remote-tracking branch 'origin/master' into synchrogazed
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/launch/ndt_matching.launch
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
 * Change variable name (velodyne_sub-> scan_sub)
 * Modified to switch localizer (lidar) easily.
 * Combine velodyne_callback and hokuyo_callback into scan_callback.
@@ -212,7 +179,6 @@ Changelog for package ndt_localizer
 * ndt_matching supports setup tab.
 * Modified TF tree
   Add localizer_pose
-* Merge branch 'master' of https://github.com/CPFL/Autoware into ndt_matching_mod_tf_tree
 * Modified ndt_matching.launch
 * Update for integrated velodyne package
 * Modified TF Tree.
@@ -237,4 +203,4 @@ Changelog for package ndt_localizer
 * Publish /estimated_vel_mps and /estimated_vel_kmph.
 * Improve local2global.cpp
 * Initial commit for public release
-* Contributors: Shinpei Kato, Syohei YOSHIDA, USUDA Hisashi, Yuki Kitsukawa, Yukihiro Saito, h_ohta, kondoh, pdsljp, syouji, yukikitsukawa
+* Contributors: Shinpei Kato, Syohei YOSHIDA, USUDA Hisashi, Yukihiro Saito, h_ohta, kondoh, pdsljp, syouji, yukikitsukawa

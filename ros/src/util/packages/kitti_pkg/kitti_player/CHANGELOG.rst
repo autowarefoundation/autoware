@@ -2,43 +2,46 @@
 Changelog for package kitti_player
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* merge develop and fixed slow switching map
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
-* Merge branch 'master' into feature/decision
-* Feature/kitti player update for kinetic, autoware_msgs (`#865 <https://github.com/CPFL/Autoware/issues/865>`_)
+* Prepare release for 1.6.0
+* Feature/kitti player update for kinetic, autoware_msgs (`#865 <https://github.com/cpfl/autoware/issues/865>`_)
   * Added support for Autoware Messages
   * Changed argument
   * Added support for Kinetic
   * Updated README
   * Added fps argument to launch file
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Abraham Monrroy, Yamato ANDO, Yuki Iida, Yusuke FUJII, anhnv-3991, hatem-darweesh, yukikitsukawa
+* Contributors: Abraham Monrroy, Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------

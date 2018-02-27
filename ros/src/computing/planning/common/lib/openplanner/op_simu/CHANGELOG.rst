@@ -2,19 +2,24 @@
 Changelog for package op_simu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'feature/OpenPlanner' into develop
+* Prepare release for 1.6.0
 * - Test Tracking
   - Add missing parameter to lunch file and runtime manager
 * - Add new Node for object polygon representation and tracking (kf_contour_tracker)
   - Add launch file and tune tracking parameters
   - Test with Moriyama rosbag
-* merge develop and fixed slow switching map
 * - Update OpenPlanner libraries (plannerh, simuh, utilityh) with the latest modifications
   - Fix inconsistency after library update, make sure old (way_planner, dp_planner) are working fine
   - Create new package (op_local_planner)
@@ -24,22 +29,27 @@ Changelog for package op_simu
   - Test generating trajectories (rollouts) in simulation with way_planner
   - Test generating trajectories with real rosbag data with way_planner
   - Test generating trajectories with real rosbag data and waypoints_loader
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+* Contributors: Yamato ANDO, hatem-darweesh
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------

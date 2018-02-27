@@ -2,44 +2,51 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/tlr_turn
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge pull request `#936 <https://github.com/CPFL/Autoware/issues/936>`_ from CPFL/feature/decision
-  Feature/decision: Enhancement decision maker node
-* merge develop and fixed slow switching map
+* Prepare release for 1.6.0
 * add smoothing on waypoint loader
 * add waypoint relay
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: AMC, Yamato ANDO, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, yukikitsukawa
+* Contributors: Yamato ANDO, Yusuke FUJII
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
 
 1.3.0 (2017-07-14)
 ------------------
-* Resolved merge conflict by new feature
 * Add obstacle avoid feature in astar_planner
 * convert to autoware_msgs
-* Contributors: TomohitoAndo, YamatoAndo, Yusuke FUJII
+* Contributors: TomohitoAndo, YamatoAndo
 
 1.2.0 (2017-06-07)
 ------------------
@@ -99,10 +106,6 @@ Changelog for package waypoint_maker
 * Compute yaw in lane_navi and waypoint_clicker
 * Add debug code ,checking the orientation of waypoint
 * Delete needless code
-* Merge branch 'master' into develop-waypoint-maker
-  Conflicts:
-  ros/src/computing/planning/motion/packages/waypoint_follower/lib/libwaypoint_follower.cpp
-  ros/src/computing/planning/motion/packages/waypoint_maker/nodes/waypoint_marker_publisher/waypoint_marker_publisher.cpp
 * Fix style
 * Add Markers which show traffic_waypoints_array
 * Rewrite waypoint_clicker by new API

@@ -1,14 +1,20 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package dp_planner
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package op_ros_helpers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'feature/OpenPlanner' into develop
+* Prepare release for 1.6.0
 * - Add new Node for object polygon representation and tracking (kf_contour_tracker)
   - Add launch file and tune tracking parameters
   - Test with Moriyama rosbag
@@ -25,14 +31,9 @@ Changelog for package dp_planner
 
 1.5.1 (2017-09-25)
 ------------------
-* fix build error for older indigo version
-* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
-* Add changing topic name option for the planner selector.
-* compilation issues
-* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
@@ -42,15 +43,9 @@ Changelog for package dp_planner
 
 1.3.0 (2017-07-14)
 ------------------
-* convert to autoware_msgs
-* Contributors: YamatoAndo
 
 1.2.0 (2017-06-07)
 ------------------
-* Change OpenPlanner stand alone libraries names.
-* fix a math library compatibility
-* Restructure OpenPlanner for merging autoware develop branch
-* Contributors: Yusuke FUJII, hatem-darweesh
 
 1.1.2 (2017-02-27 23:10)
 ------------------------

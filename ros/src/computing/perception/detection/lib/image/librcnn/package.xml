@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>librcnn</name>
-  <version>1.6.1</version>
+  <version>1.6.2</version>
   <description>librcnn package</description>
   <maintainer email="a@a.com"></maintainer>
   <license>BSD</license>

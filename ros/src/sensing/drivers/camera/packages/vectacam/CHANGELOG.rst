@@ -2,34 +2,41 @@
 Changelog for package vectacam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/remote_monitor
-* removing mailing list from pkg maintainer (`#834 <https://github.com/CPFL/Autoware/issues/834>`_)
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Dejan Pangercic, Yamato ANDO, Yuki Iida, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+* Prepare release for 1.6.0
+* removing mailing list from pkg maintainer (`#834 <https://github.com/cpfl/autoware/issues/834>`_)
+* Contributors: Dejan Pangercic, Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
-* TierFusion Driver Updated (`#742 <https://github.com/CPFL/Autoware/issues/742>`_)
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* TierFusion Driver Updated (`#742 <https://github.com/cpfl/autoware/issues/742>`_)
   Added Support for new firmware version.
   Features:
   -IP Address changed to the same as Velodyne's
@@ -38,7 +45,7 @@ Changelog for package vectacam
   TierFusion address is fixed to 192.168.1.200
   Velodyne address is considered as default value, 192.168.1.201
   Tested in 14.04 and 16.04
-* Contributors: Abraham Monrroy
+* Contributors: Abraham Monrroy, Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------

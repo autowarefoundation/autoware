@@ -58,6 +58,10 @@ subs :
         desc : Baumer VLG-22 desc sample
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
+      - name : Sekonix 3322/3323 GMSLCamera
+        desc : gmsl camera. run on PX2 only
+        probe:
+        run  : roslaunch autoware_driveworks_interface gmsl_interface
 
   - name : GNSS
     desc : GNSS desc sample

@@ -2,56 +2,53 @@
 Changelog for package road_wizard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#967 <https://github.com/CPFL/Autoware/issues/967>`_ from CPFL/fix/qt_autouic
-  [bugfix]use qt5_wrap_ui instead of autouic
+* Changed ROS_INFO output destination to log
+* Prepare release for 1.6.0
 * use qt5_wrap_ui instead of autouic
-* Merge branch develop into feature/ndt_pcl_gpu
-* Merge pull request `#953 <https://github.com/CPFL/Autoware/issues/953>`_ from CPFL/feature/tlr_turn_support
-  Feature/tlr turn support, multi traffic signal support
 * Changed the publishing time of all the signals
 * Added support to publish result of multiple traffic signals according to the lane
   VectorMapServer Support to publish signals on current lane if current_pose and final_waypoints available
 * Initial modifications to feat_proj, tlr, context and vector_map loader, server and client to support different types of traffic signals
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Support for multi cameras in feat_proj node (`#930 <https://github.com/CPFL/Autoware/issues/930>`_)
+* Support for multi cameras in feat_proj node (`#930 <https://github.com/cpfl/autoware/issues/930>`_)
   [fix] feat_proj node multi cam support
-* merge develop and fixed slow switching map
-* Merge pull request `#888 <https://github.com/CPFL/Autoware/issues/888>`_ from CPFL/feature/cmake_refactor
-  refactor CMakeLists.txt. use automoc, autouic and autorcc
-* Merge branch 'feature/cmake_refactor' of github.com:cpfl/autoware into feature/decision
 * refactor CMakeLists.txt. use automoc, autouic and autorcc
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
-* Contributors: AMC, Abraham Monrroy, Yamato ANDO, YamatoAndo, Yuki Iida, Yuki Kitsukawa, Yusuke FUJII, hatem-darweesh, yukikitsukawa
+* Contributors: AMC, Abraham Monrroy, Yamato ANDO, Yusuke FUJII
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * fixed cmake and package.xml for libvectormap
   moved headers into include/libvectormap since otherwise this otherwise can conflict with other files elsewhere.
-* Contributors: Dejan Pangercic
+* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
 * Change specifing each msg to catkin_EXPORTED_TARGETS
 * R.I.P.
-* Contributors: Yusuke FUJII
+* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.3.1 (2017-07-16)
 ------------------
@@ -59,11 +56,8 @@ Changelog for package road_wizard
 1.3.0 (2017-07-14)
 ------------------
 * fix build issues due to autoware_msgs
-* Resolved merge conflict by new feature
 * Add link of trained data for tlr
-* Merge branch 'develop' into feature/TLR_by_machine_learning
 * fix to free a NULL window
-* Merge branch 'develop' into feature/TLR_by_machine_learning
 * Enable building nodes on the kinetic setup
   -road_wizard
   -klt_tracker
@@ -130,8 +124,6 @@ Changelog for package road_wizard
 
 1.0.0 (2016-12-22)
 ------------------
-* Merge pull request `#452 <https://github.com/CPFL/Autoware/issues/452>`_ from CPFL/add-vector_map-library
-  Add vector map library
 * Fix codes to use map_file messages and old vector_map_info topics
 * Publish the detection result when it is different from the previous one
 * Modify region_tlr so that it publishes superimpose image as topic
@@ -151,28 +143,6 @@ Changelog for package road_wizard
   * Make it possible to obtain camera ID in each node to subscribe topics
   under camera name space selectively
   * Get image size from sensor_msgs::Image instead of CameraInfo
-* Merge branch 'master' of ssh://localhost:8443/CPFL/Autoware into apply_multi_camera
-  WARNING: This commit contains unresolved conflict.
-  Unresolved conflicts are contained in...:
-  *
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  * ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  * ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ocv.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ttic.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/kf_tracking.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/reprojection.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/computing/perception/detection/packages/viewers/nodes/scan_image_viewer/scan_image_viewer.cpp
-  ros/src/sensing/fusion/packages/calibration_camera_lidar/CalibrationToolkit/calibrationtoolkit.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  ros/src/util/packages/runtime_manager/scripts/points2image.launch
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  ros/src/util/packages/runtime_manager/scripts/vscan.launch
 * Eigen3 with Fallback on ros-catkin-modules
 * Change frame ID according to used camera
 * Modify launch files to specify source camera
