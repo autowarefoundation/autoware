@@ -307,6 +307,10 @@ void DecisionMakerNode::changeVelocityLane(int dir)
 
 void DecisionMakerNode::callbackInStateKeep(int status)
 {
+  /*temporary implementation*/
+  std_msgs::String layer_msg;
+  layer_msg.data = "wayarea";
+  Pubs["filtering_gridmap_layer"].publish(layer_msg);
   changeVelocityBasedLane();
   publishControlledLaneArray();
 }
@@ -325,9 +329,16 @@ void DecisionMakerNode::updateStateStop(int status)
 
   if (status)
   {
+    if (current_velocity_ == 0.0)
+    {
+      /*temporary implementation*/
+      std_msgs::String layer_msg;
+      layer_msg.data = "detectionarea";
+      Pubs["filtering_gridmap_layer"].publish(layer_msg);
+    }
     if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
     {
-      stopping_timer = nh_.createTimer(ros::Duration(1),
+      stopping_timer = nh_.createTimer(ros::Duration(param_stopline_pause_time_),
                                        [&](const ros::TimerEvent&) {
                                          ctx->setCurrentState(state_machine::DRIVE_ACC_KEEP_STATE);
                                          ROS_INFO("Change state to [KEEP] from [STOP]\n");

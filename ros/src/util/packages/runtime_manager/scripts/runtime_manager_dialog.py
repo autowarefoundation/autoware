@@ -131,6 +131,8 @@ class MyFrame(rtmgr.MyFrame):
 		rospy.init_node('runime_manager', anonymous=True)
 		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
+                self.state_cmd_pub = rospy.Publisher('state_cmd', std_msgs.msg.Int32, queue_size=10)
+                self.auto_pilot_pub = rospy.Publisher('/as/control_mode', Bool, queue_size=1)
 
 		#
 		# for Quick Start tab
@@ -782,11 +784,13 @@ class MyFrame(rtmgr.MyFrame):
 		pub.publish(msg)
 
 	def OnAutoPilot(self, event):
-		obj = event.GetEventObject()
-		self.alias_sync(obj)
-		v = obj.GetValue()
-		pub = rospy.Publisher('/as/control_mode', Bool, queue_size=10)
-		pub.publish(Bool(data=v))
+                obj = event.GetEventObject()
+                self.alias_sync(obj)
+                v = obj.GetValue()
+                ## this allows some time before publisher is constructed
+                ## see issue: https://gitlab.apex.ai/ApexAI/grand_central/issues/930
+                self.auto_pilot_pub.publish(Bool(data=v))
+
 
 
 
@@ -1735,11 +1739,10 @@ class MyFrame(rtmgr.MyFrame):
                     return -99
 
         def OnState(self, event):
-                pub = rospy.Publisher('state_cmd', std_msgs.msg.Int32, queue_size=10)
                 msg = std_msgs.msg.Int32()
                 clicked_event = event.GetEventObject()
                 msg.data = self.getStateId(clicked_event.GetLabel())
-                pub.publish(msg)
+                self.state_cmd_pub.publish(msg)
 
 	#
 	# Common Utils

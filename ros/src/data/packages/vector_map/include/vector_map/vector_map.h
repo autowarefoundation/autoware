@@ -47,6 +47,7 @@
 #include <vector_map_msgs/NodeArray.h>
 #include <vector_map_msgs/LaneArray.h>
 #include <vector_map_msgs/WayAreaArray.h>
+#include <vector_map_msgs/DetectionAreaArray.h>
 #include <vector_map_msgs/RoadEdgeArray.h>
 #include <vector_map_msgs/GutterArray.h>
 #include <vector_map_msgs/CurbArray.h>
@@ -82,6 +83,7 @@ using vector_map_msgs::DTLane;
 using vector_map_msgs::Node;
 using vector_map_msgs::Lane;
 using vector_map_msgs::WayArea;
+using vector_map_msgs::DetectionArea;
 using vector_map_msgs::RoadEdge;
 using vector_map_msgs::Gutter;
 using vector_map_msgs::Curb;
@@ -115,6 +117,7 @@ using vector_map_msgs::DTLaneArray;
 using vector_map_msgs::NodeArray;
 using vector_map_msgs::LaneArray;
 using vector_map_msgs::WayAreaArray;
+using vector_map_msgs::DetectionAreaArray;
 using vector_map_msgs::RoadEdgeArray;
 using vector_map_msgs::GutterArray;
 using vector_map_msgs::CurbArray;
@@ -157,32 +160,33 @@ enum Category : category_t
   NODE = 1LLU << 7,
   LANE = 1LLU << 8,
   WAY_AREA = 1LLU << 9,
+  DETECTION_AREA = 1LLU << 10,
 
   // Object Data
-  ROAD_EDGE = 1LLU << 10,
-  GUTTER = 1LLU << 11,
-  CURB = 1LLU << 12,
-  WHITE_LINE = 1LLU << 13,
-  STOP_LINE = 1LLU << 14,
-  ZEBRA_ZONE = 1LLU << 15,
-  CROSS_WALK = 1LLU << 16,
-  ROAD_MARK = 1LLU << 17,
-  ROAD_POLE = 1LLU << 18,
-  ROAD_SIGN = 1LLU << 19,
-  SIGNAL = 1LLU << 20,
-  STREET_LIGHT = 1LLU << 21,
-  UTILITY_POLE = 1LLU << 22,
-  GUARD_RAIL = 1LLU << 23,
-  SIDE_WALK = 1LLU << 24,
-  DRIVE_ON_PORTION = 1LLU << 25,
-  CROSS_ROAD = 1LLU << 26,
-  SIDE_STRIP = 1LLU << 27,
-  CURVE_MIRROR = 1LLU << 28,
-  WALL = 1LLU << 29,
-  FENCE = 1LLU << 30,
-  RAIL_CROSSING = 1LLU << 31,
+  ROAD_EDGE = 1LLU << 11,
+  GUTTER = 1LLU << 12,
+  CURB = 1LLU << 13,
+  WHITE_LINE = 1LLU << 14,
+  STOP_LINE = 1LLU << 15,
+  ZEBRA_ZONE = 1LLU << 16,
+  CROSS_WALK = 1LLU << 17,
+  ROAD_MARK = 1LLU << 18,
+  ROAD_POLE = 1LLU << 19,
+  ROAD_SIGN = 1LLU << 20,
+  SIGNAL = 1LLU << 21,
+  STREET_LIGHT = 1LLU << 22,
+  UTILITY_POLE = 1LLU << 23,
+  GUARD_RAIL = 1LLU << 24,
+  SIDE_WALK = 1LLU << 25,
+  DRIVE_ON_PORTION = 1LLU << 26,
+  CROSS_ROAD = 1LLU << 27,
+  SIDE_STRIP = 1LLU << 28,
+  CURVE_MIRROR = 1LLU << 29,
+  WALL = 1LLU << 30,
+  FENCE = 1LLU << 31,
+  RAIL_CROSSING = 1LLU << 32,
 
-  ALL = (1LLU << 32) - 1
+  ALL = (1LLU << 33) - 1
 };
 
 enum Color : int
@@ -372,6 +376,7 @@ private:
   Handle<Node, NodeArray> node_;
   Handle<Lane, LaneArray> lane_;
   Handle<WayArea, WayAreaArray> way_area_;
+  Handle<DetectionArea, DetectionAreaArray> detection_area_;
   Handle<RoadEdge, RoadEdgeArray> road_edge_;
   Handle<Gutter, GutterArray> gutter_;
   Handle<Curb, CurbArray> curb_;
@@ -414,6 +419,7 @@ public:
   Node findByKey(const Key<Node>& key) const;
   Lane findByKey(const Key<Lane>& key) const;
   WayArea findByKey(const Key<WayArea>& key) const;
+  DetectionArea findByKey(const Key<DetectionArea>& key) const;
   RoadEdge findByKey(const Key<RoadEdge>& key) const;
   Gutter findByKey(const Key<Gutter>& key) const;
   Curb findByKey(const Key<Curb>& key) const;
@@ -447,6 +453,7 @@ public:
   std::vector<Node> findByFilter(const Filter<Node>& filter) const;
   std::vector<Lane> findByFilter(const Filter<Lane>& filter) const;
   std::vector<WayArea> findByFilter(const Filter<WayArea>& filter) const;
+  std::vector<DetectionArea> findByFilter(const Filter<DetectionArea>& filter) const;
   std::vector<RoadEdge> findByFilter(const Filter<RoadEdge>& filter) const;
   std::vector<Gutter> findByFilter(const Filter<Gutter>& filter) const;
   std::vector<Curb> findByFilter(const Filter<Curb>& filter) const;
@@ -480,6 +487,7 @@ public:
   void registerCallback(const Callback<NodeArray>& cb);
   void registerCallback(const Callback<LaneArray>& cb);
   void registerCallback(const Callback<WayAreaArray>& cb);
+  void registerCallback(const Callback<DetectionAreaArray>& cb);
   void registerCallback(const Callback<RoadEdgeArray>& cb);
   void registerCallback(const Callback<GutterArray>& cb);
   void registerCallback(const Callback<CurbArray>& cb);
@@ -554,6 +562,7 @@ std::ostream& operator<<(std::ostream& os, const vector_map::DTLane& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::Node& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::Lane& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::WayArea& obj);
+std::ostream& operator<<(std::ostream& os, const vector_map::DetectionArea& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::RoadEdge& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::Gutter& obj);
 std::ostream& operator<<(std::ostream& os, const vector_map::Curb& obj);
@@ -587,6 +596,7 @@ std::istream& operator>>(std::istream& is, vector_map::DTLane& obj);
 std::istream& operator>>(std::istream& is, vector_map::Node& obj);
 std::istream& operator>>(std::istream& is, vector_map::Lane& obj);
 std::istream& operator>>(std::istream& is, vector_map::WayArea& obj);
+std::istream& operator>>(std::istream& is, vector_map::DetectionArea& obj);
 std::istream& operator>>(std::istream& is, vector_map::RoadEdge& obj);
 std::istream& operator>>(std::istream& is, vector_map::Gutter& obj);
 std::istream& operator>>(std::istream& is, vector_map::Curb& obj);

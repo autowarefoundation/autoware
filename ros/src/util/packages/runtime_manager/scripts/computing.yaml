@@ -1102,8 +1102,8 @@ params :
     - name    : vectormap_grid_width
       desc    : Width Distance in Meters to create a filtering grid to the sides. Default. 30
       label   : 'vectormap_grid_width'
-      min       : 10.0
-      max       : 100.0
+      min       : 0.0
+      max       : 300.0
       v       : 30.0
       cmd_param :
         dash        : ''
@@ -1111,8 +1111,8 @@ params :
     - name    : vectormap_grid_height
       desc    : Height Distance in Meters to create a filtering grid to the front. Default. 70
       label   : 'vectormap_grid_height'
-      min       : 10.0
-      max       : 100.0
+      min       : 0.0
+      max       : 300.0
       v       : 70.0
       cmd_param :
         dash        : ''
@@ -1121,7 +1121,7 @@ params :
       desc    : One Grid square is equivalent to this value in meters. Smaller Value provide better resolution at the cost of memory (Default. 0.3)
       label   : 'vectormap_grid_resolution'
       min       : 0.1
-      max       : 1.0
+      max       : 10.0
       v       : 0.3
       cmd_param :
         dash        : ''
@@ -1130,7 +1130,7 @@ params :
       desc    : Allows to perform filtering behind the vehicle. Moves the grid to filter objects behind the current position (Default. 20.0)
       label   : 'vectormap_grid_behind'
       min       : 0.0
-      max       : 50.0
+      max       : 300.0
       v       : 20.0
       cmd_param :
         dash        : ''
@@ -2075,6 +2075,12 @@ params :
       min  : 0.0
       max  : 0.99
       v    : 0.0
+    - name : stopline_pause_time
+      desc : stopline
+      label: stopline_pause_time
+      min  : 0.0
+      max  : 10.0
+      v    : 1.0
     - name : shift_width
       desc : lane shift width
       label: shift_width

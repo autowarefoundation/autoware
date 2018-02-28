@@ -30,6 +30,8 @@ add_message_files(
   LaneArray.msg
   WayArea.msg
   WayAreaArray.msg
+  DetectionArea.msg
+  DetectionAreaArray.msg
   RoadEdge.msg
   RoadEdgeArray.msg
   Gutter.msg

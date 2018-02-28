@@ -32,7 +32,7 @@ void DecisionMakerNode::update(void)
 
 void DecisionMakerNode::run(void)
 {
-  ros::Rate loop_rate(1);
+  ros::Rate loop_rate(10);
 
   // for subscribe callback function
   ros::AsyncSpinner spinner(3);

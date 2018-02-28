@@ -28,12 +28,12 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <map_file/get_file.h>
 #include <ros/console.h>
 #include <std_msgs/Bool.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <vector_map/vector_map.h>
-#include <map_file/get_file.h>
 #include <sys/stat.h>
+#include <vector_map/vector_map.h>
+#include <visualization_msgs/MarkerArray.h>
 
 using vector_map::VectorMap;
 using vector_map::Category;
@@ -50,6 +50,7 @@ using vector_map::DTLane;
 using vector_map::Node;
 using vector_map::Lane;
 using vector_map::WayArea;
+using vector_map::DetectionArea;
 using vector_map::RoadEdge;
 using vector_map::Gutter;
 using vector_map::Curb;
@@ -83,6 +84,7 @@ using vector_map::DTLaneArray;
 using vector_map::NodeArray;
 using vector_map::LaneArray;
 using vector_map::WayAreaArray;
+using vector_map::DetectionAreaArray;
 using vector_map::RoadEdgeArray;
 using vector_map::GutterArray;
 using vector_map::CurbArray;
@@ -142,7 +144,7 @@ visualization_msgs::Marker createLinkedLineMarker(const std::string& ns, int id,
                                                   const Line& line)
 {
   Area area;
-  area.aid = 1; // must set valid aid
+  area.aid = 1;  // must set valid aid
   area.slid = line.lid;
   return createAreaMarker(ns, id, color, vmap, area);
 }
@@ -151,7 +153,7 @@ visualization_msgs::MarkerArray createRoadEdgeMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& road_edge : vmap.findByFilter([](const RoadEdge& road_edge){return true;}))
+  for (const auto& road_edge : vmap.findByFilter([](const RoadEdge& road_edge) { return true; }))
   {
     if (road_edge.lid == 0)
     {
@@ -166,7 +168,7 @@ visualization_msgs::MarkerArray createRoadEdgeMarkerArray(const VectorMap& vmap,
       continue;
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker marker = createLinkedLineMarker("road_edge", id++, color, vmap, line);
       if (isValidMarker(marker))
@@ -178,12 +180,12 @@ visualization_msgs::MarkerArray createRoadEdgeMarkerArray(const VectorMap& vmap,
   return marker_array;
 }
 
-visualization_msgs::MarkerArray createGutterMarkerArray(const VectorMap& vmap, Color no_cover_color,
-                                                        Color cover_color, Color grating_color)
+visualization_msgs::MarkerArray createGutterMarkerArray(const VectorMap& vmap, Color no_cover_color, Color cover_color,
+                                                        Color grating_color)
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& gutter : vmap.findByFilter([](const Gutter& gutter){return true;}))
+  for (const auto& gutter : vmap.findByFilter([](const Gutter& gutter) { return true; }))
   {
     if (gutter.aid == 0)
     {
@@ -201,18 +203,18 @@ visualization_msgs::MarkerArray createGutterMarkerArray(const VectorMap& vmap, C
     visualization_msgs::Marker marker;
     switch (gutter.type)
     {
-    case Gutter::NO_COVER:
-      marker = createAreaMarker("gutter", id++, no_cover_color, vmap, area);
-      break;
-    case Gutter::COVER:
-      marker = createAreaMarker("gutter", id++, cover_color, vmap, area);
-      break;
-    case Gutter::GRATING:
-      marker = createAreaMarker("gutter", id++, grating_color, vmap, area);
-      break;
-    default:
-      ROS_ERROR_STREAM("[createGutterMarkerArray] unknown gutter.type: " << gutter);
-      continue;
+      case Gutter::NO_COVER:
+        marker = createAreaMarker("gutter", id++, no_cover_color, vmap, area);
+        break;
+      case Gutter::COVER:
+        marker = createAreaMarker("gutter", id++, cover_color, vmap, area);
+        break;
+      case Gutter::GRATING:
+        marker = createAreaMarker("gutter", id++, grating_color, vmap, area);
+        break;
+      default:
+        ROS_ERROR_STREAM("[createGutterMarkerArray] unknown gutter.type: " << gutter);
+        continue;
     }
     if (isValidMarker(marker))
       marker_array.markers.push_back(marker);
@@ -226,7 +228,7 @@ visualization_msgs::MarkerArray createCurbMarkerArray(const VectorMap& vmap, Col
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& curb : vmap.findByFilter([](const Curb& curb){return true;}))
+  for (const auto& curb : vmap.findByFilter([](const Curb& curb) { return true; }))
   {
     if (curb.lid == 0)
     {
@@ -241,7 +243,7 @@ visualization_msgs::MarkerArray createCurbMarkerArray(const VectorMap& vmap, Col
       continue;
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker marker = createLinkedLineMarker("curb", id++, color, vmap, line);
       // XXX: The visualization_msgs::Marker::LINE_STRIP is difficult to deal with curb.width and curb.height.
@@ -254,19 +256,18 @@ visualization_msgs::MarkerArray createCurbMarkerArray(const VectorMap& vmap, Col
   return marker_array;
 }
 
-visualization_msgs::MarkerArray createWhiteLineMarkerArray(const VectorMap& vmap, Color white_color,
-                                                           Color yellow_color)
+visualization_msgs::MarkerArray createWhiteLineMarkerArray(const VectorMap& vmap, Color white_color, Color yellow_color)
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& white_line : vmap.findByFilter([](const WhiteLine& white_line){return true;}))
+  for (const auto& white_line : vmap.findByFilter([](const WhiteLine& white_line) { return true; }))
   {
     if (white_line.lid == 0)
     {
       ROS_ERROR_STREAM("[createWhiteLineMarkerArray] invalid white_line: " << white_line);
       continue;
     }
-    if (white_line.type == WhiteLine::DASHED_LINE_BLANK) // if invisible line
+    if (white_line.type == WhiteLine::DASHED_LINE_BLANK)  // if invisible line
       continue;
 
     Line line = vmap.findByKey(Key<Line>(white_line.lid));
@@ -276,20 +277,20 @@ visualization_msgs::MarkerArray createWhiteLineMarkerArray(const VectorMap& vmap
       continue;
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker marker;
       switch (white_line.color)
       {
-      case 'W':
-        marker = createLinkedLineMarker("white_line", id++, white_color, vmap, line);
-        break;
-      case 'Y':
-        marker = createLinkedLineMarker("white_line", id++, yellow_color, vmap, line);
-        break;
-      default:
-        ROS_ERROR_STREAM("[createWhiteLineMarkerArray] unknown white_line.color: " << white_line);
-        continue;
+        case 'W':
+          marker = createLinkedLineMarker("white_line", id++, white_color, vmap, line);
+          break;
+        case 'Y':
+          marker = createLinkedLineMarker("white_line", id++, yellow_color, vmap, line);
+          break;
+        default:
+          ROS_ERROR_STREAM("[createWhiteLineMarkerArray] unknown white_line.color: " << white_line);
+          continue;
       }
       // XXX: The visualization_msgs::Marker::LINE_STRIP is difficult to deal with white_line.width.
       if (isValidMarker(marker))
@@ -305,7 +306,7 @@ visualization_msgs::MarkerArray createStopLineMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& stop_line : vmap.findByFilter([](const StopLine& stop_line){return true;}))
+  for (const auto& stop_line : vmap.findByFilter([](const StopLine& stop_line) { return true; }))
   {
     if (stop_line.lid == 0)
     {
@@ -320,7 +321,7 @@ visualization_msgs::MarkerArray createStopLineMarkerArray(const VectorMap& vmap,
       continue;
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker marker = createLinkedLineMarker("stop_line", id++, color, vmap, line);
       if (isValidMarker(marker))
@@ -336,7 +337,7 @@ visualization_msgs::MarkerArray createZebraZoneMarkerArray(const VectorMap& vmap
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& zebra_zone : vmap.findByFilter([](const ZebraZone& zebra_zone){return true;}))
+  for (const auto& zebra_zone : vmap.findByFilter([](const ZebraZone& zebra_zone) { return true; }))
   {
     if (zebra_zone.aid == 0)
     {
@@ -364,7 +365,7 @@ visualization_msgs::MarkerArray createCrossWalkMarkerArray(const VectorMap& vmap
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& cross_walk : vmap.findByFilter([](const CrossWalk& cross_walk){return true;}))
+  for (const auto& cross_walk : vmap.findByFilter([](const CrossWalk& cross_walk) { return true; }))
   {
     if (cross_walk.aid == 0)
     {
@@ -392,7 +393,7 @@ visualization_msgs::MarkerArray createRoadMarkMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& road_mark : vmap.findByFilter([](const RoadMark& road_mark){return true;}))
+  for (const auto& road_mark : vmap.findByFilter([](const RoadMark& road_mark) { return true; }))
   {
     if (road_mark.aid == 0)
     {
@@ -420,7 +421,7 @@ visualization_msgs::MarkerArray createRoadPoleMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& road_pole : vmap.findByFilter([](const RoadPole& road_pole){return true;}))
+  for (const auto& road_pole : vmap.findByFilter([](const RoadPole& road_pole) { return true; }))
   {
     if (road_pole.plid == 0)
     {
@@ -448,7 +449,7 @@ visualization_msgs::MarkerArray createRoadSignMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& road_sign : vmap.findByFilter([](const RoadSign& road_sign){return true;}))
+  for (const auto& road_sign : vmap.findByFilter([](const RoadSign& road_sign) { return true; }))
   {
     if (road_sign.vid == 0)
     {
@@ -497,7 +498,7 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& signal : vmap.findByFilter([](const Signal& signal){return true;}))
+  for (const auto& signal : vmap.findByFilter([](const Signal& signal) { return true; }))
   {
     if (signal.vid == 0)
     {
@@ -526,24 +527,25 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
     visualization_msgs::Marker vector_marker;
     switch (signal.type)
     {
-    case Signal::RED:
-    case Signal::PEDESTRIAN_RED:
-      vector_marker = createVectorMarker("signal", id++, red_color, vmap, vector);
-      break;
-    case Signal::BLUE:
-    case Signal::PEDESTRIAN_BLUE:
-      vector_marker = createVectorMarker("signal", id++, blue_color, vmap, vector);
-      break;
-    case Signal::YELLOW:
-      vector_marker = createVectorMarker("signal", id++, yellow_color, vmap, vector);
-      break;
-    case Signal::OTHER:
-      vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
-      break;
-    default:
-      ROS_WARN_STREAM("[createSignalMarkerArray] unknown signal.type: " << signal.type << " Creating Marker as OTHER.");
-      vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
-      break;
+      case Signal::RED:
+      case Signal::PEDESTRIAN_RED:
+        vector_marker = createVectorMarker("signal", id++, red_color, vmap, vector);
+        break;
+      case Signal::BLUE:
+      case Signal::PEDESTRIAN_BLUE:
+        vector_marker = createVectorMarker("signal", id++, blue_color, vmap, vector);
+        break;
+      case Signal::YELLOW:
+        vector_marker = createVectorMarker("signal", id++, yellow_color, vmap, vector);
+        break;
+      case Signal::OTHER:
+        vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
+        break;
+      default:
+        ROS_WARN_STREAM("[createSignalMarkerArray] unknown signal.type: " << signal.type << " Creating Marker as "
+                                                                                            "OTHER.");
+        vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
+        break;
     }
     if (isValidMarker(vector_marker))
       marker_array.markers.push_back(vector_marker);
@@ -562,12 +564,11 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
   return marker_array;
 }
 
-visualization_msgs::MarkerArray createStreetLightMarkerArray(const VectorMap& vmap, Color light_color,
-                                                             Color pole_color)
+visualization_msgs::MarkerArray createStreetLightMarkerArray(const VectorMap& vmap, Color light_color, Color pole_color)
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& street_light : vmap.findByFilter([](const StreetLight& street_light){return true;}))
+  for (const auto& street_light : vmap.findByFilter([](const StreetLight& street_light) { return true; }))
   {
     if (street_light.lid == 0)
     {
@@ -593,7 +594,7 @@ visualization_msgs::MarkerArray createStreetLightMarkerArray(const VectorMap& vm
       }
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker line_marker = createLinkedLineMarker("street_light", id++, light_color, vmap, line);
       if (isValidMarker(line_marker))
@@ -618,7 +619,7 @@ visualization_msgs::MarkerArray createUtilityPoleMarkerArray(const VectorMap& vm
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& utility_pole : vmap.findByFilter([](const UtilityPole& utility_pole){return true;}))
+  for (const auto& utility_pole : vmap.findByFilter([](const UtilityPole& utility_pole) { return true; }))
   {
     if (utility_pole.plid == 0)
     {
@@ -646,7 +647,7 @@ visualization_msgs::MarkerArray createGuardRailMarkerArray(const VectorMap& vmap
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& guard_rail : vmap.findByFilter([](const GuardRail& guard_rail){return true;}))
+  for (const auto& guard_rail : vmap.findByFilter([](const GuardRail& guard_rail) { return true; }))
   {
     if (guard_rail.aid == 0)
     {
@@ -674,7 +675,7 @@ visualization_msgs::MarkerArray createSideWalkMarkerArray(const VectorMap& vmap,
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& side_walk : vmap.findByFilter([](const SideWalk& side_walk){return true;}))
+  for (const auto& side_walk : vmap.findByFilter([](const SideWalk& side_walk) { return true; }))
   {
     if (side_walk.aid == 0)
     {
@@ -702,7 +703,7 @@ visualization_msgs::MarkerArray createDriveOnPortionMarkerArray(const VectorMap&
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& drive_on_portion : vmap.findByFilter([](const DriveOnPortion& drive_on_portion){return true;}))
+  for (const auto& drive_on_portion : vmap.findByFilter([](const DriveOnPortion& drive_on_portion) { return true; }))
   {
     if (drive_on_portion.aid == 0)
     {
@@ -730,7 +731,7 @@ visualization_msgs::MarkerArray createCrossRoadMarkerArray(const VectorMap& vmap
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& cross_road : vmap.findByFilter([](const CrossRoad& cross_road){return true;}))
+  for (const auto& cross_road : vmap.findByFilter([](const CrossRoad& cross_road) { return true; }))
   {
     if (cross_road.aid == 0)
     {
@@ -758,7 +759,7 @@ visualization_msgs::MarkerArray createSideStripMarkerArray(const VectorMap& vmap
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& side_strip : vmap.findByFilter([](const SideStrip& side_strip){return true;}))
+  for (const auto& side_strip : vmap.findByFilter([](const SideStrip& side_strip) { return true; }))
   {
     if (side_strip.lid == 0)
     {
@@ -773,7 +774,7 @@ visualization_msgs::MarkerArray createSideStripMarkerArray(const VectorMap& vmap
       continue;
     }
 
-    if (line.blid == 0) // if beginning line
+    if (line.blid == 0)  // if beginning line
     {
       visualization_msgs::Marker marker = createLinkedLineMarker("side_strip", id++, color, vmap, line);
       if (isValidMarker(marker))
@@ -790,7 +791,7 @@ visualization_msgs::MarkerArray createCurveMirrorMarkerArray(const VectorMap& vm
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& curve_mirror : vmap.findByFilter([](const CurveMirror& curve_mirror){return true;}))
+  for (const auto& curve_mirror : vmap.findByFilter([](const CurveMirror& curve_mirror) { return true; }))
   {
     if (curve_mirror.vid == 0 || curve_mirror.plid == 0)
     {
@@ -831,7 +832,7 @@ visualization_msgs::MarkerArray createWallMarkerArray(const VectorMap& vmap, Col
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& wall : vmap.findByFilter([](const Wall& wall){return true;}))
+  for (const auto& wall : vmap.findByFilter([](const Wall& wall) { return true; }))
   {
     if (wall.aid == 0)
     {
@@ -859,7 +860,7 @@ visualization_msgs::MarkerArray createFenceMarkerArray(const VectorMap& vmap, Co
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& fence : vmap.findByFilter([](const Fence& fence){return true;}))
+  for (const auto& fence : vmap.findByFilter([](const Fence& fence) { return true; }))
   {
     if (fence.aid == 0)
     {
@@ -887,7 +888,7 @@ visualization_msgs::MarkerArray createRailCrossingMarkerArray(const VectorMap& v
 {
   visualization_msgs::MarkerArray marker_array;
   int id = 0;
-  for (const auto& rail_crossing : vmap.findByFilter([](const RailCrossing& rail_crossing){return true;}))
+  for (const auto& rail_crossing : vmap.findByFilter([](const RailCrossing& rail_crossing) { return true; }))
   {
     if (rail_crossing.aid == 0)
     {
@@ -915,9 +916,9 @@ void insertMarkerArray(visualization_msgs::MarkerArray& a1, const visualization_
 {
   a1.markers.insert(a1.markers.end(), a2.markers.begin(), a2.markers.end());
 }
-} // namespace
+}  // namespace
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "vector_map_loader");
   ros::NodeHandle nh;
@@ -945,6 +946,7 @@ int main(int argc, char **argv)
   ros::Publisher node_pub = nh.advertise<NodeArray>("vector_map_info/node", 1, true);
   ros::Publisher lane_pub = nh.advertise<LaneArray>("vector_map_info/lane", 1, true);
   ros::Publisher way_area_pub = nh.advertise<WayAreaArray>("vector_map_info/way_area", 1, true);
+  ros::Publisher detection_area_pub = nh.advertise<DetectionAreaArray>("vector_map_info/detection_area", 1, true);
   ros::Publisher road_edge_pub = nh.advertise<RoadEdgeArray>("vector_map_info/road_edge", 1, true);
   ros::Publisher gutter_pub = nh.advertise<GutterArray>("vector_map_info/gutter", 1, true);
   ros::Publisher curb_pub = nh.advertise<CurbArray>("vector_map_info/curb", 1, true);
@@ -1009,42 +1011,23 @@ int main(int argc, char **argv)
       }
     }
 
-    std::vector<std::string> file_names
-    {
-      "idx.csv",
-      "point.csv",
-      "vector.csv",
-      "line.csv",
-      "area.csv",
-      "pole.csv",
-      "box.csv",
-      "dtlane.csv",
-      "node.csv",
-      "lane.csv",
-      "wayarea.csv",
-      "roadedge.csv",
-      "gutter.csv",
-      "curb.csv",
-      "whiteline.csv",
-      "stopline.csv",
-      "zebrazone.csv",
-      "crosswalk.csv",
-      "road_surface_mark.csv",
-      "poledata.csv",
-      "roadsign.csv",
-      "signaldata.csv",
-      "streetlight.csv",
-      "utilitypole.csv",
-      "guardrail.csv",
-      "sidewalk.csv",
-      "driveon_portion.csv",
-      "intersection.csv",
-      "sidestrip.csv",
-      "curvemirror.csv",
-      "wall.csv",
-      "fence.csv",
-      "railroad_crossing.csv"
-    };
+    std::vector<std::string> file_names{ "idx.csv",          "point.csv",
+                                         "vector.csv",       "line.csv",
+                                         "area.csv",         "pole.csv",
+                                         "box.csv",          "dtlane.csv",
+                                         "node.csv",         "lane.csv",
+                                         "wayarea.csv",      "detectionarea.csv",
+                                         "roadedge.csv",     "gutter.csv",
+                                         "curb.csv",         "whiteline.csv",
+                                         "stopline.csv",     "zebrazone.csv",
+                                         "crosswalk.csv",    "road_surface_mark.csv",
+                                         "poledata.csv",     "roadsign.csv",
+                                         "signaldata.csv",   "streetlight.csv",
+                                         "utilitypole.csv",  "guardrail.csv",
+                                         "sidewalk.csv",     "driveon_portion.csv",
+                                         "intersection.csv", "sidestrip.csv",
+                                         "curvemirror.csv",  "wall.csv",
+                                         "fence.csv",        "railroad_crossing.csv" };
     for (const auto& file_name : file_names)
     {
       if (gf.GetHTTPFile(remote_path + "/" + file_name) == 0)
@@ -1068,7 +1051,7 @@ int main(int argc, char **argv)
     std::string file_name(basename(file_path.c_str()));
     if (file_name == "idx.csv")
     {
-      ; // XXX: This version of Autoware don't support index csv file now.
+      ;  // XXX: This version of Autoware don't support index csv file now.
     }
     else if (file_name == "point.csv")
     {
@@ -1119,6 +1102,11 @@ int main(int argc, char **argv)
     {
       way_area_pub.publish(createObjectArray<WayArea, WayAreaArray>(file_path));
       category |= Category::WAY_AREA;
+    }
+    else if (file_name == "detectionarea.csv")
+    {
+      detection_area_pub.publish(createObjectArray<DetectionArea, DetectionAreaArray>(file_path));
+      category |= Category::DETECTION_AREA;
     }
     else if (file_name == "roadedge.csv")
     {
@@ -1248,8 +1236,8 @@ int main(int argc, char **argv)
   insertMarkerArray(marker_array, createRoadMarkMarkerArray(vmap, Color::WHITE));
   insertMarkerArray(marker_array, createRoadPoleMarkerArray(vmap, Color::GRAY));
   insertMarkerArray(marker_array, createRoadSignMarkerArray(vmap, Color::GREEN, Color::GRAY));
-  insertMarkerArray(marker_array, createSignalMarkerArray(vmap, Color::RED, Color::BLUE, Color::YELLOW, Color::CYAN,
-                                                          Color::GRAY));
+  insertMarkerArray(marker_array,
+                    createSignalMarkerArray(vmap, Color::RED, Color::BLUE, Color::YELLOW, Color::CYAN, Color::GRAY));
   insertMarkerArray(marker_array, createStreetLightMarkerArray(vmap, Color::YELLOW, Color::GRAY));
   insertMarkerArray(marker_array, createUtilityPoleMarkerArray(vmap, Color::GRAY));
   insertMarkerArray(marker_array, createGuardRailMarkerArray(vmap, Color::LIGHT_BLUE));
