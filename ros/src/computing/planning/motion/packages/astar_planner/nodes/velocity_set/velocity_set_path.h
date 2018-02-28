@@ -52,7 +52,7 @@ class VelocitySetPath
   VelocitySetPath();
   ~VelocitySetPath();
 
-  void changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration);
+  void changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, double obstacle_velocity, int closest_waypoint, double deceleration);
   void avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint);
   void avoidSuddenAcceleration(double decelerationint, int closest_waypoint);
   void changeWaypointsForDeceleration(double deceleration, int closest_waypoint, int obstacle_waypoint);
@@ -94,7 +94,7 @@ class VelocitySetPath
   int getPrevWaypointsSize() const
   {
     return prev_waypoints_.waypoints.size();
-  }  
+  }
 
   int getNewWaypointsSize() const
   {
