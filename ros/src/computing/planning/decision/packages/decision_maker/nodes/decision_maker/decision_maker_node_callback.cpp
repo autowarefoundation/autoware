@@ -151,27 +151,9 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
   {
     if (msg.clusters.size())
     {
-      // if euclidean_cluster does not use wayarea, it may always founded.
-      for (const auto cluster : msg.clusters)
-      {
-        geometry_msgs::PoseStamped cluster_pose;
-        geometry_msgs::PoseStamped baselink_pose;
-        cluster_pose.pose = cluster.bounding_box.pose;
-        cluster_pose.header = cluster.header;
-
-        tflistener_baselink.transformPose(cluster.header.frame_id, cluster.header.stamp, cluster_pose, "base_link",
-                                          baselink_pose);
-
-        if (detectionArea_.x1 * param_detection_area_rate_ >= baselink_pose.pose.position.x &&
-            baselink_pose.pose.position.x >= detectionArea_.x2 * param_detection_area_rate_ &&
-            detectionArea_.y1 * param_detection_area_rate_ >= baselink_pose.pose.position.y &&
-            baselink_pose.pose.position.y >= detectionArea_.y2 * param_detection_area_rate_)
-        {
-          l_detection_flag = true;
-          setFlagTime = ros::Time::now().toSec();
-	  break;
-        }
-      }
+      // since euclidean_cluster always use wayarea, the cluster should be already on the wayrea/detection area
+      l_detection_flag = true;
+      setFlagTime = ros::Time::now().toSec();
     }
   }
   /* The true state continues for more than 1 second. */
