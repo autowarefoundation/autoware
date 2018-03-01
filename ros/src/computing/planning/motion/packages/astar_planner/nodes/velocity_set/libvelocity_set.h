@@ -185,12 +185,12 @@ class ObstacleTracker
 private:
   enum class ETrackingState
   {
-    NOT_TRACKING = -1,
     INITIALIZE = 1,
     TRACKING = 2,
     LOST = 3,
   };
 
+  bool use_tracking_;
   int frame_thres_;
   double moving_thres_;
 
@@ -202,6 +202,7 @@ private:
   ros::Time time_;
 
   boost::circular_buffer<tf::Vector3> position_buf_;
+  boost::circular_buffer<double> velocity_buf_;
   boost::circular_buffer<ros::Time> time_buf_;
 
   bool isTrackingState()
@@ -211,44 +212,45 @@ private:
 
   double calcVelocity()
   {
-    tf::Vector3 dx(0.0, 0.0, 0.0);
-    ros::Time dt;
     for (unsigned int i = 1; i < position_buf_.size(); ++i)
     {
-      dx += position_buf_[i]-position_buf_[i-1];
-      dt += time_buf_[i]-time_buf_[i-1];
+      tf::Vector3 dx = position_buf_[i]-position_buf_[i-1];
+      ros::Duration dt = time_buf_[i]-time_buf_[i-1];
+      velocity_buf_.push_back(dx.length()/dt.toSec());
     }
-    return dx.length()/dt.toSec();
+    return std::accumulate(velocity_buf_.begin(), velocity_buf_.end(), 0.0)/velocity_buf_.size();
   }
 
 public:
   ObstacleTracker(const bool& use_tracking, int frame_size, int frame_thres, double moving_thres)
   {
-    reset();
-    state_ = use_tracking ? ETrackingState::INITIALIZE : ETrackingState::NOT_TRACKING;
     position_buf_.set_capacity(frame_size);
+    velocity_buf_.set_capacity(frame_size);
     time_buf_.set_capacity(frame_size);
+    use_tracking_ = use_tracking;
     frame_thres_ = frame_thres;
     moving_thres_ = moving_thres;
+    reset();
   }
 
   void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& initial_velocity)
   {
+    counter_++;
     time_ = ros::Time::now();
     waypoint_ = stop_waypoint;
     velocity_ = 0.0;
     tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
-    counter_++;
 
-    if (state_ == ETrackingState::NOT_TRACKING)
-    {
+    if (!use_tracking_)
       return;
-    }
-    else if (state_ == ETrackingState::INITIALIZE)
+
+    if (state_ == ETrackingState::INITIALIZE)
     {
-      velocity_ = initial_velocity; // not used now
+      velocity_ = initial_velocity;
+      for (unsigned int i = 0; i < velocity_buf_.capacity(); ++i)
+        velocity_buf_.push_back(velocity_);
       if (counter_ >= frame_thres_)
         state_ = ETrackingState::TRACKING;
     }
@@ -261,18 +263,19 @@ public:
 
   void reset()
   {
+    state_ = ETrackingState::INITIALIZE;
     counter_ = 0;
     waypoint_ = -1;
     velocity_ = 0.0;
-    position_ = tf::Vector3();
+    position_ = tf::Vector3(0.0, 0.0, 0.0);
     position_buf_.clear();
+    velocity_buf_.clear();
     time_buf_.clear();
-    state_ = ETrackingState::INITIALIZE;
   }
 
   int getWaypointIdx()
   {
-    return isTrackingState() ? waypoint_ : -1;
+    return waypoint_;
   }
 
   double getVelocity()
