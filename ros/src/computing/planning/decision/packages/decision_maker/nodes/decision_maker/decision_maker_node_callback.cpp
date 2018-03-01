@@ -286,7 +286,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
             if (amathutils::isPointLeftFromLine(
                     center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
                     lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                    lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
+                    lane.waypoints.at(wp_idx + 1).pose.pose.position.y) >= 0)
             {
               lane.waypoints.at(wp_idx).wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
             }
