@@ -405,9 +405,8 @@ int main(int argc, char **argv)
 	for (int i = 0; i < camera_num; i++) {
 	  std::string topic(std::string("image_raw"));
 
-	  if (camera_num > 1) {
 		topic = "camera" + std::to_string(i) + "/" + topic;
-	  } 
+
 		pub[i] = n.advertise<sensor_msgs::Image>(topic, 100);
 		ROS_INFO("Publishing.. %s", topic.c_str());
 	}
