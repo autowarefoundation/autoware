@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="world_name" />
+  <arg name="headless" default="false" />
+  <arg name="use_camera_control" default="false" />
+  <arg name="physics" default="ode"/>
+
+  <param name="/use_sim_time" value="true" />
+
+  <!-- set command arguments -->
+  <arg unless="$(arg headless)" name="headless_arg" value=""/>
+  <arg     if="$(arg headless)" name="headless_arg" value="-r"/>
+
+  <!-- start gazebo server-->
+  <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false" output="screen"
+        args="$(arg headless_arg) -e $(arg physics) $(arg world_name)" />
+
+  <!-- start gazebo client -->
+  <group unless="$(arg headless)">
+    <arg unless="$(arg use_lidar_control)" name="gzclient_args" value="" />
+    <arg     if="$(arg use_lidar_control)" name="gzclient_args" value="-g libgazebo_ros_velodyne_laser.so" />
+    <node name="gazebo_gui" pkg="gazebo_ros" type="gzclient" respawn="false" args="$(arg gzclient_args)" output="screen"/>
+  </group>
+
+</launch>

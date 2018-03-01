@@ -1,0 +1,21 @@
+<launch>
+
+  <arg name="case_name" default="RTPP"/>
+  <arg name="obstacle_name" default="s1"/>
+  <arg name="known_environment" default="true"/>
+  <arg name="3DOF_plant" default="true"/>
+
+  <param name="nloptcontrol_planner/case_name" value="$(arg case_name)"/>
+  <param name="nloptcontrol_planner/obstacle_name" value="$(arg obstacle_name)"/>
+  <!-- indicates if the 3DOF plant model in VehicleModels.jl will be used-->
+  <param name="nloptcontrol_planner/flags/3DOF_plant" value="$(arg 3DOF_plant)"/>
+  <!-- indicates if the obstacle information is assumed to be known -->
+  <param name="nloptcontrol_planner/flags/known_environment" value="$(arg known_environment)"/>
+
+  <!-- Load YAML file to parameter server, currently need X0 -->
+  <!-- rosparam file="$(find nloptcontrol_planner)/config/case/$(arg case_name).yaml" command="load"/-->
+
+  <!-- Obstacle Avoidance-->
+  <node name="obstacle_avoidance" pkg="nloptcontrol_planner" type="obstacle_avoidance.jl" output="screen"/>
+
+</launch>
