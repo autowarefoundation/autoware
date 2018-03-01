@@ -98,6 +98,10 @@ void RegionTlrMxNetRosNode::RoiSignalCallback(const autoware_msgs::Signals::Cons
 		// The state of the traffic light WON'T be changed
 		// unless the new state is found at least change_state_threshold_ times
 		DetermineState(current_state, context);
+
+		// publish the roi images
+		PublishROIImage(roi);
+
 	}
 
 	// Publish recognition result as some topic format
@@ -164,6 +168,7 @@ void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 	signal_state_string_publisher = node_handle.advertise<std_msgs::String>("/sound_player", 1);
 	marker_publisher = node_handle.advertise<visualization_msgs::MarkerArray>("tlr_result", 1, kAdvertiseInLatch_);
 	superimpose_image_publisher = node_handle.advertise<sensor_msgs::Image>("tlr_superimpose_image", 1);
+	roi_image_publisher = node_handle.advertise<sensor_msgs::Image>("tlr_roi_image", 1);
 
 } // RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 
@@ -477,6 +482,17 @@ void RegionTlrMxNetRosNode::PublishImage(std::vector<Context> contexts)
 	superimpose_image_publisher.publish(converter.toImageMsg());
 
 } // void RegionTlrMxNetRosNode::PublishImage()
+
+void RegionTlrMxNetRosNode::PublishROIImage(cv::Mat roi_image)
+{
+	// Publish roi image
+	cv_bridge::CvImage converter;
+	converter.header = frame_header_;
+	converter.encoding = sensor_msgs::image_encodings::BGR8;
+	converter.image = roi_image;
+	roi_image_publisher.publish(converter.toImageMsg());
+
+} // void RegionTlrMxNetRosNode::PublishROIImage()
 
 int main(int argc, char *argv[])
 {
