@@ -187,7 +187,7 @@ void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle
   // fill velocity with obstacle velocity for stopping
   for (int i = stop_waypoint; i <= obstacle_waypoint; i++)
   {
-    new_waypoints_.waypoints[i].twist.twist.linear.x = obstacle_velocity;
+    new_waypoints_.waypoints[i].twist.twist.linear.x = new_waypoints_.waypoints[stop_waypoint].twist.twist.linear.x;
   }
 
 }

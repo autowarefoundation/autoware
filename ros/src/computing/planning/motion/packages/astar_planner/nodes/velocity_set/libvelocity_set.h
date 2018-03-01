@@ -194,7 +194,7 @@ private:
   int frame_thres_;
   double moving_thres_;
 
-  int counter_;
+  int tracking_counter_, lost_counter_;
   int waypoint_;
   double velocity_;
   tf::Vector3 position_;
@@ -235,7 +235,7 @@ public:
 
   void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& initial_velocity)
   {
-    counter_++;
+    tracking_counter_++;
     time_ = ros::Time::now();
     waypoint_ = stop_waypoint;
     velocity_ = 0.0;
@@ -251,7 +251,7 @@ public:
       velocity_ = initial_velocity;
       for (unsigned int i = 0; i < velocity_buf_.capacity(); ++i)
         velocity_buf_.push_back(velocity_);
-      if (counter_ >= frame_thres_)
+      if (tracking_counter_ >= frame_thres_)
         state_ = ETrackingState::TRACKING;
     }
     else if (state_ == ETrackingState::TRACKING)
@@ -261,10 +261,18 @@ public:
     }
   }
 
+  void update()
+  {
+    lost_counter_++;
+    if (lost_counter_ >= frame_thres_)
+      reset();
+  }
+
   void reset()
   {
     state_ = ETrackingState::INITIALIZE;
-    counter_ = 0;
+    tracking_counter_ = 0;
+    lost_counter_ = 0;
     waypoint_ = -1;
     velocity_ = 0.0;
     position_ = tf::Vector3(0.0, 0.0, 0.0);
@@ -280,7 +288,7 @@ public:
 
   double getVelocity()
   {
-    return isTrackingState() ? velocity_ : 0.0;
+    return velocity_;
   }
 };
 

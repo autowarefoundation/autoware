@@ -6,13 +6,19 @@
   <arg name="decelerate_vel_min" default="1.3" />
   <arg name="remove_points_upto" default="2.3" />
   <arg name="enable_multiple_crosswalk_detection" default="true" />
-  <arg name="enable_tracking_on_waypoints" default="false" />
   <arg name="enablePlannerDynamicSwitch" default="false" />
+  <arg name="enable_tracking_on_waypoints" default="true" />
+  <arg name="tracking_frame_size" default="10" />
+  <arg name="tracking_frame_thres" default="5" />
+  <arg name="tracking_moving_thres" default="1.0" />
 
   <node pkg="astar_planner" type="velocity_set" name="velocity_set" output="screen">
     <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
     <param name="enable_multiple_crosswalk_detection" value="$(arg enable_multiple_crosswalk_detection)" />
     <param name="enable_tracking_on_waypoints" value="$(arg enable_tracking_on_waypoints)" />
+    <param name="tracking_frame_size" value="$(arg tracking_frame_size)" />
+    <param name="tracking_frame_thres" value="$(arg tracking_frame_thres)" />
+    <param name="tracking_moving_thres" value="$(arg tracking_moving_thres)" />
     <param name="points_topic" value="$(arg points_topic)" />
     <param name="velocity_offset" value="$(arg velocity_offset)" />
     <param name="decelerate_vel_min" value="$(arg decelerate_vel_min)" />
