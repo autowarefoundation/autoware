@@ -230,10 +230,10 @@ void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vecto
   wp->change_flag = std::stoi(map["change_flag"]);
 
   // ver.4
-  wp->wpstate.steering_state = std::stoi(map["steering_flag"]);
-  wp->wpstate.accel_state = std::stoi(map["accel_flag"]);
-  wp->wpstate.stop_state = std::stoi(map["stop_flag"]);
-  wp->wpstate.event_state = std::stoi(map["event_flag"]);
+  wp->wpstate.steering_state = map["steering_flag"].empty() ? 0 : std::stoi(map["steering_flag"]);
+  wp->wpstate.accel_state = map["accel_flag"].empty() ? 0 : std::stoi(map["accel_flag"]);
+  wp->wpstate.stop_state = map["stop_flag"].empty() ? 0 : std::stoi(map["stop_flag"]);
+  wp->wpstate.event_state = map["event_flag"].empty() ? 0 : std::stoi(map["event_flag"]);
 }
 
 FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
