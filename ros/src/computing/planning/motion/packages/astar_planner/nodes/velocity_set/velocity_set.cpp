@@ -434,6 +434,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   }
   else
   {
+    tracker->update();
     *obstacle_waypoint = stop_obstacle_waypoint;
     *obstacle_velocity = 0.0;
   }

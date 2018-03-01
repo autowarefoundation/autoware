@@ -7,6 +7,9 @@
 	<node pkg="waypoint_follower" type="pure_pursuit" name="pure_pursuit" output="log">
 		<param name="is_linear_interpolation" value="$(arg is_linear_interpolation)"/>
 		<param name="publishes_for_steering_robot" value="$(arg publishes_for_steering_robot)"/>
+		<remap from="curvature_cmd" to="curvature_cmd_raw" />
 	</node>
+
+	<node pkg="waypoint_follower" type="curvature_cmd_filter" name="curvature_cmd_filter" output="log" />
 
 </launch>

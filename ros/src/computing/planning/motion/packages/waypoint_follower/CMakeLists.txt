@@ -65,6 +65,11 @@ target_link_libraries(twist_gate ${catkin_LIBRARIES})
 add_dependencies(twist_gate
 ${catkin_EXPORTED_TARGETS} )
 
+add_executable(curvature_cmd_filter nodes/twist_filter/curvature_cmd_filter.cpp)
+target_link_libraries(curvature_cmd_filter ${catkin_LIBRARIES})
+add_dependencies(curvature_cmd_filter
+${catkin_EXPORTED_TARGETS} )
+
 ## Install executables and/or libraries
 install(TARGETS libwaypoint_follower pure_pursuit wf_simulator twist_filter twist_gate
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -196,27 +196,18 @@ private:
     double x_, p_, k_, Q_, R_;
   public:
     KalmanFilter(double Q = 1e-5, double R = 1e-2)
-    {
-      Q_ = Q;
-      R_ = R;
-    }
-    void init(double x0)
-    {
-      x_ = x0;
-    }
-    void predict()
-    {
+    : x_(1e-0), p_(1e-1), k_(1e-1)
+    { Q_ = Q; R_ = R; }
+    void init(double x0) { x_ = x0; }
+    void predict() {
       x_ = x_;
       p_ = p_ + Q_;
     }
-    void update(const double z)
+    double update(const double z)
     {
       k_ = p_ / (p_ + R_);
       x_ = x_ + k_ * (z - x_);
       p_ = (1.0 - k_) * p_;
-    }
-    double getState()
-    {
       return x_;
     }
   };
@@ -243,8 +234,7 @@ private:
     tf::Vector3 dx = position_buf_[1]-position_buf_[0];
     ros::Duration dt = time_buf_[1]-time_buf_[0];
     kf_.predict();
-    kf_.update(dx.length()/dt.toSec());
-    double v = kf_.getState();
+    double v = kf_.update(dx.length()/dt.toSec());
     v = (v > moving_thres_) ? v : 0.0;
     return v;
   }
@@ -291,7 +281,7 @@ public:
   {
     lost_counter_++;
     kf_.predict();
-    if (lost_counter_ >= 10)
+    if (lost_counter_ >= 5)
     {
       lost_counter_ = 0;
       reset();
