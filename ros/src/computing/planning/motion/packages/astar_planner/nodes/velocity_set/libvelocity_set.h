@@ -190,6 +190,37 @@ private:
     LOST = 3,
   };
 
+  class KalmanFilter
+  {
+  private:
+    double x_, p_, k_, Q_, R_;
+  public:
+    KalmanFilter(double Q = 1e-5, double R = 1e-2)
+    {
+      Q_ = Q;
+      R_ = R;
+    }
+    void init(double x0)
+    {
+      x_ = x0;
+    }
+    void predict()
+    {
+      x_ = x_;
+      p_ = p_ + Q_;
+    }
+    void update(const double z)
+    {
+      k_ = p_ / (p_ + R_);
+      x_ = x_ + k_ * (z - x_);
+      p_ = (1.0 - k_) * p_;
+    }
+    double getState()
+    {
+      return x_;
+    }
+  };
+
   bool use_tracking_;
   int frame_thres_;
   double moving_thres_;
@@ -205,67 +236,66 @@ private:
   boost::circular_buffer<double> velocity_buf_;
   boost::circular_buffer<ros::Time> time_buf_;
 
-  bool isTrackingState()
-  {
-    return (state_ == ETrackingState::TRACKING);
-  }
+  KalmanFilter kf_;
 
   double calcVelocity()
   {
-    for (unsigned int i = 1; i < position_buf_.size(); ++i)
-    {
-      tf::Vector3 dx = position_buf_[i]-position_buf_[i-1];
-      ros::Duration dt = time_buf_[i]-time_buf_[i-1];
-      velocity_buf_.push_back(dx.length()/dt.toSec());
-    }
-    return std::accumulate(velocity_buf_.begin(), velocity_buf_.end(), 0.0)/velocity_buf_.size();
+    tf::Vector3 dx = position_buf_[1]-position_buf_[0];
+    ros::Duration dt = time_buf_[1]-time_buf_[0];
+    kf_.predict();
+    kf_.update(dx.length()/dt.toSec());
+    double v = kf_.getState();
+    v = (v > moving_thres_) ? v : 0.0;
+    return v;
   }
 
 public:
-  ObstacleTracker(const bool& use_tracking, int frame_size, int frame_thres, double moving_thres)
+  ObstacleTracker(const bool& use_tracking, double moving_thres)
   {
-    position_buf_.set_capacity(frame_size);
-    velocity_buf_.set_capacity(frame_size);
-    time_buf_.set_capacity(frame_size);
+    position_buf_.set_capacity(2);
+    time_buf_.set_capacity(2);
     use_tracking_ = use_tracking;
-    frame_thres_ = frame_thres;
     moving_thres_ = moving_thres;
     reset();
   }
 
-  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& initial_velocity)
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity)
   {
-    tracking_counter_++;
-    time_ = ros::Time::now();
     waypoint_ = stop_waypoint;
     velocity_ = 0.0;
-    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
-    position_buf_.push_back(position_);
-    time_buf_.push_back(time_);
 
     if (!use_tracking_)
       return;
 
+    lost_counter_ = 0;
+    tracking_counter_++;
+    time_ = ros::Time::now();
+    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    position_buf_.push_back(position_);
+    time_buf_.push_back(time_);
+
     if (state_ == ETrackingState::INITIALIZE)
     {
-      velocity_ = initial_velocity;
-      for (unsigned int i = 0; i < velocity_buf_.capacity(); ++i)
-        velocity_buf_.push_back(velocity_);
-      if (tracking_counter_ >= frame_thres_)
+      kf_.init(waypoint_velocity);
+      velocity_ = waypoint_velocity;
+      if (tracking_counter_ >= 2)
         state_ = ETrackingState::TRACKING;
     }
     else if (state_ == ETrackingState::TRACKING)
     {
       velocity_ = calcVelocity();
-      velocity_ = (velocity_ > moving_thres_) ? velocity_ : 0.0;
     }
   }
 
   void update()
   {
     lost_counter_++;
-    if (lost_counter_ >= frame_thres_)
+    kf_.predict();
+    if (lost_counter_ >= 10)
+    {
+      lost_counter_ = 0;
       reset();
+    }
   }
 
   void reset()
@@ -279,6 +309,7 @@ public:
     position_buf_.clear();
     velocity_buf_.clear();
     time_buf_.clear();
+    kf_.init(0.0);
   }
 
   int getWaypointIdx()

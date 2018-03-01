@@ -31,6 +31,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
+#include <std_msgs/Float32.h>
 #include <iostream>
 
 #include "libvelocity_set.h"
@@ -420,14 +421,19 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   // tracking vehicle on waypoints
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
   {
-    double initial_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
-    tracker->update(stop_obstacle_waypoint, obstacle_points, initial_velocity);
+    double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
+    tracker->update(stop_obstacle_waypoint, obstacle_points, waypoint_velocity);
+    *obstacle_waypoint = tracker->getWaypointIdx();
+    *obstacle_velocity = tracker->getVelocity();
+  }
+  else if (obstacle_type == EObstacleType::NONE)
+  {
+    tracker->update();
     *obstacle_waypoint = tracker->getWaypointIdx();
     *obstacle_velocity = tracker->getVelocity();
   }
   else
   {
-    tracker->update();
     *obstacle_waypoint = stop_obstacle_waypoint;
     *obstacle_velocity = 0.0;
   }
@@ -577,8 +583,6 @@ int main(int argc, char** argv)
   bool enable_tracking_on_waypoints;
 
   std::string points_topic;
-  int tracking_frame_size;
-  int tracking_frame_thres;
   int tracking_moving_thres;
 
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
@@ -586,15 +590,13 @@ int main(int argc, char** argv)
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_frame_size", tracking_frame_size, 10);
-  private_nh.param<int>("tracking_frame_thres", tracking_frame_thres, 2);
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 1.0); // < 3.6 [km/h]
+  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 5.0); // < 18 [km/h]
 
   // class
   CrossWalk crosswalk;
   VelocitySetPath vs_path;
   VelocitySetInfo vs_info;
-  ObstacleTracker tracker(enable_tracking_on_waypoints, tracking_frame_size, tracking_frame_thres, tracking_moving_thres);
+  ObstacleTracker tracker(enable_tracking_on_waypoints, tracking_moving_thres);
 
   // velocity set subscriber
   ros::Subscriber waypoints_sub = nh.subscribe("safety_waypoints", 1, &VelocitySetPath::waypointsCallback, &vs_path);
