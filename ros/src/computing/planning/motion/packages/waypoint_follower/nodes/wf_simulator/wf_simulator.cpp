@@ -28,15 +28,15 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <ros/ros.h>
+#include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
+#include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-#include <tf/tf.h>
 #include <iostream>
-#include <std_msgs/Int32.h>
 #include <random>
 
 #include "waypoint_follower/libwaypoint_follower.h"
@@ -60,18 +60,17 @@ int32_t g_closest_waypoint = -1;
 double g_position_error;
 double g_angle_error;
 
-constexpr int LOOP_RATE = 50; // 50Hz
+constexpr int LOOP_RATE = 50;  // 50Hz
 
 void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_rate)
 {
-
   static double previous_linear_velocity = 0;
 
-  if(_current_velocity.linear.x < msg->twist.linear.x)
+  if (_current_velocity.linear.x < msg->twist.linear.x)
   {
     _current_velocity.linear.x = previous_linear_velocity + accel_rate / (double)LOOP_RATE;
 
-    if(_current_velocity.linear.x > msg->twist.linear.x)
+    if (_current_velocity.linear.x > msg->twist.linear.x)
     {
       _current_velocity.linear.x = msg->twist.linear.x;
     }
@@ -80,7 +79,7 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_ra
   {
     _current_velocity.linear.x = previous_linear_velocity - accel_rate / (double)LOOP_RATE;
 
-    if(_current_velocity.linear.x < msg->twist.linear.x)
+    if (_current_velocity.linear.x < msg->twist.linear.x)
     {
       _current_velocity.linear.x = msg->twist.linear.x;
     }
@@ -89,7 +88,6 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_ra
   previous_linear_velocity = _current_velocity.linear.x;
 
   _current_velocity.angular.z = msg->twist.angular.z;
-
 
   //_current_velocity = msg->twist;
 }
@@ -138,7 +136,7 @@ void waypointCallback(const autoware_msgs::laneConstPtr &msg)
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  //ROS_INFO_STREAM("waypoint subscribed");
+  // ROS_INFO_STREAM("waypoint subscribed");
 }
 
 void callbackFromClosestWaypoint(const std_msgs::Int32ConstPtr &msg)
@@ -175,7 +173,8 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
-*/if(_waypoint_set && g_is_closest_waypoint_subscribed)
+*/
+  if (_waypoint_set && g_is_closest_waypoint_subscribed && g_closest_waypoint != -1)
     pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
 
   double vx = _current_velocity.linear.x;
@@ -253,9 +252,8 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("initialize_source : " << initialize_source);
 
   double accel_rate;
-  private_nh.param("accel_rate",accel_rate,double(1.0));
+  private_nh.param("accel_rate", accel_rate, double(1.0));
   ROS_INFO_STREAM("accel_rate : " << accel_rate);
-
 
   private_nh.param("position_error", g_position_error, double(0.0));
   private_nh.param("angle_error", g_angle_error, double(0.0));
@@ -264,7 +262,8 @@ int main(int argc, char **argv)
   g_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 10);
 
   // subscribe topic
-  ros::Subscriber cmd_subscriber = nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
+  ros::Subscriber cmd_subscriber =
+      nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
   ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, callbackFromClosestWaypoint);
   ros::Subscriber initialpose_subscriber;
