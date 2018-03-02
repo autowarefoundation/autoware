@@ -311,8 +311,13 @@ void DecisionMakerNode::updateStateStop(int status)
   else  // stop process
   {
     publishStoplineWaypointIdx(closest_waypoint_ + 1);
+    if (current_velocity_ == 0.0)
+    {
+      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_WAIT_STATE);
+    }
   }
 }
+
 void DecisionMakerNode::callbackInStateStop(int status)
 {
   int _sendWaypointIdx;
@@ -343,6 +348,7 @@ void DecisionMakerNode::callbackOutStateStop(int status)
   else
   {
     closest_stop_waypoint_ = -1;
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_WAIT_STATE);
   }
   publishStoplineWaypointIdx(-1);
 }

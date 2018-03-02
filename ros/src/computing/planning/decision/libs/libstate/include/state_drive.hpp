@@ -226,6 +226,20 @@ private:
 public:
 };
 
+class DriveBehaviorWaitState : public State<DriveBehaviorWaitState>
+{
+private:
+  friend class State<DriveBehaviorWaitState>;
+  DriveBehaviorWaitState(void)
+  {
+    StateName = "WaitOrders";
+    StateNum = DRIVE_BEHAVIOR_WAIT_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
 class DriveBehaviorAcceptLanechangeState : public State<DriveBehaviorAcceptLanechangeState>
 {
 private:

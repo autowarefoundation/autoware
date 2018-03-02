@@ -28,6 +28,7 @@ class DriveStrRightTurnState;
 class DriveBehaviorLaneChangeLeftState;
 class DriveBehaviorLaneChangeRightState;
 class DriveBehaviorObstacleAvoidanceState;
+class DriveBehaviorWaitState;
 
 // Perception subState
 class DriveDetectObstacleState;
