@@ -1,13 +1,12 @@
 # Autoware Docker
-Assuming the NVIDIA drivers and Docker and nvidia-docker are properly
-installed.
+To use the Autoware Docker, first make sure the NVIDIA drivers, Docker and nvidia-docker are properly installed.
 
 [Docker installation](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 
 
 [nvidia-docker installation](https://github.com/NVIDIA/nvidia-docker)
 
-## How to build
+## How to Build
 ```
 $ cd Autoware/docker
 
@@ -18,7 +17,7 @@ $ sh build.sh indigo
 $ sh build.sh kinetic
 ```
 
-## How to run
+## How to Run
 ```
 $ Default shared directory path is /home/$USER/shared_dir
 $ sh run.sh
