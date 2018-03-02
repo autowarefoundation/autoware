@@ -257,6 +257,14 @@ cmds:
       desc : Transforms cloud points' coordinates to the specified target frame
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
+
+  - name : Fusion
+    desc : Sensor fusion tools
+    subs :
+    - name : multi_lidar_calibrator
+      desc : Performs extrinsic calibration between two point clouds
+      cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
+      param: multi_lidar_calibrator
       
 buttons:
   calibration_toolkit :
@@ -1074,3 +1082,121 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : multi_lidar_calibrator
+    vars  :
+    - name  : points_parent_src
+      desc  : PointCloud Topic of the parent
+      label : points_parent_src
+      kind  : str
+      v     : lidar0/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : points_child_src
+      desc  : Serial Port of the LiDAR
+      label : points_child_src
+      kind  : str
+      v     : lidar1/points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : voxel_size
+      desc  : Downsampling voxel size of the child.
+      label : voxel_size
+      kind  : num
+      min   : 0.1
+      max   : 10.0
+      v     : 0.5
+    - name  : ndt_epsilon
+      desc  : NDT Epsilon. Default 0.01
+      label : ndt_epsilon
+      min   : 0.01
+      max   : 1.0
+      v     : 0.01
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : ndt_step_size
+      desc  : NDT optimization step size. Default 0.1
+      label : ndt_step_size
+      min   : 0.01
+      max   : 1
+      v     : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : ndt_resolution
+      desc  : Downsampling voxel size of the parent. Default 1.0
+      label : ndt_resolution
+      min   : 0.1
+      max   : 5
+      v     : 1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : ndt_iterations
+      desc  : Number of NDT iterations before finishing. Default 400
+      label : ndt_iterations
+      min   : 0
+      max   : 1000
+      v     : 400
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : x
+      desc  : Initial X value. meters
+      label : x
+      min   : -100.1
+      max   : 100.1
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : y
+      desc  : Initial Y value. meters
+      label : y
+      min   : -100.1
+      max   : 100.1
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : z
+      desc  : Initial Z value. meters
+      label : z
+      min   : -100.1
+      max   : 100.1
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : roll
+      desc  : Initial roll angle. radians
+      label : roll
+      min   : -3.14157
+      max   : 3.14157
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : pitch
+      desc  : Initial pitch angle. radians
+      label : pitch
+      min   : -3.14157
+      max   : 3.14157
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : yaw
+      desc  : Initial yaw angle. radians
+      label : yaw
+      min   : -3.14157
+      max   : 3.14157
+      v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+

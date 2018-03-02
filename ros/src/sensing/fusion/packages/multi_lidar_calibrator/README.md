@@ -5,7 +5,7 @@ This package allows to obtain the extrinsic calibration between two PointClouds 
 The `multi_lidar_calibrator` node receives two `PointCloud2` messages (parent and child), and an initialization pose from rviz.
 If possible, the transformation required to transform the child to the parent point cloud is calculated, and output to the terminal.
 
-## How to use
+## How to launch
 
 1. **You'll need to provide an initial guess, otherwise the transformation won't converge.**
 
@@ -35,7 +35,7 @@ Using roslaunch
 ----------|-----|--------
 |`points_parent_src`|*String* |PointCloud topic name to subscribe and synchronize with the child.|
 |`points_child_src`|*String*|PointCloud topic name to subscribe and synchronize with the parent.|
-|`voxel_size`|*double*|Size of the Voxel used to downsample the CHILD pointcloud. Default: 0.1|
+|`voxel_size`|*double*|Size of the Voxel used to downsample the CHILD pointcloud. Default: 0.5|
 |`ndt_epsilon`|*double*|The transformation epsilon in order for an optimization to be considered as having converged to the final solution. Default: 0.01|
 |`ndt_step_size`|*double*|Set/change the newton line search maximum step length. Default: 0.1|
 |`ndt_resolution`|*double*|Size of the Voxel used to downsample the PARENT pointcloud. Default: 1.0|
