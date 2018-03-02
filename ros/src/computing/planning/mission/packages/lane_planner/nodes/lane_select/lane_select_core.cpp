@@ -85,7 +85,7 @@ void LaneSelectNode::initForROS()
   }
 
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
-  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id",1);
+  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id", 1);
 
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
@@ -792,11 +792,15 @@ int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const 
     idx_vec.reserve(current_lane.waypoints.size());
     for (uint32_t i = 0; i < current_lane.waypoints.size(); i++)
     {
-      geometry_msgs::Point converted_p =
-          convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
-      double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
-      if (converted_p.x > 0 && angle < 90)
-        idx_vec.push_back(i);
+      if (distance_threshold >
+          getTwoDimensionalDistance(current_lane.waypoints.at(i).pose.pose.position, current_pose.position))
+      {
+        geometry_msgs::Point converted_p =
+            convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
+        double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
+        if (converted_p.x > 0 && angle < 90)
+          idx_vec.push_back(i);
+      }
     }
   }
   else
