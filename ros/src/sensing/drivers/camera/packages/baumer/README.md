@@ -1,7 +1,7 @@
 ## Baumer Package
 
-This package allows to obtain an image stream from Baumer cameras.
-It was tested successfully on a VLG22C.
+This package allows the capture of an image stream from Baumer cameras.
+It was tested successfully using a VLG22C.
 
 ### Requirements
 
@@ -13,20 +13,20 @@ Baumer SDK installed in HOME (Default path)
 
 `roslaunch vlg22c_cam baumer.launch`
 
-* From Runtime manager
+* From Runtime Manager:
 
 Sensing Tab -> Cameras -> VLG-22
 
 ### Parameters
-Launch file available params.
+
+Launch file available parameters:
 
 |Parameter| Type| Description|
 ----------|-----|--------
 |`fps`|*Integer* |Frames per second to try to acquire the image stream.|
-|`scale`|*Double*|Number between 0.1 and 1.0, it will scale down the image according to this ratio. |
-|`brightness`|*Double*|Number between 0.1 and 1.0, Brightness Threshold to trigger exposure compensation. The camera does not have automatic exposure parametrization, therefore a naive Histogram compensation algorithm was added. |
+|`scale`|*Double*|Number between 0.1 and 1.0, the scaling factor for the output image.|
+|`brightness`|*Double*|Number between 0.1 and 1.0, the brightness threshold to trigger exposure compensation. The camera does not have automatic exposure parametrization, therefore a naive Histogram compensation algorithm was added.|
 |`CalibrationFile`|*String*|Path to an Autoware compatible calibration file to be published in the `camera_info` topic related to this camera.|
-
 
 ### Notes
 
