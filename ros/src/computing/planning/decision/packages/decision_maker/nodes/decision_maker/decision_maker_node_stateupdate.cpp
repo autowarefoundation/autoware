@@ -40,6 +40,8 @@ void DecisionMakerNode::setupStateCallback(void)
                              std::bind(&DecisionMakerNode::updateStateStop, this, 0));
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_STOP_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateStop, this, 0));
+  ctx->setCallbackOutFunc(state_machine::DRIVE_ACC_STOP_STATE,
+                          std::bind(&DecisionMakerNode::callbackOutStateStop, this, 0));
 
   ctx->setCallbackInFunc(state_machine::DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE,
                          std::bind(&DecisionMakerNode::StoplinePlanIn, this, 1));
@@ -222,60 +224,11 @@ void DecisionMakerNode::changeVelocityBasedLane(void)
   current_controlled_lane_array_ = current_shifted_lane_array_;
 }
 
-void DecisionMakerNode::setAllStoplineStop(void)
-{
-  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) { return true; });
-
-  for (auto& lane : current_shifted_lane_array_.lanes)
-  {
-    for (size_t wp_idx = 0; wp_idx < lane.waypoints.size() - 1; wp_idx++)
-    {
-      for (auto& stopline : stoplines)
-      {
-        geometry_msgs::Point bp =
-            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).bpid)));
-        geometry_msgs::Point fp =
-            to_geoPoint(g_vmap.findByKey(Key<Point>(g_vmap.findByKey(Key<Line>(stopline.lid)).fpid)));
-
-        if (amathutils::isIntersectLine(lane.waypoints.at(wp_idx).pose.pose.position.x,
-                                        lane.waypoints.at(wp_idx).pose.pose.position.y,
-                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                                        lane.waypoints.at(wp_idx + 1).pose.pose.position.y, bp.x, bp.y, fp.x, fp.y))
-        {
-          geometry_msgs::Point center_point;
-          center_point.x = (bp.x * 2 + fp.x) / 3;
-          center_point.y = (bp.y * 2 + fp.y) / 3;
-          if (amathutils::isPointLeftFromLine(
-                  center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
-                  lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                  lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
-          {
-            amathutils::point* a = new amathutils::point();
-            amathutils::point* b = new amathutils::point();
-            a->x = center_point.x;
-            a->y = center_point.y;
-            b->x = lane.waypoints.at(wp_idx).pose.pose.position.x;
-            b->y = lane.waypoints.at(wp_idx).pose.pose.position.y;
-            if (amathutils::find_distance(a, b) <= 4)  //
-              lane.waypoints.at(wp_idx).wpstate.stop_state = 1;
-          }
-        }
-      }
-    }
-  }
-}
-
 void DecisionMakerNode::StoplinePlanIn(int status)
 {
-  setAllStoplineStop();
-  changeVelocityBasedLane();
-  publishControlledLaneArray();
 }
 void DecisionMakerNode::StoplinePlanOut(int status)
 {
-  current_shifted_lane_array_ = current_based_lane_array_;
-  changeVelocityBasedLane();
-  publishControlledLaneArray();
 }
 
 void DecisionMakerNode::changeVelocityLane(int dir)
@@ -367,7 +320,8 @@ void DecisionMakerNode::callbackInStateStop(int status)
   {
     if (!closest_stop_waypoint_)
     {
-      _sendWaypointIdx = closest_waypoint_ + 1;
+      int _stop_offset = 1;
+      _sendWaypointIdx = closest_waypoint_ + _stop_offset;
     }
     else
     {
@@ -382,7 +336,6 @@ void DecisionMakerNode::callbackInStateStop(int status)
 }
 void DecisionMakerNode::callbackOutStateStop(int status)
 {
-  int _sendWaypointIdx = -1;
   if (status)
   {
     closest_stopline_waypoint_ = -1;
@@ -391,7 +344,7 @@ void DecisionMakerNode::callbackOutStateStop(int status)
   {
     closest_stop_waypoint_ = -1;
   }
-  publishStoplineWaypointIdx(_sendWaypointIdx);
+  publishStoplineWaypointIdx(-1);
 }
 
 void DecisionMakerNode::updateStateObstacleAvoid(int status)

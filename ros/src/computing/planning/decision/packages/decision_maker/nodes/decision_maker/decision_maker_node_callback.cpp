@@ -366,6 +366,11 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   // cached
   current_finalwaypoints_ = msg;
 
+  if (current_finalwaypoints_.waypoints.empty())
+  {
+    return;
+  }
+
   // stopline
   static size_t previous_idx = 0;
 
@@ -389,10 +394,33 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   previous_idx = idx;
 
-  // steering
+// steering
+#if 0
   idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
+#endif
+  double _distance = 0.0;
+  double _distance_threshold = 30;  // 30[m] is decided by japanese law.
+
+  //
+  amathutils::point _prev_point(current_finalwaypoints_.waypoints.at(0).pose.pose.position.x,
+                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.y,
+                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.z);
+
+  idx = 0;
+  for (auto &wp : current_finalwaypoints_.waypoints)
+  {
+    amathutils::point _next_point(wp.pose.pose.position.x, wp.pose.pose.position.y, wp.pose.pose.position.z);
+
+    _distance += amathutils::find_distance(&_prev_point, &_next_point);
+    idx++;
+    if (_distance >= _distance_threshold)
+    {
+      break;
+    }
+    _prev_point = _next_point;
+  }
 
   if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
   {
