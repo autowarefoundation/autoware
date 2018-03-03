@@ -22,9 +22,14 @@ buttons:
         flags  : [ left, no_category ]
 
   gazebo :
-    run : sh -c "$(rospack find runtime_manager)/scripts/gazebo.sh"
+    run : do_shell_exec sh "$(rospack find runtime_manager)/scripts/gazebo.sh"
+    param : gazebo_world_map
     gui :
       flags : [ kill_children ]
+      show_order : [ gazebo_world ]
+      panel      : self.panel_gazebo_world
+      gazebo_world : { border: 16, flags: [ right ] }
+
 
 params :
   - name  : rosbag_play
@@ -72,3 +77,11 @@ params :
       kind      : hide
       v         : False
       rosparam  : /use_sim_time
+  - name  : gazebo_world_map
+    vars  :
+    - name      : gazebo_world
+      label     : 'World:'
+      kind      : menu
+      choices   : [ CarDemo, CatVechicle, TestMap1 ]
+      choices_type : str
+      cmd_param : { delim: '' }
