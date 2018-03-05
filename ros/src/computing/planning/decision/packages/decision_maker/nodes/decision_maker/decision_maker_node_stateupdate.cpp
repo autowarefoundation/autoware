@@ -326,9 +326,9 @@ void DecisionMakerNode::callbackInStateStop(int status)
   int _sendWaypointIdx;
   if (!status) /*not a stopline*/
   {
-    if (!closest_stop_waypoint_)
+    if (!closest_stop_waypoint_ == -1)
     {
-      int _stop_offset = 1;
+      int _stop_offset = 2;  // temporary, should be specified by speed and distance
       _sendWaypointIdx = closest_waypoint_ + _stop_offset;
     }
     else
