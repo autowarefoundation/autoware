@@ -2,7 +2,7 @@
 
 This package allows to obtain the extrinsic calibration between two PointClouds with the help of the NDT algorithm.
 
-The `multi_lidar_calibrator` node receives two `PointCloud2` messages (parent and child), and an initialization pose from rviz.
+The `multi_lidar_calibrator` node receives two `PointCloud2` messages (parent and child), and an initialization pose.
 If possible, the transformation required to transform the child to the parent point cloud is calculated, and output to the terminal.
 
 ## How to launch
@@ -19,7 +19,7 @@ Using roslaunch
 
 `roslaunch multi_lidar_calibrator multi_lidar_calibrator points_child_src:=/lidar_child/points_raw points_parent_src:=/lidar_parent/points_raw x:=0.0 y:=0.0 z:=0.0 roll:=0.0 pitch:=0.0 yaw:=0.0`
 
-3. Play a rosbag with `/lidar_child/points_raw` and `/lidar_parent/points_raw`
+3. Play a rosbag with both lidar data `/lidar_child/points_raw` and `/lidar_parent/points_raw`
 
 4. The resulting transformation will be shown in the terminal as shown in the *Output* section.
 
@@ -27,7 +27,7 @@ Using roslaunch
 
 6. Add both point cloud `/lidar_parent/points_raw` and `/points_calibrated`
 
-7. Both PointClouds are shown
+7. If the algorithm converged, both PointClouds will be shown in rviz.
 
 ## Input topics
 
