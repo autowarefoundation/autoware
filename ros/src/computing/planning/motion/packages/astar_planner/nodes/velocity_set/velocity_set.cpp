@@ -438,7 +438,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
     *obstacle_waypoint = stop_obstacle_waypoint;
     *obstacle_velocity = 0.0;
   }
-
+  
   // skip searching deceleration range
   if (vs_info.getDecelerationRange() < 0.01)
   {
@@ -512,17 +512,17 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
   }
 
   // there are no obstacles, but wait a little for safety
-  if (prev_detection == EControl::STOP || prev_detection == EControl::STOPLINE || prev_detection == EControl::DECELERATE)
-  {
-    false_count++;
-
-    if (false_count < LOOP_RATE / 2)
-    {
-      *obstacle_waypoint = prev_obstacle_waypoint;
-      displayObstacle(EControl::OTHERS, obstacle_points, obstacle_pub);
-      return prev_detection;
-    }
-  }
+  // if (prev_detection == EControl::STOP || prev_detection == EControl::STOPLINE || prev_detection == EControl::DECELERATE)
+  // {
+  //   false_count++;
+  //
+  //   if (false_count < LOOP_RATE / 2)
+  //   {
+  //     *obstacle_waypoint = prev_obstacle_waypoint;
+  //     displayObstacle(EControl::OTHERS, obstacle_points, obstacle_pub);
+  //     return prev_detection;
+  //   }
+  // }
 
   // there are no obstacles, so we move forward
   *obstacle_waypoint = -1;
