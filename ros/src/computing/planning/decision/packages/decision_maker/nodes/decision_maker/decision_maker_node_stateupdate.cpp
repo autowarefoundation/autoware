@@ -88,6 +88,9 @@ void DecisionMakerNode::setupStateCallback(void)
     publishLightColor((int)state_machine::E_GREEN);
   });
 
+  ctx->setCallbackOutFunc(state_machine::MISSION_COMPLETE_STATE,
+                          std::bind(&DecisionMakerNode::callbackOutStateStop, this, 0));
+
 #if 0
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE,
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_RED));
