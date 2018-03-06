@@ -198,7 +198,7 @@ private:
   private:
     double x_, p_, k_, Q_, R_;
   public:
-    KalmanFilter(double Q = 1e-5, double R = 5e-4)
+    KalmanFilter(double Q = 1e-5, double R = 1e-3)
     : x_(1e-0), p_(1e-1), k_(1e-1)
     { Q_ = Q; R_ = R; }
     void init(double x0) { x_ = x0; }
@@ -231,12 +231,14 @@ private:
 
   KalmanFilter kf_;
 
-  double calcVelocity()
+  double calcVelocity(const geometry_msgs::Point& cpos)
   {
-    tf::Vector3 dx = position_buf_[1]-position_buf_[0];
+    tf::Vector3 cx;
+    tf::pointMsgToTF(cpos, cx);
+    double dx = (position_buf_[1]-cx).length()-(position_buf_[0]-cx).length();
     ros::Duration dt = time_buf_[1]-time_buf_[0];
     kf_.predict();
-    double v = kf_.update(dx.length()/dt.toSec());
+    double v = kf_.update(dx/dt.toSec());
     v = (v > moving_thres_) ? v : 0.0;
     return v;
   }
@@ -280,7 +282,7 @@ public:
     else if (state_ == ETrackingState::TRACKING)
     {
       waypoint_ = stop_waypoint;
-      velocity_ = calcVelocity();
+      velocity_ = calcVelocity(current_position);
     }
   }
 

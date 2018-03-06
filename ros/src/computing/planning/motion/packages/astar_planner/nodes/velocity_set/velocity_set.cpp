@@ -448,7 +448,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   // skip searching deceleration range
   if (vs_info.getDecelerationRange() < 0.01)
   {
-    if (stop_obstacle_waypoint < 0)
+    if (*obstacle_waypoint < 0)
       return EControl::KEEP;
     else if (obstacle_type == EObstacleType::ON_WAYPOINTS || obstacle_type == EObstacleType::ON_CROSSWALK || obstacle_type == EObstacleType::NONE)
       return EControl::STOP;
@@ -505,6 +505,7 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
 
   static EControl prev_detection = EControl::KEEP;
 
+  // keep prev detection if EControl::OTHERS
   detection_result = (detection_result == EControl::OTHERS) ? prev_detection : detection_result;
 
   // stop or decelerate because we found obstacles
@@ -583,7 +584,7 @@ int main(int argc, char** argv)
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 5.0); // < 18 [km/h]
+  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 2.78); // < 10 [km/h]
 
   // class
   CrossWalk crosswalk;
