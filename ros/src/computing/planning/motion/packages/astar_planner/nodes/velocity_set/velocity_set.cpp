@@ -530,8 +530,8 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     // stop_waypoint is about stop_distance meter away from obstacles/stoplines
     int stop_distance = (detection_result == EControl::STOP)
       ? vs_info.getStopDistanceObstacle() : vs_info.getStopDistanceStopline();
-    // if obstacle has speed, stop distance is set 1 for platoon control
-    stop_distance = (detection_result == EControl::STOP && obstacle_velocity > 0.0) ? 1 : stop_distance;
+    // // if obstacle has speed, stop distance is set 1 for platoon control
+    // stop_distance = (detection_result == EControl::STOP && obstacle_velocity > 0.0) ? 1 : stop_distance;
     double deceleration = (detection_result == EControl::STOP)
       ? vs_info.getDecelerationObstacle() : vs_info.getDecelerationStopline();
     int stop_waypoint =
