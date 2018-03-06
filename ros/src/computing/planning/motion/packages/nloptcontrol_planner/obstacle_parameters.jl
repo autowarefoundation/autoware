@@ -59,11 +59,6 @@ function setConstObstacleParams(msg::Obstacles)
     RobotOS.set_param("obstacle_vx",vx)
     RobotOS.set_param("obstacle_vy",vy)
 
-<<<<<<< HEAD
-
-  return nothing
-end
-=======
   return nothing
 end
 """
@@ -100,6 +95,9 @@ function setInitObstacleParams(c)
   return nothing
 end
 
+<<<<<<< HEAD
+>>>>>>> beb641d592c51720bff87d7d20a594fcc17c54a8
+=======
 >>>>>>> beb641d592c51720bff87d7d20a594fcc17c54a8
 init_node("obstacle_params")
 sub = Subscriber{Obstacles}("/obstacles", setConstObstacleParams, queue_size = 10)
