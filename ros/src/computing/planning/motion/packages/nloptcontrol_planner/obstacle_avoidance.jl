@@ -6,6 +6,8 @@ rostypegen()
 using geometry_msgs.msg
 using nloptcontrol_planner.msg
 
+import YAML
+
 using NLOptControl
 using MAVs
 using PyCall
@@ -291,13 +293,13 @@ function main()
     obstacle_name = RobotOS.get_param("nloptcontrol_planner/obstacle_name")
 
 	# launch the parameters, given the names of the config files
-    c = load(open(string(Pkg.dir("MAVs"),"/config/case/",case_name,".yaml")))
-    c["obstacles"] = load(open(string(Pkg.dir("MAVs"),"/config/obstacles/",obstacle_name,".yaml")))
+    c = YAML.load(open(string(Pkg.dir("MAVs"),"/config/case/",case_name,".yaml")))
+    c["obstacles"] = YAML.load(open(string(Pkg.dir("MAVs"),"/config/obstacles/",obstacle_name,".yaml")))
     # NOTE currently not using config files in this package because of this error:
     # ERROR: LoadError: SystemError: opening file /home/febbo/.rosconfig/case/RTPP.yaml: No such file or directory
     # so, when this script is ran it is not ran in its directory
-    #c = load(open(string(pwd(),"config/case/",case_name,".yaml")))
-    #c["obstacles"] = load(open(string(pwd(),"config/obstacles/",obstacle_name,".yaml")))
+    #c = YAML.load(open(string(pwd(),"config/case/",case_name,".yaml")))
+    #c["obstacles"] = YAML.load(open(string(pwd(),"config/obstacles/",obstacle_name,".yaml")))
     setConfig(c, "misc"; (:N=>40), (:solver=>:Ipopt), (:integrationScheme=>:trapezoidal))
   end
 
