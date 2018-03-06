@@ -408,15 +408,21 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
                          const autoware_msgs::lane& lane, const CrossWalk& crosswalk, const VelocitySetInfo& vs_info,
                          int* obstacle_waypoint, double *obstacle_velocity, ObstacleTracker *tracker, ObstaclePoints* obstacle_points)
 {
+  int stop_obstacle_waypoint = -1;
+  EObstacleType obstacle_type = EObstacleType::NONE;
+
   // no input for detection || no closest waypoint
   if ((points.empty() == true && vs_info.getDetectionResultByOtherNodes() == -1) || closest_waypoint < 0)
-    return EControl::OTHERS;
-
-  EObstacleType obstacle_type = EObstacleType::NONE;
-  int stop_obstacle_waypoint =
+  {
+    // equal NONE
+  }
+  else
+  {
+    stop_obstacle_waypoint =
       detectStopObstacle(points, closest_waypoint, lane, crosswalk, vs_info.getStopRange(),
                          vs_info.getPointsThreshold(), vs_info.getLocalizerPose(),
                          obstacle_points, &obstacle_type, vs_info.getDetectionResultByOtherNodes());
+  }
 
   // tracking vehicle on waypoints
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
@@ -509,19 +515,6 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
     return detection_result;
   }
 
-  // there are no obstacles, but wait a little for safety
-  // if (prev_detection == EControl::STOP || prev_detection == EControl::STOPLINE || prev_detection == EControl::DECELERATE)
-  // {
-  //   false_count++;
-  //
-  //   if (false_count < LOOP_RATE / 2)
-  //   {
-  //     *obstacle_waypoint = prev_obstacle_waypoint;
-  //     displayObstacle(EControl::OTHERS, obstacle_points, obstacle_pub);
-  //     return prev_detection;
-  //   }
-  // }
-
   // there are no obstacles, so we move forward
   *obstacle_waypoint = -1;
   prev_detection = EControl::KEEP;
@@ -588,7 +581,7 @@ int main(int argc, char** argv)
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 5.0); // < 18 [km/h]
+  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 1.4); // < 5 [km/h]
 
   // class
   CrossWalk crosswalk;

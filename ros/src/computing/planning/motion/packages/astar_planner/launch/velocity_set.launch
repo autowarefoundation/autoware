@@ -8,7 +8,7 @@
   <arg name="enable_multiple_crosswalk_detection" default="true" />
   <arg name="enablePlannerDynamicSwitch" default="false" />
   <arg name="enable_tracking_on_waypoints" default="true" />
-  <arg name="tracking_moving_thres" default="3.0" />
+  <arg name="tracking_moving_thres" default="1.4" />
 
   <node pkg="astar_planner" type="velocity_set" name="velocity_set" output="screen">
     <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />

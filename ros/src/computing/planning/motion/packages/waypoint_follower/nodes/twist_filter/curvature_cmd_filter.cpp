@@ -36,7 +36,7 @@ class KalmanFilter
 private:
   double x_, p_, k_, Q_, R_;
 public:
-  KalmanFilter(double Q = 1e-2, double R = 5e-1)
+  KalmanFilter(double Q = 1e-2, double R = 1e-2)
   : x_(1e-0), p_(1e-2), k_(1e-0)
   { Q_ = Q; R_ = R; }
   void init(double x0) { x_ = x0; }
