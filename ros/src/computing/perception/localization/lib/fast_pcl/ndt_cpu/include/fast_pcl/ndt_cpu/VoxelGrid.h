@@ -1,13 +1,15 @@
 #ifndef CPU_VGRID_H_
 #define CPU_VGRID_H_
 
-#include <velodyne_pointcloud/point_types.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <float.h>
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Geometry>
+#include "Octree.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 namespace cpu {
 
@@ -55,8 +57,8 @@ public:
 	/* Searching for the nearest point of each input query point.
 	 * Return the distance between the query point and its nearest neighbor.
 	 * If the distance is larger than max_range, then return DBL_MAX. */
-	double nearestNeighborDistance(PointSourceType query_point, float max_range);
 
+	double nearestNeighborDistance(PointSourceType query_point, float max_range);
 
 	Eigen::Vector3d getCentroid(int voxel_id) const;
 	Eigen::Matrix3d getCovariance(int voxel_id) const;
@@ -65,6 +67,10 @@ public:
 	void update(typename pcl::PointCloud<PointSourceType>::Ptr new_cloud);
 
 private:
+
+	typedef struct {
+		int x, y, z;
+	} OctreeDim;
 
 	/* Construct the voxel grid and the build the octree. */
 	void initialize();
@@ -101,7 +107,13 @@ private:
 
 	void updateVoxelContent(typename pcl::PointCloud<PointSourceType>::Ptr new_cloud);
 
+	int nearestVoxel(PointSourceType query_point, Eigen::Matrix<float, 6, 1> boundaries, float max_range);
 
+	int roundUp(int input, int factor);
+
+	int roundDown(int input, int factor);
+
+	int div(int input, int divisor);
 
 	//Coordinate of input points
 	typename pcl::PointCloud<PointSourceType>::Ptr source_cloud_;
@@ -118,18 +130,23 @@ private:
 										// per voxel is less than this number, then the voxel is ignored
 										// during computation (treated like it contains no point)
 
-	std::vector<Eigen::Vector3d> centroid_;			// 3x1 Centroid vectors of voxels
-	std::vector<Eigen::Matrix3d> covariance_;		// 3x3 Covariance matrixes of voxels
-	std::vector<Eigen::Matrix3d> icovariance_;		// Inverse covariance matrixes of voxel
-	std::vector<std::vector<int> > points_id_;		// Indexes of points belong to each voxel
-	std::vector<int> points_per_voxel_;				// Number of points belong to each voxel
+	boost::shared_ptr<std::vector<Eigen::Vector3d> > centroid_;			// 3x1 Centroid vectors of voxels
+	boost::shared_ptr<std::vector<Eigen::Matrix3d> > icovariance_;		// Inverse covariance matrixes of voxel
+	boost::shared_ptr<std::vector<std::vector<int> > > points_id_;		// Indexes of points belong to each voxel
+	boost::shared_ptr<std::vector<int> > points_per_voxel_;				// Number of points belong to each voxel
 													// (may differ from size of each vector in points_id_
 													// because of changes made during computing covariances
-	std::vector<Eigen::Vector3d> tmp_centroid_;
-	std::vector<Eigen::Matrix3d> tmp_cov_;
+	boost::shared_ptr<std::vector<Eigen::Vector3d> > tmp_centroid_;
+	boost::shared_ptr<std::vector<Eigen::Matrix3d> > tmp_cov_;
 
 	int real_max_bx_, real_max_by_, real_max_bz_;
 	int real_min_bx_, real_min_by_, real_min_bz_;
+
+	Octree<PointSourceType> octree_;
+
+	static const int MAX_BX_ = 16;
+	static const int MAX_BY_ = 16;
+	static const int MAX_BZ_ = 8;
 };
 }
 
