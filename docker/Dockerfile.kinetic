@@ -234,12 +234,11 @@ RUN sudo rm -rf /etc/ros/rosdep/sources.list.d/* \
 # Install Autoware
 # T.Q.
 RUN echo 3
-RUN git clone https://github.com/huckl3b3rry87/Autoware.git -b feature/port_car_demo /home/$USERNAME/Autoware
+RUN git clone https://github.com/huckl3b3rry87/Autoware.git -b feature/trajectory_generator /home/$USERNAME/Autoware
 
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash \
 && cd /home/$USERNAME/Autoware/ros/src \
-&& catkin_init_workspace; cd ../ \
-&& catkin_make --pkg prius_msgs \
+&& catkin_init_workspace; cd .. \
 && catkin_make'
 
 # catkin_make --pkg prius_msgs && catkin_make  added H.F.
@@ -253,16 +252,21 @@ RUN echo "export LANG=\"en_US.UTF-8\"" >> /home/$USERNAME/.bashrc
 # Install dev tools
 RUN sudo apt-get -y install vim tmux
 
-# install Julia
+# Install Julia and setup environment
 RUN sudo wget https://julialang-s3.julialang.org/bin/linux/x64/0.6/julia-0.6.2-linux-x86_64.tar.gz && \
 sudo tar -xvf julia-0.6.2-linux-x86_64.tar.gz -C /opt && \
-echo 'alias julia='/opt/julia-d386e40c17/bin/julia'' >> ~/.bashrc
+echo 'alias julia='/opt/julia-d386e40c17/bin/julia'' >> ~/.bashrc && \
+echo 'export PATH="$PATH:/opt/julia-d386e40c17/bin"' >>  ~/.bashrc
+
 
 #Install Julia packages
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("NLOptControl")'
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("VehicleModels")'
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("NLOptControl")' 
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("VehicleModels")' 
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("RobotOS")'
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("PyCall")'
-# RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("NLOptControl")'
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.clone("https://github.com/huckl3b3rry87/MAVs.jl")'
 
 # Change Terminal Color
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
