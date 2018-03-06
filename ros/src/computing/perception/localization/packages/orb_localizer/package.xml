@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>orb_localizer</name>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
   <description>Vision-based Localization Derived from ORB-SLAM2</description>
 
   <maintainer email="sujiwo@ertl.jp">Adi Sujiwo</maintainer>

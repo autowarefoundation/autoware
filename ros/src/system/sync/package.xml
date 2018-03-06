@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>synchronization</name>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
   <description>The synchronization package</description>
   <maintainer email="yukky@ubi.cs.ritsumei.ac.jp">Yukihiro SAITO</maintainer>
   <license>BSD</license>

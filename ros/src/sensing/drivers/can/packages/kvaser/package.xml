@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>kvaser</name>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
   <description>can tools package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 

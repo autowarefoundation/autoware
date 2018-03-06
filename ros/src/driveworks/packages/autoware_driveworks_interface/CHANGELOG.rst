@@ -2,8 +2,8 @@
 Changelog for package autoware_driveworks_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.6.3 (2018-03-06)
+------------------
 * Fix autoware_driveworks image
 * Contributors: Yusuke FUJII
 
