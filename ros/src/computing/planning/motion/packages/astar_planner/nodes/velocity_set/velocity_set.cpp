@@ -529,6 +529,8 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     // stop_waypoint is about stop_distance meter away from obstacles/stoplines
     int stop_distance = (detection_result == EControl::STOP)
       ? vs_info.getStopDistanceObstacle() : vs_info.getStopDistanceStopline();
+    // if obstacle has speed, stop distance is set 1 for platoon control
+    stop_distance = (detection_result == EControl::STOP && obstacle_velocity > 0.0) ? 1 : stop_distance;
     double deceleration = (detection_result == EControl::STOP)
       ? vs_info.getDecelerationObstacle() : vs_info.getDecelerationStopline();
     int stop_waypoint =
@@ -581,7 +583,7 @@ int main(int argc, char** argv)
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 1.4); // < 5 [km/h]
+  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 5.0); // < 18 [km/h]
 
   // class
   CrossWalk crosswalk;
