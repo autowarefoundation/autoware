@@ -167,6 +167,7 @@ public:
   }
 
   geometry_msgs::Point getObstaclePoint(const EControl &kind) const;
+  geometry_msgs::Point getNearestObstaclePoint(const geometry_msgs::Point &current_position) const;
 
   void clearStopPoints()
   {
@@ -263,7 +264,8 @@ public:
     lost_counter_ = 0;
     tracking_counter_++;
     time_ = ros::Time::now();
-    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
