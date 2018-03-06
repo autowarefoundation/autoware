@@ -2,17 +2,52 @@
 Changelog for package calibration_camera_lidar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* use qt5_wrap_ui instead of autouic
+* Added support to Image Publisher for frames different than only "velodyne". (`#946 <https://github.com/cpfl/autoware/issues/946>`_)
+* Fix feature/points2image bug multicam support (`#886 <https://github.com/cpfl/autoware/issues/886>`_)
+  * pointgrey
+  * Added New Calibration node
+  * Added parameters, plane fitting
+  * added mirror node, etc
+  * Points2Image
+  Calibration Publisher
+  now works with multiple cameras using ros namespaces
+  * Including only points2image
+  * Added Launch file for points2 image specific for the ladybug camera
+* refactor CMakeLists.txt. use automoc, autouic and autorcc
+* Contributors: Abraham Monrroy, Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -58,28 +93,6 @@ Changelog for package calibration_camera_lidar
   * Make it possible to obtain camera ID in each node to subscribe topics
   under camera name space selectively
   * Get image size from sensor_msgs::Image instead of CameraInfo
-* Merge branch 'master' of ssh://localhost:8443/CPFL/Autoware into apply_multi_camera
-  WARNING: This commit contains unresolved conflict.
-  Unresolved conflicts are contained in...:
-  *
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  * ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  * ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ocv.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ttic.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/kf_tracking.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/reprojection.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/computing/perception/detection/packages/viewers/nodes/scan_image_viewer/scan_image_viewer.cpp
-  ros/src/sensing/fusion/packages/calibration_camera_lidar/CalibrationToolkit/calibrationtoolkit.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  ros/src/util/packages/runtime_manager/scripts/points2image.launch
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  ros/src/util/packages/runtime_manager/scripts/vscan.launch
 * Support bayerformat in CalibrationToolKit
   16bit bayer images are not supprted
   as cvtColor function in OpenCV doesn't support them.

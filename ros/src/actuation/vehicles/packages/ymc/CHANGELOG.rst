@@ -2,25 +2,56 @@
 Changelog for package ymc
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* merge develop and fixed slow switching map
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge pull request `#879 <https://github.com/CPFL/Autoware/issues/879>`_ from CPFL/fix/aarch64_proprietary_driver
-  Fix/aarch64 proprietary driver
+* Prepare release for 1.6.0
 * add support ymc_can on aarch64
 * fix build error on aarch64
-* Merge pull request `#838 <https://github.com/CPFL/Autoware/issues/838>`_ from CPFL/feature/g30esli_interface
-  Add G30ESLi interface
 * Change output from screen to log
 * fix linking library
 * Ensure compatibility of proprietary lib
 * Add G30ESLi interface
-* Contributors: TomohitoAndo, Yamato ANDO, Yusuke FUJII, hatem-darweesh
+* Contributors: TomohitoAndo, Yamato ANDO, Yusuke FUJII
+
+1.5.1 (2017-09-25)
+------------------
+
+1.5.0 (2017-09-21)
+------------------
+
+1.4.0 (2017-08-04)
+------------------
+
+1.3.1 (2017-07-16)
+------------------
+
+1.3.0 (2017-07-14)
+------------------
+
+1.2.0 (2017-06-07)
+------------------
+
+1.1.2 (2017-02-27 23:10)
+------------------------
+
+1.1.1 (2017-02-27 22:25)
+------------------------
+
+1.1.0 (2017-02-24)
+------------------
+
+1.0.1 (2017-01-14)
+------------------
+
+1.0.0 (2016-12-22)
+------------------

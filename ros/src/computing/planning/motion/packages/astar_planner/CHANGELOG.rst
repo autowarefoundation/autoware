@@ -2,45 +2,40 @@
 Changelog for package astar_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Merge pull request `#892 <https://github.com/CPFL/Autoware/issues/892>`_ from asimay/patch-1
-  launch file missing parameter setting.
-* merge develop and fixed slow switching map
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
+* Prepare release for 1.6.0
 * Update velocity_set.launch
   set value to false
 * fix video settings
 * launch file missing parameter setting.
   missing parameter setting, when launch motion plan, report error :enablePlannerDynamicSwitch arg to be set.
   see :  https://github.com/CPFL/Autoware/issues/871
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Merge branch 'feature/decision_maker' of github.com:cpfl/autoware into feature/remote_monitor
-* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/remote_monitor
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, asimay, hatem-darweesh, hironari.yashiro, yukikitsukawa
+* Contributors: Yamato ANDO, asimay, hironari.yashiro
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
-* Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
-  [WIP]Feature/decision maker `#807 <https://github.com/cpfl/autoware/issues/807>`_
+* Update changelog
 * add web ui
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision_maker
-* Resolve conflicts
 * Change parameter for obstacle avoid
 * Change color of a simulated obstacle
 * fix a planner selector
@@ -58,6 +53,9 @@ Changelog for package astar_planner
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -65,7 +63,6 @@ Changelog for package astar_planner
 1.3.0 (2017-07-14)
 ------------------
 * fix build issues due to autoware_msgs
-* Resolved merge conflict by new feature
 * Apply clang-formt
 * Add obstacle avoid feature in astar_planner
 * convert to autoware_msgs
@@ -99,9 +96,6 @@ Changelog for package astar_planner
 * Avoid sudden aceleration after changing waypoints
 * Remove unnecessary comments
 * Remove unnecessary include
-* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/refactor_velocity_set
-  Conflicts:
-  ros/src/computing/planning/motion/packages/astar_planner/nodes/velocity_set/velocity_set.cpp
 * Remove unnecessary comment
 * Comment out publishing of the obstacle marker
 * Make constans all capitals

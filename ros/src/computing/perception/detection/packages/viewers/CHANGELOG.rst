@@ -2,28 +2,40 @@
 Changelog for package viewers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* merge develop and fixed slow switching map
-* Merge branch 'master' into feature/decision
-* Merge branch 'master' of github.com:cpfl/autoware into develop
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
-* Contributors: Yamato ANDO, Yuki Iida, Yusuke FUJII, yukikitsukawa
+* Prepare release for 1.6.0
+* Contributors: Yamato ANDO
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
+* Contributors: Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -66,28 +78,6 @@ Changelog for package viewers
   * Make it possible to obtain camera ID in each node to subscribe topics
   under camera name space selectively
   * Get image size from sensor_msgs::Image instead of CameraInfo
-* Merge branch 'master' of ssh://localhost:8443/CPFL/Autoware into apply_multi_camera
-  WARNING: This commit contains unresolved conflict.
-  Unresolved conflicts are contained in...:
-  *
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  * ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  * ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  Conflicts:
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ocv.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/dpm_ttic.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/kf_tracking.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/launch/reprojection.launch
-  ros/src/computing/perception/detection/packages/cv_tracker/nodes/obj_reproj/obj_reproj.cpp
-  ros/src/computing/perception/detection/packages/viewers/nodes/scan_image_viewer/scan_image_viewer.cpp
-  ros/src/sensing/fusion/packages/calibration_camera_lidar/CalibrationToolkit/calibrationtoolkit.cpp
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-  ros/src/util/packages/runtime_manager/scripts/points2image.launch
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.py
-  ros/src/util/packages/runtime_manager/scripts/rtmgr.wxg
-  ros/src/util/packages/runtime_manager/scripts/runtime_manager_dialog.py
-  ros/src/util/packages/runtime_manager/scripts/sensing.yaml
-  ros/src/util/packages/runtime_manager/scripts/vscan.launch
 * Correct points2image dependency
   This is not incomplete because point2image has cycle dependency.
 * Unify how to receive /image_raw

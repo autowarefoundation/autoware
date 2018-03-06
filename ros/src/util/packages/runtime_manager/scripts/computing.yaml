@@ -533,6 +533,18 @@ subs :
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+    - name : NLOpt_planner
+      desc : NLOpt_planner desc sample
+      subs :
+      - name : obstacle_avoid_nl
+        desc : obstacle_avoid desc sample
+        cmd  : roslaunch nloptcontrol_planner demo.launch
+        param: obstacle_avoid_nl
+        gui  :
+          known_environment :
+            flags : [nl]
+          3DOF_plant :
+            flags : [nl]
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1657,6 +1669,43 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name  : obstacle_avoid_nl
+    vars  :
+    - name  : known_environment
+      desc  : if checked, indicates the obstacle information is assumed to be known
+      label : Known environment
+      kind  : checkbox
+      v     : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : 3DOF_plant
+      desc  : indicates if the 3DOF plant model will be used
+      label : 3 DOF plant
+      kind  : checkbox
+      v     : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name    : obstacle_name
+      label   : 'Obstacle name name: '
+      kind    : menu
+      choices : [ 's1', 's2', 's3' ]
+      choices_type : str
+      v       : 's1'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : case_name
+      label   : 'Case name: '
+      kind    : menu
+      choices : [ 'default', 'RTPP', 'custom' ]
+      choices_type : str
+      v       : 'RTPP'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set

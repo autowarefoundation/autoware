@@ -2,54 +2,52 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
 1.6.1 (2018-01-20)
 ------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.6.0 (2017-12-11)
 ------------------
-* Merge pull request `#960 <https://github.com/CPFL/Autoware/issues/960>`_ from CPFL/fix/initialpose_frame_id
-  Use initialpose header.frame_id at initialposeCallback function
+* Prepare release for 1.6.0
 * use header.frame_id included in initialpose topic
-* Merge branch 'develop' into feature/OpenPlanner
-  Conflicts:
-  ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* merge develop and fixed slow switching map
-* Merge branch 'develop' of github.com:cpfl/autoware into feature/decision
-* Merge branch 'develop' into feature/ndt_pcl_gpu
-  Conflicts:
-  ros/src/computing/perception/localization/packages/ndt_localizer/CMakeLists.txt
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_mapping/ndt_mapping.cpp
-  ros/src/computing/perception/localization/packages/ndt_localizer/nodes/ndt_matching/ndt_matching.cpp
 * Fix build error
-* Merge pull request `#844 <https://github.com/CPFL/Autoware/issues/844>`_ from CPFL/feature/remote_monitor
-  Feature/remote monitor
 * Rename and merge msgs
-* Merge branch 'master' into feature/decision
 * refactor code
 * refactor code
-* Merge branch 'master' of github.com:cpfl/autoware into develop
 * refactor code and add ctrl mode topic
 * refactor msg and add blinker to msg
-* Merge branch 'feature/ndt_pcl_gpu' of https://github.com/CPFL/Autoware into feature/ndt_pcl_gpu
-* Merge for ndt_pcl_gpu
-* merge develop
-* merge develop
 * fix bug and refactor code
 * add twist gate node
-* Contributors: Akihito Ohsato, Yamato ANDO, Yuki Iida, Yusuke FUJII, anhnv-3991, hatem-darweesh, yukikitsukawa
+* Contributors: Akihito Ohsato, Yamato ANDO, Yuki Iida
 
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * launch files
 * added install targets
   some dependencies are not used
-* Contributors: Dejan Pangercic
+* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -157,7 +155,6 @@ Changelog for package waypoint_follower
 * temporary commit
 * Add linear interpolate mode Switch
 * Bug fix about 'calcTwist'
-* Merge branch 'pp-support-can' into fix-motion-planner
 * Add function , 'verify whether vehicle is following correctly or not'
 * Refactoring and Delete needless parts
 * Extract as function
@@ -186,8 +183,6 @@ Changelog for package waypoint_follower
   ros/src/util/packages/runtime_manager/scripts/computing.yaml
 * angular velocity filtering by using lateral acceleration
 * changed to use yaw in a waypoint
-* Merge pull request `#99 <https://github.com/CPFL/Autoware/issues/99>`_ from CPFL/driving-planner
-  Update driving_planner and computing.yaml
 * minor fix
 * bug fix
 * prevented segment fault
@@ -211,9 +206,6 @@ Changelog for package waypoint_follower
 * deleted unused code
   R
 * comment outed temporarily
-* Merge branch 'master' into develop-planner
-  Conflicts:
-  ros/src/computing/planning/motion/packages/waypoint_follower/CMakeLists.txt
 * Refactoring CMakeLists.txt
   Remove absolute paths by using cmake features and pkg-config.
 * fix style
@@ -224,7 +216,6 @@ Changelog for package waypoint_follower
 * bug fix , changed current pose to center of rear tires
 * bug fix , changed current pose to center of rear tires
 * bug fix for interpolate of waypoint
-* Merge branch 'develop-planner' of https://github.com/CPFL/Autoware into develop-planner
 * comment out fitness evaluation
 * Use c++11 option instead of c++0x
   We can use newer compilers which support 'c++11' option
@@ -248,7 +239,6 @@ Changelog for package waypoint_follower
 * Change velocity_set.cpp to subscribe 'config/velocity_set'
 * Add new variables for DPM detection
 * fix style
-* Merge branch 'develop-planner' of https://github.com/CPFL/Autoware into develop-planner
 * Move velocity_set from waypoint_follower to driving_planner
 * improved
 * deleted unused
@@ -278,4 +268,4 @@ Changelog for package waypoint_follower
 * modified velocity_set
 * Add the state lattice motion planning features
 * Initial commit for public release
-* Contributors: Hiroki Ohta, Matthew O'Kelly, Shinpei Kato, Syohei YOSHIDA, TomohitoAndo, USUDA Hisashi, h_ohta, pdsljp
+* Contributors: Hiroki Ohta, Shinpei Kato, Syohei YOSHIDA, TomohitoAndo, USUDA Hisashi, h_ohta, pdsljp
