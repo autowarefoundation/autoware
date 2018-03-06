@@ -102,6 +102,8 @@ private:
 
 	void PublishImage(std::vector<Context> contexts);
 
+	void PublishROIImage(cv::Mat roi_image);
+
 	// Execution parameter
 	std::string image_topic_name_;
 	std::string network_definition_file_name_;
@@ -121,6 +123,7 @@ private:
 	ros::Publisher signal_state_string_publisher;
 	ros::Publisher marker_publisher;
 	ros::Publisher superimpose_image_publisher;
+	ros::Publisher roi_image_publisher;
 
 	// Flag to show topic will be published in latch manner
 	bool kAdvertiseInLatch_;
