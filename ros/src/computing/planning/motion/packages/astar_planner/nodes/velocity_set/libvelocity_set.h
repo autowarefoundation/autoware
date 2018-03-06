@@ -165,7 +165,9 @@ public:
   {
     decelerate_points_.push_back(p);
   }
+
   geometry_msgs::Point getObstaclePoint(const EControl &kind) const;
+
   void clearStopPoints()
   {
     stop_points_.clear();
@@ -195,7 +197,7 @@ private:
   private:
     double x_, p_, k_, Q_, R_;
   public:
-    KalmanFilter(double Q = 1e-5, double R = 1e-2)
+    KalmanFilter(double Q = 1e-5, double R = 1e-4)
     : x_(1e-0), p_(1e-1), k_(1e-1)
     { Q_ = Q; R_ = R; }
     void init(double x0) { x_ = x0; }
@@ -224,7 +226,6 @@ private:
   ros::Time time_;
 
   boost::circular_buffer<tf::Vector3> position_buf_;
-  boost::circular_buffer<double> velocity_buf_;
   boost::circular_buffer<ros::Time> time_buf_;
 
   KalmanFilter kf_;
@@ -249,13 +250,15 @@ public:
     reset();
   }
 
-  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity)
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity, const geometry_msgs::Point current_position)
   {
-    waypoint_ = stop_waypoint;
-    velocity_ = 0.0;
 
     if (!use_tracking_)
+    {
+      waypoint_ = stop_waypoint;
+      velocity_ = 0.0;
       return;
+    }
 
     lost_counter_ = 0;
     tracking_counter_++;
@@ -267,12 +270,14 @@ public:
     if (state_ == ETrackingState::INITIALIZE)
     {
       kf_.init(waypoint_velocity);
+      waypoint_ = stop_waypoint;
       velocity_ = waypoint_velocity;
       if (tracking_counter_ >= 2)
         state_ = ETrackingState::TRACKING;
     }
     else if (state_ == ETrackingState::TRACKING)
     {
+      waypoint_ = stop_waypoint;
       velocity_ = calcVelocity();
     }
   }
@@ -297,7 +302,6 @@ public:
     velocity_ = 0.0;
     position_ = tf::Vector3(0.0, 0.0, 0.0);
     position_buf_.clear();
-    velocity_buf_.clear();
     time_buf_.clear();
     kf_.init(0.0);
   }

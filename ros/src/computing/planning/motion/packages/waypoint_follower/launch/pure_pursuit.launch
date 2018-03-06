@@ -10,6 +10,6 @@
 		<remap from="curvature_cmd" to="curvature_cmd_raw" />
 	</node>
 
-	<node pkg="waypoint_follower" type="curvature_cmd_filter" name="curvature_cmd_filter" output="log" />
+	<node pkg="waypoint_follower" type="curvature_cmd_filter" name="curvature_cmd_filter" output="screen" />
 
 </launch>

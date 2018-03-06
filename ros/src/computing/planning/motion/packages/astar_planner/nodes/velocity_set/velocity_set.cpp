@@ -410,7 +410,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
 {
   // no input for detection || no closest waypoint
   if ((points.empty() == true && vs_info.getDetectionResultByOtherNodes() == -1) || closest_waypoint < 0)
-    return EControl::KEEP;
+    return EControl::OTHERS;
 
   EObstacleType obstacle_type = EObstacleType::NONE;
   int stop_obstacle_waypoint =
@@ -422,7 +422,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
   {
     double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
-    tracker->update(stop_obstacle_waypoint, obstacle_points, waypoint_velocity);
+    tracker->update(stop_obstacle_waypoint, obstacle_points, waypoint_velocity, vs_info.getControlPose().pose.position);
     *obstacle_waypoint = tracker->getWaypointIdx();
     *obstacle_velocity = tracker->getVelocity();
   }
@@ -438,13 +438,13 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
     *obstacle_waypoint = stop_obstacle_waypoint;
     *obstacle_velocity = 0.0;
   }
-  
+
   // skip searching deceleration range
   if (vs_info.getDecelerationRange() < 0.01)
   {
     if (stop_obstacle_waypoint < 0)
       return EControl::KEEP;
-    else if (obstacle_type == EObstacleType::ON_WAYPOINTS || obstacle_type == EObstacleType::ON_CROSSWALK)
+    else if (obstacle_type == EObstacleType::ON_WAYPOINTS || obstacle_type == EObstacleType::ON_CROSSWALK || obstacle_type == EObstacleType::NONE)
       return EControl::STOP;
     else if (obstacle_type == EObstacleType::STOPLINE)
       return EControl::STOPLINE;
@@ -497,17 +497,15 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
                                               obstacle_waypoint, obstacle_velocity, tracker, &obstacle_points);
   displayDetectionRange(lane, crosswalk, closest_waypoint, detection_result, *obstacle_waypoint, *obstacle_velocity, vs_info.getStopRange(), vs_info.getDecelerationRange(), detection_range_pub);
 
-  static int false_count = 0;
   static EControl prev_detection = EControl::KEEP;
-  static int prev_obstacle_waypoint = -1;
+
+  detection_result = (detection_result == EControl::OTHERS) ? prev_detection : detection_result;
 
   // stop or decelerate because we found obstacles
   if (detection_result == EControl::STOP || detection_result == EControl::STOPLINE || detection_result == EControl::DECELERATE)
   {
     displayObstacle(detection_result, obstacle_points, obstacle_pub);
     prev_detection = detection_result;
-    false_count = 0;
-    prev_obstacle_waypoint = *obstacle_waypoint;
     return detection_result;
   }
 
@@ -526,7 +524,6 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::lane& lane
 
   // there are no obstacles, so we move forward
   *obstacle_waypoint = -1;
-  false_count = 0;
   prev_detection = EControl::KEEP;
   return detection_result;
 }
