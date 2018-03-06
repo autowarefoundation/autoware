@@ -390,8 +390,10 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
           closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
         }
         if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
+        {
           ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
-        closest_stop_waypoint_ = CurrentStoplineTarget_.gid;
+          closest_stop_waypoint_ = CurrentStoplineTarget_.gid;
+        }
       }
     }
   }

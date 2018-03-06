@@ -313,7 +313,14 @@ void DecisionMakerNode::updateStateStop(int status)
   }
   else  // stop process
   {
-    publishStoplineWaypointIdx(closest_waypoint_ + 1);
+    if (closest_stop_waypoint_ == -1)
+    {
+      publishStoplineWaypointIdx(closest_waypoint_ + 1);
+    }
+    else
+    {
+      publishStoplineWaypointIdx(closest_stop_waypoint_);
+    }
     if (current_velocity_ == 0.0)
     {
       ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_WAIT_STATE);
