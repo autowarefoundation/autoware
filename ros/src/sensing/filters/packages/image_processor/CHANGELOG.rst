@@ -2,6 +2,9 @@
 Changelog for package image_processor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.2 (2018-02-27)
 ------------------
 * Update CHANGELOG

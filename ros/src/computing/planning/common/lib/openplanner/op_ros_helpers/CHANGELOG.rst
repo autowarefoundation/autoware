@@ -2,6 +2,9 @@
 Changelog for package op_ros_helpers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.6.2 (2018-02-27)
 ------------------
 * Update CHANGELOG
