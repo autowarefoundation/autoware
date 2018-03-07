@@ -1,7 +1,6 @@
 #ifndef CPU_VGRID_H_
 #define CPU_VGRID_H_
 
-#include <velodyne_pointcloud/point_types.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <float.h>

@@ -270,6 +270,7 @@ void VoxelGrid<PointSourceType>::computeCentroidAndCovariance()
 				if (ipoint_num > 0) {
 					(*centroid_)[i] = pt_sum / point_num;
 				}
+
 				Eigen::Matrix3d covariance;
 
 				if (ipoint_num >= min_points_per_voxel_) {
@@ -370,10 +371,11 @@ void VoxelGrid<PointSourceType>::findBoundaries()
 	vgrid_y_ = max_b_y_ - min_b_y_ + 1;
 	vgrid_z_ = max_b_z_ - min_b_z_ + 1;
 
-	if (vgrid_x_ > 0 && vgrid_y_ > 0 && vgrid_z_ > 0)
+	if (vgrid_x_ > 0 && vgrid_y_ > 0 && vgrid_z_ > 0) {
 		voxel_num_ = vgrid_x_ * vgrid_y_ * vgrid_z_;
-	else
+	} else {
 		voxel_num_ = 0;
+	}
 }
 
 template <typename PointSourceType>
@@ -527,8 +529,9 @@ double VoxelGrid<PointSourceType>::nearestNeighborDistance(PointSourceType q, fl
 	Eigen::Vector3d c = (*centroid_)[nn_vid];
 	double min_dist = sqrt((q.x - c(0)) * (q.x - c(0)) + (q.y - c(1)) * (q.y - c(1)) + (q.z - c(2)) * (q.z - c(2)));
 
-	if (min_dist >= max_range)
+	if (min_dist >= max_range) {
 		return DBL_MAX;
+	}
 
 	return min_dist;
 
@@ -673,8 +676,9 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 template <typename PointSourceType>
 void VoxelGrid<PointSourceType>::update(typename pcl::PointCloud<PointSourceType>::Ptr new_cloud)
 {
-	if (new_cloud->points.size() <= 0)
+	if (new_cloud->points.size() <= 0) {
 		return;
+	}
 
 	float new_max_x, new_max_y, new_max_z;
 	float new_min_x, new_min_y, new_min_z;

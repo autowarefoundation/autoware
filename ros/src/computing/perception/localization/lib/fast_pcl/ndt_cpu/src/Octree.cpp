@@ -69,23 +69,29 @@ void Octree<PointSourceType>::setInput(std::vector<Eigen::Vector3i> occupied_vox
 	for (int i = 0; i < occupied_voxels.size(); i++) {
 		Eigen::Vector3i vid = occupied_voxels[i];
 
-		if (min_b_x > vid(0))
+		if (min_b_x > vid(0)) {
 			min_b_x = vid(0);
+		}
 
-		if (max_b_x < vid(0))
+		if (max_b_x < vid(0)) {
 			max_b_x = vid(0);
+		}
 
-		if (min_b_y > vid(1))
+		if (min_b_y > vid(1)) {
 			min_b_y = vid(1);
+		}
 
-		if (max_b_y < vid(1))
+		if (max_b_y < vid(1)) {
 			max_b_y = vid(1);
+		}
 
-		if (min_b_z > vid(2))
+		if (min_b_z > vid(2)) {
 			min_b_z = vid(2);
+		}
 
-		if (max_b_z < vid(2))
+		if (max_b_z < vid(2)) {
 			max_b_z = vid(2);
+		}
 	}
 
 	OctreeLevelBoundaries level;
@@ -180,23 +186,29 @@ void Octree<PointSourceType>::setInput(std::vector<Eigen::Vector3i> occupied_vox
 
 		} else {
 			/* Otherwise, update boundaries inside the node */
-			if (p.x < current_node.lx)
+			if (p.x < current_node.lx) {
 				current_node.lx = p.x;
+			}
 
-			if (p.y < current_node.ly)
+			if (p.y < current_node.ly) {
 				current_node.ly = p.y;
+			}
 
-			if (p.z < current_node.lz)
+			if (p.z < current_node.lz) {
 				current_node.lz = p.z;
+			}
 
-			if (p.x > current_node.ux)
+			if (p.x > current_node.ux) {
 				current_node.ux = p.x;
+			}
 
-			if (p.y > current_node.uy)
+			if (p.y > current_node.uy) {
 				current_node.uy = p.y;
+			}
 
-			if (p.z > current_node.uz)
+			if (p.z > current_node.uz) {
 				current_node.uz = p.z;
+			}
 
 			Eigen::Vector3d new_node(p.x, p.y, p.z);
 
@@ -279,23 +291,29 @@ void Octree<PointSourceType>::buildLevel(int level)
 
 				if (isOccupied(cid, level - 1)) {
 					if (isOccupied(pid, level)) {
-						if (pnode.lx > cnode.lx)
+						if (pnode.lx > cnode.lx) {
 							pnode.lx = cnode.lx;
+						}
 
-						if (pnode.ly > cnode.ly)
+						if (pnode.ly > cnode.ly) {
 							pnode.ly = cnode.ly;
+						}
 
-						if (pnode.lz > cnode.lz)
+						if (pnode.lz > cnode.lz) {
 							pnode.lz = cnode.lz;
+						}
 
-						if (pnode.ux < cnode.ux)
+						if (pnode.ux < cnode.ux) {
 							pnode.ux = cnode.ux;
+						}
 
-						if (pnode.uy < cnode.uy)
+						if (pnode.uy < cnode.uy) {
 							pnode.uy = cnode.uy;
+						}
 
-						if (pnode.uz < cnode.uz)
+						if (pnode.uz < cnode.uz) {
 							pnode.uz = cnode.uz;
+						}
 
 						// If the parent node is already occupied, update its centroid
 						pnode.centroid = pnode.centroid * pnode.point_num + cnode.centroid * cnode.point_num;
@@ -334,23 +352,29 @@ void Octree<PointSourceType>::updateBoundaries(std::vector<Eigen::Vector3i> new_
 	for (int i = 0; i < new_voxels.size(); i++) {
 		Eigen::Vector3i vid = new_voxels[i];
 
-		if (new_min_bx > vid(0))
+		if (new_min_bx > vid(0)) {
 			new_min_bx = vid(0);
+		}
 
-		if (new_max_bx < vid(0))
+		if (new_max_bx < vid(0)) {
 			new_max_bx = vid(0);
+		}
 
-		if (new_min_by > vid(1))
+		if (new_min_by > vid(1)) {
 			new_min_by = vid(1);
+		}
 
-		if (new_max_by < vid(1))
+		if (new_max_by < vid(1)) {
 			new_max_by = vid(1);
+		}
 
-		if (new_min_bz > vid(2))
+		if (new_min_bz > vid(2)) {
 			new_min_bz = vid(2);
+		}
 
-		if (new_max_bz < vid(2))
+		if (new_max_bz < vid(2)) {
 			new_max_bz = vid(2);
+		}
 	}
 
 	OctreeLevelBoundaries dst_bounds;
@@ -371,23 +395,29 @@ void Octree<PointSourceType>::updateBoundaries(std::vector<Eigen::Vector3i> new_
 	if (dst_bounds.lower_x < src_bounds.lower_x || dst_bounds.lower_y < src_bounds.lower_y || dst_bounds.lower_z < src_bounds.lower_z ||
 			dst_bounds.upper_x > src_bounds.upper_x || dst_bounds.upper_y > src_bounds.upper_y || dst_bounds.upper_z > src_bounds.upper_z) {
 		// If the base voxel grid expanded, then we need expand the octree as well
-		if (dst_bounds.lower_x > src_bounds.lower_x)
+		if (dst_bounds.lower_x > src_bounds.lower_x) {
 			dst_bounds.lower_x = src_bounds.lower_x;
+		}
 
-		if (dst_bounds.lower_y > src_bounds.lower_y)
+		if (dst_bounds.lower_y > src_bounds.lower_y) {
 			dst_bounds.lower_y = src_bounds.lower_y;
+		}
 
-		if (dst_bounds.lower_z > src_bounds.lower_z)
+		if (dst_bounds.lower_z > src_bounds.lower_z) {
 			dst_bounds.lower_z = src_bounds.lower_z;
+		}
 
-		if (dst_bounds.upper_x < src_bounds.upper_x)
+		if (dst_bounds.upper_x < src_bounds.upper_x) {
 			dst_bounds.upper_x = src_bounds.upper_x;
+		}
 
-		if (dst_bounds.upper_y < src_bounds.upper_y)
+		if (dst_bounds.upper_y < src_bounds.upper_y) {
 			dst_bounds.upper_y = src_bounds.upper_y;
+		}
 
-		if (dst_bounds.upper_z < src_bounds.upper_z)
+		if (dst_bounds.upper_z < src_bounds.upper_z) {
 			dst_bounds.upper_z = src_bounds.upper_z;
+		}
 
 		OctreeLevelDim dst_dim;
 
@@ -556,23 +586,29 @@ void Octree<PointSourceType>::updateOctreeContent(std::vector<Eigen::Vector3i> n
 
 			if (isOccupied(nid, level)) {
 				// If the node is occupied, update the current content
-				if (p.x < node.lx)
+				if (p.x < node.lx) {
 					node.lx = p.x;
+				}
 
-				if (p.y < node.ly)
+				if (p.y < node.ly) {
 					node.ly = p.y;
+				}
 
-				if (p.z < node.lz)
+				if (p.z < node.lz) {
 					node.lz = p.z;
+				}
 
-				if (p.x > node.ux)
+				if (p.x > node.ux) {
 					node.ux = p.x;
+				}
 
-				if (p.y > node.uy)
+				if (p.y > node.uy) {
 					node.uy = p.y;
+				}
 
-				if (p.z > node.uz)
+				if (p.z > node.uz) {
 					node.uz = p.z;
+				}
 
 
 				node.centroid = node.centroid * node.point_num + point;
@@ -636,26 +672,29 @@ double Octree<PointSourceType>::dist(OctreeNode node, PointSourceType p)
 	double dx, dy, dz;
 
 
-	if (p.x < node.lx)
+	if (p.x < node.lx) {
 		dx = node.lx - p.x;
-	else if (p.x > node.ux)
+	} else if (p.x > node.ux) {
 		dx = p.x - node.ux;
-	else
+	} else {
 		dx = 0;
+	}
 
-	if (p.y < node.ly)
+	if (p.y < node.ly) {
 		dy = node.ly - p.y;
-	else if (p.y > node.uy)
+	} else if (p.y > node.uy) {
 		dy = p.y - node.uy;
-	else
+	} else {
 		dy = 0;
+	}
 
-	if (p.z < node.lz)
+	if (p.z < node.lz) {
 		dz = node.lz - p.z;
-	else if (p.z > node.uz)
+	} else if (p.z > node.uz) {
 		dz = p.z - node.uz;
-	else
+	} else {
 		dz = 0;
+	}
 
 	return sqrt(dx * dx + dy * dy + dz * dz);
 }
@@ -773,8 +812,9 @@ void Octree<PointSourceType>::goDown(Eigen::Matrix<int, 4, 1> node, PointSourceT
 {
 	int id = index2id(node(0), node(1), node(2), node(3));
 
-	if (!isOccupied(id, node(3)))
+	if (!isOccupied(id, node(3))) {
 		return;
+	}
 
 	std::vector<OctreeNode> &cur_level = (*octree_)[node(3)];
 	OctreeNode cur_node = cur_level[id];
@@ -791,8 +831,9 @@ void Octree<PointSourceType>::goDown(Eigen::Matrix<int, 4, 1> node, PointSourceT
 
 	double cur_dist = dist(cur_node, q);
 
-	if (cur_dist > min_range)
+	if (cur_dist > min_range) {
 		return;
+	}
 
 	// Check children
 	int level = node(3) - 1;
