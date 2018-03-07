@@ -1,0 +1,44 @@
+material GasStation/Diffuse
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture GasStation_Diffuse.png
+      }
+    }
+  }
+}
+
+material GasStation/Specular
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture GasStation_Spec.png
+      }
+    }
+  }
+}
+
+material GasStation/Normal
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture GasStation_Normal.png
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="Speed limit">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <scale>10 10 10</scale>
+            <uri>model://speed_limit_sign/meshes/speed_limit_sign.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <scale>10 10 10</scale>
+            <uri>model://speed_limit_sign/meshes/speed_limit_sign.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+  </model>
+</sdf>

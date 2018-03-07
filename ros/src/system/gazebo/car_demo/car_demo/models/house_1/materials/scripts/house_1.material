@@ -1,0 +1,49 @@
+material House_1/Diffuse
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture House_1_Diffuse.png
+      }
+
+      rtshader_system
+      {
+        lighting_stage normal_map House_1_Normal.png tangent_space 0
+      }
+    }
+  }
+}
+
+material House_1/Specular
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture House_1_Spec.png
+      }
+    }
+  }
+}
+
+material House_1/Normal
+{
+  receive_shadows off
+  technique
+  {
+    pass
+    {
+      texture_unit
+      {
+        texture House_1_Normal.png
+      }
+    }
+  }
+}

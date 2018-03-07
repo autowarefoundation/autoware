@@ -1,0 +1,14 @@
+# Blender MTL File: 'None'
+# Material Count: 1
+
+newmtl Hybrid_Interior
+Ns 9.803922
+Ka 0.588200 0.588200 0.588200
+Kd 0.588200 0.588200 0.588200
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd Hybrid_Interior.png
+map_Ka Hybrid_Interior.png

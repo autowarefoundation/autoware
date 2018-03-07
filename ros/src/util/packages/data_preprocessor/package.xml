@@ -49,7 +49,7 @@
   <build_depend>std_msgs</build_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
-  <run_depend>pcd_tutorial</run_depend>
+  <!--run_depend>pcd_tutorial</run_depend-->
   <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_msgs</run_depend>
   <run_depend>pcl_ros</run_depend>

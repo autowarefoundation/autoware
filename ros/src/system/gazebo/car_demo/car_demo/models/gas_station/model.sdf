@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <model name="Gas Station">
+    <static>true</static>
+    <link name="link">
+      <pose>0 0 0 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://gas_station/meshes/gas_station.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://gas_station/meshes/gas_station.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://gas_station/materials/scripts</uri>
+            <uri>model://gas_station/materials/textures</uri>
+            <name>GasStation/Diffuse</name>
+          </script>
+          <shader type="normal_map_object_space">
+            <normal_map>GasStation_Normal.png</normal_map>
+          </shader>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
