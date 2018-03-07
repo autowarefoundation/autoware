@@ -80,8 +80,9 @@ params :
   - name  : gazebo_world_map
     vars  :
     - name      : gazebo_world
-      label     : 'World:'
+      label     : 'World: '
       kind      : menu
       choices   : [ CarDemo, CatVechicle, TestMap1 ]
       choices_type : str
+      v         : CarDemo
       cmd_param : { delim: '' }
