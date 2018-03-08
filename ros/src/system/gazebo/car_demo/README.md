@@ -1,3 +1,51 @@
+# To DEMO in Autoware, by Huckleberry Febbo
+This demo can be run using either a Docker build or a local build.
+
+## Local Usage
+
+### Build
+Type:
+```
+/Autoware/ros$ catkin_make --pkg prius_msgs && catkin_make
+```
+
+### Run
+Type:
+```
+/Autoware/ros$./run
+```
+Then the Autoware gui will pop up and you will have to put in your password.
+
+Next in the Autoware gui in the ``Simulation`` tab, select ``CarDemo`` as shown below.
+![Screenshot](docs/images/car_demo_gui.png)
+
+Then click the ``Gazebo`` button to launch Gazebo.
+
+## Docker Usage
+### Build
+Type:
+```
+Autoware/docker$ ./build.sh kinetic
+```
+
+### Run
+Type:
+```
+Autoware/docker$ ./run.sh kinetic
+```
+Then follow the same procedure as described in ``Local Usage``. i.e.:
+```
+autoware@febbo-HP-ZBook-17-G2:~$ cd Autoware/
+autoware@febbo-HP-ZBook-17-G2:~/Autoware$ cd ros/
+autoware@febbo-HP-ZBook-17-G2:~/Autoware/ros$ ./run
+```
+etc..
+
+## Notes:
+
+* the ``CatVehicle`` can still be launched.
+* to close Gazebo, just click on the ``Gazebo`` button again.
+
 # Demo of Prius in ROS/GAZEBO
 
 This is a simulation of a Prius in [gazebo 8](http://gazebosim.org) with sensor data being published using [ROS kinetic](http://wiki.ros.org/kinetic/Installation)
