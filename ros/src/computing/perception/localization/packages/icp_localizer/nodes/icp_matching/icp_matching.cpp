@@ -60,7 +60,6 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl/registration/ndt.h>
 #include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
 
@@ -96,7 +95,6 @@ static int map_loaded = 0;
 static int _use_gnss = 1;
 static int init_pos_set = 0;
 
-static pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
 static pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 
 // Default values for ICP
@@ -237,17 +235,9 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_ptr(new pcl::PointCloud<pcl::PointXYZ>(map));
     // Setting point cloud to be aligned to.
-//    ndt.setInputTarget(map_ptr);
     icp.setInputTarget(map_ptr);
     std::cout << "setInputTarget finished." << std::endl;
 
-    // Setting NDT parameters to default values
-    /*
-    ndt.setMaximumIterations(iter);
-    ndt.setResolution(ndt_res);
-    ndt.setStepSize(step_size);
-    ndt.setTransformationEpsilon(trans_eps);
-*/
     map_loaded = 1;
   }
 }
@@ -356,7 +346,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     static double align_time, getFitnessScore_time = 0.0;
 
     // Setting point cloud to be aligned.
-//    ndt.setInputSource(filtered_scan_ptr);
     icp.setInputSource(filtered_scan_ptr);
 
     // Guess the initial gross estimation of the transformation
@@ -374,7 +363,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     Eigen::Matrix4f init_guess = (init_translation * init_rotation_z * init_rotation_y * init_rotation_x) * tf_btol;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-//    ndt.align(*output_cloud, init_guess);
 
     icp.setMaximumIterations(maximum_iterations);
     icp.setTransformationEpsilon(transformation_epsilon);
@@ -387,19 +375,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     align_end = std::chrono::system_clock::now();
     align_time = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
 
-//    t = ndt.getFinalTransformation();  // localizer
     t = icp.getFinalTransformation();  // localizer
     t2 = t * tf_ltob;                  // base_link
-
-//    iteration = ndt.getFinalNumIteration();
-//    score = ndt.getFitnessScore();
 
     getFitnessScore_start = std::chrono::system_clock::now();
     fitness_score = icp.getFitnessScore();
     getFitnessScore_end = std::chrono::system_clock::now();
     getFitnessScore_time = std::chrono::duration_cast<std::chrono::microseconds>(getFitnessScore_end - getFitnessScore_start).count() / 1000.0;
-
-//    trans_probability = ndt.getTransformationProbability();
 
     tf::Matrix3x3 mat_l;  // localizer
     mat_l.setValue(static_cast<double>(t(0, 0)), static_cast<double>(t(0, 1)), static_cast<double>(t(0, 2)),
@@ -417,13 +399,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
                    static_cast<double>(t2(1, 0)), static_cast<double>(t2(1, 1)), static_cast<double>(t2(1, 2)),
                    static_cast<double>(t2(2, 0)), static_cast<double>(t2(2, 1)), static_cast<double>(t2(2, 2)));
 
-    // Update ndt_pose
+    // Update icp_pose
     icp_pose.x = t2(0, 3);
     icp_pose.y = t2(1, 3);
     icp_pose.z = t2(2, 3);
     mat_b.getRPY(icp_pose.roll, icp_pose.pitch, icp_pose.yaw, 1);
 
-    // Calculate the difference between ndt_pose and predict_pose
+    // Calculate the difference between icp_pose and predict_pose
     predict_pose_error = sqrt((icp_pose.x - predict_pose.x) * (icp_pose.x - predict_pose.x) +
                               (icp_pose.y - predict_pose.y) * (icp_pose.y - predict_pose.y) +
                               (icp_pose.z - predict_pose.z) * (icp_pose.z - predict_pose.z));
@@ -600,10 +582,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     std::cout << "Number of Filtered Scan Points: " << scan_points_num << " points." << std::endl;
     std::cout << "ICP has converged: " << icp.hasConverged() << std::endl;
     std::cout << "Fitness Score: " << fitness_score << std::endl;
-//    std::cout << "Transformation Probability: " << ndt.getTransformationProbability() << std::endl;
+
     std::cout << "Execution Time: " << exe_time << " ms." << std::endl;
-//    std::cout << "Number of Iterations: " << ndt.getFinalNumIteration() << std::endl;
-//    std::cout << "NDT Reliability: " << ndt_reliability.data << std::endl;
     std::cout << "(x,y,z,roll,pitch,yaw): " << std::endl;
     std::cout << "(" << current_pose.x << ", " << current_pose.y << ", " << current_pose.z << ", " << current_pose.roll
               << ", " << current_pose.pitch << ", " << current_pose.yaw << ")" << std::endl;

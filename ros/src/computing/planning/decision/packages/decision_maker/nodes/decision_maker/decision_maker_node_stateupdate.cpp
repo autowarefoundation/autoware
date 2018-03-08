@@ -50,6 +50,12 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx->setCallbackInFunc(state_machine::DRIVE_ACC_DECELERATION_STATE,
                          std::bind(&DecisionMakerNode::callbackInStateAcc, this, -1));
 
+  // LaneChange
+  ctx->setCallbackOutFunc(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE,
+                          std::bind(&DecisionMakerNode::callbackOutStateLaneChange, this, 1));
+  ctx->setCallbackOutFunc(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE,
+                          std::bind(&DecisionMakerNode::callbackOutStateLaneChange, this, 1));
+
   // obstacle avoidance
   ctx->setCallbackUpdateFunc(state_machine::DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE,
                              std::bind(&DecisionMakerNode::updateStateObstacleAvoid, this, -1));
@@ -79,6 +85,14 @@ void DecisionMakerNode::setupStateCallback(void)
                              std::bind(&DecisionMakerNode::publishLightColor, this, (int)state_machine::E_GREEN));
 #endif
 
+}
+
+void DecisionMakerNode::callbackOutStateLaneChange(int status)
+{
+  if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
+  {
+    ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE);
+  }
 }
 
 void DecisionMakerNode::publishLightColor(int status)

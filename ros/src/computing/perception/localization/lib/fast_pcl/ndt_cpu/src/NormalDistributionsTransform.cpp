@@ -169,14 +169,16 @@ void NormalDistributionsTransform<PointSourceType, PointTargetType>::computeTran
 
 		//Not update visualizer
 
-		if (nr_iterations_ > max_iterations_ || (nr_iterations_ && (std::fabs(delta_p_norm) < transformation_epsilon_)))
+		if (nr_iterations_ > max_iterations_ || (nr_iterations_ && (std::fabs(delta_p_norm) < transformation_epsilon_))) {
 			converged_ = true;
+		}
 
 		nr_iterations_++;
 	}
 
-	if (source_cloud_->points.size() > 0)
+	if (source_cloud_->points.size() > 0) {
 		trans_probability_ = score / static_cast<double>(source_cloud_->points.size());
+	}
 }
 
 template <typename PointSourceType, typename PointTargetType>
@@ -274,8 +276,9 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::updateDer
 
 	e_x_cov_x = gauss_d2_ * e_x_cov_x;
 
-	if (e_x_cov_x > 1 || e_x_cov_x < 0 || e_x_cov_x != e_x_cov_x)
+	if (e_x_cov_x > 1 || e_x_cov_x < 0 || e_x_cov_x != e_x_cov_x) {
 		return 0.0;
+	}
 
 	e_x_cov_x *= gauss_d1_;
 
@@ -435,9 +438,9 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::computeSt
 	Eigen::Matrix<double, 6, 1> x_t;
 
 	if (d_phi_0 >= 0) {
-		if (d_phi_0 == 0)
+		if (d_phi_0 == 0) {
 			return 0;
-		else {
+		} else {
 			d_phi_0 *= -1;
 			step_dir *= -1;
 		}
@@ -551,10 +554,11 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::trialValu
 		// Equation 2.4.2 [Sun, Yuan 2006]
 		double a_q = a_l - 0.5 * (a_l - a_t) * g_l / (g_l - (f_l - f_t) / (a_l - a_t));
 
-		if (std::fabs (a_c - a_l) < std::fabs (a_q - a_l))
+		if (std::fabs (a_c - a_l) < std::fabs (a_q - a_l)) {
 		  return (a_c);
-		else
+		} else {
 		  return (0.5 * (a_q + a_c));
+		}
 	}
 	// Case 2 in Trial Value Selection [More, Thuente 1994]
 	else if (g_t * g_l < 0) {
@@ -569,10 +573,11 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::trialValu
 		// Equation 2.4.5 [Sun, Yuan 2006]
 		double a_s = a_l - (a_l - a_t) / (g_l - g_t) * g_l;
 
-		if (std::fabs (a_c - a_t) >= std::fabs (a_s - a_t))
+		if (std::fabs (a_c - a_t) >= std::fabs (a_s - a_t)) {
 		  return (a_c);
-		else
+		} else {
 		  return (a_s);
+		}
 	}
 	// Case 3 in Trial Value Selection [More, Thuente 1994]
 	else if (std::fabs (g_t) <= std::fabs (g_l)) {
@@ -588,15 +593,17 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::trialValu
 
 		double a_t_next;
 
-		if (std::fabs (a_c - a_t) < std::fabs (a_s - a_t))
+		if (std::fabs (a_c - a_t) < std::fabs (a_s - a_t)) {
 		  a_t_next = a_c;
-		else
+		} else {
 		  a_t_next = a_s;
+		}
 
-		if (a_t > a_l)
+		if (a_t > a_l) {
 		  return (std::min (a_t + 0.66 * (a_u - a_t), a_t_next));
-		else
+		} else {
 		  return (std::max (a_t + 0.66 * (a_u - a_t), a_t_next));
+		}
 	}
 	// Case 4 in Trial Value Selection [More, Thuente 1994]
 	else {
@@ -641,8 +648,9 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::updateInt
 		return (false);
 	}
 	// Interval Converged
-	else
+	else {
 		return (true);
+	}
 }
 
 template <typename PointSourceType, typename PointTargetType>
@@ -653,8 +661,9 @@ void NormalDistributionsTransform<PointSourceType, PointTargetType>::updateHessi
 	Eigen::Vector3d cov_dxd_pi;
 	double e_x_cov_x = gauss_d2_ * exp(-gauss_d2_ * x_trans.dot(c_inv * x_trans) / 2);
 
-	if (e_x_cov_x > 1 || e_x_cov_x < 0 || e_x_cov_x != e_x_cov_x)
+	if (e_x_cov_x > 1 || e_x_cov_x < 0 || e_x_cov_x != e_x_cov_x) {
 		return;
+	}
 
 	e_x_cov_x *= gauss_d1_;
 
@@ -719,22 +728,30 @@ double NormalDistributionsTransform<PointSourceType, PointTargetType>::getFitnes
 	double distance;
 	int nr = 0;
 
-
 	for (int i = 0; i < trans_cloud.points.size(); i++) {
 		PointSourceType q = trans_cloud.points[i];
 
 		distance = voxel_grid_.nearestNeighborDistance(q, max_range);
 
-		if (distance <= max_range) {
+		if (distance < max_range) {
 			fitness_score += distance;
 			nr++;
 		}
 	}
 
-	if (nr > 0)
+	if (nr > 0) {
 		return (fitness_score / nr);
+	}
 
 	return DBL_MAX;
+}
+
+
+template <typename PointSourceType, typename PointTargetType>
+void NormalDistributionsTransform<PointSourceType, PointTargetType>::updateVoxelGrid(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud)
+{
+	// Update voxel grid
+	voxel_grid_.update(new_cloud);
 }
 
 template class NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>;

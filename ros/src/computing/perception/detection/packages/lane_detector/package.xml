@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>lane_detector</name>
-  <version>1.6.2</version>
+  <version>1.6.3</version>
   <description>The lane_detector package</description>
   <maintainer email="syoshida@axe.bz">Syoeh YOSHIDA</maintainer>
   <license>BSD</license>
