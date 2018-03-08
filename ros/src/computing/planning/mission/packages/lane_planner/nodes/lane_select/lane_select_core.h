@@ -101,6 +101,7 @@ private:
   // parameter from runtime manager
   double distance_threshold_, lane_change_interval_, lane_change_target_ratio_, lane_change_target_minimum_,
       vlength_hermite_curve_;
+  double lane_change_velocity_ratio_;
 
   // topics
   geometry_msgs::PoseStamped current_pose_;

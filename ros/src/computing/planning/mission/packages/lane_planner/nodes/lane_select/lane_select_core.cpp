@@ -50,6 +50,7 @@ LaneSelectNode::LaneSelectNode()
   , lane_change_target_minimum_(5.0)
   , vlength_hermite_curve_(10)
   , current_state_("UNKNOWN")
+  , lane_change_velocity_ratio_(0.8)
 {
   initForROS();
 }
@@ -280,7 +281,8 @@ void LaneSelectNode::createLaneForChange()
   std::get<0>(lane_for_change_).header.stamp = nghbr_lane.header.stamp;
   std::vector<autoware_msgs::waypoint> hermite_wps = generateHermiteCurveForROS(
       cur_lane.waypoints.at(num_lane_change).pose.pose, nghbr_lane.waypoints.at(target_num).pose.pose,
-      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x, vlength_hermite_curve_);
+      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x * lane_change_velocity_ratio_,
+      vlength_hermite_curve_);
 
   for (auto &&el : hermite_wps)
     el.change_flag = cur_lane.waypoints.at(num_lane_change).change_flag;
