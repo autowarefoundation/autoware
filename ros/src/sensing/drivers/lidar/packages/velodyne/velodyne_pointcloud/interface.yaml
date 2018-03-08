@@ -1,7 +1,0 @@
-- {name: cloud_node}
-- name: ringcolors_node
-  publish: [/velodyne_rings]
-  subscribe: [/velodyne_points]
-- name: transform_node
-  publish: [/velodyne_points]
-  subscribe: [/velodyne_packets]

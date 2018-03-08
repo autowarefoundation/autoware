@@ -8,8 +8,7 @@
   <arg name="model" default="64E_S2"/>
   <arg name="pcap" default="" />
   
-  <!--  <arg name="calibration" default="$(find velodyne_pointcloud)/params/64e_utexas.yaml"/>-->
-  <arg name="calibration" default="$(env HOME)/S2-Unit.yaml"/>  
+  <arg name="calibration" default="$(find velodyne_pointcloud)/params/64e_s2.1-sztaki.yaml"/>
   <arg name="min_range" default="2.0"/>
   <arg name="max_range" default="250.0"/>
   <arg name="topic_name" default="points_raw"/>

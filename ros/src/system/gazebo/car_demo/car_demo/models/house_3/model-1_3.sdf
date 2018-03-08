@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<sdf version="1.3">
+  <model name="House 3">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://house_3/meshes/house_3.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://house_3/meshes/house_3.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://house_3/materials/scripts</uri>
+            <uri>model://house_3/materials/textures</uri>
+            <name>House_3/Diffuse</name>
+          </script>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

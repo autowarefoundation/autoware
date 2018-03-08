@@ -174,7 +174,7 @@ private:
   void changeShiftLane(void);
   void removeShiftLane(void);
 
-
+  // state callback
   void setAllStoplineStop(void);
   void StoplinePlanIn(int status);
   void StoplinePlanOut(int status);
@@ -188,7 +188,9 @@ private:
   void callbackInStateAcc(int status);
   void callbackInStateDec(int status);
   void callbackInStateKeep(int status);
+  void callbackOutStateLaneChange(int status);
   void setupStateCallback(void);
+  
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);

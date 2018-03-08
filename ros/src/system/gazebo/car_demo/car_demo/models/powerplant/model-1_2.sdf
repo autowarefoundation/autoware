@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<gazebo version='1.2'>
+  <model name="powerplant">
+    <static>true</static>
+    <link name="link">
+      <pose>0 0 0.01 0 0 0</pose>
+
+      <collision name="wall1">
+        <geometry>
+          <mesh>
+            <uri>model://powerplant/meshes/powerplant.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <visual name="visual1">
+        <geometry>
+          <mesh>
+            <uri>model://powerplant/meshes/powerplant.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+
+    <!--
+    <link name="door1">
+      <pose>8 -42.5 0 0 0 0</pose>
+      <collision>
+      </collision>
+    </link>
+-->
+
+  </model>
+</gazebo>

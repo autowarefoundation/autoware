@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <model name="House 2">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://house_2/meshes/house_2.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://house_2/meshes/house_2.dae</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://house_2/materials/scripts</uri>
+            <uri>model://house_2/materials/textures</uri>
+            <uri>model://house_1/materials/textures</uri>
+            <name>House_2/Diffuse</name>
+          </script>
+
+          <shader type="normal_map_object_space">
+            <normal_map>model://house_1/materials/textures/House_1_Normal.png</normal_map>
+          </shader>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

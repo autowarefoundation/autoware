@@ -35,7 +35,7 @@ ReadMe.png参照
 		dt: f
 		data: [0.014429, -0.032025, 0.003003, -0.001721]  #camera_calibrationにて求めた行列
 ---param.yaml-end--------------------------------------------------------------------------------------
-2:hokuyo_node、uvc_camera、calibration_of_camera_and_lrfを実行
+2:urg_node、uvc_camera、calibration_of_camera_and_lrfを実行
 	2.1:LRFウィンドウ、カメラ画像ウィンドウが表示される
 3:カメラ、LRFでチェッカーボードを認識し、CALIBRATE(CLICK)をクリックする
 	3.1:LRFにて認識されるとLRFウィンドウにLRF OKと表示されます。

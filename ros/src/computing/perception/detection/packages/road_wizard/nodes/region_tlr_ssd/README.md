@@ -1,8 +1,7 @@
 # Setup region_tlr_ssd
 
-0. Refer [this-README](../../../cv_tracker/nodes/ssd/README.md) to install Caffe for SSD  
-   The compilation process for `region_tlr_ssd` assumes that SSD Caffe has been installed under `~/ssdcaffe/`.  
-   Otherwise, specify your Caffe-installed path in `CMakeLists.txt` for `road_wizard` package or compler skips compilation of this node.
+0. Refer [this-README](../../../cv_tracker/nodes/ssd/README.md) to install Caffe for SSD. The compilation process for `region_tlr_ssd` assumes that SSD Caffe has been installed under `~/ssdcaffe/`.  
+   Otherwise, specify your Caffe install path in `CMakeLists.txt` for `road_wizard` package or the compiler will skip compilation of this node.
 
 1. Compile Autoware
 
