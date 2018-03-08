@@ -167,10 +167,20 @@ class RosCameraLidarApp
 
 			std::cout << "Rotation:" << camera_velodyne_rotation << std::endl << std::endl;
 			std::cout << "Translation:" << camera_velodyne_translation << std::endl;
-
 			std::cout << "RPY: " << get_rpy_from_matrix(camera_velodyne_rotation) << std::endl << std::endl;
 
+			cv::Mat extrinsics = cv::Mat::eye(4,4, CV_64F);
+			camera_velodyne_rotation.copyTo(extrinsics(cv::Rect_<float>(0,0,3,3)));
 
+			std::cout << extrinsics << std::endl;
+
+			extrinsics.at<double>(0,3) = camera_velodyne_translation.x;
+			extrinsics.at<double>(1,3) = camera_velodyne_translation.y;
+			extrinsics.at<double>(2,3) = camera_velodyne_translation.z;
+
+			std::cout << extrinsics << std::endl;
+
+			SaveCalibrationFile(extrinsics ,camera_instrinsics_, distortion_coefficients_, image_size_);
 		}
 	}
 

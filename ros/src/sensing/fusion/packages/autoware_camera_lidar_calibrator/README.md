@@ -2,12 +2,12 @@
 
 ## How to calibrate
 
-Calibration is performed in two steps:
-1. Camera Intrinsic
-1. Camera-LiDAR Extrinsic
+Camera-LiDAR calibration is performed in two steps:
+1. Obtain camera intrinsics
+1. Obtain camera-LiDAR extrinsics
 
 ## Camera intrinsic calibration
-The instrinsics are obtained using the `autoware_camera_calibration`, which is a fork of the official ROS calibration tool.
+The intrinsics are obtained using the `autoware_camera_calibration` script, which is a fork of the official ROS calibration tool.
 
 ### How to launch
 1. In a sourced terminal:
@@ -32,8 +32,8 @@ Parameter| Type| Description|
 
 For extra details please visit: http://www.ros.org/wiki/camera_calibration
 
-#### Matlab checkerboard engine detection
-This node supports additionally Matlab engine for chessboard detection.
+#### Matlab checkerboard engine detection (Beta)
+This node supports additionally Matlab engine for chessboard detection, which is faster and more robust than OpenCV's.
 
 1. Go to Matlab python setup path `/PATH/TO/MATLAB/R201XY/extern/engines/python`
 1. Run `python setup.py install` to setup Matlab bindings
@@ -48,7 +48,7 @@ To use this engine add `--detection matlab` to the list of arguments. i.e.
 
 ## Camera-LiDAR extrinsic calibration
 
-LiDAR extrinsics are done clicking the corresponding poins in the image and the pointcloud.
+LiDAR extrinsics are done clicking the corresponding poins in the image and the point cloud.
 
 This node uses `clicked_point` from `rviz`, and `screenpoint` from `image_view2` packages.
 
@@ -64,10 +64,10 @@ Get the intrinsic calibration using Camera intrinsic calibration tool described 
 1. Click the pixel in the image.
 1. Click the corresponding 3D point in Rviz using the *Publish Point*.
 1. Repeat this at least 9 times.
-1. Once finished the file will be saved in your home directory with the name 
+1. Once finished, the file will be saved in your home directory with the name 
 `YYYYmmdd_HHMM_autoware_lidar_camera_calibration.yaml`.
-1. This file cna be used with Autoware's Calibration Publisher to publish and register the transformation 
-between the LiDAR and Camera.
+1. This file can be used with Autoware's Calibration Publisher to publish and register the transformation 
+between the LiDAR and Camera. The file contains both the intrinsic and extrinsic parameters.
 
 
 ### Parameters available
@@ -81,4 +81,15 @@ Parameter| Type| Description|
 
 ### Camera-Lidar calibration example
 
+To test the result, the generated yaml file can be used by the `Calibration Publisher` and then the `Points Image` in the **Sensing** tab. 
+
 ![Calibration](docs/camera_lidar_calibration.jpg "Successful camera lidar calibration")
+
+
+### Notes
+
+This calibration tool assumes the Velodyne is installed wih the default axes order of the Velodyne sensor.
+X axis points to the front
+Y axis points to the left
+Z axis points above
+
