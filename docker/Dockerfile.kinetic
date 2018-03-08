@@ -262,11 +262,11 @@ echo 'export PATH="$PATH:/opt/julia-d386e40c17/bin"' >>  ~/.bashrc
 #Install Julia packages
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("NLOptControl")'
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("VehicleModels")'
-RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("NLOptControl")' 
-RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("VehicleModels")' 
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("NLOptControl")'
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.checkout("VehicleModels")'
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("RobotOS")'
 RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.add("PyCall")'
-RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.clone("https://github.com/huckl3b3rry87/MAVs.jl")'
+RUN /opt/julia-d386e40c17/bin/julia -e 'Pkg.clone("https://github.com/JuliaMPC/MAVs.jl")'
 
 # Change Terminal Color
 RUN gconftool-2 --set "/apps/gnome-terminal/profiles/Default/use_theme_background" --type bool false
