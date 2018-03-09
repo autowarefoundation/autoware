@@ -1,56 +1,47 @@
-# autoware_pointgrey_drivers package
+# Autoware Point Grey Camera Drivers Package
 
-This package allows the capture of an image stream from PointGrey cameras.
-Has been tested successfully on Grasshopper3 and LadyBug5 devices on both Ubuntu 14.04 and 16.04.
+This package allows the capture of an image stream from Point Grey cameras.
+It has been tested successfully with Grasshopper3 and LadyBug5 devices on both Ubuntu 14.04 and 16.04.
 
 ## Requirements
-FlyCapture SDK provided by PointGrey.
+* FlyCapture SDK provided by Point Grey.
 
 ---
 
-### grasshopper3_camera
+## Grasshopper3
 
-#### How to launch
-* From a sourced terminal:
-
+### How to launch
+* From a sourced terminal:\
 `roslaunch autoware_pointgrey_drivers grasshopper3.launch`
-
-* From Runtime manager
-
+* From Runtime manager:\
 Sensing Tab -> Cameras -> PointGrey Grasshopper3
 
-#### Parameters
-
-Launch file available params.
+### Parameters available
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`fps`|*Integer* |Frames per second to try to acquire the image stream.|
-|`mode`|*Integer*|Camera Mode, please check your camera specific valid modes. (0,1,2,...,31) |
-|`format`|*String*|Pixel Format, this can be either `raw` or `rgb`. `raw` will publish the default bayer format according to your camera sensor. Both modes have 8 bit per pixel per channel.|
-|`CalibrationFile`|*String*|Path to an Autoware compatible calibration file to be published in the `camera_info` topic related to this camera.|
+|`fps`|*integer* |Defines the frames per second at which to attempt image stream acquisition.|
+|`mode`|*integer*|Camera Mode - please check your camera for valid modes (0,1,2,...,31). |
+|`format`|*string*|Pixel Format, which can be either `raw` or `rgb`. `raw` will publish the default bayer format according to your camera sensor. Both modes have 8 bits per pixel per channel.|
+|`CalibrationFile`|*string*|Path to an Autoware-compatible calibration file to be published in the `camera_info` topic related to this camera.|
 
-### ladybug_camera
+## Ladybug
 
-#### How to launch
-* From a sourced terminal:
-
+### How to launch
+* From a sourced terminal:\
 `roslaunch autoware_pointgrey_drivers ladybug.launch`
 
-* From Runtime manager
-
+* From Runtime manager:\
 Sensing Tab -> Cameras -> PointGrey Ladybug5
 
-#### Parameters
-
-Launch file available params.
+### Parameters available
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`SCALE`|*Float*|Floating Number between 0.1 and 1.0. Sets the downscale ratio.|
-|`CalibrationFile`|*String*|Path to an Autoware compatible calibration file to be published in the `camera_info` topic related to this camera.|
-
+|`SCALE`|*float*|Defines the downscale ratio (between 0.1 and 1.0).|
+|`CalibrationFile`|*string*|Path to an Autoware-compatible calibration file to be published in the `camera_info` topic related to this camera.|
 
 ### Notes
 
-* The SDK needs to be obtained from PointGrey's website.
+* The FlyCapture SDK must be obtained from Point Grey's website.\
+<https://www.ptgrey.com/flycapture-sdk>
