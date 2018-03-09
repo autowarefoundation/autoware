@@ -1,10 +1,10 @@
 # autoware_pointgrey_drivers package
 
-This package allows to obtain an image stream from PointGrey cameras.
-It was tested successfully on Grasshopper3 and LadyBug5 devices.
+This package allows the capture of an image stream from PointGrey cameras.
+Has been tested successfully on Grasshopper3 and LadyBug5 devices on both Ubuntu 14.04 and 16.04.
 
 ## Requirements
-Install the SDK provided by PointGrey.
+FlyCapture SDK provided by PointGrey.
 
 ---
 
