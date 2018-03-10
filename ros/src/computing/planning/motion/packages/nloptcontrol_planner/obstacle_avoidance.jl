@@ -18,7 +18,7 @@ using PyCall
 # used to publish the solution of the ocp to ROS params
 --------------------------------------------------------------------------------------\n
 Author: Huckleberry Febbo, Graduate Student, University of Michigan
-Date Create: 2/28/2018, Last Modified: 2/28/2018 \n
+Date Create: 2/28/2018, Last Modified: 3/10/2018 \n
 --------------------------------------------------------------------------------------\n
 """
 function setTrajParams(msg::Control)
@@ -36,12 +36,14 @@ function setTrajParams(msg::Control)
     end
 
     # update trajectory parameters
-    RobotOS.set_param("nloptcontrol_planner/traj/t",t)
-    RobotOS.set_param("nloptcontrol_planner/traj/x",x)
-    RobotOS.set_param("nloptcontrol_planner/traj/y",y)
-    RobotOS.set_param("nloptcontrol_planner/traj/vx",vx)
-    RobotOS.set_param("nloptcontrol_planner/traj/sa",sa)
-    RobotOS.set_param("nloptcontrol_planner/traj/psi",psi)
+    plannerNamespace = RobotOS.get_param("plannerNamespace")
+
+    RobotOS.set_param(string(plannerNamespace,"/traj/t"),t)
+    RobotOS.set_param(string(plannerNamespace,"/traj/x"),x)
+    RobotOS.set_param(string(plannerNamespace,"/traj/y"),y)
+    RobotOS.set_param(string(plannerNamespace,"/traj/vx"),vx)
+    RobotOS.set_param(string(plannerNamespace,"/traj/sa"),sa)
+    RobotOS.set_param(string(plannerNamespace,"/traj/psi"),psi)
 
   else
     error("L !> 0")
@@ -210,11 +212,12 @@ end
 """
 --------------------------------------------------------------------------------------\n
 Author: Huckleberry Febbo, Graduate Student, University of Michigan
-Date Create: 4/6/2017, Last Modified: 2/28/2018 \n
+Date Create: 4/6/2017, Last Modified: 3/10/2018 \n
 --------------------------------------------------------------------------------------\n
 """
 function loop(pub,n,c)
 
+  plannerNamespace = RobotOS.get_param("plannerNamespace")
   init = false
   loop_rate = Rate(2.0) # 2 Hz
   while !is_shutdown()
@@ -273,28 +276,30 @@ end
 """
 --------------------------------------------------------------------------------------\n
 Author: Huckleberry Febbo, Graduate Student, University of Michigan
-Date Create: 4/6/2017, Last Modified: 2/28/2018 \n
+Date Create: 4/6/2017, Last Modified: 3/10/2018 \n
 --------------------------------------------------------------------------------------\n
 """
 function main()
 
   # indicates if the problem has been initialized
+  plannerNamespace = RobotOS.get_param("plannerNamespace")
+
   RobotOS.set_param("nloptcontrol_planner/flags/init",false)
 
   # TODO implement this
   # indicates if the user would like to pause the planner
-  # RobotOS.set_param("nloptcontrol_planner/flags/pause",true)
+  # RobotOS.set_param("nloptcontrol_planner/flags/pause",true
 
   println("initializing nloptcontrol_planner node ...")
   init_node("nloptcontrol_planner")
 
-  if !RobotOS.has_param("nloptcontrol_planner/case_name")
+  if !RobotOS.has_param(string(plannerNamespace,"/case_name"))
       error("Please set the nloptcontrol_planner/case_name")
-  elseif !RobotOS.has_param("nloptcontrol_planner/obstacle_name")
+  elseif !RobotOS.has_param(string(plannerNamespace,"/obstacle_name"))
       error("Please set the nloptcontrol_planner/obstacle_name")
   else
-    case_name = RobotOS.get_param("nloptcontrol_planner/case_name")
-    obstacle_name = RobotOS.get_param("nloptcontrol_planner/obstacle_name")
+    case_name = RobotOS.get_param(string(plannerNamespace,"/case_name"))
+    obstacle_name = RobotOS.get_param(string(plannerNamespace,"/obstacle_name"))
 
 	# launch the parameters, given the names of the config files
     c = YAML.load(open(string(Pkg.dir("MAVs"),"/config/case/",case_name,".yaml")))
@@ -308,13 +313,13 @@ function main()
   end
 
   # message for solution to optimal control problem
-  pub = Publisher{Control}("/nloptcontrol_planner/control", queue_size=10)
-  sub = Subscriber{Control}("/nloptcontrol_planner/control", setTrajParams, queue_size = 10)
+  pub = Publisher{Control}(string(plannerNamespace,"/control"), queue_size=10)
+  sub = Subscriber{Control}(string(plannerNamespace, "/control"), setTrajParams, queue_size = 10)
 
   n=initializeAutonomousControl(c);
 
   setInitStateParams(c)
-  if RobotOS.get_param("nloptcontrol_planner/flags/known_environment")
+  if RobotOS.get_param(string(plannerNamespace,"/flags/known_environment"))
     setInitObstacleParams(c)
   end
   loop(pub,n,c)

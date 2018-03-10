@@ -4,6 +4,10 @@
   <arg name="obstacle_name" default="s1"/>
   <arg name="known_environment" default="true"/>
   <arg name="3DOF_plant" default="true"/>
+  <arg name="global_params_file" default="$(find nloptcontrol_planner)/config/global_params.yaml"/>
+
+  <!--  ************** Global Parameters ***************  -->
+  <rosparam command="load" file="$(arg global_params_file)" />
 
   <param name="nloptcontrol_planner/case_name" value="$(arg case_name)"/>
   <param name="nloptcontrol_planner/obstacle_name" value="$(arg obstacle_name)"/>
