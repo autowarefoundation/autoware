@@ -220,18 +220,19 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 }
 
 /* First step of computing point gradients */
-__global__ void computePointGradients0(float *x, float *y, float *z, int points_num,
+__global__ void computePointGradients(float *x, float *y, float *z, int points_num,
 													int *valid_points, int valid_points_num,
 													double *dj_ang,
 													double *pg00, double *pg11, double *pg22,
-													double *pg13, double *pg23, double *pg04, double *pg14)
+													double *pg13, double *pg23, double *pg04, double *pg14,
+													double *pg24, double *pg05, double *pg15, double *pg25)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
-	__shared__ double j_ang[12];
+	__shared__ double j_ang[24];
 
 
-	if (threadIdx.x < 12) {
+	if (threadIdx.x < 24) {
 		j_ang[threadIdx.x] = dj_ang[threadIdx.x];
 	}
 
@@ -255,40 +256,11 @@ __global__ void computePointGradients0(float *x, float *y, float *z, int points_
 		pg23[i] = o_x * j_ang[3] + o_y * j_ang[4] + o_z * j_ang[5];
 		pg04[i] = o_x * j_ang[6] + o_y * j_ang[7] + o_z * j_ang[8];
 		pg14[i] = o_x * j_ang[9] + o_y * j_ang[10] + o_z * j_ang[11];
-	}
-}
 
-/* Second step of computing point gradients */
-__global__ void computePointGradients1(float *x, float *y, float *z, int points_num,
-													int *valid_points, int valid_points_num,
-													double *dj_ang,
-													double *pg24, double *pg05, double *pg15, double *pg25)
-{
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-	int stride = blockDim.x * gridDim.x;
-	__shared__ double j_ang[12];
-
-
-	if (threadIdx.x < 12) {
-		j_ang[threadIdx.x] = dj_ang[threadIdx.x + 12];
-	}
-
-	__syncthreads();
-
-	for (int i = id; i < valid_points_num; i += stride) {
-		int pid = valid_points[i];
-
-		//Orignal coordinates
-		double o_x = static_cast<double>(x[pid]);
-		double o_y = static_cast<double>(y[pid]);
-		double o_z = static_cast<double>(z[pid]);
-
-		//Compute point derivatives
-
-		pg24[i] = o_x * j_ang[0] + o_y * j_ang[1] + o_z * j_ang[2];
-		pg05[i] = o_x * j_ang[3] + o_y * j_ang[4] + o_z * j_ang[5];
-		pg15[i] = o_x * j_ang[6] + o_y * j_ang[7] + o_z * j_ang[8];
-		pg25[i] = o_x * j_ang[9] + o_y * j_ang[10] + o_z * j_ang[11];
+		pg24[i] = o_x * j_ang[12] + o_y * j_ang[13] + o_z * j_ang[14];
+		pg05[i] = o_x * j_ang[15] + o_y * j_ang[16] + o_z * j_ang[17];
+		pg15[i] = o_x * j_ang[18] + o_y * j_ang[19] + o_z * j_ang[20];
+		pg25[i] = o_x * j_ang[21] + o_y * j_ang[22] + o_z * j_ang[23];
 	}
 }
 
@@ -557,7 +529,7 @@ __global__ void computeHessianListS0(float *trans_x, float *trans_y, float *tran
 													double *icov00, double *icov01, double *icov02,
 													double *icov10, double *icov11, double *icov12,
 													double *icov20, double *icov21, double *icov22,
-													double *point_gradients,
+													double *point_gradients0, double *point_gradients1, double *point_gradients2,
 													double *tmp_hessian,
 													int valid_voxel_num)
 {
@@ -566,12 +538,12 @@ __global__ void computeHessianListS0(float *trans_x, float *trans_y, float *tran
 	int col = blockIdx.y;
 
 	if (col < 6) {
-		double *tmp_pg0 = point_gradients + col * valid_points_num;
-		double *tmp_pg1 = tmp_pg0 + 6 * valid_points_num;
-		double *tmp_pg2 = tmp_pg1 + 6 * valid_points_num;
+		double *tmp_pg0 = point_gradients0 + col * valid_points_num;
+		double *tmp_pg1 = point_gradients1 + 6 * valid_points_num;
+		double *tmp_pg2 = point_gradients2 + 6 * valid_points_num;
 		double *tmp_h = tmp_hessian + col * valid_voxel_num;
 
-		for (int i = id; i < valid_points_num; i += stride) {
+		for (int i = id; i < valid_points_num && col < 6; i += stride) {
 			int pid = valid_points[i];
 			double d_x = static_cast<double>(trans_x[pid]);
 			double d_y = static_cast<double>(trans_y[pid]);
@@ -791,7 +763,7 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 
 	dim3 grid;
 
-	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
 												dj_ang_.buffer(),
 												point_gradients,
@@ -800,12 +772,7 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 												point_gradients + valid_points_num * 9,
 												point_gradients + valid_points_num * 15,
 												point_gradients + valid_points_num * 4,
-												point_gradients + valid_points_num * 10);
-	checkCudaErrors(cudaGetLastError());
-
-	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
-												valid_points, valid_points_num,
-												dj_ang_.buffer(),
+												point_gradients + valid_points_num * 10,
 												point_gradients + valid_points_num * 16,
 												point_gradients + valid_points_num * 5,
 												point_gradients + valid_points_num * 11,
@@ -909,7 +876,7 @@ double GNormalDistributionsTransform::computeDerivatives(Eigen::Matrix<double, 6
 												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
 												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
 												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
-												point_gradients,
+												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
 												tmp_hessian, valid_voxel_num);
 		checkCudaErrors(cudaGetLastError());
 		grid.z = 6;
@@ -1439,7 +1406,7 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 	int grid_x = (valid_points_num - 1) / block_x + 1;
 	dim3 grid;
 
-	computePointGradients0<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
+	computePointGradients<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
 												valid_points, valid_points_num,
 												dj_ang_.buffer(),
 												point_gradients,
@@ -1448,12 +1415,7 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 												point_gradients + valid_points_num * 9,
 												point_gradients + valid_points_num * 15,
 												point_gradients + valid_points_num * 4,
-												point_gradients + valid_points_num * 10);
-	checkCudaErrors(cudaGetLastError());
-
-	computePointGradients1<<<grid_x, block_x>>>(x_, y_, z_, points_number_,
-												valid_points, valid_points_num,
-												dj_ang_.buffer(),
+												point_gradients + valid_points_num * 10,
 												point_gradients + valid_points_num * 16,
 												point_gradients + valid_points_num * 5,
 												point_gradients + valid_points_num * 11,
@@ -1533,7 +1495,7 @@ void GNormalDistributionsTransform::computeHessian(Eigen::Matrix<double, 6, 6> &
 												inverse_covariance, inverse_covariance + voxel_num, inverse_covariance + 2 * voxel_num,
 												inverse_covariance + 3 * voxel_num, inverse_covariance + 4 * voxel_num, inverse_covariance + 5 * voxel_num,
 												inverse_covariance + 6 * voxel_num, inverse_covariance + 7 * voxel_num, inverse_covariance + 8 * voxel_num,
-												point_gradients,
+												point_gradients, point_gradients + 6 * valid_points_num, point_gradients + 12 * valid_points_num,
 												tmp_hessian, valid_voxel_num);
 	checkCudaErrors(cudaGetLastError());
 

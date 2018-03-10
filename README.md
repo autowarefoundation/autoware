@@ -22,20 +22,20 @@ Open-source software for urban autonomous driving, maintained by [Tier IV](http:
 - Software Simulation
 - Virtual Reality
 
-Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+Autoware is protected by the BSD License. Please use it on at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. In case you use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
 ## Manuals and Documents
 
-Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
+Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to join maintenance of those manuals. Thanks for your cooperation!
 
-See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for tips on Autoware development, including the coding style and branching model.
+See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for the tips of Autoware development, including the coding style and branching model.
 
 ## License
 
 * New BSD License
     * See LICENSE
 
-## Recommended Minimum System Specifications
+## Spec Recommendation
 
 - Number of CPU cores: 8
 - RAM size: 32GB
@@ -46,28 +46,28 @@ See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/
 - ROS indigo (Ubuntu 14.04) or ROS jade (Ubuntu 15.04) or ROS kinetic (Ubuntu 16.04)
 - OpenCV 2.4.10 or higher
 - Qt 5.2.1 or higher
-- CUDA (optional)
-- FlyCapture2 (optional)
-- Armadillo (optional)
+- CUDA(Optional)
+- FlyCapture2 (Optional)
+- Armadillo (Optional)
 
-**Please use checkout a revision before 2015/OCT/21 if you want to use Autoware on ROS Hydro or Ubuntu 13.04, 13.10.**
+**Please use checkout revision before 2015/OCT/21 if you use Autoware on ROS hydro or Ubuntu 13.04, 13.10.**
 
-### Install dependencies for Ubuntu 14.04 Indigo
+### Install dependencies for Ubuntu 14.04 indigo
 
 ```
 % sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
-% sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver ros-indigo-urg-node ros-indigo-image-view2
+% sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev software-properties-common libyaml-cpp-dev python-flask python-requests
 % sudo add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
 % sudo apt-get install libmosquitto-dev
 ```
 
-**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. If it is already installed, please uninstall.**
+**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. Please uninstall it if you already installed.**
 
-### Install dependencies for Ubuntu 16.04 Kinetic
+### Install dependencies for Ubuntu 16.04 kinetic
 ```
 % sudo apt-get install ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
-% sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers ros-kinetic-urg-node ros-kinetic-image-view2
+% sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
 % sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
 ```
 
@@ -110,11 +110,11 @@ repository, you must use **git subtree push**. (Please never change and push cod
 `git subtree` well).
 
 GitFlow, the git branching model, is used in the Autoware repository.
-- When adding new features, you can branch off your feature branch from `develop`.  
-  You can use the following command.  
+- When you adding new features, you can branch off your feature branch from `develop`.  
+  you can use the following command.  
   `$ git checkout -b feature/[your_branch_name] develop`
 - When you find bugs in `master`, you can branch off your hotfix branch from `master`.  
-  You can use the following command.  
+  you can use the following command.  
   `$ git checkout -b hotfix/[your_branch_name] master`
 
 See [docs/en/branching_model.md](docs/en/branching_model.md)
@@ -158,7 +158,7 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ### Test Field Demonstration
 [![Test Field Demonstration](http://img.youtube.com/vi/zujGfJcZCpQ/mqdefault.jpg)](https://www.youtube.com/watch?v=zujGfJcZCpQ)
 
-## Instructional Videos
+## Instruction Videos
 
 ### Quick Start
 [![Quick Start](http://img.youtube.com/vi/NDNcy0C-Has/mqdefault.jpg)](https://www.youtube.com/watch?v=NDNcy0C-Has)

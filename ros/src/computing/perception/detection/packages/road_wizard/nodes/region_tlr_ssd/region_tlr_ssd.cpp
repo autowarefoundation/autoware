@@ -409,7 +409,7 @@ void RegionTlrSsdRosNode::PublishImage(std::vector<Context> contexts) {
   // Define information for written label
   std::string  label;
   const int    kFontFace      = cv::FONT_HERSHEY_COMPLEX_SMALL;
-  const double kFontScale     = 0.8;
+  const double kFontScale     = 1.0;
   int          font_baseline  = 0;
   CvScalar     label_color;
 
@@ -437,17 +437,6 @@ void RegionTlrSsdRosNode::PublishImage(std::vector<Context> contexts) {
       label = "UNKNOWN";
       label_color = CV_RGB(0, 0, 0);
     }
-
-    if (ctx.leftTurnSignal)
-    {
-      label += " LEFT";
-    }
-    if (ctx.rightTurnSignal)
-    {
-      label += " RIGHT";
-    }
-    //add lane # text
-    label +=" " + std::to_string(ctx.closestLaneId);
 
     cv::Point label_origin = cv::Point(ctx.topLeft.x, ctx.botRight.y + font_baseline);
 

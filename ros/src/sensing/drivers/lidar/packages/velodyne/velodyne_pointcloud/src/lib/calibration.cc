@@ -53,7 +53,6 @@ namespace velodyne_pointcloud
   const std::string FOCAL_DISTANCE = "focal_distance";
   const std::string FOCAL_SLOPE = "focal_slope";
 
-  /** Read calibration for a single laser. */
   void operator >> (const YAML::Node& node,
                     std::pair<int, LaserCorrection>& correction)
   {
@@ -74,54 +73,25 @@ namespace velodyne_pointcloud
     node[DIST_CORRECTION_X] >> correction.second.dist_correction_x;
     node[DIST_CORRECTION_Y] >> correction.second.dist_correction_y;
     node[VERT_OFFSET_CORRECTION] >> correction.second.vert_offset_correction;
+    node[HORIZ_OFFSET_CORRECTION] >> correction.second.horiz_offset_correction;
 #ifdef HAVE_NEW_YAMLCPP
-    if (node[HORIZ_OFFSET_CORRECTION])
-      node[HORIZ_OFFSET_CORRECTION] >>
-        correction.second.horiz_offset_correction;
-#else
-    if (const YAML::Node *pName = node.FindValue(HORIZ_OFFSET_CORRECTION))
-      *pName >> correction.second.horiz_offset_correction;
-#endif
-    else
-      correction.second.horiz_offset_correction = 0;
-
-    const YAML::Node * max_intensity_node = NULL;
-#ifdef HAVE_NEW_YAMLCPP
-    if (node[MAX_INTENSITY]) {
-      const YAML::Node max_intensity_node_ref = node[MAX_INTENSITY];
-      max_intensity_node = &max_intensity_node_ref;
-    }
+    if (node[MAX_INTENSITY])
+      node[MAX_INTENSITY] >> correction.second.max_intensity;
 #else
     if (const YAML::Node *pName = node.FindValue(MAX_INTENSITY))
-      max_intensity_node = pName;
+      *pName >> correction.second.max_intensity;
 #endif
-    if (max_intensity_node) {
-      float max_intensity_float;
-      *max_intensity_node >> max_intensity_float;
-      correction.second.max_intensity = floor(max_intensity_float);
-    }
-    else {
+    else
       correction.second.max_intensity = 255;
-    }
-
-    const YAML::Node * min_intensity_node = NULL;
 #ifdef HAVE_NEW_YAMLCPP
-    if (node[MIN_INTENSITY]) {
-      const YAML::Node min_intensity_node_ref = node[MIN_INTENSITY];
-      min_intensity_node = &min_intensity_node_ref;
-    }
+    if (node[MIN_INTENSITY])
+      node[MIN_INTENSITY] >> correction.second.min_intensity;
 #else
     if (const YAML::Node *pName = node.FindValue(MIN_INTENSITY))
-      min_intensity_node = pName;
+      *pName >> correction.second.min_intensity;
 #endif
-    if (min_intensity_node) {
-      float min_intensity_float;
-      *min_intensity_node >> min_intensity_float;
-      correction.second.min_intensity = floor(min_intensity_float);
-    }
-    else {
+    else
       correction.second.min_intensity = 0;
-    }
     node[FOCAL_DISTANCE] >> correction.second.focal_distance;
     node[FOCAL_SLOPE] >> correction.second.focal_slope;
 
@@ -138,7 +108,6 @@ namespace velodyne_pointcloud
     correction.second.laser_ring = 0;   // clear initially (set later)
   }
 
-  /** Read entire calibration file. */
   void operator >> (const YAML::Node& node, Calibration& calibration) 
   {
     int num_lasers;
@@ -176,10 +145,8 @@ namespace velodyne_pointcloud
         // store this ring number with its corresponding laser number
         calibration.laser_corrections[next_index].laser_ring = ring;
         next_angle = min_seen;
-        if (calibration.ros_info) {
-          ROS_INFO("laser_ring[%2u] = %2u, angle = %+.6f",
-                   next_index, ring, next_angle);
-        }
+        ROS_INFO_STREAM("laser_ring[" << next_index << "] = " << ring
+                         << ", angle = " << next_angle);
       }
     }
   }

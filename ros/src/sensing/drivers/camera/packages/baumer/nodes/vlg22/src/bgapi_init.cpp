@@ -1,8 +1,9 @@
-#include <bgapidef.hpp>
 #include "bgapi.hpp"
 #include "bgapi_init.h"
 
-int init_systems(int * system_count, std::vector<BGAPI::System*> * externppSystem)
+using namespace std;
+
+int init_systems(int * system_count, vector<BGAPI::System*> * externppSystem)
 {
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
 	int i = 0;
@@ -87,6 +88,9 @@ bool setup_cameras(std::vector<BGAPI::Camera*> & cameraObjects, std::string came
 		}
 		ROS_INFO( "Flip ok.\n" );
 
+	//PIXEL FORMAT
+	// --------
+
 		BGAPI_FeatureState state;
 		state.cbSize = sizeof( BGAPI_FeatureState );
 
@@ -153,8 +157,9 @@ bool setup_cameras(std::vector<BGAPI::Camera*> & cameraObjects, std::string came
 			}
 			ROS_INFO("setPixelFormat => (ID %x:%s | %d)\n" , pformat.iPixelFormat, (char*)pformat.sName, pformat.iPixelBits);
 
+
 			// check result
-			res = cameraObjects[i]-> getPixelFormat(formatlist.current, &state ,&pixellist) ;
+			res = cameraObjects[i] -> getPixelFormat(formatlist.current, &state ,&pixellist) ;
 			if(res != BGAPI_RESULT_OK)
 			{
 				ROS_INFO("BGAPI::Camera::getPixelFormat2 error:%d\n" ,res) ;
@@ -168,68 +173,22 @@ bool setup_cameras(std::vector<BGAPI::Camera*> & cameraObjects, std::string came
 				return false;
 			}
 		}
-
-		res = cameraObjects[i]->setHDREnable( true );
-		if (res != BGAPI_RESULT_OK)
-		{
-			ROS_INFO("Camera->setHDREnable errorcode: %d\n", res);
-		}
-		else
-		{
-			ROS_INFO("HDR Mode enabled");
-		}
-
-		BGAPIX_TypeRangeINT rangedint;
-		rangedint.cbSize = sizeof( BGAPIX_TypeRangeINT );
-		res = cameraObjects[i]->getExposure( &state, &rangedint );
-		if( res != BGAPI_RESULT_OK )
-		{
-			ROS_INFO("BGAPI::Camera::getExposure Errorcode: %d", res);
-		}
-		else
-		{
-			ROS_INFO("Current Exposure: %d\n", rangedint.current);
-			ROS_INFO("Possible value range: %d to %d\n", rangedint.minimum, rangedint.maximum);
-		}
-
-		int exposurevalue = VLG22_DEFAULT_EXPOSURE;
-		res = cameraObjects[i]->setExposure( exposurevalue );
-		if( res != BGAPI_RESULT_OK )
-		{
-			ROS_INFO("BGAPI::Camera::setExposure errorcode %d\n", res);
-
-		}
-
-		BGAPIX_TypeRangeFLOAT gainrange;
-		gainrange.cbSize = sizeof( BGAPIX_TypeRangeFLOAT );
-		res = cameraObjects[i]->getGain( &state, &gainrange );
-		if( res != BGAPI_RESULT_OK )
-		{
-			ROS_INFO("BGAPI::Camera::getGain Errorcode: %d\n", res);
-		}
-
-		ROS_INFO("Current Gain: %g max:%g min:%g\n", gainrange.current, gainrange.maximum, gainrange.minimum);
-
-		res = cameraObjects[i]->setGain( gainrange.maximum/4 );
-		if( res != BGAPI_RESULT_OK )
-		{
-			printf("BGAPI::Camera::setGain Errorcode: %d\n", res);
-		}
-
+	//PIXEL FORMAT
 	}
 	return true;
 }
 
-int init_cameras( int system_count, std::vector<BGAPI::System*> * externppSystem, int * pCurrSystem, int& camera_count, std::vector<BGAPI::Camera*>& cameraObjects)
+int init_cameras( int system_count, vector<BGAPI::System*> * externppSystem, int * pCurrSystem, int& camera_count, std::vector<BGAPI::Camera*>& cameraObjects)
 {
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
 	int cam = 0;
 	camera_count = 0;
-	std::vector<int> cameras;
-	std::vector<int>::iterator camIter;
+	vector<int> cameras;
+	vector<int>::iterator camIter;
 	BGAPI_FeatureState state;
 	BGAPIX_CameraInfo cameradeviceinfo;
-	std::vector<BGAPI::System*>::iterator systemIter;
+	int inputVal = 0;
+	vector<BGAPI::System*>::iterator systemIter;
 	ROS_INFO( "START COUNTING\n" );
 	
 	for( systemIter = externppSystem->begin(); systemIter != externppSystem->end(); systemIter++ )
@@ -307,10 +266,10 @@ int init_cameras( int system_count, std::vector<BGAPI::System*> * externppSystem
 	return res;
 }
 
-int release_systems( std::vector<BGAPI::System*> * externppSystem )
+int release_systems( vector<BGAPI::System*> * externppSystem )
 {
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
-	std::vector<BGAPI::System*>::iterator systemIter;
+	vector<BGAPI::System*>::iterator systemIter;
 
 	for( systemIter = externppSystem->begin(); systemIter != externppSystem->end(); systemIter++ )
 	{
@@ -323,10 +282,10 @@ int release_systems( std::vector<BGAPI::System*> * externppSystem )
 	externppSystem->clear();
 	return res;
 }
-int release_images( std::vector<BGAPI::Image*> * ppImage )
+int release_images( vector<BGAPI::Image*> * ppImage )
 {
 	BGAPI_RESULT res = BGAPI_RESULT_FAIL;
-	std::vector<BGAPI::Image*>::iterator imageIter;
+	vector<BGAPI::Image*>::iterator imageIter;
 	bool tmpExtern = false;
 	unsigned char* tmpBuffer = NULL;
 	

@@ -25,19 +25,27 @@ subs :
         desc : PointGrey Grasshoper 3 (USB1) desc sample
         probe: 'lsusb -d 1e10: > /dev/null'
         run  : roslaunch autoware_pointgrey_drivers grasshopper3.launch
-        param: grasshopper3_params
-
+        param: calibration_path_grasshopper3
+        gui  :
+          CalibrationFile :
+            prop  : 1
+            flags : [ center_v ]
       - name : PointGrey Generic
         desc : PointGrey Generic desc sample
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
-
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
         run  : roslaunch autoware_pointgrey_drivers ladybug.launch
-        param: ladybug_params
-
+        param: calibration_path_ladybug
+        gui  :
+          CalibrationFile :
+            prop  : 1
+            flags : [ center_v ]
+          Scale :
+            prop  : 1
+            flags : [ center_v ]
       - name : USB Generic
         desc : USB Generic desc sample
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
@@ -50,10 +58,6 @@ subs :
         desc : Baumer VLG-22 desc sample
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
-      - name : IDS UI-3060CP
-        desc : IDS UI-3060CP (Requires official ueye package)
-        probe:
-        run  : roslaunch ueye nodelets.launch
       - name : Sekonix 3322/3323 GMSLCamera
         desc : gmsl camera. run on PX2 only
         probe:
@@ -111,83 +115,58 @@ subs :
   - name : LIDARs
     desc : LIDARs desc sample
     subs :
-      - name : Velodyne HDL-64E-S2
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
+      - name : Velodyne HDL-64e-S2
+        desc : Velodyne HDL-64e-S2 desc sample
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s2.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
           calibration :
-            prop  : 0
+            prop  : 1
             flags : [ center_v ]
-      - name : Velodyne HDL-64E-S3
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
+      - name : Velodyne HDL-64e-S3
+        desc : Velodyne HDL-64e-S3 desc sample
         probe: 'ifconfig eth0 | grep "192.168.1.105" > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl64e_s3.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
           calibration :
-            prop  : 0
+            prop  : 1
             flags : [ center_v ]
-      - name : Velodyne HDL-32E
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
+      - name : Velodyne HDL-32e
+        desc : Velodyne HDL-32e desc sample
         probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
         run  : roslaunch velodyne_pointcloud velodyne_hdl32e.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
           calibration :
-            prop  : 0
-            flags : [ center_v ]
-      - name : Velodyne VLP-32C
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
-        probe: 'ping -c 1 -W 1 192.168.1.201 > /dev/null'
-        run  : roslaunch velodyne_pointcloud velodyne_vlp32c.launch
-        param: calibration_path
-        gui  :
-          flags : [ SIGTERM, kill_children ]
-          calibration :
-            prop  : 0
+            prop  : 1
             flags : [ center_v ]
       - name : Velodyne VLP-16
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
+        desc : Velodyne VLP-16 desc sample
         probe:
         run  : roslaunch velodyne_pointcloud velodyne_vlp16.launch
         param: calibration_path
         gui  :
           flags : [ SIGTERM, kill_children ]
           calibration :
-            prop  : 0
+            prop  : 1
             flags : [ center_v ]
-      - name : Velodyne VLP-16 Hi-Res
-        desc : Launches the driver for the selected Velodyne sensor and publishes the pointcloud in points_raw. To select a custom calibration file press the [config] button.
-        probe:
-        run  : roslaunch velodyne_pointcloud velodyne_vlp16_hires.launch
-        param: calibration_path
-        gui  :
-          flags : [ SIGTERM, kill_children ]
-          calibration :
-            prop  : 0
-            flags : [ center_v ]
-      - name : Hokuyo 2D URG
-        desc : urg_node supports SCIP 2.2 or earlier compliant laser range-finders.
+      - name : Hokuyo TOP-URG
+        desc : Hokuyo TOP-URG desc sample
+        probe: 'lsusb -d 15d1: > /dev/null'
         run  : roslaunch hokuyo top_urg.launch
-        param: hokuyo_urg
-
       - name : Hokuyo 3D-URG
         desc : Hokuyo 3D-URG desc sample
         probe:
         run  : roslaunch hokuyo hokuyo_3d.launch
-        param: hokuyo_3d
-
-      - name : Sick LMS511
-        desc : Initializes the Sick LMS511 driver
+      - name : SICK LMS511
+        desc : SICK LMS511 desc sample
         probe:
-        run  : roslaunch sick_driver lms511.launch
-        param: sick_lms511
-
+        run  :
       - name : IBEO 8L Single
         desc : IBEO 8L Single desc sample
         probe:
@@ -257,14 +236,6 @@ cmds:
       desc : Transforms cloud points' coordinates to the specified target frame
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
-
-  - name : Fusion
-    desc : Sensor fusion tools
-    subs :
-    - name : multi_lidar_calibrator
-      desc : Performs extrinsic calibration between two point clouds
-      cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
-      param: multi_lidar_calibrator
       
 buttons:
   calibration_toolkit :
@@ -348,79 +319,29 @@ params :
       cmd_param :
         dash : ''
         delim: ':='
-        must : False
-
-  - name  : sick_lms511
-    vars  :
-    - name  : ip
-      label : IP
-      desc  : IP address of SICK LMS511
-      kind  : str
-      v     : 192.168.1.1
-      cmd_param :
-        dash : ''
-        delim: ':='
         must : True
 
-  - name  : grasshopper3_params
+  - name  : calibration_path_grasshopper3
     vars  :
     - name  : CalibrationFile
-      label : CalibrationFile
-      desc  : Path to Autoware format calibration file
+      desc  : CalibrationFile desc sample
       kind  : path
       v     : ''
       cmd_param :
         dash        : ''
         delim       : ':='
         only_enable : True
-    - name  : mode
-      label : mode
-      desc  : Camera mode (0,1,2,3,....). Default 0
-      min   : 0
-      max   : 32
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : format
-      label : format
-      desc  : Pixel format ("raw" or "rgb")
-      kind  : str
-      v     : 'raw'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : fps
-      label : fps
-      desc  : Frames per second to try to acquire. Default 20
-      min   : 1
-      max   : 24
-      v     : 20
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-  - name  : ladybug_params
+  - name  : calibration_path_ladybug
     vars  :
-    - name  : SCALE
-      label : SCALE
-      desc  : scale, resize downsample ratio (0.1 - 1.0) Default 0.2
-      min   : 0.1
-      max   : 1.0
-      v     : 0.2
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-        only_enable : True
     - name  : CalibrationFile
-      label : CalibrationFile
-      desc  : Path to Autoware format calibration file
+      desc  : CalibrationFile desc sample
       kind  : path
       v     : ''
       cmd_param :
         dash        : ''
         delim       : ':='
         only_enable : True
+        must        : True
 
 #  - name  : points_image
 #    vars  :
@@ -450,14 +371,6 @@ params :
     topic : /config/voxel_grid_filter
     msg   : ConfigVoxelGridFilter
     vars  :
-    - name  : points_topic
-      desc  : input point topic to downsample
-      label : Points topic
-      kind  : str
-      v     : /points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name  : voxel_leaf_size
       desc  : voxel_leaf_size desc sample
       label : Voxel Leaf Size
@@ -482,14 +395,6 @@ params :
     topic : /config/ring_filter
     msg   : ConfigRingFilter
     vars  :
-    - name  : points_topic
-      desc  : input point topic to downsample
-      label : Points topic
-      kind  : str
-      v     : /points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name  : ring_div
       desc  : ring_div desc sample
       label : Ring Div
@@ -520,14 +425,6 @@ params :
     topic : /config/distance_filter
     msg   : ConfigDistanceFilter
     vars  :
-    - name  : points_topic
-      desc  : input point topic to downsample
-      label : Points topic
-      kind  : str
-      v     : /points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name  : sample_num
       desc  : sample_num desc sample
       label : Sample Num
@@ -552,14 +449,6 @@ params :
     topic : /config/random_filter
     msg   : ConfigRandomFilter
     vars  :
-    - name  : points_topic
-      desc  : input point topic to downsample
-      label : Points topic
-      kind  : str
-      v     : /points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name  : sample_num
       desc  : sample_num desc sample
       label : Sample Num
@@ -985,218 +874,3 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
-  - name  : hokuyo_urg
-    vars  :
-    - name  : ip_address
-      desc  : IP address if the LiDAR has ethernet interface
-      label : ip_address
-      kind  : str
-      v     : ''
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : serial_port
-      desc  : Serial Port of the LiDAR
-      label : serial_port
-      kind  : str
-      v     : /dev/ttyACM0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : frame_id
-      desc  : Coordinate frame to publish the scan
-      label : frame_id
-      kind  : str
-      v     : laser
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : calibrate_time
-      desc  : calibrate_time
-      label : calibrate_time
-      kind      : checkbox
-      v         : True
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name  : publish_intensity
-      desc  : Publish intensity value
-      label : publish_intensity
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name  : publish_multiecho
-      desc  : publish multiecho
-      label : publish_multiecho
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name  : angle_min
-      desc  : Minimum angle of the scan
-      label : angle_min
-      min   : -1.57
-      max   : 0
-      v     : -1.57
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : angle_max
-      desc  : Maximum angle of the scan
-      label : angle_max
-      min   : 0
-      max   : 1.57
-      v     : 1.57
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-  - name  : hokuyo_3d
-    vars  :
-    - name  : ip
-      desc  : IP address of the LiDAR
-      label : ip
-      kind  : str
-      v     : 192.168.0.10
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : topic_name
-      desc  : Topic name to publish the cloud
-      label : topic_name
-      kind  : str
-      v     : /points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : interlace
-      desc  : Interlacing value
-      label : interlace
-      min   : 1
-      max   : 10
-      v     : 4
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-  - name  : multi_lidar_calibrator
-    vars  :
-    - name  : points_parent_src
-      desc  : PointCloud Topic of the parent
-      label : points_parent_src
-      kind  : str
-      v     : lidar0/points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : points_child_src
-      desc  : Serial Port of the LiDAR
-      label : points_child_src
-      kind  : str
-      v     : lidar1/points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : voxel_size
-      desc  : Downsampling voxel size of the child.
-      label : voxel_size
-      kind  : num
-      min   : 0.1
-      max   : 10.0
-      v     : 0.5
-    - name  : ndt_epsilon
-      desc  : NDT Epsilon. Default 0.01
-      label : ndt_epsilon
-      min   : 0.01
-      max   : 1.0
-      v     : 0.01
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : ndt_step_size
-      desc  : NDT optimization step size. Default 0.1
-      label : ndt_step_size
-      min   : 0.01
-      max   : 1
-      v     : 0.1
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : ndt_resolution
-      desc  : Downsampling voxel size of the parent. Default 1.0
-      label : ndt_resolution
-      min   : 0.1
-      max   : 5
-      v     : 1
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : ndt_iterations
-      desc  : Number of NDT iterations before finishing. Default 400
-      label : ndt_iterations
-      min   : 0
-      max   : 1000
-      v     : 400
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : x
-      desc  : Initial X value. meters
-      label : x
-      min   : -100.1
-      max   : 100.1
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : y
-      desc  : Initial Y value. meters
-      label : y
-      min   : -100.1
-      max   : 100.1
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : z
-      desc  : Initial Z value. meters
-      label : z
-      min   : -100.1
-      max   : 100.1
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : roll
-      desc  : Initial roll angle. radians
-      label : roll
-      min   : -3.14157
-      max   : 3.14157
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : pitch
-      desc  : Initial pitch angle. radians
-      label : pitch
-      min   : -3.14157
-      max   : 3.14157
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : yaw
-      desc  : Initial yaw angle. radians
-      label : yaw
-      min   : -3.14157
-      max   : 3.14157
-      v     : 0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-

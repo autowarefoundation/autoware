@@ -43,7 +43,8 @@ namespace velodyne_pointcloud
 } // namespace velodyne_pointcloud
 
 
-// Register this plugin with pluginlib.  Names must match nodelets.xml.
+// Register this plugin with pluginlib.  Names must match nodelet_velodyne.xml.
 //
-// parameters: class type, base class type
-PLUGINLIB_EXPORT_CLASS(velodyne_pointcloud::RingColorsNodelet, nodelet::Nodelet)
+// parameters: package, class name, class type, base class type
+PLUGINLIB_DECLARE_CLASS(velodyne_pointcloud, RingColorsNodelet,
+                        velodyne_pointcloud::RingColorsNodelet, nodelet::Nodelet);

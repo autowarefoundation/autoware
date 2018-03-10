@@ -1,17 +1,17 @@
-# Build and Install Procedure for Nvidia DrivePX2
-## Prerequisites
+# Build and install procedure for Nvidia DrivePX2
+## Prerequires
  - Login with user nvidia
  - Internet connectivity
 
 ## Caution
- - Install a new DRM related file. Please backup your PX2.
+ - Install a new DRM related file. Plsease backup your PX2.
 
 ## Procedures
  Launch terminal software and execute the following steps.
 
-
-### DRM Library Installation
- PX2 has libDRM installed at the time of setup, but NVIDIA customized these libraries and an error occurs for Autoware.  
+ 
+### DRM Library installation
+ PX2 has libDRM installed at the time of setup, but NVIDIA customized these libraries and an error occurs for autoware.  
  So, you need to install common drm libraries.
 
 
@@ -34,7 +34,7 @@
     sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
     sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
     sudo apt-get update
-
+    
     sudo apt-get install -y build-essential cmake python-pip
     sudo apt-get install -y checkinstall
     sudo apt-get install -y python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential

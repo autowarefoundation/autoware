@@ -23,7 +23,6 @@
 static std::string PARENT_FRAME;
 static std::string CHILD_FRAME;
 static std::string POINTS_TOPIC;
-static int SCAN_NUM;
 static std::string OUTPUT_DIR;
 
 static pcl::PointCloud<velodyne_pointcloud::PointXYZIR> map;
@@ -139,7 +138,7 @@ void points_callback(const pcl::PointCloud<pcl::PointXYZI>::ConstPtr &input)
     }
     std::cout << "Wrote " << pcl_out.size() << " points to " << filename << "." << std::endl;
     added_scan_num++;
-    if(added_scan_num == SCAN_NUM)
+    if(added_scan_num == 300)
     {
       added_scan_num = 0;
       map_id++;
@@ -156,13 +155,11 @@ int main(int argc, char **argv)
   private_nh.getParam("parent_frame", PARENT_FRAME);
   private_nh.getParam("child_frame", CHILD_FRAME);
   private_nh.getParam("points_topic", POINTS_TOPIC);
-  private_nh.getParam("scan_num", SCAN_NUM);
   private_nh.getParam("output_dir", OUTPUT_DIR);
 
   std::cout << "parent_frame: " << PARENT_FRAME << std::endl;
   std::cout << "child_frame: " << CHILD_FRAME << std::endl;
   std::cout << "points_topic: " << POINTS_TOPIC << std::endl;
-  std::cout << "scan_num: " << SCAN_NUM << std::endl;
   std::cout << "output_dir: " << OUTPUT_DIR << std::endl;
 
   tf_listener = new tf::TransformListener();

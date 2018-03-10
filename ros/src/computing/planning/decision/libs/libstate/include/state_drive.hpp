@@ -249,7 +249,7 @@ private:
   friend class State<DriveBehaviorAcceptLanechangeState>;
   DriveBehaviorAcceptLanechangeState(void)
   {
-    StateName = "AcceptLane-Change";
+    StateName = "AcceptLaneChange";
     StateNum = DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE;
     StateKind = BEHAVIOR_STATE;
   }

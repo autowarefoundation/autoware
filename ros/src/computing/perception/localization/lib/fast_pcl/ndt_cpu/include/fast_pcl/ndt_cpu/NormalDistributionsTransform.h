@@ -36,8 +36,6 @@ public:
 	/* Compute and get fitness score */
 	double getFitnessScore(double max_range = DBL_MAX);
 
-	void updateVoxelGrid(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud);
-
 protected:
 	void computeTransformation(const Eigen::Matrix<float, 4, 4> &guess);
 

@@ -15,8 +15,8 @@ $ cd /ui/web/remote_monitor
 $ sudo npm install
 ```
 
-- Controller
-  - Logicool (Logitech) G29 Driving Force
+- controler
+  - Logicool G29 Driving Force
 
 ## Running
 ```
