@@ -173,7 +173,7 @@ void LaneSelectNode::processing()
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
 
-  if (current_state_ == "LANE_CHANGE")
+  if (current_state_.find("LANE_CHANGE") != std::string::npos)
   {
     try
     {
@@ -320,17 +320,22 @@ void LaneSelectNode::updateChangeFlag()
 
 void LaneSelectNode::changeLane()
 {
-  if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::right && right_lane_idx_ != -1 &&
-      std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
+  if (current_state_.find("LANE_CHANGE_LEFT") != std::string::npos)
   {
-    current_lane_idx_ = right_lane_idx_;
+    if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::left && left_lane_idx_ != -1 &&
+        std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = left_lane_idx_;
+    }
   }
-  else if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::left && left_lane_idx_ != -1 &&
-           std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
+  else if (current_state_.find("LANE_CHANGE_RIGHT") != std::string::npos)
   {
-    current_lane_idx_ = left_lane_idx_;
+    if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::right && right_lane_idx_ != -1 &&
+        std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = right_lane_idx_;
+    }
   }
-
   findNeighborLanes();
   return;
 }
@@ -693,16 +698,18 @@ void LaneSelectNode::callbackFromStates(const autoware_msgs::stateConstPtr &msg)
 {
   is_current_state_subscribed_ = true;
 
-  if (msg->behavior_state.find("LaneChange") != std::string::npos)
+  if (msg->behavior_state.find("LaneChangeLeft") != std::string::npos)
   {
-    current_state_ = std::string("LANE_CHANGE");
-    ;
+    current_state_ = std::string("LANE_CHANGE_LEFT");
+  }
+  else if (msg->behavior_state.find("LaneChangeRight") != std::string::npos)
+  {
+    current_state_ = std::string("LANE_CHANGE_RIGHT");
   }
   else
   {
     current_state_ = msg->main_state;
   }
-
   if (current_lane_idx_ == -1)
     initForLaneSelect();
   else

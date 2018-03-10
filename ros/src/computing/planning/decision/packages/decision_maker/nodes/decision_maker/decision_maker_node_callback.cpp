@@ -445,6 +445,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   else
   {
+    idx = (idx >= current_finalwaypoints_.waypoints.size()) ? idx = current_finalwaypoints_.waypoints.size() - 1 : idx;
     try
     {
       state_machine::StateFlags _TargetStateFlag;
