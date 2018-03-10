@@ -215,9 +215,7 @@ Date Create: 4/6/2017, Last Modified: 2/28/2018 \n
 """
 function loop(pub,n,c)
 
-  RobotOS.set_param("nloptcontrol_planner/flags/init",true)
-  println("nloptcontrol_planner has been initialized.")
-
+  init = false
   loop_rate = Rate(2.0) # 2 Hz
   while !is_shutdown()
       println("Running model for the: ",n.r.eval_num," time")
@@ -261,6 +259,12 @@ function loop(pub,n,c)
       if ((n.r.dfs_plant[end][:x][end]-c["goal"]["x"])^2 + (n.r.dfs_plant[end][:y][end]-c["goal"]["y"])^2)^0.5 < 2*n.XF_tol[1]
          println("Goal Attained! \n"); n.mpc.goal_reached=true;
          break;
+      end
+
+      if !init  # calling this node initialized after the first solve so that /traj/ parameters are set
+        init = true
+        RobotOS.set_param("nloptcontrol_planner/flags/init",true)
+        println("nloptcontrol_planner has been initialized.")
       end
       rossleep(loop_rate)  # sleep for leftover time
   end  # while()
