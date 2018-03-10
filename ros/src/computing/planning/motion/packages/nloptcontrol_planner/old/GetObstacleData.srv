@@ -1,0 +1,5 @@
+obstacle_detector/CircleObstacle[] circles
+---
+obstacle_detector/CircleObstacle[] circles
+bool success                         # return true if get successful
+string status_message                # comments if available

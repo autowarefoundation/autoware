@@ -1,0 +1,6 @@
+float64[] t                       # time [s]
+float64[] sa                      # steering angle [rad/s]
+float64[] vx                      # x speed [m/s]
+float64[] x                       # x position [m]
+float64[] y                       # y position [m]
+float64[] psi                     # heading angle [rad]
