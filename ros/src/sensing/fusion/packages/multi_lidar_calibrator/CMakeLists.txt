@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         pcl_ros
         pcl_conversions
+        qt5core
         )
 
 catkin_package(CATKIN_DEPENDS
