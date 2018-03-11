@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     tf
 )
-
+find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL)
 
@@ -49,6 +49,7 @@ target_link_libraries(autoware_camera_lidar_calibration_node
     ${OpenCV_LIBRARIES}
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
+    ${Qt5Core_LIBRARIES}
 )
 add_dependencies(autoware_camera_lidar_calibration_node ${catkin_EXPORTED_TARGETS})
 
