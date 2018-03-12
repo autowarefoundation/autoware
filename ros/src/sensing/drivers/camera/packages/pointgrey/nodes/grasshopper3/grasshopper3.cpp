@@ -51,6 +51,7 @@
 
 #include <signal.h>
 
+
 // ---- Apex-specific settings ----
 #define APEX_MODE FlyCapture2::MODE_1
 #define APEX_PIXEL_FORMAT FlyCapture2::PIXEL_FORMAT_RAW8
@@ -422,16 +423,22 @@ int main(int argc, char **argv)
 		int i = 0;
 		for (auto *camera : cameras)
 		{
+		
 			FlyCapture2::Image image;
+			std::cout << ros::Time::now() << " before  RetrieveBuffer" << std::endl;
 			FlyCapture2::Error error = camera->RetrieveBuffer(&image);
+			std::cout << ros::Time::now() << " after  RetrieveBuffer" << std::endl;
 			if (error != FlyCapture2::PGRERROR_OK)
 			{
-				error.PrintErrorTrace();
-				std::exit(-1);
+			  std::cout << ros::Time::now() << "error != FlyCapture2::PGRERROR_OK" << std::endl;
+			  error.PrintErrorTrace();
+			  continue;
+			  //std::exit(-1);
 			}
 
 			// check encoding pattern
 			std::string encoding_pattern;
+			std::cout << ros::Time::now() << " before  switch" << std::endl;
 			switch (image.GetBayerTileFormat()) {
 			case FlyCapture2::RGGB: 
 			  encoding_pattern = "bayer_rggb8";
@@ -448,6 +455,7 @@ int main(int argc, char **argv)
 			default:
 			  encoding_pattern = "rgb8";
 			}
+			std::cout << ros::Time::now() << " after  switch" << std::endl;
 
 			sensor_msgs::Image msg;
 			//publish*******************
@@ -456,6 +464,7 @@ int main(int argc, char **argv)
 			msg.header.frame_id = "camera";
 			msg.header.stamp.sec = ros::Time::now().sec;
 			msg.header.stamp.nsec = ros::Time::now().nsec;
+			std::cout << ros::Time::now() << " before  getting data" << std::endl;
 			msg.height = image.GetRows();
 			msg.width  = image.GetCols();
 			msg.encoding = encoding_pattern;
@@ -464,10 +473,10 @@ int main(int argc, char **argv)
 			size_t image_size = image.GetDataSize();
 			msg.data.resize(image_size);
 			memcpy(msg.data.data(), image.GetData(), image_size);
-
-
+			std::cout << ros::Time::now() << " after getting data" << " i: " << i << std::endl;
 
 			pub[i].publish(msg);
+			std::cout << ros::Time::now() << " after pub" << std::endl;
 			i++;
 		}
 
@@ -475,15 +484,14 @@ int main(int argc, char **argv)
 		loop_rate.sleep();
 		count++;
 	}
-
+	std::cout << ros::Time::now() << " out of while" << std::endl;
 	//close cameras
 	for (auto *camera : cameras)
-	{
-		camera->StopCapture();
-		camera->Disconnect();
-		delete camera;
-	}
-
-	ROS_INFO("Camera node closed correctly");
+	  {
+	    camera->StopCapture();
+	    camera->Disconnect();
+	    delete camera;
+	  }
+	std::cout << ros::Time::now() << " after StopCapture" << std::endl;
 	return 0;
 }
