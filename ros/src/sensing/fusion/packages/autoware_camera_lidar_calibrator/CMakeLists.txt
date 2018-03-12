@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     tf
 )
-
+find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL)
 
