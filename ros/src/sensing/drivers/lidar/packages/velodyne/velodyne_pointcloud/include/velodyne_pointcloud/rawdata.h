@@ -137,7 +137,7 @@ namespace velodyne_rawdata
      */
     int setup(ros::NodeHandle private_nh);
 
-    void unpack(const velodyne_msgs::VelodynePacket &pkt, VPointCloud &pc);
+    void unpack(const velodyne_msgs::VelodynePacket &pkt, VPointCloud &pc, int packets_num);
     
     void setParameters(double min_range, double max_range, double view_direction,
                        double view_width);

@@ -1,11 +1,14 @@
 <!-- -*- mode: XML -*- -->
 <!-- run velodyne_pointcloud/CloudNodelet in a nodelet manager for an HDL-32E
+
      arg: calibration = path to calibration file (default: standard 32db.yaml)
           pcap = path to packet capture file (default: use real device)
+
      $Id$
   -->
 
 <launch>
+<remap from="velodyne_points" to="points_raw"/>
 
   <!-- declare arguments with default values -->
   <arg name="pcap" default="" />
@@ -21,5 +24,5 @@
   <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
     <arg name="calibration" value="$(arg calibration)"/>
   </include>
-
+    
 </launch>

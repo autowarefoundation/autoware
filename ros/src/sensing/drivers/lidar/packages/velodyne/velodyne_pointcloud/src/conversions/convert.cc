@@ -69,7 +69,7 @@ namespace velodyne_pointcloud
     // process each packet provided by the driver
     for (size_t i = 0; i < scanMsg->packets.size(); ++i)
       {
-        data_->unpack(scanMsg->packets[i], *outMsg);
+        data_->unpack(scanMsg->packets[i], *outMsg, scanMsg->packets.size());
       }
 
     // publish the accumulated cloud message
