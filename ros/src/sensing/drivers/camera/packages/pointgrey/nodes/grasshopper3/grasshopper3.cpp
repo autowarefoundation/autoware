@@ -146,7 +146,8 @@ void initialize_cameras(std::vector<FlyCapture2::Camera *> &cameras,
                         FlyCapture2::BusManager *bus_manger,
                         int camera_num,
                         FlyCapture2::Mode desired_mode,
-                        FlyCapture2::PixelFormat desired_pixel_format)
+                        FlyCapture2::PixelFormat desired_pixel_format,
+                        int timeout_ms)
 {
 	// Connect to all detected cameras and attempt to set them to
 	// a common video mode and frame rate
@@ -269,6 +270,26 @@ void initialize_cameras(std::vector<FlyCapture2::Camera *> &cameras,
 			ROS_ERROR("Selected Mode not supported, using last working mode.");
 		}
 
+		FlyCapture2::FC2Config camera_config;
+		error = camera->GetConfiguration(&camera_config);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			ROS_INFO("Could not read configuration from Camera");
+		}
+		else
+		{
+			if (timeout_ms > 0)
+				camera_config.grabTimeout = timeout_ms;
+
+			error = camera->SetConfiguration(&camera_config);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				ROS_INFO("Could not set configuration on Camera");
+			}
+		}
+
 		print_camera_info(&camera_info);
 		cameras.push_back(camera);
 	}
@@ -359,11 +380,12 @@ void getMatricesFromFile(const ros::NodeHandle& nh, sensor_msgs::CameraInfo &cam
 /*!
  * Reads the params from the console
  * @param private_nh[in] Private Ros node handle
- * @param fps[out] Read value from the console
- * @param mode[out] Read value from the console
- * @param format[out] Read value from the console
+ * @param fps[out] Read value from the console double
+ * @param mode[out] Read value from the console integer
+ * @param format[out] Read value from the console raw or rgb
+ * @param timeout[out] Read value from the console timeout in ms
  */
-void ros_get_params(const ros::NodeHandle& private_nh, int& fps, int& mode, std::string& format)
+void ros_get_params(const ros::NodeHandle& private_nh, int& fps, int& mode, std::string& format, int& timeout)
 {
 	if (private_nh.getParam("fps", fps))
 	{
@@ -389,6 +411,14 @@ void ros_get_params(const ros::NodeHandle& private_nh, int& fps, int& mode, std:
 		ROS_INFO("No param received, defaulting format to %s", format.c_str());
 	}
 
+	if (private_nh.getParam("timeout", timeout))
+	{
+		ROS_INFO("timeout set to %d ms", timeout);
+	} else {
+		timeout = 1000;
+		ROS_INFO("No param received, defaulting timeout to %d ms", timeout);
+	}
+
 }
 
 int main(int argc, char **argv)
@@ -403,10 +433,10 @@ int main(int argc, char **argv)
 
 	signal(SIGTERM, signal_handler);//detect closing
 
-	int fps, camera_mode;
+	int fps, camera_mode, timeout;
 	std::string pixel_format;
 
-	ros_get_params(private_nh, fps, camera_mode, pixel_format);
+	ros_get_params(private_nh, fps, camera_mode, pixel_format, timeout);
 
 	//
 	FlyCapture2::Mode desired_mode;
@@ -426,7 +456,7 @@ int main(int argc, char **argv)
 	//init cameras
 	int camera_num = get_num_cameras(&busMgr);
 	std::vector<FlyCapture2::Camera*> cameras;
-	initialize_cameras(cameras, &busMgr, camera_num, desired_mode, desired_pixel_format);
+	initialize_cameras(cameras, &busMgr, camera_num, desired_mode, desired_pixel_format, timeout);
 
 	///////calibration data
 	sensor_msgs::CameraInfo camerainfo_msg;
@@ -463,7 +493,7 @@ int main(int argc, char **argv)
 			if (error != FlyCapture2::PGRERROR_OK)
 			{
 				error.PrintErrorTrace();
-				std::exit(-1);
+				continue;
 			}
 
 			// check encoding pattern
