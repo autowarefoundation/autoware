@@ -399,6 +399,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name  : timeout
+      label : timeout
+      desc  : Miliseconds to wait before dropping the frame. Default 1000 ms
+      min   : 10
+      max   : 2000
+      v     : 1000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : ladybug_params
     vars  :
