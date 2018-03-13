@@ -21,7 +21,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
   CATKIN_DEPENDS roscpp geometry_msgs op_utility op_planner autoware_msgs
-  DEPENDS system_lib
 )
 
 ###########
