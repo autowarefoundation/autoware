@@ -51,7 +51,7 @@ EXECUTE_PROCESS(
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
     catkin_package(
             CATKIN_DEPENDS libdpm_ocv
-            libdpm_ttic fusion kf std_msgs geometry_msgs autoware_msgs
+            libdpm_ttic fusion kf_lib std_msgs geometry_msgs autoware_msgs
     )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
     catkin_package(

@@ -16,7 +16,10 @@ find_package(OpenCV REQUIRED)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS autoware_msgs
+        CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs autoware_msgs
+	INCLUDE_DIRS include
+	DEPENDS opencv
+	LIBRARIES kf_lib
 )
 
 ###########
