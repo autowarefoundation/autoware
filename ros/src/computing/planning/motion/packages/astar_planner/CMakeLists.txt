@@ -8,9 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   tf
   waypoint_follower
-  autoware_msgs 
+  autoware_msgs
   vector_map
 )
+
+find_package(Boost REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -27,11 +29,12 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 add_executable(velocity_set nodes/velocity_set/velocity_set.cpp nodes/velocity_set/velocity_set_path.cpp nodes/velocity_set/velocity_set_info.cpp nodes/velocity_set/libvelocity_set.cpp)
-target_link_libraries(velocity_set ${catkin_LIBRARIES})
-add_dependencies(velocity_set 
+target_link_libraries(velocity_set ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_dependencies(velocity_set
 ${catkin_EXPORTED_TARGETS})
 
 add_executable(obstacle_avoid nodes/obstacle_avoid/obstacle_avoid.cpp nodes/obstacle_avoid/astar_search.cpp nodes/obstacle_avoid/search_info_ros.cpp nodes/obstacle_avoid/astar_util.cpp)

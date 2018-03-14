@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/circular_buffer.hpp>
+
 #include <geometry_msgs/Point.h>
 #include <ros/ros.h>
 #include <vector_map/vector_map.h>
@@ -163,7 +165,10 @@ public:
   {
     decelerate_points_.push_back(p);
   }
+
   geometry_msgs::Point getObstaclePoint(const EControl &kind) const;
+  geometry_msgs::Point getNearestObstaclePoint(const geometry_msgs::Point &current_position) const;
+
   void clearStopPoints()
   {
     stop_points_.clear();
@@ -175,6 +180,144 @@ public:
 
   ObstaclePoints() : stop_points_(0), decelerate_points_(0)
   {
+  }
+};
+
+class ObstacleTracker
+{
+private:
+  enum class ETrackingState
+  {
+    INITIALIZE = 1,
+    TRACKING = 2,
+    LOST = 3,
+  };
+
+  class KalmanFilter
+  {
+  private:
+    double x_, p_, k_, Q_, R_;
+  public:
+    KalmanFilter(double Q = 1e-5, double R = 1e-3)
+    : x_(1e-0), p_(1e-1), k_(1e-1)
+    { Q_ = Q; R_ = R; }
+    void init(double x0) { x_ = x0; }
+    void predict() {
+      x_ = x_;
+      p_ = p_ + Q_;
+    }
+    double update(const double z)
+    {
+      k_ = p_ / (p_ + R_);
+      x_ = x_ + k_ * (z - x_);
+      p_ = (1.0 - k_) * p_;
+      return x_;
+    }
+  };
+
+  bool use_tracking_;
+  int frame_thres_;
+  double moving_thres_;
+
+  int tracking_counter_, lost_counter_;
+  int waypoint_;
+  double velocity_;
+  tf::Vector3 position_;
+  ETrackingState state_;
+  ros::Time time_;
+
+  boost::circular_buffer<tf::Vector3> position_buf_;
+  boost::circular_buffer<ros::Time> time_buf_;
+
+  KalmanFilter kf_;
+
+  double calcVelocity(const geometry_msgs::Point& cpos)
+  {
+    tf::Vector3 cx;
+    tf::pointMsgToTF(cpos, cx);
+    double dx = (position_buf_[1]-cx).length()-(position_buf_[0]-cx).length();
+    ros::Duration dt = time_buf_[1]-time_buf_[0];
+    kf_.predict();
+    double v = kf_.update(dx/dt.toSec());
+    v = (v > moving_thres_) ? v : 0.0;
+    return v;
+  }
+
+public:
+  ObstacleTracker(const bool& use_tracking, double moving_thres)
+  {
+    position_buf_.set_capacity(2);
+    time_buf_.set_capacity(2);
+    use_tracking_ = use_tracking;
+    moving_thres_ = moving_thres;
+    reset();
+  }
+
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity, const geometry_msgs::Point current_position)
+  {
+
+    if (!use_tracking_)
+    {
+      waypoint_ = stop_waypoint;
+      velocity_ = 0.0;
+      return;
+    }
+
+    lost_counter_ = 0;
+    tracking_counter_++;
+    time_ = ros::Time::now();
+    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+    position_buf_.push_back(position_);
+    time_buf_.push_back(time_);
+
+    if (state_ == ETrackingState::INITIALIZE)
+    {
+      kf_.init(waypoint_velocity);
+      waypoint_ = stop_waypoint;
+      velocity_ = waypoint_velocity;
+      if (tracking_counter_ >= 2)
+        state_ = ETrackingState::TRACKING;
+    }
+    else if (state_ == ETrackingState::TRACKING)
+    {
+      waypoint_ = stop_waypoint;
+      velocity_ = calcVelocity(current_position);
+    }
+  }
+
+  void update()
+  {
+    lost_counter_++;
+    kf_.predict();
+    if (lost_counter_ >= 5)
+    {
+      lost_counter_ = 0;
+      reset();
+    }
+  }
+
+  void reset()
+  {
+    state_ = ETrackingState::INITIALIZE;
+    tracking_counter_ = 0;
+    lost_counter_ = 0;
+    waypoint_ = -1;
+    velocity_ = 0.0;
+    position_ = tf::Vector3(0.0, 0.0, 0.0);
+    position_buf_.clear();
+    time_buf_.clear();
+    kf_.init(0.0);
+  }
+
+  int getWaypointIdx()
+  {
+    return waypoint_;
+  }
+
+  double getVelocity()
+  {
+    return velocity_;
   }
 };
 

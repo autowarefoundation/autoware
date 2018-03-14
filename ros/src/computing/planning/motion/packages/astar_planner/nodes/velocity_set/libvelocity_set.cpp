@@ -336,3 +336,29 @@ geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind) cons
     return point;
   }
 }
+
+geometry_msgs::Point ObstaclePoints::getNearestObstaclePoint(const geometry_msgs::Point &current_position) const
+{
+
+  double distance, min_distance = DBL_MAX;
+  tf::Vector3 current_, nearest_, stop_;
+  tf::pointMsgToTF(current_position, current_);
+
+  for (const auto &p : stop_points_)
+  {
+    tf::pointMsgToTF(p, stop_);
+    distance = (stop_-current_).length();
+    if (distance < min_distance)
+    {
+      min_distance = distance;
+      nearest_ = stop_;
+    }
+  }
+
+  geometry_msgs::Point nearest_point;
+  nearest_point.x = nearest_.x();
+  nearest_point.y = nearest_.y();
+  nearest_point.z = nearest_.z();
+
+  return nearest_point;
+}

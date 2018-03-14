@@ -159,7 +159,7 @@ void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, doub
 
 }
 
-void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration)
+void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, double obstacle_velocity, int closest_waypoint, double deceleration)
 {
   if (closest_waypoint < 0)
     return;
@@ -170,8 +170,8 @@ void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle
     if (!checkWaypoint(index, __FUNCTION__))
       continue;
 
-    // v = (v0)^2 + 2ax, and v0 = 0
-    double changed_vel = std::sqrt(2.0 * deceleration * calcInterval(index, stop_waypoint));
+    // v = (v0)^2 + 2ax, and v0 = obstacle velocity
+    double changed_vel = std::sqrt(obstacle_velocity * obstacle_velocity + 2.0 * deceleration * calcInterval(index, stop_waypoint));
 
     double prev_vel = prev_waypoints_.waypoints[index].twist.twist.linear.x;
     if (changed_vel > prev_vel)
@@ -184,10 +184,10 @@ void VelocitySetPath::changeWaypointsForStopping(int stop_waypoint, int obstacle
     }
   }
 
-  // fill velocity with 0 for stopping
+  // fill velocity with obstacle velocity for stopping
   for (int i = stop_waypoint; i <= obstacle_waypoint; i++)
   {
-    new_waypoints_.waypoints[i].twist.twist.linear.x = 0;
+    new_waypoints_.waypoints[i].twist.twist.linear.x = new_waypoints_.waypoints[stop_waypoint].twist.twist.linear.x;
   }
 
 }
