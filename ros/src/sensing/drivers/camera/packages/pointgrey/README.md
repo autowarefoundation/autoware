@@ -23,6 +23,7 @@ Sensing Tab -> Cameras -> PointGrey Grasshopper3
 |`fps`|*integer* |Defines the frames per second at which to attempt image stream acquisition.|
 |`mode`|*integer*|Camera Mode - please check your camera for valid modes (0,1,2,...,31). |
 |`format`|*string*|Pixel Format, which can be either `raw` or `rgb`. `raw` will publish the default bayer format according to your camera sensor. Both modes have 8 bits per pixel per channel.|
+|`timeout`|*integer*|Timeout in miliseconds. Default 1000 ms.|
 |`CalibrationFile`|*string*|Path to an Autoware-compatible calibration file to be published in the `camera_info` topic related to this camera.|
 
 ## Ladybug
