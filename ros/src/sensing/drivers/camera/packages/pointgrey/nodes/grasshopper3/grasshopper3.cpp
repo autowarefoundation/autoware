@@ -493,7 +493,9 @@ int main(int argc, char **argv)
 			if (error != FlyCapture2::PGRERROR_OK)
 			{
 				error.PrintErrorTrace();
-				continue;
+				// this will exit from while and continue in the main and close the
+				// camera properly. launch will will then respawn the camera
+				break;
 			}
 
 			// check encoding pattern
