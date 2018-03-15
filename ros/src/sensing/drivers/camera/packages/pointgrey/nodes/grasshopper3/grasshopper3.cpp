@@ -307,7 +307,7 @@ unsigned int get_num_cameras(FlyCapture2::BusManager* bus_manager)
 	if (error != FlyCapture2::PGRERROR_OK)
 	{
 		error.PrintErrorTrace();
-		std::exit(-1);
+		return 0;
 	}
 
 	std::cout << "Number of cameras detected: " << cameras << std::endl;
@@ -315,7 +315,7 @@ unsigned int get_num_cameras(FlyCapture2::BusManager* bus_manager)
 	if (cameras < 1)
 	{
 		std::cerr << "Error: This program requires at least 1 camera." << std::endl;
-		std::exit(-1);
+		return 0;
 	}
 	return cameras;
 }
@@ -455,6 +455,11 @@ int main(int argc, char **argv)
 
 	//init cameras
 	int camera_num = get_num_cameras(&busMgr);
+	if (camera_num == 0)
+	  {
+	    std::cerr << "No cameras available, exiting" << std::endl;
+	    return 0;
+	  }
 	std::vector<FlyCapture2::Camera*> cameras;
 	initialize_cameras(cameras, &busMgr, camera_num, desired_mode, desired_pixel_format, timeout);
 
@@ -495,7 +500,7 @@ int main(int argc, char **argv)
 				error.PrintErrorTrace();
 				// this will exit from while and continue in the main and close the
 				// camera properly. launch will will then respawn the camera
-				break;
+				running = false;
 			}
 
 			// check encoding pattern
