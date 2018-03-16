@@ -628,7 +628,7 @@ int main(int argc, char** argv)
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 1.39); // < 5 [km/h]
+  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 2.78); // < 10 [km/h]
 
   // class
   CrossWalk crosswalk;
