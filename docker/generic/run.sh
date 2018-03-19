@@ -22,7 +22,26 @@ else
 fi
 echo "Shared directory: ${HOST_DIR}"
 
-nvidia-docker run \
+if nvidia-smi > /dev/null 2>&1; then # Detect if nvidia is used
+  if dpkg -s nvidia-docker2 > /dev/null 2>&1; then # Detect if nvidia-docker v2 is used
+    echo "Will run with nvidia acceleration (nvidia-docker v2)"
+    DOCKER_CMD="docker"
+    RUN_ARG="--runtime=nvidia"
+    TAG_SUFFIX="-nvidia"
+  else
+    echo "Will run without nvidia acceleration (nvidia-docker v1 - deprecated)"
+    DOCKER_CMD="nvidia-docker"
+    RUN_ARG=""
+    TAG_SUFFIX=""
+  fi
+else
+  echo "Will run without nvidia acceleration"
+  DOCKER_CMD="docker"
+  RUN_ARG=""
+  TAG_SUFFIX=""
+fi
+
+$DOCKER_CMD run $RUN_ARG \
     -it --rm \
     --volume=$XSOCK:$XSOCK:rw \
     --volume=$XAUTH:$XAUTH:rw \
@@ -32,4 +51,4 @@ nvidia-docker run \
     -u autoware \
     --privileged -v /dev/bus/usb:/dev/bus/usb \
     --net=host \
-    autoware-$1
+    autoware-${1}${TAG_SUFFIX}
