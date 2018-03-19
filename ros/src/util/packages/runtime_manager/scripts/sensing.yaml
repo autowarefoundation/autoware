@@ -42,22 +42,33 @@ subs :
         desc : USB Generic desc sample
         probe: 'lsusb -v | grep wTerminalType | grep "Camera Sensor" > /dev/null'
         run  : roslaunch runtime_manager uvc_camera.launch
+
       - name : IEEE1394
         desc : IEEE1394 desc sample
         probe:
         run  :
+
       - name : Baumer VLG-22
         desc : Baumer VLG-22 desc sample
         probe:
         run  : roslaunch vlg22c_cam baumer.launch
+
       - name : IDS UI-3060CP
         desc : IDS UI-3060CP (Requires official ueye package)
         probe:
         run  : roslaunch ueye nodelets.launch
+
       - name : Sekonix 3322/3323 GMSLCamera
-        desc : gmsl camera. run on PX2 only
+        desc : gmsl camera. runs only on PX2
         probe:
         run  : roslaunch autoware_driveworks_interface gmsl_interface
+
+      - name : AVT Vimba Mako
+        desc : Allied Vision Technologies Mako Camera. Requires the installation of avt_vimba_camera package and Vimba SDK.
+        run  : do_shell_exec "$(rospack find runtime_manager)/scripts/avt_vimba.sh"
+        param: avt_params
+        gui  :
+          flags: [ SIGTERM, kill_children ]
 
   - name : GNSS
     desc : GNSS desc sample
@@ -431,29 +442,125 @@ params :
         delim       : ':='
         only_enable : True
 
-#  - name  : points_image
-#    vars  :
-#    - name      : file
-#      kind      : path
-#      v         : ''
-#      cmd_param :
-#        delim : ''
-
-#  - name  : scan_image
-#    vars  :
-#    - name      : file
-#      kind      : path
-#      v         : ''
-#      rosparam  : /scan2image/camera_yaml
-
-#  - name  : virtual_scan_image
-#    vars  :
-#    - name      : file
-#      kind      : path
-#      v         : ''
-#      cmd_param :
-#        dash : ''
-#        delim: ':='
+  - name  : avt_params
+    vars  :
+    - name  : guid
+      label : guid
+      desc  : Camera serial number to connect to. Choose either this or IP Address
+      kind  : str
+      v     : '50-'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : ip
+      label : ip
+      desc  : IP address of the camera to connect to.
+      kind  : str
+      v     : ''
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : camera_info_url
+      label : camera_info_url
+      desc  : Path to the calibration file.
+      kind  : path
+      v     : ''
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : show_debug_prints
+      label : show_debug_prints
+      desc  : Print debug messages to the terminal. True or False.
+      kind  : str
+      v     : 'true'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : acquisition_mode
+      label : acquisition_mode
+      desc  : Default Continuous
+      kind  : str
+      v     : 'Continuous'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : acquisition_rate
+      label : acquisition_rate
+      desc  : Frames per second. Default 20
+      min   : 1
+      max   : 100
+      v     : 20
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : pixel_format
+      label : pixel_format
+      desc  : Please check launch file for all availables format. Default BayerRG8
+      kind  : str
+      v     : 'BayerRG8'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : exposure
+      label : exposure
+      desc  : Exposure time in us. Default 10000
+      min   : 100
+      max   : 500000
+      v     : 10000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : gain
+      label : gain
+      desc  : Gain in db. Default 15
+      min   : 0
+      max   : 100
+      v     : 15
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : exposure_auto
+      label : exposure_auto
+      desc  : Exposure mode. Continuous, Once, Off.
+      kind  : str
+      v     : 'Continuous'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : gain_auto
+      label : gain_auto
+      desc  : Automatic gain mode. Continuous, Once, Off.
+      kind  : str
+      v     : 'Continuous'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : whitebalance_auto
+      label : whitebalance_auto
+      desc  : White balance mode. Continuous, Once, Off.
+      kind  : str
+      v     : 'Continuous'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : gain_auto_max
+      label : gain_auto_max
+      desc  : Automatic maximum gain in db. Default 32
+      min   : 0
+      max   : 100
+      v     : 32
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : exposure_auto_max
+      label : exposure_auto_max
+      desc  : Auto exposure maximum value in us. Default 50000
+      min   : 100
+      max   : 500000
+      v     : 50000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : voxel_grid_filter
     topic : /config/voxel_grid_filter

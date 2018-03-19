@@ -1,0 +1,112 @@
+<launch>
+    <arg name="guid" default=""/>
+    <arg name="ip" default=""/>
+    <arg name="camera_info_url" default=""/>
+    <arg name="frame_id" default="avt_camera"/>
+    <arg name="trig_timestamp_topic" default=""/>
+    <arg name="show_debug_prints" default="true"/>
+
+    <arg name="trigger_source" default="FixedRate"/>
+
+    <arg name="acquisition_mode" default="Continuous"/>
+    <arg name="acquisition_rate" default="20"/>
+
+    <arg name="pixel_format" default="BayerRG8"/>
+
+    <arg name="exposure" default="10000"/>
+    <arg name="gain" default="15"/>
+
+    <arg name="exposure_auto" default="Continuous"/>
+    <arg name="gain_auto" default="Continuous"/>
+    <arg name="whitebalance_auto" default="Continuous"/>
+
+    <arg name="exposure_auto_max" default="50000"/>
+    <arg name="gain_auto_max" default="50"/>
+
+    <arg name="binning_x" default="1"/>
+    <arg name="binning_y" default="1"/>
+    <arg name="decimation_x" default="1"/>
+    <arg name="decimation_y" default="1"/>
+    <arg name="x_offset" default="0"/>
+    <arg name="y_offset" default="0"/>
+
+    <arg name="width" default="1920"/>
+    <arg name="height" default="1440"/>
+
+    <arg name="stream_bytes_per_second" default="45000000"/>
+
+    <group ns="avt_camera">
+        <node name="image_proc" pkg="image_proc" type="image_proc"/>
+    </group>
+
+    <node name="avt_camera" pkg="avt_vimba_camera" type="mono_camera_node" output="screen">
+        <param name="guid" value="$(arg guid)"/>
+        <param name="ip" value="$(arg ip)"/>
+        <param name="camera_info_url" value="$(arg camera_info_url)"/>
+        <param name="frame_id" value="$(arg frame_id)"/>
+        <param name="trig_timestamp_topic" value="$(arg trig_timestamp_topic)"/>
+        <param name="show_debug_prints" value="$(arg show_debug_prints)"/>
+
+        <!-- Trigger mode:
+            1. Freerun
+            2. SyncIn1
+            3. SyncIn2
+            4. SyncIn3
+            5. SyncIn4
+            6. FixedRate
+            7. Software
+        -->
+        <param name="trigger_source" value="$(arg trigger_source)"/>
+
+        <!-- Acquisition mode:
+            1. Continuous
+            2. SingleFrame
+            3. MultiFrame
+            4. Recorder
+        -->
+        <param name="acquisition_mode" value="$(arg acquisition_mode)"/>
+
+        <!-- Acquisition rate in fps -->
+        <param name="acquisition_rate" value="$(arg acquisition_rate)"/>
+
+        <!-- Pixel format:
+            1. Mono8
+            2. Mono12
+            3. Mono12Packed
+            4. BayerRG8
+            5. BayerRG12Packed
+            6. BayerGR12
+            7. RGB8Packed
+            8. BGR8Packed
+        -->
+        <param name="pixel_format" value="$(arg pixel_format)"/>
+        <!-- Exposure in us -->
+        <param name="exposure" value="$(arg exposure)"/>
+        <!-- Gain in dB -->
+        <param name="gain" value="$(arg gain)"/>
+
+        <!-- Auto control
+            1. Off
+            2. Once
+            3. Continuous
+        -->
+        <param name="exposure_auto" value="$(arg exposure_auto)"/>
+        <param name="gain_auto" value="$(arg gain_auto)"/>
+        <param name="whitebalance_auto" value="$(arg whitebalance_auto)"/>
+
+        <param name="exposure_auto_max" value="$(arg exposure_auto_max)"/>
+        <param name="gain_auto_max" value="$(arg gain_auto_max)"/>
+
+        <param name="binning_x" value="$(arg binning_x)"/>
+        <param name="binning_y" value="$(arg binning_y)"/>
+        <param name="decimation_x" value="$(arg decimation_x)"/>
+        <param name="decimation_y" value="$(arg decimation_y)"/>
+        <param name="x_offset" value="$(arg x_offset)"/>
+        <param name="y_offset" value="$(arg y_offset)"/>
+        <param name="width" value="$(arg width)"/>
+        <param name="height" value="$(arg height)"/>
+
+        <param name="stream_bytes_per_second" value="$(arg stream_bytes_per_second)"/>
+    </node>
+
+</launch>
