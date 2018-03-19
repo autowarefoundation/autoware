@@ -273,11 +273,17 @@ public:
 
     if (state_ == ETrackingState::INITIALIZE)
     {
-      kf_.init(waypoint_velocity);
-      waypoint_ = stop_waypoint;
-      velocity_ = waypoint_velocity;
-      if (tracking_counter_ >= 2)
-        state_ = ETrackingState::TRACKING;
+//      kf_.init(waypoint_velocity);
+//      waypoint_ = stop_waypoint;
+//      velocity_ = waypoint_velocity;
+
+      if (tracking_counter_ >= 2) {
+          state_ = ETrackingState::TRACKING;
+//          std::cerr << "tracking\n";
+          kf_.init(calcVelocity(current_position));
+          waypoint_ = stop_waypoint;
+          velocity_ = calcVelocity(current_position);
+      }
     }
     else if (state_ == ETrackingState::TRACKING)
     {
