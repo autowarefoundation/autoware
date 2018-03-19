@@ -144,7 +144,7 @@ namespace velodyne_rawdata
    *  @param pc shared pointer to point cloud (points are appended)
    */
   void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt,
-                       VPointCloud &pc)
+                       VPointCloud &pc, int packets_num)
   {
     ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp);
     
@@ -190,7 +190,13 @@ namespace velodyne_rawdata
              ||(config_.min_angle > config_.max_angle 
              && (raw->blocks[i].rotation <= config_.max_angle 
              || raw->blocks[i].rotation >= config_.min_angle))){
-          float distance = tmp.uint * DISTANCE_RESOLUTION;
+
+          float distance;
+          if (packets_num==(int) ceil(1507.0 / 10))
+            distance = tmp.uint * DISTANCE_RESOLUTION * 2;
+          else
+            distance = tmp.uint * DISTANCE_RESOLUTION;
+
           distance += corrections.dist_correction;
   
           float cos_vert_angle = corrections.cos_vert_correction;

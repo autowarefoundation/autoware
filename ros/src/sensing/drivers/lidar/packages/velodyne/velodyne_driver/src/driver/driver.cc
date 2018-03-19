@@ -60,7 +60,7 @@ VelodyneDriver::VelodyneDriver(ros::NodeHandle node,
     }
     else if (config_.model == "32C")
     {
-      packet_rate = 1808.0;
+      packet_rate = 1507.0;
       model_full_name = std::string("VLP-") + config_.model;
     }
   else if (config_.model == "VLP16")
