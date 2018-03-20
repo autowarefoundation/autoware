@@ -48,6 +48,7 @@ private:
   int lkup_crv_width_;
   double velocity_max_, velocity_min_;
   double accel_limit_, decel_limit_, resample_interval_;
+  int delay_offset_;
 public:
   WaypointFilter();
   ~WaypointFilter();

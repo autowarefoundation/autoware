@@ -54,6 +54,7 @@ namespace waypoint_maker
     private_nh_.param<double>("radius_min", r_min_, 6.0);
     private_nh_.param<int>("lookup_curve_width", lkup_crv_width_, 5);
     private_nh_.param<double>("resample_interval", resample_interval_, 1.0);
+    private_nh_.param<int>("delay_offset", delay_offset_, 6);
     r_inf_ = 10 * r_max_;
   }
 
@@ -78,8 +79,8 @@ namespace waypoint_maker
     //set curve_velocity on curve begining
     for(const auto& el : curve_list)
     {
-      const unsigned long start_idx = el.first;
-      const unsigned long end_idx = el.second.first;
+      const unsigned long start_idx = (el.first > delay_offset_) ? (el.first - delay_offset_) : 0;
+      const unsigned long end_idx = (el.second.first > delay_offset_) ? (el.second.first - delay_offset_) : 0;
       const double radius = el.second.second;
       const double vmax = velocity_max_;
       const double vmin = vel_param[0] * radius + vel_param[1];

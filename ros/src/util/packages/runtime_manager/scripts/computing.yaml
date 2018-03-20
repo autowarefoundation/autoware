@@ -3074,6 +3074,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : delay_offset
+      desc      : offset points for delay correction.
+      label     : offset for delay correction
+      min       : 0
+      max       : 20
+      v         : 6
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : waypoint_velocity_visualizer
     vars  :
