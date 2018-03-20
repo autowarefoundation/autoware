@@ -30,6 +30,7 @@ enum class EObstacleType
   ON_WAYPOINTS = 1,
   ON_CROSSWALK = 2,
   STOPLINE = 3,
+  ON_DECELERATE = 4,
 };
 
 struct CrossWalkPoints
@@ -276,10 +277,8 @@ public:
 //      kf_.init(waypoint_velocity);
 //      waypoint_ = stop_waypoint;
 //      velocity_ = waypoint_velocity;
-
       if (tracking_counter_ >= 2) {
           state_ = ETrackingState::TRACKING;
-//          std::cerr << "tracking\n";
           kf_.init(calcVelocity(current_position));
           waypoint_ = stop_waypoint;
           velocity_ = calcVelocity(current_position);
@@ -325,6 +324,17 @@ public:
   {
     return velocity_;
   }
+};
+
+class ObstacleInfo
+{
+public:
+  int waypoint = -1;
+  double velocity = 0.0;
+  ObstaclePoints points;
+  EObstacleType type = EObstacleType::NONE;
+  ObstacleInfo(int waypoint, double velocity, EObstacleType type)
+  : waypoint(waypoint), velocity(velocity), type(type) {};
 };
 
 inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
