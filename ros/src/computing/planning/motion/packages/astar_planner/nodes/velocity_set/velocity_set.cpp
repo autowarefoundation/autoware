@@ -144,11 +144,32 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
   waypoint_marker_decelerate.color.b = 0.0;
   waypoint_marker_decelerate.frame_locked = true;
 
+  bool found_obstacle = false, found_stopline = false;
   for (auto& info : obstacle_infos)
   {
+    // use nearest obstacle and stopline
+    if ((info.type == EObstacleType::ON_WAYPOINTS ||
+         info.type == EObstacleType::ON_CROSSWALK))
+    {
+      if (!found_obstacle) found_obstacle = true;
+      else continue;
+    }
+    if (info.type == EObstacleType::STOPLINE)
+    {
+      if (!found_stopline) found_stopline = true;
+      else continue;
+    }
+
     // geo-fence
     stop_line.pose.position = lane.waypoints[info.waypoint].pose.pose.position;
     stop_line.pose.orientation = lane.waypoints[info.waypoint].pose.pose.orientation;
+
+    // hack: normalizing quaternion for fixing rviz error
+    // "Marker 'Stop Line/0' contains unnormalized quaternions."
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(stop_line.pose.orientation, quat);  // normalized same time
+    tf::quaternionTFToMsg(quat, stop_line.pose.orientation);
+
     stop_line.pose.position.z += 1.0;
     stop_line.scale.x = 0.1;
     stop_line.scale.y = 15.0;
