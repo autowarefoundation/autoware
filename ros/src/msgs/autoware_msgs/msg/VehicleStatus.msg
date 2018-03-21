@@ -3,7 +3,7 @@ string tm
 
 # Powertrain
 int32 drivemode
-int32 steeringMode
+int32 steeringmode
 int32 MODE_MANUAL=0
 int32 MODE_AUTO=1
 

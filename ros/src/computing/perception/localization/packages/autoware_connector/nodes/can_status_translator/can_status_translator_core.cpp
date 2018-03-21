@@ -1,6 +1,6 @@
 /*
- *  Copyright (c) 2015, Nagoya University
-
+ *  Copyright (c) 2018, TierIV Inc.
+ *  Copyright (c) 2015-2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -29,26 +29,26 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "can_info_translator_core.h"
+#include "can_status_translator_core.h"
 
 namespace autoware_connector
 {
 // Constructor
-VelPoseConnectNode::VelPoseConnectNode() : private_nh_("~"), v_info_(), odom_(ros::Time::now())
+CanStatusTranslatorNode::CanStatusTranslatorNode() : private_nh_("~"), v_info_()
 {
   initForROS();
 }
 
 // Destructor
-VelPoseConnectNode::~VelPoseConnectNode()
+CanStatusTranslatorNode::~CanStatusTranslatorNode()
 {
 }
 
-void VelPoseConnectNode::initForROS()
+void CanStatusTranslatorNode::initForROS()
 {
   // ros parameter settings
   if (!nh_.hasParam("/vehicle_info/wheel_base") || !nh_.hasParam("/vehicle_info/minimum_turning_radius") ||
-    !nh_.hasParam("/vehicle_info/maximum_steering_angle"))
+      !nh_.hasParam("/vehicle_info/maximum_steering_angle"))
   {
     v_info_.is_stored = false;
     ROS_INFO("vehicle_info is not set");
@@ -66,23 +66,21 @@ void VelPoseConnectNode::initForROS()
 
     v_info_.is_stored = true;
   }
-
   // setup subscriber
-  sub1_ = nh_.subscribe("can_info", 100, &VelPoseConnectNode::callbackFromCanInfo, this);
+  sub1_ = nh_.subscribe("can_info", 100, &CanStatusTranslatorNode::callbackFromCanInfo, this);
 
   // setup publisher
-  pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("can_velocity",10);
+  pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("can_velocity", 10);
   pub2_ = nh_.advertise<std_msgs::Float32>("linear_velocity_viz", 10);
-  pub3_ = nh_.advertise<nav_msgs::Odometry>("odom_pose",10);
-
+  pub3_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
 }
 
-void VelPoseConnectNode::run()
+void CanStatusTranslatorNode::run()
 {
   ros::spin();
 }
 
-void VelPoseConnectNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &msg)
 {
   geometry_msgs::TwistStamped tw;
   tw.header = msg->header;
@@ -96,66 +94,37 @@ void VelPoseConnectNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &m
   pub1_.publish(tw);
 }
 
-void VelPoseConnectNode::publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg)
 {
   std_msgs::Float32 fl;
   fl.data = msg->speed;
   pub2_.publish(fl);
 }
 
-void VelPoseConnectNode::publishOdometry(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVehicleStatus(const autoware_msgs::CanInfoConstPtr &msg)
 {
-  double vx = kmph2mps(msg->speed);
-  double vth = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
-  odom_.updateOdometry(vx, vth, msg->header.stamp);
+  // currently, this function is only support to autoware_socket format.
+  autoware_msgs::VehicleStatus vs;
+  vs.header = msg->header;
+  vs.tm = msg->tm;
+  vs.drivemode = msg->devmode;  // I think devmode is typo in CanInfo...
+  vs.steeringmode = msg->strmode;
+  vs.gearshift = msg->driveshift;
+  vs.speed = msg->speed;
+  vs.drivepedal = msg->drivepedal;
+  vs.brakepedal = msg->brakepedal;
+  vs.angle = msg->angle;
+  vs.lamp = 0;
+  vs.light = msg->light;
 
-  geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(odom_.th);
-
-  // first, we'll publish the transform over tf
-  /*geometry_msgs::TransformStamped odom_trans;
-  odom_trans.header.stamp = msg->header.stamp;
-  odom_trans.header.frame_id = "odom";
-  odom_trans.child_frame_id = "base_link";
-
-  odom_trans.transform.translation.x = odom_.x;
-  odom_trans.transform.translation.y = odom_.y;
-  odom_trans.transform.translation.z = 0.0;
-  odom_trans.transform.rotation = odom_quat;
-
-  // send the transform
-  odom_broadcaster_.sendTransform(odom_trans);
-  */
-
-  // next, we'll publish the odometry message over ROS
-  nav_msgs::Odometry odom;
-  odom.header.stamp = msg->header.stamp;
-  odom.header.frame_id = "odom";
-
-  // set the position
-  odom.pose.pose.position.x = odom_.x;
-  odom.pose.pose.position.y = odom_.y;
-  odom.pose.pose.position.z = 0.0;
-  odom.pose.pose.orientation = odom_quat;
-
-  // set the velocity
-  odom.child_frame_id = "base_link";
-  odom.twist.twist.linear.x = vx;
-  odom.twist.twist.angular.z = vth;
-
-  // publish the message
-  pub3_.publish(odom);
+  pub3_.publish(vs);
 }
 
-void VelPoseConnectNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
 {
   publishVelocity(msg);
   publishVelocityViz(msg);
-  publishOdometry(msg);
-
-
-
+  publishVehicleStatus(msg);
 }
 
-
-
-} // autoware_connector
+}  // autoware_connector
