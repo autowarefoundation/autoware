@@ -5,12 +5,17 @@ const MAX_ACCEL_STROKE = 1000;
 const MAX_BRAKE_STROKE = 3000;
 const EMERGENCY_OFF = 0;
 const EMERGENCY_ON = 1;
+const DRIVE_MODE_MANUAL = 0;
+const DRIVE_MODE_STEER_PROGRAM = 1;
+const DRIVE_MODE_DRIVE_PROGRAM = 2;
+const DRIVE_MODE_ALL_PROGRAM = 3;
 const MODE_AUTO_CONTROL = 1;
 const MODE_REMOTE_CONTROL = 2;
-const TOPIC_CAN_INFO = "/can_info"
-const TOPIC_STATE = "/state"
-const TOPIC_CURRENT_VELOCITY = "/current_velocity"
-const TOPIC_TARGET_VELOCITY  = "/target_velocity"
+const TOPIC_CAN_INFO = "/can_info";
+const TOPIC_STATE = "/state";
+const TOPIC_DRIVE_MODE = "/drive_mode";
+const TOPIC_CURRENT_VELOCITY = "/current_velocity";
+const TOPIC_TARGET_VELOCITY  = "/target_velocity";
 const BUTTON_SWITCH_INTERVAL = 500;
 
 let lastEmegencyUpdateTime = (new Date()).getTime();
@@ -74,6 +79,9 @@ function set_vehicle_info(msg) {
     setAccelStroke(parseFloat(vehicle_info["drivepedal"]), MAX_ACCEL_STROKE);
     setBrakeStroke(parseFloat(vehicle_info["brakepedal"]), MAX_BRAKE_STROKE);
   }
+  else if(msg["topic"] == TOPIC_DRIVE_MODE) {
+    select_drive_mode_button(msg["message"]);
+  }
   else if(msg["topic"] == TOPIC_STATE) {
     document.getElementById("text_state").innerHTML = "State: " + msg["message"];
   }
@@ -113,6 +121,26 @@ function select_emergency_button(obj) {
     lastEmegencyUpdateTime = currentUnixTime;
   }
 }
+
+function select_drive_mode_button(drive_mode) {
+  if(drive_mode == DRIVE_MODE_MANUAL) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#00a3e0";
+    document.getElementById("drive_mode_button").innerHTML = "MANUAL";
+  }
+  else if(drive_mode == DRIVE_MODE_STEER_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "STEER PROGRAM";
+  }
+  else if(drive_mode == DRIVE_MODE_DRIVE_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "DRIVE PROGRAM";
+  }
+  else if(drive_mode == DRIVE_MODE_ALL_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "PROGRAM";
+  }
+}
+
 
 function select_mode_button(obj) {
   let currentUnixTime =  (new Date()).getTime();
