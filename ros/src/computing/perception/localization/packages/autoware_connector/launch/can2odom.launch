@@ -1,5 +1,5 @@
 <launch>
 
-  <node pkg="autoware_connector" type="can_info_translator" name="can_info_translator" output="log" />
+  <node pkg="autoware_connector" type="can_odometry" name="can_odometry" output="log" />
 
 </launch>

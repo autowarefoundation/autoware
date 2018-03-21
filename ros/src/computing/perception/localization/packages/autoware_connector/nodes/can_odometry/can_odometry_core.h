@@ -28,132 +28,22 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CAN_INFO_TRANSLATOR_CORE_H
-#define CAN_INFO_TRANSLATOR_CORE_H
+#ifndef CAN_ODOMETRY_CORE_H
+#define CAN_ODOMETRY_CORE_H
 
 // ROS includes
-#include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <std_msgs/Float32.h>
 #include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <tf/transform_broadcaster.h>
 
 // User Defined Includes
 #include "autoware_msgs/CanInfo.h"
+#include "autoware_msgs/VehicleStatus.h"
 
 namespace autoware_connector
 {
-
-struct VehicleInfo {
-  bool is_stored;
-  double wheel_base;
-  double minimum_turning_radius;
-  double maximum_steering_angle;
-
-  VehicleInfo()
-  {
-    is_stored = false;
-    wheel_base = 0.0;
-    minimum_turning_radius = 0.0;
-    maximum_steering_angle = 0.0;
-  }
-  double convertSteeringAngleToAngularVelocity(const double cur_vel_mps, const double cur_angle_deg) // rad/s
-  {
-    return is_stored ? tan(deg2rad(getCurrentTireAngle(cur_angle_deg))) * cur_vel_mps / wheel_base : 0;
-  }
-  double getCurrentTireAngle(const double angle_deg) // steering [degree] -> tire [degree]
-  {
-    return is_stored ? angle_deg * getMaximumTireAngle() / maximum_steering_angle: 0;
-  }
-  double getMaximumTireAngle() // degree
-  {
-    return is_stored ? rad2deg(asin(wheel_base / minimum_turning_radius)) : 0;
-  }
-  double rad2deg(double rad)
-  {
-    return rad * 180 / M_PI;
-  }
-  // convert degree to radian
-  inline double deg2rad(double deg)
-  {
-    return deg * M_PI / 180;
-  }
-};
-
-struct Odometry {
-  double x;
-  double y;
-  double th;
-  ros::Time stamp;
-
-  Odometry(const ros::Time &time)
-  {
-    x = 0.0;
-    y = 0.0;
-    th = 0.0;
-    stamp = time;
-  }
-
-  void updateOdometry(const double vx, const double vth, const ros::Time &cur_time)
-  {
-    if(stamp.sec == 0 && stamp.nsec == 0)
-    {
-      stamp = cur_time;
-    }
-    double dt = (cur_time - stamp).toSec();
-    double delta_x = (vx * cos(th)) * dt;
-    double delta_y = (vx * sin(th)) * dt;
-    double delta_th = vth * dt;
-
-    std::cout << "dt : " << dt << "delta (x y th) : (" << delta_x << " " << delta_y << " " << delta_th << ")" << std::endl;
-
-
-    x += delta_x;
-    y += delta_y;
-    th += delta_th;
-    stamp = cur_time;
-  }
-
-};
-
-class VelPoseConnectNode
-{
-public:
-
-  VelPoseConnectNode();
-  ~VelPoseConnectNode();
-
-  void run();
-
-private:
-
-  // handle
-  ros::NodeHandle nh_;
-  ros::NodeHandle private_nh_;
-
-  // publisher
-  ros::Publisher pub1_, pub2_, pub3_;
-
-  // subscriber
-  ros::Subscriber sub1_,sub2_;
-
-  // variables
-  VehicleInfo v_info_;
-  Odometry odom_;
-  // tf::TransformBroadcaster odom_broadcaster_;
-
-  // callbacks
-  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
-
-  // initializer
-  void initForROS();
-
-  // functions
-  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishOdometry(const autoware_msgs::CanInfoConstPtr &msg);
-};
-
 inline double kmph2mps(double velocity_kmph)
 {
   return (velocity_kmph * 1000) / (60 * 60);
@@ -176,5 +66,102 @@ inline double rad2deg(double rad)
   return rad * 180 / M_PI;
 }
 
+struct VehicleInfo
+{
+  bool is_stored;
+  double wheel_base;
+  double minimum_turning_radius;
+  double maximum_steering_angle;
+
+  VehicleInfo()
+  {
+    is_stored = false;
+    wheel_base = 0.0;
+    minimum_turning_radius = 0.0;
+    maximum_steering_angle = 0.0;
+  }
+  double convertSteeringAngleToAngularVelocity(const double cur_vel_mps, const double cur_angle_deg)  // rad/s
+  {
+    return is_stored ? tan(deg2rad(getCurrentTireAngle(cur_angle_deg))) * cur_vel_mps / wheel_base : 0;
+  }
+  double getCurrentTireAngle(const double angle_deg)  // steering [degree] -> tire [degree]
+  {
+    return is_stored ? angle_deg * getMaximumTireAngle() / maximum_steering_angle : 0;
+  }
+  double getMaximumTireAngle()  // degree
+  {
+    return is_stored ? rad2deg(asin(wheel_base / minimum_turning_radius)) : 0;
+  }
+};
+
+struct Odometry
+{
+  double x;
+  double y;
+  double th;
+  ros::Time stamp;
+
+  Odometry(const ros::Time &time)
+  {
+    x = 0.0;
+    y = 0.0;
+    th = 0.0;
+    stamp = time;
+  }
+
+  void updateOdometry(const double vx, const double vth, const ros::Time &cur_time)
+  {
+    if (stamp.sec == 0 && stamp.nsec == 0)
+    {
+      stamp = cur_time;
+    }
+    double dt = (cur_time - stamp).toSec();
+    double delta_x = (vx * cos(th)) * dt;
+    double delta_y = (vx * sin(th)) * dt;
+    double delta_th = vth * dt;
+
+    ROS_INFO("dt : %f delta (x y th) : (%f %f %f %f)", dt, delta_x, delta_y, delta_th);
+
+    x += delta_x;
+    y += delta_y;
+    th += delta_th;
+    stamp = cur_time;
+  }
+};
+
+class CanOdometryNode
+{
+public:
+  CanOdometryNode();
+  ~CanOdometryNode();
+
+  void run();
+
+private:
+  // handle
+  ros::NodeHandle nh_;
+  ros::NodeHandle private_nh_;
+
+  // publisher
+  ros::Publisher pub1_;
+
+  // subscriber
+  ros::Subscriber sub1_;
+
+  // variables
+  VehicleInfo v_info_;
+  Odometry odom_;
+
+  // callbacks
+  void callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr &msg);
+
+  // initializer
+  void initForROS();
+
+  // functions
+  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishOdometry(const autoware_msgs::CanInfoConstPtr &msg);
+};
 }
-#endif  // CAN_INFO_TRANSLATOR_CORE_H
+#endif  // CAN_ODOMETRY_CORE_H
