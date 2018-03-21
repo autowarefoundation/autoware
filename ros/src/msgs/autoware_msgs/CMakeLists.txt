@@ -81,6 +81,7 @@ add_message_files(
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
   ConfigVoxelGridFilter.msg
+  ConfigWaypointLoader.msg
   ConfigWaypointFollower.msg
   accel_cmd.msg
   adjust_xy.msg

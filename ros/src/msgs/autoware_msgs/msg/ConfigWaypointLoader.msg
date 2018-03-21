@@ -1,0 +1,11 @@
+string multi_lane_csv
+bool disable_decision_maker
+bool disable_filtering
+float32 velocity_max
+float32 velocity_min
+float32 accel_limit
+float32 decel_limit
+float32 radius_max
+float32 radius_min
+float32 resample_interval
+int32 delay_offset

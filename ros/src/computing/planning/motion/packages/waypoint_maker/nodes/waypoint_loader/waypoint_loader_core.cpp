@@ -36,8 +36,7 @@ namespace waypoint_maker
 // Constructor
 WaypointLoaderNode::WaypointLoaderNode() : private_nh_("~")
 {
-  initParameter();
-  initPublisher();
+  initPubSub();
 }
 
 // Destructor
@@ -45,7 +44,7 @@ WaypointLoaderNode::~WaypointLoaderNode()
 {
 }
 
-void WaypointLoaderNode::initPublisher()
+void WaypointLoaderNode::initPubSub()
 {
   // setup publisher
   if(disable_decision_maker_){
@@ -53,31 +52,36 @@ void WaypointLoaderNode::initPublisher()
   }else{
 	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
   }
+  config_sub_ = nh_.subscribe("/config/waypoint_loader", 1, &WaypointLoaderNode::configCallback, this);
+  output_cmd_sub_ = nh_.subscribe("/config/waypoint_loader_output", 1, &WaypointLoaderNode::outputCommandCallback, this);
 }
 
-void WaypointLoaderNode::initParameter()
+void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   // parameter settings
-  private_nh_.param<bool>("disable_decision_maker", disable_decision_maker_, true);
-  private_nh_.param<bool>("disable_filtering", disable_filtering_, false);
-  private_nh_.param<std::string>("multi_lane_csv", multi_lane_csv_, MULTI_LANE_CSV);
+  disable_decision_maker_ = conf->disable_decision_maker;
+  disable_filtering_ = conf->disable_filtering;
+  multi_lane_csv_ = conf->multi_lane_csv;
 }
 
-void WaypointLoaderNode::publishLaneArray()
+void WaypointLoaderNode::configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
-  // extract file paths
-  std::vector<std::string> multi_file_path;
-  parseColumns(multi_lane_csv_, &multi_file_path);
+  filter_.initParameter(conf);
+  initParameter(conf);
+
+  parseColumns(multi_lane_csv_, &multi_file_path_);
   autoware_msgs::LaneArray lane_array;
-  createLaneArray(multi_file_path, &lane_array);
+  createLaneArray(multi_file_path_, &lane_array);
   lane_pub_.publish(lane_array);
-  if(!disable_filtering_)
-  {
-    std::vector<std::string> dst_multi_file_path = multi_file_path;
-    for(auto& el : dst_multi_file_path)
-      el = addFileSuffix(el, "_filtered");
-    saveLaneArray(dst_multi_file_path, lane_array);
-  }
+  output_lane_array_ = lane_array;
+}
+
+void WaypointLoaderNode::outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd)
+{
+  std::vector<std::string> dst_multi_file_path = multi_file_path_;
+  for(auto& el : dst_multi_file_path)
+    el = addFileSuffix(el, "_filtered");
+  saveLaneArray(dst_multi_file_path, output_lane_array_);
 }
 
 const std::string addFileSuffix(std::string file_path, std::string suffix)

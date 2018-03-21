@@ -618,10 +618,41 @@ subs :
          gui  :
            multi_lane_csv :
              prop  : 1
-           disable_decision_maker :
-                   flags : [nl ]
            disable_filtering :
-                   flags : [nl ]
+             flags : [ nl ]
+           resample_interval :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           velocity_max :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           radius_max :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           radius_min :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           velocity_min :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           accel_limit :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           decel_limit :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           delay_offset :
+             depend      : disable_filtering
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+           dialog : MyDialogWaypointLoader
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -2987,10 +3018,12 @@ params :
       rosparam  : /waypoint_clicker/output_file
 
   - name  : waypoint_loader
+    topic : /config/waypoint_loader
+    msg   : ConfigWaypointLoader
     vars  :
     - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : multi_lane
+      label     : 'multi_lane'
       kind      : path
       path_type : multi
       v         : /tmp/driving_lane.csv
@@ -3009,29 +3042,46 @@ params :
       desc      : if you don't need both filtering or saving files, please check this.
       label     : 'disable_filtering'
       kind      : checkbox
-      v         : true
+      v         : false
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : resample_interval
-      desc      : please set resample interval [m] for new waypoint
-      label     : resample interval [m]
+      label     : 'Resample:                   resample interval[m]'
       v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : velocity_max
-      desc      : maximum value of velocity on all waypoints[km/h]
-      label     : velocity max [km/h]
+      desc      : All velocity is limited under Vmax[km/h]
+      label     : 'VelocityMaxLimit: Vmax[km/h]'
+      min       : 10.0
+      max       : 60.0
+      v         : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : radius_max
+      desc      : if rotate_radius > Rth[m], recognize curve
+      label     : 'CurveRecognize:   Rth[m]'
       min       : 10.0
       max       : 100.0
       v         : 20.0
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : radius_min
+      desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
+      label     : 'VelocityPlanning: Rmin(c0)[m]'
+      min       : 4.0
+      max       : 10.0
+      v         : 6.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : velocity_min
-      desc      : minimum value of velocity on all waypoints[km/h]
-      label     : velocity min [km/h]
+      desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
+      label     : '                                         Vmin(Rmin(c0))[km/h]'
       min       : 0.0
       max       : 10.0
       v         : 4.0
@@ -3040,43 +3090,25 @@ params :
         delim       : ':='
     - name      : accel_limit
       desc      : maximum value of acceleration on all waypoints[km/h]
-      label     : accel limit [m/s^2]
+      label     : 'Accel/DecelLimit: accel limit[m/s^2]'
       min       : 0.0
-      max       : 1.5
-      v         : 5.0
+      max       : 0.98
+      v         : 0.98
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : decel_limit
       desc      : maximum value of deceleration on all waypoints[km/h]
-      label     : decel limit [m/s^2]
+      label     : '                                         decel limit[m/s^2]'
       min       : 0.0
-      max       : 1.5
-      v         : 5.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : radius_max
-      desc      : if this parameter < rotate_radius_of_waypoints, vehicle will be in the curve.
-      label     : radius max threshold for curve recognition [m]
-      min       : 10.0
-      max       : 100.0
-      v         : 20.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : radius_min
-      desc      : minimum value of rotate radius [m] for using on velocity control.
-      label     : radius min for controling velocity[m]
-      min       : 4.0
-      max       : 10.0
-      v         : 6.0
+      max       : 0.98
+      v         : 0.98
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : delay_offset
-      desc      : offset points for delay correction.
-      label     : offset for delay correction
+      desc      : velocity offset for delay correction.
+      label     : 'VelocityOffset:      velocity offset[point count]'
       min       : 0
       max       : 20
       v         : 6

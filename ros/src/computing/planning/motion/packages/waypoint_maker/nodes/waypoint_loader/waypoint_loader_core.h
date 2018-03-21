@@ -38,6 +38,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <std_msgs/Bool.h>
 #include <tf/transform_datatypes.h>
 #include <unordered_map>
 
@@ -76,29 +77,32 @@ public:
   WaypointLoaderNode();
   ~WaypointLoaderNode();
 
-  void publishLaneArray();
-
 private:
 
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
-  // publisher
+  // publisher & subscriber
   ros::Publisher lane_pub_;
+  ros::Subscriber config_sub_;
+  ros::Subscriber output_cmd_sub_;
 
   // variables
   std::string multi_lane_csv_;
   bool disable_decision_maker_;
   bool disable_filtering_;
   WaypointFilter filter_;
+  std::vector<std::string> multi_file_path_;
+  autoware_msgs::LaneArray output_lane_array_;
 
   // initializer
-  void initPublisher();
-  void initParameter();
+  void initPubSub();
+  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
-
+  void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
   void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
   void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
   void saveLaneArray(const std::vector<std::string> &paths, const autoware_msgs::LaneArray &lane_array);

@@ -44,21 +44,23 @@ namespace waypoint_maker
 
   WaypointFilter::WaypointFilter():private_nh_("~")
   {
-    private_nh_.param<double>("velocity_max", velocity_max_, 40.0);
-    velocity_max_ = kmph2mps(velocity_max_);
-    private_nh_.param<double>("velocity_min", velocity_min_, 4.0);
-    velocity_min_ = kmph2mps(velocity_min_);
-    private_nh_.param<double>("accel_limit", accel_limit_, 0.15 * 9.8);
-    private_nh_.param<double>("decel_limit", decel_limit_, 0.15 * 9.8);
-    private_nh_.param<double>("radius_max", r_max_, 20.0);
-    private_nh_.param<double>("radius_min", r_min_, 6.0);
-    private_nh_.param<int>("lookup_curve_width", lkup_crv_width_, 5);
-    private_nh_.param<double>("resample_interval", resample_interval_, 1.0);
-    private_nh_.param<int>("delay_offset", delay_offset_, 6);
-    r_inf_ = 10 * r_max_;
   }
 
   WaypointFilter::~WaypointFilter(){}
+
+  void WaypointFilter::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+  {
+    velocity_max_ = kmph2mps(conf->velocity_max);
+    velocity_min_ = kmph2mps(conf->velocity_min);
+    accel_limit_ = conf->accel_limit;
+    decel_limit_ = conf->decel_limit;
+    r_max_ = conf->radius_max;
+    r_min_ = conf->radius_min;
+    lkup_crv_width_ = 5;
+    resample_interval_ = conf->resample_interval;
+    delay_offset_ = conf->delay_offset;
+    r_inf_ = 10 * r_max_;
+  }
 
   void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane *lane)
   {

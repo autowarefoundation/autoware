@@ -33,6 +33,7 @@
 
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
+#include <autoware_msgs/ConfigWaypointLoader.h>
 #include <fstream>
 #include <unordered_map>
 #include "autoware_msgs/lane.h"
@@ -52,6 +53,7 @@ private:
 public:
   WaypointFilter();
   ~WaypointFilter();
+  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
   void filterLaneWaypoint(autoware_msgs::lane *lane);
 protected:
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane *lane, std::vector<double> *curve_radius);
