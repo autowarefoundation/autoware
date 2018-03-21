@@ -1,3 +1,4 @@
+#include <mutex>
 #include <ros/ros.h>
 #include <ros/spinner.h>
 #include <std_msgs/Float64.h>
@@ -6,7 +7,6 @@
 #include <std_msgs/String.h>
 #include <stdio.h>
 #include <tf/transform_listener.h>
-#include <mutex>
 
 // lib
 #include <state.hpp>
@@ -19,8 +19,8 @@
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <random>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -38,8 +38,6 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["current_velocity"] =
       nh_.subscribe("current_velocity", 20, &DecisionMakerNode::callbackFromCurrentVelocity, this);
   Subs["light_color"] = nh_.subscribe("light_color", 10, &DecisionMakerNode::callbackFromLightColor, this);
-//  Subs["light_color_managed"] =
-  //    nh_.subscribe("light_color_managed", 10, &DecisionMakerNode::callbackFromLightColor, this);
   Subs["points_raw"] = nh_.subscribe("filtered_points", 1, &DecisionMakerNode::callbackFromPointsRaw, this);
   Subs["final_waypoints"] = nh_.subscribe("final_waypoints", 100, &DecisionMakerNode::callbackFromFinalWaypoint, this);
   Subs["twist_cmd"] = nh_.subscribe("twist_cmd", 10, &DecisionMakerNode::callbackFromTwistCmd, this);
@@ -47,12 +45,17 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["state_cmd"] = nh_.subscribe("state_cmd", 1, &DecisionMakerNode::callbackFromStateCmd, this);
   Subs["closest_waypoint"] =
       nh_.subscribe("closest_waypoint", 1, &DecisionMakerNode::callbackFromClosestWaypoint, this);
+  Subs["cloud_clusters"] =
+      nh_.subscribe("cloud_clusters", 1, &DecisionMakerNode::callbackFromObjectDetector, this);
 
   // Config subscriber
   Subs["config/decision_maker"] =
       nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
 
+
   // pub
+  //
+  Pubs["state/stopline_wpidx"] = nh_.advertise<std_msgs::Int32>("/state/stopline_wpidx", 1, true);
 
   // for controlling other planner
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
@@ -62,13 +65,14 @@ void DecisionMakerNode::initROS(int argc, char **argv)
 
   // for controlling vehicle
   Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
-  Pubs["emergency"] =
 
-      // for visualize status
-      Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
+  // for visualize status
+  Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
   Pubs["crossroad_marker"] = nh_.advertise<visualization_msgs::MarkerArray>("/state/cross_road_marker", 1);
   Pubs["crossroad_inside_marker"] = nh_.advertise<visualization_msgs::Marker>("/state/cross_inside_marker", 1);
   Pubs["crossroad_bbox"] = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/state/crossroad_bbox", 10);
+  Pubs["detection_area"] = nh_.advertise<visualization_msgs::Marker>("/state/detection_area",1);
+  Pubs["stopline_target"] = nh_.advertise<visualization_msgs::Marker>("/state/stopline_target",1);
 
   // for debug
   Pubs["target_velocity_array"] = nh_.advertise<std_msgs::Float64MultiArray>("/target_velocity_array", 1);
@@ -174,8 +178,8 @@ void DecisionMakerNode::initVectorMap(void)
         z = _point.z;
       }  // points iter
     }    // line iter
-    carea.bbox.pose.position.x = x_avg / (double)points_count;
-    carea.bbox.pose.position.y = y_avg / (double)points_count;
+    carea.bbox.pose.position.x = x_avg / (double)points_count * 1.5/* expanding rate */;
+    carea.bbox.pose.position.y = y_avg / (double)points_count * 1.5;
     carea.bbox.pose.position.z = z;
     carea.bbox.dimensions.x = x_max - x_min;
     carea.bbox.dimensions.y = y_max - y_min;
