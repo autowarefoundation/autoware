@@ -144,12 +144,9 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
   waypoint_marker_decelerate.color.b = 0.0;
   waypoint_marker_decelerate.frame_locked = true;
 
-  stop_line.id = 0;
-  bool obstacle, stopline = false;
   for (auto& info : obstacle_infos)
   {
     // geo-fence
-    stop_line.id++;
     stop_line.pose.position = lane.waypoints[info.waypoint].pose.pose.position;
     stop_line.pose.orientation = lane.waypoints[info.waypoint].pose.pose.orientation;
     stop_line.pose.position.z += 1.0;
@@ -173,6 +170,8 @@ void displayDetectionRange(const autoware_msgs::lane& lane, const CrossWalk& cro
     oss << std::fixed << std::setprecision(1) << 3.6*info.velocity << " [km/h]";
     stop_velocity.text = oss.str();
     marker_array.markers.push_back(stop_velocity);
+
+    stop_line.id++;
   }
 
   int crosswalk_id = crosswalk.getDetectionCrossWalkID();
