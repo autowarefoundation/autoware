@@ -45,11 +45,11 @@ class WaypointFilter
 {
 private:
   ros::NodeHandle private_nh_;
-  double r_max_, r_min_, r_inf_;
+  double r_th_, r_min_, r_inf_;
   int lkup_crv_width_;
   double velocity_max_, velocity_min_;
   double accel_limit_, decel_limit_, resample_interval_;
-  int delay_offset_;
+  int velocity_offset_;
 public:
   WaypointFilter();
   ~WaypointFilter();

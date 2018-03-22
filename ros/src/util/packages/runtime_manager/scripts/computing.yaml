@@ -628,7 +628,7 @@ subs :
              depend      : disable_filtering
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
-           radius_max :
+           radius_thresh :
              depend      : disable_filtering
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
@@ -648,7 +648,7 @@ subs :
              depend      : disable_filtering
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
-           delay_offset :
+           velocity_offset :
              depend      : disable_filtering
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
@@ -3047,23 +3047,30 @@ params :
         dash        : ''
         delim       : ':='
     - name      : resample_interval
-      label     : 'Resample:                   resample interval[m]'
+      desc      : All waypoints is resampled in this interval[m]
+      label     : |
+                  [1] Resample
+                        resample interval[m]
       v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : velocity_max
       desc      : All velocity is limited under Vmax[km/h]
-      label     : 'VelocityMaxLimit: Vmax[km/h]'
+      label     : |
+                  [2] VelocityMaxLimit
+                        Vmax[km/h]
       min       : 10.0
       max       : 60.0
       v         : 20.0
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : radius_max
+    - name      : radius_thresh
       desc      : if rotate_radius > Rth[m], recognize curve
-      label     : 'CurveRecognize:   Rth[m]'
+      label     : |
+                  [3] CurveRecognize
+                        Rth[m]
       min       : 10.0
       max       : 100.0
       v         : 20.0
@@ -3072,7 +3079,9 @@ params :
         delim       : ':='
     - name      : radius_min
       desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : 'VelocityPlanning: Rmin(c0)[m]'
+      label     : |
+                  [4] VelocityPlanning
+                        Rmin(c0)[m]
       min       : 4.0
       max       : 10.0
       v         : 6.0
@@ -3081,7 +3090,7 @@ params :
         delim       : ':='
     - name      : velocity_min
       desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : '                                         Vmin(Rmin(c0))[km/h]'
+      label     : '      Vmin(Rmin(c0))[km/h]'
       min       : 0.0
       max       : 10.0
       v         : 4.0
@@ -3090,7 +3099,9 @@ params :
         delim       : ':='
     - name      : accel_limit
       desc      : maximum value of acceleration on all waypoints[km/h]
-      label     : 'Accel/DecelLimit: accel limit[m/s^2]'
+      label     : |
+                  [5] Accel/DecelLimit
+                        accel limit[m/s^2]
       min       : 0.0
       max       : 0.98
       v         : 0.98
@@ -3099,16 +3110,18 @@ params :
         delim       : ':='
     - name      : decel_limit
       desc      : maximum value of deceleration on all waypoints[km/h]
-      label     : '                                         decel limit[m/s^2]'
+      label     : '      decel limit[m/s^2]'
       min       : 0.0
       max       : 0.98
       v         : 0.98
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : delay_offset
-      desc      : velocity offset for delay correction.
-      label     : 'VelocityOffset:      velocity offset[point count]'
+    - name      : velocity_offset
+      desc      : velocity offset for matching to the base point of vehicle velocity.
+      label     : |
+                  [6] VelocityOffset
+                        velocity offset[point count]
       min       : 0
       max       : 20
       v         : 6

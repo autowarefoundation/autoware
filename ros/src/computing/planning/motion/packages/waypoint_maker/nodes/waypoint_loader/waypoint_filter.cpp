@@ -54,12 +54,12 @@ namespace waypoint_maker
     velocity_min_ = kmph2mps(conf->velocity_min);
     accel_limit_ = conf->accel_limit;
     decel_limit_ = conf->decel_limit;
-    r_max_ = conf->radius_max;
+    r_th_ = conf->radius_thresh;
     r_min_ = conf->radius_min;
     lkup_crv_width_ = 5;
     resample_interval_ = conf->resample_interval;
-    delay_offset_ = conf->delay_offset;
-    r_inf_ = 10 * r_max_;
+    velocity_offset_ = conf->velocity_offset;
+    r_inf_ = 10 * r_th_;
   }
 
   void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane *lane)
@@ -81,8 +81,8 @@ namespace waypoint_maker
     //set curve_velocity on curve begining
     for(const auto& el : curve_list)
     {
-      const unsigned long start_idx = (el.first > delay_offset_) ? (el.first - delay_offset_) : 0;
-      const unsigned long end_idx = (el.second.first > delay_offset_) ? (el.second.first - delay_offset_) : 0;
+      const unsigned long start_idx = (el.first > velocity_offset_) ? (el.first - velocity_offset_) : 0;
+      const unsigned long end_idx = (el.second.first > velocity_offset_) ? (el.second.first - velocity_offset_) : 0;
       const double radius = el.second.second;
       const double vmax = velocity_max_;
       const double vmin = vel_param[0] * radius + vel_param[1];
@@ -183,8 +183,8 @@ namespace waypoint_maker
   const std::vector<double> WaypointFilter::calcVelParamFromVmax(const double vmax)const
   {
     std::vector<double> param(2, 0.0);
-    param[0] = (vmax - velocity_min_) / (r_max_ - r_min_);//bias
-    param[1] = vmax - param[0] * r_max_;//vel_intersept
+    param[0] = (vmax - velocity_min_) / (r_th_ - r_min_);//bias
+    param[1] = vmax - param[0] * r_th_;//vel_intersept
     return param;
   }
 
@@ -195,12 +195,12 @@ namespace waypoint_maker
     double radius_localmin = DBL_MAX;
     for(unsigned long i = 1; i < curve_radius.size(); i++)
     {
-      if(!on_curve && curve_radius[i] <= r_max_ && curve_radius[i -1] > r_max_)
+      if(!on_curve && curve_radius[i] <= r_th_ && curve_radius[i -1] > r_th_)
       {
         index = i;
         on_curve = true;
       }
-      else if(on_curve && curve_radius[i - 1] <= r_max_ && curve_radius[i] > r_max_)
+      else if(on_curve && curve_radius[i - 1] <= r_th_ && curve_radius[i] > r_th_)
       {
         on_curve = false;
         if(radius_localmin < r_min_)radius_localmin = r_min_;

@@ -5,7 +5,7 @@ float32 velocity_max
 float32 velocity_min
 float32 accel_limit
 float32 decel_limit
-float32 radius_max
+float32 radius_thresh
 float32 radius_min
 float32 resample_interval
-int32 delay_offset
+int32 velocity_offset
