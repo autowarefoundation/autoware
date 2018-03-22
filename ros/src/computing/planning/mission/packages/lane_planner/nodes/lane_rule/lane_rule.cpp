@@ -314,8 +314,10 @@ autoware_msgs::lane apply_stopline_acceleration(const autoware_msgs::lane& lane,
 	if (indexes.empty())
 		return l;
 
-	for (const size_t i : indexes)
-		l = apply_acceleration(l, acceleration, i, behind_cnt + 1, 0);
+	if (stop_line_type == STOP_LINES) {
+		for (const size_t i : indexes)
+			l = apply_acceleration(l, acceleration, i, behind_cnt + 1, 0);
+	}
 
 	std::reverse(l.waypoints.begin(), l.waypoints.end());
 
