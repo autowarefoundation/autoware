@@ -327,16 +327,31 @@ void DecisionMakerNode::updateStateStop(int status)
   static bool timerflag;
   static ros::Timer stopping_timer;
 
+  const static double STOPPING_AREA_DISTANCE = 8.0;
+  const static double STOPPING_VECLOCITY_EPSILON = 1e-2;
+
   if (status)
   {
-    if (current_velocity_ == 0.0)
+    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON)
     {
       /*temporary implementation*/
       std_msgs::String layer_msg;
       layer_msg.data = "detectionarea";
       Pubs["filtering_gridmap_layer"].publish(layer_msg);
     }
-    if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
+
+    // obtain distance from self to stopline -> TODO: refactor!
+    geometry_msgs::Point pcw =
+      current_finalwaypoints_.waypoints[closest_waypoint_].pose.pose.position;
+    geometry_msgs::Point psw =
+      current_finalwaypoints_.waypoints[closest_stopline_waypoint_].pose.pose.position;
+    double distance_to_stopline =
+      std::hypot(std::hypot((pcw.x-psw.x), pcw.y-psw.y), pcw.z-psw.z);
+    bool inside_stopping_area = ((closest_waypoint_ < closest_stopline_waypoint_)
+      && distance_to_stopline < STOPPING_AREA_DISTANCE);
+
+    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON
+        && !foundOtherVehicleForIntersectionStop_ && inside_stopping_area && !timerflag)
     {
       stopping_timer = nh_.createTimer(ros::Duration(param_stopline_pause_time_),
                                        [&](const ros::TimerEvent&) {

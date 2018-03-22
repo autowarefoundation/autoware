@@ -81,6 +81,21 @@ class VelocitySetPath
     return temporal_waypoints_;
   }
 
+  void setPrevWaypoints(const autoware_msgs::lane& prev_waypoints)
+  {
+    prev_waypoints_ = prev_waypoints;
+  }
+
+  void setNewWaypoints(const autoware_msgs::lane& new_waypoints)
+  {
+    new_waypoints_ = new_waypoints;
+  }
+
+  void setTemporalWaypoints(const autoware_msgs::lane& temporal_waypoints)
+  {
+    temporal_waypoints_ = temporal_waypoints;
+  }
+
   bool getSetPath() const
   {
     return set_path_;

@@ -30,6 +30,7 @@ enum class EObstacleType
   ON_WAYPOINTS = 1,
   ON_CROSSWALK = 2,
   STOPLINE = 3,
+  ON_DECELERATE = 4,
 };
 
 struct CrossWalkPoints
@@ -198,7 +199,7 @@ private:
   private:
     double x_, p_, k_, Q_, R_;
   public:
-    KalmanFilter(double Q = 1e-5, double R = 1e-3)
+    KalmanFilter(double Q = 1e-4, double R = 1e-3)
     : x_(1e-0), p_(1e-1), k_(1e-1)
     { Q_ = Q; R_ = R; }
     void init(double x0) { x_ = x0; }
@@ -266,8 +267,8 @@ public:
     lost_counter_ = 0;
     tracking_counter_++;
     time_ = ros::Time::now();
-    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
-    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    //tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
@@ -276,10 +277,8 @@ public:
 //      kf_.init(waypoint_velocity);
 //      waypoint_ = stop_waypoint;
 //      velocity_ = waypoint_velocity;
-
       if (tracking_counter_ >= 2) {
           state_ = ETrackingState::TRACKING;
-//          std::cerr << "tracking\n";
           kf_.init(calcVelocity(current_position));
           waypoint_ = stop_waypoint;
           velocity_ = calcVelocity(current_position);
@@ -325,6 +324,17 @@ public:
   {
     return velocity_;
   }
+};
+
+class ObstacleInfo
+{
+public:
+  int waypoint = -1;
+  double velocity = 0.0;
+  ObstaclePoints points;
+  EObstacleType type = EObstacleType::NONE;
+  ObstacleInfo(int waypoint, double velocity, EObstacleType type)
+  : waypoint(waypoint), velocity(velocity), type(type) {};
 };
 
 inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2)
