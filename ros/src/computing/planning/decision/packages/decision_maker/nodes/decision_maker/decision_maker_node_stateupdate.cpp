@@ -326,9 +326,14 @@ void DecisionMakerNode::updateStateStop(int status)
 {
   static bool timerflag;
   static ros::Timer stopping_timer;
+  // flag to hold the stopline state
+  static bool is_stopline_state_pending = false;
 
   if (status)
   {
+    // set the flag
+    is_stopline_state_pending = true;
+
     if (current_velocity_ == 0.0)
     {
       /*temporary implementation*/
@@ -346,6 +351,8 @@ void DecisionMakerNode::updateStateStop(int status)
                                        },
                                        this, true);
       timerflag = true;
+      // reset stopline holding
+      is_stopline_state_pending = false;
     }
     else
     {
@@ -356,6 +363,11 @@ void DecisionMakerNode::updateStateStop(int status)
       }
       publishStoplineWaypointIdx(closest_stopline_waypoint_);
     }
+  }
+  // if we need to stop and stopline is still pending
+  else if (is_stopline_state_pending)
+  {
+      publishStoplineWaypointIdx(closest_stopline_waypoint_);
   }
 }
 void DecisionMakerNode::callbackInStateStop(int status)
