@@ -1,0 +1,39 @@
+<launch>
+  <arg name="with_filter" default="true"/>
+  <arg name="with_rviz" default="false"/>
+  <arg name="with_plot" default="false"/>
+  <arg name="device" default="/dev/ttyACM0"/>
+  <arg name="frame_id" default="imu"/>
+  <arg name="burst_read" default="false"/>
+  <arg name="rate" default="100"/>
+  <arg name="publish_tf" default="true"/>
+
+  <param if="$(arg with_rviz)" name="robot_description" command="$(find xacro)/xacro --inorder '$(find adi_driver)/urdf/adis16470_breakout.urdf'" />
+
+  <node name="imu" pkg="adi_driver" type="adis16470_node">
+    <param name="device" value="$(arg device)"/>
+    <param name="frame_id" value="$(arg frame_id)"/>
+    <param name="burst_mode" value="$(arg burst_read)"/>
+    <param name="rate" value="$(arg rate)"/>
+  </node>
+
+  <node if="$(arg with_filter)"
+	name="imu_filter" pkg="imu_filter_madgwick" type="imu_filter_node">
+    <param name="use_mag" value="false"/>
+    <param name="publish_tf" value="$(arg publish_tf)"/>
+  </node>
+
+  <node if="$(arg with_rviz)"
+	name="rviz" pkg="rviz" type="rviz" args="-d $(find adi_driver)/launch/imu.rviz"/>
+
+  <group ns="plot" if="$(arg with_plot)">
+    <node name="gyro" pkg="rqt_plot" type="rqt_plot"
+	  args="/imu/data_raw/angular_velocity/x:y:z"/>
+    <node name="accl" pkg="rqt_plot" type="rqt_plot"
+	  args="/imu/data_raw/linear_acceleration/x:y:z"/>
+  </group>
+
+  <!-- Connect sensors before tests -->
+  <test test-name="test_adis16470" pkg="adi_driver" type="test_adis16470.py"/>
+  
+</launch>
