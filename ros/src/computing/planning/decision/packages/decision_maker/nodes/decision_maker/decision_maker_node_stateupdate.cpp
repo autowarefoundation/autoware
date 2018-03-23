@@ -328,20 +328,21 @@ void DecisionMakerNode::updateStateStop(int status)
   static ros::Timer stopping_timer;
   // flag to hold the stopline state
   static bool is_stopline_state_pending = false;
+  const static double STOPPING_VECLOCITY_EPSILON = 1e-2;
 
   if (status)
   {
     // set the flag
     is_stopline_state_pending = true;
 
-    if (current_velocity_ == 0.0)
+    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON)
     {
       /*temporary implementation*/
       std_msgs::String layer_msg;
       layer_msg.data = "detectionarea";
       Pubs["filtering_gridmap_layer"].publish(layer_msg);
     }
-    if (current_velocity_ == 0.0 && !foundOtherVehicleForIntersectionStop_ && !timerflag)
+    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON && !foundOtherVehicleForIntersectionStop_ && !timerflag)
     {
       stopping_timer = nh_.createTimer(ros::Duration(param_stopline_pause_time_),
                                        [&](const ros::TimerEvent&) {
