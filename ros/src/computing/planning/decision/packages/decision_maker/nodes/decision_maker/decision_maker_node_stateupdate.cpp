@@ -326,15 +326,11 @@ void DecisionMakerNode::updateStateStop(int status)
 {
   static bool timerflag;
   static ros::Timer stopping_timer;
-  // flag to hold the stopline state
-  static bool is_stopline_state_pending = false;
   const static double STOPPING_VECLOCITY_EPSILON = 1e-2;
+  const static double STOPPING_AREA_DISTANCE = 8.0;
 
   if (status)
   {
-    // set the flag
-    is_stopline_state_pending = true;
-
     if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON)
     {
       /*temporary implementation*/
@@ -342,7 +338,14 @@ void DecisionMakerNode::updateStateStop(int status)
       layer_msg.data = "detectionarea";
       Pubs["filtering_gridmap_layer"].publish(layer_msg);
     }
-    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON && !foundOtherVehicleForIntersectionStop_ && !timerflag)
+
+    // obtain distance from self to stopline -> TODO: refactor!
+    geometry_msgs::Point pcw = current_finalwaypoints_.waypoints[closest_waypoint_].pose.pose.position;
+    geometry_msgs::Point psw = current_finalwaypoints_.waypoints[closest_stopline_waypoint_].pose.pose.position;
+    double distance_to_stopline = std::hypot(std::hypot((pcw.x-psw.x), pcw.y-psw.y), pcw.z-psw.z);
+    bool inside_stopping_area = ((closest_waypoint_ < closest_stopline_waypoint_) && distance_to_stopline < STOPPING_AREA_DISTANCE);
+
+    if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON && !foundOtherVehicleForIntersectionStop_ && !timerflag && inside_stopping_area)
     {
       stopping_timer = nh_.createTimer(ros::Duration(param_stopline_pause_time_),
                                        [&](const ros::TimerEvent&) {
@@ -352,8 +355,6 @@ void DecisionMakerNode::updateStateStop(int status)
                                        },
                                        this, true);
       timerflag = true;
-      // reset stopline holding
-      is_stopline_state_pending = false;
     }
     else
     {
@@ -364,11 +365,6 @@ void DecisionMakerNode::updateStateStop(int status)
       }
       publishStoplineWaypointIdx(closest_stopline_waypoint_);
     }
-  }
-  // if we need to stop and stopline is still pending
-  else if (is_stopline_state_pending)
-  {
-      publishStoplineWaypointIdx(closest_stopline_waypoint_);
   }
 }
 void DecisionMakerNode::callbackInStateStop(int status)
