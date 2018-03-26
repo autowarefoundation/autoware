@@ -321,6 +321,12 @@ void DecisionMakerNode::callbackInStateAcc(int status)
   publishControlledLaneArray();
 }
 
+// TODO: move these to header
+#define FOUND_NONE_WP 0
+#define FOUND_CLOSEST_WP 1
+#define FOUND_CLOSEST_STOPLINE_WP 2
+#define FOUND_BOTH_WP 3
+
 // for stopping state(stopline/stop)
 void DecisionMakerNode::updateStateStop(int status)
 {
@@ -328,6 +334,7 @@ void DecisionMakerNode::updateStateStop(int status)
   static ros::Timer stopping_timer;
   const static double STOPPING_VECLOCITY_EPSILON = 1e-2;
   const static double STOPPING_AREA_DISTANCE = 8.0;
+  uint8_t found_wp = FOUND_NONE_WP;
 
   if (status)
   {
@@ -340,10 +347,40 @@ void DecisionMakerNode::updateStateStop(int status)
     }
 
     // obtain distance from self to stopline -> TODO: refactor!
-    geometry_msgs::Point pcw = current_finalwaypoints_.waypoints[closest_waypoint_].pose.pose.position;
-    geometry_msgs::Point psw = current_finalwaypoints_.waypoints[closest_stopline_waypoint_].pose.pose.position;
-    double distance_to_stopline = std::hypot(std::hypot((pcw.x-psw.x), pcw.y-psw.y), pcw.z-psw.z);
-    bool inside_stopping_area = ((closest_waypoint_ < closest_stopline_waypoint_) && distance_to_stopline < STOPPING_AREA_DISTANCE);
+    bool inside_stopping_area = false;
+    geometry_msgs::Point pcw;
+    geometry_msgs::Point psw;
+
+    // get the closet waypoint and the closest stopline waypoint
+    for (size_t i=0;i<current_finalwaypoints_.waypoints.size();i++)
+    {
+        if (current_finalwaypoints_.waypoints[i].gid == closest_waypoint_)
+        {
+            // get the closest waypoint
+            pcw = current_finalwaypoints_.waypoints[i].pose.pose.position;
+            // update the found waypoint
+            found_wp = (found_wp == FOUND_CLOSEST_STOPLINE_WP) ? FOUND_BOTH_WP : FOUND_CLOSEST_WP;
+        }
+        if(current_finalwaypoints_.waypoints[i].gid == closest_stopline_waypoint_)
+        {
+            // get the closest stopline waypoint
+            psw = current_finalwaypoints_.waypoints[i].pose.pose.position;
+            // update the found waypoint
+            found_wp = (found_wp == FOUND_CLOSEST_WP) ? FOUND_BOTH_WP : FOUND_CLOSEST_STOPLINE_WP;
+        }
+        if (found_wp == FOUND_BOTH_WP)
+            break;
+        std::cerr << i << " ";
+    }
+      std::cerr << "\n";
+
+    // if both closet waypoint and closest stopline point were found
+    if (found_wp == FOUND_BOTH_WP) {
+        double distance_to_stopline = std::hypot(std::hypot((pcw.x - psw.x), pcw.y - psw.y), pcw.z - psw.z);
+        std::cerr << "distance_to_stopline: " << distance_to_stopline << "\n";
+        inside_stopping_area = ((closest_waypoint_ < closest_stopline_waypoint_) && distance_to_stopline < STOPPING_AREA_DISTANCE);
+        std::cerr << "inside_stopping_area: " << inside_stopping_area << "\n";
+    }
 
     if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON && !foundOtherVehicleForIntersectionStop_ && !timerflag && inside_stopping_area)
     {
