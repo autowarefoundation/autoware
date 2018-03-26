@@ -282,11 +282,10 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             // if there is a turn
             if (steering_state == autoware_msgs::WaypointState::STR_LEFT || steering_state == autoware_msgs::WaypointState::STR_RIGHT)
             {
-                for (size_t i=size; (i > 0 && (size-i) < (str_wp_ahead_of_curvature_+20)); i--)
+                for (size_t i=size-1; (i > 0 && (size-i) < (str_wp_ahead_of_curvature_+20)); i--)
                 {
                     // update the state
                     lane.waypoints[i].wpstate.steering_state = steering_state;
-                    std::cerr << i << " ";
                 }
 
             }
