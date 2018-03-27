@@ -402,7 +402,7 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
     for (size_t i=param_stopline_target_waypoint_-offset; i<param_stopline_target_waypoint_+offset ; i++) {
       if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE) {
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-        CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(param_stopline_target_waypoint_);
+        CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(i);
         closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
         break;
       }
