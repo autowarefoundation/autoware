@@ -1,0 +1,17 @@
+<launch>
+  <arg name="device" default="/dev/ttyACM0"/>
+  <arg name="with_plot" default="false"/>
+
+  <node name="adxl345" pkg="adi_driver" type="adxl345_node">
+    <param name="device" value="$(arg device)"/>
+  </node>
+
+  <group ns="plot" if="$(arg with_plot)">
+    <node name="accl" pkg="rqt_plot" type="rqt_plot"
+	  args="/adxl345/data_raw/linear_acceleration/x:y:z"/>
+  </group>
+
+  <!-- Connect sensors before tests -->
+  <test test-name="test_adxl345" pkg="adi_driver" type="test_adxl345.py"/>
+  
+</launch>

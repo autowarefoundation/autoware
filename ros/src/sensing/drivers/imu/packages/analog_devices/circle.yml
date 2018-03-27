@@ -1,0 +1,59 @@
+general:
+  artifacts:
+    - "$CIRCLE_ARTIFACTS/"
+machine:
+  environment:
+    ROS_DISTRO: indigo
+    ROS_REPOSITORY_PATH: http://packages.ros.org/ros/ubuntu
+dependencies:
+  pre:
+    - rm -fr  /opt/circleci/.pyenv/
+    - rm -fr  /home/ubuntu/virtualenvs/
+    - hash -r
+    - type python
+    - python -c 'import sys; print(sys.path)'
+    - env | grep ROS
+    #- sudo rm /etc/apt/sources.list.d/*
+    - sudo sh -c "echo \"deb $ROS_REPOSITORY_PATH `lsb_release -cs` main\" > /etc/apt/sources.list.d/ros-latest.list"
+    - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+    - sudo apt-get update
+    - sudo apt-get install -y -q python-catkin-pkg python-rosdep ros-$ROS_DISTRO-catkin
+    - sudo apt-get install -y -q mongodb # to install ros-indigo-warehouse-ros
+    - sudo rosdep init && rosdep update
+  override:
+    - mkdir -p ~/catkin_ws/src
+    - cd ~/catkin_ws/src && ln -sf ~/$CIRCLE_PROJECT_REPONAME $CIRCLE_PROJECT_REPONAME
+test:
+  pre:
+    - rosdep update
+  override:
+    # compile
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && rosdep install --from-paths src/ --ignore-src -y 
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && catkin_make
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && catkin_make run_tests
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && catkin_test_results --verbose build
+    # doc build
+    - sudo pip install sphinx
+    - sudo pip install recommonmark
+    - sudo apt-get install -y -q doxygen pandoc python-catkin-sphinx
+    - sudo apt-get install -y -q texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra
+    - sudo apt-get install -y -q latexmk
+    - sudo apt-get install -y -q texlive-lang-cjk
+    ##
+    ## not sure why but we need this hack only for 14.04
+    - sudo sed -i 's@role(name@role("download"@' /usr/local/lib/python2.7/dist-packages/recommonmark/states.py
+    - sudo sed -i 's@str(content)@content@' /usr/local/lib/python2.7/dist-packages/recommonmark/states.py
+    ##
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && catkin_make --pkg $CIRCLE_PROJECT_REPONAME --make-args docbuild_$CIRCLE_PROJECT_REPONAME
+    - find -L ~/catkin_ws/ -iname '*.pdf' -exec cp {} $CIRCLE_ARTIFACTS \;
+    ##
+    # deb build
+    - sudo apt-get install -y -q python-bloom
+    - . /opt/ros/$ROS_DISTRO/setup.bash && cd ~/catkin_ws && catkin_make --pkg $CIRCLE_PROJECT_REPONAME --make-args debbuild_$CIRCLE_PROJECT_REPONAME
+    - cp ~/*.deb $CIRCLE_ARTIFACTS
+
+deployment:
+  release:
+    tag: /[0-9]+(\.[0-9]+)*/
+    commands:
+      - ./.github_release.sh

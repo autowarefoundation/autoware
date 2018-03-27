@@ -17,6 +17,8 @@ var remotePositionNo = '0';
 var isFirefox = !!window.sidebar;
 var mediaSenders = [];
 var MAX_CAMERA_NUM = 6;
+var audioStream = null;
+var useDevices = {"front": null, "back": null};
 
 othorSelectDevice.style.display = isFirefox ? 'none' : '';
 firefoxSelectDevice.style.display = isFirefox ? '' : 'none';
@@ -126,6 +128,24 @@ function addStream() {
   }
   localView.srcObject = stream;
   localView.play();
+
+  // Set Camera ID
+  console.log("ADD Strean");
+  console.log(deviceList.value);
+  deviceId = deviceList.value
+  if(RUN_TYPE == "vehicle") {
+    if(useDevices["front"] == null || useDevices["front"] == deviceId) {
+      console.log("FrontCamera: " + deviceId)
+      useDevices["front"] = deviceId;
+    }
+    else if((useDevices["front"] != null && useDevices["back"] == null) || useDevices["back"] == deviceId) {
+      console.log("BackCamera: " + deviceId)
+      useDevices["back"] = deviceId;
+    }
+    else {
+      console.log("OtherCamera: " + deviceId)
+    }
+  }
 }
 
 function setFocusDialogRoomName() {
@@ -136,17 +156,86 @@ function setFocusDialogRoomName() {
 function deviceChange() {
   var deviceId = deviceList.value;
   clearStream(streamPreview);
+
   if (deviceId || isFirefox) {
+    // set audio device if fist device
+    if(audioStream == null) {
+      isUseAudio = true;
+    }
+    else {
+      isUseAudio = false
+    }
     deviceList.disabled = true;
-    var constraints = {
-      audio: false,
-      video: {
-        optional: [{ sourceId: deviceId }],
+    console.log("RUN_TYPE " + RUN_TYPE);
+    if(RUN_TYPE == "vehicle") {
+      if(useDevices["front"] == null || useDevices["front"] == deviceId) {
+        console.log("FrontCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              minAspectRatio: 1.777,
+              maxAspectRatio: 1.778,
+              minWidth: 320,
+              minHeight: 180,
+              minFrameRate: 30
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
       }
-    };
+      else if((useDevices["front"] != null && useDevices["back"] == null) || useDevices["back"] == deviceId) {
+        console.log("BackCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              minAspectRatio: 1.777,
+              maxAspectRatio: 1.778,
+              maxWidth: 768,
+              maxHeight: 432,
+              minFrameRate: 30
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
+      }
+      else {
+        console.log("OtherCamera: " + deviceId)
+        var constraints = {
+          audio: isUseAudio,
+          video: {
+            mandatory: {
+              maxWidth: 640,
+              maxHeight: 480,
+              minWidth: 320,
+              minHeight: 240,
+              minFrameRate: 30
+            },
+            optional: [{
+              sourceId: deviceId
+            }]
+          }
+        };
+      }
+    }
+    else if(RUN_TYPE == "operator") {
+      var constraints = {
+        audio: true,
+        video: false
+      };
+    }
   }
+  console.log(constraints);
   navigator.mediaDevices.getUserMedia(constraints)
     .then(function (stream) {
+      if(isUseAudio == true) {
+        audioStream = stream
+      }
       streamPreview.srcObject = stream;
       streamPreview.play();
       deviceList.disabled = false;
@@ -161,6 +250,9 @@ function removeStream() {
   localPositionNo = this.dataset.no;
   var stream = document.getElementById('localView' + localPositionNo).srcObject;
   // stream.stop();
+  if(audioStream.id == stream.id) {
+    audioStream = null;
+  }
   if (isFirefox) {
     mediaSenders.forEach(function (sender) {
       pc.removeTrack(sender);
@@ -189,7 +281,7 @@ function clearStream(video) {
 }
 
 function clearStreamAll() {
-  for (var i = 1; i <= 3; i++) {
+  for (var i = 1; i <=5; i++) {
     document.getElementById('btnAddStream' + i).style.display = '';
     document.getElementById('btnRemoveStream' + i).style.display = 'none';
     clearStream(document.getElementById('localView' + i));
@@ -266,12 +358,6 @@ function start() {
   pc.onicecandidate = function (evt) {
     if (evt.candidate)
       signalingChannel.send(JSON.stringify({ candidate: evt.candidate }));
-    try {
-      console.log('candidate', evt.candidate);
-      console.log(pc.getConfiguration());
-    }
-    catch (e) {
-    }
   };
 
   pc.onnegotiationneeded = function () {

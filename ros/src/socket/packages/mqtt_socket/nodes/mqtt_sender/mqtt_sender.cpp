@@ -33,6 +33,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <unordered_map>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +44,7 @@
 using namespace std;
 #include "mqtt_socket/mqtt_setting.hpp"
 #include "autoware_msgs/CanInfo.h"
+#include <tablet_socket_msgs/mode_info.h>
 
 class MqttSender
 {
@@ -59,6 +61,8 @@ private:
   void targetVelocityArrayCallback(const std_msgs::Float64MultiArray &msg);
   void twistCmdCallback(const geometry_msgs::TwistStamped &msg);
   void stateCallback(const std_msgs::String &msg);
+  void currentPoseCallback(const geometry_msgs::PoseStamped& msg);
+  void modeInfoCallback(const tablet_socket_msgs::mode_info& msg);
   unordered_map<string, ros::Subscriber> Subs;
   ros::NodeHandle node_handle_;
 
@@ -67,6 +71,8 @@ private:
   string mqtt_topic_state_;
   string mqtt_topic_target_velocity_;
   string mqtt_topic_current_target_velocity_;
+  string mqtt_topic_current_pose_;
+  string mqtt_topic_drive_mode_;
 
   // current behavior/status
   std_msgs::Float64MultiArray current_target_velocity_array_; //kmph
@@ -74,7 +80,8 @@ private:
   double current_target_velocity_; // mps2kmph(current_twist_cmd_.twist.twist.linear.x);
   std_msgs::String current_state_;
 
-  int callback_counter_ = 0;
+  int can_info_callback_counter_ = 0;
+  int mode_info_callback_counter_ = 0;
 };
 
 inline double mps2kmph(double _mpsval)
@@ -90,6 +97,8 @@ MqttSender::MqttSender() :
   Subs["target_velocity_array"] = node_handle_.subscribe("/target_velocity_array", 1, &MqttSender::targetVelocityArrayCallback, this);
   Subs["twist_cmd"] = node_handle_.subscribe("/twist_cmd", 1, &MqttSender::twistCmdCallback, this);
   Subs["state"] = node_handle_.subscribe("/state", 1, &MqttSender::stateCallback, this);
+  Subs["drive_mode"] = node_handle_.subscribe("/mode_info", 1, &MqttSender::modeInfoCallback, this);
+  Subs["current_pose"] = node_handle_.subscribe("/current_pose", 1, &MqttSender::currentPoseCallback, this);
 
   // MQTT PARAMS
   mosquitto_lib_init();
@@ -101,6 +110,8 @@ MqttSender::MqttSender() :
   mqtt_topic_state_ = "vehicle/" + to_string(vehicle_id) + "/state";
   mqtt_topic_target_velocity_ = "vehicle/" + to_string(vehicle_id) + "/target_velocity";
   mqtt_topic_current_target_velocity_ = "vehicle/" + to_string(vehicle_id) + "/current_velocity";
+  mqtt_topic_current_pose_ = "vehicle/" + to_string(vehicle_id) + "/current_pose";
+  mqtt_topic_drive_mode_ = "vehicle/" + to_string(vehicle_id) + "/drive_mode";
 
   mqtt_client = mosquitto_new(mqtt_client_id.c_str(), true, NULL);
   mosquitto_connect_callback_set(mqtt_client, &MqttSender::on_connect);
@@ -145,6 +156,7 @@ static void MqttSender::load_config()
   caninfo_downsample = config["mqtt"]["CANINFO_DOWNSAMPLE"].as<float>();
   gear_d = config["mqtt"]["GEAR_D"].as<int>();
   gear_n = config["mqtt"]["GEAR_N"].as<int>();
+  unordered_map<string, ros::Subscriber> Subs;
   gear_r = config["mqtt"]["GEAR_R"].as<int>();
   gear_p = config["mqtt"]["GEAR_P"].as<int>();
 
@@ -212,10 +224,58 @@ void MqttSender::stateCallback(const std_msgs::String &msg)
   );
 }
 
+void MqttSender::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
+{
+  ostringstream publish_msg;
+
+  publish_msg << to_string(msg.pose.position.x) << ",";
+  publish_msg << to_string(msg.pose.position.y) << ",";
+  publish_msg << to_string(msg.pose.position.z) << ",";
+  publish_msg << to_string(msg.pose.orientation.x) << ",";
+  publish_msg << to_string(msg.pose.orientation.y) << ",";
+  publish_msg << to_string(msg.pose.orientation.z) << ",";
+  publish_msg << to_string(msg.pose.orientation.w) << ",";
+
+  string publish_msg_str = publish_msg.str();
+  int ret = mosquitto_publish(
+    mqtt_client,
+    NULL,
+    mqtt_topic_current_pose_.c_str(),
+    strlen(publish_msg_str.c_str()),
+    publish_msg_str.c_str(),
+    mqtt_qos,
+    false
+  );
+}
+
+void MqttSender::modeInfoCallback(const tablet_socket_msgs::mode_info& msg)
+{
+  if(mode_info_callback_counter_ > caninfo_downsample * 100) {
+    ostringstream publish_msg;
+    publish_msg << to_string(msg.mode);
+    string publish_msg_str = publish_msg.str();
+    ROS_INFO("Drive Mode: %s\n", publish_msg_str.c_str());
+
+    int ret = mosquitto_publish(
+      mqtt_client,
+      NULL,
+      mqtt_topic_drive_mode_.c_str(),
+      strlen(publish_msg_str.c_str()),
+      publish_msg_str.c_str(),
+      mqtt_qos,
+      false
+    );
+    mode_info_callback_counter_ = 0;
+  }
+  else {
+    mode_info_callback_counter_++;
+  }
+}
+
 void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
 {
 
-  if(callback_counter_ > caninfo_downsample * 100) {
+  if(can_info_callback_counter_ > caninfo_downsample * 100) {
     ostringstream publish_msg;
 
     publish_msg << msg->tm << ",";
@@ -292,10 +352,10 @@ void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
       false
     );
 
-    callback_counter_ = 0;
+    can_info_callback_counter_ = 0;
   }
   else {
-    callback_counter_++;
+    can_info_callback_counter_++;
   }
 }
 
