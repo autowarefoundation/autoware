@@ -255,6 +255,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
   }
 
     // add the steering state to the points at the end turn (with out intersection) explicitly
+    int last_turn_offset_wp = 20; // no.of waypoints extra to hold the steering state for the turn at the last
     for (auto &lane : lane_array.lanes){
 
         // check if the waypoints in the end have a turn
@@ -262,11 +263,11 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
         auto last_wp = lane.waypoints[size -1];
 
         // if there are enough waypoints for turn in the end
-        if (size > 20 + str_wp_ahead_of_curvature_) {
+        if (size > last_turn_offset_wp + str_wp_ahead_of_curvature_) {
             int steering_state;
 
             // reference 20th waypoint from end
-            auto ref_wp = lane.waypoints[size - 1 -20];
+            auto ref_wp = lane.waypoints[size - 1 -last_turn_offset_wp];
 
             // get the yaw diff for the points in the end
             int diff = ((int)std::floor(calcPosesAngleDiff(ref_wp.pose.pose, last_wp.pose.pose)));
@@ -282,7 +283,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             // if there is a turn
             if (steering_state == autoware_msgs::WaypointState::STR_LEFT || steering_state == autoware_msgs::WaypointState::STR_RIGHT)
             {
-                for (size_t i=size-1; (i > 0 && (size-i) < (str_wp_ahead_of_curvature_+20)); i--)
+                for (size_t i=size-1; (i > 0 && (size-i) < (str_wp_ahead_of_curvature_+last_turn_offset_wp)); i--)
                 {
                     // update the state
                     lane.waypoints[i].wpstate.steering_state = steering_state;
