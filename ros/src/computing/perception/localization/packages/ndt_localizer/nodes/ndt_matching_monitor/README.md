@@ -13,7 +13,10 @@ The score is the result of PCL's function `getFitnessScore()` which measures how
 
 `ndt_matching_monitor` subscribes to `/ndt_stat` and `/ndt_pose` topics, and keeps a running average filter on 
 the score value. When the filtered score is beyond some thresholds, `ndt_matching_monitor` will issue 
-the `/initialpose` topic (same as rviz) using the last known "healty" pose to force `/ndt_matching` to initialize. 
+the `/initialpose` topic (same as rviz) using the last known "healty" pose to force `/ndt_matching` to initialize.
+
+If a GNSS device is available, an automatic reinitialization will be triggered with it. `nmea2pose` node is required.
+Otherwise, a halt in localization will be started. To reset the halted status, use *Initial Pose* tool in RVIZ. 
 
 ### How to launch
 * From a sourced terminal:\
