@@ -1669,6 +1669,17 @@
                                         </object>
                                     </object>
                                     <object class="sizeritem">
+                                        <flag>wxALL</flag>
+                                        <border>0</border>
+                                        <option>1</option>
+                                        <object class="wxButton" name="button_run_ros1_bridge" base="EditButton">
+                                            <label>Run ROS1 Bridge</label>
+                                            <events>
+                                                <handler event="EVT_BUTTON">OnRunROS1Bridge</handler>
+                                            </events>
+                                        </object>
+                                    </object>
+                                    <object class="sizeritem">
                                         <border>0</border>
                                         <option>1</option>
                                         <object class="spacer" name="spacer" base="EditSpacer">

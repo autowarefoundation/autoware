@@ -296,6 +296,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.panel_interface_cc.SetSizer(szr)
                 self.all_sensors_proc = None
                 self.lidar_tracker_proc = None
+                self.ros1_bridge_proc = None
                 choices = [
                     'ghost obstacle',
                     'accident took over',
@@ -1861,10 +1862,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.dlg_rosbag_record.OnStop(None)
 
         def OnRunAllSensors(self, event):
-                cmd = 'do_shell_exec ' \
-                      'bash -lc \\"source ~/autoware/ros/devel/setup.bash; ' \
-                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
-                      'roslaunch demo_scripts all_sensors.launch\\"'
+                cmd = os.path.join(os.path.dirname(__file__), 'run-allsensors.sh')
                 self.all_sensors_proc = self.launch_kill(
                         not self.all_sensors_proc,
                         cmd,
@@ -1874,12 +1872,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
 
         def OnRunLidarTracker(self, event):
-                cmd = 'do_shell_exec ' \
-                      'ssh apex-car-drivepx2 \\\'.local/bin/ade enter \\"source /opt/apex_ws/install.bash; ros2 run lidar_tracking lidar_tracker_exe\\" \\\' & '\
-                      'bash -lc \\"source ~/autoware/ros/devel/setup.bash; ' \
-                      'source ~/autoware/ros/src/apex_ros1/as_vehicle/install/setup.bash --extend; '\
-                      'source ~/ros1_bridge/install/setup.bash; '\
-                      'ros2 run ros1_bridge dynamic_bridge --bridge-all-2to1-topics\\"'
+                cmd = os.path.join(os.path.dirname(__file__), 'run-lidartracker.sh')
                 self.lidar_tracker_proc = self.launch_kill(
                         not self.lidar_tracker_proc,
                         cmd,
@@ -1887,6 +1880,16 @@ class MyFrame(rtmgr.MyFrame):
                         obj=self.button_run_lidar_tracker,
                         kill_children=True)
 		self.interface_cmd[ self.button_run_lidar_tracker ] = (cmd, self.lidar_tracker_proc)
+
+        def OnRunROS1Bridge(self, event):
+                cmd = os.path.join(os.path.dirname(__file__), 'run-ros1bridge.sh')
+                self.ros1_bridge_proc = self.launch_kill(
+                        not self.ros1_bridge_proc,
+                        cmd,
+                        self.ros1_bridge_proc,
+                        obj=self.button_run_ros1_bridge,
+                        kill_children=True)
+		self.interface_cmd[ self.button_run_ros1_bridge ] = (cmd, self.ros1_bridge_proc)
 
         def OnApexReportSelected(self, event):
                 self.apex_report_custom.SetValue('')
