@@ -393,22 +393,29 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   // cached
   current_finalwaypoints_ = msg;
+  uint8_t offset = 3;
 
-  size_t idx = param_stopline_target_waypoint_ +  (current_velocity_ * param_stopline_target_ratio_);
-
-	  if(current_finalwaypoints_.waypoints.size() > param_stopline_target_waypoint_){
-		  if (current_finalwaypoints_.waypoints.at(param_stopline_target_waypoint_).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE){
-			  ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-              CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(param_stopline_target_waypoint_);
-			  closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
-		  }
-		  if (current_finalwaypoints_.waypoints.at(param_stopline_target_waypoint_).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP) {
-              ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
-          }
+  // sanity checks
+  if(current_finalwaypoints_.waypoints.size() > param_stopline_target_waypoint_+offset && param_stopline_target_waypoint_-offset > 0){
+    // check if there is a stopline state in [param_stopline_target_waypoint_-offset, param_stopline_target_waypoint_+offset]
+    for (size_t i=param_stopline_target_waypoint_-offset; i<param_stopline_target_waypoint_+offset ; i++) {
+        if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE) {
+            ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+            CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(param_stopline_target_waypoint_);
+            closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
+            break;
+        }
+      }
+    // check if there is a stopline state in [param_stopline_target_waypoint_-offset, param_stopline_target_waypoint_+offset]
+    for (size_t i=param_stopline_target_waypoint_-offset; i<param_stopline_target_waypoint_+offset ; i++) {
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP) {
+        ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
+      }
+    }
   }
 
   // steering
-  idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
+  size_t idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
 
