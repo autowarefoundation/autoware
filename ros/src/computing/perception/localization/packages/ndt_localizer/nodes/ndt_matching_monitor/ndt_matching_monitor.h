@@ -104,6 +104,8 @@ class RosNdtMatchingMonitor
 	unsigned int            stable_samples_;
 	unsigned int            prediction_samples_;
 
+	jsk_rviz_plugins::OverlayText rviz_info_text_;
+
 	jsk_rviz_plugins::OverlayText ndt_normal_text_;
 	jsk_rviz_plugins::OverlayText ndt_warn_text_;
 	jsk_rviz_plugins::OverlayText ndt_error_text_;

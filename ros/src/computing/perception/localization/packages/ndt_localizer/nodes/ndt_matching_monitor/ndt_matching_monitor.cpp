@@ -68,6 +68,7 @@ geometry_msgs::PoseWithCovarianceStamped
 
 	predicted_pose.header = current_pose.header;
 	predicted_pose.header.stamp.sec += time_delta;
+	predicted_pose.pose.pose.orientation = current_pose.pose.pose.orientation;
 
 	predicted_pose.pose.pose.position.x = current_pose.pose.pose.position.x +
 			(current_pose.pose.pose.position.x - current_pose.pose.pose.position.x) / time_delta;
@@ -102,17 +103,16 @@ void RosNdtMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCo
 
 void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
-	jsk_rviz_plugins::OverlayText rviz_info_text;
 	geometry_msgs::PoseWithCovarianceStamped initialpose_msg;
 	initialpose_msg.header = input->header;
 
 	if (ndt_status::NDT_FATAL == ndt_status_)
 	{
-		rviz_info_text = ndt_fatal_text_;
+		rviz_info_text_ = ndt_fatal_text_;
 		ROS_ERROR_STREAM(__APP_NAME__ << " FATAL CANNOT RECOVER - STOPPING.");
 		initialpose_msg.pose = initialpose_.pose;
 		initialpose_pub_.publish(initialpose_msg);
-		overlay_info_text_pub_.publish(rviz_info_text);
+		overlay_info_text_pub_.publish(rviz_info_text_);
 		stable_samples_ = 0;
 		return;
 	}
@@ -121,7 +121,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	    && score_delta_ < score_threshold_delta_)
 	{
 		//update the last good pose
-		rviz_info_text = ndt_normal_text_;
+		rviz_info_text_ = ndt_normal_text_;
 		initialpose_.pose.pose = input->pose;
 		prev_gnss_pose_ = gnss_pose_;
 		prev_initialpose_ = initialpose_;
@@ -136,7 +136,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 			((iteration_count_ >= iteration_threshold_stop_)
 	         || (iteration_count_ >= iteration_threshold_warning_ && score_delta_ >= score_threshold_delta_)))
 	{
-		rviz_info_text = ndt_error_text_;
+		rviz_info_text_ = ndt_error_text_;
 		ndt_status_ = ndt_status::NDT_ERROR;
 		//force the last known good pose as initialpose_
 
@@ -170,7 +170,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	          && iteration_count_< iteration_threshold_stop_)
 	          || ndt_status_ == ndt_status::NDT_ERROR))
 	{
-		rviz_info_text = ndt_warn_text_;
+		rviz_info_text_ = ndt_warn_text_;
 		ndt_status_ = ndt_status::NDT_WARNING;
 		prev_gnss_pose_ = gnss_pose_;
 		prev_initialpose_ = initialpose_;
@@ -178,11 +178,11 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 
 	if (!initialized_)
 	{
-		rviz_info_text = ndt_not_ready_text_;
+		rviz_info_text_ = ndt_not_ready_text_;
 	}
 
 	//publish the current max speed
-	overlay_info_text_pub_.publish(rviz_info_text);
+	overlay_info_text_pub_.publish(rviz_info_text_);
 	last_score_ = current_score_;
 }
 
@@ -262,4 +262,6 @@ RosNdtMatchingMonitor::RosNdtMatchingMonitor()
 
 	ndt_fatal_text_ = ndt_error_text_;
 	ndt_fatal_text_.text = "NDT MONITOR - FATAL CANNOT RECOVER AUTOMATICALLY";
+
+	rviz_info_text_ = ndt_not_ready_text_;
 }
