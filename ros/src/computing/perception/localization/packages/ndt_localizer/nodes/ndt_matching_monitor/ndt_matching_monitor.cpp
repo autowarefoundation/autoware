@@ -40,6 +40,7 @@ void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::Cons
 	gnss_pose_.header = input->header;
 	gnss_pose_.pose.pose = input->pose;
 	gnss_pose_available_ = true;
+	gnss_text_ = " - GNSS available";
 }
 
 void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::ndt_stat::ConstPtr& input)
@@ -105,14 +106,15 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 {
 	geometry_msgs::PoseWithCovarianceStamped initialpose_msg;
 	initialpose_msg.header = input->header;
+	jsk_rviz_plugins::OverlayText rviz_info_text;
 
 	if (ndt_status::NDT_FATAL == ndt_status_)
 	{
-		rviz_info_text_ = ndt_fatal_text_;
+		rviz_info_text = ndt_fatal_text_;
 		ROS_ERROR_STREAM(__APP_NAME__ << " FATAL CANNOT RECOVER - STOPPING.");
 		initialpose_msg.pose = initialpose_.pose;
 		initialpose_pub_.publish(initialpose_msg);
-		overlay_info_text_pub_.publish(rviz_info_text_);
+		overlay_info_text_pub_.publish(rviz_info_text);
 		stable_samples_ = 0;
 		return;
 	}
@@ -121,9 +123,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	    && score_delta_ < score_threshold_delta_)
 	{
 		//update the last good pose
-		rviz_info_text_ = ndt_normal_text_;
 		initialpose_.pose.pose = input->pose;
-		prev_gnss_pose_ = gnss_pose_;
 		prev_initialpose_ = initialpose_;
 		if (stable_samples_ >= (unsigned int) min_stable_samples_)
 		{
@@ -136,10 +136,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 			((iteration_count_ >= iteration_threshold_stop_)
 	         || (iteration_count_ >= iteration_threshold_warning_ && score_delta_ >= score_threshold_delta_)))
 	{
-		rviz_info_text_ = ndt_error_text_;
 		ndt_status_ = ndt_status::NDT_ERROR;
-		//force the last known good pose as initialpose_
-
 		if (gnss_pose_available_)
 		{
 			initialpose_msg.header.frame_id = gnss_pose_.header.frame_id;
@@ -158,7 +155,8 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 			prediction_samples_++;
 		}
 
-		if (stable_samples_ >= (unsigned int) min_stable_samples_ )
+		if (gnss_pose_available_
+		    || stable_samples_ >= (unsigned int) min_stable_samples_ )
 		{
 			ROS_INFO_STREAM(__APP_NAME__ << " Resetting position.");
 			initialpose_pub_.publish(initialpose_msg);
@@ -170,19 +168,38 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	          && iteration_count_< iteration_threshold_stop_)
 	          || ndt_status_ == ndt_status::NDT_ERROR))
 	{
-		rviz_info_text_ = ndt_warn_text_;
 		ndt_status_ = ndt_status::NDT_WARNING;
-		prev_gnss_pose_ = gnss_pose_;
 		prev_initialpose_ = initialpose_;
 	}
 
+	prev_gnss_pose_ = gnss_pose_;
+
 	if (!initialized_)
 	{
-		rviz_info_text_ = ndt_not_ready_text_;
+		rviz_info_text = ndt_not_ready_text_;
+	} else
+	{
+		switch (ndt_status_)
+		{
+			case ndt_status::NDT_ERROR:
+				rviz_info_text = ndt_error_text_;
+				break;
+			case ndt_status::NDT_WARNING:
+				rviz_info_text = ndt_warn_text_;
+				break;
+			case ndt_status::NDT_OK:
+				rviz_info_text = ndt_normal_text_;
+				break;
+			case ndt_status::NDT_NOT_INITIALIZED:
+			default:
+				rviz_info_text = ndt_not_ready_text_;
+				break;
+		}
 	}
 
-	//publish the current max speed
-	overlay_info_text_pub_.publish(rviz_info_text_);
+	rviz_info_text.text+=gnss_text_;
+
+	overlay_info_text_pub_.publish(rviz_info_text);
 	last_score_ = current_score_;
 }
 
@@ -228,6 +245,7 @@ RosNdtMatchingMonitor::RosNdtMatchingMonitor()
 	prediction_samples_ = 0;
 	ndt_status_     = ndt_status::NDT_NOT_INITIALIZED;
 	initialized_    = false;
+	gnss_text_ = " - NO GNSS available";
 
 	ndt_normal_text_.width  = 800;
 	ndt_normal_text_.height = 100;
@@ -262,6 +280,4 @@ RosNdtMatchingMonitor::RosNdtMatchingMonitor()
 
 	ndt_fatal_text_ = ndt_error_text_;
 	ndt_fatal_text_.text = "NDT MONITOR - FATAL CANNOT RECOVER AUTOMATICALLY";
-
-	rviz_info_text_ = ndt_not_ready_text_;
 }

@@ -103,8 +103,7 @@ class RosNdtMatchingMonitor
 	int                     min_stable_samples_;
 	unsigned int            stable_samples_;
 	unsigned int            prediction_samples_;
-
-	jsk_rviz_plugins::OverlayText rviz_info_text_;
+	std::string             gnss_text_;
 
 	jsk_rviz_plugins::OverlayText ndt_normal_text_;
 	jsk_rviz_plugins::OverlayText ndt_warn_text_;
@@ -118,15 +117,37 @@ class RosNdtMatchingMonitor
 	geometry_msgs::PoseWithCovarianceStamped prev_gnss_pose_;
 	std::deque< geometry_msgs::PoseWithCovarianceStamped > ndt_pose_array_;
 
+	/*!
+	 * Callback for NDT statistics
+	 * @param input message published by ndt
+	 */
 	void ndt_stat_callback(const autoware_msgs::ndt_stat::ConstPtr& input);
 
+	/*!
+	 * Callback for transformation result from NDT
+	 * @param input message published by ndt containing the pose of the ego-vehicle
+	 */
 	void ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input);
 
+	/*!
+	 * If available GNSS will be used to try to reset
+	 * @param input message containing the pose as given by the GNSS device
+	 */
 	void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input);
 
+	/*!
+	 * Calculates the possible next location based on the current and previous positions
+	 * @param prev_pose previous position
+	 * @param current_pose current position
+	 * @return the estimated position
+	 */
 	geometry_msgs::PoseWithCovarianceStamped predict_next_pose(geometry_msgs::PoseWithCovarianceStamped prev_pose,
 	                                             geometry_msgs::PoseWithCovarianceStamped current_pose);
 
+	/*!
+	 * In case of Fatal status a halt will be generated, the only way to recover would be using a reinitialization
+	 * @param input the pose as given by rviz
+	 */
 	void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input);
 public:
 	void Run();
