@@ -370,16 +370,12 @@ void DecisionMakerNode::updateStateStop(int status)
         }
         if (found_wp == FOUND_BOTH_WP)
             break;
-        std::cerr << i << " ";
     }
-      std::cerr << "\n";
 
     // if both closet waypoint and closest stopline point were found
     if (found_wp == FOUND_BOTH_WP) {
         double distance_to_stopline = std::hypot(std::hypot((pcw.x - psw.x), pcw.y - psw.y), pcw.z - psw.z);
-        std::cerr << "distance_to_stopline: " << distance_to_stopline << "\n";
         inside_stopping_area = ((closest_waypoint_ < closest_stopline_waypoint_) && distance_to_stopline < STOPPING_AREA_DISTANCE);
-        std::cerr << "inside_stopping_area: " << inside_stopping_area << "\n";
     }
 
     if (std::abs(current_velocity_) < STOPPING_VECLOCITY_EPSILON && !foundOtherVehicleForIntersectionStop_ && !timerflag && inside_stopping_area)
