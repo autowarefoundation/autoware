@@ -22,7 +22,7 @@ double find_angle(point *_a, point *_b)
 
 bool isIntersectLine(double p1x, double p1y, double p2x, double p2y, double p3x, double p3y, double p4x, double p4y)
 {
-  double ta = (p3x - p4x) * (p1y - p3y) + (p3y - p4y) * (p3x - p4x);
+  double ta = (p3x - p4x) * (p1y - p3y) + (p3y - p4y) * (p3x - p1x);
   double tb = (p3x - p4x) * (p2y - p3y) + (p3y - p4y) * (p3x - p2x);
   double tc = (p1x - p2x) * (p3y - p1y) + (p1y - p2y) * (p1x - p3x);
   double td = (p1x - p2x) * (p4y - p1y) + (p1y - p2y) * (p1x - p4x);

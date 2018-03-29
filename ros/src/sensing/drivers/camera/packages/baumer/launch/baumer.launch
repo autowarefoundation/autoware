@@ -1,10 +1,14 @@
 <launch>
 	<!-- declare arguments with default values -->
-	<arg name="fps" default="15"/>
+	<arg name="fps" default="20"/>
+	<arg name="scale" default="0.5"/>
+	<arg name="brightness" default="0.7"/>
 	<arg name="CalibrationFile" default=""/>
 
-	<node pkg="vlg22c_cam" type="vlg22c_cam_node" name="vlg22c" cwd="node">
+	<node pkg="vlg22c_cam" type="vlg22c_cam_node" name="vlg22c" cwd="node" output="screen">
 		<param name="fps" value="$(arg fps)"/>
+		<param name="scale" value="$(arg scale)"/>
+		<param name="brightness" value="$(arg brightness)"/>
 		<param name="calibrationfile" value="$(arg CalibrationFile)"/>
 	</node>
 </launch>

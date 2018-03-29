@@ -1,0 +1,26 @@
+<launch>
+	<arg name="points_ground_src" default="points_ground" /> <!-- PointCloud Ground filtered source topic-->
+	<arg name="points_no_ground_src" default="points_no_ground" /> <!-- PointCloud NoGround filtered source topic-->
+	<arg name="wayarea_topic_src" default="grid_map_wayarea" /> <!-- GridMap Road data source topic-->
+	<arg name="wayarea_layer_name" default="wayarea" /> <!-- NAme of the layer in the GridMap containing the road data-->
+	<arg name="output_layer_name" default="road_status" /> <!-- NAme of the output layer in the GridMap-->
+
+	<arg name="road_unknown_value" default="128" />     <!-- Value to fill in the occupancy grid when a cell is UNKNOWN -->
+	<arg name="road_free_value" default="75" />         <!-- Value to fill in the occupancy grid when a cell is FREE-->
+	<arg name="road_occupied_value" default="0" />      <!-- Value to fill in the occupancy grid when a cell is OCCUPIED-->
+	<arg name="no_road_value" default="255" />          <!-- Value to fill in the occupancy grid when a cell is NO ROAD-->
+	
+	<node name="occupancy_processor_01" pkg="road_occupancy_processor" type="road_occupancy_processor" output="screen">
+		<param name="points_ground_src" value="$(arg points_ground_src)" />
+		<param name="points_no_ground_src" value="$(arg points_no_ground_src)" />
+		<param name="wayarea_topic_src" value="$(arg wayarea_topic_src)" />
+		<param name="wayarea_layer_name" value="$(arg wayarea_layer_name)" />
+		<param name="output_layer_name" value="$(arg output_layer_name)" />
+
+		<param name="road_unknown_value" value="$(arg road_unknown_value)" />
+		<param name="road_free_value" value="$(arg road_free_value)" />
+		<param name="road_occupied_value" value="$(arg road_occupied_value)" />
+		<param name="no_road_value" value="$(arg no_road_value)" />
+	</node>
+
+</launch>

@@ -3,16 +3,10 @@
 
 <launch>
 
-  <!-- start nodelet manager and driver nodelets -->
-  <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">
-    <arg name="model" value="VLP16"/>
+  <!-- start nodelet manager, driver and cloud nodelets -->
+  <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch">
+    <arg name="frame_id" value="test_frame"/>
     <arg name="pcap" value="$(find velodyne_pointcloud)/tests/vlp16.pcap"/>
-  </include>
-
-  <!-- start cloud nodelet using test calibration file -->
-  <include file="$(find velodyne_pointcloud)/launch/cloud_nodelet.launch">
-    <arg name="calibration"
-         value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
   </include>
 
   <!-- verify PointCloud2 publication rate -->
