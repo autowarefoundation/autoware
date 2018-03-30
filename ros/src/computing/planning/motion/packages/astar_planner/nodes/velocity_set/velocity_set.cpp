@@ -654,9 +654,7 @@ int main(int argc, char** argv)
 
     changeWaypoints(vs_info, detection_result, closest_waypoint,
                     obstacle_waypoint, obstacle_velocity, final_waypoints_pub, &vs_path);
-
-    vs_info.clearPoints();
-
+    
     // publish obstacle waypoint index
     std_msgs::Int32 obstacle_waypoint_index;
     obstacle_waypoint_index.data = obstacle_waypoint;
