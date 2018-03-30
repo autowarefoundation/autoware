@@ -198,7 +198,7 @@ private:
   private:
     double x_, p_, k_, Q_, R_;
   public:
-    KalmanFilter(double Q = 1e-5, double R = 1e-3)
+    KalmanFilter(double Q = 1e-4, double R = 1e-3)
     : x_(1e-0), p_(1e-1), k_(1e-1)
     { Q_ = Q; R_ = R; }
     void init(double x0) { x_ = x0; }
@@ -266,8 +266,8 @@ public:
     lost_counter_ = 0;
     tracking_counter_++;
     time_ = ros::Time::now();
-    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
-    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    // tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
