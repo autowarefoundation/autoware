@@ -152,7 +152,14 @@ void PacmodInterface::publishToPacmod()
   platform_comm_msgs::TurnSignalCommand turn_signal;
   turn_signal.header.stamp = ros::Time::now();
   turn_signal.mode = speed_mode.mode;
-  if (lamp_cmd_.l == 1)
+
+  // if both lamps are enabled
+  if (lamp_cmd_.l == 1 && lamp_cmd_.r == 1)
+  {
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+  }
+  else if (lamp_cmd_.l == 1)
   {
     turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
   }
