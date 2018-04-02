@@ -1,5 +1,5 @@
-#include <ros/ros.h>
 #include <decision_maker_node.hpp>
+#include <ros/ros.h>
 
 int main(int argc, char **argv)
 {
