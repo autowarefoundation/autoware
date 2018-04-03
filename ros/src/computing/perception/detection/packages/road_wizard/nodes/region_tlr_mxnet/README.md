@@ -29,6 +29,15 @@ For a complete list check https://developer.nvidia.com/cuda-gpus, or execute `de
 
 5. Compile Autoware
 
+6. Put your trained data in `Autoware/ros/src/computing/perception/detection/packages/road_wizard/data`.  
+
+   ```
+   Autoware/ros/src/computing/perception/detection/packages/road_wizard/data
+   ├── mxnet-network.json
+   └── mxnet-network.params
+   ```  
+   Specify your files name in `Autoware/ros/src/computing/perception/detection/packages/road_wizard/launch/traffic_recognition_mxnet.launch`, if you use your own.
+
 ---
 
 For a complete reference on the compilation follow the project's documentation:
