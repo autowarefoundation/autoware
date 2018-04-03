@@ -54,6 +54,7 @@ void VoxelGrid<PointSourceType>::initialize()
 
 	icovariance_.resize(voxel_num_);
 
+	points_id_.clear();
 	points_id_.resize(voxel_num_);
 
 	points_per_voxel_.resize(voxel_num_);
@@ -225,7 +226,7 @@ void VoxelGrid<PointSourceType>::computeCentroidAndCovariance()
 
 		if (ipoint_num >= min_points_per_voxel_) {
 
-			covariance_[i] = (covariance_[i] - 2 * (pt_sum * centroid_[i].transpose())) / point_num + centroid_[i] * centroid_[i].transpose();
+			covariance_[i] = (covariance_[i] - 2.0 * (pt_sum * centroid_[i].transpose())) / point_num + centroid_[i] * centroid_[i].transpose();
 			covariance_[i] *= (point_num - 1.0) / point_num;
 
 			SymmetricEigensolver3x3 sv(covariance_[i]);
