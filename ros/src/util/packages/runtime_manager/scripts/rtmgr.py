@@ -1363,7 +1363,7 @@ class MyDialogWaypointLoader(wx.Dialog):
 	def __set_properties(self):
 		# begin wxGlade: MyDialogWaypointLoader.__set_properties
 		self.SetTitle(_("waypoint_loader"))
-		self.SetSize((600, 550))
+		self.SetSize((600, 400))
 		self.panel_v.SetScrollRate(10, 10)
 		# end wxGlade
 

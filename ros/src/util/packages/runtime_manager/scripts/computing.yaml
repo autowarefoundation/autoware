@@ -618,39 +618,42 @@ subs :
          gui  :
            multi_lane_csv :
              prop  : 1
-           disable_filtering :
+           filtering_mode :
              flags : [ nl ]
+           resample_mode :
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
            resample_interval :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_max :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            radius_thresh :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            radius_min :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_min :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            accel_limit :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            decel_limit :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_offset :
-             depend      : disable_filtering
-             depend_bool : 'lambda v : v == 0'
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            dialog : MyDialogWaypointLoader
        - name : waypoint_saver
@@ -3038,28 +3041,32 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_filtering
-      desc      : if you don't need both filtering or saving files, please check this.
-      label     : 'disable_filtering'
+    - name      : filtering_mode
+      desc      : please check if you want filter.
+      label     : 'filtering_mode'
       kind      : checkbox
-      v         : false
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : resample_mode
+      desc      : please check if you want resample.
+      label     : resample mode
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : resample_interval
       desc      : All waypoints is resampled in this interval[m]
-      label     : |
-                  [1] Resample
-                        resample interval[m]
+      label     : resample interval[m]
       v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : velocity_max
       desc      : All velocity is limited under Vmax[km/h]
-      label     : |
-                  [2] VelocityMaxLimit
-                        Vmax[km/h]
+      label     : VelocityMaxLimit---Vmax[km/h]
       min       : 10.0
       max       : 60.0
       v         : 20.0
@@ -3068,9 +3075,7 @@ params :
         delim       : ':='
     - name      : radius_thresh
       desc      : if rotate_radius > Rth[m], recognize curve
-      label     : |
-                  [3] CurveRecognize
-                        Rth[m]
+      label     : CurveRecognize---Rth[m]
       min       : 10.0
       max       : 100.0
       v         : 20.0
@@ -3079,9 +3084,7 @@ params :
         delim       : ':='
     - name      : radius_min
       desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : |
-                  [4] VelocityPlanning
-                        Rmin(c0)[m]
+      label     : VelocityPlanning---Rmin(c0)[m]
       min       : 4.0
       max       : 10.0
       v         : 6.0
@@ -3090,7 +3093,7 @@ params :
         delim       : ':='
     - name      : velocity_min
       desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : '      Vmin(Rmin(c0))[km/h]'
+      label     : VelocityPlanning---Vmin(Rmin)[km/h]
       min       : 0.0
       max       : 10.0
       v         : 4.0
@@ -3099,9 +3102,7 @@ params :
         delim       : ':='
     - name      : accel_limit
       desc      : maximum value of acceleration on all waypoints[km/h]
-      label     : |
-                  [5] Accel/DecelLimit
-                        accel limit[m/s^2]
+      label     : Accel/DecelLimit---accel limit[m/s^2]
       min       : 0.0
       max       : 0.98
       v         : 0.98
@@ -3110,7 +3111,7 @@ params :
         delim       : ':='
     - name      : decel_limit
       desc      : maximum value of deceleration on all waypoints[km/h]
-      label     : '      decel limit[m/s^2]'
+      label     : Accel/DecelLimit---decel limit[m/s^2]
       min       : 0.0
       max       : 0.98
       v         : 0.98
@@ -3119,9 +3120,7 @@ params :
         delim       : ':='
     - name      : velocity_offset
       desc      : velocity offset for matching to the base point of vehicle velocity.
-      label     : |
-                  [6] VelocityOffset
-                        velocity offset[point count]
+      label     : VelocityOffset---velocity offset[point count]
       min       : 0
       max       : 20
       v         : 6

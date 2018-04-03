@@ -91,7 +91,7 @@ private:
   // variables
   std::string multi_lane_csv_;
   bool disable_decision_maker_;
-  bool disable_filtering_;
+  bool filtering_mode_;
   WaypointFilter filter_;
   std::vector<std::string> multi_file_path_;
   autoware_msgs::LaneArray output_lane_array_;
@@ -113,8 +113,8 @@ private:
   void parseWaypointForVer1(const std::string &line, autoware_msgs::waypoint *wp);
   void loadWaypointsForVer2(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
   void parseWaypointForVer2(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
+  void loadWaypointsForVer3(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
+  void parseWaypointForVer3(const std::string &line, const std::vector<std::string> &contents,
                             autoware_msgs::waypoint *wp);
 };
 

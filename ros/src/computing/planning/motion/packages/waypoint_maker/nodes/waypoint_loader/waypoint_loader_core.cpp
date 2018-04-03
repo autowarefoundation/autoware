@@ -60,7 +60,7 @@ void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader
 {
   // parameter settings
   disable_decision_maker_ = conf->disable_decision_maker;
-  disable_filtering_ = conf->disable_filtering;
+  filtering_mode_ = conf->filtering_mode;
   multi_lane_csv_ = conf->multi_lane_csv;
 }
 
@@ -107,7 +107,7 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string> &paths,
   {
     autoware_msgs::lane lane;
     createLaneWaypoint(el, &lane);
-    if(!disable_filtering_)
+    if(filtering_mode_)
       filter_.filterLaneWaypoint(&lane);
     lane_array->lanes.push_back(lane);
   }
@@ -118,12 +118,14 @@ void WaypointLoaderNode::saveLaneArray(const std::vector<std::string> &paths, co
   unsigned long idx = 0;
   for (const auto& file_path : paths)
   {
-    std::ofstream ofs(file_path.c_str(), std::ios::app);
-    ofs << "x,y,z,yaw,velocity,change_flag" << std::endl;
+    std::ofstream ofs(file_path.c_str());
+    ofs << "x,y,z,yaw,velocity,change_flag,steering_flag,accel_flag,stop_flag,event_flag" << std::endl;
     for(const auto& el : lane_array.lanes[idx].waypoints)
     {
       ofs << std::fixed << std::setprecision(4) << el.pose.pose.position.x << "," << el.pose.pose.position.y << ","
-          << el.pose.pose.position.z << "," << tf::getYaw(el.pose.pose.orientation) << "," << mps2kmph(el.twist.twist.linear.x) << ",0" << std::endl;
+          << el.pose.pose.position.z << "," << tf::getYaw(el.pose.pose.orientation) << "," << mps2kmph(el.twist.twist.linear.x) << ","
+          << (int)el.change_flag << "," << (int)el.wpstate.steering_state << "," << (int)el.wpstate.accel_state << ","
+          << (int)el.wpstate.stopline_state << "," << (int)el.wpstate.event_state << std::endl;
     }
     idx++;
   }
@@ -145,7 +147,7 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string &file_path, autowa
   else if (format == FileFormat::ver2)
     loadWaypointsForVer2(file_path.c_str(), &wps);
   else
-    loadWaypoints(file_path.c_str(), &wps);
+    loadWaypointsForVer3(file_path.c_str(), &wps);
   lane->header.frame_id = "/map";
   lane->header.stamp = ros::Time(0);
   lane->waypoints = wps;
@@ -225,7 +227,7 @@ void WaypointLoaderNode::parseWaypointForVer2(const std::string &line, autoware_
   wp->twist.twist.linear.x = kmph2mps(std::stod(columns[4]));
 }
 
-void WaypointLoaderNode::loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps)
+void WaypointLoaderNode::loadWaypointsForVer3(const char *filename, std::vector<autoware_msgs::waypoint> *wps)
 {
   std::ifstream ifs(filename);
 
@@ -237,16 +239,16 @@ void WaypointLoaderNode::loadWaypoints(const char *filename, std::vector<autowar
   std::vector<std::string> contents;
   parseColumns(line, &contents);
 
-  std::getline(ifs, line);  // remove second line
+  //std::getline(ifs, line);  // remove second line
   while (std::getline(ifs, line))
   {
     autoware_msgs::waypoint wp;
-    parseWaypoint(line, contents, &wp);
+    parseWaypointForVer3(line, contents, &wp);
     wps->push_back(wp);
   }
 }
 
-void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
+void WaypointLoaderNode::parseWaypointForVer3(const std::string &line, const std::vector<std::string> &contents,
                                        autoware_msgs::waypoint *wp)
 {
   std::vector<std::string> columns;
@@ -263,6 +265,10 @@ void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vecto
   wp->pose.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(map["yaw"]));
   wp->twist.twist.linear.x = kmph2mps(std::stod(map["velocity"]));
   wp->change_flag = std::stoi(map["change_flag"]);
+  wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
+  wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
+  wp->wpstate.stopline_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
+  wp->wpstate.event_state = (map.find("event_flag") != map.end()) ? std::stoi(map["event_flag"]) : 0;
 }
 
 FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)

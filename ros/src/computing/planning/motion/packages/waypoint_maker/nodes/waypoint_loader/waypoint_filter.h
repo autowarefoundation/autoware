@@ -46,10 +46,11 @@ class WaypointFilter
 private:
   ros::NodeHandle private_nh_;
   double r_th_, r_min_, r_inf_;
-  int lkup_crv_width_;
+  int lookup_crv_width_;
   double velocity_max_, velocity_min_;
   double accel_limit_, decel_limit_, resample_interval_;
   int velocity_offset_;
+  bool resample_mode_;
 public:
   WaypointFilter();
   ~WaypointFilter();
@@ -57,6 +58,7 @@ public:
   void filterLaneWaypoint(autoware_msgs::lane *lane);
 protected:
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane *lane, std::vector<double> *curve_radius);
+  void getCurveAll(const autoware_msgs::lane& lane, std::vector<double> *curve_radius);
   const std::vector<double> calcVelParamFromVmax(const double vmax)const;
   void createCurveList(const std::vector<double>& curve_radius, std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
   void limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx, autoware_msgs::lane *lane);

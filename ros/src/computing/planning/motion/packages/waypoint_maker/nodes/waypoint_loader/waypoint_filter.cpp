@@ -56,7 +56,8 @@ namespace waypoint_maker
     decel_limit_ = conf->decel_limit;
     r_th_ = conf->radius_thresh;
     r_min_ = conf->radius_min;
-    lkup_crv_width_ = 5;
+    lookup_crv_width_ = 5;
+    resample_mode_ = conf->resample_mode;
     resample_interval_ = conf->resample_interval;
     velocity_offset_ = conf->velocity_offset;
     r_inf_ = 10 * r_th_;
@@ -67,7 +68,10 @@ namespace waypoint_maker
     std::vector<double> curve_radius;
     std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
 
-    resampleLaneWaypoint(resample_interval_, lane, &curve_radius);
+    if(resample_mode_)
+      resampleLaneWaypoint(resample_interval_, lane, &curve_radius);
+    else
+      getCurveAll(*lane, &curve_radius);
     const std::vector<double> vel_param = calcVelParamFromVmax(velocity_max_);
     createCurveList(curve_radius, &curve_list);
     if(vel_param.size() < 2)
@@ -99,7 +103,7 @@ namespace waypoint_maker
     {
       const unsigned long idx = end_id[i];
       const double vmax = velocity_max_;
-      const double vmin = 0.0;
+      const double vmin = (i == 0) ? velocity_min_ : 0.0;
       if(lane->waypoints[idx].twist.twist.linear.x < vmin)continue;
       lane->waypoints[idx].twist.twist.linear.x = vmin;
       limitAccelDecel(vmax, vmin, idx, lane);
@@ -119,8 +123,8 @@ namespace waypoint_maker
     lane->waypoints.reserve(waypoints_size);
     curve_radius->reserve(waypoints_size);
 
-    const unsigned int n = (lkup_crv_width_ - 1) / 2;
-    for(unsigned long i = 1; i < original_lane.waypoints.size() - 1; i++)
+    const unsigned int n = (lookup_crv_width_ - 1) / 2;
+    for(unsigned long i = 1; i < original_lane.waypoints.size(); i++)
     {
       std::vector<geometry_msgs::Point> curve_point(3);
       curve_point[0] = (lane->waypoints.size() < n) ? lane->waypoints[0].pose.pose.position
@@ -136,9 +140,10 @@ namespace waypoint_maker
         autoware_msgs::waypoint wp;
         wp.pose.pose.position = lane->waypoints.back().pose.pose.position;
         wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(atan2(vec[1], vec[0]));
+        wp.change_flag = lane->waypoints.back().change_flag;
         const std::vector<double> nvec = {curve_point[1].x - wp.pose.pose.position.x, curve_point[1].y - wp.pose.pose.position.y};
         double dist = sqrt(calcSquareSum(nvec[0], nvec[1]));
-        const tf::Vector3 resample_vec(resample_interval_ * vec[0] / dist, resample_interval_ * vec[1] / dist, 0.0);
+        const tf::Vector3 resample_vec(resample_interval_ * nvec[0] / dist, resample_interval_ * nvec[1] / dist, 0.0);
         for(; dist > resample_interval_; dist -= resample_interval_)
         {
           if(lane->waypoints.size() == lane->waypoints.capacity())break;
@@ -163,10 +168,12 @@ namespace waypoint_maker
         else if(theta < -M_PI)theta += 2 * M_PI;
         //interport
         double t = atan2(p0.y - cy, p0.x - cx);
+        autoware_msgs::waypoint wp;
+        wp.pose.pose.position = lane->waypoints.back().pose.pose.position;
+        wp.change_flag = lane->waypoints.back().change_flag;
         for(double dist = radius * fabs(theta); dist > resample_interval_; dist -= resample_interval_)
         {
           if(lane->waypoints.size() == lane->waypoints.capacity())break;
-          autoware_msgs::waypoint wp = lane->waypoints[0];
           const int sign = (theta > 0.0) ? (1) : (-1);
           t += sign * resample_interval_ / radius;
           const double yaw = fmod(t + sign * M_PI / 2.0, 2 * M_PI);
@@ -176,6 +183,42 @@ namespace waypoint_maker
           lane->waypoints.push_back(wp);
           curve_radius->push_back(threshold_radius);
         }
+      }
+      lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;
+      lane->waypoints.back().change_flag = original_lane.waypoints[i].change_flag;
+    }
+    lane->waypoints.back().wpstate = original_lane.waypoints.back().wpstate;
+    lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
+  }
+
+
+
+  void WaypointFilter::getCurveAll(const autoware_msgs::lane& lane, std::vector<double> *curve_radius)
+  {
+    if(lane.waypoints.empty())return;
+    curve_radius->resize(lane.waypoints.size());
+    curve_radius->at(0) = curve_radius->back() = r_inf_;
+
+    const unsigned int n = (lookup_crv_width_ - 1) / 2;
+    for(unsigned long i = 1; i < lane.waypoints.size() - 1; i++)
+    {
+      std::vector<geometry_msgs::Point> curve_point(3);
+      curve_point[0] = (i < n) ? lane.waypoints[0].pose.pose.position
+                                : lane.waypoints[i - n].pose.pose.position;
+      curve_point[1] = lane.waypoints[i].pose.pose.position;
+      curve_point[2] = (i >= lane.waypoints.size() - n) ? lane.waypoints.back().pose.pose.position
+                                                          : lane.waypoints[i + n].pose.pose.position;
+      const std::vector<double> curve_param = getCurveOnce(curve_point);
+      //if going straight
+      if(curve_param.empty())
+      {
+        curve_radius->at(i) = r_inf_;
+      }
+      //else if turnning curve
+      else
+      {
+        const double& radius = curve_param[2];
+        curve_radius->at(i) = (radius > r_inf_) ? r_inf_ : radius;
       }
     }
   }
@@ -247,6 +290,7 @@ namespace waypoint_maker
       pt_m[i].x = (p0.x + p1.x) / 2.0;
       pt_m[i].y = (p0.y + p1.y) / 2.0;
       vec[i] = tf::Vector3(p1.x - p0.x, p1.y - p0.y, 0.0);
+      if(fabs(vec[i].x()) < 1e-8 && fabs(vec[i].y()) < 1e-8)return std::vector<double>();
       tan_pt_m[i] = tan(atan2(vec[i].y(), vec[i].x()) + M_PI / 2.0);
     }
     if(fabs(tan_pt_m[1] - tan_pt_m[0]) < 1e-9)return std::vector<double>();
