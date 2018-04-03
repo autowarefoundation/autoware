@@ -183,6 +183,9 @@ public:
   }
 };
 
+// threshold to determine if the object is moving towards us
+#define OBJECT_MOVING_TOWARD_US_THRESHOLD 10
+
 class ObstacleTracker
 {
 private:
@@ -222,9 +225,11 @@ private:
   int tracking_counter_, lost_counter_;
   int waypoint_;
   double velocity_;
+  double prev_velocity_;
   tf::Vector3 position_;
   ETrackingState state_;
   ros::Time time_;
+  int dx_negative_count_;
 
   boost::circular_buffer<tf::Vector3> position_buf_;
   boost::circular_buffer<ros::Time> time_buf_;
@@ -233,13 +238,54 @@ private:
 
   double calcVelocity(const geometry_msgs::Point& cpos)
   {
-    tf::Vector3 cx;
-    tf::pointMsgToTF(cpos, cx);
-    double dx = (position_buf_[1]-cx).length()-(position_buf_[0]-cx).length();
+    double v;
     ros::Duration dt = time_buf_[1]-time_buf_[0];
-    kf_.predict();
-    double v = kf_.update(dx/dt.toSec());
-    v = (v > moving_thres_) ? v : 0.0;
+    // dt can be 0, when this function is called with out calling update()
+    // if dt is non zero
+    if (dt != ros::Duration(0.0)) {
+
+        // compute dx
+        tf::Vector3 cx;
+        tf::pointMsgToTF(cpos, cx);
+        double dx = (position_buf_[1] - cx).length() - (position_buf_[0] - cx).length();
+
+        // dx can be negative for couple of frames, if a car cuts in when we were already tracking.
+        // if dx is non negative
+        if (dx >= 0) {
+            // KF estimate
+            kf_.predict();
+            v = kf_.update(dx / dt.toSec());
+            v = (v > moving_thres_) ? v : 0.0;
+
+            // update previous velocity
+            prev_velocity_ = v;
+
+            // reset the count
+            dx_negative_count_ = 0;
+        }
+        else
+        {
+            dx_negative_count_++;
+
+            // then the car is moving towards us
+            if (dx_negative_count_ >= OBJECT_MOVING_TOWARD_US_THRESHOLD)
+            {
+                // zero velocity
+                v = 0.0;
+
+                //wrap the counter
+                dx_negative_count_ = OBJECT_MOVING_TOWARD_US_THRESHOLD;
+            }
+            else
+            {
+                v = prev_velocity_;
+            }
+        }
+    }
+    else
+    {
+        v = prev_velocity_;
+    }
     return v;
   }
 
@@ -273,16 +319,17 @@ public:
 
     if (state_ == ETrackingState::INITIALIZE)
     {
-//      kf_.init(waypoint_velocity);
-//      waypoint_ = stop_waypoint;
-//      velocity_ = waypoint_velocity;
-
-      if (tracking_counter_ >= 2) {
+        if (tracking_counter_ >= 2) {
+          // change the state to tracking
           state_ = ETrackingState::TRACKING;
-//          std::cerr << "tracking\n";
-          kf_.init(calcVelocity(current_position));
+
+          // compute the obstacle velocity
+          double velocity = calcVelocity(current_position);
+          kf_.init(velocity);
           waypoint_ = stop_waypoint;
-          velocity_ = calcVelocity(current_position);
+          velocity_ = velocity;
+          prev_velocity_ = velocity;
+          dx_negative_count_ = 0;
       }
     }
     else if (state_ == ETrackingState::TRACKING)
@@ -310,6 +357,8 @@ public:
     lost_counter_ = 0;
     waypoint_ = -1;
     velocity_ = 0.0;
+    prev_velocity_ = 0.0;
+    dx_negative_count_ = 0;
     position_ = tf::Vector3(0.0, 0.0, 0.0);
     position_buf_.clear();
     time_buf_.clear();
