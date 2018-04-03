@@ -2,6 +2,12 @@
 Changelog for package ndt_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.6.3 (2018-03-06)
+------------------
+* set default queue_size 10
+* Fix queue sizes of pubs/subs for ensuring real-time
+* Contributors: Akihito OHSATO, yukikitsukawa
+
 1.6.2 (2018-02-27)
 ------------------
 * Update CHANGELOG

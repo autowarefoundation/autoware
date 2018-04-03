@@ -14,10 +14,6 @@
 
 namespace cpu {
 
-#define MAX_BX_ (128)
-#define MAX_BY_ (128)
-#define MAX_BZ_ (32)
-
 template <typename PointSourceType>
 VoxelGrid<PointSourceType>::VoxelGrid():
 	voxel_num_(0),
@@ -39,36 +35,60 @@ VoxelGrid<PointSourceType>::VoxelGrid():
 	vgrid_x_(0),
 	vgrid_y_(0),
 	vgrid_z_(0),
-	min_points_per_voxel_(6)
+	min_points_per_voxel_(6),
+	real_max_bx_(INT_MIN),
+	real_max_by_(INT_MIN),
+	real_max_bz_(INT_MIN),
+	real_min_bx_(INT_MAX),
+	real_min_by_(INT_MAX),
+	real_min_bz_(INT_MAX)
 {
-	centroid_.clear();
-	covariance_.clear();
-	icovariance_.clear();
-	points_id_.clear();
-	points_per_voxel_.clear();
-	tmp_centroid_.clear();
-	tmp_cov_.clear();
+	centroid_.reset();
+	icovariance_.reset();
+	points_id_.reset();
+	points_per_voxel_.reset();
+	tmp_centroid_.reset();
+	tmp_cov_.reset();
 };
+
+template <typename PointSourceType>
+int VoxelGrid<PointSourceType>::roundUp(int input, int factor)
+{
+	return (input < 0) ? -((-input) / factor) * factor : ((input + factor - 1) / factor) * factor;
+}
+
+template <typename PointSourceType>
+int VoxelGrid<PointSourceType>::roundDown(int input, int factor)
+{
+	return (input < 0) ? -((-input + factor - 1) / factor) * factor : (input / factor) * factor;
+}
+
+template <typename PointSourceType>
+int VoxelGrid<PointSourceType>::div(int input, int divisor)
+{
+	return (input < 0) ? -((-input + divisor - 1) / divisor) : input / divisor;
+}
 
 template <typename PointSourceType>
 void VoxelGrid<PointSourceType>::initialize()
 {
-	centroid_.resize(voxel_num_);
+	centroid_.reset();
+	centroid_ = boost::make_shared<std::vector<Eigen::Vector3d> >(voxel_num_);
 
-	covariance_.resize(voxel_num_);
+	icovariance_.reset();
+	icovariance_ = boost::make_shared<std::vector<Eigen::Matrix3d> >(voxel_num_);
 
-	icovariance_.resize(voxel_num_);
+	points_id_.reset();
+	points_id_ = boost::make_shared<std::vector<std::vector<int> > >(voxel_num_);
 
-	points_id_.resize(voxel_num_);
+	points_per_voxel_.reset();
+	points_per_voxel_ = boost::make_shared<std::vector<int> >(voxel_num_, 0);
 
-	points_per_voxel_.resize(voxel_num_);
+	tmp_centroid_.reset();
+	tmp_centroid_ = boost::make_shared<std::vector<Eigen::Vector3d> >(voxel_num_);
 
-	// Reset the number of points in all voxels to zero
-	std::fill(points_per_voxel_.begin(), points_per_voxel_.end(), 0);
-
-	tmp_centroid_.resize(voxel_num_);
-
-	tmp_cov_.resize(voxel_num_);
+	tmp_cov_.reset();
+	tmp_cov_ = boost::make_shared<std::vector<Eigen::Matrix3d> >(voxel_num_);
 }
 
 template <typename PointSourceType>
@@ -188,19 +208,13 @@ int VoxelGrid<PointSourceType>::getVgridZ() const
 template <typename PointSourceType>
 Eigen::Vector3d VoxelGrid<PointSourceType>::getCentroid(int voxel_id) const
 {
-	return centroid_[voxel_id];
-}
-
-template <typename PointSourceType>
-Eigen::Matrix3d VoxelGrid<PointSourceType>::getCovariance(int voxel_id) const
-{
-	return covariance_[voxel_id];
+	return (*centroid_)[voxel_id];
 }
 
 template <typename PointSourceType>
 Eigen::Matrix3d VoxelGrid<PointSourceType>::getInverseCovariance(int voxel_id) const
 {
-	return icovariance_[voxel_id];
+	return (*icovariance_)[voxel_id];
 }
 
 template <typename PointSourceType>
@@ -249,27 +263,28 @@ void VoxelGrid<PointSourceType>::computeCentroidAndCovariance()
 		for (int idy = real_min_by_; idy <= real_max_by_; idy++)
 			for (int idz = real_min_bz_; idz <= real_max_bz_; idz++) {
 				int i = voxelId(idx, idy, idz, min_b_x_, min_b_y_, min_b_z_, vgrid_x_, vgrid_y_, vgrid_z_);
-				int ipoint_num = points_id_[i].size();
+				int ipoint_num = (*points_id_)[i].size();
 				double point_num = static_cast<double>(ipoint_num);
-				Eigen::Vector3d pt_sum = tmp_centroid_[i];
+				Eigen::Vector3d pt_sum = (*tmp_centroid_)[i];
 
 				if (ipoint_num > 0) {
-					centroid_[i] = pt_sum / point_num;
+					(*centroid_)[i] = pt_sum / point_num;
 				}
 
+				Eigen::Matrix3d covariance;
 
 				if (ipoint_num >= min_points_per_voxel_) {
-					covariance_[i] = (tmp_cov_[i] - 2.0 * (pt_sum * centroid_[i].transpose())) / point_num + centroid_[i] * centroid_[i].transpose();
-					covariance_[i] *= (point_num - 1.0) / point_num;
+					covariance = ((*tmp_cov_)[i] - 2.0 * (pt_sum * (*centroid_)[i].transpose())) / point_num + (*centroid_)[i] * (*centroid_)[i].transpose();
+					covariance *= (point_num - 1.0) / point_num;
 
-					SymmetricEigensolver3x3 sv(covariance_[i]);
+					SymmetricEigensolver3x3 sv(covariance);
 
 					sv.compute();
 					Eigen::Matrix3d evecs = sv.eigenvectors();
 					Eigen::Matrix3d evals = sv.eigenvalues().asDiagonal();
 
 					if (evals(0, 0) < 0 || evals(1, 1) < 0 || evals(2, 2) <= 0) {
-						points_per_voxel_[i] = -1;
+						(*points_per_voxel_)[i] = -1;
 						continue;
 					}
 
@@ -282,10 +297,10 @@ void VoxelGrid<PointSourceType>::computeCentroidAndCovariance()
 							evals(1, 1) = min_cov_eigvalue;
 						}
 
-						covariance_[i] = evecs * evals * evecs.inverse();
+						covariance = evecs * evals * evecs.inverse();
 					}
 
-					icovariance_[i] = covariance_[i].inverse();
+					(*icovariance_)[i] = covariance.inverse();
 				}
 			}
 }
@@ -301,6 +316,21 @@ void VoxelGrid<PointSourceType>::setInput(typename pcl::PointCloud<PointSourceTy
 		source_cloud_ = input_cloud;
 
 		findBoundaries();
+
+		std::vector<Eigen::Vector3i> voxel_ids(input_cloud->points.size());
+
+		for (int i = 0; i < input_cloud->points.size(); i++) {
+			Eigen::Vector3i &vid = voxel_ids[i];
+			PointSourceType p = input_cloud->points[i];
+
+			vid(0) = static_cast<int>(floor(p.x / voxel_x_));
+			vid(1) = static_cast<int>(floor(p.y / voxel_y_));
+			vid(2) = static_cast<int>(floor(p.z / voxel_z_));
+		}
+
+		octree_.setInput(voxel_ids, input_cloud);
+
+		voxel_ids.clear();
 
 		initialize();
 
@@ -328,23 +358,24 @@ void VoxelGrid<PointSourceType>::findBoundaries()
 	 * we do not have to reallocate buffers when the target cloud is set
 	 */
 	/* Max bounds round toward plus infinity */
-	max_b_x_ = (max_b_x_ < 0) ? (-(- max_b_x_) / MAX_BX_) * MAX_BX_ : ((max_b_x_ - 1) / MAX_BX_ + 1) * MAX_BX_;
-	max_b_y_ = (max_b_y_ < 0) ? (-(- max_b_y_) / MAX_BY_) * MAX_BY_ : ((max_b_y_ - 1) / MAX_BY_ + 1) * MAX_BY_;
-	max_b_z_ = (max_b_z_ < 0) ? (-(- max_b_z_) / MAX_BZ_) * MAX_BZ_ : ((max_b_z_ - 1) / MAX_BZ_ + 1) * MAX_BZ_;
+	max_b_x_ = roundUp(max_b_x_, MAX_BX_);
+	max_b_y_ = roundUp(max_b_y_, MAX_BY_);
+	max_b_z_ = roundUp(max_b_z_, MAX_BZ_);
 
 	/* Min bounds round toward minus infinity */
-	min_b_x_ = (min_b_x_ < 0) ? (-((- min_b_x_ - 1) / MAX_BX_ + 1)) * MAX_BX_ : (min_b_x_ / MAX_BX_) * MAX_BX_;
-	min_b_y_ = (min_b_y_ < 0) ? (-((- min_b_y_ - 1) / MAX_BY_ + 1)) * MAX_BY_ : (min_b_y_ / MAX_BY_) * MAX_BY_;
-	min_b_z_ = (min_b_z_ < 0) ? (-((- min_b_z_ - 1) / MAX_BZ_ + 1)) * MAX_BZ_ : (min_b_z_ / MAX_BZ_) * MAX_BZ_;
+	min_b_x_ = roundDown(min_b_x_, MAX_BX_);
+	min_b_y_ = roundDown(min_b_y_, MAX_BY_);
+	min_b_z_ = roundDown(min_b_z_, MAX_BZ_);
 
 	vgrid_x_ = max_b_x_ - min_b_x_ + 1;
 	vgrid_y_ = max_b_y_ - min_b_y_ + 1;
 	vgrid_z_ = max_b_z_ - min_b_z_ + 1;
 
-	if (vgrid_x_ > 0 && vgrid_y_ > 0 && vgrid_z_ > 0)
+	if (vgrid_x_ > 0 && vgrid_y_ > 0 && vgrid_z_ > 0) {
 		voxel_num_ = vgrid_x_ * vgrid_y_ * vgrid_z_;
-	else
+	} else {
 		voxel_num_ = 0;
+	}
 }
 
 template <typename PointSourceType>
@@ -353,25 +384,21 @@ void VoxelGrid<PointSourceType>::findBoundaries(typename pcl::PointCloud<PointSo
 													float &min_x, float &min_y, float &min_z)
 {
 
+	max_x = max_y = max_z = -FLT_MAX;
+	min_x = min_y = min_z = FLT_MAX;
+
 	for (int i = 0; i < input_cloud->points.size(); i++) {
 		float x = input_cloud->points[i].x;
 		float y = input_cloud->points[i].y;
 		float z = input_cloud->points[i].z;
 
-		if (i == 0) {
-			max_x = min_x = x;
-			max_y = min_y = y;
-			max_z = min_z = z;
-		} else {
+		max_x = (max_x > x) ? max_x : x;
+		max_y = (max_y > y) ? max_y : y;
+		max_z = (max_z > z) ? max_z : z;
 
-			max_x = (max_x > x) ? max_x : x;
-			max_y = (max_y > y) ? max_y : y;
-			max_z = (max_z > z) ? max_z : z;
-
-			min_x = (min_x < x) ? min_x : x;
-			min_y = (min_y < y) ? min_y : y;
-			min_z = (min_z < z) ? min_z : z;
-		}
+		min_x = (min_x < x) ? min_x : x;
+		min_y = (min_y < y) ? min_y : y;
+		min_z = (min_z < z) ? min_z : z;
 	}
 }
 
@@ -409,10 +436,10 @@ void VoxelGrid<PointSourceType>::radiusSearch(PointSourceType p, float radius, s
 									min_b_x_, min_b_y_, min_b_z_,
 									vgrid_x_, vgrid_y_, vgrid_z_);
 
-				if (points_per_voxel_[vid] >= min_points_per_voxel_) {
-					double cx = centroid_[vid](0) - static_cast<double>(t_x);
-					double cy = centroid_[vid](1) - static_cast<double>(t_y);
-					double cz = centroid_[vid](2) - static_cast<double>(t_z);
+				if ((*points_per_voxel_)[vid] >= min_points_per_voxel_) {
+					double cx = (*centroid_)[vid](0) - static_cast<double>(t_x);
+					double cy = (*centroid_)[vid](1) - static_cast<double>(t_y);
+					double cz = (*centroid_)[vid](2) - static_cast<double>(t_z);
 
 					double distance = sqrt(cx * cx + cy * cy + cz * cz);
 
@@ -436,146 +463,78 @@ void VoxelGrid<PointSourceType>::scatterPointsToVoxelGrid()
 
 		Eigen::Vector3d p3d(p.x, p.y, p.z);
 
-		if (points_id_[vid].size() == 0) {
-			centroid_[vid].setZero();
-			points_per_voxel_[vid] = 0;
-			tmp_centroid_[vid].setZero();
-			tmp_cov_[vid].setIdentity();
+		if ((*points_id_)[vid].size() == 0) {
+			(*centroid_)[vid].setZero();
+			(*points_per_voxel_)[vid] = 0;
+			(*tmp_centroid_)[vid].setZero();
+			(*tmp_cov_)[vid].setIdentity();
 		}
 
-		tmp_centroid_[vid] += p3d;
-		tmp_cov_[vid] += p3d * p3d.transpose();
-		points_id_[vid].push_back(pid);
-		points_per_voxel_[vid]++;
+		(*tmp_centroid_)[vid] += p3d;
+		(*tmp_cov_)[vid] += p3d * p3d.transpose();
+		(*points_id_)[vid].push_back(pid);
+		(*points_per_voxel_)[vid]++;
 	}
 }
 
 template <typename PointSourceType>
-double VoxelGrid<PointSourceType>::nearestNeighborDistance(PointSourceType query_point, float max_range)
+int VoxelGrid<PointSourceType>::nearestVoxel(PointSourceType query_point, Eigen::Matrix<float, 6, 1> boundaries, float max_range)
 {
 	// Index of the origin of the circle (query point)
 	float qx = query_point.x;
 	float qy = query_point.y;
 	float qz = query_point.z;
 
-	int ovx = static_cast<int>(floor(qx / voxel_x_));
-	int ovy = static_cast<int>(floor(qy / voxel_y_));
-	int ovz = static_cast<int>(floor(qz / voxel_z_));
+	int lower_x = static_cast<int>(floor(boundaries(0) / voxel_x_));
+	int lower_y = static_cast<int>(floor(boundaries(1) / voxel_y_));
+	int lower_z = static_cast<int>(floor(boundaries(2) / voxel_z_));
 
-	// Now find index of the nearest voxel (may be empty or not)
-	int nvx, nvy, nvz, fvx, fvy, fvz;
+	int upper_x = static_cast<int>(floor(boundaries(3) / voxel_x_));
+	int upper_y = static_cast<int>(floor(boundaries(4) / voxel_y_));
+	int upper_z = static_cast<int>(floor(boundaries(5) / voxel_z_));
 
-	if (ovx > real_max_bx_) {
-		nvx = real_max_bx_;
-		fvx = real_min_bx_;
-	} else if (ovx < real_min_bx_) {
-		nvx = real_min_bx_;
-		fvx = real_max_bx_;
-	} else {
-		nvx = ovx;
-		fvx = (real_max_bx_ - ovx > ovx - real_min_bx_) ? real_max_bx_ : real_min_bx_;
-	}
+	double min_dist = DBL_MAX;
+	int nn_vid = -1;
 
-	if (ovy > real_max_by_) {
-		nvy = real_max_by_;
-		fvy = real_min_by_;
-	} else if (ovy < real_min_by_) {
-		nvy = real_min_by_;
-		fvy = real_max_by_;
-	} else {
-		nvy = ovy;
-		fvy = (real_max_by_ - ovy > ovy - real_min_by_) ? real_max_by_ : real_min_by_;
-	}
+	for (int i = lower_x; i <= upper_x; i++) {
+		for (int j = lower_y; j <= upper_y; j++) {
+			for (int k = lower_z; k <= upper_z; k++) {
+				int vid = voxelId(i, j, k, min_b_x_, min_b_y_, min_b_z_, vgrid_x_, vgrid_y_, vgrid_z_);
+				Eigen::Vector3d c = (*centroid_)[vid];
 
-	if (ovz > real_max_bz_) {
-		nvz = real_max_bz_;
-		fvz = real_min_bz_;
-	} else if (ovz < real_min_bz_) {
-		nvz = real_min_bz_;
-		fvz = real_max_bz_;
-	} else {
-		nvz = ovz;
-		fvz = (real_max_bz_ - ovz > ovz - real_min_bz_) ? real_max_bz_ : real_min_bz_;
-	}
+				if ((*points_id_)[vid].size() > 0) {
+					double cur_dist = sqrt((qx - c(0)) * (qx - c(0)) + (qy - c(1)) * (qy - c(1)) + (qz - c(2)) * (qz - c(2)));
 
-	// Now find index of the furthest voxel
-
-	int min_radius = static_cast<int>(sqrt((nvx - ovx) * (nvx - ovx) + (nvy - ovy) * (nvy - ovy) + (nvz - ovz) * (nvz - ovz)));
-	int max_radius = static_cast<int>(sqrt((nvx - ovx) * (nvx - ovx) + (nvy - ovy) * (nvy - ovy) + (nvz - ovz) * (nvz - ovz)));
-
-	/* Check all voxels laying on the circle. If a voxel is
-	 * not empty, then break immediately.
-	 * If those voxels are all empty, then increase the radius
-	 * and repeat the process. */
-	bool found_nn = false;
-	int nn_vid;
-
-	for (int radius = min_radius; radius <= max_radius && !found_nn; radius++) {
-		// Find the intersection of the circle with the voxel grid
-		int lower_bx, upper_bx, lower_by, upper_by, lower_bz, upper_bz;
-
-		lower_bx = (ovx - radius > real_min_bx_) ? ovx - radius : real_min_bx_;
-		upper_bx = (ovx + radius > real_max_bx_) ? real_max_bx_ : ovx + radius;
-
-		lower_by = (ovy - radius > real_min_by_) ? ovy - radius : real_min_by_;
-		upper_by = (ovy + radius > real_max_by_) ? real_max_by_ : ovy + radius;
-
-		lower_bz = (ovz - radius > real_min_bz_) ? ovz - radius : real_min_bz_;
-		upper_bz = (ovz + radius > real_max_bz_) ? real_max_bz_ : ovz + radius;
-
-		for (int i = lower_bx; i <= upper_bx && !found_nn; i++) {
-			for (int j = lower_by; j <= upper_by && !found_nn; j++) {
-				int kz = static_cast<int>(sqrt(radius * radius - (ovx - i) * (ovx - i) - (ovy - j) * (ovy - j)));
-				int k;
-				int vid;
-
-				k = ovz + kz;
-				if (k >= lower_bz && k <= upper_bz) {
-					vid = voxelId(i, j, k, min_b_x_, min_b_y_, min_b_z_, vgrid_x_, vgrid_y_, vgrid_z_);
-
-					if (points_id_[vid].size() > 0) {
-						found_nn = true;
+					if (cur_dist < min_dist) {
+						min_dist = cur_dist;
 						nn_vid = vid;
-						break;
-					}
-				}
-
-				k = ovz - kz;
-
-				if (k >= lower_bz && k <= upper_bz) {
-					vid = voxelId(i, j, k, min_b_x_, min_b_y_, min_b_z_, vgrid_x_, vgrid_y_, vgrid_z_);
-
-					if (points_id_[vid].size() > 0) {
-						found_nn = true;
-						nn_vid = vid;
-						break;
 					}
 				}
 			}
 		}
 	}
 
-//	std::vector<int> &tmp_pid = points_id_[nn_vid];
-//
-//	float min_dist = DBL_MAX;
-//
-//
-//	for (int i = 0; i < tmp_pid.size(); i++) {
-//		PointSourceType p = source_cloud_->points[tmp_pid[i]];
-//		float distance = sqrt((p.x - qx) * (p.x - qx) + (p.y - qy) * (p.y - qy) + (p.z - qz) * (p.z - qz));
-//
-//		if (distance < min_dist) {
-//			min_dist = distance;
-//		}
-//	}
+	return nn_vid;
+}
 
-	Eigen::Vector3d c = centroid_[nn_vid];
-	double min_dist = sqrt((qx - c(0)) * (qx - c(0)) + (qy - c(1)) * (qy - c(1)) + (qz - c(2)) * (qz - c(2)));
+template <typename PointSourceType>
+double VoxelGrid<PointSourceType>::nearestNeighborDistance(PointSourceType q, float max_range)
+{
+	Eigen::Matrix<float, 6, 1> nn_node_bounds;
 
-	if (min_dist >= max_range)
+	nn_node_bounds = octree_.nearestOctreeNode(q);
+
+	int nn_vid = nearestVoxel(q, nn_node_bounds, max_range);
+
+	Eigen::Vector3d c = (*centroid_)[nn_vid];
+	double min_dist = sqrt((q.x - c(0)) * (q.x - c(0)) + (q.y - c(1)) * (q.y - c(1)) + (q.z - c(2)) * (q.z - c(2)));
+
+	if (min_dist >= max_range) {
 		return DBL_MAX;
+	}
 
-	return static_cast<double>(min_dist);
+	return min_dist;
+
 }
 
 template <typename PointSourceType>
@@ -594,9 +553,7 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 	new_min_y = (min_y_ <= min_y) ? min_y_ : min_y;
 	new_min_z = (min_z_ <= min_z) ? min_z_ : min_z;
 
-	/* If the boundaries change, then we need to extend the
-	 * list of voxels as well as the octree
-	 */
+	/* If the boundaries change, then we need to extend the list of voxels */
 	if (new_max_x > max_x_ || new_max_y > max_y_ || new_max_z > max_z_ ||
 			new_min_x < min_x_ || new_min_y < min_y_ || new_min_z < min_z_) {
 
@@ -617,14 +574,14 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 		int real_min_bz = min_b_z;
 
 		/* Max bounds round toward plus infinity */
-		max_b_x = (max_b_x < 0) ? (-(- max_b_x) / MAX_BX_) * MAX_BX_ : ((max_b_x - 1) / MAX_BX_ + 1) * MAX_BX_;
-		max_b_y = (max_b_y < 0) ? (-(- max_b_y) / MAX_BY_) * MAX_BY_ : ((max_b_y - 1) / MAX_BY_ + 1) * MAX_BY_;
-		max_b_z = (max_b_z < 0) ? (-(- max_b_z) / MAX_BZ_) * MAX_BZ_ : ((max_b_z - 1) / MAX_BZ_ + 1) * MAX_BZ_;
+		max_b_x = roundUp(max_b_x, MAX_BX_);
+		max_b_y = roundUp(max_b_y, MAX_BY_);
+		max_b_z = roundUp(max_b_z, MAX_BZ_);
 
 		/* Min bounds round toward minus infinity */
-		min_b_x = (min_b_x < 0) ? (-((- min_b_x - 1) / MAX_BX_ + 1)) * MAX_BX_ : (min_b_x / MAX_BX_) * MAX_BX_;
-		min_b_y = (min_b_y < 0) ? (-((- min_b_y - 1) / MAX_BY_ + 1)) * MAX_BY_ : (min_b_y / MAX_BY_) * MAX_BY_;
-		min_b_z = (min_b_z < 0) ? (-((- min_b_z - 1) / MAX_BZ_ + 1)) * MAX_BZ_ : (min_b_z / MAX_BZ_) * MAX_BZ_;
+		min_b_x = roundDown(min_b_x, MAX_BX_);
+		min_b_y = roundDown(min_b_y, MAX_BY_);
+		min_b_z = roundDown(min_b_z, MAX_BZ_);
 
 		if (max_b_x > max_b_x_ || max_b_y > max_b_y_ || max_b_z > max_b_z_ ||
 				min_b_x < min_b_x_ || min_b_y < min_b_y_ || min_b_z < min_b_z_) {
@@ -634,14 +591,20 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 
 			int voxel_num = vgrid_x * vgrid_y * vgrid_z;
 
-			std::vector<Eigen::Vector3d> new_centroid(voxel_num);
-			std::vector<Eigen::Matrix3d> new_covariance(voxel_num);
-			std::vector<Eigen::Matrix3d> new_icovariance(voxel_num);
-			std::vector<std::vector<int> > points_id(voxel_num);
-			std::vector<int> points_per_voxel(voxel_num, 0);
+			boost::shared_ptr<std::vector<Eigen::Vector3d> > old_centroid = centroid_;
+			boost::shared_ptr<std::vector<Eigen::Matrix3d> > old_icovariance = icovariance_;
+			boost::shared_ptr<std::vector<std::vector<int> > > old_points_id = points_id_;
+			boost::shared_ptr<std::vector<int> > old_points_per_voxel = points_per_voxel_;
 
-			std::vector<Eigen::Vector3d> new_tmp_centroid(voxel_num);
-			std::vector<Eigen::Matrix3d> new_tmp_cov(voxel_num);
+			boost::shared_ptr<std::vector<Eigen::Vector3d> > old_tmp_centroid = tmp_centroid_;
+			boost::shared_ptr<std::vector<Eigen::Matrix3d> > old_tmp_cov = tmp_cov_;
+
+			centroid_ = boost::make_shared<std::vector<Eigen::Vector3d> >(voxel_num);
+			icovariance_ = boost::make_shared<std::vector<Eigen::Matrix3d> >(voxel_num);
+			points_id_ = boost::make_shared<std::vector<std::vector<int> > >(voxel_num);
+			points_per_voxel_ = boost::make_shared<std::vector<int> >(voxel_num, 0);
+			tmp_centroid_ = boost::make_shared<std::vector<Eigen::Vector3d> >(voxel_num);
+			tmp_cov_ = boost::make_shared<std::vector<Eigen::Matrix3d> >(voxel_num);
 
 			// Move the old non-empty voxels to the new list of voxels
 
@@ -658,36 +621,18 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 											min_b_x, min_b_y, min_b_z,
 											vgrid_x, vgrid_y, vgrid_z);
 
-						if (points_id_[old_id].size() > 0) {
-							points_per_voxel[new_id] = points_per_voxel_[old_id];
-							new_centroid[new_id] = centroid_[old_id];
-							new_covariance[new_id] = covariance_[old_id];
-							new_icovariance[new_id] = icovariance_[old_id];
-							points_id[new_id] = points_id_[old_id];
+						if ((*old_points_id)[old_id].size() > 0) {
+							(*points_per_voxel_)[new_id] = (*old_points_per_voxel)[old_id];
+							(*centroid_)[new_id] = (*old_centroid)[old_id];
+							(*icovariance_)[new_id] = (*old_icovariance)[old_id];
+							(*points_id_)[new_id] = (*old_points_id)[old_id];
 
-							new_tmp_centroid[new_id] = tmp_centroid_[old_id];
-							new_tmp_cov[new_id] = tmp_cov_[old_id];
+							(*tmp_centroid_)[new_id] = (*old_tmp_centroid)[old_id];
+							(*tmp_cov_)[new_id] = (*old_tmp_cov)[old_id];
 						}
 					}
 				}
 			}
-
-			centroid_.clear();
-			covariance_.clear();
-			icovariance_.clear();
-			points_id_.clear();
-			points_per_voxel_.clear();
-			tmp_centroid_.clear();
-			tmp_cov_.clear();
-
-			centroid_ = new_centroid;
-			covariance_ = new_covariance;
-			icovariance_ = new_icovariance;
-			points_id_ = points_id;
-			points_per_voxel_ = points_per_voxel;
-			tmp_centroid_ = new_tmp_centroid;
-			tmp_cov_ = new_tmp_cov;
-
 
 			// Update boundaries of voxels
 			max_b_x_ = max_b_x;
@@ -727,15 +672,16 @@ void VoxelGrid<PointSourceType>::updateBoundaries(float max_x, float max_y, floa
 	}
 }
 
+
 template <typename PointSourceType>
 void VoxelGrid<PointSourceType>::update(typename pcl::PointCloud<PointSourceType>::Ptr new_cloud)
 {
-	if (new_cloud->points.size() <= 0)
+	if (new_cloud->points.size() <= 0) {
 		return;
+	}
 
 	float new_max_x, new_max_y, new_max_z;
 	float new_min_x, new_min_y, new_min_z;
-	int shift_x, shift_y, shift_z;
 
 	// Find boundaries of the new point cloud
 	findBoundaries(new_cloud, new_max_x, new_max_y, new_max_z, new_min_x, new_min_y, new_min_z);
@@ -752,6 +698,20 @@ void VoxelGrid<PointSourceType>::update(typename pcl::PointCloud<PointSourceType
 	 * as well as inverse covariance matrixes */
 	updateVoxelContent(new_cloud);
 
+	/* Update octree */
+	std::vector<Eigen::Vector3i> new_voxel_id(new_cloud->points.size());
+
+	for (int i = 0; i < new_cloud->points.size(); i++) {
+		Eigen::Vector3i &vid = new_voxel_id[i];
+		PointSourceType p = new_cloud->points[i];
+
+		vid(0) = static_cast<int>(floor(p.x / voxel_x_));
+		vid(1) = static_cast<int>(floor(p.y / voxel_y_));
+		vid(2) = static_cast<int>(floor(p.z / voxel_z_));
+	}
+
+	octree_.update(new_voxel_id, new_cloud);
+
 	*source_cloud_ += *new_cloud;
 }
 
@@ -767,43 +727,44 @@ void VoxelGrid<PointSourceType>::updateVoxelContent(typename pcl::PointCloud<Poi
 		int vy = static_cast<int>(floor(p.y / voxel_y_));
 		int vz = static_cast<int>(floor(p.z / voxel_z_));
 		int vid = voxelId(vx, vy, vz, min_b_x_, min_b_y_, min_b_z_, vgrid_x_, vgrid_y_, vgrid_z_);
-		std::vector<int> &tmp_pid = points_id_[vid];
+		std::vector<int> &tmp_pid = (*points_id_)[vid];
 
 		if (tmp_pid.size() == 0) {
-			centroid_[vid].setZero();
-			tmp_cov_[vid].setIdentity();
-			tmp_centroid_[vid].setZero();
+			(*centroid_)[vid].setZero();
+			(*tmp_cov_)[vid].setIdentity();
+			(*tmp_centroid_)[vid].setZero();
 		}
 
-		tmp_centroid_[vid] += p3d;
-		tmp_cov_[vid] += p3d * p3d.transpose();
-		points_id_[vid].push_back(total_points_num + i);
+		(*tmp_centroid_)[vid] += p3d;
+		(*tmp_cov_)[vid] += p3d * p3d.transpose();
+		(*points_id_)[vid].push_back(total_points_num + i);
 
 		// Update centroids
-		int ipoint_num = points_id_[vid].size();
-		centroid_[vid] = tmp_centroid_[vid] / static_cast<double>(ipoint_num);
-		points_per_voxel_[vid] = ipoint_num;
+		int ipoint_num = (*points_id_)[vid].size();
+		(*centroid_)[vid] = (*tmp_centroid_)[vid] / static_cast<double>(ipoint_num);
+		(*points_per_voxel_)[vid] = ipoint_num;
 
 
 		// Update covariance
 		double point_num = static_cast<double>(ipoint_num);
-		Eigen::Vector3d pt_sum = tmp_centroid_[vid];
+		Eigen::Vector3d pt_sum = (*tmp_centroid_)[vid];
 
 		// Update  centroids
-		centroid_[vid] = tmp_centroid_[vid] / point_num;
+		(*centroid_)[vid] = (*tmp_centroid_)[vid] / point_num;
 
 		if (ipoint_num >= min_points_per_voxel_) {
-			covariance_[vid] = (tmp_cov_[vid] - 2.0 * (pt_sum * centroid_[vid].transpose())) / point_num + centroid_[vid] * centroid_[vid].transpose();
-			covariance_[vid] *= (point_num - 1.0) / point_num;
+			Eigen::Matrix3d covariance;
+			covariance = ((*tmp_cov_)[vid] - 2.0 * (pt_sum * (*centroid_)[vid].transpose())) / point_num + (*centroid_)[vid] * (*centroid_)[vid].transpose();
+			covariance *= (point_num - 1.0) / point_num;
 
-			SymmetricEigensolver3x3 sv(covariance_[vid]);
+			SymmetricEigensolver3x3 sv(covariance);
 
 			sv.compute();
 			Eigen::Matrix3d evecs = sv.eigenvectors();
 			Eigen::Matrix3d evals = sv.eigenvalues().asDiagonal();
 
 			if (evals(0, 0) < 0 || evals(1, 1) < 0 || evals(2, 2) <= 0) {
-				points_per_voxel_[vid] = -1;
+				(*points_per_voxel_)[vid] = -1;
 				continue;
 			}
 
@@ -816,10 +777,10 @@ void VoxelGrid<PointSourceType>::updateVoxelContent(typename pcl::PointCloud<Poi
 					evals(1, 1) = min_cov_eigvalue;
 				}
 
-				covariance_[vid] = evecs * evals * evecs.inverse();
+				covariance = evecs * evals * evecs.inverse();
 			}
 
-			icovariance_[vid] = covariance_[vid].inverse();
+			(*icovariance_)[vid] = covariance.inverse();
 		}
 	}
 }
