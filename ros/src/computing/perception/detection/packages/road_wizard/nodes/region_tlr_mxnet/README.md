@@ -29,10 +29,10 @@ For a complete list check https://developer.nvidia.com/cuda-gpus, or execute `de
 
 5. Compile Autoware
 
-6. Put your trained data in `Autoware/ros/src/computing/perception/detection/packages/road_wizard/data`.  
+6. Put your trained data in `/tmp`.  
 
    ```
-   Autoware/ros/src/computing/perception/detection/packages/road_wizard/data
+   /tmp
    ├── mxnet-network.json
    └── mxnet-network.params
    ```  
