@@ -574,6 +574,8 @@ subs :
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 400
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1785,12 +1787,18 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : others_distance
-      desc  : others_distance desc sample
-      label : Others Distance (m)
+    - name  : stop_distance_obstacle
+      desc  : stop_distance_obstacle desc sample
+      label : Stop Distance for Obstacle (m)
       min   : 0
       max   : 50
       v     : 15.0
+    - name  : stop_distance_stopline
+      desc  : stop_distance_stopline desc sample
+      label : Stop Distance for Stopline(m)
+      min   : 0
+      max   : 50
+      v     : 5.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1821,12 +1829,18 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
-    - name  : deceleration
-      desc  : deceleration desc sample
-      label : Deceleration (m/s^2)
+    - name  : deceleration_obstacle
+      desc  : deceleration_obstacle desc sample
+      label : Deceleration for Obstacle (m/s^2)
       min   : 0
       max   : 5
       v     : 0.7
+    - name  : deceleration_stopline
+      desc  : deceleration_stopline desc sample
+      label : Deceleration for Stopline (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 0.3
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
@@ -2099,16 +2113,66 @@ params :
       min  : 0
       max  : 50
       v    : 10
+    - name : stopline_target_ratio
+      desc : stopline
+      label: stopline_target_ratio
+      min  : 0.0
+      max  : 0.99
+      v    : 0.0
     - name : shift_width
       desc : lane shift width
       label: shift_width
       min  : -5.0
       max  : 5.0
       v    : 1.0
+    - name : detection_area_rate
+      desc : detection_area_rate
+      label: detection_area_rate
+      min  : 0.0
+      max  : 3.0
+      v    : 1.0
+    - name : crawl_velocity
+      desc : crawl_velocity
+      label: crawl_velocity
+      min  : 0.0
+      max  : 10.0
+      v    : 4.0
+    - name : detection_area_x1
+      desc : detection_area_x1
+      label: detection_area_x1
+      min  : -200.0
+      max  : 200.0
+      v    : 80.0
+    - name : detection_area_x2
+      desc : detection_area_x2
+      label: detection_area_x2
+      min  : -200.0
+      max  : 200.0
+      v    : 0.0
+    - name : detection_area_y1
+      desc : detection_area_y1
+      label: detection_area_y1
+      min  : -200.0
+      max  : 200.0
+      v    : 50.0
+    - name : detection_area_y2
+      desc : detection_area_y2
+      label: detection_area_y2
+      min  : -200.0
+      max  : 200.0
+      v    : -50.0
+
     - name : points_topic
       desc : points_topic
       kind : str
       v    : /points_lanes
+      cmd_param:
+              dash : ''
+              delim: ':='
+    - name : baselink_tf
+      desc : baselnk_tf
+      kind : str
+      v    : base_link
       cmd_param:
               dash : ''
               delim: ':='
