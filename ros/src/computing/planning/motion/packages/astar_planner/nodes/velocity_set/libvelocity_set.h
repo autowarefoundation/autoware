@@ -184,7 +184,9 @@ public:
 };
 
 // threshold to determine if the object is moving towards us
-#define OBJECT_MOVING_TOWARD_US_THRESHOLD 10
+#define OBJECT_MOVING_TOWARD_US_THRESHOLD 4
+// thereshold to change the state to tracking
+#define TRACKING_STATE_CHANGE_THRESHOLD 2
 
 class ObstacleTracker
 {
@@ -239,7 +241,7 @@ private:
   double calcVelocity(const geometry_msgs::Point& cpos)
   {
     double v;
-    ros::Duration dt = time_buf_[1]-time_buf_[0];
+    ros::Duration dt = time_buf_[1]-time_buf_[0]; double dx;
     // dt can be 0, when this function is called with out calling update()
     // if dt is non zero
     if (dt != ros::Duration(0.0)) {
@@ -247,7 +249,7 @@ private:
         // compute dx
         tf::Vector3 cx;
         tf::pointMsgToTF(cpos, cx);
-        double dx = (position_buf_[1] - cx).length() - (position_buf_[0] - cx).length();
+        dx = (position_buf_[1] - cx).length() - (position_buf_[0] - cx).length();
 
         // dx can be negative for couple of frames, if a car cuts in when we were already tracking.
         // if dx is non negative
@@ -259,6 +261,7 @@ private:
 
             // update previous velocity
             prev_velocity_ = v;
+            std::cerr << "prev vel: " << prev_velocity_ << "\n";
 
             // reset the count
             dx_negative_count_ = 0;
@@ -266,6 +269,7 @@ private:
         else
         {
             dx_negative_count_++;
+            std::cerr << "dx negative\n";
 
             // then the car is moving towards us
             if (dx_negative_count_ >= OBJECT_MOVING_TOWARD_US_THRESHOLD)
@@ -284,8 +288,11 @@ private:
     }
     else
     {
+        std::cerr << "dt is zero\n";
         v = prev_velocity_;
     }
+
+      std::cerr << "act: " << dx / dt.toSec() << " kf: " << v << "\n\n";
     return v;
   }
 
@@ -299,9 +306,8 @@ public:
     reset();
   }
 
-  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity, const geometry_msgs::Point current_position)
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& init_velocity, const geometry_msgs::Point current_position)
   {
-
     if (!use_tracking_)
     {
       waypoint_ = stop_waypoint;
@@ -319,17 +325,22 @@ public:
 
     if (state_ == ETrackingState::INITIALIZE)
     {
-        if (tracking_counter_ >= 2) {
+        if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD) {
+          // wrap the counter
+          tracking_counter_ = TRACKING_STATE_CHANGE_THRESHOLD;
+
           // change the state to tracking
           state_ = ETrackingState::TRACKING;
 
+          prev_velocity_ = init_velocity;  // initialise prev_velocity with init velocity (current ego car velocity)
+          dx_negative_count_ = 0;     // reset the count
+
           // compute the obstacle velocity
           double velocity = calcVelocity(current_position);
-          kf_.init(velocity);
+          kf_.init(velocity);         // initialise the KF with obstacle velocity
           waypoint_ = stop_waypoint;
-          velocity_ = velocity;
-          prev_velocity_ = velocity;
-          dx_negative_count_ = 0;
+          velocity_ = velocity;       // obstacle velocity
+          std::cerr <<" tracking state\n";
       }
     }
     else if (state_ == ETrackingState::TRACKING)
@@ -363,6 +374,7 @@ public:
     position_buf_.clear();
     time_buf_.clear();
     kf_.init(0.0);
+      std::cerr <<"all parameters reset\n";
   }
 
   int getWaypointIdx()

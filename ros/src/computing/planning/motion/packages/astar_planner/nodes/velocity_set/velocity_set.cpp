@@ -44,6 +44,9 @@ constexpr int LOOP_RATE = 10;
 constexpr double DECELERATION_SEARCH_DISTANCE = 30;
 constexpr double STOP_SEARCH_DISTANCE = 60;
 
+// TODO: fix this
+double current_velocity_;
+
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
   if (kind == EControl::STOP)
@@ -428,7 +431,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
   {
     double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
-    tracker->update(stop_obstacle_waypoint, obstacle_points, waypoint_velocity, vs_info.getControlPose().pose.position);
+    tracker->update(stop_obstacle_waypoint, obstacle_points, current_velocity_, vs_info.getControlPose().pose.position);
     *obstacle_waypoint = tracker->getWaypointIdx();
     *obstacle_velocity = tracker->getVelocity();
   }
@@ -649,6 +652,7 @@ int main(int argc, char** argv)
 
     int obstacle_waypoint = -1;
     double obstacle_velocity = 0.0;
+    current_velocity_ = vs_path.getCurrentVelocity();
     EControl detection_result = obstacleDetection(closest_waypoint, vs_path.getPrevWaypoints(), crosswalk, vs_info,
                                                   detection_range_pub, obstacle_pub, &obstacle_waypoint, &obstacle_velocity, &tracker);
 
