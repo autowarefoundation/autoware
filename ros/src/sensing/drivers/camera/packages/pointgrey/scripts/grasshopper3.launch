@@ -1,11 +1,17 @@
 <launch>
 
 	<!-- declare arguments with default values -->
-	<arg name="FPS" default="15"/>
-	<arg name="CalibrationFile" default=""/>
+	<arg name="fps" default="20"/>                  <!--frame per second to try to acquire the image -->
+	<arg name="CalibrationFile" default=""/>        <!--Path to Autoware calibration format file-->
+	<arg name="mode" default="0"/>                  <!--Valid Camera Mode -->
+	<arg name="format" default="raw"/>              <!--Pixel Format to acquire the image "raw" or "rgb"-->
+	<arg name="timeout" default="1000"/>            <!--Timeout in mili seconds-->
 
 	<node pkg="autoware_pointgrey_drivers" type="grasshopper3_camera" name="grasshopper" output="screen">
-		<param name="fps" value="$(arg FPS)"/>
+		<param name="fps" value="$(arg fps)"/>
 		<param name="calibrationfile" value="$(arg CalibrationFile)"/>
+		<param name="mode" value="$(arg mode)"/>
+		<param name="format" value="$(arg format)"/>
+		<param name="timeout" value="$(arg timeout)"/>
 	</node>
 </launch>

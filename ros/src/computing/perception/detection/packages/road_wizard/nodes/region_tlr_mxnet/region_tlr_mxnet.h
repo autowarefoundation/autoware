@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <std_msgs/Bool.h>
 
 #include <opencv2/opencv.hpp>
 #include <ros/ros.h>
@@ -102,6 +103,8 @@ private:
 
 	void PublishImage(std::vector<Context> contexts);
 
+	void SuperimposeCb(const std_msgs::Bool::ConstPtr &config_msg);
+
 	// Execution parameter
 	std::string image_topic_name_;
 	std::string network_definition_file_name_;
@@ -115,6 +118,7 @@ private:
 	// Subscribers
 	ros::Subscriber image_subscriber;
 	ros::Subscriber roi_signal_subscriber;
+	ros::Subscriber superimpose_sub;
 
 	// Publishers
 	ros::Publisher signal_state_publisher;

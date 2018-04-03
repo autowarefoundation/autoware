@@ -8,6 +8,10 @@
 #include "Context.h"
 #include "region_tlr_mxnet.h"
 
+
+static bool show_superimpose_result = false;
+static const std::string window_name = "superimpose result";
+
 RegionTlrMxNetRosNode::RegionTlrMxNetRosNode() :
 		image_topic_name_("/image_raw"),
 		network_definition_file_name_(""),
@@ -158,6 +162,10 @@ void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 	                                              1,
 	                                              &RegionTlrMxNetRosNode::RoiSignalCallback,
 	                                              this);
+	superimpose_sub = node_handle.subscribe("/config/superimpose",
+                                          1,
+                                          &RegionTlrMxNetRosNode::SuperimposeCb,
+                                          this);
 
 	// Register publishers
 	signal_state_publisher = node_handle.advertise<autoware_msgs::traffic_light>("light_color", 1);
@@ -477,6 +485,27 @@ void RegionTlrMxNetRosNode::PublishImage(std::vector<Context> contexts)
 	superimpose_image_publisher.publish(converter.toImageMsg());
 
 } // void RegionTlrMxNetRosNode::PublishImage()
+
+void RegionTlrMxNetRosNode::SuperimposeCb(const std_msgs::Bool::ConstPtr &config_msg)
+{
+	show_superimpose_result = config_msg->data;
+
+	if (show_superimpose_result)
+	{
+		cv::namedWindow(window_name, cv::WINDOW_NORMAL);
+		cv::startWindowThread();
+	}
+
+	if (!show_superimpose_result)
+	{
+		if (cvGetWindowHandle(window_name.c_str()) != NULL)
+		{
+			cv::destroyWindow(window_name);
+			cv::waitKey(1);
+		}
+	}
+
+} // void RegionTlrMxNetRosNode::SuperimposeCb()
 
 int main(int argc, char *argv[])
 {

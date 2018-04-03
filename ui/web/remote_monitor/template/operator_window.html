@@ -18,10 +18,16 @@
   <script src="/js/bootstrap.min.js"></script>
   <script src="socket.io/socket.io.js"></script>
   <script src="/js/webrtc_polyfill.js"></script>
+  <script src="/js/operator.js"></script>
   <script src="/js/utility.js"></script>
   <script src="/js/remote_ui.js"></script>
   <script src="/js/gamepad.js"></script>
   <script src="/js/vehicle_button.js"></script>
+  <script>
+    window.addEventListener('beforeunload', function(e) {
+      e.returnValue = 'Do you want to leave this page?';
+    }, false);
+  </script>
 </head>
 
 <body>
@@ -72,6 +78,15 @@
           <h3 id="text_target_speed">Target Speed: - km/h</h3>
           <h3 id="text_next_target_speed">Next Target Speed: - km/h</h3>
           <h3 id="text_state">State: -</h3>
+        </div>
+
+        <div class="streamAudioContainer">
+          <span class="btnRemoveStream glyphicon glyphicon-remove" style="display:none" id="btnRemoveStream6" data-no="6" title="DELETE"></span><br />
+          <button class="btnAddStream" id="btnAddStream6" data-no="6">
+            <span class="glyphicon glyphicon-remove r45"></span><br />
+            <span>Add Audio</span>
+          </button>
+          <video muted id="localView6"></video>
         </div>
       </div>
 
@@ -158,19 +173,11 @@
       </div>
 
       <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-        <div class="onoffswitch">
-            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="emergencyswitch" checked onchange="select_emergency_button();">
-            <label class="onoffswitch-label" for="emergencyswitch">
-                <span class="emergencyswitch-inner"></span>
-            </label>
-        </div>
-
-        <div class="onoffswitch">
-          <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="modeswitch" checked onchange="select_mode_button();">
-          <label class="onoffswitch-label" for="modeswitch">
-              <span class="modeswitch-inner"></span>
-          </label>
-        </div>
+        <center>
+          <a href="#" class="bt-emergency" onclick="select_emergency_button();"><span id="emergency_button">EMEGENCY</span></a>
+          <a href="#" class="bt-drive-mode" onclick="select_drive_mode_button(2);"><span id="drive_mode_button">MANUAL</span></a>
+          <a href="#" class="bt-controlmode" onclick="select_mode_button();"><span id="control_mode_button">AUTO</span></a>
+        </center>
 
         <div class="row">
           <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
@@ -207,7 +214,7 @@
           <div class="form-group">
             <label for="streamPreview control-label">Preview</label>
             <div class="form-control" id="devicePreview">
-              <video id="streamPreview"></video>
+              <video muted id="streamPreview"></video>
             </div>
           </div>
         </div>

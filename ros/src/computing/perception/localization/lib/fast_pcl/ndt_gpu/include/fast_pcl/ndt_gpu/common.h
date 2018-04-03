@@ -15,3 +15,9 @@
 
 #define SHARED_MEM_SIZE 3072
 #endif
+
+//  This is the temploary patch for CUDA9 build problem 
+#if ( __CUDACC_VER_MAJOR__ >=9 )
+#undef  __CUDACC_VER__
+#define __CUDACC_VER__ 90000 
+#endif

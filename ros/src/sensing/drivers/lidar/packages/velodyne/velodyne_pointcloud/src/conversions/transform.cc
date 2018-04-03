@@ -25,19 +25,23 @@ namespace velodyne_pointcloud
 {
   /** @brief Constructor. */
   Transform::Transform(ros::NodeHandle node, ros::NodeHandle private_nh):
+    tf_prefix_(tf::getPrefixParam(private_nh)),
     data_(new velodyne_rawdata::RawData())
   {
-    private_nh.param("frame_id", config_.frame_id, std::string("odom"));
-    std::string tf_prefix = tf::getPrefixParam(private_nh);
-    config_.frame_id = tf::resolve(tf_prefix, config_.frame_id);
-    ROS_INFO_STREAM("target frame ID: " << config_.frame_id);
-
+    // Read calibration.
     data_->setup(private_nh);
 
     // advertise output point cloud (before subscribing to input data)
     output_ =
       node.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
 
+    srv_ = boost::make_shared <dynamic_reconfigure::Server<velodyne_pointcloud::
+      TransformNodeConfig> > (private_nh);
+    dynamic_reconfigure::Server<velodyne_pointcloud::TransformNodeConfig>::
+      CallbackType f;
+    f = boost::bind (&Transform::reconfigure_callback, this, _1, _2);
+    srv_->setCallback (f);
+    
     // subscribe to VelodyneScan packets using transform filter
     velodyne_scan_.subscribe(node, "velodyne_packets", 10);
     tf_filter_ =
@@ -45,6 +49,16 @@ namespace velodyne_pointcloud
                                                          listener_,
                                                          config_.frame_id, 10);
     tf_filter_->registerCallback(boost::bind(&Transform::processScan, this, _1));
+  }
+  
+  void Transform::reconfigure_callback(
+      velodyne_pointcloud::TransformNodeConfig &config, uint32_t level)
+  {
+    ROS_INFO_STREAM("Reconfigure request.");
+    data_->setParameters(config.min_range, config.max_range, 
+                         config.view_direction, config.view_width);
+    config_.frame_id = tf::resolve(tf_prefix_, config.frame_id);
+    ROS_INFO_STREAM("Target frame ID: " << config_.frame_id);
   }
 
   /** @brief Callback for raw scan messages.
@@ -77,7 +91,7 @@ namespace velodyne_pointcloud
         pcl_conversions::toPCL(header, inPc_.header);
 
         // unpack the raw data
-        data_->unpack(scanMsg->packets[next], inPc_);
+        data_->unpack(scanMsg->packets[next], inPc_, scanMsg->packets.size());
 
         // clear transform point cloud for this packet
         tfPc_.points.clear();           // is this needed?
@@ -90,7 +104,7 @@ namespace velodyne_pointcloud
         // transform the packet point cloud into the target frame
         try
           {
-            ROS_DEBUG_STREAM("transforming from" << inPc_.header.frame_id
+            ROS_DEBUG_STREAM("transforming from " << inPc_.header.frame_id
                              << " to " << config_.frame_id);
             pcl_ros::transformPointCloud(config_.frame_id, inPc_, tfPc_,
                                          listener_);

@@ -2,7 +2,7 @@
 
 XSOCK=/tmp/.X11-unix
 XAUTH=/home/$USER/.Xauthority
-SHARED_DIR=/home/$USER/shared_dir
+SHARED_DIR=/home/autoware/shared_dir
 HOST_DIR=/home/$USER/shared_dir
 
 if [ "$1" = "kinetic" ] || [ "$1" = "indigo" ]
@@ -16,7 +16,7 @@ fi
 if [ "$2" = "" ]
 then
     # Create Shared Folder
-    mkdir -p $SHARED_DIR
+    mkdir -p $HOST_DIR
 else
     HOST_DIR=$2
 fi
