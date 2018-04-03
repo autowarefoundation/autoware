@@ -362,7 +362,7 @@ subs :
 
       - name : region_tlr_mxnet
         desc : region_tlr_mxnet desc sample
-        cmd  : roslaunch demo_scripts traffic_light_recognition_mxnet.launch
+        cmd  : roslaunch road_wizard traffic_light_recognition_mxnet.launch
         param: region_tlr_mxnet
         gui  :
           flags : [ need_camera_info ]
@@ -2408,14 +2408,6 @@ params :
       min  : -100
       max  : 100
       v    : 0
-    - name    : use_path_info
-      desc    : use_path_info desc sample
-      label   : 'Use Path Info'
-      kind    : checkbox
-      v       : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name         : camera_id
       desc         : camera_id desc sample
       kind         : menu
