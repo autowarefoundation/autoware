@@ -120,7 +120,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	}
 
 	if (iteration_count_ < iteration_threshold_warning_
-	    && score_delta_ < score_threshold_delta_)
+	    && score_delta_ < score_delta_threshold_)
 	{
 		//update the last good pose
 		initialpose_.pose.pose = input->pose;
@@ -134,7 +134,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
 	}
 	else if ( initialized_ &&
 			((iteration_count_ >= iteration_threshold_stop_)
-	         || (iteration_count_ >= iteration_threshold_warning_ && score_delta_ >= score_threshold_delta_)))
+	         || (iteration_count_ >= iteration_threshold_warning_ && score_delta_ >= score_delta_threshold_)))
 	{
 		ndt_status_ = ndt_status::NDT_ERROR;
 		if (gnss_pose_available_)
@@ -211,7 +211,7 @@ void RosNdtMatchingMonitor::Run()
 	// Geting parameters
 	private_nh.param("/monitor/iteration_threshold_warn", iteration_threshold_warning_, NDT_THRESHOLD_ITERATION_WARN);
 	private_nh.param("/monitor/iteration_threshold_stop", iteration_threshold_stop_, NDT_THRESHOLD_ITERATION_STOP);
-	private_nh.param("/monitor/score_threshold_delta", score_threshold_delta_, NDT_THRESHOLD_SCORE_MAX_DELTA);
+	private_nh.param("/monitor/score_delta_threshold", score_delta_threshold_, NDT_THRESHOLD_SCORE_MAX_DELTA);
 	private_nh.param("/monitor/min_stable_samples", min_stable_samples_, NDT_MIN_STABLE_SAMPLES);
 	private_nh.param("/monitor/fatal_time_threshold", fatal_time_threshold_, NDT_TIME_TO_FATAL_PREDICTIONS);
 

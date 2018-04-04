@@ -31,11 +31,11 @@ Computing Tab -> ndt_localizer -> ndt_matching_monitor
 ----------|-----|--------
 |`iteration_threshold_warn`|*integer* |Number of maximum iterations before notifying a warning. Default 10.|
 |`iteration_threshold_stop`|*integer*|Number of maximum iterations before notifying a warning. Default 32. |
-|`score_threshold_delta`|*double*|Difference between consecutive scores to consider a safe match. Default 14.0|
+|`score_delta_threshold`|*double*|Difference between consecutive scores to consider a safe match. Default 14.0|
 |`min_stable_samples`|*integer*|Minimum number of samples to start monitoring after a reset. Default 30|
 |`fatal_time_threshold`|*double*|When no GNSS is available a prediction based on the previous samples will be employed. If reinitialization fails the algorithm will stop after n secs. Default 2|
 
-### Published topics
+### Subscribed topics
 
 |Topic|Type|Objective|
 ------|----|---------
@@ -44,7 +44,7 @@ Computing Tab -> ndt_localizer -> ndt_matching_monitor
 |`initialpose`|`geometry_msgs/PoseWithCovarianceStamped`|Obtain pose from RVIZ to reinitialize in case of an unrecoverable error.|
 |`gnss_pose`|`geometry_msgs/Pose`|If a GNSS device is available it will be used to automatically try to reset NDT, requires `nmea2tfpose`.|
 
-### Subscribed topics
+### Published topics
 
 |Topic|Type|Objective|
 ------|----|---------

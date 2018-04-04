@@ -90,7 +90,7 @@ class RosNdtMatchingMonitor
 
 	double                  last_score_;
 	double                  current_score_;
-	double                  score_threshold_delta_;
+	double                  score_delta_threshold_;
 	double                  score_delta_;
 	int                     iteration_threshold_warning_;
 	int                     iteration_threshold_stop_;
