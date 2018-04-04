@@ -3083,8 +3083,8 @@ params :
         dash        : ''
         delim       : ':='
     - name      : radius_min
-      desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : VelocityPlanning---Rmin(c0)[m]
+      desc      : On the curve, Velocity_local_minimum(=Vlm) show linearly increase with Radius_local_minimum(=Rlm). Rmin = min(Rlm)
+      label     : VelocityPlanning---Rmin[m]
       min       : 4.0
       max       : 10.0
       v         : 6.0
@@ -3092,8 +3092,8 @@ params :
         dash        : ''
         delim       : ':='
     - name      : velocity_min
-      desc      : On the curve, Vmin(r) show linearly increase with Rmin(c). c=c0(worst sharp curve) => (v, r)=(Vmin(Rmin(c0)), Rmin(c0))
-      label     : VelocityPlanning---Vmin(Rmin)[km/h]
+      desc      : On the curve, Velocity_local_minimum(=Vlm) show linearly increase with Radius_local_minimum(=Rlm). Vmin = min(Vlm)
+      label     : VelocityPlanning---Vmin[km/h]
       min       : 0.0
       max       : 10.0
       v         : 4.0
