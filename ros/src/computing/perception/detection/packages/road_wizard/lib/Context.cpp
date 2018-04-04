@@ -12,6 +12,8 @@ Context::Context(cv::Point aRedCenter, cv::Point aYellowCenter, cv::Point aGreen
 	leftTurnSignal = false;
 	rightTurnSignal = false;
 	closestLaneId = -1;
+	newCandidateLightState = UNDEFINED;
+	lightState = UNDEFINED;
 }
 
 /*
@@ -153,6 +155,7 @@ void Context::SetContexts(std::vector<Context> &out_signal_contexts,
 				final_signal_contexts.push_back(current_signal_context);
 				final_signal_contexts.back().lightState = out_signal_contexts.at(i).lightState;
 				final_signal_contexts.back().stateJudgeCount = out_signal_contexts.at(i).stateJudgeCount;
+				final_signal_contexts.back().newCandidateLightState = out_signal_contexts.at(i).newCandidateLightState;
 				isInserted = true;
 				break;
 			}

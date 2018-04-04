@@ -56,7 +56,7 @@ catkin_package(
   CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
@@ -211,12 +211,7 @@ set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 if(EXISTS "${SSD_CAFFE_PATH}")
 
-find_package(CUDA)
-pkg_check_modules(HDF5 hdf5)
-
-if(HDF5_FOUND)
-  include_directories(${HDF5_INCLUDE_DIRS})
-endif()
+find_package(CUDA REQUIRED)
 
 add_executable(region_tlr_ssd
   nodes/region_tlr_ssd/region_tlr_ssd.cpp
@@ -247,3 +242,47 @@ add_dependencies(region_tlr_ssd
 else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
   message("'SSD/Caffe' is not installed. 'region_tlr_ssd' will not be built.")
 endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
+
+### region_tlr_mxnet ###
+##############################MXNET with CPP_PACKAGE NEEDS TO BE PREVIOUSLY COMPILED################
+#############Please follow README file for instructions#############################################
+set(MXNET_PATH "$ENV{HOME}/mxnet/")
+####################################################################################################
+if(EXISTS "${MXNET_PATH}")
+
+  find_package(CUDA REQUIRED)
+
+  add_executable(region_tlr_mxnet
+    nodes/region_tlr_mxnet/region_tlr_mxnet.cpp
+    nodes/region_tlr_mxnet/mxnet_traffic_light_recognizer.cpp
+    nodes/region_tlr_mxnet/region_tlr_mxnet.h
+    nodes/region_tlr_mxnet/mxnet_traffic_light_recognizer.h
+  )
+
+  target_link_libraries(region_tlr_mxnet
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_curand_LIBRARY}
+    ${MXNET_PATH}/lib/libmxnet.so
+    libcontext
+  )
+
+  target_include_directories(region_tlr_mxnet PRIVATE
+    ${MXNET_PATH}/nnvm/include/
+    ${MXNET_PATH}/cpp-package/include/
+    ${MXNET_PATH}/include/
+    ${MXNET_PATH}/dmlc-core/include/
+    ${CUDA_INCLUDE_DIRS}
+    nodes/region_tlr_mxnet/
+    include
+  )
+
+  add_dependencies(region_tlr_mxnet
+    ${catkin_EXPORTED_TARGETS}
+  )
+
+else()
+  message("'MXNET Package' is not installed. 'region_tlr_mxnet' will not be built.")
+endif()
