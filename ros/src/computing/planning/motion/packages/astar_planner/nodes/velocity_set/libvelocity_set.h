@@ -185,8 +185,10 @@ public:
 
 // threshold to determine initializing tracking
 #define UNTRACKING_DISTANCE_THRESHOLD 8.0
-// thereshold to change the state to tracking
+// threshold to change the state to tracking
 #define TRACKING_STATE_CHANGE_THRESHOLD 2
+// threshold allowed for negative dx
+#define ALLOWED_NEGATIVE_DX_COUNT 2
 
 class ObstacleTracker
 {
@@ -221,7 +223,7 @@ private:
   };
 
   bool use_tracking_;
-  int frame_thres_;
+  int negative_dx_counter_;
   double moving_thres_;
 
   int tracking_counter_, lost_counter_;
@@ -249,14 +251,26 @@ private:
       tf::pointMsgToTF(cpos, cx);
       dx = (position_buf_[1] - cx).length() - (position_buf_[0] - cx).length();
 
-      // KF estimate
-      kf_.predict();
-      v = kf_.update(dx / dt.toSec());
-      v = (v > moving_thres_) ? v : 0.0;
+      // this condition is to handle when the front part of the car is tracked in a frame and
+      // by next frame if we detect the back part of the car ==> dx is negative
+      if (prev_velocity_ > moving_thres_ && dx < 0 && negative_dx_counter_< ALLOWED_NEGATIVE_DX_COUNT)
+      {
+        std::cerr << "negative dx\n";
+        v = prev_velocity_;
+        negative_dx_counter_++;
+      }
+      else {
+        // KF estimate
+        kf_.predict();
+        v = kf_.update(dx / dt.toSec());
+        std::cerr << "KF raw: " << v << "\n";
+        v = (v > moving_thres_) ? v : 0.0;
 
-      // update previous velocity
-      prev_velocity_ = v;
-      std::cerr << "prev vel: " << prev_velocity_ << "\n";
+        // update previous velocity
+        prev_velocity_ = v;
+        std::cerr << "prev vel: " << prev_velocity_ << "\n";
+        negative_dx_counter_=0;
+      }
     }
     else
     {
@@ -294,10 +308,11 @@ public:
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
-    if (tracking_counter_ >= 2 && (position_buf_[1]-position_buf_[0]).length() > UNTRACKING_DISTANCE_THRESHOLD)
+    // this is to handle if a car cuts in front of us of we are already tracking a car way ahead of us
+    if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD && (position_buf_[1]-position_buf_[0]).length() > UNTRACKING_DISTANCE_THRESHOLD)
     {
       std::cerr << "distance changed greatly, untracking\n";
-      reset();
+      //reset();
       return;
     }
 
@@ -342,6 +357,7 @@ public:
     state_ = ETrackingState::INITIALIZE;
     tracking_counter_ = 0;
     lost_counter_ = 0;
+    negative_dx_counter_ = 0;
     waypoint_ = -1;
     velocity_ = 0.0;
     prev_velocity_ = 0.0;
