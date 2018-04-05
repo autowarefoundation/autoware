@@ -303,8 +303,8 @@ public:
     lost_counter_ = 0;
     tracking_counter_++;
     time_ = ros::Time::now();
-    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
-    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    //tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
