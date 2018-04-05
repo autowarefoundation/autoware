@@ -167,7 +167,7 @@ void PacmodInterface::publishToPacmod()
   if (lidar_detect_cmd_ != 0)
   {
     // hazard lights (dont work!!!)
-    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;;
+    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
   }
   else    // if lidar driver is fine
   {
