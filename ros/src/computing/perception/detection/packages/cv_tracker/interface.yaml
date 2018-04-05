@@ -12,7 +12,7 @@
   subscribe: [/config/*/kf, /image_raw, /*/image_obj_ranged]
 - name: /*/klt_track
   publish: [/*/image_obj_tracked]
-  subscribe: [/config/*/klt, /image_raw, /*/image_obj_ranged]
+  subscribe: [/image_raw, /*/image_obj_ranged]
 - name: obj_reproj
   publish: [/obj_X/obj_label, /obj_X/obj_label_marker]
   subscribe: [/obj_X/image_obj_tracked, /current_pose, /projection_matrix, /camera/camera_info]
