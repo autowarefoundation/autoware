@@ -51,6 +51,7 @@
 
 #include <autoware_msgs/CurvatureCommandStamped.h>
 #include <autoware_msgs/lamp_cmd.h>
+#include <std_msgs/UInt8.h>
 
 namespace pacmod
 {
@@ -82,6 +83,7 @@ private:
   ros::Subscriber curvature_cmd_sub_;
   ros::Subscriber lamp_cmd_sub_;
   ros::Subscriber speed_sub_;
+  ros::Subscriber lidar_detect_cmd_sub_;
 
   message_filters::Subscriber<module_comm_msgs::VelocityAccel>* current_velocity_sub_;
   message_filters::Subscriber<platform_comm_msgs::CurvatureFeedback>* current_curvature_sub_;
@@ -107,6 +109,7 @@ private:
   double curvature_ = 0.0;
   std_msgs::Header header_;
   autoware_msgs::lamp_cmd lamp_cmd_;
+  uint8_t lidar_detect_cmd_;
 
   // callbacks
   void callbackFromCurvatureCmd(const autoware_msgs::CurvatureCommandStampedConstPtr& msg);
@@ -115,6 +118,7 @@ private:
   void callbackFromSyncedCurrentTwist(const module_comm_msgs::VelocityAccelConstPtr& msg_velocity, const platform_comm_msgs::CurvatureFeedbackConstPtr& msg_curvature);
   void callbackPacmodTimer(const ros::TimerEvent& event);
   void callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg);
+  void callbackLidarDetectCmd(const std_msgs::UInt8ConstPtr msg);
 
   // publisher
   void publishToPacmod();

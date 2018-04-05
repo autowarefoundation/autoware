@@ -71,6 +71,11 @@ void PacmodInterface::initForROS()
   control_mode_sub_ = nh_.subscribe("/as/control_mode", 1, &PacmodInterface::callbackFromControlMode, this);
   lamp_cmd_sub_ = nh_.subscribe("/lamp_cmd", 1, &PacmodInterface::callbackFromLampCmd, this);
 
+  lidar_detect_cmd_sub_ = nh_.subscribe("/lidar_detect_command", 1, &PacmodInterface::callbackLidarDetectCmd, this);
+
+  // initialise
+  lidar_detect_cmd_ = 0;
+
   // sease_link"up timer
   if (use_timer_publisher_)
   {
@@ -134,6 +139,11 @@ void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
   publishToPacmod();
 }
 
+void PacmodInterface::callbackLidarDetectCmd(const std_msgs::UInt8ConstPtr msg)
+{
+  lidar_detect_cmd_ = msg->data;
+}
+
 void PacmodInterface::publishToPacmod()
 {
   module_comm_msgs::SpeedMode speed_mode;
@@ -152,17 +162,22 @@ void PacmodInterface::publishToPacmod()
   platform_comm_msgs::TurnSignalCommand turn_signal;
   turn_signal.header.stamp = ros::Time::now();
   turn_signal.mode = speed_mode.mode;
-  if (lamp_cmd_.l == 1)
+
+  // if lidar is not fine
+  if (lidar_detect_cmd_ != 0)
   {
-    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
-  }
-  else if (lamp_cmd_.r == 1)
-  {
+    // hazard lights (dont work!!!)
     turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
   }
-  else
+  else    // if lidar driver is fine
   {
-    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
+    if (lamp_cmd_.l == 1) {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
+    } else if (lamp_cmd_.r == 1) {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+    } else {
+      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
+    }
   }
 
   platform_comm_msgs::GearCommand gear_comm;
