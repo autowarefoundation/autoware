@@ -1,6 +1,6 @@
-- name: dpm_ocv
-  publish: [/obj_X/image_obj]
-  subscribe: [/config/obj_X/dpm, /image_raw]
+- name: /*/dpm_ocv
+  publish: [/*/image_obj]
+  subscribe: [/config/*/dpm, /image_raw]
 - name: dpm_ttic
   publish: [/obj_X/image_obj]
   subscribe: [/config/obj_X/dpm, /image_raw]
