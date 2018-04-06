@@ -12,11 +12,13 @@
 - name: /ndt_mapping_tku
   publish: [/ndmap, /ndt_pose, /localizer_pose]
   subscribe: [/points_raw]
+- name: /ndt_matching
+  publish: [/predict_pose, /predict_pose_imu, /predict_pose_odom, /predict_pose_imu_odom,
+    /ndt_pose, /localizer_pose, /estimate_twist, /estimated_vel_mps,
+    /estimated_vel_kmph, /estimated_vel, /time_ndt_matching, /ndt_stat,
+    /ndt_reliability]
+  subscribe: [/config/ndt, /gnss_pose, /initialpose, /filtered_points, /odom_pose,
+    /imu_raw]
 - name: queue_counter
   publish: []
   subscribe: [/points_raw, /ndt_map]
-- name: ndt_matching
-  publish: [/predict_pose, /ndt_pose, /localizer_pose,
-    /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /estimated_vel, /time_ndt_matching,
-    /ndt_stat, /ndt_reliability]
-  subscribe: [/config/ndt, /gnss_pose, /points_map, /initialpose, /filtered_points]
