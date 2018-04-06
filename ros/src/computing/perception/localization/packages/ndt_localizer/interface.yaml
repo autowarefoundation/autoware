@@ -2,11 +2,11 @@
   publish: [/ndt_map, /current_pose]
   subscribe: [/config/approximate_ndt_mapping, /config/ndt_mapping_output,
     /points_raw, /odom_pose, /imu_raw]
+- name: /lazy_ndt_mapping
+  publish: [/ndt_map, /reference_map, /current_pose]
+  subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
 - name: ndt_mapping
   publish: [/ndt_map, /current_pose]
-  subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
-- name: lazy_ndt_mapping
-  publish: [/ndt_map, /reference_map, /current_pose]
   subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
 - name: queue_counter
   publish: []
