@@ -6,6 +6,9 @@
 - name: /euclidean_lidar_track
   publish: [/detected_objects, /cloud_cluster_tracked_bounding_box, /cloud_cluster_tracked_text]
   subscribe: [/cloud_clusters_class]
+- name: /kf_contour_tracker
+  publish: [/detected_objects, /detected_polygons, /op_planner_tracked_boxe]
+  subscribe: [/cloud_clusters, /current_pose]
 - name: obj_fusion
   publish: [/obj_X/obj_pose]
   subscribe: [/obj_X/obj_label, /cluster_centroids]
