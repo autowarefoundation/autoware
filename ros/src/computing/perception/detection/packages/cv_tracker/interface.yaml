@@ -25,3 +25,6 @@
 - name: /ssd
   publish: [/*/image_obj]
   subscribe: [/config/ssd, /image_raw]
+- name: /yolo2_wa
+  publish: [/*/image_obj]
+  subscribe: [/config/yolo2, /image_raw]
