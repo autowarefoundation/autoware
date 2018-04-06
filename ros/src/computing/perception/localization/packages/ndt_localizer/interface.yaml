@@ -19,6 +19,9 @@
     /ndt_reliability]
   subscribe: [/config/ndt, /gnss_pose, /initialpose, /filtered_points, /odom_pose,
     /imu_raw]
+- name: /ndt_matching_tku
+  publish: [/ndt_pose, /localizer_pose]
+  subscribe: [/points_map, /initialpose, /filtered_points]
 - name: queue_counter
   publish: []
   subscribe: [/points_raw, /ndt_map]
