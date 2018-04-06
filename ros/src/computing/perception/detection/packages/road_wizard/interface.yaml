@@ -2,8 +2,9 @@
   publish: [/roi_signal]
   subscribe: [/vector_map_info/*, /camera/camera_info, /config/adjust_xy, /current_pose,
     /final_waypoints]
-- name: region_tlr
-  publish: [/light_color, /sound_player, /tlr_result]
+- name: /traffic_light_recognition
+  publish: [/light_color, /sound_player, /tlr_result, /tlr_superimpose_image,
+    /tlr_result_array]
   subscribe: [/image_raw, /roi_signal, /tuned_result, /config/superimpose]
 - name: tlr_tuner
   publish: [/tuned_result]
