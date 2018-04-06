@@ -242,7 +242,9 @@ private:
   double calcVelocity(const geometry_msgs::Point& cpos)
   {
     double v;
-    ros::Duration dt = time_buf_[1]-time_buf_[0]; double dx;
+    ros::Duration dt = time_buf_[1]-time_buf_[0];
+    double dx;
+    double raw_velocity;
     // dt can be 0, when this function is called with out calling update()
     // if dt is non zero
     if (dt != ros::Duration(0.0)) {
@@ -262,7 +264,12 @@ private:
       else {
         // KF estimate
         kf_.predict();
-        v = kf_.update(dx / dt.toSec());
+        raw_velocity =  dx/dt.toSec();
+
+        // truncate negative values to 0
+        raw_velocity = (raw_velocity < 0.0) ? 0.0 : raw_velocity;
+
+        v = kf_.update(raw_velocity);
         std::cerr << "KF raw: " << v << "\n";
         v = (v > moving_thres_) ? v : 0.0;
 
@@ -277,7 +284,7 @@ private:
       std::cerr << "dt is zero\n";
       v = prev_velocity_;
     }
-    std::cerr << "act: " << dx / dt.toSec() << " kf: " << v << "\n\n";
+    std::cerr << "raw: " << raw_velocity << " KF: " << v << "\n\n";
     return v;
   }
 
@@ -291,7 +298,7 @@ public:
     reset();
   }
 
-  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& init_velocity, const geometry_msgs::Point current_position)
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& init_velocity, const geometry_msgs::Point current_position, double obstacle_stop_distance_hard)
   {
     if (!use_tracking_)
     {
@@ -305,6 +312,22 @@ public:
     time_ = ros::Time::now();
     tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
     //tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+
+    // obstacle_distance
+    tf::Vector3 current;
+    tf::pointMsgToTF(current_position, current);
+    double distance_to_obstacle = (current-position_).length();
+    std::cerr << "distance to obs: " << distance_to_obstacle <<"\n";
+    std::cerr.precision(8);
+
+    // if the obstacle is very near no point in tracking
+    if (distance_to_obstacle < obstacle_stop_distance_hard)
+    {
+      std::cerr << "obstacle is very near\n";
+      reset();
+      return;
+    }
+
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
