@@ -1,6 +1,3 @@
-- name: local2global
-  publish: [/current_pose, /ndt_map]
-  subscribe: [/config/ndt, /gnss_pose, /points_map]
 - name: ndt_mapping
   publish: [/ndt_map, /current_pose]
   subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw]
