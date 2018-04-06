@@ -9,6 +9,9 @@
   publish: [/ndt_map, /current_pose]
   subscribe: [/config/ndt_mapping, /config/ndt_mapping_output, /points_raw,
     /odom_pose, /imu_raw]
+- name: /ndt_mapping_tku
+  publish: [/ndmap, /ndt_pose, /localizer_pose]
+  subscribe: [/points_raw]
 - name: queue_counter
   publish: []
   subscribe: [/points_raw, /ndt_map]
