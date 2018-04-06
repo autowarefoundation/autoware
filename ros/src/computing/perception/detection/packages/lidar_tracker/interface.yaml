@@ -9,6 +9,9 @@
 - name: /kf_contour_tracker
   publish: [/detected_objects, /detected_polygons, /op_planner_tracked_boxe]
   subscribe: [/cloud_clusters, /current_pose]
+- name: /kf_lidar_track
+  publish: [/detected_objects, /bounding_boxes_tracked, /cluster_hulls_tracked, /cluster_ids_tracked]
+  subscribe: [/cloud_clusters_class]
 - name: obj_fusion
   publish: [/obj_X/obj_pose]
   subscribe: [/obj_X/obj_label, /cluster_centroids]
