@@ -18,6 +18,9 @@
 - name: /pf_lidar_track
   publish: [/detected_objects]
   subscribe: [/cloud_clusters_class]
+- name: /svm_lidar_detect
+  publish: [/cloud_clusters_class]
+  subscribe: [/cloud_clusters]
 - name: vscan_filling
   publish: [/vscan_filling_cloud]
   subscribe: [/vscan_points]
