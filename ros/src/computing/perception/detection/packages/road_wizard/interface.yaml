@@ -15,6 +15,6 @@
 - name: /roi_extractor
   publish: []
   subscribe: [/image_raw, /roi_signal]
-- name: tlr_tuner
+- name: /tlr_tuner
   publish: [/tuned_result]
   subscribe: [/image_raw]
