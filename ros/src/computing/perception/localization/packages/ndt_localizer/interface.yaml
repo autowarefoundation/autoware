@@ -25,3 +25,6 @@
 - name: /queue_counter
   publish: []
   subscribe: [/points_raw, /ndt_map]
+- name: /tf_mapping
+  publish: []
+  subscribe: [/points_raw]
