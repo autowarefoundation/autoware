@@ -15,6 +15,9 @@
 - name: /*/fusion
   publish: [/*/obj_pose, /cloud_clusters_class, /*/obj_pose_timestamp, /*/obj_pose_arrow, ]
   subscribe: [/*/obj_label, /cloud_clusters, /vector_map_info/*]
+- name: /pf_lidar_track
+  publish: [/detected_objects]
+  subscribe: [/cloud_clusters_class]
 - name: vscan_filling
   publish: [/vscan_filling_cloud]
   subscribe: [/vscan_points]
