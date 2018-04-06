@@ -21,6 +21,6 @@
 - name: /svm_lidar_detect
   publish: [/cloud_clusters_class]
   subscribe: [/cloud_clusters]
-- name: vscan_filling
+- name: /vscan_filling
   publish: [/vscan_filling_cloud]
   subscribe: [/vscan_points]
