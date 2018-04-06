@@ -22,3 +22,6 @@
 - name: /rcnn
   publish: [/*/image_obj]
   subscribe: [/config/rcnn, /image_raw]
+- name: /ssd
+  publish: [/*/image_obj]
+  subscribe: [/config/ssd, /image_raw]
