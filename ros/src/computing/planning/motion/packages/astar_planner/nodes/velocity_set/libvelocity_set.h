@@ -258,8 +258,14 @@ private:
       if (prev_velocity_ > moving_thres_ && dx < 0 && negative_dx_counter_< ALLOWED_NEGATIVE_DX_COUNT)
       {
         std::cerr << "negative dx\n";
-        v = prev_velocity_;
         negative_dx_counter_++;
+
+        raw_velocity = 0.0f;
+        // update KF
+        kf_.predict();
+        kf_.update(raw_velocity);
+        // but ignore the estimated value
+        v = prev_velocity_;
       }
       else {
         // KF estimate
@@ -267,11 +273,11 @@ private:
         raw_velocity =  dx/dt.toSec();
 
         // truncate negative values to 0
-        raw_velocity = (raw_velocity < 0.0) ? 0.0 : raw_velocity;
+        raw_velocity = (raw_velocity < 0.0f) ? 0.0f : raw_velocity;
 
         v = kf_.update(raw_velocity);
         std::cerr << "KF raw: " << v << "\n";
-        v = (v > moving_thres_) ? v : 0.0;
+        v = (v > moving_thres_) ? v : 0.0f;
 
         // update previous velocity
         prev_velocity_ = v;
@@ -318,13 +324,16 @@ public:
     tf::pointMsgToTF(current_position, current);
     double distance_to_obstacle = (current-position_).length();
     std::cerr << "distance to obs: " << distance_to_obstacle <<"\n";
-    std::cerr.precision(8);
 
     // if the obstacle is very near no point in tracking
     if (distance_to_obstacle < obstacle_stop_distance_hard)
     {
       std::cerr << "obstacle is very near\n";
+      // reset tracking
       reset();
+      // set velocity to zero and hold stop waypoint till obstacle is lost
+      waypoint_ = stop_waypoint;
+      velocity_ = 0.0f;
       return;
     }
 
