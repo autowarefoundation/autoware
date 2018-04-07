@@ -9,9 +9,6 @@ OPTION_RM_GEOMETRY='--geometry=50x10+500+0'
 OPTION_COMMAND='--command'
 
 
-MASTER_DISPLAY_OPTION="${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}\=\"roscore\""
-RUNMGR_DISPLAY_OPTION="${OPTION_RM_GEOMETRY} ${OPTION_TITLE}\=\"runtime_manager\""
-
 if [ $(which gnome-terminal) ]; then
     TERMINAL=gnome-terminal
     GNOME_VERSION=$(gnome-terminal --version | cut -d '.' -f 2)
@@ -25,6 +22,7 @@ elif [ $(which xfce4-terminal) ]; then
     TERMINAL=xfce4-terminal
 elif [ $(which lxterminal) ]; then
     TERMINAL=lxterminal
+    OPTION_TITLE='--title'
 elif [ $(which konsole) ]; then
     TERMINAL=konsole
     OPTION_WORKING_DIR='--workdir'
@@ -34,6 +32,9 @@ elif [ $(which konsole) ]; then
     OPTION_COMMAND='-e'
     OPTION_TITLE='-T'
 fi
+
+MASTER_DISPLAY_OPTION="${OPTION_CORE_GEOMETRY} ${OPTION_TITLE}=\"roscore\""
+RUNMGR_DISPLAY_OPTION="${OPTION_RM_GEOMETRY} ${OPTION_TITLE}=\"runtime_manager\""
 
 echo "Process Manager"
 
