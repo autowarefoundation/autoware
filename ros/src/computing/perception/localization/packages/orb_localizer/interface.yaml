@@ -10,3 +10,7 @@
 - name: /orb_mapping_1
   publish: []
   subscribe: [/current_pose, /camera/image_hs]
+- name: /camera_localizer_1
+  publish: [/camera_pose, /camera_pose_covariance, /framebuffer, /debug,
+    /keyframeDebug, /fusion_odometry]
+  subscribe: [/camera/image_hs, /odom]
