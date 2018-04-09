@@ -25,6 +25,11 @@ add_executable(can_status_translator nodes/can_status_translator/can_status_tran
 target_link_libraries(can_status_translator ${catkin_LIBRARIES})
 add_dependencies(can_status_translator ${catkin_EXPORTED_TARGETS})
 
+add_executable(can_odometry nodes/can_odometry/can_odometry_node.cpp
+  nodes/can_odometry/can_odometry_core.cpp)
+target_link_libraries(can_odometry ${catkin_LIBRARIES})
+add_dependencies(can_odometry ${catkin_EXPORTED_TARGETS})
+
 install(TARGETS can_status_translator
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

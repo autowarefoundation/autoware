@@ -68,7 +68,7 @@ void CanOdometryNode::initForROS()
   }
 
   // setup subscriber
-  sub1_ = nh_.subscribe("vehicle_status", 10, &CanOdometryNode::callbackFromCanInfo, this);
+  sub1_ = nh_.subscribe("vehicle_status", 10, &CanOdometryNode::callbackFromVehicleStatus, this);
 
   // setup publisher
   pub1_ = nh_.advertise<nav_msgs::Odometry>("/vehicle/odom", 10);
@@ -79,7 +79,7 @@ void CanOdometryNode::run()
   ros::spin();
 }
 
-void CanOdometryNode::publishOdometry(const autoware_msgs::CanInfoConstPtr &msg)
+void CanOdometryNode::publishOdometry(const autoware_msgs::VehicleStatusConstPtr &msg)
 {
   double vx = kmph2mps(msg->speed);
   double vth = v_info_.convertSteeringAngleToAngularVelocity(kmph2mps(msg->speed), msg->angle);
@@ -119,10 +119,10 @@ void CanOdometryNode::publishOdometry(const autoware_msgs::CanInfoConstPtr &msg)
   odom.twist.twist.angular.z = vth;
 
   // publish the message
-  pub3_.publish(odom);
+  pub1_.publish(odom);
 }
 
-void CanOdometryNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void CanOdometryNode::callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr &msg)
 {
   publishOdometry(msg);
 }
