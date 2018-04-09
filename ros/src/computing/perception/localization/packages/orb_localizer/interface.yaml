@@ -17,3 +17,6 @@
 - name: /orb_map_publisher
   publish: [/ORB_SLAM/Map/MapPoint, /ORB_SLAM/Map/KeyFrame]
   subscribe: []
+- name: /voc_creator
+  publish: []
+  subscribe: [/camera/image_hs]
