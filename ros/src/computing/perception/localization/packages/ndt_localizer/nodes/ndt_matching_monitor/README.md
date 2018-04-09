@@ -50,6 +50,7 @@ Computing Tab -> ndt_localizer -> ndt_matching_monitor
 ------|----|---------
 |`initialpose`|`geometry_msgs/PoseWithCovarianceStamped`|Used to cause a reset or halt in `ndt_matching`.|
 |`/ndt_monitor/ndt_info_text`|`jsk_rviz_plugins/OverlayText`|Publishes the text to be displayed in RVIZ with the help of `OverlayText` display type.|
+|`/ndt_monitor/ndt_status`|`std_msgs/String`|Publishes the text for its later use in safety decision maker.|
 
 ## Contributing
 `ndt_matching_monitor` is far from complete. 
