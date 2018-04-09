@@ -1,3 +1,6 @@
 - name: /grid_map_filter
   publish: [/filtered_grid_map]
   subscribe: [/realtime_cost_map]
+- name: /laserscan2costmap
+  publish: [/ring_ogm]
+  subscribe: [/scan]
