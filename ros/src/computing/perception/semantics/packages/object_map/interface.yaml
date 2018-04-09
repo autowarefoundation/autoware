@@ -10,3 +10,6 @@
 - name: /potential_field
   publish: [/potential_field]
   subscribe: [/detected_objects, /vscan_points, /next_target_mark]
+- name: /wayarea2grid
+  publish: [/grid_map_wayarea, /occupancy_wayarea]
+  subscribe: []
