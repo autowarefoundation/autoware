@@ -159,9 +159,7 @@ private:
   void initForROS();
 
   // functions
-  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishOdometry(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishOdometry(const autoware_msgs::VehicleStatusConstPtr &msg);
 };
 }
 #endif  // CAN_ODOMETRY_CORE_H
