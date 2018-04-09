@@ -14,3 +14,6 @@
   publish: [/camera_pose, /camera_pose_covariance, /framebuffer, /debug,
     /keyframeDebug, /fusion_odometry]
   subscribe: [/camera/image_hs, /odom]
+- name: /orb_map_publisher
+  publish: [/ORB_SLAM/Map/MapPoint, /ORB_SLAM/Map/KeyFrame]
+  subscribe: []
