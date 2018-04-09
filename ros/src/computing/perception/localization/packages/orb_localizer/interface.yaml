@@ -7,3 +7,6 @@
 - name: /orb_evaluator
   publish: []
   subscribe: [/camera/image_raw]
+- name: /orb_mapping_1
+  publish: []
+  subscribe: [/current_pose, /camera/image_hs]
