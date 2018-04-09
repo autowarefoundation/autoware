@@ -4,3 +4,6 @@
 - name: /hist_match
   publish: [/camera/image_hs]
   subscribe: [/camera/image_raw]
+- name: /orb_evaluator
+  publish: []
+  subscribe: [/camera/image_raw]
