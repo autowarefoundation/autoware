@@ -132,6 +132,7 @@ IF (CUDA_FOUND)
 
     target_include_directories(yolo3_detector PRIVATE
             ${CUDA_INCLUDE_DIRS}
+            ${catkin_INCLUDE_DIRS}
             ${PROJECT_SOURCE_DIR}/darknet
             ${PROJECT_SOURCE_DIR}/darknet/src
             ${PROJECT_SOURCE_DIR}/src
