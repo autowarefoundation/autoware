@@ -1,0 +1,15 @@
+- name: /grid_map_filter
+  publish: [/filtered_grid_map]
+  subscribe: [/realtime_cost_map]
+- name: /laserscan2costmap
+  publish: [/ring_ogm]
+  subscribe: [/scan]
+- name: /points2costmap
+  publish: [/realtime_cost_map]
+  subscribe: [/points_lanes, /obstacle_sim_pointcloud]
+- name: /potential_field
+  publish: [/potential_field]
+  subscribe: [/detected_objects, /vscan_points, /next_target_mark]
+- name: /wayarea2grid
+  publish: [/grid_map_wayarea, /occupancy_wayarea]
+  subscribe: []
