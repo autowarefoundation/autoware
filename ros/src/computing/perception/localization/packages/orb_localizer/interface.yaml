@@ -1,0 +1,6 @@
+- name: /imgprocx
+  publish: [/camera/image_hs]
+  subscribe: [/camera/image_raw_d]
+- name: /hist_match
+  publish: [/camera/image_hs]
+  subscribe: [/camera/image_raw]
