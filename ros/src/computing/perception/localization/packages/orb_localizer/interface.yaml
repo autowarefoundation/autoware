@@ -1,0 +1,22 @@
+- name: /imgprocx
+  publish: [/camera/image_hs]
+  subscribe: [/camera/image_raw_d]
+- name: /hist_match
+  publish: [/camera/image_hs]
+  subscribe: [/camera/image_raw]
+- name: /orb_evaluator
+  publish: []
+  subscribe: [/camera/image_raw]
+- name: /orb_mapping_1
+  publish: []
+  subscribe: [/current_pose, /camera/image_hs]
+- name: /camera_localizer_1
+  publish: [/camera_pose, /camera_pose_covariance, /framebuffer, /debug,
+    /keyframeDebug, /fusion_odometry]
+  subscribe: [/camera/image_hs, /odom]
+- name: /orb_map_publisher
+  publish: [/ORB_SLAM/Map/MapPoint, /ORB_SLAM/Map/KeyFrame]
+  subscribe: []
+- name: /voc_creator
+  publish: []
+  subscribe: [/camera/image_hs]
