@@ -4,3 +4,6 @@
 - name: /laserscan2costmap
   publish: [/ring_ogm]
   subscribe: [/scan]
+- name: /points2costmap
+  publish: [/realtime_cost_map]
+  subscribe: [/points_lanes, /obstacle_sim_pointcloud]
