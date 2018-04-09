@@ -84,8 +84,10 @@ class RosNdtMatchingMonitor
 		NDT_ERROR,
 		NDT_FATAL
 	};
+	const std::vector<std::string> ndt_status_names = {"NDT_NOT_INITIALIZED", "NDT_OK", "NDT_WARNING", "NDT_ERROR", "NDT_FATAL"};
 	ros::Publisher          initialpose_pub_;
 	ros::Publisher          overlay_info_text_pub_;
+	ros::Publisher			ndt_status_pub_;
 	ros::Time               last_prediction_time_;
 
 	double                  last_score_;
