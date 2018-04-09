@@ -7,3 +7,6 @@
 - name: /points2costmap
   publish: [/realtime_cost_map]
   subscribe: [/points_lanes, /obstacle_sim_pointcloud]
+- name: /potential_field
+  publish: [/potential_field]
+  subscribe: [/detected_objects, /vscan_points, /next_target_mark]
