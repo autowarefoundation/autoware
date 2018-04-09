@@ -191,7 +191,7 @@ class Yolo2DetectorNode
 	void image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 	{
 		std::vector< RectClassScore<float> > detections;
-		//darknet_image = yolo_detector_.convert_image(in_image_message);
+		//darknet_image_ = yolo_detector_.convert_image(in_image_message);
 
 		darknet_image = convert_ipl_to_image(in_image_message);
 

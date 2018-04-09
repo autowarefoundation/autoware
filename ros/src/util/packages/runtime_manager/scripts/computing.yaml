@@ -180,6 +180,11 @@ subs :
         cmd  : roslaunch cv_tracker yolo2.launch
         param: yolo2
 
+      - name : yolo3_wa
+        desc : Yolo3 Image based detector
+        cmd  : roslaunch yolo3_detector yolo3.launch
+        param: yolo3
+
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch cv_tracker ranging.launch
@@ -3958,3 +3963,130 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name  : yolo2
+    vars  :
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_threshold
+      desc  : Non-Maximum suppresion area threshold ratio to merge proposals.
+      label : NMS Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.45
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_src
+      desc      : Image topic to be fed to the network for detection
+      label     : image_src
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : $(echo $HOME)/darknet/cfg/yolo.cfg
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : $(echo $HOME)/darknet/data/yolo.weights
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+
+
+  - name  : yolo3
+    vars  :
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_threshold
+      desc  : Non-Maximum suppresion area threshold ratio to merge proposals.
+      label : NMS Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.45
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_src
+      desc      : Image topic to be fed to the network for detection
+      label     : image_src
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : $(rospack find yolo3_detector)/darknet/cfg/yolov3.cfg
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : $(rospack find yolo3_detector)/darknet/data/yolov3.weights
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
