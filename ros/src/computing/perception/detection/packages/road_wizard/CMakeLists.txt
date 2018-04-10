@@ -66,6 +66,18 @@ add_dependencies(libcontext
   ${catkin_EXPORTED_TARGETS}
 )
 
+### tl_switch ###
+add_executable(tl_switch
+  nodes/tl_switch/tl_switch.cpp
+  )
+
+target_link_libraries(tl_switch
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(tl_switch
+  ${catkin_EXPORTED_TARGETS}
+)
 
 ### region_tlr ###
 add_executable(region_tlr
