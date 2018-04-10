@@ -1,0 +1,12 @@
+- name: /decision_maker_node
+  publish: [/state/stopline_wpidx, /state, /lane_waypoints_array, /decisionmaker/states, /light_color_managed,
+    /lamp_cmd, /state/overlay_text, /state/cross_road_marker, /state/cross_inside_marker, /state/crossroad_bbox,
+    /state/detection_area, /state/stopline_target, /target_velocity_array, /state/val_diff_distance,
+    /state/exectime]
+  subscribe: [/sim_pose, /current_pose, /current_velocity, /light_color, /filtered_points, /final_waypoints,
+    /twist_cmd, /change_flag, /state_cmd, /closest_waypoint, /cloud_clusters, /config/decision_maker,
+    /vector_map_info/*, /based/lane_waypoints_array]
+- name: /planner_selector_node
+  publish: [/final_waypoints, /closest_waypoint]
+  subscribe: [/dp/final_waypoints, /astar/final_waypoints, /enableLattice, /dp/closest_waypoint,
+    /astar/closest_waypoint, /config/PlannerSelector, /current_velocity, ]
