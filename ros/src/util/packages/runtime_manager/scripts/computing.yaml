@@ -332,6 +332,21 @@ subs :
             flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : imm_ukf_pda_tracker
+        desc : imm_ukf_pda_tracker desc sample
+        cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
+        param: imm_ukf_pda_tracker
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
+      - name : visualize_cloud_cluster
+        desc : visualize_cloud_cluster desc sample
+        cmd  : roslaunch lidar_tracker visualize_cloud_cluster.launch
+        param: visualize_cloud_cluster
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : road_wizard
       desc : road_wizard desc sample
