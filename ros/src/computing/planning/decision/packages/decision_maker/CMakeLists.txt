@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(decision_maker)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -lpthread -pg -Wall)
-
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
-SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
-SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+# set cpp-11
+set(CMAKE_CXX_STANDARD 11)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -20,11 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   vector_map
   jsk_recognition_msgs
   amathutils
-  dynamic_reconfigure
+  jsk_rviz_plugins
+  sensor_msgs
+  visualization_msgs
 )
-
-#generate_dynamic_reconfigure_options(cfg/debug_decision_dynconfig.cfg)
-
 
 add_message_files(
 	FILES
@@ -34,13 +29,13 @@ add_message_files(
 catkin_package(
   INCLUDE_DIRS include
   #LIBRARIES 
-  CATKIN_DEPENDS roscpp  tf std_msgs geometry_msgs autoware_msgs state vector_map vector_map_msgs jsk_recognition_msgs amathutils
+  CATKIN_DEPENDS roscpp tf std_msgs message_runtime geometry_msgs autoware_msgs state vector_map vector_map_msgs jsk_recognition_msgs amathutils jsk_rviz_plugins sensor_msgs visualization_msgs
   DEPENDS system_lib
 )
 include_directories(
  include
  src
-  ${catkin_INCLUDE_DIRS}
+ ${catkin_INCLUDE_DIRS}
 )
 
 set(TARGET_SRC  nodes/decision_maker/decision_maker_node.cpp
