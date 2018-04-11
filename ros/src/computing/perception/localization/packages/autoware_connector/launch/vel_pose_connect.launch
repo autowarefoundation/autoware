@@ -7,7 +7,7 @@
   <arg name="sim_mode" default="false" />
 
   <group unless="$(arg sim_mode)">
-    <node pkg="autoware_connector" type="can_info_translator" name="can_info_translator" output="log" />
+    <node pkg="autoware_connector" type="can_status_translator" name="can_status_translator" output="log" />
     <node pkg="topic_tools" type="relay" name="pose_relay" output="log" args="$(arg topic_pose_stamped) /current_pose"/>
     <node pkg="topic_tools" type="relay" name="vel_relay" output="log" args="$(arg topic_twist_stamped) /current_velocity"/>
   </group>
