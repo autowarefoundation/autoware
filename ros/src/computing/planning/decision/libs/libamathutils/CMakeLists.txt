@@ -27,7 +27,7 @@ add_library(${PROJECT_NAME}
 #	${CMAKE_THREAD_LIBS_INIT}
 #	)
 
-add_dependencies(${TARGET}
+add_dependencies(${PROJECT_NAME}
 	${catkin_EXPORTED_TARGETS}
 	)
 
