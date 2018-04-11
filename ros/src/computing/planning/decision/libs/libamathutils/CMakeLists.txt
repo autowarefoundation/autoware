@@ -9,35 +9,37 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_package(
-	INCLUDE_DIRS include
-        LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS roscpp
+    INCLUDE_DIRS include
+    LIBRARIES ${PROJECT_NAME} amathutils
+    CATKIN_DEPENDS roscpp
 )
 
 include_directories(
-	include
-	${catkin_INCLUDE_DIRS}
-	)
+        include
+        ${catkin_INCLUDE_DIRS}
+
+)
 
 add_library(${PROJECT_NAME}
         src/Amathutils.cpp
 	)
 
-#target_link_libraries(${TARGET}
-#	${CMAKE_THREAD_LIBS_INIT}
-#	)
-
 add_dependencies(${PROJECT_NAME}
 	${catkin_EXPORTED_TARGETS}
 	)
 
+target_link_libraries(amathutils ${catkin_LIBRARIES})
+
 install(DIRECTORY include/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  PATTERN ".svn" EXCLUDE
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn"
+        EXCLUDE
 )
 
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(TARGETS amathutils
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
+
+

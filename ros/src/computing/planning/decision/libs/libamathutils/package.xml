@@ -12,7 +12,4 @@
   <build_depend>roscpp</build_depend>
 
   <run_depend>roscpp</run_depend>
-
-  <export>
-  </export>
 </package>
