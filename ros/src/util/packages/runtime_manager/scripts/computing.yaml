@@ -675,6 +675,8 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
+           use_ctrl_cmd :
+             flags : [ nl ]
 
   - name : Decision
     desc : decision groups
@@ -2037,6 +2039,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name     : use_ctrl_cmd
+      desc     : use_ctrl_cmd
+      label    : use_ctrl_cmd
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : planner_selector
     topic : /config/PlannerSelector
