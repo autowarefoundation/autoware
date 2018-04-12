@@ -185,7 +185,6 @@ double PurePursuitNode::computeCommandAccel() const
 double PurePursuitNode::computeAngularGravity(double velocity, double kappa) const
 {
   const double gravity = 9.80665;
-  std::cout << "kappa:" << 1.0/kappa << std::endl;
   return (velocity*velocity) / (1.0/kappa*gravity);
 }
 
