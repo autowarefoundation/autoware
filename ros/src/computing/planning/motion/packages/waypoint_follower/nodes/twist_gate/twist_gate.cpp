@@ -34,6 +34,7 @@
 #include <map>
 
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -74,6 +75,7 @@ class TwistGate
     ros::Publisher emergency_stop_pub_;
     ros::Publisher control_command_pub_;
     ros::Publisher vehicle_cmd_pub_;
+    ros::Publisher state_cmd_pub_;
     ros::Subscriber remote_cmd_sub_;
     std::map<std::string , ros::Subscriber> auto_cmd_sub_stdmap_;
 
@@ -85,6 +87,9 @@ class TwistGate
     std::thread watchdog_timer_thread_;
     enum class CommandMode{AUTO=1, REMOTE=2} command_mode_, previous_command_mode_;
     std_msgs::String command_mode_topic_;
+
+    // still send is true
+    bool send_emergency_cmd = false;
 };
 
 TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh) :
@@ -97,6 +102,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   emergency_stop_pub_ = nh_.advertise<std_msgs::Bool>("/emergency_stop", 1, true);
   control_command_pub_ = nh_.advertise<std_msgs::String>("/ctrl_mode", 1);
   vehicle_cmd_pub_ = nh_.advertise<vehicle_cmd_msg_t>("/vehicle_cmd", 1, true);
+  state_cmd_pub_ = nh_.advertise<std_msgs::Int32>("/state_cmd", 1, true);
 
   remote_cmd_sub_ = nh_.subscribe("/remote_cmd", 1, &TwistGate::remote_cmd_callback, this);
 
@@ -110,8 +116,8 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   auto_cmd_sub_stdmap_["ctrl_cmd"] = nh_.subscribe("/ctrl_cmd", 1, &TwistGate::ctrl_cmd_callback, this);
 
   twist_gate_msg_.header.seq = 0;
-
   emergency_stop_msg_.data = false;
+  send_emergency_cmd = false;
 
   remote_cmd_time_ = ros::Time::now();
   watchdog_timer_thread_ = std::thread(&TwistGate::watchdog_timer, this);
@@ -175,7 +181,16 @@ void TwistGate::watchdog_timer()
 
     // Emergency
     if(emergency_flag) {
+      // Change Auto Mode
       command_mode_ = CommandMode::AUTO;
+      if(send_emergency_cmd == false) {
+        // Change State to Stop
+        std_msgs::Int32 state_cmd;
+        state_cmd.data = 14;
+        state_cmd_pub_.publish(state_cmd);
+        send_emergency_cmd = true;
+      }
+      // Set Emergency Stop
       emergency_stop_msg_.data = true;
       emergency_stop_pub_.publish(emergency_stop_msg_);
       ROS_WARN("Emergency Stop!");
