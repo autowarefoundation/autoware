@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
-  rosinterface
+  #rosinterface
   cv_bridge
   vector_map
   vector_map_server
@@ -127,7 +127,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-if(EXISTS "/usr/local/cuda")
+if(EXISTS "/usr/local/cudakfjdhkdj")
   include_directories(
     ${catkin_INCLUDE_DIRS}
     "/usr/local/cuda/include"
