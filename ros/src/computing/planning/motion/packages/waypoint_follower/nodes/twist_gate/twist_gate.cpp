@@ -47,6 +47,13 @@
 #include "autoware_msgs/brake_cmd.h"
 #include "autoware_msgs/steer_cmd.h"
 #include "autoware_msgs/ControlCommandStamped.h"
+#include "autoware_msgs/state.h"
+
+#define CMD_GEAR_D 1
+#define CMD_GEAR_R 2
+#define CMD_GEAR_B 3
+#define CMD_GEAR_N 4
+#define CMD_GEAR_P 5
 
 class TwistGate
 {
@@ -67,6 +74,7 @@ class TwistGate
     void brake_cmd_callback(const autoware_msgs::brake_cmd::ConstPtr& input_msg);
     void lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input_msg);
     void ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg);
+    void states_callback(const autoware_msgs::stateConstPtr &input_msg);
 
     void reset_vehicle_cmd_msg();
 
@@ -114,6 +122,7 @@ TwistGate::TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_n
   auto_cmd_sub_stdmap_["brake_cmd"] = nh_.subscribe("/brake_cmd", 1, &TwistGate::brake_cmd_callback, this);
   auto_cmd_sub_stdmap_["lamp_cmd"] = nh_.subscribe("/lamp_cmd", 1, &TwistGate::lamp_cmd_callback, this);
   auto_cmd_sub_stdmap_["ctrl_cmd"] = nh_.subscribe("/ctrl_cmd", 1, &TwistGate::ctrl_cmd_callback, this);
+  auto_cmd_sub_stdmap_["states"] = nh_.subscribe("/decisionmaker/states", 1, &TwistGate::states_callback, this);
 
   twist_gate_msg_.header.seq = 0;
   emergency_stop_msg_.data = false;
@@ -318,6 +327,23 @@ void TwistGate::ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::Co
     twist_gate_msg_.header.stamp = input_msg->header.stamp;
     twist_gate_msg_.header.seq++;
     twist_gate_msg_.ctrl_cmd = input_msg->cmd;
+    vehicle_cmd_pub_.publish(twist_gate_msg_);
+  }
+}
+
+void TwistGate::states_callback(const autoware_msgs::stateConstPtr &input_msg)
+{
+  if(command_mode_ == CommandMode::AUTO)
+  {
+    // Set Parking Gear
+    if (input_msg->behavior_state.find("WaitOrders") != std::string::npos)
+    {
+      twist_gate_msg_.gear = CMD_GEAR_P;
+    }
+    // Set Drive Gear
+    else {
+      twist_gate_msg_.gear = CMD_GEAR_D;
+    }
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
