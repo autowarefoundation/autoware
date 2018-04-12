@@ -50,7 +50,6 @@ catkin_package(
         vector_map
         vector_map_msgs
         visualization_msgs
-    DEPENDS system_lib
 )
 
 include_directories(

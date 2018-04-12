@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME} amathutils
+    LIBRARIES ${PROJECT_NAME}
     CATKIN_DEPENDS roscpp
 )
 
@@ -32,8 +32,7 @@ target_link_libraries(amathutils ${catkin_LIBRARIES})
 
 install(DIRECTORY include/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn"
-        EXCLUDE
+        PATTERN ".svn" EXCLUDE
 )
 
 install(TARGETS amathutils
