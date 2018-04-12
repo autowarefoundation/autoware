@@ -10,7 +10,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <amathutils.hpp>
+#include <amathutils/amathutils.hpp>
 
 namespace decision_maker
 {

@@ -17,20 +17,19 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-
 )
 
 add_library(${PROJECT_NAME}
         src/Amathutils.cpp
 	)
 
+target_link_libraries(amathutils ${catkin_LIBRARIES})
+
 add_dependencies(${PROJECT_NAME}
 	${catkin_EXPORTED_TARGETS}
 	)
 
-target_link_libraries(amathutils ${catkin_LIBRARIES})
-
-install(DIRECTORY include/
+install(DIRECTORY include/amathutils/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
 )
