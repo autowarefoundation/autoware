@@ -385,7 +385,7 @@ class MyFrame(rtmgr.MyFrame):
                 #
                 tab = self.tab_states
                 self.all_tabs.append(tab)
-                
+
                 self.state_dic = self.load_yaml('state.yaml')
                 self.mainstate_dic = self.state_dic["mainstate"]
                 self.substate_dic = self.state_dic["substate"]
@@ -746,7 +746,8 @@ class MyFrame(rtmgr.MyFrame):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
 			self.button_statchk_b : 3,
-			self.button_statchk_n : 4 }
+			self.button_statchk_n : 4,
+                       self.button_statchk_p : 5 }
 		self.radio_action(event, grp.keys())
 		v = grp.get(event.GetEventObject())
 		if v is not None:
