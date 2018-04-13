@@ -100,6 +100,7 @@ void PurePursuitNode::run()
     }
 
     pp_.setLookaheadDistance(computeLookaheadDistance());
+    pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
 
     double kappa = 0;
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
