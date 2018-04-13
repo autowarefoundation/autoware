@@ -431,7 +431,7 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   // tracking vehicle on waypoints
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
   {
-    double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
+    // double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
     tracker->update(stop_obstacle_waypoint, obstacle_points, current_velocity_, vs_info.getControlPose().pose.position, vs_info.getStopDistanceObstacleHard());
     *obstacle_waypoint = tracker->getWaypointIdx();
     *obstacle_velocity = tracker->getVelocity();

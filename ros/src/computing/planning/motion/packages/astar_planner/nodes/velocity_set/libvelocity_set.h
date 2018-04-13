@@ -257,7 +257,6 @@ private:
       // by next frame if we detect the back part of the car ==> dx is negative
       if (prev_velocity_ > moving_thres_ && dx < 0 && negative_dx_counter_< ALLOWED_NEGATIVE_DX_COUNT)
       {
-        std::cerr << "negative dx\n";
         negative_dx_counter_++;
 
         raw_velocity = 0.0f;
@@ -276,21 +275,17 @@ private:
         raw_velocity = (raw_velocity < 0.0f) ? 0.0f : raw_velocity;
 
         v = kf_.update(raw_velocity);
-        std::cerr << "KF raw: " << v << "\n";
         v = (v > moving_thres_) ? v : 0.0f;
 
         // update previous velocity
         prev_velocity_ = v;
-        std::cerr << "prev vel: " << prev_velocity_ << "\n";
         negative_dx_counter_=0;
       }
     }
     else
     {
-      std::cerr << "dt is zero\n";
       v = prev_velocity_;
     }
-    std::cerr << "raw: " << raw_velocity << " KF: " << v << "\n\n";
     return v;
   }
 
@@ -323,12 +318,10 @@ public:
     tf::Vector3 current;
     tf::pointMsgToTF(current_position, current);
     double distance_to_obstacle = (current-position_).length();
-    std::cerr << "distance to obs: " << distance_to_obstacle <<"\n";
 
     // if the obstacle is very near no point in tracking
     if (distance_to_obstacle < obstacle_stop_distance_hard)
     {
-      std::cerr << "obstacle is very near\n";
       // reset tracking
       reset();
       // set velocity to zero and hold stop waypoint till obstacle is lost
@@ -343,7 +336,6 @@ public:
     // this is to handle if a car cuts in front of us of we are already tracking a car way ahead of us
     if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD && (position_buf_[1]-position_buf_[0]).length() > UNTRACKING_DISTANCE_THRESHOLD)
     {
-      std::cerr << "distance changed greatly, untracking\n";
       //reset();
       return;
     }
@@ -363,7 +355,6 @@ public:
         kf_.init(velocity);         // initialise the KF with obstacle velocity
         waypoint_ = stop_waypoint;
         velocity_ = velocity;       // obstacle velocity
-        std::cerr << "tracking state\n";
       }
     }
     else if (state_ == ETrackingState::TRACKING)
@@ -397,7 +388,6 @@ public:
     position_buf_.clear();
     time_buf_.clear();
     kf_.init(0.0);
-    std::cerr << "all parameters reset\n";
   }
 
   int getWaypointIdx()
