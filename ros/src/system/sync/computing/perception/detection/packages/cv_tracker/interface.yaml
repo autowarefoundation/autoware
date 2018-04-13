@@ -1,0 +1,12 @@
+- name: /sync_tracking/*/sync_*_tracking
+  publish: [/sync_tracking/*/image_obj_ranged, /sync_tracking/*/image_raw,
+    /sync_tracking/time_diff]
+  subscribe: [/*/image_obj_ranged, /sync_drivers/image_raw,
+    /*/image_obj_tracked]
+- name: /sync_reprojection/*/sync_*_reprojection
+  publish: [/sync_reprojection/*/image_obj_tracked, /sync_reprojection/*/current_pose,
+    /sync_reprojection/time_diff]
+  subscribe: [/*/image_obj_tracked, /current_pose, /*/obj_label]
+- name: /sync_tracking/*/sync_*_ranging
+  publish: [/sync_ranging/*/image_obj, /sync_ranging/*/points_image, /sync_ranging/time_diff]
+  subscribe: [/*/image_obj, /points_image, /*/image_obj_ranged]
