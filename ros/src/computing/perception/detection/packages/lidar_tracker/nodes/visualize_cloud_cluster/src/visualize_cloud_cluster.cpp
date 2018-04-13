@@ -5,6 +5,7 @@
 #include <visualization_msgs/Marker.h>
 #include <tf/transform_datatypes.h>
 
+// #include <string>
 
 // #include <jsk_recognition_msgs/BoundingBox.h>
 // #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -14,9 +15,9 @@
 // #include <vector>
 
 
-using namespace std;
-using namespace pcl;
-using namespace Eigen;
+// using namespace std;
+// using namespace pcl;
+// using namespace Eigen;
 
 VisualizeCloudCluster::VisualizeCloudCluster()
 {
@@ -48,7 +49,7 @@ void VisualizeCloudCluster::getJskBB(autoware_msgs::CloudClusterArray input,
 		jsk_recognition_msgs::BoundingBox bb;
 		bb = input.clusters[i].bounding_box;
 		bb.header = input.header;
-		string label = input.clusters[i].label;
+		std::string label = input.clusters[i].label;
 		// cout << label << endl;
 		// bb.label = label;
 		// ? jsk bb, how to find appropriate color
@@ -73,7 +74,7 @@ void VisualizeCloudCluster::visArrows(autoware_msgs::CloudClusterArray input)
 	{
 		visualization_msgs::Marker arrows;
 		arrows.lifetime = ros::Duration(0.1);
-		string label = input.clusters[i].label;
+		std::string label = input.clusters[i].label;
 
 		if(label == "None" || label == "Initialized" || label == "Lost" || label == "Static") 
 		{
