@@ -5,13 +5,13 @@
 	<arg name="p_g_" default="0.99" />
 	<arg name="p_d_" default="0.9" />
 	<arg name="distance_thres_" default="99" />
-	<arg name="lifetime_thres_" default="8" />
+	<arg name="life_time_thres_" default="8" />
 	<arg name="bb_yaw_change_thres_" default="0.3" />
 	<arg name="dist_from_init_thres_" default="3.0" />
 	<arg name="init_yaw_" default="100" />
 	<arg name="input_topic_" default="/cloud_clusters" />
 	<arg name="output_topic_" default="/tracking_cluster_array" />
-	
+
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
 	<node pkg="lidar_tracker" type="imm_ukf_pda_tracker" name="imm_ukf_pda_tracker" output="screen">
 		<param name="init_" value="$(arg init_)" />
