@@ -1878,7 +1878,8 @@ class MyFrame(rtmgr.MyFrame):
                         cmd,
                         self.lidar_tracker_proc,
                         obj=self.button_run_lidar_tracker,
-                        kill_children=True)
+                        kill_children=True,
+                        sigint=True)
 		self.interface_cmd[ self.button_run_lidar_tracker ] = (cmd, self.lidar_tracker_proc)
 
         def OnRunROS1Bridge(self, event):
