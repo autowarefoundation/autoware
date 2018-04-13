@@ -85,9 +85,17 @@ void DecisionMakerNode::setupStateCallback(void)
 
 void DecisionMakerNode::publishLightColor(int status)
 {
-  autoware_msgs::traffic_light msg;
-  msg.traffic_light = status;
-  Pubs["light_color"].publish(msg);
+  // decision maker updates at 10Hz
+  ros::Rate loop_rate(5);
+
+  // publish twice to make sure that the light color is  not missed
+  for (int i=0; i<2 ; i++) {
+    autoware_msgs::traffic_light msg;
+    msg.traffic_light = status;
+    Pubs["light_color"].publish(msg);
+
+    loop_rate.sleep();
+  }
 }
 
 void DecisionMakerNode::publishStoplineWaypointIdx(int wp_idx)
