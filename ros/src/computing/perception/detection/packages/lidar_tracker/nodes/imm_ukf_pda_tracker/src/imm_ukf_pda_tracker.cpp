@@ -368,7 +368,7 @@ void ImmUkfPda::filterPDA(UKF& target,
 
 void ImmUkfPda::getNearestEuclidCluster(const UKF target,
                                         const std::vector<autoware_msgs::CloudCluster> cluster_vec,
-                                        autoware_msgs::CloudCluster& cluster, int& min_dist){
+                                        autoware_msgs::CloudCluster& cluster, double& min_dist){
     int min_ind = 0;
     double px = target.x_merge_(0);
     double py = target.x_merge_(1);
@@ -403,7 +403,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster> clust
     {
         // cout << "--------------" << endl;
         autoware_msgs::CloudCluster nearest_cluster;
-        int min_dist = 999;
+        double min_dist = 999;
         getNearestEuclidCluster(target, cluster_vec, nearest_cluster, min_dist);
         // cout << "minDist "<< minDist << endl;
         if(min_dist < distance_thres_)

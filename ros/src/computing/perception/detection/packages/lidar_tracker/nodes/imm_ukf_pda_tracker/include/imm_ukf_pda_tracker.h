@@ -70,7 +70,7 @@ private:
 							   std::vector<int>& matching_vec);
 	void filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, std::vector<double>& lambda_vec);
 	void getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, 
-							  autoware_msgs::CloudCluster& cluster, int& min_dist);
+							  autoware_msgs::CloudCluster& cluster, double& min_dist);
 	void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
 	void associateBB(const std::vector<autoware_msgs::CloudCluster> cluster_vec,
                      UKF& target);
