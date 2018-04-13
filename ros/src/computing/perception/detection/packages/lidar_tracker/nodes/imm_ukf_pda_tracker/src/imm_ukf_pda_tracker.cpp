@@ -21,6 +21,31 @@
 using std::cout;
 using std::endl;
 
+namespace States
+{
+  enum TrackingState: int
+  {
+     Die = 0,
+     Init = 1,
+     Stable = 4,
+     Lost = 10,
+
+  };
+}
+typedef States::TrackingState TrackingState;
+
+namespace Matches
+{
+  enum IsMatch: int
+  {
+     False = 0,
+     True = 1,
+  };
+}
+typedef Matches::IsMatch IsMatch;
+
+
+
 int g_count = 0;
 
 ImmUkfPda::ImmUkfPda()
@@ -43,6 +68,9 @@ ImmUkfPda::ImmUkfPda()
     life_time_thres_ = 8;
     //bbox update params
     bb_yaw_change_thres_  = 0.3;
+
+    //static callsification param
+    dist_from_init_thres_ = 3.0;
 
 
     tf::TransformListener *lr (new  tf::TransformListener);
@@ -162,7 +190,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
         if(nis < gamma_g_)
         { // x^2 99% range
             count ++;
-            if(matching_vec[i] == 0) target.lifetime_ ++;
+            if(matching_vec[i] == IsMatch::False) target.lifetime_ ++;
 
             // pick one meas with smallest nis
             if(second_init)
@@ -172,7 +200,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
                 smallest_nis = nis;
                 smallest_meas_cluster = input.clusters[i];
                 // measVec.push_back(meas);
-                matching_vec[i] = 1;
+                matching_vec[i] = IsMatch::True;
                 second_init_done = true;
                 }
             }
@@ -180,7 +208,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
             {
                 // cout << "check cp "<<input.clusters[i].bounding_box.pose.position.x << " "<< input.clusters[i].bounding_box.pose.position.y << endl;
                 cluster_vec.push_back(input.clusters[i]);
-                matching_vec[i] = 1;
+                matching_vec[i] = IsMatch::True;
             }
         }
     }
@@ -371,7 +399,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster> clust
         return;
     }
     // cout << target.tracking_num_ << " "<< target.lifetime_ << endl;
-    if(target.tracking_num_ == 5 && target.lifetime_ >= life_time_thres_)
+    if(target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_)
     {
         // cout << "--------------" << endl;
         autoware_msgs::CloudCluster nearest_cluster;
@@ -546,15 +574,15 @@ void ImmUkfPda::updateLabel(UKF target, autoware_msgs::CloudCluster& cc)
     {
         cc.label = "Static";
     }
-    else if(tracking_num > 0 && tracking_num <= 3)
+    else if(tracking_num > TrackingState::Die && tracking_num < TrackingState::Stable)
     {
         cc.label = "Initialized";
     }
-    else if(tracking_num == 5)
+    else if(tracking_num == TrackingState::Stable)
     {
         cc.label = "Stable";
     }
-    else if(tracking_num > 5 && tracking_num <= 10)
+    else if(tracking_num > TrackingState::Stable && tracking_num <= TrackingState::Lost)
     {
         cc.label = "Lost";
     }
@@ -611,11 +639,11 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
         targets_[i].is_vis_bb_ = false;
 
     	//todo: modify here. This skips irregular measurement and nan
-    	if(targets_[i].tracking_num_ == 0) continue;
+        if(targets_[i].tracking_num_ == TrackingState::Die) continue;
         // prevent ukf not to explode
         if(targets_[i].p_merge_.determinant() > 10 || targets_[i].p_merge_(4,4) > 1000)
         {
-            targets_[i].tracking_num_ = 0;
+            targets_[i].tracking_num_ = TrackingState::Die;
             continue;
         }
         // immukf prediction step
@@ -636,12 +664,12 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
         // prevent ukf not to explode
         if(std::isnan(det_s)|| det_s > 10)
         {
-            targets_[i].tracking_num_ = 0;
+            targets_[i].tracking_num_ = TrackingState::Die;
             continue;
         }
 
         bool second_init;
-        if(targets_[i].tracking_num_ == 1)
+        if(targets_[i].tracking_num_ == TrackingState::Init)
         {
             second_init = true;
         }
@@ -668,7 +696,7 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
         {
             if(cluster_vec.size() == 0)
             {
-                targets_[i].tracking_num_ = 0;
+                targets_[i].tracking_num_ = TrackingState::Die;
                 continue;
             }
 
@@ -701,38 +729,38 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
     	// update tracking number
     	if(cluster_vec.size() > 0)
         {
-    		if(targets_[i].tracking_num_ < 3)
+            if(targets_[i].tracking_num_ < TrackingState::Stable)
             {
     			targets_[i].tracking_num_++;
     		}
-    		else if(targets_[i].tracking_num_ == 3)
+            else if(targets_[i].tracking_num_ == TrackingState::Stable)
             {
-    			targets_[i].tracking_num_ = 5;
+                targets_[i].tracking_num_ = TrackingState::Stable;
     		}
-    		else if(targets_[i].tracking_num_ >= 5 && targets_[i].tracking_num_ < 10)
+            else if(targets_[i].tracking_num_ >= TrackingState::Stable && targets_[i].tracking_num_ < TrackingState::Lost)
             {
-    			targets_[i].tracking_num_ = 5;
+                targets_[i].tracking_num_ = TrackingState::Stable;
     		}
-            else if(targets_[i].tracking_num_ == 10)
+            else if(targets_[i].tracking_num_ == TrackingState::Lost)
             {
-                targets_[i].tracking_num_ = 0;
+                targets_[i].tracking_num_ = TrackingState::Die;
             }
     	}else{
-            if(targets_[i].tracking_num_ < 5)
+            if(targets_[i].tracking_num_ < TrackingState::Stable)
             {
-                targets_[i].tracking_num_ = 0;
+                targets_[i].tracking_num_ = TrackingState::Die;
             }
-    		else if(targets_[i].tracking_num_ >= 5 && targets_[i].tracking_num_ < 10)
+            else if(targets_[i].tracking_num_ >= TrackingState::Stable && targets_[i].tracking_num_ < TrackingState::Lost)
             {
     			targets_[i].tracking_num_++;
     		}
-    		else if(targets_[i].tracking_num_ == 10)
+            else if(targets_[i].tracking_num_ == TrackingState::Lost)
             {
-    			targets_[i].tracking_num_ = 0;
+                targets_[i].tracking_num_ = TrackingState::Die;
     		}
     	}
 
-        if(targets_[i].tracking_num_ == 0) continue;
+        if(targets_[i].tracking_num_ == TrackingState::Die) continue;
 
 
 	    filterPDA(targets_[i], cluster_vec, lambda_vec);
@@ -752,7 +780,7 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
 
     for(size_t i = 0; i < matching_vec.size(); i ++)
     {
-        if(matching_vec[i] == 0)
+        if(matching_vec[i] == IsMatch::False)
         {
             double px = input.clusters[i].bounding_box.pose.position.x;
             double py = input.clusters[i].bounding_box.pose.position.y;
@@ -772,10 +800,12 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
     // static dynamic classification
     for (size_t i = 0; i < targets_.size(); i++)
     {
-        if(!targets_[i].is_static_ && targets_[i].tracking_num_ == 5 && targets_[i].lifetime_ > 8 )
+        if(!targets_[i].is_static_ &&
+         targets_[i].tracking_num_ == TrackingState::Stable &&
+         targets_[i].lifetime_ > life_time_thres_ )
         {
-            double dist_thres = 3.0;
-            if((targets_[i].dist_from_init_ < dist_thres)&&
+            // double dist_thres = 3.0;
+            if((targets_[i].dist_from_init_ < dist_from_init_thres_)&&
                     (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
                      targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_ ))
             {

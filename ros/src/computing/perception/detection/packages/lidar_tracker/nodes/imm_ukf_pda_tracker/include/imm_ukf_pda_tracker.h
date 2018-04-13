@@ -49,6 +49,8 @@ private:
 	double bb_yaw_change_thres_;//0.2; 
 	// double bb_area_change_thres_;//0.5;
 
+	double dist_from_init_thres_;
+
 	// std::vector<UKF> targets_;
 	// std::vector<int> trackNumVec_;
 
