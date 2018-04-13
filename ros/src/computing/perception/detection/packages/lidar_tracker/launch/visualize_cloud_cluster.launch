@@ -1,7 +1,9 @@
 <!-- -->
 <launch>
+	<arg name="input_topic_" default="/tracking_cluster_array" />
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
 	<node pkg="lidar_tracker" type="visualize_cloud_cluster" name="visualize_cloud_cluster" output="screen">
+		<param name="input_topic_" value="$(arg input_topic_)" />
 	</node>
 
 </launch>

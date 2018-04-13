@@ -46,10 +46,15 @@ private:
 	double distance_thres_;//0.25;
 	int life_time_thres_;//8;
 	//bbox update params
-	double bb_yaw_change_thres_;//0.2; 
+	double bb_yaw_change_thres_;//0.2;
 	// double bb_area_change_thres_;//0.5;
 
 	double dist_from_init_thres_;
+
+	double init_yaw_;
+
+	std::string input_topic_;
+	std::string output_topic_;
 
 	// std::vector<UKF> targets_;
 	// std::vector<int> trackNumVec_;
@@ -57,19 +62,19 @@ private:
 	tf::TransformListener* tran_;
 
 	ros::NodeHandle node_handle_;
-    ros::Subscriber sub_cloud_array_;
-    ros::Publisher pub_cloud_array_;
+  ros::Subscriber sub_cloud_array_;
+  ros::Publisher pub_cloud_array_;
 
-    void callBack(autoware_msgs::CloudClusterArray input);
-    void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
-    void transformPoseToLocal(autoware_msgs::CloudClusterArray& input);
+  void callBack(autoware_msgs::CloudClusterArray input);
+  void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
+  void transformPoseToLocal(autoware_msgs::CloudClusterArray& input);
 	void findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
-	void measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init, 
-							   const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s, 
-							   std::vector<autoware_msgs::CloudCluster>& cluster_vec, 
+	void measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init,
+							   const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
+							   std::vector<autoware_msgs::CloudCluster>& cluster_vec,
 							   std::vector<int>& matching_vec);
 	void filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, std::vector<double>& lambda_vec);
-	void getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, 
+	void getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
 							  autoware_msgs::CloudCluster& cluster, double& min_dist);
 	void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
 	void associateBB(const std::vector<autoware_msgs::CloudCluster> cluster_vec,

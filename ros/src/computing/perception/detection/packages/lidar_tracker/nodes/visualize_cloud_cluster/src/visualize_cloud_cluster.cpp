@@ -20,10 +20,12 @@ using namespace Eigen;
 
 VisualizeCloudCluster::VisualizeCloudCluster()
 {
+	ros::NodeHandle private_nh_("~");
+	private_nh_.param<std::string>("input_topic_", input_topic_, "/tracking_cluster_array");
 	// sub_cloud_array_  = node_handle_.subscribe ("/bbox_cluster_array", 1, &VisualizeCloudCluster::callBack, this);
-	sub_cloud_array_  = node_handle_.subscribe ("/tracking_cluster_array", 1, &VisualizeCloudCluster::callBack, this);
-    pub_jsk_bb_       = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray> ("/tracking_cluster_array/jsk_bb", 1);
-    pub_arrow_        = node_handle_.advertise<visualization_msgs::Marker> ("/tracking_cluster_array/velocity_arrow", 1);
+	sub_cloud_array_  = node_handle_.subscribe (input_topic_, 1, &VisualizeCloudCluster::callBack, this);
+	pub_jsk_bb_       = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray> ("/tracking_cluster_array/jsk_bb", 1);
+	pub_arrow_        = node_handle_.advertise<visualization_msgs::Marker> ("/tracking_cluster_array/velocity_arrow", 1);
 }
 
 void VisualizeCloudCluster::callBack(autoware_msgs::CloudClusterArray input)
@@ -33,7 +35,7 @@ void VisualizeCloudCluster::callBack(autoware_msgs::CloudClusterArray input)
 	getJskBB(input, jsk_bbs);
 	pub_jsk_bb_.publish(jsk_bbs);
 	visArrows(input);
-	cout << "receive jsk call back" << endl;
+	// cout << "receive jsk call back" << endl;
 }
 
 void VisualizeCloudCluster::getJskBB(autoware_msgs::CloudClusterArray input,
@@ -47,7 +49,7 @@ void VisualizeCloudCluster::getJskBB(autoware_msgs::CloudClusterArray input,
 		bb = input.clusters[i].bounding_box;
 		bb.header = input.header;
 		string label = input.clusters[i].label;
-		cout << label << endl;
+		// cout << label << endl;
 		// bb.label = label;
 		// ? jsk bb, how to find appropriate color
 		if(label == "Stable")

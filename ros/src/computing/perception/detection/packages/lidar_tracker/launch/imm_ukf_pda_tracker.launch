@@ -1,7 +1,30 @@
 <!-- -->
 <launch>
+	<arg name="init_" default="false" />
+	<arg name="gamma_g_" default="9.22" />
+	<arg name="p_g_" default="0.99" />
+	<arg name="p_d_" default="0.9" />
+	<arg name="distance_thres_" default="99" />
+	<arg name="lifetime_thres_" default="8" />
+	<arg name="bb_yaw_change_thres_" default="0.3" />
+	<arg name="dist_from_init_thres_" default="3.0" />
+	<arg name="init_yaw_" default="100" />
+	<arg name="input_topic_" default="/cloud_clusters" />
+	<arg name="output_topic_" default="/tracking_cluster_array" />
+	
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
 	<node pkg="lidar_tracker" type="imm_ukf_pda_tracker" name="imm_ukf_pda_tracker" output="screen">
+		<param name="init_" value="$(arg init_)" />
+	    <param name="gamma_g_" value="$(arg gamma_g_)" />
+	    <param name="p_g_" value="$(arg p_g_)" />
+	    <param name="p_d_" value="$(arg p_d_)" />
+	    <param name="distance_thres_" value="$(arg distance_thres_)" />
+	    <param name="life_time_thres_" value="$(arg life_time_thres_)" />
+	    <param name="bb_yaw_change_thres_" value="$(arg bb_yaw_change_thres_)" />
+	    <param name="dist_from_init_thres_" value="$(arg dist_from_init_thres_)" />
+	    <param name="init_yaw_" value="$(arg init_yaw_)" />
+	    <param name="input_topic_" value="$(arg input_topic_)" />
+	    <param name="output_topic_" value="$(arg output_topic_)" />
+	
 	</node>
-
 </launch>

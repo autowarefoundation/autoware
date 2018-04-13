@@ -22,10 +22,12 @@ using namespace Eigen;
 class VisualizeCloudCluster
 {
 private:
+	std::string input_topic_;
+	
 	ros::NodeHandle node_handle_;
-    ros::Subscriber sub_cloud_array_;
-    ros::Publisher  pub_jsk_bb_;
-    ros::Publisher  pub_arrow_;
+  ros::Subscriber sub_cloud_array_;
+  ros::Publisher  pub_jsk_bb_;
+  ros::Publisher  pub_arrow_;
 
 	void getJskBB(autoware_msgs::CloudClusterArray input,
 				  jsk_recognition_msgs::BoundingBoxArray& jskBBs);

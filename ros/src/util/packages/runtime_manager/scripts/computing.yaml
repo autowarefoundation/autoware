@@ -1256,6 +1256,44 @@ params :
         dash        : ''
         delim       : ':='
 
+  - name  : imm_ukf_pda_tracker
+    vars  :
+    - name    : input_topic_
+      desc    : input_topic desc sample
+      label   : 'input topic'
+      kind    : str
+      v       : /cloud_clusters
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_topic_
+      desc    : output_topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /tracking_cluster_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : life_time_thres_
+      desc    : lifetime_threshold desc sample
+      label   : 'life_time_thres_'
+      min       : 1
+      max       : 20
+      v       : 8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+  - name  : visualize_cloud_cluster
+    vars  :
+    - name    : input_topic_
+      desc    : input_topic_ desc sample
+      label   : 'input topic'
+      kind    : str
+      v       : /tracking_cluster_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
