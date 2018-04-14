@@ -92,7 +92,9 @@ void DecisionMakerNode::publishLightColor(int status)
   for (int i=0; i<2 ; i++) {
     autoware_msgs::traffic_light msg;
     msg.traffic_light = status;
+    ROS_INFO ("before pub, sub num: %d",Pubs["light_color"].getNumSubscribers());
     Pubs["light_color"].publish(msg);
+    ROS_INFO ("after pub, sub num: %d",Pubs["light_color"].getNumSubscribers());
 
     loop_rate.sleep();
   }
