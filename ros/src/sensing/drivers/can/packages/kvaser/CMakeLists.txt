@@ -9,26 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         std_msgs
         visualization_msgs
-        message_generation
+        autoware_msgs
         )
 
-
-add_message_files(
-        #DIRECTORY
-        # msg
-        FILES
-        CANPacket.msg
-        #  Vibration.msg
-)
-
-generate_messages(
-        DEPENDENCIES
-        std_msgs
-        visualization_msgs
-)
-
 catkin_package(
-        CATKIN_DEPENDS message_runtime std_msgs visualization_msgs
+        CATKIN_DEPENDS std_msgs visualization_msgs autoware_msgs
 )
 
 ###########
@@ -41,6 +26,7 @@ include_directories(
 
 if (EXISTS "/usr/include/canlib.h")
     add_executable(can_listener nodes/can_listener/can_listener.cpp)
+    target_include_directories(can_listener PRIVATE ${catkin_INCLUDE_DIRS})
     target_link_libraries(can_listener ${catkin_LIBRARIES})
     target_link_libraries(can_listener canlib)
     add_dependencies(can_listener ${catkin_EXPORTED_TARGETS})
@@ -49,10 +35,12 @@ else ()
 endif ()
 
 add_executable(can_converter nodes/can_converter/can_converter.cpp)
+target_include_directories(can_converter PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(can_converter ${catkin_LIBRARIES})
 add_dependencies(can_converter ${catkin_EXPORTED_TARGETS})
 
 add_executable(can_draw nodes/can_draw/can_draw.cpp)
+target_include_directories(can_draw PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(can_draw ${catkin_LIBRARIES})
 add_dependencies(can_draw ${catkin_EXPORTED_TARGETS})
 
