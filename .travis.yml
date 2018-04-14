@@ -33,11 +33,10 @@ before_install:
 
 # Create a catkin workspace with the package under integration.
 install:
-  - cd CPFL/Autoware/ros/src
+  - cd ros/src
   - catkin_init_workspace
-  - cd ../
+  - cd ..
   - catkin_make clean
-  - source devel/setup.bash
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
@@ -60,5 +59,6 @@ before_script:
 # fails. Running `catkin_test_results` aggregates all the results and returns
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
+  - source /opt/ros/$ROS_DISTRO/setup.bash
   - source devel/setup.bash
-  - catkin_make -j8 -l6
+  - catkin_make $ROS_PARALLEL_JOBS
