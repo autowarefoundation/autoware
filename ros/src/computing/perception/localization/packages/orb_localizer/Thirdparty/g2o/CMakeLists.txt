@@ -17,17 +17,8 @@ IF (OPENMP_FOUND AND G2O_USE_OPENMP)
     MESSAGE(STATUS "Compiling with OpenMP support")
 ENDIF (OPENMP_FOUND AND G2O_USE_OPENMP)
 
-find_package(Eigen3 QUIET)
-if (NOT EIGEN3_FOUND)
-    # Fallback to cmake_modules
-    find_package(cmake_modules REQUIRED)
-    find_package(Eigen REQUIRED)
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
-    set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
-    # Possibly map additional variables to the EIGEN3_ prefix.
-else ()
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif ()
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
 
 IF (EIGEN3_FOUND)
     SET(G2O_EIGEN3_INCLUDE ${EIGEN3_INCLUDE_DIR} CACHE PATH "Directory of Eigen3")

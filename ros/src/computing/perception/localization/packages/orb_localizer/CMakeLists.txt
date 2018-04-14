@@ -25,17 +25,10 @@ find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenMP)
-find_package(Eigen3 QUIET)
-if (NOT EIGEN3_FOUND)
-    # Fallback to cmake_modules
-    find_package(cmake_modules REQUIRED)
-    find_package(Eigen REQUIRED)
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
-    set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
-    # Possibly map additional variables to the EIGEN3_ prefix.
-else ()
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif ()
+
+find_package(PkgConfig)
+pkg_search_module(Eigen3 REQUIRED eigen3)
+
 find_package(PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package(PythonLibs REQUIRED)
 find_package(X11 REQUIRED)
