@@ -23,8 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
         )
 find_package(OpenCV REQUIRED)
 
-find_package(PkgConfig)
-pkg_search_module(Eigen3 REQUIRED eigen3)
+FIND_PACKAGE(Eigen3)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -90,7 +89,7 @@ add_dependencies(region_tlr
 ### feat_proj ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIR}
+        ${EIGEN_INCLUDE_DIR}
         ${libvectormap_INCLUDE_DIRS}
 )
 

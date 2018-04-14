@@ -26,8 +26,7 @@ find_package(LAPACK REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenMP)
 
-find_package(PkgConfig)
-pkg_search_module(Eigen3 REQUIRED eigen3)
+FIND_PACKAGE(Eigen3)
 
 find_package(PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package(PythonLibs REQUIRED)

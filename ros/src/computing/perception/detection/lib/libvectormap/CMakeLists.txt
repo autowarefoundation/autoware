@@ -5,8 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map
         )
 
-find_package(PkgConfig)
-pkg_search_module(Eigen3 REQUIRED eigen3)
+FIND_PACKAGE(Eigen3)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 

@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
-pkg_check_modules(EIGEN3 REQUIRED eigen3)
+FIND_PACKAGE(Eigen3)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
