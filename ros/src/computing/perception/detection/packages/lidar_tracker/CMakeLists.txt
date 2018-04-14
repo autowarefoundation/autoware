@@ -65,7 +65,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        CATKIN_DEPENDS message_runtime std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
+        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
 )
 
 include_directories(
@@ -124,7 +124,7 @@ target_link_libraries(vscan_filling ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 #Object Fusion
 add_executable(obj_fusion nodes/obj_fusion/obj_fusion.cpp)
 target_link_libraries(obj_fusion ${catkin_LIBRARIES} ${PCL_LIBRARIES} m)
-add_dependencies(obj_fusion ${catkin_EXPORTED_TARGETS} vector_map_server_generate_messages_cpp)
+add_dependencies(obj_fusion ${catkin_EXPORTED_TARGETS})
 
 # Vscan Track
 execute_process(

@@ -13,6 +13,8 @@
     <build_depend>pcl_ros</build_depend>
     <build_depend>roscpp</build_depend>
     <build_depend>rospy</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+    <build_depend>std_msgs</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>tf</build_depend>
@@ -31,6 +33,8 @@
     <run_depend>pcl_ros</run_depend>
     <run_depend>roscpp</run_depend>
     <run_depend>rospy</run_depend>
+    <run_depend>geometry_msgs</run_depend>
+    <run_depend>std_msgs</run_depend>
     <run_depend>sensor_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>tf</run_depend>
