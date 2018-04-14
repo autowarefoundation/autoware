@@ -38,6 +38,8 @@
 
 #include "autoware_msgs/ConfigVelocitySet.h"
 
+#define DELTA_T_SOFT_STOPPING_DISTANCE 0.5f // 0.5 sec
+
 class VelocitySetInfo
 {
  private:
@@ -110,9 +112,22 @@ class VelocitySetInfo
     return detection_height_bottom_;
   }
 
-  int getStopDistanceObstacle() const
+  int getStopDistanceObstacleHard() const
   {
+    // hard stopping distance
     return stop_distance_obstacle_;
+  }
+
+  int getStopDistanceObstacleSoft(double current_velocity) const
+  {
+    // soft stopping distance
+    return current_velocity*DELTA_T_SOFT_STOPPING_DISTANCE;
+  }
+
+  int getStopDistanceObstacle(double current_velocity) const
+  {
+    // hard stopping distance + soft stopping distance
+    return (getStopDistanceObstacleHard() + getStopDistanceObstacleSoft(current_velocity));
   }
 
   int getStopDistanceStopline() const

@@ -44,6 +44,10 @@ constexpr int LOOP_RATE = 10;
 constexpr double DECELERATION_SEARCH_DISTANCE = 30;
 constexpr double STOP_SEARCH_DISTANCE = 60;
 
+// TODO: fix this
+double current_velocity_;
+
+
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
   if (kind == EControl::STOP)
@@ -427,8 +431,8 @@ EControl pointsDetection(const pcl::PointCloud<pcl::PointXYZ>& points, const int
   // tracking vehicle on waypoints
   if (obstacle_type == EObstacleType::ON_WAYPOINTS)
   {
-    double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
-    tracker->update(stop_obstacle_waypoint, obstacle_points, waypoint_velocity, vs_info.getControlPose().pose.position);
+    // double waypoint_velocity = lane.waypoints.at(stop_obstacle_waypoint).twist.twist.linear.x;
+    tracker->update(stop_obstacle_waypoint, obstacle_points, current_velocity_, vs_info.getControlPose().pose.position, vs_info.getStopDistanceObstacleHard());
     *obstacle_waypoint = tracker->getWaypointIdx();
     *obstacle_velocity = tracker->getVelocity();
   }
@@ -529,7 +533,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // STOP for obstacle/stopline
     // stop_waypoint is about stop_distance meter away from obstacles/stoplines
     int stop_distance = (detection_result == EControl::STOP)
-      ? vs_info.getStopDistanceObstacle() : vs_info.getStopDistanceStopline();
+      ? vs_info.getStopDistanceObstacle(vs_path->getCurrentVelocity()) : vs_info.getStopDistanceStopline();
     // // if obstacle has speed, stop distance is set 1 for platoon control
     // stop_distance = (detection_result == EControl::STOP && obstacle_velocity > 0.0) ? 1 : stop_distance;
     double deceleration = (detection_result == EControl::STOP)
@@ -577,14 +581,14 @@ int main(int argc, char** argv)
   bool enable_tracking_on_waypoints;
 
   std::string points_topic;
-  int tracking_moving_thres;
+  double tracking_moving_thres;
 
   private_nh.param<bool>("use_crosswalk_detection", use_crosswalk_detection, true);
   private_nh.param<bool>("enable_multiple_crosswalk_detection", enable_multiple_crosswalk_detection, true);
   private_nh.param<bool>("enable_tracking_on_waypoints", enable_tracking_on_waypoints, true);
   private_nh.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   private_nh.param<std::string>("points_topic", points_topic, "points_lanes");
-  private_nh.param<int>("tracking_moving_thres", tracking_moving_thres, 1.39); // < 5 [km/h]
+  private_nh.param<double>("tracking_moving_thres", tracking_moving_thres, 2.78); // < 10 [km/h]
 
   // class
   CrossWalk crosswalk;
@@ -617,7 +621,6 @@ int main(int argc, char** argv)
   ros::Publisher detection_range_pub = nh.advertise<visualization_msgs::MarkerArray>("detection_range", 1);
   ros::Publisher obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 1);
   ros::Publisher obstacle_waypoint_pub = nh.advertise<std_msgs::Int32>("obstacle_waypoint", 1, true);
-
   ros::Publisher final_waypoints_pub;
   if(enablePlannerDynamicSwitch){
 	  final_waypoints_pub = nh.advertise<autoware_msgs::lane>("astar/final_waypoints", 1, true);
@@ -649,6 +652,7 @@ int main(int argc, char** argv)
 
     int obstacle_waypoint = -1;
     double obstacle_velocity = 0.0;
+    current_velocity_ = vs_path.getCurrentVelocity();
     EControl detection_result = obstacleDetection(closest_waypoint, vs_path.getPrevWaypoints(), crosswalk, vs_info,
                                                   detection_range_pub, obstacle_pub, &obstacle_waypoint, &obstacle_velocity, &tracker);
 

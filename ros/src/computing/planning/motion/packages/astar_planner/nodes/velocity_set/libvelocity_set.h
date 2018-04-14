@@ -183,6 +183,13 @@ public:
   }
 };
 
+// threshold to determine initializing tracking
+#define UNTRACKING_DISTANCE_THRESHOLD 8.0
+// threshold to change the state to tracking
+#define TRACKING_STATE_CHANGE_THRESHOLD 2
+// threshold allowed for negative dx
+#define ALLOWED_NEGATIVE_DX_COUNT 2
+
 class ObstacleTracker
 {
 private:
@@ -216,12 +223,13 @@ private:
   };
 
   bool use_tracking_;
-  int frame_thres_;
+  int negative_dx_counter_;
   double moving_thres_;
 
   int tracking_counter_, lost_counter_;
   int waypoint_;
   double velocity_;
+  double prev_velocity_;
   tf::Vector3 position_;
   ETrackingState state_;
   ros::Time time_;
@@ -233,13 +241,51 @@ private:
 
   double calcVelocity(const geometry_msgs::Point& cpos)
   {
-    tf::Vector3 cx;
-    tf::pointMsgToTF(cpos, cx);
-    double dx = (position_buf_[1]-cx).length()-(position_buf_[0]-cx).length();
+    double v;
     ros::Duration dt = time_buf_[1]-time_buf_[0];
-    kf_.predict();
-    double v = kf_.update(dx/dt.toSec());
-    v = (v > moving_thres_) ? v : 0.0;
+    double dx;
+    double raw_velocity;
+    // dt can be 0, when this function is called with out calling update()
+    // if dt is non zero
+    if (dt != ros::Duration(0.0)) {
+      // compute dx
+      tf::Vector3 cx;
+      tf::pointMsgToTF(cpos, cx);
+      dx = (position_buf_[1] - cx).length() - (position_buf_[0] - cx).length();
+
+      // this condition is to handle when the front part of the car is tracked in a frame and
+      // by next frame if we detect the back part of the car ==> dx is negative
+      if (prev_velocity_ > moving_thres_ && dx < 0 && negative_dx_counter_< ALLOWED_NEGATIVE_DX_COUNT)
+      {
+        negative_dx_counter_++;
+
+        raw_velocity = 0.0f;
+        // update KF
+        kf_.predict();
+        kf_.update(raw_velocity);
+        // but ignore the estimated value
+        v = prev_velocity_;
+      }
+      else {
+        // KF estimate
+        kf_.predict();
+        raw_velocity =  dx/dt.toSec();
+
+        // truncate negative values to 0
+        raw_velocity = (raw_velocity < 0.0f) ? 0.0f : raw_velocity;
+
+        v = kf_.update(raw_velocity);
+        v = (v > moving_thres_) ? v : 0.0f;
+
+        // update previous velocity
+        prev_velocity_ = v;
+        negative_dx_counter_=0;
+      }
+    }
+    else
+    {
+      v = prev_velocity_;
+    }
     return v;
   }
 
@@ -253,9 +299,8 @@ public:
     reset();
   }
 
-  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& waypoint_velocity, const geometry_msgs::Point current_position)
+  void update(const int& stop_waypoint, const ObstaclePoints* obstacle_points, const double& init_velocity, const geometry_msgs::Point current_position, double obstacle_stop_distance_hard)
   {
-
     if (!use_tracking_)
     {
       waypoint_ = stop_waypoint;
@@ -266,23 +311,50 @@ public:
     lost_counter_ = 0;
     tracking_counter_++;
     time_ = ros::Time::now();
-    // tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
-    tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+    tf::pointMsgToTF(obstacle_points->getObstaclePoint(EControl::STOP), position_);
+    //tf::pointMsgToTF(obstacle_points->getNearestObstaclePoint(current_position), position_);
+
+    // obstacle_distance
+    tf::Vector3 current;
+    tf::pointMsgToTF(current_position, current);
+    double distance_to_obstacle = (current-position_).length();
+
+    // if the obstacle is very near no point in tracking
+    if (distance_to_obstacle < obstacle_stop_distance_hard)
+    {
+      // reset tracking
+      reset();
+      // set velocity to zero and hold stop waypoint till obstacle is lost
+      waypoint_ = stop_waypoint;
+      velocity_ = 0.0f;
+      return;
+    }
+
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
+    // this is to handle if a car cuts in front of us and if we are already tracking a car way ahead of us
+    if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD && (position_buf_[1]-position_buf_[0]).length() > UNTRACKING_DISTANCE_THRESHOLD)
+    {
+      //reset();
+      return;
+    }
+
     if (state_ == ETrackingState::INITIALIZE)
     {
-//      kf_.init(waypoint_velocity);
-//      waypoint_ = stop_waypoint;
-//      velocity_ = waypoint_velocity;
+      if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD) {
+        // wrap the counter
+        tracking_counter_ = TRACKING_STATE_CHANGE_THRESHOLD;
 
-      if (tracking_counter_ >= 2) {
-          state_ = ETrackingState::TRACKING;
-//          std::cerr << "tracking\n";
-          kf_.init(calcVelocity(current_position));
-          waypoint_ = stop_waypoint;
-          velocity_ = calcVelocity(current_position);
+        // change the state to tracking
+        state_ = ETrackingState::TRACKING;
+        prev_velocity_ = init_velocity;  // initialise prev_velocity with init velocity (current ego car velocity)
+
+        // compute the obstacle velocity
+        double velocity = calcVelocity(current_position);
+        kf_.init(velocity);         // initialise the KF with obstacle velocity
+        waypoint_ = stop_waypoint;
+        velocity_ = velocity;       // obstacle velocity
       }
     }
     else if (state_ == ETrackingState::TRACKING)
@@ -308,8 +380,10 @@ public:
     state_ = ETrackingState::INITIALIZE;
     tracking_counter_ = 0;
     lost_counter_ = 0;
+    negative_dx_counter_ = 0;
     waypoint_ = -1;
     velocity_ = 0.0;
+    prev_velocity_ = 0.0;
     position_ = tf::Vector3(0.0, 0.0, 0.0);
     position_buf_.clear();
     time_buf_.clear();

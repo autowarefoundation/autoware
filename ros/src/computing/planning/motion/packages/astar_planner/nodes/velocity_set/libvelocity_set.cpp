@@ -344,6 +344,9 @@ geometry_msgs::Point ObstaclePoints::getNearestObstaclePoint(const geometry_msgs
   tf::Vector3 current_, nearest_, stop_;
   tf::pointMsgToTF(current_position, current_);
 
+  // defensive semantic (to remove the warning)
+  nearest_ = current_;
+
   for (const auto &p : stop_points_)
   {
     tf::pointMsgToTF(p, stop_);
