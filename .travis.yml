@@ -60,4 +60,4 @@ before_script:
 script:
   - catkin_make clean
   - source devel/setup.bash
-  - catkin_make $ROS_PARALLEL_JOBS
+  - catkin_make -j4
