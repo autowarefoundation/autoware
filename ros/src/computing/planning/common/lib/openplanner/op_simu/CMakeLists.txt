@@ -19,14 +19,8 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
-if(${CMAKE_VERSION} VERSION_LESS "3.0.0")
-	include(cmake/FindEigen.cmake)
-else()
-	find_package(Eigen3 REQUIRED)
-endif()
 find_package(X11 REQUIRED)
 find_package(Threads REQUIRED)
-#find_package(TinyXML REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -77,7 +71,6 @@ target_link_libraries(${PROJECT_NAME}
 		${GLUT_LIBRARIES}
 		${GLEW_LIBRARIES}
 		${X11_LIBRARIES}
-		${TinyXML_LIBRARIES}
 )
 add_executable(Simu
 	    ${SIMUH_SRC}
@@ -93,7 +86,6 @@ target_link_libraries(Simu
 		${GLEW_LIBRARIES}
 		${X11_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
-		${TinyXML_LIBRARIES}
 )
 
 
