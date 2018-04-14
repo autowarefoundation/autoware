@@ -333,7 +333,7 @@ public:
     position_buf_.push_back(position_);
     time_buf_.push_back(time_);
 
-    // this is to handle if a car cuts in front of us of we are already tracking a car way ahead of us
+    // this is to handle if a car cuts in front of us and if we are already tracking a car way ahead of us
     if (tracking_counter_ >= TRACKING_STATE_CHANGE_THRESHOLD && (position_buf_[1]-position_buf_[0]).length() > UNTRACKING_DISTANCE_THRESHOLD)
     {
       //reset();
