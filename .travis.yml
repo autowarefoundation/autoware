@@ -33,7 +33,7 @@ before_install:
 
 # Create a catkin workspace with the package under integration.
 install:
-  - cd Autoware/ros/src
+  - cd CPFL/Autoware/ros/src
   - catkin_init_workspace
   - cd ../
   - catkin_make clean
