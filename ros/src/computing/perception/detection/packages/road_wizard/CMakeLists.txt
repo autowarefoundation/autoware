@@ -23,18 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
         )
 find_package(OpenCV REQUIRED)
 
-find_package(Eigen3 QUIET)
-if (NOT EIGEN3_FOUND)
-  # Fallback to cmake_modules
-  find_package(cmake_modules REQUIRED)
-  find_package(Eigen REQUIRED)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
-  set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
-  # Possibly map additional variables to the EIGEN3_ prefix.
-  set(EIGEN3_FOUND 1)
-else ()
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif ()
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -50,11 +40,11 @@ find_package(Qt5Widgets REQUIRED)
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIRS}
+        ${Eigen_INCLUDE_DIRS}
 )
 
 catkin_package(
-        INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
+        INCLUDE_DIRS ${Eigen_INCLUDE_DIRS}
         CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
 )
 
@@ -100,7 +90,7 @@ add_dependencies(region_tlr
 ### feat_proj ###
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${EIGEN_INCLUDE_DIR}
+        ${Eigen_INCLUDE_DIRS}
         ${libvectormap_INCLUDE_DIRS}
 )
 

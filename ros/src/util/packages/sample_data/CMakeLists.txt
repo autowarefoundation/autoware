@@ -9,18 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
 )
 pkg_check_modules(PCL_IO REQUIRED pcl_io-1.7)
-find_package(Eigen3 QUIET)
-if (NOT EIGEN3_FOUND)
-    # Fallback to cmake_modules
-    find_package(cmake_modules REQUIRED)
-    find_package(Eigen REQUIRED)
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
-    set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
-    # Possibly map additional variables to the EIGEN3_ prefix.
-    set(EIGEN3_FOUND 1)
-else ()
-    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif ()
+
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -42,7 +33,7 @@ target_link_libraries(sample_vector_map ${catkin_LIBRARIES})
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
 )
 
 add_executable(sample_points_map nodes/sample_points_map/sample_points_map.cpp)
