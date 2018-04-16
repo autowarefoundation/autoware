@@ -14,6 +14,8 @@
     <build_depend>geometry_msgs</build_depend>
     <build_depend>waypoint_follower</build_depend>
     <build_depend>cmake_modules</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
+
     <run_depend>cmake_modules</run_depend>
     <run_depend>runtime_manager</run_depend>
     <run_depend>std_msgs</run_depend>
@@ -23,6 +25,10 @@
     <run_depend>vector_map_server</run_depend>
     <run_depend>geometry_msgs</run_depend>
     <run_depend>waypoint_follower</run_depend>
+    <run_depend>libqt5-core</run_depend>
+    <run_depend>libqt5-gui</run_depend>
+    <run_depend>libqt5-widgets</run_depend>
+
     <export>
     </export>
 </package>

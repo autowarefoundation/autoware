@@ -16,6 +16,7 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>pcl_conversions</build_depend>
     <build_depend>pcl_ros</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
 
     <exec_depend>message_runtime</exec_depend>
     <exec_depend>roscpp</exec_depend>
@@ -24,6 +25,7 @@
     <exec_depend>sensor_msgs</exec_depend>
     <exec_depend>pcl_conversions</exec_depend>
     <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
 
     <test_depend>rosunit</test_depend>
 
