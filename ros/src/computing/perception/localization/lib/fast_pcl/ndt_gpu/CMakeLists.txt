@@ -32,7 +32,7 @@ if (CUDA_FOUND)
 
   catkin_package(
     DEPENDS ${SUBSYS_DEPS}
-    INCLUDE_DIRS include
+    INCLUDE_DIRS include/fast_pcl/
     LIBRARIES ${LIB_NAME}
   )
 
@@ -73,6 +73,16 @@ if (CUDA_FOUND)
                          ${CUDA_LIBRARIES}
                          ${CUDA_CUBLAS_LIBRARIES}
                          ${CUDA_curand_LIBRARY})
+
+install(TARGETS ${LIB_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/fast_pcl/ndt_gpu/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE)
 
 else()
         message("fast_pcl_ndt_gpu doesnot build and requires CUDA")
