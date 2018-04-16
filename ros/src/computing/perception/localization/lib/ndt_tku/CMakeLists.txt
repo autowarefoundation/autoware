@@ -4,6 +4,9 @@ project(ndt_tku)
 ###################################
 ## catkin specific configuration ##
 ###################################
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        )
 
 catkin_package(
   INCLUDE_DIRS include

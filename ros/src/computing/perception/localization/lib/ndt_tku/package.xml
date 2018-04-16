@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <package>
-  <name>ndt_tku</name>
-  <version>1.6.3</version>
-  <description>The ndt_tku package</description>
-  <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <export>
-  </export>
+    <name>ndt_tku</name>
+    <version>1.6.3</version>
+    <description>The ndt_tku package</description>
+    <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>roscpp</build_depend>
+    <export>
+    </export>
 </package>
