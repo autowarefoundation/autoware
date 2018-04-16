@@ -1,0 +1,4 @@
+- name: /imu
+  publish: [/data_raw]
+- name: /adxl345_node
+  publish: [/data_raw]
