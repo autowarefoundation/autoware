@@ -1145,8 +1145,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     diff_z = current_pose.z - previous_pose.z;
     diff_yaw = calcDiffForRadian(current_pose.yaw, previous_pose.yaw);
     diff = sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
+    const bool is_backing = (diff_x * cos(previous_pose.yaw) + diff_y * sin(previous_pose.yaw)) < 0 ? true : false;
 
     current_velocity   = (diff_time > 0) ? (diff / diff_time) : 0;
+    current_velocity   = (is_backing == true) ? -current_velocity : current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -1485,7 +1487,7 @@ void* thread_func(void* args)
     map_callback_queue.callAvailable(ros::WallDuration());
     ros_rate.sleep();
   }
-  
+
   return nullptr;
 }
 
