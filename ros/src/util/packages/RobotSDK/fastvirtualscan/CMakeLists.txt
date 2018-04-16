@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(fastvirtualscan)
 
-include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
 )
 
-pkg_check_modules(Qt5Core REQUIRED Qt5Core)
+find_package(Qt5Core REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
