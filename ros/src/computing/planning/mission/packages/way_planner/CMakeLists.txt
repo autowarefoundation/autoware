@@ -28,7 +28,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES way_planner
   CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utility op_planner op_simu
-  DEPENDS system_lib
 )
 
 ###########

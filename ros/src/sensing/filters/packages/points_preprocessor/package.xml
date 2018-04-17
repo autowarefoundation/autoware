@@ -1,33 +1,35 @@
 <?xml version="1.0"?>
 <package>
-  <name>points_preprocessor</name>
-  <version>1.6.3</version>
-  <description>The points_preprocessor package</description>
+    <name>points_preprocessor</name>
+    <version>1.6.3</version>
+    <description>The points_preprocessor package</description>
 
-  <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
-  <maintainer email="n.patiphon@gmail.com">n-patiphon</maintainer>
+    <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
+    <maintainer email="n.patiphon@gmail.com">n-patiphon</maintainer>
 
-  <license>BSD</license>
+    <license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>pcl_conversions</build_depend>
-  <build_depend>pcl_ros</build_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>velodyne_pointcloud</build_depend>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>pcl_conversions</build_depend>
+    <build_depend>pcl_ros</build_depend>
+    <build_depend>cv_bridge</build_depend>
+    <build_depend>velodyne_pointcloud</build_depend>
+    <build_depend>qtbase5-dev</build_depend>
 
-  <run_depend>message_runtime</run_depend>
-  <run_depend>pcl_conversions</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>velodyne_pointcloud</run_depend>
+    <run_depend>message_runtime</run_depend>
+    <run_depend>pcl_conversions</run_depend>
+    <run_depend>pcl_ros</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>cv_bridge</run_depend>
+    <run_depend>velodyne_pointcloud</run_depend>
+    <run_depend>libqt5-core</run_depend>
 
-  <test_depend>rosunit</test_depend>
+    <test_depend>rosunit</test_depend>
 
-  <export></export>
+    <export></export>
 </package>
