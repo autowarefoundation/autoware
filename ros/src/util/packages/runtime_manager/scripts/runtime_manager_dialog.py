@@ -100,6 +100,7 @@ from autoware_msgs.msg import lamp_cmd
 from autoware_msgs.msg import traffic_light
 from autoware_msgs.msg import adjust_xy
 from types import MethodType
+import rospkg
 
 SCHED_OTHER = 0
 SCHED_FIFO = 1
@@ -1872,7 +1873,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
 
         def OnRunLidarTracker(self, event):
-                cmd = os.path.join(os.path.dirname(__file__), 'run-lidartracker.sh')
+                cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/run-lidartracker.sh')
                 self.lidar_tracker_proc = self.launch_kill(
                         not self.lidar_tracker_proc,
                         cmd,
@@ -1883,7 +1884,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.interface_cmd[ self.button_run_lidar_tracker ] = (cmd, self.lidar_tracker_proc)
 
         def OnRunROS1Bridge(self, event):
-                cmd = os.path.join(os.path.dirname(__file__), 'run-ros1bridge.sh')
+                cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/run-ros1bridge.sh')
                 self.ros1_bridge_proc = self.launch_kill(
                         not self.ros1_bridge_proc,
                         cmd,
