@@ -148,15 +148,18 @@ void WaypointFilter::resampleLaneWaypoint(const double resample_interval,
       wp.change_flag = lane->waypoints.back().change_flag;
       const std::vector<double> nvec = {
           curve_point[1].x - wp.pose.pose.position.x,
-          curve_point[1].y - wp.pose.pose.position.y};
+          curve_point[1].y - wp.pose.pose.position.y,
+          curve_point[1].z - wp.pose.pose.position.z};
       double dist = sqrt(calcSquareSum(nvec[0], nvec[1]));
       const tf::Vector3 resample_vec(resample_interval_ * nvec[0] / dist,
-                                     resample_interval_ * nvec[1] / dist, 0.0);
+                                     resample_interval_ * nvec[1] / dist,
+                                     resample_interval_ * nvec[2] / dist);
       for (; dist > resample_interval_; dist -= resample_interval_) {
         if (lane->waypoints.size() == lane->waypoints.capacity())
           break;
         wp.pose.pose.position.x += resample_vec.x();
         wp.pose.pose.position.y += resample_vec.y();
+        wp.pose.pose.position.z += resample_vec.z();
         lane->waypoints.push_back(wp);
         curve_radius->push_back(r_inf_);
       }
@@ -182,8 +185,11 @@ void WaypointFilter::resampleLaneWaypoint(const double resample_interval,
       autoware_msgs::waypoint wp;
       wp.pose.pose.position = lane->waypoints.back().pose.pose.position;
       wp.change_flag = lane->waypoints.back().change_flag;
-      for (double dist = radius * fabs(theta); dist > resample_interval_;
-           dist -= resample_interval_) {
+      double dist = radius * fabs(theta);
+      double dz_nextpt =
+          curve_point[1].z -lane->waypoints.back().pose.pose.position.z;
+      const double resample_dz = resample_interval_ * dz_nextpt / dist;
+      for (; dist > resample_interval_; dist -= resample_interval_) {
         if (lane->waypoints.size() == lane->waypoints.capacity())
           break;
         const int sign = (theta > 0.0) ? (1) : (-1);
@@ -191,6 +197,7 @@ void WaypointFilter::resampleLaneWaypoint(const double resample_interval,
         const double yaw = fmod(t + sign * M_PI / 2.0, 2 * M_PI);
         wp.pose.pose.position.x = cx + radius * cos(t);
         wp.pose.pose.position.y = cy + radius * sin(t);
+        wp.pose.pose.position.z += resample_dz;
         wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
         lane->waypoints.push_back(wp);
         curve_radius->push_back(threshold_radius);
