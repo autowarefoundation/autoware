@@ -69,9 +69,12 @@ static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
   pose.pose.position.x = geo.y();
   pose.pose.position.y = geo.x();
   pose.pose.position.z = geo.z();
+  // nasty hack!!! Fix this
   if(_plane == 99)
   {
-    pose.pose.position.z -= 28.0; // temporary fix
+    pose.pose.position.x -= 1.0; // temporary fix
+    //pose.pose.position.y -= 1; // temporary fix
+    pose.pose.position.z -= 31.9; // temporary fix
   }
 
   // set gnss_stat
