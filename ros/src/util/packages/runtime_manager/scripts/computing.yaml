@@ -180,6 +180,11 @@ subs :
         cmd  : roslaunch cv_tracker yolo2.launch
         param: yolo2
 
+      - name : yolo3_wa
+        desc : Yolo3 Image based detector
+        cmd  : roslaunch yolo3_detector yolo3.launch
+        param: yolo3
+
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch cv_tracker ranging.launch
@@ -352,6 +357,18 @@ subs :
         desc : region_tlr desc sample
         cmd  : roslaunch road_wizard traffic_light_recognition.launch
         param: region_tlr
+        gui  :
+          flags : [ need_camera_info ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+
+      - name : region_tlr_mxnet
+        desc : region_tlr_mxnet desc sample
+        cmd  : roslaunch road_wizard traffic_light_recognition_mxnet.launch
+        param: region_tlr_mxnet
         gui  :
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
@@ -574,6 +591,8 @@ subs :
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 400
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -1819,12 +1838,18 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : others_distance
-      desc  : others_distance desc sample
-      label : Others Distance (m)
+    - name  : stop_distance_obstacle
+      desc  : stop_distance_obstacle desc sample
+      label : Stop Distance for Obstacle (m)
       min   : 0
       max   : 50
       v     : 15.0
+    - name  : stop_distance_stopline
+      desc  : stop_distance_stopline desc sample
+      label : Stop Distance for Stopline(m)
+      min   : 0
+      max   : 50
+      v     : 5.0
     - name  : detection_range
       desc  : detection_range desc sample
       label : Detection Range (m)
@@ -1855,12 +1880,18 @@ params :
       min   : -10
       max   : 0
       v     : -1.5
-    - name  : deceleration
-      desc  : deceleration desc sample
-      label : Deceleration (m/s^2)
+    - name  : deceleration_obstacle
+      desc  : deceleration_obstacle desc sample
+      label : Deceleration for Obstacle (m/s^2)
       min   : 0
       max   : 5
       v     : 0.7
+    - name  : deceleration_stopline
+      desc  : deceleration_stopline desc sample
+      label : Deceleration for Stopline (m/s^2)
+      min   : 0
+      max   : 5
+      v     : 0.3
     - name  : velocity_change_limit
       desc  : velocity_change_limit desc sample
       label : Velocity Change Limit (km/h)
@@ -2133,16 +2164,66 @@ params :
       min  : 0
       max  : 50
       v    : 10
+    - name : stopline_target_ratio
+      desc : stopline
+      label: stopline_target_ratio
+      min  : 0.0
+      max  : 0.99
+      v    : 0.0
     - name : shift_width
       desc : lane shift width
       label: shift_width
       min  : -5.0
       max  : 5.0
       v    : 1.0
+    - name : detection_area_rate
+      desc : detection_area_rate
+      label: detection_area_rate
+      min  : 0.0
+      max  : 3.0
+      v    : 1.0
+    - name : crawl_velocity
+      desc : crawl_velocity
+      label: crawl_velocity
+      min  : 0.0
+      max  : 10.0
+      v    : 4.0
+    - name : detection_area_x1
+      desc : detection_area_x1
+      label: detection_area_x1
+      min  : -200.0
+      max  : 200.0
+      v    : 80.0
+    - name : detection_area_x2
+      desc : detection_area_x2
+      label: detection_area_x2
+      min  : -200.0
+      max  : 200.0
+      v    : 0.0
+    - name : detection_area_y1
+      desc : detection_area_y1
+      label: detection_area_y1
+      min  : -200.0
+      max  : 200.0
+      v    : 50.0
+    - name : detection_area_y2
+      desc : detection_area_y2
+      label: detection_area_y2
+      min  : -200.0
+      max  : 200.0
+      v    : -50.0
+
     - name : points_topic
       desc : points_topic
       kind : str
       v    : /points_lanes
+      cmd_param:
+              dash : ''
+              delim: ':='
+    - name : baselink_tf
+      desc : baselnk_tf
+      kind : str
+      v    : base_link
       cmd_param:
               dash : ''
               delim: ':='
@@ -2396,6 +2477,62 @@ params :
         dash         : ''
         delim        : ':='
         only_enable  : True
+
+  - name : region_tlr_mxnet
+    topic: /config/superimpose
+    msg  : Bool
+    vars :
+    - name  : data
+      desc  : data desc sample
+      label : Display superimpose result
+      kind  : checkbox
+      v     : False
+    - name      : score_threshold
+      desc      : score threshold for a positive label
+      label     : score_threshold
+      min       : 0
+      max       : 1.0
+      v         : 0.8
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : change_state_threshold
+      desc      : state change threshold
+      label     : change_state_threshold
+      min       : 0
+      max       : 100
+      v         : 2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+        only_enable  : True
+    - name      : network_definition_file
+      desc      : network_definition json file
+      label     : network_definition json file
+      kind      : path
+      path_type : multi
+      v         : /tmp/network_definition.json
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : pretrained_model_file
+      desc      : pretrained_model params file
+      label     : pretrained_model params file
+      kind      : path
+      path_type : multi
+      v         : /tmp/network_definition.params
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name : region_tlr_ssd
     vars :
@@ -3933,3 +4070,130 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name  : yolo2
+    vars  :
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_threshold
+      desc  : Non-Maximum suppresion area threshold ratio to merge proposals.
+      label : NMS Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.45
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_src
+      desc      : Image topic to be fed to the network for detection
+      label     : image_src
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : $(echo $HOME)/darknet/cfg/yolo.cfg
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : $(echo $HOME)/darknet/data/yolo.weights
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='
+
+
+  - name  : yolo3
+    vars  :
+    - name  : score_threshold
+      desc  : Detections with a confidence value larger than this value will be displayed.
+      label : Score Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : nms_threshold
+      desc  : Non-Maximum suppresion area threshold ratio to merge proposals.
+      label : NMS Threshold
+      min   : 0.0
+      max   : 1.0
+      v     : 0.45
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : image_src
+      desc      : Image topic to be fed to the network for detection
+      label     : image_src
+      kind      : str
+      v         : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name     : network_definition_file
+      desc     : Configuration file defining the network
+      label    : 'network_definition (cfg)'
+      kind     : path
+      v        : $(rospack find yolo3_detector)/darknet/cfg/yolov3.cfg
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : pretrained_model_file
+      desc     : Pre-trained  model
+      label    : 'pre_trained_model (weights)'
+      kind     : path
+      v        : $(rospack find yolo3_detector)/darknet/data/yolov3.weights
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : gpu_device_id
+      desc      : gpu_device_id desc sample
+      label     : gpu_device_id
+      min       : 0
+      max       : 10
+      v         : 0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name         : camera_id
+      desc         : camera_id desc sample
+      kind         : menu
+      label        : Camera ID
+      choices_type : str
+      v            : ''
+      cmd_param    :
+        dash         : ''
+        delim        : ':='

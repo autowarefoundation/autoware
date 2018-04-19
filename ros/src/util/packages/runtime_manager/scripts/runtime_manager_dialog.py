@@ -747,7 +747,8 @@ class MyFrame(rtmgr.MyFrame):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
 			self.button_statchk_b : 3,
-			self.button_statchk_n : 4 }
+			self.button_statchk_n : 4,
+                       self.button_statchk_p : 5 }
 		self.radio_action(event, grp.keys())
 		v = grp.get(event.GetEventObject())
 		if v is not None:

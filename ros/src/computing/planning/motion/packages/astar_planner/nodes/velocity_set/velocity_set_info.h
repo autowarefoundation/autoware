@@ -47,10 +47,13 @@ class VelocitySetInfo
   int points_threshold_;            // points threshold to find obstacles
   double detection_height_top_;     // from sensor
   double detection_height_bottom_;  // from sensor
-  double stop_distance_;            // (meter) stopping distance from obstacles
-  double decel_;                    // (m/s^2) deceleration
+  double stop_distance_obstacle_;   // (meter) stopping distance from obstacles
+  double stop_distance_stopline_;   // (meter) stopping distance from stoplines
+  double deceleration_obstacle_;    // (m/s^2) deceleration for obstacles
+  double deceleration_stopline_;    // (m/s^2) deceleration for stopline
   double velocity_change_limit_;    // (m/s)
   double temporal_waypoints_size_;  // (meter)
+  int	wpidx_detectionResultByOtherNodes_; // waypoints index@finalwaypoints
 
   // ROS param
   double remove_points_upto_;
@@ -72,8 +75,15 @@ class VelocitySetInfo
   void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
+  void detectionCallback(const std_msgs::Int32 &msg);
 
   void clearPoints();
+
+
+  int getDetectionResultByOtherNodes() const
+  {
+	  return wpidx_detectionResultByOtherNodes_;
+  }
 
   double getStopRange() const
   {
@@ -100,14 +110,24 @@ class VelocitySetInfo
     return detection_height_bottom_;
   }
 
-  int getStopDistance() const
+  int getStopDistanceObstacle() const
   {
-    return stop_distance_;
+    return stop_distance_obstacle_;
   }
 
-  double getDeceleration() const
+  int getStopDistanceStopline() const
   {
-    return decel_;
+    return stop_distance_stopline_;
+  }
+
+  double getDecelerationObstacle() const
+  {
+    return deceleration_obstacle_;
+  }
+
+  double getDecelerationStopline() const
+  {
+    return deceleration_stopline_;
   }
 
   double getVelocityChangeLimit() const

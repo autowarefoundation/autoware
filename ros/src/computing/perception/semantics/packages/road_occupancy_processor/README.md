@@ -2,26 +2,26 @@
 
 This package generates the occupancy grid indicating the status of the road. It uses the point cloud from a filtered sensor and the ADAS Map data.
 
-The occupancy grid can be seen as a one dimensional 8-bit depth bitmap.
+The occupancy grid can be conceptualized as a one dimensional 8-bit depth bitmap.
 
-This package publishes the GridMap/OccupancyGrid with four different possible values:
+This package publishes a GridMap/OccupancyGrid with four different possible values:
 - UNKNOWN
 - FREE
 - NO ROAD
 - OCCUPIED
 
-These values can be set using parameters. See section *Configuration Parameters* below.
+These values can be set using parameters, as described in the *Configuration Parameters* section below.
 
 ### Extra requirements for compilation
 - GridMap (http://wiki.ros.org/grid_map)
 
-### Pre requisites
-- Localization Working (TF between velodyne and world)
+### Prerequisites
+- Localization working (TF between velodyne and world)
   - PCD Map (map)
   - TF for the Map (tf map->world)
   - NDT matching (tf world-> base_link)
   - Base link to Localizer (tf base_link -> velodyne)
-- A Ground filtering method publishing `/points_ground` and `/points_no_ground`. Autoware has three available:
+- Ground filtering method publishing `/points_ground` and `/points_no_ground`. Autoware has three available:
   - `ray_ground_filter`
   - `ring_ground_filter`
   - `euclidean_cluster` with Planar Ground removal
@@ -30,23 +30,21 @@ These values can be set using parameters. See section *Configuration Parameters*
   - Vector Map in `/vector_map` (also known as ADAS Map)
     - VectorMap must contain the definition of road areas (way_areas)
 
-### Data Subscription
+### Data subscription
 This node subscribes to:
 - Ground filtered in `/points_ground` (sensor_msgs::PointCloud)
 - Obstacle points in `/points_no_ground` (sensor_msgs::PointCloud)
 - GridMap containing the road processed in `/grid_map_wayarea` (grid_map::GridMap)
 
-### Data Publishing
-- `gridmap_road_status` on this topic the native format of the grid_map package. This can be used to extend the functionalities of this package.
-- `occupancy_road_status` on this topic the native ros `nav_msgs::OccupancyGrid` message is published.
+### Data publishing
+- `gridmap_road_status` publishes the native format of the grid_map package. This can be used to extend the functionalities of this package.
+- `occupancy_road_status` publishes the native ros `nav_msgs::OccupancyGrid` message.
 
 ### How to run
 From a sourced terminal in the workspace:
-
 `roslaunch road_occupancy_processor road_occupancy_processor.launch`
 
 ### Quick Setup
-
 **This is only a quick guide, each node must be properly configured**
 
 1. Load PointCloud Map (Map tab)
@@ -61,46 +59,18 @@ From a sourced terminal in the workspace:
 1. Launch road_occupancy_processor (Computing tab/Localization)
 
 ### Configuration parameters
-`points_ground_src` (default=`"points_ground"`)
-
-Defines the PointCloud source topic containing only the ground points
-
-`points_no_ground_src` (default=`"points_no_ground"`)
-
-Defines the PointCloud source topic containing only the obstacle points
-
-`wayarea_topic_src` (default=`grid_map_wayarea`)
-Defines the name of the topic containing the grid_map_msgs:GridMap containing the road areas.
-
-`wayarea_layer_name` (default=`"wayarea"`)
-
-Name of the layer in the topic `wayarea_topic_src` that containes the road areas.
-
-`output_layer_name` (default=`road_status`)
-
-The name of the output layer in the published GridMap object. If running several instances, each vehicle one can publish a different layer and later add them.
-
-
-`road_unknown_value` default=`"128"`
-
-Value to fill in the occupancy grid when a cell is **UNKNOWN**
-
-`road_free_value` (default=`"75"`)
-
-Value to fill in the occupancy grid when a cell is **FREE**. Should be a number between 0-255.
-
-`road_occupied_value` (default=`"0"`)
-
-Value to fill in the occupancy grid when a cell is **OCCUPIED**. Should be a number between 0-255.
-
-`no_road_value` (default=`"255"`)
-
-Value to fill in the occupancy grid when a cell is **NO ROAD**. Should be a number between 0-255.
+* `points_ground_src` (default=`"points_ground"`) defines the PointCloud source topic containing only the ground points.
+* `points_no_ground_src` (default=`"points_no_ground"`) defines the PointCloud source topic containing only the obstacle points.
+* `wayarea_topic_src` (default=`grid_map_wayarea`) defines the name of the topic containing the grid_map_msgs:GridMap containing the road areas.
+* `wayarea_layer_name` (default=`"wayarea"`) defines the name of the layer in the topic `wayarea_topic_src` that contains the road areas.
+* `output_layer_name` (default=`road_status`) defines name of the output layer in the published GridMap object. If running several instances, each vehicle one can publish a different layer and later add them.
+* `road_unknown_value` (default=`"128"`) indicates the value to fill in the occupancy grid when a cell is **UNKNOWN**.
+* `road_free_value` (default=`"75"`) indicates the value to fill in the occupancy grid when a cell is **FREE**. Should be a number between 0-255.
+* `road_occupied_value` (default=`"0"`) indicates the value to fill in the occupancy grid when a cell is **OCCUPIED**. Should be a number between 0-255.
+* `no_road_value` (default=`"255"`) indicates the value to fill in the occupancy grid when a cell is **NO ROAD**. Should be a number between 0-255.
 
 ### Coordinate Frame
-
-The occupancy grid is published in the same coordinate frame as the input GridMap from `/grid_map_wayarea`
-
+The occupancy grid is published in the same coordinate frame as the input GridMap from `/grid_map_wayarea`.
 
 ### Color representation using default values
 

@@ -44,16 +44,30 @@ header {
   flex-wrap: wrap;
 }
 
-.row-top {
-  height: 23%;
+@media all and (max-width: 1920px){
+  .row-top {
+    height: 23%;
+  }
+  .row-center {
+    height: 45%;
+  }
+  .row-bottom {
+    height: 23%;
+  }
 }
 
-.row-center {
-  height: 45%;
+@media all and (min-width: 1921px){
+  .row-top {
+    height: 22%;
+  }
+  .row-center {
+    height: 52%;
+  }
+  .row-bottom {
+    height: 22%;
+  }
 }
-.row-bottom {
-  height: 23%;
-}
+
 
 img#vehicle_steering {
   height: 100%;
@@ -188,6 +202,18 @@ img#vehicle_steering {
   margin: 2px;
   width: 100%;
   height: 100%;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .1) inset;
+  background: #FFFFFF;
+  border: solid #00a3e0;
+}
+
+.streamAudioContainer {
+  position: relative;
+  float: left;
+  margin: 2px;
+  width: 50%;
+  height: 20%;
   justify-content: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, .1) inset;
   background: #FFFFFF;

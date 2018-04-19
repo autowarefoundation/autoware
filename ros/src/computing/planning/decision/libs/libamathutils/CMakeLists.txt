@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project (amathutils) # autoware math utility
+project (amathutils_lib) # autoware math utility
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	autoware_msgs
@@ -14,7 +14,7 @@ set(TARGET_SRC  src/Amathutils.cpp
 
 catkin_package(
 	INCLUDE_DIRS include
-	LIBRARIES amathutils
+	LIBRARIES amathutils_lib
 	CATKIN_DEPENDS roscpp autoware_msgs
 )
 

@@ -35,7 +35,6 @@ if (CUDA_FOUND)
 	set(LIB_NAME "fast_pcl_ndt_gpu")
 	
 	catkin_package(
-  	DEPENDS ${SUBSYS_DEPS}
   	INCLUDE_DIRS include
     LIBRARIES ${LIB_NAME}
   )

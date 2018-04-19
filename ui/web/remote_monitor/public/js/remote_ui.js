@@ -5,12 +5,21 @@ const MAX_ACCEL_STROKE = 1000;
 const MAX_BRAKE_STROKE = 3000;
 const EMERGENCY_OFF = 0;
 const EMERGENCY_ON = 1;
+const DRIVE_MODE_MANUAL = 0;
+const DRIVE_MODE_STEER_PROGRAM = 1;
+const DRIVE_MODE_DRIVE_PROGRAM = 2;
+const DRIVE_MODE_ALL_PROGRAM = 3;
 const MODE_AUTO_CONTROL = 1;
 const MODE_REMOTE_CONTROL = 2;
-const TOPIC_CAN_INFO = "/can_info"
-const TOPIC_STATE = "/state"
-const TOPIC_CURRENT_VELOCITY = "/current_velocity"
-const TOPIC_TARGET_VELOCITY  = "/target_velocity"
+const TOPIC_CAN_INFO = "/can_info";
+const TOPIC_STATE = "/state";
+const TOPIC_DRIVE_MODE = "/drive_mode";
+const TOPIC_CURRENT_VELOCITY = "/current_velocity";
+const TOPIC_TARGET_VELOCITY  = "/target_velocity";
+const BUTTON_SWITCH_INTERVAL = 500;
+
+let lastEmegencyUpdateTime = (new Date()).getTime();
+let lastControlModeUpdateTime = (new Date()).getTime();
 
 let remote_cmd = {
   "vehicle_id": 1,
@@ -39,10 +48,8 @@ function addOnload(func)
 }
 
 window.onload = function() {
-  setSteeringAngle(0);
-  setSpeed(0);
-  setRPM(0);
-  setGear("P");
+  setInitialVal();
+  setGamepadListener();
 
   var send_cmd = function(){
     if(remote_cmd["control_mode"] == MODE_REMOTE_CONTROL || remote_cmd["emergency"] == EMERGENCY_ON || publish_flag) {
@@ -51,6 +58,13 @@ window.onload = function() {
     }
   }
   setInterval(send_cmd, UPLOAD_INTERVAL);
+}
+
+function setInitialVal() {
+  setSteeringAngle(0);
+  setSpeed(0);
+  setRPM(0);
+  setGear("P");
 }
 
 function set_vehicle_info(msg) {
@@ -64,6 +78,9 @@ function set_vehicle_info(msg) {
     setGear(vehicle_info["driveshift"]);
     setAccelStroke(parseFloat(vehicle_info["drivepedal"]), MAX_ACCEL_STROKE);
     setBrakeStroke(parseFloat(vehicle_info["brakepedal"]), MAX_BRAKE_STROKE);
+  }
+  else if(msg["topic"] == TOPIC_DRIVE_MODE) {
+    select_drive_mode_button(msg["message"]);
   }
   else if(msg["topic"] == TOPIC_STATE) {
     document.getElementById("text_state").innerHTML = "State: " + msg["message"];
@@ -87,15 +104,61 @@ function select_gear(obj) {
 }
 
 function select_emergency_button(obj) {
-  remote_cmd["emergency"] = remote_cmd["emergency"] == EMERGENCY_OFF ? EMERGENCY_ON : EMERGENCY_OFF;
-  console.log('select_emergency_button => ' + remote_cmd["emergency"]);
-  publish_flag = true;
+  let currentUnixTime =  (new Date()).getTime();
+
+  if (currentUnixTime - lastEmegencyUpdateTime > BUTTON_SWITCH_INTERVAL) {
+    remote_cmd["emergency"] = remote_cmd["emergency"] == EMERGENCY_OFF ? EMERGENCY_ON : EMERGENCY_OFF;
+    console.log('select_emergency_button => ' + remote_cmd["emergency"]);
+    if(remote_cmd["emergency"] == EMERGENCY_ON) {
+      document.getElementById("emergency_button").style.backgroundColor = "#FF0000";
+      document.getElementById("emergency_button").innerHTML = "EMERGENCY ON";
+    }
+    else if(remote_cmd["emergency"] == EMERGENCY_OFF) {
+      document.getElementById("emergency_button").style.backgroundColor = "#00a3e0";
+      document.getElementById("emergency_button").innerHTML = "EMERGENCY";
+    }
+    publish_flag = true;
+    lastEmegencyUpdateTime = currentUnixTime;
+  }
 }
 
+function select_drive_mode_button(drive_mode) {
+  if(drive_mode == DRIVE_MODE_MANUAL) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#00a3e0";
+    document.getElementById("drive_mode_button").innerHTML = "MANUAL";
+  }
+  else if(drive_mode == DRIVE_MODE_STEER_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "STEER PROGRAM";
+  }
+  else if(drive_mode == DRIVE_MODE_DRIVE_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "DRIVE PROGRAM";
+  }
+  else if(drive_mode == DRIVE_MODE_ALL_PROGRAM) {
+    document.getElementById("drive_mode_button").style.backgroundColor = "#008000";
+    document.getElementById("drive_mode_button").innerHTML = "PROGRAM";
+  }
+}
+
+
 function select_mode_button(obj) {
-  remote_cmd["control_mode"] = remote_cmd["control_mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
-  console.log('select_mode_button => ' + remote_cmd["control_mode"]);
-  publish_flag = true;
+  let currentUnixTime =  (new Date()).getTime();
+
+  if (currentUnixTime - lastControlModeUpdateTime > BUTTON_SWITCH_INTERVAL) {
+    remote_cmd["control_mode"] = remote_cmd["control_mode"] == MODE_AUTO_CONTROL ? MODE_REMOTE_CONTROL : MODE_AUTO_CONTROL;
+    console.log('select_mode_button => ' + remote_cmd["control_mode"]);
+    if(remote_cmd["control_mode"] == MODE_AUTO_CONTROL) {
+      document.getElementById("control_mode_button").style.backgroundColor = "#00a3e0";
+      document.getElementById("control_mode_button").innerHTML = "AUTO";
+    }
+    else if(remote_cmd["control_mode"] == MODE_REMOTE_CONTROL) {
+      document.getElementById("control_mode_button").style.backgroundColor = "#008000";
+      document.getElementById("control_mode_button").innerHTML = "REMOTE";
+    }
+    publish_flag = true;
+    lastControlModeUpdateTime = currentUnixTime;
+  }
 }
 
 // Rotate Image
@@ -388,8 +451,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	speedMeter = new Meter(document.querySelector(".meter--speed"), {
 		value: 0,
 		valueMin: 0,
-		valueMax: 220,
-		valueStep: 20,
+		valueMax: 100,
+		valueStep: 10,
 		valueUnit: "<span>Speed</span><div>Km/h</div>",
 		angleMin: 30,
 		angleMax: 330,
