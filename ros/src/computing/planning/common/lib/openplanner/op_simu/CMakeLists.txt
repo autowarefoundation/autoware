@@ -4,11 +4,7 @@ project(op_simu)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Get a ros version
-execute_process(
-	COMMAND rosversion -d
-	OUTPUT_VARIABLE ROS_VERSION
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
 		op_utility

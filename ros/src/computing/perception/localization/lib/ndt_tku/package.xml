@@ -6,7 +6,8 @@
     <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>roscpp</build_depend>
+    <build_depend>glut</build_depend>
+    <run_depend>glut</run_depend>
     <export>
     </export>
 </package>

@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_planner)
 
 # Get a ros version
-execute_process(
-	COMMAND rosversion -d
-	OUTPUT_VARIABLE ROS_VERSION
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
 		op_utility

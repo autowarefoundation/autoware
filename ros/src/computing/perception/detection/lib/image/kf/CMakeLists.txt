@@ -41,3 +41,7 @@ target_link_libraries(kf_lib
         )
 
 add_dependencies(kf_lib ${catkin_EXPORTED_TARGETS})
+
+install(DIRECTORY include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        )

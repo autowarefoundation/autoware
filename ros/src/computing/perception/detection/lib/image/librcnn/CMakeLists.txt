@@ -35,10 +35,6 @@ if (EXISTS "${CAFFE_PATH}")
         INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
     ENDIF ()
 
-    IF (HDF5_FOUND)
-        INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
-    ENDIF ()
-
     ## Declare a cpp library
     add_library(librcnn
             src/rcnn_detector.cpp

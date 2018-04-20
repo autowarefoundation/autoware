@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(calibration_camera_lidar)
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 include(FindLibXml2)

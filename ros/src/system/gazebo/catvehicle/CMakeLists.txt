@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(catvehicle)
-execute_process(
-  COMMAND rosversion -d
-  OUTPUT_VARIABLE ROS_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ## Find catkin macros and libraries

@@ -26,13 +26,22 @@ find_package(LAPACK REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenMP)
 
-find_package(cmake_modules REQUIRED)
-find_package(Eigen REQUIRED)
+find_package(Eigen3 QUIET)
+
+if (NOT EIGEN3_FOUND)
+    # Fallback to cmake_modules
+    find_package(cmake_modules REQUIRED)
+    find_package(Eigen REQUIRED)
+    set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+    set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+    # Possibly map additional variables to the EIGEN3_ prefix.
+else ()
+    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif ()
 
 find_package(PCL 1.7 REQUIRED COMPONENTS common octree)
 find_package(PythonLibs REQUIRED)
 find_package(X11 REQUIRED)
-
 
 add_message_files(
         FILES
@@ -44,13 +53,11 @@ generate_messages(
         std_msgs
 )
 
-
 catkin_package(
-        INCLUDE_DIRS include
+        INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
         CATKIN_DEPENDS message_runtime
         DEPENDS OpenCV GLEW PCL
 )
-
 
 # Vocabulary file
 set(orb_slam_vocabulary_file ${CATKIN_DEVEL_PREFIX}/share/${PROJECT_NAME}/ORBvoc.txt)
@@ -82,7 +89,7 @@ include_directories(
         ${PCL_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PYTHON_INCLUDE_DIR}
-        ${Eigen_INCLUDE_DIRS}
+        ${Eigen3_INCLUDE_DIRS}
 
         # Third parties
         Thirdparty

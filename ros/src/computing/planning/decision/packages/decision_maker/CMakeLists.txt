@@ -67,3 +67,14 @@ set(SUBPROJECT_NAME planner_selector)
 add_executable(${SUBPROJECT_NAME}_node nodes/planner_selector/planner_selector_node.cpp)
 target_link_libraries(${SUBPROJECT_NAME}_node ${catkin_LIBRARIES})
 add_dependencies(${SUBPROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS ${PROJECT_NAME}_node ${SUBPROJECT_NAME}_node
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
+        PATTERN ".svn" EXCLUDE
+        )

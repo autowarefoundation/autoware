@@ -1,40 +1,39 @@
 cmake_minimum_required(VERSION 2.8.11)
-project (amathutils_lib) # autoware math utility
+project(amathutils_lib) # autoware math utility
 find_package(catkin REQUIRED COMPONENTS
-	roscpp
-	autoware_msgs
-)
+        roscpp
+        autoware_msgs
+        )
 
-set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 set(TARGET ${PROJECT_NAME})
-set(TARGET_SRC  src/Amathutils.cpp
-	)
+set(TARGET_SRC src/Amathutils.cpp
+        )
 
 catkin_package(
-	INCLUDE_DIRS include
-	LIBRARIES amathutils_lib
-	CATKIN_DEPENDS roscpp autoware_msgs
+        INCLUDE_DIRS include
+        LIBRARIES amathutils_lib
+        CATKIN_DEPENDS roscpp autoware_msgs
 )
 
-include_directories(${TARGET} 
-	include
-	${catkin_INCLUDE_DIRS}
-	)
+include_directories(${TARGET}
+        include
+        ${catkin_INCLUDE_DIRS}
+        )
 
 add_library(${TARGET}
-	${TARGET_SRC}
-	)
+        ${TARGET_SRC}
+        )
 target_link_libraries(${TARGET}
-	${CMAKE_THREAD_LIBS_INIT}
-	)
+        ${CMAKE_THREAD_LIBS_INIT}
+        )
 
 add_dependencies(${TARGET}
-	${catkin_EXPORTED_TARGETS}
-	)
+        ${catkin_EXPORTED_TARGETS}
+        )
 
 install(DIRECTORY include
-	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-	FILES_MATCHING PATTERN "*.hpp"
-	)
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+        )

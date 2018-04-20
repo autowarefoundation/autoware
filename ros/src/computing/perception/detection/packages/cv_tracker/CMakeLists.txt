@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(cv_tracker)
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 
@@ -111,6 +108,12 @@ ADD_DEPENDENCIES(dpm_ttic
         ${catkin_EXPORTED_TARGETS}
         )
 
+install(TARGETS dpm_ttic
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
 ## dpm_ocv
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
     INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
@@ -143,6 +146,11 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 
     ENDIF ()
     #CUDAENDIF
+    install(TARGETS dpm_ocv
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+            )
 
 ENDIF ()
 #ROS_VERSION_ENDIF
@@ -159,6 +167,12 @@ TARGET_LINK_LIBRARIES(range_fusion
 
 ADD_DEPENDENCIES(range_fusion
         ${catkin_EXPORTED_TARGETS}
+        )
+
+install(TARGETS range_fusion
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
 ## kf_tracker ##
@@ -181,6 +195,11 @@ ADD_EXECUTABLE(dummy_track
 TARGET_LINK_LIBRARIES(dummy_track
         ${catkin_LIBRARIES}
         )
+install(TARGETS dummy_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 ## obj_reproj ##
 ADD_EXECUTABLE(obj_reproj
@@ -190,6 +209,12 @@ ADD_EXECUTABLE(obj_reproj
 TARGET_LINK_LIBRARIES(obj_reproj
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
+        )
+
+install(TARGETS obj_reproj
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
 
@@ -205,7 +230,6 @@ endif (jsk_recognition_msgs_FOUND)
 ## klt_tracker ##
 ADD_EXECUTABLE(klt_track
         nodes/klt_track/klt_track.cpp
-
         )
 
 INCLUDE_DIRECTORIES(lib/lktracker)
@@ -229,6 +253,12 @@ TARGET_LINK_LIBRARIES(klt_track
 ADD_DEPENDENCIES(klt_track
         ${catkin_EXPORTED_TARGETS}
         )
+install(TARGETS klt_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
 ############# RCNN#############
 
 ###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
@@ -238,14 +268,6 @@ set(RCNN_CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
 
 if (EXISTS "${RCNN_CAFFE_PATH}")
     find_package(librcnn)
-    #  INCLUDE_DIRECTORIES(
-    #    ${librcnn_INCLUDE_DIRS}
-    #    ${RCNN_CAFFE_PATH}/include
-    #  )
-
-    IF (HDF5_FOUND)
-        INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
-    ENDIF ()
 
     ADD_EXECUTABLE(rcnn_msr
             nodes/rcnn/rcnn_node.cpp
@@ -263,11 +285,17 @@ if (EXISTS "${RCNN_CAFFE_PATH}")
     TARGET_INCLUDE_DIRECTORIES(rcnn_msr PRIVATE
             ${librcnn_INCLUDE_DIRS}
             ${RCNN_CAFFE_PATH}/include
+            ${catkin_INCLUDE_DIRS}
             )
 
     ADD_DEPENDENCIES(rcnn_msr
             ${catkin_EXPORTED_TARGETS}
             librcnn
+            )
+    install(TARGETS rcnn_msr
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
 else ()
     message("'FastRCNN/Caffe' are not installed. 'rcnn_msr' will not be built.")
@@ -278,10 +306,6 @@ endif ()
 set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 if (EXISTS "${SSD_CAFFE_PATH}")
-
-    IF (HDF5_FOUND)
-        INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIRS})
-    ENDIF ()
 
     ADD_EXECUTABLE(ssd_unc
             nodes/ssd/ssd_node.cpp
@@ -305,6 +329,12 @@ if (EXISTS "${SSD_CAFFE_PATH}")
 
     ADD_DEPENDENCIES(ssd_unc
             ${catkin_EXPORTED_TARGETS}
+            )
+
+    install(TARGETS ssd_unc
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
 else ()
     message("'SSD/Caffe' is not installed. 'ssd_unc' will not be built.")
@@ -418,6 +448,12 @@ if (EXISTS "${YOLO2_PATH}")
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
+            )
+
+    install(TARGETS yolo2_wa
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
 
 

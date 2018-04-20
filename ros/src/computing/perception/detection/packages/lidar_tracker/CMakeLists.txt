@@ -34,11 +34,7 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(OpenMP)
 
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(OpenCV REQUIRED)
 
@@ -134,11 +130,11 @@ execute_process(
 )
 
 #set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
-
-if (EXISTS "/usr/local/cuda")
+FIND_PACKAGE(CUDA)
+if (${CUDA_FOUND})
     include_directories(
             ${catkin_INCLUDE_DIRS}
-            "/usr/local/cuda/include"
+            ${CUDA_INCLUDE_DIRS}
     )
 
     if ("${ARCHITECTURE}" MATCHES "^arm")
