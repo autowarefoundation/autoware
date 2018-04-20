@@ -47,14 +47,13 @@
 
 namespace waypoint_maker
 {
-
 const std::string MULTI_LANE_CSV = "/tmp/driving_lane.csv";
 
 enum class FileFormat : int32_t
 {
-  ver1,  //x,y,z,(velocity)
-  ver2,  //x,y,z,yaw,(velocity)
-  ver3,  //first line consists on explanation of values
+  ver1,  // x,y,z,(velocity)
+  ver2,  // x,y,z,yaw,(velocity)
+  ver3,  // first line consists on explanation of values
 
   unknown = -1,
 };
@@ -73,12 +72,10 @@ inline double mps2kmph(double velocity_mps)
 class WaypointLoaderNode
 {
 public:
-
   WaypointLoaderNode();
   ~WaypointLoaderNode();
 
 private:
-
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
@@ -103,24 +100,23 @@ private:
   // functions
   void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
   void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
-  void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
-  void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
-  void saveLaneArray(const std::vector<std::string> &paths, const autoware_msgs::LaneArray &lane_array);
+  void createLaneWaypoint(const std::string& file_path, autoware_msgs::lane* lane);
+  void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
+  void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array);
 
-  FileFormat checkFileFormat(const char *filename);
-  bool verifyFileConsistency(const char *filename);
-  void loadWaypointsForVer1(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer1(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypointsForVer2(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer2(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypointsForVer3(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer3(const std::string &line, const std::vector<std::string> &contents,
-                            autoware_msgs::waypoint *wp);
+  FileFormat checkFileFormat(const char* filename);
+  bool verifyFileConsistency(const char* filename);
+  void loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer1(const std::string& line, autoware_msgs::waypoint* wp);
+  void loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer2(const std::string& line, autoware_msgs::waypoint* wp);
+  void loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer3(const std::string& line, const std::vector<std::string>& contents,
+                            autoware_msgs::waypoint* wp);
 };
 
 const std::string addFileSuffix(std::string file_path, std::string suffix);
-void parseColumns(const std::string &line, std::vector<std::string> *columns);
+void parseColumns(const std::string& line, std::vector<std::string>* columns);
 size_t countColumns(const std::string& line);
-
 }
 #endif  // WAYPOINT_LOADER_CORE_H

@@ -40,7 +40,6 @@
 
 namespace waypoint_maker
 {
-
 class WaypointFilter
 {
 private:
@@ -51,20 +50,24 @@ private:
   double accel_limit_, decel_limit_, resample_interval_;
   int velocity_offset_;
   bool resample_mode_;
+
 public:
   WaypointFilter();
   ~WaypointFilter();
   void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
-  void filterLaneWaypoint(autoware_msgs::lane *lane);
+  void filterLaneWaypoint(autoware_msgs::lane* lane);
+
 protected:
-  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane *lane, std::vector<double> *curve_radius);
-  void getCurveAll(const autoware_msgs::lane& lane, std::vector<double> *curve_radius);
-  const std::vector<double> calcVelParamFromVmax(const double vmax)const;
-  void createCurveList(const std::vector<double>& curve_radius, std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
-  void limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx, autoware_msgs::lane *lane);
-  const std::vector<double> getCurveOnce(const std::vector<geometry_msgs::Point>& point)const;
-  const double calcSquareSum(const double x, const double y)const;
-  const double calcPathLength(const autoware_msgs::lane& lane)const;
+  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane,
+                            std::vector<double>* curve_radius);
+  void getCurveAll(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
+  const std::vector<double> calcVelParamFromVmax(const double vmax) const;
+  void createCurveList(const std::vector<double>& curve_radius,
+                       std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
+  void limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx, autoware_msgs::lane* lane);
+  const std::vector<double> getCurveOnce(const std::vector<geometry_msgs::Point>& point) const;
+  const double calcSquareSum(const double x, const double y) const;
+  const double calcPathLength(const autoware_msgs::lane& lane) const;
 };
 }
 #endif
