@@ -1916,6 +1916,26 @@ class MyFrame(rtmgr.MyFrame):
 		pub = rospy.Publisher('/gnss_pose_update', std_msgs.msg.Bool, queue_size=10)
 		pub.publish(std_msgs.msg.Bool(True))
 
+	def OnRoute01(self, event):
+		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route01')
+		self.all_sensors_proc = self.launch_kill(
+			not self.all_sensors_proc,
+			cmd,
+			self.all_sensors_proc,
+			obj=self.button_run_all_sensors,
+			kill_children=True)
+		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
+
+	def OnRoute01(self, event):
+		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route02')
+		self.all_sensors_proc = self.launch_kill(
+			not self.all_sensors_proc,
+			cmd,
+			self.all_sensors_proc,
+			obj=self.button_run_all_sensors,
+			kill_children=True)
+		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
+
 	def stdout_file_search(self, file, k):
 		s = ''
 		while True:
