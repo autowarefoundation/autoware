@@ -7,7 +7,13 @@ EXECUTE_PROCESS(
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
+
 find_package(CUDA)
+
+catkin_package(
+        CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
+)
 
 if ("${ARCH}" STREQUAL "aarch64" AND CUDA_FOUND)
     find_package(Threads REQUIRED)
@@ -21,13 +27,6 @@ if ("${ARCH}" STREQUAL "aarch64" AND CUDA_FOUND)
             autoware_msgs
             tf
             )
-
-
-    catkin_package(
-            CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
-    )
-
-    set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
 
     include_directories(
             include
