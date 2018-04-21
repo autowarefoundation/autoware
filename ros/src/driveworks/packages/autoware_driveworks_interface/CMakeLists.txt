@@ -9,6 +9,12 @@ EXECUTE_PROCESS(
 
 set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
 
+
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        std_msgs sensor_msgs autoware_msgs
+        )
+
 find_package(CUDA)
 
 catkin_package(
