@@ -1863,7 +1863,7 @@ class MyFrame(rtmgr.MyFrame):
 			self.dlg_rosbag_record.OnStop(None)
 
         def OnRunAllSensors(self, event):
-                cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh')
+                cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/run-allsensors.sh')
                 self.all_sensors_proc = self.launch_kill(
                         not self.all_sensors_proc,
                         cmd,
@@ -1926,7 +1926,7 @@ class MyFrame(rtmgr.MyFrame):
 			kill_children=True)
 		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
 
-	def OnRoute01(self, event):
+	def OnRoute02(self, event):
 		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route02')
 		self.all_sensors_proc = self.launch_kill(
 			not self.all_sensors_proc,
