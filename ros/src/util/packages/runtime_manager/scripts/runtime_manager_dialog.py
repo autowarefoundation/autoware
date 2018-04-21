@@ -1912,6 +1912,15 @@ class MyFrame(rtmgr.MyFrame):
                     'std_msgs/String',
                     value ])
 
+	def OnInitNDT(self, event):
+		subprocess.Popen([
+			'rostopic',
+			'pub',
+			'-1',
+			'/gnss_pose_update',
+			'std_msgs/Bool',
+			"True"])
+
 	def stdout_file_search(self, file, k):
 		s = ''
 		while True:
