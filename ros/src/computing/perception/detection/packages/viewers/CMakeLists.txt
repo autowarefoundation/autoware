@@ -3,28 +3,18 @@ project(viewers)
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+find_package(catkin REQUIRED COMPONENTS
+        roscpp sensor_msgs std_msgs autoware_msgs cv_bridge image_transport
+        )
+
+catkin_package(
+        CATKIN_DEPENDS roscpp sensor_msgs std_msgs autoware_msgs cv_bridge image_transport
+)
+
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-    find_package(catkin REQUIRED COMPONENTS
-            cv_bridge
-            image_transport
-            roscpp
-            sensor_msgs
-            std_msgs
-            autoware_msgs
-            )
 
     set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
     find_package(OpenCV REQUIRED)
-
-    ###################################
-    ## catkin specific configuration ##
-    ###################################
-    catkin_package(
-            #  INCLUDE_DIRS include
-            #  LIBRARIES debug
-            CATKIN_DEPENDS std_msgs autoware_msgs
-            #  DEPENDS system_lib
-    )
 
     ###########
     ## Build ##
