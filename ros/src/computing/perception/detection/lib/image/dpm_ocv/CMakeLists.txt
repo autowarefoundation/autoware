@@ -3,23 +3,25 @@ project(libdpm_ocv)
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+find_package(catkin REQUIRED COMPONENTS
+        std_msgs
+        autoware_msgs
+        )
+
+find_package(CUDA)
+find_package(OpenCV REQUIRED)
+
+catkin_package(
+        INCLUDE_DIRS include/dpm_ocv
+        LIBRARIES libdpm_ocv
+        CATKIN_DEPENDS std_msgs autoware_msgs
+)
+
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-    find_package(catkin REQUIRED COMPONENTS
-            std_msgs
-            autoware_msgs
-            )
-    FIND_PACKAGE(CUDA)
-    find_package(OpenCV REQUIRED)
+
 
     SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -std=c++11 -DUSE_GPU -DCUBIN_PATH=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin ${CMAKE_CXX_FLAGS}")
     SET(CMAKE_NVCC_FLAGS "-use_fast_math")
-
-    catkin_package(
-            INCLUDE_DIRS include/dpm_ocv
-            LIBRARIES libdpm_ocv
-            CATKIN_DEPENDS message_runtime std_msgs
-            #  DEPENDS system_lib
-    )
 
     IF (CUDA_FOUND)
         INCLUDE_DIRECTORIES(
@@ -116,13 +118,14 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
     SET_TARGET_PROPERTIES(libdpm_ocv PROPERTIES OUTPUT_NAME dpm_ocv)
     ADD_DEPENDENCIES(libdpm_ocv ${catkin_EXPORTED_TARGETS})
 
-    #############
-    ## Install ##
-    #############
-
-    INSTALL(
-            DIRECTORY include/dpm_ocv
-            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-            FILES_MATCHING PATTERN "*.hpp"
-    )
 endif ()
+
+#############
+## Install ##
+#############
+
+INSTALL(
+        DIRECTORY include/dpm_ocv
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+)
