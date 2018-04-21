@@ -1913,13 +1913,8 @@ class MyFrame(rtmgr.MyFrame):
                     value ])
 
 	def OnInitNDT(self, event):
-		subprocess.Popen([
-			'rostopic',
-			'pub',
-			'-1',
-			'/gnss_pose_update',
-			'std_msgs/Bool',
-			"True"])
+		pub = rospy.Publisher('/gnss_pose_update', std_msgs.msg.Bool, queue_size=10)
+		pub.publish(std_msgs.msg.Bool(True))
 
 	def stdout_file_search(self, file, k):
 		s = ''

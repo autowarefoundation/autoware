@@ -485,8 +485,6 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   current_gnss_pose.z = input->pose.position.z;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
-  std::cerr << "gnss callback, flag: " << gnss_pose_update << "\n";
-
   //if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
   // if update requested
   if (gnss_pose_update == true)
@@ -514,7 +512,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
     init_pos_set = 1;
     gnss_pose_update = false;
-    std::cerr << "updated current pose with gnss pose\n";
+    ROS_INFO("updated current pose with gnss pose\n");
   }
 
   previous_gnss_pose.x = current_gnss_pose.x;
@@ -834,7 +832,6 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 static void gnss_pose_update_callback(const std_msgs::Bool update)
 {
   gnss_pose_update = update.data;
-  std::cerr << "updated\n";
 }
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
