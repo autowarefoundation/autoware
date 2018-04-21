@@ -1912,6 +1912,10 @@ class MyFrame(rtmgr.MyFrame):
                     'std_msgs/String',
                     value ])
 
+	def OnInitNDT(self, event):
+		pub = rospy.Publisher('/gnss_pose_update', std_msgs.msg.Bool, queue_size=10)
+		pub.publish(std_msgs.msg.Bool(True))
+
 	def stdout_file_search(self, file, k):
 		s = ''
 		while True:

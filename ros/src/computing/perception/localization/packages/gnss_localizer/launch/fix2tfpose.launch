@@ -5,6 +5,7 @@
 
   <node pkg="gnss_localizer" type="fix2tfpose" name="fix2tfpose" output="log">
     <param name="plane" value="$(arg plane)"/>
+    <remap from="/fix" to="/novatel/navsat/fix"/>
   </node>
 
 </launch>

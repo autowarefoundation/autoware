@@ -239,6 +239,8 @@ static tf::StampedTransform local_transform;
 
 static int points_map_num = 0;
 
+static bool gnss_pose_update = false;
+
 pthread_mutex_t mutex;
 
 static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
@@ -483,7 +485,9 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   current_gnss_pose.z = input->pose.position.z;
   gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);
 
-  if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
+  //if ((_use_gnss == 1 && init_pos_set == 0) || fitness_score >= 500.0)
+  // if update requested
+  if (gnss_pose_update == true)
   {
     previous_pose.x = previous_gnss_pose.x;
     previous_pose.y = previous_gnss_pose.y;
@@ -507,6 +511,8 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
     offset_yaw = current_pose.yaw - previous_pose.yaw;
 
     init_pos_set = 1;
+    gnss_pose_update = false;
+    ROS_INFO("updated current pose with gnss pose\n");
   }
 
   previous_gnss_pose.x = current_gnss_pose.x;
@@ -821,6 +827,11 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
   previous_imu_roll = imu_roll;
   previous_imu_pitch = imu_pitch;
   previous_imu_yaw = imu_yaw;
+}
+
+static void gnss_pose_update_callback(const std_msgs::Bool update)
+{
+  gnss_pose_update = update.data;
 }
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -1568,6 +1579,7 @@ int main(int argc, char** argv)
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/odom_pose", _queue_size * 10, odom_callback);
   ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size * 10, imu_callback);
+  ros::Subscriber gnss_pose_update_sub = nh.subscribe("/gnss_pose_update", 1, gnss_pose_update_callback);
 
   pthread_t thread;
   pthread_create(&thread, NULL, thread_func, NULL);
