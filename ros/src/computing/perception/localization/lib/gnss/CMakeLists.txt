@@ -4,12 +4,12 @@ project(gnss)
 find_package(catkin REQUIRED roscpp)
 
 catkin_package(
-        INCLUDE_DIRS include/gnss
+        INCLUDE_DIRS include
         LIBRARIES gnss
 )
 
 include_directories(
-        include/gnss
+        include
         ${catkin_INCLUDE_DIRS}
 )
 
@@ -22,7 +22,7 @@ target_link_libraries(gnss
         )
 
 install(
-        DIRECTORY include/gnss
+        DIRECTORY include
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hh"
 )

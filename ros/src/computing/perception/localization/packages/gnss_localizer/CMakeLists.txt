@@ -22,7 +22,6 @@ include_directories(
 add_executable(fix2tfpose
         nodes/fix2tfpose/fix2tfpose.cpp
         )
-target_include_directories(fix2tfpose PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(fix2tfpose ${catkin_LIBRARIES})
 add_dependencies(fix2tfpose ${catkin_EXPORTED_TARGETS})
 
@@ -32,7 +31,6 @@ add_executable(nmea2tfpose
         nodes/nmea2tfpose/nmea2tfpose_node.cpp
         nodes/nmea2tfpose/nmea2tfpose_core.h
         )
-target_include_directories(nmea2tfpose PRIVATE ${catkin_INCLUDE_DIRS})
 target_link_libraries(nmea2tfpose ${catkin_LIBRARIES})
 add_dependencies(nmea2tfpose ${catkin_EXPORTED_TARGETS})
 
