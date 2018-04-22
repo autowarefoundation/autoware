@@ -10,8 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         )
 
 catkin_package(
-        CATKIN_DEPENDS roscpp std_msgs nmea_msgs tf
-        DEPENDS gnss
+        CATKIN_DEPENDS roscpp std_msgs nmea_msgs tf gnss
 )
 
 
