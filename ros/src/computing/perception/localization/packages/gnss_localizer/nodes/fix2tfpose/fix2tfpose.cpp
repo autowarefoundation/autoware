@@ -37,8 +37,7 @@
 #include <tf/transform_broadcaster.h>
 
 #include <iostream>
-
-#include "geo_pos_conv.hh"
+#include <geo_pos_conv.hh>
 
 static ros::Publisher pose_publisher;
 

@@ -41,7 +41,7 @@
 #include <nmea_msgs/Sentence.h>
 #include <tf/transform_broadcaster.h>
 
-#include "geo_pos_conv.hh"
+#include <geo_pos_conv.hh>
 
 namespace gnss_localizer
 {

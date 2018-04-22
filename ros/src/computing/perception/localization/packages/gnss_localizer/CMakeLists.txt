@@ -29,8 +29,8 @@ add_dependencies(fix2tfpose ${catkin_EXPORTED_TARGETS})
 add_executable(nmea2tfpose
         nodes/nmea2tfpose/nmea2tfpose_core.cpp
         nodes/nmea2tfpose/nmea2tfpose_node.cpp
-        nodes/nmea2tfpose/nmea2tfpose_core.h
         )
+target_include_directories(nmea2tfpose PRIVATE nodes/nmea2tfpose ${catkin_INCLUDE_DIRS})
 target_link_libraries(nmea2tfpose ${catkin_LIBRARIES})
 add_dependencies(nmea2tfpose ${catkin_EXPORTED_TARGETS})
 
