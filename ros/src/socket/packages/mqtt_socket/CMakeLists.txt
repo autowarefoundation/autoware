@@ -6,18 +6,15 @@ find_package(catkin REQUIRED COMPONENTS
         roslib
         std_msgs
         autoware_msgs
+        tablet_socket_msgs
         )
 
 catkin_package(
-        CATKIN_DEPENDS roscpp roslib std_msgs autoware_msgs
+        CATKIN_DEPENDS roscpp roslib std_msgs autoware_msgs tablet_socket_msgs
 )
 
 if (EXISTS /usr/include/mosquitto.h)
-
-
     set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
-
-
 
     include_directories(
             include

@@ -154,9 +154,7 @@ if (${CUDA_FOUND})
             )
 
     add_custom_target(gpu_arch_version_checker)
-    add_dependencies(gpu_arch_version_checker
-            libdpm_ttic
-            )
+    add_dependencies(gpu_arch_version_checker ${catkin_EXPORTED_TARGETS})
 
     execute_process(
             COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}

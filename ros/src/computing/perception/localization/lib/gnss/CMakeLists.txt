@@ -21,7 +21,6 @@ target_link_libraries(gnss
         ${catkin_LIBRARIES}
         )
 
-
 install(
         DIRECTORY include/gnss
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

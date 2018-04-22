@@ -30,9 +30,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs autoware_msgs vector_map
 )
 
-
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
-
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
@@ -45,7 +43,6 @@ add_library(object_map_utils_lib
         )
 target_link_libraries(object_map_utils_lib
         ${catkin_LIBRARIES}
-        vector_map
         )
 
 ### laserscan2costmap ###
@@ -84,7 +81,6 @@ add_library(grid_map_filter_lib
         )
 target_link_libraries(grid_map_filter_lib
         ${catkin_LIBRARIES}
-        vector_map
         object_map_utils_lib
         )
 add_executable(grid_map_filter
@@ -93,7 +89,6 @@ add_executable(grid_map_filter
         )
 target_link_libraries(grid_map_filter
         ${catkin_LIBRARIES}
-        vector_map
         object_map_utils_lib
         grid_map_filter_lib
         )
@@ -106,7 +101,6 @@ add_library(wayarea2grid_lib
         )
 target_link_libraries(wayarea2grid_lib
         ${catkin_LIBRARIES}
-        vector_map
         object_map_utils_lib
         )
 
@@ -117,7 +111,6 @@ add_executable(wayarea2grid
 
 target_link_libraries(wayarea2grid
         ${catkin_LIBRARIES}
-        vector_map
         wayarea2grid_lib
         )
 

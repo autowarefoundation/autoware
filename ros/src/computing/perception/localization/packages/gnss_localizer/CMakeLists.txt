@@ -13,7 +13,6 @@ catkin_package(
         CATKIN_DEPENDS roscpp std_msgs nmea_msgs tf gnss
 )
 
-
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
@@ -27,14 +26,21 @@ add_executable(fix2tfpose
 target_link_libraries(fix2tfpose
         ${catkin_LIBRARIES}
         )
+add_dependencies(fix2tfpose
+        ${catkin_EXPORTED_TARGETS}
+        )
 
 add_executable(nmea2tfpose
         nodes/nmea2tfpose/nmea2tfpose_core.cpp
         nodes/nmea2tfpose/nmea2tfpose_node.cpp
+        nodes/nmea2tfpose/nmea2tfpose_core.h
         )
 
 target_link_libraries(nmea2tfpose
         ${catkin_LIBRARIES}
+        )
+add_dependencies(nmea2tfpose
+        ${catkin_EXPORTED_TARGETS}
         )
 
 install(TARGETS nmea2tfpose fix2tfpose
