@@ -24,7 +24,7 @@ target_link_libraries(autoware_gnss_library
 install(
         DIRECTORY include
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.hh"
+        FILES_MATCHING PATTERN "*.hpp"
 )
 
 ## Install executables and/or libraries
