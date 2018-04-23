@@ -3,7 +3,7 @@ project(obj_db)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        gnss
+        autoware_gnss_library
         visualization_msgs
         autoware_msgs
         )
@@ -14,7 +14,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS roscpp autoware_msgs gnss
+        CATKIN_DEPENDS roscpp
+        autoware_gnss_library
+        visualization_msgs
+        autoware_msgs
 )
 
 ###########

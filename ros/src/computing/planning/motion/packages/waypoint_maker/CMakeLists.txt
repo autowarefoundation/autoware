@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_maker)
 
 find_package(catkin REQUIRED COMPONENTS
-        gnss
+        autoware_gnss_library
         roscpp
         std_msgs
         geometry_msgs
@@ -16,19 +16,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES lane_follower
-        CATKIN_DEPENDS roscpp std_msgs tf waypoint_follower vector_map lane_planner autoware_msgs
-        DEPENDS gnss
+        CATKIN_DEPENDS autoware_gnss_library
+        roscpp
+        std_msgs
+        geometry_msgs
+        nav_msgs
+        tf
+        waypoint_follower
+        vector_map
+        lane_planner
+        autoware_msgs
 )
-
-###########
-## Build ##
-###########
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 

@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         tablet_socket
         waypoint_follower
         vector_map
-        gnss
+        autoware_gnss_library
         autoware_msgs
         )
 
@@ -16,8 +16,13 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES vmap
-        CATKIN_DEPENDS tablet_socket waypoint_follower vector_map autoware_msgs
-        DEPENDS gnss
+        CATKIN_DEPENDS roscpp
+        std_msgs
+        tablet_socket
+        waypoint_follower
+        vector_map
+        autoware_gnss_library
+        autoware_msgs
 )
 
 include_directories(

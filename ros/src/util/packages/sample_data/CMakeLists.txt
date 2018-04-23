@@ -4,7 +4,7 @@ project(sample_data)
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        gnss
+        autoware_gnss_library
         std_msgs
         visualization_msgs
         )
@@ -26,12 +26,8 @@ endif ()
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES fake_drivers
-        #  CATKIN_DEPENDS other_catkin_pkg
-        #  DEPENDS system_lib
         DEPENDS roscpp
-        gnss
+        autoware_gnss_library
         std_msgs
         visualization_msgs
 )
