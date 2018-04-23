@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(autoware_gnss_library)
+project(gnss)
 
-find_package(catkin REQUIRED roscpp)
+find_package(catkin REQUIRED COMPONENTS roscpp)
 
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES autoware_gnss_library
+        LIBRARIES gnss
 )
 
 include_directories(
@@ -13,22 +13,22 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-add_library(autoware_gnss_library
+add_library(gnss
         src/geo_pos_conv.cpp
         )
 
-target_link_libraries(autoware_gnss_library
+target_link_libraries(gnss
         ${catkin_LIBRARIES}
         )
 
 install(
-        DIRECTORY include
+        DIRECTORY include/gnss
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp"
 )
 
 ## Install executables and/or libraries
-install(TARGETS autoware_gnss_library
+install(TARGETS gnss
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

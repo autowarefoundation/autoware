@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
         tablet_socket
         waypoint_follower
         vector_map
-        autoware_gnss_library
+        gnss
         autoware_msgs
         )
 
@@ -21,7 +21,7 @@ catkin_package(
         tablet_socket
         waypoint_follower
         vector_map
-        autoware_gnss_library
+        gnss
         autoware_msgs
 )
 

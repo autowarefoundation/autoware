@@ -4,7 +4,7 @@ project(tablet_socket)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
-        autoware_gnss_library
+        gnss
         tablet_socket_msgs
         autoware_msgs
         geometry_msgs
@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        CATKIN_DEPENDS tf tablet_socket_msgs autoware_msgs autoware_gnss_library
+        CATKIN_DEPENDS tf tablet_socket_msgs autoware_msgs gnss
 )
 
 include_directories(

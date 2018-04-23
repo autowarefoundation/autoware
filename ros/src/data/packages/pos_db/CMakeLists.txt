@@ -3,7 +3,7 @@ project(pos_db)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
-        autoware_gnss_library
+        gnss
         jsk_recognition_msgs
         tf
         autoware_msgs
@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
         CATKIN_DEPENDS
         roscpp
-        autoware_gnss_library
+        gnss
         jsk_recognition_msgs
         tf
         autoware_msgs

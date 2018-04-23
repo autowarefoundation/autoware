@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_maker)
 
 find_package(catkin REQUIRED COMPONENTS
-        autoware_gnss_library
+        gnss
         roscpp
         std_msgs
         geometry_msgs
@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED)
 
 catkin_package(
-        CATKIN_DEPENDS autoware_gnss_library
+        CATKIN_DEPENDS gnss
         roscpp
         std_msgs
         geometry_msgs

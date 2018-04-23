@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         sensor_msgs
         tf
-        autoware_gnss_library
+        gnss
         waypoint_follower
         vector_map
         astar_planner
@@ -34,7 +34,7 @@ catkin_package(
         pcl_conversions
         sensor_msgs
         tf
-        autoware_gnss_library
+        gnss
         waypoint_follower
         vector_map
         astar_planner

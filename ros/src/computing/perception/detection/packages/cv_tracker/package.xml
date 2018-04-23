@@ -22,7 +22,7 @@
     <build_depend>kf_lib</build_depend>
     <build_depend>librcnn</build_depend>
     <build_depend>jsk_recognition_msgs</build_depend>
-    <build_depend>autoware_gnss_library</build_depend>
+    <build_depend>gnss</build_depend>
 
     <run_depend>cv_bridge</run_depend>
     <run_depend>image_transport</run_depend>
@@ -38,7 +38,7 @@
     <run_depend>kf_lib</run_depend>
     <run_depend>librcnn</run_depend>
     <run_depend>jsk_recognition_msgs</run_depend>
-    <run_depend>autoware_gnss_library</run_depend>
+    <run_depend>gnss</run_depend>
 
     <export>
     </export>

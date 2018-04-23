@@ -5,12 +5,12 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         nmea_msgs
-        autoware_gnss_library
+        gnss
         tf
         )
 
 catkin_package(
-        CATKIN_DEPENDS roscpp std_msgs nmea_msgs autoware_gnss_library tf
+        CATKIN_DEPENDS roscpp std_msgs nmea_msgs gnss tf
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -18,6 +18,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 message("--------------------------")
 message("--------------------------")
 message(${catkin_INCLUDE_DIRS})
+message(${gnss_INCLUDE_DIRS})
 message("--------------------------")
 message("--------------------------")
 
