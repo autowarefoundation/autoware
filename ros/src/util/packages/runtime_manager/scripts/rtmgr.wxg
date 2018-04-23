@@ -5,7 +5,7 @@
     <object class="MyFrame" name="frame_1" base="EditFrame">
         <style>wxDEFAULT_FRAME_STYLE</style>
         <title>Runtime Manager</title>
-        <size>2495, 1556</size>
+        <size>495, 556</size>
         <object class="wxBoxSizer" name="sizer_1" base="EditBoxSizer">
             <attribute>1</attribute>
             <orient>wxVERTICAL</orient>

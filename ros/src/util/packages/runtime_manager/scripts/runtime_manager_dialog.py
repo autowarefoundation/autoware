@@ -298,6 +298,8 @@ class MyFrame(rtmgr.MyFrame):
                 self.all_sensors_proc = None
                 self.lidar_tracker_proc = None
                 self.ros1_bridge_proc = None
+		self.route01_proc = None
+		self.route02_proc = None
                 choices = [
                     'ghost obstacle',
                     'accident took over',
@@ -1918,23 +1920,23 @@ class MyFrame(rtmgr.MyFrame):
 
 	def OnRoute01(self, event):
 		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route01')
-		self.all_sensors_proc = self.launch_kill(
-			not self.all_sensors_proc,
+		self.route01_proc = self.launch_kill(
+			not self.route01_proc,
 			cmd,
-			self.all_sensors_proc,
-			obj=self.button_run_all_sensors,
+			self.route01_proc,
+			obj=self.button_route01,
 			kill_children=True)
-		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
+		self.interface_cmd[ self.button_route01 ] = (cmd, self.route01_proc)
 
 	def OnRoute02(self, event):
 		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route02')
-		self.all_sensors_proc = self.launch_kill(
-			not self.all_sensors_proc,
+		self.route02_proc = self.launch_kill(
+			not self.route02_proc,
 			cmd,
-			self.all_sensors_proc,
-			obj=self.button_run_all_sensors,
+			self.route02_proc,
+			obj=self.button_route02,
 			kill_children=True)
-		self.interface_cmd[ self.button_run_all_sensors ] = (cmd, self.all_sensors_proc)
+		self.interface_cmd[ self.button_route02 ] = (cmd, self.route02_proc)
 
 	def stdout_file_search(self, file, k):
 		s = ''
