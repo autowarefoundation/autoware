@@ -45,7 +45,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Bool.h>
 
-#include <gnss/geo_pos_conv.hpp>
+#include <autoware_gnss_library/geo_pos_conv.hpp>
 
 #include "ros/ros.h"
 #include "tablet_socket_msgs/gear_cmd.h"

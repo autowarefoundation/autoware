@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <geo_pos_conv.hpp>
+#include <autoware_gnss_library/geo_pos_conv.hpp>
 
 double geo_pos_conv::x() const
 {
