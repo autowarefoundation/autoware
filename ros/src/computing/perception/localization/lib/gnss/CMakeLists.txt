@@ -4,12 +4,12 @@ project(autoware_gnss_library)
 find_package(catkin REQUIRED roscpp)
 
 catkin_package(
-        INCLUDE_DIRS include
+        INCLUDE_DIRS include/gnss
         LIBRARIES autoware_gnss_library
 )
 
 include_directories(
-        include
+        include/gnss
         ${catkin_INCLUDE_DIRS}
 )
 

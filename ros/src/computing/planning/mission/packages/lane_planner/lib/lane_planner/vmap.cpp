@@ -35,7 +35,7 @@
 
 #include <tablet_socket_msgs/Waypoint.h>
 
-#include <geo_pos_conv.hpp>
+#include <gnss/geo_pos_conv.hpp>
 #include <lane_planner/vmap.hpp>
 
 namespace lane_planner {

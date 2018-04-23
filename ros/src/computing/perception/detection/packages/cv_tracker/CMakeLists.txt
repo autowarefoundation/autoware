@@ -19,6 +19,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             libdpm_ocv
             kf_lib
             jsk_recognition_msgs
+            autoware_gnss_library
             )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
     FIND_PACKAGE(catkin REQUIRED COMPONENTS
@@ -33,6 +34,7 @@ elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
             tf
             kf_lib
             jsk_recognition_msgs
+            autoware_gnss_library
             )
 endif ()
 
@@ -47,12 +49,34 @@ EXECUTE_PROCESS(
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
     catkin_package(
-            CATKIN_DEPENDS libdpm_ocv
-            libdpm_ttic fusion kf_lib std_msgs geometry_msgs autoware_msgs
+            CATKIN_DEPENDS cv_bridge
+            image_transport
+            roscpp
+            sensor_msgs
+            std_msgs
+            autoware_msgs
+            libdpm_ttic
+            fusion
+            tf
+            libdpm_ocv
+            kf_lib
+            jsk_recognition_msgs
+            autoware_gnss_library
     )
 elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
     catkin_package(
-            CATKIN_DEPENDS libdpm_ttic fusion std_msgs geometry_msgs autoware_msgs
+            CATKIN_DEPENDS cv_bridge
+            image_transport
+            roscpp
+            std_msgs
+            autoware_msgs
+            sensor_msgs
+            libdpm_ttic
+            fusion
+            tf
+            kf_lib
+            jsk_recognition_msgs
+            autoware_gnss_library
     )
 endif ()
 ###########
