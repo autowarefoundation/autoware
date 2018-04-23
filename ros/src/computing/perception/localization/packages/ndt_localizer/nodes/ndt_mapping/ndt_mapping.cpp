@@ -68,7 +68,7 @@
 
 
 #ifdef CUDA_FOUND
-  #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
+  #include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
 
 #include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>

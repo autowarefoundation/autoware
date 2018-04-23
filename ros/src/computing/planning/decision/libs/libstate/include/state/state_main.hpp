@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include <state.hpp>
+#include <state/state.hpp>
 
 namespace state_machine
 {

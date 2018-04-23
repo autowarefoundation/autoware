@@ -1,28 +1,29 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(road_wizard)
-execute_process(
-  COMMAND rosversion -d
-  OUTPUT_VARIABLE ROS_VERSION
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+
+# get ros version
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
+
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  cv_bridge
-  sensor_msgs
-  tf
-  libvectormap
-  runtime_manager
-  vector_map_server
-  geometry_msgs
-  waypoint_follower
-  cmake_modules
-  autoware_msgs
+        autoware_msgs
+        cmake_modules
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+        waypoint_follower
   )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 QUIET)
+
 if(NOT EIGEN3_FOUND)
   # Fallback to cmake_modules
   find_package(cmake_modules REQUIRED)
@@ -52,8 +53,22 @@ include_directories(
 )
 
 catkin_package(
-  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
-  CATKIN_DEPENDS std_msgs message_runtime geometry_msgs vector_map_server libvectormap autoware_msgs
+    INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
+    CATKIN_DEPENDS
+        autoware_msgs
+        cmake_modules
+        cv_bridge
+        geometry_msgs
+        libvectormap
+        roscpp
+        sensor_msgs
+        std_msgs
+        tf
+        vector_map
+        vector_map_server
+        visualization_msgs
+
+    LIBRARIES libcontext
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -87,7 +102,6 @@ add_dependencies(region_tlr
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
-  ${libvectormap_INCLUDE_DIRS}
 )
 
 add_executable(feat_proj
@@ -96,9 +110,7 @@ add_executable(feat_proj
 
 target_link_libraries(feat_proj
   ${catkin_LIBRARIES}
-  ${libvectormap_LIBRARIES}
   ${OpenCV_LIBS}
-  vector_map
 )
 
 add_dependencies(feat_proj
@@ -157,10 +169,6 @@ target_link_libraries(roi_extractor
   ${catkin_LIBRARIES}
   libcontext
 )
-
-add_dependencies(region_tlr
-road_wizard_generate_messages_cpp)
-
 
 ### label_maker ###
 find_package(Qt5Core REQUIRED)
@@ -244,6 +252,28 @@ add_dependencies(region_tlr_ssd
   ${catkin_EXPORTED_TARGETS}
   )
 
+install(TARGETS region_tlr_ssd
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 else()                          # if(EXISTS "${SSD_CAFFE_PATH}")
   message("'SSD/Caffe' is not installed. 'region_tlr_ssd' will not be built.")
 endif()                         # if(EXISTS "${SSD_CAFFE_PATH}")
+
+
+install(TARGETS region_tlr feat_proj tlr_tuner roi_extractor label_maker
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+  PATTERN ".svn" EXCLUDE)

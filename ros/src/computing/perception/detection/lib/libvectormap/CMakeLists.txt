@@ -31,7 +31,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 INCLUDE_DIRS include
-LIBRARIES vectormap
+LIBRARIES libvectormap
 CATKIN_DEPENDS vector_map
 DEPENDS Eigen3
 )
@@ -43,15 +43,15 @@ include_directories(
 )
 
 
-add_library(vectormap STATIC
+add_library(libvectormap STATIC
    src/vector_map.cpp
 )
 
-target_link_libraries(vectormap
+target_link_libraries(libvectormap
   ${catkin_LIBRARIES}
   )
 
-install(TARGETS vectormap
+install(TARGETS libvectormap
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

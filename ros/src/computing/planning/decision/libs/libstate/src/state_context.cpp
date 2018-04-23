@@ -7,10 +7,10 @@
 #include <cassert>
 #include <mutex>
 
-#include <state_context.hpp>
+#include <state/state_context.hpp>
 
-#include <state.hpp>
-#include <state_common.hpp>
+#include <state/state.hpp>
+#include <state/state_common.hpp>
 
 /**
  *

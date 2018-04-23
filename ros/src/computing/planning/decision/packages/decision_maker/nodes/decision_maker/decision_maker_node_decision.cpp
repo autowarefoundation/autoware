@@ -11,8 +11,8 @@
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state/state.hpp>
+#include <state/state_context.hpp>
 
 namespace decision_maker
 {

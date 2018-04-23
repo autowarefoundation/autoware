@@ -3,6 +3,7 @@ project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  autoware_msgs
   pcl_ros
   sensor_msgs
   pcl_conversions
@@ -21,7 +22,8 @@ generate_messages(
 )
 
 catkin_package(
-  CATKIN_DEPENDS sensor_msgs
+  CATKIN_DEPENDS pcl_ros pcl_conversions message_runtime
+  INCLUDE_DIRS include
 )
 
 ###########
@@ -29,7 +31,7 @@ catkin_package(
 ###########
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_STANDARD 11)
 
 add_executable(voxel_grid_filter nodes/voxel_grid_filter/voxel_grid_filter.cpp)
 add_executable(ring_filter nodes/ring_filter/ring_filter.cpp)
@@ -45,3 +47,18 @@ target_link_libraries(voxel_grid_filter ${catkin_LIBRARIES})
 target_link_libraries(ring_filter ${catkin_LIBRARIES})
 target_link_libraries(distance_filter ${catkin_LIBRARIES})
 target_link_libraries(random_filter ${catkin_LIBRARIES})
+
+
+## Install executables and/or libraries
+install(TARGETS voxel_grid_filter ring_filter distance_filter random_filter
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+## Install project namespaced headers
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+PATTERN ".svn" EXCLUDE)

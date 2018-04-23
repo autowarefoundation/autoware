@@ -4,9 +4,7 @@ project(autoware_pointgrey_drivers)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
-	std_msgs
-	message_generation
-	tf
+        sensor_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -23,8 +21,7 @@ if(EXISTS "/usr/include/flycapture")
 	include_directories(
 		/usr/include/flycapture
 		${catkin_INCLUDE_DIRS}
-		${OpenCV_INCLUDE_DIRS}
-		${catkin_INCLUDE_DIRS}
+                ${OpenCV_INCLUDE_DIRS}
 	)
 	add_executable(grasshopper3_camera
 		nodes/grasshopper3/grasshopper3.cpp
@@ -35,6 +32,13 @@ if(EXISTS "/usr/include/flycapture")
 		${OpenCV_LIBS}
 		flycapture
 	)
+
+        ## Install executables and/or libraries
+        install(TARGETS grasshopper3_camera
+                ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 else()
 	message("'FlyCapture SDK' is not installed. 'grasshopper3_camera' will not be built.")
 endif()
@@ -49,8 +53,7 @@ if(EXISTS "/usr/include/ladybug")
 	endif()
 
 	include_directories(
-		/usr/include/ladybug
-		nodes/ladybug
+                /usr/include/ladybug
 		${catkin_INCLUDE_DIRS}
 		${OpenCV_INCLUDE_DIRS}
 		${XercesC_INCLUDE_DIRS}
@@ -63,10 +66,19 @@ if(EXISTS "/usr/include/ladybug")
 	target_link_libraries(ladybug_camera
 		${catkin_LIBRARIES}
 		${OpenCV_LIBS}
-		${XercesC_LIBRARIES}
-		flycapture
+                ${XercesC_LIBRARIES}
 		ladybug
+
+        ## Install executables and/or libraries
+        install(TARGETS ladybug_camera
+                ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+                RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 	)
 else()
 	message("'SDK for Ladybug' is not installed. 'ladybug_camera' will not be built.")
 endif()
+
+install(DIRECTORY scripts/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+PATTERN ".svn" EXCLUDE)

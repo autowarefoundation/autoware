@@ -1,4 +1,4 @@
-#include "amathutils.hpp"
+#include "amathutils/amathutils.hpp"
 
 namespace amathutils
 {
