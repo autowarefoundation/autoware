@@ -10,3 +10,4 @@ float32 radius_min
 bool resample_mode
 float32 resample_interval
 int32 velocity_offset
+int32 end_point_offset

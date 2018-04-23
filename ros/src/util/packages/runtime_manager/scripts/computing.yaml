@@ -674,6 +674,10 @@ subs :
              depend      : filtering_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
+           end_point_offset :
+             depend      : filtering_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
            dialog : MyDialogWaypointLoader
        - name : waypoint_saver
          desc : waypoint_saver desc sample
@@ -3222,7 +3226,7 @@ params :
     - name      : radius_min
       desc      : On the curve, Velocity_local_minimum(=Vlm) show linearly increase with Radius_local_minimum(=Rlm). Rmin = min(Rlm)
       label     : VelocityPlanning---Rmin[m]
-      min       : 4.0
+      min       : 1.0
       max       : 10.0
       v         : 6.0
       cmd_param :
@@ -3257,13 +3261,23 @@ params :
         delim       : ':='
     - name      : velocity_offset
       desc      : velocity offset for matching to the base point of vehicle velocity.
-      label     : VelocityOffset---velocity offset[point count]
+      label     : VelocityOffset[point count]
       min       : 0
       max       : 20
       v         : 6
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : end_point_offset
+      desc      : expand end point region (velocity=0) for safety or definitely stopping. 
+      label     : EndPointOffset[point count]
+      min       : 0
+      max       : 10
+      v         : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
 
   - name  : waypoint_velocity_visualizer
     vars  :

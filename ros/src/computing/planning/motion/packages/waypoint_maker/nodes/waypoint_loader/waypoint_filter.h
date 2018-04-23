@@ -50,6 +50,7 @@ private:
   double accel_limit_, decel_limit_, resample_interval_;
   int velocity_offset_;
   bool resample_mode_;
+  int end_point_offset_;
 
 public:
   WaypointFilter();

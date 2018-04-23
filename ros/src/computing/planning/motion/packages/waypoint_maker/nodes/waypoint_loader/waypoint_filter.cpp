@@ -61,6 +61,7 @@ void WaypointFilter::initParameter(const autoware_msgs::ConfigWaypointLoader::Co
   resample_mode_ = conf->resample_mode;
   resample_interval_ = conf->resample_interval;
   velocity_offset_ = conf->velocity_offset;
+  end_point_offset_ = conf->end_point_offset;
   r_inf_ = 10 * r_th_;
 }
 
@@ -100,7 +101,7 @@ void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
     limitAccelDecel(vmax, vmin, start_idx, lane);
     limitAccelDecel(vmax, vmin, end_idx, lane);
   }
-  unsigned long end_id[2] = { 0, lane->waypoints.size() - 1 };
+  unsigned long end_id[2] = { 0, lane->waypoints.size() - 1 - end_point_offset_};
   for (int i = 0; i < 2; i++)
   {
     const unsigned long idx = end_id[i];
@@ -109,6 +110,13 @@ void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
     if (lane->waypoints[idx].twist.twist.linear.x < vmin)
       continue;
     lane->waypoints[idx].twist.twist.linear.x = vmin;
+    if (i == 1)
+    {
+      for (int j = 0; j < end_point_offset_; j++)
+      {
+        lane->waypoints[idx + j + 1].twist.twist.linear.x = vmin;
+      }
+    }
     limitAccelDecel(vmax, vmin, idx, lane);
   }
 }
