@@ -290,10 +290,10 @@ target_include_directories(imm_ukf_pda_tracker PRIVATE nodes/imm_ukf_pda_tracker
 target_link_libraries(imm_ukf_pda_tracker ${catkin_LIBRARIES})
 
 #cluster filter
-set(SOURCE_FILES nodes/cluster_filter/src/cluster_filter_main.cpp nodes/cluster_filter/src/cluster_filter.cpp)
-add_executable(cluster_filter ${SOURCE_FILES})
-target_include_directories(cluster_filter PRIVATE nodes/cluster_filter/include)
-target_link_libraries(cluster_filter ${catkin_LIBRARIES})
+#set(SOURCE_FILES nodes/cluster_filter/src/cluster_filter_main.cpp nodes/cluster_filter/src/cluster_filter.cpp)
+#add_executable(cluster_filter ${SOURCE_FILES})
+#target_include_directories(cluster_filter PRIVATE nodes/cluster_filter/include)
+#target_link_libraries(cluster_filter ${catkin_LIBRARIES})
 
 #visualize cloud cluster
 set(SOURCE_FILES nodes/visualize_cloud_cluster/src/visualize_cloud_cluster_main.cpp nodes/visualize_cloud_cluster/src/visualize_cloud_cluster.cpp)

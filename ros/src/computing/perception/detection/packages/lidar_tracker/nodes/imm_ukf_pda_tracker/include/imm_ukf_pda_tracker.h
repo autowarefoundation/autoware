@@ -85,10 +85,25 @@ private:
 	double getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox jsk_bb);
 	void updateBB(UKF& target);
 	double getIntersectCoef(const double vec1x, const double vec1y, const double vec2x, const double vec2y,
-                            const double p_x, const double p_y, const double cp_x, const double cp_y);
+													const double p_x, const double p_y, const double cp_x, const double cp_y);
 	void mergeOverSegmentation(const std::vector<UKF> targets);
 
 	void updateLabel(UKF target, autoware_msgs::CloudCluster& cc);
+
+	void initTracker(autoware_msgs::CloudClusterArray input, double timestamp);
+	void secondInit(double dt, std::vector<autoware_msgs::CloudCluster> clusterVec, UKF &target);
+
+	void updateTrackingNum(std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target);
+
+	void probabilisticDataAssociation(autoware_msgs::CloudClusterArray input,
+																		double dt, double det_explode_param, std::vector<int>& matching_vec,
+																		std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target);
+	void makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<int> matching_vec);
+
+	void staticClassification();
+
+	void makeOutput(autoware_msgs::CloudClusterArray input,
+									autoware_msgs::CloudClusterArray& output);
 
 	void tracker(autoware_msgs::CloudClusterArray input,
                  autoware_msgs::CloudClusterArray& output);
@@ -97,8 +112,5 @@ private:
 public:
 	ImmUkfPda();
 };
-
-
-
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */
