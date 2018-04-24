@@ -1919,7 +1919,7 @@ class MyFrame(rtmgr.MyFrame):
 		pub.publish(std_msgs.msg.Bool(True))
 
 	def OnRoute01(self, event):
-		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route01')
+		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_processes.sh route01')
 		self.route01_proc = self.launch_kill(
 			not self.route01_proc,
 			cmd,
@@ -1929,7 +1929,7 @@ class MyFrame(rtmgr.MyFrame):
 		self.interface_cmd[ self.button_route01 ] = (cmd, self.route01_proc)
 
 	def OnRoute02(self, event):
-		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_process.sh route02')
+		cmd = os.path.join(rospkg.RosPack().get_path('demo_scripts'), 'scripts/all_processes.sh route02')
 		self.route02_proc = self.launch_kill(
 			not self.route02_proc,
 			cmd,
