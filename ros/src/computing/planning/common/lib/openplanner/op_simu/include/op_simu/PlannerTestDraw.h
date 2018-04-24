@@ -9,13 +9,13 @@
 #define PLANNERTESTDRAW_H_
 #include <iostream>
 #include "DrawObjBase.h"
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 #include "CarState.h"
 #include "DrawingHelpers.h"
 #include "TrajectoryFollower.h"
 #include "SimulatedTrajectoryFollower.h"
 #include "Graph2dBase.h"
-#include "LocalPlannerH.h"
+#include "op_planner/LocalPlannerH.h"
 
 namespace Graphics
 {

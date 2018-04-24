@@ -4,8 +4,7 @@ project(op_utility)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
-find_package(catkin REQUIRED COMPONENTS
-        )
+find_package(catkin REQUIRED)
 
 find_package(TinyXML REQUIRED)
 
@@ -15,6 +14,7 @@ find_package(TinyXML REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES op_utility
+        DEPENDS tinyxml
 )
 
 ###########
@@ -42,3 +42,14 @@ target_link_libraries(${PROJECT_NAME}
         ${TinyXML_LIBRARIES}
         )
 
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        )
+
+
+install(TARGETS op_utility
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )

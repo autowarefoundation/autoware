@@ -9,7 +9,7 @@
 #define AlternativeVisualizer_H_
 #include <iostream>
 #include "DrawObjBase.h"
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 #include "CarState.h"
 #include "DrawingHelpers.h"
 #include "TrajectoryFollower.h"

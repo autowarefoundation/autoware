@@ -9,7 +9,7 @@
 #define GRAPH2DBASE_H_
 
 #include "DrawingHelpers.h"
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 #include <vector>
 
 namespace Graphics {

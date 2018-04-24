@@ -7,9 +7,9 @@
 
 #ifndef SimulatedTrajectoryFollower_H_
 #define SimulatedTrajectoryFollower_H_
-#include "RoadNetwork.h"
-#include "UtilityH.h"
-#include "PlannerCommonDef.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/PlannerCommonDef.h"
 
 namespace SimulationNS
 {

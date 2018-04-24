@@ -9,7 +9,7 @@
 #define DRAWINGHELPERS_H_
 
 #include "glm.h"
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 #include "glm.h"
 
 namespace Graphics {

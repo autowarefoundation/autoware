@@ -24,7 +24,7 @@ target_link_libraries(gnss
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp"
-)
+        )
 
 
 install(TARGETS gnss

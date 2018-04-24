@@ -7,9 +7,9 @@
 
 #ifndef TRAJECTORYFOLLOWER_H_
 #define TRAJECTORYFOLLOWER_H_
-#include "RoadNetwork.h"
-#include "UtilityH.h"
-#include "PlannerCommonDef.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/PlannerCommonDef.h"
 
 
 #define MAX_ACCELERATION_2G 5 // meter /sec/sec

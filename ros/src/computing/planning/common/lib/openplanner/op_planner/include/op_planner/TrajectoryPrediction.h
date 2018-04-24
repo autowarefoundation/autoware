@@ -8,7 +8,7 @@
 #ifndef TRAJECTORYPREDICTION_H_
 #define TRAJECTORYPREDICTION_H_
 
-#include <RoadNetwork.h>
+#include <op_planner/RoadNetwork.h>
 #include "PlannerCommonDef.h"
 #include "PlanningHelpers.h"
 

@@ -9,9 +9,9 @@
 #define ROSHELPERS_H_
 
 #include <ros/ros.h>
-#include "RoadNetwork.h"
-#include "PlannerCommonDef.h"
-#include "LocalPlannerH.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_planner/PlannerCommonDef.h"
+#include "op_planner/LocalPlannerH.h"
 
 #include "vector_map_msgs/PointArray.h"
 #include "vector_map_msgs/LaneArray.h"
