@@ -24,10 +24,6 @@ catkin_package(
         CATKIN_DEPENDS roscpp
 )
 
-###########
-## Build ##
-###########
-
 EXECUTE_PROCESS(
         COMMAND pkg-config --variable=host_bins Qt5Core
         OUTPUT_VARIABLE Qt5BIN
@@ -50,10 +46,6 @@ target_link_libraries(rosinterface
         Qt5::Core
         Qt5::Widgets
         )
-
-#############
-## Install ##
-#############
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

@@ -144,3 +144,9 @@ add_dependencies(calibration_publisher
 target_link_libraries(calibration_publisher
         ${catkin_LIBRARIES}
         )
+
+install(TARGETS calibration_publisher calibration_toolkit
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )

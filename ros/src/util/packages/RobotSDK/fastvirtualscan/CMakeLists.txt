@@ -13,7 +13,7 @@ find_package(Qt5Core REQUIRED)
 ###################################
 
 catkin_package(
-  INCLUDE_DIRS include/fastvirtualscan
+  INCLUDE_DIRS include
   LIBRARIES fastvirtualscan
   CATKIN_DEPENDS roscpp sensor_msgs
 )
@@ -26,7 +26,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  include/fastvirtualscan
+  include
   ${Qt5Core_INCLUDE_DIRS}
 )
 
@@ -38,8 +38,14 @@ add_library(fastvirtualscan
 ## Install ##
 #############
 
-install(
-  DIRECTORY include/fastvirtualscan
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        )
+
+
+install(TARGETS fastvirtualscan
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )

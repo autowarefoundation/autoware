@@ -25,20 +25,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES camera_lidar3d
         CATKIN_DEPENDS rosinterface message_runtime std_msgs sensor_msgs autoware_msgs
-        #  DEPENDS system_lib
 )
-
-###########
-## Build ##
-###########
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 

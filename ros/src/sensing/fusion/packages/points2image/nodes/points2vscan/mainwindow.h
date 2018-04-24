@@ -1,15 +1,16 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <string>
 #include <QMainWindow>
-#include<QPainter>
-#include<QImage>
-#include<QTime>
+#include <QPainter>
+#include <QImage>
+#include <QTime>
 
-#include<rosinterface.h>
-#include<fastvirtualscan.h>
-#include<sensor_msgs/LaserScan.h>
-#include<string>
+#include <rosinterface/rosinterface.h>
+#include <fastvirtualscan/fastvirtualscan.h>
+#include <sensor_msgs/LaserScan.h>
+
 
 //#define DEBUG_GUI
 
