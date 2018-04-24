@@ -3,7 +3,7 @@ project(calibration_camera_lidar)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
-include(FindLibXml2)
+include(FindLibXml2 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         rosconsole
@@ -32,10 +32,17 @@ find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES camera
-        CATKIN_DEPENDS glviewer rosinterface std_msgs message_runtime autoware_msgs
-        #  DEPENDS system_lib
+        CATKIN_DEPENDS
+        roscpp
+        rosconsole
+        std_msgs
+        sensor_msgs
+        glviewer
+        rosinterface
+        cv_bridge
+        pcl_ros
+        image_transport
+        autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -g ${CMAKE_CXX_FLAGS}")
@@ -53,10 +60,11 @@ include_directories(
         CalibrationToolkit
         nodes/calibration_toolkit
         ${catkin_INCLUDE_DIRS}
+        ${LIBXML2_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${GLUT_INCLUDE_DIRS}
-        ${OPENGL_INCLUDE_DIR}
+        ${GLUT_LIBRARIES}
 )
 
 ## Declare a cpp library
@@ -77,16 +85,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             Qt5::OpenGL
             )
 
-    include_directories(
-            CalibrationToolkit
-            nodes/calibration_toolkit
-            ${catkin_INCLUDE_DIRS}
-            ${LIBXML2_INCLUDE_DIR}
-            ${OpenCV_INCLUDE_DIRS}
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-            ${GLUT_LIBRARIES}
-    )
 endif ()
 
 ## 2D

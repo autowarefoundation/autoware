@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fastvirtualscan)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  sensor_msgs
-)
+        roscpp
+        sensor_msgs
+        )
 
 find_package(Qt5Core REQUIRED)
 
@@ -13,9 +13,9 @@ find_package(Qt5Core REQUIRED)
 ###################################
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES fastvirtualscan
-  CATKIN_DEPENDS roscpp sensor_msgs
+        INCLUDE_DIRS include
+        LIBRARIES fastvirtualscan
+        CATKIN_DEPENDS roscpp sensor_msgs
 )
 
 ###########
@@ -25,14 +25,14 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
-  include
-  ${Qt5Core_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
+        include
+        ${Qt5Core_INCLUDE_DIRS}
 )
 
 add_library(fastvirtualscan
-  FastVirtualScan/fastvirtualscan.cpp
-)
+        FastVirtualScan/fastvirtualscan.cpp
+        )
 
 #############
 ## Install ##

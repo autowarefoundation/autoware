@@ -20,8 +20,8 @@ else ()
 endif ()
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -34,6 +34,7 @@ find_package(Qt5Gui REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES glviewer
+        CATKIN_DEPENDS roscpp
 )
 
 EXECUTE_PROCESS(
@@ -51,8 +52,13 @@ if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR 
             ${EIGEN3_INCLUDE_DIRS}
     )
 
+    qt5_wrap_cpp(glviewer_SRC
+            include/glviewer/glviewer.h
+            )
+
     add_library(glviewer
             GLViewer/glviewer.cpp
+            ${glviewer_SRC}
             )
 
     target_link_libraries(glviewer

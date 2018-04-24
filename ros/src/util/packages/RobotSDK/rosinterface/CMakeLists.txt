@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(rosinterface)
 
 include(FindPkgConfig)
@@ -8,8 +8,8 @@ find_package(catkin REQUIRED
         )
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+#set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -20,24 +20,21 @@ find_package(Qt5Widgets REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES rosinterface
-        CATKIN_DEPENDS roscpp
-)
-
-EXECUTE_PROCESS(
-        COMMAND pkg-config --variable=host_bins Qt5Core
-        OUTPUT_VARIABLE Qt5BIN
-        OUTPUT_STRIP_TRAILING_WHITESPACE
+        CATKIN_DEPENDS roscpp tf
 )
 
 include_directories(
-        include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${catkin_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+qt5_wrap_cpp(rosinterface_SRC
+        include/rosinterface/rosinterface.h
+        )
 
 add_library(rosinterface
         ROSInterface/rosinterface.cpp
+        ${rosinterface_SRC}
         )
 
 target_link_libraries(rosinterface
