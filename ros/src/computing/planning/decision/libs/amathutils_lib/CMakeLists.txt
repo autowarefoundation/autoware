@@ -17,23 +17,29 @@ catkin_package(
         CATKIN_DEPENDS roscpp autoware_msgs
 )
 
-include_directories(${TARGET}
+include_directories(amathutils_lib
         include
         ${catkin_INCLUDE_DIRS}
         )
 
-add_library(${TARGET}
+add_library(amathutils_lib
         ${TARGET_SRC}
         )
-target_link_libraries(${TARGET}
+target_link_libraries(amathutils_lib
         ${CMAKE_THREAD_LIBS_INIT}
         )
 
-add_dependencies(${TARGET}
+add_dependencies(amathutils_lib
         ${catkin_EXPORTED_TARGETS}
         )
 
-install(DIRECTORY include
+install(TARGETS amathutils_lib
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
+
+install(DIRECTORY include/amathutils_lib
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp"
         )

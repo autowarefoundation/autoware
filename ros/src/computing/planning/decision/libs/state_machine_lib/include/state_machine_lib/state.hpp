@@ -4,7 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
-#include <state_flags.hpp>
+#include <state_machine_lib/state_flags.hpp>
 #include <vector>
 
 namespace state_machine

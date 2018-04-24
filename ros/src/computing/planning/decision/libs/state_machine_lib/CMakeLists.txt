@@ -38,7 +38,13 @@ add_dependencies(${TARGET}
         ${catkin_EXPORTED_TARGETS}
         )
 
-install(DIRECTORY include
+install(TARGETS state_machine_lib
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
+
+install(DIRECTORY include/state_machine_lib
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp"
         )
