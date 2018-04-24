@@ -147,8 +147,8 @@ double PurePursuitNode::computeLookaheadDistance() const
   if (param_flag_ == enumToInteger(Mode::dialog))
     return const_lookahead_distance_;
 
-  double maximum_lookahead_distance = current_linear_velocity_ * 10;
-  double ld = current_linear_velocity_ * lookahead_distance_ratio_;
+  double maximum_lookahead_distance = std::abs(current_linear_velocity_) * 10;
+  double ld = std::abs(current_linear_velocity_) * lookahead_distance_ratio_;
 
   return ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_
         : ld > maximum_lookahead_distance ? maximum_lookahead_distance
