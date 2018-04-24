@@ -820,7 +820,7 @@ int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const 
       geometry_msgs::Point converted_p =
           convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
       double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
-      if (converted_p.x > 0 && angle < 90)
+      //if (converted_p.x > 0 && angle < 90)
         idx_vec.push_back(i);
     }
   }
