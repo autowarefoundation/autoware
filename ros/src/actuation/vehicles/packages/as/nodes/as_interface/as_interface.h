@@ -52,6 +52,7 @@
 #include <autoware_msgs/CurvatureCommandStamped.h>
 #include <autoware_msgs/lamp_cmd.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 
 namespace pacmod
 {
@@ -76,6 +77,7 @@ private:
   ros::Publisher turn_signal_pub_;
   ros::Publisher gear_pub_;
   ros::Publisher current_twist_pub_;
+  ros::Publisher velocity_overlay_pub_;
 
   // subscriber
   ros::Subscriber twist_cmd_sub_;

@@ -89,6 +89,7 @@ void PacmodInterface::initForROS()
   gear_pub_ = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
 
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
+  velocity_overlay_pub_ = nh_.advertise<std_msgs::Float32>("velocity_overlay", 10);
 }
 
 void PacmodInterface::run()
@@ -132,6 +133,11 @@ void PacmodInterface::callbackFromSyncedCurrentTwist(const module_comm_msgs::Vel
   ts.twist.linear.x = msg_velocity->velocity;  // [m/sec]
   ts.twist.angular.z = msg_curvature->curvature * ts.twist.linear.x; // [rad/sec]
   current_twist_pub_.publish(ts);
+
+  // publish the velocity for overlay on rviz
+  std_msgs::Float32 velocity_mph;
+  velocity_mph.data = msg_velocity->velocity*2.23694f; // to miles per hour
+  velocity_overlay_pub_.publish(velocity_mph); // miles per hour
 }
 
 void PacmodInterface::callbackPacmodTimer(const ros::TimerEvent& event)
