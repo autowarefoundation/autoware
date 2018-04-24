@@ -7,10 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-set(TARGET ${PROJECT_NAME})
-set(TARGET_SRC src/Amathutils.cpp
-        )
-
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES amathutils_lib
@@ -23,23 +19,23 @@ include_directories(amathutils_lib
         )
 
 add_library(amathutils_lib
-        ${TARGET_SRC}
+        src/Amathutils.cpp
         )
 target_link_libraries(amathutils_lib
-        ${CMAKE_THREAD_LIBS_INIT}
+        ${catkin_LIBRARIES}
         )
 
 add_dependencies(amathutils_lib
         ${catkin_EXPORTED_TARGETS}
         )
 
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+        )
+
 install(TARGETS amathutils_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-        )
-
-install(DIRECTORY include/amathutils_lib
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.hpp"
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
