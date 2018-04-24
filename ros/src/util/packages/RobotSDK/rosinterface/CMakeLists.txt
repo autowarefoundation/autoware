@@ -19,7 +19,7 @@ find_package(Qt5Widgets REQUIRED)
 
 
 catkin_package(
-  INCLUDE_DIRS include/rosinterface
+  INCLUDE_DIRS include
   LIBRARIES rosinterface
   CATKIN_DEPENDS roscpp
 )
@@ -35,7 +35,7 @@ EXECUTE_PROCESS(
 )
 
 include_directories(
-  include/rosinterface
+  include
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
@@ -56,8 +56,14 @@ target_link_libraries(rosinterface
 ## Install ##
 #############
 
-install(
-  DIRECTORY include/rosinterface
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        )
+
+
+install(TARGETS rosinterface
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )

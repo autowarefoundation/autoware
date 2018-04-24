@@ -25,7 +25,7 @@ catkin_package(
         INCLUDE_DIRS include
         LIBRARIES op_simu
         CATKIN_DEPENDS op_utility op_planner
-        DEPENDS libopencv-dev opengl libglew-dev glut libx11-dev threads
+        DEPENDS OpenCV OpenGL GLEW GLUT X11 Threads
 )
 
 ###########

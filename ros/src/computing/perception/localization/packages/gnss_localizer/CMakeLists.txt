@@ -13,13 +13,6 @@ catkin_package()
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
-message("--------------------------")
-message("--------------------------")
-message(${catkin_INCLUDE_DIRS})
-message(${gnss_INCLUDE_DIRS})
-message("--------------------------")
-message("--------------------------")
-
 include_directories(
         ${catkin_INCLUDE_DIRS}
 )
