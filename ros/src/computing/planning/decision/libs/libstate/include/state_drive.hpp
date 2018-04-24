@@ -12,23 +12,6 @@
 
 namespace state_machine
 {
-// DriveState
-class DriveState : public State<DriveState>
-{
-private:
-  friend class State<DriveState>;
-
-  DriveState(void)
-  {
-    StateName = "Drive";
-    StateNum = StateTransMask = DRIVE_STATE;
-    StateTransMask |= INITIAL_LOCATEVEHICLE_STATE;
-    StateKind = MAIN_STATE;
-  }
-
-public:
-};
-
 class DriveAccAccelerationState : public State<DriveAccAccelerationState>
 {
 private:
@@ -237,6 +220,20 @@ private:
   {
     StateName = "STOPLINE_PLAN";
     StateNum = DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE;
+    StateKind = BEHAVIOR_STATE;
+  }
+
+public:
+};
+
+class DriveBehaviorWaitState : public State<DriveBehaviorWaitState>
+{
+private:
+  friend class State<DriveBehaviorWaitState>;
+  DriveBehaviorWaitState(void)
+  {
+    StateName = "WaitOrders";
+    StateNum = DRIVE_BEHAVIOR_WAIT_STATE;
     StateKind = BEHAVIOR_STATE;
   }
 

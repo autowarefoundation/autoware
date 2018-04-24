@@ -48,10 +48,13 @@ WaypointLoaderNode::~WaypointLoaderNode()
 void WaypointLoaderNode::initPublisher()
 {
   // setup publisher
-  if(disableDecisionMaker_){
-	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
-  }else{
-	  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+  if (disableDecisionMaker_)
+  {
+    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
+  }
+  else
+  {
+    lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
   }
 }
 
@@ -75,8 +78,7 @@ void WaypointLoaderNode::publishLaneArray()
   lane_pub_.publish(lane_array);
 }
 
-void WaypointLoaderNode::createLaneArray(const std::vector<std::string> &paths,
-                                         autoware_msgs::LaneArray *lane_array)
+void WaypointLoaderNode::createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array)
 {
   for (auto el : paths)
   {
@@ -226,6 +228,12 @@ void WaypointLoaderNode::parseWaypoint(const std::string &line, const std::vecto
   wp->pose.pose.orientation = tf::createQuaternionMsgFromYaw(std::stod(map["yaw"]));
   wp->twist.twist.linear.x = kmph2mps(std::stod(map["velocity"]));
   wp->change_flag = std::stoi(map["change_flag"]);
+
+  // ver.4
+  wp->wpstate.steering_state = map["steering_flag"].empty() ? 0 : std::stoi(map["steering_flag"]);
+  wp->wpstate.accel_state = map["accel_flag"].empty() ? 0 : std::stoi(map["accel_flag"]);
+  wp->wpstate.stop_state = map["stop_flag"].empty() ? 0 : std::stoi(map["stop_flag"]);
+  wp->wpstate.event_state = map["event_flag"].empty() ? 0 : std::stoi(map["event_flag"]);
 }
 
 FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
@@ -255,31 +263,33 @@ FileFormat WaypointLoaderNode::checkFileFormat(const char *filename)
   int num_of_columns = countColumns(line);
   ROS_INFO("columns size: %d", num_of_columns);
 
-  return ( num_of_columns == 3 ? FileFormat::ver1  // if data consists "x y z (velocity)"
-         : num_of_columns == 4 ? FileFormat::ver2  // if data consists "x y z yaw (velocity)
-                               : FileFormat::unknown
-          );
+  return (num_of_columns == 3 ? FileFormat::ver1  // if data consists "x y z (velocity)"
+                                :
+                                num_of_columns == 4 ? FileFormat::ver2  // if data consists "x y z yaw (velocity)
+                                                      :
+                                                      FileFormat::unknown);
 }
 
 void WaypointLoaderNode::planningVelocity(std::vector<autoware_msgs::waypoint> *wps)
 {
-
   for (size_t i = 0; i < wps->size(); ++i)
   {
     wps->at(i).twist.twist.linear.x = decelerate(
-      wps->at(i).pose.pose.position, wps->at(wps->size() - 1).pose.pose.position, wps->at(i).twist.twist.linear.x);
+        wps->at(i).pose.pose.position, wps->at(wps->size() - 1).pose.pose.position, wps->at(i).twist.twist.linear.x);
   }
 
-  if(!disableVelocitySmoothing_){
-	  std::vector<autoware_msgs::waypoint> temp = *wps;
-	  if(temp.size() > 3){
-		  for (size_t i = 1; i< wps->size()-1; ++i){
-			  wps->at(i).twist.twist.linear.x = 
-				  (temp.at(i-1).twist.twist.linear.x + 
-				   temp.at(i-1).twist.twist.linear.x + 
-				   temp.at(i-1).twist.twist.linear.x) / 3;
-		  }
-	  }
+  if (!disableVelocitySmoothing_)
+  {
+    std::vector<autoware_msgs::waypoint> temp = *wps;
+    if (temp.size() > 3)
+    {
+      for (size_t i = 1; i < wps->size() - 1; ++i)
+      {
+        wps->at(i).twist.twist.linear.x = (temp.at(i - 1).twist.twist.linear.x + temp.at(i - 1).twist.twist.linear.x +
+                                           temp.at(i - 1).twist.twist.linear.x) /
+                                          3;
+      }
+    }
   }
 }
 
@@ -316,9 +326,11 @@ bool WaypointLoaderNode::verifyFileConsistency(const char *filename)
   std::string line;
   std::getline(ifs, line);  // remove first line
 
-  size_t ncol = format == FileFormat::ver1 ? 4 //x,y,z,velocity
-              : format == FileFormat::ver2 ? 5 //x,y,z,yaw,velocity
-              : countColumns(line);
+  size_t ncol = format == FileFormat::ver1 ? 4  // x,y,z,velocity
+                                             :
+                                             format == FileFormat::ver2 ? 5  // x,y,z,yaw,velocity
+                                                                          :
+                                                                          countColumns(line);
 
   while (std::getline(ifs, line))  // search from second line
   {

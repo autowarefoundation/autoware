@@ -1,5 +1,5 @@
-#include <cmath>
 #include <stdio.h>
+#include <cmath>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -22,7 +22,7 @@ namespace decision_maker
 void DecisionMakerNode::callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg)
 {
   geometry_msgs::PoseStamped _pose = current_pose_ = msg;
-  bool initLocalizationFlag = ctx->isCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE);
+  bool initLocalizationFlag = ctx->isCurrentState(state_machine::LOCATEVEHICLE_STATE);
   if (initLocalizationFlag &&
       isLocalizationConvergence(_pose.pose.position.x, _pose.pose.position.y, _pose.pose.position.z,
                                 _pose.pose.orientation.x, _pose.pose.orientation.y, _pose.pose.orientation.z))
@@ -38,21 +38,22 @@ bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
   if (!ctx->isCurrentState(_state_num))
   {
     _ret = ctx->setCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
-		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
-	    isManualLight = true;
+    if (_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE ||
+        _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE)
+    {
+      isManualLight = true;
     }
   }
   else
   {
     _ret = ctx->disableCurrentState((state_machine::StateFlags)_state_num);
-    if(_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE 
-		    || _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE){
-	    isManualLight = false;
+    if (_state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE ||
+        _state_num == state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE)
+    {
+      isManualLight = false;
     }
   }
   ctx->setEnableForceSetState(false);
-
 
   return _ret;
 }
@@ -72,12 +73,14 @@ void DecisionMakerNode::callbackFromStateCmd(const std_msgs::Int32 &msg)
 
 void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
 {
-  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
+  if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::LEFT) &&
+      ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
   }
-  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) && ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
+  else if (msg.data == enumToInteger<E_ChangeFlags>(E_ChangeFlags::RIGHT) &&
+           ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE))
   {
     ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE);
     ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_RIGHT_STATE);
@@ -111,23 +114,24 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
-{    
+{
   const autoware_msgs::traffic_light *light = event.getMessage().get();
-//  const ros::M_string &header = event.getConnectionHeader();
-//  std::string topic = header.at("topic"); 
-  
-  if(!isManualLight){// && topic.find("manage") == std::string::npos){
-	  current_traffic_light_ = light->traffic_light;
-	  if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
-	  {
-		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-	  }
-	  else
-	  {
-		  ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
-		  ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
-	  }
+  //  const ros::M_string &header = event.getConnectionHeader();
+  //  std::string topic = header.at("topic");
+
+  if (!isManualLight)
+  {  // && topic.find("manage") == std::string::npos){
+    current_traffic_light_ = light->traffic_light;
+    if (current_traffic_light_ == state_machine::E_RED || current_traffic_light_ == state_machine::E_YELLOW)
+    {
+      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+    }
+    else
+    {
+      ctx->setCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_GREEN_STATE);
+      ctx->disableCurrentState(state_machine::DRIVE_BEHAVIOR_TRAFFICLIGHT_RED_STATE);
+    }
   }
 }
 
@@ -164,27 +168,27 @@ void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClu
         {
           l_detection_flag = true;
           setFlagTime = ros::Time::now().toSec();
-	  break;
+          break;
         }
       }
     }
   }
   /* The true state continues for more than 1 second. */
-  if(l_detection_flag || (ros::Time::now().toSec() - setFlagTime) >= 1.0/*1.0sec*/){
-	  foundOtherVehicleForIntersectionStop_ = l_detection_flag;
+  if (l_detection_flag || (ros::Time::now().toSec() - setFlagTime) >= 1.0 /*1.0sec*/)
+  {
+    foundOtherVehicleForIntersectionStop_ = l_detection_flag;
   }
 }
 
 void DecisionMakerNode::callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg)
 {
-  if (ctx->setCurrentState(state_machine::INITIAL_LOCATEVEHICLE_STATE))
+  if (ctx->setCurrentState(state_machine::LOCATEVEHICLE_STATE))
     Subs["points_raw"].shutdown();
 }
 
 void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects,
                                                    autoware_msgs::LaneArray &lane_array)
 {
-
   for (auto &lane : lane_array.lanes)
   {
     for (auto &wp : lane.waypoints)
@@ -203,7 +207,7 @@ void DecisionMakerNode::insertPointWithinCrossRoad(const std::vector<CrossRoadAr
           {
             autoware_msgs::lane nlane;
             area.insideLanes.push_back(nlane);
-	    area.bbox.pose.orientation = wp.pose.pose.orientation;
+            area.bbox.pose.orientation = wp.pose.pose.orientation;
           }
           area.insideLanes.back().waypoints.push_back(wp);
           area.insideWaypoint_points.push_back(pp);  // geometry_msgs::point
@@ -221,7 +225,7 @@ inline double getDistance(double ax, double ay, double bx, double by)
   return std::hypot(ax - bx, ay - by);
 }
 
-void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
+void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray &lane_array)
 {
   insertPointWithinCrossRoad(intersects, lane_array);
   // STR
@@ -251,7 +255,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
     }
   }
   // STOP
-  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine& stopline) {
+  std::vector<StopLine> stoplines = g_vmap.findByFilter([&](const StopLine &stopline) {
     return ((g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type &
              (autoware_msgs::WaypointState::TYPE_STOP | autoware_msgs::WaypointState::TYPE_STOPLINE)) != 0);
   });
@@ -282,14 +286,22 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
             if (amathutils::isPointLeftFromLine(
                     center_point.x, center_point.y, lane.waypoints.at(wp_idx).pose.pose.position.x,
                     lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
-                    lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
+                    lane.waypoints.at(wp_idx + 1).pose.pose.position.y) >= 0)
             {
-              lane.waypoints.at(wp_idx).wpstate.stopline_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
-              // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+              lane.waypoints.at(wp_idx).wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
             }
           }
         }
       }
+    }
+// MISSION COMPLETE FLAG
+#define NUM_OF_SET_MISSION_COMPLETE_FLAG 3
+    size_t wp_idx = lane.waypoints.size();
+    int counter = 0;
+    for (int counter = 0;
+         counter <= (wp_idx <= NUM_OF_SET_MISSION_COMPLETE_FLAG ? wp_idx : NUM_OF_SET_MISSION_COMPLETE_FLAG); counter++)
+    {
+      lane.waypoints.at(--wp_idx).wpstate.event_state = autoware_msgs::WaypointState::TYPE_EVENT_GOAL;
     }
   }
 }
@@ -297,6 +309,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 // for based waypoint
 void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg)
 {
+  static bool isFirstTimeCallback = true;
+
   ROS_INFO("[%s]:LoadedWaypointLaneArray\n", __func__);
   current_based_lane_array_ = msg;  // cached based path
   // indexing
@@ -311,7 +325,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
       wp.wpstate.aid = 0;
       wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stopline_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
     }
@@ -321,6 +335,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
 
   publishControlledLaneArray();
   updateLaneWaypointsArray();
+  isFirstTimeCallback = false;
 }
 
 state_machine::StateFlags getStateFlags(uint8_t msg_state)
@@ -335,47 +350,83 @@ state_machine::StateFlags getStateFlags(uint8_t msg_state)
 
 void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg)
 {
-  if (!hasvMap())
+  if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
   {
-    std::cerr << "Not found vmap subscribe" << std::endl;
+    ROS_DEBUG("State is not DRIVE_STATE[%s]", ctx->getCurrentStateName().c_str());
     return;
   }
 
-  if (!ctx->isCurrentState(state_machine::DRIVE_STATE))
-  {
-    std::cerr << "State is not DRIVE_STATE[" << ctx->getCurrentStateName() << "]" << std::endl;
-    return;
-  }
   // cached
   current_finalwaypoints_ = msg;
+  if (current_finalwaypoints_.waypoints.empty())
+  {
+    return;
+  }
 
   // stopline
   static size_t previous_idx = 0;
 
-  size_t idx = param_stopline_target_waypoint_ + (current_velocity_ * param_stopline_target_ratio_);
+  size_t idx;
+  idx = param_stopline_target_waypoint_ + (current_velocity_ * param_stopline_target_ratio_);
   idx = current_finalwaypoints_.waypoints.size() - 1 > idx ? idx : current_finalwaypoints_.waypoints.size() - 1;
 
   CurrentStoplineTarget_ = current_finalwaypoints_.waypoints.at(idx);
-
-  for (size_t i = (previous_idx > idx) ? idx : previous_idx; i <= idx; i++)
+  try
   {
-    if (i < current_finalwaypoints_.waypoints.size())
+    for (size_t i = (previous_idx > idx) ? idx : previous_idx; i <= idx; i++)
     {
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
+      if (i < current_finalwaypoints_.waypoints.size())
       {
-        ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
-        closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
+        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
+        {
+          ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
+          closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
+        }
+        if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
+        {
+          ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
+          closest_stop_waypoint_ = CurrentStoplineTarget_.gid;
+        }
       }
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP)
-        ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
     }
   }
+  catch (std::out_of_range &oor)
+  {
+    fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx, current_finalwaypoints_.waypoints.size());
+  }
   previous_idx = idx;
-
-  // steering
+// steering
+#if 0
   idx = current_finalwaypoints_.waypoints.size() - 1 > param_target_waypoint_ ?
             param_target_waypoint_ :
             current_finalwaypoints_.waypoints.size() - 1;
+#endif
+  double _distance = 0.0;
+  double _distance_threshold = 30;  // 30[m] is decided by japanese law.
+
+  //
+  amathutils::point _prev_point(current_finalwaypoints_.waypoints.at(0).pose.pose.position.x,
+                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.y,
+                                current_finalwaypoints_.waypoints.at(0).pose.pose.position.z);
+
+  idx = 0;
+  for (auto &wp : current_finalwaypoints_.waypoints)
+  {
+    amathutils::point _next_point(wp.pose.pose.position.x, wp.pose.pose.position.y, wp.pose.pose.position.z);
+
+    _distance += amathutils::find_distance(&_prev_point, &_next_point);
+    idx++;
+    if (_distance >= _distance_threshold)
+    {
+      break;
+    }
+    if (idx >= current_finalwaypoints_.waypoints.size())
+    {
+      idx -= 1;
+      break;
+    }
+    _prev_point = _next_point;
+  }
 
   if (ctx->isCurrentState(state_machine::DRIVE_BEHAVIOR_LANECHANGE_LEFT_STATE))
   {
@@ -387,28 +438,31 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::lane &msg
   }
   else
   {
-    state_machine::StateFlags _TargetStateFlag;
-    for (size_t i = idx; i > 0; i--)
+    idx = (idx >= current_finalwaypoints_.waypoints.size()) ? idx = current_finalwaypoints_.waypoints.size() - 1 : idx;
+    try
     {
-      _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
-      if (_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE)
+      state_machine::StateFlags _TargetStateFlag;
+      for (size_t i = idx; i > 0; i--)
       {
-        break;
+        _TargetStateFlag = getStateFlags(current_finalwaypoints_.waypoints.at(i).wpstate.steering_state);
+        if (_TargetStateFlag != state_machine::DRIVE_STR_STRAIGHT_STATE)
+        {
+          break;
+        }
       }
+      ctx->setCurrentState(_TargetStateFlag);
     }
-    ctx->setCurrentState(_TargetStateFlag);
+    catch (std::out_of_range &oor)
+    {
+      fprintf(stderr, "[%s:%d]: access=%d, size=%d\n", __FILE__, __LINE__, idx,
+              current_finalwaypoints_.waypoints.size());
+    }
   }
   // for publish plan of velocity
   publishToVelocityArray();
 }
 void DecisionMakerNode::callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg)
 {
-  static bool Twistflag = false;
-
-  if (Twistflag)
-    ctx->handleTwistCmd(false);
-  else
-    Twistflag = true;
 }
 
 void DecisionMakerNode::callbackFromClosestWaypoint(const std_msgs::Int32 &msg)

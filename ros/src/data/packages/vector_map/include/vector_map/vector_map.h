@@ -395,12 +395,12 @@ private:
   Handle<Fence, FenceArray> fence_;
   Handle<RailCrossing, RailCrossingArray> rail_crossing_;
 
-  bool hasSubscribed(category_t category) const;
   void registerSubscriber(ros::NodeHandle& nh, category_t category);
 
 public:
   VectorMap();
 
+  bool hasSubscribed(category_t category) const;
   void subscribe(ros::NodeHandle& nh, category_t category);
   void subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout);
   void subscribe(ros::NodeHandle& nh, category_t category, const size_t max_retries);

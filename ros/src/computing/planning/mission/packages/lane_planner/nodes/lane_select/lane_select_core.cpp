@@ -50,6 +50,7 @@ LaneSelectNode::LaneSelectNode()
   , lane_change_target_minimum_(5.0)
   , vlength_hermite_curve_(10)
   , current_state_("UNKNOWN")
+  , lane_change_velocity_ratio_(0.8)
 {
   initForROS();
 }
@@ -85,7 +86,7 @@ void LaneSelectNode::initForROS()
   }
 
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
-  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id",1);
+  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id", 1);
 
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
@@ -172,7 +173,7 @@ void LaneSelectNode::processing()
   ROS_INFO("right_lane_idx: %d", right_lane_idx_);
   ROS_INFO("left_lane_idx: %d", left_lane_idx_);
 
-  if (current_state_ == "LANE_CHANGE")
+  if (current_state_.find("LANE_CHANGE") != std::string::npos)
   {
     try
     {
@@ -280,7 +281,8 @@ void LaneSelectNode::createLaneForChange()
   std::get<0>(lane_for_change_).header.stamp = nghbr_lane.header.stamp;
   std::vector<autoware_msgs::waypoint> hermite_wps = generateHermiteCurveForROS(
       cur_lane.waypoints.at(num_lane_change).pose.pose, nghbr_lane.waypoints.at(target_num).pose.pose,
-      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x, vlength_hermite_curve_);
+      cur_lane.waypoints.at(num_lane_change).twist.twist.linear.x * lane_change_velocity_ratio_,
+      vlength_hermite_curve_);
 
   for (auto &&el : hermite_wps)
     el.change_flag = cur_lane.waypoints.at(num_lane_change).change_flag;
@@ -318,17 +320,22 @@ void LaneSelectNode::updateChangeFlag()
 
 void LaneSelectNode::changeLane()
 {
-  if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::right && right_lane_idx_ != -1 &&
-      std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
+  if (current_state_.find("LANE_CHANGE_LEFT") != std::string::npos)
   {
-    current_lane_idx_ = right_lane_idx_;
+    if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::left && left_lane_idx_ != -1 &&
+        std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = left_lane_idx_;
+    }
   }
-  else if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::left && left_lane_idx_ != -1 &&
-           std::get<1>(tuple_vec_.at(left_lane_idx_)) != -1)
+  else if (current_state_.find("LANE_CHANGE_RIGHT") != std::string::npos)
   {
-    current_lane_idx_ = left_lane_idx_;
+    if (std::get<2>(tuple_vec_.at(current_lane_idx_)) == ChangeFlag::right && right_lane_idx_ != -1 &&
+        std::get<1>(tuple_vec_.at(right_lane_idx_)) != -1)
+    {
+      current_lane_idx_ = right_lane_idx_;
+    }
   }
-
   findNeighborLanes();
   return;
 }
@@ -691,16 +698,18 @@ void LaneSelectNode::callbackFromStates(const autoware_msgs::stateConstPtr &msg)
 {
   is_current_state_subscribed_ = true;
 
-  if (msg->behavior_state.find("LaneChange") != std::string::npos)
+  if (msg->behavior_state.find("LaneChangeLeft") != std::string::npos)
   {
-    current_state_ = std::string("LANE_CHANGE");
-    ;
+    current_state_ = std::string("LANE_CHANGE_LEFT");
+  }
+  else if (msg->behavior_state.find("LaneChangeRight") != std::string::npos)
+  {
+    current_state_ = std::string("LANE_CHANGE_RIGHT");
   }
   else
   {
     current_state_ = msg->main_state;
   }
-
   if (current_lane_idx_ == -1)
     initForLaneSelect();
   else
@@ -792,11 +801,15 @@ int32_t getClosestWaypointNumber(const autoware_msgs::lane &current_lane, const 
     idx_vec.reserve(current_lane.waypoints.size());
     for (uint32_t i = 0; i < current_lane.waypoints.size(); i++)
     {
-      geometry_msgs::Point converted_p =
-          convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
-      double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
-      if (converted_p.x > 0 && angle < 90)
-        idx_vec.push_back(i);
+      if (distance_threshold >
+          getTwoDimensionalDistance(current_lane.waypoints.at(i).pose.pose.position, current_pose.position))
+      {
+        geometry_msgs::Point converted_p =
+            convertPointIntoRelativeCoordinate(current_lane.waypoints.at(i).pose.pose.position, current_pose);
+        double angle = getRelativeAngle(current_lane.waypoints.at(i).pose.pose, current_pose);
+        if (converted_p.x > 0 && angle < 90)
+          idx_vec.push_back(i);
+      }
     }
   }
   else

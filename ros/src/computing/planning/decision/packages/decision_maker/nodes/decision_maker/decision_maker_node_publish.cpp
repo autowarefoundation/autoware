@@ -15,8 +15,8 @@
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/state.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <random>
 #include <visualization_msgs/MarkerArray.h>
+#include <random>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -66,18 +66,18 @@ void DecisionMakerNode::displayMarker(void)
 
   double scale = 3.0;
   createCrossRoadAreaMarker(crossroad_marker, scale);
-  
+
   detection_area_marker = crossroad_marker;
   detection_area_marker.header.frame_id = param_baselink_tf_;
   detection_area_marker.scale.x = (detectionArea_.x1 - detectionArea_.x2) * param_detection_area_rate_;
   detection_area_marker.scale.y = (detectionArea_.y1 - detectionArea_.y2) * param_detection_area_rate_;
-  detection_area_marker.color.r = foundOtherVehicleForIntersectionStop_?0.0:1.0;
-  detection_area_marker.pose.position.x =  detection_area_marker.scale.x/2;
+  detection_area_marker.color.r = foundOtherVehicleForIntersectionStop_ ? 0.0 : 1.0;
+  detection_area_marker.pose.position.x = detection_area_marker.scale.x / 2;
   detection_area_marker.color.g = 1;
   detection_area_marker.color.b = 0.3;
   detection_area_marker.color.a = 0.3;
   detection_area_marker.type = visualization_msgs::Marker::CUBE;
-  detection_area_marker.lifetime=ros::Duration();
+  detection_area_marker.lifetime = ros::Duration();
 
   stopline_target_marker = crossroad_marker;
   stopline_target_marker.type = visualization_msgs::Marker::SPHERE;
@@ -93,7 +93,7 @@ void DecisionMakerNode::displayMarker(void)
   stopline_target_marker.pose.position.x = CurrentStoplineTarget_.pose.pose.position.x;
   stopline_target_marker.pose.position.y = CurrentStoplineTarget_.pose.pose.position.y;
   stopline_target_marker.pose.position.z = CurrentStoplineTarget_.pose.pose.position.z;
-  
+
   inside_marker = crossroad_marker;
   inside_marker.scale.x = scale / 3;
   inside_marker.scale.y = scale / 3;
@@ -105,7 +105,6 @@ void DecisionMakerNode::displayMarker(void)
   inside_marker.color.b = 0.0;
   inside_marker.ns = "inside";
   inside_marker.lifetime = ros::Duration();
-   
 
   inside_marker = crossroad_marker;
   inside_marker.scale.x = scale / 3;
@@ -177,7 +176,6 @@ void DecisionMakerNode::displayMarker(void)
     marker_array.markers.push_back(inside_line_marker);
   }
 
-
   Pubs["detection_area"].publish(detection_area_marker);
   Pubs["crossroad_bbox"].publish(bbox_array);
   Pubs["crossroad_marker"].publish(marker_array);
@@ -222,6 +220,20 @@ void DecisionMakerNode::update_msgs(void)
 std::string DecisionMakerNode::createStateMessageText()
 {
   return ctx->createStateMessageText();
+}
+
+void DecisionMakerNode::publishLightColor(int status)
+{
+  autoware_msgs::traffic_light msg;
+  msg.traffic_light = status;
+  Pubs["light_color"].publish(msg);
+}
+
+void DecisionMakerNode::publishStoplineWaypointIdx(int wp_idx)
+{
+  std_msgs::Int32 msg;
+  msg.data = wp_idx;
+  Pubs["state/stopline_wpidx"].publish(msg);
 }
 
 void DecisionMakerNode::publishToVelocityArray()

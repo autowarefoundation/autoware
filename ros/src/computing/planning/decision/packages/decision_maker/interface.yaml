@@ -1,0 +1,3 @@
+- name: decision_maker_node
+  publish: [/state/stopline_wpidx, /state, /light_color_managed, /lamp_cmd, /state/overlay_text, /state/cross_road_marker, /state/cross_inside_marker, /state/detection_area, /state/stopline_target, /target_velocity_array, /state/val_diff_distance, /state/exectime]
+  subscribe: [/sim_pose, /current_pose, /current_velocity, /light_color, /filtered_points, /final_waypoints, /twist_cmd, /change_flag, /state_cmd, /closest_waypoint, /cloud_clusters, /config/decision_maker]

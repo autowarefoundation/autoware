@@ -41,7 +41,9 @@ public:
   {
     StateStores[START_STATE] = StartState::getInstance();
     StateStores[INITIAL_STATE] = InitialState::getInstance();
-    StateStores[INITIAL_LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
+    StateStores[LOCATEVEHICLE_STATE] = LocateVehicleState::getInstance();
+    StateStores[VEHICLE_READY_STATE] = VehicleReadyState::getInstance();
+    StateStores[DRIVE_READY_STATE] = DriveReadyState::getInstance();
     StateStores[DRIVE_STATE] = DriveState::getInstance();
     StateStores[DRIVE_ACC_ACCELERATION_STATE] = DriveAccAccelerationState::getInstance();
     StateStores[DRIVE_ACC_DECELERATION_STATE] = DriveAccDecelerationState::getInstance();
@@ -59,6 +61,7 @@ public:
     StateStores[DRIVE_BEHAVIOR_OBSTACLE_AVOIDANCE_STATE] = DriveBehaviorObstacleAvoidanceState::getInstance();
     StateStores[DRIVE_BEHAVIOR_STOPLINE_PLAN_STATE] = DriveBehaviorStoplinePlanState::getInstance();
     StateStores[DRIVE_BEHAVIOR_ACCEPT_LANECHANGE_STATE] = DriveBehaviorAcceptLanechangeState::getInstance();
+    StateStores[DRIVE_BEHAVIOR_WAIT_STATE] = DriveBehaviorWaitState::getInstance();
     StateStores[MISSION_COMPLETE_STATE] = MissionCompleteState::getInstance();
     StateStores[EMERGENCY_STATE] = EmergencyState::getInstance();
 
@@ -100,6 +103,7 @@ public:
   BaseState *getCurrentState(void);
   std::string getCurrentStateName(void);
   std::string getStateName(void);
+  bool reCallCurrentStateInCallback(void);
 
   std::vector<BaseState *> getMultipleStates(uint64_t _state_num_set);
 
@@ -123,15 +127,6 @@ public:
 
   bool setEnableForceSetState(bool force_flag);
   void InitContext(void);
-
-  bool TFInitialized(void);
-
-  void handleTrafficLight(uint32_t _light_color);
-  bool handleCurrentPose(double x, double y, double z, double roll, double pitch, double yaw);
-  bool handlePointsRaw(bool _hasLidarData);
-
-  bool handleIntersection(bool _hasIntersection, double _angle);
-  bool handleTwistCmd(bool _hasTwistCmd);
 };
 }
 

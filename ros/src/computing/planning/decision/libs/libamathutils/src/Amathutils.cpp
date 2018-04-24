@@ -40,6 +40,6 @@ int isPointLeftFromLine(double p1x, double p1y, double line_p1x, double line_p1y
 {
   double n = p1x * (line_p1y - line_p2y) + line_p1x * (line_p2y - p1y) + line_p2x * (p1y - line_p1y);
 
-  return n > 0 ? 1 : n < 0 ? -1 : 0;
+  return n > 0 ? LEFT : n < 0 ? RIGHT : ONLINE;
 }
 }

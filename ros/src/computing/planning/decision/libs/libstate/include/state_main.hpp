@@ -28,7 +28,6 @@ public:
   }
 };
 
-// InitialState
 class InitialState : public State<InitialState>
 {
 private:
@@ -43,6 +42,7 @@ private:
 
 public:
 };
+
 class LocateVehicleState : public State<LocateVehicleState>
 {
 private:
@@ -50,14 +50,62 @@ private:
   LocateVehicleState(void)
   {
     StateName = "Locate Vehicle";
-    StateNum = StateTransMask = INITIAL_LOCATEVEHICLE_STATE;
+    StateNum = StateTransMask = LOCATEVEHICLE_STATE;
     StateTransMask |= INITIAL_STATE;
     StateKind = MAIN_STATE;
   }
 
 public:
 };
-// MissionCompleteState
+
+class VehicleReadyState : public State<VehicleReadyState>
+{
+private:
+  friend class State<VehicleReadyState>;
+  VehicleReadyState(void)
+  {
+    StateName = "Vehicle Ready";
+    StateNum = StateTransMask = VEHICLE_READY_STATE;
+    StateTransMask |= LOCATEVEHICLE_STATE;
+    StateKind = MAIN_STATE;
+  }
+
+public:
+};
+
+
+
+class DriveReadyState : public State<DriveReadyState>
+{
+private:
+  friend class State<DriveReadyState>;
+  DriveReadyState(void)
+  {
+    StateName = "Drive Ready";
+    StateNum = StateTransMask = DRIVE_READY_STATE;
+    StateTransMask |= VEHICLE_READY_STATE;
+    StateKind = MAIN_STATE;
+  }
+
+public:
+};
+
+class DriveState : public State<DriveState>
+{
+private:
+  friend class State<DriveState>;
+
+  DriveState(void)
+  {
+    StateName = "Drive";
+    StateNum = StateTransMask = DRIVE_STATE;
+    StateTransMask |= DRIVE_READY_STATE;
+    StateKind = MAIN_STATE;
+  }
+
+public:
+};
+
 class MissionCompleteState : public State<MissionCompleteState>
 {
 private:
@@ -73,7 +121,6 @@ private:
 public:
 };
 
-// EmergencyState
 class EmergencyState : public State<EmergencyState>
 {
 private:

@@ -28,17 +28,18 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <ros/ros.h>
+#include <std_msgs/Int32.h>
+#include <std_msgs/String.h>
+#include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
-#include <tf/tf.h>
 #include <iostream>
-#include <std_msgs/Int32.h>
 #include <random>
 
+#include "autoware_msgs/ControlCommandStamped.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 namespace
@@ -52,6 +53,7 @@ geometry_msgs::Pose _initial_pose;
 bool _initial_set = false;
 bool _pose_set = false;
 bool _waypoint_set = false;
+bool _use_ctrl_cmd = false;
 bool g_is_closest_waypoint_subscribed = false;
 WayPoints _current_waypoints;
 ros::Publisher g_odometry_publisher;
@@ -59,19 +61,24 @@ ros::Publisher g_velocity_publisher;
 int32_t g_closest_waypoint = -1;
 double g_position_error;
 double g_angle_error;
+double g_linear_acceleration = 0;
+double g_steering_angle = 0;
+double g_wheel_base_m = 2.7;
 
-constexpr int LOOP_RATE = 50; // 50Hz
+constexpr int LOOP_RATE = 50;  // 50Hz
 
 void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_rate)
 {
+  if (_use_ctrl_cmd == true)
+    return;
 
   static double previous_linear_velocity = 0;
 
-  if(_current_velocity.linear.x < msg->twist.linear.x)
+  if (_current_velocity.linear.x < msg->twist.linear.x)
   {
     _current_velocity.linear.x = previous_linear_velocity + accel_rate / (double)LOOP_RATE;
 
-    if(_current_velocity.linear.x > msg->twist.linear.x)
+    if (_current_velocity.linear.x > msg->twist.linear.x)
     {
       _current_velocity.linear.x = msg->twist.linear.x;
     }
@@ -80,7 +87,7 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_ra
   {
     _current_velocity.linear.x = previous_linear_velocity - accel_rate / (double)LOOP_RATE;
 
-    if(_current_velocity.linear.x < msg->twist.linear.x)
+    if (_current_velocity.linear.x < msg->twist.linear.x)
     {
       _current_velocity.linear.x = msg->twist.linear.x;
     }
@@ -90,8 +97,16 @@ void CmdCallBack(const geometry_msgs::TwistStampedConstPtr &msg, double accel_ra
 
   _current_velocity.angular.z = msg->twist.angular.z;
 
-
   //_current_velocity = msg->twist;
+}
+
+void controlCmdCallBack(const autoware_msgs::ControlCommandStampedConstPtr &msg)
+{
+  if (_use_ctrl_cmd == false)
+    return;
+
+  g_linear_acceleration = msg->cmd.linear_acceleration;
+  g_steering_angle = msg->cmd.steering_angle;
 }
 
 void getTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
@@ -138,13 +153,22 @@ void waypointCallback(const autoware_msgs::laneConstPtr &msg)
   // _path_og.setPath(msg);
   _current_waypoints.setPath(*msg);
   _waypoint_set = true;
-  //ROS_INFO_STREAM("waypoint subscribed");
+  // ROS_INFO_STREAM("waypoint subscribed");
 }
 
 void callbackFromClosestWaypoint(const std_msgs::Int32ConstPtr &msg)
 {
   g_closest_waypoint = msg->data;
   g_is_closest_waypoint_subscribed = true;
+}
+
+void updateVelocity()
+{
+  if (_use_ctrl_cmd == false)
+    return;
+
+  _current_velocity.linear.x += g_linear_acceleration / (double)LOOP_RATE;
+  _current_velocity.angular.z = _current_velocity.linear.x * std::sin(g_steering_angle) / g_wheel_base_m;
 }
 
 void publishOdometry()
@@ -175,9 +199,9 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
-*/if(_waypoint_set && g_is_closest_waypoint_subscribed)
+*/
+  if (_waypoint_set && g_is_closest_waypoint_subscribed && g_closest_waypoint != -1)
     pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
-
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
   current_time = ros::Time::now();
@@ -253,18 +277,22 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM("initialize_source : " << initialize_source);
 
   double accel_rate;
-  private_nh.param("accel_rate",accel_rate,double(1.0));
+  private_nh.param("accel_rate", accel_rate, double(1.0));
   ROS_INFO_STREAM("accel_rate : " << accel_rate);
-
 
   private_nh.param("position_error", g_position_error, double(0.0));
   private_nh.param("angle_error", g_angle_error, double(0.0));
+  private_nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
+
+  private_nh.param("use_ctrl_cmd", _use_ctrl_cmd, false);
   // publish topic
   g_odometry_publisher = nh.advertise<geometry_msgs::PoseStamped>("sim_pose", 10);
   g_velocity_publisher = nh.advertise<geometry_msgs::TwistStamped>("sim_velocity", 10);
 
   // subscribe topic
-  ros::Subscriber cmd_subscriber = nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
+  ros::Subscriber cmd_subscriber =
+      nh.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 10, boost::bind(CmdCallBack, _1, accel_rate));
+  ros::Subscriber control_cmd_subscriber = nh.subscribe("ctrl_cmd", 10, controlCmdCallBack);
   ros::Subscriber waypoint_subcscriber = nh.subscribe("base_waypoints", 10, waypointCallback);
   ros::Subscriber closest_sub = nh.subscribe("closest_waypoint", 10, callbackFromClosestWaypoint);
   ros::Subscriber initialpose_subscriber;
@@ -303,6 +331,7 @@ int main(int argc, char **argv)
       continue;
     }
 
+    updateVelocity();
     publishOdometry();
 
     loop_rate.sleep();

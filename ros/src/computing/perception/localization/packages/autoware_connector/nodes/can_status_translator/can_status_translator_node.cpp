@@ -31,13 +31,13 @@
 // ROS includes
 #include <ros/ros.h>
 
-#include "can_info_translator_core.h"
+#include "can_status_translator_core.h"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "can_info_translator");
-  autoware_connector::VelPoseConnectNode n;
+  ros::init(argc, argv, "can_status_translator");
+  autoware_connector::CanStatusTranslatorNode n;
   n.run();
- 
+
   return 0;
 }
