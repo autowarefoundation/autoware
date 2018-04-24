@@ -224,6 +224,14 @@ void DecisionMakerNode::update_msgs(void)
       state_text_msg.text += state_msg.behavior_state + "\n";
     }
 
+    // add autopilot state
+    if (autopilot_mode_)
+    {
+      state_text_msg.text += "Autonomous\n";
+    } else {
+      state_text_msg.text += "Manual\n";
+    }
+
     Pubs["states"].publish(state_msg);
     // Pubs["state"].publish(state_string_msg);
     Pubs["state_overlay"].publish(state_text_msg);

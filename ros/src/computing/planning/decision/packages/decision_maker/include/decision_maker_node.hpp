@@ -17,6 +17,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Bool.h>
 #include <tf/transform_listener.h>
 
 #include <visualization_msgs/MarkerArray.h>
@@ -160,6 +161,9 @@ private:
   std::mutex vMap_mutex;
   bool created_shift_lane_flag_;
 
+  // autopilot mode
+  bool autopilot_mode_;
+
   // initialization method
   void initROS(int argc, char **argv);
   void initVectorMap(void);
@@ -233,6 +237,7 @@ private:
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
   void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
+  void callbackFromAS(const std_msgs::BoolConstPtr& msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);

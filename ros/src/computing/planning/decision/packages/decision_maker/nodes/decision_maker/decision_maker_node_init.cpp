@@ -51,6 +51,9 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   Subs["config/decision_maker"] =
       nh_.subscribe("/config/decision_maker", 3, &DecisionMakerNode::callbackFromConfig, this);
 
+  // as mode subscriber
+  Subs["/as/control_mode"] = nh_.subscribe("/as/control_mode", 1, &DecisionMakerNode::callbackFromAS, this);
+
   // pub
   //
   Pubs["state/stopline_wpidx"] = nh_.advertise<std_msgs::Int32>("/state/stopline_wpidx", 1, true);

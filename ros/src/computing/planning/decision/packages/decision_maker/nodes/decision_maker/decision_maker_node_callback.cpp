@@ -16,6 +16,7 @@
 #include <decision_maker_node.hpp>
 #include <state.hpp>
 #include <state_context.hpp>
+#include <std_msgs/Bool.h>
 
 namespace decision_maker
 {
@@ -110,6 +111,11 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   detectionArea_.x2 = msg.detection_area_x2;
   detectionArea_.y1 = msg.detection_area_y1;
   detectionArea_.y2 = msg.detection_area_y2;
+}
+
+void DecisionMakerNode::callbackFromAS(const std_msgs::BoolConstPtr& msg)
+{
+  autopilot_mode_ = msg->data;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)
