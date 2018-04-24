@@ -853,8 +853,8 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
     targets_[i].predictionIMMUKF(dt);
 
 
-    std::vector<double> lambda_vec;
     bool is_skip_target;
+    std::vector<double> lambda_vec;
     probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, lambda_vec, targets_[i], is_skip_target);
     if(is_skip_target)
       continue;
@@ -875,54 +875,6 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
 
   // making output(CludClusterArray) for visualization
   makeOutput(input, output);
-  // // making output(CludClusterArray) for visualization
-  // tf::StampedTransform transform;
-  // tran_->lookupTransform("/world", "/velodyne", ros::Time(0), transform);
-  //
-  // // get yaw angle from "world" to "velodyne" for direction(arrow) visualization
-  // tf::Matrix3x3 m(transform.getRotation());
-  // double roll, pitch, yaw;
-  // m.getRPY(roll, pitch, yaw);
-  //
-  // output.header = input.header;
-  // // int target_num_count = 0;
-  // for(size_t i = 0; i < targets_.size(); i++)
-  // {
-  //   if(targets_[i].is_vis_bb_)
-  //   {
-  //     double tx = targets_[i].x_merge_(0);
-  //     double ty = targets_[i].x_merge_(1);
-  //     double mx = targets_[i].init_meas_(0);
-  //     double my = targets_[i].init_meas_(1);
-  //
-  //     //for static classification
-  //     targets_[i].dist_from_init_ = sqrt((tx - mx)*(tx - mx) + (ty - my)*(ty - my));
-  //     std::vector<double> cp;
-  //     cp.push_back(tx);
-  //     cp.push_back(ty);
-  //
-  //     double tv = targets_[i].x_merge_(2);
-  //     double tyaw = targets_[i].x_merge_(3) - yaw;
-  //
-  //     // tyaw += egoPoints_[0][2];
-  //     while (tyaw> M_PI) tyaw -= 2.*M_PI;
-  //     while (tyaw<-M_PI) tyaw += 2.*M_PI;
-  //     // cout << "testing yaw off "<< tyaw << endl;
-  //
-  //     // cout << "inside tracker ----------------------------------------------------------------------------------------------"<<targets_[i].jskBB_.pose << endl;
-  //
-  //     autoware_msgs::CloudCluster cc;
-  //     cc.header = input.header;
-  //     cc.bounding_box = targets_[i].jsk_bb_;
-  //     cc.bounding_box.header = input.header;
-  //     cc.score           = tv;
-  //     cc.estimated_angle = tyaw;
-  //     updateLabel(targets_[i], cc);
-  //     output.clusters.push_back(cc);
-  //   }
-  //
-  // }
-  // cout << output.clusters.size()<< endl;
 
   assert(matching_vec.size() == input.clusters.size());
 }
