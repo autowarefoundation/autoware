@@ -37,7 +37,7 @@ EXECUTE_PROCESS(
 
 if("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "${ARCHITECTURE}" STREQUAL "aarch64")
     include_directories(
-      include/glviewer
+      include
       ${catkin_INCLUDE_DIRS}
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${CMAKE_CURRENT_BINARY_DIR}
@@ -45,7 +45,6 @@ if("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "
 
     add_library(glviewer
       GLViewer/glviewer.cpp
-      include/glviewer/glviewer.h
     )
 
     target_link_libraries(glviewer
@@ -57,7 +56,7 @@ if("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "
 
     install(DIRECTORY include/${PROJECT_NAME}/
             DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-            FILES_MATCHING PATTERN "*.hpp"
+            FILES_MATCHING PATTERN "*.h"
             )
 
 
