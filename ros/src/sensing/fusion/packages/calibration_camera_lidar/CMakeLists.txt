@@ -28,6 +28,9 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 
+find_package(GLUT REQUIRED)
+find_package(OpenGL REQUIRED)
+
 catkin_package(
         #  INCLUDE_DIRS include
         #  LIBRARIES camera
@@ -52,6 +55,8 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${GLUT_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIR}
 )
 
 ## Declare a cpp library
@@ -66,6 +71,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
     target_link_libraries(calibrationtoolkit
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
+            ${OPENGL_LIBRARIES}
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL
@@ -79,6 +85,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             ${OpenCV_INCLUDE_DIRS}
             ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_BINARY_DIR}
+            ${GLUT_LIBRARIES}
     )
 endif ()
 
@@ -107,7 +114,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 
     qt5_wrap_ui(calibration_toolkit_ui_mainwindow nodes/calibration_toolkit/mainwindow.ui)
 
-
     add_executable(calibration_toolkit
             nodes/calibration_toolkit/main.cpp
             nodes/calibration_toolkit/mainwindow.cpp
@@ -124,8 +130,8 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             calibrationtoolkit
-            glut
-            GLU
+            ${GLUT_LIBRARIES}
+            ${OPENGL_LIBRARIES}
             nlopt
             Qt5::Core
             Qt5::Widgets

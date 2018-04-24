@@ -3,9 +3,8 @@ project(glviewer)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  pcl_ros
-)
+        roscpp
+        )
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -17,52 +16,47 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Gui REQUIRED)
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES glviewer
+        INCLUDE_DIRS include
+        LIBRARIES glviewer
 )
 
 EXECUTE_PROCESS(
-  COMMAND uname -m
-  OUTPUT_VARIABLE ARCHITECTURE
-  OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND uname -m
+        OUTPUT_VARIABLE ARCHITECTURE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-EXECUTE_PROCESS(
-  COMMAND pkg-config --variable=host_bins Qt5Core
-  OUTPUT_VARIABLE Qt5BIN
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-if("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "${ARCHITECTURE}" STREQUAL "aarch64")
+if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "${ARCHITECTURE}" STREQUAL "aarch64")
     include_directories(
-      include
-      ${catkin_INCLUDE_DIRS}
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      ${CMAKE_CURRENT_BINARY_DIR}
+            include
+            ${catkin_INCLUDE_DIRS}
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
     )
 
     add_library(glviewer
-      GLViewer/glviewer.cpp
-    )
+            GLViewer/glviewer.cpp
+            )
 
     target_link_libraries(glviewer
-      ${catkin_LIBRARIES}
-      Qt5::Core
-      Qt5::Widgets
-      Qt5::OpenGL
-    )
+            ${catkin_LIBRARIES}
+            Qt5::Core
+            Qt5::Widgets
+            Qt5::OpenGL
+            Qt5::Gui
+            )
 
     install(DIRECTORY include/${PROJECT_NAME}/
             DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
             FILES_MATCHING PATTERN "*.h"
             )
 
-
     install(TARGETS glviewer
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
-endif()
+endif ()

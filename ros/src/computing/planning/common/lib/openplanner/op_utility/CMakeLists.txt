@@ -14,7 +14,6 @@ find_package(TinyXML REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES op_utility
-        DEPENDS tinyxml
 )
 
 ###########

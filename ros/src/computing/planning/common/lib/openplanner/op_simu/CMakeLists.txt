@@ -25,7 +25,6 @@ catkin_package(
         INCLUDE_DIRS include
         LIBRARIES op_simu
         CATKIN_DEPENDS op_utility op_planner
-        DEPENDS OpenCV OpenGL GLEW GLUT X11 Threads
 )
 
 ###########
