@@ -209,7 +209,7 @@ void DecisionMakerNode::update_msgs(void)
     state_string_msg.data = CurrentStateName;
     // state_text_msg.text = createStateMessageText();
     state_text_msg.text = state_msg.main_state + "\n" + state_msg.acc_state + "\n" + state_msg.str_state + "\n";
-                          + state_msg.behavior_state + "\n";
+                          //+ state_msg.behavior_state + "\n";
 
     Pubs["states"].publish(state_msg);
     // Pubs["state"].publish(state_string_msg);
