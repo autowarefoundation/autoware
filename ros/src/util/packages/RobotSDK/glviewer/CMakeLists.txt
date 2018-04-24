@@ -6,6 +6,19 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         )
 
+find_package(Eigen3 QUIET)
+
+if (NOT EIGEN3_FOUND)
+    # Fallback to cmake_modules
+    find_package(cmake_modules REQUIRED)
+    find_package(Eigen REQUIRED)
+    set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+    set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+    # Possibly map additional variables to the EIGEN3_ prefix.
+else ()
+    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif ()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -35,6 +48,7 @@ if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR 
             ${catkin_INCLUDE_DIRS}
             ${CMAKE_CURRENT_SOURCE_DIR}
             ${CMAKE_CURRENT_BINARY_DIR}
+            ${EIGEN3_INCLUDE_DIRS}
     )
 
     add_library(glviewer
@@ -43,6 +57,7 @@ if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR 
 
     target_link_libraries(glviewer
             ${catkin_LIBRARIES}
+            ${EIGEN3_LIBRARIES}
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL
