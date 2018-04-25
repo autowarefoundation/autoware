@@ -8,7 +8,7 @@
 #include "matching_gpu.hpp"
 #include "routine_gpu.hpp"
 
-#include <dpm_ocv.hpp>
+#include <dpm_ocv/dpm_ocv.hpp>
 
 // OpenCV non public functions
 extern int freeFeatureMapObject(CvLSVMFeatureMap **obj);

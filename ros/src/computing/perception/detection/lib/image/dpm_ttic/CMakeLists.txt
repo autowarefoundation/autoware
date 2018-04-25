@@ -15,7 +15,7 @@ EXECUTE_PROCESS(
 )
 
 catkin_package(
-        INCLUDE_DIRS include/dpm_ttic
+        INCLUDE_DIRS include
         LIBRARIES libdpm_ttic
 )
 
@@ -24,7 +24,7 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAG
 
 IF (CUDA_FOUND)
     INCLUDE_DIRECTORIES(
-            include/dpm_ttic
+            include
             ${catkin_INCLUDE_DIRS}
             ${CUDA_INCLUDE_DIRS}
             "common"
@@ -105,7 +105,7 @@ IF (CUDA_FOUND)
 ELSE ()#No CUDA
 
     INCLUDE_DIRECTORIES(
-            include/dpm_ttic
+            include
             ${catkin_INCLUDE_DIRS}
             "common"
             "cpu"
@@ -133,8 +133,14 @@ ENDIF ()
 ## Install ##
 #############
 
-INSTALL(
-        DIRECTORY include/dpm_ttic
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.hpp"
-)
+        )
+
+install(TARGETS
+        libdpm_ttic
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )

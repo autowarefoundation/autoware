@@ -12,13 +12,12 @@ find_package(CUDA)
 find_package(OpenCV REQUIRED)
 
 catkin_package(
-        INCLUDE_DIRS include/dpm_ocv
+        INCLUDE_DIRS include
         LIBRARIES libdpm_ocv
         CATKIN_DEPENDS std_msgs autoware_msgs
 )
 
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-
 
     SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -std=c++11 -DUSE_GPU -DCUBIN_PATH=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin ${CMAKE_CXX_FLAGS}")
     SET(CMAKE_NVCC_FLAGS "-use_fast_math")
@@ -26,11 +25,10 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
     IF (CUDA_FOUND)
         INCLUDE_DIRECTORIES(
                 ${catkin_INCLUDE_DIRS}
-                "include/dpm_ocv"
+                include
                 ${CUDA_INCLUDE_DIRS}
         )
 
-        ## Declare a cpp library
         ADD_LIBRARY(libdpm_ocv
                 gpu/gpu_init.cpp
                 gpu/dpm_ocv_gpu.cpp
@@ -97,11 +95,11 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
         ADD_CUSTOM_TARGET(cuda_binary_ DEPENDS gpu_function.cubin)
         ADD_DEPENDENCIES(libdpm_ocv cuda_binary_)
 
-    ELSE ()
+    ELSE ()#NO CUDA
 
         INCLUDE_DIRECTORIES(
                 ${catkin_INCLUDE_DIRS}
-                "include/dpm_ocv"
+                include
         )
 
         ADD_LIBRARY(libdpm_ocv
@@ -110,22 +108,22 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 
         TARGET_LINK_LIBRARIES(libdpm_ocv
                 ${catkin_LIBRARIES}
-                ${OpenCV_LIBS}
                 )
 
     ENDIF ()
 
-    SET_TARGET_PROPERTIES(libdpm_ocv PROPERTIES OUTPUT_NAME dpm_ocv)
     ADD_DEPENDENCIES(libdpm_ocv ${catkin_EXPORTED_TARGETS})
 
+    install(DIRECTORY include/${PROJECT_NAME}/
+            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+            FILES_MATCHING PATTERN "*.hpp"
+            )
+
+    install(TARGETS
+            libdpm_ocv
+            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+            RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+            )
+
 endif ()
-
-#############
-## Install ##
-#############
-
-INSTALL(
-        DIRECTORY include/dpm_ocv
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.hpp"
-)

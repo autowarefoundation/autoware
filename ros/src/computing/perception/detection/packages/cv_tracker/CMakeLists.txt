@@ -17,7 +17,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             fusion
             tf
             libdpm_ocv
-            kf_lib
+            #kf_lib
             jsk_recognition_msgs
             gnss
             )
@@ -32,7 +32,7 @@ elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
             libdpm_ttic
             fusion
             tf
-            kf_lib
+            #kf_lib
             jsk_recognition_msgs
             gnss
             )
@@ -59,7 +59,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             fusion
             tf
             libdpm_ocv
-            kf_lib
+            #kf_lib
             jsk_recognition_msgs
             gnss
     )
@@ -200,17 +200,17 @@ install(TARGETS range_fusion
         )
 
 ## kf_tracker ##
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-    ADD_EXECUTABLE(kf_track
-            nodes/kf_track/kf_track.cpp
-            )
+#if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+#    ADD_EXECUTABLE(kf_track
+#            nodes/kf_track/kf_track.cpp
+#            )
 
-    TARGET_LINK_LIBRARIES(kf_track
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
-            )
-    add_dependencies(kf_track ${catkin_EXPORTED_TARGETS})
-endif ()
+#    TARGET_LINK_LIBRARIES(kf_track
+#            ${catkin_LIBRARIES}
+#            ${OpenCV_LIBS}
+#            )
+#    add_dependencies(kf_track ${catkin_EXPORTED_TARGETS})
+#endif ()
 
 ## dummy_tracker ##
 ADD_EXECUTABLE(dummy_track

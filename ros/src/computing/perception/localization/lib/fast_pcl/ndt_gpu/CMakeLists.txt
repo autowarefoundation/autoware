@@ -51,7 +51,7 @@ if (CUDA_FOUND)
             ${PCL_INCLUDE_DIRS}
             ${catkin_INCLUDE_DIRS}
             ${CUDA_INCLUDE_DIRS}
-            "${CMAKE_CURRENT_SOURCE_DIR}/include"
+            include
             ${EIGEN3_INCLUDE_DIRS}
     )
 
@@ -85,15 +85,17 @@ if (CUDA_FOUND)
             ${PCL_LIBRARIES}
             )
 
+    install(DIRECTORY include/${PROJECT_NAME}/
+            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+            FILES_MATCHING PATTERN "*.h"
+            )
+
+
     install(TARGETS ndt_gpu
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
-
-    install(DIRECTORY include/fast_pcl/ndt_gpu/
-            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-            PATTERN ".svn" EXCLUDE)
 
 else ()
     message("ndt_gpu will not be built, CUDA was not found.")
