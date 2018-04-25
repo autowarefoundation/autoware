@@ -18,8 +18,8 @@ Computing Tab -> Detection/ lidar_detector -> `visualize_cloud_cluster`
 ### Requirements
 * `eucledian_cluster` node.
 * `ray_ground_filter` node.
-* `/tf` topic. Below video is from Suginami data: (`autoware-20180205150908.bag`). You can download from ROSBAG STORE for free. Otherwise, you need to do localization with a map to produce /tf topic from `velodyne` to `world`.
-* `wayarea` info from vectormap if is possible. 
+* `/tf` topic. Below video is from Suginami data which contais /tf topic: (`autoware-20180205150908.bag`). You can download it from ROSBAG STORE for free. Otherwise, you need to do localization with a map to produce /tf topic from `velodyne` to `world`.
+* `wayarea` info from vectormap if is possible.
 
 ### Parameters
 
