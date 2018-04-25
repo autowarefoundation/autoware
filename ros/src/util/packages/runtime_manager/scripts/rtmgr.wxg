@@ -1496,6 +1496,18 @@
                                                             <label>N</label>
                                                         </object>
                                                     </object>
+                                                    <object class="sizeritem">
+                                                        <option>0</option>
+                                                        <border>4</border>
+                                                        <flag>wxALL|wxEXPAND</flag>
+                                                        <object class="wxToggleButton" name="button_statchk_p" base="EditToggleButton">
+                                                            <events>
+                                                                <handler event="EVT_TOGGLEBUTTON">OnGear</handler>
+                                                            </events>
+                                                            <size>32, 29</size>
+                                                            <label>P</label>
+                                                        </object>
+                                                    </object>
                                                 </object>
                                             </object>
                                             <object class="sizeritem">

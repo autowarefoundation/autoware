@@ -14,7 +14,6 @@ set(SUBSYS_DEPS common)
 set(LIB_NAME "fast_pcl_ndt_cpu")
 	
 catkin_package(
-	DEPENDS ${SUBSYS_DEPS}
 	INCLUDE_DIRS include
 	LIBRARIES ${LIB_NAME}
 )

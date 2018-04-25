@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>state</name>
+  <name>state_machine_lib</name>
   <version>1.6.3</version>
   <description>The libstate package</description>
 

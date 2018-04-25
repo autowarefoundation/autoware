@@ -7,7 +7,7 @@
   publish: [/twist_cmd]
   subscribe: [/twist_raw, /config/twist_filter]
 - name: /twist_gate
-  publish: [/emergency_stop, /ctrl_mode, /vehicle_cmd]
+  publish: [/emergency_stop, /ctrl_mode, /vehicle_cmd, /state_cmd]
   subscribe: [/remote_cmd, /twist_cmd, /mode_cmd, /gear_cmd, /accel_cmd,
     /steer_cmd, /brake_cmd, /lamp_cmd, /ctrl_cmd]
 - name: /wf_simulator

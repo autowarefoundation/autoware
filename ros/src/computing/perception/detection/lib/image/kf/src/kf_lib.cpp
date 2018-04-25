@@ -958,7 +958,7 @@ void init_params()
 
 int kf_main(int argc, char* argv[])
 {
-	ros::init(argc, argv, "kf");
+	ros::init(argc, argv, "kf_lib");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 

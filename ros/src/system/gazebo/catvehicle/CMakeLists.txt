@@ -18,8 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   sensor_msgs
-#  sicktoolbox
-#  sicktoolbox_wrapper
   std_msgs
   tf
   transmission_interface
