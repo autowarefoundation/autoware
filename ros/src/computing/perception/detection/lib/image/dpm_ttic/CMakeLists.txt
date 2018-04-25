@@ -17,6 +17,7 @@ EXECUTE_PROCESS(
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES libdpm_ttic
+        CATKIN_DEPENDS sensor_msgs
 )
 
 SET(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
@@ -27,9 +28,9 @@ IF (CUDA_FOUND)
             include
             ${catkin_INCLUDE_DIRS}
             ${CUDA_INCLUDE_DIRS}
-            "common"
-            "cpu"
-            "gpu"
+            common
+            cpu
+            gpu
     )
 
     IF ("${ARCHITECTURE}" MATCHES "^arm")
@@ -51,7 +52,7 @@ IF (CUDA_FOUND)
     TARGET_LINK_LIBRARIES(libdpm_ttic
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
-            cuda
+            ${CUDA_LIBRARIES}
             )
 
     SET(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
@@ -107,8 +108,8 @@ ELSE ()#No CUDA
     INCLUDE_DIRECTORIES(
             include
             ${catkin_INCLUDE_DIRS}
-            "common"
-            "cpu"
+            common
+            cpu
     )
 
     FILE(GLOB DPM_TTIC_COMMON_IMPL_SOURCES "common/*.cpp")
@@ -119,7 +120,6 @@ ELSE ()#No CUDA
             ${DPM_TTIC_COMMON_IMPL_SOURCES}
             ${DPM_TTIC_CPU_IMPL_SOURCES}
             )
-    SET_TARGET_PROPERTIES(libdpm_ttic PROPERTIES OUTPUT_NAME dpm_ttic)
 
     TARGET_LINK_LIBRARIES(libdpm_ttic
             ${catkin_LIBRARIES}
