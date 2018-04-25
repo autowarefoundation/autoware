@@ -74,7 +74,7 @@ elseif ("${ROS_VERSION}" MATCHES "(kinetic)")
             libdpm_ttic
             fusion
             tf
-            kf_lib
+            #kf_lib
             jsk_recognition_msgs
             gnss
     )
