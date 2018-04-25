@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         )
 
+find_package(Armadillo REQUIRED)
+
 OPTION(USE_OpenMP "Use OpenMP" ON)
 IF (USE_OpenMP)
     FIND_PACKAGE(OpenMP)
@@ -45,12 +47,12 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
+        ${ARMADILLO_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
-
 add_library(libtraj_gen lib/libtraj_gen.cpp)
-target_link_libraries(libtraj_gen ${catkin_LIBRARIES} armadillo)
+target_link_libraries(libtraj_gen ${catkin_LIBRARIES} ${ARMADILLO_LIBRARIES})
 
 add_executable(lattice_trajectory_gen nodes/lattice_trajectory_gen/lattice_trajectory_gen.cpp)
 target_link_libraries(lattice_trajectory_gen libtraj_gen ${catkin_LIBRARIES})
