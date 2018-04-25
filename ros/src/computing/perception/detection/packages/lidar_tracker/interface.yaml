@@ -13,7 +13,7 @@
   publish: [/detected_objects, /bounding_boxes_tracked, /cluster_hulls_tracked, /cluster_ids_tracked]
   subscribe: [/cloud_clusters_class]
 - name: /*/fusion
-  publish: [/*/obj_pose, /cloud_clusters_class, /*/obj_pose_timestamp, /*/obj_pose_arrow, ]
+  publish: [/*/obj_pose, /cloud_clusters_class, /*/obj_pose_timestamp, /*/obj_pose_arrow]
   subscribe: [/*/obj_label, /cloud_clusters, /vector_map_info/*]
 - name: /pf_lidar_track
   publish: [/detected_objects]
