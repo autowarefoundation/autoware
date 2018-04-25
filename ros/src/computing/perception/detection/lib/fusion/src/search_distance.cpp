@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iterator>
 #include <map>
-#include "search_distance.h"
+#include "fusion/search_distance.h"
 
 
 float getShortest(const std::vector<float>& candidates) {

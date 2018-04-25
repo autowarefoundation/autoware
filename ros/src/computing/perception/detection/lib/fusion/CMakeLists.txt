@@ -11,7 +11,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES fusion
-        CATKIN_DEPENDS roscpp autoware_msgs
+        CATKIN_DEPENDS roscpp autoware_msgs cv_bridge
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -22,8 +22,8 @@ include_directories(
 )
 
 add_library(fusion
-        fusion.cpp
-        search_distance.cpp
+        src/fusion.cpp
+        src/search_distance.cpp
         )
 
 target_link_libraries(fusion
@@ -34,8 +34,14 @@ add_dependencies(fusion
         ${catkin_EXPORTED_TARGETS}
         )
 
-# Mark cpp header files for installation
-install(DIRECTORY include
+install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "fusion_func.h"
+        FILES_MATCHING PATTERN "*.hpp"
+        )
+
+install(TARGETS
+        fusion
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
         )

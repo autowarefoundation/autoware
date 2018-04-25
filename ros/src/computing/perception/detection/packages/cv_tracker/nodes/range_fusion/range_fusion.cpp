@@ -30,7 +30,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
-#include <fusion_func.h>
+#include <fusion/fusion_func.h>
 #include "autoware_msgs/image_obj_ranged.h"
 #include "autoware_msgs/ConfigCarFusion.h"
 

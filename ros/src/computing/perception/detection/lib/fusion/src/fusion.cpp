@@ -32,8 +32,8 @@
 #include <opencv/highgui.h>
 #include <opencv/cxcore.h>
 
-#include "fusion_func.h"
-#include "search_distance.h"
+#include "fusion/fusion_func.h"
+#include "fusion/search_distance.h"
 
 #if _DEBUG //debug
 static const char *window_name = "CAR_TRACK";
