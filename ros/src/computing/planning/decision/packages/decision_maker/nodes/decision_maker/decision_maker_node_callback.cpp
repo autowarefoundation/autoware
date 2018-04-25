@@ -113,9 +113,9 @@ void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMa
   detectionArea_.y2 = msg.detection_area_y2;
 }
 
-void DecisionMakerNode::callbackFromAS(const std_msgs::BoolConstPtr& msg)
+void DecisionMakerNode::callbackFromPacmod(const pacmod_msgs::GlobalRpt::ConstPtr & msg)
 {
-  autopilot_mode_ = msg->data;
+  autopilot_enabled_ = msg->enabled;
 }
 
 void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event)

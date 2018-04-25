@@ -225,7 +225,7 @@ void DecisionMakerNode::update_msgs(void)
     }
 
     // add autopilot state
-    if (autopilot_mode_)
+    if (autopilot_enabled_)
     {
       state_text_msg.text += "Autonomous\n";
     } else {

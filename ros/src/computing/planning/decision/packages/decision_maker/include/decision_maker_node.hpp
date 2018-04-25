@@ -17,7 +17,6 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
-#include <std_msgs/Bool.h>
 #include <tf/transform_listener.h>
 
 #include <visualization_msgs/MarkerArray.h>
@@ -30,7 +29,7 @@
 #include <vector_map/vector_map.h>
 
 #include <geometry_msgs/Point.h>
-
+#include <pacmod_msgs/GlobalRpt.h>
 // lib
 #include <amathutils.hpp>
 #include <cross_road_area.hpp>
@@ -162,7 +161,7 @@ private:
   bool created_shift_lane_flag_;
 
   // autopilot mode
-  bool autopilot_mode_;
+  bool autopilot_enabled_;
 
   // initialization method
   void initROS(int argc, char **argv);
@@ -237,7 +236,7 @@ private:
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
   void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
-  void callbackFromAS(const std_msgs::BoolConstPtr& msg);
+  void callbackFromPacmod(const pacmod_msgs::GlobalRpt::ConstPtr & msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);
