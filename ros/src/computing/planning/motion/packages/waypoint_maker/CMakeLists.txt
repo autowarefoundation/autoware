@@ -58,3 +58,14 @@ add_executable(waypoint_velocity_visualizer nodes/waypoint_velocity_visualizer/w
 target_link_libraries(waypoint_velocity_visualizer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(waypoint_velocity_visualizer
         ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS
+        waypoint_loader
+        waypoint_saver
+        waypoint_clicker
+        waypoint_marker_publisher
+        waypoint_velocity_visualizer
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
