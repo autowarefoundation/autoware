@@ -35,7 +35,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include <dpm_ttic/dpm_ttic.hpp>
+#include <libdpm_ttic/dpm_ttic.hpp>
 
 #include "for_use_GPU.h"
 #include "load_model.hpp"

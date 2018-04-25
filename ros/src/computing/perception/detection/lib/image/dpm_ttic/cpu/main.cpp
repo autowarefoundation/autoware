@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <dpm_ttic/dpm_ttic.hpp>
+#include <libdpm_ttic/dpm_ttic.hpp>
 
 #include "MODEL_info.h"
 #include "switch_float.h"

@@ -39,7 +39,7 @@
 #include "autoware_msgs/image_obj.h"
 #include "autoware_msgs/ConfigPedestrianDpm.h"
 
-#include <dpm_ttic/dpm_ttic.hpp>
+#include <libdpm_ttic/dpm_ttic.hpp>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
