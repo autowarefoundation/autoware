@@ -50,31 +50,26 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
+add_library(catvehiclegazebo SHARED src/cont.cc ./include/catvehicle/cont.hh)
+target_link_libraries(catvehiclegazebo ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-    add_library(catvehiclegazebo SHARED src/cont.cc ./include/catvehicle/cont.hh)
-    target_link_libraries(catvehiclegazebo ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+add_executable(distanceEstimator src/distanceEstimator.cpp)
+target_link_libraries(distanceEstimator ${catkin_LIBRARIES})
 
-    add_executable(distanceEstimator src/distanceEstimator.cpp)
-    target_link_libraries(distanceEstimator ${catkin_LIBRARIES})
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-    install(DIRECTORY launch
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY meshes
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-    install(DIRECTORY meshes
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY urdf
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-    install(DIRECTORY urdf
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY worlds
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-    install(DIRECTORY worlds
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-    ## Mark executables and/or libraries for installation
-    install(TARGETS catvehiclegazebo
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            )
-
-
-endif ()
+## Mark executables and/or libraries for installation
+install(TARGETS catvehiclegazebo
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
