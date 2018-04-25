@@ -33,6 +33,7 @@
 
 // ROS includes
 #include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/Marker.h>
@@ -77,7 +78,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_;
+  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -112,6 +113,8 @@ private:
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
+  double computeCommandAccel() const;
+  double computeAngularGravity(double velocity, double kappa) const;
 };
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);

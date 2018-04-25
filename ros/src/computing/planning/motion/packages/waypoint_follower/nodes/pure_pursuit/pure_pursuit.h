@@ -83,6 +83,10 @@ public:
   {
     return current_pose_;
   }
+  std::vector<autoware_msgs::waypoint> getCurrentWaypoints() const
+  {
+    return current_waypoints_;
+  }
   double getLookaheadDistance() const
   {
     return lookahead_distance_;
