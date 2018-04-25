@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(lane_planner)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -30,15 +30,15 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-add_library(lane_planner_vmap lib/lane_planner/lane_planner_vmap.cpp)
-target_link_libraries(lane_planner_vmap ${catkin_LIBRARIES})
-add_dependencies(lane_planner_vmap
+add_library(lane_planner lib/lane_planner/lane_planner_vmap.cpp)
+target_link_libraries(lane_planner ${catkin_LIBRARIES})
+add_dependencies(lane_planner
         ${catkin_EXPORTED_TARGETS}
         )
 
 add_executable(lane_navi nodes/lane_navi/lane_navi.cpp)
 target_link_libraries(lane_navi
-        lane_planner_vmap
+        lane_planner
         ${catkin_LIBRARIES}
         )
 add_dependencies(lane_navi
@@ -47,7 +47,7 @@ add_dependencies(lane_navi
 
 add_executable(lane_rule nodes/lane_rule/lane_rule.cpp)
 target_link_libraries(lane_rule
-        lane_planner_vmap
+        lane_planner
         ${catkin_LIBRARIES}
         )
 add_dependencies(lane_rule
@@ -55,7 +55,7 @@ add_dependencies(lane_rule
         )
 
 add_executable(lane_stop nodes/lane_stop/lane_stop.cpp)
-target_link_libraries(lane_stop lane_planner_vmap ${catkin_LIBRARIES})
+target_link_libraries(lane_stop lane_planner ${catkin_LIBRARIES})
 add_dependencies(lane_stop
         ${catkin_EXPORTED_TARGETS}
         )
@@ -80,7 +80,7 @@ install(TARGETS
         lane_stop
         lane_rule
         lane_navi
-        lane_planner_vmap
+        lane_planner
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
