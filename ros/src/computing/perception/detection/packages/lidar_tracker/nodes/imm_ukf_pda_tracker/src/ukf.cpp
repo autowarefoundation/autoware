@@ -147,7 +147,7 @@ UKF::UKF()
 
 
 
-  gamma_g_ = 9.21;
+  // gamma_g_ = 9.21;
   pd_     = 0.9;
   pg_     = 0.99;
 
@@ -156,6 +156,7 @@ UKF::UKF()
   is_static_ = false;
 
   //bounding box params
+  is_best_jsk_bb_empty_ = false;
   is_vis_bb_ = false;
   best_yaw_ = 100;
   bb_yaw_  = 0;

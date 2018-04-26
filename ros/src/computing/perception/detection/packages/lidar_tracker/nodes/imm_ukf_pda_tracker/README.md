@@ -27,15 +27,22 @@ M. Schreire, Bayesian environment representation, prediction, and criticality as
 
 ### Parameters
 
-Launch file available parameters(imm_ukf_pda_tracker):
+Launch file available parameters for `imm_ukf_pda_tracker`
 
 |Parameter| Type| Description|
 ----------|-----|--------
-|`input_topic`|*String* |Input topic(type: autoware_msgs::CloudClusterArray). Default `/cloud_cluster`.|
-|`output_topic`|*String*|Output topic(type: autoware_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
-|`life_time_thres_`|*Int*|The minimum frames for targets to be visualized. Default `8`.|
+|`input topic`|*String* |Input topic(type: autoware_msgs::CloudClusterArray). Default `/cloud cluster`.|
+|`output topic`|*String*|Output topic(type: autoware_msgs::CloudClusterArray). Default `/tracking_cluster_array`.|
+|`life time thres`|*Int*|The minimum frames for targets to be visualized. Default `8`.|
+|`gating thres`|*Double*|The value of gate threshold for measurement validation. Default `9.22`.|
+|`gate probability`|*Double*|The probability that the gate contains the true measurement. Default `0.99`.|
+|`detection probability`|*Double*|The probability that a target is detected. Default `0.9`.|
+|`static distance thres`|*Double*|The distance threshold for classifying static/dynamic. Default `3.0`.|
 
-Launch file available parameters(visualize_cloud_cluster):
+
+
+
+Launch file available parameters for `visualize_cloud_cluster`
 
 |Parameter| Type| Description|
 ----------|-----|--------

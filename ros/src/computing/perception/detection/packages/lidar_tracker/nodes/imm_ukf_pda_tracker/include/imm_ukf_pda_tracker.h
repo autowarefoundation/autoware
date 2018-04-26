@@ -35,12 +35,12 @@ private:
 	// std::vector<int> trackNumVec_;
 
 	// probabilistic data association params
-	double gamma_g_;//9.22; // 99%
-	double p_g_;//0.99;
+	double gating_thres_;//9.22; // 99%
+	double gate_probability_;//0.99;
 	// extern double gammaG_ = 5.99; // 99%
 	// extern double pG_ = 0.95;
 	// extern double gammaG_ = 15.22; // 99%
-	double p_d_;//0.9;
+	double detection_probability_;//0.9;
 
 	//bbox association param
 	double distance_thres_;//0.25;
@@ -49,7 +49,7 @@ private:
 	double bb_yaw_change_thres_;//0.2;
 	// double bb_area_change_thres_;//0.5;
 
-	double dist_from_init_thres_;
+	double static_distance_thres_;
 
 	double init_yaw_;
 

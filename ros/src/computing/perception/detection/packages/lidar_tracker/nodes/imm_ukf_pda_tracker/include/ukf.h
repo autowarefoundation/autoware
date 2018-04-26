@@ -160,7 +160,7 @@ public:
   Eigen::MatrixXd k_ctrv_;
   Eigen::MatrixXd k_rm_;
 
-  double gamma_g_;
+  // double gamma_g_;
   double pd_;
   double pg_;
 
@@ -173,6 +173,8 @@ public:
 
   jsk_recognition_msgs::BoundingBox jsk_bb_;
   jsk_recognition_msgs::BoundingBox best_jsk_bb_;
+
+  bool is_best_jsk_bb_empty_;
   // pcl::PointCloud<pcl::PointXYZ> bbox_;
   // pcl::PointCloud<pcl::PointXYZ> bestBBox_;
   double best_yaw_;

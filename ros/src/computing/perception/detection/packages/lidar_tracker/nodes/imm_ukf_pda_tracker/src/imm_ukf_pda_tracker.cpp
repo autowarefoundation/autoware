@@ -1,21 +1,3 @@
-//
-// Created by kosuke on 12/23/17.
-//
-
-// #include <ros/ros.h>
-
-// #include <iostream>
-// #include <fstream>
-// #include <vector>
-// #include <cmath>
-// #include <math.h>
-
-// #include <limits.h>
-
-// #include <tf/tf.h>
-// #include <tf/transform_listener.h>
-// #include <tf2/LinearMath/Quaternion.h>
-
 #include "ukf.h"
 #include "imm_ukf_pda_tracker.h"
 
@@ -53,20 +35,18 @@ int g_count = 0;
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
-  // dynamic params
   private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
   private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
   private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
-
-  // static params
-  private_nh_.param<bool>("init_", init_, false);
-  private_nh_.param<double>("gamma_g_", gamma_g_, 9.22);
-  private_nh_.param<double>("p_g_", p_g_, 0.99);
-  private_nh_.param<double>("p_d_", p_d_, 0.9);
+  private_nh_.param<double>("gating_thres_", gating_thres_, 9.22);
+  private_nh_.param<double>("gate_probability_", gate_probability_, 0.99);
+  private_nh_.param<double>("detection_probability_", detection_probability_, 0.9);
   private_nh_.param<double>("distance_thres_", distance_thres_, 99);
-  private_nh_.param<double>("bb_yaw_change_thres_", bb_yaw_change_thres_, 0.3);
-  private_nh_.param<double>("dist_from_init_thres_", dist_from_init_thres_, 3.0);
-  private_nh_.param<double>("init_yaw_", init_yaw_, 100);
+  private_nh_.param<double>("static_distance_thres_", static_distance_thres_, 3.0);
+  // private_nh_.param<double>("bb_yaw_change_thres_", bb_yaw_change_thres_, 0.3);
+  // private_nh_.param<double>("init_yaw_", init_yaw_, 100);
+
+  init_ = false;
 
   tf::TransformListener *lr (new  tf::TransformListener);
   tran_=lr;
@@ -177,7 +157,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
     Eigen::VectorXd diff = meas - max_det_z;
     double nis = diff.transpose()*max_det_s.inverse()*diff;
     // cout <<"nis: " <<nis << endl;
-    if(nis < gamma_g_)
+    if(nis < gating_thres_)
     { // x^2 99% range
       count ++;
       if(matching_vec[i] == IsMatch::False) target.lifetime_ ++;
@@ -210,7 +190,7 @@ void ImmUkfPda::filterPDA(UKF& target,
 {
   // calculating association probability
   double num_meas = cluster_vec.size();
-  double b = 2*num_meas*(1-p_d_*p_g_)/(gamma_g_*p_d_);
+  double b = 2*num_meas*(1-detection_probability_*gate_probability_)/(gating_thres_*detection_probability_);
   double e_cv_sum   = 0;
   double e_ctrv_sum = 0;
   double e_rm_sum   = 0;
@@ -330,23 +310,23 @@ void ImmUkfPda::filterPDA(UKF& target,
   Eigen::MatrixXd max_det_s;
 
   findMaxZandS(target, max_det_z, max_det_s);
-  double Vk =  M_PI *sqrt(gamma_g_ * max_det_s.determinant());
+  double Vk =  M_PI *sqrt(gating_thres_ * max_det_s.determinant());
 
   double lambda_cv, lambda_ctrv, lambda_rm;
   if(num_meas != 0)
   {
-    lambda_cv   = (1 - p_g_*p_d_)/pow(Vk, num_meas) +
-                        p_d_*pow(Vk, 1-num_meas)*e_cv_sum/(num_meas*sqrt(2*M_PI*target.s_cv_.determinant()));
-    lambda_ctrv = (1 - p_g_*p_d_)/pow(Vk, num_meas) +
-                        p_d_*pow(Vk, 1-num_meas)*e_ctrv_sum/(num_meas*sqrt(2*M_PI*target.s_ctrv_.determinant()));
-    lambda_rm   = (1 - p_g_*p_d_)/pow(Vk, num_meas) +
-                        p_d_*pow(Vk, 1-num_meas)*e_rm_sum/(num_meas*sqrt(2*M_PI*target.s_rm_.determinant()));
+    lambda_cv   = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas) +
+                        detection_probability_*pow(Vk, 1-num_meas)*e_cv_sum/(num_meas*sqrt(2*M_PI*target.s_cv_.determinant()));
+    lambda_ctrv = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas) +
+                        detection_probability_*pow(Vk, 1-num_meas)*e_ctrv_sum/(num_meas*sqrt(2*M_PI*target.s_ctrv_.determinant()));
+    lambda_rm   = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas) +
+                        detection_probability_*pow(Vk, 1-num_meas)*e_rm_sum/(num_meas*sqrt(2*M_PI*target.s_rm_.determinant()));
   }
   else
   {
-    lambda_cv   = (1 - p_g_*p_d_)/pow(Vk, num_meas);
-    lambda_ctrv = (1 - p_g_*p_d_)/pow(Vk, num_meas);
-    lambda_rm   = (1 - p_g_*p_d_)/pow(Vk, num_meas);
+    lambda_cv   = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas);
+    lambda_ctrv = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas);
+    lambda_rm   = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas);
   }
   // cout <<endl<< "lambda: "<<endl<<lambdaCV << " "<< lambdaCTRV<<" "<< lambdaRM << endl;
   lambda_vec.push_back(lambda_cv);
@@ -455,10 +435,11 @@ void ImmUkfPda::updateBB(UKF& target)
   // skip the rest of process if it is first bbox associaiton
   // todo: wanna check if bestJskBBox is empty or not, there should be better method
   // if(target.bestBBox_.empty()){
-  if(target.best_yaw_ == init_yaw_)
+  if(target.is_best_jsk_bb_empty_ == false)
   {
     target.best_jsk_bb_ = target.jsk_bb_;
     target.best_yaw_   = yaw;
+    target.is_best_jsk_bb_empty_ = true;
     return;
   }
 
@@ -757,7 +738,7 @@ void ImmUkfPda::staticClassification()
      targets_[i].lifetime_ > life_time_thres_ )
     {
       // double dist_thres = 3.0;
-      if((targets_[i].dist_from_init_ < dist_from_init_thres_)&&
+      if((targets_[i].dist_from_init_ < static_distance_thres_)&&
           (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
            targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_ ))
       {
