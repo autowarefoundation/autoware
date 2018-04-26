@@ -22,7 +22,7 @@ void VisualizeCloudCluster::callBack(autoware_msgs::CloudClusterArray input)
 
 	getJskBBs(input, jsk_bbs);
 	pub_jsk_bb_.publish(jsk_bbs);
-	visArrows(input);
+	visMarkers(input);
 	// cout << "receive jsk call back" << endl;
 }
 
@@ -54,7 +54,7 @@ void VisualizeCloudCluster::getJskBBs(autoware_msgs::CloudClusterArray input,
 	// cout <<"cluster size " << jsk_bbs.boxes.size() << endl;
 }
 
-void VisualizeCloudCluster::visArrows(autoware_msgs::CloudClusterArray input)
+void VisualizeCloudCluster::visMarkers(autoware_msgs::CloudClusterArray input)
 {
 	for(size_t i = 0; i < input.clusters.size(); i++)
 	{

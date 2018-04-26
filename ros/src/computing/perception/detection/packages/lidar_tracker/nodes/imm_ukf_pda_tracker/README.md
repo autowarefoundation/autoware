@@ -66,6 +66,7 @@ Node: visualize_cloud_cluster
 ------|----|---------
 |`/tracking_cluster_array/jsk_bb`|`jsk_recognition_msgs::BoundingBoxArray`|Visualze bounsing box nicely in rviz by JSK bounding box. Label contains information about static/dynamic class|
 |`/tracking_cluster_array/velocity_arrow`|`visualization_msgs::Marker`|Visualize velocity and yaw of the targets.|
+|`/tracking_cluster_array/target_id`|`visualization_msgs::Marker`|Visualize targets' id.|
 
 ### Node Graph
 

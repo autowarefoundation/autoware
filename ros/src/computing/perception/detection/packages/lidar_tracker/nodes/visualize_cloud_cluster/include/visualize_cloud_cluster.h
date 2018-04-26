@@ -33,7 +33,7 @@ private:
 
 	void getJskBBs(autoware_msgs::CloudClusterArray input,
 				  jsk_recognition_msgs::BoundingBoxArray& jskBBs);
-	void visArrows(autoware_msgs::CloudClusterArray input);
+	void visMarkers(autoware_msgs::CloudClusterArray input);
 	void callBack(autoware_msgs::CloudClusterArray input);
 
 public:
