@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
-#include <dpm_ocv/dpm_ocv.hpp>
+#include <libdpm_ocv/dpm_ocv.hpp>
 
 // Macros in OpenCV private header files
 #define VAL_OF_TRUNCATE 0.2f

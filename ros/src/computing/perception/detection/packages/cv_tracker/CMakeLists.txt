@@ -140,7 +140,7 @@ install(TARGETS dpm_ttic
 
 ## dpm_ocv
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-    INCLUDE_DIRECTORIES(../../lib/image/dpm_ocv/src)
+    INCLUDE_DIRECTORIES(${catkin_INCLUDE_DIRS})
 
     ADD_EXECUTABLE(dpm_ocv
             nodes/dpm_ocv/dpm_ocv.cpp
