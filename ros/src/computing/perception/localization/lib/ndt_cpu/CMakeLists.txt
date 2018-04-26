@@ -27,7 +27,7 @@ catkin_package(
 include_directories(
         ${PCL_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "include"
         ${EIGEN3_INCLUDE_DIRS}
 )
 
@@ -39,12 +39,12 @@ set(srcs
         )
 
 set(incs
-        include/fast_pcl/ndt_cpu/debug.h
-        include/fast_pcl/ndt_cpu/NormalDistributionsTransform.h
-        include/fast_pcl/ndt_cpu/Registration.h
-        include/fast_pcl/ndt_cpu/SymmetricEigenSolver.h
-        include/fast_pcl/ndt_cpu/VoxelGrid.h
-        include/fast_pcl/ndt_cpu/Octree.h
+        include/ndt_cpu/debug.h
+        include/ndt_cpu/NormalDistributionsTransform.h
+        include/ndt_cpu/Registration.h
+        include/ndt_cpu/SymmetricEigenSolver.h
+        include/ndt_cpu/VoxelGrid.h
+        include/ndt_cpu/Octree.h
         )
 
 add_library(ndt_cpu ${incs} ${srcs})

@@ -1,5 +1,5 @@
-#include "fast_pcl/ndt_gpu/MatrixHost.h"
-#include "fast_pcl/ndt_gpu/debug.h"
+#include "ndt_gpu/MatrixHost.h"
+#include "ndt_gpu/debug.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
-#include "fast_pcl/ndt_gpu/MatrixDevice.h"
-#include "fast_pcl/ndt_gpu/debug.h"
+#include "ndt_gpu/MatrixDevice.h"
+#include "ndt_gpu/debug.h"
 
 namespace gpu {
 MatrixDevice::MatrixDevice(int rows, int cols) {

@@ -1,5 +1,5 @@
-#include "fast_pcl/ndt_cpu/Registration.h"
-#include "fast_pcl/ndt_cpu/debug.h"
+#include "ndt_cpu/Registration.h"
+#include "ndt_cpu/debug.h"
 #include <iostream>
 
 namespace cpu {

@@ -1,6 +1,6 @@
-#include "fast_pcl/ndt_gpu/VoxelGrid.h"
-#include "fast_pcl/ndt_gpu/debug.h"
-#include "fast_pcl/ndt_gpu/common.h"
+#include "ndt_gpu/VoxelGrid.h"
+#include "ndt_gpu/debug.h"
+#include "ndt_gpu/common.h"
 #include <math.h>
 #include <limits>
 #include <thrust/device_ptr.h>
@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "fast_pcl/ndt_gpu/SymmetricEigenSolver.h"
+#include "ndt_gpu/SymmetricEigenSolver.h"
 
 namespace gpu {
 

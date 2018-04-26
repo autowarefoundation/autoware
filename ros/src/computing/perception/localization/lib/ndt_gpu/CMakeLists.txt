@@ -65,15 +65,15 @@ if (CUDA_FOUND)
             )
 
     set(incs
-            include/fast_pcl/ndt_gpu/common.h
-            include/fast_pcl/ndt_gpu/debug.h
-            include/fast_pcl/ndt_gpu/Matrix.h
-            include/fast_pcl/ndt_gpu/MatrixDevice.h
-            include/fast_pcl/ndt_gpu/MatrixHost.h
-            include/fast_pcl/ndt_gpu/NormalDistributionsTransform.h
-            include/fast_pcl/ndt_gpu/Registration.h
-            include/fast_pcl/ndt_gpu/SymmetricEigenSolver.h
-            include/fast_pcl/ndt_gpu/VoxelGrid.h
+            include/ndt_gpu/common.h
+            include/ndt_gpu/debug.h
+            include/ndt_gpu/Matrix.h
+            include/ndt_gpu/MatrixDevice.h
+            include/ndt_gpu/MatrixHost.h
+            include/ndt_gpu/NormalDistributionsTransform.h
+            include/ndt_gpu/Registration.h
+            include/ndt_gpu/SymmetricEigenSolver.h
+            include/ndt_gpu/VoxelGrid.h
             )
 
     cuda_add_library(ndt_gpu ${srcs} ${incs})

@@ -1,5 +1,5 @@
-#include "fast_pcl/ndt_cpu/VoxelGrid.h"
-#include "fast_pcl/ndt_cpu/debug.h"
+#include "ndt_cpu/VoxelGrid.h"
+#include "ndt_cpu/debug.h"
 #include <math.h>
 #include <limits>
 #include <inttypes.h>
@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "fast_pcl/ndt_cpu/SymmetricEigenSolver.h"
+#include "ndt_cpu/SymmetricEigenSolver.h"
 
 namespace cpu {
 

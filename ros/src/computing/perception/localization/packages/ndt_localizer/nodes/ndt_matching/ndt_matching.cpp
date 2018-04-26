@@ -66,9 +66,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 
 #include <pcl/registration/ndt.h>
-#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
+#include <ndt_cpu/NormalDistributionsTransform.h>
 #ifdef CUDA_FOUND
-  #include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
+  #include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
 #ifdef USE_PCL_OPENMP
   #include <pcl_omp/registration/ndt.h>
