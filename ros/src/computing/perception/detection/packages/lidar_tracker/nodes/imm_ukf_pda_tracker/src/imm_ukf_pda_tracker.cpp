@@ -804,6 +804,8 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
 
       autoware_msgs::CloudCluster cc;
       cc.header = input.header;
+      // std::cout << "id "<< i << std::endl;
+      cc.id     = i;
       cc.bounding_box = targets_[i].jsk_bb_;
       cc.bounding_box.header = input.header;
       cc.score           = tv;

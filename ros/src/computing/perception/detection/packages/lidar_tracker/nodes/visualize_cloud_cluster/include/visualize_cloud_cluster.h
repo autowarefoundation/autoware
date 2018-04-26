@@ -10,6 +10,7 @@
 #include <pcl/io/io.h>
 
 #include <vector>
+#include <string>
 
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
@@ -23,13 +24,14 @@ class VisualizeCloudCluster
 {
 private:
 	std::string input_topic_;
-	
+
 	ros::NodeHandle node_handle_;
   ros::Subscriber sub_cloud_array_;
   ros::Publisher  pub_jsk_bb_;
   ros::Publisher  pub_arrow_;
+	ros::Publisher  pub_id_;
 
-	void getJskBB(autoware_msgs::CloudClusterArray input,
+	void getJskBBs(autoware_msgs::CloudClusterArray input,
 				  jsk_recognition_msgs::BoundingBoxArray& jskBBs);
 	void visArrows(autoware_msgs::CloudClusterArray input);
 	void callBack(autoware_msgs::CloudClusterArray input);
