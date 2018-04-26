@@ -53,17 +53,20 @@ int g_count = 0;
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
+  // dynamic params
+  private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
+  private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
+  private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
+
+  // static params
   private_nh_.param<bool>("init_", init_, false);
   private_nh_.param<double>("gamma_g_", gamma_g_, 9.22);
   private_nh_.param<double>("p_g_", p_g_, 0.99);
   private_nh_.param<double>("p_d_", p_d_, 0.9);
   private_nh_.param<double>("distance_thres_", distance_thres_, 99);
-  private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
   private_nh_.param<double>("bb_yaw_change_thres_", bb_yaw_change_thres_, 0.3);
   private_nh_.param<double>("dist_from_init_thres_", dist_from_init_thres_, 3.0);
   private_nh_.param<double>("init_yaw_", init_yaw_, 100);
-  private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
-  private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
 
   tf::TransformListener *lr (new  tf::TransformListener);
   tran_=lr;
