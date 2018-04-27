@@ -94,7 +94,7 @@ params :
       v         : ''
       cmd_param :
         delim     : ''
-        default   : ~/.autoware/data/tf/tf.launch
+        default   : $(rospack find runtime_manager)/scripts/tf_generate.launch
 
   - name  : pcd_filter
     vars  :
