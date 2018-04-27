@@ -10,10 +10,12 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>cv_bridge</build_depend>
+    <build_depend>libopencv-dev</build_depend>
 
     <run_depend>sensor_msgs</run_depend>
     <run_depend>std_msgs</run_depend>
     <run_depend>cv_bridge</run_depend>
+    <run_depend>libopencv-dev</run_depend>
 
     <export>
     </export>

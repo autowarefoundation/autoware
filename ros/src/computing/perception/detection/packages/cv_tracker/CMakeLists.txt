@@ -83,44 +83,57 @@ endif ()
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
-INCLUDE_DIRECTORIES(
+include_directories(
         ${catkin_INCLUDE_DIRS}
         lib
         include
 )
 
 IF (CUDA_FOUND)
-    INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+    include_directories(${CUDA_INCLUDE_DIRS})
 
     IF ("${ARCHITECTURE}" MATCHES "^arm")
-        LINK_DIRECTORIES(/usr/lib/arm-linux-gnueabihf/tegra)
+        link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
-
-ELSE ()
-    message("CUDA is not installed. 'cv_tracker' package will not be built.")
 ENDIF ()
 
 ## dpm_ttic ##
-ADD_EXECUTABLE(dpm_ttic
-        nodes/dpm_ttic/dpm_ttic.cpp
-        )
 
-TARGET_LINK_LIBRARIES(dpm_ttic
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
-        )
 
 #this must be fixed to use cmake cuda commands
 IF (CUDA_FOUND)
-    SET_TARGET_PROPERTIES(dpm_ttic
+
+    cuda_add_executable(dpm_ttic
+            nodes/dpm_ttic/dpm_ttic.cpp
+            )
+
+    target_link_libraries(dpm_ttic
+            ${catkin_LIBRARIES}
+            ${OpenCV_LIBRARIES}
+            ${CUDA_LIBRARIES}
+            ${CUDA_CUBLAS_LIBRARIES}
+            ${CUDA_curand_LIBRARY}
+            )
+
+    set_target_properties(dpm_ttic
             PROPERTIES
             COMPILE_FLAGS
             "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/GPU_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
             )
 ELSE ()
-    SET_TARGET_PROPERTIES(dpm_ttic
+
+    add_executable(dpm_ttic
+            nodes/dpm_ttic/dpm_ttic.cpp
+            )
+
+    target_link_libraries(dpm_ttic
+            ${catkin_LIBRARIES}
+            ${OpenCV_LIBRARIES}
+            )
+
+    set_target_properties(dpm_ttic
             PROPERTIES
             COMPILE_FLAGS
             "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
@@ -128,7 +141,7 @@ ELSE ()
 ENDIF ()
 
 
-ADD_DEPENDENCIES(dpm_ttic
+add_dependencies(dpm_ttic
         ${catkin_EXPORTED_TARGETS}
         )
 
@@ -140,36 +153,36 @@ install(TARGETS dpm_ttic
 
 ## dpm_ocv
 if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-    INCLUDE_DIRECTORIES(${catkin_INCLUDE_DIRS})
-
-    ADD_EXECUTABLE(dpm_ocv
-            nodes/dpm_ocv/dpm_ocv.cpp
-            )
-
-    TARGET_LINK_LIBRARIES(dpm_ocv
-            ${catkin_LIBRARIES}
-            #${OpenCV_LIBS}
-            )
-
-    ADD_DEPENDENCIES(dpm_ocv
-            ${catkin_EXPORTED_TARGETS}
-            )
 
     IF (CUDA_FOUND)
-        SET_TARGET_PROPERTIES(dpm_ocv
+        cuda_add_executable(dpm_ocv
+                nodes/dpm_ocv/dpm_ocv.cpp
+                )
+        set_target_properties(dpm_ocv
                 PROPERTIES
                 COMPILE_FLAGS
                 "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/model/models_VOC2007/"
                 )
     ELSE ()
-        SET_TARGET_PROPERTIES(dpm_ocv
+        add_executable(dpm_ocv
+                nodes/dpm_ocv/dpm_ocv.cpp
+                )
+        set_target_properties(dpm_ocv
                 PROPERTIES
                 COMPILE_FLAGS
                 "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
                 )
-
     ENDIF ()
-    #CUDAENDIF
+
+    target_link_libraries(dpm_ocv
+            ${catkin_LIBRARIES}
+            ${OpenCV_LIBRARIES}
+            )
+
+    add_dependencies(dpm_ocv
+            ${catkin_EXPORTED_TARGETS}
+            )
+
     install(TARGETS dpm_ocv
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -180,16 +193,16 @@ ENDIF ()
 #ROS_VERSION_ENDIF
 
 ## range_fusion ##
-ADD_EXECUTABLE(range_fusion
+add_executable(range_fusion
         nodes/range_fusion/range_fusion.cpp
         )
 
-TARGET_LINK_LIBRARIES(range_fusion
+target_link_libraries(range_fusion
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
+        ${OpenCV_LIBRARIES}
         )
 
-ADD_DEPENDENCIES(range_fusion
+add_dependencies(range_fusion
         ${catkin_EXPORTED_TARGETS}
         )
 
@@ -207,16 +220,16 @@ install(TARGETS range_fusion
 
 #    TARGET_LINK_LIBRARIES(kf_track
 #            ${catkin_LIBRARIES}
-#            ${OpenCV_LIBS}
+#            ${OpenCV_LIBRARIES}
 #            )
 #    add_dependencies(kf_track ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 ## dummy_tracker ##
-ADD_EXECUTABLE(dummy_track
+add_executable(dummy_track
         nodes/dummy_track/dummy_track.cpp
         )
-TARGET_LINK_LIBRARIES(dummy_track
+target_link_libraries(dummy_track
         ${catkin_LIBRARIES}
         )
 install(TARGETS dummy_track
@@ -226,13 +239,19 @@ install(TARGETS dummy_track
         )
 
 ## obj_reproj ##
-ADD_EXECUTABLE(obj_reproj
+# check whether jsk library is available or not
+add_executable(obj_reproj
         nodes/obj_reproj/obj_reproj.cpp
         )
 
-TARGET_LINK_LIBRARIES(obj_reproj
+set_target_properties(obj_reproj
+        PROPERTIES COMPILE_FLAGS
+        "-DHAVE_JSK_PLUGIN"
+        )
+
+target_link_libraries(obj_reproj
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
+        ${OpenCV_LIBRARIES}
         )
 
 install(TARGETS obj_reproj
@@ -241,40 +260,30 @@ install(TARGETS obj_reproj
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-
-# check whether jsk library is available or not
-find_package(jsk_recognition_msgs)
-if (jsk_recognition_msgs_FOUND)
-    # if jsk plugin is found, activate macro
-    SET_TARGET_PROPERTIES(obj_reproj
-            PROPERTIES COMPILE_FLAGS
-            "-DHAVE_JSK_PLUGIN")
-endif (jsk_recognition_msgs_FOUND)
-
 ## klt_tracker ##
-ADD_EXECUTABLE(klt_track
+add_executable(klt_track
         nodes/klt_track/klt_track.cpp
         )
 
-INCLUDE_DIRECTORIES(lib/lktracker)
+include_directories(lib/lktracker)
 
-ADD_LIBRARY(lktracker
+add_library(lktracker
         lib/lktracker/LkTracker.cpp
         )
-TARGET_LINK_LIBRARIES(lktracker
-        ${OpenCV_LIBS}
+target_link_libraries(lktracker
+        ${OpenCV_LIBRARIES}
         )
-ADD_DEPENDENCIES(lktracker
+add_dependencies(lktracker
         ${catkin_EXPORTED_TARGETS}
         )
 
-TARGET_LINK_LIBRARIES(klt_track
+target_link_libraries(klt_track
         lktracker
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
+        ${OpenCV_LIBRARIES}
         )
 
-ADD_DEPENDENCIES(klt_track
+add_dependencies(klt_track
         ${catkin_EXPORTED_TARGETS}
         )
 install(TARGETS klt_track
@@ -293,26 +302,26 @@ set(RCNN_CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
 if (EXISTS "${RCNN_CAFFE_PATH}")
     find_package(librcnn)
 
-    ADD_EXECUTABLE(rcnn_msr
+    add_executable(rcnn_msr
             nodes/rcnn/rcnn_node.cpp
             )
 
-    TARGET_LINK_LIBRARIES(rcnn_msr
+    target_link_libraries(rcnn_msr
             librcnn
             ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
+            ${OpenCV_LIBRARIES}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
             )
 
-    TARGET_INCLUDE_DIRECTORIES(rcnn_msr PRIVATE
+    target_include_directories(rcnn_msr PRIVATE
             ${librcnn_INCLUDE_DIRS}
             ${RCNN_CAFFE_PATH}/include
             ${catkin_INCLUDE_DIRS}
             )
 
-    ADD_DEPENDENCIES(rcnn_msr
+    add_dependencies(rcnn_msr
             ${catkin_EXPORTED_TARGETS}
             librcnn
             )
@@ -331,14 +340,14 @@ set(SSD_CAFFE_PATH "$ENV{HOME}/ssdcaffe/distribute")
 ####################################################################################################
 if (EXISTS "${SSD_CAFFE_PATH}")
 
-    ADD_EXECUTABLE(ssd_unc
+    add_executable(ssd_unc
             nodes/ssd/ssd_node.cpp
             nodes/ssd/ssd_detector.cpp
             )
 
-    TARGET_LINK_LIBRARIES(ssd_unc
+    target_link_libraries(ssd_unc
             ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
+            ${OpenCV_LIBRARIES}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
@@ -346,12 +355,12 @@ if (EXISTS "${SSD_CAFFE_PATH}")
             glog
             )
 
-    TARGET_INCLUDE_DIRECTORIES(ssd_unc PRIVATE
+    target_include_directories(ssd_unc PRIVATE
             ${SSD_CAFFE_PATH}/include
             nodes/ssd/include
             )
 
-    ADD_DEPENDENCIES(ssd_unc
+    add_dependencies(ssd_unc
             ${catkin_EXPORTED_TARGETS}
             )
 
@@ -374,7 +383,7 @@ if (EXISTS "${YOLO2_PATH}")
     set(YOLO2_USE_GPU 1)
 
     list(APPEND CUDA_NVCC_FLAGS "--std=c++11 -I${YOLO2_PATH}/include -I${YOLO2_PATH}/src")
-    SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
 
     cuda_add_library(yolo2lib_wa
@@ -445,7 +454,7 @@ if (EXISTS "${YOLO2_PATH}")
 
     target_link_libraries(yolo2lib_wa
             ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
+            ${OpenCV_LIBRARIES}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
@@ -468,7 +477,7 @@ if (EXISTS "${YOLO2_PATH}")
     target_link_libraries(yolo2_wa
             yolo2lib_wa
             ${catkin_LIBRARIES}
-            ${OpenCV_LIBS}
+            ${OpenCV_LIBRARIES}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
