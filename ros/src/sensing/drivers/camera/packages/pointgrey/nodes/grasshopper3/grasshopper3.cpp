@@ -525,7 +525,7 @@ int main(int argc, char **argv)
 			//publish*******************
 
 			msg.header.seq = count;
-			msg.header.frame_id = "camera";
+			msg.header.frame_id = "camera" + std::to_string(i);
 			msg.header.stamp.sec = ros::Time::now().sec;
 			msg.header.stamp.nsec = ros::Time::now().nsec;
 			msg.height = image.GetRows();
