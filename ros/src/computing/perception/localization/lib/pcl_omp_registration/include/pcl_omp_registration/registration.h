@@ -605,6 +605,6 @@ namespace pcl_omp
    };
 }
 
-#include "pcl_omp/registration/impl/registration.hpp"
+#include "pcl_omp_registration/impl/registration.hpp"
 
 #endif  //#ifndef PCL_OMP_REGISTRATION_H_

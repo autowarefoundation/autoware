@@ -43,8 +43,8 @@
 
 //#include <pcl/registration/ndt.h>
 //#include <pcl/registration/impl/ndt.hpp>
-#include "pcl_omp/registration/ndt.h"
-#include "pcl_omp/registration/impl/ndt.hpp"
+#include "pcl_omp_registration/ndt.h"
+#include "pcl_omp_registration/impl/ndt.hpp"
 
 template class PCL_EXPORTS pcl_omp::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ>;
 template class PCL_EXPORTS pcl_omp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI>;

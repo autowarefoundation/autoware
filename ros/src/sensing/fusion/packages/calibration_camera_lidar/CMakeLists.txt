@@ -64,7 +64,7 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${GLUT_LIBRARIES}
+        ${GLUT_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -80,6 +80,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             ${OPENGL_LIBRARIES}
+            ${GLUT_LIBRARY}
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL

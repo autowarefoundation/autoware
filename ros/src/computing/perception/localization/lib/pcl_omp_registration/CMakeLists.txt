@@ -32,13 +32,13 @@ ELSE (PCL_VERSION VERSION_LESS "1.7.2")
             )
 
     set(incs
-            include/pcl_omp/registration/ndt.h
-            include/pcl_omp/registration/registration.h
+            include/pcl_omp_registration/ndt.h
+            include/pcl_omp_registration/registration.h
             )
 
     set(impl_incs
-            include/pcl_omp/registration/impl/ndt.hpp
-            include/pcl_omp/registration/impl/registration.hpp
+            include/pcl_omp_registration/impl/ndt.hpp
+            include/pcl_omp_registration/impl/registration.hpp
             )
 
     include_directories(include
@@ -59,7 +59,6 @@ ELSE (PCL_VERSION VERSION_LESS "1.7.2")
 
     install(DIRECTORY include/${PROJECT_NAME}/
             DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-            FILES_MATCHING PATTERN "*.h"
             )
 
 

@@ -64,7 +64,7 @@
   #include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
 #ifdef USE_PCL_OPENMP
-  #include <pcl_omp/registration/ndt.h>
+  #include <pcl_omp_registration/ndt.h>
 #endif
 
 #include <autoware_msgs/ConfigNdtMapping.h>

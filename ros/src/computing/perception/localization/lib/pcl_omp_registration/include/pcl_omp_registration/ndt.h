@@ -42,7 +42,7 @@
 #define PCL_OMP_REGISTRATION_NDT_H_
 
 //#include <pcl/registration/registration.h>
-#include "pcl_omp/registration/registration.h"
+#include "pcl_omp_registration/registration.h"
 //#include <pcl/filters/voxel_grid_covariance.h>
 #include <pcl/filters/voxel_grid_covariance.h>
 
@@ -467,6 +467,6 @@ namespace pcl_omp
 }
 
 //#include <pcl/registration/impl/ndt.hpp>
-#include "pcl_omp/registration/impl/ndt.hpp"
+#include "pcl_omp_registration/impl/ndt.hpp"
 
 #endif // PCL_OMP_REGISTRATION_NDT_H_
