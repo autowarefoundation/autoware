@@ -3077,7 +3077,7 @@ class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
 	def update_filename(self):
 		tc = self.text_ctrl
 		now = datetime.datetime.now()
-		fn = 'autoware-%04d%02d%02d%02d%02d%02d' % (
+		fn = 'apex-%04d%02d%02d%02d%02d%02d' % (
 			now.year, now.month, now.day, now.hour, now.minute, now.second)
 		path = os.path.join(self.basedir, fn)
 		set_path(tc, path)
