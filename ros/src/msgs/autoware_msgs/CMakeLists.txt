@@ -50,41 +50,43 @@ add_message_files(
             vscan_tracked.msg
             vscan_tracked_array.msg
             waypoint.msg
+            WaypointState.msg
             VehicleCmd.msg
+            VehicleStatus.msg
             TrafficLightResult.msg
             TrafficLightResultArray.msg
-
+        
             ## Runtime Manager ##
-            ConfigApproximateNdtMapping.msg
-            ConfigCarDpm.msg
-            ConfigCarFusion.msg
-            ConfigCarKf.msg
-            ConfigDecisionMaker.msg
-            ConfigDistanceFilter.msg
-            ConfigRingGroundFilter.msg
-            ConfigICP.msg
-            ConfigLaneRule.msg
-            ConfigLaneSelect.msg
-            ConfigLaneStop.msg
-            ConfigLatticeVelocitySet.msg
-            ConfigNdt.msg
-            ConfigNdtMapping.msg
-            ConfigNdtMappingOutput.msg
-            ConfigPedestrianDpm.msg
-            ConfigPedestrianFusion.msg
-            ConfigPedestrianKf.msg
-            ConfigPlannerSelector.msg
-            ConfigPoints2Polygon.msg
-            ConfigPointsConcatFilter.msg
-            ConfigRandomFilter.msg
-            ConfigRcnn.msg
-            ConfigRingFilter.msg
-            ConfigRayGroundFilter.msg
-            ConfigSsd.msg
-            ConfigTwistFilter.msg
-            ConfigVelocitySet.msg
-            ConfigVoxelGridFilter.msg
-            ConfigWaypointFollower.msg
+            config/ConfigApproximateNdtMapping.msg
+            config/ConfigCarDpm.msg
+            config/ConfigCarFusion.msg
+            config/ConfigCarKf.msg
+            config/ConfigDecisionMaker.msg
+            config/ConfigDistanceFilter.msg
+            config/ConfigRingGroundFilter.msg
+            config/ConfigICP.msg
+            config/ConfigLaneRule.msg
+            config/ConfigLaneSelect.msg
+            config/ConfigLaneStop.msg
+            config/ConfigLatticeVelocitySet.msg
+            config/ConfigNdt.msg
+            config/ConfigNdtMapping.msg
+            config/ConfigNdtMappingOutput.msg
+            config/ConfigPedestrianDpm.msg
+            config/ConfigPedestrianFusion.msg
+            config/ConfigPedestrianKf.msg
+            config/ConfigPlannerSelector.msg
+            config/ConfigPoints2Polygon.msg
+            config/ConfigPointsConcatFilter.msg
+            config/ConfigRandomFilter.msg
+            config/ConfigRcnn.msg
+            config/ConfigRingFilter.msg
+            config/ConfigRayGroundFilter.msg
+            config/ConfigSsd.msg
+            config/ConfigTwistFilter.msg
+            config/ConfigVelocitySet.msg
+            config/ConfigVoxelGridFilter.msg
+            config/ConfigWaypointFollower.msg
             accel_cmd.msg
             adjust_xy.msg
             brake_cmd.msg
@@ -93,14 +95,12 @@ add_message_files(
             steer_cmd.msg
             traffic_light.msg
             state_cmd.msg
-            WaypointState.msg
             state.msg
-
-
+        
             ## Sync
             Sync_time_monitor.msg
             Sync_time_diff.msg
-
+        
             ## Remote Control
             RemoteCmd.msg
 )
