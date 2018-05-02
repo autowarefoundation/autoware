@@ -58,20 +58,19 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <pcl/registration/ndt.h>
 #include <ndt_cpu/NormalDistributionsTransform.h>
+#include <pcl/registration/ndt.h>
 #ifdef CUDA_FOUND
-  #include <ndt_gpu/NormalDistributionsTransform.h>
+#include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
 #ifdef USE_PCL_OPENMP
-  #include <pcl_omp_registration/ndt.h>
+#include <pcl_omp_registration/ndt.h>
 #endif
 
 #include <autoware_msgs/ConfigNdtMapping.h>
 #include <autoware_msgs/ConfigNdtMappingOutput.h>
 
 #include <time.h>
-
 
 struct pose
 {
@@ -85,10 +84,10 @@ struct pose
 
 enum class MethodType
 {
-    PCL_GENERIC = 0,
-    PCL_ANH = 1,
-    PCL_ANH_GPU = 2,
-    PCL_OPENMP = 3,
+  PCL_GENERIC = 0,
+  PCL_ANH = 1,
+  PCL_ANH_GPU = 2,
+  PCL_OPENMP = 3,
 };
 static MethodType _method_type = MethodType::PCL_GENERIC;
 
@@ -125,8 +124,6 @@ static gpu::GNormalDistributionsTransform anh_gpu_ndt;
 #ifdef USE_PCL_OPENMP
 static pcl_omp::NormalDistributionsTransform<pcl::PointXYZI, pcl::PointXYZI> omp_ndt;
 #endif
-
-
 
 // Default values
 static int max_iter = 30;        // Maximum iterations
@@ -370,10 +367,10 @@ static double wrapToPmPi(double a_angle_rad)
 static double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
 {
   double diff_rad = lhs_rad - rhs_rad;
-  if(diff_rad >= M_PI)
-     diff_rad = diff_rad - 2*M_PI;
-  else if(diff_rad < -M_PI)
-     diff_rad = diff_rad + 2*M_PI;
+  if (diff_rad >= M_PI)
+    diff_rad = diff_rad - 2 * M_PI;
+  else if (diff_rad < -M_PI)
+    diff_rad = diff_rad + 2 * M_PI;
   return diff_rad;
 }
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
@@ -547,7 +544,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 #endif
 
-
   static bool is_first_map = true;
   if (is_first_map == true)
   {
@@ -605,7 +601,6 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   t4_start = ros::Time::now();
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZI>);
-
 
   if (_method_type == MethodType::PCL_GENERIC)
   {
@@ -774,7 +769,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       ndt.setInputTarget(map_ptr);
     else if (_method_type == MethodType::PCL_ANH)
     {
-      if(_incremental_voxel_update == true)
+      if (_incremental_voxel_update == true)
         anh_ndt.updateVoxelGrid(transformed_scan_ptr);
       else
         anh_ndt.setInputTarget(map_ptr);
@@ -789,12 +784,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 #endif
   }
 
-
   sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
   pcl::toROSMsg(*map_ptr, *map_msg_ptr);
   ndt_map_pub.publish(*map_msg_ptr);
-
-
 
   q.setRPY(current_pose.roll, current_pose.pitch, current_pose.yaw);
   current_pose_msg.header.frame_id = "map";
@@ -902,7 +894,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
-// setting parameters
+  // setting parameters
   int method_type_tmp = 0;
   private_nh.getParam("method_type", method_type_tmp);
   _method_type = static_cast<MethodType>(method_type_tmp);
@@ -952,7 +944,7 @@ int main(int argc, char** argv)
             << _tf_roll << ", " << _tf_pitch << ", " << _tf_yaw << ")" << std::endl;
 
 #ifndef CUDA_FOUND
-  if(_method_type == MethodType::PCL_ANH_GPU)
+  if (_method_type == MethodType::PCL_ANH_GPU)
   {
     std::cerr << "**************************************************************" << std::endl;
     std::cerr << "[ERROR]PCL_ANH_GPU is not built. Please use other method type." << std::endl;
@@ -961,7 +953,7 @@ int main(int argc, char** argv)
   }
 #endif
 #ifndef USE_PCL_OPENMP
-  if(_method_type == MethodType::PCL_OPENMP)
+  if (_method_type == MethodType::PCL_OPENMP)
   {
     std::cerr << "**************************************************************" << std::endl;
     std::cerr << "[ERROR]PCL_OPENMP is not built. Please use other method type." << std::endl;
@@ -990,7 +982,7 @@ int main(int argc, char** argv)
   ros::Subscriber param_sub = nh.subscribe("config/ndt_mapping", 10, param_callback);
   ros::Subscriber output_sub = nh.subscribe("config/ndt_mapping_output", 10, output_callback);
   ros::Subscriber points_sub = nh.subscribe("points_raw", 100000, points_callback);
-  ros::Subscriber odom_sub = nh.subscribe("/odom_pose", 100000, odom_callback);
+  ros::Subscriber odom_sub = nh.subscribe("/vehicle/odom", 100000, odom_callback);
   ros::Subscriber imu_sub = nh.subscribe(_imu_topic, 100000, imu_callback);
 
   ros::spin();
