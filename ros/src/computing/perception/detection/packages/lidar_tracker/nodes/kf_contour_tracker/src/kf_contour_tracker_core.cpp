@@ -1,4 +1,5 @@
 /*
+ // *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -69,7 +70,7 @@ ContourTracker::ContourTracker()
 	sub_cloud_clusters 		= nh.subscribe("/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
 	sub_current_pose 		= nh.subscribe("/current_pose",   1, &ContourTracker::callbackGetCurrentPose, 	this);
 
-	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
+	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("op_planner_tracked_boxes", 1);
 
@@ -189,29 +190,7 @@ void ContourTracker::MainLoop()
 			autoware_msgs::DetectedObject obj;
 			for(unsigned int i = 0 ; i <m_ObstacleTracking.m_DetectedObjects.size(); i++)
 			{
-				obj.id = m_ObstacleTracking.m_DetectedObjects.at(i).id;
-				obj.label = m_ObstacleTracking.m_DetectedObjects.at(i).label;
-				obj.dimensions.x = m_ObstacleTracking.m_DetectedObjects.at(i).l;
-				obj.dimensions.y = m_ObstacleTracking.m_DetectedObjects.at(i).w;
-				obj.dimensions.z = m_ObstacleTracking.m_DetectedObjects.at(i).h;
-
-				obj.pose.position.x = m_ObstacleTracking.m_DetectedObjects.at(i).center.pos.x;
-				obj.pose.position.y = m_ObstacleTracking.m_DetectedObjects.at(i).center.pos.y;
-				obj.pose.position.z = m_ObstacleTracking.m_DetectedObjects.at(i).center.pos.z;
-
-				obj.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(m_ObstacleTracking.m_DetectedObjects.at(i).center.pos.a));
-
-				geometry_msgs::Point32 p;
-				obj.convex_hull.polygon.points.clear();
-
-				for(unsigned int j=0; j < m_ObstacleTracking.m_DetectedObjects.at(i).contour.size(); j++)
-				{
-					p.x = m_ObstacleTracking.m_DetectedObjects.at(i).contour.at(j).x;
-					p.y = m_ObstacleTracking.m_DetectedObjects.at(i).contour.at(j).y;
-					p.z = m_ObstacleTracking.m_DetectedObjects.at(i).contour.at(j).z;
-					obj.convex_hull.polygon.points.push_back(p);
-				}
-
+				PlannerHNS::RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), obj);
 				m_OutPutResults.objects.push_back(obj);
 			}
 

@@ -1,5 +1,5 @@
 /*
-// *  Copyright (c) 2016, Nagoya University
+// *  Copyright (c) 2017, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,10 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 #ifndef KF_CONTOUR_TRACKER_CORE
 #define KF_CONTOUR_TRACKER_CORE
 
-// ROS includes
 #include <ros/ros.h>
 #include "RoadNetwork.h"
 #include "SimpleTracker.h"
@@ -94,12 +94,11 @@ protected:
 
 	visualization_msgs::MarkerArray m_DetectionCircles;
 
-protected: //ROS messages (topics)
+	//ROS messages (topics)
 	ros::NodeHandle nh;
 
 	//define publishers
 	ros::Publisher pub_AllTrackedObjects;
-
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
 
@@ -108,11 +107,11 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_current_pose ;
 
 
-protected: // Callback function for subscriber.
+	// Callback function for subscriber.
 	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 
-protected: //Helper Functions
+	//Helper Functions
 	void VisualizeLocalTracking();
 
 public:

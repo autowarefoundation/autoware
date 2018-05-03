@@ -1,9 +1,8 @@
-/*
- * RosHelpers.cpp
- *
- *  Created on: Jun 30, 2016
- *      Author: ai-driver
- */
+
+/// \file  RosHelpers.cpp
+/// \brief Helper functions for rviz visualization
+/// \author Hatem Darweesh
+/// \date Jun 30, 2016
 
 #include "op_RosHelpers.h"
 
@@ -238,73 +237,544 @@ void RosHelpers::CreateCircleMarker(const PlannerHNS::WayPoint& _center, const d
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-		autoware_msgs::lane& trajectory)
+void RosHelpers::InitPredMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
+{
+	paths.markers.clear();
+	for(int i=0; i<nMarkers; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
+		paths.markers.push_back(mkr);
+	}
+}
+
+void RosHelpers::InitCurbsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& curbs)
+{
+	curbs.markers.clear();
+	for(int i=0; i<nMarkers; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"map_detected_curbs", visualization_msgs::Marker::SPHERE);
+		curbs.markers.push_back(mkr);
+	}
+}
+
+void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<PlannerHNS::WayPoint> >& paths,visualization_msgs::MarkerArray& path_markers, visualization_msgs::MarkerArray& path_markers_d)
+{
+
+	path_markers = path_markers_d;
+	for(unsigned int i = 0; i < paths.size(); i++)
+	{
+		double prop = 1.0;
+//		if(paths.at(i).size()>0)
+//			prop = paths.at(i).at(0).collisionCost;
+
+		visualization_msgs::Marker path_mkr = CreateGenMarker(0,0,0,0,0.57*prop,0.43*prop,0.85*prop,0.1,i,"Predicted_Trajectories", visualization_msgs::Marker::LINE_STRIP);
+
+
+		for(unsigned int p = 0; p < paths.at(i).size(); p++)
+		{
+			geometry_msgs::Point point;
+			point.x = paths.at(i).at(p).pos.x;
+			point.y = paths.at(i).at(p).pos.y;
+			point.z = paths.at(i).at(p).pos.z;
+			path_mkr.points.push_back(point);
+		}
+
+		if(i < path_markers.markers.size())
+			path_markers.markers.at(i) = path_mkr;
+		else
+			path_markers.markers.push_back(path_mkr);
+	}
+}
+
+void RosHelpers::ConvertCurbsMarkers(const std::vector<PlannerHNS::DetectedObject>& curbs, visualization_msgs::MarkerArray& curbs_markers, visualization_msgs::MarkerArray& curbs_markers_d)
+{
+
+	curbs_markers = curbs_markers_d;
+	for(unsigned int i = 0; i < curbs.size(); i++)
+	{
+		if(curbs.at(i).contour.size() > 0)
+		{
+			visualization_msgs::Marker curb_mkr = CreateGenMarker(curbs.at(i).contour.at(0).x,curbs.at(i).contour.at(0).y,curbs.at(i).contour.at(0).z,0,1,0.54,0,0.2,i,"map_detected_curbs", visualization_msgs::Marker::SPHERE);
+
+			if(i < curbs_markers.markers.size())
+				curbs_markers.markers.at(i) = curb_mkr;
+			else
+				curbs_markers.markers.push_back(curb_mkr);
+		}
+	}
+}
+
+void RosHelpers::InitCollisionPointsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& col_points)
+{
+	col_points.markers.clear();
+	for(int i=0; i<nMarkers; i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(0,0,0,0,1,1,1,1,i,"collision_points_rviz", visualization_msgs::Marker::SPHERE);
+		col_points.markers.push_back(mkr);
+	}
+}
+
+void RosHelpers::ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::WayPoint>& col_points, visualization_msgs::MarkerArray& collision_markers, visualization_msgs::MarkerArray& collision_markers_d)
+{
+	collision_markers = collision_markers_d;
+	for(unsigned int i = 0; i < col_points.size(); i++)
+	{
+		visualization_msgs::Marker mkr = CreateGenMarker(col_points.at(i).pos.x, col_points.at(i).pos.y, col_points.at(i).pos.z,0,1,0,0,0.5,i,"collision_points_rviz", visualization_msgs::Marker::SPHERE);
+
+		if(i < collision_markers.markers.size())
+			collision_markers.markers.at(i) = mkr;
+		else
+			collision_markers.markers.push_back(mkr);
+
+	}
+}
+
+void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::lane& trajectory , const unsigned int& iStart)
 {
 	trajectory.waypoints.clear();
-	for(unsigned int i=iStart; i < path.size(); i++)
+
+	for(unsigned int i = iStart; i < path.size(); i++)
 	{
 		autoware_msgs::waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
 		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
+
 		wp.twist.twist.linear.x = path.at(i).v;
-		if(path.at(i).bDir == FORWARD_DIR)
-			wp.dtlane.dir = 0;
-		else if(path.at(i).bDir == FORWARD_LEFT_DIR)
-			wp.dtlane.dir = 1;
-		else if(path.at(i).bDir == FORWARD_RIGHT_DIR)
-			wp.dtlane.dir = 2;
-		//PlannerHNS::GPSPoint p = path.at(i).pos;
-		//std::cout << p.ToString() << std::endl;
+		wp.lane_id = path.at(i).laneId;
+		wp.stop_line_id = path.at(i).stopLineID;
+		wp.left_lane_id = path.at(i).LeftLaneId;
+		wp.right_lane_id = path.at(i).RightLaneId;
+		wp.time_cost = path.at(i).timeCost;
+
+		wp.gid = path.at(i).gid;
+
+		if(path.at(i).actionCost.size()>0)
+			wp.direction = path.at(i).actionCost.at(0).first;
+
+		wp.cost = path.at(i).cost;
+
 		trajectory.waypoints.push_back(wp);
+	}
+}
+
+void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::lane& trajectory)
+{
+	trajectory.waypoints.clear();
+
+	for(unsigned int i=0; i < path.size(); i++)
+	{
+		autoware_msgs::waypoint wp;
+		wp.pose.pose.position.x = path.at(i).x;
+		wp.pose.pose.position.y = path.at(i).y;
+		wp.pose.pose.position.z = path.at(i).z;
+		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).a));
+
+		trajectory.waypoints.push_back(wp);
+	}
+}
+
+void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::lane& trajectory, std::vector<PlannerHNS::WayPoint>& path)
+{
+	path.clear();
+
+	for(unsigned int i=0; i < trajectory.waypoints.size(); i++)
+	{
+		PlannerHNS::WayPoint wp;
+		wp.pos.x = trajectory.waypoints.at(i).pose.pose.position.x;
+		wp.pos.y = trajectory.waypoints.at(i).pose.pose.position.y;
+		wp.pos.z = trajectory.waypoints.at(i).pose.pose.position.z;
+		wp.pos.a = tf::getYaw(trajectory.waypoints.at(i).pose.pose.orientation);
+
+		wp.v = trajectory.waypoints.at(i).twist.twist.linear.x;
+
+		wp.gid = trajectory.waypoints.at(i).gid;
+		wp.laneId = trajectory.waypoints.at(i).lane_id;
+		wp.stopLineID = trajectory.waypoints.at(i).stop_line_id;
+		wp.LeftLaneId = trajectory.waypoints.at(i).left_lane_id;
+		wp.RightLaneId = trajectory.waypoints.at(i).right_lane_id;
+		wp.timeCost = trajectory.waypoints.at(i).time_cost;
+
+		if(trajectory.waypoints.at(i).direction == 0)
+			wp.bDir = PlannerHNS::FORWARD_DIR;
+		else if(trajectory.waypoints.at(i).direction == 1)
+			wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
+		else if(trajectory.waypoints.at(i).direction == 2)
+			wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
+		else if(trajectory.waypoints.at(i).direction == 3)
+			wp.bDir = PlannerHNS::BACKWARD_DIR;
+		else if(trajectory.waypoints.at(i).direction == 4)
+			wp.bDir = PlannerHNS::BACKWARD_LEFT_DIR;
+		else if(trajectory.waypoints.at(i).direction == 5)
+			wp.bDir = PlannerHNS::BACKWARD_RIGHT_DIR;
+		else if(trajectory.waypoints.at(i).direction == 6)
+			wp.bDir = PlannerHNS::STANDSTILL_DIR;
+
+		wp.cost = trajectory.waypoints.at(i).cost;
+
+		path.push_back(wp);
+	}
+}
+
+void RosHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
+		const autoware_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray)
+{
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.ns = "global_lane_array_marker";
+  lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 0.75;
+  lane_waypoint_marker.scale.y = 0.75;
+  lane_waypoint_marker.color = color;
+  lane_waypoint_marker.frame_locked = false;
+
+  int count = 0;
+  for (unsigned int i=0; i<  lane_waypoints_array.lanes.size(); i++)
+  {
+    lane_waypoint_marker.points.clear();
+    lane_waypoint_marker.id = count;
+
+    for (unsigned int j=0; j < lane_waypoints_array.lanes.at(i).waypoints.size(); j++)
+    {
+      geometry_msgs::Point point;
+      point = lane_waypoints_array.lanes.at(i).waypoints.at(j).pose.pose.position;
+      lane_waypoint_marker.points.push_back(point);
+    }
+    markerArray.markers.push_back(lane_waypoint_marker);
+    count++;
+  }
+
+}
+
+void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+		, visualization_msgs::MarkerArray& markerArray)
+{
+  visualization_msgs::MarkerArray tmp_marker_array;
+  // display by markers the velocity of each waypoint.
+  visualization_msgs::Marker velocity_marker;
+  velocity_marker.header.frame_id = "map";
+  velocity_marker.header.stamp = ros::Time();
+  velocity_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  velocity_marker.action = visualization_msgs::Marker::ADD;
+  //velocity_marker.scale.z = 0.4;
+  velocity_marker.color.a = 0.9;
+  velocity_marker.color.r = 1;
+  velocity_marker.color.g = 1;
+  velocity_marker.color.b = 1;
+  velocity_marker.frame_locked = false;
+
+  int count = 1;
+  for (unsigned int i=0; i<  lane_waypoints_array.lanes.size(); i++)
+  {
+
+	  std::ostringstream str_count;
+	  str_count << count;
+    velocity_marker.ns = "global_velocity_lane_" + str_count.str();
+    for (unsigned int j=0; j < lane_waypoints_array.lanes.at(i).waypoints.size(); j++)
+    {
+      //std::cout << _waypoints[i].GetX() << " " << _waypoints[i].GetY() << " " << _waypoints[i].GetZ() << " " << _waypoints[i].GetVelocity_kmh() << std::endl;
+      velocity_marker.id = j;
+      geometry_msgs::Point relative_p;
+      relative_p.y = 0.5;
+      velocity_marker.pose.position = calcAbsoluteCoordinate(relative_p, lane_waypoints_array.lanes.at(i).waypoints.at(j).pose.pose);
+      velocity_marker.pose.position.z += 0.2;
+
+      // double to string
+      std::ostringstream str_out;
+      str_out << lane_waypoints_array.lanes.at(i).waypoints.at(j).twist.twist.linear.x;
+      //std::string vel = str_out.str();
+      velocity_marker.text = str_out.str();//vel.erase(vel.find_first_of(".") + 2);
+
+      tmp_marker_array.markers.push_back(velocity_marker);
+    }
+    count++;
+  }
+
+  markerArray.markers.insert(markerArray.markers.end(), tmp_marker_array.markers.begin(),
+                                       tmp_marker_array.markers.end());
+}
+
+void RosHelpers::createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+		, visualization_msgs::MarkerArray& markerArray)
+{
+  visualization_msgs::MarkerArray tmp_marker_array;
+  visualization_msgs::Marker lane_waypoint_marker;
+  lane_waypoint_marker.header.frame_id = "map";
+  lane_waypoint_marker.header.stamp = ros::Time();
+  lane_waypoint_marker.type = visualization_msgs::Marker::ARROW;
+  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_waypoint_marker.scale.x = 0.3;
+  lane_waypoint_marker.scale.y = 0.1;
+  lane_waypoint_marker.scale.z = 0.1;
+  lane_waypoint_marker.color.r = 1.0;
+  lane_waypoint_marker.color.a = 0.8;
+  //lane_waypoint_marker.frame_locked = false;
+
+  lane_waypoint_marker.ns = "global_lane_waypoint_orientation_marker";
+
+  int count = 1;
+  for (unsigned int i=0; i<  lane_waypoints_array.lanes.size(); i++)
+  {
+//	  std::ostringstream str_ns;
+//	  str_ns << "global_lane_waypoint_orientation_marker_";
+//	  str_ns << i;
+//	 lane_waypoint_marker.ns = str_ns.str();
+
+    for (unsigned int j=0; j < lane_waypoints_array.lanes.at(i).waypoints.size(); j++)
+    {
+    	lane_waypoint_marker.id = count;
+    	lane_waypoint_marker.pose = lane_waypoints_array.lanes.at(i).waypoints.at(j).pose.pose;
+
+    	if(lane_waypoints_array.lanes.at(i).waypoints.at(j).dtlane.dir == 1)
+    	{
+    		lane_waypoint_marker.color.r = 0.0;
+    		lane_waypoint_marker.color.g = 1.0;
+    		lane_waypoint_marker.color.b = 0.0;
+    		tmp_marker_array.markers.push_back(lane_waypoint_marker);
+    	}
+    	else if(lane_waypoints_array.lanes.at(i).waypoints.at(j).dtlane.dir == 2)
+    	{
+    		lane_waypoint_marker.color.r = 0.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 1.0;
+			tmp_marker_array.markers.push_back(lane_waypoint_marker);
+    	}
+    	else
+    	{
+    		lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 1.0;
+			tmp_marker_array.markers.push_back(lane_waypoint_marker);
+    	}
+      count++;
+    }
+  }
+
+  markerArray.markers.insert(markerArray.markers.end(), tmp_marker_array.markers.begin(),
+										   tmp_marker_array.markers.end());
+}
+
+void RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(const autoware_msgs::DetectedObject& det_obj, PlannerHNS::DetectedObject& obj)
+{
+	obj.id = det_obj.id;
+	obj.label = det_obj.label;
+	obj.l = det_obj.dimensions.x;
+	obj.w = det_obj.dimensions.y;
+	obj.h = det_obj.dimensions.z;
+
+	obj.center.pos.x = det_obj.pose.position.x;
+	obj.center.pos.y = det_obj.pose.position.y;
+	obj.center.pos.z = det_obj.pose.position.z;
+	obj.center.pos.a = tf::getYaw(det_obj.pose.orientation);
+
+	obj.center.v = det_obj.velocity.linear.x;
+	obj.bVelocity = det_obj.velocity_reliable;
+	obj.bDirection = det_obj.pose_reliable;
+
+	PlannerHNS::GPSPoint p;
+	obj.contour.clear();
+
+	for(unsigned int j=0; j < det_obj.convex_hull.polygon.points.size(); j++)
+	{
+
+		p.x = det_obj.convex_hull.polygon.points.at(j).x;
+		p.y = det_obj.convex_hull.polygon.points.at(j).y;
+		p.z = det_obj.convex_hull.polygon.points.at(j).z;
+		obj.contour.push_back(p);
+	}
+
+	obj.predTrajectories.clear();
+
+	for(unsigned int j = 0 ; j < det_obj.candidate_trajectories.lanes.size(); j++)
+	{
+		std::vector<PlannerHNS::WayPoint> _traj;
+		PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(det_obj.candidate_trajectories.lanes.at(j), _traj);
+		obj.predTrajectories.push_back(_traj);
+	}
+}
+
+void RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(const PlannerHNS::DetectedObject& det_obj, autoware_msgs::DetectedObject& obj)
+{
+	obj.id = det_obj.id;
+	obj.label = det_obj.label;
+	obj.dimensions.x = det_obj.l;
+	obj.dimensions.y = det_obj.w;
+	obj.dimensions.z = det_obj.h;
+
+	obj.pose.position.x = det_obj.center.pos.x;
+	obj.pose.position.y = det_obj.center.pos.y;
+	obj.pose.position.z = det_obj.center.pos.z;
+	obj.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(det_obj.center.pos.a));
+
+	obj.velocity.linear.x = det_obj.center.v;
+	obj.velocity_reliable = det_obj.bVelocity;
+	obj.pose_reliable = det_obj.bDirection;
+
+	geometry_msgs::Point32 p;
+	obj.convex_hull.polygon.points.clear();
+
+	for(unsigned int j=0; j < det_obj.contour.size(); j++)
+	{
+		p.x = det_obj.contour.at(j).x;
+		p.y = det_obj.contour.at(j).y;
+		p.z = det_obj.contour.at(j).z;
+		obj.convex_hull.polygon.points.push_back(p);
+	}
+
+
+	obj.candidate_trajectories.lanes.clear();
+	for(unsigned int j = 0 ; j < det_obj.predTrajectories.size(); j++)
+	{
+		autoware_msgs::lane pred_traj;
+		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(det_obj.predTrajectories.at(j), pred_traj);
+		pred_traj.cost = 0;
+		pred_traj.lane_index = 0;
+		obj.candidate_trajectories.lanes.push_back(pred_traj);
 	}
 }
 
 void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
 {
-	visualization_msgs::Marker lane_waypoint_marker;
-	lane_waypoint_marker.header.frame_id = "map";
-	lane_waypoint_marker.header.stamp = ros::Time();
-	lane_waypoint_marker.ns = "road_network_vector_map";
-	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
-	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
-	lane_waypoint_marker.scale.x = 0.25;
-	std_msgs::ColorRGBA roll_color, total_color, curr_color;
-	roll_color.r = 1;
-	roll_color.g = 1;
-	roll_color.b = 1;
-	roll_color.a = 0.5;
-
-	lane_waypoint_marker.color = roll_color;
-	lane_waypoint_marker.frame_locked = false;
-
 	markerArray.markers.clear();
-
+	autoware_msgs::LaneArray map_lane_array;
+	autoware_msgs::lane l;
 	for(unsigned int i = 0; i< map.roadSegments.size(); i++)
 	{
 		for(unsigned int j = 0; j < map.roadSegments.at(i).Lanes.size(); j++)
 		{
-			lane_waypoint_marker.points.clear();
-
-			lane_waypoint_marker.id = map.roadSegments.at(i).Lanes.at(j).id;
-			for(unsigned int p = 0; p < map.roadSegments.at(i).Lanes.at(j).points.size(); p++)
-			{
-				geometry_msgs::Point point;
-
-
-
-				  point.x = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.x;
-				  point.y = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.y;
-				  point.z = map.roadSegments.at(i).Lanes.at(j).points.at(p).pos.z;
-
-				  lane_waypoint_marker.points.push_back(point);
-			}
-
-			markerArray.markers.push_back(lane_waypoint_marker);
+			RosHelpers::ConvertFromLocalLaneToAutowareLane(map.roadSegments.at(i).Lanes.at(j).points, l);
+			map_lane_array.lanes.push_back(l);
 		}
 	}
+
+	std_msgs::ColorRGBA total_color;
+	total_color.r = 1;
+	total_color.g = 0.5;
+	total_color.b = 0.3;
+	total_color.a = 0.85;
+
+	visualization_msgs::Marker lane_waypoint_marker;
+	  lane_waypoint_marker.header.frame_id = "map";
+	  lane_waypoint_marker.header.stamp = ros::Time();
+	  lane_waypoint_marker.ns = "vector_map_center_lines_rviz";
+	  lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	  lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	  lane_waypoint_marker.scale.x = 0.25;
+	  lane_waypoint_marker.scale.y = 0.25;
+	  lane_waypoint_marker.scale.z = 0.25;
+	  lane_waypoint_marker.color = total_color;
+	  //lane_waypoint_marker.frame_locked = false;
+
+	  visualization_msgs::Marker text_marker;
+	  text_marker.header.frame_id = "map";
+	  text_marker.header.stamp = ros::Time();
+	  text_marker.ns = "MapItemsIds";
+	  text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	  text_marker.action = visualization_msgs::Marker::ADD;
+	  text_marker.scale.x = 1;
+	  text_marker.scale.y = 1;
+	  text_marker.scale.z = 1;
+	  text_marker.color.a = 0.9;
+	  text_marker.color.r = 1;
+	  text_marker.color.g = 1;
+	  text_marker.color.b = 1;
+	  //text_marker.frame_locked = false;
+
+	  int count = 0;
+	  for (unsigned int i=0; i<  map_lane_array.lanes.size(); i++)
+	  {
+		lane_waypoint_marker.points.clear();
+		lane_waypoint_marker.id = count;
+
+		for (unsigned int j=0; j < map_lane_array.lanes.at(i).waypoints.size(); j++)
+		{
+		  geometry_msgs::Point point;
+		  point = map_lane_array.lanes.at(i).waypoints.at(j).pose.pose.position;
+		  lane_waypoint_marker.points.push_back(point);
+		}
+		markerArray.markers.push_back(lane_waypoint_marker);
+
+		  if(lane_waypoint_marker.points.size() > 0)
+		  {
+			  text_marker.id = count * 10;
+				text_marker.pose.position = lane_waypoint_marker.points.at(lane_waypoint_marker.points.size()/2);
+				std::ostringstream str_out;
+				str_out << " Lane: " ;
+				str_out << map_lane_array.lanes.at(i).waypoints.at(0).twist.twist.linear.y;
+				text_marker.text = str_out.str();
+				markerArray.markers.push_back(text_marker);
+		  }
+
+		count++;
+	  }
+
+	  RosHelpers::createGlobalLaneArrayOrientationMarker(map_lane_array, markerArray);
+	total_color.r = 0.99;
+	total_color.g = 0.99;
+	total_color.b = 0.99;
+	total_color.a = 0.85;
+
+	visualization_msgs::Marker stop_waypoint_marker;
+	  stop_waypoint_marker.header.frame_id = "map";
+	  stop_waypoint_marker.header.stamp = ros::Time();
+	  stop_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	  stop_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	  stop_waypoint_marker.scale.x = 0.4;
+	  stop_waypoint_marker.scale.y = 0.4;
+	  stop_waypoint_marker.scale.z = 0.4;
+	  stop_waypoint_marker.color = total_color;
+	 // stop_waypoint_marker.frame_locked = false;
+
+
+	  for (unsigned int i=0; i<  map.stopLines.size(); i++)
+	  {
+		  std::ostringstream ns_id;
+		  ns_id << "stop_lines_rviz_" ;
+		  ns_id << map.stopLines.at(i).id;
+		  stop_waypoint_marker.ns =ns_id.str();
+
+		  RosHelpers::ConvertFromLocalLaneToAutowareLane(map.stopLines.at(i).points, l);
+
+		  stop_waypoint_marker.points.clear();
+		  stop_waypoint_marker.id = count;
+		 for (unsigned int k=0; k < l.waypoints.size(); k++)
+		{
+		  geometry_msgs::Point point;
+		  point = l.waypoints.at(k).pose.pose.position;
+		  stop_waypoint_marker.points.push_back(point);
+		}
+
+			markerArray.markers.push_back(stop_waypoint_marker);
+			count++;
+
+		  if(stop_waypoint_marker.points.size() > 0)
+		  {
+			  text_marker.id = count * 10;
+				text_marker.pose.position = stop_waypoint_marker.points.at(0);
+				std::ostringstream str_out;
+				str_out << "StopLine: " ;
+				str_out << map.stopLines.at(i).id;
+				text_marker.text = str_out.str();
+				markerArray.markers.push_back(text_marker);
+		  }
+	  }
+
+	  for (unsigned int i=0; i<  map.trafficLights.size(); i++)
+	  {
+		  text_marker.id = count * 10;
+			text_marker.pose.position.x = map.trafficLights.at(i).pos.x;
+			text_marker.pose.position.y = map.trafficLights.at(i).pos.y;
+			text_marker.pose.position.z = map.trafficLights.at(i).pos.z;
+			std::ostringstream str_out;
+			str_out << "Light: ";
+			str_out << map.trafficLights.at(i).id;
+			text_marker.text = str_out.str();
+			markerArray.markers.push_back(text_marker);
+			count++;
+	  }
 }
 
 void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
@@ -377,7 +847,7 @@ void RosHelpers::TrajectoriesToMarkers(const std::vector<std::vector<std::vector
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
 	lane_waypoint_marker.header.stamp = ros::Time();
-	lane_waypoint_marker.ns = "global_lane_array_marker";
+	lane_waypoint_marker.ns = "local_lane_array_marker";
 	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
 	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
 	lane_waypoint_marker.scale.x = 0.1;
@@ -414,6 +884,81 @@ void RosHelpers::TrajectoriesToMarkers(const std::vector<std::vector<std::vector
 			markerArray.markers.push_back(lane_waypoint_marker);
 			count++;
 		}
+	}
+}
+
+void RosHelpers::TrajectoriesToColoredMarkers(const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const std::vector<PlannerHNS::TrajectoryCost>& traj_costs,const int& iClosest, visualization_msgs::MarkerArray& markerArray)
+{
+	visualization_msgs::Marker lane_waypoint_marker;
+	lane_waypoint_marker.header.frame_id = "map";
+	lane_waypoint_marker.header.stamp = ros::Time();
+	lane_waypoint_marker.ns = "local_lane_array_marker_colored";
+	lane_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+	lane_waypoint_marker.action = visualization_msgs::Marker::ADD;
+	lane_waypoint_marker.scale.x = 0.1;
+	lane_waypoint_marker.scale.y = 0.1;
+	//lane_waypoint_marker.scale.z = 0.1;
+	lane_waypoint_marker.color.a = 0.9;
+	lane_waypoint_marker.color.r = 1.0;
+	lane_waypoint_marker.color.g = 1.0;
+	lane_waypoint_marker.color.b = 1.0;
+	lane_waypoint_marker.frame_locked = false;
+
+	int count = 0;
+	for (unsigned int i = 0; i < paths.size(); i++)
+	{
+		lane_waypoint_marker.points.clear();
+		lane_waypoint_marker.id = count;
+
+		for (unsigned int j=0; j < paths.at(i).size(); j++)
+		{
+			geometry_msgs::Point point;
+
+			point.x = paths.at(i).at(j).pos.x;
+			point.y = paths.at(i).at(j).pos.y;
+			point.z = paths.at(i).at(j).pos.z;
+
+			lane_waypoint_marker.points.push_back(point);
+		}
+
+		lane_waypoint_marker.color.b = 0;
+
+		if(traj_costs.size() == paths.size())
+		{
+			float norm_cost = traj_costs.at(i).cost * paths.size();
+			if(norm_cost <= 1.0)
+			{
+				lane_waypoint_marker.color.r = norm_cost;
+				lane_waypoint_marker.color.g = 1.0;
+			}
+			else if(norm_cost > 1.0)
+			{
+				lane_waypoint_marker.color.r = 1.0;
+				lane_waypoint_marker.color.g = 2.0 - norm_cost;
+			}
+		}
+		else
+		{
+			lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 0.0;
+		}
+
+		if(traj_costs.at(i).bBlocked)
+		{
+			lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 0.0;
+		}
+
+		if(i == iClosest)
+		{
+			lane_waypoint_marker.color.r = 1.0;
+			lane_waypoint_marker.color.g = 0.0;
+			lane_waypoint_marker.color.b = 1.0;
+		}
+
+		markerArray.markers.push_back(lane_waypoint_marker);
+		count++;
 	}
 }
 
@@ -753,6 +1298,15 @@ std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& be
 	case PlannerHNS::STOP_SIGN_WAIT_STATE:
 		str = "Sign Wait";
 		break;
+	case PlannerHNS::YIELDING_STATE:
+		str = "Yielding";
+		break;
+	case PlannerHNS::BRANCH_RIGHT_STATE:
+			str = "Right";
+			break;
+	case PlannerHNS::BRANCH_LEFT_STATE:
+			str = "LEFT";
+			break;
 	default:
 		str = "Unknown";
 		break;
@@ -761,15 +1315,15 @@ std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& be
 	return str;
 }
 
-void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker)
+void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker, std::string ns,double size_factor)
 {
 	behaviorMarker.header.frame_id = "map";
 	behaviorMarker.header.stamp = ros::Time();
-	behaviorMarker.ns = "detected_polygons_velocity";
+	behaviorMarker.ns = ns;
 	behaviorMarker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-	behaviorMarker.scale.z = 1.0;
-	behaviorMarker.scale.x = 1.0;
-	behaviorMarker.scale.y = 1.0;
+	behaviorMarker.scale.z = 1.0*size_factor;
+	behaviorMarker.scale.x = 1.0*size_factor;
+	behaviorMarker.scale.y = 1.0*size_factor;
 	behaviorMarker.color.a = 0.9;
 	behaviorMarker.frame_locked = false;
 	if(bGreenLight)
@@ -783,13 +1337,15 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 		behaviorMarker.color.r = 1;//trackedObstacles.at(i).center.v/16.0;
 		behaviorMarker.color.g = 0.1;// - trackedObstacles.at(i).center.v/16.0;
 		behaviorMarker.color.b = 0.1;
-		behaviorMarker.id = 0;
 	}
+
+	behaviorMarker.id = 0;
+
 	geometry_msgs::Point point;
 
 	point.x = currState.pos.x;
 	point.y = currState.pos.y;
-	point.z = currState.pos.z+2.0;
+	point.z = currState.pos.z+3.0;
 
 	behaviorMarker.pose.position = point;
 

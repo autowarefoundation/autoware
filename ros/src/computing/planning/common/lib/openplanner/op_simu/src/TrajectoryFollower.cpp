@@ -1,9 +1,8 @@
-/*
- * TrajectoryFollower.cpp
- *
- *  Created on: Jun 18, 2016
- *      Author: hatem
- */
+
+/// \file TrajectoryFollower.cpp
+/// \brief PID based trajectory follower
+/// \author Hatem Darweesh
+/// \date Jun 18, 2016
 
 #include "TrajectoryFollower.h"
 #include "PlanningHelpers.h"

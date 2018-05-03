@@ -1,9 +1,9 @@
-/*
- * DataRW.h
- *
- *  Created on: Jun 23, 2016
- *      Author: hatem
- */
+
+/// \file DataRW.h
+/// \brief File operations for loading vector map files, loading kml map files and writing log .csv files
+/// \author Hatem Darweesh
+/// \date Jun 23, 2016
+
 
 #ifndef DATARW_H_
 #define DATARW_H_
@@ -34,6 +34,7 @@ public:
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);
 	static void WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData);
+	static void CreateLoggingFolder();
 };
 
 class SimpleReaderBase
@@ -72,16 +73,6 @@ protected:
 
 };
 
-//class GPSLocalizerReader : public SimpleReaderBase
-//{
-//	public:
-//		GPSLocalizerReader(const std::string& fileName) : SimpleReaderBase(fileName){}
-//		~GPSLocalizerReader(){}
-//
-//		bool ReadNextLine( MsgEstPose& pos, double& logTime);
-//		int ReadAllData(vector<pair<double,  MsgEstPose> >& pos_list);
-//};
-//
 class GPSDataReader : public SimpleReaderBase
 {
 public:
@@ -102,27 +93,6 @@ public:
 	bool ReadNextLine(GPSBasicData& data);
 	int ReadAllData(std::vector<GPSBasicData>& data_list);
 };
-
-//
-//class VehicleStateReader : public SimpleReaderBase
-//{
-//	public:
-//	VehicleStateReader(const string& fileName) : SimpleReaderBase(fileName){}
-//	~VehicleStateReader(){}
-//
-//	bool ReadNextLine( MsgVehicleStatus& state, double& logTime);
-//	int ReadAllData(vector<pair<double,  MsgVehicleStatus> >& state_list);
-//};
-//
-//class MovingObjectsReader : public SimpleReaderBase
-//{
-//	public:
-//	MovingObjectsReader(const string& fileName) : SimpleReaderBase(fileName, 2, 1, 28, 4){}
-//	~MovingObjectsReader(){}
-//
-//	bool ReadNextLine( MsgMovingObject& state, double& logTime);
-//	int ReadAllData(vector<pair<double,  MsgMovingObject> >& state_list);
-//};
 
 class SimulationFileReader : public SimpleReaderBase
 {

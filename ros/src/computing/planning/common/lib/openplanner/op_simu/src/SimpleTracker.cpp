@@ -1,9 +1,8 @@
-/*
- * SimpleTracker.cpp
- *
- *  Created on: Aug 11, 2016
- *      Author: hatem
- */
+
+/// \file SimpleTracker.cpp
+/// \brief Kalman Filter based object tracker
+/// \author Hatem Darweesh
+/// \date Aug 11, 2016
 
 #include "SimpleTracker.h"
 #include "MatrixOperations.h"
@@ -12,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
+#include <float.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -140,7 +140,7 @@ void SimpleTracker::MatchClosest()
 	{
 		double iCloseset_track = -1;
 		double iCloseset_obj = -1;
-		double dCloseset = 99999999;
+		double dCloseset = DBL_MAX;
 		bool bFoundMatch = false;
 
 		double size_diff = -1;
@@ -230,17 +230,17 @@ void SimpleTracker::MatchClosestCost()
 	{
 		//std::cout << std::endl;
 		double max_d = -1;
-		double min_d = 999999999;
+		double min_d = DBL_MAX;
 		double max_s = -1;
-		double min_s = 999999999;
+		double min_s = DBL_MAX;
 		double max_a = -1;
-		double min_a = 999999999;
+		double min_a = DBL_MAX;
 		double max_w = -1;
-		double min_w = 999999999;
+		double min_w = DBL_MAX;
 		double max_l = -1;
-		double min_l = 999999999;
+		double min_l = DBL_MAX;
 		double max_h = -1;
-		double min_h = 999999999;
+		double min_h = DBL_MAX;
 
 		m_CostsLists.clear();
 
@@ -348,7 +348,7 @@ void SimpleTracker::MatchClosestCost()
 		}
 
 		CostRecordSet min_set;
-		min_set.cost = 99999999;
+		min_set.cost = DBL_MAX;
 
 		for(unsigned int ic = 0 ; ic < m_CostsLists.size() ; ic++)
 		{
@@ -454,7 +454,7 @@ void SimpleTracker::AssociateAndTrack()
 	{
 		double iCloseset_track = -1;
 		double iCloseset_obj = -1;
-		double dCloseset = 99999999;
+		double dCloseset = DBL_MAX;
 		bool bFoundMatch = false;
 		double min_size = -1;
 		std::cout << "DetObjSize: " <<  m_DetectedObjects.size() <<  ", TracksSize: " << m_TrackSimply.size() << std::endl;

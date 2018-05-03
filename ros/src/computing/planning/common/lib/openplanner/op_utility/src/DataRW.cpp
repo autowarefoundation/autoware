@@ -1,21 +1,24 @@
-/*
- * DataRW.cpp
- *
- *  Created on: Jun 23, 2016
- *      Author: hatem
- */
+
+/// \file DataRW.cpp
+/// \brief File operations for loading vector map files, loading kml map files and writing log .csv files
+/// \author Hatem Darweesh
+/// \date Jun 23, 2016
+
+
 
 #include "DataRW.h"
 #include <stdlib.h>
 #include <tinyxml.h>
+#include <sys/stat.h>
 #include "UtilityH.h"
+
 
 using namespace std;
 
 namespace UtilityHNS
 {
 
-std::string DataRW::LoggingMainfolderName 	= "/SimuLogs/";
+std::string DataRW::LoggingMainfolderName 	= "/autoware_openplanner_logs/";
 std::string DataRW::ControlLogFolderName 	= "ControlLogs/";
 std::string DataRW::GlobalPathLogFolderName = "GlobalPathLogs/";
 std::string DataRW::PathLogFolderName 		= "TrajectoriesLogs/";
@@ -30,6 +33,44 @@ DataRW::DataRW()
 
 DataRW::~DataRW()
 {
+}
+
+void DataRW::CreateLoggingFolder()
+{
+	std::string main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName;
+	int dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	if (-1 == dir_err)
+	    cout << "Can't Create OpenPlanner Log Path!n" << endl;
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::ControlLogFolderName;
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::GlobalPathLogFolderName;
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::PathLogFolderName;
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::StatesLogFolderName;
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::SimulationFolderName;
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar1";
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar2";
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar3";
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar4";
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+
+	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + "SimulatedCar5";
+	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 }
 
 void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData)

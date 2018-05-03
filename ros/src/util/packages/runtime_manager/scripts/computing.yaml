@@ -547,13 +547,20 @@ subs :
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
         param: astar_navi
-    - name : way_planner (OpenPlanner)
+    - name : way_planner (OpenPlanner) (old ver)
       desc : Global planner for OpenPlanner
       subs :
       - name : way_planner
         desc : for global planning
         cmd  : roslaunch way_planner way_planner.launch
         param: way_planner
+    - name : OpenPlanner - Global Planning
+      desc : Global planner for OpenPlanner
+      subs :
+      - name : op_global_planner
+        desc : global planner node from OpenPlanner
+        cmd  : roslaunch op_global_planner op_global_planner.launch
+        param: op_global_planner
 
   - name : Motion Planning
     desc : Motion Planning desc sample
@@ -572,10 +579,56 @@ subs :
     - name : OpenPlanner - Local planning
       desc : Local Planner for OpenPlanner
       subs :
+      - name : op_common_params
+        desc : load common local planning parameters
+        cmd  : roslaunch op_local_planner op_common_params.launch
+        param: op_common_params
       - name : op_trajectory_generator
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
         param: op_trajectory_generator
+      - name : op_motion_predictor
+        desc : predict behavior and trajectories for moving vehicles
+        cmd  : roslaunch op_local_planner op_motion_predictor.launch
+        param: op_motion_predictor
+      - name : op_trajectory_evaluator
+        desc : evaluate candidate rollout trajectory against the tracked obstacles
+        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
+        param: op_trajectory_evaluator
+      - name : op_behavior_selector
+        desc : Decision making by selecting best behavior for local planner 
+        cmd  : roslaunch op_local_planner op_behavior_selector.launch
+    - name : OpenPlanner - Simulator
+      desc : Car, Signs, Detection Simulation for OpenPlanner Test
+      subs :
+      - name : op_perception_simulator
+        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
+        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
+        param: op_perception_simulator
+      - name : op_signs_simulator
+        desc : Simulate traffic Signs status for intersections included in the map
+        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
+        param: op_signs_simulator
+      - name : op_car_simulator_1
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
+        param: op_car_simulator
+      - name : op_car_simulator_2
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_2.launch
+        param: op_car_simulator
+      - name : op_car_simulator_3
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_3.launch
+        param: op_car_simulator
+      - name : op_car_simulator_4
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_4.launch
+        param: op_car_simulator
+      - name : op_car_simulator_5
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_5.launch
+        param: op_car_simulator
 
     - name : astar_planner
       desc : astar_planner desc sample
@@ -2746,6 +2799,91 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name  : op_global_planner
+    vars  :
+    - name : enableLaneChange
+      desc : global plan extended by lane changes
+      label: Enable Lane Changing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableReplan
+      desc : infinite replanning to multiple goals including the start position
+      label: Enable Replanning
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSmoothing
+      desc : smooth and fix global path
+      label: Enable Smoothing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableRvizInput
+      desc : Enable Destination selection by Rviz or from Log file
+      label: Rviz Goals
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash   : ''
+        delim  : ':='
+
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.75
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Autoware
+      - Folder
+      - KML
+      descs :
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : dp_planner
     vars  :
     - name : enabTrajectoryVelocities
@@ -3041,14 +3179,443 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-  - name  : op_trajectory_generator
+
+  - name  : op_common_params
     vars  :
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Autoware
+      - Folder
+      - KML
+      descs :
+      - use Autoware Map
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizonDistance
+      desc : Horizon distance
+      label: Horizon
+      min : 2.0
+      max : 200.0
+      v   : 120.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxLocalPlanDistance
+      desc : max length of the local plan
+      label: Plan Ditance
+      min  : 10.0
+      max  : 150.0
+      v    : 60.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density
       min  : 0.1
       max  : 3.0
       v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutDensity
+      desc : Roll outs density
+      label: Horizontal Density
+      min  : 0.1
+      max  : 2.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutsNumber
+      desc : Number of roll outs
+      label: Rollouts Number
+      min  : 0
+      max  : 20
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxVelocity
+      desc : maximum allowed velocity in meter/second
+      label: Max Velocity
+      min  : -1.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxAcceleration
+      desc : Maximum acceleration allowed 
+      label: Acceleration
+      min  : 0.1
+      max  : 15.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDeceleration
+      desc : Maximum deceleration
+      label: Deceleration
+      min  : -15.0
+      max  : -0.1
+      v    : -3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car
+      label: Follow Distance
+      min  : 10.0
+      max  : 50.0
+      v    : 30.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minDistanceToAvoid
+      desc : Avoidance and Following threshold Distance
+      label: Avoiding Distance
+      min  : 6.0
+      max  : 30.0
+      v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
+      min  : 1.0
+      max  : 6.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableTrafficLightBehavior
+      desc : Enable traffic light check
+      label: Enable Traffic Light
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLaneChange
+      desc : Enable Lane Change
+      label: Enable Lane Change
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.0
+      max : 3.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.0
+      max : 5.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : ff_waypoint_follower
+    vars  :
+    - name : maxVelocity
+      desc : maximum allowed velocity in
+      label: Max Velocity
+      min  : 0.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steeringDelay
+      desc : Steering wheel average delay
+      label: Steering Delay
+      min  : 0.0
+      max  : 2.0
+      v    : 0.85
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minPursuiteDistance
+      desc : Minimum Follow Point Distance
+      label: Follow Distance
+      min  : 0.0
+      max  : 5.0
+      v    : 2.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKP
+      desc : Gain proportional component
+      label: KP
+      min  : 0.0
+      max  : 1.0
+      v    : 0.07
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKI
+      desc : Gain integral component
+      label: KI
+      min  : 0.0
+      max  : 1.0
+      v    : 0.02
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKD
+      desc : Gain Defferential component
+      label: KD
+      min  : 0.0
+      max  : 1.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : signal
+      desc : To what component should the control signal be sent
+      label: Control Signal
+      kind : radio_box
+      choices:
+      - Simulation
+      - Vehicle
+      - Autoware
+      - Robot
+      descs :
+      - Simulation Mode
+      - ZMP Vehicle
+      - Autoware Other Nodes
+      - Smaller Robot
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_trajectory_generator
+    vars  :
+    - name : samplingTipMargin
+      desc : Car Tip Initial Margin
+      label: Tip Margin
+      min  : 2.5
+      max  : 10.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingOutMargin
+      desc : Roll In Margin
+      label: Roll In Margin
+      min  : 5.0
+      max  : 30.0
+      v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_trajectory_evaluator
+    vars  :
+    - name : enablePrediction
+      desc : treat all obstacles as dynamic or as static 
+      label: Enable Prediction
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_perception_simulator
+    vars  :
+    - name : simObjNumber
+      desc : Max Number of simulated objects
+      label: Simulated Objects Number
+      min  : 1
+      max  : 5
+      v    : 5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : GuassianErrorFactor
+      desc : Noise factor added to simulated car position
+      label: Guassian error factor
+      min  : 0.0
+      max  : 5.0
+      v    : 0.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+
+  - name  : op_motion_predictor
+    vars  :
+    - name : enableCurbObstacles
+      desc : Enable using curb from map as obstacles 
+      label: Detect curbs from map
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableGenrateBranches
+      desc : to predict branching outside road network map
+      label: Enable Branching
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_distance_to_lane
+      desc : Distance to closest lane
+      label: Distance to closest lane
+      min  : 0
+      max  : 5.0
+      v    : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : prediction_distance
+      desc : Max trajectory prediction distance
+      label: Prediction distance
+      min  : 1.0
+      max  : 50.0
+      v    : 25.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_car_simulator
+    vars  :
+    - name : enableRvizPoseSelect
+      desc : Select Start and Goal posistions from rviz
+      label: Rviz Start-Goal
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLooper
+      desc : Restart car after reaching the goal
+      label: Auto restart
+      kind : checkbox
+      v    : false
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : logFolder
+      desc : Folder for simulation data logging 
+      label: Log Folder
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableCurbObstacles
+      desc : Detect curbs from Map
+      label: Detect Curbs
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.1
+      max  : 3.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxVelocity
+      desc : maximum allowed velocity in meter/second
+      label: Max Velocity
+      min  : -1.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxLocalPlanDistance
+      desc : max length of the local plan
+      label: Plan Ditance
+      min  : 10.0
+      max  : 150.0
+      v    : 60.0
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3088,6 +3655,171 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car
+      label: Follow Distance
+      min  : 10.0
+      max  : 50.0
+      v    : 30.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minDistanceToAvoid
+      desc : Avoidance and Following threshold Distance
+      label: Avoiding Distance
+      min  : 6.0
+      max  : 30.0
+      v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
+      min  : 1.0
+      max  : 6.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableTrafficLightBehavior
+      desc : Enable traffic light check
+      label: Enable Traffic Light
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLaneChange
+      desc : Enable Lane Change
+      label: Enable Lane Change
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.2
+      max : 2.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.5
+      max : 4.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Folder
+      - KML
+      descs :
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : ff_waypoint_follower
+    vars  :
+    - name : maxVelocity
+      desc : maximum allowed velocity in
+      label: Max Velocity
+      min  : 0.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steeringDelay
+      desc : Steering wheel average delay
+      label: Steering Delay
+      min  : 0.0
+      max  : 2.0
+      v    : 0.85
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minPursuiteDistance
+      desc : Minimum Follow Point Distance
+      label: Follow Distance
+      min  : 0.0
+      max  : 5.0
+      v    : 2.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKP
+      desc : Gain proportional component
+      label: KP
+      min  : 0.0
+      max  : 1.0
+      v    : 0.07
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKI
+      desc : Gain integral component
+      label: KI
+      min  : 0.0
+      max  : 1.0
+      v    : 0.02
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : steerGainKD
+      desc : Gain Defferential component
+      label: KD
+      min  : 0.0
+      max  : 1.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : signal
+      desc : To what component should the control signal be sent
+      label: Control Signal
+      kind : radio_box
+      choices:
+      - Simulation
+      - Vehicle
+      - Autoware
+      - Robot
+      descs :
+      - Simulation Mode
+      - ZMP Vehicle
+      - Autoware Other Nodes
+      - Smaller Robot
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : waypoint_saver
     vars  :
     - name      : save_filename

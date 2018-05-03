@@ -49,73 +49,77 @@ TrajectoryGen::TrajectoryGen()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_LocalPath = nh.advertise<autoware_msgs::lane>("/final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("/base_waypoints", 100,true);
-	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories", 1);
+	pub_LocalTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_trajectories", 1);
+	pub_LocalTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_gen_rviz", 1);
 
-	sub_initialpose 	= nh.subscribe("/initialpose", 				1,		&TrajectoryGen::callbackGetInitPose, 		this);
-	sub_current_pose 	= nh.subscribe("/current_pose", 			1,		&TrajectoryGen::callbackGetCurrentPose, 		this);
+	sub_initialpose = nh.subscribe("/initialpose", 1, &TrajectoryGen::callbackGetInitPose, this);
+	sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryGen::callbackGetCurrentPose, this);
 
 	int bVelSource = 1;
 	_nh.getParam("/op_trajectory_generator/velocitySource", bVelSource);
 	if(bVelSource == 0)
-		sub_robot_odom 			= nh.subscribe("/odom", 					100,	&TrajectoryGen::callbackGetRobotOdom, 	this);
+		sub_robot_odom = nh.subscribe("/odom", 10,	&TrajectoryGen::callbackGetRobotOdom, this);
 	else if(bVelSource == 1)
-		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&TrajectoryGen::callbackGetVehicleStatus, 	this);
+		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryGen::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&TrajectoryGen::callbackGetCanInfo, 	this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCanInfo, this);
 
-	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryGen::callbackGetGlobalPlannerPath, 	this);
+	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryGen::callbackGetGlobalPlannerPath, this);
 }
 
 TrajectoryGen::~TrajectoryGen()
 {
 }
 
-
 void TrajectoryGen::UpdatePlanningParams(ros::NodeHandle& _nh)
 {
-	_nh.getParam("/op_trajectory_generator/enableSwerving", m_PlanningParams.enableSwerving);
-	if(m_PlanningParams.enableSwerving)
-		m_PlanningParams.enableFollowing = true;
-	else
-		_nh.getParam("/op_trajectory_generator/enableFollowing", m_PlanningParams.enableFollowing);
-
-	_nh.getParam("/op_trajectory_generator/enableHeadingSmoothing", m_PlanningParams.enableHeadingSmoothing);
-	_nh.getParam("/op_trajectory_generator/enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
-	_nh.getParam("/op_trajectory_generator/enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
-
-	_nh.getParam("/op_trajectory_generator/maxVelocity", m_PlanningParams.maxSpeed);
-	_nh.getParam("/op_trajectory_generator/minVelocity", m_PlanningParams.minSpeed);
-	_nh.getParam("/op_trajectory_generator/maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
 	_nh.getParam("/op_trajectory_generator/samplingTipMargin", m_PlanningParams.carTipMargin);
 	_nh.getParam("/op_trajectory_generator/samplingOutMargin", m_PlanningParams.rollInMargin);
 	_nh.getParam("/op_trajectory_generator/samplingSpeedFactor", m_PlanningParams.rollInSpeedFactor);
+	_nh.getParam("/op_trajectory_generator/enableHeadingSmoothing", m_PlanningParams.enableHeadingSmoothing);
 
-	_nh.getParam("/op_trajectory_generator/pathDensity", m_PlanningParams.pathDensity);
-	_nh.getParam("/op_trajectory_generator/rollOutDensity", m_PlanningParams.rollOutDensity);
+	_nh.getParam("/op_common_params/enableSwerving", m_PlanningParams.enableSwerving);
 	if(m_PlanningParams.enableSwerving)
-		_nh.getParam("/op_trajectory_generator/rollOutsNumber", m_PlanningParams.rollOutNumber);
+		m_PlanningParams.enableFollowing = true;
+	else
+		_nh.getParam("/op_common_params/enableFollowing", m_PlanningParams.enableFollowing);
+
+	_nh.getParam("/op_common_params/enableTrafficLightBehavior", m_PlanningParams.enableTrafficLightBehavior);
+	_nh.getParam("/op_common_params/enableStopSignBehavior", m_PlanningParams.enableStopSignBehavior);
+
+	_nh.getParam("/op_common_params/maxVelocity", m_PlanningParams.maxSpeed);
+	_nh.getParam("/op_common_params/minVelocity", m_PlanningParams.minSpeed);
+	_nh.getParam("/op_common_params/maxLocalPlanDistance", m_PlanningParams.microPlanDistance);
+
+	_nh.getParam("/op_common_params/pathDensity", m_PlanningParams.pathDensity);
+	_nh.getParam("/op_common_params/rollOutDensity", m_PlanningParams.rollOutDensity);
+	if(m_PlanningParams.enableSwerving)
+		_nh.getParam("/op_common_params/rollOutsNumber", m_PlanningParams.rollOutNumber);
 	else
 		m_PlanningParams.rollOutNumber = 0;
 
-	_nh.getParam("/op_trajectory_generator/horizonDistance", m_PlanningParams.horizonDistance);
-	_nh.getParam("/op_trajectory_generator/minFollowingDistance", m_PlanningParams.minFollowingDistance);
-	_nh.getParam("/op_trajectory_generator/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
-	_nh.getParam("/op_trajectory_generator/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
-	_nh.getParam("/op_trajectory_generator/speedProfileFactor", m_PlanningParams.speedProfileFactor);
+	_nh.getParam("/op_common_params/horizonDistance", m_PlanningParams.horizonDistance);
+	_nh.getParam("/op_common_params/minFollowingDistance", m_PlanningParams.minFollowingDistance);
+	_nh.getParam("/op_common_params/minDistanceToAvoid", m_PlanningParams.minDistanceToAvoid);
+	_nh.getParam("/op_common_params/maxDistanceToAvoid", m_PlanningParams.maxDistanceToAvoid);
+	_nh.getParam("/op_common_params/speedProfileFactor", m_PlanningParams.speedProfileFactor);
 
-	_nh.getParam("/op_trajectory_generator/horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
-	_nh.getParam("/op_trajectory_generator/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
+	_nh.getParam("/op_common_params/smoothingDataWeight", m_PlanningParams.smoothingDataWeight);
+	_nh.getParam("/op_common_params/smoothingSmoothWeight", m_PlanningParams.smoothingSmoothWeight);
 
-	_nh.getParam("/op_trajectory_generator/enableLaneChange", m_PlanningParams.enableLaneChange);
-	_nh.getParam("/op_trajectory_generator/enabTrajectoryVelocities", m_PlanningParams.enabTrajectoryVelocities);
+	_nh.getParam("/op_common_params/horizontalSafetyDistance", m_PlanningParams.horizontalSafetyDistancel);
+	_nh.getParam("/op_common_params/verticalSafetyDistance", m_PlanningParams.verticalSafetyDistance);
 
-	_nh.getParam("/op_trajectory_generator/width", m_CarInfo.width);
-	_nh.getParam("/op_trajectory_generator/length", m_CarInfo.length);
-	_nh.getParam("/op_trajectory_generator/wheelBaseLength", m_CarInfo.wheel_base);
-	_nh.getParam("/op_trajectory_generator/turningRadius", m_CarInfo.turning_radius);
-	_nh.getParam("/op_trajectory_generator/maxSteerAngle", m_CarInfo.max_steer_angle);
+	_nh.getParam("/op_common_params/enableLaneChange", m_PlanningParams.enableLaneChange);
+
+	_nh.getParam("/op_common_params/width", m_CarInfo.width);
+	_nh.getParam("/op_common_params/length", m_CarInfo.length);
+	_nh.getParam("/op_common_params/wheelBaseLength", m_CarInfo.wheel_base);
+	_nh.getParam("/op_common_params/turningRadius", m_CarInfo.turning_radius);
+	_nh.getParam("/op_common_params/maxSteerAngle", m_CarInfo.max_steer_angle);
+	_nh.getParam("/op_common_params/maxAcceleration", m_CarInfo.max_acceleration);
+	_nh.getParam("/op_common_params/maxDeceleration", m_CarInfo.max_deceleration);
+
 	m_CarInfo.max_speed_forward = m_PlanningParams.maxSpeed;
 	m_CarInfo.min_speed_forward = m_PlanningParams.minSpeed;
 
@@ -145,7 +149,7 @@ void TrajectoryGen::callbackGetCurrentPose(const geometry_msgs::PoseStampedConst
 void TrajectoryGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
 {
 	m_VehicleStatus.speed = msg->twist.linear.x;
-
+	m_CurrentPos.v = m_VehicleStatus.speed;
 	if(fabs(msg->twist.linear.x) > 0.25)
 		m_VehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
@@ -172,57 +176,27 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 {
 	if(msg->lanes.size() > 0)
 	{
-
 		bool bOldGlobalPath = m_GlobalPaths.size() == msg->lanes.size();
 
 		m_GlobalPaths.clear();
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			std::vector<PlannerHNS::WayPoint> path;
-			for(unsigned int j = 0 ; j < msg->lanes.at(i).waypoints.size(); j++)
-			{
-				PlannerHNS::WayPoint wp(msg->lanes.at(i).waypoints.at(j).pose.pose.position.x,
-						msg->lanes.at(i).waypoints.at(j).pose.pose.position.y,
-						msg->lanes.at(i).waypoints.at(j).pose.pose.position.z,
-						tf::getYaw(msg->lanes.at(i).waypoints.at(j).pose.pose.orientation));
-				wp.v = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.x;
-				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
-				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
-				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
-				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
+			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 
-				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
-					wp.bDir = PlannerHNS::FORWARD_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 1)
-					wp.bDir = PlannerHNS::FORWARD_LEFT_DIR;
-				else if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 2)
-					wp.bDir = PlannerHNS::FORWARD_RIGHT_DIR;
-
-				path.push_back(wp);
-			}
-
-			PlannerHNS::PlanningHelpers::CalcAngleAndCost(path);
-			m_GlobalPaths.push_back(path);
+			PlannerHNS::PlanningHelpers::CalcAngleAndCost(m_temp_path);
+			m_GlobalPaths.push_back(m_temp_path);
 
 			if(bOldGlobalPath)
 			{
-				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(path, m_GlobalPaths.at(i));
+				bOldGlobalPath = PlannerHNS::PlanningHelpers::CompareTrajectories(m_temp_path, m_GlobalPaths.at(i));
 			}
 		}
 
 		if(!bOldGlobalPath)
 		{
 			bWayGlobalPath = true;
-			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
-			{
-				PlannerHNS::PlanningHelpers::FixPathDensity(m_GlobalPaths.at(i), m_PlanningParams.pathDensity);
-				PlannerHNS::PlanningHelpers::SmoothPath(m_GlobalPaths.at(i), 0.49, 0.25, 0.05);
-
-				PlannerHNS::PlanningHelpers::GenerateRecommendedSpeed(m_GlobalPaths.at(i), m_CarInfo.max_speed_forward, m_PlanningParams.speedProfileFactor);
-				m_GlobalPaths.at(i).at(m_GlobalPaths.at(i).size()-1).v = 0;
-			}
+			std::cout << "Received New Global Path Generator ! " << std::endl;
 		}
 		else
 		{
@@ -248,13 +222,8 @@ void TrajectoryGen::MainLoop()
 			for(unsigned int i = 0; i < m_GlobalPaths.size(); i++)
 			{
 				t_centerTrajectorySmoothed.clear();
-				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceFast(m_GlobalPaths.at(i), m_CurrentPos,
-						m_PlanningParams.horizonDistance ,
-						m_PlanningParams.pathDensity ,
-						t_centerTrajectorySmoothed,
-						m_PlanningParams.smoothingDataWeight,
-						m_PlanningParams.smoothingSmoothWeight,
-						m_PlanningParams.smoothingToleranceError);
+				PlannerHNS::PlanningHelpers::ExtractPartFromPointToDistanceDirectionFast(m_GlobalPaths.at(i), m_CurrentPos, m_PlanningParams.horizonDistance ,
+						m_PlanningParams.pathDensity ,t_centerTrajectorySmoothed);
 
 				m_GlobalPathSections.push_back(t_centerTrajectorySmoothed);
 			}
@@ -279,6 +248,24 @@ void TrajectoryGen::MainLoop()
 								m_PlanningParams.enableHeadingSmoothing,
 								-1 , -1,
 								m_RollOuts, sampledPoints_debug);
+
+			autoware_msgs::LaneArray local_lanes;
+			for(unsigned int i=0; i < m_RollOuts.size(); i++)
+			{
+				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
+				{
+					autoware_msgs::lane lane;
+					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
+					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
+					lane.closest_object_distance = 0;
+					lane.closest_object_velocity = 0;
+					lane.cost = 0;
+					lane.is_blocked = false;
+					lane.lane_index = i;
+					local_lanes.lanes.push_back(lane);
+				}
+			}
+			pub_LocalTrajectories.publish(local_lanes);
 		}
 		else
 			sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryGen::callbackGetGlobalPlannerPath, 	this);

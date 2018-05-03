@@ -1,12 +1,11 @@
-/*
- * HelperFunctions.cpp
- *
- *  Created on: May 14, 2016
- *      Author: hatem
- */
+
+/// \file PlannerH.cpp
+/// \brief Main functions for path generation (global and local)
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #include "PlannerH.h"
-#include "PlanningHelpers.h"
 #include "MappingHelpers.h"
 #include <iostream>
 
@@ -17,23 +16,11 @@ namespace PlannerHNS
 {
 PlannerH::PlannerH()
 {
-	//m_Params = params;
 }
 
 PlannerH::~PlannerH()
 {
 }
-
-double PlannerH::PlanUsingReedShepp(const WayPoint& start, const WayPoint& goal, vector<WayPoint>& generatedPath, const double pathDensity, const double smoothFactor)
- {
- 	RSPlanner rs_planner(smoothFactor);
- 	int numero = 0;
- 	double t=0, u=0 , v=0;
- 	rs_planner.PATHDENSITY = pathDensity;
- 	double length = rs_planner.min_length_rs(start.pos.x, start.pos.y, start.pos.a, goal.pos.x, goal.pos.y, goal.pos.a, numero, t , u , v);
- 	rs_planner.constRS(numero, t, u , v, start.pos.x, start.pos.y, start.pos.a, rs_planner.PATHDENSITY, generatedPath);
- 	return length;
- }
 
 void PlannerH::GenerateRunoffTrajectory(const std::vector<std::vector<WayPoint> >& referencePaths,const WayPoint& carPos, const bool& bEnableLaneChange, const double& speed, const double& microPlanDistance,
 		const double& maxSpeed,const double& minSpeed, const double&  carTipMargin, const double& rollInMargin,
@@ -178,18 +165,11 @@ double PlannerH::PlanUsingDP(const WayPoint& start,
 
 	if(fabs(start_info.perp_distance) > START_POINT_MAX_DISTANCE)
 	{
-		//if(fabs(start_info.perp_distance) > 20)
-		{
-			GPSPoint sp = start.pos;
-			cout << endl << "Error: PlannerH -> Start Distance to Lane is: " << start_info.perp_distance
-					<< ", Pose: " << sp.ToString() << ", LanePose:" << start_info.perp_point.pos.ToString()
-					<< ", LaneID: " << pStart->pLane->id << " -> Check origin and vector map. " << endl;
-			return 0;
-		}
-		// 		else
-		// 		{
-		// 			//PlanUsingReedShepp(start, *pStart, start_path, 1.0, 1);
-		// 		}
+		GPSPoint sp = start.pos;
+		cout << endl << "Error: PlannerH -> Start Distance to Lane is: " << start_info.perp_distance
+				<< ", Pose: " << sp.ToString() << ", LanePose:" << start_info.perp_point.pos.ToString()
+				<< ", LaneID: " << pStart->pLane->id << " -> Check origin and vector map. " << endl;
+		return 0;
 	}
 
 	if(fabs(goal_info.perp_distance) > GOAL_POINT_MAX_DISTANCE)
@@ -295,7 +275,7 @@ double PlannerH::PlanUsingDP(const WayPoint& start,
 	return totalPlanningDistance;
 }
 
-double PlannerH::PredictPlanUsingDP(Lane* l, const WayPoint& start, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths)
+double PlannerH::PredictPlanUsingDP(PlannerHNS::Lane* l, const WayPoint& start, const double& maxPlanningDistance, std::vector<std::vector<WayPoint> >& paths)
 {
 	if(!l)
 	{
