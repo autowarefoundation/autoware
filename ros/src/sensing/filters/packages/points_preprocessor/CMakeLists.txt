@@ -137,15 +137,20 @@ target_link_libraries(cloud_transformer
         )
 add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
 ### Unit Tests ###
-if (CATKIN_ENABLE_TESTING)
-    catkin_add_gtest(test_points_preprocessor test/src/test_points_preprocessor.cpp)
-    target_include_directories(test_points_preprocessor PRIVATE
-            nodes/ray_ground_filter/include
-            test/include)
-    target_link_libraries(test_points_preprocessor
-            ray_ground_filter_lib
-            ${catkin_LIBRARIES})
-endif ()
+#if (CATKIN_ENABLE_TESTING)
+#    find_package(rostest REQUIRED)
+#    find_package(roslaunch REQUIRED)
+
+#    add_rostest_gtest(test_points_preprocessor 
+#			test/test_points_preprocessor.test
+#			test/src/test_points_preprocessor.cpp)
+#   target_include_directories(test_points_preprocessor PRIVATE
+#          nodes/ray_ground_filter/include
+#            test/include)
+#    target_link_libraries(test_points_preprocessor
+#            ray_ground_filter_lib
+#            ${catkin_LIBRARIES})
+#endif ()
 
 
 install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter
