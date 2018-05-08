@@ -27,7 +27,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "../include/kf_contour_tracker_core.h"
-#include "op_RosHelpers.h"
+#include "op_ros_helpers/op_RosHelpers.h"
 
 
 namespace ContourTrackerNS

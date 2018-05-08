@@ -6,9 +6,9 @@
  */
 
 
-#include "MappingHelpers.h"
-#include "MatrixOperations.h"
-#include "PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/MatrixOperations.h"
+#include "op_planner/PlanningHelpers.h"
 
 #include "math.h"
 #include <fstream>

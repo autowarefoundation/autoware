@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <numeric>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_rviz_plugins/OverlayText.h>
@@ -11,8 +12,8 @@
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 namespace decision_maker
 {

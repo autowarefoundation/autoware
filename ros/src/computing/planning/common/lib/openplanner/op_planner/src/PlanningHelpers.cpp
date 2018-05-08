@@ -5,8 +5,8 @@
  *      Author: hatem
  */
 
-#include "PlanningHelpers.h"
-#include "MatrixOperations.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MatrixOperations.h"
 #include <string>
 //#include "spline.hpp"
 

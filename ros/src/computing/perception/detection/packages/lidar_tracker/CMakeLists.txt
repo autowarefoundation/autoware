@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_tracker)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-
 find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         pcl_ros
@@ -34,11 +30,7 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(OpenMP)
 
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(OpenCV REQUIRED)
 
@@ -49,21 +41,6 @@ execute_process(
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
 )
@@ -134,11 +111,11 @@ execute_process(
 )
 
 #set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
-
-if (EXISTS "/usr/local/cuda")
+FIND_PACKAGE(CUDA)
+if (${CUDA_FOUND})
     include_directories(
             ${catkin_INCLUDE_DIRS}
-            "/usr/local/cuda/include"
+            ${CUDA_INCLUDE_DIRS}
     )
 
     if ("${ARCHITECTURE}" MATCHES "^arm")
@@ -158,9 +135,7 @@ if (EXISTS "/usr/local/cuda")
             )
 
     add_custom_target(gpu_arch_version_checker)
-    add_dependencies(gpu_arch_version_checker
-            libdpm_ttic
-            )
+    add_dependencies(gpu_arch_version_checker ${catkin_EXPORTED_TARGETS})
 
     execute_process(
             COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}

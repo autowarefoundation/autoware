@@ -14,7 +14,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS roscpp autoware_msgs
+        CATKIN_DEPENDS roscpp
+        gnss
+        visualization_msgs
+        autoware_msgs
 )
 
 ###########

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include<QMainWindow>
-#include<rosinterface.h>
+#include<rosinterface/rosinterface.h>
 #include<sensor_msgs/LaserScan.h>
 #include<sensor_msgs/PointCloud2.h>
 #include<visualization_msgs/MarkerArray.h>

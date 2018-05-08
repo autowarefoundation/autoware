@@ -5,16 +5,16 @@
  *      Author: hatem
  */
 
-#include "MainWindowWrapper.h"
-#include "DrawingHelpers.h"
+#include "op_simu/MainWindowWrapper.h"
+#include "op_simu/DrawingHelpers.h"
 #include <iostream>
 #include <cmath>
-#include "UtilityH.h"
+#include "op_utility/UtilityH.h"
 #include "GL/freeglut_ext.h"
 
 using namespace std;
 using namespace UtilityHNS;
-#include "MatrixOperations.h"
+#include "op_planner/MatrixOperations.h"
 
 namespace Graphics {
 

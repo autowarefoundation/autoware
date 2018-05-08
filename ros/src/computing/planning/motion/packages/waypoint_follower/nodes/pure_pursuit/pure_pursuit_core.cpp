@@ -82,6 +82,7 @@ void PurePursuitNode::initForROS()
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
   pub14_ = nh_.advertise<visualization_msgs::Marker>("line_point_mark", 0);  // debug tool
   pub15_ = nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
+  pub16_ = nh_.advertise<std_msgs::Float32>("angular_gravity", 0);
   // pub7_ = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 }
 
@@ -100,6 +101,7 @@ void PurePursuitNode::run()
     }
 
     pp_.setLookaheadDistance(computeLookaheadDistance());
+    pp_.setMinimumLookaheadDistance(minimum_lookahead_distance_);
 
     double kappa = 0;
     bool can_get_curvature = pp_.canGetCurvature(&kappa);
@@ -112,10 +114,14 @@ void PurePursuitNode::run()
     pub12_.publish(displayNextTarget(pp_.getPoseOfNextTarget()));
     pub15_.publish(displayTrajectoryCircle(
         waypoint_follower::generateTrajectoryCircle(pp_.getPoseOfNextTarget(), pp_.getCurrentPose())));
+    std_msgs::Float32 angular_gravity_msg;
+    angular_gravity_msg.data = computeAngularGravity(computeCommandVelocity(), kappa);
+    pub16_.publish(angular_gravity_msg);
 
     is_pose_set_ = false;
     is_velocity_set_ = false;
     is_waypoint_set_ = false;
+
     loop_rate.sleep();
   }
 }
@@ -137,6 +143,7 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   autoware_msgs::ControlCommandStamped ccs;
   ccs.header.stamp = ros::Time::now();
   ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
+  ccs.cmd.linear_acceleration = can_get_curvature ? computeCommandAccel() : 0;
   ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
   pub2_.publish(ccs);
@@ -161,6 +168,25 @@ double PurePursuitNode::computeCommandVelocity() const
     return kmph2mps(const_velocity_);
 
   return command_linear_velocity_;
+}
+
+double PurePursuitNode::computeCommandAccel() const
+{
+  const geometry_msgs::Pose current_pose = pp_.getCurrentPose();
+  const geometry_msgs::Pose target_pose = pp_.getCurrentWaypoints().at(1).pose.pose;
+
+  // v^2 - v0^2 = 2ax
+  const double x =  std::hypot(current_pose.position.x-target_pose.position.x, current_pose.position.y-target_pose.position.y);
+  const double v0 = current_linear_velocity_;
+  const double v = computeCommandVelocity();
+  const double a = (v*v - v0*v0) / (2*x);
+  return a;
+}
+
+double PurePursuitNode::computeAngularGravity(double velocity, double kappa) const
+{
+  const double gravity = 9.80665;
+  return (velocity*velocity) / (1.0/kappa*gravity);
 }
 
 void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)

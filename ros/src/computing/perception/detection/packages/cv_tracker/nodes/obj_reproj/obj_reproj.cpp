@@ -61,7 +61,7 @@
 #include "structure.h"
 #include "calcoordinates.h"
 #include "axialMove.h"
-#include "geo_pos_conv.hh"
+#include <gnss/geo_pos_conv.hpp>
 #include "CalObjLoc.h"
 #include "autoware_msgs/image_obj_tracked.h"
 #include "autoware_msgs/obj_label.h"

@@ -6,7 +6,13 @@
     <maintainer email="yuki@ertl.jp">Yuki Kitsukawa</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>roscpp</build_depend>
+    <build_depend>glut</build_depend>
+    <build_depend>libxmu-dev</build_depend>
+    <build_depend>libxi-dev</build_depend>
+
+    <run_depend>glut</run_depend>
+    <run_depend>libxmu-dev</run_depend>
+    <run_depend>libxi-dev</run_depend>
     <export>
     </export>
 </package>

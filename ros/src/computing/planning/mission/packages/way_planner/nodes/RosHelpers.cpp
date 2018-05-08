@@ -11,7 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <math.h>
-#include "PlanningHelpers.h"
+#include "op_planner/PlanningHelpers.h"
 
 namespace WayPlannerNS {
 
