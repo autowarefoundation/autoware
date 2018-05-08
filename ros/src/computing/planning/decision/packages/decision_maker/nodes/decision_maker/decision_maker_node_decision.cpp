@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <numeric>
 
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_rviz_plugins/OverlayText.h>
