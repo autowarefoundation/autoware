@@ -82,3 +82,11 @@ target_include_directories(road_occupancy_processor PRIVATE
 target_link_libraries(road_occupancy_processor
     road_occupancy_processor_lib)
 
+install(TARGETS road_occupancy_processor
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

@@ -7,8 +7,8 @@
 #include <tf/transform_listener.h>
 
 // lib
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 #include <decision_maker_node.hpp>
 

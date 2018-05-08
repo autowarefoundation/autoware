@@ -29,7 +29,7 @@
 */
 
 #include <vector>
-#include <points_image.hpp>
+#include <include/points_image/points_image.hpp>
 #include <stdint.h>
 #include <iostream>
 

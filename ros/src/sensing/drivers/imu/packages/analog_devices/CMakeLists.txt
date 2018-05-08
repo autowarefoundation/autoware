@@ -29,15 +29,15 @@ install(DIRECTORY launch test urdf
   USE_SOURCE_PERMISSIONS
   )
 
-if(CATKIN_ENABLE_TESTING)
-  find_package(catkin REQUIRED COMPONENTS rostest roslaunch)
-  file(GLOB LAUNCH_FILES launch/*.launch)
-  foreach(LAUNCH_FILE ${LAUNCH_FILES})
-    message(STATUS "Testing ${LAUNCH_FILE}")
-    roslaunch_add_file_check(${LAUNCH_FILE})
-  endforeach()
-  roslaunch_add_file_check(launch/adis16470.launch with_rviz:=true with_plot:=true)
-endif()
+#if(CATKIN_ENABLE_TESTING)
+#  find_package(catkin REQUIRED COMPONENTS rostest roslaunch)
+#  file(GLOB LAUNCH_FILES launch/*.launch)
+#  foreach(LAUNCH_FILE ${LAUNCH_FILES})
+#    message(STATUS "Testing ${LAUNCH_FILE}")
+#    roslaunch_add_file_check(${LAUNCH_FILE})
+#  endforeach()
+#  roslaunch_add_file_check(launch/adis16470.launch with_rviz:=true with_plot:=true)
+#endif()
 
 roslint_cpp()
 

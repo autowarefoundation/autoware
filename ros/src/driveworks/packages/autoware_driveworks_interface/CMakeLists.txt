@@ -2,75 +2,79 @@ cmake_minimum_required(VERSION 2.8.3)
 project(autoware_driveworks_interface)
 
 EXECUTE_PROCESS(
-  COMMAND uname -m
-  OUTPUT_VARIABLE ARCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-if("${ARCH}" STREQUAL "aarch64")
-
-
-include(FindPkgConfig)
-find_package(CUDA REQUIRED)
-find_package(Threads REQUIRED)
-find_package(OpenCV REQUIRED)
-
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  cv_bridge
-  std_msgs
-  sensor_msgs
-  autoware_msgs
-  tf
-)
-
-
-catkin_package(
-  CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
+        COMMAND uname -m
+        OUTPUT_VARIABLE ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
 
-include_directories(
-	include
-	${catkin_INCLUDE_DIRS}
-	${Boost_INCLUDE_DIRS}
-	${OpenCV_INCLUDE_DIRS}
+
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        std_msgs sensor_msgs autoware_msgs
+        )
+
+find_package(CUDA)
+
+catkin_package(
+        CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
 )
 
-link_directories(
-	${catkin_LIBRARY_DIRS}
-	${PCL_LIBRARY_DIRS}
-	${OpenCV_LIBRARY_DIRS}
-	/usr/lib/
-	lib
-	/usr/local/driveworks/lib/
-)
+if ("${ARCH}" STREQUAL "aarch64" AND CUDA_FOUND)
+    find_package(Threads REQUIRED)
+    find_package(OpenCV REQUIRED)
 
-add_executable(gmsl_interface
- 	nodes/gmsl_interface/gmsl_interface_node.cpp
-)
+    find_package(catkin REQUIRED COMPONENTS
+            roscpp
+            cv_bridge
+            std_msgs
+            sensor_msgs
+            autoware_msgs
+            tf
+            )
 
-add_dependencies(gmsl_interface
-	${catkin_EXPORTED_TARGETS}
-)
+    include_directories(
+            include
+            ${catkin_INCLUDE_DIRS}
+            ${Boost_INCLUDE_DIRS}
+            ${OpenCV_INCLUDE_DIRS}
+    )
 
-target_link_libraries(gmsl_interface
-	${catkin_LIBRARIES}
-	-lautoware_driveworks
-)
+    link_directories(
+            ${catkin_LIBRARY_DIRS}
+            ${PCL_LIBRARY_DIRS}
+            ${OpenCV_LIBRARY_DIRS}
+            /usr/lib/
+            lib
+            /usr/local/driveworks/lib/
+    )
 
-add_executable(tensorrt_interface
-	nodes/tensorrt_interface/tensorrt_interface_node.cpp
-)
+    add_executable(gmsl_interface
+            nodes/gmsl_interface/gmsl_interface_node.cpp
+            )
 
-add_dependencies(tensorrt_interface
-	${catkin_EXPORTED_TARGETS}
-)
+    add_dependencies(gmsl_interface
+            ${catkin_EXPORTED_TARGETS}
+            )
 
-target_link_libraries(tensorrt_interface 
-		${catkin_LIBRARIES}
-	-lautoware_driveworks
-)
+    target_link_libraries(gmsl_interface
+            ${catkin_LIBRARIES}
+            -lautoware_driveworks
+            )
 
-endif()
+    add_executable(tensorrt_interface
+            nodes/tensorrt_interface/tensorrt_interface_node.cpp
+            )
+
+    add_dependencies(tensorrt_interface
+            ${catkin_EXPORTED_TARGETS}
+            )
+
+    target_link_libraries(tensorrt_interface
+            ${catkin_LIBRARIES}
+            -lautoware_driveworks
+            )
+ELSE()
+    message("autoware_driveworks_interface won't be built, CUDA and aarch64 are required.")
+ENDIF ()

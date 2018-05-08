@@ -2,23 +2,18 @@ cmake_minimum_required(VERSION 2.8.3)
 project(icp_localizer)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  pcl_ros
-#  sensor_msgs
-  autoware_msgs
-  pcl_conversions
-  velodyne_pointcloud
-)
-
+        roscpp
+        pcl_ros
+        autoware_msgs
+        pcl_conversions
+        velodyne_pointcloud
+        )
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES ndt_pcl
-  CATKIN_DEPENDS std_msgs autoware_msgs
-#  DEPENDS system_lib
+        CATKIN_DEPENDS std_msgs autoware_msgs
 )
 
 ###########
@@ -33,5 +28,13 @@ add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
 
 target_link_libraries(icp_matching ${catkin_LIBRARIES})
 
-add_dependencies(icp_matching autoware_msgs_generate_messages_cpp)
+add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
+install(TARGETS icp_matching
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

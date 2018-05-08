@@ -35,7 +35,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 
 namespace WayPlannerNS
 {

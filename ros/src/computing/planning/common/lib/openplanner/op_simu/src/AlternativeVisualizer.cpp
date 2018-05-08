@@ -5,14 +5,14 @@
  *      Author: hatem
  */
 
-#include "AlternativeVisualizer.h"
-#include "PlannerH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
+#include "op_simu/AlternativeVisualizer.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
 #include <sstream>
-#include "MatrixOperations.h"
-#include "SimpleTracker.h"
-#include "DataRW.h"
+#include "op_planner/MatrixOperations.h"
+#include "op_simu/SimpleTracker.h"
+#include "op_utility/DataRW.h"
 #include <algorithm>
 
 

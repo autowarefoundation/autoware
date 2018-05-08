@@ -19,6 +19,7 @@
 #include <autoware_msgs/TrafficLightResult.h>
 
 #include "TrafficLight.h"
+#include "RegionTLR.h"
 
 thresholdSet thSet;
 
@@ -213,9 +214,6 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 	tlr_result_array_msg.header = extractedPos->header;
 
 	std_msgs::String state_string_msg;
-	const int32_t TRAFFIC_LIGHT_RED = 0;
-	const int32_t TRAFFIC_LIGHT_GREEN = 1;
-	const int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 	static int32_t prev_state = TRAFFIC_LIGHT_UNKNOWN;
 	state_msg.traffic_light = TRAFFIC_LIGHT_UNKNOWN;
 
@@ -488,14 +486,16 @@ int main(int argc, char *argv[])
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 	std::string image_topic_name;
+	std::string camera_light_color_topic_name;
 	private_nh.param<std::string>("image_raw_topic", image_topic_name, "/image_raw");
+	private_nh.param<std::string>("camera_light_color_topic", camera_light_color_topic_name, "/camera_light_color");
 
 	ros::Subscriber image_sub = n.subscribe(image_topic_name, 1, image_raw_cb);
 	ros::Subscriber position_sub = n.subscribe("/roi_signal", 1, extractedPos_cb);
 	ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
 	ros::Subscriber superimpose_sub = n.subscribe("/config/superimpose", 1, superimpose_cb);
 
-	signalState_pub = n.advertise<autoware_msgs::traffic_light>("/light_color", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+	signalState_pub = n.advertise<autoware_msgs::traffic_light>(camera_light_color_topic_name, ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 	signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
 	marker_pub = n.advertise<visualization_msgs::MarkerArray>("tlr_result", ADVERTISE_QUEUE_SIZE);
 	superimpose_image_pub = n.advertise<sensor_msgs::Image>("tlr_superimpose_image", ADVERTISE_QUEUE_SIZE);

@@ -1,4 +1,5 @@
 #include "TrafficLight.h"
+#include "RegionTLR.h"
 #include "TrafficLightDetector.h"
 
 #define BLACK CV_RGB(0, 0, 0)

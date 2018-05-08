@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 #include <autoware_msgs/lamp_cmd.h>
 #include <decision_maker_node.hpp>
