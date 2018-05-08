@@ -242,15 +242,18 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   }
   // check whether curvature is valid or not
   bool is_valid_curve = false;
-  for(const auto& el : current_waypoints_)
+  for (const auto& el : current_waypoints_)
   {
-    if(getPlaneDistance(el.pose.pose.position, current_pose_.position) > minimum_lookahead_distance_)
+    if (getPlaneDistance(el.pose.pose.position, current_pose_.position) > minimum_lookahead_distance_)
     {
       is_valid_curve = true;
       break;
     }
   }
-  if(!is_valid_curve)return false;
+  if (!is_valid_curve)
+  {
+    return false;
+  }
   // if is_linear_interpolation_ is false or next waypoint is first or last
   if (!is_linear_interpolation_ || next_waypoint_number_ == 0 ||
       next_waypoint_number_ == (static_cast<int>(current_waypoints_.size() - 1)))
