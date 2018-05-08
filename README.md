@@ -1,5 +1,10 @@
 <div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
 
+|Branch | Status |
+|-------|--------|
+|Master |[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware) |
+|Develop|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
+
 # Autoware
 Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
 
@@ -28,7 +33,7 @@ Autoware is protected by the BSD License. Please use it at your own discretion. 
 
 Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
 
-See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for tips on Autoware development, including the coding style and branching model.
+If you have a question please check the [Wiki](https://github.com/CPFL/Autoware/wiki), and the [FAQ](https://github.com/CPFL/Autoware/wiki/FAQ), [FAQ (JP)](https://github.com/CPFL/Autoware/wiki/FAQ(JP)).
 
 ## License
 
@@ -101,6 +106,7 @@ To build these nodes please follow the respective node's README
 [SSD](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
 [RCNN](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
 [Yolo2](ros/src/computing/perception/detection/packages/cv_tracker/nodes/yolo2/README.md)
+[Yolo3](ros/src/computing/perception/detection/packages/yolo3_detector/README.md)
 
 
 ## How to Start
@@ -125,7 +131,7 @@ GitFlow, the git branching model, is used in the Autoware repository.
   You can use the following command.  
   `$ git checkout -b hotfix/[your_branch_name] master`
 
-See [docs/en/branching_model.md](docs/en/branching_model.md)
+See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for tips on Autoware development, including the coding style and branching model.
 
 More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 
@@ -189,6 +195,9 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ### Detection with Yolo2
 [![Yolo2](http://img.youtube.com/vi/gG_ojWOmDO0/mqdefault.jpg)](https://youtu.be/gG_ojWOmDO0)
 
+### Detection with Yolo3
+[![Yolo v3 Autoware](https://img.youtube.com/vi/pO4vM4ehI98/0.jpg)](https://www.youtube.com/watch?v=pO4vM4ehI98)
+
 ### Detection with DPM
 [![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)
 
@@ -211,6 +220,12 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 [![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
 
 See [https://github.com/CPFL/Autoware/wiki/Calibration(EN)](https://github.com/CPFL/Autoware/wiki/Calibration(EN))
+
+### Camera-LiDAR Calibration
+See [Autoware Camera-LiDAR Calibration](ros/src/sensing/fusion/packages/autoware_camera_lidar_calibrator/README.md)
+
+### Multi-LiDAR Calibration
+See [Autoware Multi-LiDAR Calibration](ros/src/sensing/fusion/packages/multi_lidar_calibrator/README.md)
 
 ### Data Processor for Bag File
 [![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)
