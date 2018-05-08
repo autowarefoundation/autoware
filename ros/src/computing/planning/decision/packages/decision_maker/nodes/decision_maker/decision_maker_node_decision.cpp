@@ -1,3 +1,4 @@
+#include <numeric>
 #include <stdio.h>
 
 #include <geometry_msgs/PoseStamped.h>
