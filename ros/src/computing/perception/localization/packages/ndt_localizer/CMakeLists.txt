@@ -113,8 +113,23 @@ add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 target_link_libraries(mapping ${catkin_LIBRARIES})
 add_dependencies(mapping ${catkin_EXPORTED_TARGETS})
 
+add_library(ndt_matching_monitor_lib SHARED
+        nodes/ndt_matching_monitor/ndt_matching_monitor.h
+        nodes/ndt_matching_monitor/ndt_matching_monitor.cpp
+        )
+target_include_directories(ndt_matching_monitor_lib PRIVATE
+        ${catkin_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
+        )
+add_dependencies(ndt_matching_monitor_lib
+        ${catkin_EXPORTED_TARGETS}
+        )
 
-install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku
+add_executable(ndt_matching_monitor nodes/ndt_matching_monitor/ndt_matching_monitor_node.cpp)
+target_link_libraries(ndt_matching_monitor ndt_matching_monitor_lib ${catkin_LIBRARIES})
+
+
+install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_monitor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

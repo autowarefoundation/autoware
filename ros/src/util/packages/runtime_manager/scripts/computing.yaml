@@ -68,6 +68,11 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : ndt_matching_monitor
+        desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
+        cmd  : roslaunch ndt_localizer ndt_matching_monitor.launch
+        param: ndt_matching_monitor
+
     - name : icp_localizer
       subs :
       - name : icp_matching
@@ -3974,6 +3979,55 @@ params :
         dash      : ''
         delim     : ':='
 
+
+  - name : ndt_matching_monitor
+    vars :
+    - name      : iteration_threshold_warn
+      desc      : Number of maximum iterations before notifying a warning. Default 10
+      label     : iteration_threshold_warn
+      min       : 1
+      max       : 32
+      v         : 10
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : iteration_threshold_stop
+      desc      : Number of maximum iterations before using GNSS or stopping the localziation. Default 32
+      label     : iteration_threshold_stop
+      min       : 1
+      max       : 32
+      v         : 32
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : score_threshold_delta
+      desc      : Difference between consecutive scores to consider a safe match. Default 14.0
+      label     : score_threshold_delta
+      min       : 0.0
+      max       : 100.0
+      v         : 14.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : min_stable_samples
+      desc      : Minimum number of samples to start monitoring after a reset. Default 30
+      label     : min_stable_samples
+      min       : 5
+      max       : 100
+      v         : 30
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : fatal_time_threshold
+      desc      : When no GNSS is available a prediction based on the previous samples will be employed. If reinitialization fails the algorithm will stop after n secs. Default 2
+      label     : fatal_time_threshold
+      min       : 0.1
+      max       : 5.0
+      v         : 2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
   - name  : yolo2
     vars  :
     - name  : score_threshold
@@ -4036,7 +4090,6 @@ params :
       cmd_param    :
         dash         : ''
         delim        : ':='
-
 
   - name  : yolo3
     vars  :
