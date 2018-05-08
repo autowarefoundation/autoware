@@ -9,7 +9,7 @@
 #include "autoware_msgs/image_obj.h"
 #include "autoware_msgs/ConfigCarDpm.h"
 
-#include <dpm_ocv.hpp>
+#include <libdpm_ocv/dpm_ocv.hpp>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)

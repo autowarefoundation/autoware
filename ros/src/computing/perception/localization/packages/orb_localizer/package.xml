@@ -15,6 +15,8 @@
     <build_depend>message_runtime</build_depend>
     <build_depend>message_generation</build_depend>
     <build_depend>cmake_modules</build_depend>
+    <build_depend>eigen</build_depend>
+    <build_depend>libglew-dev</build_depend>
 
     <run_depend>cmake_modules</run_depend>
     <run_depend>roscpp</run_depend>
@@ -22,6 +24,8 @@
     <run_depend>image_transport</run_depend>
     <run_depend>message_runtime</run_depend>
     <run_depend>message_generation</run_depend>
+    <run_depend>eigen</run_depend>
+    <run_depend>libglew-dev</run_depend>
 
     <export>
 

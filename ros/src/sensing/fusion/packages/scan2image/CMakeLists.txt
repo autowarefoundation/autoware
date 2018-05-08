@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(scan2image)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         image_transport
@@ -14,18 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
         )
 find_package(OpenCV REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
-        #  INCLUDE_DIRS include
         CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs std_msgs autoware_msgs message_runtime
-        #DEPENDS system_lib
 )
 
-###########
-## Build ##
-###########
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

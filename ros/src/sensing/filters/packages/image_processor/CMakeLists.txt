@@ -2,14 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(image_processor)
 
 find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    std_msgs
-    cv_bridge
-)
+        roscpp
+        sensor_msgs
+        cv_bridge
+        )
 
 catkin_package(CATKIN_DEPENDS
-    sensor_msgs
-)
+        sensor_msgs
+        cv_bridge
+        )
 
 find_package(OpenCV REQUIRED)
 
@@ -18,39 +19,39 @@ find_package(OpenCV REQUIRED)
 ###########
 
 include_directories(
-    ${catkin_INCLUDE_DIRS}
-    include
+        ${catkin_INCLUDE_DIRS}
+        include
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Image rotator
 add_executable(image_rotator
-    nodes/image_rotator/image_rotator_node.cpp
-)
+        nodes/image_rotator/image_rotator_node.cpp
+        )
 
 target_include_directories(image_rotator PRIVATE
-    ${OpenCV_INCLUDE_DIR}
-)
+        ${OpenCV_INCLUDE_DIR}
+        )
 
 target_link_libraries(image_rotator
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
-)
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
 
 #Image rectifier
 add_executable(image_rectifier
-    nodes/image_rectifier/image_rectifier_node.cpp
-)
+        nodes/image_rectifier/image_rectifier_node.cpp
+        )
 
 target_include_directories(image_rectifier PRIVATE
-    ${OpenCV_INCLUDE_DIR}
-)
+        ${OpenCV_INCLUDE_DIR}
+        )
 
 target_link_libraries(image_rectifier
-    ${catkin_LIBRARIES}
-    ${OpenCV_LIBS}
-)
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
 
 #Image Stitcher
 
@@ -61,15 +62,15 @@ target_link_libraries(image_rectifier
 #############
 
 install(TARGETS image_rotator image_rectifier
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 install(FILES
-    launch/image_rotator.launch
-    launch/image_rotator_ladybug.launch
-    launch/image_rectifier.launch
-    launch/image_rectifier_ladybug.launch
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+        launch/image_rotator.launch
+        launch/image_rotator_ladybug.launch
+        launch/image_rectifier.launch
+        launch/image_rectifier_ladybug.launch
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )

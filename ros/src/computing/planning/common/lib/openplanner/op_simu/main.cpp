@@ -6,9 +6,9 @@
  */
 
 #include <iostream>
-#include "AlternativeVisualizer.h"
-#include "MainWindowWrapper.h"
-#include "PlannerTestDraw.h"
+#include "op_simu/AlternativeVisualizer.h"
+#include "op_simu/MainWindowWrapper.h"
+#include "op_simu/PlannerTestDraw.h"
 
 using namespace  Graphics;
 #define USE_ALT_VISUALIZER 1

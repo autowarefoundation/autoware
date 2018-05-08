@@ -8,8 +8,8 @@
 #ifndef POLYGONGENERATOR_H_
 #define POLYGONGENERATOR_H_
 
-#include "RoadNetwork.h"
-#include "PlanningHelpers.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_planner/PlanningHelpers.h"
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/Marker.h>
 #include <pcl_conversions/pcl_conversions.h>

@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         )
 
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -31,3 +30,11 @@ target_link_libraries(icp_matching ${catkin_LIBRARIES})
 
 add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
+install(TARGETS icp_matching
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

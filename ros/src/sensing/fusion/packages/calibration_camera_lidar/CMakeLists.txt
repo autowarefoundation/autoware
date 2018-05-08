@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(calibration_camera_lidar)
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
-include(FindLibXml2)
+include(FindLibXml2 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         rosconsole
@@ -32,11 +28,21 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 
+find_package(GLUT REQUIRED)
+find_package(OpenGL REQUIRED)
+
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES camera
-        CATKIN_DEPENDS glviewer rosinterface std_msgs message_runtime autoware_msgs
-        #  DEPENDS system_lib
+        CATKIN_DEPENDS
+        roscpp
+        rosconsole
+        std_msgs
+        sensor_msgs
+        glviewer
+        rosinterface
+        cv_bridge
+        pcl_ros
+        image_transport
+        autoware_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -g ${CMAKE_CXX_FLAGS}")
@@ -54,8 +60,11 @@ include_directories(
         CalibrationToolkit
         nodes/calibration_toolkit
         ${catkin_INCLUDE_DIRS}
+        ${LIBXML2_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${GLUT_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -70,20 +79,13 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
     target_link_libraries(calibrationtoolkit
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
+            ${OPENGL_LIBRARIES}
+            ${GLUT_LIBRARY}
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL
             )
 
-    include_directories(
-            CalibrationToolkit
-            nodes/calibration_toolkit
-            ${catkin_INCLUDE_DIRS}
-            ${LIBXML2_INCLUDE_DIR}
-            ${OpenCV_INCLUDE_DIRS}
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CMAKE_CURRENT_BINARY_DIR}
-    )
 endif ()
 
 ## 2D
@@ -111,7 +113,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
 
     qt5_wrap_ui(calibration_toolkit_ui_mainwindow nodes/calibration_toolkit/mainwindow.ui)
 
-
     add_executable(calibration_toolkit
             nodes/calibration_toolkit/main.cpp
             nodes/calibration_toolkit/mainwindow.cpp
@@ -128,8 +129,8 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             calibrationtoolkit
-            glut
-            GLU
+            ${GLUT_LIBRARIES}
+            ${OPENGL_LIBRARIES}
             nlopt
             Qt5::Core
             Qt5::Widgets
@@ -147,4 +148,10 @@ add_dependencies(calibration_publisher
 
 target_link_libraries(calibration_publisher
         ${catkin_LIBRARIES}
+        )
+
+install(TARGETS calibration_publisher calibration_toolkit
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )

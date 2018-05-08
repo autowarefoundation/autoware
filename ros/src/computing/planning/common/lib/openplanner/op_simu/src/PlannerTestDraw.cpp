@@ -5,15 +5,15 @@
  *      Author: hatem
  */
 
-#include "PlannerTestDraw.h"
-#include "PlannerH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
+#include "op_simu/PlannerTestDraw.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
 #include <sstream>
-#include "MatrixOperations.h"
-#include "SimpleTracker.h"
-#include "DataRW.h"
-#include "PlannerCommonDef.h"
+#include "op_planner/MatrixOperations.h"
+#include "op_simu/SimpleTracker.h"
+#include "op_utility/DataRW.h"
+#include "op_planner/PlannerCommonDef.h"
 //#include <plib/js.h>
 
 

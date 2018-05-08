@@ -58,13 +58,13 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-#include <fast_pcl/ndt_cpu/NormalDistributionsTransform.h>
+#include <ndt_cpu/NormalDistributionsTransform.h>
 #include <pcl/registration/ndt.h>
 #ifdef CUDA_FOUND
-#include <fast_pcl/ndt_gpu/NormalDistributionsTransform.h>
+#include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
 #ifdef USE_PCL_OPENMP
-#include <pcl_omp/registration/ndt.h>
+#include <pcl_omp_registration/ndt.h>
 #endif
 
 #include <autoware_msgs/ConfigNdtMapping.h>

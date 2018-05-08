@@ -9,11 +9,13 @@
 
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>libqt5-opengl-dev</build_depend>
+    <build_depend>roscpp</build_depend>
 
     <run_depend>libqt5-core</run_depend>
     <run_depend>libqt5-gui</run_depend>
     <run_depend>libqt5-widgets</run_depend>
     <run_depend>libqt5-opengl</run_depend>
+    <run_depend>roscpp</run_depend>
 
     <export>
     </export>

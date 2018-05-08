@@ -5,9 +5,9 @@
  *      Author: user
  */
 
-#include "TrajectoryPrediction.h"
-#include "PlannerH.h"
-#include "MappingHelpers.h"
+#include "op_planner/TrajectoryPrediction.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/MappingHelpers.h"
 
 namespace PlannerHNS
 {
