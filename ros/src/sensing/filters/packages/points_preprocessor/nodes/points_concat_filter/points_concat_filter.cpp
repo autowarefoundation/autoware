@@ -51,7 +51,10 @@ private:
   typedef pcl::PointXYZI PointT;
   typedef pcl::PointCloud<PointT> PointCloudT;
   typedef sensor_msgs::PointCloud2 PointCloudMsgT;
-  typedef message_filters::sync_policies::ApproximateTime<PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT, PointCloudMsgT> SyncPolicyT;
+  typedef message_filters::sync_policies::ApproximateTime<PointCloudMsgT, PointCloudMsgT, PointCloudMsgT,
+                                                          PointCloudMsgT, PointCloudMsgT, PointCloudMsgT,
+                                                          PointCloudMsgT, PointCloudMsgT>
+      SyncPolicyT;
 
   ros::NodeHandle node_handle_, private_node_handle_;
   message_filters::Subscriber<PointCloudMsgT>* cloud_subscribers_[8];
@@ -64,11 +67,13 @@ private:
   std::string input_topics_;
   std::string output_frame_id_;
 
-  void pointcloud_callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2, const PointCloudMsgT::ConstPtr& msg3, const PointCloudMsgT::ConstPtr& msg4, const PointCloudMsgT::ConstPtr& msg5, const PointCloudMsgT::ConstPtr& msg6, const PointCloudMsgT::ConstPtr& msg7, const PointCloudMsgT::ConstPtr& msg8);
+  void pointcloud_callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2,
+                           const PointCloudMsgT::ConstPtr& msg3, const PointCloudMsgT::ConstPtr& msg4,
+                           const PointCloudMsgT::ConstPtr& msg5, const PointCloudMsgT::ConstPtr& msg6,
+                           const PointCloudMsgT::ConstPtr& msg7, const PointCloudMsgT::ConstPtr& msg8);
 };
 
-PointsConcatFilter::PointsConcatFilter()
-  : node_handle_(), private_node_handle_("~"), tf_listener_()
+PointsConcatFilter::PointsConcatFilter() : node_handle_(), private_node_handle_("~"), tf_listener_()
 {
   private_node_handle_.param("input_topics", input_topics_, std::string("[ /points_alpha, /points_beta ]"));
   private_node_handle_.param("output_frame_id", output_frame_id_, std::string("velodyne"));
@@ -83,17 +88,24 @@ PointsConcatFilter::PointsConcatFilter()
   for (size_t i = 0; i < 8; ++i)
   {
     if (i < topics.size())
-      cloud_subscribers_[i] = new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[i].as<std::string>(), 1);
+      cloud_subscribers_[i] =
+          new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[i].as<std::string>(), 1);
     else
-      cloud_subscribers_[i] = new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[0].as<std::string>(), 1);
+      cloud_subscribers_[i] =
+          new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[0].as<std::string>(), 1);
   }
-  cloud_synchronizer_ =
-      new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10), *cloud_subscribers_[0], *cloud_subscribers_[1], *cloud_subscribers_[2], *cloud_subscribers_[3], *cloud_subscribers_[4], *cloud_subscribers_[5], *cloud_subscribers_[6], *cloud_subscribers_[7]);
-  cloud_synchronizer_->registerCallback(boost::bind(&PointsConcatFilter::pointcloud_callback, this, _1, _2, _3, _4, _5, _6, _7, _8));
+  cloud_synchronizer_ = new message_filters::Synchronizer<SyncPolicyT>(
+      SyncPolicyT(10), *cloud_subscribers_[0], *cloud_subscribers_[1], *cloud_subscribers_[2], *cloud_subscribers_[3],
+      *cloud_subscribers_[4], *cloud_subscribers_[5], *cloud_subscribers_[6], *cloud_subscribers_[7]);
+  cloud_synchronizer_->registerCallback(
+      boost::bind(&PointsConcatFilter::pointcloud_callback, this, _1, _2, _3, _4, _5, _6, _7, _8));
   cloud_publisher_ = node_handle_.advertise<PointCloudMsgT>("/points_concat", 1);
 }
 
-void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2, const PointCloudMsgT::ConstPtr& msg3, const PointCloudMsgT::ConstPtr& msg4, const PointCloudMsgT::ConstPtr& msg5, const PointCloudMsgT::ConstPtr& msg6, const PointCloudMsgT::ConstPtr& msg7, const PointCloudMsgT::ConstPtr& msg8)
+void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr& msg1, const PointCloudMsgT::ConstPtr& msg2,
+                                             const PointCloudMsgT::ConstPtr& msg3, const PointCloudMsgT::ConstPtr& msg4,
+                                             const PointCloudMsgT::ConstPtr& msg5, const PointCloudMsgT::ConstPtr& msg6,
+                                             const PointCloudMsgT::ConstPtr& msg7, const PointCloudMsgT::ConstPtr& msg8)
 {
   assert(2 < input_topics_size_ && input_topics_size_ < 8);
 
