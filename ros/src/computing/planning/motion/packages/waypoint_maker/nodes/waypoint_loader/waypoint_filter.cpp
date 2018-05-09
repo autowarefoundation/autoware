@@ -315,30 +315,65 @@ void WaypointFilter::limitAccelDecel(const double vmax, const double vmin_local,
 const std::vector<double> WaypointFilter::getCurveOnce(const std::vector<geometry_msgs::Point>& point) const
 {
   std::vector<double> curve_param(3, 0.0);
-  tf::Vector3 vec[2];
-  geometry_msgs::Point pt_m[2];
-  double tan_pt_m[2];
-  for (unsigned int i = 0; i < 2; i++)
+  const std::vector<double> dx = {point[0].x - point[1].x, point[1].x - point[2].x, point[2].x - point[0].x};
+  const std::vector<double> dy = {point[0].y - point[1].y, point[1].y - point[2].y, point[2].y - point[0].y};
+  std::vector<double> dist(3);
+  // exclude identical points
+  for (int i = 0; i < 3; i++)
   {
-    const geometry_msgs::Point& p0 = point[i];
-    const geometry_msgs::Point& p1 = point[i + 1];
-    pt_m[i].x = (p0.x + p1.x) / 2.0;
-    pt_m[i].y = (p0.y + p1.y) / 2.0;
-    vec[i] = tf::Vector3(p1.x - p0.x, p1.y - p0.y, 0.0);
-    if (fabs(vec[i].x()) < 1e-8 && fabs(vec[i].y()) < 1e-8)
+    dist[i] = sqrt(dx[i] * dx[i] + dy[i] * dy[i]);
+    if (dist[i] < 1e-8)
       return std::vector<double>();
-    tan_pt_m[i] = tan(atan2(vec[i].y(), vec[i].x()) + M_PI / 2.0);
   }
-  if (fabs(tan_pt_m[1] - tan_pt_m[0]) < 1e-9)
+
+  // exclude identical x,y
+  int valid_dx_cnt = 0;
+  int valid_dy_cnt = 0;
+  int valid_dx_index, valid_dy_index;
+  for(int i = 0; i < 3; i++)
+  {
+    if(fabs(dx[i]) > 1e-8)
+    {
+      valid_dx_cnt++;
+      valid_dx_index = i;
+    }
+    if(fabs(dy[i]) > 1e-8)
+    {
+      valid_dy_cnt++;
+      valid_dy_index = i;
+    }
+  }
+  if (valid_dx_cnt == 0 || valid_dy_cnt == 0)
     return std::vector<double>();
 
+  // exclude idential line
+  const double cross_prod = dx[0] * dy[1] - dx[1] * dy[0];
+  if (asin(fabs(cross_prod) / (dist[0] * dist[1])) < 1e-8)
+    return std::vector<double>();
+
+  //
+  std::vector<double> sq_diff(3);
   {
-    const geometry_msgs::Point& p0 = point[0];
-    curve_param[0] = pt_m[0].y - pt_m[0].x * tan_pt_m[0] - pt_m[1].y + pt_m[1].x * tan_pt_m[1];
-    curve_param[0] /= tan_pt_m[1] - tan_pt_m[0];
-    curve_param[1] = pt_m[0].y - (pt_m[0].x - curve_param[0]) * tan_pt_m[0];
-    curve_param[2] = sqrt(calcSquareSum(p0.x - curve_param[0], p0.y - curve_param[1]));
+    std::vector<double> sx = {point[0].x + point[1].x, point[1].x + point[2].x, point[2].x + point[0].x};
+    std::vector<double> sy = {point[0].y + point[1].y, point[1].y + point[2].y, point[2].y + point[0].y};
+    std::transform(sx.begin(), sx.end(), dx.begin(), sx.begin(), std::multiplies<double>());
+    std::transform(sy.begin(), sy.end(), dy.begin(), sy.begin(), std::multiplies<double>());
+    std::transform(sx.begin(), sx.end(), sy.begin(), sq_diff.begin(), std::plus<double>());
   }
+  if(valid_dx_cnt < valid_dy_cnt)
+  {
+    curve_param[0] = - 0.5 / cross_prod * (dy[0] * sq_diff[1] - dy[1] * sq_diff[0]);
+    const int& idx = valid_dy_index;
+    curve_param[1] = 0.5 / dy[idx] * (sq_diff[idx] - 2 * dx[idx] * curve_param[0]);
+  }
+  else
+  {
+    curve_param[1] = 0.5 / cross_prod * (dx[0] * sq_diff[1] - dx[1] * sq_diff[0]);
+    const int& idx = valid_dx_index;
+    curve_param[0] = 0.5 / dx[idx] * (sq_diff[idx] - 2 * dy[idx] * curve_param[1]);
+  }
+  curve_param[2] = sqrt(calcSquareSum(point[0].x - curve_param[0], point[0].y - curve_param[1]));
+
   return curve_param;
 }
 

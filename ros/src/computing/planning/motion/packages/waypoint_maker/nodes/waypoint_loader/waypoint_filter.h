@@ -36,6 +36,7 @@
 #include <autoware_msgs/ConfigWaypointLoader.h>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
 #include "autoware_msgs/lane.h"
 
 namespace waypoint_maker
