@@ -1,8 +1,8 @@
 <!-- -->
 <launch>
-  <arg name="output_frame_id" default="velodyne" />
   <arg name="input_topics" default="[ /points_alpha, /points_beta ]" />
   <arg name="output_topic" default="/points_concat" />
+  <arg name="output_frame_id" default="velodyne" />
 
   <node pkg="points_preprocessor" type="points_concat_filter"
         name="points_concat_filter" output="screen">
