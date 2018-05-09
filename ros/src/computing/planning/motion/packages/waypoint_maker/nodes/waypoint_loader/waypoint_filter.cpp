@@ -74,11 +74,11 @@ void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
     resampleLaneWaypoint(resample_interval_, lane, &curve_radius);
   else
     getCurveAll(*lane, &curve_radius);
-  const std::vector<double> vel_param = calcVelParamFromVmax(velocity_max_);
+  const double vel_param = calcVelParam();
   createCurveList(curve_radius, &curve_list);
-  if (vel_param.size() < 2)
+  if (vel_param == DBL_MAX)
   {
-    ROS_ERROR("velocity parameter is invalid");
+    ROS_ERROR("velocity parameter is invalid: please change Rth or Rmin");
     return;
   }
   // set velocity_max for all_point
@@ -91,7 +91,7 @@ void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
     const unsigned long end_idx = (el.second.first > velocity_offset_) ? (el.second.first - velocity_offset_) : 0;
     const double radius = el.second.second;
     const double vmax = velocity_max_;
-    const double vmin = vel_param[0] * radius + vel_param[1];
+    const double vmin = velocity_max_ - vel_param * (r_th_ - radius);
     for (unsigned long idx = start_idx; idx <= end_idx; idx++)
     {
       if (lane->waypoints[idx].twist.twist.linear.x < vmin)
@@ -226,6 +226,8 @@ void WaypointFilter::getCurveAll(const autoware_msgs::lane& lane, std::vector<do
   const unsigned int n = (lookup_crv_width_ - 1) / 2;
   for (unsigned long i = 1; i < lane.waypoints.size() - 1; i++)
   {
+    //Three points used for curve detection (the target point is the center)
+    //[0] = previous point, [1] = target point, [2] = next point
     std::vector<geometry_msgs::Point> curve_point(3);
     curve_point[0] = (i < n) ? lane.waypoints[0].pose.pose.position : lane.waypoints[i - n].pose.pose.position;
     curve_point[1] = lane.waypoints[i].pose.pose.position;
@@ -246,12 +248,13 @@ void WaypointFilter::getCurveAll(const autoware_msgs::lane& lane, std::vector<do
   }
 }
 
-const std::vector<double> WaypointFilter::calcVelParamFromVmax(const double vmax) const
+const double WaypointFilter::calcVelParam() const
 {
-  std::vector<double> param(2, 0.0);
-  param[0] = (vmax - velocity_min_) / (r_th_ - r_min_);  // bias
-  param[1] = vmax - param[0] * r_th_;                    // vel_intersept
-  return param;
+  if(fabs(r_th_ - r_min_) < 1e-8)
+  {
+    return DBL_MAX;//error
+  }
+  return (velocity_max_ - velocity_min_) / (r_th_ - r_min_);
 }
 
 void WaypointFilter::createCurveList(const std::vector<double>& curve_radius,
