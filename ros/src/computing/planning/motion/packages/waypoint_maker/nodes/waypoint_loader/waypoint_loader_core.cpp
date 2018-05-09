@@ -70,9 +70,10 @@ void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader
 
 void WaypointLoaderNode::configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
-  filter_.initParameter(conf);
   initParameter(conf);
+  filter_.initParameter(conf);
 
+  multi_file_path_.clear();
   parseColumns(multi_lane_csv_, &multi_file_path_);
   autoware_msgs::LaneArray lane_array;
   createLaneArray(multi_file_path_, &lane_array);
