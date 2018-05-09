@@ -1,4 +1,4 @@
-name : Computing
+replanning_modename : Computing
 subs :
 - subs :
   - name : Localization
@@ -637,45 +637,45 @@ subs :
          gui  :
            multi_lane_csv :
              prop  : 1
-           filtering_mode :
+           replanning_mode :
              flags : [ nl ]
            resample_mode :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
            resample_interval :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_max :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            radius_thresh :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            radius_min :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_min :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            accel_limit :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            decel_limit :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            velocity_offset :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            end_point_offset :
-             depend      : filtering_mode
+             depend      : replanning_mode
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
            dialog : MyDialogWaypointLoader
@@ -3182,9 +3182,9 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : filtering_mode
-      desc      : Enable waypoint filter
-      label     : 'filtering_mode'
+    - name      : replanning_mode
+      desc      : Enable waypoint replan
+      label     : 'replanning_mode'
       kind      : checkbox
       v         : false
       cmd_param :

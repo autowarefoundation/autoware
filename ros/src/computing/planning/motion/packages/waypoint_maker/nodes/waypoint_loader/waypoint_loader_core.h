@@ -88,8 +88,8 @@ private:
   // variables
   std::string multi_lane_csv_;
   bool disable_decision_maker_;
-  bool filtering_mode_;
-  WaypointFilter filter_;
+  bool replanning_mode_;
+  WaypointReplan replan_;
   std::vector<std::string> multi_file_path_;
   autoware_msgs::LaneArray output_lane_array_;
 

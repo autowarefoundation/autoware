@@ -1,6 +1,6 @@
 string multi_lane_csv
 bool disable_decision_maker
-bool filtering_mode
+bool replanning_mode
 float32 velocity_max
 float32 velocity_min
 float32 accel_limit

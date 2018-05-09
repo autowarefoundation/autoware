@@ -41,15 +41,15 @@ inline double mps2kmph(double velocity_mps)
   return (velocity_mps * 60 * 60) / 1000;
 }
 
-WaypointFilter::WaypointFilter() : private_nh_("~")
+WaypointReplan::WaypointReplan() : private_nh_("~")
 {
 }
 
-WaypointFilter::~WaypointFilter()
+WaypointReplan::~WaypointReplan()
 {
 }
 
-void WaypointFilter::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void WaypointReplan::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   velocity_max_ = kmph2mps(conf->velocity_max);
   velocity_min_ = kmph2mps(conf->velocity_min);
@@ -65,7 +65,7 @@ void WaypointFilter::initParameter(const autoware_msgs::ConfigWaypointLoader::Co
   r_inf_ = 10 * r_th_;
 }
 
-void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
+void WaypointReplan::replanLaneWaypoint(autoware_msgs::lane* lane)
 {
   std::vector<double> curve_radius;
   std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
@@ -121,7 +121,7 @@ void WaypointFilter::filterLaneWaypoint(autoware_msgs::lane* lane)
   }
 }
 
-void WaypointFilter::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane,
+void WaypointReplan::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane,
                                           std::vector<double>* curve_radius)
 {
   if (lane->waypoints.empty())
@@ -216,7 +216,7 @@ void WaypointFilter::resampleLaneWaypoint(const double resample_interval, autowa
   lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
 
-void WaypointFilter::getCurveAll(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
+void WaypointReplan::getCurveAll(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
 {
   if (lane.waypoints.empty())
     return;
@@ -248,7 +248,7 @@ void WaypointFilter::getCurveAll(const autoware_msgs::lane& lane, std::vector<do
   }
 }
 
-const double WaypointFilter::calcVelParam() const
+const double WaypointReplan::calcVelParam() const
 {
   if(fabs(r_th_ - r_min_) < 1e-8)
   {
@@ -257,7 +257,7 @@ const double WaypointFilter::calcVelParam() const
   return (velocity_max_ - velocity_min_) / (r_th_ - r_min_);
 }
 
-void WaypointFilter::createCurveList(const std::vector<double>& curve_radius,
+void WaypointReplan::createCurveList(const std::vector<double>& curve_radius,
                                      std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list)
 {
   unsigned long index = 0;
@@ -285,7 +285,7 @@ void WaypointFilter::createCurveList(const std::vector<double>& curve_radius,
   }
 }
 
-void WaypointFilter::limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx,
+void WaypointReplan::limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx,
                                      autoware_msgs::lane* lane)
 {
   double v = vmin_local;
@@ -312,7 +312,7 @@ void WaypointFilter::limitAccelDecel(const double vmax, const double vmin_local,
 }
 
 // get 3 parameter of curve, [center_x, center_y, radius]
-const std::vector<double> WaypointFilter::getCurveOnce(const std::vector<geometry_msgs::Point>& point) const
+const std::vector<double> WaypointReplan::getCurveOnce(const std::vector<geometry_msgs::Point>& point) const
 {
   std::vector<double> curve_param(3, 0.0);
   const std::vector<double> dx = {point[0].x - point[1].x, point[1].x - point[2].x, point[2].x - point[0].x};
@@ -377,12 +377,12 @@ const std::vector<double> WaypointFilter::getCurveOnce(const std::vector<geometr
   return curve_param;
 }
 
-const double WaypointFilter::calcSquareSum(const double x, const double y) const
+const double WaypointReplan::calcSquareSum(const double x, const double y) const
 {
   return (x * x + y * y);
 }
 
-const double WaypointFilter::calcPathLength(const autoware_msgs::lane& lane) const
+const double WaypointReplan::calcPathLength(const autoware_msgs::lane& lane) const
 {
   double distance = 0.0;
   for (unsigned long i = 1; i < lane.waypoints.size(); i++)
