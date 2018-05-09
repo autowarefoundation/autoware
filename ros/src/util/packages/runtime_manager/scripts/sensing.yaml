@@ -284,7 +284,7 @@ cmds:
       desc : Performs extrinsic calibration between two point clouds
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
-      
+
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -1341,5 +1341,3 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
-
