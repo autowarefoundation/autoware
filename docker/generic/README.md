@@ -22,11 +22,11 @@ $ sh build.sh kinetic
 # Default shared directory path is /home/$USER/shared_dir
 
 # Ubuntu 14.04 (Indigo)
-$ sh run.sh indogo
+$ sh run.sh indigo
 
 # Ubuntu 16.04 (Kinetic)
 $ sh run.sh kinetic
 
 # If you select your shared directory path
-$ sh run.sh indogo|kinetic {SHARED_DIR_PATH}
+$ sh run.sh indigo|kinetic {SHARED_DIR_PATH}
 ```
