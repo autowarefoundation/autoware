@@ -71,9 +71,8 @@ void WaypointReplan::replanLaneWaypoint(autoware_msgs::lane* lane)
   std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
 
   if (resample_mode_)
-    resampleLaneWaypoint(resample_interval_, lane, &curve_radius);
-  else
-    getCurveAll(*lane, &curve_radius);
+    resampleLaneWaypoint(resample_interval_, lane);
+  getCurveAll(*lane, &curve_radius);
   const double vel_param = calcVelParam();
   createCurveList(curve_radius, &curve_list);
   if (vel_param == DBL_MAX)
@@ -121,20 +120,16 @@ void WaypointReplan::replanLaneWaypoint(autoware_msgs::lane* lane)
   }
 }
 
-void WaypointReplan::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane,
-                                          std::vector<double>* curve_radius)
+void WaypointReplan::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane)
 {
   if (lane->waypoints.empty())
     return;
   autoware_msgs::lane original_lane = *lane;
   lane->waypoints.clear();
   lane->waypoints.push_back(original_lane.waypoints[0]);
-  curve_radius->clear();
-  curve_radius->push_back(r_inf_);
   double original_len = calcPathLength(original_lane);
   unsigned long waypoints_size = ceil(1.5 * original_len / resample_interval_);
   lane->waypoints.reserve(waypoints_size);
-  curve_radius->reserve(waypoints_size);
 
   const unsigned int n = (lookup_crv_width_ - 1) / 2;
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
@@ -168,7 +163,6 @@ void WaypointReplan::resampleLaneWaypoint(const double resample_interval, autowa
         wp.pose.pose.position.y += resample_vec.y();
         wp.pose.pose.position.z += resample_vec.z();
         lane->waypoints.push_back(wp);
-        curve_radius->push_back(r_inf_);
       }
     }
     // else if turnning curve
@@ -206,7 +200,6 @@ void WaypointReplan::resampleLaneWaypoint(const double resample_interval, autowa
         wp.pose.pose.position.z += resample_dz;
         wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
         lane->waypoints.push_back(wp);
-        curve_radius->push_back(threshold_radius);
       }
     }
     lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;

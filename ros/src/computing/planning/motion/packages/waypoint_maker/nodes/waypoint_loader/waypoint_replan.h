@@ -60,8 +60,7 @@ public:
   void replanLaneWaypoint(autoware_msgs::lane* lane);
 
 protected:
-  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane,
-                            std::vector<double>* curve_radius);
+  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane);
   void getCurveAll(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
   const double calcVelParam() const;
   void createCurveList(const std::vector<double>& curve_radius,
