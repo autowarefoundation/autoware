@@ -1274,6 +1274,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : pointcloud_frame_
+      desc    : pointcloud_frame_ desc sample
+      label   : 'pointcloud frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : life_time_thres_
       desc    : life_time_thres_ desc sample
       label   : 'life time thres'
@@ -1338,7 +1346,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
+    - name    : pointcloud_frame_
+      desc    : pointcloud_frame_ desc sample
+      label   : 'pointcloud frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type

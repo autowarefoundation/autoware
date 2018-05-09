@@ -35,9 +35,10 @@ int g_count = 0;
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
-  private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
   private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
   private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
+  private_nh_.param<std::string>("pointcloud_frame_", pointcloud_frame_, "velodyne");
+  private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
   private_nh_.param<double>("gating_thres_", gating_thres_, 9.22);
   private_nh_.param<double>("gate_probability_", gate_probability_, 0.99);
   private_nh_.param<double>("detection_probability_", detection_probability_, 0.9);
@@ -59,7 +60,6 @@ ImmUkfPda::ImmUkfPda()
 void ImmUkfPda::callBack(autoware_msgs::CloudClusterArray input)
 {
   autoware_msgs::CloudClusterArray output;
-
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input);
   tracker(input, output);
@@ -68,18 +68,19 @@ void ImmUkfPda::callBack(autoware_msgs::CloudClusterArray input)
   pub_cloud_array_.publish(output);
   g_count ++;
   // std::cout << "Frame " <<g_count<< "------------------------------------------------"<<std::endl;
-  // std::cout << "target size "<<targets_.size() << std::endl;
 }
 
 void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
 {
+  // std::string local_frame = "base_link";
+
   for(size_t i = 0; i < input.clusters.size(); i ++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
 
     pose_in.header = input.header;
     pose_in.pose = input.clusters[i].bounding_box.pose;
-    tran_->waitForTransform("/velodyne", "/world",input.header.stamp, ros::Duration(3.0));
+    tran_->waitForTransform(pointcloud_frame_, "/world",input.header.stamp, ros::Duration(3.0));
     tran_->transformPose("world", ros::Time(0), pose_in, input.header.frame_id, pose_out);
     input.clusters[i].bounding_box.pose = pose_out.pose;
   }
@@ -87,6 +88,7 @@ void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
 
 void ImmUkfPda::transformPoseToLocal(autoware_msgs::CloudClusterArray& output)
 {
+  // std::string local_frame = "base_link";
   for(size_t i = 0; i < output.clusters.size(); i ++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
@@ -95,9 +97,9 @@ void ImmUkfPda::transformPoseToLocal(autoware_msgs::CloudClusterArray& output)
     pose_in.header.frame_id = "world";
     pose_in.pose = output.clusters[i].bounding_box.pose;
 
-    tran_->waitForTransform("/world", "/velodyne",ros::Time(0), ros::Duration(3.0));
-    tran_->transformPose("velodyne", ros::Time(0), pose_in, "world", pose_out);
-    pose_out.header.frame_id = output.header.frame_id = "velodyne";
+    tran_->waitForTransform("/world", pointcloud_frame_, ros::Time(0), ros::Duration(3.0));
+    tran_->transformPose(pointcloud_frame_, ros::Time(0), pose_in, "world", pose_out);
+    pose_out.header.frame_id = output.header.frame_id = pointcloud_frame_;
     output.clusters[i].bounding_box.pose = pose_out.pose;
   }
 }
@@ -752,7 +754,7 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
                            autoware_msgs::CloudClusterArray& output)
 {
   tf::StampedTransform transform;
-  tran_->lookupTransform("/world", "/velodyne", ros::Time(0), transform);
+  tran_->lookupTransform("/world", "/base_link", ros::Time(0), transform);
 
   // get yaw angle from "world" to "velodyne" for direction(arrow) visualization
   tf::Matrix3x3 m(transform.getRotation());

@@ -8,10 +8,10 @@
 int main(int argc, char **argv)
 {
 
-	// std::cout<< 122<<std::endl;
-	ros::init(argc, argv, "visualize_cloud_cluster");
-	VisualizeCloudCluster app;
-	ros::spin();
+  // std::cout<< 122<<std::endl;
+  ros::init(argc, argv, "visualize_cloud_cluster");
+  VisualizeCloudCluster app;
+  ros::spin();
 
-	return 0;
+  return 0;
 }
