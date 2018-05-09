@@ -43,7 +43,7 @@
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
-#include "waypoint_filter.h"
+#include "waypoint_replan.h"
 
 namespace waypoint_maker
 {
