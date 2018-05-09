@@ -26,7 +26,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "../include/kf_contour_tracker_core.h"
+#include "../include/kf_contour_track_core.h"
 #include "op_RosHelpers.h"
 
 

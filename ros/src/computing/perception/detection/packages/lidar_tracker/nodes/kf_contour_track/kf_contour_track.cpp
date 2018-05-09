@@ -30,11 +30,11 @@
 
 
 #include <ros/ros.h>
-#include "include/kf_contour_tracker_core.h"
+#include "include/kf_contour_track_core.h"
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "kf_contour_tracker");
+	ros::init(argc, argv, "kf_contour_track");
 	ContourTrackerNS::ContourTracker tracker;
 	tracker.MainLoop();
 	return 0;
