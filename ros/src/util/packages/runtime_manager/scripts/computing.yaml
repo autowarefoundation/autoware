@@ -732,8 +732,6 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
-           use_ctrl_cmd :
-             flags : [ nl ]
 
   - name : Decision
     desc : decision groups
@@ -2108,14 +2106,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name     : use_ctrl_cmd
-      desc     : use_ctrl_cmd
-      label    : use_ctrl_cmd
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : planner_selector
     topic : /config/PlannerSelector
@@ -3193,7 +3183,7 @@ params :
         dash        : ''
         delim       : ':='
     - name      : filtering_mode
-      desc      : please check if you want filter.
+      desc      : Enable waypoint filter
       label     : 'filtering_mode'
       kind      : checkbox
       v         : false
@@ -3201,7 +3191,7 @@ params :
         dash        : ''
         delim       : ':='
     - name      : resample_mode
-      desc      : please check if you want resample.
+      desc      : Enable resampling mode
       label     : resample mode
       kind      : checkbox
       v         : true
@@ -3209,15 +3199,15 @@ params :
         dash        : ''
         delim       : ':='
     - name      : resample_interval
-      desc      : All waypoints is resampled in this interval[m]
-      label     : resample interval[m]
+      desc      : All waypoints are resampled by this interval [m]
+      label     : resample interval [m]
       v         : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : velocity_max
-      desc      : All velocity is limited under Vmax[km/h]
-      label     : VelocityMaxLimit---Vmax[km/h]
+      desc      : All velocities are limited under Vmax [km/h]
+      label     : Velocity Max Limit - Vmax [km/h]
       min       : 10.0
       max       : 60.0
       v         : 20.0
@@ -3225,8 +3215,8 @@ params :
         dash        : ''
         delim       : ':='
     - name      : radius_thresh
-      desc      : if rotate_radius > Rth[m], recognize curve
-      label     : CurveRecognize---Rth[m]
+      desc      : When the estimated turning radius > Rth [m], the area is recognized as a curve
+      label     : Curve Recognize - Rth [m]
       min       : 10.0
       max       : 100.0
       v         : 20.0
@@ -3234,8 +3224,8 @@ params :
         dash        : ''
         delim       : ':='
     - name      : radius_min
-      desc      : On the curve, Velocity_local_minimum(=Vlm) show linearly increase with Radius_local_minimum(=Rlm). Rmin = min(Rlm)
-      label     : VelocityPlanning---Rmin[m]
+      desc      : In curves, when the turning radius R is Rmin, velocity becomes Vmin.
+      label     : Minimum Turning Radius in curves - Rmin [m]
       min       : 1.0
       max       : 10.0
       v         : 6.0
@@ -3243,8 +3233,8 @@ params :
         dash        : ''
         delim       : ':='
     - name      : velocity_min
-      desc      : On the curve, Velocity_local_minimum(=Vlm) show linearly increase with Radius_local_minimum(=Rlm). Vmin = min(Vlm)
-      label     : VelocityPlanning---Vmin[km/h]
+      desc      : In curves, when the turning radius R is Rmin, velocity becomes Vmin.
+      label     : Minimum Velocity in curves - Vmin [km/h]
       min       : 0.0
       max       : 10.0
       v         : 4.0
@@ -3252,37 +3242,37 @@ params :
         dash        : ''
         delim       : ':='
     - name      : accel_limit
-      desc      : maximum value of acceleration on all waypoints[km/h]
-      label     : Accel/DecelLimit---accel limit[m/s^2]
+      desc      : Maximum value of acceleration on all waypoints [km/h]
+      label     : Acceleration Limit - Accel limit [m/s^2]
       min       : 0.0
-      max       : 0.98
+      max       : 5.0
       v         : 0.98
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : decel_limit
-      desc      : maximum value of deceleration on all waypoints[km/h]
-      label     : Accel/DecelLimit---decel limit[m/s^2]
+      desc      : Maximum value of deceleration on all waypoints [km/h]
+      label     : Deceleration Limit - Decel limit [m/s^2]
       min       : 0.0
-      max       : 0.98
+      max       : 5.0
       v         : 0.98
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : velocity_offset
-      desc      : velocity offset for matching to the base point of vehicle velocity.
-      label     : VelocityOffset[point count]
+      desc      : Planned velocity offset for the response delay
+      label     : Velocity Offset
       min       : 0
-      max       : 20
-      v         : 6
+      max       : 30
+      v         : 4
       cmd_param :
         dash        : ''
         delim       : ':='
     - name      : end_point_offset
-      desc      : expand end point region (velocity=0) for safety or definitely stopping. 
-      label     : EndPointOffset[point count]
+      desc      : Expanded end points (v = 0) for safe stopping
+      label     : End Point Offset
       min       : 0
-      max       : 10
+      max       : 30
       v         : 5
       cmd_param :
         dash        : ''
