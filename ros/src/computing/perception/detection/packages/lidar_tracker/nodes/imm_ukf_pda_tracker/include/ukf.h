@@ -1,8 +1,7 @@
 #ifndef OBJECT_TRACKING_UKF_H
 #define OBJECT_TRACKING_UKF_H
-// #include "measurement_package.h"
+
 #include "Eigen/Dense"
-// #include <eigen3>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -10,11 +9,6 @@
 #include <pcl/point_cloud.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
-
-
-// using Eigen::Eigen::MatrixXd;
-// using Eigen::VectorXd;
-// using namespace Eigen;
 
 class UKF
 {
@@ -53,9 +47,6 @@ public:
   ///* state covariance matrix
   Eigen::MatrixXd p_rm_;
 
-//    ///* predicted sigma points matrix
-//    Eigen::MatrixXd Xsig_pred_;
-
   ///* predicted sigma points matrix
   Eigen::MatrixXd x_sig_pred_cv_;
 
@@ -74,6 +65,7 @@ public:
   double std_a_rm_;
   ///* Process noise standard deviation yaw acceleration in rad/s^2
 //    double std_yawdd_;
+
   // CTRV
   double std_ctrv_yawdd_;
   // CV
@@ -152,15 +144,12 @@ public:
   Eigen::MatrixXd s_cv_;
   Eigen::MatrixXd s_ctrv_;
   Eigen::MatrixXd s_rm_;
-  // Eigen::MatrixXd rS_cv_;
-  // Eigen::MatrixXd rS_ctrv_;
-  // Eigen::MatrixXd rS_rm_;
+
 
   Eigen::MatrixXd k_cv_;
   Eigen::MatrixXd k_ctrv_;
   Eigen::MatrixXd k_rm_;
 
-  // double gamma_g_;
   double pd_;
   double pg_;
 
@@ -169,14 +158,12 @@ public:
 
   // bounding box params
   bool is_vis_bb_;
-  // todo: need initialization?
 
   jsk_recognition_msgs::BoundingBox jsk_bb_;
   jsk_recognition_msgs::BoundingBox best_jsk_bb_;
 
   bool is_best_jsk_bb_empty_;
-  // pcl::PointCloud<pcl::PointXYZ> bbox_;
-  // pcl::PointCloud<pcl::PointXYZ> bestBBox_;
+
   double best_yaw_;
   double bb_yaw_;
   double bb_area_;
@@ -200,11 +187,6 @@ public:
    * Constructor
    */
   UKF();
-
-  /**
-   * Destructor
-   */
-  // virtual ~UKF();
 
   void updateYawWithHighProb();
 

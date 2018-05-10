@@ -1,18 +1,5 @@
-//
-// Created by kosuke on 12/23/17.
-//
 
 #include "ukf.h"
-// #include "tools.h"
-#include "Eigen/Dense"
-#include <iostream>
-#include <math.h>
-
-
-using namespace std;
-// using namespace Eigen;
-//using Eigen::MatrixXd;
-//using Eigen::VectorXd;
 
 /**
 * Initializes Unscented Kalman filter
@@ -241,8 +228,6 @@ void UKF::updateModeProb(const std::vector<double> lambda_vec)
   if(fabs(mode_prob_cv_)   < 0.0001) mode_prob_cv_   = 0.0001;
   if(fabs(mode_prob_ctrv_) < 0.0001) mode_prob_ctrv_ = 0.0001;
   if(fabs(mode_prob_rm_)   < 0.0001) mode_prob_rm_   = 0.0001;
-
-  // cout << endl<<"mode prob"<<endl<<"cv: "<<mode_prob_CV_<<endl<<"ctrv: "<<mode_prob_CTRV_<<endl<<"rm: "<<mode_prob_RM_<<endl;
 }
 
 void UKF::updateYawWithHighProb()
@@ -428,7 +413,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
   double v_p = v;
   // not sure which one, works better in curve by using yaw
   double yaw_p = yaw;
-//    double yaw_p = 0;
+
   double yawd_p = yawd;
 
   //add noise
@@ -619,7 +604,6 @@ void UKF::prediction(const double delta_t, const int model_ind)
 */
 void UKF::updateLidar(const int model_ind)
 {
-  // TODO refactoring
   /*****************************************************************************
  *  Initialize model parameters
  ****************************************************************************/
