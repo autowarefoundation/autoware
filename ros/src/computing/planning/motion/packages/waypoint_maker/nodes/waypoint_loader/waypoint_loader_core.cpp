@@ -46,6 +46,7 @@ WaypointLoaderNode::~WaypointLoaderNode()
 
 void WaypointLoaderNode::initPubSub()
 {
+  private_nh_.param<bool>("disable_decision_maker", disable_decision_maker_, true);
   // setup publisher
   if (disable_decision_maker_)
   {
@@ -63,7 +64,6 @@ void WaypointLoaderNode::initPubSub()
 void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   // parameter settings
-  disable_decision_maker_ = conf->disable_decision_maker;
   replanning_mode_ = conf->replanning_mode;
   multi_lane_csv_ = conf->multi_lane_csv;
 }
@@ -321,7 +321,7 @@ bool WaypointLoaderNode::verifyFileConsistency(const char* filename)
     return false;
 
   FileFormat format = checkFileFormat(filename);
-  ROS_INFO("format: %d", static_cast<FileFormat>(format));
+  ROS_INFO("format: %d", static_cast<int>(format));
   if (format == FileFormat::unknown)
   {
     ROS_ERROR("unknown file format");

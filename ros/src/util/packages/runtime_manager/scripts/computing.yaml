@@ -3174,14 +3174,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : disable_decision_maker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disable_decision_maker'
-      kind      : checkbox
-      v         : true
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name      : replanning_mode
       desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
@@ -3274,6 +3266,14 @@ params :
       min       : 0
       max       : 30
       v         : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disable_decision_maker
+      desc      : if you not check this, you have to run a decisionmaker node.
+      label     : 'disable_decision_maker'
+      kind      : checkbox
+      v         : true
       cmd_param :
         dash        : ''
         delim       : ':='
