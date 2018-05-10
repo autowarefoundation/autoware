@@ -8,12 +8,8 @@
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
 
-    <build_depend>velodyne_pointcloud</build_depend>
     <build_depend>libpcl-all-dev</build_depend>
 
-    <run_depend>velodyne_pointcloud</run_depend>
     <run_depend>libpcl-all</run_depend>
 
-    <export>
-    </export>
 </package>
