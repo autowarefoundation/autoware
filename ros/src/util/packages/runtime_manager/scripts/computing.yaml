@@ -332,18 +332,11 @@ subs :
             flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
+
       - name : imm_ukf_pda_tracker
         desc : imm_ukf_pda_tracker desc sample
         cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
         param: imm_ukf_pda_tracker
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : visualize_cloud_cluster
-        desc : visualize_cloud_cluster desc sample
-        cmd  : roslaunch lidar_tracker visualize_cloud_cluster.launch
-        param: visualize_cloud_cluster
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -1336,24 +1329,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-  - name  : visualize_cloud_cluster
-    vars  :
-    - name    : input_topic_
-      desc    : input_topic_ desc sample
-      label   : 'input topic'
-      kind    : str
-      v       : /tracking_cluster_array
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : pointcloud_frame_
-      desc    : pointcloud_frame_ desc sample
-      label   : 'pointcloud frame'
-      kind    : str
-      v       : velodyne
-      cmd_param :
-        dash        : ''
-        delim       : ':='
+
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type

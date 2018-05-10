@@ -9,7 +9,7 @@ VisualizeCloudCluster::VisualizeCloudCluster()
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("input_topic_", input_topic_, "/tracking_cluster_array");
   private_nh_.param<std::string>("pointcloud_frame_", pointcloud_frame_, "velodyne");
-  // sub_cloud_array_  = node_handle_.subscribe ("/bbox_cluster_array", 1, &VisualizeCloudCluster::callBack, this);
+
   sub_cloud_array_  = node_handle_.subscribe (input_topic_, 1, &VisualizeCloudCluster::callBack, this);
   pub_jsk_bb_       = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray> ("/tracking_cluster_array/jsk_bb", 1);
   pub_arrow_        = node_handle_.advertise<visualization_msgs::Marker> ("/tracking_cluster_array/velocity_arrow", 1);
@@ -24,7 +24,6 @@ void VisualizeCloudCluster::callBack(autoware_msgs::CloudClusterArray input)
   getJskBBs(input, jsk_bbs);
   pub_jsk_bb_.publish(jsk_bbs);
   visMarkers(input);
-  // cout << "receive jsk call back" << endl;
 }
 
 void VisualizeCloudCluster::getJskBBs(autoware_msgs::CloudClusterArray input,
@@ -38,9 +37,7 @@ void VisualizeCloudCluster::getJskBBs(autoware_msgs::CloudClusterArray input,
     bb = input.clusters[i].bounding_box;
     bb.header = input.header;
     std::string label = input.clusters[i].label;
-    // cout << label << endl;
-    // bb.label = label;
-    // ? jsk bb, how to find appropriate color
+
     if(label == "Stable")
     {
       bb.label = 2;
@@ -52,7 +49,6 @@ void VisualizeCloudCluster::getJskBBs(autoware_msgs::CloudClusterArray input,
 
     jsk_bbs.boxes.push_back(bb);
   }
-  // cout <<"cluster size " << jsk_bbs.boxes.size() << endl;
 }
 
 void VisualizeCloudCluster::visMarkers(autoware_msgs::CloudClusterArray input)
@@ -97,9 +93,7 @@ void VisualizeCloudCluster::visMarkers(autoware_msgs::CloudClusterArray input)
     ids.pose.orientation.z = q_tf.getZ();
     ids.pose.orientation.w = q_tf.getW();
 
-    // Set the scale of the ids -- 1x1x1 here means 1m on a side
-    // ids.scale.x = tv;
-    // ids.scale.y = 0.1;
+
     ids.scale.z = 1.0;
 
     ids.text = std::to_string(input.clusters[i].id);

@@ -6,13 +6,11 @@ Autoware package based on IMM-UKF-PDA tracker.
 
 `roslaunch lidar_tracker imm_ukf_pda_tracker.launch`
 
-`roslaunch lidar_tracker visualize_cloud_cluster.launch`
 
 * From Runtime Manager:
 
 Computing Tab -> Detection/ lidar_detector -> `imm_ukf_pda_tracker`
 
-Computing Tab -> Detection/ lidar_detector -> `visualize_cloud_cluster`
 
 ### Reference
 A. Arya Senna Abdul Rachman, 3D-LIDAR Multi Object Tracking for Autonomous Driving. 2017. [paper](https://repository.tudelft.nl/islandora/object/uuid:f536b829-42ae-41d5-968d-13bbaa4ec736)

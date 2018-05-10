@@ -2,9 +2,6 @@
 #include "imm_ukf_pda_tracker.h"
 
 
-using std::cout;
-using std::endl;
-
 namespace States
 {
   enum TrackingState: int
@@ -29,14 +26,12 @@ namespace Matches
 typedef Matches::IsMatch IsMatch;
 
 
-//for print out iteration
-int g_count = 0;
 
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
-  private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
-  private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
+  // private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
+  // private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
   private_nh_.param<std::string>("pointcloud_frame_", pointcloud_frame_, "velodyne");
   private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
   private_nh_.param<double>("gating_thres_", gating_thres_, 9.22);
@@ -44,16 +39,15 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("detection_probability_", detection_probability_, 0.9);
   private_nh_.param<double>("distance_thres_", distance_thres_, 99);
   private_nh_.param<double>("static_distance_thres_", static_distance_thres_, 3.0);
-  // private_nh_.param<double>("bb_yaw_change_thres_", bb_yaw_change_thres_, 0.3);
-  // private_nh_.param<double>("init_yaw_", init_yaw_, 100);
+
 
   init_ = false;
 
   tf::TransformListener *lr (new  tf::TransformListener);
   tran_=lr;
 
-  sub_cloud_array_   = node_handle_.subscribe (input_topic_, 1, &ImmUkfPda::callBack, this);
-  pub_cloud_array_  = node_handle_.advertise<autoware_msgs::CloudClusterArray> (output_topic_, 1);
+  sub_cloud_array_   = node_handle_.subscribe ("cloud_clusters", 1, &ImmUkfPda::callBack, this);
+  pub_cloud_array_  = node_handle_.advertise<autoware_msgs::CloudClusterArray> ("tracking_cluster_array", 1);
 
 }
 
@@ -64,16 +58,13 @@ void ImmUkfPda::callBack(autoware_msgs::CloudClusterArray input)
   transformPoseToGlobal(input);
   tracker(input, output);
   transformPoseToLocal(output);
-  // output = input;
+
   pub_cloud_array_.publish(output);
-  g_count ++;
-  // std::cout << "Frame " <<g_count<< "------------------------------------------------"<<std::endl;
+
 }
 
 void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
 {
-  // std::string local_frame = "base_link";
-
   for(size_t i = 0; i < input.clusters.size(); i ++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
@@ -88,7 +79,7 @@ void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
 
 void ImmUkfPda::transformPoseToLocal(autoware_msgs::CloudClusterArray& output)
 {
-  // std::string local_frame = "base_link";
+
   for(size_t i = 0; i < output.clusters.size(); i ++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
@@ -158,7 +149,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
 
     Eigen::VectorXd diff = meas - max_det_z;
     double nis = diff.transpose()*max_det_s.inverse()*diff;
-    // cout <<"nis: " <<nis << endl;
+
     if(nis < gating_thres_)
     { // x^2 99% range
       count ++;
@@ -170,14 +161,12 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
         {
         smallest_nis = nis;
         smallest_meas_cluster = input.clusters[i];
-        // measVec.push_back(meas);
         matching_vec[i] = IsMatch::True;
         second_init_done = true;
         }
       }
       else
       {
-        // cout << "check cp "<<input.clusters[i].bounding_box.pose.position.x << " "<< input.clusters[i].bounding_box.pose.position.y << endl;
         cluster_vec.push_back(input.clusters[i]);
         matching_vec[i] = IsMatch::True;
       }
@@ -330,7 +319,6 @@ void ImmUkfPda::filterPDA(UKF& target,
     lambda_ctrv = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas);
     lambda_rm   = (1 - gate_probability_*detection_probability_)/pow(Vk, num_meas);
   }
-  // cout <<endl<< "lambda: "<<endl<<lambdaCV << " "<< lambdaCTRV<<" "<< lambdaRM << endl;
   lambda_vec.push_back(lambda_cv);
   lambda_vec.push_back(lambda_ctrv);
   lambda_vec.push_back(lambda_rm);
@@ -342,12 +330,12 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF target,
   int min_ind = 0;
   double px = target.x_merge_(0);
   double py = target.x_merge_(1);
-  // cout << "px py"<< px << " "<< py << endl;
+
   for (size_t i = 0; i < cluster_vec.size(); i++)
   {
     double meas_x = cluster_vec[i].bounding_box.pose.position.x;
     double meas_y = cluster_vec[i].bounding_box.pose.position.y;
-    // cout << "measx measY "<< measX << " "<< measY << endl;
+
     double dist = sqrt((px-meas_x)*(px-meas_x)+(py-meas_y)*(py-meas_y));
     if(dist < min_dist)
     {
@@ -355,7 +343,7 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF target,
       min_ind = i;
     }
   }
-  // assert(clusterVec[minInd].rows() == 2);
+
   cluster = cluster_vec[min_ind];
 }
 
@@ -368,20 +356,14 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster> clust
   {
       return;
   }
-  // cout << target.tracking_num_ << " "<< target.lifetime_ << endl;
   if(target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_)
   {
-    // cout << "--------------" << endl;
     autoware_msgs::CloudCluster nearest_cluster;
-    // double min_dist = 999;
     double min_dist = std::numeric_limits<double>::max();
     getNearestEuclidCluster(target, cluster_vec, nearest_cluster, min_dist);
-    // std::cout << "minDist "<< min_dist << std::endl;
     if(min_dist < distance_thres_)
     {
       target.is_vis_bb_ = true;
-      // target.BBox_    = bbox;
-      // cout <<"nearestCluster "<< nearestCluster.bounding_box<<endl;
       target.jsk_bb_   = nearest_cluster.bounding_box;
     }
   }
@@ -424,10 +406,7 @@ double ImmUkfPda::getJskBBoxArea(const jsk_recognition_msgs::BoundingBox jsk_bb)
 
 void ImmUkfPda::updateBB(UKF& target)
 {
-  //to do: initialize target.BBox_ somewhere else
-
   // skip to prevent memory leak by accessing empty target.bbox_
-
   if(!target.is_vis_bb_)
   {
       return;
@@ -435,8 +414,6 @@ void ImmUkfPda::updateBB(UKF& target)
   double yaw = getJskBBoxYaw(target.jsk_bb_);
 
   // skip the rest of process if it is first bbox associaiton
-  // todo: wanna check if bestJskBBox is empty or not, there should be better method
-  // if(target.bestBBox_.empty()){
   if(target.is_best_jsk_bb_empty_ == false)
   {
     target.best_jsk_bb_ = target.jsk_bb_;
@@ -575,7 +552,6 @@ void ImmUkfPda::initTracker(autoware_msgs::CloudClusterArray input, double times
     targets_.push_back(ukf);
   }
   timestamp_ = timestamp;
-  // egoPreYaw_ = egoYaw_;
   init_ = true;
   return;
 }
@@ -587,8 +563,6 @@ void ImmUkfPda::secondInit(double dt, std::vector<autoware_msgs::CloudCluster> c
     target.tracking_num_ = TrackingState::Die;
     return;
   }
-
-  // assert(measVec.size() == 1);
   // record init measurement for env classification
   target.init_meas_ << target.x_merge_(0), target.x_merge_(1);
 
@@ -600,7 +574,6 @@ void ImmUkfPda::secondInit(double dt, std::vector<autoware_msgs::CloudCluster> c
   double target_yaw = atan2(target_diff_y, target_diff_x);
   double dist      = sqrt(target_diff_x*target_diff_x + target_diff_y* target_diff_y);
   double target_v   = dist/dt;
-  // double targetV   = 2;
 
   while (target_yaw> M_PI) target_yaw -= 2.*M_PI;
   while (target_yaw<-M_PI) target_yaw += 2.*M_PI;
@@ -664,7 +637,7 @@ void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray in
   is_skip_target = false;
   // find maxDetS associated with predZ
   findMaxZandS(target, max_det_z, max_det_s);
-  // to do: might modufy here: this code ensures that measurement is incorporated
+  // to do: might modify here: this code ensures that measurement is incorporated
   max_det_s = max_det_s*4;
   double det_s = max_det_s.determinant();
 
@@ -762,7 +735,6 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
   m.getRPY(roll, pitch, yaw);
 
   output.header = input.header;
-  // int target_num_count = 0;
   for(size_t i = 0; i < targets_.size(); i++)
   {
     if(targets_[i].is_vis_bb_)
@@ -781,16 +753,11 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
       double tv = targets_[i].x_merge_(2);
       double tyaw = targets_[i].x_merge_(3) - yaw;
 
-      // tyaw += egoPoints_[0][2];
       while (tyaw> M_PI) tyaw -= 2.*M_PI;
       while (tyaw<-M_PI) tyaw += 2.*M_PI;
-      // cout << "testing yaw off "<< tyaw << endl;
-
-      // cout << "inside tracker ----------------------------------------------------------------------------------------------"<<targets_[i].jskBB_.pose << endl;
 
       autoware_msgs::CloudCluster cc;
       cc.header = input.header;
-      // std::cout << "id "<< i << std::endl;
       cc.id     = i;
       cc.bounding_box = targets_[i].jsk_bb_;
       cc.bounding_box.header = input.header;
@@ -805,7 +772,6 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
 void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
                         autoware_msgs::CloudClusterArray& output)
 {
-  // int in_num_cluster = input.clusters.size();
   double timestamp = input.header.stamp.toSec();
 
   double det_explode_param = 10;

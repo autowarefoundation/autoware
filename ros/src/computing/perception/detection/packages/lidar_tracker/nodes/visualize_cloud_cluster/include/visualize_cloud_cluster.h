@@ -16,9 +16,6 @@
 #include "autoware_msgs/CloudClusterArray.h"
 
 
-// using namespace std;
-// using namespace pcl;
-// using namespace Eigen;
 
 class VisualizeCloudCluster
 {
