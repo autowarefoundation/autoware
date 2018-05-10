@@ -63,23 +63,23 @@ void VelocityReplanner::initParameter(const autoware_msgs::ConfigWaypointLoader:
   velocity_offset_ = conf->velocity_offset;
   end_point_offset_ = conf->end_point_offset;
   r_inf_ = 10 * r_th_;
+  vel_param_ = calcVelParam();
 }
 
 void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 {
+  if (vel_param_ == DBL_MAX)
+  {
+    ROS_ERROR("velocity parameter is invalid: please change Rth or Rmin");
+    return;
+  }
   std::vector<double> curve_radius;
   std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
 
   if (resample_mode_)
     resampleLaneWaypoint(resample_interval_, lane);
   createRadiusList(*lane, &curve_radius);
-  const double vel_param = calcVelParam();
   createCurveList(curve_radius, &curve_list);
-  if (vel_param == DBL_MAX)
-  {
-    ROS_ERROR("velocity parameter is invalid: please change Rth or Rmin");
-    return;
-  }
   // set velocity_max for all_point
   for (auto& el : lane->waypoints)
     el.twist.twist.linear.x = velocity_max_;
@@ -90,7 +90,7 @@ void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
     const unsigned long end_idx = (el.second.first > velocity_offset_) ? (el.second.first - velocity_offset_) : 0;
     const double radius = el.second.second;
     const double vmax = velocity_max_;
-    const double vmin = velocity_max_ - vel_param * (r_th_ - radius);
+    const double vmin = velocity_max_ - vel_param_ * (r_th_ - radius);
     for (unsigned long idx = start_idx; idx <= end_idx; idx++)
     {
       if (lane->waypoints[idx].twist.twist.linear.x < vmin)

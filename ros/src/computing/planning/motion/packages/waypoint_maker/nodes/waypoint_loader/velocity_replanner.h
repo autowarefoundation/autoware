@@ -53,6 +53,7 @@ private:
   int velocity_offset_;
   bool resample_mode_;
   int end_point_offset_;
+  double vel_param_;
 
 public:
   VelocityReplanner();
