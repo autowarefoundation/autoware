@@ -28,8 +28,8 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#ifndef __WAYPOINT_REPLAN_H__
-#define __WAYPOINT_REPLAN_H__
+#ifndef __VELOCITY_REPLANNER_H__
+#define __VELOCITY_REPLANNER_H__
 
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
@@ -41,7 +41,7 @@
 
 namespace waypoint_maker
 {
-class WaypointReplan
+class VelocityReplanner
 {
 private:
   ros::NodeHandle private_nh_;
@@ -54,10 +54,10 @@ private:
   int end_point_offset_;
 
 public:
-  WaypointReplan();
-  ~WaypointReplan();
+  VelocityReplanner();
+  ~VelocityReplanner();
   void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
-  void replanLaneWaypoint(autoware_msgs::lane* lane);
+  void replanLaneWaypointVel(autoware_msgs::lane* lane);
 
 protected:
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane);

@@ -1,4 +1,4 @@
-replanning_modename : Computing
+name : Computing
 subs :
 - subs :
   - name : Localization
@@ -3183,7 +3183,7 @@ params :
         dash        : ''
         delim       : ':='
     - name      : replanning_mode
-      desc      : Enable waypoint replan
+      desc      : Enable velocity replanning mode
       label     : 'replanning_mode'
       kind      : checkbox
       v         : false

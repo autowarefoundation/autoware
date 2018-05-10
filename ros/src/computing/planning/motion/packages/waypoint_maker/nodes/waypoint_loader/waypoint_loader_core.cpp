@@ -71,7 +71,7 @@ void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader
 void WaypointLoaderNode::configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   initParameter(conf);
-  replan_.initParameter(conf);
+  replanner_.initParameter(conf);
 
   multi_file_path_.clear();
   parseColumns(multi_lane_csv_, &multi_file_path_);
@@ -113,7 +113,7 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, 
     autoware_msgs::lane lane;
     createLaneWaypoint(el, &lane);
     if (replanning_mode_)
-      replan_.replanLaneWaypoint(&lane);
+      replanner_.replanLaneWaypointVel(&lane);
     lane_array->lanes.push_back(lane);
   }
 }

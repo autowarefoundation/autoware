@@ -43,7 +43,7 @@
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
-#include "waypoint_replan.h"
+#include "velocity_replanner.h"
 
 namespace waypoint_maker
 {
@@ -89,7 +89,7 @@ private:
   std::string multi_lane_csv_;
   bool disable_decision_maker_;
   bool replanning_mode_;
-  WaypointReplan replan_;
+  VelocityReplanner replanner_;
   std::vector<std::string> multi_file_path_;
   autoware_msgs::LaneArray output_lane_array_;
 
