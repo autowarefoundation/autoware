@@ -67,7 +67,9 @@ protected:
   const double calcVelParam() const;
   void createCurveList(const std::vector<double>& curve_radius,
                        std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
-  void limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx, autoware_msgs::lane* lane);
+  void limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
+                            double vmin, autoware_msgs::lane* lane);
+  void limitAccelDecel(const unsigned long idx, autoware_msgs::lane* lane);
   const std::vector<double> calcCurveParam(boost::circular_buffer<geometry_msgs::Point> point) const;
   const double calcPathLength(const autoware_msgs::lane& lane) const;
 };
