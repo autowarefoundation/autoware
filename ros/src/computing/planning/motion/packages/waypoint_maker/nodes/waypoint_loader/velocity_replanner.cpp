@@ -72,7 +72,7 @@ void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 
   if (resample_mode_)
     resampleLaneWaypoint(resample_interval_, lane);
-  getCurveAll(*lane, &curve_radius);
+  getRadiusList(*lane, &curve_radius);
   const double vel_param = calcVelParam();
   createCurveList(curve_radius, &curve_list);
   if (vel_param == DBL_MAX)
@@ -134,13 +134,13 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
   const unsigned int n = (lookup_crv_width_ - 1) / 2;
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
   {
-    std::vector<geometry_msgs::Point> curve_point(3);
-    curve_point[0] = (lane->waypoints.size() < n) ? lane->waypoints[0].pose.pose.position :
-                                                    lane->waypoints[lane->waypoints.size() - n].pose.pose.position;
-    curve_point[1] = original_lane.waypoints[i].pose.pose.position;
-    curve_point[2] = (i >= original_lane.waypoints.size() - n) ? original_lane.waypoints.back().pose.pose.position :
-                                                                 original_lane.waypoints[i + n].pose.pose.position;
-    const std::vector<double> curve_param = getCurveOnce(curve_point);
+    boost::circular_buffer<geometry_msgs::Point> curve_point(3);
+    curve_point.push_back((lane->waypoints.size() < n) ? lane->waypoints[0].pose.pose.position :
+                                                         lane->waypoints[lane->waypoints.size() - n].pose.pose.position);
+    curve_point.push_back(original_lane.waypoints[i].pose.pose.position);
+    curve_point.push_back((i >= original_lane.waypoints.size() - n) ? original_lane.waypoints.back().pose.pose.position :
+                                                                      original_lane.waypoints[i + n].pose.pose.position);
+    const std::vector<double> curve_param = getCurveParam(curve_point);
     // if going straight
     if (curve_param.empty())
     {
@@ -171,7 +171,6 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
       const double& cx = curve_param[0];
       const double& cy = curve_param[1];
       const double& radius = curve_param[2];
-      const double threshold_radius = (radius > r_inf_) ? r_inf_ : radius;
 
       const geometry_msgs::Point& p0 = lane->waypoints.back().pose.pose.position;
       const geometry_msgs::Point& p1 = curve_point[1];
@@ -209,7 +208,7 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
   lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
 
-void VelocityReplanner::getCurveAll(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
+void VelocityReplanner::getRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
 {
   if (lane.waypoints.empty())
     return;
@@ -221,12 +220,12 @@ void VelocityReplanner::getCurveAll(const autoware_msgs::lane& lane, std::vector
   {
     //Three points used for curve detection (the target point is the center)
     //[0] = previous point, [1] = target point, [2] = next point
-    std::vector<geometry_msgs::Point> curve_point(3);
-    curve_point[0] = (i < n) ? lane.waypoints[0].pose.pose.position : lane.waypoints[i - n].pose.pose.position;
-    curve_point[1] = lane.waypoints[i].pose.pose.position;
-    curve_point[2] = (i >= lane.waypoints.size() - n) ? lane.waypoints.back().pose.pose.position :
-                                                        lane.waypoints[i + n].pose.pose.position;
-    const std::vector<double> curve_param = getCurveOnce(curve_point);
+    boost::circular_buffer<geometry_msgs::Point> curve_point(3);
+    curve_point.push_back((i < n) ? lane.waypoints[0].pose.pose.position : lane.waypoints[i - n].pose.pose.position);
+    curve_point.push_back(lane.waypoints[i].pose.pose.position);
+    curve_point.push_back((i >= lane.waypoints.size() - n) ? lane.waypoints.back().pose.pose.position :
+                                                             lane.waypoints[i + n].pose.pose.position);
+    const std::vector<double> curve_param = getCurveParam(curve_point);
     // if going straight
     if (curve_param.empty())
     {
@@ -243,7 +242,7 @@ void VelocityReplanner::getCurveAll(const autoware_msgs::lane& lane, std::vector
 
 const double VelocityReplanner::calcVelParam() const
 {
-  if(fabs(r_th_ - r_min_) < 1e-8)
+  if (fabs(r_th_ - r_min_) < 1e-8)
   {
     return DBL_MAX;//error
   }
@@ -304,70 +303,25 @@ void VelocityReplanner::limitAccelDecel(const double vmax, const double vmin_loc
   }
 }
 
-// get 3 parameter of curve, [center_x, center_y, radius]
-const std::vector<double> VelocityReplanner::getCurveOnce(const std::vector<geometry_msgs::Point>& point) const
+// get curve 3-Parameter [center_x, center_y, radius] with 3 point input. If error occured, return empty vector.
+const std::vector<double> VelocityReplanner::getCurveParam(boost::circular_buffer<geometry_msgs::Point> p) const
 {
-  std::vector<double> curve_param(3, 0.0);
-  const std::vector<double> dx = {point[0].x - point[1].x, point[1].x - point[2].x, point[2].x - point[0].x};
-  const std::vector<double> dy = {point[0].y - point[1].y, point[1].y - point[2].y, point[2].y - point[0].y};
-  std::vector<double> dist(3);
-  // exclude identical points
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++, p.push_back(p.front()))//if exception occured, change points order
   {
-    dist[i] = sqrt(dx[i] * dx[i] + dy[i] * dy[i]);
-    if (dist[i] < 1e-8)
-      return std::vector<double>();
+    const double d = 2 * ((p[0].y - p[2].y) * (p[0].x - p[1].x) - (p[0].y - p[1].y) * (p[0].x - p[2].x));
+    if (fabs(d) < 1e-8)continue;
+    const std::vector<double> x2 = { p[0].x * p[0].x, p[1].x * p[1].x, p[2].x * p[2].x };
+    const std::vector<double> y2 = { p[0].y * p[0].y, p[1].y * p[1].y, p[2].y * p[2].y };
+    const double a = y2[0] - y2[1] + x2[0] - x2[1];
+    const double b = y2[0] - y2[2] + x2[0] - x2[2];
+    std::vector<double> param(3);
+    const double cx = param[0] = ((p[0].y - p[2].y) * a - (p[0].y - p[1].y) * b) / d;
+    const double cy = param[1] = ((p[0].x - p[2].x) * a - (p[0].x - p[1].x) * b) / -d;
+    param[2] = sqrt((cx - p[0].x) * (cx - p[0].x) + (cy - p[0].y) * (cy - p[0].y));
+    return param;
   }
-
-  // exclude identical x,y
-  int valid_dx_cnt = 0;
-  int valid_dy_cnt = 0;
-  int valid_dx_index, valid_dy_index;
-  for(int i = 0; i < 3; i++)
-  {
-    if(fabs(dx[i]) > 1e-8)
-    {
-      valid_dx_cnt++;
-      valid_dx_index = i;
-    }
-    if(fabs(dy[i]) > 1e-8)
-    {
-      valid_dy_cnt++;
-      valid_dy_index = i;
-    }
-  }
-  if (valid_dx_cnt == 0 || valid_dy_cnt == 0)
-    return std::vector<double>();
-
-  // exclude idential line
-  const double cross_prod = dx[0] * dy[1] - dx[1] * dy[0];
-  if (asin(fabs(cross_prod) / (dist[0] * dist[1])) < 1e-8)
-    return std::vector<double>();
-
-  //
-  std::vector<double> sq_diff(3);
-  {
-    std::vector<double> sx = {point[0].x + point[1].x, point[1].x + point[2].x, point[2].x + point[0].x};
-    std::vector<double> sy = {point[0].y + point[1].y, point[1].y + point[2].y, point[2].y + point[0].y};
-    std::transform(sx.begin(), sx.end(), dx.begin(), sx.begin(), std::multiplies<double>());
-    std::transform(sy.begin(), sy.end(), dy.begin(), sy.begin(), std::multiplies<double>());
-    std::transform(sx.begin(), sx.end(), sy.begin(), sq_diff.begin(), std::plus<double>());
-  }
-  if(valid_dx_cnt < valid_dy_cnt)
-  {
-    curve_param[0] = - 0.5 / cross_prod * (dy[0] * sq_diff[1] - dy[1] * sq_diff[0]);
-    const int& idx = valid_dy_index;
-    curve_param[1] = 0.5 / dy[idx] * (sq_diff[idx] - 2 * dx[idx] * curve_param[0]);
-  }
-  else
-  {
-    curve_param[1] = 0.5 / cross_prod * (dx[0] * sq_diff[1] - dx[1] * sq_diff[0]);
-    const int& idx = valid_dx_index;
-    curve_param[0] = 0.5 / dx[idx] * (sq_diff[idx] - 2 * dy[idx] * curve_param[1]);
-  }
-  curve_param[2] = sqrt(calcSquareSum(point[0].x - curve_param[0], point[0].y - curve_param[1]));
-
-  return curve_param;
+  ROS_ERROR("error is occured");
+  return std::vector<double>();//error
 }
 
 const double VelocityReplanner::calcSquareSum(const double x, const double y) const
