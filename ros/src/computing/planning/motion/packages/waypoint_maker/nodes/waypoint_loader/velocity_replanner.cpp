@@ -102,86 +102,118 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
   autoware_msgs::lane original_lane = *lane;
   lane->waypoints.clear();
   lane->waypoints.push_back(original_lane.waypoints[0]);
-  double original_len = calcPathLength(original_lane);
-  unsigned long waypoints_size = ceil(1.5 * original_len / resample_interval_);
-  lane->waypoints.reserve(waypoints_size);
+  lane->waypoints.reserve(ceil(1.5 * calcPathLength(original_lane) / resample_interval_));
 
-  const unsigned int n = (lookup_crv_width_ - 1) / 2;
   for (unsigned long i = 1; i < original_lane.waypoints.size(); i++)
   {
-    boost::circular_buffer<geometry_msgs::Point> curve_point(3);
-    curve_point.push_back((lane->waypoints.size() < n) ? lane->waypoints[0].pose.pose.position :
-                                                         lane->waypoints[lane->waypoints.size() - n].pose.pose.position);
-    curve_point.push_back(original_lane.waypoints[i].pose.pose.position);
-    curve_point.push_back((i >= original_lane.waypoints.size() - n) ? original_lane.waypoints.back().pose.pose.position :
-                                                                      original_lane.waypoints[i + n].pose.pose.position);
+    boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPointsOnResample(*lane, original_lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
-    // if going straight
-    if (curve_param.empty())
-    {
-      const std::vector<double> vec = { curve_point[2].x - curve_point[0].x, curve_point[2].y - curve_point[0].y };
-      autoware_msgs::waypoint wp;
-      wp.pose.pose.position = lane->waypoints.back().pose.pose.position;
-      wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(atan2(vec[1], vec[0]));
-      wp.change_flag = lane->waypoints.back().change_flag;
-      const std::vector<double> nvec = { curve_point[1].x - wp.pose.pose.position.x,
-                                         curve_point[1].y - wp.pose.pose.position.y,
-                                         curve_point[1].z - wp.pose.pose.position.z };
-      double dist = sqrt(nvec[0] * nvec[0] + nvec[1] * nvec[1]);
-      const tf::Vector3 resample_vec(resample_interval_ * nvec[0] / dist, resample_interval_ * nvec[1] / dist,
-                                     resample_interval_ * nvec[2] / dist);
-      for (; dist > resample_interval_; dist -= resample_interval_)
-      {
-        if (lane->waypoints.size() == lane->waypoints.capacity())
-          break;
-        wp.pose.pose.position.x += resample_vec.x();
-        wp.pose.pose.position.y += resample_vec.y();
-        wp.pose.pose.position.z += resample_vec.z();
-        lane->waypoints.push_back(wp);
-      }
-    }
-    // else if turnning curve
-    else
-    {
-      const double& cx = curve_param[0];
-      const double& cy = curve_param[1];
-      const double& radius = curve_param[2];
 
-      const geometry_msgs::Point& p0 = lane->waypoints.back().pose.pose.position;
-      const geometry_msgs::Point& p1 = curve_point[1];
-      double theta = fmod(atan2(p1.y - cy, p1.x - cx) - atan2(p0.y - cy, p0.x - cx), 2 * M_PI);
-      if (theta > M_PI)
-        theta -= 2 * M_PI;
-      else if (theta < -M_PI)
-        theta += 2 * M_PI;
-      // interport
-      double t = atan2(p0.y - cy, p0.x - cx);
-      autoware_msgs::waypoint wp;
-      wp.pose.pose.position = lane->waypoints.back().pose.pose.position;
-      wp.change_flag = lane->waypoints.back().change_flag;
-      double dist = radius * fabs(theta);
-      double dz_nextpt = curve_point[1].z - lane->waypoints.back().pose.pose.position.z;
-      const double resample_dz = resample_interval_ * dz_nextpt / dist;
-      for (; dist > resample_interval_; dist -= resample_interval_)
-      {
-        if (lane->waypoints.size() == lane->waypoints.capacity())
-          break;
-        const int sign = (theta > 0.0) ? (1) : (-1);
-        t += sign * resample_interval_ / radius;
-        const double yaw = fmod(t + sign * M_PI / 2.0, 2 * M_PI);
-        wp.pose.pose.position.x = cx + radius * cos(t);
-        wp.pose.pose.position.y = cy + radius * sin(t);
-        wp.pose.pose.position.z += resample_dz;
-        wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-        lane->waypoints.push_back(wp);
-      }
-    }
+    if (curve_param.empty())// if going straight
+      resampleOnStraight(curve_point, lane);
+    else// else if turnning curve
+      resampleOnCurve(curve_point[1], curve_param, lane);
+
     lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;
     lane->waypoints.back().change_flag = original_lane.waypoints[i].change_flag;
   }
   lane->waypoints.back().wpstate = original_lane.waypoints.back().wpstate;
   lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
+
+
+void VelocityReplanner::resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane)
+{
+  autoware_msgs::waypoint wp = lane->waypoints.back();
+  const geometry_msgs::Point& pt= wp.pose.pose.position;
+  const double yaw = atan2(curve_point[2].y - curve_point[0].y, curve_point[2].x - curve_point[0].x);
+  wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+
+  const std::vector<double> nvec = { curve_point[1].x - pt.x, curve_point[1].y - pt.y, curve_point[1].z - pt.z };
+  double dist = sqrt(nvec[0] * nvec[0] + nvec[1] * nvec[1]);
+  std::vector<double> resample_vec = nvec;
+  const double coeff = resample_interval_ / dist;
+  for (auto& el : resample_vec)
+    el *= coeff;
+  for (; dist > resample_interval_; dist -= resample_interval_)
+  {
+    wp.pose.pose.position.x += resample_vec[0];
+    wp.pose.pose.position.y += resample_vec[1];
+    wp.pose.pose.position.z += resample_vec[2];
+    lane->waypoints.push_back(wp);
+  }
+}
+
+
+void VelocityReplanner::resampleOnCurve(const geometry_msgs::Point& target_point, const std::vector<double>& curve_param, autoware_msgs::lane* lane)
+{
+  autoware_msgs::waypoint wp = lane->waypoints.back();
+  const double& cx = curve_param[0];
+  const double& cy = curve_param[1];
+  const double& radius = curve_param[2];
+
+  const geometry_msgs::Point& p0 = wp.pose.pose.position;
+  const geometry_msgs::Point& p1 = target_point;
+  double theta = fmod(atan2(p1.y - cy, p1.x - cx) - atan2(p0.y - cy, p0.x - cx), 2 * M_PI);
+  int sgn = (theta > 0.0) ? (1) : (-1);
+  if (fabs(theta) > M_PI)
+    theta -= 2 * sgn * M_PI;
+  sgn = (theta > 0.0) ? (1) : (-1);
+  // interport
+  double t = atan2(p0.y - cy, p0.x - cx);
+  double dist = radius * fabs(theta);
+  const double resample_dz = resample_interval_ * (p1.z - p0.z) / dist;
+  for (; dist > resample_interval_; dist -= resample_interval_)
+  {
+    if (lane->waypoints.size() == lane->waypoints.capacity())
+      break;
+    t += sgn * resample_interval_ / radius;
+    const double yaw = fmod(t + sgn * M_PI / 2.0, 2 * M_PI);
+    wp.pose.pose.position.x = cx + radius * cos(t);
+    wp.pose.pose.position.y = cy + radius * sin(t);
+    wp.pose.pose.position.z += resample_dz;
+    wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+    lane->waypoints.push_back(wp);
+  }
+}
+
+
+//Three points used for curve detection (the target point is the center)
+//[0] = previous point, [1] = target point, [2] = next point
+const boost::circular_buffer<geometry_msgs::Point>
+  VelocityReplanner::getCrvPointsOnResample(const autoware_msgs::lane& lane, const autoware_msgs::lane& original_lane, unsigned long original_index) const
+{
+  unsigned long id = original_index;
+  boost::circular_buffer<geometry_msgs::Point> curve_point(3);
+  const unsigned int n = (lookup_crv_width_ - 1) / 2;
+  const autoware_msgs::waypoint cp[3] =
+  {
+    (lane.waypoints.size() < n) ? lane.waypoints.front() : lane.waypoints[lane.waypoints.size() - n],
+    original_lane.waypoints[id],
+    (id < original_lane.waypoints.size() - n) ? original_lane.waypoints[id + n] : original_lane.waypoints.back()
+  };
+  for (int i = 0; i < 3; i++)
+    curve_point.push_back(cp[i].pose.pose.position);
+  return curve_point;
+}
+
+const boost::circular_buffer<geometry_msgs::Point>
+  VelocityReplanner::getCrvPoints(const autoware_msgs::lane& lane, unsigned long index) const
+{
+  boost::circular_buffer<geometry_msgs::Point> curve_point(3);
+  const unsigned int n = (lookup_crv_width_ - 1) / 2;
+  const unsigned long curve_index[3] =
+  {
+    (index < n) ? 0 : (index - n),
+    index,
+    (index >= lane.waypoints.size() - n) ? (lane.waypoints.size() - 1) : (index + n)
+  };
+  for (int i = 0; i < 3; i++)
+    curve_point.push_back(lane.waypoints[curve_index[i]].pose.pose.position);
+  return curve_point;
+}
+
+
 
 void VelocityReplanner::createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
 {
@@ -190,28 +222,15 @@ void VelocityReplanner::createRadiusList(const autoware_msgs::lane& lane, std::v
   curve_radius->resize(lane.waypoints.size());
   curve_radius->at(0) = curve_radius->back() = r_inf_;
 
-  const unsigned int n = (lookup_crv_width_ - 1) / 2;
   for (unsigned long i = 1; i < lane.waypoints.size() - 1; i++)
   {
-    //Three points used for curve detection (the target point is the center)
-    //[0] = previous point, [1] = target point, [2] = next point
-    boost::circular_buffer<geometry_msgs::Point> curve_point(3);
-    curve_point.push_back((i < n) ? lane.waypoints[0].pose.pose.position : lane.waypoints[i - n].pose.pose.position);
-    curve_point.push_back(lane.waypoints[i].pose.pose.position);
-    curve_point.push_back((i >= lane.waypoints.size() - n) ? lane.waypoints.back().pose.pose.position :
-                                                             lane.waypoints[i + n].pose.pose.position);
+    boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPoints(lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
-    // if going straight
-    if (curve_param.empty())
-    {
+
+    if (curve_param.empty())// if going straight
       curve_radius->at(i) = r_inf_;
-    }
-    // else if turnning curve
-    else
-    {
-      const double& radius = curve_param[2];
-      curve_radius->at(i) = (radius > r_inf_) ? r_inf_ : radius;
-    }
+    else// else if turnning curve
+      curve_radius->at(i) = (curve_param[2] > r_inf_) ? r_inf_ : curve_param[2];
   }
 }
 
@@ -255,7 +274,7 @@ void VelocityReplanner::createCurveList(const std::vector<double>& curve_radius,
 void VelocityReplanner::limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
                           double vmin, autoware_msgs::lane* lane)
 {
-  if(offset > 0)
+  if (offset > 0)
   {
     start_idx = (start_idx > offset) ? (start_idx - offset) : 0;
     end_idx = (end_idx > offset) ? (end_idx - offset) : 0;
