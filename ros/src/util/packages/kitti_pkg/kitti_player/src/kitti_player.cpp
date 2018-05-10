@@ -119,6 +119,7 @@ int publish_velodyne(ros::Publisher &pub, string infile, std_msgs::Header *heade
 
         pc2.header.frame_id= "velodyne"; //ros::this_node::getName();
         pc2.header.stamp=header->stamp;
+        pc2.header.seq=header->seq;
         points->header = pcl_conversions::toPCL(pc2.header);
         pub.publish(points);
 
@@ -1225,6 +1226,7 @@ int main(int argc, char **argv)
                 timestamps.seekg(30*entries_played);
                 getline(timestamps,str_support);
                 header_support.stamp = parseTime(str_support).stamp;
+                header_support.seq = progress.count();
                 publish_velodyne(map_pub, full_filename_velodyne,&header_support);
             }
 
