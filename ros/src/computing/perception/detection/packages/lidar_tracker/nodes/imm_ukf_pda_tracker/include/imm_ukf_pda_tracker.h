@@ -17,11 +17,6 @@
 #include "ukf.h"
 
 
-// using namespace pcl;
-// using namespace Eigen;
-
-
-
 class ImmUkfPda
 {
 private:
@@ -29,14 +24,10 @@ private:
   double timestamp_ ;
 
   std::vector<UKF> targets_;
-  // std::vector<int> trackNumVec_;
 
   // probabilistic data association params
-  double gating_thres_;//9.22; // 99%
+  double gating_thres_;//9.22
   double gate_probability_;//0.99;
-  // extern double gammaG_ = 5.99; // 99%
-  // extern double pG_ = 0.95;
-  // extern double gammaG_ = 15.22; // 99%
   double detection_probability_;//0.9;
 
   //bbox association param
@@ -44,26 +35,42 @@ private:
   int life_time_thres_;//8;
   //bbox update params
   double bb_yaw_change_thres_;//0.2;
-  // double bb_area_change_thres_;//0.5;
 
   double static_distance_thres_;
 
   double init_yaw_;
 
+  //Tracking state paramas
+  int stable_num_;
+  int lost_num_;
+
   std::string input_topic_;
   std::string output_topic_;
 
   std::string pointcloud_frame_;
-  // std::vector<UKF> targets_;
-  // std::vector<int> trackNumVec_;
+  std::string tracking_frame_;
 
-  tf::TransformListener* tran_;
+  tf::TransformListener* tf_listener_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_cloud_array_;
   ros::Publisher pub_cloud_array_;
 
-  void callBack(autoware_msgs::CloudClusterArray input);
+  enum TrackingState: int
+    {
+       Die = 0,
+       Init = 1,
+       Stable = 4,
+       Lost = 10,
+    };
+
+  enum IsMatch: int
+    {
+       False = 0,
+       True = 1,
+    };
+
+  void callback(autoware_msgs::CloudClusterArray input);
   void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
   void transformPoseToLocal(autoware_msgs::CloudClusterArray& input);
   void findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);

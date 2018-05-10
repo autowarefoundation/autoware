@@ -1275,6 +1275,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : tracking_frame_
+      desc    : trakcing_frame_ desc sample
+      label   : 'tracking frame'
+      kind    : str
+      v       : world
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : life_time_thres_
       desc    : life_time_thres_ desc sample
       label   : 'life time thres'
