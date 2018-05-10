@@ -7,10 +7,9 @@
 VisualizeCloudCluster::VisualizeCloudCluster()
 {
   ros::NodeHandle private_nh_("~");
-  private_nh_.param<std::string>("input_topic_", input_topic_, "/tracking_cluster_array");
-  private_nh_.param<std::string>("pointcloud_frame_", pointcloud_frame_, "velodyne");
+  private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
 
-  sub_cloud_array_  = node_handle_.subscribe (input_topic_, 1, &VisualizeCloudCluster::callBack, this);
+  sub_cloud_array_  = node_handle_.subscribe ("tracking_cluster_array", 1, &VisualizeCloudCluster::callBack, this);
   pub_jsk_bb_       = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray> ("/tracking_cluster_array/jsk_bb", 1);
   pub_arrow_        = node_handle_.advertise<visualization_msgs::Marker> ("/tracking_cluster_array/velocity_arrow", 1);
   pub_id_           = node_handle_.advertise<visualization_msgs::Marker> ("/tracking_cluster_array/target_id", 1);

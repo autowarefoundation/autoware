@@ -30,15 +30,13 @@ typedef Matches::IsMatch IsMatch;
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
-  // private_nh_.param<std::string>("input_topic_", input_topic_, "/cloud_clusters");
-  // private_nh_.param<std::string>("output_topic_", output_topic_, "/tracking_cluster_array");
-  private_nh_.param<std::string>("pointcloud_frame_", pointcloud_frame_, "velodyne");
-  private_nh_.param<int>("life_time_thres_", life_time_thres_, 8);
-  private_nh_.param<double>("gating_thres_", gating_thres_, 9.22);
-  private_nh_.param<double>("gate_probability_", gate_probability_, 0.99);
-  private_nh_.param<double>("detection_probability_", detection_probability_, 0.9);
-  private_nh_.param<double>("distance_thres_", distance_thres_, 99);
-  private_nh_.param<double>("static_distance_thres_", static_distance_thres_, 3.0);
+  private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
+  private_nh_.param<int>("life_time_thres", life_time_thres_, 8);
+  private_nh_.param<double>("gating_thres", gating_thres_, 9.22);
+  private_nh_.param<double>("gate_probability", gate_probability_, 0.99);
+  private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
+  private_nh_.param<double>("distance_thres", distance_thres_, 99);
+  private_nh_.param<double>("static_distance_thres", static_distance_thres_, 3.0);
 
 
   init_ = false;

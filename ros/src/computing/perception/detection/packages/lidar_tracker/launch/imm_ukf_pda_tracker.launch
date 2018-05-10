@@ -1,29 +1,32 @@
 <!-- -->
 <launch>
-  <arg name="gating_thres_" default="9.22" />
-  <arg name="gate_probability_" default="0.99" />
-  <arg name="detection_probability_" default="0.9" />
-  <arg name="distance_thres_" default="99" />
-  <arg name="life_time_thres_" default="8" />
-  <arg name="static_distance_thres_" default="3.0" />
-  <arg name="tracker_input_topic_" default="/cloud_clusters" />
-  <arg name="tracker_output_topic_" default="/tracking_cluster_array" />
-  <arg name="pointcloud_frame_" default="/velodyne" />
+  <arg name="gating_thres" default="9.22" />
+  <arg name="gate_probability" default="0.99" />
+  <arg name="detection_probability" default="0.9" />
+  <arg name="distance_thres" default="99" />
+  <arg name="life_time_thres" default="8" />
+  <arg name="static_distance_thres" default="3.0" />
+  <arg name="tracker_input_topic" default="/cloud_clusters" />
+  <arg name="tracker_output_topic" default="/tracking_cluster_array" />
+  <arg name="pointcloud_frame" default="/velodyne" />
 
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_tracker" type="imm_ukf_pda_tracker" name="imm_ukf_pda_tracker" output="screen">
-    <param name="gating_thres_" value="$(arg gating_thres_)" />
-    <param name="gate_probability_" value="$(arg gate_probability_)" />
-    <param name="detection_probability_" value="$(arg detection_probability_)" />
-    <param name="distance_thres_" value="$(arg distance_thres_)" />
-    <param name="life_time_thres_" value="$(arg life_time_thres_)" />
-    <param name="static_distance_thres_" value="$(arg static_distance_thres_)" />
-    <param name="pointcloud_frame_" value="$(arg pointcloud_frame_)" />
-    <remap from="cloud_clusters" to="$(arg tracker_input_topic_)" />
-    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic_)" />
+    <param name="gating_thres" value="$(arg gating_thres)" />
+    <param name="gate_probability" value="$(arg gate_probability)" />
+    <param name="detection_probability" value="$(arg detection_probability)" />
+    <param name="distance_thres" value="$(arg distance_thres)" />
+    <param name="life_time_thres" value="$(arg life_time_thres)" />
+    <param name="static_distance_thres" value="$(arg static_distance_thres)" />
+    <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
+
+    <remap from="cloud_clusters" to="$(arg tracker_input_topic)" />
+    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
   </node>
 
   <node pkg="lidar_tracker" type="visualize_cloud_cluster" name="visualize_cloud_cluster" output="screen">
-    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic_)" />
+    <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
+
+    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
   </node>
 </launch>
