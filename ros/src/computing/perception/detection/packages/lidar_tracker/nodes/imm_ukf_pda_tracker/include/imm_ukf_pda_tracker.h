@@ -56,19 +56,6 @@ private:
   ros::Subscriber sub_cloud_array_;
   ros::Publisher pub_cloud_array_;
 
-  enum TrackingState: int
-    {
-       Die = 0,
-       Init = 1,
-       Stable = 4,
-       Lost = 10,
-    };
-
-  enum IsMatch: int
-    {
-       False = 0,
-       True = 1,
-    };
 
   void callback(autoware_msgs::CloudClusterArray input);
   void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
@@ -77,7 +64,7 @@ private:
   void measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init,
                  const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
                  std::vector<autoware_msgs::CloudCluster>& cluster_vec,
-                 std::vector<int>& matching_vec);
+                 std::vector<bool>& matching_vec);
   void filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, std::vector<double>& lambda_vec);
   void getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
                 autoware_msgs::CloudCluster& cluster, double& min_dist);
@@ -101,9 +88,9 @@ private:
   void updateTrackingNum(std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target);
 
   void probabilisticDataAssociation(autoware_msgs::CloudClusterArray input,
-                                    double dt, double det_explode_param, std::vector<int>& matching_vec,
+                                    double dt, double det_explode_param, std::vector<bool>& matching_vec,
                                     std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target);
-  void makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<int> matching_vec);
+  void makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<bool> matching_vec);
 
   void staticClassification();
 

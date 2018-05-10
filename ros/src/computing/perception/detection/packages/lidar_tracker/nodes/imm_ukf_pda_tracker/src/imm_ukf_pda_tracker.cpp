@@ -1,6 +1,15 @@
 #include "ukf.h"
 #include "imm_ukf_pda_tracker.h"
 
+//
+enum TrackingState: int
+  {
+     Die = 0, // No longer tracking
+     Init = 1, // Start tracking
+     Stable = 4, // Stable tracking
+     Lost = 10, // About to lose target
+  };
+
 
 ImmUkfPda::ImmUkfPda()
 {
@@ -109,7 +118,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
                                      const bool second_init,
                                      const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
                                      std::vector<autoware_msgs::CloudCluster>& cluster_vec,
-                                     std::vector<int>& matching_vec)
+                                     std::vector<bool>& matching_vec)
 {
   int count = 0;
   bool second_init_done = false;
@@ -129,7 +138,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
     if(nis < gating_thres_)
     { // x^2 99% range
       count ++;
-      if(matching_vec[i] == IsMatch::False) target.lifetime_ ++;
+      if(matching_vec[i] == false) target.lifetime_ ++;
       // pick one meas with smallest nis
       if(second_init)
       {
@@ -137,14 +146,14 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
         {
         smallest_nis = nis;
         smallest_meas_cluster = input.clusters[i];
-        matching_vec[i] = IsMatch::True;
+        matching_vec[i] = true;
         second_init_done = true;
         }
       }
       else
       {
         cluster_vec.push_back(input.clusters[i]);
-        matching_vec[i] = IsMatch::True;
+        matching_vec[i] = true;
       }
     }
   }
@@ -604,7 +613,7 @@ void ImmUkfPda::updateTrackingNum(std::vector<autoware_msgs::CloudCluster> clust
 }
 
 void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray input,
-                                            double dt, double det_explode_param, std::vector<int>& matching_vec,
+                                            double dt, double det_explode_param, std::vector<bool>& matching_vec,
                                             std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target)
 {
   Eigen::VectorXd max_det_z;
@@ -661,11 +670,11 @@ void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray in
   filterPDA(target, cluster_vec, lambda_vec);
 }
 
-void ImmUkfPda::makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<int> matching_vec)
+void ImmUkfPda::makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<bool> matching_vec)
 {
   for(size_t i = 0; i < input.clusters.size(); i ++)
   {
-    if(matching_vec[i] == IsMatch::False)
+    if(matching_vec[i] == false)
     {
       double px = input.clusters[i].bounding_box.pose.position.x;
       double py = input.clusters[i].bounding_box.pose.position.y;
@@ -763,7 +772,7 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
   double dt = (timestamp - timestamp_);
   timestamp_ = timestamp;
   // // used for making new target with no data association
-  std::vector<int> matching_vec(input.clusters.size()); // make 0 vector
+  std::vector<bool> matching_vec(input.clusters.size(), false); // make 0 vector
 
   // start UKF process
   for(size_t i = 0; i < targets_.size(); i++)
