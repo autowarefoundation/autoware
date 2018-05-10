@@ -72,7 +72,7 @@ void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 
   if (resample_mode_)
     resampleLaneWaypoint(resample_interval_, lane);
-  getRadiusList(*lane, &curve_radius);
+  createRadiusList(*lane, &curve_radius);
   const double vel_param = calcVelParam();
   createCurveList(curve_radius, &curve_list);
   if (vel_param == DBL_MAX)
@@ -140,7 +140,7 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
     curve_point.push_back(original_lane.waypoints[i].pose.pose.position);
     curve_point.push_back((i >= original_lane.waypoints.size() - n) ? original_lane.waypoints.back().pose.pose.position :
                                                                       original_lane.waypoints[i + n].pose.pose.position);
-    const std::vector<double> curve_param = getCurveParam(curve_point);
+    const std::vector<double> curve_param = calcCurveParam(curve_point);
     // if going straight
     if (curve_param.empty())
     {
@@ -152,7 +152,7 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
       const std::vector<double> nvec = { curve_point[1].x - wp.pose.pose.position.x,
                                          curve_point[1].y - wp.pose.pose.position.y,
                                          curve_point[1].z - wp.pose.pose.position.z };
-      double dist = sqrt(calcSquareSum(nvec[0], nvec[1]));
+      double dist = sqrt(nvec[0] * nvec[0] + nvec[1] * nvec[1]);
       const tf::Vector3 resample_vec(resample_interval_ * nvec[0] / dist, resample_interval_ * nvec[1] / dist,
                                      resample_interval_ * nvec[2] / dist);
       for (; dist > resample_interval_; dist -= resample_interval_)
@@ -208,7 +208,7 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
   lane->waypoints.back().change_flag = original_lane.waypoints.back().change_flag;
 }
 
-void VelocityReplanner::getRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
+void VelocityReplanner::createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
 {
   if (lane.waypoints.empty())
     return;
@@ -225,7 +225,7 @@ void VelocityReplanner::getRadiusList(const autoware_msgs::lane& lane, std::vect
     curve_point.push_back(lane.waypoints[i].pose.pose.position);
     curve_point.push_back((i >= lane.waypoints.size() - n) ? lane.waypoints.back().pose.pose.position :
                                                              lane.waypoints[i + n].pose.pose.position);
-    const std::vector<double> curve_param = getCurveParam(curve_point);
+    const std::vector<double> curve_param = calcCurveParam(curve_point);
     // if going straight
     if (curve_param.empty())
     {
@@ -280,31 +280,26 @@ void VelocityReplanner::createCurveList(const std::vector<double>& curve_radius,
 void VelocityReplanner::limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx,
                                      autoware_msgs::lane* lane)
 {
-  double v = vmin_local;
-  for (unsigned long i = 1;; i++)
+  const double acc[2] = {accel_limit_, decel_limit_};
+  const unsigned long end_idx[2] = {lane->waypoints.size() - idx - 1, idx};
+  const int sgn[2] = {1, -1};
+  for (int j = 0; j < 2; j++)// [j=0]: accel_limit_process, [j=1]: decel_limit_process
   {
-    v = sqrt(2 * accel_limit_ * resample_interval_ + v * v);
-    if (i > lane->waypoints.size() - idx - 1 || v > vmax)
-      break;
-    if (lane->waypoints[idx + i].twist.twist.linear.x < v)
-      break;
-    lane->waypoints[idx + i].twist.twist.linear.x = v;
-  }
-
-  v = vmin_local;
-  for (unsigned long i = 1;; i++)
-  {
-    v = sqrt(2 * decel_limit_ * resample_interval_ + v * v);
-    if (i > idx || v > vmax)
-      break;
-    if (lane->waypoints[idx - i].twist.twist.linear.x < v)
-      break;
-    lane->waypoints[idx - i].twist.twist.linear.x = v;
+    double v = vmin_local;
+    for (unsigned long i = 1;; i++)
+    {
+      v = sqrt(2 * acc[j] * resample_interval_ + v * v);
+      if (i > end_idx[j] || v > vmax)
+        break;
+      if (lane->waypoints[idx + sgn[j] * i].twist.twist.linear.x < v)
+        break;
+      lane->waypoints[idx + sgn[j] * i].twist.twist.linear.x = v;
+    }
   }
 }
 
 // get curve 3-Parameter [center_x, center_y, radius] with 3 point input. If error occured, return empty vector.
-const std::vector<double> VelocityReplanner::getCurveParam(boost::circular_buffer<geometry_msgs::Point> p) const
+const std::vector<double> VelocityReplanner::calcCurveParam(boost::circular_buffer<geometry_msgs::Point> p) const
 {
   for (int i = 0; i < 3; i++, p.push_back(p.front()))//if exception occured, change points order
   {
@@ -320,13 +315,7 @@ const std::vector<double> VelocityReplanner::getCurveParam(boost::circular_buffe
     param[2] = sqrt((cx - p[0].x) * (cx - p[0].x) + (cy - p[0].y) * (cy - p[0].y));
     return param;
   }
-  ROS_ERROR("error is occured");
   return std::vector<double>();//error
-}
-
-const double VelocityReplanner::calcSquareSum(const double x, const double y) const
-{
-  return (x * x + y * y);
 }
 
 const double VelocityReplanner::calcPathLength(const autoware_msgs::lane& lane) const

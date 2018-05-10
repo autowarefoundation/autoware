@@ -62,13 +62,12 @@ public:
 
 protected:
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane);
-  void getRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
+  void createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
   const double calcVelParam() const;
   void createCurveList(const std::vector<double>& curve_radius,
                        std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
   void limitAccelDecel(const double vmax, const double vmin_local, const unsigned long idx, autoware_msgs::lane* lane);
-  const std::vector<double> getCurveParam(boost::circular_buffer<geometry_msgs::Point> point) const;
-  const double calcSquareSum(const double x, const double y) const;
+  const std::vector<double> calcCurveParam(boost::circular_buffer<geometry_msgs::Point> point) const;
   const double calcPathLength(const autoware_msgs::lane& lane) const;
 };
 }
