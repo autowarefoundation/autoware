@@ -97,7 +97,7 @@ QString LabelMakerGui::GetTargetDirectoryPath() {
       error_message = "\"Images\" direcotry cannnot be found in \"" +
                       path + "\". \n\n" +
                       "Make sure DataSet directory surely exists. \n" +
-                      "Or Execute \"rosrun road_wizard roi_extractor\" first in order to create dataset source ";
+                      "Or Execute \"rosrun trafficlight_recognizer roi_extractor\" first in order to create dataset source ";
 
       QMessageBox::warning(this,
                            "ERROR",

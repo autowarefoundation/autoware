@@ -36,7 +36,7 @@ For a complete list check https://developer.nvidia.com/cuda-gpus, or execute `de
    ├── mxnet-network.json
    └── mxnet-network.params
    ```  
-   Specify your files name in `Autoware/ros/src/computing/perception/detection/packages/road_wizard/launch/traffic_recognition_mxnet.launch`, if you use your own.
+   Specify your files name in `Autoware/ros/src/computing/perception/detection/packages/trafficlight_recognizer/launch/traffic_recognition_mxnet.launch`, if you use your own.
 
 ---
 

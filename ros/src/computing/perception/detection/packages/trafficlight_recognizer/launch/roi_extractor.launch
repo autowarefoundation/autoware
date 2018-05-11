@@ -12,7 +12,7 @@
   <arg name="similarity_threshold" default="0.9" />
 
   <!-- Execute the node -->
-  <node pkg="road_wizard" type="roi_extractor" name="roi_extractor">
+  <node pkg="trafficlight_recognizer" type="roi_extractor" name="roi_extractor">
     <param name="image_raw_topic" type="str" value="$(arg image_raw_topic)" />
     <param name="target_directory" type="str" value="$(arg target_directory)" />
     <param name="minimum_height" type="int" value="$(arg minimum_height)" />

@@ -6,7 +6,7 @@ The node uses traffic signal obtained by image recognition and that recieved fro
 ### How to launch
 * From a sourced terminal:
 
-    `roslaunch road_wizard traffic_light_recognition.launch`
+    `roslaunch trafficlight_recognizer traffic_light_recognition.launch`
 
 * From Runtime manager:
 

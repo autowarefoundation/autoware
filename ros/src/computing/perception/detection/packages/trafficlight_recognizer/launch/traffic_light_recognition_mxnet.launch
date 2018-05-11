@@ -10,7 +10,7 @@
   <arg name="change_state_threshold" default="2" />
 
   <!-- run region_tlr_mxnet node -->
-  <node pkg="road_wizard" name="region_tlr_mxnet" type="region_tlr_mxnet" output="screen">
+  <node pkg="trafficlight_recognizer" name="region_tlr_mxnet" type="region_tlr_mxnet" output="screen">
     <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)" />
     <param name="network_definition_file" type="str" value="$( arg network_definition_file)" />
     <param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)" />

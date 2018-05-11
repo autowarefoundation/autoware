@@ -144,7 +144,7 @@ More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
 ### Detection
 - lidar_tracker
 - cv_tracker
-- road_wizard
+- trafficlight_recognizer
 
 ### Mission (Global) Planning
 - lane_planner

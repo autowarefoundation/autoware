@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>road_wizard/Label_Maker</string>
+   <string>trafficlight_recognizer/Label_Maker</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
