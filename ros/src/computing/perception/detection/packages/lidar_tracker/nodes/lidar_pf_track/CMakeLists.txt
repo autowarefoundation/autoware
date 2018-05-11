@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(pf_lidar_track)
+project(lidar_pf_track)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -77,6 +77,6 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 
 
 #ParticleFilter Track
-add_executable(pf_lidar_track pf_lidar_track.cpp)
-target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(pf_lidar_track ${catkin_EXPORTED_TARGETS})
+add_executable(lidar_pf_track lidar_pf_track.cpp)
+target_link_libraries(lidar_pf_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(lidar_pf_track ${catkin_EXPORTED_TARGETS})

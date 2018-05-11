@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>pf_lidar_track</name>
+    <name>lidar_pf_track</name>
     <version>1.6.3</version>
-    <description>The pf_lidar_tracker package</description>
+    <description>The lidar_pf_tracker package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>BSD</license>

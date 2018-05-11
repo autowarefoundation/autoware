@@ -59,7 +59,7 @@ void PfTrack::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr&
 int main(int argc, char **argv)
 {
 
-	ros::init(argc, argv, "pf_lidar_detect");
+	ros::init(argc, argv, "lidar_pf_detect");
 	PfTrack node;
 	ros::spin();
 
