@@ -42,7 +42,7 @@ Launch file available parameters for `imm_ukf_pda_tracker`
 
 
 
-Launch file available parameters for `visualize_cloud_cluster`
+Launch file available parameters for `visualize_detected_objects`
 
 |Parameter| Type| Description|
 ----------|-----|--------
@@ -58,7 +58,7 @@ Node: imm_ukf_pda_tracker
 |`/cloud_cluster`|`autoware_msgs::CloudClusterArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
 |`/tf`|`tf`|Tracking objects in `world` coordinate.|
 
-Node: visualize_cloud_cluster
+Node: visualize_detected_objects
 
 |Topic|Type|Objective|
 ------|----|---------
@@ -73,7 +73,7 @@ Node: imm_ukf_pda_tracker
 |`/detected_objects`|`autoware_msgs::DetectedObjectArray`|Added info like velocity, yaw ,yaw_rate and static/dynamic class to DetectedObject msg.|
 |`/bounding_boxes_tracked`|`jsk_recognition_msgs::BoundingBoxArray`|Visualze bounsing box nicely in rviz by JSK bounding box. Label contains information about static/dynamic class|
 
-Node: visualize_cloud_cluster
+Node: visualize_detected_objects
 
 |Topic|Type|Objective|
 ------|----|---------
@@ -82,7 +82,7 @@ Node: visualize_cloud_cluster
 
 ### Node Graph
 
-![node graph](./image/graph.png "node graph")
+![node graph](./image/tracking_graph.png "node graph")
 
 ※ It is recommended to run eucledian cluster with vectormap if is possible. However, you can use the tracker without vectormap.
 
