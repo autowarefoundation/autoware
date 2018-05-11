@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>road_wizard</name>
+    <name>trafficlight_recognizer</name>
     <version>1.6.3</version>
-    <description>The road_wizard package</description>
+    <description>The trafficlight_recognizer package</description>
     <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>

@@ -356,12 +356,12 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-    - name : road_wizard
-      desc : road_wizard desc sample
+    - name : trafficlight_recognizer
+      desc : trafficlight_recognizer desc sample
       subs :
       - name : feat_proj
         desc : feat_proj desc sample
-        cmd  : roslaunch road_wizard feat_proj.launch
+        cmd  : roslaunch trafficlight_recognizer feat_proj.launch
         param: feat_proj
         gui  :
           flags : [ need_camera_info ]
@@ -373,7 +373,7 @@ subs :
 
       - name : region_tlr
         desc : region_tlr desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition.launch
         param: region_tlr
         gui  :
           flags : [ need_camera_info ]
@@ -385,7 +385,7 @@ subs :
 
       - name : region_tlr_mxnet
         desc : region_tlr_mxnet desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition_mxnet.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition_mxnet.launch
         param: region_tlr_mxnet
         gui  :
           flags : [ need_camera_info ]
@@ -397,7 +397,7 @@ subs :
 
       - name : region_tlr_ssd
         desc : region_tlr_ssd desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition_ssd.launch
         param : region_tlr_ssd
         gui  :
           flags : [ no_link, need_camera_info ]
