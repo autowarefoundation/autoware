@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(euclidean_lidar_track)
+project(lidar_euclidean_track)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -76,6 +76,6 @@ link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Track
-add_executable(euclidean_lidar_track euclidean_lidar_track.cpp)
-target_link_libraries(euclidean_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(euclidean_lidar_track ${catkin_EXPORTED_TARGETS})
+add_executable(lidar_euclidean_track lidar_euclidean_track.cpp)
+target_link_libraries(lidar_euclidean_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(lidar_euclidean_track ${catkin_EXPORTED_TARGETS})

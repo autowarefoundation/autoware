@@ -279,8 +279,8 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-    - name : lidar_detector
-      desc : lidar_detector desc sample
+    - name : lidar_tracker
+      desc : lidar_tracker desc sample
       subs :
       - name : euclidean_cluster
         desc : euclidean_cluster desc sample
@@ -310,10 +310,10 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : euclidean_lidar_track
-        desc : euclidean_lidar_track desc sample
-        cmd  : roslaunch lidar_tracker euclidean_lidar_track.launch
-        param: euclidean_lidar_track
+      - name : lidar_euclidean_track
+        desc : lidar_euclidean_track desc sample
+        cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
+        param: lidar_euclidean_track
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
