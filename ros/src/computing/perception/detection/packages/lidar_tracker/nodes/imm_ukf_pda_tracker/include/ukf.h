@@ -13,7 +13,6 @@
 class UKF
 {
 public:
-
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -23,7 +22,7 @@ public:
   ///* if this is false, radar measurements will be ignored (except for init)
   bool use_radar_;
 
-//    ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  //    ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
 
   ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
@@ -35,7 +34,7 @@ public:
   ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_rm_;
 
-//    ///* state covariance matrix
+  //    ///* state covariance matrix
   Eigen::MatrixXd p_merge_;
 
   ///* state covariance matrix
@@ -64,7 +63,7 @@ public:
   double std_a_ctrv_;
   double std_a_rm_;
   ///* Process noise standard deviation yaw acceleration in rad/s^2
-//    double std_yawdd_;
+  //    double std_yawdd_;
 
   // CTRV
   double std_ctrv_yawdd_;
@@ -86,7 +85,7 @@ public:
   double std_radphi_;
 
   ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
+  double std_radrd_;
 
   ///* Weights of sigma points
   Eigen::VectorXd weights_;
@@ -103,21 +102,20 @@ public:
   ///* Augmented sigma point spreading parameter
   double lambda_aug_;
 
-
   int count_;
   int count_empty_;
 
   double mode_match_prob_cv2cv_;
   double mode_match_prob_ctrv2cv_;
-  double mode_match_prob_rm2cv_ ;
+  double mode_match_prob_rm2cv_;
 
   double mode_match_prob_cv2ctrv_;
-  double mode_match_prob_ctrv2ctrv_ ;
-  double mode_match_prob_rm2ctrv_ ;
+  double mode_match_prob_ctrv2ctrv_;
+  double mode_match_prob_rm2ctrv_;
 
-  double mode_match_prob_cv2rm_ ;
-  double mode_match_prob_ctrv2rm_ ;
-  double mode_match_prob_rm2rm_ ;
+  double mode_match_prob_cv2rm_;
+  double mode_match_prob_ctrv2rm_;
+  double mode_match_prob_rm2rm_;
 
   double mode_match_prob_cv_;
 
@@ -144,7 +142,6 @@ public:
   Eigen::MatrixXd s_cv_;
   Eigen::MatrixXd s_ctrv_;
   Eigen::MatrixXd s_rm_;
-
 
   Eigen::MatrixXd k_cv_;
   Eigen::MatrixXd k_ctrv_;
@@ -175,7 +172,6 @@ public:
   Eigen::VectorXd init_meas_;
   double dist_from_init_;
 
-
   std::vector<Eigen::VectorXd> local2local_;
   std::vector<double> local2localYawVec_;
 
@@ -200,7 +196,6 @@ public:
 
   void interaction();
 
-
   /**
    * ProcessMeasurement
    * @param meas_package The latest measurement data of either radar or laser
@@ -209,15 +204,14 @@ public:
 
   void updateIMMUKF(const std::vector<double> lambda_vec);
 
+  void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double nu_a,
+            const double nu_yawdd, const double delta_t, std::vector<double>& state);
 
-  void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-      const double nu_a,const  double nu_yawdd, const double delta_t, std::vector<double>&state);
-
-  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-      const double nu_a,const  double nu_yawdd, const double delta_t, std::vector<double>&state);
+  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double nu_a,
+          const double nu_yawdd, const double delta_t, std::vector<double>& state);
 
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-      const double nu_a,const  double nu_yawdd, const double delta_t, std::vector<double>&state);
+                    const double nu_a, const double nu_yawdd, const double delta_t, std::vector<double>& state);
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
    * matrix

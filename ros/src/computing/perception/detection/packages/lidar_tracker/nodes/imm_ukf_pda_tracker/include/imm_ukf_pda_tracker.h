@@ -10,7 +10,6 @@
 
 #include <tf/transform_listener.h>
 
-
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 
@@ -20,34 +19,32 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-
 #include "ukf.h"
-
 
 class ImmUkfPda
 {
 private:
   bool init_;
-  double timestamp_ ;
+  double timestamp_;
 
   std::vector<UKF> targets_;
 
   // probabilistic data association params
-  double gating_thres_;//9.22
-  double gate_probability_;//0.99;
-  double detection_probability_;//0.9;
+  double gating_thres_;           // 9.22
+  double gate_probability_;       // 0.99;
+  double detection_probability_;  // 0.9;
 
-  //bbox association param
-  double distance_thres_;//0.25;
-  int life_time_thres_;//8;
-  //bbox update params
-  double bb_yaw_change_thres_;//0.2;
+  // bbox association param
+  double distance_thres_;  // 0.25;
+  int life_time_thres_;    // 8;
+  // bbox update params
+  double bb_yaw_change_thres_;  // 0.2;
 
   double static_distance_thres_;
 
   double init_yaw_;
 
-  //Tracking state paramas
+  // Tracking state paramas
   int stable_num_;
   int lost_num_;
 
@@ -64,23 +61,20 @@ private:
   ros::Publisher pub_object_array_;
   ros::Publisher pub_jskbbox_array_;
 
-
-
   void callback(autoware_msgs::CloudClusterArray input);
   void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
   void findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
   void measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init,
-                 const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
-                 std::vector<autoware_msgs::CloudCluster>& cluster_vec,
-                 std::vector<bool>& matching_vec);
-  void filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec, std::vector<double>& lambda_vec);
+                             const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
+                             std::vector<autoware_msgs::CloudCluster>& cluster_vec, std::vector<bool>& matching_vec);
+  void filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
+                 std::vector<double>& lambda_vec);
   void getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
-                autoware_msgs::CloudCluster& cluster, double& min_dist);
+                               autoware_msgs::CloudCluster& cluster, double& min_dist);
   void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
-  void associateBB(const std::vector<autoware_msgs::CloudCluster> cluster_vec,
-                     UKF& target);
+  void associateBB(const std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target);
   double getBboxArea(const pcl::PointCloud<pcl::PointXYZ> bbox);
   double getBBoxYaw(const UKF target);
   double getJskBBoxArea(const jsk_recognition_msgs::BoundingBox jsk_bb);
@@ -95,25 +89,22 @@ private:
   bool isVisible(UKF target);
 
   void initTracker(autoware_msgs::CloudClusterArray input, double timestamp);
-  void secondInit(double dt, std::vector<autoware_msgs::CloudCluster> clusterVec, UKF &target);
+  void secondInit(double dt, std::vector<autoware_msgs::CloudCluster> clusterVec, UKF& target);
 
   void updateTrackingNum(std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target);
 
-  void probabilisticDataAssociation(autoware_msgs::CloudClusterArray input,
-                                    double dt, double det_explode_param, std::vector<bool>& matching_vec,
-                                    std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target);
+  void probabilisticDataAssociation(autoware_msgs::CloudClusterArray input, double dt, double det_explode_param,
+                                    std::vector<bool>& matching_vec, std::vector<double>& lambda_vec, UKF& target,
+                                    bool& is_skip_target);
   void makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<bool> matching_vec);
 
   void staticClassification();
 
-  void makeOutput(autoware_msgs::CloudClusterArray input,
-                  jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
-                  autoware_msgs::DetectedObjectArray &detected_objects_output);
+  void makeOutput(autoware_msgs::CloudClusterArray input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+                  autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  void tracker(autoware_msgs::CloudClusterArray input,
-               jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
-               autoware_msgs::DetectedObjectArray &detected_objects_output);
-
+  void tracker(autoware_msgs::CloudClusterArray input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+               autoware_msgs::DetectedObjectArray& detected_objects_output);
 
 public:
   ImmUkfPda();
