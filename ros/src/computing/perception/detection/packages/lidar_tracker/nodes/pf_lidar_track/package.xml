@@ -2,7 +2,7 @@
 <package>
     <name>pf_lidar_track</name>
     <version>1.6.3</version>
-    <description>The lidar_tracker package</description>
+    <description>The pf_lidar_tracker package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>BSD</license>
@@ -51,6 +51,5 @@
     <run_depend>grid_map_msgs</run_depend>
     <run_depend>libqt5-core</run_depend>
     <run_depend>libqt5-widgets</run_depend>
-
     <export></export>
 </package>
