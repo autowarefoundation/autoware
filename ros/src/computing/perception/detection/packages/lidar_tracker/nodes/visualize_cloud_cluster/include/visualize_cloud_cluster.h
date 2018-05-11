@@ -15,6 +15,10 @@
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
+
+
 
 
 class VisualizeCloudCluster
@@ -25,14 +29,12 @@ private:
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_cloud_array_;
-  ros::Publisher  pub_jsk_bb_;
+
   ros::Publisher  pub_arrow_;
   ros::Publisher  pub_id_;
 
-  void getJskBBs(autoware_msgs::CloudClusterArray input,
-          jsk_recognition_msgs::BoundingBoxArray& jskBBs);
-  void visMarkers(autoware_msgs::CloudClusterArray input);
-  void callBack(autoware_msgs::CloudClusterArray input);
+  void visMarkers(autoware_msgs::DetectedObjectArray input);
+  void callBack(autoware_msgs::DetectedObjectArray input);
 
 public:
   VisualizeCloudCluster();

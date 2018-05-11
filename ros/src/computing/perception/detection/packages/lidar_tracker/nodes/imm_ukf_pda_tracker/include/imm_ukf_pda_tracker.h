@@ -14,6 +14,13 @@
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 
+#include <jsk_recognition_msgs/BoundingBox.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
+
+
 #include "ukf.h"
 
 
@@ -54,12 +61,15 @@ private:
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_cloud_array_;
-  ros::Publisher pub_cloud_array_;
+  ros::Publisher pub_object_array_;
+  ros::Publisher pub_jskbbox_array_;
+
 
 
   void callback(autoware_msgs::CloudClusterArray input);
   void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
-  void transformPoseToLocal(autoware_msgs::CloudClusterArray& input);
+  void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+                            autoware_msgs::DetectedObjectArray& detected_objects_output);
   void findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
   void measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init,
                  const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
@@ -80,7 +90,9 @@ private:
                           const double p_x, const double p_y, const double cp_x, const double cp_y);
   void mergeOverSegmentation(const std::vector<UKF> targets);
 
-  void updateLabel(UKF target, autoware_msgs::CloudCluster& cc);
+  void updateLabel(UKF target, autoware_msgs::DetectedObject& dd);
+  void updateJskLabel(UKF target, jsk_recognition_msgs::BoundingBox& bb);
+  bool isVisible(UKF target);
 
   void initTracker(autoware_msgs::CloudClusterArray input, double timestamp);
   void secondInit(double dt, std::vector<autoware_msgs::CloudCluster> clusterVec, UKF &target);
@@ -95,10 +107,12 @@ private:
   void staticClassification();
 
   void makeOutput(autoware_msgs::CloudClusterArray input,
-                  autoware_msgs::CloudClusterArray& output);
+                  jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
+                  autoware_msgs::DetectedObjectArray &detected_objects_output);
 
   void tracker(autoware_msgs::CloudClusterArray input,
-                 autoware_msgs::CloudClusterArray& output);
+               jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
+               autoware_msgs::DetectedObjectArray &detected_objects_output);
 
 
 public:

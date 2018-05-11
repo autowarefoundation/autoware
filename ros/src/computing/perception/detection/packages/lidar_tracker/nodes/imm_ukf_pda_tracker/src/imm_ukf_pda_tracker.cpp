@@ -32,19 +32,24 @@ ImmUkfPda::ImmUkfPda()
   tf_listener_=lr;
 
   sub_cloud_array_   = node_handle_.subscribe ("cloud_clusters", 1, &ImmUkfPda::callback, this);
-  pub_cloud_array_  = node_handle_.advertise<autoware_msgs::CloudClusterArray> ("tracking_cluster_array", 1);
+  pub_jskbbox_array_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray> ("/bounding_boxes_tracked", 1);
+  pub_object_array_  = node_handle_.advertise<autoware_msgs::DetectedObjectArray> ("/detected_objects", 1);
 
 }
 
 void ImmUkfPda::callback(autoware_msgs::CloudClusterArray input)
 {
   autoware_msgs::CloudClusterArray output;
+  jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
+  autoware_msgs::DetectedObjectArray detected_objects_output;
+
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input);
-  tracker(input, output);
-  transformPoseToLocal(output);
+  tracker(input, jskbboxes_output, detected_objects_output);
+  transformPoseToLocal(jskbboxes_output, detected_objects_output);
 
-  pub_cloud_array_.publish(output);
+  pub_jskbbox_array_.publish(jskbboxes_output);
+  pub_object_array_.publish(detected_objects_output);
 
 }
 
@@ -62,21 +67,23 @@ void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
   }
 }
 
-void ImmUkfPda::transformPoseToLocal(autoware_msgs::CloudClusterArray& output)
+void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+                                     autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
 
-  for(size_t i = 0; i < output.clusters.size(); i ++)
+  for(size_t i = 0; i < jskbboxes_output.boxes.size(); i ++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
 
-    pose_in.header = output.header;
+    pose_in.header = jskbboxes_output.header;
     pose_in.header.frame_id = tracking_frame_;
-    pose_in.pose = output.clusters[i].bounding_box.pose;
+    pose_in.pose = jskbboxes_output.boxes[i].pose;
 
     tf_listener_->waitForTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), ros::Duration(1.0));
     tf_listener_->transformPose(pointcloud_frame_, ros::Time(0), pose_in, tracking_frame_, pose_out);
-    pose_out.header.frame_id = output.header.frame_id = pointcloud_frame_;
-    output.clusters[i].bounding_box.pose = pose_out.pose;
+    pose_out.header.frame_id = jskbboxes_output.header.frame_id = pointcloud_frame_;
+    jskbboxes_output.boxes[i].pose = pose_out.pose;
+    detected_objects_output.objects[i].pose = pose_out.pose;
   }
 }
 
@@ -122,7 +129,6 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
 {
   int count = 0;
   bool second_init_done = false;
-  // double smallest_nis = 999;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::CloudCluster smallest_meas_cluster;
   for(size_t i = 0; i < input.clusters.size(); i++)
@@ -497,30 +503,59 @@ void ImmUkfPda::updateBB(UKF& target)
 //     }
 // }
 
-void ImmUkfPda::updateLabel(UKF target, autoware_msgs::CloudCluster& cc)
+void ImmUkfPda::updateLabel(UKF target, autoware_msgs::DetectedObject& dd)
 {
   int tracking_num = target.tracking_num_;
   // cout << "trackingnum "<< trackingNum << endl;
   if(target.is_static_)
   {
-    cc.label = "Static";
+    dd.label = "Static";
   }
   else if(tracking_num > TrackingState::Die && tracking_num < TrackingState::Stable)
   {
-    cc.label = "Initialized";
+    dd.label = "Initialized";
   }
   else if(tracking_num == TrackingState::Stable)
   {
-    cc.label = "Stable";
+    dd.label = "Stable";
   }
   else if(tracking_num > TrackingState::Stable && tracking_num <= TrackingState::Lost)
   {
-    cc.label = "Lost";
+    dd.label = "Lost";
   }
   else
   {
-    cc.label = "None";
+    dd.label = "None";
   }
+}
+
+void ImmUkfPda::updateJskLabel(UKF target, jsk_recognition_msgs::BoundingBox& bb)
+{
+  int tracking_num = target.tracking_num_;
+  // cout << "trackingnum "<< trackingNum << endl;
+  if(target.is_static_)
+  {
+    bb.label = 15;//white color
+  }
+  else if(tracking_num == TrackingState::Stable)
+  {
+    bb.label = 2;//orange color
+  }
+}
+
+bool ImmUkfPda::isVisible(UKF target)
+{
+  bool is_visible = false;
+  int tracking_num = target.tracking_num_;
+  if(tracking_num == TrackingState::Stable || target.is_static_)
+  {
+    is_visible = true;
+  }
+  else
+  {
+    is_visible = false;
+  }
+  return is_visible;
 }
 
 void ImmUkfPda::initTracker(autoware_msgs::CloudClusterArray input, double timestamp)
@@ -622,8 +657,7 @@ void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray in
   is_skip_target = false;
   // find maxDetS associated with predZ
   findMaxZandS(target, max_det_z, max_det_s);
-  // to do: might modify here: this code ensures that measurement is incorporated
-  max_det_s = max_det_s*4;
+
   double det_s = max_det_s.determinant();
 
   // prevent ukf not to explode
@@ -709,7 +743,8 @@ void ImmUkfPda::staticClassification()
 }
 
 void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
-                           autoware_msgs::CloudClusterArray& output)
+                           jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
+                           autoware_msgs::DetectedObjectArray &detected_objects_output)
 {
   tf::StampedTransform transform;
   tf_listener_->lookupTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), transform);
@@ -719,10 +754,12 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
 
-  output.header = input.header;
+  // output.header = input.header;
+  jskbboxes_output.header = input.header;
+  detected_objects_output.header = input.header;
   for(size_t i = 0; i < targets_.size(); i++)
   {
-    if(targets_[i].is_vis_bb_)
+    if(targets_[i].is_vis_bb_ && isVisible(targets_[i]))
     {
       double tx = targets_[i].x_merge_(0);
       double ty = targets_[i].x_merge_(1);
@@ -731,9 +768,6 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
 
       //for static classification
       targets_[i].dist_from_init_ = sqrt((tx - mx)*(tx - mx) + (ty - my)*(ty - my));
-      std::vector<double> cp;
-      cp.push_back(tx);
-      cp.push_back(ty);
 
       double tv = targets_[i].x_merge_(2);
       double tyaw = targets_[i].x_merge_(3) - yaw;
@@ -741,21 +775,28 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
       while (tyaw> M_PI) tyaw -= 2.*M_PI;
       while (tyaw<-M_PI) tyaw += 2.*M_PI;
 
-      autoware_msgs::CloudCluster cc;
-      cc.header = input.header;
-      cc.id     = i;
-      cc.bounding_box = targets_[i].jsk_bb_;
-      cc.bounding_box.header = input.header;
-      cc.score           = tv;
-      cc.estimated_angle = tyaw;
-      updateLabel(targets_[i], cc);
-      output.clusters.push_back(cc);
+      jsk_recognition_msgs::BoundingBox bb;
+      bb.header = input.header;
+      bb = targets_[i].jsk_bb_;
+      updateJskLabel(targets_[i], bb);
+      jskbboxes_output.boxes.push_back(bb);
+
+      autoware_msgs::DetectedObject dd;
+      dd.header = input.header;
+      dd.id = i;
+      dd.velocity.linear.x = tv;
+      dd.pose = targets_[i].jsk_bb_.pose;
+      // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
+      dd.velocity.linear.y = tyaw;
+      updateLabel(targets_[i], dd);
+      detected_objects_output.objects.push_back(dd);
     }
   }
 }
 
 void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
-                        autoware_msgs::CloudClusterArray& output)
+             jsk_recognition_msgs::BoundingBoxArray &jskbboxes_output,
+             autoware_msgs::DetectedObjectArray &detected_objects_output)
 {
   double timestamp = input.header.stamp.toSec();
 
@@ -813,7 +854,8 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
   staticClassification();
 
   // making output(CludClusterArray) for visualization
-  makeOutput(input, output);
+  makeOutput(input, jskbboxes_output, detected_objects_output);
 
   assert(matching_vec.size() == input.clusters.size());
+  assert(jskbboxes_output.boxes.size() == detected_objects_output.objects.size());
 }
