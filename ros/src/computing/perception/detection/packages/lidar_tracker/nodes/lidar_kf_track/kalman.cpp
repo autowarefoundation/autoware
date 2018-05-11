@@ -1,4 +1,4 @@
-#include "Kalman.h"
+#include "kalman.h"
 #include "opencv2/opencv.hpp"
 #include <iostream>
 #include <vector>
@@ -11,7 +11,7 @@ TKalmanFilter::TKalmanFilter(cv::Point2f pt, float dt, float Accel_noise_mag)
 	deltatime = dt; //0.2
 
 	// We don't know acceleration, so, assume it to process noise.
-	// But we can guess, the range of acceleration values thich can be achieved by tracked object. 
+	// But we can guess, the range of acceleration values thich can be achieved by tracked object.
     // Process noise. (standard deviation of acceleration: m/s^2)
 	// shows, woh much target can accelerate.
 	//float Accel_noise_mag = 0.5;
@@ -24,7 +24,7 @@ TKalmanFilter::TKalmanFilter(cv::Point2f pt, float dt, float Accel_noise_mag)
 															0, 0, 1, 0,
 															0, 0, 0, 1);
 
-	// init... 
+	// init...
 	LastResult = pt;
 	kalman.statePre.at<float>(0) = pt.x; // x
 	kalman.statePre.at<float>(1) = pt.y; // y

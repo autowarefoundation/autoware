@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-    <name>kf_lidar_track</name>
+    <name>lidar_kf_track</name>
     <version>1.6.3</version>
     <description>The lidar_tracker package</description>
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>

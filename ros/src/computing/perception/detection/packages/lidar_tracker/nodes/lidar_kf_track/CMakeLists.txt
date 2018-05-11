@@ -1,5 +1,5 @@
 # cmake_minimum_required(VERSION 2.8.3)
-# project(kf_lidar_track)
+# project(lidar_kf_track)
 #
 # ## Find catkin macros and libraries
 # ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -76,13 +76,13 @@
 # link_directories(${OpenCV_LIBRARY_DIRS})
 #
 # #KalmanFilter Track
-# add_executable(kf_lidar_track
-#         kf_lidar_track.cpp
-#         KfLidarTrack.cpp
-#         HungarianAlg.cpp
-#         Kalman.cpp
+# add_executable(lidar_kf_track
+#         lidar_kf_track_core.cpp
+#         lidar_kf_track.cpp
+#         hungarian_alg.cpp
+#         kalman.cpp
 #         # nodes/euclidean_cluster/Cluster.cpp
 #         )
-# target_include_directories(kf_lidar_track PRIVATE includes)
-# target_link_libraries(kf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-# add_dependencies(kf_lidar_track ${catkin_EXPORTED_TARGETS})
+# target_include_directories(lidar_kf_track PRIVATE includes)
+# target_link_libraries(lidar_kf_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+# add_dependencies(lidar_kf_track ${catkin_EXPORTED_TARGETS})
