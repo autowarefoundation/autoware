@@ -318,10 +318,10 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-      - name : kf_contour_tracker
+      - name : lidar_kf_contour_track
         desc : part of open planner perception package
-        cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
-        param: kf_contour_tracker
+        cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
+        param: lidar_kf_contour_track
 
       - name : obj_fusion
         desc : obj_fusion desc sample
