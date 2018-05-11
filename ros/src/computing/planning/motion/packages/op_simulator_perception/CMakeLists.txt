@@ -11,33 +11,17 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
         INCLUDE_DIRS include
-        LIBRARIES
         CATKIN_DEPENDS roscpp geometry_msgs op_utility op_planner autoware_msgs
 )
-
-###########
-## Build ##
-###########
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
-        #  /usr/local/include/zmp/minivan
         ${catkin_INCLUDE_DIRS}
 )
-
-
-## Declare a C++ library
-#add_library(libplanner_x lib/libplanner_x.cpp)
 
 
 link_directories(lib)
@@ -47,3 +31,14 @@ target_link_libraries(op_simulator_perception ${catkin_LIBRARIES})
 add_dependencies(op_simulator_perception
         ${catkin_EXPORTED_TARGETS}
         )
+
+install(TARGETS op_simulator_perception
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

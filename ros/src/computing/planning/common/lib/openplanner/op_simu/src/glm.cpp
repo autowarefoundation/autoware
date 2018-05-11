@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "glm.h"
+#include "op_simu/glm.h"
 
 namespace Graphics
 {

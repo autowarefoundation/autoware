@@ -5,8 +5,8 @@
  *      Author: user
  */
 
-#include "TrajectoryCosts.h"
-#include "MatrixOperations.h"
+#include "op_planner/TrajectoryCosts.h"
+#include "op_planner/MatrixOperations.h"
 
 namespace PlannerHNS
 {

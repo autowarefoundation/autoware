@@ -33,8 +33,8 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include "PlannerH.h"
-#include "PlannerCommonDef.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlannerCommonDef.h"
 
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>

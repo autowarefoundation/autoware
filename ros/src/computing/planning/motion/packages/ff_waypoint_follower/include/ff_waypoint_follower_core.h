@@ -46,11 +46,11 @@
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "TrajectoryFollower.h"
+#include "op_simu/TrajectoryFollower.h"
 //#include "CarState.h"
-#include "LocalPlannerH.h"
-#include "PlannerH.h"
-#include "MappingHelpers.h"
+#include "op_planner/LocalPlannerH.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/MappingHelpers.h"
 
 
 #ifdef ENABLE_ZMP_LIBRARY_LINK

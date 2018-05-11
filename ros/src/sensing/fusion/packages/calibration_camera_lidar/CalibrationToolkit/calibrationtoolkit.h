@@ -29,8 +29,8 @@
 
 #include<nlopt.hpp>
 
-#include<rosinterface.h>
-#include<glviewer.h>
+#include<rosinterface/rosinterface.h>
+#include<glviewer/glviewer.h>
 
 #include"selectionwidget.h"
 

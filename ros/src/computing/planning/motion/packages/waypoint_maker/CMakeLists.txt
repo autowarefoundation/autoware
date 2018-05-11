@@ -16,19 +16,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Boost REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES lane_follower
-        CATKIN_DEPENDS roscpp std_msgs tf waypoint_follower vector_map lane_planner autoware_msgs
-        DEPENDS gnss
+        CATKIN_DEPENDS gnss
+        roscpp
+        std_msgs
+        geometry_msgs
+        nav_msgs
+        tf
+        waypoint_follower
+        vector_map
+        lane_planner
+        autoware_msgs
 )
-
-###########
-## Build ##
-###########
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -59,3 +58,14 @@ add_executable(waypoint_velocity_visualizer nodes/waypoint_velocity_visualizer/w
 target_link_libraries(waypoint_velocity_visualizer ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(waypoint_velocity_visualizer
         ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS
+        waypoint_loader
+        waypoint_saver
+        waypoint_clicker
+        waypoint_marker_publisher
+        waypoint_velocity_visualizer
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )

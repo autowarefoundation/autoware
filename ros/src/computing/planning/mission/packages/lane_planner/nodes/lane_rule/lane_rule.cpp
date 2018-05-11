@@ -40,7 +40,7 @@
 #include "autoware_msgs/ConfigLaneRule.h"
 #include "autoware_msgs/LaneArray.h"
 
-#include <lane_planner/vmap.hpp>
+#include <lane_planner/lane_planner_vmap.hpp>
 
 namespace {
 

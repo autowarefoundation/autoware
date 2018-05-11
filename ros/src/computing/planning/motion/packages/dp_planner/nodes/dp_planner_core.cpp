@@ -34,8 +34,8 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include "UtilityH.h"
-#include "MatrixOperations.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/MatrixOperations.h"
 
 namespace PlannerXNS
 {

@@ -24,7 +24,7 @@
 #include<sensor_msgs/PointCloud2.h>
 #include<sensor_msgs/LaserScan.h>
 
-#include<glviewer.h>
+#include<glviewer/glviewer.h>
 
 class PlaneExtractor : public GLViewer
 {
