@@ -26,7 +26,7 @@
 #include <jsk_rviz_plugins/PictogramArray.h>
 #include <jsk_recognition_msgs/PolygonArray.h>
 
-#include "KfLidarTrack.h"
+#include "kf_lidar_track.h"
 
 class KfLidarTrackNode
 {

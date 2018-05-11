@@ -1,4 +1,4 @@
-#include "HungarianAlg.h"
+#include "hungarian_alg.h"
 #include <limits>
 
 AssignmentProblemSolver::AssignmentProblemSolver()
@@ -43,7 +43,7 @@ float AssignmentProblemSolver::Solve(
 // --------------------------------------------------------------------------
 void AssignmentProblemSolver::assignmentoptimal(std::vector<int>& assignment, float& cost, const std::vector<float>& distMatrixIn, size_t nOfRows, size_t nOfColumns)
 {
-	// Generate distance cv::Matrix 
+	// Generate distance cv::Matrix
 	// and check cv::Matrix elements positiveness :)
 
 	// Total elements number
