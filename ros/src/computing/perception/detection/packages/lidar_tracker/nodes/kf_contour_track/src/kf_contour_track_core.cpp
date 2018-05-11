@@ -26,13 +26,8 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-<<<<<<< 3938e207a1c789123372d4abcdb79e52d2e4edd5:ros/src/computing/perception/detection/packages/lidar_tracker/nodes/kf_contour_tracker/src/kf_contour_tracker_core.cpp
 #include "../include/kf_contour_tracker_core.h"
 #include "op_ros_helpers/op_RosHelpers.h"
-=======
-#include "../include/kf_contour_track_core.h"
-#include "op_RosHelpers.h"
->>>>>>> rename lidar_tracker:ros/src/computing/perception/detection/packages/lidar_tracker/nodes/kf_contour_track/src/kf_contour_track_core.cpp
 
 
 namespace ContourTrackerNS
