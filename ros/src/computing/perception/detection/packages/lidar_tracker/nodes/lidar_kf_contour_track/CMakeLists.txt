@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kf_contour_track)
+project(lidar_kf_contour_track)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -76,6 +76,6 @@ link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #kl contour track
-add_executable(kf_contour_track kf_contour_track.cpp src/kf_contour_track_core.cpp)
-target_link_libraries(kf_contour_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(kf_contour_track ${catkin_EXPORTED_TARGETS})
+add_executable(lidar_kf_contour_track lidar_kf_contour_track.cpp src/lidar_kf_contour_track_core.cpp)
+target_link_libraries(lidar_kf_contour_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(lidar_kf_contour_track ${catkin_EXPORTED_TARGETS})

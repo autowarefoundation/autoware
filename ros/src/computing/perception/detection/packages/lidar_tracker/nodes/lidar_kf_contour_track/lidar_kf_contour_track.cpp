@@ -30,7 +30,7 @@
 
 
 #include <ros/ros.h>
-#include "include/kf_contour_track_core.h"
+#include "include/lidar_kf_contour_track_core.h"
 
 int main(int argc, char **argv)
 {

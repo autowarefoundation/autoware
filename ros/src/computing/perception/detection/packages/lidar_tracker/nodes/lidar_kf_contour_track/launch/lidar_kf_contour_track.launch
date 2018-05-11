@@ -15,7 +15,7 @@
 	<arg name="contours_circle_resolutions" default="4.0" />
 
 
-	<node pkg="kf_contour_track" type="kf_contour_track" name="kf_contour_track">
+	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track">
 
     	<param name="vehicle_width" value="$(arg vehicle_width)" />
 		<param name="vehicle_length" value="$(arg vehicle_length)" />
