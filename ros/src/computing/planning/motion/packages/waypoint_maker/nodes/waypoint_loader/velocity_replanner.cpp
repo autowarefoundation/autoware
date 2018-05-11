@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2018, TierIV, Inc.
 
  *  All rights reserved.
  *
@@ -77,12 +77,16 @@ void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
   std::unordered_map<unsigned long, std::pair<unsigned long, double> > curve_list;
 
   if (resample_mode_)
+  {
     resampleLaneWaypoint(resample_interval_, lane);
+  }
   createRadiusList(*lane, &curve_radius);
   createCurveList(curve_radius, &curve_list);
   // set velocity_max for all_point
   for (auto& el : lane->waypoints)
+  {
     el.twist.twist.linear.x = velocity_max_;
+  }
   // set velocity by curve
   for (const auto& el : curve_list)
   {
@@ -98,7 +102,9 @@ void VelocityReplanner::replanLaneWaypointVel(autoware_msgs::lane* lane)
 void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane)
 {
   if (lane->waypoints.empty())
+  {
     return;
+  }
   autoware_msgs::lane original_lane = *lane;
   lane->waypoints.clear();
   lane->waypoints.push_back(original_lane.waypoints[0]);
@@ -109,10 +115,16 @@ void VelocityReplanner::resampleLaneWaypoint(const double resample_interval, aut
     boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPointsOnResample(*lane, original_lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
 
-    if (curve_param.empty())  // if going straight
+    // if going straight
+    if (curve_param.empty())
+    {
       resampleOnStraight(curve_point, lane);
-    else  // else if turnning curve
+    }
+    // else if turnning curve
+    else
+    {
       resampleOnCurve(curve_point[1], curve_param, lane);
+    }
 
     lane->waypoints.back().wpstate = original_lane.waypoints[i].wpstate;
     lane->waypoints.back().change_flag = original_lane.waypoints[i].change_flag;
@@ -134,7 +146,9 @@ void VelocityReplanner::resampleOnStraight(const boost::circular_buffer<geometry
   std::vector<double> resample_vec = nvec;
   const double coeff = resample_interval_ / dist;
   for (auto& el : resample_vec)
+  {
     el *= coeff;
+  }
   for (; dist > resample_interval_; dist -= resample_interval_)
   {
     wp.pose.pose.position.x += resample_vec[0];
@@ -157,7 +171,9 @@ void VelocityReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
   double theta = fmod(atan2(p1.y - cy, p1.x - cx) - atan2(p0.y - cy, p0.x - cx), 2 * M_PI);
   int sgn = (theta > 0.0) ? (1) : (-1);
   if (fabs(theta) > M_PI)
+  {
     theta -= 2 * sgn * M_PI;
+  }
   sgn = (theta > 0.0) ? (1) : (-1);
   // interport
   double t = atan2(p0.y - cy, p0.x - cx);
@@ -166,7 +182,9 @@ void VelocityReplanner::resampleOnCurve(const geometry_msgs::Point& target_point
   for (; dist > resample_interval_; dist -= resample_interval_)
   {
     if (lane->waypoints.size() == lane->waypoints.capacity())
+    {
       break;
+    }
     t += sgn * resample_interval_ / radius;
     const double yaw = fmod(t + sgn * M_PI / 2.0, 2 * M_PI);
     wp.pose.pose.position.x = cx + radius * cos(t);
@@ -191,7 +209,9 @@ const boost::circular_buffer<geometry_msgs::Point> VelocityReplanner::getCrvPoin
     (id < original_lane.waypoints.size() - n) ? original_lane.waypoints[id + n] : original_lane.waypoints.back()
   };
   for (int i = 0; i < 3; i++)
+  {
     curve_point.push_back(cp[i].pose.pose.position);
+  }
   return curve_point;
 }
 
@@ -204,14 +224,18 @@ const boost::circular_buffer<geometry_msgs::Point> VelocityReplanner::getCrvPoin
                                                                                    (lane.waypoints.size() - 1) :
                                                                                    (index + n) };
   for (int i = 0; i < 3; i++)
+  {
     curve_point.push_back(lane.waypoints[curve_index[i]].pose.pose.position);
+  }
   return curve_point;
 }
 
 void VelocityReplanner::createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius)
 {
   if (lane.waypoints.empty())
+  {
     return;
+  }
   curve_radius->resize(lane.waypoints.size());
   curve_radius->at(0) = curve_radius->back() = r_inf_;
 
@@ -220,10 +244,16 @@ void VelocityReplanner::createRadiusList(const autoware_msgs::lane& lane, std::v
     boost::circular_buffer<geometry_msgs::Point> curve_point = getCrvPoints(lane, i);
     const std::vector<double> curve_param = calcCurveParam(curve_point);
 
-    if (curve_param.empty())  // if going straight
+    // if going straight
+    if (curve_param.empty())
+    {
       curve_radius->at(i) = r_inf_;
-    else  // else if turnning curve
+    }
+    // else if turnning curve
+    else
+    {
       curve_radius->at(i) = (curve_param[2] > r_inf_) ? r_inf_ : curve_param[2];
+    }
   }
 }
 
@@ -254,14 +284,20 @@ void VelocityReplanner::createCurveList(
     {
       on_curve = false;
       if (radius_localmin < r_min_)
+      {
         radius_localmin = r_min_;
+      }
       (*curve_list)[index] = std::make_pair(i, radius_localmin);
       radius_localmin = DBL_MAX;
     }
     if (!on_curve)
+    {
       continue;
+    }
     if (radius_localmin > curve_radius[i])
+    {
       radius_localmin = curve_radius[i];
+    }
   }
 }
 
@@ -276,7 +312,9 @@ void VelocityReplanner::limitVelocityByRange(unsigned long start_idx, unsigned l
   for (unsigned long idx = start_idx; idx <= end_idx; idx++)
   {
     if (lane->waypoints[idx].twist.twist.linear.x < vmin)
+    {
       continue;
+    }
     lane->waypoints[idx].twist.twist.linear.x = vmin;
   }
   limitAccelDecel(start_idx, lane);
@@ -296,7 +334,9 @@ void VelocityReplanner::limitAccelDecel(const unsigned long idx, autoware_msgs::
     {
       v = sqrt(2 * acc[j] * resample_interval_ + v * v);
       if (v > velocity_max_ || v > lane->waypoints[next].twist.twist.linear.x)
+      {
         break;
+      }
       lane->waypoints[next].twist.twist.linear.x = v;
     }
   }
@@ -309,7 +349,9 @@ const std::vector<double> VelocityReplanner::calcCurveParam(boost::circular_buff
   {
     const double d = 2 * ((p[0].y - p[2].y) * (p[0].x - p[1].x) - (p[0].y - p[1].y) * (p[0].x - p[2].x));
     if (fabs(d) < 1e-8)
+    {
       continue;
+    }
     const std::vector<double> x2 = { p[0].x * p[0].x, p[1].x * p[1].x, p[2].x * p[2].x };
     const std::vector<double> y2 = { p[0].y * p[0].y, p[1].y * p[1].y, p[2].y * p[2].y };
     const double a = y2[0] - y2[1] + x2[0] - x2[1];

@@ -85,7 +85,9 @@ void WaypointLoaderNode::outputCommandCallback(const std_msgs::Bool::ConstPtr& o
 {
   std::vector<std::string> dst_multi_file_path = multi_file_path_;
   for (auto& el : dst_multi_file_path)
+  {
     el = addFileSuffix(el, "_replanned");
+  }
   saveLaneArray(dst_multi_file_path, output_lane_array_);
 }
 
@@ -97,11 +99,15 @@ const std::string addFileSuffix(std::string file_path, std::string suffix)
   tmp = file_path;
   const std::string::size_type idx_slash = tmp.find_last_of("/");
   if (idx_slash != std::string::npos)
+  {
     tmp.erase(0, idx_slash);
+  }
   const std::string::size_type idx_dot = tmp.find_last_of(".");
   const std::string::size_type idx_dot_allpath = file_path.find_last_of(".");
   if (idx_dot != std::string::npos && idx_dot != tmp.size() - 1)
+  {
     file_path.erase(idx_dot_allpath, file_path.size() - 1);
+  }
   file_path += suffix + ".csv";
   return file_path;
 }
@@ -113,7 +119,9 @@ void WaypointLoaderNode::createLaneArray(const std::vector<std::string>& paths, 
     autoware_msgs::lane lane;
     createLaneWaypoint(el, &lane);
     if (replanning_mode_)
+    {
       replanner_.replanLaneWaypointVel(&lane);
+    }
     lane_array->lanes.push_back(lane);
   }
 }
@@ -150,11 +158,17 @@ void WaypointLoaderNode::createLaneWaypoint(const std::string& file_path, autowa
   FileFormat format = checkFileFormat(file_path.c_str());
   std::vector<autoware_msgs::waypoint> wps;
   if (format == FileFormat::ver1)
+  {
     loadWaypointsForVer1(file_path.c_str(), &wps);
+  }
   else if (format == FileFormat::ver2)
+  {
     loadWaypointsForVer2(file_path.c_str(), &wps);
+  }
   else
+  {
     loadWaypointsForVer3(file_path.c_str(), &wps);
+  }
   lane->header.frame_id = "/map";
   lane->header.stamp = ros::Time(0);
   lane->waypoints = wps;
@@ -165,7 +179,9 @@ void WaypointLoaderNode::loadWaypointsForVer1(const char* filename, std::vector<
   std::ifstream ifs(filename);
 
   if (!ifs)
+  {
     return;
+  }
 
   std::string line;
   std::getline(ifs, line);  // Remove first line
@@ -209,7 +225,9 @@ void WaypointLoaderNode::loadWaypointsForVer2(const char* filename, std::vector<
   std::ifstream ifs(filename);
 
   if (!ifs)
+  {
     return;
+  }
 
   std::string line;
   std::getline(ifs, line);  // Remove first line
@@ -239,7 +257,9 @@ void WaypointLoaderNode::loadWaypointsForVer3(const char* filename, std::vector<
   std::ifstream ifs(filename);
 
   if (!ifs)
+  {
     return;
+  }
 
   std::string line;
   std::getline(ifs, line);  // get first line
@@ -318,7 +338,9 @@ bool WaypointLoaderNode::verifyFileConsistency(const char* filename)
   std::ifstream ifs(filename);
 
   if (!ifs)
+  {
     return false;
+  }
 
   FileFormat format = checkFileFormat(filename);
   ROS_INFO("format: %d", static_cast<int>(format));
@@ -340,7 +362,9 @@ bool WaypointLoaderNode::verifyFileConsistency(const char* filename)
   while (std::getline(ifs, line))  // search from second line
   {
     if (countColumns(line) != ncol)
+    {
       return false;
+    }
   }
   return true;
 }
@@ -355,11 +379,15 @@ void parseColumns(const std::string& line, std::vector<std::string>* columns)
     {
       auto res = std::find(column.begin(), column.end(), ' ');
       if (res == column.end())
+      {
         break;
+      }
       column.erase(res);
     }
     if (!column.empty())
+    {
       columns->push_back(column);
+    }
   }
 }
 

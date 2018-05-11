@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2018, TierIV, Inc.
 
  *  All rights reserved.
  *
