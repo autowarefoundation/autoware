@@ -1,24 +1,24 @@
-#include "visualize_cloud_cluster.h"
+#include "visualize_detected_objects.h"
 
 #include <visualization_msgs/Marker.h>
 #include <tf/transform_datatypes.h>
 
-VisualizeCloudCluster::VisualizeCloudCluster()
+VisualizeDetectedObjects::VisualizeDetectedObjects()
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
 
-  sub_cloud_array_ = node_handle_.subscribe("/detected_objects", 1, &VisualizeCloudCluster::callBack, this);
+  sub_cloud_array_ = node_handle_.subscribe("/detected_objects", 1, &VisualizeDetectedObjects::callBack, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::Marker>("/detected_objects/velocity_arrow", 1);
   pub_id_ = node_handle_.advertise<visualization_msgs::Marker>("/detected_objects/target_id", 1);
 }
 
-void VisualizeCloudCluster::callBack(autoware_msgs::DetectedObjectArray input)
+void VisualizeDetectedObjects::callBack(autoware_msgs::DetectedObjectArray input)
 {
   visMarkers(input);
 }
 
-void VisualizeCloudCluster::visMarkers(autoware_msgs::DetectedObjectArray input)
+void VisualizeDetectedObjects::visMarkers(autoware_msgs::DetectedObjectArray input)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
   {
@@ -62,6 +62,7 @@ void VisualizeCloudCluster::visMarkers(autoware_msgs::DetectedObjectArray input)
     visualization_msgs::Marker arrows;
     arrows.lifetime = ros::Duration(0.1);
 
+    // visualize velocity arrow only if its status is Stable
     std::string label = input.objects[i].label;
     if (label == "None" || label == "Initialized" || label == "Lost" || label == "Static")
     {

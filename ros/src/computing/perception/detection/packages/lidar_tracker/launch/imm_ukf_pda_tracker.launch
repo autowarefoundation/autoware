@@ -26,7 +26,7 @@
     <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
   </node>
 
-  <node pkg="lidar_tracker" type="visualize_cloud_cluster" name="visualize_cloud_cluster" output="screen">
+  <node pkg="lidar_tracker" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
 
     <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />

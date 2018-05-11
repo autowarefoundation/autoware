@@ -36,6 +36,7 @@ Launch file available parameters for `imm_ukf_pda_tracker`
 |`gating thres`|*Double*|The value of gate threshold for measurement validation. Default `9.22`.|
 |`gate probability`|*Double*|The probability that the gate contains the true measurement. Default `0.99`.|
 |`detection probability`|*Double*|The probability that a target is detected. Default `0.9`.|
+|`distance thres`|*Double*|The distance threshold for associating bounding box over frames. Default `100`.|
 |`static distance thres`|*Double*|The distance threshold for classifying static/dynamic. Default `3.0`.|
 
 
@@ -61,7 +62,7 @@ Node: visualize_cloud_cluster
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/tracking_cluster_array`|`autoware_msgs::CloudClusterArray`|Segmented pointcloud with tracking info.|
+|`/detected_objects`|`autoware_msgs::DetectedObjectArray`|Objects with tracking info.|
 
 ### Published topics
 
@@ -69,15 +70,15 @@ Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/tracking_cluster_array`|`autoware_msgs::CloudClusterArray`|Added info like velocity, yaw ,yaw_rate and static/dynamic class to segmented pointcloud.|
+|`/detected_objects`|`autoware_msgs::DetectedObjectArray`|Added info like velocity, yaw ,yaw_rate and static/dynamic class to DetectedObject msg.|
+|`/bounding_boxes_tracked`|`jsk_recognition_msgs::BoundingBoxArray`|Visualze bounsing box nicely in rviz by JSK bounding box. Label contains information about static/dynamic class|
 
 Node: visualize_cloud_cluster
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/tracking_cluster_array/jsk_bb`|`jsk_recognition_msgs::BoundingBoxArray`|Visualze bounsing box nicely in rviz by JSK bounding box. Label contains information about static/dynamic class|
-|`/tracking_cluster_array/velocity_arrow`|`visualization_msgs::Marker`|Visualize velocity and yaw of the targets.|
-|`/tracking_cluster_array/target_id`|`visualization_msgs::Marker`|Visualize targets' id.|
+|`/detected_objects/velocity_arrow`|`visualization_msgs::Marker`|Visualize velocity and yaw of the targets.|
+|`/detected_objects/target_id`|`visualization_msgs::Marker`|Visualize targets' id.|
 
 ### Node Graph
 

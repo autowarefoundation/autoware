@@ -296,7 +296,7 @@ target_link_libraries(imm_ukf_pda_tracker ${catkin_LIBRARIES})
 #target_link_libraries(cluster_filter ${catkin_LIBRARIES})
 
 #visualize cloud cluster
-set(SOURCE_FILES nodes/visualize_cloud_cluster/src/visualize_cloud_cluster_main.cpp nodes/visualize_cloud_cluster/src/visualize_cloud_cluster.cpp)
-add_executable(visualize_cloud_cluster ${SOURCE_FILES})
-target_include_directories(visualize_cloud_cluster PRIVATE nodes/visualize_cloud_cluster/include)
-target_link_libraries(visualize_cloud_cluster ${catkin_LIBRARIES})
+set(SOURCE_FILES nodes/visualize_detected_objects/src/visualize_detected_objects_main.cpp nodes/visualize_detected_objects/src/visualize_detected_objects.cpp)
+add_executable(visualize_detected_objects ${SOURCE_FILES})
+target_include_directories(visualize_detected_objects PRIVATE nodes/visualize_detected_objects/include)
+target_link_libraries(visualize_detected_objects ${catkin_LIBRARIES})

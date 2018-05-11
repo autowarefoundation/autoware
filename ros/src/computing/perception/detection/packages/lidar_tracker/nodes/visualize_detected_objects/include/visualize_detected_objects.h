@@ -1,5 +1,5 @@
-#ifndef OBJECT_TRACKING_VisualizeCloudCluster_H
-#define OBJECT_TRACKING_VisualizeCloudCluster_H
+#ifndef OBJECT_TRACKING_VisualizeDetecedObjects_H
+#define OBJECT_TRACKING_VisualizeDetecedObjects_H
 
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
@@ -15,7 +15,7 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-class VisualizeCloudCluster
+class VisualizeDetectedObjects
 {
 private:
   std::string input_topic_;
@@ -31,7 +31,7 @@ private:
   void callBack(autoware_msgs::DetectedObjectArray input);
 
 public:
-  VisualizeCloudCluster();
+  VisualizeDetectedObjects();
 };
 
 #endif  // OBJECT_TRACKING_VisualizeCloudCluster_H
