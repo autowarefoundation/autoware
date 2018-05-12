@@ -143,16 +143,16 @@ static void publish_car(int id, int is_current, ros::Time now,
   pictogram.pose = pose;
   pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
   pictogram.mode = jsk_rviz_plugins::Pictogram::PICTOGRAM_MODE;
-  pictogram.ttl = 1000;
+  pictogram.ttl = 0;
   if (is_current) {
 #ifdef CURRENT_CAR_DIRECTLY
     pictogram.character = "fa-car";
-    pictogram.size = 1000.0;
+    pictogram.size = 1.0;
     // marker.lifetime = ros::Duration();
     pictogram.color.r = 1.0;
     pictogram.color.g = 0.0;
     pictogram.color.b = 0.0;
-    pictogram.color.a = 0.0;
+    pictogram.color.a = 1.0;
 
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
@@ -211,13 +211,13 @@ static void publish_car_summary(ros::Time now)
     pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
     pictogram.mode = jsk_rviz_plugins::Pictogram::PICTOGRAM_MODE;
     pictogram.character = "fa-car";
-    pictogram.size = 1000;
-    pictogram.ttl = 1000;
+    pictogram.size = 1;
+    pictogram.ttl = 0;
     // marker.lifetime = ros::Duration();
     pictogram.color.r = 1.0;
     pictogram.color.g = 0.0;
     pictogram.color.b = 0.0;
-    pictogram.color.a = 0.0;
+    pictogram.color.a = 1.0;
     tf::Quaternion q1;
     q1.setRPY(M_PI/2, 0, M_PI);
     tf::Quaternion q2(pictogram.pose.orientation.x, pictogram.pose.orientation.y, pictogram.pose.orientation.z, pictogram.pose.orientation.w);
