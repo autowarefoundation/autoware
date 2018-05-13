@@ -60,9 +60,9 @@
 #include <sensor_msgs/NavSatFix.h>
 #include "structure.h"
 #include "calcoordinates.h"
-#include "axialMove.h"
+#include "axial_move.h"
 #include <gnss/geo_pos_conv.hpp>
-#include "CalObjLoc.h"
+#include "cal_obj_loc.h"
 #include "autoware_msgs/image_obj_tracked.h"
 #include "autoware_msgs/obj_label.h"
 #include "autoware_msgs/projection_matrix.h"
@@ -301,7 +301,7 @@ void locatePublisher(void){
   visualization_msgs::MarkerArray obj_label_marker_msgs;
 
   vector<OBJPOS>::iterator cp_iterator;
- 
+
   cp_iterator = car_position_vector.begin();
 
   //get data of car and pedestrian recognizing
