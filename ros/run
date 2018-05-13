@@ -6,8 +6,8 @@ MY_PATH=$(readlink -f  $(dirname $0))
 OPTION_WORKING_DIR='--working-directory'
 OPTION_CORE_GEOMETRY='--geometry=50x10+0+0'
 OPTION_RM_GEOMETRY='--geometry=50x10+500+0'
+OPTION_TITLE='--title'
 OPTION_COMMAND='--command'
-
 
 if [ $(which mate-terminal) ]; then
     TERMINAL=mate-terminal
@@ -15,8 +15,7 @@ elif [ $(which xfce4-terminal) ]; then
     TERMINAL=xfce4-terminal
 elif [ $(which lxterminal) ]; then
     TERMINAL=lxterminal
-    OPTION_TITLE='--title'
-elif [ $(which konsole) ]; then
+ elif [ $(which konsole) ]; then
     TERMINAL=konsole
     OPTION_WORKING_DIR='--workdir'
     OPTION_CORE_GEOMETRY=''
