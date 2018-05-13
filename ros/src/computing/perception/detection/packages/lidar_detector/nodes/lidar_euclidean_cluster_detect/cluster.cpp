@@ -5,7 +5,7 @@
  *      Author: Ne0
  */
 
-#include "Cluster.h"
+#include "cluster.h"
 
 Cluster::Cluster()
 {
