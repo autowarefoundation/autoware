@@ -55,6 +55,12 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 # catkin_python_setup()
 
 
+## Install project namespaced headers
+# install(DIRECTORY include
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -66,10 +72,11 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
+        INCLUDE_DIRS include
 )
 
 include_directories(
-        includes
+        include
         ${catkin_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
@@ -92,7 +99,7 @@ if (${CUDA_FOUND})
             )
 
     cuda_add_library(gpu_euclidean_clustering
-            includes/gpu_euclidean_clustering.h
+            include/gpu_euclidean_clustering.h
             gpu_euclidean_clustering.cu
             )
 
@@ -115,3 +122,8 @@ if (OPENMP_FOUND)
             LINK_FLAGS ${OpenMP_CXX_FLAGS}
             )
 endif ()
+
+install(DIRECTORY include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+        )

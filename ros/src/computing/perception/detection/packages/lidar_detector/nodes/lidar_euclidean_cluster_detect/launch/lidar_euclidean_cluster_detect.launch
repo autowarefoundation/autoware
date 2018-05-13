@@ -32,9 +32,6 @@
 
 	<arg name="use_gpu" default="false" />
 
-	<!-- rosrun lidar_tracker vscan_filling -->
-	<!-- <node pkg="lidar_tracker" type="vscan_filling" name="vscan_filling" /> -->
-
 	<!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
 	<node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
 		<param name="points_node" value="$(arg points_node)" /> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
