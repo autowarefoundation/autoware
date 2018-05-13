@@ -23,7 +23,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include "Cluster.h"
+#include "cluster.h"
 
 // --------------------------------------------------------------------------
 class CTrack
