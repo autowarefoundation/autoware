@@ -75,7 +75,7 @@
 #endif
 
 
-#include "Cluster.h"
+#include "cluster.h"
 
 #ifdef GPU_CLUSTERING
 	#include "gpu_euclidean_clustering.h"
