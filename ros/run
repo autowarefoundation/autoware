@@ -15,7 +15,7 @@ elif [ $(which xfce4-terminal) ]; then
     TERMINAL=xfce4-terminal
 elif [ $(which lxterminal) ]; then
     TERMINAL=lxterminal
- elif [ $(which konsole) ]; then
+elif [ $(which konsole) ]; then
     TERMINAL=konsole
     OPTION_WORKING_DIR='--workdir'
     OPTION_CORE_GEOMETRY=''
