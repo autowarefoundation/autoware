@@ -160,7 +160,12 @@ static void publish_car(int id, int is_current, ros::Time now,
     tf::Quaternion q3;
     q3 = q2 * q1;
 
-    pictogram.pose.position.z -= 2.0;
+    //for making look good from top veiw
+    tf::Quaternion q4;
+    q4.setRPY(M_PI/2, 0, 0);
+    q3 = q3 * q4;
+
+    pictogram.pose.position.z += 1.0;
     pictogram.pose.orientation.x = q3.x();
     pictogram.pose.orientation.y = q3.y();
     pictogram.pose.orientation.z = q3.z();
@@ -211,7 +216,7 @@ static void publish_car_summary(ros::Time now)
     pictogram.action = jsk_rviz_plugins::Pictogram::ADD;
     pictogram.mode = jsk_rviz_plugins::Pictogram::PICTOGRAM_MODE;
     pictogram.character = "fa-car";
-    pictogram.size = 1;
+    pictogram.size = 5;
     pictogram.ttl = 0;
     // marker.lifetime = ros::Duration();
     pictogram.color.r = 1.0;
@@ -224,7 +229,13 @@ static void publish_car_summary(ros::Time now)
     tf::Quaternion q3;
     q3 = q2 * q1;
 
-    pictogram.pose.position.z -= 2.0;
+
+    //for making look good from top veiw
+    tf::Quaternion q4;
+    q4.setRPY(M_PI/2, 0, 0);
+    q3 = q3 * q4;
+
+    pictogram.pose.position.z += 1.0;
     pictogram.pose.orientation.x = q3.x();
     pictogram.pose.orientation.y = q3.y();
     pictogram.pose.orientation.z = q3.z();
@@ -251,7 +262,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   pictogram.character = "dot-circle-o";
   //marker.type = visualization_msgs::Marker::CYLINDER;
   // marker.lifetime = ros::Duration(life_time);
-  pictogram.size = 1;
+  pictogram.size = 5;
   pictogram.ttl = life_time;
   if (is_pedestrian) {
     pictogram.color.r = 0.0;
@@ -276,7 +287,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   pictogram.pose = pose;
   pictogram.pose.position.z += 1.2 + 0.3 + 0.1; // == #1 + #2/2 + alpha
   pictogram.character = "circle";
-  pictogram.size = 1;
+  pictogram.size = 5;
   // marker.scale.x = 0.6; // #2
   // marker.scale.y = 0.6;
   // marker.scale.z = 0.6;
