@@ -17,3 +17,11 @@
 
 ### RUN
 `$ autoware-docker`
+
+## Videos
+
+### How to use Autoware within docker on DRIVE PX2
+[![How to use Autoware within docker on DRIVE PX2](http://img.youtube.com/vi/3UO1K0lD2Qk/mqdefault.jpg)](https://www.youtube.com/embed/3UO1K0lD2Qk)
+
+### How to use GMSL Camera within docker
+[![How to use Autoware within docker on DRIVE PX2](http://img.youtube.com/vi/-swTFYO3Fuc/mqdefault.jpg)](https://www.youtube.com/embed/-swTFYO3Fuc)
