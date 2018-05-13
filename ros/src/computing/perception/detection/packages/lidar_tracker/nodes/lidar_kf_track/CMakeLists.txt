@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
+        lidar_euclidean_cluster_detect
         )
 
 set(CMAKE_AUTOMOC ON)
@@ -65,12 +66,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
+        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs lidar_euclidean_cluster_detect
 )
 
-set(EXTERNAL_INCLUDE_DIRS ../../../lidar_detector/nodes/lidar_euclidean_cluster_detect/includes)
 include_directories(
-        ${EXTERNAL_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
