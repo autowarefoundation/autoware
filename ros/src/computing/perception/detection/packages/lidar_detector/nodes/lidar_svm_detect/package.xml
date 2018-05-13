@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>lidar_tracker</name>
+    <name>lidar_svm_detect</name>
     <version>1.6.3</version>
-    <description>The lidar_tracker package</description>
+    <description>The lidar_svm_detect package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>BSD</license>
