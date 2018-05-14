@@ -155,19 +155,6 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
-      - name : rcnn_msr
-        desc : rcnn_msr desc sample
-        cmd  : roslaunch cv_tracker rcnn.launch
-        param: rcnn
-        gui   :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-
       - name : ssd_unc
         desc : ssd_unc desc sample
         cmd  : roslaunch cv_tracker ssd.launch
@@ -3541,63 +3528,6 @@ params :
       min   : 0.0
       max   : 5.0
       v     : 1.0
-
-  - name  : rcnn
-    topic : /config/rcnn
-    msg   : ConfigRcnn
-    vars  :
-    - name  : score_threshold
-      desc  : score_threshold desc sample
-      label : Score Threshold
-      min   : 0.0
-      max   : 1.0
-      v     : 0.6
-    - name  : group_threshold
-      desc  : group_threshold desc sample
-      label : Group Threshold
-      min   : 0.0
-      max   : 1.0
-      v     : 0.3
-    - name  : image_slices
-      desc  : image_slices desc sample
-      label : Image Slices (proposals)
-      min   : 2
-      max   : 32
-      v     : 16
-    - name  : slices_overlap
-      desc  : slices_overlap desc sample
-      label : Overlap between slices (proposals)
-      min   : 0.0
-      max   : 1.0
-      v     : 0.7
-    - name  : b_mean
-      desc  : b_mean desc sample
-      label : Blue Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 192.9801
-    - name  : g_mean
-      desc  : g_mean desc sample
-      label : Green Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 115.9465
-    - name  : r_mean
-      desc  : r_mean desc sample
-      label : Red Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 122.7717
-    - name         : camera_id
-      desc         : camera_id desc sample
-      kind         : menu
-      label        : Camera ID
-      choices_type : str
-      v            : ''
-      cmd_param    :
-        dash         : ''
-        delim        : ':='
-        only_enable  : True
 
   - name  : ssd
     topic : /config/ssd

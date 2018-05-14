@@ -55,7 +55,7 @@ add_message_files(
             VehicleStatus.msg
             TrafficLightResult.msg
             TrafficLightResultArray.msg
-        
+
             ## Runtime Manager ##
             config/ConfigApproximateNdtMapping.msg
             config/ConfigCarDpm.msg
@@ -79,7 +79,6 @@ add_message_files(
             config/ConfigPoints2Polygon.msg
             config/ConfigPointsConcatFilter.msg
             config/ConfigRandomFilter.msg
-            config/ConfigRcnn.msg
             config/ConfigRingFilter.msg
             config/ConfigRayGroundFilter.msg
             config/ConfigSsd.msg
@@ -100,7 +99,7 @@ add_message_files(
             ## Sync
             Sync_time_monitor.msg
             Sync_time_diff.msg
-        
+
             ## Remote Control
             RemoteCmd.msg
 )

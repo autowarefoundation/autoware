@@ -21,8 +21,7 @@
     <build_depend>fusion</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>libdpm_ocv</build_depend>
-    <!--<build_depend>kf_lib</build_depend>-->
-    <build_depend>librcnn</build_depend>
+
     <build_depend>jsk_recognition_msgs</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>libopencv-dev</build_depend>
@@ -38,8 +37,6 @@
     <run_depend>fusion</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>libdpm_ocv</run_depend>
-    <!--<run_depend>kf_lib</run_depend>-->
-    <run_depend>librcnn</run_depend>
     <run_depend>jsk_recognition_msgs</run_depend>
     <run_depend>gnss</run_depend>
     <run_depend>libopencv-dev</run_depend>
