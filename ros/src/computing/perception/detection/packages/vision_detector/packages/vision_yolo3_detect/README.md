@@ -1,6 +1,6 @@
-# Yolo3 Detector
+# Vision Yolo3 Detect
 
-Autoware package based on Yolov3 image detector. 
+Autoware package based on Yolov3 image detector.
 
 ### Requirements
 
@@ -11,11 +11,11 @@ Autoware package based on Yolov3 image detector.
 
 * From a sourced terminal:
 
-`roslaunch yolo3_detector yolo3.launch`
+`roslaunch vision_yolo3_detect vision_yolo3_detect.launch`
 
 * From Runtime Manager:
 
-Computing Tab -> Detection/ cv_detector -> `yolo3_wa`
+Computing Tab -> Detection/ vision_detector -> `vision_yolo3_detect`
 
 ### Parameters
 

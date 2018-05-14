@@ -36,7 +36,7 @@
 #ifndef DARKNET_YOLO3_H
 #define DARKNET_YOLO3_H
 
-#define __APP_NAME__ "yolo3_detector"
+#define __APP_NAME__ "vision_yolo3_detect"
 
 #include <cstdint>
 #include <cstdlib>

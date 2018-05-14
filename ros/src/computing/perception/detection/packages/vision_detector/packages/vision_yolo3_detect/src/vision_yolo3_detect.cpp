@@ -33,7 +33,7 @@
  *
  *  Created on: April 4th, 2018
  */
-#include "yolo3_detector.h"
+#include "vision_yolo3_detect.h"
 
 namespace darknet
 {
