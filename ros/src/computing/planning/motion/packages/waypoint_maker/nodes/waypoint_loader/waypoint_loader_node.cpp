@@ -33,11 +33,10 @@
 
 #include "waypoint_loader_core.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "waypoint_loader");
   waypoint_maker::WaypointLoaderNode wln;
-  wln.publishLaneArray();
   ros::spin();
 
   return 0;

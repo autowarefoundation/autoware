@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ndt_gpu)
 
-find_package(catkin REQUIRED COMPONENTS velodyne_pointcloud)
+find_package(catkin REQUIRED)
 find_package(PCL REQUIRED)
 find_package(CUDA)
 
@@ -42,7 +42,6 @@ if (CUDA_FOUND)
 
     catkin_package(
             DEPENDS PCL                                #Non-catkin CMake projects
-            CATKIN_DEPENDS velodyne_pointcloud          #Other catkin projects that this project depends on
             INCLUDE_DIRS include                        #The exported include paths
             LIBRARIES ndt_gpu                           #The exported libraries from the project
     )

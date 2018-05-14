@@ -85,6 +85,7 @@ add_message_files(
             config/ConfigTwistFilter.msg
             config/ConfigVelocitySet.msg
             config/ConfigVoxelGridFilter.msg
+            config/ConfigWaypointLoader.msg
             config/ConfigWaypointFollower.msg
             accel_cmd.msg
             adjust_xy.msg
@@ -95,7 +96,6 @@ add_message_files(
             traffic_light.msg
             state_cmd.msg
             state.msg
-
             ## Sync
             Sync_time_monitor.msg
             Sync_time_diff.msg

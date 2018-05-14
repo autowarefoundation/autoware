@@ -143,6 +143,14 @@ void GNormalDistributionsTransform::setInputTarget(pcl::PointCloud<pcl::PointXYZ
 void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<float, 4, 4> &guess)
 {
 
+	if (dj_ang_.isEmpty()) {
+		dj_ang_.memAlloc();
+	}
+
+	if (dh_ang_.isEmpty()) {
+		dh_ang_.memAlloc();
+	}
+
 	nr_iterations_ = 0;
 	converged_ = false;
 
@@ -1129,7 +1137,6 @@ void GNormalDistributionsTransform::computeAngleDerivatives(MatrixHost pose, boo
 		h_ang_(43) = -cx * sy * sz - sx * cz;
 		h_ang_(44) = 0;
 
-
 		h_ang_.moveToGpu(dh_ang_);
 	}
 
@@ -1164,6 +1171,8 @@ void GNormalDistributionsTransform::transformPointCloud(float *in_x, float *in_y
 
 	MatrixHost htrans(3, 4);
 	MatrixDevice dtrans(3, 4);
+
+	dtrans.memAlloc();
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 4; j++) {

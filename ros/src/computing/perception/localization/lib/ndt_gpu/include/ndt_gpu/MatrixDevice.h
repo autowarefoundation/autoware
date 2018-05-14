@@ -20,6 +20,8 @@ public:
 
 	CUDAH void setBuffer(double *buffer);
 
+	void memAlloc();
+
 	void memFree();
 
 private:
@@ -44,7 +46,7 @@ CUDAH MatrixDevice::MatrixDevice(int rows, int cols, int offset, double *buffer)
 
 CUDAH bool MatrixDevice::isEmpty()
 {
-	return (rows_ == 0 && cols_ == 0);
+	return (rows_ == 0 || cols_ == 0 || buffer_ == NULL);
 }
 
 CUDAH MatrixDevice MatrixDevice::col(int index)

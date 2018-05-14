@@ -343,6 +343,14 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
+      - name : imm_ukf_pda_tracker
+        desc : imm_ukf_pda_tracker desc sample
+        cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
+        param: imm_ukf_pda_tracker
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
     - name : road_wizard
       desc : road_wizard desc sample
       subs :
@@ -640,12 +648,50 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
-           lane_waypoint_csv :
+           multi_lane_csv :
              prop  : 1
-           decelerate :
-                   flags : [nl ]
-           disableDecisionMaker :
-                   flags : [nl ]
+           replanning_mode :
+             flags : [ nl ]
+           resample_mode :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+           resample_interval :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_max :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           radius_thresh :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           radius_min :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_min :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           accel_limit :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           decel_limit :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           velocity_offset :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           end_point_offset :
+             depend      : replanning_mode
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+           dialog : MyDialogWaypointLoader
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
@@ -698,8 +744,6 @@ subs :
            accel_rate :
              flags : [ nl ]
            position_error :
-             flags : [ nl ]
-           use_ctrl_cmd :
              flags : [ nl ]
 
   - name : Decision
@@ -1261,6 +1305,95 @@ params :
       label   : 'use_gpu'
       kind    : checkbox
       v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : imm_ukf_pda_tracker
+    vars  :
+    - name    : input_topic_
+      desc    : input_topic desc sample
+      label   : 'input topic'
+      kind    : str
+      v       : /cloud_clusters
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_topic_
+      desc    : output_topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /tracking_cluster_array
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : pointcloud_frame_
+      desc    : pointcloud_frame_ desc sample
+      label   : 'pointcloud frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : tracking_frame_
+      desc    : trakcing_frame_ desc sample
+      label   : 'tracking frame'
+      kind    : str
+      v       : world
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : life_time_thres_
+      desc    : life_time_thres_ desc sample
+      label   : 'life time thres'
+      min       : 1
+      max       : 20
+      v       : 8
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : gating_thres_
+      desc    : gating_thres_ desc sample
+      label   : 'gating thres'
+      min       : 0
+      max       : 20
+      v       : 9.22
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : gate_probability_
+      desc    : gate_probability_ desc sample
+      label   : 'gate probability'
+      min       : 0
+      max       : 1
+      v       : 0.99
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : detection_probability_
+      desc    : detection_probability_ desc sample
+      label   : 'detection probability'
+      min       : 0
+      max       : 1
+      v       : 0.9
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : distance_thres_
+      desc    : distance_thres_ desc sample
+      label   : 'distance thres'
+      min       : 0
+      max       : 100
+      v       : 100
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : static_distance_thres_
+      desc    : static_distance_thres_ desc sample
+      label   : 'static distance thres'
+      min       : 0
+      max       : 10
+      v       : 3.0
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -2075,14 +2208,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name     : use_ctrl_cmd
-      desc     : use_ctrl_cmd
-      label    : use_ctrl_cmd
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : planner_selector
     topic : /config/PlannerSelector
@@ -3139,39 +3264,122 @@ params :
       rosparam  : /waypoint_clicker/output_file
 
   - name  : waypoint_loader
+    topic : /config/waypoint_loader
+    msg   : ConfigWaypointLoader
     vars  :
     - name      : multi_lane_csv
       desc      : driving_lane_csv desc sample
-      label     : Multi Lane
+      label     : 'multi_lane'
       kind      : path
       path_type : multi
       v         : /tmp/driving_lane.csv
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name      : decelerate
-      desc      : decelerate   desc sample
-      label   : 'decelerate :'
-      v         : 1.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : disableDecisionMaker
-      desc      : if you not check this, you have to run a decisionmaker node.
-      label     : 'disableDecisionMaker'
-      kind      : checkbox
-      v         : true
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : disableVelocitySmoothing
-      desc      : sample.
-      label     : 'disableVelocitySmoothing'
+    - name      : replanning_mode
+      desc      : Enable velocity replanning mode
+      label     : 'replanning_mode'
       kind      : checkbox
       v         : false
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : resample_mode
+      desc      : Enable resampling mode
+      label     : resample mode
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : resample_interval
+      desc      : All waypoints are resampled by this interval [m]
+      label     : resample interval [m]
+      v         : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : velocity_max
+      desc      : All velocities are limited under Vmax [km/h]
+      label     : Velocity Max Limit - Vmax [km/h]
+      min       : 10.0
+      max       : 60.0
+      v         : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : radius_thresh
+      desc      : When the estimated turning radius > Rth [m], the area is recognized as a curve
+      label     : Curve Recognize - Rth [m]
+      min       : 10.0
+      max       : 100.0
+      v         : 20.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : radius_min
+      desc      : In curves, when the turning radius R is Rmin, velocity becomes Vmin.
+      label     : Minimum Turning Radius in curves - Rmin [m]
+      min       : 1.0
+      max       : 10.0
+      v         : 6.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : velocity_min
+      desc      : In curves, when the turning radius R is Rmin, velocity becomes Vmin.
+      label     : Minimum Velocity in curves - Vmin [km/h]
+      min       : 0.0
+      max       : 10.0
+      v         : 4.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : accel_limit
+      desc      : Maximum value of acceleration on all waypoints [km/h]
+      label     : Acceleration Limit - Accel limit [m/s^2]
+      min       : 0.0
+      max       : 5.0
+      v         : 0.98
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : decel_limit
+      desc      : Maximum value of deceleration on all waypoints [km/h]
+      label     : Deceleration Limit - Decel limit [m/s^2]
+      min       : 0.0
+      max       : 5.0
+      v         : 0.98
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : velocity_offset
+      desc      : Planned velocity offset for the response delay
+      label     : Velocity Offset
+      min       : 0
+      max       : 30
+      v         : 4
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : end_point_offset
+      desc      : Expanded end points (v = 0) for safe stopping
+      label     : End Point Offset
+      min       : 0
+      max       : 30
+      v         : 5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : disable_decision_maker
+      desc      : if you not check this, you have to run a decisionmaker node.
+      label     : 'disable_decision_maker'
+      kind      : checkbox
+      v         : true
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
 
   - name  : waypoint_velocity_visualizer
     vars  :
