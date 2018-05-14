@@ -12,9 +12,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 
 
 catkin_package(
-  CATKIN_DEPENDS 
-  roscpp
-  autoware_msgs
+  CATKIN_DEPENDS roscpp autoware_msgs
 )
 
 ###########
@@ -32,9 +30,14 @@ include_directories(
 add_executable(vision_dummy_track
   nodes/vision_dummy_track/vision_dummy_track.cpp
   )
+
 target_link_libraries(vision_dummy_track
   ${catkin_LIBRARIES}
   )
+add_dependencies(vision_dummy_track
+  ${catkin_EXPORTED_TARGETS}
+  )
+
 install(TARGETS vision_dummy_track
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

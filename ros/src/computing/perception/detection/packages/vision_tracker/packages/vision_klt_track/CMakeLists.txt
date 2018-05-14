@@ -35,27 +35,26 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${OPENCV_INCLUDE_DIRS}
         lib
+        lib/lktracker
         include
 )
 
 
 ## vision_klt_tracker ##
-add_executable(vision_klt_track
-        nodes/vision_klt_track/vision_klt_track.cpp
-        )
-
-include_directories(lib/lktracker)
-
 add_library(lktracker
         lib/lktracker/LkTracker.cpp
         )
-
 target_link_libraries(lktracker
         ${OpenCV_LIBRARIES}
         )
 add_dependencies(lktracker
         ${catkin_EXPORTED_TARGETS}
+        )
+
+add_executable(vision_klt_track
+        nodes/vision_klt_track/vision_klt_track.cpp
         )
 
 target_link_libraries(vision_klt_track
