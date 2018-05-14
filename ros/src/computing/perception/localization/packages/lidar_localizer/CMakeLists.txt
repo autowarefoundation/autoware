@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ndt_localizer)
+project(lidar_localizer)
 
 find_package(PCL REQUIRED)
 
@@ -128,6 +128,9 @@ add_dependencies(ndt_matching_monitor_lib
 add_executable(ndt_matching_monitor nodes/ndt_matching_monitor/ndt_matching_monitor_node.cpp)
 target_link_libraries(ndt_matching_monitor ndt_matching_monitor_lib ${catkin_LIBRARIES})
 
+add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
+target_link_libraries(icp_matching ${catkin_LIBRARIES})
+add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_monitor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -140,6 +143,12 @@ install(TARGETS ndt_matching ndt_mapping approximate_ndt_mapping tf_mapping lazy
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+
+install(TARGETS icp_matching
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
 
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

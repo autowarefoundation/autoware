@@ -20,10 +20,10 @@ Otherwise, a halt in localization will be started. To reset the halted status, u
 
 ### How to launch
 * From a sourced terminal:\
-`roslaunch ndt_localizer ndt_matching_monitor.launch`
+`roslaunch lidar_localizer ndt_matching_monitor.launch`
 
 * From Runtime manager:\
-Computing Tab -> ndt_localizer -> ndt_matching_monitor
+Computing Tab -> lidar_localizer -> ndt_matching_monitor
 
 ### Parameters available
 

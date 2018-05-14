@@ -9,7 +9,7 @@
   <arg name="init_yaw" default="0.0" />
   <arg name="use_gnss" default="0" />
   
-  <node pkg="ndt_localizer" type="ndt_matching_tku" name="ndt_matching_tku" output="screen">
+  <node pkg="lidar_localizer" type="ndt_matching_tku" name="ndt_matching_tku" output="screen">
     <param name="init_x" value="$(arg init_x)" />
     <param name="init_y" value="$(arg init_y)" />
     <param name="init_z" value="$(arg init_z)" />

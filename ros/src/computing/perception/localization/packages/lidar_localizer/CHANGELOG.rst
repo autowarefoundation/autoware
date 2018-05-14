@@ -1,5 +1,5 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package ndt_localizer
+Changelog for package lidar_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.6.3 (2018-03-06)
@@ -46,6 +46,7 @@ Changelog for package ndt_localizer
 * apply clang-format
 * bug fix
 * Add thread_func.]
+* remove currnet_pose publisher
 * Contributors: Akihito Ohsato, Yamato ANDO, Yuki Kitsukawa, anhnv-3991, kitsukawa, yukikitsukawa
 
 1.5.1 (2017-09-25)
@@ -209,4 +210,21 @@ Changelog for package ndt_localizer
 * Publish /estimated_vel_mps and /estimated_vel_kmph.
 * Improve local2global.cpp
 * Initial commit for public release
+* Switch output from screen to log
+* Modified file name of log for ndt_matching/icp_matching.
+* Update interface.yaml of ndt_localizer, icp_localizer and points_filter
+* Add measuring align_time and getFitnessScore_time.
+  Fix warnings.
+* Fix deprecated code
+  std::basic_ios does not implement 'operator void*' in C++11 specification.
+  But GCC 4.8 still supports it with '-std=c++11' option, so there is no
+  problem until now. However newer GCC removes it and we should use
+  'operator !' or 'operator bool' instead of 'operator void*' after C++11.
+* Remove a dependency of ndt_localizer.
+  Add icp_stat.msg.
+* Add missing ndt_localizer dependency
+* Add checkbox of icp_matching to Computing tab.
+  Add ConfigICP.msg.
+* Parameter tuning.
+* Add icp_localizer package.
 * Contributors: Shinpei Kato, Syohei YOSHIDA, USUDA Hisashi, Yukihiro Saito, h_ohta, kondoh, pdsljp, syouji, yukikitsukawa
