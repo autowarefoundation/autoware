@@ -26,6 +26,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 //#include <boost/locale.hpp>
 #include <boost/program_options.hpp>

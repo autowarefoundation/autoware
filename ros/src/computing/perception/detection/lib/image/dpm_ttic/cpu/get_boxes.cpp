@@ -480,7 +480,7 @@ FLOAT *dpm_ttic_cpu_get_boxes(FLOAT **features,FLOAT *scales,int *FSIZE,MODEL *M
 		}
 	}
 
-	FLOAT AS_OFF = abs(thresh);
+	FLOAT AS_OFF = std::abs(thresh);
 
 	//accumulated score calculation
 	FLOAT max_ac = 0.0;
