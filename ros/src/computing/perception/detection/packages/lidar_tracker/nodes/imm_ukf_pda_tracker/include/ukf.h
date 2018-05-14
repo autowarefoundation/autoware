@@ -172,7 +172,7 @@ public:
 
   void initialize(const Eigen::VectorXd& z, const double timestamp);
 
-  void updateModeProb(const std::vector<double> lambda_vec);
+  void updateModeProb(const std::vector<double>& lambda_vec);
 
   void mergeEstimationAndCovariance();
 

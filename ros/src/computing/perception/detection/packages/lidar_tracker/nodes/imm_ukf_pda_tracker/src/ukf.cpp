@@ -191,7 +191,7 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp)
   jsk_bb_.pose.orientation.x = 1.0;
 }
 
-void UKF::updateModeProb(const std::vector<double> lambda_vec)
+void UKF::updateModeProb(const std::vector<double>& lambda_vec)
 {
   double cvGauss = lambda_vec[0];
   double ctrvGauss = lambda_vec[1];
