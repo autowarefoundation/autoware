@@ -192,25 +192,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
 ENDIF ()
 #ROS_VERSION_ENDIF
 
-## range_fusion ##
-add_executable(range_fusion
-        nodes/range_fusion/range_fusion.cpp
-        )
-
-target_link_libraries(range_fusion
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        )
-
-add_dependencies(range_fusion
-        ${catkin_EXPORTED_TARGETS}
-        )
-
-install(TARGETS range_fusion
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
 
 ## kf_tracker ##
 #if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
@@ -238,27 +219,6 @@ install(TARGETS dummy_track
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-## obj_reproj ##
-# check whether jsk library is available or not
-add_executable(obj_reproj
-        nodes/obj_reproj/obj_reproj.cpp
-        )
-
-set_target_properties(obj_reproj
-        PROPERTIES COMPILE_FLAGS
-        "-DHAVE_JSK_PLUGIN"
-        )
-
-target_link_libraries(obj_reproj
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        )
-
-install(TARGETS obj_reproj
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
 
 ## klt_tracker ##
 add_executable(klt_track

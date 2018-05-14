@@ -1,0 +1,129 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(lidar_euclidean_cluster_detect)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+
+find_package(catkin REQUIRED COMPONENTS
+        pcl_conversions
+        pcl_ros
+        roscpp
+        sensor_msgs
+        autoware_msgs
+        tf
+        jsk_recognition_msgs
+        jsk_rviz_plugins
+        rosinterface
+        cv_bridge
+        vector_map
+        vector_map_server
+        op_ros_helpers
+        vector_map
+        grid_map_ros
+        grid_map_cv
+        grid_map_msgs
+        )
+
+set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(OpenMP)
+
+execute_process(
+        COMMAND rosversion -d
+        OUTPUT_VARIABLE ROS_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+find_package(OpenCV REQUIRED)
+
+execute_process(
+        COMMAND pkg-config --variable=host_bins Qt5Core
+        OUTPUT_VARIABLE Qt5BIN
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+# catkin_python_setup()
+
+
+## Install project namespaced headers
+# install(DIRECTORY include
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE)
+
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if you package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(
+        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
+        INCLUDE_DIRS include
+)
+
+include_directories(
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
+)
+link_directories(${PCL_LIBRARY_DIRS})
+link_directories(${OpenCV_LIBRARY_DIRS})
+
+#Euclidean Cluster
+add_executable(lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.cpp cluster.cpp)
+
+find_package(CUDA)
+if (${CUDA_FOUND})
+    INCLUDE(FindCUDA)
+    message("-- USING ACCELERATED CLUSTERING --")
+    message("Version: " ${CUDA_VERSION})
+    message("Library: " ${CUDA_CUDA_LIBRARY})
+    message("Runtime: " ${CUDA_CUDART_LIBRARY})
+
+    target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
+            GPU_CLUSTERING=1
+            )
+
+    cuda_add_library(gpu_euclidean_clustering
+            include/gpu_euclidean_clustering.h
+            gpu_euclidean_clustering.cu
+            )
+
+    target_link_libraries(lidar_euclidean_cluster_detect
+            ${OpenCV_LIBRARIES}
+            ${catkin_LIBRARIES}
+            ${PCL_LIBRARIES}
+            gpu_euclidean_clustering)
+
+else ()
+    target_link_libraries(lidar_euclidean_cluster_detect ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+endif ()
+
+add_dependencies(lidar_euclidean_cluster_detect ${catkin_EXPORTED_TARGETS})
+
+if (OPENMP_FOUND)
+    set_target_properties(lidar_euclidean_cluster_detect PROPERTIES
+            COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
+            LINK_FLAGS ${OpenMP_CXX_FLAGS}
+            )
+endif ()
+
+install(DIRECTORY include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE
+        )
