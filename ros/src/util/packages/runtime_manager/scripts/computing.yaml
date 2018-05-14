@@ -105,9 +105,9 @@ subs :
       desc : vision_detector desc sample
       subs :
 
-      - name : dpm_ttic
-        desc : dpm_ttic desc sample
-        cmd  : roslaunch cv_tracker dpm_ttic.launch
+      - name : vision_dpm_ttic_detect
+        desc : vision_dpm_ttic_detect desc sample
+        cmd  : roslaunch vision_dpm_ttic_detect vision_dpm_ttic_detect.launch
         param: dpm_ttic
         gui  :
           flags                  : [ open_dialog, need_camera_info ]
