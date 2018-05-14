@@ -11,7 +11,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "image_segmenter_enet.hpp"
+#include "vision_segment_enet_detect.h"
 
 class RosENetSegmenterApp
 {
@@ -144,4 +144,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
