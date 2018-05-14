@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="runtime_manager" type="tf_generate.py" name="tf_generate" />
-</launch>
