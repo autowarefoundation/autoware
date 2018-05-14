@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs  
+        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
 )
 
 include_directories(
@@ -24,7 +24,7 @@ include_directories(
 )
 
 #Euclidean Track
-add_executable(lidar_euclidean_track 
+add_executable(lidar_euclidean_track
   nodes/lidar_euclidean_track/lidar_euclidean_track.cpp
   )
 target_link_libraries(lidar_euclidean_track

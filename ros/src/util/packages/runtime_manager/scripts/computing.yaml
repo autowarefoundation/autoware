@@ -130,9 +130,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-      - name : ssd_unc
-        desc : ssd_unc desc sample
-        cmd  : roslaunch cv_tracker ssd.launch
+      - name : vision_ssd_detect
+        desc : vision_ssd_detect desc sample
+        cmd  : roslaunch vision_ssd_detect vision_ssd_detect.launch
         param: ssd
         gui   :
           flags : [ need_camera_info ]
