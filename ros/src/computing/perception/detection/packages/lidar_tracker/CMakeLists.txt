@@ -77,6 +77,7 @@ add_executable(pf_lidar_track nodes/pf_lidar_track/pf_lidar_track.cpp)
 target_link_libraries(pf_lidar_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(pf_lidar_track ${catkin_EXPORTED_TARGETS})
 
+
 #KalmanFilter Track
 add_executable(kf_lidar_track
         nodes/kf_lidar_track/kf_lidar_track.cpp
@@ -255,3 +256,17 @@ endif ()
 add_executable(kf_contour_tracker nodes/kf_contour_tracker/kf_contour_tracker.cpp nodes/kf_contour_tracker/src/kf_contour_tracker_core.cpp)
 target_link_libraries(kf_contour_tracker ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(kf_contour_tracker ${catkin_EXPORTED_TARGETS})
+
+
+#immUkfPda Track
+find_package(Eigen3 QUIET)
+set(SOURCE_FILES nodes/imm_ukf_pda_tracker/src/imm_ukf_pda_tracker_main.cpp nodes/imm_ukf_pda_tracker/src/imm_ukf_pda_tracker.cpp nodes/imm_ukf_pda_tracker/src/ukf.cpp)
+add_executable(imm_ukf_pda_tracker ${SOURCE_FILES})
+target_include_directories(imm_ukf_pda_tracker PRIVATE nodes/imm_ukf_pda_tracker/include)
+target_link_libraries(imm_ukf_pda_tracker ${catkin_LIBRARIES})
+
+#visualize cloud cluster
+set(SOURCE_FILES nodes/visualize_detected_objects/src/visualize_detected_objects_main.cpp nodes/visualize_detected_objects/src/visualize_detected_objects.cpp)
+add_executable(visualize_detected_objects ${SOURCE_FILES})
+target_include_directories(visualize_detected_objects PRIVATE nodes/visualize_detected_objects/include)
+target_link_libraries(visualize_detected_objects ${catkin_LIBRARIES})
