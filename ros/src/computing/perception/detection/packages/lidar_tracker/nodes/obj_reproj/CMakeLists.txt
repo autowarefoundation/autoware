@@ -16,7 +16,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             libdpm_ttic
             fusion
             tf
-            libdpm_ocv
             #kf_lib
             jsk_recognition_msgs
             gnss
@@ -93,7 +92,7 @@ include_directories(
 ## obj_reproj ##
 # check whether jsk library is available or not
 add_executable(obj_reproj
-        obj_reproj.cpp
+        nodes/obj_reproj/obj_reproj.cpp
         )
 
 set_target_properties(obj_reproj

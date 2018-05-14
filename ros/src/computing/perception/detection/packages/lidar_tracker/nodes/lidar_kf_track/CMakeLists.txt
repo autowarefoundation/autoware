@@ -72,6 +72,7 @@ catkin_package(
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
+        includes
 )
 link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
@@ -79,11 +80,10 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 #KalmanFilter Track
 
 add_executable(lidar_kf_track
-        lidar_kf_track_core.cpp
-        lidar_kf_track.cpp
-        hungarian_alg.cpp
-        kalman.cpp
+        nodes/lidar_kf_track/lidar_kf_track_core.cpp
+        nodes/lidar_kf_track/lidar_kf_track.cpp
+        nodes/lidar_kf_track/hungarian_alg.cpp
+        nodes/lidar_kf_track/kalman.cpp
         )
-target_include_directories(lidar_kf_track PRIVATE includes)
 target_link_libraries(lidar_kf_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(lidar_kf_track ${catkin_EXPORTED_TARGETS})
