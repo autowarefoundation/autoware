@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-
 find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         roscpp
@@ -21,51 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_msgs
         )
 
-set(CMAKE_AUTOMOC ON)
-#set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
 find_package(OpenMP)
-
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 find_package(OpenCV REQUIRED)
 
-execute_process(
-        COMMAND pkg-config --variable=host_bins Qt5Core
-        OUTPUT_VARIABLE Qt5BIN
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
-
-## Install project namespaced headers
-# install(DIRECTORY include
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE)
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
         INCLUDE_DIRS include
@@ -108,11 +64,16 @@ if (${CUDA_FOUND})
             gpu_euclidean_clustering)
 
 else ()
-    target_link_libraries(lidar_euclidean_cluster_detect ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+    target_link_libraries(lidar_euclidean_cluster_detect
+      ${OpenCV_LIBRARIES}
+      ${catkin_LIBRARIES}
+      ${PCL_LIBRARIES})
 
 endif ()
 
-add_dependencies(lidar_euclidean_cluster_detect ${catkin_EXPORTED_TARGETS})
+add_dependencies(lidar_euclidean_cluster_detect 
+  ${catkin_EXPORTED_TARGETS}
+  )
 
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES

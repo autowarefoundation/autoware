@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_kf_contour_track</name>
-    <version>1.7.0</version>
+    <version>1.6.3</version>
     <description>lidar_kf_contour_track package</description>
 
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>
@@ -14,7 +14,6 @@
     <build_depend>pcl_ros</build_depend>
     <build_depend>roscpp</build_depend>
     <build_depend>rospy</build_depend>
-    <!-- <build_depend>geometry_msgs</build_depend> -->
     <build_depend>std_msgs</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>

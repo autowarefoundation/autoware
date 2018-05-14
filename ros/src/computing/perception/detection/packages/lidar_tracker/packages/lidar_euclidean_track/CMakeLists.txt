@@ -6,13 +6,10 @@ project(lidar_euclidean_track)
 ## is used, also find other catkin packages
 
 find_package(catkin REQUIRED COMPONENTS
-        pcl_ros
         roscpp
         geometry_msgs
-        std_msgs
         autoware_msgs
         jsk_recognition_msgs
-        vector_map_server
         )
 
 
@@ -25,10 +22,14 @@ catkin_package(
 include_directories(
         ${catkin_INCLUDE_DIRS}
 )
-link_directories(${PCL_LIBRARY_DIRS})
 
 #Euclidean Track
 add_executable(lidar_euclidean_track 
-              nodes/lidar_euclidean_track/lidar_euclidean_track.cpp)
-target_link_libraries(lidar_euclidean_track ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(lidar_euclidean_track ${catkin_EXPORTED_TARGETS})
+  nodes/lidar_euclidean_track/lidar_euclidean_track.cpp
+  )
+target_link_libraries(lidar_euclidean_track
+  ${catkin_LIBRARIES}
+  )
+add_dependencies(lidar_euclidean_track
+  ${catkin_EXPORTED_TARGETS}
+  )
