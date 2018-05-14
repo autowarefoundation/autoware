@@ -13,12 +13,12 @@ VisualizeDetectedObjects::VisualizeDetectedObjects()
   pub_id_ = node_handle_.advertise<visualization_msgs::Marker>("/detected_objects/target_id", 1);
 }
 
-void VisualizeDetectedObjects::callBack(autoware_msgs::DetectedObjectArray input)
+void VisualizeDetectedObjects::callBack(const autoware_msgs::DetectedObjectArray& input)
 {
   visMarkers(input);
 }
 
-void VisualizeDetectedObjects::visMarkers(autoware_msgs::DetectedObjectArray input)
+void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArray& input)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
   {

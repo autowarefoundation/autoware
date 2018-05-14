@@ -87,7 +87,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 }
 
-void ImmUkfPda::findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
+void ImmUkfPda::findMaxZandS(const UKF& target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
 {
   double cv_det = target.s_cv_.determinant();
   double ctrv_det = target.s_ctrv_.determinant();
@@ -121,8 +121,8 @@ void ImmUkfPda::findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen
   }
 }
 
-void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray input, UKF& target, const bool second_init,
-                                      const Eigen::VectorXd max_det_z, const Eigen::MatrixXd max_det_s,
+void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray &input, UKF& target, const bool second_init,
+                                      const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
                                       std::vector<autoware_msgs::CloudCluster>& cluster_vec,
                                       std::vector<bool>& matching_vec)
 {
@@ -167,7 +167,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::CloudClusterArray inp
     cluster_vec.push_back(smallest_meas_cluster);
 }
 
-void ImmUkfPda::filterPDA(UKF& target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
+void ImmUkfPda::filterPDA(UKF& target,
+                          const std::vector<autoware_msgs::CloudCluster>& cluster_vec,
                           std::vector<double>& lambda_vec)
 {
   // calculating association probability
@@ -325,7 +326,7 @@ void ImmUkfPda::filterPDA(UKF& target, const std::vector<autoware_msgs::CloudClu
   lambda_vec.push_back(lambda_rm);
 }
 
-void ImmUkfPda::getNearestEuclidCluster(const UKF target, const std::vector<autoware_msgs::CloudCluster> cluster_vec,
+void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::CloudCluster>& cluster_vec,
                                         autoware_msgs::CloudCluster& cluster, double& min_dist)
 {
   int min_ind = 0;
@@ -348,7 +349,7 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF target, const std::vector<auto
   cluster = cluster_vec[min_ind];
 }
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target)
+void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster>& cluster_vec, UKF& target)
 {
   // skip if no validated measurement
   if (cluster_vec.size() == 0)
@@ -368,22 +369,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::CloudCluster> clust
   }
 }
 
-double ImmUkfPda::getBboxArea(const pcl::PointCloud<pcl::PointXYZ> bbox)
-{
-  pcl::PointXYZ p1 = bbox[0];
-  pcl::PointXYZ p2 = bbox[1];
-  pcl::PointXYZ p3 = bbox[2];
-  pcl::PointXYZ p4 = bbox[3];
-
-  // S=tri(p1,p2,p3) + tri(p1, p3, p4)
-  // s(triangle) = 1/2*|(x1−x3)(y2−y3)−(x2−x3)(y1−y3)|
-  double tri1 = 0.5 * abs((p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y));
-  double tri2 = 0.5 * abs((p1.x - p4.x) * (p3.y - p4.y) - (p3.x - p4.x) * (p1.y - p4.y));
-  double S = tri1 + tri2;
-  return S;
-}
-
-double ImmUkfPda::getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox jsk_bb)
+double ImmUkfPda::getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox& jsk_bb)
 {
   tf::Quaternion q(jsk_bb.pose.orientation.x, jsk_bb.pose.orientation.y, jsk_bb.pose.orientation.z,
                    jsk_bb.pose.orientation.w);
@@ -392,7 +378,7 @@ double ImmUkfPda::getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox jsk_bb)
   return yaw;
 }
 
-double ImmUkfPda::getJskBBoxArea(const jsk_recognition_msgs::BoundingBox jsk_bb)
+double ImmUkfPda::getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb)
 {
   double area = jsk_bb.dimensions.x * jsk_bb.dimensions.y;
   return area;
@@ -417,23 +403,23 @@ void ImmUkfPda::updateBB(UKF& target)
   }
 
   // restricting yaw movement
-  // double diff_yaw = yaw - target.best_yaw_;
+  double diff_yaw = yaw - target.best_yaw_;
 
-  // // diffYaw is within the threshold, apply the diffYaw chamge
-  // if(abs(diff_yaw) < bb_yaw_change_thres_)
-  // {
-  //     target.best_jsk_bb_.pose.orientation = target.jsk_bb_.pose.orientation;
-  //     target.best_yaw_ = yaw;
-  // }
-  // else
-  // {
-  //     target.jsk_bb_.pose.orientation = target.best_jsk_bb_.pose.orientation;
-  // }
+  // diffYaw is within the threshold, apply the diffYaw chamge
+  if(abs(diff_yaw) < bb_yaw_change_thres_)
+  {
+      target.best_jsk_bb_.pose.orientation = target.jsk_bb_.pose.orientation;
+      target.best_yaw_ = yaw;
+  }
+  else
+  {
+      target.jsk_bb_.pose.orientation = target.best_jsk_bb_.pose.orientation;
+  }
 
   // // bbox area
   double area = getJskBBoxArea(target.jsk_bb_);
   double best_area = getJskBBoxArea(target.best_jsk_bb_);
-  // double bestArea = getBboxArea(target.bestBBox_);
+
 
   // start updating bbox params
   double delta_area = area - best_area;
@@ -455,7 +441,7 @@ void ImmUkfPda::updateBB(UKF& target)
   }
 }
 
-void ImmUkfPda::updateLabel(UKF target, autoware_msgs::DetectedObject& dd)
+void ImmUkfPda::updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd)
 {
   int tracking_num = target.tracking_num_;
   // cout << "trackingnum "<< trackingNum << endl;
@@ -481,10 +467,9 @@ void ImmUkfPda::updateLabel(UKF target, autoware_msgs::DetectedObject& dd)
   }
 }
 
-void ImmUkfPda::updateJskLabel(UKF target, jsk_recognition_msgs::BoundingBox& bb)
+void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb)
 {
   int tracking_num = target.tracking_num_;
-  // cout << "trackingnum "<< trackingNum << endl;
   if (target.is_static_)
   {
     bb.label = 15;  // white color
@@ -495,7 +480,7 @@ void ImmUkfPda::updateJskLabel(UKF target, jsk_recognition_msgs::BoundingBox& bb
   }
 }
 
-bool ImmUkfPda::isVisible(UKF target)
+bool ImmUkfPda::isVisible(const UKF& target)
 {
   bool is_visible = false;
   int tracking_num = target.tracking_num_;
@@ -510,7 +495,7 @@ bool ImmUkfPda::isVisible(UKF target)
   return is_visible;
 }
 
-void ImmUkfPda::initTracker(autoware_msgs::CloudClusterArray input, double timestamp)
+void ImmUkfPda::initTracker(const autoware_msgs::CloudClusterArray& input, double timestamp)
 {
   for (size_t i = 0; i < input.clusters.size(); i++)
   {
@@ -528,7 +513,7 @@ void ImmUkfPda::initTracker(autoware_msgs::CloudClusterArray input, double times
   return;
 }
 
-void ImmUkfPda::secondInit(double dt, std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target)
+void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::CloudCluster>& cluster_vec, double dt)
 {
   if (cluster_vec.size() == 0)
   {
@@ -561,7 +546,7 @@ void ImmUkfPda::secondInit(double dt, std::vector<autoware_msgs::CloudCluster> c
   return;
 }
 
-void ImmUkfPda::updateTrackingNum(std::vector<autoware_msgs::CloudCluster> cluster_vec, UKF& target)
+void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::CloudCluster>& cluster_vec, UKF& target)
 {
   if (cluster_vec.size() > 0)
   {
@@ -601,8 +586,8 @@ void ImmUkfPda::updateTrackingNum(std::vector<autoware_msgs::CloudCluster> clust
   return;
 }
 
-void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray input, double dt,
-                                             double det_explode_param, std::vector<bool>& matching_vec,
+void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::CloudClusterArray& input, const double dt,
+                                             const double det_explode_param, std::vector<bool>& matching_vec,
                                              std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target)
 {
   Eigen::VectorXd max_det_z;
@@ -642,7 +627,7 @@ void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray in
   // second detection for a target: update v and yaw
   if (is_second_init)
   {
-    secondInit(dt, cluster_vec, target);
+    secondInit(target, cluster_vec, dt);
     is_skip_target = true;
     return;
   }
@@ -658,7 +643,7 @@ void ImmUkfPda::probabilisticDataAssociation(autoware_msgs::CloudClusterArray in
   filterPDA(target, cluster_vec, lambda_vec);
 }
 
-void ImmUkfPda::makeNewTargets(double timestamp, autoware_msgs::CloudClusterArray input, std::vector<bool> matching_vec)
+void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::CloudClusterArray& input, const std::vector<bool>& matching_vec)
 {
   for (size_t i = 0; i < input.clusters.size(); i++)
   {
@@ -695,7 +680,7 @@ void ImmUkfPda::staticClassification()
   }
 }
 
-void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
+void ImmUkfPda::makeOutput(const autoware_msgs::CloudClusterArray& input,
                            jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
@@ -749,7 +734,7 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
   }
 }
 
-void ImmUkfPda::tracker(const autoware_msgs::CloudClusterArray transformed_input,
+void ImmUkfPda::tracker(const autoware_msgs::CloudClusterArray& input,
                         jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                         autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
