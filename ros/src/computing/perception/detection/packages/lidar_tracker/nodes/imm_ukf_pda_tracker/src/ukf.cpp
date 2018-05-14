@@ -145,7 +145,7 @@ UKF::UKF()
   x_merge_yaw_ = 0;
 }
 
-void UKF::initialize(const Eigen::VectorXd z, const double timestamp)
+void UKF::initialize(const Eigen::VectorXd& z, const double timestamp)
 {
   // first measurement
   x_merge_ << 1, 1, 0, 0, 0.1;
@@ -336,7 +336,7 @@ void UKF::predictionIMMUKF(const double dt)
   updateLidar(2);
 }
 
-void UKF::updateIMMUKF(const std::vector<double> lambda_vec)
+void UKF::updateIMMUKF(const std::vector<double>& lambda_vec)
 {
   /*****************************************************************************
   *  IMM Merge Step

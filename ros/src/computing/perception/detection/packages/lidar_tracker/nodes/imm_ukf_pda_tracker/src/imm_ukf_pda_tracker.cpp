@@ -63,7 +63,6 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::CloudClusterArray& in
     cc.header = input.header;
     cc = input.clusters[i];
     cc.bounding_box.pose = pose_out.pose;
-    // input.clusters[i].bounding_box.pose = pose_out.pose;
     transformed_input.clusters.push_back(cc);
   }
 }
@@ -523,7 +522,7 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::CloudCl
   // record init measurement for env classification
   target.init_meas_ << target.x_merge_(0), target.x_merge_(1);
 
-  // abs update
+  // state update
   double target_x = cluster_vec[0].bounding_box.pose.position.x;
   double target_y = cluster_vec[0].bounding_box.pose.position.y;
   double target_diff_x = target_x - target.x_merge_(0);
@@ -669,7 +668,6 @@ void ImmUkfPda::staticClassification()
     if (!targets_[i].is_static_ && targets_[i].tracking_num_ == TrackingState::Stable &&
         targets_[i].lifetime_ > life_time_thres_)
     {
-      // double dist_thres = 3.0;
       if ((targets_[i].dist_from_init_ < static_distance_thres_) &&
           (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
            targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
@@ -781,10 +779,7 @@ void ImmUkfPda::tracker(const autoware_msgs::CloudClusterArray& input,
     // immukf update step
     targets_[i].updateIMMUKF(lambda_vec);
   }
-  // // end UKF process
-
-  // // deling with over segmentation, update trackNumVec_
-  // mergeOverSegmentation(targets_);
+  // end UKF process
 
   // making new ukf target for no data association clusters
   makeNewTargets(timestamp, input, matching_vec);
@@ -794,7 +789,7 @@ void ImmUkfPda::tracker(const autoware_msgs::CloudClusterArray& input,
 
   // making output(CludClusterArray) for visualization
   makeOutput(input, jskbboxes_output, detected_objects_output);
+
+  assert(matching_vec.size() == input.clusters.size());
+  assert(jskbboxes_output.boxes.size() == detected_objects_output.objects.size());
 }
-//   assert(matching_vec.size() == input.clusters.size());
-//   assert(jskbboxes_output.boxes.size() == detected_objects_output.objects.size());
-// }

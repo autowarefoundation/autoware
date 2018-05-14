@@ -56,8 +56,7 @@ public:
   double std_a_cv_;
   double std_a_ctrv_;
   double std_a_rm_;
-  ///* Process noise standard deviation yaw acceleration in rad/s^2
-  //    double std_yawdd_;
+
 
   // CTRV
   double std_ctrv_yawdd_;
@@ -171,7 +170,7 @@ public:
 
   void updateYawWithHighProb();
 
-  void initialize(const Eigen::VectorXd z, const double timestamp);
+  void initialize(const Eigen::VectorXd& z, const double timestamp);
 
   void updateModeProb(const std::vector<double> lambda_vec);
 
@@ -181,13 +180,9 @@ public:
 
   void interaction();
 
-  /**
-   * ProcessMeasurement
-   * @param meas_package The latest measurement data of either radar or laser
-   */
   void predictionIMMUKF(const double dt);
 
-  void updateIMMUKF(const std::vector<double> lambda_vec);
+  void updateIMMUKF(const std::vector<double>& lambda_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double nu_a,
             const double nu_yawdd, const double delta_t, std::vector<double>& state);
@@ -197,24 +192,11 @@ public:
 
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double nu_a, const double nu_yawdd, const double delta_t, std::vector<double>& state);
-  /**
-   * Prediction Predicts sigma points, the state, and the state covariance
-   * matrix
-   * @param delta_t Time between k and k+1 in s
-   */
+
   void prediction(const double delta_t, const int model_ind);
 
-  /**
-   * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
-   */
   void updateLidar(const int model_ind);
 
-  /**
-   * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
-   */
-  // void UpdateRadar(MeasurementPackage meas_package, int modelInd);
 };
 
 #endif /* UKF_H */
