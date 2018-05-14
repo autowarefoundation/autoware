@@ -24,7 +24,10 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 INCLUDE_DIRECTORIES(
         ${catkin_INCLUDE_DIRS}
-)
+        ${CUDA_INCLUDE_DIRS}
+        ${ENET_CAFFE_PATH}/include
+        include
+        )
 
 
 #####ENET########
@@ -34,8 +37,8 @@ set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
 
     ADD_EXECUTABLE(vision_segment_enet_detect
-            src/vision_segment_enet_detect_node.cpp
-            src/vision_segment_enet_detect.cpp
+            nodes/vision_segment_enet_detect/vision_segment_enet_detect_node.cpp
+            nodes/vision_segment_enet_detect/vision_segment_enet_detect.cpp
             )
 
     TARGET_LINK_LIBRARIES(vision_segment_enet_detect
@@ -46,12 +49,6 @@ if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
             ${CUDA_curand_LIBRARY}
             ${ENET_CAFFE_PATH}/lib/libcaffe.so
             glog
-            )
-
-    TARGET_INCLUDE_DIRECTORIES(vision_segment_enet_detect PRIVATE
-            ${CUDA_INCLUDE_DIRS}
-            ${ENET_CAFFE_PATH}/include
-            include
             )
 
     ADD_DEPENDENCIES(vision_segment_enet_detect

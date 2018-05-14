@@ -69,7 +69,7 @@ ENDIF ()
 IF (CUDA_FOUND)
 
     cuda_add_executable(vision_dpm_ttic_detect
-            vision_dpm_ttic_detect.cpp
+            nodes/vision_dpm_ttic_detect/vision_dpm_ttic_detect.cpp
             )
 
     target_link_libraries(vision_dpm_ttic_detect
@@ -88,7 +88,7 @@ IF (CUDA_FOUND)
 ELSE ()
 
     add_executable(vision_dpm_ttic_detect
-            vision_dpm_ttic_detect.cpp
+            nodes/vision_dpm_ttic_detect/vision_dpm_ttic_detect.cpp
             )
 
     target_link_libraries(vision_dpm_ttic_detect
