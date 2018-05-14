@@ -208,47 +208,7 @@ install(TARGETS klt_track
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-############# RCNN#############
 
-###########################################CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################
-##############DONT FORGET TO INSTALL fastrcnn's caffe dynamic libraries to /usr/local/lib	 	###
-set(RCNN_CAFFE_PATH "$ENV{HOME}/fast-rcnn/caffe-fast-rcnn/distribute")
-####################################################################################################
-
-if (EXISTS "${RCNN_CAFFE_PATH}")
-    find_package(librcnn)
-
-    add_executable(rcnn_msr
-            nodes/rcnn/rcnn_node.cpp
-            )
-
-    target_link_libraries(rcnn_msr
-            librcnn
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBRARIES}
-            ${CUDA_LIBRARIES}
-            ${CUDA_CUBLAS_LIBRARIES}
-            ${CUDA_curand_LIBRARY}
-            )
-
-    target_include_directories(rcnn_msr PRIVATE
-            ${librcnn_INCLUDE_DIRS}
-            ${RCNN_CAFFE_PATH}/include
-            ${catkin_INCLUDE_DIRS}
-            )
-
-    add_dependencies(rcnn_msr
-            ${catkin_EXPORTED_TARGETS}
-            librcnn
-            )
-    install(TARGETS rcnn_msr
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            )
-else ()
-    message("'FastRCNN/Caffe' are not installed. 'rcnn_msr' will not be built.")
-endif ()
 
 #####SSD########
 ##############################SSD'sFORK of CAFFE NEEDS TO BE PREVIOUSLY COMPILED####################

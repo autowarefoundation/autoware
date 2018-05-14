@@ -16,6 +16,3 @@
 - name: range_fusion
   publish: [/obj_X/image_obj_ranged]
   subscribe: [/config/obj_X/fusion, /obj_X/image_obj, /points_image]
-- name: rcnn
-  publish: [/obj_X/image_obj]
-  subscribe: [/config/obj_X/rcnn, /image_raw]
