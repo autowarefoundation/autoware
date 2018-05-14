@@ -6,6 +6,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   autoware_msgs
+  jsk_recognition_msgs
   tf
   gnss
   )
@@ -17,6 +18,7 @@ catkin_package(
   sensor_msgs
   std_msgs
   autoware_msgs
+  jsk_recognition_msgs
   tf
   gnss
   )
@@ -34,14 +36,12 @@ add_executable(obj_reproj
   nodes/obj_reproj/obj_reproj.cpp
   )
 
-set_target_properties(obj_reproj
-  PROPERTIES COMPILE_FLAGS
-  "-DHAVE_JSK_PLUGIN"
-  )
-
 target_link_libraries(obj_reproj
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  )
+add_dependencies(obj_reproj
+  ${catkin_EXPORTED_TARGETS}
   )
 
 install(TARGETS obj_reproj

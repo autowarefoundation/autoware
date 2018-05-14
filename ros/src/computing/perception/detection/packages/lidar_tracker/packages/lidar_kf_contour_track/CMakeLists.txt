@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
+  CATKIN_DEPENDS
   pcl_ros
   roscpp
   autoware_msgs
@@ -24,13 +25,14 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        include
 )
 link_directories(${PCL_LIBRARY_DIRS})
 
 #kl contour track
 add_executable(lidar_kf_contour_track
-lidar_kf_contour_track.cpp
-src/lidar_kf_contour_track_core.cpp
+  nodes/lidar_kf_contour_track/lidar_kf_contour_track.cpp
+  nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp
 )
 target_link_libraries(lidar_kf_contour_track
 ${catkin_LIBRARIES}

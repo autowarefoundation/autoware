@@ -6,22 +6,25 @@ project(lidar_euclidean_track)
 ## is used, also find other catkin packages
 
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
-        geometry_msgs
-        autoware_msgs
-        jsk_recognition_msgs
-        )
+  roscpp
+  geometry_msgs
+  autoware_msgs
+  jsk_recognition_msgs
+  )
 
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
-)
+  CATKIN_DEPENDS
+  geometry_msgs
+  autoware_msgs
+  jsk_recognition_msgs
+  )
 
 include_directories(
-        ${catkin_INCLUDE_DIRS}
-)
+  ${catkin_INCLUDE_DIRS}
+  )
 
 #Euclidean Track
 add_executable(lidar_euclidean_track
