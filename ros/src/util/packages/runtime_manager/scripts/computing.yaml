@@ -147,12 +147,12 @@ subs :
         cmd  : roslaunch cv_tracker yolo2.launch
         param: yolo2
 
-      - name : yolo3_wa
+      - name : vision_yolo3_detect
         desc : Yolo3 Image based detector
-        cmd  : roslaunch yolo3_detector yolo3.launch
+        cmd  : roslaunch vision_yolo3_detect vision_yolo3_detect.launch
         param: yolo3
 
-    
+
     - name : vision_tracker
       desc : vision_tracker desc sample
       subs :
@@ -4021,7 +4021,7 @@ params :
       desc     : Configuration file defining the network
       label    : 'network_definition (cfg)'
       kind     : path
-      v        : $(rospack find yolo3_detector)/darknet/cfg/yolov3.cfg
+      v        : $(rospack find vision_yolo3_detect)/darknet/cfg/yolov3.cfg
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4029,7 +4029,7 @@ params :
       desc     : Pre-trained  model
       label    : 'pre_trained_model (weights)'
       kind     : path
-      v        : $(rospack find yolo3_detector)/darknet/data/yolov3.weights
+      v        : $(rospack find vision_yolo3_detect)/darknet/data/yolov3.weights
       cmd_param:
         dash     : ''
         delim    : ':='

@@ -32,11 +32,11 @@
  *  Created on: April 4th, 2018
  */
 
-#include "yolo3_detector.h"
+#include "vision_yolo3_detect.h"
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "yolo3");
+    ros::init(argc, argv, "vision_yolo3_detect");
 
     Yolo3DetectorNode app;
 
