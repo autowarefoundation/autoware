@@ -1,0 +1,18 @@
+- name: dpm_ocv
+  publish: [/obj_X/image_obj]
+  subscribe: [/config/obj_X/dpm, /image_raw]
+- name: dpm_ttic
+  publish: [/obj_X/image_obj]
+  subscribe: [/config/obj_X/dpm, /image_raw]
+- name: kf_track
+  publish: [/obj_X/image_obj_tracked]
+  subscribe: [/config/obj_X/kf, /image_raw, /obj_X/image_obj_ranged]
+- name: klt_track
+  publish: [/obj_X/image_obj_tracked]
+  subscribe: [/config/obj_X/klt, /image_raw, /obj_X/image_obj_ranged]
+- name: obj_reproj
+  publish: [/obj_X/obj_label, /obj_X/obj_label_marker]
+  subscribe: [/obj_X/image_obj_tracked, /current_pose, /projection_matrix, /camera/camera_info]
+- name: range_fusion
+  publish: [/obj_X/image_obj_ranged]
+  subscribe: [/config/obj_X/fusion, /obj_X/image_obj, /points_image]
