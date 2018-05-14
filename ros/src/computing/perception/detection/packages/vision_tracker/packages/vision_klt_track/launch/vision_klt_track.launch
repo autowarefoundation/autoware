@@ -1,0 +1,44 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="true"/>
+  <arg name="sync" default="false" />
+
+  <arg name="camera_id" default="/" />
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+      <!-- argument -->
+      <arg name="image_src_car" default="/image_raw" />
+
+      <!-- klt tracking -->
+      <node pkg="vision_klt_track" name="tracking" type="vision_klt_track" output="screen">
+          <param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src_car)" />
+          <remap from="/config/obj_car/klt" to="/config/car_klt" />
+          <remap from="/obj_car/image_obj_ranged" to="/sync_tracking/obj_car/image_obj_ranged" if="$(arg sync)" />
+          <remap from="/image_raw" to="/sync_tracking/obj_car/image_raw" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+      <!-- argument -->
+      <arg name="image_src_pedestrian" default="/image_raw" />
+
+      <!-- klt tracking -->
+      <node pkg="vision_klt_track" name="tracking" type="vision_klt_track">
+          <param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src_pedestrian)" />
+          <remap from="/config/obj_person/klt" to="/config/pedestrian_klt" />
+          <remap from="/obj_person/image_obj_ranged" to="/sync_tracking/obj_person/image_obj_ranged" if="$(arg sync)" />
+          <remap from="/image_raw" to="/sync_tracking/obj_person/image_raw" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <include file="$(find synchronization)/launch/sync_track.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
+</launch>

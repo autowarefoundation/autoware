@@ -19,12 +19,12 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
-    - name : ndt_localizer
-      desc : ndt_localizer desc sample
+    - name : lidar_localizer
+      desc : lidar_localizer desc sample
       subs :
       - name : ndt_mapping
         desc : ndt_mapping desc sample
-        cmd  : roslaunch ndt_localizer ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -39,7 +39,7 @@ subs :
           imu_topic:
             flags : [ nl ]
       - name : approximate_ndt_mapping
-        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -47,7 +47,7 @@ subs :
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
-        cmd  : roslaunch ndt_localizer ndt_matching.launch
+        cmd  : roslaunch lidar_localizer ndt_matching.launch
         param: ndt
         gui  :
           dialog_height : 550
@@ -70,14 +70,12 @@ subs :
             func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
         desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
-        cmd  : roslaunch ndt_localizer ndt_matching_monitor.launch
+        cmd  : roslaunch lidar_localizer ndt_matching_monitor.launch
         param: ndt_matching_monitor
-
-    - name : icp_localizer
-      subs :
       - name : icp_matching
-        cmd  : roslaunch icp_localizer icp_matching.launch
+        cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -103,32 +101,9 @@ subs :
   - name : Detection
     desc : Detection desc sample
     subs :
-    - name : cv_detector
-      desc : cv_detector desc sample
+    - name : vision_detector
+      desc : vision_detector desc sample
       subs :
-      - name : dpm_ocv
-        desc : dpm_ocv desc sample
-        cmd  : roslaunch cv_tracker dpm_ocv.launch
-        param: dpm_ocv
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
-          use_gpu :
-            flags  : [ nl ]
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
 
       - name : dpm_ttic
         desc : dpm_ttic desc sample
@@ -177,9 +152,13 @@ subs :
         cmd  : roslaunch yolo3_detector yolo3.launch
         param: yolo3
 
-      - name : klt_track
-        desc : klt_track desc sample
-        cmd  : roslaunch cv_tracker klt_tracking.launch
+    
+    - name : vision_tracker
+      desc : vision_tracker desc sample
+      subs :
+      - name : vision_klt_track
+        desc : vision_klt_track desc sample
+        cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
           flags : [ need_camera_info ]
@@ -190,10 +169,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
-      - name : kf_track
-        desc : kf_track desc sample
-        cmd  : roslaunch cv_tracker kf_tracking.launch
+      - name : vision_kf_track
+        desc : vision_kf_track desc sample
+        cmd  : roslaunch vision_kf_track vision_kf_track.launch
         param: car_kf
         gui  :
           flags                  : [ open_dialog, need_camera_info ]
@@ -222,9 +200,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-      - name : dummy_track
-        desc : dummy_track desc sample
-        cmd  : roslaunch cv_tracker dummy_track.launch
+      - name : vision_dummy_track
+        desc : vision_dummy_track desc sample
+        cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
         gui  :
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
@@ -1949,8 +1927,8 @@ params :
       desc    : initialize_source desc sample
       label   : Initialize Source
       kind    : radio_box
-      choices : ['Rviz','ndt_localizer','GNSS']
-      descs   : ['Rviz desc sample', 'ndt_localizer desc sample', 'GNSS desc sample']
+      choices : ['Rviz','lidar_localizer','GNSS']
+      descs   : ['Rviz desc sample', 'lidar_localizer desc sample', 'GNSS desc sample']
       choices_type : str
       v       : Rviz
       cmd_param:

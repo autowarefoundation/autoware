@@ -1,5 +1,0 @@
-- name: icp_matching
-  publish: [/predict_pose, /icp_pose, /localizer_pose,
-    /estimate_twist, /estimated_vel_mps, /estimated_vel_kmph, /estimated_vel, /time_icp_matching,
-    /icp_stat]
-  subscribe: [/config/icp, /gnss_pose, /points_map, /initialpose, /filtered_points]
