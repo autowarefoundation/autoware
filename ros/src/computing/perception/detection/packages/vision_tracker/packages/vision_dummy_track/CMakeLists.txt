@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(dummy_track)
+project(vision_dummy_track)
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
@@ -28,14 +28,14 @@ include_directories(
         include
 )
 
-## dummy_tracker ##
-add_executable(dummy_track
-  nodes/dummy_track/dummy_track.cpp
+## vision_dummy_tracker ##
+add_executable(vision_dummy_track
+  nodes/vision_dummy_track/vision_dummy_track.cpp
   )
-target_link_libraries(dummy_track
+target_link_libraries(vision_dummy_track
   ${catkin_LIBRARIES}
   )
-install(TARGETS dummy_track
+install(TARGETS vision_dummy_track
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

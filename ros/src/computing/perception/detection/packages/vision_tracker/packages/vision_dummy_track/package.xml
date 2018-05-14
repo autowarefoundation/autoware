@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-    <name>dummy_track</name>
+    <name>vision_dummy_track</name>
     <version>1.6.3</version>
     <description>The cv_tracker package</description>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
