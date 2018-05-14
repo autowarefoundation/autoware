@@ -1,0 +1,34 @@
+<!-- -->
+<launch>
+  <arg name="gating_thres" default="9.22" />
+  <arg name="gate_probability" default="0.99" />
+  <arg name="detection_probability" default="0.9" />
+  <arg name="distance_thres" default="99" />
+  <arg name="life_time_thres" default="8" />
+  <arg name="static_distance_thres" default="3.0" />
+  <arg name="tracker_input_topic" default="/cloud_clusters" />
+  <arg name="tracker_output_topic" default="/tracking_cluster_array" />
+  <arg name="pointcloud_frame" default="/velodyne" />
+  <arg name="tracking_frame" default="/world" />
+
+  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+  <node pkg="lidar_imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda" output="screen">
+    <param name="gating_thres" value="$(arg gating_thres)" />
+    <param name="gate_probability" value="$(arg gate_probability)" />
+    <param name="detection_probability" value="$(arg detection_probability)" />
+    <param name="distance_thres" value="$(arg distance_thres)" />
+    <param name="life_time_thres" value="$(arg life_time_thres)" />
+    <param name="static_distance_thres" value="$(arg static_distance_thres)" />
+    <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
+    <param name="tracking_frame" value="$(arg tracking_frame)" />
+
+    <remap from="cloud_clusters" to="$(arg tracker_input_topic)" />
+    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
+  </node>
+
+  <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
+    <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
+
+    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
+  </node>
+</launch>
