@@ -291,7 +291,7 @@ subs :
 
       - name : obj_fusion
         desc : obj_fusion desc sample
-        cmd  : roslaunch lidar_tracker obj_fusion.launch
+        cmd  : roslaunch obj_fusion obj_fusion.launch
         param: obj_fusion
         gui  :
           flags                : [ open_dialog, no_link ]
