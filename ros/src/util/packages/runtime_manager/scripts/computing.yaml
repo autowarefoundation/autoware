@@ -142,10 +142,10 @@ subs :
             border : 16
             flags : [ all ]
 
-      - name : yolo2_wa
-        desc : yolo2_wa desc sample
-        cmd  : roslaunch cv_tracker yolo2.launch
-        param: yolo2
+      - name : vision_yolo2_detect
+        desc : Yolo2 Image based detector
+        cmd  : roslaunch vision_yolo2_detect vision_yolo2_detect.launch
+        param: vision_yolo2_detect
 
       - name : vision_yolo3_detect
         desc : Yolo3 Image based detector
@@ -3926,7 +3926,7 @@ params :
         dash      : ''
         delim     : ':='
 
-  - name  : yolo2
+  - name  : vision_yolo2_detect
     vars  :
     - name  : score_threshold
       desc  : Detections with a confidence value larger than this value will be displayed.
