@@ -19,12 +19,12 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
-    - name : ndt_localizer
-      desc : ndt_localizer desc sample
+    - name : lidar_localizer
+      desc : lidar_localizer desc sample
       subs :
       - name : ndt_mapping
         desc : ndt_mapping desc sample
-        cmd  : roslaunch ndt_localizer ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -39,7 +39,7 @@ subs :
           imu_topic:
             flags : [ nl ]
       - name : approximate_ndt_mapping
-        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -47,7 +47,7 @@ subs :
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
-        cmd  : roslaunch ndt_localizer ndt_matching.launch
+        cmd  : roslaunch lidar_localizer ndt_matching.launch
         param: ndt
         gui  :
           dialog_height : 550
@@ -70,14 +70,12 @@ subs :
             func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
         desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
-        cmd  : roslaunch ndt_localizer ndt_matching_monitor.launch
+        cmd  : roslaunch lidar_localizer ndt_matching_monitor.launch
         param: ndt_matching_monitor
-
-    - name : icp_localizer
-      subs :
       - name : icp_matching
-        cmd  : roslaunch icp_localizer icp_matching.launch
+        cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -1949,8 +1947,8 @@ params :
       desc    : initialize_source desc sample
       label   : Initialize Source
       kind    : radio_box
-      choices : ['Rviz','ndt_localizer','GNSS']
-      descs   : ['Rviz desc sample', 'ndt_localizer desc sample', 'GNSS desc sample']
+      choices : ['Rviz','lidar_localizer','GNSS']
+      descs   : ['Rviz desc sample', 'lidar_localizer desc sample', 'GNSS desc sample']
       choices_type : str
       v       : Rviz
       cmd_param:

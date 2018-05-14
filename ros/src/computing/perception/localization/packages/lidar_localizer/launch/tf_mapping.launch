@@ -9,7 +9,7 @@
   <arg name="scan_num" default="100" />
   <arg name="output_dir" default="/tmp/" />
   
-  <node pkg="ndt_localizer" type="tf_mapping" name="tf_mapping" output="screen">
+  <node pkg="lidar_localizer" type="tf_mapping" name="tf_mapping" output="screen">
     <param name="parent_frame" value="$(arg parent_frame)" />
     <param name="child_frame" value="$(arg child_frame)" />
     <param name="points_topic" value="$(arg points_topic)" />
