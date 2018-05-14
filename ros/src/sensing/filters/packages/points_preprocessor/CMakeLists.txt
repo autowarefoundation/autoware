@@ -29,6 +29,7 @@ find_package(Qt5Core REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(OpenMP)
+find_package(yaml-cpp REQUIRED)
 
 ###########
 ## Build ##
@@ -114,10 +115,16 @@ add_dependencies(ray_ground_filter ${catkin_EXPORTED_TARGETS})
 add_executable(points_concat_filter
         nodes/points_concat_filter/points_concat_filter.cpp
         )
+target_include_directories(points_concat_filter PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        ${yaml-cpp_INCLUDE_DIRS}
+        )
+
 
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
+        ${yaml-cpp_LIBRARIES}
         )
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
 

@@ -87,12 +87,16 @@ PointsConcatFilter::PointsConcatFilter() : node_handle_(), private_node_handle_(
   }
   for (size_t i = 0; i < 8; ++i)
   {
-    if (i < topics.size())
+    if (i < input_topics_size_)
+    {
       cloud_subscribers_[i] =
           new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[i].as<std::string>(), 1);
+    }
     else
+    {
       cloud_subscribers_[i] =
           new message_filters::Subscriber<PointCloudMsgT>(node_handle_, topics[0].as<std::string>(), 1);
+    }
   }
   cloud_synchronizer_ = new message_filters::Synchronizer<SyncPolicyT>(
       SyncPolicyT(10), *cloud_subscribers_[0], *cloud_subscribers_[1], *cloud_subscribers_[2], *cloud_subscribers_[3],
@@ -134,7 +138,9 @@ void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr &msg
 
   // merge points
   for (size_t i = 0; i < input_topics_size_; ++i)
+  {
     *cloud_concatenated += *cloud_sources[i];
+  }
 
   // publsh points
   cloud_concatenated->header = pcl_conversions::toPCL(msgs[0]->header);
