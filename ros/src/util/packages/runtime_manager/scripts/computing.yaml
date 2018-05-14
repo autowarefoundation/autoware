@@ -294,6 +294,14 @@ subs :
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track
 
+      - name : lidar_imm_ukf_pda_track
+        desc : lidar_imm_ukf_pda_track desc sample
+        cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
+        param: imm_ukf_pda_tracker
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
       - name : obj_fusion
         desc : obj_fusion desc sample
         cmd  : roslaunch obj_fusion obj_fusion.launch
@@ -306,14 +314,6 @@ subs :
           pedestrian :
             border : 16
             flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : imm_ukf_pda_tracker
-        desc : imm_ukf_pda_tracker desc sample
-        cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
-        param: imm_ukf_pda_tracker
-        gui  :
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -1052,7 +1052,7 @@ params :
       max   : 10
       v     : 9
 
-  - name  : imm_ukf_pda_tracker
+  - name  : lidar_imm_ukf_pda_track
     vars  :
     - name    : input_topic_
       desc    : input_topic desc sample
