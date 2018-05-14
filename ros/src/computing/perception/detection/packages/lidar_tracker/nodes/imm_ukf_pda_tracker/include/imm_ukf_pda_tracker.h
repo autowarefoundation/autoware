@@ -61,8 +61,9 @@ private:
   ros::Publisher pub_object_array_;
   ros::Publisher pub_jskbbox_array_;
 
-  void callback(autoware_msgs::CloudClusterArray input);
-  void transformPoseToGlobal(autoware_msgs::CloudClusterArray& input);
+  void callback(const autoware_msgs::CloudClusterArray& input);
+  void transformPoseToGlobal(const autoware_msgs::CloudClusterArray& input,
+                                   autoware_msgs::CloudClusterArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
   void findMaxZandS(const UKF target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
@@ -103,7 +104,7 @@ private:
   void makeOutput(autoware_msgs::CloudClusterArray input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  void tracker(autoware_msgs::CloudClusterArray input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+  void tracker(const autoware_msgs::CloudClusterArray transformed_input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
 public:

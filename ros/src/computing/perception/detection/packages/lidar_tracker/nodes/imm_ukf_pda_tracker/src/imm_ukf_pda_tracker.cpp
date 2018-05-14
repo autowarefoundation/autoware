@@ -31,23 +31,25 @@ ImmUkfPda::ImmUkfPda()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
 }
 
-void ImmUkfPda::callback(autoware_msgs::CloudClusterArray input)
+void ImmUkfPda::callback(const autoware_msgs::CloudClusterArray& input)
 {
-  autoware_msgs::CloudClusterArray output;
+  autoware_msgs::CloudClusterArray transformed_input;
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
 
   // only transform pose(clusteArray.clusters.bouding_box.pose)
-  transformPoseToGlobal(input);
-  tracker(input, jskbboxes_output, detected_objects_output);
+  transformPoseToGlobal(input, transformed_input);
+  tracker(transformed_input, jskbboxes_output, detected_objects_output);
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
 
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
 }
 
-void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
+void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::CloudClusterArray& input,
+                                            autoware_msgs::CloudClusterArray& transformed_input)
 {
+  transformed_input.header = input.header;
   for (size_t i = 0; i < input.clusters.size(); i++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
@@ -56,7 +58,13 @@ void ImmUkfPda::transformPoseToGlobal(autoware_msgs::CloudClusterArray& input)
     pose_in.pose = input.clusters[i].bounding_box.pose;
     tf_listener_->waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(1.0));
     tf_listener_->transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
-    input.clusters[i].bounding_box.pose = pose_out.pose;
+
+    autoware_msgs::CloudCluster cc;
+    cc.header = input.header;
+    cc = input.clusters[i];
+    cc.bounding_box.pose = pose_out.pose;
+    // input.clusters[i].bounding_box.pose = pose_out.pose;
+    transformed_input.clusters.push_back(cc);
   }
 }
 
@@ -447,57 +455,6 @@ void ImmUkfPda::updateBB(UKF& target)
   }
 }
 
-// double ImmUkfPda::getIntersectCoef(const double vec1x, const double vec1y, const double vec2x, const double vec2y,
-//                                   const double px, const double py, const double cpx, const double cpy)
-// {
-//     double intersect_coef = (((vec1x-vec2x)*(py - vec1y) + (vec1y - vec2y)*(vec1x - px)) *
-//         ((vec1x - vec2x)*(cpy - vec1y) + (vec1y - vec2y)*(vec1x - cpx)));
-//     return intersect_coef;
-//
-// }
-
-// naive method
-// void ImmUkfPda::mergeOverSegmentation(const std::vector<UKF> targets){
-//     // cout << "mergeOverSegmentation"<<endl;
-//     for(size_t i = 0; i < targets.size(); i++){
-//         if(targets[i].is_vis_bb_ == true){
-//             double vec1x = targets[i].BBox_[0].x;
-//             double vec1y = targets[i].BBox_[0].y;
-//             double vec2x = targets[i].BBox_[1].x;
-//             double vec2y = targets[i].BBox_[1].y;
-//             double vec3x = targets[i].BBox_[2].x;
-//             double vec3y = targets[i].BBox_[2].y;
-//             double vec4x = targets[i].BBox_[3].x;
-//             double vec4y = targets[i].BBox_[3].y;
-//             double cp1x  = (vec1x+vec2x+vec3x)/3;
-//             double cp1y  = (vec1y+vec2y+vec3y)/3;
-//             double cp2x  = (vec1x+vec4x+vec3x)/3;
-//             double cp2y  = (vec1y+vec4y+vec3y)/3;
-//             for (int j = 0; j < targets.size(); j++){
-//                 if(i == j) continue;
-//                 // make sure that merged area(i) is larger than compared area(j)
-//                 if(targets_[i].bb_area_ < targets_[j].bb_area_){
-//                     double px = targets[j].x_merge_(0);
-//                     double py = targets[j].x_merge_(1);
-//                     // check if px, py are in triangle vec1, vec2, vec3
-//                     double cross1 = getIntersectCoef(vec1x, vec1y, vec2x, vec2y, px, py, cp1x, cp1y);
-//                     double cross2 = getIntersectCoef(vec1x, vec1y, vec3x, vec3y, px, py, cp1x, cp1y);
-//                     double cross3 = getIntersectCoef(vec3x, vec3y, vec2x, vec2y, px, py, cp1x, cp1y);
-//                     // check if px, py are in triangle vec1, vec3, vec4
-//                     double cross4 = getIntersectCoef(vec1x, vec1y, vec4x, vec4y, px, py, cp2x, cp2y);
-//                     double cross5 = getIntersectCoef(vec1x, vec1y, vec3x, vec3y, px, py, cp2x, cp2y);
-//                     double cross6 = getIntersectCoef(vec3x, vec3y, vec4x, vec4y, px, py, cp2x, cp2y);
-//                     // check if inside or not
-//                     if((cross1 > 0 && cross2>0&&cross3>0)||(cross4>0 && cross5 > 0 && cross6>0)){
-//                         trackNumVec_[i] = 5;
-//                         trackNumVec_[j] = 0;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
 void ImmUkfPda::updateLabel(UKF target, autoware_msgs::DetectedObject& dd)
 {
   int tracking_num = target.tracking_num_;
@@ -792,7 +749,7 @@ void ImmUkfPda::makeOutput(autoware_msgs::CloudClusterArray input,
   }
 }
 
-void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
+void ImmUkfPda::tracker(const autoware_msgs::CloudClusterArray transformed_input,
                         jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                         autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
@@ -852,7 +809,7 @@ void ImmUkfPda::tracker(autoware_msgs::CloudClusterArray input,
 
   // making output(CludClusterArray) for visualization
   makeOutput(input, jskbboxes_output, detected_objects_output);
-
-  assert(matching_vec.size() == input.clusters.size());
-  assert(jskbboxes_output.boxes.size() == detected_objects_output.objects.size());
 }
+//   assert(matching_vec.size() == input.clusters.size());
+//   assert(jskbboxes_output.boxes.size() == detected_objects_output.objects.size());
+// }

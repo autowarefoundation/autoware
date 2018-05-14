@@ -284,16 +284,11 @@ add_dependencies(kf_contour_tracker ${catkin_EXPORTED_TARGETS})
 
 
 #immUkfPda Track
+find_package(Eigen3 QUIET)
 set(SOURCE_FILES nodes/imm_ukf_pda_tracker/src/imm_ukf_pda_tracker_main.cpp nodes/imm_ukf_pda_tracker/src/imm_ukf_pda_tracker.cpp nodes/imm_ukf_pda_tracker/src/ukf.cpp)
 add_executable(imm_ukf_pda_tracker ${SOURCE_FILES})
 target_include_directories(imm_ukf_pda_tracker PRIVATE nodes/imm_ukf_pda_tracker/include)
 target_link_libraries(imm_ukf_pda_tracker ${catkin_LIBRARIES})
-
-#cluster filter
-#set(SOURCE_FILES nodes/cluster_filter/src/cluster_filter_main.cpp nodes/cluster_filter/src/cluster_filter.cpp)
-#add_executable(cluster_filter ${SOURCE_FILES})
-#target_include_directories(cluster_filter PRIVATE nodes/cluster_filter/include)
-#target_link_libraries(cluster_filter ${catkin_LIBRARIES})
 
 #visualize cloud cluster
 set(SOURCE_FILES nodes/visualize_detected_objects/src/visualize_detected_objects_main.cpp nodes/visualize_detected_objects/src/visualize_detected_objects.cpp)

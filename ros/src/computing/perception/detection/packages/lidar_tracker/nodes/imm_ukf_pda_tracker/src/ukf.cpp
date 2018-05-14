@@ -6,11 +6,6 @@
 */
 UKF::UKF()
 {
-  // if this is false, laser measurements will be ignored (except during init)
-  use_laser_ = true;
-
-  // if this is false, radar measurements will be ignored (except during init)
-  use_radar_ = true;
 
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);
@@ -318,10 +313,7 @@ void UKF::interaction()
           mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
 }
 
-/**
-* @param {MeasurementPackage} meas_package The latest measurement data of
-* either radar or laser.
-*/
+
 void UKF::predictionIMMUKF(const double dt)
 {
   /*****************************************************************************
@@ -434,11 +426,7 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
   state[4] = yawd_p;
 }
 
-/**
-* Predicts sigma points, the state, and the state covariance matrix.
-* @param {double} delta_t the change in time (in seconds) between the last
-* measurement and this one.
-*/
+
 void UKF::prediction(const double delta_t, const int model_ind)
 {
   /*****************************************************************************
@@ -589,10 +577,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
   }
 }
 
-/**
-* Updates the state and the state covariance matrix using a laser measurement.
-* @param {MeasurementPackage} meas_package
-*/
+
 void UKF::updateLidar(const int model_ind)
 {
   /*****************************************************************************
