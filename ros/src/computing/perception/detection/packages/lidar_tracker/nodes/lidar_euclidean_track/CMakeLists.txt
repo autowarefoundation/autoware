@@ -6,23 +6,13 @@ project(lidar_euclidean_track)
 ## is used, also find other catkin packages
 
 find_package(catkin REQUIRED COMPONENTS
-        pcl_conversions
         pcl_ros
         roscpp
-        sensor_msgs
+        geometry_msgs
+        std_msgs
         autoware_msgs
-        tf
         jsk_recognition_msgs
-        jsk_rviz_plugins
-        rosinterface
-        cv_bridge
-        vector_map
         vector_map_server
-        op_ros_helpers
-        vector_map
-        grid_map_ros
-        grid_map_cv
-        grid_map_msgs
         )
 
 set(CMAKE_AUTOMOC ON)
