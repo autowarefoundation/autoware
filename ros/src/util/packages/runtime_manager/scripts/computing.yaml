@@ -101,32 +101,9 @@ subs :
   - name : Detection
     desc : Detection desc sample
     subs :
-    - name : cv_detector
-      desc : cv_detector desc sample
+    - name : vision_detector
+      desc : vision_detector desc sample
       subs :
-      - name : dpm_ocv
-        desc : dpm_ocv desc sample
-        cmd  : roslaunch cv_tracker dpm_ocv.launch
-        param: dpm_ocv
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
-          use_gpu :
-            flags  : [ nl ]
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
 
       - name : dpm_ttic
         desc : dpm_ttic desc sample
@@ -175,9 +152,13 @@ subs :
         cmd  : roslaunch yolo3_detector yolo3.launch
         param: yolo3
 
-      - name : klt_track
-        desc : klt_track desc sample
-        cmd  : roslaunch cv_tracker klt_tracking.launch
+    
+    - name : vision_tracker
+      desc : vision_tracker desc sample
+      subs :
+      - name : vision_klt_track
+        desc : vision_klt_track desc sample
+        cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
           flags : [ need_camera_info ]
@@ -188,10 +169,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
-      - name : kf_track
-        desc : kf_track desc sample
-        cmd  : roslaunch cv_tracker kf_tracking.launch
+      - name : vision_kf_track
+        desc : vision_kf_track desc sample
+        cmd  : roslaunch vision_kf_track vision_kf_track.launch
         param: car_kf
         gui  :
           flags                  : [ open_dialog, need_camera_info ]
@@ -220,9 +200,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-      - name : dummy_track
-        desc : dummy_track desc sample
-        cmd  : roslaunch cv_tracker dummy_track.launch
+      - name : vision_dummy_track
+        desc : vision_dummy_track desc sample
+        cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
         gui  :
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
