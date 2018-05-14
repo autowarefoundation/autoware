@@ -149,65 +149,6 @@ install(TARGETS dpm_ttic
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-## kf_tracker ##
-#if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-#    ADD_EXECUTABLE(kf_track
-#            nodes/kf_track/kf_track.cpp
-#            )
-
-#    TARGET_LINK_LIBRARIES(kf_track
-#            ${catkin_LIBRARIES}
-#            ${OpenCV_LIBRARIES}
-#            )
-#    add_dependencies(kf_track ${catkin_EXPORTED_TARGETS})
-#endif ()
-
-## dummy_tracker ##
-add_executable(dummy_track
-        nodes/dummy_track/dummy_track.cpp
-        )
-target_link_libraries(dummy_track
-        ${catkin_LIBRARIES}
-        )
-install(TARGETS dummy_track
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-
-
-## klt_tracker ##
-add_executable(klt_track
-        nodes/klt_track/klt_track.cpp
-        )
-
-include_directories(lib/lktracker)
-
-add_library(lktracker
-        lib/lktracker/LkTracker.cpp
-        )
-target_link_libraries(lktracker
-        ${OpenCV_LIBRARIES}
-        )
-add_dependencies(lktracker
-        ${catkin_EXPORTED_TARGETS}
-        )
-
-target_link_libraries(klt_track
-        lktracker
-        ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
-        )
-
-add_dependencies(klt_track
-        ${catkin_EXPORTED_TARGETS}
-        )
-install(TARGETS klt_track
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-        )
-
 
 
 #####SSD########
