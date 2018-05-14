@@ -72,7 +72,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #SVM Detect
-add_executable(lidar_svm_detect lidar_svm_detect.cpp)
+add_executable(lidar_svm_detect 
+  nodes/lidar_svm_detect/lidar_svm_detect.cpp)
 #add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
 target_link_libraries(lidar_svm_detect PRIVATE
         ${catkin_LIBRARIES}

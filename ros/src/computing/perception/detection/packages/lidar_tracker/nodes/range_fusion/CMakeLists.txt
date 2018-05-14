@@ -16,7 +16,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             libdpm_ttic
             fusion
             tf
-            libdpm_ocv
             #kf_lib
             jsk_recognition_msgs
             gnss
@@ -93,7 +92,7 @@ include_directories(
 
 ## range_fusion ##
 add_executable(range_fusion
-        range_fusion.cpp
+        nodes/range_fusion/range_fusion.cpp
         )
 
 target_link_libraries(range_fusion

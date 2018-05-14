@@ -80,7 +80,9 @@ link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
-add_executable(lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.cpp cluster.cpp)
+add_executable(lidar_euclidean_cluster_detect 
+  nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
+  nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
 find_package(CUDA)
 if (${CUDA_FOUND})
@@ -96,7 +98,7 @@ if (${CUDA_FOUND})
 
     cuda_add_library(gpu_euclidean_clustering
             include/gpu_euclidean_clustering.h
-            gpu_euclidean_clustering.cu
+            nodes/lidar_euclidean_cluster_detect/gpu_euclidean_clustering.cu
             )
 
     target_link_libraries(lidar_euclidean_cluster_detect
