@@ -16,7 +16,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             libdpm_ttic
             fusion
             tf
-            libdpm_ocv
             #kf_lib
             jsk_recognition_msgs
             gnss
@@ -58,7 +57,6 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
             libdpm_ttic
             fusion
             tf
-            libdpm_ocv
             #kf_lib
             jsk_recognition_msgs
             gnss
@@ -150,48 +148,6 @@ install(TARGETS dpm_ttic
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
-
-## dpm_ocv
-if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
-
-    IF (CUDA_FOUND)
-        cuda_add_executable(dpm_ocv
-                nodes/dpm_ocv/dpm_ocv.cpp
-                )
-        set_target_properties(dpm_ocv
-                PROPERTIES
-                COMPILE_FLAGS
-                "-DHAS_GPU -DDEFAULT_CUBIN=${CATKIN_DEVEL_PREFIX}/lib/gpu_function.cubin -DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/model/models_VOC2007/"
-                )
-    ELSE ()
-        add_executable(dpm_ocv
-                nodes/dpm_ocv/dpm_ocv.cpp
-                )
-        set_target_properties(dpm_ocv
-                PROPERTIES
-                COMPILE_FLAGS
-                "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
-                )
-    ENDIF ()
-
-    target_link_libraries(dpm_ocv
-            ${catkin_LIBRARIES}
-            ${OpenCV_LIBRARIES}
-            )
-
-    add_dependencies(dpm_ocv
-            ${catkin_EXPORTED_TARGETS}
-            )
-
-    install(TARGETS dpm_ocv
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            )
-
-ENDIF ()
-#ROS_VERSION_ENDIF
-
 
 ## kf_tracker ##
 #if ("${ROS_VERSION}" MATCHES "(indigo|jade)")
