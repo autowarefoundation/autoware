@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(image_segmenter)
+project(vision_segment_enet_detect)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         cv_bridge
@@ -33,12 +33,12 @@ set(ENET_CAFFE_PATH "$ENV{HOME}/ENet/caffe-enet/distribute")
 ####################################################################################################
 if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
 
-    ADD_EXECUTABLE(image_segmenter_enet
-            src/image_segmenter_enet_node.cpp
-            src/image_segmenter_enet.cpp
+    ADD_EXECUTABLE(vision_segment_enet_detect
+            src/vision_segment_enet_detect_node.cpp
+            src/vision_segment_enet_detect.cpp
             )
 
-    TARGET_LINK_LIBRARIES(image_segmenter_enet
+    TARGET_LINK_LIBRARIES(vision_segment_enet_detect
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             ${CUDA_LIBRARIES}
@@ -48,15 +48,15 @@ if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
             glog
             )
 
-    TARGET_INCLUDE_DIRECTORIES(image_segmenter_enet PRIVATE
+    TARGET_INCLUDE_DIRECTORIES(vision_segment_enet_detect PRIVATE
             ${CUDA_INCLUDE_DIRS}
             ${ENET_CAFFE_PATH}/include
             include
             )
 
-    ADD_DEPENDENCIES(image_segmenter_enet
+    ADD_DEPENDENCIES(vision_segment_enet_detect
             ${catkin_EXPORTED_TARGETS}
             )
 else ()
-    message("'ENet/Caffe' is not installed. 'image_segmenter_enet' will not be built.")
+    message("' ENet/Caffe' is not installed. 'vision_segment_enet_detect' will not be built.")
 endif ()

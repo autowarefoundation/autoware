@@ -5,7 +5,7 @@
  *      Author: amc
  */
 
-#include "image_segmenter_enet.hpp"
+#include "vision_segment_enet_detect.h"
 
 ENetSegmenter::ENetSegmenter(const std::string& in_model_file,
 		const std::string& in_trained_file,
