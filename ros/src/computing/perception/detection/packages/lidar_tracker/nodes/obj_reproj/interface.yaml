@@ -1,0 +1,3 @@
+- name: obj_reproj
+  publish: [/obj_X/obj_label, /obj_X/obj_label_bounding_box, /obj_X/obj_label_marker]
+  subscribe: [/obj_X/image_obj_tracked, /projection_matrix, /camera_info]

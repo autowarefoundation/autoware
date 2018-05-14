@@ -1,0 +1,3 @@
+- name: lidar_svm_detect
+  publish: [/cloud_clusters_class]
+  subscribe: [/cloud_clusters]

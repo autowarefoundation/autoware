@@ -10,7 +10,7 @@
       <arg name="projection_matrix_src_car" default="/projection_matrix"/>
       <arg name="camera_info_src_car" default="/camera_info"/>
 
-      <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+      <node pkg="obj_reproj" name="reprojection" type="obj_reproj">
         <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_car)"/>
         <param name="camera_info_topic" value="$(arg camera_id)$(arg camera_info_src_car)"/>
         <remap from="/obj_car/image_obj_tracked" to="/sync_reprojection/obj_car/image_obj_tracked" if="$(arg sync)" />
@@ -26,7 +26,7 @@
       <arg name="projection_matrix_src_pedestrian" default="/projection_matrix"/>
       <arg name="camera_info_src_pedestrian" default="/camera_info"/>
 
-      <node pkg="cv_tracker" name="reprojection" type="obj_reproj">
+      <node pkg="obj_reproj" name="reprojection" type="obj_reproj">
         <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_pedestrian)"/>
         <param name="camera_info_topic" value="$(arg camera_id)$(arg camera_info_src_pedestrian)"/>
         <remap from="/obj_person/image_obj_tracked" to="/sync_reprojection/obj_person/image_obj_tracked" if="$(arg sync)" />
