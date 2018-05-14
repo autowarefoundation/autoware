@@ -12,7 +12,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 
 
 catkin_package(
-  CATKIN_DEPENDS cv_bridge
+  CATKIN_DEPENDS 
   roscpp
   autoware_msgs
 )
