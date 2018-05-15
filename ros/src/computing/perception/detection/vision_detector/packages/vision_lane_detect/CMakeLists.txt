@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lane_detector)
+project(vision_lane_detect)
 
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
@@ -15,7 +15,7 @@ find_package(OpenCV REQUIRED)
 
 catkin_package(
         #  INCLUDE_DIRS include
-        #  LIBRARIES lane_detector
+        #  LIBRARIES vision_lane_detect
         CATKIN_DEPENDS roscpp
         #  DEPENDS system_lib
 )
@@ -26,23 +26,23 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        nodes/lane_detector
+        nodes/vision_lane_detect
         ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(lane_detector
-        nodes/lane_detector/lane_detector.cpp
+add_executable(vision_lane_detect
+        nodes/vision_lane_detect/vision_lane_detect.cpp
         )
 
-target_link_libraries(lane_detector
+target_link_libraries(vision_lane_detect
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
         )
-add_dependencies(lane_detector
+add_dependencies(vision_lane_detect
         ${catkin_EXPORTED_TARGETS}
         )
 
-install(TARGETS lane_detector
+install(TARGETS vision_lane_detect
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
