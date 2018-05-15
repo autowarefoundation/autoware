@@ -75,7 +75,7 @@ private:
 
 PointsConcatFilter::PointsConcatFilter() : node_handle_(), private_node_handle_("~"), tf_listener_()
 {
-  private_node_handle_.param("input_topics", input_topics_, std::string("[ /points_alpha, /points_beta ]"));
+  private_node_handle_.param("input_topics", input_topics_, std::string("[/points_alpha, /points_beta]"));
   private_node_handle_.param("output_frame_id", output_frame_id_, std::string("velodyne"));
 
   YAML::Node topics = YAML::Load(input_topics_);
@@ -111,7 +111,7 @@ void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr &msg
                                              const PointCloudMsgT::ConstPtr &msg5, const PointCloudMsgT::ConstPtr &msg6,
                                              const PointCloudMsgT::ConstPtr &msg7, const PointCloudMsgT::ConstPtr &msg8)
 {
-  assert(2 < input_topics_size_ && input_topics_size_ < 8);
+  assert(2 <= input_topics_size_ && input_topics_size_ <= 8);
 
   PointCloudMsgT::ConstPtr msgs[8] = { msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8 };
   PointCloudT::Ptr cloud_sources[8];
