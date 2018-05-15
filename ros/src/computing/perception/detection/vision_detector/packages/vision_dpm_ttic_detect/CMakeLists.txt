@@ -1,23 +1,15 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(vision_dpm_ttic_detect)
 
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         cv_bridge
-        # image_transport
         roscpp
         sensor_msgs
         std_msgs
         autoware_msgs
         libdpm_ttic
-        # fusion
-        # tf
-        #kf_lib
-        # jsk_recognition_msgs
-        # gnss
         )
 
 FIND_PACKAGE(CUDA)
@@ -31,17 +23,11 @@ EXECUTE_PROCESS(
 
 catkin_package(
         CATKIN_DEPENDS cv_bridge
-        # image_transport
         roscpp
         sensor_msgs
         std_msgs
         autoware_msgs
         libdpm_ttic
-        # fusion
-        # tf
-        #kf_lib
-        # jsk_recognition_msgs
-        # gnss
 )
 
 ###########
@@ -63,8 +49,6 @@ IF (CUDA_FOUND)
 ENDIF ()
 
 ## dpm_ttic ##
-
-
 #this must be fixed to use cmake cuda commands
 IF (CUDA_FOUND)
 
@@ -102,7 +86,6 @@ ELSE ()
             "-DMODEL_DIR=${CMAKE_CURRENT_SOURCE_DIR}/data/"
             )
 ENDIF ()
-
 
 add_dependencies(vision_dpm_ttic_detect
         ${catkin_EXPORTED_TARGETS}
