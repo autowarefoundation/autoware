@@ -70,6 +70,7 @@ catkin_package(
         vector_map
         vector_map_server
         visualization_msgs
+        waypoint_follower
 
         LIBRARIES libcontext
 )
