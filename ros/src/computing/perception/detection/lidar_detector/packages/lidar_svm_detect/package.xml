@@ -5,7 +5,6 @@
     <description>The lidar_svm_detect package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
-    <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>
     <license>BSD</license>
 
     <buildtool_depend>catkin</buildtool_depend>
