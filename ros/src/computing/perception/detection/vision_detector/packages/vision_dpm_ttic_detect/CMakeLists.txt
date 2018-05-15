@@ -7,17 +7,17 @@ include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         cv_bridge
-        image_transport
+        # image_transport
         roscpp
         sensor_msgs
         std_msgs
         autoware_msgs
         libdpm_ttic
-        fusion
-        tf
+        # fusion
+        # tf
         #kf_lib
-        jsk_recognition_msgs
-        gnss
+        # jsk_recognition_msgs
+        # gnss
         )
 
 FIND_PACKAGE(CUDA)
@@ -31,17 +31,17 @@ EXECUTE_PROCESS(
 
 catkin_package(
         CATKIN_DEPENDS cv_bridge
-        image_transport
+        # image_transport
         roscpp
         sensor_msgs
         std_msgs
         autoware_msgs
         libdpm_ttic
-        fusion
-        tf
+        # fusion
+        # tf
         #kf_lib
-        jsk_recognition_msgs
-        gnss
+        # jsk_recognition_msgs
+        # gnss
 )
 
 ###########
