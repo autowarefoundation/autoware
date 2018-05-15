@@ -10,9 +10,9 @@
     <group ns="obj_car">
 
       <!-- arguments list -->
-      <arg name="comp_model_car" default="$(find cv_tracker)/data/car_comp.csv"/>
-      <arg name="root_model_car" default="$(find cv_tracker)/data/car_root.csv"/>
-      <arg name="part_model_car" default="$(find cv_tracker)/data/car_part.csv"/>
+      <arg name="comp_model_car" default="$(find vision_dpm_ttic_detect)/data/car_comp.csv"/>
+      <arg name="root_model_car" default="$(find vision_dpm_ttic_detect)/data/car_root.csv"/>
+      <arg name="part_model_car" default="$(find vision_dpm_ttic_detect)/data/car_part.csv"/>
       <arg name="image_src_car" default="/image_raw"/>
 
       <!-- dpm detection -->
@@ -33,9 +33,9 @@
     <group ns="obj_person">
 
       <!-- arguments list -->
-      <arg name="comp_model_pedestrian" default="$(find cv_tracker)/data/person_comp.csv"/>
-      <arg name="root_model_pedestrian" default="$(find cv_tracker)/data/person_root.csv"/>
-      <arg name="part_model_pedestrian" default="$(find cv_tracker)/data/person_part.csv"/>
+      <arg name="comp_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_comp.csv"/>
+      <arg name="root_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_root.csv"/>
+      <arg name="part_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_part.csv"/>
       <arg name="image_src_pedestrian" default="/image_raw"/>
 
       <!-- dpm detection -->
