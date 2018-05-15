@@ -6,16 +6,15 @@
     <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>std_msgs</build_depend>
-    <build_depend>libvectormap</build_depend>
+    <build_depend>cmake_modules</build_depend>
     <build_depend>runtime_manager</build_depend>
+    <build_depend>std_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>vector_map_server</build_depend>
     <build_depend>geometry_msgs</build_depend>
     <build_depend>waypoint_follower</build_depend>
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>cv_bridge</build_depend>
-    <build_depend>cmake_modules</build_depend>
     <build_depend>eigen</build_depend>
     <build_depend>libvectormap</build_depend>
     <build_depend>roscpp</build_depend>
