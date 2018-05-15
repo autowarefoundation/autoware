@@ -117,14 +117,14 @@ add_executable(points_concat_filter
         )
 target_include_directories(points_concat_filter PRIVATE
         ${PCL_INCLUDE_DIRS}
-        ${yaml-cpp_INCLUDE_DIRS}
+        ${YAML_CPP_INCLUDE_DIR}
         )
 
 
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
-        ${yaml-cpp_LIBRARIES}
+        ${YAML_CPP_LIBRARIES}
         )
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
 
@@ -148,7 +148,7 @@ add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
 #    find_package(rostest REQUIRED)
 #    find_package(roslaunch REQUIRED)
 
-#    add_rostest_gtest(test_points_preprocessor 
+#    add_rostest_gtest(test_points_preprocessor
 #			test/test_points_preprocessor.test
 #			test/src/test_points_preprocessor.cpp)
 #   target_include_directories(test_points_preprocessor PRIVATE
