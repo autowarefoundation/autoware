@@ -31,9 +31,9 @@ link_directories(${PCL_LIBRARY_DIRS})
 
 #imm_ukf_pda
 add_executable(imm_ukf_pda
-  nodes/imm_ukf_pda/src/imm_ukf_pda_main.cpp
-  nodes/imm_ukf_pda/src/imm_ukf_pda.cpp
-  nodes/imm_ukf_pda/src/ukf.cpp
+  nodes/imm_ukf_pda/imm_ukf_pda_main.cpp
+  nodes/imm_ukf_pda/imm_ukf_pda.cpp
+  nodes/imm_ukf_pda/ukf.cpp
   )
 target_link_libraries(imm_ukf_pda
   ${catkin_LIBRARIES}
@@ -45,8 +45,8 @@ add_dependencies(imm_ukf_pda
 
 #visualize_detected_objects
 add_executable(visualize_detected_objects
-  nodes/visualize_detected_objects/src/visualize_detected_objects_main.cpp
-  nodes/visualize_detected_objects/src/visualize_detected_objects.cpp
+  nodes/visualize_detected_objects/visualize_detected_objects_main.cpp
+  nodes/visualize_detected_objects/visualize_detected_objects.cpp
   )
 target_link_libraries(visualize_detected_objects
   ${catkin_LIBRARIES}
