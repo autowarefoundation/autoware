@@ -1120,8 +1120,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
->>>>>>> Add lidar_imm_ukf_pda_track
+        
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
