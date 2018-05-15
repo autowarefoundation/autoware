@@ -873,70 +873,6 @@ params :
       kind     : num
       v        : 20
 
-  - name  : dpm_ocv
-    vars  :
-    - name     : use_gpu
-      desc     : use_gpu desc sample
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      descs    : [ 'False desc sample', 'True desc sample' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : car
-      desc     : car desc sample
-      label    : Car
-      kind     : checkbox
-      v        : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : pedestrian
-      desc     : pedestrian desc sample
-      label    : Pedestrian
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : model_file_car
-      desc     : model_file_car desc sample
-      label    : 'model_file (Car)'
-      kind     : path
-      v        : $(rospack find cv_tracker)/data/car_2008.xml
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : model_file_pedestrian
-      desc     : model_file_pedestrian desc sample
-      label    : 'model_file (Pedestrian)'
-      kind     : path
-      v        : $(rospack find cv_tracker)/data/person.xml
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name         : camera_id
-      desc         : camera_id desc sample
-      kind         : menu
-      label        : Camera ID
-      choices_type : str
-      v            : ''
-      cmd_param    :
-        dash         : ''
-        delim        : ':='
-        only_enable  : True
-    - name      : sync
-      kind      : hide
-      v         : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-        only_enable : True
-
   - name  : dpm_ttic
     vars  :
     - name     : use_gpu
@@ -971,7 +907,7 @@ params :
       desc     : comp_model_car desc sample
       label    : 'comp_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_comp.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_comp.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -979,7 +915,7 @@ params :
       desc     : root_model_car desc sample
       label    : 'root_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_root.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_root.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -987,7 +923,7 @@ params :
       desc     : part_model_car desc sample
       label    : 'part_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_part.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_part.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -995,7 +931,7 @@ params :
       desc     : comp_model_pedestrian desc sample
       label    : 'comp_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_comp.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_comp.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1003,7 +939,7 @@ params :
       desc     : root_model_pedestrian desc sample
       label    : 'root_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_root.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_root.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1011,7 +947,7 @@ params :
       desc     : part_model_pedestrian desc sample
       label    : 'part_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_part.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_part.csv
       cmd_param:
         dash     : ''
         delim    : ':='
