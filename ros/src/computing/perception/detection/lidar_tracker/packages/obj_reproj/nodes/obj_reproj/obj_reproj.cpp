@@ -49,10 +49,6 @@
 #include <time.h>
 #include <vector>
 
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/highgui.h>
-
 #include "axial_move.h"
 #include "cal_obj_loc.h"
 #include "calcoordinates.h"
@@ -62,7 +58,6 @@
 #include <autoware_msgs/projection_matrix.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <gnss/geo_pos_conv.hpp>
 #include <mutex>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/NavSatFix.h>

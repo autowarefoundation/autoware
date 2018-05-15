@@ -23,7 +23,20 @@ find_package(OpenCV REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        CATKIN_DEPENDS std_msgs geometry_msgs pcl_ros vector_map_server autoware_msgs
+        CATKIN_DEPENDS 
+        pcl_ros
+        roscpp
+        geometry_msgs
+        std_msgs
+        sensor_msgs
+        autoware_msgs
+        tf
+        jsk_recognition_msgs
+        jsk_rviz_plugins
+        vector_map_server
+        grid_map_ros
+        grid_map_cv
+        grid_map_msgs
         INCLUDE_DIRS include
 )
 

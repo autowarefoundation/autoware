@@ -17,6 +17,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS
+  roscpp
   geometry_msgs
   autoware_msgs
   jsk_recognition_msgs

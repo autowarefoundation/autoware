@@ -13,7 +13,6 @@
     <build_depend>autoware_msgs</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>jsk_recognition_msgs</build_depend>
-    <build_depend>jsk_rviz_plugins</build_depend>
     <build_depend>vector_map_server</build_depend>
     <build_depend>vector_map</build_depend>
 
@@ -21,7 +20,6 @@
     <run_depend>autoware_msgs</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>jsk_recognition_msgs</run_depend>
-    <run_depend>jsk_rviz_plugins</run_depend>
     <run_depend>vector_map_server</run_depend>
     <run_depend>vector_map</run_depend>
 
