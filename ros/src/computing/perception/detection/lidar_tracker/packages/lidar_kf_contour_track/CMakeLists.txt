@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_kf_contour_track)
 
 find_package(catkin REQUIRED COMPONENTS
-  pcl_ros
   roscpp
   autoware_msgs
   tf
@@ -15,7 +14,6 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS
-  pcl_ros
   roscpp
   autoware_msgs
   tf
@@ -27,7 +25,6 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         include
 )
-link_directories(${PCL_LIBRARY_DIRS})
 
 #kl contour track
 add_executable(lidar_kf_contour_track
@@ -36,7 +33,6 @@ add_executable(lidar_kf_contour_track
 )
 target_link_libraries(lidar_kf_contour_track
 ${catkin_LIBRARIES}
-${PCL_LIBRARIES}
 )
 add_dependencies(lidar_kf_contour_track
 ${catkin_EXPORTED_TARGETS}

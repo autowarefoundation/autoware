@@ -4,7 +4,6 @@ project(lidar_imm_ukf_pda_track)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_ros
-  std_msgs
   autoware_msgs
   geometry_msgs
   tf
@@ -18,7 +17,6 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   pcl_ros
-  std_msgs
   autoware_msgs
   geometry_msgs
   tf

@@ -6,9 +6,6 @@
  */
 
 #include "ros/ros.h"
-#include <sensor_msgs/PointCloud.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/point_cloud_conversion.h>
 
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"

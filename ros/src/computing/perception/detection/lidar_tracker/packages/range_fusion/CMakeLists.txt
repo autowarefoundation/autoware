@@ -12,6 +12,7 @@ FIND_PACKAGE(OpenCV REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS 
+  roscpp
   std_msgs
   autoware_msgs
   fusion

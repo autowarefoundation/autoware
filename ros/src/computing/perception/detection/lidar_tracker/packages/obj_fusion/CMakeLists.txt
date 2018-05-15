@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   tf
   jsk_recognition_msgs
-  jsk_rviz_plugins
   vector_map
   vector_map_server
   )
@@ -15,10 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
   CATKIN_DEPENDS 
+  roscpp
   autoware_msgs
   tf
   jsk_recognition_msgs
-  jsk_rviz_plugins
   vector_map
   vector_map_server
 )

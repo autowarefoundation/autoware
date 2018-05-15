@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   std_msgs
-  sensor_msgs
   autoware_msgs
   tf
   jsk_recognition_msgs
@@ -23,7 +22,6 @@ catkin_package(
   pcl_ros
   roscpp
   std_msgs
-  sensor_msgs
   autoware_msgs
   tf
   jsk_recognition_msgs

@@ -8,19 +8,18 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   autoware_msgs
   jsk_recognition_msgs
   tf
-  gnss
   )
 
 FIND_PACKAGE(OpenCV REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS 
+  roscpp
   sensor_msgs
   std_msgs
   autoware_msgs
   jsk_recognition_msgs
   tf
-  gnss
   )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
