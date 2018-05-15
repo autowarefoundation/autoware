@@ -320,13 +320,6 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-      - name : imm_ukf_pda_tracker
-        desc : imm_ukf_pda_tracker desc sample
-        cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
-        param: imm_ukf_pda_tracker
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
 
       - name : range_fusion
         desc : range_fusion desc sample
@@ -1039,8 +1032,6 @@ params :
       max   : 10
       v     : 9
 
-<<<<<<< 917eb87007edbddbf09ac30745646a9d5a3f12f3
-=======
   - name  : lidar_imm_ukf_pda_track
     vars  :
     - name    : input_topic_

@@ -9,10 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
         )
 find_package(OpenCV REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
-
 catkin_package(
         #  INCLUDE_DIRS include
         #  LIBRARIES vision_lane_detect
