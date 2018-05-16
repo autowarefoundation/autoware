@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
-  lidar_euclidean_cluster_detect
   )
 
 find_package(OpenCV REQUIRED)
@@ -26,7 +25,6 @@ catkin_package(
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
-  lidar_euclidean_cluster_detect
 )
 
 include_directories(
