@@ -44,11 +44,11 @@
 
   <!-- traffic light recognition -->
   <!-- feat_proj -->
-  <node pkg="road_wizard" type="feat_proj" name="feat_proj">
+  <node pkg="trafficlight_recognizer" type="feat_proj" name="feat_proj">
   </node>
 
   <!-- region_tlr -->
-  <include file="$(find road_wizard)/launch/traffic_light_recognition.launch">
+  <include file="$(find trafficlight_recognizer)/launch/traffic_light_recognition.launch">
   </include>
 
 </launch>

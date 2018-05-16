@@ -1,0 +1,45 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+  <arg name="image_node" default="image_obj"/>
+  <arg name="points_node" default="/points_image"/>
+  <arg name="sync" default="false" />
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <!-- ranging -->
+      <node pkg="range_fusion" name="ranging" type="range_fusion" output="screen" >
+          <remap from="/config/obj_car/fusion" to="/config/car_fusion"/>
+          <param name="image_node" type="str" value="$(arg image_node)"/>
+          <param name="points_node" type="str" value="$(arg points_node)"/>
+          <remap from="/obj_car/image_obj" to="/sync_ranging/obj_car/image_obj" if="$(arg sync)" />
+          <remap from="/vscan_image" to="/sync_ranging/obj_car/vscan_image" if="$(arg sync)" />
+          <remap from="/points_image" to="/sync_ranging/obj_car/points_image" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <!-- ranging -->
+      <node pkg="range_fusion" name="ranging" type="range_fusion">
+          <remap from="/config/obj_person/fusion" to="/config/pedestrian_fusion"/>
+          <param name="image_node" type="str" value="$(arg image_node)"/>
+          <param name="points_node" type="str" value="$(arg points_node)"/>
+          <remap from="/obj_person/image_obj" to="/sync_ranging/obj_person/image_obj" if="$(arg sync)" />
+          <remap from="/vscan_image" to="/sync_ranging/obj_person/vscan_image" if="$(arg sync)" />
+          <remap from="/points_image" to="/sync_ranging/obj_car/points_image" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <include file="$(find synchronization)/launch/sync_range_fusion.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
+
+</launch>

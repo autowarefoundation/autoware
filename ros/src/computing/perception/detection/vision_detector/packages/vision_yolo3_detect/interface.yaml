@@ -1,0 +1,3 @@
+- name: vision_yolo3_detect
+  publish: [/obj_X/image_obj]
+  subscribe: [/config/Yolo3, /image_raw]

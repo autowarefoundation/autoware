@@ -19,12 +19,12 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
-    - name : ndt_localizer
-      desc : ndt_localizer desc sample
+    - name : lidar_localizer
+      desc : lidar_localizer desc sample
       subs :
       - name : ndt_mapping
         desc : ndt_mapping desc sample
-        cmd  : roslaunch ndt_localizer ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer ndt_mapping.launch
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -39,7 +39,7 @@ subs :
           imu_topic:
             flags : [ nl ]
       - name : approximate_ndt_mapping
-        cmd  : roslaunch ndt_localizer approximate_ndt_mapping.launch
+        cmd  : roslaunch lidar_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
@@ -47,7 +47,7 @@ subs :
           dialog_height : 450
       - name : ndt_matching
         desc : ndt_matching desc sample
-        cmd  : roslaunch ndt_localizer ndt_matching.launch
+        cmd  : roslaunch lidar_localizer ndt_matching.launch
         param: ndt
         gui  :
           dialog_height : 550
@@ -70,14 +70,12 @@ subs :
             func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
         desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
-        cmd  : roslaunch ndt_localizer ndt_matching_monitor.launch
+        cmd  : roslaunch lidar_localizer ndt_matching_monitor.launch
         param: ndt_matching_monitor
-
-    - name : icp_localizer
-      subs :
       - name : icp_matching
-        cmd  : roslaunch icp_localizer icp_matching.launch
+        cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+
     - name : autoware_connector
       desc : autoware_connector desc sample
       subs :
@@ -103,36 +101,13 @@ subs :
   - name : Detection
     desc : Detection desc sample
     subs :
-    - name : cv_detector
-      desc : cv_detector desc sample
+    - name : vision_detector
+      desc : vision_detector desc sample
       subs :
-      - name : dpm_ocv
-        desc : dpm_ocv desc sample
-        cmd  : roslaunch cv_tracker dpm_ocv.launch
-        param: dpm_ocv
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
-          use_gpu :
-            flags  : [ nl ]
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
 
-      - name : dpm_ttic
-        desc : dpm_ttic desc sample
-        cmd  : roslaunch cv_tracker dpm_ttic.launch
+      - name : vision_dpm_ttic_detect
+        desc : vision_dpm_ttic_detect desc sample
+        cmd  : roslaunch vision_dpm_ttic_detect vision_dpm_ttic_detect.launch
         param: dpm_ttic
         gui  :
           flags                  : [ open_dialog, need_camera_info ]
@@ -155,22 +130,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
-      - name : rcnn_msr
-        desc : rcnn_msr desc sample
-        cmd  : roslaunch cv_tracker rcnn.launch
-        param: rcnn
-        gui   :
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-
-      - name : ssd_unc
-        desc : ssd_unc desc sample
-        cmd  : roslaunch cv_tracker ssd.launch
+      - name : vision_ssd_detect
+        desc : vision_ssd_detect desc sample
+        cmd  : roslaunch vision_ssd_detect vision_ssd_detect.launch
         param: ssd
         gui   :
           flags : [ need_camera_info ]
@@ -180,38 +142,23 @@ subs :
             border : 16
             flags : [ all ]
 
-      - name : yolo2_wa
-        desc : yolo2_wa desc sample
-        cmd  : roslaunch cv_tracker yolo2.launch
-        param: yolo2
+      - name : vision_yolo2_detect
+        desc : Yolo2 Image based detector
+        cmd  : roslaunch vision_yolo2_detect vision_yolo2_detect.launch
+        param: vision_yolo2_detect
 
-      - name : yolo3_wa
+      - name : vision_yolo3_detect
         desc : Yolo3 Image based detector
-        cmd  : roslaunch yolo3_detector yolo3.launch
+        cmd  : roslaunch vision_yolo3_detect vision_yolo3_detect.launch
         param: yolo3
 
-      - name : range_fusion
-        desc : range_fusion desc sample
-        cmd  : roslaunch cv_tracker ranging.launch
-        param: car_fusion
-        gui  :
-          flags                  : [ open_dialog ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
-          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
 
-      - name : klt_track
-        desc : klt_track desc sample
-        cmd  : roslaunch cv_tracker klt_tracking.launch
+    - name : vision_tracker
+      desc : vision_tracker desc sample
+      subs :
+      - name : vision_klt_track
+        desc : vision_klt_track desc sample
+        cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
           flags : [ need_camera_info ]
@@ -222,10 +169,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-
-      - name : kf_track
-        desc : kf_track desc sample
-        cmd  : roslaunch cv_tracker kf_tracking.launch
+      - name : vision_kf_track
+        desc : vision_kf_track desc sample
+        cmd  : roslaunch vision_kf_track vision_kf_track.launch
         param: car_kf
         gui  :
           flags                  : [ open_dialog, need_camera_info ]
@@ -254,9 +200,9 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-      - name : dummy_track
-        desc : dummy_track desc sample
-        cmd  : roslaunch cv_tracker dummy_track.launch
+      - name : vision_dummy_track
+        desc : vision_dummy_track desc sample
+        cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
         gui  :
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
@@ -264,9 +210,139 @@ subs :
           camera_id :
             border : 16
             flags : [ all ]
+
+    - name : lidar_detector
+      desc : lidar_detector desc sample
+      subs :
+      - name : lidar_euclidean_cluster_detect
+        desc : lidar_euclidean_cluster_detect desc sample
+        cmd  : roslaunch lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.launch
+        param: lidar_euclidean_cluster_detect_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : lidar_svm_detect
+        desc : lidar_svm_detect desc sample
+        cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
+        param: lidar_svm_detect
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
+    - name : lidar_tracker
+      desc : lidar_tracker desc sample
+      subs :
+      - name : lidar_kf_track
+        desc : lidar_kf_track desc sample
+        cmd  : roslaunch lidar_kf_track lidar_kf_track.launch
+        param: lidar_kf_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : lidar_pf_track
+        desc : lidar_pf_track desc sample
+        cmd  : roslaunch lidar_pf_track lidar_pf_track.launch
+        param: lidar_pf_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : lidar_euclidean_track
+        desc : lidar_euclidean_track desc sample
+        cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
+        param: lidar_euclidean_track
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
+      - name : lidar_kf_contour_track
+        desc : part of open planner perception package
+        cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
+        param: lidar_kf_contour_track
+
+      - name : lidar_imm_ukf_pda_track
+        desc : lidar_imm_ukf_pda_track desc sample
+        cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
+        param: imm_ukf_pda_tracker
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
+
+      - name : range_fusion
+        desc : range_fusion desc sample
+        cmd  : roslaunch range_fusion range_fusion.launch
+        param: car_fusion
+        gui  :
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
+          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
+          open_dialog_only       : [ car, pedestrian ]
+          open_dialog_ok_label   : Start
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
+
       - name : obj_reproj
         desc : obj_reproj desc sample
-        cmd  : roslaunch cv_tracker reprojection.launch
+        cmd  : roslaunch obj_reproj obj_reproj.launch
+        param: obj_reproj
+        gui  :
+          flags                : [ open_dialog, no_link, need_camera_info ]
+          open_dialog_ok_label : Start
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+          sel_cam_dialog_only : [ camera_id ]
+          sel_cam_dialog_allow: [ camera_id ]
+          camera_id :
+            border : 16
+            flags : [ all ]
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : obj_fusion
+        desc : obj_fusion desc sample
+        cmd  : roslaunch obj_fusion obj_fusion.launch
+        param: obj_fusion
+        gui  :
+          flags                : [ open_dialog, no_link ]
+          open_dialog_ok_label : Start
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
+
+
+      - name : range_fusion
+        desc : range_fusion desc sample
+        cmd  : roslaunch range_fusion range_fusion.launch
+        param: car_fusion
+        gui  :
+          flags                  : [ open_dialog ]
+          config_dialog          : MyDialogCarPedestrian
+          car_pedestrian_obj_key : { car : car_fusion, pedestrian : pedestrian_fusion }
+          config_dialog_only     : [ min_low_height, max_low_height, max_height, min_points, dispersion ]
+          open_dialog_only       : [ car, pedestrian ]
+          open_dialog_ok_label   : Start
+          car :
+            user_category : Detection Target
+          pedestrian :
+            border : 16
+            flags  : [ left ]
+          sync :
+            func : self.button_synchronization.GetValue()
+
+      - name : obj_reproj
+        desc : obj_reproj desc sample
+        cmd  : roslaunch obj_reproj obj_reproj.launch
         param: obj_reproj
         gui  :
           flags                : [ open_dialog, no_link, need_camera_info ]
@@ -284,79 +360,13 @@ subs :
           sync :
             func : self.button_synchronization.GetValue()
 
-    - name : lidar_detector
-      desc : lidar_detector desc sample
-      subs :
-      - name : euclidean_cluster
-        desc : euclidean_cluster desc sample
-        cmd  : roslaunch lidar_tracker euclidean_clustering.launch
-        param: euclidean_cluster
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : svm_lidar_detect
-        desc : svm_lidar_detect desc sample
-        cmd  : roslaunch lidar_tracker svm_lidar_detect.launch
-        param: svm_lidar_detect
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : kf_lidar_track
-        desc : kf_lidar_track desc sample
-        cmd  : roslaunch lidar_tracker kf_lidar_track.launch
-        param: kf_lidar_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : pf_lidar_track
-        desc : pf_lidar_track desc sample
-        cmd  : roslaunch lidar_tracker pf_lidar_track.launch
-        param: pf_lidar_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-      - name : euclidean_lidar_track
-        desc : euclidean_lidar_track desc sample
-        cmd  : roslaunch lidar_tracker euclidean_lidar_track.launch
-        param: euclidean_lidar_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
 
-      - name : kf_contour_tracker
-        desc : part of open planner perception package
-        cmd  : roslaunch lidar_tracker kf_contour_tracker.launch
-        param: kf_contour_tracker
-
-      - name : obj_fusion
-        desc : obj_fusion desc sample
-        cmd  : roslaunch lidar_tracker obj_fusion.launch
-        param: obj_fusion
-        gui  :
-          flags                : [ open_dialog, no_link ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
-      - name : imm_ukf_pda_tracker
-        desc : imm_ukf_pda_tracker desc sample
-        cmd  : roslaunch lidar_tracker imm_ukf_pda_tracker.launch
-        param: imm_ukf_pda_tracker
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
-    - name : road_wizard
-      desc : road_wizard desc sample
+    - name : trafficlight_recognizer
+      desc : trafficlight_recognizer desc sample
       subs :
       - name : feat_proj
         desc : feat_proj desc sample
-        cmd  : roslaunch road_wizard feat_proj.launch
+        cmd  : roslaunch trafficlight_recognizer feat_proj.launch
         param: feat_proj
         gui  :
           flags : [ need_camera_info ]
@@ -368,7 +378,7 @@ subs :
 
       - name : region_tlr
         desc : region_tlr desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition.launch
         param: region_tlr
         gui  :
           flags : [ need_camera_info ]
@@ -380,7 +390,7 @@ subs :
 
       - name : region_tlr_mxnet
         desc : region_tlr_mxnet desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition_mxnet.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition_mxnet.launch
         param: region_tlr_mxnet
         gui  :
           flags : [ need_camera_info ]
@@ -392,7 +402,7 @@ subs :
 
       - name : region_tlr_ssd
         desc : region_tlr_ssd desc sample
-        cmd  : roslaunch road_wizard traffic_light_recognition_ssd.launch
+        cmd  : roslaunch trafficlight_recognizer traffic_light_recognition_ssd.launch
         param : region_tlr_ssd
         gui  :
           flags : [ no_link, need_camera_info ]
@@ -856,70 +866,6 @@ params :
       kind     : num
       v        : 20
 
-  - name  : dpm_ocv
-    vars  :
-    - name     : use_gpu
-      desc     : use_gpu desc sample
-      label    : Use GPU
-      kind     : radio_box
-      choices  : [ 'False', 'True' ]
-      descs    : [ 'False desc sample', 'True desc sample' ]
-      choices_type : str
-      choices_style: h
-      v        : 'False'
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : car
-      desc     : car desc sample
-      label    : Car
-      kind     : checkbox
-      v        : True
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : pedestrian
-      desc     : pedestrian desc sample
-      label    : Pedestrian
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : model_file_car
-      desc     : model_file_car desc sample
-      label    : 'model_file (Car)'
-      kind     : path
-      v        : $(rospack find cv_tracker)/data/car_2008.xml
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : model_file_pedestrian
-      desc     : model_file_pedestrian desc sample
-      label    : 'model_file (Pedestrian)'
-      kind     : path
-      v        : $(rospack find cv_tracker)/data/person.xml
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name         : camera_id
-      desc         : camera_id desc sample
-      kind         : menu
-      label        : Camera ID
-      choices_type : str
-      v            : ''
-      cmd_param    :
-        dash         : ''
-        delim        : ':='
-        only_enable  : True
-    - name      : sync
-      kind      : hide
-      v         : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-        only_enable : True
-
   - name  : dpm_ttic
     vars  :
     - name     : use_gpu
@@ -954,7 +900,7 @@ params :
       desc     : comp_model_car desc sample
       label    : 'comp_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_comp.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_comp.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -962,7 +908,7 @@ params :
       desc     : root_model_car desc sample
       label    : 'root_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_root.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_root.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -970,7 +916,7 @@ params :
       desc     : part_model_car desc sample
       label    : 'part_model (Car)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/car_part.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/car_part.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -978,7 +924,7 @@ params :
       desc     : comp_model_pedestrian desc sample
       label    : 'comp_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_comp.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_comp.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -986,7 +932,7 @@ params :
       desc     : root_model_pedestrian desc sample
       label    : 'root_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_root.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_root.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -994,7 +940,7 @@ params :
       desc     : part_model_pedestrian desc sample
       label    : 'part_model (Pedestrian)'
       kind     : path
-      v        : $(rospack find cv_tracker)/data/person_part.csv
+      v        : $(rospack find vision_dpm_ttic_detect)/data/person_part.csv
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1086,230 +1032,7 @@ params :
       max   : 10
       v     : 9
 
-  - name  : euclidean_cluster
-    vars  :
-    - name    : remove_ground
-      desc    : remove_ground desc sample
-      label   : 'remove ground'
-      kind    : checkbox
-      v       : True
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : pose_estimation
-      desc    : pose_estimation desc sample
-      label   : 'pose_estimation'
-      kind    : checkbox
-      v       : True
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : use_diffnormals
-      desc    : use_diffnormals desc sample
-      label   : 'use_diffnormals'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-    - name    : publish_filtered
-      desc    : publish_filtered desc sample
-      label   : 'publish filtered'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : downsample_cloud
-      desc    : downsample_cloud desc sample
-      label   : 'downsample_cloud'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-    - name    : points_node
-      desc    : points_node desc sample
-      label   : 'input_points_node'
-      kind    : str
-      v       : points_raw
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-    - name    : leaf_size
-      desc    : leaf_size desc sample
-      label   : 'leaf size'
-      min       : 0
-      max       : 1
-      v       : 0.1
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : cluster_size_min
-      desc    : cluster_size_min desc sample
-      label   : 'cluster size minimum'
-      min       : 0
-      max       : 100000
-      v       : 20
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : cluster_size_max
-      desc    : cluster_size_max desc sample
-      label   : 'cluster size maximum'
-      min       : 0
-      max       : 100000
-      v       : 100000
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clip_min_height
-      desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
-      label   : 'clip_min_height (~sensor height)'
-      min       : -5
-      max       : 5
-      v       : -5
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clip_max_height
-      desc    : Remove points above this value. Introduced value must match the input data frame coordinate system.
-      label   : 'clip_max_height (above sensor)'
-      min       : 0
-      max       : 5
-      v       : 0.5
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : use_vector_map
-      desc    : If checked, Localization and ADAS MAp with WAYAREA info should be published. Objects outside the road will be filtered.
-      label   : 'use_vector_map'
-      kind    : checkbox
-      v       : false
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : vectormap_frame
-      desc    : Frame of the VectorMap according to TF. default. map
-      label   : 'vectormap_frame'
-      kind    : str
-      v       : map
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : wayarea_gridmap_topic
-      desc    : Topic name of the wayarea grid_map, this is published by wayarea2grid node in Computing/Semantics. default. grid_map_wayarea
-      label   : 'wayarea_gridmap_topic'
-      kind    : str
-      v       : grid_map_wayarea
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : wayarea_gridmap_layer
-      desc    : Name of the layer inside the GridMap containing the wayarea. default. wayarea
-      label   : 'wayarea_gridmap_topic'
-      kind    : str
-      v       : wayarea
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : wayarea_no_road_value
-      desc    : Value in the cccupancy grid to define non road cells. Default 255
-      label   : 'wayarea_no_road_value'
-      min       : 0
-      max       : 255
-      v       : 255
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : remove_points_upto
-      desc    : remove_points_upto desc sample
-      label   : 'remove_points_upto (ignore points up to this distance)'
-      min       : 0
-      max       : 2.5
-      v       : 0.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : keep_lanes
-      desc    : keep_lanes desc sample
-      label   : 'keep_only_lanes_points'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : keep_lane_left_distance
-      desc    : keep_lane_left_distance desc sample
-      label   : 'keep_lane_left_distance'
-      min       : 0
-      max       : 100
-      v       : 5.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : keep_lane_right_distance
-      desc    : keep_lane_right_distance desc sample
-      label   : 'keep_lane_right_distance'
-      min       : 0
-      max       : 100
-      v       : 5.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clustering_distances
-      desc    : clustering_distances desc sample
-      label   : 'clustering_distances (no spaces)'
-      kind    : str
-      v       : '[15,30,45,60]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clustering_thresholds
-      desc    : clustering_thresholds desc sample
-      label   : 'clustering_thresholds (no spaces)'
-      kind    : str
-      v       : '[0.5,1.1,1.6,2.1,2.6]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : output_frame
-      desc    : output_frame desc sample
-      label   : 'output_frame'
-      kind    : str
-      v       : velodyne
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : cluster_merge_threshold
-      desc    : cluster_merge_threshold desc sample
-      label   : 'cluster_merge_threshold'
-      min       : 0
-      max       : 10
-      v       : 1.5
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name      : sync
-      kind      : hide
-      v         : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-        only_enable : True
-    - name    : use_gpu
-      desc    : use_gpu desc sample
-      label   : 'use_gpu'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-  - name  : imm_ukf_pda_tracker
+  - name  : lidar_imm_ukf_pda_track
     vars  :
     - name    : input_topic_
       desc    : input_topic desc sample
@@ -1397,7 +1120,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
+        
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
@@ -2180,8 +1903,8 @@ params :
       desc    : initialize_source desc sample
       label   : Initialize Source
       kind    : radio_box
-      choices : ['Rviz','ndt_localizer','GNSS']
-      descs   : ['Rviz desc sample', 'ndt_localizer desc sample', 'GNSS desc sample']
+      choices : ['Rviz','lidar_localizer','GNSS']
+      descs   : ['Rviz desc sample', 'lidar_localizer desc sample', 'GNSS desc sample']
       choices_type : str
       v       : Rviz
       cmd_param:
@@ -3710,63 +3433,6 @@ params :
       max   : 5.0
       v     : 1.0
 
-  - name  : rcnn
-    topic : /config/rcnn
-    msg   : ConfigRcnn
-    vars  :
-    - name  : score_threshold
-      desc  : score_threshold desc sample
-      label : Score Threshold
-      min   : 0.0
-      max   : 1.0
-      v     : 0.6
-    - name  : group_threshold
-      desc  : group_threshold desc sample
-      label : Group Threshold
-      min   : 0.0
-      max   : 1.0
-      v     : 0.3
-    - name  : image_slices
-      desc  : image_slices desc sample
-      label : Image Slices (proposals)
-      min   : 2
-      max   : 32
-      v     : 16
-    - name  : slices_overlap
-      desc  : slices_overlap desc sample
-      label : Overlap between slices (proposals)
-      min   : 0.0
-      max   : 1.0
-      v     : 0.7
-    - name  : b_mean
-      desc  : b_mean desc sample
-      label : Blue Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 192.9801
-    - name  : g_mean
-      desc  : g_mean desc sample
-      label : Green Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 115.9465
-    - name  : r_mean
-      desc  : r_mean desc sample
-      label : Red Channel Mean Value (pre processing)
-      min   : -255.0
-      max   : 255.0
-      v     : 122.7717
-    - name         : camera_id
-      desc         : camera_id desc sample
-      kind         : menu
-      label        : Camera ID
-      choices_type : str
-      v            : ''
-      cmd_param    :
-        dash         : ''
-        delim        : ':='
-        only_enable  : True
-
   - name  : ssd
     topic : /config/ssd
     msg   : ConfigSsd
@@ -4236,7 +3902,7 @@ params :
         dash      : ''
         delim     : ':='
 
-  - name  : yolo2
+  - name  : vision_yolo2_detect
     vars  :
     - name  : score_threshold
       desc  : Detections with a confidence value larger than this value will be displayed.
@@ -4331,7 +3997,7 @@ params :
       desc     : Configuration file defining the network
       label    : 'network_definition (cfg)'
       kind     : path
-      v        : $(rospack find yolo3_detector)/darknet/cfg/yolov3.cfg
+      v        : $(rospack find vision_yolo3_detect)/darknet/cfg/yolov3.cfg
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4339,7 +4005,7 @@ params :
       desc     : Pre-trained  model
       label    : 'pre_trained_model (weights)'
       kind     : path
-      v        : $(rospack find yolo3_detector)/darknet/data/yolov3.weights
+      v        : $(rospack find vision_yolo3_detect)/darknet/data/yolov3.weights
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4361,3 +4027,226 @@ params :
       cmd_param    :
         dash         : ''
         delim        : ':='
+
+  - name  : lidar_euclidean_cluster_detect_param
+    vars  :
+    - name    : remove_ground
+      desc    : remove_ground desc sample
+      label   : 'remove ground'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : pose_estimation
+      desc    : pose_estimation desc sample
+      label   : 'pose_estimation'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+    - name    : publish_filtered
+      desc    : publish_filtered desc sample
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : downsample_cloud
+      desc    : downsample_cloud desc sample
+      label   : 'downsample_cloud'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+    - name    : points_node
+      desc    : points_node desc sample
+      label   : 'input_points_node'
+      kind    : str
+      v       : points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+    - name    : leaf_size
+      desc    : leaf_size desc sample
+      label   : 'leaf size'
+      min       : 0
+      max       : 1
+      v       : 0.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : cluster_size_min
+      desc    : cluster_size_min desc sample
+      label   : 'cluster size minimum'
+      min       : 0
+      max       : 100000
+      v       : 20
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : cluster_size_max
+      desc    : cluster_size_max desc sample
+      label   : 'cluster size maximum'
+      min       : 0
+      max       : 100000
+      v       : 100000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clip_min_height
+      desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
+      label   : 'clip_min_height (~sensor height)'
+      min       : -5
+      max       : 5
+      v       : -5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clip_max_height
+      desc    : Remove points above this value. Introduced value must match the input data frame coordinate system.
+      label   : 'clip_max_height (above sensor)'
+      min       : 0
+      max       : 5
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_vector_map
+      desc    : If checked, Localization and ADAS MAp with WAYAREA info should be published. Objects outside the road will be filtered.
+      label   : 'use_vector_map'
+      kind    : checkbox
+      v       : false
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_frame
+      desc    : Frame of the VectorMap according to TF. default. map
+      label   : 'vectormap_frame'
+      kind    : str
+      v       : map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : wayarea_gridmap_topic
+      desc    : Topic name of the wayarea grid_map, this is published by wayarea2grid node in Computing/Semantics. default. grid_map_wayarea
+      label   : 'wayarea_gridmap_topic'
+      kind    : str
+      v       : grid_map_wayarea
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : wayarea_gridmap_layer
+      desc    : Name of the layer inside the GridMap containing the wayarea. default. wayarea
+      label   : 'wayarea_gridmap_topic'
+      kind    : str
+      v       : wayarea
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : wayarea_no_road_value
+      desc    : Value in the cccupancy grid to define non road cells. Default 255
+      label   : 'wayarea_no_road_value'
+      min       : 0
+      max       : 255
+      v       : 255
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : remove_points_upto
+      desc    : remove_points_upto desc sample
+      label   : 'remove_points_upto (ignore points up to this distance)'
+      min       : 0
+      max       : 2.5
+      v       : 0.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lanes
+      desc    : keep_lanes desc sample
+      label   : 'keep_only_lanes_points'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lane_left_distance
+      desc    : keep_lane_left_distance desc sample
+      label   : 'keep_lane_left_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : keep_lane_right_distance
+      desc    : keep_lane_right_distance desc sample
+      label   : 'keep_lane_right_distance'
+      min       : 0
+      max       : 100
+      v       : 5.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (no spaces)'
+      kind    : str
+      v       : '[15,30,45,60]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_thresholds
+      desc    : clustering_thresholds desc sample
+      label   : 'clustering_thresholds (no spaces)'
+      kind    : str
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_frame
+      desc    : output_frame desc sample
+      label   : 'output_frame'
+      kind    : str
+      v       : velodyne
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : cluster_merge_threshold
+      desc    : cluster_merge_threshold desc sample
+      label   : 'cluster_merge_threshold'
+      min       : 0
+      max       : 10
+      v       : 1.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : sync
+      kind      : hide
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        only_enable : True
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='

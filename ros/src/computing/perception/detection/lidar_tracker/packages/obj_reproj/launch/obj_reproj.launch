@@ -1,0 +1,43 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+  <arg name="camera_id" default="/"/>
+  <arg name="sync" default="false" />
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <arg name="projection_matrix_src_car" default="/projection_matrix"/>
+      <arg name="camera_info_src_car" default="/camera_info"/>
+
+      <node pkg="obj_reproj" name="reprojection" type="obj_reproj">
+        <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_car)"/>
+        <param name="camera_info_topic" value="$(arg camera_id)$(arg camera_info_src_car)"/>
+        <remap from="/obj_car/image_obj_tracked" to="/sync_reprojection/obj_car/image_obj_tracked" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/obj_car/current_pose" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <arg name="projection_matrix_src_pedestrian" default="/projection_matrix"/>
+      <arg name="camera_info_src_pedestrian" default="/camera_info"/>
+
+      <node pkg="obj_reproj" name="reprojection" type="obj_reproj">
+        <param name="projection_matrix_topic" value="$(arg camera_id)$(arg projection_matrix_src_pedestrian)"/>
+        <param name="camera_info_topic" value="$(arg camera_id)$(arg camera_info_src_pedestrian)"/>
+        <remap from="/obj_person/image_obj_tracked" to="/sync_reprojection/obj_person/image_obj_tracked" if="$(arg sync)" />
+        <remap from="/current_pose" to="/sync_reprojection/obj_person/current_pose" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <include file="$(find synchronization)/launch/sync_obj_reproj.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
+</launch>

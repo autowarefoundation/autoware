@@ -1,0 +1,21 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="init_x" default="0.0" />
+  <arg name="init_y" default="0.0" />
+  <arg name="init_z" default="0.0" />  
+  <arg name="init_roll" default="0.0" />  
+  <arg name="init_pitch" default="0.0" />  
+  <arg name="init_yaw" default="0.0" />  
+  
+  <node pkg="lidar_localizer" type="ndt_mapping_tku" name="ndt_mapping_tku" output="screen">
+    <param name="init_x" value="$(arg init_x)" />
+    <param name="init_y" value="$(arg init_y)" />
+    <param name="init_z" value="$(arg init_z)" />
+    <param name="init_roll" value="$(arg init_roll)" />
+    <param name="init_pitch" value="$(arg init_pitch)" />
+    <param name="init_yaw" value="$(arg init_yaw)" />
+  </node>
+  
+</launch>
