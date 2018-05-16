@@ -2,8 +2,8 @@
 Changelog for package multi_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-16)
+------------------
 * Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
 * Updated README
 * Added RTM UI controls

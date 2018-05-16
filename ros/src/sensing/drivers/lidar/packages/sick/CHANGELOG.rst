@@ -2,8 +2,8 @@
 Changelog for package sick_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-16)
+------------------
 * Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
 * Fixing `#1064 <https://github.com/kfunaoka/Autoware/issues/1064>`_ and `#1065 <https://github.com/kfunaoka/Autoware/issues/1065>`_
 * Add SICK LMS511 driver (`#1054 <https://github.com/kfunaoka/Autoware/issues/1054>`_)

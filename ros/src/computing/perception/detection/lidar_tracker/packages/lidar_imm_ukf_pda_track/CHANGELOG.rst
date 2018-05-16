@@ -2,8 +2,8 @@
 Changelog for package lidar_imm_ukf_pda_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-16)
+------------------
 * [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
 * Contributors: Kosuke Murakami
 

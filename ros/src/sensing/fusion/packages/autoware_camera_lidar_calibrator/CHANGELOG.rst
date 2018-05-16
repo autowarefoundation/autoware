@@ -2,8 +2,8 @@
 Changelog for package autoware_camera_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-16)
+------------------
 * Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
 * [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/kfunaoka/Autoware/issues/1149>`_)
 * Output file updated
