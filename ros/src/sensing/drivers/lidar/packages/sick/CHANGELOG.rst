@@ -7,10 +7,6 @@ Forthcoming
 * Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
 * Fixing `#1064 <https://github.com/kfunaoka/Autoware/issues/1064>`_ and `#1065 <https://github.com/kfunaoka/Autoware/issues/1065>`_
 * Add SICK LMS511 driver (`#1054 <https://github.com/kfunaoka/Autoware/issues/1054>`_)
-  * Add SICK LMS511 driver
-  * remove unnecessary dependencies
-  * Name of package changed
-  * Added Node Documentation
 * Contributors: AMC, David, Yuki Kitsukawa
 
 1.6.3 (2018-03-06)

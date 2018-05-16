@@ -5,38 +5,6 @@ Changelog for package multi_lidar_calibrator
 Forthcoming
 -----------
 * Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
-  * Initial Cleanup
-  * fixed also for indigo
-  * kf cjeck
-  * Fix road wizard
-  * Added travis ci
-  * Trigger CI
-  * Fixes to cv_tracker and lidar_tracker cmake
-  * Fix kitti player dependencies
-  * Removed unnecessary dependencies
-  * messages fixing for can
-  * Update build script travis
-  * Travis Path
-  * Travis Paths fix
-  * Travis test
-  * Eigen checks
-  * removed unnecessary dependencies
-  * Eigen Detection
-  * Job number reduced
-  * Eigen3 more fixes
-  * More Eigen3
-  * Even more Eigen
-  * find package cmake modules included
-  * More fixes to cmake modules
-  * Removed non ros dependency
-  * Enable industrial_ci for indidog and kinetic
-  * Wrong install command
-  * fix rviz_plugin install
-  * FastVirtualScan fix
-  * Fix Qt5 Fastvirtualscan
-  * Fixed qt5 system dependencies for rosdep
-  * NDT TKU Fix catkin not pacakged
-  * Fixes from industrial_ci
 * Updated README
 * Added RTM UI controls
 * Initial Release of Multi Lidar Calibrator Tool
