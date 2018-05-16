@@ -17,8 +17,6 @@ Changelog for package velodyne
 * Added velodyne_laserscan package and inserted into existing launch files
 * Contributors: Jack O'Quin, Joshua Whitley, Kevin Hallenbeck
 
-1.3.0 (2017-07-14)
-------------------
 
 1.2.0 (2017-06-07)
 ------------------

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_segment_enet_detect</name>
-    <version>1.7.0</version>
+    <version>1.6.3</version>
     <description>Image Segmentation</description>
     <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>
     <license>BSD</license>
