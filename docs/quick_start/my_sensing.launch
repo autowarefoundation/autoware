@@ -1,0 +1,20 @@
+<launch>
+
+  <!-- calibration file path -->
+  <arg name="velodyne_calib" default="$(find velodyne_pointcloud)/params/32db.yaml"/>
+  <arg name="camera_calib" default="$(env HOME)/.autoware/data/calibration/camera_lidar_3d/prius/nic-150407.yml"/>
+
+  <!-- HDL-32e -->
+  <include file="$(find velodyne_pointcloud)/launch/velodyne_hdl32e.launch">
+    <arg name="calibration" value="$(arg velodyne_calib)"/>
+  </include>
+
+  <!-- Javad Delta 3 -->
+  <!-- <node pkg="javad_navsat_driver" type="gnss.sh" name="javad_driver"/> -->
+
+  <!-- PointGrey Grasshopper3 -->
+  <include file="$(find autoware_pointgrey_drivers)/scripts/grasshopper3.launch">
+    <arg name="CalibrationFile" value="$(arg camera_calib)"/>
+  </include>
+
+</launch>

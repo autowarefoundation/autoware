@@ -237,11 +237,7 @@ See [Autoware Multi-LiDAR Calibration](ros/src/sensing/fusion/packages/multi_lid
 
 ## Sample Data
 
-[3D maps of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
-
-[ROSBAG data for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
-
-[Script of generating launch files for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
+[[Moriyama demo|Demo]]
 
 [ROSBAG data for calibration test](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
 
