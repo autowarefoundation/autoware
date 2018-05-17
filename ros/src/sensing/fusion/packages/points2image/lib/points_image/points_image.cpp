@@ -33,6 +33,22 @@
 #include <stdint.h>
 #include <iostream>
 
+static cv::Mat invRt, invTt;
+static bool init_matrix = false;
+
+void resetMatrix()
+{
+	init_matrix = false;
+}
+
+void initMatrix(const cv::Mat& cameraExtrinsicMat)
+{
+	invRt = cameraExtrinsicMat(cv::Rect(0,0,3,3));
+	cv::Mat invT = -invRt.t()*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
+	invTt = invT.t();
+	init_matrix = true;
+}
+
 autoware_msgs::PointsImage
 pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 		     const cv::Mat& cameraExtrinsicMat,
@@ -51,8 +67,6 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	msg.min_height.assign(w * h, 0);
 	msg.max_height.assign(w * h, 0);
 
-	cv::Mat invR = cameraExtrinsicMat(cv::Rect(0,0,3,3)).t();
-	cv::Mat invT = -invR*(cameraExtrinsicMat(cv::Rect(3,0,1,3)));
 	uintptr_t cp = (uintptr_t)pointcloud2->data.data();
 
 	msg.max_y = -1;
@@ -60,17 +74,21 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 
 	msg.image_height = imageSize.height;
 	msg.image_width = imageSize.width;
+	if (!init_matrix)
+	{
+		initMatrix(cameraExtrinsicMat);
+	}
 
+	cv::Mat point(1, 3, CV_64F);
 	for (uint32_t y = 0; y < pointcloud2->height; ++y) {
 		for (uint32_t x = 0; x < pointcloud2->width; ++x) {
 			float* fp = (float *)(cp + (x + y*pointcloud2->width) * pointcloud2->point_step);
 			double intensity = fp[4];
 
-			cv::Mat point(1, 3, CV_64F);
 			point.at<double>(0) = double(fp[0]);
 			point.at<double>(1) = double(fp[1]);
 			point.at<double>(2) = double(fp[2]);
-			point = point * invR.t() + invT.t();
+			point = point * invRt + invTt;
 
 			if (point.at<double>(2) <= 1) {
 				continue;
