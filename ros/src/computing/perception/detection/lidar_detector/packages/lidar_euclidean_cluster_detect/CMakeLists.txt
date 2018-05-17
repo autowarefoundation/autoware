@@ -23,7 +23,7 @@ find_package(OpenCV REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-        CATKIN_DEPENDS 
+        CATKIN_DEPENDS
         pcl_ros
         roscpp
         geometry_msgs
@@ -49,7 +49,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
-add_executable(lidar_euclidean_cluster_detect 
+add_executable(lidar_euclidean_cluster_detect
   nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
   nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
@@ -84,7 +84,7 @@ else ()
 
 endif ()
 
-add_dependencies(lidar_euclidean_cluster_detect 
+add_dependencies(lidar_euclidean_cluster_detect
   ${catkin_EXPORTED_TARGETS}
   )
 
@@ -95,7 +95,9 @@ if (OPENMP_FOUND)
             )
 endif ()
 
-install(DIRECTORY include
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE
-        )
+install(TARGETS
+        lidar_euclidean_cluster_detect
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)

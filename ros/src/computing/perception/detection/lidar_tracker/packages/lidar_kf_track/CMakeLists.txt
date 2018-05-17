@@ -50,3 +50,10 @@ target_link_libraries(lidar_kf_track
 add_dependencies(lidar_kf_track
   ${catkin_EXPORTED_TARGETS}
   )
+
+install(TARGETS
+        lidar_kf_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)

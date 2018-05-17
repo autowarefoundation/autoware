@@ -37,3 +37,10 @@ ${catkin_LIBRARIES}
 add_dependencies(lidar_kf_contour_track
 ${catkin_EXPORTED_TARGETS}
 )
+
+install(TARGETS
+        lidar_kf_contour_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)

@@ -15,8 +15,8 @@ find_package(OpenCV REQUIRED)
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS 
-  roscpp 
+  CATKIN_DEPENDS
+  roscpp
   sensor_msgs
   autoware_msgs
   tf
@@ -31,7 +31,7 @@ include_directories(
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 #SVM Detect
-add_executable(lidar_svm_detect 
+add_executable(lidar_svm_detect
   nodes/lidar_svm_detect/lidar_svm_detect.cpp)
 #add_library(svm SHARED nodes/svm_lidar_detect/libsvm/svm.cpp)
 target_link_libraries(lidar_svm_detect PRIVATE
@@ -43,3 +43,10 @@ target_link_libraries(lidar_svm_detect PRIVATE
 
 #target_include_directories(svm_lidar_detect PRIVATE nodes/svm_lidar_detect/libsvm)
 add_dependencies(lidar_svm_detect ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS
+        lidar_svm_detect
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)

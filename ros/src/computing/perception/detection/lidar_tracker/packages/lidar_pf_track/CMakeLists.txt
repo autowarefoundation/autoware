@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
-  CATKIN_DEPENDS 
+  CATKIN_DEPENDS
   roscpp
   autoware_msgs
   )
@@ -30,3 +30,10 @@ target_link_libraries(lidar_pf_track
 add_dependencies(lidar_pf_track
   ${catkin_EXPORTED_TARGETS}
   )
+
+install(TARGETS
+        lidar_pf_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
