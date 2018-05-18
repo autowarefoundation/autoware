@@ -57,6 +57,7 @@ static void projection_callback(const autoware_msgs::projection_matrix& msg)
 			cameraExtrinsicMat.at<double>(row, col) = msg.projection_matrix[row * 4 + col];
 		}
 	}
+	resetMatrix();
 }
 
 static void intrinsic_callback(const sensor_msgs::CameraInfo& msg)
@@ -75,6 +76,7 @@ static void intrinsic_callback(const sensor_msgs::CameraInfo& msg)
 	for (int col=0; col<5; col++) {
 		distCoeff.at<double>(col) = msg.D[col];
 	}
+	resetMatrix();
 }
 
 static void callback(const sensor_msgs::PointCloud2ConstPtr& msg)

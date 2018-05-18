@@ -80,28 +80,31 @@ pointcloud2_to_image(const sensor_msgs::PointCloud2ConstPtr& pointcloud2,
 	}
 
 	cv::Mat point(1, 3, CV_64F);
+	cv::Point2d imagepoint;
 	for (uint32_t y = 0; y < pointcloud2->height; ++y) {
 		for (uint32_t x = 0; x < pointcloud2->width; ++x) {
 			float* fp = (float *)(cp + (x + y*pointcloud2->width) * pointcloud2->point_step);
 			double intensity = fp[4];
-
-			point.at<double>(0) = double(fp[0]);
-			point.at<double>(1) = double(fp[1]);
-			point.at<double>(2) = double(fp[2]);
-			point = point * invRt + invTt;
+			for (int i = 0; i < 3; i++)
+			{
+				point.at<double>(i) = invTt.at<double>(i);
+				for (int j = 0; j < 3; j++)
+				{
+					point.at<double>(i) += double(fp[j]) * invRt.at<double>(j, i);
+				}
+			}
 
 			if (point.at<double>(2) <= 1) {
 				continue;
 			}
 
 			double tmpx = point.at<double>(0) / point.at<double>(2);
-			double tmpy = point.at<double>(1)/point.at<double>(2);
+			double tmpy = point.at<double>(1) / point.at<double>(2);
 			double r2 = tmpx * tmpx + tmpy * tmpy;
 			double tmpdist = 1 + distCoeff.at<double>(0) * r2
 				+ distCoeff.at<double>(1) * r2 * r2
 				+ distCoeff.at<double>(4) * r2 * r2 * r2;
 
-			cv::Point2d imagepoint;
 			imagepoint.x = tmpx * tmpdist
 				+ 2 * distCoeff.at<double>(2) * tmpx * tmpy
 				+ distCoeff.at<double>(3) * (r2 + 2 * tmpx * tmpx);
