@@ -50,8 +50,9 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 
 #Euclidean Cluster
 add_executable(lidar_euclidean_cluster_detect
-  nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
-  nodes/lidar_euclidean_cluster_detect/cluster.cpp)
+        nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
+        nodes/lidar_euclidean_cluster_detect/cluster.cpp)
+
 
 find_package(CUDA)
 if (${CUDA_FOUND})
@@ -60,7 +61,10 @@ if (${CUDA_FOUND})
     message("Version: " ${CUDA_VERSION})
     message("Library: " ${CUDA_CUDA_LIBRARY})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
-
+    set(ROS_VERSION $ENV{ROS_DISTRO})
+    if ("${ROS_VERSION}" MATCHES "(indigo)")
+        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
+    endif()
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
             GPU_CLUSTERING=1
             )
@@ -78,15 +82,16 @@ if (${CUDA_FOUND})
 
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
-      ${OpenCV_LIBRARIES}
-      ${catkin_LIBRARIES}
-      ${PCL_LIBRARIES})
+            ${OpenCV_LIBRARIES}
+            ${catkin_LIBRARIES}
+            ${PCL_LIBRARIES})
 
 endif ()
 
 add_dependencies(lidar_euclidean_cluster_detect
-  ${catkin_EXPORTED_TARGETS}
-  )
+        ${catkin_EXPORTED_TARGETS}
+        )
+
 
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES

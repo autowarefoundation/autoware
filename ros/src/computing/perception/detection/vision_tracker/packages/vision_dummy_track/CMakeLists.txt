@@ -6,13 +6,13 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-  roscpp
-  autoware_msgs
-)
+        roscpp
+        autoware_msgs
+        )
 
 
 catkin_package(
-  CATKIN_DEPENDS roscpp autoware_msgs
+        CATKIN_DEPENDS roscpp autoware_msgs
 )
 
 ###########
@@ -28,18 +28,18 @@ include_directories(
 
 ## vision_dummy_tracker ##
 add_executable(vision_dummy_track
-  nodes/vision_dummy_track/vision_dummy_track.cpp
-  )
+        nodes/vision_dummy_track/vision_dummy_track.cpp
+        )
 
 target_link_libraries(vision_dummy_track
-  ${catkin_LIBRARIES}
-  )
+        ${catkin_LIBRARIES}
+        )
 add_dependencies(vision_dummy_track
-  ${catkin_EXPORTED_TARGETS}
-  )
+        ${catkin_EXPORTED_TARGETS}
+        )
 
 install(TARGETS vision_dummy_track
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
