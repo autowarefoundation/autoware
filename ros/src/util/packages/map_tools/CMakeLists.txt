@@ -1,23 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_tools)
 
+find_package(PCL REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  tf
+  sensor_msgs
   pcl_ros
   pcl_conversions
-  velodyne_pointcloud
-)
+        )
 
-###################################
-## catkin specific configuration ##
-###################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  CATKIN_DEPENDS runtime_manager
+  CATKIN_DEPENDS sensor_msgs
+  DEPENDS PCL
 )
-
-###########
-## Build ##
-###########
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
