@@ -237,7 +237,7 @@ See [Autoware Multi-LiDAR Calibration](ros/src/sensing/fusion/packages/multi_lid
 
 ## Sample Data
 
-[[Moriyama demo|Demo]]
+[Moriyama demo](https://github.com/CPFL/Autoware/wiki/Demo)
 
 [ROSBAG data for calibration test](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
 
