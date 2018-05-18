@@ -10,6 +10,164 @@ Changelog for package road_occupancy_processor
 * Feature/occupancygrid filter (`#1002 <https://github.com/kfunaoka/Autoware/issues/1002>`_)
 * Contributors: Abraham Monrroy, David, TomohitoAndo
 
+Forthcoming
+-----------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Modify package xml version other than 1.6.3
+* Remove history of sub-branches
+* Add automatically-generated CHANGELOG.rst
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * More in detail dependencies fixes for more packages
+  * GLEW library for ORB
+  * Ignore OrbLocalizer
+  * Ignore Version checker
+  * Fix for driveworks interface
+  * driveworks not catkinpackagedd
+  * Missing catkin for driveworks
+  * libdpm opencv not catkin packaged
+  * catkin lib gnss  not included in obj_db
+  * Points2Polygon fix
+  * More missing dependencies
+  * image viewer not packaged
+  * Fixed SSH2 detection, added viewers for all distros
+  * Fix gnss localizer incorrect dependency config
+  * Fixes to multiple packages dependencies
+  * gnss plib and package
+  * More fixes to gnss
+  * gnss dependencies for gnss_loclaizer
+  * Missing gnss dependency for gnss on localizer
+  * More fixes for dependencies
+  Replaced gnss for autoware_gnss_library
+  * gnss more fixes
+  * fixes to more dependencies
+  * header dependency
+  * Debug message
+  * more debug messages changed back to gnss
+  * debud messages
+  * gnss test
+  * gnss install command
+  * Several fixes for OpenPlanner and its lbiraries
+  * Fixes to ROSInterface
+  * More fixes to robotsdk and rosinterface
+  * robotsdk calibration fix
+  * Fixes to rosinterface robotsdk libraries and its nodes
+  * Fixes to Qt5 missing dependencies in robotsdk
+  * glviewer missing dependencies
+  * Missing qt specific config cmake for robotsdk
+  * disable cv_tracker
+  * Fix to open planner un needed dependendecies
+  * Fixes for libraries indecision maker
+  * Fixes to libraries decision_maker installation
+  * Gazebo on Kinetic
+  * Added Missing library
+  * * Removed Gazebo and synchonization packages
+  * Renames vmap in lane_planner
+  * Added installation commands for missing pakcages
+  * Fixes to lane_planner
+  * Added NDT TKU Glut extra dependencies
+  * ndt localizer/lib fast pcl fixes
+  re enable cv_tracker
+  * Fix kf_lib
+  * Keep industrial_ci
+  * Fixes for dpm library
+  * Fusion lib fixed
+  * dpm and fusion header should match exported project name
+  * Fixes to dpm_ocv  ndt_localizer and pcl_omp
+  * no fast_pcl anymore
+  * fixes to libdpm and its package
+  * CI test
+  * test with native travis ci
+  * missing update for apt
+  * Fixes to pcl_omp installation and headers
+  * Final fixes for tests, modified README
+  * * Fixes to README
+  * Enable industrial_ci
+  * re enable native travis tests
+* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * Fixes from industrial_ci
+* Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
+* Feature/occupancygrid filter (`#1002 <https://github.com/kfunaoka/Autoware/issues/1002>`_)
+  * Add grid map filter node
+  * Add wayarea2grid node
+  * Replace dist_transform with grid_map_filter
+  * Add Runtime Manager UI for grid_map_filter node
+  * Add UI for wayarea2grid node
+  * Add instruction videos
+  * Fix videos
+  * Both node handles were private
+  * Added Comments Documentation
+  Code refactoring to follow standards
+  Added libraries
+  Separation of Vectormap Processing inside Clustering
+  * Added documentation
+  * Changed variable name
+  * Added Road Occupancy Processor package
+  * Added extra documentation
+  Added commands to RunTimeManager
+* Contributors: Abraham Monrroy, David, Kenji Funaoka, Kosuke Murakami, TomohitoAndo
+
 1.6.3 (2018-03-06)
 ------------------
 

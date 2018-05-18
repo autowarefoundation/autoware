@@ -2,6 +2,13 @@
 Changelog for package velodyne
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Modify package xml version other than 1.6.3
+* Removed flawed subtree
+* Contributors: AMC, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 
