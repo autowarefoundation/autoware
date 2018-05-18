@@ -53,6 +53,7 @@ add_executable(lidar_euclidean_cluster_detect
         nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
         nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
+
 find_package(CUDA)
 if (${CUDA_FOUND})
     INCLUDE(FindCUDA)
@@ -91,6 +92,7 @@ add_dependencies(lidar_euclidean_cluster_detect
         ${catkin_EXPORTED_TARGETS}
         )
 
+
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES
             COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
@@ -98,7 +100,9 @@ if (OPENMP_FOUND)
             )
 endif ()
 
-install(DIRECTORY include
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE
-        )
+install(TARGETS
+        lidar_euclidean_cluster_detect
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)

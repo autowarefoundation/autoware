@@ -57,6 +57,13 @@ if (EXISTS "${ENET_CAFFE_PATH}" AND ${CUDA_FOUND})
   ADD_DEPENDENCIES(vision_segment_enet_detect
     ${catkin_EXPORTED_TARGETS}
     )
+
+  install(TARGETS
+        vision_segment_enet_detect
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+  )
 else ()
   message("' ENet/Caffe' is not installed. 'vision_segment_enet_detect' will not be built.")
 endif ()

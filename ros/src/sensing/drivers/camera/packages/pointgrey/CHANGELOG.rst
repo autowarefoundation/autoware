@@ -2,6 +2,57 @@
 Changelog for package autoware_pointgrey_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * Fixes from industrial_ci
+* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/kfunaoka/Autoware/issues/1154>`_)
+  * Added timeout to the grasshopper camera node.
+  * Added timeout to the launch file
+* Autoware PointGrey driver package README (`#1145 <https://github.com/kfunaoka/Autoware/issues/1145>`_)
+  * Autoware PointGrey driver package README
+  * Pushed latest README
+  * Edited README
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+  * Grasshopper3 node modified to set the mode and pixel format
+  * Baumer Type Readme
+  * Baumer Auto Exposure Algorithm improvement
+  * Added Documentation to the package
+  * Added runtime manager param controls for both Ladybug and Grasshopper nodes
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>point_cloud_converter</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The point_cloud_converter package to convert PointCloud to PointCloud2 or PointCloud2 to PointCloud. Basically the node of
   http://wiki.ros.org/point_cloud_converter by Radu Bogdan Rusu revived.</description>
 

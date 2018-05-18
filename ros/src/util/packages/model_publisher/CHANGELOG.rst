@@ -2,6 +2,14 @@
 Changelog for package model_publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [Feature] Collada Milee 3D model (`#982 <https://github.com/kfunaoka/Autoware/issues/982>`_)
+  * Added Milee Collada Model
+  * Added Launch file
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 
