@@ -34,7 +34,7 @@
     <arg name="pedestrian" value="$(arg pedestrian_detection)" />
   </include>
 
-  <!-- vision_klt_track_track -->
+  <!-- vision_klt_track -->
   <include file="$(find vision_klt_track)/launch/vision_klt_track.launch">
     <arg name="car" value="$(arg car_detection)" />
     <arg name="pedestrian" value="$(arg pedestrian_detection)" />

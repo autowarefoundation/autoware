@@ -1,7 +1,6 @@
 <launch>
 
   <!-- setting path parameter -->
-  <arg name="use_openmp" value="false" />
   <arg name="get_height" value="true" />
 
   <!-- Setup -->
