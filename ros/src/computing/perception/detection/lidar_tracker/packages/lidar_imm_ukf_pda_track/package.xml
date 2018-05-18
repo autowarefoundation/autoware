@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_imm_ukf_pda_track</name>
-    <version>1.7.0</version>
+    <version>1.6.3</version>
     <description>lidar_imm_ukf_pda_track package</description>
 
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>
