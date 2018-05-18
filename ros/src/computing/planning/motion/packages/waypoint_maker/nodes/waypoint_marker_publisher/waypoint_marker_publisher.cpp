@@ -75,6 +75,15 @@ enum class ChangeFlag : int32_t
 
 typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
 
+void setLifetime(double sec, visualization_msgs::MarkerArray* marker_array)
+{
+  ros::Duration lifetime(sec);
+  for (auto& marker : marker_array->markers)
+  {
+    marker.lifetime = lifetime;
+  }
+}
+
 void publishMarkerArray(const visualization_msgs::MarkerArray& marker_array, const ros::Publisher& publisher, bool delete_markers=false)
 {
   visualization_msgs::MarkerArray msg;
@@ -85,11 +94,15 @@ void publishMarkerArray(const visualization_msgs::MarkerArray& marker_array, con
   if (delete_markers)
   {
     for (auto& marker : msg.markers)
+    {
       marker.action = visualization_msgs::Marker::DELETE;
+    }
   }
 
   publisher.publish(msg);
 }
+
+
 
 void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_waypoints_array)
 {
@@ -395,12 +408,12 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
 
 void finalCallback(const autoware_msgs::laneConstPtr& msg)
 {
-  publishMarkerArray(g_local_waypoints_marker_array, g_local_mark_pub, true);
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
+  setLifetime(0.5, &g_local_waypoints_marker_array);
   publishMarkerArray(g_local_waypoints_marker_array, g_local_mark_pub);
 }
 
