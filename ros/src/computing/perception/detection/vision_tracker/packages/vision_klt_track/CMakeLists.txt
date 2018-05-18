@@ -6,11 +6,11 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-  cv_bridge
-  roscpp
-  sensor_msgs
-  autoware_msgs
-  )
+        cv_bridge
+        roscpp
+        sensor_msgs
+        autoware_msgs
+        )
 
 FIND_PACKAGE(OpenCV REQUIRED)
 
@@ -21,12 +21,12 @@ EXECUTE_PROCESS(
 )
 
 catkin_package(
-  CATKIN_DEPENDS 
-  cv_bridge
-  roscpp
-  sensor_msgs
-  autoware_msgs
-  )
+        CATKIN_DEPENDS
+        cv_bridge
+        roscpp
+        sensor_msgs
+        autoware_msgs
+)
 ###########
 ## Build ##
 ###########
