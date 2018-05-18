@@ -2,8 +2,8 @@
 Changelog for package velodyne_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/kfunaoka/Autoware/issues/1166>`_)
   * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 776a358..1a70413

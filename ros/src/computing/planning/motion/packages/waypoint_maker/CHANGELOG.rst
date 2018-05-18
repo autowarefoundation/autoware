@@ -2,8 +2,8 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * Fix flashing marker & set lifetime
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Update README

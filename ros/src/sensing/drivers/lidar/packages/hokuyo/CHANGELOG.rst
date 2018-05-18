@@ -2,8 +2,8 @@
 Changelog for package hokuyo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
   * Replaced outdated Hokuyo node with new urg_node

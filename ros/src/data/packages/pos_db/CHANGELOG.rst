@@ -2,8 +2,8 @@
 Changelog for package pos_db
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
   * Initial Cleanup

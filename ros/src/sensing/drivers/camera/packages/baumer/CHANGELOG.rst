@@ -2,8 +2,8 @@
 Changelog for package vlg22c_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
 * [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)

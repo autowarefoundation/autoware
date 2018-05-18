@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>twist_cmd_converter</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The twist_cmd_converter package from Autoware twist cmd to catvehcle twist cmd.</description>
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

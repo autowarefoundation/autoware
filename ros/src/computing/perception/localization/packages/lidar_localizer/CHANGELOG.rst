@@ -2,8 +2,8 @@
 Changelog for package lidar_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
   * rename lidar_tracker

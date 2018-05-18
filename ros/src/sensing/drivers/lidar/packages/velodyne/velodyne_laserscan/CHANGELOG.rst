@@ -2,8 +2,8 @@
 Changelog for package velodyne_laserscan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Modify package xml version other than 1.6.3
 * [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/kfunaoka/Autoware/issues/1166>`_)

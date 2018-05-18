@@ -2,8 +2,8 @@
 Changelog for package decision_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Fix build failures on Aarch64
   Following issues are detected and fixed while building Autoware on Aarch64 host:

@@ -2,8 +2,8 @@
 Changelog for package ndt_gpu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Removed unnecessary pakcage from ndt
 * Fix the bug ndt_mapping/matching use GPU resources even when selecting pcl_generic.

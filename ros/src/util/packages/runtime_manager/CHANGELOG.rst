@@ -2,8 +2,8 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2018-05-18)
+------------------
 * Delete duplicated nodes on Runtime Manager
 * Update runtime_manager/scripts/launch_files
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
