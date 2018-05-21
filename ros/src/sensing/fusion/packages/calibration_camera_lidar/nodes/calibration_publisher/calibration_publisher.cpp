@@ -120,9 +120,11 @@ static void image_raw_cb(const sensor_msgs::Image& image_msg)
 
   if (isPublish_cameraInfo) {
     cameraInfo_sender(CameraMat, DistCoeff, ImageSize, DistModel, timeStampOfImage);
+    isPublish_cameraInfo = false;
   }
   if (isPublish_extrinsic) {
     projectionMatrix_sender(CameraExtrinsicMat, timeStampOfImage);
+    isPublish_extrinsic = false;
   }
 
 }
@@ -190,9 +192,9 @@ int main(int argc, char* argv[])
 
   image_sub = n.subscribe(image_topic_name, 10, image_raw_cb);
 
-  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, false);
+  camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
 
-  projection_matrix_pub = n.advertise<autoware_msgs::projection_matrix>(projection_matrix_name, 10, false);
+  projection_matrix_pub = n.advertise<autoware_msgs::projection_matrix>(projection_matrix_name, 10, true);
 
 
   ros::spin();
