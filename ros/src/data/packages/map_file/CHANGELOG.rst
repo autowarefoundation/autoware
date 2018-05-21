@@ -2,6 +2,13 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* -Added support fot VMap colouring to Left Traffic signals (`#988 <https://github.com/kfunaoka/Autoware/issues/988>`_)
+  -Added Lane number on tlr_superimpose
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

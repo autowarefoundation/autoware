@@ -2,6 +2,20 @@
 Changelog for package vlg22c_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+  * Grasshopper3 node modified to set the mode and pixel format
+  * Baumer Type Readme
+  * Baumer Auto Exposure Algorithm improvement
+  * Added Documentation to the package
+  * Added runtime manager param controls for both Ladybug and Grasshopper nodes
+* Added missing param to launch file
+* Added Autoexposure, documentation to the Baumer camera node
+* Contributors: AMC, Abraham Monrroy, David, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

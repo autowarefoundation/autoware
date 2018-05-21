@@ -2,6 +2,183 @@
 Changelog for package decision_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Fix build failures on Aarch64
+  Following issues are detected and fixed while building Autoware on Aarch64 host:
+  1. FLOAT = abs(FLOAT) doesn't really makes sense. Hence modify that to use std::abs.
+  2. Include <numeric> header for using accumulate API.
+  3. Include <boost/format.hpp> header for using boost format API's.
+  Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * More in detail dependencies fixes for more packages
+  * GLEW library for ORB
+  * Ignore OrbLocalizer
+  * Ignore Version checker
+  * Fix for driveworks interface
+  * driveworks not catkinpackagedd
+  * Missing catkin for driveworks
+  * libdpm opencv not catkin packaged
+  * catkin lib gnss  not included in obj_db
+  * Points2Polygon fix
+  * More missing dependencies
+  * image viewer not packaged
+  * Fixed SSH2 detection, added viewers for all distros
+  * Fix gnss localizer incorrect dependency config
+  * Fixes to multiple packages dependencies
+  * gnss plib and package
+  * More fixes to gnss
+  * gnss dependencies for gnss_loclaizer
+  * Missing gnss dependency for gnss on localizer
+  * More fixes for dependencies
+  Replaced gnss for autoware_gnss_library
+  * gnss more fixes
+  * fixes to more dependencies
+  * header dependency
+  * Debug message
+  * more debug messages changed back to gnss
+  * debud messages
+  * gnss test
+  * gnss install command
+  * Several fixes for OpenPlanner and its lbiraries
+  * Fixes to ROSInterface
+  * More fixes to robotsdk and rosinterface
+  * robotsdk calibration fix
+  * Fixes to rosinterface robotsdk libraries and its nodes
+  * Fixes to Qt5 missing dependencies in robotsdk
+  * glviewer missing dependencies
+  * Missing qt specific config cmake for robotsdk
+  * disable cv_tracker
+  * Fix to open planner un needed dependendecies
+  * Fixes for libraries indecision maker
+  * Fixes to libraries decision_maker installation
+  * Gazebo on Kinetic
+  * Added Missing library
+  * * Removed Gazebo and synchonization packages
+  * Renames vmap in lane_planner
+  * Added installation commands for missing pakcages
+  * Fixes to lane_planner
+  * Added NDT TKU Glut extra dependencies
+  * ndt localizer/lib fast pcl fixes
+  re enable cv_tracker
+  * Fix kf_lib
+  * Keep industrial_ci
+  * Fixes for dpm library
+  * Fusion lib fixed
+  * dpm and fusion header should match exported project name
+  * Fixes to dpm_ocv  ndt_localizer and pcl_omp
+  * no fast_pcl anymore
+  * fixes to libdpm and its package
+  * CI test
+  * test with native travis ci
+  * missing update for apt
+  * Fixes to pcl_omp installation and headers
+  * Final fixes for tests, modified README
+  * * Fixes to README
+  * Enable industrial_ci
+  * re enable native travis tests
+* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * Fixes from industrial_ci
+* Suppress compile error
+  I encounterd compile error like following:
+  ```
+  Autoware/ros/src/computing/planning/decision/packages/decision_maker/nodes/decision_maker/decision_maker_node_decision.cpp:86:28: error: ‘accumulate’ is not a member of ‘std’
+  ```
+  And this can be avoided by this modification.
+* fix a merging miss
+* fix a typo
+* parametrize detection area
+* code formatting
+* fix stopstate to track update of stopline
+* remove a unused line
+* add to out for stopline_state
+* VelocitySet support to stop by stopline
+* fix a out of range
+* R.I.P
+* change to apply ratio to stopline target
+* add ratio for stopline target
+* increase spinner thread, and apply clang-format
+* Add a transition to stopstate to re-start only manually
+* Add new feature that use object detection for stopline state
+* R.I.P.
+* fix a duplicate state update
+* stop light_color publish every state update
+* fix a judge intersect stopline
+* add new state for lanechange
+* add new state for all stopline pause
+* fix a build bug
+* fix a build bug
+* fix a state num name
+* fix a state num name
+* add support to manual fixing light
+* fix a lane_change loop
+* change a exploring way for lamp
+* fix a importing vectormap
+* Contributors: Abraham Monrroy, Dejan Pangercic, Kosuke Murakami, Manato Hirabayashi, Manivannan Sadhasivam, Yusuke FUJII
+
 1.6.3 (2018-03-06)
 ------------------
 

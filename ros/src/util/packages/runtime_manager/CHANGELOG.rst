@@ -2,6 +2,289 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* Delete duplicated nodes on Runtime Manager
+* Update runtime_manager/scripts/launch_files
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+  * rename lidar_tracker
+  * Modify pf_lidar_track's cmake file
+  * Refactor code
+  * Rename from euclidean_lidar_tracker to lidar_euclidean_track
+  * Rename from kf_contour_track to lidar_kf_contour_track
+  * Rename from kf_lidar_track to lidar_kf_track, but need some modification in euclidean cluster(Cluster.h)
+  * Rename from pf_lidar_tarck to lidar_pf_track
+  * Rename range_fusion
+  * Rename obj_reproj
+  * Rename euclidean_cluster to lidar_euclidean_cluster_detect
+  * Rename svm_lidar_detect to lidar_svm_detect
+  * Rename kf_lidar_track to lidar_kf_track
+  * Change version 1.6.3 to 1.7.0 in pacakge.xml
+  * Modify CMake so that extrenal header would be loaded
+  * Remove obj_reproj from cv_tracker
+  * Add interface.yaml
+  * Rename road_wizard to trafficlight_recognizer
+  * create common directory
+  * Add lidar_imm_ukf_pda_track
+  * create vision_detector and moved cv
+  * Modify interface.yaml and package.xml
+  * remove dpm_ocv
+  * moved directory
+  * Delete unnecessary launch file
+  * Delete rcnn related file and code
+  * separated dummy_track from cv_tracker
+  * separated klt_track from cv_tracker
+  * Fix a cmake
+  * Remove unnecessary dependency of lidar_euclidean_cluster_detect package
+  * Rename image_segmenter to vision_segment_enet_detect
+  * Remove unnecessary dependency of lidar_svm_detect package
+  * separated kf_track and fix a some compiling issue
+  * move viewers
+  * merge ndt_localizer and icp_localizer, and rename to lidar_localizer
+  * Remove unnecessary dependency of lidar_euclidean_track
+  * moved image lib
+  * add launch
+  * lib move under lidar_tracker
+  * Rename dpm_ttic to vision_dpm_ttic_detect
+  * rename yolo3detector to vision_yolo3_detect
+  * Modify cmake and package.xml in vision_dpm_ttic_detect
+  * moved sourcefiles into nodes dir
+  * moved sourcefiles into nodes dir
+  * Move cv_tracker/data folder and delete cv_tracker/model folder
+  * fix a package file and cmake
+  * Rename yolo2 -> vision_yolo2_detect
+  * fix a package file and cmake
+  * Fix package name of launch file
+  * Rename ssd to vision_ssd_detect
+  * fixed cmake and package for decerese dependencies
+  * remove top packages dir for detection
+  * fixed cmake for cuda
+  * Rename lane_detector to vision_lane_detect
+  * Modify package.xml in lidar-related packages
+  * Remove unnecessary dependencies in lidar_detector and lidar_tracker
+  * Modify computing.yaml for dpm_ttic
+  * Modify dpm_ttic launch file
+  * Remove/Add dependencies to trafficlight_recognizer
+  * Update data folder in dpm_ttic
+  * Modified CMake and package file in dpm_ttic.
+  * Remove src dir in imm_ukf_pda_track
+  * removed unnecessary comments
+  * rename lidar_tracker
+  * Modify pf_lidar_track's cmake file
+  * Refactor code
+  * Rename from euclidean_lidar_tracker to lidar_euclidean_track
+  * Rename from kf_contour_track to lidar_kf_contour_track
+  * Rename from kf_lidar_track to lidar_kf_track, but need some modification in euclidean cluster(Cluster.h)
+  * Rename from pf_lidar_tarck to lidar_pf_track
+  * Rename range_fusion
+  * Rename obj_reproj
+  * Rename road_wizard to trafficlight_recognizer
+  * Rename euclidean_cluster to lidar_euclidean_cluster_detect
+  * Rename svm_lidar_detect to lidar_svm_detect
+  * Rename kf_lidar_track to lidar_kf_track
+  * Change version 1.6.3 to 1.7.0 in pacakge.xml
+  * Modify CMake so that extrenal header would be loaded
+  * Remove obj_reproj from cv_tracker
+  * Add interface.yaml
+  * create common directory
+  * Add lidar_imm_ukf_pda_track
+  * create vision_detector and moved cv
+  * Modify interface.yaml and package.xml
+  * remove dpm_ocv
+  * moved directory
+  * Delete unnecessary launch file
+  * Delete rcnn related file and code
+  * separated dummy_track from cv_tracker
+  * separated klt_track from cv_tracker
+  * Fix a cmake
+  * Remove unnecessary dependency of lidar_euclidean_cluster_detect package
+  * Rename image_segmenter to vision_segment_enet_detect
+  * Remove unnecessary dependency of lidar_svm_detect package
+  * separated kf_track and fix a some compiling issue
+  * move viewers
+  * merge ndt_localizer and icp_localizer, and rename to lidar_localizer
+  * Remove unnecessary dependency of lidar_euclidean_track
+  * moved image lib
+  * add launch
+  * lib move under lidar_tracker
+  * Rename dpm_ttic to vision_dpm_ttic_detect
+  * rename yolo3detector to vision_yolo3_detect
+  * Modify cmake and package.xml in vision_dpm_ttic_detect
+  * moved sourcefiles into nodes dir
+  * moved sourcefiles into nodes dir
+  * Move cv_tracker/data folder and delete cv_tracker/model folder
+  * fix a package file and cmake
+  * Rename yolo2 -> vision_yolo2_detect
+  * fix a package file and cmake
+  * Fix package name of launch file
+  * Rename ssd to vision_ssd_detect
+  * fixed cmake and package for decerese dependencies
+  * remove top packages dir for detection
+  * fixed cmake for cuda
+  * Rename lane_detector to vision_lane_detect
+  * Modify package.xml in lidar-related packages
+  * Remove unnecessary dependencies in lidar_detector and lidar_tracker
+  * Modify computing.yaml for dpm_ttic
+  * Modify dpm_ttic launch file
+  * Remove/Add dependencies to trafficlight_recognizer
+  * Update data folder in dpm_ttic
+  * Modified CMake and package file in dpm_ttic.
+  * Remove src dir in imm_ukf_pda_track
+  * Fix bug for not starting run time manager
+  * Remove invalid dependency
+* Return disable_decision_maker to rosparam
+* Rename waypoint_replan to velocity_replanner
+* Add tracking_frame
+* Merge visualize_cloud_cluster.launch to imm_ukf_pda_tracker.launch
+* Rename class and functions filter->replan
+* Fix parameter limits and descriptions
+* Refactor codes
+* [feature] ndt matching safe monitor (`#1181 <https://github.com/kfunaoka/Autoware/issues/1181>`_)
+  * Initial release of ndt_matching_monitor safety node
+  * Added extra instruction
+  * * Removed Rviz warnings
+  * Added GNSS orientation if available
+  * Added extra documentation
+  * * Changed param name
+  * Corrected README subtitle
+  * * Added Topic for ndt status
+  * Added published topic to readme
+  * Integrated matching monitor into ndt_localizer
+* Modify roslaunch params
+* Add end point offset option
+* Fix default filetring_mode parameter = false
+* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * Fixes from industrial_ci
+* Add run-time manager script
+* add gear p
+* add ctrl_cmd/cmd/linear_acceletion
+* Add new imm_ukf_pda_tracker feature
+* [feature] Initial release of Yolo v3 node (`#1202 <https://github.com/kfunaoka/Autoware/issues/1202>`_)
+  * Initial release of Yolo v3 node
+  * Added extra documentation
+  * * Missing header include
+* fix description
+* [Feature] region tlr mxnet (`#1048 <https://github.com/kfunaoka/Autoware/issues/1048>`_)
+  * Initial commit of MxNet TLR based recognizer
+  * Added result interpretation
+  * Added
+  -Score threshold,
+  -latch-like trap to avoid sudden state changes,
+  -latch threshold to set minimum number of instances before changing state
+  * added mxnet to runtime manager
+  * Fix the settings of runtime manager from apex version
+  * Add launch file for region_tlr_mxnet
+  * added path dialogue boxes to load model and params for mxnet
+  * Add the settings of region_tlr_mxnet on runtime manager dialogue
+* Correspond to new version of waypoint_csv(for decision_maker)
+* Analog Devices ADIS16470 added to Runtime Manager
+* fix runtime_manager layout and description
+* Added support for Vimba SDK supportted cameras (`#1170 <https://github.com/kfunaoka/Autoware/issues/1170>`_)
+* Add config_callback for online waypoint tuning
+* Add velocity plan offset for system delay
+* fix launch files for ros parameter
+* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/kfunaoka/Autoware/issues/1154>`_)
+  * Added timeout to the grasshopper camera node.
+  * Added timeout to the launch file
+* Added RTM UI controls
+* Add waypoint_filter functions
+* add gmsl button to runtime manager
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+  * Grasshopper3 node modified to set the mode and pixel format
+  * Baumer Type Readme
+  * Baumer Auto Exposure Algorithm improvement
+  * Added Documentation to the package
+  * Added runtime manager param controls for both Ladybug and Grasshopper nodes
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
+  * Replaced outdated Hokuyo node with new urg_node
+  * Added description to RTM
+  * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes
+  * Requested changes attended
+* Update sensing.yaml
+  HDL-32C -> VLP-32C
+* Added HDL32C to RTM
+* Added hdl32c, fixed naming
+* Added descriptions and optional calibration files. Defaults are used if not defined.
+* improve config gui of NDT
+* Feature/occupancygrid filter (`#1002 <https://github.com/kfunaoka/Autoware/issues/1002>`_)
+  * Add grid map filter node
+  * Add wayarea2grid node
+  * Replace dist_transform with grid_map_filter
+  * Add Runtime Manager UI for grid_map_filter node
+  * Add UI for wayarea2grid node
+  * Add instruction videos
+  * Fix videos
+  * Both node handles were private
+  * Added Comments Documentation
+  Code refactoring to follow standards
+  Added libraries
+  Separation of Vectormap Processing inside Clustering
+  * Added documentation
+  * Changed variable name
+  * Added Road Occupancy Processor package
+  * Added extra documentation
+  Added commands to RunTimeManager
+* add checkbox for IDS UI-3060CP (`#1058 <https://github.com/kfunaoka/Autoware/issues/1058>`_)
+  * add checkbox for IDS UI-3060CP
+  * Added description
+* Add SICK LMS511 driver (`#1054 <https://github.com/kfunaoka/Autoware/issues/1054>`_)
+  * Add SICK LMS511 driver
+  * remove unnecessary dependencies
+  * Name of package changed
+  * Added Node Documentation
+* Add deleting marker/buffers for replaying rosbag, and some fix
+* Fix typo
+* Separate speed vizualizer -> waypoint_marker/waypoint_velocity_vizualizer
+* Modify window size of velocity_set app tab
+* Separate configration for speed planning against obstacle/stopline (Note: no logics changed)
+* parametrize detection area
+* add ratio for stopline target
+* add new param for decision_maker
+* add new state button on runtime manager
+* add new state for gui
+* add points_topic in app dialog for points_downsampler so that we can select the input topic (`#990 <https://github.com/kfunaoka/Autoware/issues/990>`_)
+* [Feature] Filter Clustered Objects using VectorMap info. (`#980 <https://github.com/kfunaoka/Autoware/issues/980>`_)
+  * Switched from VectorMapServer to Image based filtering
+  Added OpenMP support
+  * Missing header
+  * Added MapGrid configuration file
+  Added parameterization to the occupancy grid size
+* Fix unfinished merge branch 'develop'
+* Add velocity visualizer with 3D graph.
+* Contributors: AMC, Abraham Monrroy, Akihito Ohsato, Dejan Pangercic, Kenji Funaoka, Kosuke Murakami, TomohitoAndo, Yamato ANDO, Yuki Iida, Yuki Kitsukawa, Yuma, Yuma Nihei, Yusuke FUJII, cirpue49, yukikitsukawa
+
 1.6.3 (2018-03-06)
 ------------------
 
