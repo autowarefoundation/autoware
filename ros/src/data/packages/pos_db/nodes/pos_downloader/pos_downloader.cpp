@@ -359,7 +359,8 @@ static int get_timeval(const char *tstr, time_t *sp, int *np) {
 }
 
 static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
-  std::vector<std::string> db_data = split(msg.data, '\n');
+  std::vector<std::string> raw_db_data = split(msg.data, '\n');
+  std::vector<std::vector> db_data;
   std::vector<std::string> cols;
   ros::Time now = ros::Time::now();
   geometry_msgs::Pose pose;
@@ -367,14 +368,24 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
   time_t now_sec, prv_sec = 0;
   int now_nsec, prv_nsec;
 
-  for (const std::string& row : db_data) {
+  for (const std::string& row : raw_db_data) {
     if(row.empty())
       continue;
     cols = split(row, '\t');
     // id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm,type
     if(cols.size() != 12)
       continue;
+    db_data.push_back(cols);
+  }
 
+  sort(
+    db_data.begin(), db_data.end(),
+    [](const std::vector<string>& cols_x, const std::vector<string>& cols_y){
+      return stod(cols_x[10]) < stod(cols_y[10]);
+    }
+  )
+
+  for (const std::vector<string>& cols : db_data) {
     type = std::stoi(cols[11]);
     if(ignore_my_pose &&
        (type == TYPE_OWN ||
