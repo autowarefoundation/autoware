@@ -98,18 +98,15 @@ static map<int, ros::Time> prev_map;
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
 #ifdef NEVER
-static double color_percent(int diffmsec)
-{
+static double color_percent(int diffmsec) {
   return (1.0 - diffmsec/TOTAL_LIFETIME/1000.0)*((256-48)/256.0) + (48/256.0);
 }
 #endif /* NEVER */
-static double alpha_percent(int diffmsec)
-{
+static double alpha_percent(int diffmsec) {
   return (1.0 - diffmsec/TOTAL_LIFETIME/1000.0);
 }
 
-static std::vector<std::string> split(const string& input, char delimiter)
-{
+static std::vector<std::string> split(const string& input, char delimiter) {
     std::istringstream stream(input);
 
     std::string field;
@@ -120,8 +117,7 @@ static std::vector<std::string> split(const string& input, char delimiter)
     return result;
 }
 
-static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram)
-{
+static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 #ifdef POS_DB_VERBOSE
   std::cout
 	<< pictogram.pose.position.x << ","
@@ -135,8 +131,7 @@ static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram)
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
-		       geometry_msgs::Pose& pose, int diffmsec)
-{
+		       geometry_msgs::Pose& pose, int diffmsec) {
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
@@ -198,8 +193,7 @@ static void publish_car(int id, int is_current, ros::Time now,
 }
 
 #ifndef CURRENT_CAR_DIRECTLY
-static void publish_car_summary(ros::Time now)
-{
+static void publish_car_summary(ros::Time now) {
   jsk_rviz_plugins::Pictogram pictogram;
   map<int, geometry_msgs::Pose>::iterator itr;
 
@@ -251,8 +245,7 @@ static void publish_car_summary(ros::Time now)
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
 static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
-			      geometry_msgs::Pose& pose, int diffmsec)
-{
+			      geometry_msgs::Pose& pose, int diffmsec) {
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
@@ -297,8 +290,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
 
 static int result_to_pictogram(const string& idstr, ros::Time now,
 			    geometry_msgs::Pose& pose, int type,
-			    int diffmsec, int is_swap)
-{
+			    int diffmsec, int is_swap) {
   int nid;
 
   switch (type) {
@@ -345,8 +337,7 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
   return 0;
 }
 
-static int get_timeval(const char *tstr, time_t *sp, int *np)
-{
+static int get_timeval(const char *tstr, time_t *sp, int *np) {
   struct tm tm;
   const char *p;
 
@@ -367,8 +358,7 @@ static int get_timeval(const char *tstr, time_t *sp, int *np)
   return 0;
 }
 
-static void pictogram_publisher(const std_msgs::String& msg, int is_swap)
-{
+static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
   std::vector<std::string> db_data = split(msg.data, '\n');
   std::vector<std::string> cols;
   ros::Time now = ros::Time::now();
@@ -418,11 +408,11 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap)
       geo.set_plane(7); // Aichi-ken
       geo.llh_to_xyz(lat, lon, 0/*h*/);
       if (is_swap) {
-	pose.position.x = geo.y();
-	pose.position.y = geo.x();
+        pose.position.x = geo.y();
+        pose.position.y = geo.x();
       } else {
-	pose.position.x = geo.x();
-	pose.position.y = geo.y();
+        	pose.position.x = geo.x();
+          pose.position.y = geo.y();
       }
       pose.position.z = geo.z();
       pose.orientation.x = 0;
@@ -443,8 +433,7 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap)
 }
 
 // create "YYYY-mm-dd HH:MM:SS.sss"
-static int create_timestr(time_t sec, int nsec, char *str, size_t size)
-{
+static int create_timestr(time_t sec, int nsec, char *str, size_t size) {
   std::tm *nowtm;
 
   nowtm = std::gmtime(&sec);
@@ -454,8 +443,7 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size)
 }
 
 //wrap SendData class
-static void send_sql(time_t diff_sec)
-{
+static void send_sql(time_t diff_sec) {
   std::string data;
   string db_response;
   std_msgs::String msg;
@@ -489,8 +477,7 @@ static void send_sql(time_t diff_sec)
   }
 }
 
-static void* intervalCall(void *unused)
-{
+static void* intervalCall(void *unused) {
   double *args = (double *)unused;
   double diff_sec = args[1];
 
@@ -508,9 +495,8 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, MYNAME) ;
+int main(int argc, char **argv) {
+  ros::init(argc, argv, MYNAME);
   ros::NodeHandle nh;
   pthread_t th;
   double args[2];
