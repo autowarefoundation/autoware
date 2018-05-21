@@ -86,6 +86,8 @@ static double pedestrian_dz;
 
 static ros::Publisher pub;
 
+static jsk_rviz_plugins::Pictogram[] *pictogramsp;
+
 static SendData sd;
 
 static char mac_addr[MAC_ADDRBUFSIZ];
@@ -130,6 +132,11 @@ static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 #endif /* POS_DB_VERBOSE */
 }
 
+
+static void update_pictograms(int id, jsk_rviz_plugins::Pictogram pictogram) {
+
+}
+
 static void publish_car(int id, int is_current, ros::Time now,
 		       geometry_msgs::Pose& pose, int diffmsec) {
   jsk_rviz_plugins::Pictogram pictogram;
@@ -166,7 +173,7 @@ static void publish_car(int id, int is_current, ros::Time now,
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    pub.publish(pictogram);
+    update_pictograms(id, pictogram);
     dbg_out_pictogram(pictogram);
 #else /* CURRENT_CAR_DIRECTLY */
     ros::Time newnow = now - ros::Duration(diffmsec/1000.0);
@@ -187,7 +194,7 @@ static void publish_car(int id, int is_current, ros::Time now,
     pictogram.color.b = 0.0;
     pictogram.color.a = alpha_percent(diffmsec);
     pictogram.pose.position.z += 0.5; // == #1/2
-    pub.publish(pictogram);
+    update_pictograms(id, pictogram);
     dbg_out_pictogram(pictogram);
   }
 }
@@ -235,7 +242,7 @@ static void publish_car_summary(ros::Time now) {
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    pub.publish(pictogram);
+    update_pictograms(id, pictogram);
     dbg_out_pictogram(pictogram);
     prev_map[id] = cur;
   }
@@ -273,7 +280,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   // marker.scale.y = 0.6;
   // marker.scale.z = 1.2; // #1
   pictogram.pose.position.z += 0.6; // == #1/2
-  pub.publish(pictogram);
+  update_pictograms(id, pictogram);
   dbg_out_pictogram(pictogram);
 
   //marker.type = visualization_msgs::Marker::SPHERE;
@@ -284,7 +291,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   // marker.scale.x = 0.6; // #2
   // marker.scale.y = 0.6;
   // marker.scale.z = 0.6;
-  pub.publish(pictogram);
+  update_pictograms(id, pictogram);
   dbg_out_pictogram(pictogram);
 }
 
