@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sick_ldmrs_tools</name>
+  <version>0.0.0</version>
+  <description>Examples how to use the sick_ldmrs</description>
+
+  <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
+  <author email="martin.guenther@dfki.de">Martin Günther</author>
+  <author email="ros@jochen.sprickerhof.de">Jochen Sprickerhof</author>
+
+  <license>BSD</license>
+
+
+  <url type="website">http://wiki.ros.org/sick_ldmrs_tools</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>libpcl-all-dev</depend>
+  <depend>message_filters</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <depend>roscpp</depend>
+  <depend>sick_ldmrs_msgs</depend>
+  <depend>tf</depend>
+  <depend>visualization_msgs</depend>
+
+  <build_depend>roslaunch</build_depend>
+
+  <exec_depend>diagnostic_aggregator</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>sick_ldmrs_description</exec_depend>
+  <exec_depend>sick_ldmrs_driver</exec_depend>
+</package>
