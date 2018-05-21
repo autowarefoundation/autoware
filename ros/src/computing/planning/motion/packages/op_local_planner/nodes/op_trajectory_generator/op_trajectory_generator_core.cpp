@@ -27,7 +27,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "op_trajectory_generator_core.h"
-#include "op_RosHelpers.h"
+#include "op_ros_helpers/op_RosHelpers.h"
 
 
 namespace TrajectoryGeneratorNS

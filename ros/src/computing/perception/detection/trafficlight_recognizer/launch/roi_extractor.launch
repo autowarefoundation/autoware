@@ -1,0 +1,22 @@
+<launch>
+  <!-- The topic name which handle by roi_extractor -->
+  <arg name="image_raw_topic" default="/image_raw" />
+
+  <!-- The target directory which ROI images will be saved -->
+  <arg name="target_directory" default="$(env HOME)/.autoware" />
+
+  <!-- The minimum height of ROI (Set "1" to save all ROI) -->
+  <arg name="minimum_height" default="32" />
+
+  <!-- The threshold of image similarity to reject similar image from saving (Set "1.0" to save all ROI) -->
+  <arg name="similarity_threshold" default="0.9" />
+
+  <!-- Execute the node -->
+  <node pkg="trafficlight_recognizer" type="roi_extractor" name="roi_extractor">
+    <param name="image_raw_topic" type="str" value="$(arg image_raw_topic)" />
+    <param name="target_directory" type="str" value="$(arg target_directory)" />
+    <param name="minimum_height" type="int" value="$(arg minimum_height)" />
+    <param name="similarity_threshold" type="double" value="$(arg similarity_threshold)" />
+  </node>
+  
+</launch>

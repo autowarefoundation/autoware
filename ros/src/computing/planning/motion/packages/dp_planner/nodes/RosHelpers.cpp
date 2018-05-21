@@ -12,8 +12,8 @@
 #include <fstream>
 #include <math.h>
 #include "PolygonGenerator.h"
-#include "MappingHelpers.h"
-#include "MatrixOperations.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/MatrixOperations.h"
 
 
 namespace PlannerXNS

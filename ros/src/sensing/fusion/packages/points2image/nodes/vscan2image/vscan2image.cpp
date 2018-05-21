@@ -35,7 +35,7 @@
 #include "autoware_msgs/projection_matrix.h"
 //#include "autoware_msgs/CameraExtrinsic.h"
 
-#include <points_image.hpp>
+#include <include/points_image/points_image.hpp>
 
 #define CAMERAEXTRINSICMAT "CameraExtrinsicMat"
 #define CAMERAMAT "CameraMat"

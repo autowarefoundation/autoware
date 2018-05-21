@@ -81,7 +81,7 @@ namespace velodyne_pointcloud
 
         // color lasers with the rainbow array
         int color = inMsg->points[i].ring % N_COLORS;
-        p.rgb = *reinterpret_cast<float*>(&rainbow[color]);
+        p.rgb = *reinterpret_cast<float*>(rainbow+color);
 
         outMsg->points.push_back(p);
         ++outMsg->width;

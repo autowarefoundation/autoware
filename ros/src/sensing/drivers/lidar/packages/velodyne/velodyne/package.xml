@@ -1,11 +1,11 @@
 <package>
 
   <name>velodyne</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>
     Basic ROS support for the Velodyne 3D LIDARs.
   </description>
-  <maintainer email="jack.oquin@gmail.com">Jack O'Quin</maintainer>
+  <maintainer email="jwhitley@autonomoustuff.com">Josh Whitley</maintainer>
   <author> Jack O'Quin</author>
   <license>BSD</license>
   <!--
@@ -18,6 +18,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <run_depend>velodyne_driver</run_depend>
+  <run_depend>velodyne_laserscan</run_depend>
   <run_depend>velodyne_msgs</run_depend>
   <run_depend>velodyne_pointcloud</run_depend>
 

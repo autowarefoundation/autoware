@@ -1,13 +1,20 @@
 <?xml version="1.0"?>
 <package>
-  <name>sample_data</name>
-  <version>1.6.3</version>
-  <description>The sample_data package</description>
-  <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>gnss</build_depend>
-  <run_depend>gnss</run_depend>
-  <export>
-  </export>
+    <name>sample_data</name>
+    <version>1.7.0</version>
+    <description>The sample_data package</description>
+    <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>gnss</build_depend>
+    <build_depend>cmake_modules</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>visualization_msgs</build_depend>
+
+    <run_depend>cmake_modules</run_depend>
+    <run_depend>gnss</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>visualization_msgs</run_depend>
 </package>

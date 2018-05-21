@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>laser_scan_converter</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The laser_scan_converter package to catvehcle laser scan to Autoware laser scan.</description>
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

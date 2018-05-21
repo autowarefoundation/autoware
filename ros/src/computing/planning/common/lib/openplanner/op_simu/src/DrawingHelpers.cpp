@@ -5,12 +5,12 @@
  *      Author: hatem
  */
 
-#include "DrawingHelpers.h"
+#include "op_simu/DrawingHelpers.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
-#include "UtilityH.h"
-#include "PlanningHelpers.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/PlanningHelpers.h"
 #include <GL/freeglut.h>
 
 using namespace std;

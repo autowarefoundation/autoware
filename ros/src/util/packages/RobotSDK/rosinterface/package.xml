@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
 <package>
-  <name>rosinterface</name>
-  <version>1.6.3</version>
-  <description>The rosinterface package</description>
-  <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <run_depend>roscpp</run_depend>
-  <export>
-  </export>
+    <name>rosinterface</name>
+    <version>1.7.0</version>
+    <description>The rosinterface package</description>
+    <maintainer email="syoshida@axe.bz">Syohei YOSHIDA</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>qtbase5-dev</build_depend>
+    <build_depend>libqt5-opengl-dev</build_depend>
+    <build_depend>roscpp</build_depend>
+    <build_depend>tf</build_depend>
+
+    <run_depend>libqt5-core</run_depend>
+    <run_depend>libqt5-gui</run_depend>
+    <run_depend>libqt5-widgets</run_depend>
+    <run_depend>libqt5-opengl</run_depend>
+    <run_depend>roscpp</run_depend>
+    <run_depend>tf</run_depend>
 </package>

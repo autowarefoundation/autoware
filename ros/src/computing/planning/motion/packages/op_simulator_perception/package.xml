@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>op_simulator_perception</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The op_simulator_perception package</description>
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
   <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
@@ -11,7 +11,6 @@
   
   <build_depend>roscpp</build_depend>
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>cv_tracker</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>op_utility</build_depend>
@@ -20,7 +19,6 @@
   
   <run_depend>roscpp</run_depend>
   <run_depend>geometry_msgs</run_depend>
-  <run_depend>cv_tracker</run_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>
   <run_depend>op_utility</run_depend>

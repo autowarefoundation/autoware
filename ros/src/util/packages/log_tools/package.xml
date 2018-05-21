@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 <package>
-  <name>log_tools</name>
-  <version>1.6.3</version>
-  <description>The log_tools package</description>
-  <maintainer email="akihito.ohsato@tier4.jp">Akihito Ohsato</maintainer>
-  <license>BSD</license>
-  <!-- <url type="website">http://wiki.ros.org/log_tools</url> -->
-  <author email="akihito.ohsato@tier4.jp">Akihito Ohsato</author>
-  <buildtool_depend>catkin</buildtool_depend>
-  <export>
-  </export>
+    <name>log_tools</name>
+    <version>1.7.0</version>
+    <description>The log_tools package</description>
+    <maintainer email="akihito.ohsato@tier4.jp">Akihito Ohsato</maintainer>
+    <license>BSD</license>
+    <!-- <url type="website">http://wiki.ros.org/log_tools</url> -->
+    <author email="akihito.ohsato@tier4.jp">Akihito Ohsato</author>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <run_depend>rospy</run_depend>
+    <run_depend>python-flask</run_depend>
+
 </package>

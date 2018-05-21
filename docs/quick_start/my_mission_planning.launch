@@ -1,0 +1,39 @@
+<launch>
+
+  <!-- setting path parameter -->
+  <arg name="topic_pose_stamped" default="/ndt_pose" />
+  <arg name="topic_twist_stamped" default="/estimate_twist" />
+
+  <!-- Tablet UI -->
+  <!--
+  <include file="$(find runtime_manager)/scripts/tablet_socket.launch"/>
+  -->
+
+  <!-- vel_pose_mux -->
+  <include file="$(find autoware_connector)/launch/vel_pose_connect.launch">
+    <arg name="topic_pose_stamped" value="$(arg topic_pose_stamped)" />
+    <arg name="topic_twist_stamped" value="$(arg topic_twist_stamped)" />
+  </include>
+
+  <!-- waypoint_loader -->
+  <node pkg="rostopic" type="rostopic" name="config_waypoint_loader_rostopic"
+        args="pub -l /config/waypoint_loader autoware_msgs/ConfigWaypointLoader
+        '{multi_lane_csv: '$(env HOME)/.autoware/data/path/moriyama_path.txt', replanning_mode: false, velocity_max: 20.0, velocity_min: 4.0, accel_limit: 0.98, decel_limit: 0.98, radius_thresh: 20.0, radius_min: 6.0, resample_mode: true, resample_interval: 1.0, velocity_offset: 4, end_point_offset: 5}' "
+  />
+  <include file="$(find waypoint_maker)/launch/waypoint_loader.launch" />
+
+  <!-- lane_navi -->
+  <!--
+  <node pkg="lane_planner" type="lane_navi" name="lane_navi" />
+  -->
+
+  <!-- lane_rule -->
+  <node pkg="lane_planner" type="lane_rule" name="lane_rule" />
+
+  <!-- lane_stop -->
+  <node pkg="lane_planner" type="lane_stop" name="lane_stop" />
+
+  <!-- lane_select -->
+  <node pkg="lane_planner" type="lane_select" name="lane_select" />
+
+</launch>

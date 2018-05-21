@@ -53,6 +53,10 @@ public:
   {
     lookahead_distance_ = ld;
   }
+  void setMinimumLookaheadDistance(const double &minld)
+  {
+    minimum_lookahead_distance_ = minld;
+  }
   void setCurrentVelocity(const double &cur_vel)
   {
     current_linear_velocity_ = cur_vel;
@@ -83,9 +87,17 @@ public:
   {
     return current_pose_;
   }
+  std::vector<autoware_msgs::waypoint> getCurrentWaypoints() const
+  {
+    return current_waypoints_;
+  }
   double getLookaheadDistance() const
   {
     return lookahead_distance_;
+  }
+  double getMinimumLookaheadDistance() const
+  {
+    return minimum_lookahead_distance_;
   }
   // processing
   bool canGetCurvature(double *output_kappa);
@@ -100,6 +112,7 @@ private:
   int next_waypoint_number_;
   geometry_msgs::Point next_target_position_;
   double lookahead_distance_;
+  double minimum_lookahead_distance_;
   geometry_msgs::Pose current_pose_;
   double current_linear_velocity_;
   std::vector<autoware_msgs::waypoint> current_waypoints_;

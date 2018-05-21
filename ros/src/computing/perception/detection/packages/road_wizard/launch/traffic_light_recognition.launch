@@ -1,8 +1,0 @@
-<launch>
-  <arg name="camera_id" default="/"/>
-  <arg name="image_src" default="/image_raw"/>
-
-  <node pkg="road_wizard" type="region_tlr" name="traffic_light_recognition" output="log">
-    <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)"/>
-  </node>
-</launch>

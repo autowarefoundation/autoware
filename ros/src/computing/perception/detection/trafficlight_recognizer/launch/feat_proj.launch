@@ -1,0 +1,10 @@
+<launch>
+  <arg name="camera_id" default="/"/>
+  <arg name="camera_info_src" default="/camera_info"/>
+  <arg name="use_path_info" default="false"/> <!-- USE VectorMap Server to publish only TrafficSignals on current lane-->
+
+  <node pkg="trafficlight_recognizer" type="feat_proj" name="feature_projection" output="log">
+    <param name="camera_info_topic" type="str" value="$(arg camera_id)$(arg camera_info_src)"/>
+    <param name="use_path_info" type="bool" value="$(arg use_path_info)"/>
+  </node>
+</launch>

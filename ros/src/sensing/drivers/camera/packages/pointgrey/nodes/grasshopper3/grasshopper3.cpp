@@ -53,16 +53,16 @@
 
 static volatile int running = 1;
 
-static void signalHandler(int)
+static void signal_handler(int)
 {
 	running = 0;
 	ros::shutdown();
 }
 
-void parseCameraInfo(const cv::Mat  &camMat,
-                       const cv::Mat  &disCoeff,
-                       const cv::Size &imgSize,
-                       sensor_msgs::CameraInfo &msg)
+void parse_camera_info(const cv::Mat& camMat,
+                       const cv::Mat& disCoeff,
+                       const cv::Size& imgSize,
+                       sensor_msgs::CameraInfo& msg)
 {
 	msg.header.frame_id = "camera";
 	//  msg.header.stamp    = ros::Time::now();
@@ -102,7 +102,7 @@ void parseCameraInfo(const cv::Mat  &camMat,
 }
 
 
-static void print_camera_info(FlyCapture2::CameraInfo* info)
+void print_camera_info(FlyCapture2::CameraInfo* info)
 {
 	std::cout << "\n*** CAMERA INFORMATION ***\n"
 		  << "\tSerial number       - " << info->serialNumber << "\n"
@@ -115,13 +115,42 @@ static void print_camera_info(FlyCapture2::CameraInfo* info)
 		  << std::endl;
 }
 
-static std::vector<FlyCapture2::Camera*>
-initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
+void print_image_settings(
+		const FlyCapture2::Format7ImageSettings& image_settings,
+		const unsigned int& packet_size,
+		const float& percentage
+	)
+{
+	std::cout << "Image settings: " << std::endl;
+	std::cout << "\tMode: " << image_settings.mode << std::endl;
+	std::cout << "\tPixel Format: 0x" << std::hex << image_settings.pixelFormat << std::dec << std::endl;
+	std::cout << "\tOffset X: " << image_settings.offsetX << std::endl;
+	std::cout << "\tOffset Y: " << image_settings.offsetY << std::endl;
+	std::cout << "\tWidth: " << image_settings.width << std::endl;
+	std::cout << "\tHeight: " << image_settings.height << std::endl;
+	std::cout << "Packet size: " << packet_size << " (" << percentage << "%)" << std::endl;
+}
+
+void print_format7_info(const FlyCapture2::Format7Info& info, bool supported)
+{
+	std::cout << "supported: " << supported << std::endl;
+	std::cout << "mode: " << info.mode << std::endl;
+	std::cout << "maxWidth: " << info.maxWidth << std::endl;
+	std::cout << "maxHeight: " << info.maxHeight << std::endl;
+	std::cout << "packetSize: " << info.packetSize << std::endl;
+	std::cout << "percentage: " << info.percentage << std::endl;
+	std::cout << "pixelFormatBitField: " << info.pixelFormatBitField << std::endl;
+}
+
+void initialize_cameras(std::vector<FlyCapture2::Camera *> &cameras,
+                        FlyCapture2::BusManager *bus_manger,
+                        int camera_num,
+                        FlyCapture2::Mode desired_mode,
+                        FlyCapture2::PixelFormat desired_pixel_format,
+                        int timeout_ms)
 {
 	// Connect to all detected cameras and attempt to set them to
 	// a common video mode and frame rate
-
-	std::vector<FlyCapture2::Camera*> cameras;
 	for (int i = 0; i < camera_num; i++)
 	{
 		FlyCapture2::Camera *camera = new FlyCapture2::Camera();
@@ -149,7 +178,7 @@ initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 			std::exit(-1);
 		}
 
-		image_info.timestamp.onOff = true;
+		image_info.timestamp.onOff = false;
 		error = camera->SetEmbeddedImageInfo(&image_info);
 		if (error != FlyCapture2::PGRERROR_OK)
 		{
@@ -166,14 +195,112 @@ initializeCameras(FlyCapture2::BusManager *bus_manger, int camera_num)
 			std::exit(-1);
 		}
 
+		//obtain working settings
+		FlyCapture2::VideoMode default_video_mode;
+		FlyCapture2::FrameRate default_frame_rate;
+
+		error = camera->GetVideoModeAndFrameRate(&default_video_mode, &default_frame_rate);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			std::exit(-1);
+		}
+
+		//try to set Format7, according to the desired mode and pixel format.
+		FlyCapture2::Format7ImageSettings image_settings;
+		bool supported = false;
+		unsigned int packet_size;
+		float percentage;
+
+		FlyCapture2::Format7Info format7_info;
+		format7_info.mode = desired_mode;
+
+		error = camera->GetFormat7Info(&format7_info, &supported);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			std::exit(-1);
+		}
+
+		print_format7_info(format7_info, supported);
+
+		if (supported)
+		{
+			error = camera->GetFormat7Configuration(&image_settings, &packet_size, &percentage);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+
+			image_settings.mode = desired_mode;
+			image_settings.pixelFormat = desired_pixel_format;
+			image_settings.offsetX = 0;
+			image_settings.offsetY = 0;
+			image_settings.width = format7_info.maxWidth;
+			image_settings.height = format7_info.maxHeight;
+
+			FlyCapture2::Format7PacketInfo packet_info;
+			bool valid_settings = false;
+			error = camera->ValidateFormat7Settings(&image_settings, &valid_settings, &packet_info);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+			packet_size = packet_info.recommendedBytesPerPacket;
+			error = camera->SetFormat7Configuration(&image_settings, packet_size);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+
+			error = camera->GetFormat7Configuration(&image_settings, &packet_size, &percentage);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				std::exit(-1);
+			}
+
+			print_image_settings(image_settings, packet_size, percentage);
+		}
+		else
+		{
+			ROS_ERROR("Selected Mode not supported, using last working mode.");
+		}
+
+		FlyCapture2::FC2Config camera_config;
+		error = camera->GetConfiguration(&camera_config);
+		if (error != FlyCapture2::PGRERROR_OK)
+		{
+			error.PrintErrorTrace();
+			ROS_INFO("Could not read configuration from Camera");
+		}
+		else
+		{
+			if (timeout_ms > 0)
+				camera_config.grabTimeout = timeout_ms;
+
+			error = camera->SetConfiguration(&camera_config);
+			if (error != FlyCapture2::PGRERROR_OK)
+			{
+				error.PrintErrorTrace();
+				ROS_INFO("Could not set configuration on Camera");
+			}
+		}
+
 		print_camera_info(&camera_info);
 		cameras.push_back(camera);
 	}
-
-	return cameras;
 }
 
-static int getNumCameras(FlyCapture2::BusManager *bus_manager)
+/*!
+ * Get the number of cameras connected to the system
+ * @param bus_manager Valid pointer to the BusManager
+ * @return The number of detected cameras
+ */
+unsigned int get_num_cameras(FlyCapture2::BusManager* bus_manager)
 {
 	unsigned int cameras;
 	FlyCapture2::Error error = bus_manager->GetNumOfCameras(&cameras);
@@ -190,11 +317,14 @@ static int getNumCameras(FlyCapture2::BusManager *bus_manager)
 		std::cerr << "Error: This program requires at least 1 camera." << std::endl;
 		std::exit(-1);
 	}
-
-	return static_cast<int>(cameras);
+	return cameras;
 }
 
-static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
+/*!
+ * Initialize the capture on all the cameras
+ * @param cameras An array of valid pointers to the camera objects
+ */
+void start_capture(std::vector<FlyCapture2::Camera *>& cameras)
 {
 	for (auto *camera : cameras)
 	{
@@ -205,11 +335,14 @@ static void startCapture(std::vector<FlyCapture2::Camera*>& cameras)
 			return;
 		}
 	}
-
-	return;
 }
 
-void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo_msg)
+/*!
+ * Reads and parses the Autoware calibration file format
+ * @param nh ros node handle
+ * @param camerainfo_msg CameraInfo message to fill
+ */
+void getMatricesFromFile(const ros::NodeHandle& nh, sensor_msgs::CameraInfo &camerainfo_msg)
 {
 	//////////////////CAMERA INFO/////////////////////////////////////////
 	cv::Mat  cameraExtrinsicMat;
@@ -241,7 +374,51 @@ void getMatricesFromFile(ros::NodeHandle nh, sensor_msgs::CameraInfo &camerainfo
 		fs["DistCoeff"] >> distCoeff;
 		fs["ImageSize"] >> imageSize;
 	}
-	parseCameraInfo(cameraMat, distCoeff, imageSize, camerainfo_msg);
+	parse_camera_info(cameraMat, distCoeff, imageSize, camerainfo_msg);
+}
+
+/*!
+ * Reads the params from the console
+ * @param private_nh[in] Private Ros node handle
+ * @param fps[out] Read value from the console double
+ * @param mode[out] Read value from the console integer
+ * @param format[out] Read value from the console raw or rgb
+ * @param timeout[out] Read value from the console timeout in ms
+ */
+void ros_get_params(const ros::NodeHandle& private_nh, int& fps, int& mode, std::string& format, int& timeout)
+{
+	if (private_nh.getParam("fps", fps))
+	{
+		ROS_INFO("fps set to %d", fps);
+	} else {
+		fps = 20;
+		ROS_INFO("No param received, defaulting fps to %d", fps);
+	}
+
+	if (private_nh.getParam("mode", mode))
+	{
+		ROS_INFO("mode set to %d", mode);
+	} else {
+		mode = 0;
+		ROS_INFO("No param received, defaulting mode to %d", mode);
+	}
+
+	if (private_nh.getParam("format", format))
+	{
+		ROS_INFO("format set to %s", format.c_str());
+	} else {
+		format = "raw";
+		ROS_INFO("No param received, defaulting format to %s", format.c_str());
+	}
+
+	if (private_nh.getParam("timeout", timeout))
+	{
+		ROS_INFO("timeout set to %d ms", timeout);
+	} else {
+		timeout = 1000;
+		ROS_INFO("No param received, defaulting timeout to %d ms", timeout);
+	}
+
 }
 
 int main(int argc, char **argv)
@@ -249,24 +426,37 @@ int main(int argc, char **argv)
 	////////////////POINT GREY CAMERA /////////////////////////////
 	FlyCapture2::BusManager busMgr;
 
-	int camera_num = getNumCameras(&busMgr);
-	std::vector<FlyCapture2::Camera*> cameras = initializeCameras(&busMgr, camera_num);
-
 	////ROS STUFF////
 	ros::init(argc, argv, "grasshopper3");
 	ros::NodeHandle n;
 	ros::NodeHandle private_nh("~");
 
-	signal(SIGTERM, signalHandler);//detect closing
+	signal(SIGTERM, signal_handler);//detect closing
 
-	double fps;
-	if (private_nh.getParam("fps", fps))
+	int fps, camera_mode, timeout;
+	std::string pixel_format;
+
+	ros_get_params(private_nh, fps, camera_mode, pixel_format, timeout);
+
+	//
+	FlyCapture2::Mode desired_mode;
+	FlyCapture2::PixelFormat desired_pixel_format;
+
+	desired_mode = (FlyCapture2::Mode)camera_mode;
+
+	if(pixel_format == "rgb")
 	{
-		ROS_INFO("fps set to %.2f", fps);
-	} else {
-		fps = 15.0;
-		ROS_INFO("No param received, defaulting to %.2f", fps);
+		desired_pixel_format = FlyCapture2::PIXEL_FORMAT_RGB8;
 	}
+	else
+	{
+		desired_pixel_format = FlyCapture2::PIXEL_FORMAT_RAW8;
+	}
+
+	//init cameras
+	int camera_num = get_num_cameras(&busMgr);
+	std::vector<FlyCapture2::Camera*> cameras;
+	initialize_cameras(cameras, &busMgr, camera_num, desired_mode, desired_pixel_format, timeout);
 
 	///////calibration data
 	sensor_msgs::CameraInfo camerainfo_msg;
@@ -287,7 +477,7 @@ int main(int argc, char **argv)
 		ROS_INFO("Publishing.. %s", topic.c_str());
 	}
 
-	startCapture(cameras);
+	start_capture(cameras);
 
 	std::cout << "Capturing by " << camera_num << " cameras..." << std::endl;
 
@@ -303,7 +493,7 @@ int main(int argc, char **argv)
 			if (error != FlyCapture2::PGRERROR_OK)
 			{
 				error.PrintErrorTrace();
-				std::exit(-1);
+				continue;
 			}
 
 			// check encoding pattern
@@ -340,8 +530,6 @@ int main(int argc, char **argv)
 			size_t image_size = image.GetDataSize();
 			msg.data.resize(image_size);
 			memcpy(msg.data.data(), image.GetData(), image_size);
-
-
 
 			pub[i].publish(msg);
 			i++;

@@ -8,7 +8,7 @@
   <include file="$(find gnss_localizer)/launch/nmea2tfpose.launch"/>
 
   <!-- ndt_matching -->
-  <include file="$(find ndt_localizer)/launch/ndt_matching.launch"/>
+  <include file="$(find lidar_localizer)/launch/ndt_matching.launch"/>
 
   <!-- calibration_publisher -->
   <include file="$(find runtime_manager)/scripts/calibration_publisher.launch">

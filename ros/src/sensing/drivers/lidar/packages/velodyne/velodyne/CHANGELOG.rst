@@ -2,6 +2,13 @@
 Changelog for package velodyne
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Modify package xml version other than 1.6.3
+* Removed flawed subtree
+* Contributors: AMC, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 
@@ -10,40 +17,13 @@ Changelog for package velodyne
 * Update CHANGELOG
 * Contributors: Yusuke FUJII
 
-1.6.1 (2018-01-20)
+1.3.0 (2017-11-10)
 ------------------
-* update CHANGELOG
-* Contributors: Yusuke FUJII
+* Merge pull request `#110 <https://github.com/ros-drivers/velodyne/issues/110>`_ from kmhallen/master
+  Added velodyne_laserscan package
+* Added velodyne_laserscan package and inserted into existing launch files
+* Contributors: Jack O'Quin, Joshua Whitley, Kevin Hallenbeck
 
-1.6.0 (2017-12-11)
-------------------
-* Prepare release for 1.6.0
-* Contributors: Yamato ANDO
-
-1.5.1 (2017-09-25)
-------------------
-* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
-  * fix a build error by gcc version
-  * fix build error for older indigo version
-  * update changelog for v1.5.1
-  * 1.5.1
-* Contributors: Yusuke FUJII
-
-1.5.0 (2017-09-21)
-------------------
-* Update changelog
-* Contributors: Yusuke FUJII
-
-1.4.0 (2017-08-04)
-------------------
-* version number must equal current release number so we can start releasing in the future
-* Contributors: Dejan Pangercic
-
-1.3.1 (2017-07-16)
-------------------
-
-1.3.0 (2017-07-14)
-------------------
 
 1.2.0 (2017-06-07)
 ------------------

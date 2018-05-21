@@ -5,15 +5,15 @@
  *      Author: ai-driver
  */
 
-#include "op_RosHelpers.h"
+#include "op_ros_helpers/op_RosHelpers.h"
 
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <math.h>
-#include "PolygonGenerator.h"
-#include "MappingHelpers.h"
-#include "MatrixOperations.h"
+#include "op_ros_helpers/PolygonGenerator.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/MatrixOperations.h"
 
 
 namespace PlannerHNS

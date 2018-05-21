@@ -1,0 +1,29 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+  <arg name="sync" default="false" />
+
+  <arg name="camera_id" default="/"/>
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <arg name="image_src_car" default="/image_raw"/>
+
+      <node pkg="vision_dummy_track" name="tracking" type="vision_dummy_track">
+      </node>
+
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <arg name="image_src_pedestrian" default="/image_raw"/>
+
+      <node pkg="vision_dummy_track" name="tracking" type="vision_dummy_track">
+      </node>
+
+    </group>
+  </group>
+</launch>

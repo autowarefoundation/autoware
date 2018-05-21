@@ -5,12 +5,12 @@
  *      Author: hatem
  */
 
-#include "LocalPlannerH.h"
-#include "UtilityH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
-#include "MatrixOperations.h"
-#include "PlannerH.h"
+#include "op_planner/LocalPlannerH.h"
+#include "op_utility/UtilityH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/MatrixOperations.h"
+#include "op_planner/PlannerH.h"
 
 using namespace UtilityHNS;
 

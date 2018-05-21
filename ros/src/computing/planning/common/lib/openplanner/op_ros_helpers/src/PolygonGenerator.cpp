@@ -5,8 +5,8 @@
  *      Author: ai-driver
  */
 
-#include "PolygonGenerator.h"
-#include "PlanningHelpers.h"
+#include "op_ros_helpers/PolygonGenerator.h"
+#include "op_planner/PlanningHelpers.h"
 
 namespace PlannerHNS
 {

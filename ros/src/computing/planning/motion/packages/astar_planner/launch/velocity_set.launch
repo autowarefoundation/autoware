@@ -8,7 +8,7 @@
   <arg name="enable_multiple_crosswalk_detection" default="true" />
   <arg name="enablePlannerDynamicSwitch" default="false" />
 
-  <node pkg="astar_planner" type="velocity_set" name="velocity_set" output="log">
+  <node pkg="astar_planner" type="velocity_set" name="velocity_set" output="screen">
     <param name="use_crosswalk_detection" value="$(arg use_crosswalk_detection)" />
     <param name="enable_multiple_crosswalk_detection" value="$(arg enable_multiple_crosswalk_detection)" />
     <param name="points_topic" value="$(arg points_topic)" />

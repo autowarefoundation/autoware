@@ -38,21 +38,22 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <std_msgs/Bool.h>
 #include <tf/transform_datatypes.h>
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
+#include "velocity_replanner.h"
 
 namespace waypoint_maker
 {
-
 const std::string MULTI_LANE_CSV = "/tmp/driving_lane.csv";
 
 enum class FileFormat : int32_t
 {
-  ver1,  //x,y,z,(velocity)
-  ver2,  //x,y,z,yaw,(velocity)
-  ver3,  //first line consists on explanation of values
+  ver1,  // x,y,z,(velocity)
+  ver2,  // x,y,z,yaw,(velocity)
+  ver3,  // first line consists on explanation of values
 
   unknown = -1,
 };
@@ -71,52 +72,51 @@ inline double mps2kmph(double velocity_mps)
 class WaypointLoaderNode
 {
 public:
-
   WaypointLoaderNode();
   ~WaypointLoaderNode();
 
-  void publishLaneArray();
-
 private:
-
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
 
-  // publisher
+  // publisher & subscriber
   ros::Publisher lane_pub_;
+  ros::Subscriber config_sub_;
+  ros::Subscriber output_cmd_sub_;
 
   // variables
   std::string multi_lane_csv_;
-  double decelerate_;
-  bool disableDecisionMaker_;
-  bool disableVelocitySmoothing_;
+  bool disable_decision_maker_;
+  bool replanning_mode_;
+  VelocityReplanner replanner_;
+  std::vector<std::string> multi_file_path_;
+  autoware_msgs::LaneArray output_lane_array_;
 
   // initializer
-  void initPublisher();
-  void initParameter();
+  void initPubSub();
+  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
+  void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
+  void createLaneWaypoint(const std::string& file_path, autoware_msgs::lane* lane);
+  void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
+  void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array);
 
-  void createLaneWaypoint(const std::string &file_path, autoware_msgs::lane *lane);
-  void createLaneArray(const std::vector<std::string> &paths, autoware_msgs::LaneArray *lane_array);
-
-  FileFormat checkFileFormat(const char *filename);
-  bool verifyFileConsistency(const char *filename);
-  void loadWaypointsForVer1(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer1(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypointsForVer2(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypointForVer2(const std::string &line, autoware_msgs::waypoint *wp);
-  void loadWaypoints(const char *filename, std::vector<autoware_msgs::waypoint> *wps);
-  void parseWaypoint(const std::string &line, const std::vector<std::string> &contents,
-                            autoware_msgs::waypoint *wp);
-  void planningVelocity(std::vector<autoware_msgs::waypoint> *wps);
-  double decelerate(geometry_msgs::Point p1, geometry_msgs::Point p2, double original_velocity_mps);
-
+  FileFormat checkFileFormat(const char* filename);
+  bool verifyFileConsistency(const char* filename);
+  void loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer1(const std::string& line, autoware_msgs::waypoint* wp);
+  void loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer2(const std::string& line, autoware_msgs::waypoint* wp);
+  void loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void parseWaypointForVer3(const std::string& line, const std::vector<std::string>& contents,
+                            autoware_msgs::waypoint* wp);
 };
 
-void parseColumns(const std::string &line, std::vector<std::string> *columns);
+const std::string addFileSuffix(std::string file_path, std::string suffix);
+void parseColumns(const std::string& line, std::vector<std::string>* columns);
 size_t countColumns(const std::string& line);
-
 }
 #endif  // WAYPOINT_LOADER_CORE_H

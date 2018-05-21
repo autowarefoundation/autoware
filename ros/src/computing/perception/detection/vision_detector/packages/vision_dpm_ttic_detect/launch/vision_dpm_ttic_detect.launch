@@ -1,0 +1,55 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+  <arg name="use_gpu" default="false"/>
+  <arg name="sync" default="false" />
+
+  <arg name="camera_id" default="/"/>
+
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <!-- arguments list -->
+      <arg name="comp_model_car" default="$(find vision_dpm_ttic_detect)/data/car_comp.csv"/>
+      <arg name="root_model_car" default="$(find vision_dpm_ttic_detect)/data/car_root.csv"/>
+      <arg name="part_model_car" default="$(find vision_dpm_ttic_detect)/data/car_part.csv"/>
+      <arg name="image_src_car" default="/image_raw"/>
+
+      <!-- dpm detection -->
+      <node pkg="vision_dpm_ttic_detect" name="vision_dpm_ttic_detect" type="vision_dpm_ttic_detect">
+        <remap from="/config/obj_car/dpm" to="/config/car_dpm"/>
+        <param name="detection_class_name" type="str" value="car"/>
+        <param name="comp_model_path" type="str" value="$(arg comp_model_car)"/>
+        <param name="root_model_path" type="str" value="$(arg root_model_car)"/>
+        <param name="part_model_path" type="str" value="$(arg part_model_car)"/>
+        <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+        <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src_car)"/>
+        <remap from="/image_raw" to="/sync_drivers/image_raw" if="$(arg sync)" />
+      </node>
+    </group>
+  </group>
+
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <!-- arguments list -->
+      <arg name="comp_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_comp.csv"/>
+      <arg name="root_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_root.csv"/>
+      <arg name="part_model_pedestrian" default="$(find vision_dpm_ttic_detect)/data/person_part.csv"/>
+      <arg name="image_src_pedestrian" default="/image_raw"/>
+
+      <!-- dpm detection -->
+      <node pkg="vision_dpm_ttic_detect" name="vision_dpm_ttic_detect" type="vision_dpm_ttic_detect">
+        <remap from="/config/obj_person/dpm" to="/config/pedestrian_dpm"/>
+        <param name="detection_class_name" type="str" value="person"/>
+        <param name="comp_model_path" type="str" value="$(arg comp_model_pedestrian)"/>
+        <param name="root_model_path" type="str" value="$(arg root_model_pedestrian)"/>
+        <param name="part_model_path" type="str" value="$(arg part_model_pedestrian)"/>
+        <param name="use_gpu" type="bool" value="$(arg use_gpu)"/>
+        <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src_pedestrian)"/>
+        <remap from="/image_raw" to="/sync_drivers/image_raw" if="$(arg sync)" />
+      </node>
+    </group>
+  </group>
+
+</launch>

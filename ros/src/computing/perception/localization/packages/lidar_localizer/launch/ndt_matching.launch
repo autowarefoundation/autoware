@@ -1,0 +1,30 @@
+<!-- -->
+<launch>
+
+  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="use_gnss" default="1" />
+  <arg name="use_odom" default="false" />
+  <arg name="use_imu" default="false" />
+  <arg name="imu_upside_down" default="false" />
+  <arg name="imu_topic" default="/imu_raw" />
+  <arg name="queue_size" default="1" />
+  <arg name="offset" default="linear" />
+  <arg name="get_height" default="false" />
+  <arg name="use_local_transform" default="false" />
+  <arg name="sync" default="false" />
+
+  <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" output="log">
+    <param name="method_type" value="$(arg method_type)" />
+    <param name="use_gnss" value="$(arg use_gnss)" />
+    <param name="use_odom" value="$(arg use_odom)" />
+    <param name="use_imu" value="$(arg use_imu)" />
+    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+    <param name="queue_size" value="$(arg queue_size)" />
+    <param name="offset" value="$(arg offset)" />
+    <param name="get_height" value="$(arg get_height)" />
+    <param name="use_local_transform" value="$(arg use_local_transform)" />
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+  </node>
+
+</launch>

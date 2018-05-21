@@ -5,7 +5,9 @@
 #include <unordered_map>
 
 #include <autoware_msgs/ConfigDecisionMaker.h>
+#include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/waypoint.h>
 #include <autoware_msgs/lane.h>
 #include <autoware_msgs/traffic_light.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -15,6 +17,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+#include <tf/transform_listener.h>
 
 #include <visualization_msgs/MarkerArray.h>
 
@@ -28,11 +31,11 @@
 #include <geometry_msgs/Point.h>
 
 // lib
-#include <amathutils.hpp>
+#include <amathutils_lib/amathutils.hpp>
 #include <cross_road_area.hpp>
 #include <decision_maker_param.hpp>
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 namespace decision_maker
 {
@@ -68,6 +71,7 @@ typename std::underlying_type<T>::type enumToInteger(T t)
   return static_cast<typename std::underlying_type<T>::type>(t);
 }
 
+
 class DecisionMakerNode
 {
 private:
@@ -97,6 +101,10 @@ private:
   autoware_msgs::LaneArray current_controlled_lane_array_;  // modified lane
   autoware_msgs::LaneArray current_stopped_lane_array_;     // 0velocity
 
+  tf::TransformListener tflistener_baselink;
+
+  int closest_stopline_waypoint_;
+
   // Current way/behavior status
   double current_velocity_;
   double average_velocity_;
@@ -107,6 +115,19 @@ private:
   std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
   double displacement_from_path_;
+  autoware_msgs::waypoint CurrentStoplineTarget_;
+
+  bool foundOtherVehicleForIntersectionStop_; // In fact this should be defined as state.
+  class DetectionArea
+  {
+    public:
+      double x1,x2;
+      double y1,y2;
+
+      DetectionArea(){
+      }
+  };
+  DetectionArea detectionArea_;
 
   bool isManualLight;
 
@@ -117,8 +138,11 @@ private:
   uint32_t param_target_waypoint_;
   double param_convergence_threshold_;
   uint32_t param_stopline_target_waypoint_;
+  double param_stopline_target_ratio_;
   double param_shift_width_;
   double param_crawl_velocity_;
+  double param_detection_area_rate_;
+  std::string param_baselink_tf_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -165,6 +189,7 @@ private:
   double calcPosesAngleDiffN(const geometry_msgs::Pose &p_from, const geometry_msgs::Pose &p_to);
   double getPoseAngle(const geometry_msgs::Pose &p);
 
+  /* for planning according to state*/
   void publishStoppedLaneArray(void);
   void publishControlledLaneArray(void);
   void updateLaneWaypointsArray(void);
@@ -173,9 +198,11 @@ private:
   void createShiftLane(void);
   void changeShiftLane(void);
   void removeShiftLane(void);
-
-
   void setAllStoplineStop(void);
+  void publishStoplineWaypointIdx(int wp_idx);
+
+
+  // callback by state context
   void StoplinePlanIn(int status);
   void StoplinePlanOut(int status);
   void publishLightColor(int status);
@@ -184,11 +211,14 @@ private:
   void updateStateObstacleAvoid(int status);
   void updateStateSTR(int status);
   void updateStateStop(int status);
+  void callbackOutStateStop(int status);
   void callbackInStateStop(int status);
   void callbackInStateAcc(int status);
   void callbackInStateDec(int status);
   void callbackInStateKeep(int status);
+  void callbackOutStateLaneChange(int status);
   void setupStateCallback(void);
+  
   // callback by topic subscribing
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
@@ -202,6 +232,7 @@ private:
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
   void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg);
+  void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
   void callbackFromVectorMapPoint(const vector_map_msgs::PointArray &msg);
@@ -221,7 +252,14 @@ public:
     param_target_waypoint_ = DEFAULT_TARGET_WAYPOINT;
     param_shift_width_ = DEFAULT_SHIFT_WIDTH;
     param_stopline_target_waypoint_ = DEFAULT_STOPLINE_TARGET_WAYPOINT;
+    param_stopline_target_ratio_ = 0.0;
     param_crawl_velocity_ = DEFAULT_CRAWL_VELOCITY;
+    param_detection_area_rate_ = DEFAULT_DETECTION_AREA_RATE;
+    param_baselink_tf_ = "base_link";
+    detectionArea_.x1 = DEFAULT_DETECTION_AREA_X1;
+    detectionArea_.x2 = DEFAULT_DETECTION_AREA_X2;
+    detectionArea_.y1 = DEFAULT_DETECTION_AREA_Y1;
+    detectionArea_.y2 = DEFAULT_DETECTION_AREA_Y2;
 
     ctx = new state_machine::StateContext();
     this->initROS(argc, argv);
@@ -229,10 +267,13 @@ public:
     vector_map_init = false;
     created_shift_lane_flag_ = false;
     closest_waypoint_ = 0;
+    
+    foundOtherVehicleForIntersectionStop_ = false; 
 
     ClosestArea_ = nullptr;
     displacement_from_path_ = 0.0;
     isManualLight = false;
+    closest_stopline_waypoint_ = -1;
   }
 
   void run(void);

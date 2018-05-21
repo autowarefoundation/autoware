@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_pointgrey_drivers</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The autoware_pointgrey_drivers package</description>
   <maintainer email="kondoh@axe-inc.co.jp">Masao KONDOH</maintainer>
   <maintainer email="abrahammonrroy@yahoo.com">Masao KONDOH</maintainer>
@@ -11,13 +11,11 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>xerces</build_depend>
   <build_depend>cv_bridge</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>xerces</run_depend>
   <run_depend>cv_bridge</run_depend>
   <export>
   </export>

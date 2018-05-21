@@ -208,15 +208,31 @@ $grad-color: #9affff;
   top: -14%;
   bottom: -14%;
 }
-.meter--gear div {
-  font-size: 2rem;
-  text-align: center;
-  line-height: 4rem;
-  font-family: 'Roboto Mono', monospace;
-  font-style: italic;
-  font-weight: bold;
-  color: #555;
+
+@media all and (max-width: 1920px){
+  .meter--gear div {
+    font-size: 2rem;
+    text-align: center;
+    line-height: 4rem;
+    font-family: 'Roboto Mono', monospace;
+    font-style: italic;
+    font-weight: bold;
+    color: #555;
+  }
 }
+
+@media all and (min-width: 1921px){
+  .meter--gear div {
+    font-size: 2rem;
+    text-align: center;
+    line-height: 7rem;
+    font-family: 'Roboto Mono', monospace;
+    font-style: italic;
+    font-weight: bold;
+    color: #555;
+  }
+}
+
 .meter--gear div.redzone {
   color: #e30;
 }

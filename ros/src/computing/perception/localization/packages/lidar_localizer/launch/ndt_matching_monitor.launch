@@ -1,0 +1,17 @@
+<launch>
+
+    <arg name="iteration_threshold_warn" default="10" />
+    <arg name="iteration_threshold_stop" default="32" />
+    <arg name="score_delta_threshold" default="14.0" />
+    <arg name="min_stable_samples" default="30.0" />
+    <arg name="fatal_time_threshold" default="2.0" />
+
+    <node pkg="lidar_localizer" type="ndt_matching_monitor" name="ndt_matching_monitor" output="screen">
+        <param name="/ndt_monitor/iteration_threshold_warn" value="$(arg iteration_threshold_warn)" />
+        <param name="/ndt_monitor/iteration_threshold_stop" value="$(arg iteration_threshold_stop)" />
+        <param name="/ndt_monitor/score_delta_threshold" value="$(arg score_delta_threshold)" />
+        <param name="/ndt_monitor/min_stable_samples" value="$(arg min_stable_samples)" />
+        <param name="/ndt_monitor/fatal_time_threshold" value="$(arg fatal_time_threshold)" />
+    </node>
+
+</launch>

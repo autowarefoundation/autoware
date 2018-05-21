@@ -8,16 +8,11 @@ RUN apt-get update && apt-get install -y \
 # Install ROS
 RUN wget http://packages.ros.org/ros.key -O - | apt-key add -
 RUN echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list
-RUN apt-get update && apt-get install -y \
-        ros-indigo-desktop-full ros-indigo-nmea-msgs \
-        ros-indigo-nmea-navsat-driver ros-indigo-sound-play \
-        ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common \
-        ros-indigo-controller-manager ros-indigo-ros-control \
-        ros-indigo-ros-controllers ros-indigo-gazebo-ros-control \
-        ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper \
-        ros-indigo-joystick-drivers ros-indigo-novatel-span-driver \
-        libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev \
-        libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev
+RUN apt-get update && apt-get install -y ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
+RUN apt-get update && apt-get install -y ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
+RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev software-properties-common libyaml-cpp-dev python-flask python-requests
+RUN add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
+RUN apt-get update && apt-get install -y libmosquitto-dev
 
 RUN rosdep init \
         && rosdep update \
@@ -96,9 +91,14 @@ RUN groupadd -f pgrimaging && \
 # Change user
 USER autoware
 
+# YOLO_V2
+RUN cd && git clone https://github.com/pjreddie/darknet.git
+RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
+RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
+
 # Install Autoware
 RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
-RUN /bin/bash -c 'source /opt/ros/indigo/setup.bash; cd /home/$USERNAME/Autoware/ros/src; catkin_init_workspace; cd ../; ./catkin_make_release'
+RUN /bin/bash -c 'source /opt/ros/indigo/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Change Terminal Color
