@@ -4,16 +4,20 @@ project(map_tools)
 find_package(PCL REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tf
-  sensor_msgs
-  pcl_ros
-  pcl_conversions
+        roscpp
+        tf
+        sensor_msgs
+        pcl_ros
+        pcl_conversions
         )
 
 catkin_package(
-  CATKIN_DEPENDS sensor_msgs
-  DEPENDS PCL
+        CATKIN_DEPENDS roscpp
+        tf
+        sensor_msgs
+        pcl_ros
+        pcl_conversions
+        DEPENDS PCL
 )
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -35,3 +39,13 @@ target_link_libraries(csv2pcd ${catkin_LIBRARIES})
 target_link_libraries(pcd2csv ${catkin_LIBRARIES})
 target_link_libraries(map_extender ${catkin_LIBRARIES})
 target_link_libraries(pcd_grid_divider ${catkin_LIBRARIES})
+
+
+install(TARGETS pcd_filter pcd_binarizer pcd_arealist csv2pcd pcd2csv map_extender pcd_grid_divider
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)
