@@ -135,6 +135,7 @@ static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 
 static void update_pictograms(int id, jsk_rviz_plugins::Pictogram pictogram) {
 
+  pub.publish(*pictogramsp);
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
@@ -385,6 +386,8 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
     db_data.push_back(cols);
   }
 
+
+  //sort db_data by time
   sort(
     db_data.begin(), db_data.end(),
     [](const std::vector<string>& cols_x, const std::vector<string>& cols_y){
@@ -535,7 +538,7 @@ int main(int argc, char **argv) {
 
   string home_dir = getenv("HOME");
 
-  pub = nh.advertise<jsk_rviz_plugins::Pictogram>(PICTOGRAMNAME, 1);
+  pub = nh.advertise<jsk_rviz_plugins::Pictogram[]>(PICTOGRAMNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
   cout << "time=" << args[0] << endl;
   nh.param<double>(MYNAME "/delay", args[1], DELAYSEC);
