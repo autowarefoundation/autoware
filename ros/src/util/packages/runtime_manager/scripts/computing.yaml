@@ -224,6 +224,7 @@ subs :
       - name : lidar_svm_detect
         desc : lidar_svm_detect desc sample
         cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
+        param: lidar_svm_detect
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
