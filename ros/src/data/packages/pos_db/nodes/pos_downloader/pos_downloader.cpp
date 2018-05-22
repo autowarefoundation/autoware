@@ -86,7 +86,8 @@ static double pedestrian_dz;
 
 static ros::Publisher pub;
 
-static jsk_rviz_plugins::Pictogram[] *pictogramsp;
+static std::vector<jsk_rviz_plugins::Pictogram> pictogramsp;
+static std::vector<int> car_ids;
 
 static SendData sd;
 
@@ -134,8 +135,14 @@ static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 
 
 static void update_pictograms(int id, jsk_rviz_plugins::Pictogram pictogram) {
-
-  pub.publish(*pictogramsp);
+  vector<int>::iterator itr = find(car_ids.begin(), car_ids.end(), id);
+  if (itr == car_ids.end()) {
+    car_ids.push_back(id);
+    pictogramsp.push_back(pictogram);
+  } else {
+    pictogramsp[itr - car_ids.begin()] = pictogram;
+  }
+  pub.publish(pictogramsp.data());
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
@@ -301,18 +308,22 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
   int diffmsec, int is_swap) {
   int nid;
 
+  /* use lower 6 bytes */
+  nid = ANON_MARKER_ID_MAX |
+  (std::strtol(idstr.substr(idstr.end() -= 6, 6).c_str(), NULL, 16)) << 1;
+
   switch (type) {
   case TYPE_OWN:
     /* use lower 6 bytes */
     nid = ANON_MARKER_ID_MAX |
-      (std::strtol(idstr.substr(6, 6).c_str(), NULL, 16)) << 1;
+    (std::strtol(idstr.substr(6, 6).c_str(), NULL, 16)) << 1;
     publish_car(nid, 1, now, pose, diffmsec);
     break;
   case TYPE_CAR:
-    publish_car(0, 0, now, pose, diffmsec);
+    publish_car(nid, 0, now, pose, diffmsec);
     break;
   case TYPE_PEDESTRIAN:
-    publish_pedestrian(0, 1, now, pose, diffmsec);
+    publish_pedestrian(nid, 1, now, pose, diffmsec);
     break;
 
   /* backward compatibility */
@@ -334,11 +345,11 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
         publish_car(nid, 1, now, pose, diffmsec);
       }
     } else if (idstr.find("car_pose", 0) != string::npos) {
-      publish_car(0, 0, now, pose, diffmsec);
+      publish_car(nid, 0, now, pose, diffmsec);
     } else if (idstr.find("pedestrian_pose", 0) != string::npos) {
-      publish_pedestrian(0, 1, now, pose, diffmsec);
+      publish_pedestrian(nid, 1, now, pose, diffmsec);
     } else {
-      publish_pedestrian(0, 0, now, pose, diffmsec); // PosUp
+      publish_pedestrian(nid, 0, now, pose, diffmsec); // PosUp
     }
   }
 
