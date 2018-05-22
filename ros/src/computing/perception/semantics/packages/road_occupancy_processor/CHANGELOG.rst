@@ -2,6 +2,11 @@
 Changelog for package road_occupancy_processor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Delete inappropriate Forthcoming in package.xml
+* Contributors: Kosuke Murakami
+
 1.7.0 (2018-05-16)
 ------------------
 * [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)

@@ -2,6 +2,11 @@
 Changelog for package sick_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Delete inappropriate Forthcoming in package.xml
+* Contributors: Kosuke Murakami
+
 1.7.0 (2018-05-16)
 ------------------
 * Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)

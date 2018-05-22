@@ -2,6 +2,9 @@
 Changelog for package image_segmenter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.7.0 (2018-05-18)
 ------------------
 * Add  code in cmakelists

@@ -2,6 +2,11 @@
 Changelog for package multi_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Delete inappropriate Forthcoming in package.xml
+* Contributors: Kosuke Murakami
+
 1.7.0 (2018-05-16)
 ------------------
 * Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)

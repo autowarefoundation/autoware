@@ -2,6 +2,9 @@
 Changelog for package autoware_driveworks_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
