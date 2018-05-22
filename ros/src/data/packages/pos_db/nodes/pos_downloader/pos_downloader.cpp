@@ -122,13 +122,13 @@ static std::vector<std::string> split(const string& input, char delimiter) {
 static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 #ifdef POS_DB_VERBOSE
   std::cout
-	<< pictogram.pose.position.x << ","
-	<< pictogram.pose.position.y << ","
-	<< pictogram.pose.position.z << " : "
-	<< pictogram.pose.orientation.x << ","
-	<< pictogram.pose.orientation.y << ","
-	<< pictogram.pose.orientation.z << ","
-	<< pictogram.pose.orientation.w << std::endl;
+  << pictogram.pose.position.x << ","
+  << pictogram.pose.position.y << ","
+  << pictogram.pose.position.z << " : "
+  << pictogram.pose.orientation.x << ","
+  << pictogram.pose.orientation.y << ","
+  << pictogram.pose.orientation.z << ","
+  << pictogram.pose.orientation.w << std::endl;
 #endif /* POS_DB_VERBOSE */
 }
 
@@ -139,7 +139,7 @@ static void update_pictograms(int id, jsk_rviz_plugins::Pictogram pictogram) {
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
-		       geometry_msgs::Pose& pose, int diffmsec) {
+  geometry_msgs::Pose& pose, int diffmsec) {
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
@@ -253,7 +253,7 @@ static void publish_car_summary(ros::Time now) {
 #endif /* ! CURRENT_CAR_DIRECTLY */
 
 static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
-			      geometry_msgs::Pose& pose, int diffmsec) {
+  geometry_msgs::Pose& pose, int diffmsec) {
   jsk_rviz_plugins::Pictogram pictogram;
   pictogram.header.frame_id = "/map";
   pictogram.header.stamp = now;
@@ -297,8 +297,8 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
 }
 
 static int result_to_pictogram(const string& idstr, ros::Time now,
-			    geometry_msgs::Pose& pose, int type,
-			    int diffmsec, int is_swap) {
+  geometry_msgs::Pose& pose, int type,
+  int diffmsec, int is_swap) {
   int nid;
 
   switch (type) {
@@ -320,17 +320,17 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
     if (idstr.find("current_pose", 0) != string::npos) {
       /* current_pose:DEF012345678 */
       if (idstr.length() >= 25) {
-	/* use lower 6 bytes */
-	nid = ANON_MARKER_ID_MAX |
-	  (std::strtol((idstr.substr(19, 6)).c_str(), NULL, 16)) << 1;
+        /* use lower 6 bytes */
+        nid = ANON_MARKER_ID_MAX |
+        (std::strtol((idstr.substr(19, 6)).c_str(), NULL, 16)) << 1;
         publish_car(nid, 1, now, pose, diffmsec);
       }
     } else if (idstr.find("ndt_pose", 0) != string::npos) {
       /* ndt_pose:9ABCDEF01234 */
       if (idstr.length() >= 21) {
-	/* use lower 6 bytes */
-	nid = ANON_MARKER_ID_MAX |
-	  (std::strtol((idstr.substr(15, 6)).c_str(), NULL, 16)) << 1;
+        /* use lower 6 bytes */
+        nid = ANON_MARKER_ID_MAX |
+        (std::strtol((idstr.substr(15, 6)).c_str(), NULL, 16)) << 1;
         publish_car(nid, 1, now, pose, diffmsec);
       }
     } else if (idstr.find("car_pose", 0) != string::npos) {
@@ -350,7 +350,7 @@ static int get_timeval(const char *tstr, time_t *sp, int *np) {
   const char *p;
 
   if (sscanf(tstr, "%d-%d-%d %d:%d:%d", &tm.tm_year, &tm.tm_mon,
-	&tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6) {
+  &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec) != 6) {
     std::cerr << "Cannot convert time \"" << tstr << "\"" << std::endl;
     return -1;
   }
@@ -398,11 +398,11 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
   for (const std::vector<string>& cols : db_data) {
     type = std::stoi(cols[11]);
     if(ignore_my_pose &&
-       (type == TYPE_OWN ||
-	cols[0].find("current_pose", 0) != string::npos ||
-	cols[0].find("ndt_pose", 0) != string::npos) &&
-       cols[0].find(mac_addr, 0) != string::npos) {
-      continue;	// don't publish Marker of my pose
+      (type == TYPE_OWN ||
+        cols[0].find("current_pose", 0) != string::npos ||
+        cols[0].find("ndt_pose", 0) != string::npos) &&
+        cols[0].find(mac_addr, 0) != string::npos) {
+          continue;	// don't publish Marker of my pose
     }
 
     if (is_swap) {
@@ -420,9 +420,9 @@ static void pictogram_publisher(const std_msgs::String& msg, int is_swap) {
     pose.orientation.z = std::stod(cols[6]);
     pose.orientation.w = std::stod(cols[7]);
     // VoltDB returns not NULL but -1.7976931348623157E308
-    if (pose.position.x < -1.79E308 ||
-	pose.position.y < -1.79E308 ||
-	pose.position.z < -1.79E308) {
+    if (pose.position.x < -1.79E308||
+      pose.position.y < -1.79E308 ||
+      pose.position.z < -1.79E308) {
       geo_pos_conv geo;
       double lon = std::stod(cols[8]);
       double lat = std::stod(cols[9]);
@@ -459,8 +459,8 @@ static int create_timestr(time_t sec, int nsec, char *str, size_t size) {
 
   nowtm = std::gmtime(&sec);
   return std::snprintf(str, size, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
-	nowtm->tm_year + 1900, nowtm->tm_mon + 1, nowtm->tm_mday,
-	nowtm->tm_hour, nowtm->tm_min, nowtm->tm_sec, nsec/1000/1000);
+  nowtm->tm_year + 1900, nowtm->tm_mon + 1, nowtm->tm_mday,
+  nowtm->tm_hour, nowtm->tm_min, nowtm->tm_sec, nsec/1000/1000);
 }
 
 //wrap SendData class
@@ -480,7 +480,7 @@ static void send_sql(time_t diff_sec) {
   data = make_header(1, 1);
   // select pos data between previous latest timestamp and now
   data += "SELECT id,x,y,z,or_x,or_y,or_z,or_w,lon,lat,tm,type FROM POS "
-	"WHERE tm > '";
+  "WHERE tm > '";
   data += prevstr;
   data += "' AND tm < '";
   data += timestr;
