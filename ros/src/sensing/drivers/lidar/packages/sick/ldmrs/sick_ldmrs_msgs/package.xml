@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sick_ldmrs_msgs</name>
+  <version>0.0.0</version>
+  <description>Messages and PCL point types for SICK LD-MRS.</description>
+
+  <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
+  <author email="martin.guenther@dfki.de">Martin Günther</author>
+  <author email="ros@jochen.sprickerhof.de">Jochen Sprickerhof</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/sick_ldmrs_msgs</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <architecture_independent/>
+  </export>
+</package>

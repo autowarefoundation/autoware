@@ -207,10 +207,11 @@ subs :
         run  : roslaunch sick_driver lms511.launch
         param: sick_lms511
 
-      - name : IBEO 8L Single
-        desc : IBEO 8L Single desc sample
+      - name : Sick LD-MRS (IBEO Lux)
+        desc : Initializes the Sick LD-MRS driver (identical to IBEO Lux)
         probe:
-        run  :
+        run  : roslaunch sick_ldmrs_driver sick_ldmrs.launch
+        param: sick_ldmrs
 
   - name : Other Sensors
     desc : Other Sensors desc sample
@@ -380,6 +381,29 @@ params :
         dash : ''
         delim: ':='
         must : True
+
+  - name  : sick_ldmrs
+    vars  :
+    - name  : hostname
+      label : IP
+      desc  : IP address of SICK LD-MRS
+      kind  : str
+      v     : 192.168.0.1
+      cmd_param :
+        dash : ''
+        delim: ':='
+        must : True
+    - name  : scan_frequency
+      label : Frequency
+      desc  : 0-12.5 Hz, 1-25.0 Hz, 2-50.0 Hz
+      kind  : menu
+      choices : [ '0', '1', '2' ]
+      choices_type : str
+      v     : '0'
+      cmd_param :
+        dash : ''
+        delim: ':='
+        must : true
 
   - name  : grasshopper3_params
     vars  :
