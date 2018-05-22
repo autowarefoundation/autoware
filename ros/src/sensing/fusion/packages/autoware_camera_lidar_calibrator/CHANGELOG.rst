@@ -2,8 +2,8 @@
 Changelog for package autoware_camera_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-05-22)
+------------------
 * Delete inappropriate Forthcoming in package.xml
 * Contributors: Kosuke Murakami
 
