@@ -2,6 +2,11 @@
 Changelog for package vision_kf_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Delete inappropriate Forthcoming in package.xml
+* Contributors: Kosuke Murakami
+
 1.7.0 (2018-05-16)
 ------------------
 * [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
