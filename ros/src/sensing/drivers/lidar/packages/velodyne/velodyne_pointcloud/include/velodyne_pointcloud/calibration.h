@@ -19,10 +19,13 @@ namespace velodyne_pointcloud {
 
   /** \brief correction values for a single laser
    *
-   * Correction values for a single laser (as provided by db.xml from veleodyne)
-   * Includes parameters for Velodyne HDL-64E S2.1 calibration.
+   * Correction values for a single laser (as provided by db.xml from
+   * Velodyne).  Includes parameters for Velodyne HDL-64E S2.1.
+   *
    * http://velodynelidar.com/lidar/products/manual/63-HDL64E%20S2%20Manual_Rev%20D_2011_web.pdf
-   **/
+   */
+
+  /** \brief Correction information for a single laser. */
   struct LaserCorrection {
 
     /** parameters in db.xml */
@@ -40,15 +43,15 @@ namespace velodyne_pointcloud {
     float focal_slope;
 
     /** cached values calculated when the calibration file is read */
-    float cos_rot_correction;              ///< cached cosine of rot_correction
-    float sin_rot_correction;              ///< cached sine of rot_correction
-    float cos_vert_correction;             ///< cached cosine of vert_correction
-    float sin_vert_correction;             ///< cached sine of vert_correction
+    float cos_rot_correction;              ///< cosine of rot_correction
+    float sin_rot_correction;              ///< sine of rot_correction
+    float cos_vert_correction;             ///< cosine of vert_correction
+    float sin_vert_correction;             ///< sine of vert_correction
 
     int laser_ring;                        ///< ring number for this laser
   };
 
-  /** \brief Calibration class storing entire configuration for the Velodyne */
+  /** \brief Calibration information for the entire device. */
   class Calibration {
 
   public:
@@ -56,11 +59,16 @@ namespace velodyne_pointcloud {
     std::map<int, LaserCorrection> laser_corrections;
     int num_lasers;
     bool initialized;
+    bool ros_info;
 
   public:
 
-    Calibration() : initialized(false) {}
-    Calibration(const std::string& calibration_file) {
+    Calibration(bool info=true):
+      initialized(false), ros_info(info) {}
+    Calibration(const std::string& calibration_file,
+                bool info=true):
+      ros_info(info)
+    {
       read(calibration_file);
     }
 

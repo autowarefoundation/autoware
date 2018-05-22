@@ -1,0 +1,3 @@
+- name: vision_dummy_track
+  publish: [/obj_X/image_obj_tracked]
+  subscribe: [/config/obj_X/dummy, /image_raw, /obj_X/image_obj_ranged]

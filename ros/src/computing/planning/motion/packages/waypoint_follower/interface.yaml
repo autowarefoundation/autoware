@@ -7,3 +7,6 @@
 - name: twist_filter
   publish: [/twist_cmd]
   subscribe: [/twist_raw]
+- name: twist_gate
+  publish: [/vehicle_cmd, /ctrl_mode, /emergency_stop, /state]
+  subscribe: [/twist_cmd, /mode_cmd, /gear_cmd, /accel_cmd, /steer_cmd, /brake_cmd, /lamp_cmd, /ctrl_cmd]

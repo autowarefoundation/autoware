@@ -1,0 +1,8 @@
+<!-- Launch file for Euclidean Tracker -->
+<launch>
+	<!-- rosrun lidar_tracker lidar_euclidean_track -->
+	<node pkg="lidar_euclidean_track" type="lidar_euclidean_track" name="lidar_euclidean_track">
+    <param name="threshold_dist" value="2.0" />
+  </node>
+
+</launch>

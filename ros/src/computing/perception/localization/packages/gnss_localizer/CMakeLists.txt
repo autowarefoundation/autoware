@@ -2,38 +2,41 @@ cmake_minimum_required(VERSION 2.8.3)
 project(gnss_localizer)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  nmea_msgs
-  tf
-  gnss
-)
+        roscpp
+        std_msgs
+        nmea_msgs
+        gnss
+        tf
+        )
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES lane_follower
-  CATKIN_DEPENDS roscpp std_msgs nmea_msgs tf
-  DEPENDS gnss
-)
-
-###########
-## Build ##
-###########
+catkin_package()
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
 include_directories(
-  ${catkin_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(fix2tfpose nodes/fix2tfpose/fix2tfpose.cpp)
+add_executable(fix2tfpose
+        nodes/fix2tfpose/fix2tfpose.cpp
+        )
 target_link_libraries(fix2tfpose ${catkin_LIBRARIES})
+add_dependencies(fix2tfpose ${catkin_EXPORTED_TARGETS})
 
-add_executable(nmea2tfpose nodes/nmea2tfpose/nmea2tfpose_core.cpp nodes/nmea2tfpose/nmea2tfpose_node.cpp)
+
+add_executable(nmea2tfpose
+        nodes/nmea2tfpose/nmea2tfpose_core.cpp
+        nodes/nmea2tfpose/nmea2tfpose_node.cpp
+        )
+target_include_directories(nmea2tfpose PRIVATE nodes/nmea2tfpose ${catkin_INCLUDE_DIRS})
 target_link_libraries(nmea2tfpose ${catkin_LIBRARIES})
+add_dependencies(nmea2tfpose ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS nmea2tfpose fix2tfpose
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+install(DIRECTORY launch/
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+        PATTERN ".svn" EXCLUDE)

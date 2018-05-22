@@ -1,0 +1,22 @@
+<launch>
+  <!-- argument list -->
+  <arg name="camera_id" default="/"/>
+  <arg name="image_src" default="/image_raw" />
+  <arg name="network_definition_file" default="/tmp/mxnet-network.json" />
+  <arg name="pretrained_model_file" default="/tmp/mxnet-network.params" />
+  <arg name="use_gpu" default="true" />
+  <arg name="gpu_device_id" default="0" />
+  <arg name="score_threshold" default="0.8" />
+  <arg name="change_state_threshold" default="2" />
+
+  <!-- run region_tlr_mxnet node -->
+  <node pkg="trafficlight_recognizer" name="region_tlr_mxnet" type="region_tlr_mxnet" output="screen">
+    <param name="image_raw_topic" type="str" value="$(arg camera_id)$(arg image_src)" />
+    <param name="network_definition_file" type="str" value="$( arg network_definition_file)" />
+    <param name="pretrained_model_file" type="str" value="$(arg pretrained_model_file)" />
+    <param name="use_gpu" type="bool" value="$(arg use_gpu)" />
+    <param name="gpu_id" type="int" value="$(arg gpu_device_id)" />
+    <param name="score_threshold" type="double" value="$(arg score_threshold)" />
+    <param name="change_state_threshold" type="int" value="$(arg change_state_threshold)" />
+  </node>
+</launch>

@@ -6,16 +6,16 @@
 #include <stdio.h>
 
 // lib
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
 #include <autoware_msgs/lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <random>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
@@ -35,7 +35,7 @@ void DecisionMakerNode::run(void)
   ros::Rate loop_rate(1);
 
   // for subscribe callback function
-  ros::AsyncSpinner spinner(1);
+  ros::AsyncSpinner spinner(3);
   spinner.start();
   while (ros::ok())
   {

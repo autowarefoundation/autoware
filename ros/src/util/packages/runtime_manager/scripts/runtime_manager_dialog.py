@@ -56,7 +56,6 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from autoware_msgs.msg import ConfigRcnn
 from autoware_msgs.msg import ConfigSsd
 from autoware_msgs.msg import ConfigCarDpm
 from autoware_msgs.msg import ConfigPedestrianDpm
@@ -72,6 +71,7 @@ from autoware_msgs.msg import ConfigRandomFilter
 from autoware_msgs.msg import ConfigRingGroundFilter
 from autoware_msgs.msg import ConfigRayGroundFilter
 from autoware_msgs.msg import ConfigPointsConcatFilter
+from autoware_msgs.msg import ConfigWaypointLoader
 from autoware_msgs.msg import ConfigWaypointFollower
 from autoware_msgs.msg import ConfigTwistFilter
 from autoware_msgs.msg import ConfigVelocitySet
@@ -385,7 +385,7 @@ class MyFrame(rtmgr.MyFrame):
                 #
                 tab = self.tab_states
                 self.all_tabs.append(tab)
-                
+
                 self.state_dic = self.load_yaml('state.yaml')
                 self.mainstate_dic = self.state_dic["mainstate"]
                 self.substate_dic = self.state_dic["substate"]
@@ -746,7 +746,8 @@ class MyFrame(rtmgr.MyFrame):
 		grp = { self.button_statchk_d : 1,
 			self.button_statchk_r : 2,
 			self.button_statchk_b : 3,
-			self.button_statchk_n : 4 }
+			self.button_statchk_n : 4,
+                       self.button_statchk_p : 5 }
 		self.radio_action(event, grp.keys())
 		v = grp.get(event.GetEventObject())
 		if v is not None:
@@ -2710,6 +2711,32 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		msg = self.klass_msg()
 		msg.filename = self.text_ctrl_path.GetValue()
 		msg.filter_res = str_to_float(v)
+		self.pub.publish(msg)
+
+	def OnOk(self, event):
+		self.panel.detach_func()
+		self.EndModal(0)
+
+class MyDialogWaypointLoader(rtmgr.MyDialogWaypointLoader):
+	def __init__(self, *args, **kwds):
+		self.pdic = kwds.pop('pdic')
+		self.pdic_bak = self.pdic.copy()
+		self.gdic = kwds.pop('gdic')
+		self.prm = kwds.pop('prm')
+		rtmgr.MyDialogWaypointLoader.__init__(self, *args, **kwds)
+		set_size_gdic(self)
+
+		parent = self.panel_v
+		frame = self.GetParent()
+		self.panel = ParamPanel(parent, frame=frame, pdic=self.pdic, gdic=self.gdic, prm=self.prm)
+		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
+
+		self.klass_msg = Bool
+		self.pub = rospy.Publisher('/config/waypoint_loader_output', self.klass_msg, queue_size=10)
+
+	def OnCsvOutput(self, event):
+		msg = self.klass_msg()
+		msg.data = True
 		self.pub.publish(msg)
 
 	def OnOk(self, event):

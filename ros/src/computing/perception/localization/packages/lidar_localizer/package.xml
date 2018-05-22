@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<package>
+    <name>lidar_localizer</name>
+    <version>1.7.0</version>
+    <description>The lidar_localizer package</description>
+    <maintainer email="yuki@ertl.jp">kitsukawa</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>nav_msgs</build_depend>
+    <build_depend>tf</build_depend>
+    <build_depend>pcl_ros</build_depend>
+    <build_depend>sensor_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>pcl_conversions</build_depend>
+    <build_depend>message_filters</build_depend>
+    <build_depend>velodyne_pointcloud</build_depend>
+    <build_depend>pcl_omp_registration</build_depend>
+    <build_depend>ndt_gpu</build_depend>
+    <build_depend>ndt_cpu</build_depend>
+    <build_depend>ndt_tku</build_depend>
+    <build_depend>libpcl-all-dev</build_depend>
+    <build_depend>eigen</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>nav_msgs</run_depend>
+    <run_depend>tf</run_depend>
+    <run_depend>pcl_ros</run_depend>
+    <run_depend>sensor_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>pcl_conversions</run_depend>
+    <run_depend>message_filters</run_depend>
+    <run_depend>velodyne_pointcloud</run_depend>
+    <run_depend>pcl_omp_registration</run_depend>
+    <run_depend>ndt_gpu</run_depend>
+    <run_depend>ndt_cpu</run_depend>
+    <run_depend>ndt_tku</run_depend>
+    <run_depend>libpcl-all</run_depend>
+    <run_depend>eigen</run_depend>
+
+    <export>
+    </export>
+</package>

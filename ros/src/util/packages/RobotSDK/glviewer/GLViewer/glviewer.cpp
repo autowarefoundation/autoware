@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "glviewer.h"
+#include "glviewer/glviewer.h"
 
 #define GL_PI 3.1415926535897932384626433832795
 

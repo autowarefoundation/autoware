@@ -1,0 +1,6 @@
+<!-- Launch file for SVM Lidar Classifier -->
+<launch>
+	<!-- rosrun lidar_tracker svm_lidar_detect -->
+	<node pkg="lidar_svm_detect" type="lidar_svm_detect" name="lidar_svm_detect" />
+
+</launch>

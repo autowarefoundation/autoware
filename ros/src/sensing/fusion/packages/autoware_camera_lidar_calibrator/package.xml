@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>autoware_camera_lidar_calibrator</name>
+    <version>1.7.0</version>
+    <description>Autoware CameraLidarCalibration tools, this package includes work from
+        http://www.ros.org/wiki/camera_calibration
+    </description>
+    <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>
+    <maintainer email="jacob.lambert@tier4.jp">Jacob Lambert</maintainer>
+
+    <author>Jacob Lambert</author>
+    <author>Abraham Monrroy</author>
+
+    <license>BSD</license>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>cv_bridge</depend>
+    <depend>image_transport</depend>
+    <depend>roscpp</depend>
+    <depend>sensor_msgs</depend>
+    <depend>pcl_conversions</depend>
+    <depend>pcl_ros</depend>
+    <depend>autoware_msgs</depend>
+    <depend>tf</depend>
+    <depend>geometry_msgs</depend>
+    <depend>image_geometry</depend>
+    <depend>message_filters</depend>
+    <depend>rospy</depend>
+    <depend>std_srvs</depend>
+
+    <build_depend>qtbase5-dev</build_depend>
+    <exec_depend>libqt5-core</exec_depend>
+
+    <test_depend>rostest</test_depend>
+</package>

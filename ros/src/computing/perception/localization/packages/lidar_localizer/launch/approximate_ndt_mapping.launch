@@ -1,0 +1,21 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="use_openmp" default="false" />
+  <arg name="use_imu" default="false" />
+  <arg name="use_odom" default="false" />
+  <arg name="imu_upside_down" default="false" />
+  <arg name="imu_topic" default="/imu_raw" />
+
+  <!-- rosrun lidar_localizer ndt_mapping  -->
+  <node pkg="lidar_localizer" type="queue_counter" name="queue_counter" output="log" />
+  <node pkg="lidar_localizer" type="approximate_ndt_mapping" name="approximate_ndt_mapping" output="log">
+    <param name="use_openmp" value="$(arg use_openmp)" />
+    <param name="use_imu" value="$(arg use_imu)" />
+    <param name="use_odom" value="$(arg use_odom)" />
+    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+  </node>
+  
+</launch>

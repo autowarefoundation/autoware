@@ -34,7 +34,7 @@
 #include "autoware_msgs/traffic_light.h"
 #include "autoware_msgs/LaneArray.h"
 
-#include <lane_planner/vmap.hpp>
+#include <lane_planner/lane_planner_vmap.hpp>
 
 namespace {
 
