@@ -23,6 +23,8 @@
   <depend>sensor_msgs</depend>
   <depend>sick_ldmrs_msgs</depend>
   <depend>tf</depend>
+  <depend>sick_ldmrs_description</depend>
+  <depend>robot_state_publisher</depend>
 
   <build_depend>roslaunch</build_depend>
 
