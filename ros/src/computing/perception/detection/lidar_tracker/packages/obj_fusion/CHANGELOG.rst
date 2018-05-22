@@ -2,8 +2,8 @@
 Changelog for package obj_fusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-05-22)
+------------------
 * Delete inappropriate Forthcoming in package.xml
 * Contributors: Kosuke Murakami
 

@@ -2,8 +2,8 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-05-22)
+------------------
 * Bug fix for not opening app in computing tab
 * Contributors: Kosuke Murakami
 

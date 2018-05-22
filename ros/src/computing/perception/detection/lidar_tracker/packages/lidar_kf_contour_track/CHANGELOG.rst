@@ -2,8 +2,8 @@
 Changelog for package lidar_kf_contour_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2018-05-22)
+------------------
 * Delete inappropriate Forthcoming in package.xml
 * Contributors: Kosuke Murakami
 
