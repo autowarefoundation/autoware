@@ -90,10 +90,6 @@ endif ()
 add_dependencies(lidar_euclidean_cluster_detect
         ${catkin_EXPORTED_TARGETS}
         )
-<<<<<<< 81c5b5ce5c97b88e5a18b56f8e85b94f4bcd9961
-
-=======
->>>>>>> * CUDA Fixes for indigo (#1280)
 
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES
