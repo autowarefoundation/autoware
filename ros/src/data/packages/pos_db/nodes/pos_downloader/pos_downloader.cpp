@@ -37,6 +37,7 @@ publish data as ractangular plane
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <jsk_rviz_plugins/Pictogram.h>
+#include <jsk_rviz_plugins/PictogramArray.h>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
@@ -86,7 +87,7 @@ static double pedestrian_dz;
 
 static ros::Publisher pub;
 
-static std::vector<jsk_rviz_plugins::Pictogram> pictograms;
+static jsk_rviz_plugins::PictogramArray pictograms_array;
 static std::vector<int> car_ids;
 
 static SendData sd;
@@ -134,15 +135,19 @@ static void dbg_out_pictogram(jsk_rviz_plugins::Pictogram pictogram) {
 }
 
 
-static void update_pictograms(int id, jsk_rviz_plugins::Pictogram pictogram) {
+static void update_pictograms(int id, ros::Time now, jsk_rviz_plugins::Pictogram pictogram) {
   vector<int>::iterator itr = find(car_ids.begin(), car_ids.end(), id);
+
+  pictograms_array.header.frame_id = "/map";
+  pictograms_array.header.stamp = now;
+
   if (itr == car_ids.end()) {
     car_ids.push_back(id);
-    pictograms.push_back(pictogram);
+    pictograms_array.pictograms.push_back(pictogram);
   } else {
-    pictograms[itr - car_ids.begin()] = pictogram;
+    pictograms_array.pictograms[itr - car_ids.begin()] = pictogram;
   }
-  pub.publish(pictograms.data());
+  pub.publish(pictograms_array);
 }
 
 static void publish_car(int id, int is_current, ros::Time now,
@@ -181,7 +186,7 @@ static void publish_car(int id, int is_current, ros::Time now,
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    update_pictograms(id, pictogram);
+    update_pictograms(id, now, pictogram);
     dbg_out_pictogram(pictogram);
 #else /* CURRENT_CAR_DIRECTLY */
     ros::Time newnow = now - ros::Duration(diffmsec/1000.0);
@@ -202,7 +207,7 @@ static void publish_car(int id, int is_current, ros::Time now,
     pictogram.color.b = 0.0;
     pictogram.color.a = alpha_percent(diffmsec);
     pictogram.pose.position.z += 0.5; // == #1/2
-    update_pictograms(id, pictogram);
+    update_pictograms(id, now, pictogram);
     dbg_out_pictogram(pictogram);
   }
 }
@@ -250,7 +255,7 @@ static void publish_car_summary(ros::Time now) {
     pictogram.pose.orientation.z = q3.z();
     pictogram.pose.orientation.w = q3.w();
 
-    update_pictograms(id, pictogram);
+    update_pictograms(id, now, pictogram);
     dbg_out_pictogram(pictogram);
     prev_map[id] = cur;
   }
@@ -288,7 +293,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   // marker.scale.y = 0.6;
   // marker.scale.z = 1.2; // #1
   pictogram.pose.position.z += 0.6; // == #1/2
-  update_pictograms(id, pictogram);
+  update_pictograms(id, now, pictogram);
   dbg_out_pictogram(pictogram);
 
   //marker.type = visualization_msgs::Marker::SPHERE;
@@ -299,7 +304,7 @@ static void publish_pedestrian(int id, int is_pedestrian, ros::Time now,
   // marker.scale.x = 0.6; // #2
   // marker.scale.y = 0.6;
   // marker.scale.z = 0.6;
-  update_pictograms(id, pictogram);
+  update_pictograms(id, now, pictogram);
   dbg_out_pictogram(pictogram);
 }
 
@@ -550,7 +555,7 @@ int main(int argc, char **argv) {
 
   string home_dir = getenv("HOME");
 
-  pub = nh.advertise<jsk_rviz_plugins::Pictogram[]>(PICTOGRAMNAME, 1);
+  pub = nh.advertise<jsk_rviz_plugins::PictogramArray>(PICTOGRAMNAME, 1);
   nh.param<double>(MYNAME "/time", args[0], STARTTIME);
   cout << "time=" << args[0] << endl;
   nh.param<double>(MYNAME "/delay", args[1], DELAYSEC);
