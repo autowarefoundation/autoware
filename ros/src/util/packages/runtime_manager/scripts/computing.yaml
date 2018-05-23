@@ -1002,11 +1002,19 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_topic
-      desc    : output_topic desc sample
+    - name    : tracker_output_jskbb_topic
+      desc    : tracker_output_jskbb_topic desc sample
+      label   : 'output jskbb topic'
+      kind    : str
+      v       : /bounding_boxes_tracked
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : tracker_output_detected_topic
+      desc    : tracker_output_detected_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /tracking_cluster_array
+      v       : /detected_objects
       cmd_param :
         dash        : ''
         delim       : ':='
