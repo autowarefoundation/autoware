@@ -1,0 +1,6 @@
+- name: /image_rectifier*
+  publish: [/image_rectified]
+  subscribe: [/image_raw, /camera_info]
+- name: /image_rotator*
+  publish: [/image_rotated]
+  subscribe: [/image_raw]

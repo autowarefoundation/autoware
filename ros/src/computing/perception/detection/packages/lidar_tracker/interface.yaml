@@ -1,0 +1,26 @@
+- name: /euclidean_cluster
+  publish: [/points_cluster, /cluster_centroids, /centroid_marker, /points_ground,
+    /points_lanes, /bounding_boxes, /cluster_hulls, /cloud_clusters, /cluster_ids,
+    /grid_map_wayarea]
+  subscribe: [/points_raw, /grid_map_wayarea]
+- name: /euclidean_lidar_track
+  publish: [/detected_objects, /cloud_cluster_tracked_bounding_box, /cloud_cluster_tracked_text]
+  subscribe: [/cloud_clusters_class]
+- name: /kf_contour_tracker
+  publish: [/detected_objects, /detected_polygons, /op_planner_tracked_boxe]
+  subscribe: [/cloud_clusters, /current_pose]
+- name: /kf_lidar_track
+  publish: [/detected_objects, /bounding_boxes_tracked, /cluster_hulls_tracked, /cluster_ids_tracked]
+  subscribe: [/cloud_clusters_class]
+- name: /*/fusion
+  publish: [/*/obj_pose, /cloud_clusters_class, /*/obj_pose_timestamp, /*/obj_pose_arrow]
+  subscribe: [/*/obj_label, /cloud_clusters, /vector_map_info/*]
+- name: /pf_lidar_track
+  publish: [/detected_objects]
+  subscribe: [/cloud_clusters_class]
+- name: /svm_lidar_detect
+  publish: [/cloud_clusters_class]
+  subscribe: [/cloud_clusters]
+- name: /vscan_filling
+  publish: [/vscan_filling_cloud]
+  subscribe: [/vscan_points]
