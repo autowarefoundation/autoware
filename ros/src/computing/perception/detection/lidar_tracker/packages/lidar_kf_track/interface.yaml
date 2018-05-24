@@ -1,0 +1,6 @@
+- name: lidar_kf_track
+  publish: [/bounding_boxes_tracked,
+            /cluster_hulls_tracked,
+            /cluster_ids_tracked,
+            /detected_objects]
+  subscribe: [/cloud_clusters_class]

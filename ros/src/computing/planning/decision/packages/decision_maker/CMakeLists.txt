@@ -22,13 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
         state_machine_lib
         )
 
-add_message_files(
-        FILES
-        DebugDecisionMaker.msg
-)
-
 catkin_package(
-        INCLUDE_DIRS include
         CATKIN_DEPENDS roscpp
         tf
         std_msgs
@@ -43,11 +37,11 @@ catkin_package(
 )
 include_directories(
         include
-        src
         ${catkin_INCLUDE_DIRS}
 )
 
-set(TARGET_SRC nodes/decision_maker/decision_maker_node.cpp
+add_executable(decision_maker_node
+        nodes/decision_maker/decision_maker_node.cpp
         nodes/decision_maker/decision_maker_node_core.cpp
         nodes/decision_maker/decision_maker_node_decision.cpp
         nodes/decision_maker/decision_maker_node_init.cpp
@@ -56,14 +50,21 @@ set(TARGET_SRC nodes/decision_maker/decision_maker_node.cpp
         nodes/decision_maker/decision_maker_node_publish.cpp
         nodes/decision_maker/cross_road_area.cpp
         )
-
-
-add_executable(${PROJECT_NAME}_node ${TARGET_SRC})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
+target_link_libraries(decision_maker_node ${catkin_LIBRARIES})
+add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
 
 # This function will be integrated into decision_maker soon.
-set(SUBPROJECT_NAME planner_selector)
-add_executable(${SUBPROJECT_NAME}_node nodes/planner_selector/planner_selector_node.cpp)
-target_link_libraries(${SUBPROJECT_NAME}_node ${catkin_LIBRARIES})
-add_dependencies(${SUBPROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(planner_selector_node nodes/planner_selector/planner_selector_node.cpp)
+target_link_libraries(planner_selector_node ${catkin_LIBRARIES})
+add_dependencies(planner_selector_node ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS decision_maker_node planner_selector_node
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
+
+install(DIRECTORY launch
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/launch/
+        PATTERN ".svn" EXCLUDE
+        )

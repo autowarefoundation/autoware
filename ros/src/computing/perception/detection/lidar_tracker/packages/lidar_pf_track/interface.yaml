@@ -1,0 +1,3 @@
+- name: lidar_pf_track
+  publish: [/detected_objects]
+  subscribe: [/cloud_clusters_class]

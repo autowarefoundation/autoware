@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(points2image)
 
 include(FindPkgConfig)
@@ -19,34 +19,26 @@ find_package(OpenCV REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+#set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
 catkin_package(
-        #  INCLUDE_DIRS include
-        #  LIBRARIES camera_lidar3d
-        CATKIN_DEPENDS rosinterface message_runtime std_msgs sensor_msgs autoware_msgs
-        #  DEPENDS system_lib
+        CATKIN_DEPENDS roscpp
+        std_msgs
+        sensor_msgs
+        autoware_msgs
+        rosinterface
+        fastvirtualscan
+        cv_bridge
+        tf
+        pcl_ros
+        pcl_conversions
 )
-
-###########
-## Build ##
-###########
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
-
-EXECUTE_PROCESS(
-        COMMAND pkg-config --variable=host_bins Qt5Core
-        OUTPUT_VARIABLE Qt5BIN
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 include_directories(
         include
@@ -71,14 +63,14 @@ add_executable(points2vscan
         ${points2vscan_ui_mainwindow}
         )
 
-set_target_properties(points2vscan
-        PROPERTIES COMPILE_FLAGS "-fPIC"
-        )
-
 target_link_libraries(points2vscan
         ${catkin_LIBRARIES}
         Qt5::Core
         Qt5::Widgets
+        points_image
+        )
+add_dependencies(points2vscan
+        ${catkin_EXPORTED_TARGETS}
         )
 
 # points2image
@@ -89,7 +81,6 @@ target_link_libraries(points2image
         points_image
         )
 add_dependencies(points2image
-        points_image
         ${catkin_EXPORTED_TARGETS}
         )
 
@@ -101,7 +92,6 @@ target_link_libraries(vscan2image
         points_image
         )
 add_dependencies(vscan2image
-        points_image
         ${catkin_EXPORTED_TARGETS}
         )
 
@@ -110,4 +100,15 @@ add_dependencies(vscan2image
 add_executable(vscan2linelist nodes/vscan2linelist/vscan2linelist.cpp)
 target_link_libraries(vscan2linelist
         ${catkin_LIBRARIES}
+        )
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+        )
+
+install(TARGETS points_image vscan2linelist vscan2image points2image points2vscan
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )

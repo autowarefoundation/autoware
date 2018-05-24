@@ -75,27 +75,34 @@ enum class ChangeFlag : int32_t
 
 typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
 
-void publishLocalMarker()
+void setLifetime(double sec, visualization_msgs::MarkerArray* marker_array)
 {
-  visualization_msgs::MarkerArray marker_array;
+  ros::Duration lifetime(sec);
+  for (auto& marker : marker_array->markers)
+  {
+    marker.lifetime = lifetime;
+  }
+}
+
+void publishMarkerArray(const visualization_msgs::MarkerArray& marker_array, const ros::Publisher& publisher, bool delete_markers=false)
+{
+  visualization_msgs::MarkerArray msg;
 
   // insert local marker
-  marker_array.markers.insert(marker_array.markers.end(), g_local_waypoints_marker_array.markers.begin(),
-                              g_local_waypoints_marker_array.markers.end());
+  msg.markers.insert(msg.markers.end(), marker_array.markers.begin(), marker_array.markers.end());
 
-  g_local_mark_pub.publish(marker_array);
+  if (delete_markers)
+  {
+    for (auto& marker : msg.markers)
+    {
+      marker.action = visualization_msgs::Marker::DELETE;
+    }
+  }
+
+  publisher.publish(msg);
 }
 
-void publishGlobalMarker()
-{
-  visualization_msgs::MarkerArray marker_array;
 
-  // insert global marker
-  marker_array.markers.insert(marker_array.markers.end(), g_global_marker_array.markers.begin(),
-                              g_global_marker_array.markers.end());
-
-  g_global_mark_pub.publish(marker_array);
-}
 
 void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_waypoints_array)
 {
@@ -391,11 +398,12 @@ void configParameter(const autoware_msgs::ConfigLaneStopConstPtr& msg)
 
 void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
 {
+  publishMarkerArray(g_global_marker_array, g_global_mark_pub, true);
   g_global_marker_array.markers.clear();
   createGlobalLaneArrayVelocityMarker(*msg);
   createGlobalLaneArrayOrientationMarker(*msg);
   createGlobalLaneArrayChangeFlagMarker(*msg);
-  publishGlobalMarker();
+  publishMarkerArray(g_global_marker_array, g_global_mark_pub);
 }
 
 void finalCallback(const autoware_msgs::laneConstPtr& msg)
@@ -405,7 +413,8 @@ void finalCallback(const autoware_msgs::laneConstPtr& msg)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
   createLocalPathMarker(g_local_color, *msg);
   createLocalPointMarker(*msg);
-  publishLocalMarker();
+  setLifetime(0.5, &g_local_waypoints_marker_array);
+  publishMarkerArray(g_local_waypoints_marker_array, g_local_mark_pub);
 }
 
 void closestCallback(const std_msgs::Int32ConstPtr& msg)

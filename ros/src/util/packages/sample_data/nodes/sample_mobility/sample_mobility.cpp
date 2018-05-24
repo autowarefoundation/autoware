@@ -36,7 +36,7 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
 #include <std_msgs/String.h>
-#include <geo_pos_conv.hh>
+#include <gnss/geo_pos_conv.hpp>
 
 static ros::Publisher pub;
 

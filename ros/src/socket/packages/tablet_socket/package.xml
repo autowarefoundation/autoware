@@ -1,20 +1,25 @@
 <?xml version="1.0"?>
 <package>
-  <name>tablet_socket</name>
-  <version>1.6.3</version>
-  <description>The package of Android UI's tablet_socket</description>
-  <maintainer email="syouji@axe.bz">syouji</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>gnss</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>tablet_socket_msgs</build_depend>
-  <build_depend>autoware_msgs</build_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>gnss</run_depend>
-  <run_depend>tablet_socket_msgs</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <export>
-  </export>
+    <name>tablet_socket</name>
+    <version>1.7.0</version>
+    <description>The package of Android UI's tablet_socket</description>
+    <maintainer email="syouji@axe.bz">syouji</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>tf</build_depend>
+    <build_depend>gnss</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>tablet_socket_msgs</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>geometry_msgs</build_depend>
+
+    <run_depend>tf</run_depend>
+    <run_depend>gnss</run_depend>
+    <run_depend>tablet_socket_msgs</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>geometry_msgs</run_depend>
+
+    <export>
+    </export>
 </package>

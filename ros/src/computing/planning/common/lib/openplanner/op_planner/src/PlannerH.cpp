@@ -5,9 +5,9 @@
  *      Author: hatem
  */
 
-#include "PlannerH.h"
-#include "PlanningHelpers.h"
-#include "MappingHelpers.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/PlanningHelpers.h"
+#include "op_planner/MappingHelpers.h"
 #include <iostream>
 
 using namespace std;

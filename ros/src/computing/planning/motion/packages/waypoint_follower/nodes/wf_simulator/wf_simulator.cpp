@@ -302,7 +302,7 @@ int main(int argc, char **argv)
   {
     initialpose_subscriber = nh.subscribe("initialpose", 10, initialposeCallback);
   }
-  else if (initialize_source == "ndt_localizer")
+  else if (initialize_source == "lidar_localizer")
   {
     initialpose_subscriber = nh.subscribe("ndt_pose", 10, callbackFromPoseStamped);
   }

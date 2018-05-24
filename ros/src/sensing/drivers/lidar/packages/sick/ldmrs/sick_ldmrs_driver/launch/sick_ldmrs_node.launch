@@ -1,0 +1,39 @@
+<launch>
+  <node name="sick_ldmrs_node" pkg="sick_ldmrs_driver" type="sick_ldmrs_node" output="screen">
+  <!-- defaults (dynamically reconfigurable):
+    <param name="frame_id" type="str" value="ldmrs" />
+    <param name="start_angle" type="double" value="0.872664625997" />
+    <param name="end_angle" type="double" value="-1.0471975512" />
+    <param name="scan_frequency" type="int" value="2" />
+    <param name="sync_angle_offset" type="double" value="0.0" />
+    <param name="angular_resolution_type" type="int" value="1" />
+    <param name="layer_range_reduction" type="int" value="0" />
+    <param name="ignore_near_range" type="bool" value="False" />
+    <param name="sensitivity_control" type="bool" value="False" />
+    <param name="flexres_start_angle1" type="double" value="0.872664625997" />
+    <param name="flexres_start_angle2" type="double" value="0.610865238198" />
+    <param name="flexres_start_angle3" type="double" value="0.523598775598" />
+    <param name="flexres_start_angle4" type="double" value="0.349065850399" />
+    <param name="flexres_start_angle5" type="double" value="0.0" />
+    <param name="flexres_start_angle6" type="double" value="-0.349065850399" />
+    <param name="flexres_start_angle7" type="double" value="-0.523598775598" />
+    <param name="flexres_start_angle8" type="double" value="-0.698131700798" />
+    <param name="flexres_resolution1" type="int" value="32" />
+    <param name="flexres_resolution2" type="int" value="16" />
+    <param name="flexres_resolution3" type="int" value="8" />
+    <param name="flexres_resolution4" type="int" value="4" />
+    <param name="flexres_resolution5" type="int" value="8" />
+    <param name="flexres_resolution6" type="int" value="16" />
+    <param name="flexres_resolution7" type="int" value="32" />
+    <param name="flexres_resolution8" type="int" value="16" />
+    <param name="contour_point_density" type="int" value="2" />
+    <param name="min_object_age" type="int" value="0" />
+    <param name="max_prediction_age" type="int" value="0" />
+  -->
+  <!-- defaults (not dynamically reconfigurable):
+    <param name="hostname" type="str" value="192.168.0.1" />
+  -->
+  </node>
+
+</launch>
+

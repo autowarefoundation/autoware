@@ -66,7 +66,7 @@ private:
   ros::NodeHandle node_handle_;
   ros::NodeHandle private_node_handle_;
 
-  ros::Subscriber base_waypoints_sub_;
+  ros::Subscriber lane_waypoints_array_sub_;
   ros::Subscriber final_waypoints_sub_;
   message_filters::Subscriber<geometry_msgs::PoseStamped>* current_pose_sub_;
   message_filters::Subscriber<geometry_msgs::TwistStamped>* current_twist_sub_;
@@ -76,7 +76,7 @@ private:
   ros::Publisher velocity_marker_pub_;
 
   visualization_msgs::MarkerArray velocity_marker_array_;
-  visualization_msgs::MarkerArray base_waypoints_marker_array_;
+  visualization_msgs::MarkerArray lane_waypoints_array_marker_array_;
   visualization_msgs::MarkerArray final_waypoints_marker_array_;
   visualization_msgs::MarkerArray current_twist_marker_array_;
   visualization_msgs::MarkerArray command_twist_marker_array_;
@@ -88,12 +88,12 @@ private:
   double plot_height_ratio_ = 1.0;
   double plot_height_shift_ = 0.2;
   double plot_metric_interval_ = 1.0;
-  std::vector<double> base_waypoints_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
+  std::vector<double> lane_waypoints_array_rgba_ = { 1.0, 1.0, 1.0, 0.5 };
   std::vector<double> final_waypoints_rgba_ = { 0.0, 1.0, 0.0, 0.5 };
   std::vector<double> current_twist_rgba_ = { 0.0, 0.0, 1.0, 0.5 };
   std::vector<double> command_twist_rgba_ = { 1.0, 0.0, 0.0, 0.5 };
 
-  std_msgs::ColorRGBA base_waypoints_color_;
+  std_msgs::ColorRGBA lane_waypoints_array_color_;
   std_msgs::ColorRGBA final_waypoints_color_;
   std_msgs::ColorRGBA current_twist_color_;
   std_msgs::ColorRGBA command_twist_color_;
@@ -107,7 +107,7 @@ private:
   void deleteMarkers();
   void resetBuffers();
 
-  void baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
+  void laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg);
   void finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
   void controlCallback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg,
@@ -142,13 +142,13 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
   private_node_handle_.param<double>("plot_height_shift", plot_height_shift_, plot_height_shift_);
   private_node_handle_.param<double>("plot_metric_interval", plot_metric_interval_, plot_metric_interval_);
 
-  private_node_handle_.param<std::vector<double> >("base_waypoints_rgba", base_waypoints_rgba_, base_waypoints_rgba_);
+  private_node_handle_.param<std::vector<double> >("lane_waypoints_array_rgba", lane_waypoints_array_rgba_, lane_waypoints_array_rgba_);
   private_node_handle_.param<std::vector<double> >("final_waypoints_rgba", final_waypoints_rgba_,
                                                    final_waypoints_rgba_);
   private_node_handle_.param<std::vector<double> >("current_twist_rgba", current_twist_rgba_, current_twist_rgba_);
   private_node_handle_.param<std::vector<double> >("command_twist_rgba", command_twist_rgba_, command_twist_rgba_);
 
-  base_waypoints_color_ = vector2color(base_waypoints_rgba_);
+  lane_waypoints_array_color_ = vector2color(lane_waypoints_array_rgba_);
   final_waypoints_color_ = vector2color(final_waypoints_rgba_);
   current_twist_color_ = vector2color(current_twist_rgba_);
   command_twist_color_ = vector2color(command_twist_rgba_);
@@ -159,8 +159,8 @@ WaypointVelocityVisualizer::WaypointVelocityVisualizer() : node_handle_(), priva
   current_twist_buf_.set_capacity(control_buffer_size_);
   command_twist_buf_.set_capacity(control_buffer_size_);
 
-  base_waypoints_sub_ =
-      node_handle_.subscribe("base_waypoints", 1, &WaypointVelocityVisualizer::baseWaypointsCallback, this);
+  lane_waypoints_array_sub_ =
+      node_handle_.subscribe("lane_waypoints_array", 1, &WaypointVelocityVisualizer::laneWaypointsArrayCallback, this);
   final_waypoints_sub_ =
       node_handle_.subscribe("final_waypoints", 1, &WaypointVelocityVisualizer::finalWaypointsCallback, this);
 
@@ -209,10 +209,14 @@ void WaypointVelocityVisualizer::resetBuffers()
   command_twist_buf_.clear();
 }
 
-void WaypointVelocityVisualizer::baseWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
+void WaypointVelocityVisualizer::laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg)
 {
-  base_waypoints_marker_array_.markers.clear();
-  createVelocityMarker(*msg, "base_waypoints", base_waypoints_color_, base_waypoints_marker_array_);
+  lane_waypoints_array_marker_array_.markers.clear();
+  for (size_t i = 0; i < msg->lanes.size(); ++i)
+  {
+    std::string ns = "lane_waypoints_" + std::to_string(i);
+    createVelocityMarker(msg->lanes[i], ns, lane_waypoints_array_color_, lane_waypoints_array_marker_array_);
+  }
   publishVelocityMarker();
 }
 
@@ -262,8 +266,8 @@ void WaypointVelocityVisualizer::publishVelocityMarker()
 {
   velocity_marker_array_.markers.clear();
   velocity_marker_array_.markers.insert(velocity_marker_array_.markers.end(),
-                                        base_waypoints_marker_array_.markers.begin(),
-                                        base_waypoints_marker_array_.markers.end());
+                                        lane_waypoints_array_marker_array_.markers.begin(),
+                                        lane_waypoints_array_marker_array_.markers.end());
   velocity_marker_array_.markers.insert(velocity_marker_array_.markers.end(),
                                         final_waypoints_marker_array_.markers.begin(),
                                         final_waypoints_marker_array_.markers.end());

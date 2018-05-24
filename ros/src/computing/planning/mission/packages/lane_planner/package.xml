@@ -1,21 +1,26 @@
 <?xml version="1.0"?>
 <package>
-  <name>lane_planner</name>
-  <version>1.6.3</version>
-  <description>The lane_planner package</description>
-  <maintainer email="tomo@axe-inc.co.jp">Tomomi HORII</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>tablet_socket</build_depend>
-  <build_depend>waypoint_follower</build_depend>
-  <build_depend>vector_map</build_depend>
-  <build_depend>gnss</build_depend>
-  <build_depend>autoware_msgs</build_depend>
-  <run_depend>tablet_socket</run_depend>
-  <run_depend>waypoint_follower</run_depend>
-  <run_depend>vector_map</run_depend>
-  <run_depend>gnss</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <export>
-  </export>
+    <name>lane_planner</name>
+    <version>1.7.0</version>
+    <description>The lane_planner package</description>
+    <maintainer email="tomo@axe-inc.co.jp">Tomomi HORII</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>std_msgs</build_depend>
+    <build_depend>tablet_socket</build_depend>
+    <build_depend>waypoint_follower</build_depend>
+    <build_depend>vector_map</build_depend>
+    <build_depend>gnss</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>std_msgs</run_depend>
+    <run_depend>tablet_socket</run_depend>
+    <run_depend>waypoint_follower</run_depend>
+    <run_depend>vector_map</run_depend>
+    <run_depend>gnss</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+
 </package>

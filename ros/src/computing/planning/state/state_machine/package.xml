@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>state_machine</name>
-  <version>1.6.3</version>
+  <version>1.7.0</version>
   <description>The state_machine package</description>
   <maintainer email="h_ohta@ertl.jp">Hiroki OHTA</maintainer>
   <license>BSD</license>

@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>op_planner</name>
-  <version>1.6.3</version>
-  <description>The libopenplanner_planner package</description>
-  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
-  <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
-  <license>BSD</license>
-  <build_depend>op_utility</build_depend>
-  <run_depend>op_utility</run_depend>
-  <buildtool_depend>catkin</buildtool_depend>
-  
-  <export>
-  </export>
+    <name>op_planner</name>
+    <version>1.7.0</version>
+    <description>The libopenplanner_planner package</description>
+    <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+    <author email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+    <build_depend>op_utility</build_depend>
+    <run_depend>op_utility</run_depend>
+
 </package>

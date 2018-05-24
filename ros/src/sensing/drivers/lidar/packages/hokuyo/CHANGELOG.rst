@@ -2,6 +2,16 @@
 Changelog for package hokuyo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
+  * Replaced outdated Hokuyo node with new urg_node
+  * Added description to RTM
+  * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes
+  * Requested changes attended
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

@@ -1,15 +1,20 @@
 <?xml version="1.0"?>
 <package>
-  <name>obj_db</name>
-  <version>1.6.3</version>
-  <description>The obj_db package</description>
-  <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
-  <license>BSD</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>autoware_msgs</build_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <export>
-  </export>
+    <name>obj_db</name>
+    <version>1.7.0</version>
+    <description>The obj_db package</description>
+    <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
+    <license>BSD</license>
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <build_depend>roscpp</build_depend>
+    <build_depend>autoware_msgs</build_depend>
+    <build_depend>gnss</build_depend>
+    <build_depend>visualization_msgs</build_depend>
+
+    <run_depend>roscpp</run_depend>
+    <run_depend>autoware_msgs</run_depend>
+    <run_depend>gnss</run_depend>
+    <run_depend>visualization_msgs</run_depend>
+
 </package>

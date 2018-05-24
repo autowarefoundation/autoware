@@ -45,10 +45,10 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <std_msgs/Int8.h>
-#include "TrajectoryFollower.h"
-#include "LocalPlannerH.h"
-#include "PlannerH.h"
-#include "MappingHelpers.h"
+#include "op_simu/TrajectoryFollower.h"
+#include "op_planner/LocalPlannerH.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/MappingHelpers.h"
 
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/InteractiveMarkerPose.h>
@@ -56,7 +56,7 @@
 #include <std_msgs/Float32.h>
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
-#include "SimpleTracker.h"
+#include "op_simu/SimpleTracker.h"
 
 namespace OpenPlannerSimulatorNS
 {

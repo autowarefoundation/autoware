@@ -1,0 +1,36 @@
+<launch>
+  <arg name="car" default="true"/>
+  <arg name="pedestrian" default="false"/>
+  <arg name="sync" default="false" />
+
+  <!-- obj_fusion for car -->
+  <group if="$(arg car)">
+    <group ns="obj_car">
+
+      <node pkg="obj_fusion" name="fusion" type="obj_fusion">
+        <param name="min_dist" value="2.0" />
+        <remap from="/obj_car/obj_label" to="/sync_obj_fusion/obj_car/obj_label" if="$(arg sync)" />
+        <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_car/cluster_centroids" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <!-- obj_fusion for pedestrian -->
+  <group if="$(arg pedestrian)">
+    <group ns="obj_person">
+
+      <node pkg="obj_fusion" name="fusion" type="obj_fusion">
+        <param name="min_dist" value="2.0" />
+        <remap from="/obj_person/obj_label" to="/sync_obj_fusion/obj_person/obj_label" if="$(arg sync)" />
+        <remap from="/cluster_centroids" to="/sync_obj_fusion/obj_person/cluster_centroids" if="$(arg sync)" />
+      </node>
+
+    </group>
+  </group>
+
+  <include file="$(find synchronization)/launch/sync_obj_fusion.launch" if="$(arg sync)">
+    <arg name="car" value="$(arg car)"/>
+    <arg name="pedestrian" value="$(arg pedestrian)"/>
+  </include>
+</launch>
