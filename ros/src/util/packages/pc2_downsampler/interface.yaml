@@ -1,0 +1,3 @@
+- name: /pc2_downsampler
+  publish: [/downsampled_points_map, /downsampled_points_raw]
+  subscribe: [/points_map, /points_raw]

@@ -1,0 +1,3 @@
+- name: /state_machine
+  publish: [/state]
+  subscribe: [/light_color, /light_color_managed, /change_flag]
