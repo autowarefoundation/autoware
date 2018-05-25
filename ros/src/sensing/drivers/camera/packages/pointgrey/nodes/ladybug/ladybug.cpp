@@ -373,7 +373,7 @@ int main (int argc, char **argv)
 
 			unlock_image(currentImage.uiBufferIndex);
 
-			publishImage(image, pub[LADYBUG_NUM_CAMERAS - i], count, i);
+			publishImage(image, pub[LADYBUG_NUM_CAMERAS - i], count, LADYBUG_NUM_CAMERAS - i);
 
 		}
 		//publish stitched one
