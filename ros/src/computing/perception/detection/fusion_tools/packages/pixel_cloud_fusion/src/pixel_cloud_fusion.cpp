@@ -61,7 +61,7 @@ void RosPixelCloudFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &i
 	cv::Mat undistorted_image;
 	cv::undistort(in_image, current_frame_, camera_instrinsics_, distortion_coefficients_);
 
-	image_frame_id_ = "camera";//in_image_msg->header.frame_id;
+	image_frame_id_ = in_image_msg->header.frame_id;
 	image_size_.height = current_frame_.rows;
 	image_size_.width = current_frame_.cols;
 }
