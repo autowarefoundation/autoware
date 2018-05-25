@@ -37,7 +37,7 @@
 */
 
 #include <iostream>
-
+#include <stdlib.h>
 #include <FlyCapture2.h>
 #include <ros/ros.h>
 #include <sensor_msgs/image_encodings.h>
@@ -519,7 +519,8 @@ int main(int argc, char **argv)
 			//publish*******************
 
 			msg.header.seq = count;
-			msg.header.frame_id = "camera";
+			std::string frame = "camera" + std::to_string(i);
+			msg.header.frame_id = frame;
 			msg.header.stamp.sec = ros::Time::now().sec;
 			msg.header.stamp.nsec = ros::Time::now().nsec;
 			msg.height = image.GetRows();
