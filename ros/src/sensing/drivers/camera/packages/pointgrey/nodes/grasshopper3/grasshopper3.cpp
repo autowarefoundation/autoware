@@ -519,7 +519,7 @@ int main(int argc, char **argv)
 			//publish*******************
 
 			msg.header.seq = count;
-			std::string frame = "camera" + std::to_string(camera_id);
+			std::string frame = "camera" + std::to_string(i);
 			msg.header.frame_id = frame;
 			msg.header.stamp.sec = ros::Time::now().sec;
 			msg.header.stamp.nsec = ros::Time::now().nsec;
