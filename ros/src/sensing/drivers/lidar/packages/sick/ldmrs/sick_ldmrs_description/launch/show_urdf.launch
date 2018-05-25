@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- launch file to show the urdf model in rviz -->
+
+<launch>
+  <include file="$(find sick_ldmrs_description)/launch/upload_urdf.launch" />
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher" />
+  <node pkg="rviz" type="rviz" name="rviz" output="screen"/>
+</launch>

@@ -1,0 +1,10 @@
+- name: /dp_planner
+  publish: [/local_trajectories_dynamic, /enableLattice, /final_waypoints, /base_waypoints,
+    /closest_waypoint, /current_behavior, /global_plan_nodes, /GlobalStartpose,
+    /GlobalGoalPose, /global_plan_start, /global_plan_goal, /detected_polygons,
+    /dp_planner_tracked_boxes, /local_trajectories, /testing_line, /behavior_state,
+    /safety_border, /simu_points_cluster, /sim_box_pose_ego]
+  subscribe: [/initialpose, /current_pose, /cloud_clusters, /bounding_boxes,
+    /realtime_cost_map, /odom, /current_velocity, /can_info, /emergency_stop_signal,
+    /traffic_signal_info, /usb_controller_r_signal, /astar_path, /lane_waypoints_array,
+    /vector_map_info/*, /clicked_point, /lane_waypoints_array]

@@ -1,0 +1,6 @@
+- name: /way_planner
+  publish: [/lane_waypoints_array, /global_waypoints_rviz, /Global_StartPoint_rviz,
+    /Global_GoalPoints_rviz, /Goal_Nodes_Points_rviz, /vector_map_center_lines_rviz,
+    /Traffic_Lights_rviz]
+  subscribe: [/initialpose, /move_base_simple/goal, /current_pose, /odom, /current_velocity,
+    /can_info, /GlobalNodesList, /vector_map_info/*]

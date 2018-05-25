@@ -1,0 +1,17 @@
+<launch>
+    <arg name="points_src" default="/points_raw" /> <!-- PointCloud source topic-->
+    <arg name="image_src" default="/image_raw" /> <!-- Raw Image source topic to be rectified-->
+    <arg name="camera_info_src" default="/camera_info" /> <!-- CameraInfo source topic-->
+
+    <node name="autoware_image_rectifier" pkg="image_processor" type="image_rectifier" output="screen">
+        <param name="image_src" value="$(arg image_src)" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+    <node name="pixel_cloud_fusion_01" pkg="pixel_cloud_fusion" type="pixel_cloud_fusion" output="screen">
+        <param name="points_src" value="$(arg points_src)" />
+        <param name="image_src" value="/image_rectified" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+</launch>
