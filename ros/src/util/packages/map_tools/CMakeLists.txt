@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_tools)
 
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   pcl_conversions
   velodyne_pointcloud
 )
+find_package(Proj)
 
 ###################################
 ## catkin specific configuration ##
@@ -21,10 +24,11 @@ catkin_package(
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${PROJ_INCLUDE_DIR})
 
-add_executable(latlon2mgrs nodes/coordinate_transformer/latlon2mgrs.cpp nodes/coordinate_transformer/mgrs_converter.cpp)
+add_executable(coodinate_test nodes/coordinate_transformer/coodinate_test.cpp nodes/coordinate_transformer/mgrs_converter.cpp)
 add_executable(pcd_latlon2mgrs nodes/coordinate_transformer/pcd_latlon2mgrs.cpp nodes/coordinate_transformer/mgrs_converter.cpp)
+add_executable(pcd_jpxy2mgrs nodes/coordinate_transformer/pcd_jpxy2mgrs.cpp nodes/coordinate_transformer/mgrs_converter.cpp)
 add_executable(pcd_filter nodes/pcd_filter/pcd_filter.cpp)
 add_executable(pcd_binarizer nodes/pcd_binarizer/pcd_binarizer.cpp)
 add_executable(pcd_arealist nodes/pcd_arealist/pcd_arealist.cpp)
@@ -32,8 +36,9 @@ add_executable(csv2pcd nodes/pcd_converter/csv2pcd.cpp)
 add_executable(pcd2csv nodes/pcd_converter/pcd2csv.cpp)
 add_executable(map_extender nodes/map_extender/map_extender.cpp)
 
-target_link_libraries(latlon2mgrs ${catkin_LIBRARIES})
-target_link_libraries(pcd_latlon2mgrs ${catkin_LIBRARIES})
+target_link_libraries(coodinate_test ${catkin_LIBRARIES} ${PROJ_LIBRARY})
+target_link_libraries(pcd_latlon2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARY})
+target_link_libraries(pcd_jpxy2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARY})
 target_link_libraries(pcd_filter ${catkin_LIBRARIES})
 target_link_libraries(pcd_binarizer ${catkin_LIBRARIES})
 target_link_libraries(pcd_arealist ${catkin_LIBRARIES})

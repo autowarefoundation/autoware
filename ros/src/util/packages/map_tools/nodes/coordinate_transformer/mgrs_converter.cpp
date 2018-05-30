@@ -20,13 +20,14 @@
  * SOFTWARE.
  */
 
-#include "mgrs_converter.hpp"
 #include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <proj_api.h>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include "pcl/point_types.h"
+#include "mgrs_converter.hpp"
 
 namespace map_tools
 {
@@ -56,12 +57,12 @@ MgrsConverter::MgrsConverter()
 
 MgrsConverter::~MgrsConverter() = default;
 
-double MgrsConverter::getRadian(double deg)
+double MgrsConverter::getRadian(const double& deg)
 {
   return deg * M_PI / 180;
 }
 
-int MgrsConverter::getUtmZoneNumber(double lat, double lon)
+int MgrsConverter::getUtmZoneNumber(const double& lat, const double& lon)
 {
   if ((56 <= lat && lat < 64) && (3 <= lon && lon < 12))
     return 32;
@@ -81,21 +82,170 @@ int MgrsConverter::getUtmZoneNumber(double lat, double lon)
   return int((lon + 180) / 6) + 1;
 }
 
-double MgrsConverter::getCentralLongitude(int zone_num)
+void MgrsConverter::setPlaneRef(int num, double& lat_0, double& lon_0)
+{
+  double lat_deg, lat_min, lon_deg, lon_min;  // longitude and latitude of origin of each plane in Japan
+  if (num == 1)
+  {
+    lat_deg = 33;
+    lat_min = 0;
+    lon_deg = 129;
+    lon_min = 30;
+  }
+  else if (num == 2)
+  {
+    lat_deg = 33;
+    lat_min = 0;
+    lon_deg = 131;
+    lon_min = 0;
+  }
+  else if (num == 3)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 132;
+    lon_min = 10;
+  }
+  else if (num == 4)
+  {
+    lat_deg = 33;
+    lat_min = 0;
+    lon_deg = 133;
+    lon_min = 30;
+  }
+  else if (num == 5)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 134;
+    lon_min = 20;
+  }
+  else if (num == 6)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 136;
+    lon_min = 0;
+  }
+  else if (num == 7)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 137;
+    lon_min = 10;
+  }
+  else if (num == 8)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 138;
+    lon_min = 30;
+  }
+  else if (num == 9)
+  {
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 139;
+    lon_min = 50;
+  }
+  else if (num == 10)
+  {
+    lat_deg = 40;
+    lat_min = 0;
+    lon_deg = 140;
+    lon_min = 50;
+  }
+  else if (num == 11)
+  {
+    lat_deg = 44;
+    lat_min = 0;
+    lon_deg = 140;
+    lon_min = 15;
+  }
+  else if (num == 12)
+  {
+    lat_deg = 44;
+    lat_min = 0;
+    lon_deg = 142;
+    lon_min = 15;
+  }
+  else if (num == 13)
+  {
+    lat_deg = 44;
+    lat_min = 0;
+    lon_deg = 144;
+    lon_min = 15;
+  }
+  else if (num == 14)
+  {
+    lat_deg = 26;
+    lat_min = 0;
+    lon_deg = 142;
+    lon_min = 0;
+  }
+  else if (num == 15)
+  {
+    lat_deg = 26;
+    lat_min = 0;
+    lon_deg = 127;
+    lon_min = 30;
+  }
+  else if (num == 16)
+  {
+    lat_deg = 26;
+    lat_min = 0;
+    lon_deg = 124;
+    lon_min = 0;
+  }
+  else if (num == 17)
+  {
+    lat_deg = 26;
+    lat_min = 0;
+    lon_deg = 131;
+    lon_min = 0;
+  }
+  else if (num == 18)
+  {
+    lat_deg = 20;
+    lat_min = 0;
+    lon_deg = 136;
+    lon_min = 0;
+  }
+  else if (num == 19)
+  {
+    lat_deg = 26;
+    lat_min = 0;
+    lon_deg = 154;
+    lon_min = 0;
+  }
+  else
+  {  // default is plane 7
+    lat_deg = 36;
+    lat_min = 0;
+    lon_deg = 137;
+    lon_min = 10;
+  }
+
+  // longitude and latitude
+  lat_0 = lat_deg + lat_min / 60.0;
+  lon_0 = lon_deg + lon_min / 60.0;
+}
+
+double MgrsConverter::getCentralLongitude(const int& zone_num)
 {
   return (zone_num - 1) * 6 - 180 + 3;
 }
 
-std::string MgrsConverter::getUtmZoneLetter(double lat)
+std::string MgrsConverter::getUtmZoneLetter(const double& lat)
 {
-  const char *ZONE_LETTERS = "CDEFGHJKLMNPQRSTUVWXX";
+  const char* ZONE_LETTERS = "CDEFGHJKLMNPQRSTUVWXX";
   std::string val;
   if (-80.0 <= lat && lat <= 84.0)
     val = ZONE_LETTERS[int(lat + 80) >> 3];
   return val;
 }
 
-void MgrsConverter::latlon2utm(double lat, double lon, double *x, double *y)
+void MgrsConverter::latlon2utm(const double& lat, const double& lon, double& x, double& y)
 {
   int zone_num;
   std::string zone_letter;
@@ -139,15 +289,15 @@ void MgrsConverter::latlon2utm(double lat, double lon, double *x, double *y)
   double m =
       R_ * (M1_ * lat_rad - M2_ * std::sin(2 * lat_rad) + M3_ * std::sin(4 * lat_rad) - M4_ * std::sin(6 * lat_rad));
 
-  *x = K0_ * n * (a + a3 / 6 * (1 - lat_tan2 + c) + a5 / 120 * (5 - 18 * lat_tan2 + lat_tan4 + 72 * c - 58 * E_P2_)) +
-       500000;
+  x = K0_ * n * (a + a3 / 6 * (1 - lat_tan2 + c) + a5 / 120 * (5 - 18 * lat_tan2 + lat_tan4 + 72 * c - 58 * E_P2_)) +
+      500000;
 
-  *y = K0_ * (m +
-              n * lat_tan * (a2 / 2 + a4 / 24 * (5 - lat_tan2 + 9 * c + 4 * c * c) +
-                             a6 / 720 * (61 - 58 * lat_tan2 + lat_tan4 + 600 * c - 330 * E_P2_)));
+  y = K0_ * (m +
+             n * lat_tan * (a2 / 2 + a4 / 24 * (5 - lat_tan2 + 9 * c + 4 * c * c) +
+                            a6 / 720 * (61 - 58 * lat_tan2 + lat_tan4 + 600 * c - 330 * E_P2_)));
 
   if (lat < 0)
-    *y += 10000000;
+    y += 10000000;
 }
 
 std::tuple<std::string, double, double> MgrsConverter::latlon2mgrs(double lat, double lon)
@@ -157,7 +307,7 @@ std::tuple<std::string, double, double> MgrsConverter::latlon2mgrs(double lat, d
   int zone;
 
   zone = getUtmZoneNumber(lat, lon);
-  latlon2utm(lat, lon, &utm_x, &utm_y);
+  latlon2utm(lat, lon, utm_x, utm_y);
   easting = utm_x;
   northing = utm_y;
 
@@ -212,7 +362,9 @@ std::tuple<std::string, double, double> MgrsConverter::latlon2mgrs(double lat, d
   {
     int idx = int(((lat + 80.0) / 8.0) + 1.0e-12);
     letters[0] = lat_band[idx];
-  } else{
+  }
+  else
+  {
     std::cerr << "latitude is out of scope" << std::endl;
     exit(1);
   }
@@ -256,5 +408,37 @@ std::tuple<std::string, double, double> MgrsConverter::latlon2mgrs(double lat, d
   mgrs_code = s_zone.str() + band + grid_id + s_eid.str() + s_nid.str();
 
   return std::forward_as_tuple(mgrs_code, easting, northing);
+}
+
+void MgrsConverter::jpxy2latlon(const double& x, const double& y, const double& z, const int& plane, double& lat,
+                                double& lon, double& alt)
+{
+  projPJ pj_latlong, pj_utm;
+  double lat_0, lon_0;  // reference point of Japanese plane coordinate system
+  setPlaneRef(plane, lat_0, lon_0);
+  pj_latlong = pj_init_plus("+proj=latlong");
+  std::stringstream ss;
+  ss << "+proj=tmerc +lat_0=" << lat_0 << " +lon_0=" << lon_0 << " +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 "
+                                                                 "+towgs84=0,0,0,0,0,0,0 +units=m +no_defs";
+  pj_utm = pj_init_plus(ss.str().c_str());
+
+  double _lat = x;
+  double _lon = y;
+  double _alt = z;
+
+  if (pj_latlong != 0 && pj_utm != 0)
+  {
+    pj_transform(pj_utm, pj_latlong, 1, 1, &_lon, &_lat, &_alt);
+    _lon = _lon * RAD_TO_DEG;
+    _lat = _lat * RAD_TO_DEG;
+
+    lon = _lon;
+    lat = _lat;
+    alt = _alt;
+  }
+  else
+  {
+    lon = lat = alt = 0;
+  }
 }
 }
