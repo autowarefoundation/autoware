@@ -3,8 +3,8 @@ project(map_tools)
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(Proj)
 find_package(PCL REQUIRED)
+find_package(PROJ REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
@@ -38,9 +38,9 @@ add_executable(pcd2csv nodes/pcd_converter/pcd2csv.cpp)
 add_executable(map_extender nodes/map_extender/map_extender.cpp)
 add_executable(pcd_grid_divider nodes/pcd_grid_divider/pcd_grid_divider.cpp)
 
-target_link_libraries(coodinate_test ${catkin_LIBRARIES} ${PROJ_LIBRARY})
-target_link_libraries(pcd_latlon2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARY})
-target_link_libraries(pcd_jpxy2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARY})
+target_link_libraries(coodinate_test ${catkin_LIBRARIES} ${PROJ_LIBRARIES})
+target_link_libraries(pcd_latlon2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARIES})
+target_link_libraries(pcd_jpxy2mgrs ${catkin_LIBRARIES} ${PROJ_LIBRARIES})
 target_link_libraries(pcd_filter ${catkin_LIBRARIES})
 target_link_libraries(pcd_binarizer ${catkin_LIBRARIES})
 target_link_libraries(pcd_arealist ${catkin_LIBRARIES})
@@ -50,7 +50,7 @@ target_link_libraries(map_extender ${catkin_LIBRARIES})
 target_link_libraries(pcd_grid_divider ${catkin_LIBRARIES})
 
 
-install(TARGETS pcd_filter pcd_binarizer pcd_arealist csv2pcd pcd2csv map_extender pcd_grid_divider
+install(TARGETS coodinate_test pcd_latlon2mgrs pcd_jpxy2mgrs pcd_filter pcd_binarizer pcd_arealist csv2pcd pcd2csv map_extender pcd_grid_divider
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

@@ -13,6 +13,7 @@
   <build_depend>pcl_ros</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>proj</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>tf</run_depend>
@@ -20,5 +21,6 @@
   <run_depend>pcl_ros</run_depend>
   <run_depend>pcl_conversions</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
+  <run_depend>proj</run_depend>
 
 </package>
