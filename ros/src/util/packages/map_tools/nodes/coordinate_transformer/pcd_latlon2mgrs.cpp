@@ -31,20 +31,6 @@ struct pcd_xyzrgb_grid
   unsigned int size;
 };
 
-std::string current_time()
-{
-  std::time_t rawtime;
-  std::tm *timeinfo;
-  char buffer[80];
-
-  std::time(&rawtime);
-  timeinfo = std::localtime(&rawtime);
-
-  std::strftime(buffer, 80, "%Y%m%d-%H%M%S", timeinfo);
-  std::string date_time = buffer;
-  return date_time;
-}
-
 void pcd_latlon2mgrs(const pcl::PointCloud<pcl::PointXYZ>::Ptr input, const std::string path)
 {
   map_tools::MgrsConverter converter;
@@ -84,7 +70,7 @@ void pcd_latlon2mgrs(const pcl::PointCloud<pcl::PointXYZ>::Ptr input, const std:
   // save PCD to "MGRS_code_time.pcd"
   for (auto v_itr = grids.begin(); v_itr != grids.end(); ++v_itr)
   {
-    std::string file_name = path + v_itr->mgrs_code + "_" + current_time() + ".pcd";
+    std::string file_name = path + v_itr->mgrs_code + "_" + std::to_string(std::time(NULL)) + ".pcd";
     v_itr->cloud.header = input->header;
     v_itr->cloud.width = v_itr->size;
     v_itr->cloud.height = 1;
@@ -132,7 +118,7 @@ void pcd_latlon2mgrs(pcl::PointCloud<pcl::PointXYZI>::Ptr input, std::string pat
   // save PCD to "MGRS_code_time.pcd"
   for (auto v_itr = grids.begin(); v_itr != grids.end(); ++v_itr)
   {
-    std::string file_name = path + v_itr->mgrs_code + "_" + current_time() + ".pcd";
+    std::string file_name = path + v_itr->mgrs_code + "_" + std::to_string(std::time(NULL)) + ".pcd";
     v_itr->cloud.header = input->header;
     v_itr->cloud.width = v_itr->size;
     v_itr->cloud.height = 1;
@@ -180,7 +166,7 @@ void pcd_latlon2mgrs(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input, std::string p
   // save PCD to "MGRS_code_time.pcd"
   for (auto v_itr = grids.begin(); v_itr != grids.end(); ++v_itr)
   {
-    std::string file_name = path + v_itr->mgrs_code + "_" + current_time() + ".pcd";
+    std::string file_name = path + v_itr->mgrs_code + "_" + std::to_string(std::time(NULL)) + ".pcd";
     v_itr->cloud.header = input->header;
     v_itr->cloud.width = v_itr->size;
     v_itr->cloud.height = 1;
