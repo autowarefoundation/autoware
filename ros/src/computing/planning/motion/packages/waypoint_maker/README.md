@@ -1,6 +1,6 @@
 # waypoint_maker
 
-## 概要
+## Overview
 
 - This package has following nodes.
 
@@ -8,10 +8,11 @@
     - waypoint_saver
     - waypoint_marker_publisher
     - waypoint_loader
+    - waypoint_velocity_visualizer
 
-- waypoint_makerで扱える経路ファイルのcsv形式には3種類あり
+- 3-formats of waypoints.csv handled by waypoint_maker
 
-    - ver1：x, y, z, velocityで構成される（1行目はvelocityを持たない）
+    - ver1： consist of x, y, z, velocity（no velocity in the first line）
 
     ex)
 
@@ -26,7 +27,7 @@
     > 3708.0266,-99426.4453,85.6608,4.9097 <br>
     > ... <br>
 
-    - ver2：x, y, z, yaw, velocityで構成される（1行目はvelocityを持たない）
+    - ver2： consist of x, y, z, yaw, velocity（no velocity in the first line）
 
     ex)
 
@@ -41,9 +42,9 @@
     > 3794.0771,-99442.9375,85.6148,3.1367,11.2300 <br>
     > ... <br>
 
-    - ver3：一番最初の行にデータ項目がある
+    - ver3： category names are on the first line
 
-    ex） x,y,z,yaw,velocity,change_flagで構成される場合
+    ex） consist of x,y,z,yaw,velocity,change_flag
 
     > x,y,z,yaw,velocity,change_flag <br>
     > 3742.216,-99411.311,85.728,3.141593,0,0 <br>
@@ -60,53 +61,88 @@
 
 ### waypoint_loader
 
-1. 概要
+1. Overview
 
-    - `waypoint_loader`は上記3種類の経路ファイルに対応している。
-    - `lane_select`にてレーンチェンジをしたい場合は、ver3フォーマットを用意する必要がある。
+    - Convert waypoints.csv to ROS message type.
+    - Correspond to the above 3 types of csv.
+    - Adjust waypoints offline (resample and replan velocity)
+    - Save waypoints.csv as ver3 format.
 
-1. 使い方
+1. How to use
 
-    - 経路のロードをするために、appタブ->`Multi Lane`の項目でRefを押し、複数ファイルを選択する。
-    - appタブ->`decelerate`の項目は経路の終点までにどれくらいの加速度で減速していくかが指定できる。
+  * How to start
+    - At `Computing`->`waypoint_loader`:
+      - Check app->`disable_decision_maker`.
+        If you want to use `decision_maker`, switch to false.
+        Otherwise switch to true.
+      - Check `waypoint_loader` and start.
+  * Idea of velocity replanning
+    - The velocity plan is based on the following idea.
+      - On a straight line, it accelerates to the maximum speed.
+      - At one curve:
+        * Finish decelerating before entering the curve.
+          If the curve is sharper, the more deceleration is required.
+        * Maintain a constant speed in the curve.
+        * Start to accelerate after getting out of the curve.
+  * Detail of app tab
+    - On `multi_lane`, please select multiple input files. If you want lane change with `lane_select`, prepare ver3 type.
+    - Check `replanning_mode` if you want to replan velocity.
+      - On replanning mode:
+        * Check `resample_mode` if you want to resample waypoints.
+          On resample mode, please set `resample_interval`.
+        * Velocity replanning parameter
+          - `Vmax` is max velocity.
+          - `Rth`  is radius threshold for extracting curve in waypoints.
+            Increasing this, you can extract curves more sensitively.
+          - `Rmin` and `Vmin` are pairs of values used for velocity replanning.
+            Designed velocity plan that minimizes velocity in the assumed sharpest curve.
+            In the _i_-th curve, the minimum radius _r<sub>i</sub>_ and the velocity _v<sub>i</sub>_ are expressed by the following expressions.
+            _v<sub>i</sub>_ = _Vmax_ - _(Vmax - Vmin)/(Rth - Rmin)_ * _(Rth - r<sub>i</sub>)_
+          - `Accel limit` is acceleration value for limitting velocity.
+          - `Decel limit` is deceleration value for limitting velocity.
+          - `Velocity Offset` is offset amount preceding the velocity plan.
+          - `End Point Offset` is the number of 0 velocity points at the end of waypoints.
 
 1. Subscribed Topics
 
-    - なし
-    
+    - /config/waypoint_loader (autoware_msgs/ConfigWaypointLoadre)
+    - /config/waypoint_loader_output (std_msgs/Bool)
+
 1. Published Topics
 
-    - /lane_waypoints_array (waypoint_follower/LaneArray)
-    
+    - /lane_waypoints_array (autoware_msgs/LaneArray)
+
 1. Parameters
 
-    - ~multi_lane_csv
-    - ~decelerate
+    - ~disable_decision_maker
 
 
 ### waypoint_saver
 
-1. 概要
+1. Overview
 
-    - `waypoint_saver`はver3フォーマットの保存に対応している。
-    - 起動すると、`/current_pose`、`/current_velocity`(option)をsubscribeし、指定した距離おきにwaypointをファイルに保存していく。
-    - `change_flag`は基本的に0（直進)で保存されるので、レーンチェンジを行いたい場合は各自で編集する。（1なら右折、2なら左折）
+    - When activated, subscribe `/current_pose`, `/current_velocity`(option) and save waypoint in the file at specified intervals.
+    - `change_flag` is basically stored as 0 (straight ahead),
+      so if you want to change the lane, edit by yourself. (1 turn right, 2 turn left)
+    - This node corresponds to preservation of ver3 format.
 
-1. 使い方
+1. How to use
 
-    - appタブ->`Save File`の項目でRefを押し、保存ファイル名を指定する。
-    - appタブ->`Save /current_velocity`で速度保存可否が選択可能、チェックがない場合は0で保存される。
-    - appタブ->`Interval`で、何メートルおきにwaypointを保存するかが設定される。
+    On app:
+    - Ref on the `Save File` and specify the save file name.
+    - Check `Save/current_velocity` if you want to save velocity.
+      In otherwise, saved as 0 velocity.
+    - Using `Interval`, it is set how many meters to store waypoint.
 
 1. Subscribed Topics
 
-    - /current_pose (geometry_msgs/PoseStamped) : default 
-    - /current_velocity (geometry_msgs/TwistStamped) : default 
-    
+    - /current_pose (geometry_msgs/PoseStamped) : default
+    - /current_velocity (geometry_msgs/TwistStamped) : default
+
 1. Published Topics
 
-    - なし
-    
+    - nothing
+
 1. Parameters
 
     - ~save_filename

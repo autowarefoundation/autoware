@@ -111,8 +111,6 @@ public:
 		node_handle.param<std::string>("image_src", image_raw_topic_str, "/image_raw");
 
 		node_handle.param<std::string>("camera_info_src", camera_info_topic_str, "/camera_info");
-		ROS_INFO("[%s] camera_info_src: %s", _NODE_NAME_, camera_info_topic_str.c_str());
-
 
 		if (name_space_str != "/") {
 			if (name_space_str.substr(0, 2) == "//") {
@@ -126,6 +124,7 @@ public:
 		}
 
 		ROS_INFO("[%s] image_src: %s", _NODE_NAME_, image_raw_topic_str.c_str());
+		ROS_INFO("[%s] camera_info_src: %s", _NODE_NAME_, camera_info_topic_str.c_str());
 
 		ROS_INFO("[%s] Subscribing to... %s", _NODE_NAME_, image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle.subscribe(image_raw_topic_str, 1, &RosImageRectifierApp::ImageCallback, this);

@@ -40,14 +40,8 @@
 #include <string>
 
 #include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Bool.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-
-#include <velodyne_pointcloud/point_types.h>
-#include <velodyne_pointcloud/rawdata.h>
 
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
@@ -59,7 +53,6 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/registration/ndt.h>
-#include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
 struct pose
@@ -104,8 +97,8 @@ static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped:
   try
   {
     ros::Time now = ros::Time(0);
-    listener.waitForTransform("/map", "/world", now, ros::Duration(10.0));
-    listener.lookupTransform("/map", "world", now, transform);
+    listener.waitForTransform("/map", input->header.frame_id, now, ros::Duration(10.0));
+    listener.lookupTransform("/map", input->header.frame_id, now, transform);
   }
   catch (tf::TransformException& ex)
   {

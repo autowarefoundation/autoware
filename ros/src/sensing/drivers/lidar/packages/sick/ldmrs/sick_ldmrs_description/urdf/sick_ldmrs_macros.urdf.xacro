@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- translation from origin of mesh to sensor coordinate origin -->
+  <xacro:property name="mesh_to_sensor_x" value="0.044" />
+  <xacro:property name="mesh_to_sensor_y" value="0.02325" />
+  <xacro:property name="mesh_to_sensor_z" value="0.0" />
+
+  <xacro:macro name="sick_ldmrs" params="name">
+    <xacro:sick_ldmrs_internal name="${name}"
+      length="0.0932" width="0.1645" height="0.088" mass="1.0"
+      mesh="package://sick_ldmrs_description/meshes/sick_ldmrs.dae" />
+  </xacro:macro>
+
+  <xacro:macro name="sick_ldmrs_internal" params="name length width height mass mesh">
+    <!-- mount_link is at origin of mesh (back of the sensor, centered on y and z) -->
+    <link name="${name}_mount_link">
+      <inertial>
+        <mass value="0.001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.000001" ixy="0.0" ixz="0.0"
+          iyy="0.000001" iyz="0.0" izz="0.000001" />
+      </inertial>
+    </link>
+
+    <joint name="${name}_joint" type="fixed">
+      <parent link="${name}_mount_link" />
+      <child link="${name}" />
+      <origin xyz="${mesh_to_sensor_x} ${mesh_to_sensor_y} ${mesh_to_sensor_z}" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${name}">
+      <visual>
+        <origin xyz="${-mesh_to_sensor_x} ${-mesh_to_sensor_y} ${-mesh_to_sensor_z}" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="${mesh}" />
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="${-mesh_to_sensor_x} ${-mesh_to_sensor_y} ${-mesh_to_sensor_z}" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="${mesh}" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="${mass}" />
+        <origin xyz="${length / 2 - mesh_to_sensor_x} ${-mesh_to_sensor_y} ${-mesh_to_sensor_z}" />
+        <inertia ixx="${0.0833333 * mass * (width * width + height * height)}" ixy="0.0" ixz="0.0"
+          iyy="${0.0833333 * mass * (length * length + height * height)}" iyz="0.0"
+          izz="${0.0833333 * mass * (length * length + width * width)}" />
+      </inertial>
+    </link>
+  </xacro:macro>
+</robot>

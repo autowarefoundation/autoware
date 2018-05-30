@@ -56,13 +56,13 @@
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
-#include "RoadNetwork.h"
-#include "MappingHelpers.h"
-#include "PlanningHelpers.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_planner/MappingHelpers.h"
+#include "op_planner/PlanningHelpers.h"
 //#include "CarState.h"
-#include "LocalPlannerH.h"
+#include "op_planner/LocalPlannerH.h"
 #include "RosHelpers.h"
-#include "SimpleTracker.h"
+#include "op_simu/SimpleTracker.h"
 
 #include <opencv/cv.h>
 #include <cv_bridge/cv_bridge.h>

@@ -2,16 +2,52 @@
 Changelog for package astar_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Add 'EControl::STOPLINE' state and detected object type 'EObstacleType' to change speed planning
+* Separate configration for speed planning against obstacle/stopline (Note: no logics changed)
+* Fix checking input for detection in velocity_set::pointsDetection
+* VelocitySet support to stop by stopline
+* Contributors: Akihito Ohsato, Kosuke Murakami, Yusuke FUJII
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.1 (2018-01-20)
+------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* Prepare release for 1.6.0
+* Update velocity_set.launch
+  set value to false
+* fix video settings
+* launch file missing parameter setting.
+  missing parameter setting, when launch motion plan, report error :enablePlannerDynamicSwitch arg to be set.
+  see :  https://github.com/CPFL/Autoware/issues/871
+* Contributors: Yamato ANDO, asimay, hironari.yashiro
+
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
-* Merge pull request `#808 <https://github.com/cpfl/autoware/issues/808>`_ from CPFL/feature/decision_maker
-  [WIP]Feature/decision maker `#807 <https://github.com/cpfl/autoware/issues/807>`_
+* Update changelog
 * add web ui
-* Merge branch 'develop' of github.com:CPFL/Autoware into feature/decision_maker
-* Resolve conflicts
 * Change parameter for obstacle avoid
 * Change color of a simulated obstacle
 * fix a planner selector
@@ -29,6 +65,9 @@ Changelog for package astar_planner
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -36,7 +75,6 @@ Changelog for package astar_planner
 1.3.0 (2017-07-14)
 ------------------
 * fix build issues due to autoware_msgs
-* Resolved merge conflict by new feature
 * Apply clang-formt
 * Add obstacle avoid feature in astar_planner
 * convert to autoware_msgs
@@ -70,9 +108,6 @@ Changelog for package astar_planner
 * Avoid sudden aceleration after changing waypoints
 * Remove unnecessary comments
 * Remove unnecessary include
-* Merge branch 'develop' of https://github.com/CPFL/Autoware into feature/refactor_velocity_set
-  Conflicts:
-  ros/src/computing/planning/motion/packages/astar_planner/nodes/velocity_set/velocity_set.cpp
 * Remove unnecessary comment
 * Comment out publishing of the obstacle marker
 * Make constans all capitals

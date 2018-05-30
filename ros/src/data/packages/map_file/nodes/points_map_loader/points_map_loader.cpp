@@ -403,8 +403,8 @@ void publish_dragged_pcd(const geometry_msgs::PoseWithCovarianceStamped& msg)
 	tf::StampedTransform transform;
 	try {
 		ros::Time zero = ros::Time(0);
-		listener.waitForTransform("map", "world", zero, ros::Duration(10));
-		listener.lookupTransform("map", "world", zero, transform);
+		listener.waitForTransform("map", msg.header.frame_id, zero, ros::Duration(10));
+		listener.lookupTransform("map", msg.header.frame_id, zero, transform);
 	} catch (tf::TransformException &ex) {
 		ROS_ERROR_STREAM("failed to create transform from " << ex.what());
 	}

@@ -403,6 +403,7 @@ public:
 
   void subscribe(ros::NodeHandle& nh, category_t category);
   void subscribe(ros::NodeHandle& nh, category_t category, const ros::Duration& timeout);
+  void subscribe(ros::NodeHandle& nh, category_t category, const size_t max_retries);
 
   Point findByKey(const Key<Point>& key) const;
   Vector findByKey(const Key<Vector>& key) const;

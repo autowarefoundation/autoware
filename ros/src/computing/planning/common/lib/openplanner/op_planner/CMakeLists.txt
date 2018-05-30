@@ -2,11 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_planner)
 
 # Get a ros version
-execute_process(
-	COMMAND rosversion -d
-	OUTPUT_VARIABLE ROS_VERSION
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
 		op_utility
@@ -36,15 +32,13 @@ include_directories(${catkin_INCLUDE_DIRS}
 set(PLANNERH_SRC
 		src/BehaviorStateMachine.cpp
 		src/MappingHelpers.cpp
-		src/RSPlanner.cpp
-		src/GridMap.cpp
+		src/RSPlanner.cpp		
 		src/MatrixOperations.cpp
-		src/TrajectoryCosts.cpp
-		src/HMIStateMachine.cpp
-		src/PlannerH.cpp
-		src/geo_pos_conv.cpp
+		src/TrajectoryCosts.cpp		
+		src/PlannerH.cpp		
 		src/LocalPlannerH.cpp
 		src/PlanningHelpers.cpp
+		src/TrajectoryPrediction.cpp
 )
 
 ## Declare a cpp library
@@ -57,3 +51,14 @@ target_link_libraries(${PROJECT_NAME}
 		${OpenCV_LIBS}
 )
 
+install(DIRECTORY include/${PROJECT_NAME}/
+		DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+		FILES_MATCHING PATTERN "*.h"
+		)
+
+
+install(TARGETS op_planner
+		ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+		)

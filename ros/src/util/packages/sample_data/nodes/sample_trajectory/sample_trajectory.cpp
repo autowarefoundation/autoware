@@ -31,7 +31,7 @@
 #include <fstream>
 #include "ros/ros.h"
 #include <visualization_msgs/Marker.h>
-#include <geo_pos_conv.hh>
+#include <gnss/geo_pos_conv.hpp>
 
 #define SELF_TRANS	0
 int swap_x_y = 0;

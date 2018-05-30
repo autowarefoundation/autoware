@@ -2,19 +2,56 @@
 Changelog for package map_file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* -Added support fot VMap colouring to Left Traffic signals (`#988 <https://github.com/kfunaoka/Autoware/issues/988>`_)
+  -Added Lane number on tlr_superimpose
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.1 (2018-01-20)
+------------------
+* update CHANGELOG
+* Contributors: Yusuke FUJII
+
+1.6.0 (2017-12-11)
+------------------
+* Prepare release for 1.6.0
+* use header.frame_id included in initialpose topic
+* Initial modifications to feat_proj, tlr, context and vector_map loader, server and client to support different types of traffic signals
+* Contributors: AMC, Yamato ANDO
+
 1.5.1 (2017-09-25)
 ------------------
+* Release/1.5.1 (`#816 <https://github.com/cpfl/autoware/issues/816>`_)
+  * fix a build error by gcc version
+  * fix build error for older indigo version
+  * update changelog for v1.5.1
+  * 1.5.1
+* Contributors: Yusuke FUJII
 
 1.5.0 (2017-09-21)
 ------------------
+* Update changelog
 * compilation issues
 * added install targets
   changed finding pcl
   removed unneeded dependencies
-* Contributors: Dejan Pangercic
+* Contributors: Dejan Pangercic, Yusuke FUJII
 
 1.4.0 (2017-08-04)
 ------------------
+* version number must equal current release number so we can start releasing in the future
+* added changelogs
+* Contributors: Dejan Pangercic
 
 1.3.1 (2017-07-16)
 ------------------
@@ -44,8 +81,6 @@ Changelog for package map_file
 1.0.0 (2016-12-22)
 ------------------
 * Remove unnecessary error checks
-* Merge pull request `#452 <https://github.com/CPFL/Autoware/issues/452>`_ from CPFL/add-vector_map-library
-  Add vector map library
 * Delete map_file messages
 * Refactoring
 * Add error check for vector_map_loader

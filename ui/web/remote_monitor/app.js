@@ -4,7 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mqtt = require('mqtt');
 var mqtt_client  = mqtt.connect('mqtt://localhost:1883');
-var mqtt_subscribe_topics = ["/can_info", "/state", "/target_velocity", "/current_velocity"];
+var mqtt_subscribe_topics = ["/can_info", "/state", "/target_velocity", "/current_velocity", "/drive_mode"];
 
 function convert_remote_cmd(remote_cmd) {
   var msg = remote_cmd["steering"] + "," +
@@ -62,6 +62,7 @@ mqtt_client.on('connect', function () {
 
 io.on('connection', function (socket) {
   socket.on('disconnect', function () {
+    console.log(socket.roomName + " is disconnect!");
     socket.broadcast.to(socket.roomName).send('leave remotePeer');
     delete socket.roomName;
   });
@@ -123,8 +124,8 @@ io.on('connection', function (socket) {
         }
       }
       else {
-        console.log("[NULL] " + topic + ": " + message.toString());
-        console.log("roomName: " + socket.roomName);
+        // console.log("[NULL] " + topic + ": " + message.toString());
+        // console.log("roomName: " + socket.roomName);
       }
     }
     catch (e) {

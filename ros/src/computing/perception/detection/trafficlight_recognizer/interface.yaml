@@ -1,0 +1,23 @@
+- name: /feature_projection
+  publish: [/roi_signal]
+  subscribe: [/vector_map_info/*, /camera/camera_info, /config/adjust_xy, /current_pose,
+    /final_waypoints]
+- name: /traffic_light_recognition
+  publish: [/camera_light_color, /sound_player, /tlr_result, /tlr_superimpose_image,
+    /tlr_result_array]
+  subscribe: [/image_raw, /roi_signal, /tuned_result, /config/superimpose]
+- name: /region_tlr_mxnet
+  publish: [/light_color, /sound_player, /tlr_result, /tlr_superimpose_image]
+  subscribe: [/image_raw, /roi_signal, /config/superimpose]
+- name: /region_tlr_ssd
+  publish: [/light_color, /sound_player, /tlr_result, /tlr_superimpose_image]
+  subscribe: [/image_raw, /roi_signal]
+- name: /roi_extractor
+  publish: []
+  subscribe: [/image_raw, /roi_signal]
+- name: /light_color_switch
+  publish: [/light_color]
+  subscribe: [/camera_light_color, /ams_light_color]
+- name: /tlr_tuner
+  publish: [/tuned_result]
+  subscribe: [/image_raw]

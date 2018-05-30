@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="autoware_driveworks_interface" type="gmsl_interface" name="gmsl_interface" output="screen">
+	</node>
+</launch>

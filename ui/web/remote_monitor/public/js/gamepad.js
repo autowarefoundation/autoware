@@ -8,27 +8,33 @@ const AXES_BRAKE_PEDAL_INDEX = 3
 
 let connectedGamepadIndex;
 let loopID;
+let isInitGamepad = false;
 
-addOnload(
-  function checkGamepads() {
-    console.log("Init Gamepad");
-    var gamepadList = navigator.getGamepads();
+function setGamepadListener() {
+  console.log("Init GamepadListener");
+  loopID = requestAnimationFrame(loop);
+}
 
+function loop(timestamp) {
+  let gamepadList = navigator.getGamepads();
+
+  // if non initialized
+  if(isInitGamepad == false) {
     for(var i=0; i<gamepadList.length; i++) {
       if(gamepadList[i] != null && gamepadList[i].id == DEFAULT_USE_DEVICE) {
         gamepad = gamepadList[i];
+        console.log("Init Gamepad");
         connectedGamepadIndex = i;
-        loopID = requestAnimationFrame(loop);
-        console.log(gamepadList[i].id);
+        isInitGamepad = true;
       }
     }
   }
-);
 
-function loop(timestamp) {
-    let gamepads = navigator.getGamepads();
-    let gp = gamepads[connectedGamepadIndex];
+  // get gamepad value
+  if(isInitGamepad == true) {
+    let gp = gamepadList[connectedGamepadIndex];
 
+    // Steering, Accel, Brake
     remote_cmd["steering"] = - gp.axes[AXES_STEERING_INDEX];
     remote_cmd["accel"] = - (gp.axes[AXES_ACCEL_PEDAL_INDEX] - 1) / 2;
     remote_cmd["brake"] = - (gp.axes[AXES_BRAKE_PEDAL_INDEX] - 1) / 2;
@@ -36,5 +42,28 @@ function loop(timestamp) {
     setAccelStroke(remote_cmd["accel"], 1, "controller_accel_bar");
     setBrakeStroke(remote_cmd["brake"], 1, "controller_brake_bar");
 
-    requestAnimationFrame(loop);
+    // right lamp
+    if(gp.buttons[4].value == 1) {
+      pushBlinker(2);
+    }
+    // left lamp
+    else if(gp.buttons[5].value == 1) {
+      pushBlinker(1);
+    }
+    // hazard lamp
+    else if(gp.buttons[3].value == 1) {
+      pushBlinker(3);
+    }
+
+    // EMERGENCY
+    if(gp.buttons[23].value == 1) {
+      select_emergency_button();
+    }
+
+    // Control MODE
+    if(gp.buttons[24].value == 1) {
+      select_mode_button();
+    }
+  }
+  requestAnimationFrame(loop);
 }

@@ -1,0 +1,18 @@
+<!-- Launch file for Kalman Filter Tracker -->
+<launch>
+	<arg name="distance_matching_threshold" default="1.5" />
+	<arg name="tracker_merging_threshold" default="1.0" />
+	<arg name="pose_estimation" default="false" />
+	<arg name="keep_alive" default="2" />
+	<arg name="maximum_track_id" default="200" />
+
+	<!-- rosrun lidar_tracker kf_track -->
+	<node pkg="lidar_kf_track" type="lidar_kf_track" name="lidar_kf_track">
+		<param name="distance_matching_threshold" value="$(arg distance_matching_threshold)" />
+		<param name="tracker_merging_threshold" value="$(arg tracker_merging_threshold)" />
+		<param name="pose_estimation" value="$(arg pose_estimation)" />
+		<param name="keep_alive" value="$(arg keep_alive)" />
+		<param name="maximum_track_id" value="$(arg maximum_track_id)" />
+	</node>
+
+</launch>

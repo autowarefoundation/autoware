@@ -23,7 +23,7 @@
 #include <velodyne_pointcloud/rawdata.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <velodyne_pointcloud/VelodyneConfigConfig.h>
+#include <velodyne_pointcloud/CloudNodeConfig.h>
 
 namespace velodyne_pointcloud
 {
@@ -36,13 +36,13 @@ namespace velodyne_pointcloud
 
   private:
     
-    void callback(velodyne_pointcloud::VelodyneConfigConfig &config,
+    void callback(velodyne_pointcloud::CloudNodeConfig &config,
                 uint32_t level);
     void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
 
     ///Pointer to dynamic reconfigure service srv_
     boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::
-      VelodyneConfigConfig> > srv_;
+      CloudNodeConfig> > srv_;
     
     boost::shared_ptr<velodyne_rawdata::RawData> data_;
     ros::Subscriber velodyne_scan_;

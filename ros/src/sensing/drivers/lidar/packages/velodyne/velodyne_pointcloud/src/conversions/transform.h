@@ -26,6 +26,9 @@
 #include <velodyne_pointcloud/rawdata.h>
 #include <velodyne_pointcloud/point_types.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <velodyne_pointcloud/TransformNodeConfig.h>
+
 // include template implementations to transform a custom point cloud
 #include <pcl_ros/impl/transforms.hpp>
 
@@ -53,6 +56,13 @@ namespace velodyne_pointcloud
 
     void processScan(const velodyne_msgs::VelodyneScan::ConstPtr &scanMsg);
 
+    ///Pointer to dynamic reconfigure service srv_
+    boost::shared_ptr<dynamic_reconfigure::Server<velodyne_pointcloud::
+      TransformNodeConfig> > srv_;
+    void reconfigure_callback(velodyne_pointcloud::TransformNodeConfig &config,
+                  uint32_t level);
+    
+    const std::string tf_prefix_;
     boost::shared_ptr<velodyne_rawdata::RawData> data_;
     message_filters::Subscriber<velodyne_msgs::VelodyneScan> velodyne_scan_;
     tf::MessageFilter<velodyne_msgs::VelodyneScan> *tf_filter_;

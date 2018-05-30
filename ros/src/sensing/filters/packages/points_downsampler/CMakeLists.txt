@@ -2,26 +2,34 @@ cmake_minimum_required(VERSION 2.8.3)
 project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  pcl_ros
-  sensor_msgs
-  pcl_conversions
-  velodyne_pointcloud
-  message_generation
-)
+        roscpp
+        pcl_ros
+        sensor_msgs
+        pcl_conversions
+        velodyne_pointcloud
+        message_generation
+        autoware_msgs
+        )
 
 add_message_files(
-  FILES
-  PointsDownsamplerInfo.msg
+        FILES
+        PointsDownsamplerInfo.msg
 )
 
 generate_messages(
-  DEPENDENCIES
-  std_msgs
+        DEPENDENCIES
+        std_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS sensor_msgs
+        CATKIN_DEPENDS
+        roscpp
+        pcl_ros
+        sensor_msgs
+        pcl_conversions
+        velodyne_pointcloud
+        message_generation
+        autoware_msgs
 )
 
 ###########
