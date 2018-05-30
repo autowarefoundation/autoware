@@ -1,3 +1,3 @@
 <launch>
-    <node pkg="tf_generator" type="tf_generate.py" name="tf_generate" />
+    <node pkg="tf_generator" type="tf_generator" name="world_to_map" />
 </launch>
