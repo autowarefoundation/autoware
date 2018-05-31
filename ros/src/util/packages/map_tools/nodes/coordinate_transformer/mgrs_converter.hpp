@@ -53,7 +53,7 @@ private:
   double P4_;
   double P5_;
 
-  char alphabet[30] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  std::string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int lat_band[20] = { 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
 
   double getRadian(const double& deg);
