@@ -60,7 +60,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 
-PKG = 'bag_tools' # this package name
+PKG = 'autoware_bag_tools' # this package name
 
 import roslib; roslib.load_manifest(PKG)
 import rospy
@@ -68,47 +68,30 @@ import rosbag
 import os
 import sys
 import argparse
-import platform
 
-def change_frame_id(inbag,outbag,frame_ids,topics):
-  rospy.loginfo('   Processing input bagfile: %s', inbag)
-  rospy.loginfo('  Writing to output bagfile: %s', outbag)
-  rospy.loginfo('            Changing topics: %s', topics)
-  rospy.loginfo('           Writing frame_ids: %s', frame_ids)
-
+def rpl_msg_time_with_hdr(inbag,outbag):
+  rospy.loginfo('Processing input bagfile  : %s', inbag)
+  rospy.loginfo('Writing to output bagfile : %s', outbag)
   outbag = rosbag.Bag(outbag,'w')
   for topic, msg, t in rosbag.Bag(inbag,'r').read_messages():
-    if topic in topics:
-      if msg._has_header:
-        if len(frame_ids) == 1:
-          msg.header.frame_id = frame_ids[0]
-        else:
-          idx = topics.index(topic)
-          msg.header.frame_id = frame_ids[idx]
-
-    outbag.write(topic, msg, t)
+    # This also replaces tf timestamps under the assumption
+    # that all transforms in the message share the same timestamp
+    if topic == "/tf" and msg.transforms:
+      outbag.write(topic, msg, msg.transforms[0].header.stamp)
+    else:
+      outbag.write(topic, msg, msg.header.stamp if msg._has_header else t)
   rospy.loginfo('Closing output bagfile and exit...')
-  outbag.close()
+  outbag.close();
 
 if __name__ == "__main__":
-  rospy.init_node('change_frame_id')
+  rospy.init_node('rpl_msg_time_with_hdr')
   parser = argparse.ArgumentParser(
-      description='Create a new bagfile from an existing one replacing the frame ids of requested topics.')
+      description='Create a new bagfile from an existing one replacing the message time for the header time.')
   parser.add_argument('-o', metavar='OUTPUT_BAGFILE', required=True, help='output bagfile')
   parser.add_argument('-i', metavar='INPUT_BAGFILE', required=True, help='input bagfile')
-  parser.add_argument('-f', metavar='FRAME_ID', required=True, help='desired frame_ids name in the topics. If there is '
-                                                                    'one frame ID, all topics are changed to that ID. '
-                                                                    'If there is more than one frame ID, one topic per '
-                                                                    'frame ID is expected.', nargs='+')
-  parser.add_argument('-t', metavar='TOPIC', required=True, help='topic(s) to change', nargs='+')
   args = parser.parse_args()
-
-  # Check
-  if len(args.f) != 1 and len(args.f) != len(args.t):
-    raise ValueError("Number of frame IDs given must be 1 or equal to the number of topics. Aborting")
-
   try:
-    change_frame_id(args.i,args.o,args.f,args.t)
+    rpl_msg_time_with_hdr(args.i, args.o)
   except Exception, e:
     import traceback
     traceback.print_exc()
