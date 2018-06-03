@@ -308,11 +308,6 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
   int diffmsec, int is_swap) {
   int nid;
 
-  /* use lower 6 bytes */
-  int itr = idstr.length() - 6;
-  nid = ANON_MARKER_ID_MAX |
-  (std::strtol(idstr.substr(itr, 6).c_str(), NULL, 16)) << 1;
-
   switch (type) {
   case TYPE_OWN:
     /* use lower 6 bytes */
@@ -321,10 +316,10 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
     publish_car(nid, 1, now, pose, diffmsec);
     break;
   case TYPE_CAR:
-    publish_car(nid, 0, now, pose, diffmsec);
+    publish_car(0, 0, now, pose, diffmsec);
     break;
   case TYPE_PEDESTRIAN:
-    publish_pedestrian(nid, 1, now, pose, diffmsec);
+    publish_pedestrian(0, 1, now, pose, diffmsec);
     break;
 
   /* backward compatibility */
@@ -346,11 +341,11 @@ static int result_to_pictogram(const string& idstr, ros::Time now,
         publish_car(nid, 1, now, pose, diffmsec);
       }
     } else if (idstr.find("car_pose", 0) != string::npos) {
-      publish_car(nid, 0, now, pose, diffmsec);
+      publish_car(0, 0, now, pose, diffmsec);
     } else if (idstr.find("pedestrian_pose", 0) != string::npos) {
-      publish_pedestrian(nid, 1, now, pose, diffmsec);
+      publish_pedestrian(0, 1, now, pose, diffmsec);
     } else {
-      publish_pedestrian(nid, 0, now, pose, diffmsec); // PosUp
+      publish_pedestrian(0, 0, now, pose, diffmsec); // PosUp
     }
   }
 
