@@ -53,7 +53,6 @@ add_executable(lidar_euclidean_cluster_detect
         nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
         nodes/lidar_euclidean_cluster_detect/cluster.cpp)
 
-
 find_package(CUDA)
 if (${CUDA_FOUND})
     INCLUDE(FindCUDA)
@@ -91,7 +90,6 @@ endif ()
 add_dependencies(lidar_euclidean_cluster_detect
         ${catkin_EXPORTED_TARGETS}
         )
-
 
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES

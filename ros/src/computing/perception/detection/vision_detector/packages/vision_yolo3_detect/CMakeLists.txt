@@ -149,7 +149,6 @@ IF (CUDA_FOUND)
     add_dependencies(vision_yolo3_detect
             ${catkin_EXPORTED_TARGETS}
             )
-
     install(TARGETS vision_yolo3_detect_lib vision_yolo3_detect
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
