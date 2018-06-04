@@ -94,7 +94,7 @@ params :
       v         : ''
       cmd_param :
         delim     : ''
-        default   : $(rospack find tf_generator)/launch/tf_generate.launch
+        default   : $(rospack find map_tf_generator)/launch/map_tf_generate.launch
 
   - name  : pcd_filter
     vars  :

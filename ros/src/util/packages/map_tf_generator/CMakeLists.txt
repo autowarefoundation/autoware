@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(tf_generator)
+project(map_tf_generator)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -25,7 +25,7 @@ find_package(catkin REQUIRED
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES tf_generator
+#  LIBRARIES map_tf_generator
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -42,7 +42,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tf_generator.cpp
+#   src/${PROJECT_NAME}/map_tf_generator.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -54,7 +54,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(
-  tf_generator nodes/tf_generator.cpp
+  map_tf_generator nodes/map_tf_generator.cpp
 )
 
 ## Rename C++ executable without prefix
@@ -69,7 +69,7 @@ add_executable(
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  tf_generator ${catkin_LIBRARIES}
+  map_tf_generator ${catkin_LIBRARIES}
 )
 
 #############
@@ -112,7 +112,7 @@ target_link_libraries(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tf_generator.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_map_tf_generator.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

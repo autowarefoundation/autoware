@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>tf_generator</name>
+  <name>map_tf_generator</name>
   <version>1.0.0</version>
-  <description>The tf_generator package</description>
+  <description>The map_tf_generator package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
