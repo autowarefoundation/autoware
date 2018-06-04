@@ -46,5 +46,3 @@ ENV/
 *.bag
 *.csv
 
-# OSX files
-.DS_Store
