@@ -92,18 +92,15 @@ void RosPixelCloudFusionApp::CloudCallback(const sensor_msgs::PointCloud2::Const
 	std::vector<pcl::PointXYZ> cam_cloud(in_cloud->points.size());
 	for (size_t i = 0; i < in_cloud->points.size(); i++)
 	{
-		if (in_cloud->points[i].x > 0)
+		cam_cloud[i] = TransformPoint(in_cloud->points[i], camera_lidar_tf_);
+		int u = int(cam_cloud[i].x * fx_ / cam_cloud[i].z + cx_);
+		int v = int(cam_cloud[i].y * fy_ / cam_cloud[i].z + cy_);
+		if ((u >= 0) && (u < image_size_.width)
+			&& (v >= 0) && (v < image_size_.height)
+			&& cam_cloud[i].z > 0
+				)
 		{
-			cam_cloud[i] = TransformPoint(in_cloud->points[i], camera_lidar_tf_);
-			int u = int(cam_cloud[i].x * fx_ / cam_cloud[i].z + cx_);
-			int v = int(cam_cloud[i].y * fy_ / cam_cloud[i].z + cy_);
-			if ((u >= 0) && (u < image_size_.width)
-			    && (v >= 0) && (v < image_size_.height)
-				//&& cam_cloud[i].z > 0
-					)
-			{
-				projection_map.insert(std::pair<cv::Point, pcl::PointXYZ>(cv::Point(u, v), in_cloud->points[i]));
-			}
+			projection_map.insert(std::pair<cv::Point, pcl::PointXYZ>(cv::Point(u, v), in_cloud->points[i]));
 		}
 	}
 
