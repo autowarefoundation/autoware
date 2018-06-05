@@ -57,7 +57,7 @@ publish data as ractangular plane
 #include <tf/transform_datatypes.h>
 
 #define MYNAME		"pos_downloader"
-#define PICTOGRAMNAME "mo_pictogram"
+#define PICTOGRAMNAME "mo_pictograms"
 #define STARTTIME	(0)		// sec since 1970-01-01 (0==now)
 #define DELAYSEC	(0)		// delay sec for pos_uploader
 #define POSUP_DZ	(40)		// z offset of PosUp
