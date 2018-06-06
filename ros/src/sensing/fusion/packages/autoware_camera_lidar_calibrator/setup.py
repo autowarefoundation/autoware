@@ -3,7 +3,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup()
-d['packages'] = ['autoware_camera_calibration']
+d['packages'] = ['autoware_camera_calibration','chessboard_camera_lidar_calibration']
 d['package_dir'] = {'':'src'}
 
 setup(**d)
