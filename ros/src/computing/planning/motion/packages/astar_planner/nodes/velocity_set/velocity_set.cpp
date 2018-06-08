@@ -617,6 +617,7 @@ int main(int argc, char** argv)
     EControl detection_result = obstacleDetection(closest_waypoint, vs_path.getPrevWaypoints(), crosswalk, vs_info,
                                                   detection_range_pub, obstacle_pub, &obstacle_waypoint);
 
+    vs_path.setClosestWaypoint(closest_waypoint);
     changeWaypoints(vs_info, detection_result, closest_waypoint,
                     obstacle_waypoint, final_waypoints_pub, &vs_path);
 

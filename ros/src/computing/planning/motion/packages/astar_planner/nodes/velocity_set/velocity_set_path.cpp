@@ -32,7 +32,8 @@
 
 VelocitySetPath::VelocitySetPath()
   : set_path_(false),
-    current_vel_(0)
+    current_vel_(0),
+    past_closest_waypoint_(2)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("velocity_offset", velocity_offset_, 1.2);
@@ -53,6 +54,52 @@ bool VelocitySetPath::checkWaypoint(int num, const char *name) const
   return true;
 }
 
+void VelocitySetPath::setClosestWaypoint(int closest_waypoint)
+{
+  double dist = 0.0;
+  const autoware_msgs::waypoint wp = new_waypoints_.waypoints[closest_waypoint];
+  if(past_closest_waypoint_.size() == 2)
+  {
+    dist = std::hypot(wp.pose.pose.position.x - past_closest_waypoint_[1].pose.pose.position.x,
+      wp.pose.pose.position.y - past_closest_waypoint_[1].pose.pose.position.y);
+  }
+  if(past_closest_waypoint_.size() < 2 || dist > 1e-8)
+  {
+    past_closest_waypoint_.push_back(wp);
+  }
+}
+
+autoware_msgs::waypoint VelocitySetPath::interpolateVelocity(const autoware_msgs::waypoint prev,
+  const autoware_msgs::waypoint next, const geometry_msgs::PoseStamped current_pose)
+{
+  autoware_msgs::waypoint interpolate_wp;
+  interpolate_wp.pose = current_pose;
+  interpolate_wp.dtlane = prev.dtlane;
+  const geometry_msgs::Point& p0 = prev.pose.pose.position;
+  const geometry_msgs::Point& p1 = next.pose.pose.position;
+  const geometry_msgs::Point& pc = current_pose.pose.position;
+  const double& v0 = prev.twist.twist.linear.x;
+  const double& v1 = next.twist.twist.linear.x;
+  const double d[3] =
+  {
+    (p1.x - p0.x) * (p1.x - p0.x) + (p1.y - p0.y) * (p1.y - p0.y),
+    (pc.x - p0.x) * (pc.x - p0.x) + (pc.y - p0.y) * (pc.y - p0.y),
+    (p1.x - pc.x) * (p1.x - pc.x) + (p1.y - pc.y) * (p1.y - pc.y)
+  };
+  if(d[0] < 1e-8)
+  {
+    interpolate_wp.twist = prev.twist;
+  }
+  else
+  {
+    double rate = (d[0] + d[1] - d[2]) / (2 * d[0]);
+    interpolate_wp.twist.twist.linear.x = (rate < 0.0) ? v0 :
+                                          (rate > 1.0) ? v1 :
+                                          v1 * rate + v0 * (1.0 - rate);
+  }
+  return interpolate_wp;
+}
+
 // set about '_temporal_waypoints_size' meter waypoints from closest waypoint
 void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose)
 {
@@ -64,10 +111,8 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   temporal_waypoints_.increment = new_waypoints_.increment;
 
   // push current pose
-  autoware_msgs::waypoint current_point;
-  current_point.pose = control_pose;
-  current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
-  current_point.dtlane = new_waypoints_.waypoints[closest_waypoint].dtlane;
+  autoware_msgs::waypoint current_point =
+    interpolateVelocity(past_closest_waypoint_[0], new_waypoints_.waypoints[closest_waypoint], control_pose);
   temporal_waypoints_.waypoints.push_back(current_point);
 
   for (int i = 0; i < temporal_waypoints_size; i++)

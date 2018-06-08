@@ -32,6 +32,7 @@
 #define VELOCITY_SET_PATH_H
 
 #include <autoware_msgs/lane.h>
+#include <boost/circular_buffer.hpp>
 #include "waypoint_follower/libwaypoint_follower.h"
 class VelocitySetPath
 {
@@ -39,6 +40,7 @@ class VelocitySetPath
   autoware_msgs::lane prev_waypoints_;
   autoware_msgs::lane new_waypoints_;
   autoware_msgs::lane temporal_waypoints_;
+  boost::circular_buffer<autoware_msgs::waypoint> past_closest_waypoint_;
   bool set_path_;
   double current_vel_;
 
@@ -52,6 +54,7 @@ class VelocitySetPath
   VelocitySetPath();
   ~VelocitySetPath();
 
+  void setClosestWaypoint(int closest_waypoint);
   void changeWaypointsForStopping(int stop_waypoint, int obstacle_waypoint, int closest_waypoint, double deceleration);
   void avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint);
   void avoidSuddenAcceleration(double decelerationint, int closest_waypoint);
@@ -59,6 +62,8 @@ class VelocitySetPath
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
   void resetFlag();
+  autoware_msgs::waypoint interpolateVelocity(const autoware_msgs::waypoint prev,
+    const autoware_msgs::waypoint next, const geometry_msgs::PoseStamped current_pose);
 
   // ROS Callbacks
   void waypointsCallback(const autoware_msgs::laneConstPtr& msg);
@@ -94,7 +99,7 @@ class VelocitySetPath
   int getPrevWaypointsSize() const
   {
     return prev_waypoints_.waypoints.size();
-  }  
+  }
 
   int getNewWaypointsSize() const
   {
