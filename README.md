@@ -76,5 +76,5 @@ To subscribe to the Autoware Developers mailing list,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
 - If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
 
-
+***
 <div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
