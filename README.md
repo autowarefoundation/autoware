@@ -10,9 +10,7 @@ You may refer to [Autoware Wiki](https://github.com/CPFL/Autoware/wiki) for **Us
 
 ## What Is Autoware
 
-<div align="center">
-   [![Autoware Overview](docs/images/autoware_overview.png)](https://github.com/CPFL/Autoware/wiki/Overview)
-</div>
+[![Autoware Overview](docs/images/autoware_overview.png)](https://github.com/CPFL/Autoware/wiki/Overview)
 
 Autoware provides a rich set of self-driving modules composed of sensing, computing, and actuation capabilities. An overview of those capabilities is described [here](https://github.com/CPFL/Autoware/wiki/Overview). Keywords include *Localization, Mapping, Object Detection & Tracking, Traffic Light Recognition, Mission & Motion Planning, Trajectory Generation, Lane Detection & Selection, Vehicle Control, Sensor Fusion, Cameras, LiDARs, RADARs, Deep Learning, Rule-based System, Connected Navigation, Logging, Virtual Reality, and so on*.
 
@@ -20,9 +18,7 @@ Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Aut
 
 ## Getting Started
 
-<div align="center">
-   [![Autoware Demo](docs/images/autoware_demo.png)](https://github.com/CPFL/Autoware/wiki/Demo)
-</div>
+[![Autoware Demo](docs/images/autoware_demo.png)](https://github.com/CPFL/Autoware/wiki/Demo)
 
 ### Recommended System Specifications
 
