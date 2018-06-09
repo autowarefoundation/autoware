@@ -1,11 +1,8 @@
-<div align="center">
-   [![Autoware](https://www.autoware.ai/static/img/autoware_web_img.png)](https://www.autoware.ai)
-</div>
-<div align="center">
+[![Autoware](https://www.autoware.ai/static/img/autoware_web_img.png)](https://www.autoware.ai)
+
 | *master* | *develop* |
 |----------|-----------|
 |[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=master)](https://travis-ci.org/CPFL/Autoware)|[![Build Status](https://travis-ci.org/CPFL/Autoware.svg?branch=develop)](https://travis-ci.org/CPFL/Autoware)|
-</div>
 
 [Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
