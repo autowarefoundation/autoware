@@ -66,6 +66,10 @@ You may download a number of test and simulation data sets from Tier IV's [ROSBA
 
 You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.jp/). The 3D map data used in Autoware are composed of point cloud structure data and vector feature data.
 
+## License
+
+Autoware is provided under the [New BSD License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
+
 ## Contact
 
 Autoware Developers Slack Team (https://autoware-developer.slack.com/)
