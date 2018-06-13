@@ -36,7 +36,7 @@
 #include "waypoint_follower/libwaypoint_follower.h"
 class VelocitySetPath
 {
- private:
+private:
   autoware_msgs::lane prev_waypoints_;
   autoware_msgs::lane new_waypoints_;
   autoware_msgs::lane temporal_waypoints_;
@@ -45,12 +45,12 @@ class VelocitySetPath
   double current_vel_;
 
   // ROS param
-  double velocity_offset_; // m/s
-  double decelerate_vel_min_; // m/s
+  double velocity_offset_;     // m/s
+  double decelerate_vel_min_;  // m/s
 
-  bool checkWaypoint(int num, const char *name) const;
+  bool checkWaypoint(int num, const char* name) const;
 
- public:
+public:
   VelocitySetPath();
   ~VelocitySetPath();
 
@@ -62,8 +62,8 @@ class VelocitySetPath
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
   void resetFlag();
-  autoware_msgs::waypoint interpolateVelocity(const autoware_msgs::waypoint prev,
-    const autoware_msgs::waypoint next, const geometry_msgs::PoseStamped current_pose);
+  autoware_msgs::waypoint interpolateVelocity(const autoware_msgs::waypoint prev, const autoware_msgs::waypoint next,
+                                              const geometry_msgs::PoseStamped current_pose);
 
   // ROS Callbacks
   void waypointsCallback(const autoware_msgs::laneConstPtr& msg);
@@ -107,4 +107,4 @@ class VelocitySetPath
   }
 };
 
-#endif // VELOCITY_SET_PATH_H
+#endif  // VELOCITY_SET_PATH_H

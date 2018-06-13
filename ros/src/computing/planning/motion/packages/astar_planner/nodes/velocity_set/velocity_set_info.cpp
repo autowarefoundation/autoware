@@ -39,20 +39,20 @@ void joinPoints(const pcl::PointCloud<pcl::PointXYZ>& points1, pcl::PointCloud<p
 }
 
 VelocitySetInfo::VelocitySetInfo()
-  : stop_range_(1.3),
-    deceleration_range_(0),
-    points_threshold_(10),
-    detection_height_top_(0.2),
-    detection_height_bottom_(-1.7),
-    stop_distance_obstacle_(10),
-    stop_distance_stopline_(5),
-    deceleration_obstacle_(0.8),
-    deceleration_stopline_(0.6),
-    velocity_change_limit_(2.77),
-    temporal_waypoints_size_(100),
-    set_pose_(false),
-    use_obstacle_sim_(false),
-    wpidx_detectionResultByOtherNodes_(-1)
+  : stop_range_(1.3)
+  , deceleration_range_(0)
+  , points_threshold_(10)
+  , detection_height_top_(0.2)
+  , detection_height_bottom_(-1.7)
+  , stop_distance_obstacle_(10)
+  , stop_distance_stopline_(5)
+  , deceleration_obstacle_(0.8)
+  , deceleration_stopline_(0.6)
+  , velocity_change_limit_(2.77)
+  , temporal_waypoints_size_(100)
+  , set_pose_(false)
+  , use_obstacle_sim_(false)
+  , wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<double>("remove_points_upto", remove_points_upto_, 2.3);
@@ -67,7 +67,7 @@ void VelocitySetInfo::clearPoints()
   points_.clear();
 }
 
-void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
+void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr& config)
 {
   stop_distance_obstacle_ = config->stop_distance_obstacle;
   stop_distance_stopline_ = config->stop_distance_stopline;
@@ -77,18 +77,18 @@ void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConst
   detection_height_bottom_ = config->detection_height_bottom;
   deceleration_obstacle_ = config->deceleration_obstacle;
   deceleration_stopline_ = config->deceleration_stopline;
-  velocity_change_limit_ = config->velocity_change_limit / 3.6; // kmph -> mps
+  velocity_change_limit_ = config->velocity_change_limit / 3.6;  // kmph -> mps
   deceleration_range_ = config->deceleration_range;
   temporal_waypoints_size_ = config->temporal_waypoints_size;
 }
 
-void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   pcl::PointCloud<pcl::PointXYZ> sub_points;
   pcl::fromROSMsg(*msg, sub_points);
 
   points_.clear();
-  for (const auto &v : sub_points)
+  for (const auto& v : sub_points)
   {
     if (v.x == 0 && v.y == 0)
       continue;
@@ -110,12 +110,12 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
   }
 }
 
-void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
+void VelocitySetInfo::detectionCallback(const std_msgs::Int32& msg)
 {
-    wpidx_detectionResultByOtherNodes_ = msg.data;
+  wpidx_detectionResultByOtherNodes_ = msg.data;
 }
 
-void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg)
 {
   control_pose_ = *msg;
 
@@ -123,12 +123,12 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
     set_pose_ = true;
 }
 
-void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
+void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg)
 {
   localizer_pose_ = *msg;
 }
 
-void VelocitySetInfo::obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
+void VelocitySetInfo::obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr& msg)
 {
   pcl::fromROSMsg(*msg, obstacle_sim_points_);
 

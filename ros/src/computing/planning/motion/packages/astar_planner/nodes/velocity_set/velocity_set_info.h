@@ -40,20 +40,20 @@
 
 class VelocitySetInfo
 {
- private:
+private:
   // parameters
-  double stop_range_;               // if obstacle is in this range, stop
-  double deceleration_range_;       // if obstacle is in this range, decelerate
-  int points_threshold_;            // points threshold to find obstacles
-  double detection_height_top_;     // from sensor
-  double detection_height_bottom_;  // from sensor
-  double stop_distance_obstacle_;   // (meter) stopping distance from obstacles
-  double stop_distance_stopline_;   // (meter) stopping distance from stoplines
-  double deceleration_obstacle_;    // (m/s^2) deceleration for obstacles
-  double deceleration_stopline_;    // (m/s^2) deceleration for stopline
-  double velocity_change_limit_;    // (m/s)
-  double temporal_waypoints_size_;  // (meter)
-  int	wpidx_detectionResultByOtherNodes_; // waypoints index@finalwaypoints
+  double stop_range_;                      // if obstacle is in this range, stop
+  double deceleration_range_;              // if obstacle is in this range, decelerate
+  int points_threshold_;                   // points threshold to find obstacles
+  double detection_height_top_;            // from sensor
+  double detection_height_bottom_;         // from sensor
+  double stop_distance_obstacle_;          // (meter) stopping distance from obstacles
+  double stop_distance_stopline_;          // (meter) stopping distance from stoplines
+  double deceleration_obstacle_;           // (m/s^2) deceleration for obstacles
+  double deceleration_stopline_;           // (m/s^2) deceleration for stopline
+  double velocity_change_limit_;           // (m/s)
+  double temporal_waypoints_size_;         // (meter)
+  int wpidx_detectionResultByOtherNodes_;  // waypoints index@finalwaypoints
 
   // ROS param
   double remove_points_upto_;
@@ -65,24 +65,23 @@ class VelocitySetInfo
   bool set_pose_;
   bool use_obstacle_sim_;
 
- public:
+public:
   VelocitySetInfo();
   ~VelocitySetInfo();
 
   // ROS Callback
-  void configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &msg);
-  void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
-  void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
-  void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
-  void obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
-  void detectionCallback(const std_msgs::Int32 &msg);
+  void configCallback(const autoware_msgs::ConfigVelocitySetConstPtr& msg);
+  void pointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg);
+  void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+  void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
+  void obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr& msg);
+  void detectionCallback(const std_msgs::Int32& msg);
 
   void clearPoints();
 
-
   int getDetectionResultByOtherNodes() const
   {
-	  return wpidx_detectionResultByOtherNodes_;
+    return wpidx_detectionResultByOtherNodes_;
   }
 
   double getStopRange() const
@@ -161,4 +160,4 @@ class VelocitySetInfo
   }
 };
 
-#endif // VELOCITY_SET_INFO_H
+#endif  // VELOCITY_SET_INFO_H
