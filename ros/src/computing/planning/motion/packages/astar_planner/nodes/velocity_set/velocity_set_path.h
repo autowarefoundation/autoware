@@ -62,8 +62,8 @@ public:
   void setTemporalWaypoints(int temporal_waypoints_size, int closest_waypoint, geometry_msgs::PoseStamped control_pose);
   void initializeNewWaypoints();
   void resetFlag();
-  autoware_msgs::waypoint interpolateVelocity(const autoware_msgs::waypoint prev, const autoware_msgs::waypoint next,
-                                              const geometry_msgs::PoseStamped current_pose);
+  autoware_msgs::waypoint interpolateVelocity(const autoware_msgs::waypoint& prev, const autoware_msgs::waypoint& next,
+                                              const geometry_msgs::PoseStamped& current_pose);
 
   // ROS Callbacks
   void waypointsCallback(const autoware_msgs::laneConstPtr& msg);
