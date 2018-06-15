@@ -54,7 +54,7 @@ bool VelocitySetPath::checkWaypoint(int num, const char* name) const
 void VelocitySetPath::setClosestWaypoint(int closest_waypoint)
 {
   double dist = 0.0;
-  const autoware_msgs::waypoint wp = new_waypoints_.waypoints[closest_waypoint];
+  const autoware_msgs::waypoint& wp = new_waypoints_.waypoints[closest_waypoint];
   if (past_closest_waypoint_.size() == 2)
   {
     dist = std::hypot(wp.pose.pose.position.x - past_closest_waypoint_[1].pose.pose.position.x,
@@ -66,9 +66,9 @@ void VelocitySetPath::setClosestWaypoint(int closest_waypoint)
   }
 }
 
-autoware_msgs::waypoint VelocitySetPath::interpolateVelocity(const autoware_msgs::waypoint prev,
-                                                             const autoware_msgs::waypoint next,
-                                                             const geometry_msgs::PoseStamped current_pose)
+autoware_msgs::waypoint VelocitySetPath::interpolateVelocity(const autoware_msgs::waypoint& prev,
+                                                             const autoware_msgs::waypoint& next,
+                                                             const geometry_msgs::PoseStamped& current_pose)
 {
   autoware_msgs::waypoint interpolate_wp;
   interpolate_wp.pose = current_pose;
@@ -76,8 +76,8 @@ autoware_msgs::waypoint VelocitySetPath::interpolateVelocity(const autoware_msgs
   const geometry_msgs::Point& p0 = prev.pose.pose.position;
   const geometry_msgs::Point& p1 = next.pose.pose.position;
   const geometry_msgs::Point& pc = current_pose.pose.position;
-  const double& v0 = prev.twist.twist.linear.x;
-  const double& v1 = next.twist.twist.linear.x;
+  const double v0 = prev.twist.twist.linear.x;
+  const double v1 = next.twist.twist.linear.x;
   const double d[3] = { (p1.x - p0.x) * (p1.x - p0.x) + (p1.y - p0.y) * (p1.y - p0.y),
                         (pc.x - p0.x) * (pc.x - p0.x) + (pc.y - p0.y) * (pc.y - p0.y),
                         (p1.x - pc.x) * (p1.x - pc.x) + (p1.y - pc.y) * (p1.y - pc.y) };
