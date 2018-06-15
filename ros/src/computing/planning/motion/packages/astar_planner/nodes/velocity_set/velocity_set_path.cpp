@@ -105,6 +105,7 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   temporal_waypoints_.increment = new_waypoints_.increment;
 
   // push current pose
+  setClosestWaypoint(closest_waypoint);
   autoware_msgs::waypoint current_point =
       interpolateVelocity(past_closest_waypoint_[0], new_waypoints_.waypoints[closest_waypoint], control_pose);
   temporal_waypoints_.waypoints.push_back(current_point);
