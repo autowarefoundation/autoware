@@ -71,12 +71,14 @@ import argparse
 import platform
 
 def change_frame_id(inbag,outbag,frame_ids,topics):
-  rospy.loginfo('   Processing input bagfile: %s', inbag)
-  rospy.loginfo('  Writing to output bagfile: %s', outbag)
-  rospy.loginfo('            Changing topics: %s', topics)
-  rospy.loginfo('           Writing frame_ids: %s', frame_ids)
-
+  rospy.loginfo('Processing input bagfile: %s', inbag)
+  rospy.loginfo('Writing to output bagfile: %s', outbag)
+  rospy.loginfo('Changing topics: %s', topics)
+  rospy.loginfo('Writing frame_ids: %s', frame_ids)
+  total_msg = rosbag.Bag(inbag,'r').get_message_count(topics[0])
+  count = 0
   outbag = rosbag.Bag(outbag,'w')
+  progress_bar(0, 1)
   for topic, msg, t in rosbag.Bag(inbag,'r').read_messages():
     if topic in topics:
       if msg._has_header:
@@ -85,10 +87,19 @@ def change_frame_id(inbag,outbag,frame_ids,topics):
         else:
           idx = topics.index(topic)
           msg.header.frame_id = frame_ids[idx]
-
+    if topic == topics[0]:
+      count+=1
+      progress_bar(count, total_msg)
     outbag.write(topic, msg, t)
   rospy.loginfo('Closing output bagfile and exit...')
   outbag.close()
+def progress_bar(iteration, total):
+  length = 50
+  percent = ("{0:." + str(1) + "f}").format(100 * (iteration / float(total)))
+  filledLength = int(length * iteration // total)
+  bar = '=' * filledLength + '|' + '-' * (length - filledLength)
+  sys.stdout.write('Rosbag conversion [%s] %s%% Complete\r' % (bar, percent))
+  sys.stdout.flush()
 
 if __name__ == "__main__":
   rospy.init_node('change_frame_id')
