@@ -207,10 +207,13 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 
 		delta_p *= delta_p_norm;
 
-		transformation_ = (Eigen::Translation<float, 3>(static_cast<float>(delta_p(0)), static_cast<float>(delta_p(1)), static_cast<float>(delta_p(2))) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(3)), Eigen::Vector3f::UnitX()) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(4)), Eigen::Vector3f::UnitY()) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(5)), Eigen::Vector3f::UnitZ())).matrix();
+		Eigen::Translation<float, 3> translation(static_cast<float>(delta_p(0)), static_cast<float>(delta_p(1)), static_cast<float>(delta_p(2)));
+		Eigen::AngleAxis<float> tmp1(static_cast<float>(delta_p(3)), Eigen::Vector3f::UnitX());
+		Eigen::AngleAxis<float> tmp2(static_cast<float>(delta_p(4)), Eigen::Vector3f::UnitY());
+		Eigen::AngleAxis<float> tmp3(static_cast<float>(delta_p(5)), Eigen::Vector3f::UnitZ());
+		Eigen::AngleAxis<float> tmp4(tmp1 * tmp2 * tmp3);
+
+		transformation_ = (translation * tmp4).matrix();
 
 		p = p + delta_p;
 
