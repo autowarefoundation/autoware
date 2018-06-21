@@ -22,7 +22,7 @@ else
 fi
 echo "Shared directory: ${HOST_DIR}"
 
-nvidia-docker run \
+docker run \
     -it --rm \
     --volume=$XSOCK:$XSOCK:rw \
     --volume=$XAUTH:$XAUTH:rw \
