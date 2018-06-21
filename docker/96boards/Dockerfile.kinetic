@@ -1,5 +1,5 @@
-FROM nvidia/cuda:8.0-devel-ubuntu16.04
-MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
+FROM ubuntu:16.04
+MAINTAINER Kenji Funaoka <kenji.funaoka@tier4.jp>
 
 # Develop
 RUN apt-get update && apt-get install -y \
