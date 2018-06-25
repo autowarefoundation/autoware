@@ -13,4 +13,7 @@
 
   <depend>rospy</depend>
   <depend>rosbag</depend>
+  
+  <depend>nmea_msgs</depend>
+  <depend>roslib</depend>  
 </package>
