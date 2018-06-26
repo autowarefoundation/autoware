@@ -114,15 +114,17 @@ add_dependencies(ray_ground_filter ${catkin_EXPORTED_TARGETS})
 add_executable(points_concat_filter
         nodes/points_concat_filter/points_concat_filter.cpp
         )
+        
 target_include_directories(points_concat_filter PRIVATE
         ${PCL_INCLUDE_DIRS}
         )
 
-
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
+        -lyaml-cpp
         )
+
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
 
 #Cloud Transformer
