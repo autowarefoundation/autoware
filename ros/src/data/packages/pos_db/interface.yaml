@@ -1,5 +1,5 @@
 - name: /pos_downloader
-  publish: [/mo_marker]
+  publish: [/mo_pictograms]
   subscribe: []
 - name: /pos_uploader
   publish: []
