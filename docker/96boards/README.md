@@ -1,7 +1,6 @@
-# Autoware Docker on Syn Quacer E
-To use the Autoware Docker, first make sure Docker is properly installed.
+# Autoware Docker on 96boards
 
-[Docker installation (Debian)](https://docs.docker.com/install/linux/docker-ce/debian/)
+See [Wiki](https://github.com/CPFL/Autoware/wiki/Docker) for more information.
 
 ## How to Build
 ```
