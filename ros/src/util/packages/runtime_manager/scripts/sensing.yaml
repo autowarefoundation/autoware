@@ -269,9 +269,12 @@ cmds:
       param: ray_ground_filter
 
     - name : points_concat_filter
-      desc : points_concat_filter filter performs merging multiple lidar input
+      desc : points_concat_filter filter performs merging multiple lidar inputs
       cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
       param: points_concat_filter
+      gui  :
+          dialog_width  : 600
+          dialog_height : 100
 
     - name : cloud_transformer
       desc : Transforms cloud points' coordinates to the specified target frame
@@ -285,7 +288,7 @@ cmds:
       desc : Performs extrinsic calibration between two point clouds
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
-      
+
 buttons:
   calibration_toolkit :
     desc  : calibration_toolkit desc sample
@@ -1101,30 +1104,31 @@ params :
         delim       : ':='
 
   - name  : points_concat_filter
-    topic : /config/points_concat_filter
-    msg   : ConfigPointsConcatFilter
     vars  :
-    - name  : input0
-      desc  : 1st concatinated pointcloud topic
-      label : Lidar0 topic
+    - name  : input_topics
+      desc  : List of input pointcloud topics
+      label : Input Topics
       kind  : str
-      v     : /lidar0/points_raw
+      v     : '[/points_alpha,/points_beta]'
       cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : input1
-      desc  : 2nd concatinated pointcloud topic
-      label : Lidar1 topic
+        dash  : ''
+        delim : ':='
+    - name  : output_topic
+      desc  : Concatinated pointcloud topic
+      label : Output Topic
       kind  : str
-      v     : /lidar1/points_raw
+      v     : /points_concat
       cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name  : output_frame
+        dash  : ''
+        delim : ':='
+    - name  : output_frame_id
       desc  : Concatinated pointcloud frame
-      label : output_frame
+      label : Output Frame
       kind  : str
-      v     : lidar_frame
+      v     : velodyne
+      cmd_param :
+        dash  : ''
+        delim : ':='
 
   - name  : cloud_transformer
     vars  :
@@ -1365,5 +1369,3 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
-

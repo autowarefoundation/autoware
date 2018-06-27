@@ -5,7 +5,8 @@
     <description>The points_preprocessor package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
-    <maintainer email="n.patiphon@gmail.com">n-patiphon</maintainer>
+    <author email="n.patiphon@gmail.com">n-patiphon</author>
+    <author email="akihito.ohsato@tier4.jp">aohsato</author>
 
     <license>BSD</license>
 
@@ -24,6 +25,7 @@
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>rostest</build_depend>
     <build_depend>gtest</build_depend>
+    <build_depend>yaml-cpp</build_depend>
 
     <run_depend>autoware_msgs</run_depend>
     <run_depend>cv_bridge</run_depend>
@@ -36,6 +38,7 @@
     <run_depend>tf</run_depend>
     <run_depend>velodyne_pointcloud</run_depend>
     <run_depend>libqt5-core</run_depend>
+    <run_depend>yaml-cpp</run_depend>
 
     <test_depend>roslaunch</test_depend>
     <test_depend>rosunit</test_depend>
