@@ -130,7 +130,7 @@ target_include_directories(points_concat_filter PRIVATE
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
-        -lyaml-cpp
+        ${YAML_CPP_LIBRARIES}
         )
 
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
