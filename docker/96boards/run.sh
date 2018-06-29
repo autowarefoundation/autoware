@@ -5,11 +5,11 @@ XAUTH=/home/$USER/.Xauthority
 SHARED_DIR=/home/autoware/shared_dir
 HOST_DIR=/home/$USER/shared_dir
 
-if [ "$1" = "kinetic" ] || [ "$1" = "indigo" ]
+if [ "$1" = "kinetic" ]
 then
     echo "Use $1"
 else
-    echo "Select distribution, kinetic|indigo"
+    echo "Set distribution, kinetic"
     exit
 fi
 
