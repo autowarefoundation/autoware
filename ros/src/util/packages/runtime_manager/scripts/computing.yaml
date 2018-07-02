@@ -559,6 +559,21 @@ subs :
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
         param: op_trajectory_generator
+    - name : OpenPlanner - Utilities
+      desc : Testing UI, Loggers , ..
+      subs :
+      - name : op_pose2tf
+        desc : Publish transformation from ndt_pose read from rosbag file 
+        cmd  : roslaunch op_utilities op_pose2tf.launch
+        param: op_pose2tf
+      - name : op_bag_player
+        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
+        cmd  : roslaunch op_utilities op_bag_player.launch
+        param: op_bag_player
+      - name : op_data_logger
+        desc : Compare Results and Log useful information
+        cmd  : roslaunch op_utilities op_data_logger.launch
+        param: op_data_logger
 
     - name : astar_planner
       desc : astar_planner desc sample
@@ -1081,7 +1096,7 @@ params :
         dash        : ''
         delim       : ':='
         
-  - name  : kf_contour_tracker
+  - name  : lidar_kf_contour_track
     vars  :
     - name : tracking_type
       desc : select the type of tracking
@@ -1096,33 +1111,6 @@ params :
       - Simple Tracker
       - Contour Tracker
       v   : 1
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : vehicle_width
-      desc : Ego vehicle width
-      label: Vehicle Width
-      min  : 0
-      max  : 4
-      v    : 1.8
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : vehicle_length
-      desc : Ego vehicle Length
-      label: Vehicle Length
-      min  : 0
-      max  : 20
-      v    : 4.2
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : horizon
-      desc : Tracking horizon
-      label: Tracking Horizon
-      min  : 0
-      max  : 200
-      v    : 120
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1144,6 +1132,15 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : splitter_topic
+      desc : splitter topic
+      label: Advanced Params -----------------------------------------------------------------
+      min  : 1
+      max  : 1
+      v    : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : polygon_quarters
       desc : Number of Quarters
       label: Quarters Number
@@ -1157,8 +1154,8 @@ params :
       desc : Object Polygon Contour resolution
       label: Polygon Resolution
       min  : 0.25
-      max  : 5
-      v    : 1
+      max  : 5.0
+      v    : 0.5
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1166,8 +1163,8 @@ params :
       desc : Maximum Distance for associating two objects
       label: Association Distance
       min  : 0.5
-      max  : 10
-      v    : 4
+      max  : 10.0
+      v    : 3
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1194,16 +1191,15 @@ params :
       label: Trust Appearance Number
       min  : 1
       max  : 15
-      v    : 4
+      v    : 5
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : contours_circle_resolutions
-      desc : Contour minimum circle size
-      label: Contour Resolution
-      min  : 1.0
-      max  : 10
-      v    : 4.0
+    - name : enableSimulationMode
+      desc : Enable Representing Ego vehicle and simulated vehicles by special IDs
+      label: Enable OpenPlanner Perception Simulation
+      kind : checkbox
+      v    : True
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2898,6 +2894,48 @@ params :
       min  : 0
       max  : 20
       v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_bag_player
+    vars  :
+    - name : rosbag_file
+      desc : path to localization ready rosbag file
+      label: Rosbag Path
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_pose2tf
+    vars  :
+    - name : pose_topic
+      desc : position topic name in rosbag file
+      label: Pose Topic
+      kind : str
+      v    : '/ndt_pose'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_data_logger
+    vars  :
+    - name : mapSource
+      desc : select map source
+      label: Map Source
+      kind : radio_box
+      choices:
+      - Folder
+      - KML
+      descs :
+      - custom read from folder
+      - custom read from kml file
+      v   : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : mapFileName
+      desc : select kml map file if applicable
+      label: Map File
+      kind : path
       cmd_param:
         dash     : ''
         delim    : ':='

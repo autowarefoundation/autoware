@@ -48,6 +48,8 @@ public:
 
 	static bool GetRelativeInfoRange(const std::vector<std::vector<WayPoint> >& trajectories, const WayPoint& p, const double& searchDistance, RelativeInfo& info);
 
+	static bool GetRelativeInfoLimited(const std::vector<WayPoint>& trajectory, const WayPoint& p, RelativeInfo& info, const int& prevIndex = 0);
+
 	/**
 	 * @brief Find point on the trajectory after initial relative point with specific distance
 	 * @param trajectory list of waypoints

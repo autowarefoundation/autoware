@@ -385,6 +385,9 @@ public:
 	std::vector<WayPoint*> pBacks;
 	std::vector<std::pair<ACTION_TYPE, double> > actionCost;
 
+	int			originalMapID;
+	int			gid;
+
 	WayPoint()
 	{
 		id = 0;
@@ -405,6 +408,9 @@ public:
 		state = INITIAL_STATE;
 		beh_state = BEH_STOPPING_STATE;
 		iOriginalIndex = 0;
+
+		gid = 0;
+		originalMapID = -1;
 	}
 
 	WayPoint(const double& x, const double& y, const double& z, const double& a)
@@ -432,6 +438,9 @@ public:
 		iOriginalIndex = 0;
 		state = INITIAL_STATE;
 		beh_state = BEH_STOPPING_STATE;
+
+		gid = 0;
+		originalMapID = -1;
 	}
 };
 
@@ -446,6 +455,9 @@ public:
 	int iGlobalPath;
 	WayPoint perp_point;
 	double angle_diff; // degrees
+	bool bBefore;
+	bool bAfter;
+	double after_angle;
 
 	RelativeInfo()
 	{
@@ -456,6 +468,9 @@ public:
 		iBack = 0;
 		iGlobalPath = 0;
 		angle_diff = 0;
+		after_angle = 0;
+		bBefore = false;
+		bAfter = false;
 	}
 };
 
@@ -740,6 +755,14 @@ public:
 	bool bDirection;
 	bool bVelocity;
 	int acceleration;
+
+	int acceleration_desc;
+	double acceleration_raw;
+	LIGHT_INDICATOR indicator_state;
+
+	int originalID;
+	BEH_STATE_TYPE behavior_state;
+
 	DetectedObject()
 	{
 		bDirection = false;
@@ -754,6 +777,13 @@ public:
 		predicted_behavior = INITIAL_STATE;
 		actual_speed = 0;
 		actual_yaw = 0;
+
+		acceleration_desc = 0;
+		acceleration_raw = 0.0;
+		indicator_state = INDICATOR_NONE;
+
+		originalID = -1;
+		behavior_state = BEH_STOPPING_STATE;
 	}
 
 };

@@ -849,6 +849,27 @@ WayPoint* MappingHelpers::GetClosestBackWaypointFromMap(const WayPoint& pos, Roa
 		return &pLane->points.at(closest_index);
 }
 
+std::vector<Lane*> MappingHelpers::GetClosestLanesFast(const WayPoint& center, RoadNetwork& map, const double& distance)
+{
+	vector<Lane*> lanesList;
+	for(unsigned int j=0; j< map.roadSegments.size(); j ++)
+	{
+		for(unsigned int k=0; k< map.roadSegments.at(j).Lanes.size(); k ++)
+		{
+			Lane* pL = &map.roadSegments.at(j).Lanes.at(k);
+			int index = PlanningHelpers::GetClosestNextPointIndexFast(pL->points, center);
+
+			if(index < 0 || index >= pL->points.size()) continue;
+
+			double d = hypot(pL->points.at(index).pos.y - center.pos.y, pL->points.at(index).pos.x - center.pos.x);
+			if(d <= distance)
+				lanesList.push_back(pL);
+		}
+	}
+
+	return lanesList;
+}
+
 Lane* MappingHelpers::GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance, const bool bDirectionBased)
 {
 	vector<pair<double, Lane*> > laneLinksList;

@@ -30,6 +30,8 @@ include_directories(
 add_executable(lidar_kf_contour_track
   nodes/lidar_kf_contour_track/lidar_kf_contour_track.cpp
   nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp
+  nodes/lidar_kf_contour_track/PolygonGenerator.cpp
+  nodes/lidar_kf_contour_track/SimpleTracker.cpp
 )
 target_link_libraries(lidar_kf_contour_track
 ${catkin_LIBRARIES}

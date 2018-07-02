@@ -53,7 +53,7 @@ public:
 	static TiXmlElement* GetHeadElement(TiXmlElement* pMainElem);
 	static TiXmlElement* GetDataFolder(const std::string& folderName, TiXmlElement* pMainElem);
 
-
+	static std::vector<Lane*> GetClosestLanesFast(const WayPoint& center, RoadNetwork& map, const double& distance);
 	static Lane* GetClosestLaneFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0, const bool bDirectionBased = true);
 	static std::vector<Lane*> GetClosestLanesListFromMap(const WayPoint& pos, RoadNetwork& map, const double& distance = 2.0, const bool bDirectionBased = true);
 	static Lane* GetClosestLaneFromMapDirectionBased(const WayPoint& pos, RoadNetwork& map, const double& distance = 5.0);

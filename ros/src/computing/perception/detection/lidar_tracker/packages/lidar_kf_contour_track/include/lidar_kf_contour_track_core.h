@@ -34,7 +34,10 @@
 // ROS includes
 #include <ros/ros.h>
 #include "op_planner/RoadNetwork.h"
-#include "op_simu/SimpleTracker.h"
+#include "op_planner/PlannerCommonDef.h"
+#include "op_planner/MatrixOperations.h"
+#include "SimpleTracker.h"
+#include "PolygonGenerator.h"
 
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/DetectedObjectArray.h>
@@ -55,7 +58,10 @@ public:
 	double 	MaxObjSize;
 	double  nQuarters;
 	double 	PolygonRes;
-	SimulationNS::TRACKING_TYPE	trackingType; // 0 association only , 1 simple tracking, 2 contour based tracking
+	TRACKING_TYPE	trackingType; // 0 association only , 1 simple tracking, 2 contour based tracking
+	bool    bEnableSimulation;
+	bool 	bEnableStepByStep;
+	bool 	bEnableLogging;
 
 	PerceptionParams()
 	{
@@ -66,7 +72,10 @@ public:
 		MaxObjSize =0;
 		nQuarters = 0;
 		PolygonRes = 0;
-		trackingType = SimulationNS::SIMPLE_TRACKER;
+		trackingType = SIMPLE_TRACKER;
+		bEnableStepByStep = false;
+		bEnableSimulation = false;
+		bEnableLogging = false;
 	}
 };
 
@@ -75,15 +84,11 @@ class ContourTracker
 protected:
 	std::vector<PlannerHNS::DetectedObject> m_OriginalClusters;
 	autoware_msgs::DetectedObjectArray m_OutPutResults;
-
 	bool bNewClusters;
-
 	PlannerHNS::WayPoint m_CurrentPos;
 	bool bNewCurrentPos;
-
 	PerceptionParams m_Params;
-
-	SimulationNS::SimpleTracker m_ObstacleTracking;
+	SimpleTracker m_ObstacleTracking;
 
 	//Visualization Section
 	int m_nDummyObjPerRep;
@@ -91,10 +96,30 @@ protected:
 	std::vector<visualization_msgs::MarkerArray> m_DetectedPolygonsDummy;
 	std::vector<visualization_msgs::MarkerArray> m_DetectedPolygonsActual;
 	visualization_msgs::MarkerArray m_DetectedPolygonsAllMarkers;
-
 	visualization_msgs::MarkerArray m_DetectionCircles;
 
-protected: //ROS messages (topics)
+	std::vector<visualization_msgs::MarkerArray> m_MatchingInfoDummy;
+	std::vector<visualization_msgs::MarkerArray> m_MatchingInfoActual;
+
+	std::vector<std::string>    m_LogData;
+	PlannerHNS::MAP_SOURCE_TYPE m_MapType;
+	std::string m_MapPath;
+	PlannerHNS::RoadNetwork m_Map;
+	bool bMap;
+	bool bVectorMapCheck;
+	double m_MapFilterDistance;
+
+	std::vector<PlannerHNS::Lane*> m_ClosestLanesList;
+
+	int m_nOriginalPoints;
+	int m_nContourPoints;
+	double m_FilteringTime;
+	double m_PolyEstimationTime;
+	double m_tracking_time;
+	double m_dt;
+	struct timespec  m_loop_timer;
+
+	//ROS subscribers
 	ros::NodeHandle nh;
 
 	//define publishers
@@ -108,12 +133,17 @@ protected: //ROS messages (topics)
 	ros::Subscriber sub_current_pose ;
 
 
-protected: // Callback function for subscriber.
+	// Callback function for subscriber.
 	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 
-protected: //Helper Functions
+	//Helper Functions
 	void VisualizeLocalTracking();
+	void ImportCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters);
+	bool IsCar(const PlannerHNS::DetectedObject& obj, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map);
+	void ReadNodeParams();
+	void ReadCommonParams();
+	void LogAndSend();
 
 public:
   ContourTracker();

@@ -24,3 +24,10 @@ bool velocity_reliable
 # SLOWDOWN_STATE 		= 6
 
 uint32 behavior_state
+
+# Indicator information
+# INDICATOR_LEFT 0
+# INDICATOR_RIGHT 1
+# INDICATOR_BOTH 2
+# INDICATOR_NONE 3
+uint32 indicator_state

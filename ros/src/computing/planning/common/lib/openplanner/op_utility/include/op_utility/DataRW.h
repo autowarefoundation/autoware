@@ -29,11 +29,14 @@ public:
 	static std::string StatesLogFolderName;
 	static std::string SimulationFolderName;
 	static std::string KmlMapsFolderName;
+	static std::string PredictionFolderName;
+	static std::string TrackingFolderName;
 
 
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list);
 	static void WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list);
 	static void WriteLogData(const std::string& logFolder, const std::string& logTitle, const std::string& header, const std::vector<std::string>& logData);
+	static void CreateLoggingFolder();
 };
 
 class SimpleReaderBase
