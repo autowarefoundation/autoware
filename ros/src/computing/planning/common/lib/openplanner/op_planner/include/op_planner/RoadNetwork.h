@@ -1,9 +1,9 @@
-/*
- * RoadNetwork.h
- *
- *  Created on: May 19, 2016
- *      Author: hatem
- */
+
+/// \file RoadNetwork.h
+/// \brief Definition of OpenPlanner's data types
+/// \author Hatem Darweesh
+/// \date May 19, 2016
+
 
 #ifndef ROADNETWORK_H_
 #define ROADNETWORK_H_
@@ -41,8 +41,16 @@ enum ACTION_TYPE {FORWARD_ACTION, BACKWARD_ACTION, STOP_ACTION, LEFT_TURN_ACTION
 
 enum BEH_STATE_TYPE {BEH_FORWARD_STATE=0,BEH_STOPPING_STATE=1, BEH_BRANCH_LEFT_STATE=2, BEH_BRANCH_RIGHT_STATE=3, BEH_YIELDING_STATE=4, BEH_ACCELERATING_STATE=5, BEH_SLOWDOWN_STATE=6};
 
+enum SEGMENT_TYPE {NORMAL_ROAD_SEG, INTERSECTION_ROAD_SEG, UTURN_ROAD_SEG, EXIT_ROAD_SEG, MERGE_ROAD_SEG, HIGHWAY_ROAD_SEG};
+enum RoadSegmentType {NORMAL_ROAD, INTERSECTION_ROAD, UTURN_ROAD, EXIT_ROAD, MERGE_ROAD, HIGHWAY_ROAD};
+
+enum MARKING_TYPE {UNKNOWN_MARK, TEXT_MARK, AF_MARK, AL_MARK, AR_MARK, AFL_MARK, AFR_MARK, ALR_MARK, UTURN_MARK, NOUTURN_MARK};
+
+enum TrafficSignTypes {UNKNOWN_SIGN, STOP_SIGN, MAX_SPEED_SIGN, MIN_SPEED_SIGN};
+
 class Lane;
 class TrafficLight;
+class RoadSegment;
 
 class ObjTimeStamp
 {
@@ -127,6 +135,11 @@ public:
   inline bool PointInRect(GPSPoint p)
   {
     return p.x >= bottom_left.x && p.x <= top_right.x && p.y >= bottom_left.y && p.y <= top_right.y;
+  }
+
+  inline bool PointInsideRect(GPSPoint p)
+  {
+    return p.x > bottom_left.x && p.x < top_right.x && p.y > bottom_left.y && p.y < top_right.y;
   }
 
   inline bool HitTest(GPSPoint p)
@@ -461,6 +474,9 @@ public:
 
 	RelativeInfo()
 	{
+		after_angle = 0;
+		bBefore = false;
+		bAfter = false;
 		perp_distance = 0;
 		to_front_distance = 0;
 		from_back_distance = 0;
@@ -468,9 +484,22 @@ public:
 		iBack = 0;
 		iGlobalPath = 0;
 		angle_diff = 0;
-		after_angle = 0;
-		bBefore = false;
-		bAfter = false;
+	}
+};
+
+class Boundary //represent wayarea in vector map
+{
+public:
+	int id;
+	int roadId;
+	std::vector<GPSPoint> points;
+	RoadSegment* pSegment;
+
+	Boundary()
+	{
+		id    = 0;
+		roadId =0;
+		pSegment = nullptr;
 	}
 };
 
@@ -489,6 +518,22 @@ public:
 		laneId =0;
 		roadId =0;
 		pLane = 0;
+	}
+};
+
+class Crossing
+{
+public:
+	int id;
+	int roadId;
+	std::vector<GPSPoint> points;
+	RoadSegment* pSegment;
+
+	Crossing()
+	{
+		id    = 0;
+		roadId =0;
+		pSegment = nullptr;
 	}
 };
 
@@ -533,8 +578,6 @@ public:
 		pLane = 0;
 	}
 };
-
-enum TrafficSignTypes {UNKNOWN_SIGN, STOP_SIGN, MAX_SPEED_SIGN, MIN_SPEED_SIGN};
 
 class TrafficSign
 {
@@ -603,13 +646,37 @@ public:
 	}
 };
 
-enum RoadSegmentType {NORMAL_ROAD, INTERSECTION_ROAD, UTURN_ROAD, EXIT_ROAD, MERGE_ROAD, HIGHWAY_ROAD};
+class Marking
+{
+public:
+	int id;
+	int laneId;
+	int roadId;
+	MARKING_TYPE  mark_type;
+	GPSPoint center;
+	std::vector<GPSPoint> points;
+	Lane* pLane;
+
+	Marking()
+	{
+		id = 0;
+		laneId = 0;
+		roadId = 0;
+		mark_type = UNKNOWN_MARK;
+		pLane = nullptr;
+	}
+};
 
 class RoadSegment
 {
 public:
 	int id;
-	RoadSegmentType roadType;
+
+	SEGMENT_TYPE 	roadType;
+	Boundary	boundary;
+	Crossing	start_crossing;
+	Crossing	finish_crossing;
+	double 		avgWidth;
 	std::vector<int> fromIds;
 	std::vector<int> toIds;
 	std::vector<Lane> Lanes;
@@ -621,7 +688,8 @@ public:
 	RoadSegment()
 	{
 		id = 0;
-		roadType = NORMAL_ROAD;
+		avgWidth = 0;
+		roadType = NORMAL_ROAD_SEG;
 	}
 
 
@@ -644,7 +712,7 @@ public:
 	double length;
 	double dir;
 	LaneType type;
-	std::vector<TrafficSign> signs;
+	double width;
 	std::vector<WayPoint> points;
 	std::vector<TrafficLight> trafficlights;
 	std::vector<StopLine> stopLines;
@@ -665,6 +733,7 @@ public:
 		length 	= 0;
 		dir		= 0;
 		type 	= NORMAL_LANE;
+		width 	= 0;
 		pLeftLane = 0;
 		pRightLane = 0;
 		pRoad	= 0;
@@ -683,7 +752,10 @@ public:
 	std::vector<TrafficLight> trafficLights;
 	std::vector<StopLine> stopLines;
 	std::vector<Curb> curbs;
-
+	std::vector<Boundary> boundaries;
+	std::vector<Crossing> crossings;
+	std::vector<Marking> markings;
+	std::vector<TrafficSign> signs;
 };
 
 class VehicleState : public ObjTimeStamp
@@ -713,6 +785,7 @@ public:
 	double followDistance;
 	LIGHT_INDICATOR indicator;
 	bool bNewPlan;
+	int iTrajectory;
 
 
 	BehaviorState()
@@ -725,6 +798,7 @@ public:
 		followDistance = 0;
 		indicator  = INDICATOR_NONE;
 		bNewPlan = false;
+		iTrajectory = -1;
 
 	}
 
@@ -758,6 +832,7 @@ public:
 
 	int acceleration_desc;
 	double acceleration_raw;
+
 	LIGHT_INDICATOR indicator_state;
 
 	int originalID;
@@ -768,6 +843,8 @@ public:
 		bDirection = false;
 		bVelocity = false;
 		acceleration = 0;
+		acceleration_desc = 0;
+		acceleration_raw = 0.0;
 		id = 0;
 		w = 0;
 		l = 0;
@@ -810,10 +887,15 @@ public:
 	double 	smoothingSmoothWeight;
 	double 	smoothingToleranceError;
 
+	double stopSignStopTime;
 
 	double additionalBrakingDistance;
 	double verticalSafetyDistance;
 	double horizontalSafetyDistancel;
+
+	double giveUpDistance;
+
+	int nReliableCount;
 
 	bool 	enableLaneChange;
 	bool 	enableSwerving;
@@ -823,6 +905,7 @@ public:
 	bool 	enableStopSignBehavior;
 
 	bool 	enabTrajectoryVelocities;
+	double minIndicationDistance;
 
 	PlanningParams()
 	{
@@ -849,6 +932,9 @@ public:
 		verticalSafetyDistance 			= 0.0;
 		horizontalSafetyDistancel		= 0.0;
 
+		giveUpDistance					= -4;
+		nReliableCount					= 2;
+
 		enableHeadingSmoothing			= false;
 		enableSwerving 					= false;
 		enableFollowing					= false;
@@ -856,6 +942,7 @@ public:
 		enableLaneChange 				= false;
 		enableStopSignBehavior			= false;
 		enabTrajectoryVelocities 		= false;
+		minIndicationDistance			= 15;
 	}
 };
 
@@ -1074,15 +1161,15 @@ public:
 	{
 		std::ostringstream str;
 		str.precision(4);
-		str << "LaneIndex    : " << lane_index;
-		str << ", Index      : " << relative_index;
-		str << ", TotalCost  : " << cost;
-		str << ", Priority   : " << priority_cost;
-		str << ", Transition : " << transition_cost;
-		str << ", Lateral    : " << lateral_cost;
-		str << ", Longitu    : " << longitudinal_cost;
-		str << ", LaneChange : " << lane_change_cost;
-		str << ", Blocked    : " << bBlocked;
+		str << "LI   : " << lane_index;
+		str << ", In : " << relative_index;
+		str << ", Co : " << cost;
+		str << ", Pr : " << priority_cost;
+		str << ", Tr : " << transition_cost;
+		str << ", La : " << lateral_cost;
+		str << ", Lo : " << longitudinal_cost;
+		str << ", Ln : " << lane_change_cost;
+		str << ", Bl : " << bBlocked;
 		str << "\n";
 		for (unsigned int i=0; i<lateral_costs.size(); i++ )
 		{
@@ -1091,6 +1178,156 @@ public:
 
 		return str.str();
 
+	}
+};
+
+class OccupancyToGridMap
+{
+public:
+	int width;
+	int length;
+	double res;
+	WayPoint center;
+
+	OccupancyToGridMap(const int& _width, const int& _length, const double& _res, const WayPoint& _center)
+	{
+		width = _width;
+		length = _length;
+		res = _res;
+		center = _center;
+	}
+
+	OccupancyToGridMap()
+	{
+		width = 0;
+		length  = 0;
+		res = 0.0;
+	}
+
+	bool GetCellIndexFromPoint(const GPSPoint& p, const std::vector<int>& data, int& _cell)
+	{
+		int col = floor(p.x / res);
+		int row = floor(p.y / res);
+
+		int index = -1;
+		if(row >= 0 && row < length && col >=0 && col < width)
+		{
+			index = get2dIndex(row,col);
+
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				//printf("Cell Info: P(%f,%f) , D(%f,%f), G(%d,%d), index = %d \n", p.x, p.y, p.x-center.pos.x, p.y-center.pos.y, col, row , index);
+				return true;
+			}
+		}
+
+		if(row+1 >= 0 && row+1 < length && col >=0 && col < width)
+		{
+			index = get2dIndex(row+1,col);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row >= 0 && row < length && col+1 >=0 && col+1 < width)
+		{
+			index = get2dIndex(row,col+1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row-1 >= 0 && row-1 < length && col >=0 && col < width)
+		{
+			index = get2dIndex(row-1,col);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row >= 0 && row < length && col-1 >=0 && col-1 < width)
+		{
+			index = get2dIndex(row,col-1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row+1 >= 0 && row+1 < length && col+1 >=0 && col+1 < width)
+		{
+			index = get2dIndex(row+1,col+1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row-1 >= 0 && row-1 < length && col-1 >=0 && col-1 < width)
+		{
+			index = get2dIndex(row-1,col-1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row-1 >= 0 && row-1 < length && col+1 >=0 && col+1 < width)
+		{
+			index = get2dIndex(row-1,col+1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		if(row+1 >= 0 && row+1 < length && col-1 >=0 && col-1 < width)
+		{
+			index = get2dIndex(row+1,col-1);
+			if(index >= 0 && index < (int)data.size())
+			{
+				_cell = data.at((unsigned int)index);
+				return true;
+			}
+		}
+
+		//printf("Error Getting Cell with Info: P(%f,%f) , C(%d,%d), index = %d \n", p.x, p.y, row, col, index);
+		return false;
+	}
+private:
+
+	int get2dIndex(const int& r,const int& c)
+	{
+		return ((r*width) + c);
+	}
+
+};
+
+class ParticleInfo
+{
+public:
+	double vel;
+	int acl; //slow down -1 braking , 0 cruising , 1 accelerating
+	PlannerHNS::LIGHT_INDICATOR indicator;
+	PlannerHNS::STATE_TYPE state;
+
+	ParticleInfo()
+	{
+		vel = 0;
+		acl = 0;
+		indicator = PlannerHNS::INDICATOR_NONE;
+		state = PlannerHNS::FORWARD_STATE;
 	}
 };
 

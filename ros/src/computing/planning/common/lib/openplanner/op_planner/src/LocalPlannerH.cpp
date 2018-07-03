@@ -351,7 +351,7 @@ void LocalPlannerH::ReInitializePlanner(const WayPoint& start_pose)
  	bool bGreenTrafficLight = true;
 
  	if(m_TotalPath.size()>0)
- 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
+ 		distanceToClosestStopLine = PlanningHelpers::GetDistanceToClosestStopLineAndCheck(m_TotalPath.at(pValues->iCurrSafeLane), state, 0, stopLineID, stopSignID, trafficLightID) - critical_long_front_distance;
 
  	if(distanceToClosestStopLine > 0 && distanceToClosestStopLine < pValues->minStoppingDistance)
  	{

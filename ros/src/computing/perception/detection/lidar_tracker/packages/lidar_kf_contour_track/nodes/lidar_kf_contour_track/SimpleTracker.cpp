@@ -505,6 +505,7 @@ void SimpleTracker::AssociateDistanceOnlyAndTrack()
 		double iClosest_obj = -1;
 		double dClosest = m_MAX_ASSOCIATION_DISTANCE;
 		double size_diff = -1;
+		double angle_diff = 0;
 
 		//std::cout << "DetObjSize: " <<  m_DetectedObjects.size() <<  ", TracksSize: " << m_TrackSimply.size() << std::endl;
 		for(unsigned int jj = 0; jj < m_DetectedObjects.size(); jj++)
@@ -518,13 +519,22 @@ void SimpleTracker::AssociateDistanceOnlyAndTrack()
 				d_x = m_DetectedObjects.at(jj).center.pos.x-m_TrackSimply.at(i).obj.center.pos.x;
 				d = hypot(d_y, d_x);
 				double old_size = sqrt(m_TrackSimply.at(i).obj.w*m_TrackSimply.at(i).obj.w + m_TrackSimply.at(i).obj.l*m_TrackSimply.at(i).obj.l + m_TrackSimply.at(i).obj.h*m_TrackSimply.at(i).obj.h);
+				size_diff = fabs(old_size - object_size);
+//				if(m_TrackSimply.at(i).obj.bDirection && m_TrackSimply.at(i).obj.bVelocity && m_TrackSimply.at(i).obj.center.v*3.6 > 3)
+//				{
+//					double a_check =  UtilityHNS::UtilityH::FixNegativeAngle(atan2(d_y, d_x));
+//					double a_old = UtilityHNS::UtilityH::FixNegativeAngle(m_TrackSimply.at(i).obj.center.pos.a);
+//					angle_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(a_check, a_old);
+//				}
+//				else
+//					angle_diff = 0;
 
-				if(d < dClosest)
+				if(d < dClosest && size_diff < m_MAX_ASSOCIATION_SIZE_DIFF)
 				{
 					dClosest = d;
 					iClosest_track = i;
 					iClosest_obj = jj;
-					size_diff = fabs(old_size - object_size);
+
 				}
 				//std::cout << "Test: " << m_TrackSimply.at(i).obj.id << ", MinD: " << d << ", ObjS: " << object_size << ", ObjI: " << jj << ", TrackS: " << old_size << ", TrackI: " << i << std::endl;
 			}
@@ -532,7 +542,7 @@ void SimpleTracker::AssociateDistanceOnlyAndTrack()
 
 		if(iClosest_obj != -1 && iClosest_track != -1 && dClosest < m_MAX_ASSOCIATION_DISTANCE)
 		{
-			std::cout << "MatchObj: " << m_TrackSimply.at(iClosest_track).obj.id << ", MinD: " << dClosest << ", Sdiff: " << size_diff << ", ObjI: " << iClosest_obj <<", TrackI: " << iClosest_track << std::endl;
+			//std::cout << "MatchObj: " << m_TrackSimply.at(iClosest_track).obj.id << ", MinD: " << dClosest << ", Sdiff: " << size_diff << ", ObjI: " << iClosest_obj <<", TrackI: " << iClosest_track << std::endl;
 			m_DetectedObjects.at(iClosest_obj).id = m_TrackSimply.at(iClosest_track).obj.id;
 			MergeObjectAndTrack(m_TrackSimply.at(iClosest_track), m_DetectedObjects.at(iClosest_obj));
 			AssociateToRegions(m_TrackSimply.at(iClosest_track));

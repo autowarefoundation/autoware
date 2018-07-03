@@ -13,9 +13,9 @@
 	<arg name="trust_counter" default="4" />
 		
 	<arg name="enableSimulationMode" default="false" />
-	<arg name="enableStepByStepMode" default="true" />
+	<arg name="enableStepByStepMode" default="false" />
 	
-	<arg name="vector_map_filter_distance" default="2.5" />
+	<arg name="vector_map_filter_distance" default="2.0" />
 	<arg name="enableLogging" default="false" />
 
 

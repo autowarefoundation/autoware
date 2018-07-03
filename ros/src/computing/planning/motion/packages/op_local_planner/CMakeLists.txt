@@ -51,6 +51,8 @@ link_directories(lib)
 
 add_executable(op_trajectory_generator nodes/op_trajectory_generator/op_trajectory_generator.cpp nodes/op_trajectory_generator/op_trajectory_generator_core.cpp)
 target_link_libraries(op_trajectory_generator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(op_trajectory_generator 
-${catkin_EXPORTED_TARGETS}
-)
+
+add_executable(op_common_params nodes/op_common_params/op_common_params.cpp )
+target_link_libraries(op_common_params ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+add_dependencies(op_common_params op_trajectory_generator ${catkin_EXPORTED_TARGETS})

@@ -289,7 +289,7 @@ void MainWindowWrapper::KeyboardExitCommand(unsigned char key, int x, int y)
 
 void MainWindowWrapper::KeyboardCommand(unsigned char key, int x, int y)
 {
-	cout << "Char : " << (int)key <<  endl;
+	//cout << "Char : " << (int)key <<  endl;
 	if(m_DrawAndControl)
 		m_DrawAndControl->OnKeyboardPress(0, key);
 
@@ -303,7 +303,7 @@ void MainWindowWrapper::KeyboardCommand(unsigned char key, int x, int y)
 
 void MainWindowWrapper::KeyboardSpecialCommand(int key, int x, int y)
 {
-	cout << "Control : " << key << endl;
+	//cout << "Control : " << key << endl;
 
 	if(m_DrawAndControl)
 		m_DrawAndControl->OnKeyboardPress(key, 0);
