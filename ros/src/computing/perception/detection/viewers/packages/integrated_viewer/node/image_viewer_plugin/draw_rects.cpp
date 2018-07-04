@@ -9,13 +9,13 @@
 #include "gencolors.cpp"
 #else
 #include <opencv2/contrib/contrib.hpp>
+#include <autoware_msgs/DetectedObjectArray.h>
+
 #endif
 
 namespace integrated_viewer
 {
   const int        DrawRects::kRectangleThickness = 3;
-  const cv::Scalar DrawRects::kBlue               = CV_RGB(0, 0, 255);
-  const cv::Scalar DrawRects::kGreen              = CV_RGB(0, 255, 0);
   
   DrawRects::DrawRects(void) {
     // Generate color map to represent tracked object
@@ -28,102 +28,32 @@ namespace integrated_viewer
   } // DrawRects::DrawRects()
 
 
-  void DrawRects::DrawImageObj(const autoware_msgs::image_obj::ConstPtr& rect_data,
+  void DrawRects::DrawImageObj(const autoware_msgs::DetectedObjectArray::ConstPtr& detected_objects,
                                cv::Mat &image) {
-    if (rect_data == NULL) {
+    if (detected_objects == NULL) {
+        std::cout << "EMPTY objects" << std::endl;
       return;
     }
-
-    cv::Scalar rectangle_color;
-    if (rect_data->type == "car") {
-      rectangle_color = kBlue;
-    } else {
-      rectangle_color = kGreen;
-    }
     
-    // Draw rectangles for each objects
-    for (const auto& rectangle : rect_data->obj) {
+    // Draw rectangles for each object
+    for (const auto& detected_object : detected_objects->objects) {
       // Make label shown on a rectangle
       std::ostringstream label;
-      label << rect_data->type << ":" << std::setprecision(2) << rectangle.score;
+      label << detected_object.label << ":" << std::setprecision(2) << detected_object.score;
 
       // Draw object information label
-      DrawLabel(label.str(), cv::Point(rectangle.x, rectangle.y), image);
+      DrawLabel(label.str(), cv::Point(detected_object.x, detected_object.y), image);
 
       // Draw rectangle
       cv::rectangle(image,
-                    cv::Point(rectangle.x, rectangle.y),
-                    cv::Point(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
-                    rectangle_color,
+                    cv::Point(detected_object.x, detected_object.y),
+                    cv::Point(detected_object.x + detected_object.width, detected_object.y + detected_object.height),
+                    cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
                     kRectangleThickness,
                     CV_AA,
                     0);
     }
   } // DrawRects::DrawImageObj()
-
-
-  void DrawRects::DrawImageObjRanged(const autoware_msgs::image_obj_ranged::ConstPtr& rect_data,
-                                     cv::Mat &image) {
-    if (rect_data == NULL) {
-      return;
-    }
-
-    cv::Scalar rectangle_color;
-    if (rect_data->type == "car") {
-      rectangle_color = kBlue;
-    } else {
-      rectangle_color = kGreen;
-    }
-    
-    // Draw rectangles for each objects
-    for (const auto& ojbect : rect_data->obj) {
-      // Make label shown on a rectangle
-      std::ostringstream label;
-      label << rect_data->type << " : " << std::fixed << std::setprecision(2) << ojbect.range / 100 << " m";
-
-      // Draw object information label
-      DrawLabel(label.str(), cv::Point(ojbect.rect.x, ojbect.rect.y), image);
-
-      // Draw rectangle
-      cv::rectangle(image,
-                    cv::Point(ojbect.rect.x, ojbect.rect.y),
-                    cv::Point(ojbect.rect.x + ojbect.rect.width, ojbect.rect.y + ojbect.rect.height),
-                    rectangle_color,
-                    kRectangleThickness,
-                    CV_AA,
-                    0);
-    }
-  } // DrawRects::DrawImageObjRanged()
-
-
-  void DrawRects::DrawImageObjTracked(const autoware_msgs::image_obj_tracked::ConstPtr& rect_data,
-                                      cv::Mat &image) {
-    if (rect_data == NULL) {
-      return;
-    }
-
-    for (const auto& object : rect_data->rect_ranged) {
-      int index = &object - &(rect_data->rect_ranged[0]);
-      int object_id = rect_data->obj_id[index];
-
-      // Make label shown on a rectangle
-      std::ostringstream label;
-      label << rect_data->type << "_" << object_id << " : " << std::setprecision(2) << rect_data->lifespan[index];
-
-      // Draw object information label
-      DrawLabel(label.str(), cv::Point(object.rect.x, object.rect.y), image);
-      
-      // Draw rectangle
-      cv::rectangle(image,
-                    cv::Point(object.rect.x, object.rect.y),
-                    cv::Point(object.rect.x + object.rect.width, object.rect.y + object.rect.height),
-                    color_map_[object_id],
-                    kRectangleThickness,
-                    CV_AA,
-                    0);
-    }
-  } // DrawRects::DrawImageObjTracked()
-
 
   void DrawRects::DrawLabel(const std::string& label,
                             const cv::Point& rectangle_origin,
