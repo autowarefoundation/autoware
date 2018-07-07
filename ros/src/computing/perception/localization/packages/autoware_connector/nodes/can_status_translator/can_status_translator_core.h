@@ -116,15 +116,16 @@ private:
   VehicleInfo v_info_;
 
   // callbacks
-  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr& msg);
+  void callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr& msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishVelocity(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg);
-  void publishVehicleStatus(const autoware_msgs::CanInfoConstPtr &msg);
+  void publishVelocity(const autoware_msgs::VehicleStatusConstPtr& msg);
+  void publishVelocityViz(const autoware_msgs::VehicleStatusConstPtr& msg);
+  void publishVehicleStatus(const autoware_msgs::CanInfoConstPtr& msg);
 };
 }
 #endif  // CAN_STATUS_TRANSLATOR_CORE_H
