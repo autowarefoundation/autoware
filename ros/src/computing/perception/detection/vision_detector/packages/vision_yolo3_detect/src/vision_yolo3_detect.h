@@ -49,7 +49,8 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <autoware_msgs/ConfigSsd.h>
-#include <autoware_msgs/image_obj.h>
+#include <autoware_msgs/DetectedObject.h>
+#include <autoware_msgs/DetectedObjectArray.h>
 
 #include <rect_class_score.h>
 
@@ -69,20 +70,20 @@ extern "C"
 #define __cplusplus
 }
 
-namespace Yolo3
-{
-    enum YoloDetectorClasses//using coco for default cfg and weights
-    {
-        PERSON, BICYCLE, CAR, MOTORBIKE, AEROPLANE, BUS, TRAIN, TRUCK, BOAT, TRAFFIC_LIGHT,
-        FIRE_HYDRANT, STOP_SIGN, PARKING_METER, BENCH, BIRD, CAT, DOG, HORSE, SHEEP, COW,
-        ELEPHANT, BEAR, ZEBRA, GIRAFFE, BACKPACK, UMBRELLA, HANDBAG, TIE, SUITCASE, FRISBEE,
-        SKIS, SNOWBOARD, SPORTS_BALL, KITE, BASEBALL_BAT, BASEBALL_GLOVE, SKATEBOARD, SURFBOARD, TENNIS_RACKET, BOTTLE,
-        WINE_GLASS, CUP, FORK, KNIFE, SPOON, BOWL, BANANA, APPLE, SANDWICH, ORANGE,
-        BROCCOLI, CARROT, HOT_DOG, PIZZA, DONUT, CAKE, CHAIR, SOFA, POTTEDPLANT, BED,
-        DININGTABLE, TOILET, TVMONITOR, LAPTOP, MOUSE, REMOTE, KEYBOARD, CELL_PHONE, MICROWAVE, OVEN,
-        TOASTER, SINK, REFRIGERATOR, BOOK, CLOCK, VASE, SCISSORS, TEDDY_BEAR, HAIR_DRIER, TOOTHBRUSH,
-    };
-}
+//namespace Yolo3
+//{
+//    enum YoloDetectorClasses//using coco for default cfg and weights
+//    {
+//        PERSON, BICYCLE, CAR, MOTORBIKE, AEROPLANE, BUS, TRAIN, TRUCK, BOAT, TRAFFIC_LIGHT,
+//        FIRE_HYDRANT, STOP_SIGN, PARKING_METER, BENCH, BIRD, CAT, DOG, HORSE, SHEEP, COW,
+//        ELEPHANT, BEAR, ZEBRA, GIRAFFE, BACKPACK, UMBRELLA, HANDBAG, TIE, SUITCASE, FRISBEE,
+//        SKIS, SNOWBOARD, SPORTS_BALL, KITE, BASEBALL_BAT, BASEBALL_GLOVE, SKATEBOARD, SURFBOARD, TENNIS_RACKET, BOTTLE,
+//        WINE_GLASS, CUP, FORK, KNIFE, SPOON, BOWL, BANANA, APPLE, SANDWICH, ORANGE,
+//        BROCCOLI, CARROT, HOT_DOG, PIZZA, DONUT, CAKE, CHAIR, SOFA, POTTEDPLANT, BED,
+//        DININGTABLE, TOILET, TVMONITOR, LAPTOP, MOUSE, REMOTE, KEYBOARD, CELL_PHONE, MICROWAVE, OVEN,
+//        TOASTER, SINK, REFRIGERATOR, BOOK, CLOCK, VASE, SCISSORS, TEDDY_BEAR, HAIR_DRIER, TOOTHBRUSH,
+//    };
+//} // The above is now in rect_class_score.h for convenience
 
 namespace darknet {
     class Yolo3Detector {
@@ -114,8 +115,7 @@ namespace darknet {
 class Yolo3DetectorNode {
     ros::Subscriber subscriber_image_raw_;
     ros::Subscriber subscriber_yolo_config_;
-    ros::Publisher publisher_car_objects_;
-    ros::Publisher publisher_person_objects_;
+    ros::Publisher publisher_objects_;
     ros::NodeHandle node_handle_;
 
     darknet::Yolo3Detector yolo_detector_;
@@ -128,7 +128,7 @@ class Yolo3DetectorNode {
     uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
     uint32_t image_left_right_border_;
 
-    void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::image_obj& out_message, std::string in_class);
+    void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::DetectedObjectArray& out_message);
     void rgbgr_image(image& im);
     image convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg);
     void image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
