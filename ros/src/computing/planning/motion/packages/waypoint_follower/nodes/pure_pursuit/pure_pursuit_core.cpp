@@ -66,7 +66,7 @@ void PurePursuitNode::initForROS()
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
   private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
-  private_nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
+  nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
 
   // setup subscriber
   sub1_ = nh_.subscribe("final_waypoints", 10, &PurePursuitNode::callbackFromWayPoints, this);
@@ -157,9 +157,8 @@ double PurePursuitNode::computeLookaheadDistance() const
   double maximum_lookahead_distance = current_linear_velocity_ * 10;
   double ld = current_linear_velocity_ * lookahead_distance_ratio_;
 
-  return ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_
-        : ld > maximum_lookahead_distance ? maximum_lookahead_distance
-        : ld;
+  return ld < minimum_lookahead_distance_ ? minimum_lookahead_distance_ :
+                                            ld > maximum_lookahead_distance ? maximum_lookahead_distance : ld;
 }
 
 double PurePursuitNode::computeCommandVelocity() const
@@ -176,17 +175,18 @@ double PurePursuitNode::computeCommandAccel() const
   const geometry_msgs::Pose target_pose = pp_.getCurrentWaypoints().at(1).pose.pose;
 
   // v^2 - v0^2 = 2ax
-  const double x =  std::hypot(current_pose.position.x-target_pose.position.x, current_pose.position.y-target_pose.position.y);
+  const double x =
+      std::hypot(current_pose.position.x - target_pose.position.x, current_pose.position.y - target_pose.position.y);
   const double v0 = current_linear_velocity_;
   const double v = computeCommandVelocity();
-  const double a = (v*v - v0*v0) / (2*x);
+  const double a = (v * v - v0 * v0) / (2 * x);
   return a;
 }
 
 double PurePursuitNode::computeAngularGravity(double velocity, double kappa) const
 {
   const double gravity = 9.80665;
-  return (velocity*velocity) / (1.0/kappa*gravity);
+  return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
 void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)
