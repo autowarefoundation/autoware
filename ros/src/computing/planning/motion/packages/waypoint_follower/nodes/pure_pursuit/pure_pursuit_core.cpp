@@ -66,7 +66,7 @@ void PurePursuitNode::initForROS()
   private_nh_.param("is_linear_interpolation", is_linear_interpolation_, bool(true));
   // ROS_INFO_STREAM("is_linear_interpolation : " << is_linear_interpolation_);
   private_nh_.param("publishes_for_steering_robot", publishes_for_steering_robot_, bool(false));
-  private_nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
+  nh_.param("vehicle_info/wheel_base", wheel_base_, double(2.7));
 
   // setup subscriber
   sub1_ = nh_.subscribe("final_waypoints", 10, &PurePursuitNode::callbackFromWayPoints, this);
