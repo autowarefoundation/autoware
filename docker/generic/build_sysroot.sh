@@ -3,7 +3,7 @@
 set -eufo pipefail
 
 # Build Docker Image
-docker build -t autoware-kinetic:sysroot-aarch64 -f Dockerfile.kinetic-sysroot-aarch64 .
+cat Dockerfile.kinetic-sysroot-aarch64 | docker build -t autoware-kinetic:sysroot-aarch64 -
 
 # Fix up symlinks so that they are relative in the sysroot
 docker run --name autoware-kinetic-sysroot-aarch64 autoware-kinetic:sysroot-aarch64 sh -c "\
