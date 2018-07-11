@@ -321,7 +321,7 @@ void Yolo3DetectorNode::Run()
     yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
     ROS_INFO("Initialization complete.");
 
-    publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
+    publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_vision", 1);
 
     ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
     subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo3DetectorNode::image_callback, this);

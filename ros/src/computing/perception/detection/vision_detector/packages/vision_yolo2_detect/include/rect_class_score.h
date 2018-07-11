@@ -37,7 +37,7 @@ public:
 	{
 		switch (class_type)
 		{
-			case Yolo3::PERSON: return "person";
+			case Yolo2::PERSON: return "person";
             case Yolo2::BICYCLE: return "bicycle";
             case Yolo2::CAR: return "car";
             case Yolo2::MOTORBIKE: return "motorbike";

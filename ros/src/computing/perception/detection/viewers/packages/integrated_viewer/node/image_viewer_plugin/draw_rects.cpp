@@ -31,7 +31,6 @@ namespace integrated_viewer
   void DrawRects::DrawImageObj(const autoware_msgs::DetectedObjectArray::ConstPtr& detected_objects,
                                cv::Mat &image) {
     if (detected_objects == NULL) {
-        std::cout << "EMPTY objects" << std::endl;
       return;
     }
     

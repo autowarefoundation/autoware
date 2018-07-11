@@ -67,7 +67,7 @@ class Yolo2DetectorNode
                 obj_msg.label = in_objects[i].GetClassString();
 				//std::cout << "x "<< rect.x<< " y " << rect.y << " w "<< rect.width << " h "<< rect.height<< " s " << rect.score << " c " << in_objects[i].class_type << std::endl;
 
-				out_message.objects.push_back(rect);
+				out_message.objects.push_back(obj_msg);
 
 			}
 		}
@@ -234,7 +234,7 @@ public:
 		yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
 		ROS_INFO("Initialization complete.");
 
-		publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
+		publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_vision", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo2DetectorNode::image_callback, this);
@@ -251,7 +251,7 @@ public:
 
 int main(int argc, char **argv)
 {
-	ros::init(argc, argv, "ssd_unc");
+	ros::init(argc, argv, "yolo2_wa");
 
 	Yolo2DetectorNode app;
 

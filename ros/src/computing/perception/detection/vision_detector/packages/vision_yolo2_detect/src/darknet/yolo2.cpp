@@ -132,11 +132,12 @@ namespace darknet
 				detection.h = b.h;
 				detection.score = prob;
 				detection.class_type = class_id;
-				//std::cout << "Box:"  <<detection.toString() << std::endl;
+				std::cout << "Box:"  <<detection.toString() << std::endl;
 
 				detections.push_back(detection);
 			}
 		}
+		std::cout << detections.size() << std::endl;
 		return detections;
 	}
 }  // namespace darknet
