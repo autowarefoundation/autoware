@@ -208,7 +208,7 @@ public:
             generateColors(colors_, 20);
         #endif
 
-        publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
+        publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_vision", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
