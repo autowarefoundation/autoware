@@ -349,8 +349,6 @@ public:
 
 };
 
-
-
 class Rotation
 {
 public:
@@ -381,8 +379,10 @@ public:
 	double 		laneChangeCost;
 	int 		laneId;
 	int 		id;
-	int 		LeftLaneId;
-	int 		RightLaneId;
+	int 		LeftPointId;
+	int 		RightPointId;
+	int 		LeftLnId;
+	int 		RightLnId;
 	int 		stopLineID;
 	DIRECTION_TYPE bDir;
 	STATE_TYPE	state;
@@ -411,8 +411,10 @@ public:
 		pLeft = 0;
 		pRight = 0;
 		bDir = FORWARD_DIR;
-		LeftLaneId = 0;
-		RightLaneId = 0;
+		LeftPointId = 0;
+		RightPointId = 0;
+		LeftLnId = 0;
+		RightLnId = 0;
 		timeCost = 0;
 		totalReward = 0;
 		collisionCost = 0;
@@ -441,8 +443,10 @@ public:
 		pLeft = 0;
 		pRight = 0;
 		bDir = FORWARD_DIR;
-		LeftLaneId = 0;
-		RightLaneId = 0;
+		LeftPointId = 0;
+		RightPointId = 0;
+		LeftLnId = 0;
+		RightLnId = 0;
 		timeCost = 0;
 		totalReward = 0;
 		collisionCost = 0;
@@ -927,6 +931,8 @@ public:
 		smoothingDataWeight				= 0.47;
 		smoothingSmoothWeight			= 0.2;
 		smoothingToleranceError			= 0.05;
+
+		stopSignStopTime 				= 2.0;
 
 		additionalBrakingDistance		= 10.0;
 		verticalSafetyDistance 			= 0.0;

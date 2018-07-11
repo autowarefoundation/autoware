@@ -62,6 +62,7 @@ public:
 	bool    bEnableSimulation;
 	bool 	bEnableStepByStep;
 	bool 	bEnableLogging;
+	bool bEnableTTC;
 
 	PerceptionParams()
 	{
@@ -76,6 +77,7 @@ public:
 		bEnableStepByStep = false;
 		bEnableSimulation = false;
 		bEnableLogging = false;
+		bEnableTTC = false;
 	}
 };
 
@@ -100,6 +102,10 @@ protected:
 
 	std::vector<visualization_msgs::MarkerArray> m_MatchingInfoDummy;
 	std::vector<visualization_msgs::MarkerArray> m_MatchingInfoActual;
+
+
+	visualization_msgs::MarkerArray m_TTC_Path;
+	visualization_msgs::Marker m_TTC_Info;
 
 	std::vector<std::string>    m_LogData;
 	PlannerHNS::MAP_SOURCE_TYPE m_MapType;
@@ -127,6 +133,7 @@ protected:
 
 	ros::Publisher pub_DetectedPolygonsRviz;
 	ros::Publisher pub_TrackedObstaclesRviz;
+	ros::Publisher pub_TTC_PathRviz;
 
 	// define subscribers.
 	ros::Subscriber sub_cloud_clusters;
@@ -141,6 +148,8 @@ protected:
 	void VisualizeLocalTracking();
 	void ImportCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters);
 	bool IsCar(const PlannerHNS::DetectedObject& obj, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map);
+	void CalculateTTC(const std::vector<PlannerHNS::DetectedObject>& objs, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map);
+	void GetFrontTrajectories(std::vector<PlannerHNS::Lane*>& lanes, const PlannerHNS::WayPoint& currState, const double& max_distance, std::vector<std::vector<PlannerHNS::WayPoint> >& trajectories);
 	void ReadNodeParams();
 	void ReadCommonParams();
 	void LogAndSend();

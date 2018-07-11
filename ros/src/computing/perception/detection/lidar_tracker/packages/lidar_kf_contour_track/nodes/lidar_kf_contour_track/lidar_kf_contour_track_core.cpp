@@ -33,6 +33,7 @@
 #include "lidar_kf_contour_track_core.h"
 #include "op_ros_helpers/op_RosHelpers.h"
 #include "op_planner/MappingHelpers.h"
+#include "op_planner/PlannerH.h"
 
 namespace ContourTrackerNS
 {
@@ -67,6 +68,7 @@ ContourTracker::ContourTracker()
 	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("op_planner_tracked_boxes", 1);
+	pub_TTC_PathRviz		= nh.advertise<visualization_msgs::MarkerArray>("ttc_direct_path", 1);
 
 
 	m_nDummyObjPerRep = 150;
@@ -168,6 +170,8 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 
 		LogAndSend();
 		VisualizeLocalTracking();
+
+		CalculateTTC(m_ObstacleTracking.m_DetectedObjects, m_CurrentPos, m_Map);
 	}
 }
 
@@ -409,6 +413,86 @@ void ContourTracker::LogAndSend()
 	m_OutPutResults.header.stamp  = ros::Time();
 
 	pub_AllTrackedObjects.publish(m_OutPutResults);
+}
+
+void ContourTracker::GetFrontTrajectories(std::vector<PlannerHNS::Lane*>& lanes, const PlannerHNS::WayPoint& currState, const double& max_distance, std::vector<std::vector<PlannerHNS::WayPoint> >& trajectories)
+{
+	double min_d = DBL_MAX;
+	PlannerHNS::WayPoint* pClosest = nullptr;
+	for(unsigned int i =0 ; i < lanes.size(); i++)
+	{
+		PlannerHNS::RelativeInfo info;
+		PlannerHNS::PlanningHelpers::GetRelativeInfoLimited(lanes.at(i)->points, currState, info);
+		PlannerHNS::WayPoint wp = lanes.at(i)->points.at(info.iFront);
+
+		if(!info.bAfter && !info.bBefore && fabs(info.perp_distance) < min_d)
+		{
+			min_d = fabs(info.perp_distance);
+			pClosest = &lanes.at(i)->points.at(info.iBack);
+		}
+	}
+
+	if(pClosest == nullptr) return;
+
+	PlannerHNS::PlannerH planner;
+	std::vector<PlannerHNS::WayPoint*> closest_pts;
+	closest_pts.push_back(pClosest);
+	planner.PredictTrajectoriesUsingDP(currState, closest_pts, max_distance, trajectories, false, false);
+
+}
+
+void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>& objs, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map)
+{
+	std::vector<std::vector<PlannerHNS::WayPoint> > paths;
+	GetFrontTrajectories(m_ClosestLanesList, currState, m_Params.DetectionRadius, paths);
+
+	double min_d = DBL_MAX;
+	int closest_obj_id = -1;
+	int closest_path_id = -1;
+	int i_start = -1;
+	int i_end = -1;
+
+
+	for(unsigned int i_obj = 0; i_obj < objs.size(); i_obj++)
+	{
+		for(unsigned int i =0 ; i < paths.size(); i++)
+		{
+			PlannerHNS::RelativeInfo obj_info, car_info;
+			PlannerHNS::PlanningHelpers::GetRelativeInfoLimited(paths.at(i), objs.at(i_obj).center , obj_info);
+
+			if(!obj_info.bAfter && !obj_info.bBefore && fabs(obj_info.perp_distance) < m_MapFilterDistance)
+			{
+				PlannerHNS::PlanningHelpers::GetRelativeInfoLimited(paths.at(i), currState , car_info);
+				double longitudinalDist = PlannerHNS::PlanningHelpers::GetExactDistanceOnTrajectory(paths.at(i), car_info, obj_info);
+				if(longitudinalDist  < min_d)
+				{
+					min_d = longitudinalDist;
+					closest_obj_id = i_obj;
+					closest_path_id = i;
+					i_start = car_info.iFront;
+					i_end = obj_info.iBack;
+				}
+			}
+		}
+	}
+
+	std::vector<PlannerHNS::WayPoint> direct_paths;
+	if(closest_path_id >= 0 && closest_obj_id >= 0)
+	{
+		for(unsigned int i=i_start; i<i_end; i++)
+		{
+			direct_paths.push_back(paths.at(closest_path_id).at(i));
+		}
+	}
+
+	cout << "TTC Path Size: " << direct_paths.size() << endl;
+
+	//Visualize Direct Path
+	m_TTC_Path.markers.clear();
+	if(direct_paths.size() == 0)
+		direct_paths.push_back(currState);
+	PlannerHNS::RosHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
+	pub_TTC_PathRviz.publish(m_TTC_Path);
 }
 
 void ContourTracker::MainLoop()

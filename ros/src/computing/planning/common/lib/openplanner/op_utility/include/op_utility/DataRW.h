@@ -76,16 +76,6 @@ protected:
 
 };
 
-//class GPSLocalizerReader : public SimpleReaderBase
-//{
-//	public:
-//		GPSLocalizerReader(const std::string& fileName) : SimpleReaderBase(fileName){}
-//		~GPSLocalizerReader(){}
-//
-//		bool ReadNextLine( MsgEstPose& pos, double& logTime);
-//		int ReadAllData(vector<pair<double,  MsgEstPose> >& pos_list);
-//};
-//
 class GPSDataReader : public SimpleReaderBase
 {
 public:
@@ -106,27 +96,6 @@ public:
 	bool ReadNextLine(GPSBasicData& data);
 	int ReadAllData(std::vector<GPSBasicData>& data_list);
 };
-
-//
-//class VehicleStateReader : public SimpleReaderBase
-//{
-//	public:
-//	VehicleStateReader(const string& fileName) : SimpleReaderBase(fileName){}
-//	~VehicleStateReader(){}
-//
-//	bool ReadNextLine( MsgVehicleStatus& state, double& logTime);
-//	int ReadAllData(vector<pair<double,  MsgVehicleStatus> >& state_list);
-//};
-//
-//class MovingObjectsReader : public SimpleReaderBase
-//{
-//	public:
-//	MovingObjectsReader(const string& fileName) : SimpleReaderBase(fileName, 2, 1, 28, 4){}
-//	~MovingObjectsReader(){}
-//
-//	bool ReadNextLine( MsgMovingObject& state, double& logTime);
-//	int ReadAllData(vector<pair<double,  MsgMovingObject> >& state_list);
-//};
 
 class SimulationFileReader : public SimpleReaderBase
 {

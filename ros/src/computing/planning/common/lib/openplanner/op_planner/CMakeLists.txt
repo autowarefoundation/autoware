@@ -23,22 +23,25 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -g -fPIC ${CMAKE_CXX_FLAGS}")
 
 include_directories(${catkin_INCLUDE_DIRS}
 		include
 )
 
 set(PLANNERH_SRC
+		src/BehaviorPrediction.cpp 
 		src/BehaviorStateMachine.cpp
-		src/MappingHelpers.cpp
-		src/RSPlanner.cpp		
-		src/MatrixOperations.cpp
-		src/TrajectoryCosts.cpp		
-		src/PlannerH.cpp		
+		src/DecisionMaker.cpp
 		src/LocalPlannerH.cpp
-		src/PlanningHelpers.cpp
-		src/TrajectoryPrediction.cpp
+		src/MappingHelpers.cpp
+		src/MatrixOperations.cpp
+		src/PassiveDecisionMaker.cpp
+		src/PlannerH.cpp		
+		src/PlanningHelpers.cpp				
+		src/SimuDecisionMaker.cpp
+		src/TrajectoryCosts.cpp
+		src/TrajectoryDynamicCosts.cpp
 )
 
 ## Declare a cpp library

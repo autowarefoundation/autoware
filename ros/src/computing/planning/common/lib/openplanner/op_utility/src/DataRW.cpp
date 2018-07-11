@@ -497,6 +497,8 @@ int AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
 
 AisanNodesFileReader::AisanNode* AisanNodesFileReader::GetDataRowById(int _nid)
 {
+	if(m_data_map.size()==0) return nullptr;
+
 	int index = _nid-m_min_id;
 	if(index >= 0 && index < m_data_map.size())
 	{
@@ -571,6 +573,8 @@ int AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
 
 AisanPointsFileReader::AisanPoints* AisanPointsFileReader::GetDataRowById(int _pid)
 {
+	if(m_data_map.size()==0) return nullptr;
+
 	int index = _pid-m_min_id;
 	if(index >= 0 && index < m_data_map.size())
 	{
@@ -639,6 +643,8 @@ int AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
 
 AisanLinesFileReader::AisanLine* AisanLinesFileReader::GetDataRowById(int _lid)
 {
+	if(m_data_map.size()==0) return nullptr;
+
 	int index = _lid-m_min_id;
 	if(index >= 0 && index < m_data_map.size())
 	{
@@ -821,6 +827,8 @@ int AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
 
 AisanLanesFileReader::AisanLane* AisanLanesFileReader::GetDataRowById(int _lnid)
 {
+	if(m_data_map.size()==0) return nullptr;
+
 int index = _lnid-m_min_id;
 if(index >= 0 && index < m_data_map.size())
 {

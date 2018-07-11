@@ -13,10 +13,8 @@
 using namespace UtilityHNS;
 using namespace std;
 
-
-
-namespace PlannerHNS {
-
+namespace PlannerHNS
+{
 
 std::vector<std::pair<GPSPoint, GPSPoint> > PlanningHelpers::m_TestingClosestPoint;
 
@@ -177,7 +175,7 @@ bool PlanningHelpers::GetRelativeInfoLimited(const std::vector<WayPoint>& trajec
 					  (trajectory.at(0).pos.z+trajectory.at(1).pos.z)/2.0, trajectory.at(0).pos.a);
 		_trajectory.push_back(p0);
 		_trajectory.push_back(p1);
-		_trajectory.push_back(trajectory.at(0));
+		_trajectory.push_back(trajectory.at(1));
 
 		info.iFront = GetClosestNextPointIndexFast(_trajectory, p, prevIndex);
 		if(info.iFront > 0)
@@ -1788,12 +1786,12 @@ std::vector<int> PlanningHelpers::GetUniqueLeftRightIds(const std::vector<WayPoi
 	 vector<int> sideLanes;
 	for(unsigned int iwp = 0; iwp < path.size(); iwp++)
 	 {
-		 if(path.at(iwp).LeftLaneId>0)
+		 if(path.at(iwp).LeftPointId>0)
 		 {
 			 bool bFound = false;
 			 for(unsigned int is = 0 ; is < sideLanes.size(); is++)
 			 {
-				 if(sideLanes.at(is) == path.at(iwp).LeftLaneId)
+				 if(sideLanes.at(is) == path.at(iwp).LeftPointId)
 				 {
 					 bFound = true;
 					 break;
@@ -1801,15 +1799,15 @@ std::vector<int> PlanningHelpers::GetUniqueLeftRightIds(const std::vector<WayPoi
 			 }
 
 			 if(!bFound)
-				 sideLanes.push_back(path.at(iwp).LeftLaneId);
+				 sideLanes.push_back(path.at(iwp).LeftPointId);
 		 }
 
-		 if(path.at(iwp).RightLaneId>0)
+		 if(path.at(iwp).RightPointId>0)
 		 {
 			 bool bFound = false;
 			 for(unsigned int is = 0 ; is < sideLanes.size(); is++)
 			 {
-				 if(sideLanes.at(is) == path.at(iwp).RightLaneId)
+				 if(sideLanes.at(is) == path.at(iwp).RightPointId)
 				 {
 					 bFound = true;
 					 break;
@@ -1817,7 +1815,7 @@ std::vector<int> PlanningHelpers::GetUniqueLeftRightIds(const std::vector<WayPoi
 			 }
 
 			 if(!bFound)
-				 sideLanes.push_back(path.at(iwp).RightLaneId);
+				 sideLanes.push_back(path.at(iwp).RightPointId);
 		 }
 
 		 //RemoveWithValue(sideLanes, path.at(iwp).laneId);
@@ -1966,6 +1964,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 	all_cells_to_delete.push_back(wp);
 
 	double 		distance 		= 0;
+	double 		before_change_distance	= 0;
 	WayPoint* 	pGoalCell 		= 0;
 	double 		nCounter 		= 0;
 
@@ -2003,12 +2002,13 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 		else
 		{
 
-			if(pH->pLeft && !CheckLaneExits(all_cells_to_delete, pH->pLeft->pLane) && bEnableLaneChange)
+			if(pH->pLeft && !CheckLaneExits(all_cells_to_delete, pH->pLeft->pLane) && !CheckNodeExits(all_cells_to_delete, pH->pLeft) && bEnableLaneChange && before_change_distance > LANE_CHANGE_MIN_DISTANCE)
 			{
 				wp = new WayPoint();
 				*wp = *pH->pLeft;
 				double d = hypot(wp->pos.y - pH->pos.y, wp->pos.x - pH->pos.x);
 				distance += d;
+				before_change_distance = -LANE_CHANGE_MIN_DISTANCE*3;
 
 				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 				{
@@ -2024,12 +2024,13 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 				all_cells_to_delete.push_back(wp);
 			}
 
-			if(pH->pRight && !CheckLaneExits(all_cells_to_delete, pH->pRight->pLane) && bEnableLaneChange)
+			if(pH->pRight && !CheckLaneExits(all_cells_to_delete, pH->pRight->pLane) && !CheckNodeExits(all_cells_to_delete, pH->pRight) && bEnableLaneChange && before_change_distance > LANE_CHANGE_MIN_DISTANCE)
 			{
 				wp = new WayPoint();
 				*wp = *pH->pRight;
 				double d = hypot(wp->pos.y - pH->pos.y, wp->pos.x - pH->pos.x);
 				distance += d;
+				before_change_distance = -LANE_CHANGE_MIN_DISTANCE*3;
 
 				for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 				{
@@ -2053,6 +2054,7 @@ WayPoint* PlanningHelpers::BuildPlanningSearchTreeV2(WayPoint* pStart,
 
 					double d = hypot(wp->pos.y - pH->pos.y, wp->pos.x - pH->pos.x);
 					distance += d;
+					before_change_distance += d;
 
 					for(unsigned int a = 0; a < wp->actionCost.size(); a++)
 					{
@@ -2213,6 +2215,7 @@ int PlanningHelpers::PredictiveIgnorIdsDP(WayPoint* pStart, const double& Distan
 		WayPoint* pZero = 0;
 		WayPoint* wp    = new WayPoint();
 		*wp = *pStart;
+		wp->cost = 0;
 		wp->pLeft = 0;
 		wp->pRight = 0;
 		nextLeafToTrace.push_back(make_pair(pZero, wp));
@@ -2372,7 +2375,7 @@ WayPoint* PlanningHelpers::CheckNodeExits(const vector<WayPoint*>& nodes, const 
 
 	for(unsigned int i=0; i< nodes.size(); i++)
 	{
-		if(nodes.at(i)->id == pL->id)
+		if(nodes.at(i)->laneId == pL->laneId && nodes.at(i)->id == pL->id)
 			return nodes.at(i);
 	}
 
@@ -2544,7 +2547,7 @@ void PlanningHelpers::ExtractPlanAlernatives(const std::vector<WayPoint>& single
 void PlanningHelpers::TraversePathTreeBackwards(WayPoint* pHead, WayPoint* pStartWP,const vector<int>& globalPathIds,
 		vector<WayPoint>& localPath, std::vector<std::vector<WayPoint> >& localPaths)
 {
-	if(pHead != NULL && pHead != pStartWP)
+	if(pHead != NULL && pHead->id != pStartWP->id)
 	{
 		if(pHead->pBacks.size()>0)
 		{

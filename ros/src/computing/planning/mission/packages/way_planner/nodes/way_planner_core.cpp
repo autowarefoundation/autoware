@@ -366,7 +366,7 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 	std::vector<UtilityHNS::AisanRoadEdgeFileReader::AisanRoadEdge> roadedge_data;
 	std::vector<UtilityHNS::AisanWayareaFileReader::AisanWayarea> way_area;
 	std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk> crossing;
-	std::vector<UtilityHNS::AisanNodesFileReader::AisanNode > nodes_data;
+	std::vector<UtilityHNS::AisanNodesFileReader::AisanNode> nodes_data;
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);

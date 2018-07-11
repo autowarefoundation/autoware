@@ -24,6 +24,7 @@ namespace PlannerHNS {
 #define LANE_CHANGE_SPEED_FACTOR 0.5
 #define LANE_CHANGE_COST 3.0 // meters
 #define BACKUP_STRAIGHT_PLAN_DISTANCE 75 //meters
+#define LANE_CHANGE_MIN_DISTANCE 5
 
 class PlanningHelpers
 {

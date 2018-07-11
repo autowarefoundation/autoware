@@ -41,18 +41,10 @@ include_directories(${catkin_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
         )
 
-set(SIMUH_SRC
-        src/AlternativeVisualizer.cpp
-        src/CarState.cpp
-        src/DrawObjBase.cpp
-        src/DrawingHelpers.cpp
-        src/Graph2dBase.cpp
-        src/PlannerTestDraw.cpp
+set(SIMUH_SRC        
         src/SimpleTracker.cpp
         src/SimulatedTrajectoryFollower.cpp
-        src/TrajectoryFollower.cpp
-        src/glm.cpp
-        src/MainWindowWrapper.cpp
+        src/TrajectoryFollower.cpp        
         )
 
 ## Declare a cpp library

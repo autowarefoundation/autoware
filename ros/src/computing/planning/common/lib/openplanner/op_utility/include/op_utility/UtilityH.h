@@ -1,9 +1,8 @@
-/*
- * UtilityH.h
- *
- *  Created on: May 14, 2016
- *      Author: hatem
- */
+
+/// \file UtilityH.h
+/// \brief General Math and Control utility functions
+/// \author Hatem Darweesh
+/// \date May 14, 2016
 
 #ifndef UTILITYH_H_
 #define UTILITYH_H_

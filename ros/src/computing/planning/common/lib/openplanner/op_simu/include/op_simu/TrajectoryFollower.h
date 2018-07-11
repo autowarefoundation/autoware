@@ -1,9 +1,9 @@
-/*
- * TrajectoryFollower.h
- *
- *  Created on: Jun 18, 2016
- *      Author: hatem
- */
+
+/// \file TrajectoryFollower.h
+/// \brief PID based trajectory follower
+/// \author Hatem Darweesh
+/// \date Jun 18, 2016
+
 
 #ifndef TRAJECTORYFOLLOWER_H_
 #define TRAJECTORYFOLLOWER_H_
