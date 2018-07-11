@@ -4,7 +4,8 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include <autoware_msgs/ConfigSsd.h>
-#include <autoware_msgs/image_obj.h>
+#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_msgs/DetectedObject.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
@@ -25,27 +26,11 @@
 
 #include "darknet/yolo2.h"
 
-namespace Yolo2
-{
-	enum YoloDetectorClasses//using coco for default cfg and weights
-	{
-		PERSON, BICYCLE, CAR, MOTORBIKE, AEROPLANE, BUS, TRAIN, TRUCK, BOAT, TRAFFIC_LIGHT,
-		FIRE_HYDRANT, STOP_SIGN, PARKING_METER, BENCH, BIRD, CAT, DOG, HORSE, SHEEP, COW,
-		ELEPHANT, BEAR, ZEBRA, GIRAFFE, BACKPACK, UMBRELLA, HANDBAG, TIE, SUITCASE, FRISBEE,
-		SKIS, SNOWBOARD, SPORTS_BALL, KITE, BASEBALL_BAT, BASEBALL_GLOVE, SKATEBOARD, SURFBOARD, TENNIS_RACKET, BOTTLE,
-		WINE_GLASS, CUP, FORK, KNIFE, SPOON, BOWL, BANANA, APPLE, SANDWICH, ORANGE,
-		BROCCOLI, CARROT, HOT_DOG, PIZZA, DONUT, CAKE, CHAIR, SOFA, POTTEDPLANT, BED,
-		DININGTABLE, TOILET, TVMONITOR, LAPTOP, MOUSE, REMOTE, KEYBOARD, CELL_PHONE, MICROWAVE, OVEN,
-		TOASTER, SINK, REFRIGERATOR, BOOK, CLOCK, VASE, SCISSORS, TEDDY_BEAR, HAIR_DRIER, TOOTHBRUSH,
-	};
-}
-
 class Yolo2DetectorNode
 {
 	ros::Subscriber subscriber_image_raw_;
 	ros::Subscriber subscriber_yolo_config_;
-	ros::Publisher publisher_car_objects_;
-	ros::Publisher publisher_person_objects_;
+	ros::Publisher publisher_objects_;
 	ros::NodeHandle node_handle_;
 
 	darknet::Yolo2Detector yolo_detector_;
@@ -58,49 +43,31 @@ class Yolo2DetectorNode
 	uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
 	uint32_t image_left_right_border_;
 
-	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::image_obj& out_message, std::string in_class)
+	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::DetectedObjectArray& out_message)
 	{
 		for (unsigned int i = 0; i < in_objects.size(); ++i)
 		{
-			if ( (in_objects[i].score > score_threshold_)
-				&& (	(in_class == "car"
-							&& (in_objects[i].class_type == Yolo2::CAR
-								|| in_objects[i].class_type == Yolo2::BUS
-								|| in_objects[i].class_type == Yolo2::TRUCK
-								|| in_objects[i].class_type == Yolo2::MOTORBIKE
-								)
-						)
-					|| (in_class == "person"
-							&& (in_objects[i].class_type == Yolo2::PERSON
-								|| in_objects[i].class_type == Yolo2::BICYCLE
-								|| in_objects[i].class_type == Yolo2::DOG
-								|| in_objects[i].class_type == Yolo2::CAT
-								|| in_objects[i].class_type == Yolo2::HORSE
-								)
-						)
-					)
-				)//check if the score is larger than minimum required
 			{
-				autoware_msgs::image_rect rect;
+				autoware_msgs::DetectedObject obj_msg;
 
-				rect.x = (in_objects[i].x * darknet_image.w /image_ratio_) - image_left_right_border_/image_ratio_;
-				rect.y = (in_objects[i].y * darknet_image.h /image_ratio_) - image_top_bottom_border_/image_ratio_;
-				rect.width = in_objects[i].w * darknet_image.w/image_ratio_;
-				rect.height = in_objects[i].h * darknet_image.h/image_ratio_;
+				obj_msg.x = (in_objects[i].x * darknet_image.w /image_ratio_) - image_left_right_border_/image_ratio_;
+				obj_msg.y = (in_objects[i].y * darknet_image.h /image_ratio_) - image_top_bottom_border_/image_ratio_;
+				obj_msg.width = in_objects[i].w * darknet_image.w/image_ratio_;
+				obj_msg.height = in_objects[i].h * darknet_image.h/image_ratio_;
 				if (in_objects[i].x < 0)
-					rect.x = 0;
+					obj_msg.x = 0;
 				if (in_objects[i].y < 0)
-					rect.y = 0;
+					obj_msg.y = 0;
 				if (in_objects[i].w < 0)
-					rect.width = 0;
+					obj_msg.width = 0;
 				if (in_objects[i].h < 0)
-					rect.height = 0;
+					obj_msg.height = 0;
 
-				rect.score = in_objects[i].score;
-
+				obj_msg.score = in_objects[i].score;
+                obj_msg.label = in_objects[i].GetClassString();
 				//std::cout << "x "<< rect.x<< " y " << rect.y << " w "<< rect.width << " h "<< rect.height<< " s " << rect.score << " c " << in_objects[i].class_type << std::endl;
 
-				out_message.obj.push_back(rect);
+				out_message.objects.push_back(rect);
 
 			}
 		}
@@ -200,26 +167,19 @@ class Yolo2DetectorNode
 		//ROS_INFO("Detections: %ud", (unsigned int)detections.size());
 
 		//Prepare Output message
-		autoware_msgs::image_obj output_car_message;
-		autoware_msgs::image_obj output_person_message;
-		output_car_message.header = in_image_message->header;
-		output_car_message.type = "car";
+		autoware_msgs::DetectedObjectArray output_message;
+        output_message.header = in_image_message->header;
 
-		output_person_message.header = in_image_message->header;
-		output_person_message.type = "person";
+        convert_rect_to_image_obj(detections, output_message);
 
-		convert_rect_to_image_obj(detections, output_car_message, "car");
-		convert_rect_to_image_obj(detections, output_person_message, "person");
-
-		publisher_car_objects_.publish(output_car_message);
-		publisher_person_objects_.publish(output_person_message);
+        publisher_objects_.publish(output_message);
 
 		free(darknet_image.data);
 	}
 
 	void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
 	{
-		score_threshold_ 	= param->score_threshold;
+		score_threshold_ = param->score_threshold;
 	}
 
 public:
@@ -274,8 +234,7 @@ public:
 		yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
 		ROS_INFO("Initialization complete.");
 
-		publisher_car_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_car/image_obj", 1);
-		publisher_person_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_person/image_obj", 1);
+		publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo2DetectorNode::image_callback, this);
