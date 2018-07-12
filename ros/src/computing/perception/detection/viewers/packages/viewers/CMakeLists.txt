@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
         )
 
 find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
 
 catkin_package(
         CATKIN_DEPENDS roscpp sensor_msgs std_msgs autoware_msgs cv_bridge image_transport
@@ -18,6 +19,7 @@ add_executable(image_viewer nodes/image_viewer/image_viewer.cpp)
 target_link_libraries(image_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(image_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -25,6 +27,7 @@ add_executable(scan_image_viewer nodes/scan_image_viewer/scan_image_viewer.cpp)
 target_link_libraries(scan_image_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(scan_image_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -32,6 +35,7 @@ add_executable(scan_image_d_viewer nodes/scan_image_d_viewer/scan_image_d_viewer
 target_link_libraries(scan_image_d_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(scan_image_d_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -39,6 +43,7 @@ add_executable(points_image_viewer nodes/points_image_viewer/points_image_viewer
 target_link_libraries(points_image_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(points_image_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -46,6 +51,7 @@ add_executable(image_d_viewer nodes/image_d_viewer/image_d_viewer.cpp)
 target_link_libraries(image_d_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(image_d_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -53,6 +59,7 @@ add_executable(points_image_d_viewer nodes/points_image_d_viewer/points_image_d_
 target_link_libraries(points_image_d_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(points_image_d_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -60,6 +67,7 @@ add_executable(vscan_image_viewer nodes/vscan_image_viewer/vscan_image_viewer.cp
 target_link_libraries(vscan_image_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(vscan_image_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -67,6 +75,7 @@ add_executable(vscan_image_d_viewer nodes/vscan_image_d_viewer/vscan_image_d_vie
 target_link_libraries(vscan_image_d_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(vscan_image_d_viewer ${catkin_EXPORTED_TARGETS})
 
@@ -78,6 +87,7 @@ add_executable(traffic_light_viewer nodes/traffic_light_viewer/traffic_light_vie
 target_link_libraries(traffic_light_viewer
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(traffic_light_viewer ${catkin_EXPORTED_TARGETS})
 
