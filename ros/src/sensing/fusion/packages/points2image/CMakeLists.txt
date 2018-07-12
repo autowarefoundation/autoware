@@ -25,6 +25,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(GLUT REQUIRED)
+find_package(OpenGL REQUIRED)
+
 catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
@@ -68,6 +71,7 @@ target_link_libraries(points2vscan
         Qt5::Core
         Qt5::Widgets
         points_image
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(points2vscan
         ${catkin_EXPORTED_TARGETS}
