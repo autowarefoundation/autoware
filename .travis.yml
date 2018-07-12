@@ -57,7 +57,9 @@ before_script:
     else
       cd src;
       wstool init;
-      if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
+      if [[ -f $ROSINSTALL_FILE ]] ; then
+        wstool merge $ROSINSTALL_FILE;
+      fi;
       wstool up;
       cd ..;
       rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO;
