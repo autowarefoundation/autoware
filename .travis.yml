@@ -14,6 +14,13 @@ matrix:
       os: linux
       sudo: required
       env: ROS_DISTRO=indigo
+    - dist: xenial
+      compiler: gcc
+      os: linux
+      sudo: required
+      services:
+        - docker
+      env: ROS_DISTRO=kinetic CROSS_COMPILE=1
 notifications:
     slack: star4:911NA0lU8gDHitCKLto9LzPJ
 env:
@@ -45,13 +52,18 @@ install:
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
 before_script:
   # source dependencies: install using wstool.
-  - cd src
-  - wstool init
-  - if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
-  - wstool up
+  - if [ $CROSS_COMPILE == "1" ]; then
+    cd docker/generic
+    ./build_cross_aarch64.sh
+    else
+    cd src
+    wstool init
+    if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
+    wstool up
   # package depdencies: install using rosdep.
-  - cd ..
-  - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+    cd ..
+    rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+    fi
 
 # Compile and test (mark the build as failed if any step fails). If the
 # CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
@@ -64,7 +76,11 @@ before_script:
 script:
   - catkin_make clean
   - source devel/setup.bash
-  - catkin_make -j4
+  - if [ $CROSS_COMPILE == "1" ]; then
+    docker run -v $TRAVIS_BUILD_DIR:$TRAVIS_BUILD_DIR -w $TRAVIS_BUILD_DIR/ros sh -c "catkin_make -DCMAKE_TOOLCHAIN_FILE=/sysroot/aarch64/aarch64_toolchain.cmake -j4"
+    else
+    catkin_make -j4
+    fi
 
 #sudo: required
 #dist: trusty
