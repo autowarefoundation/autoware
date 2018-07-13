@@ -34,10 +34,11 @@
  *  Created on: April 4th, 2018
  */
 #include "vision_yolo3_detect.h"
+
 #if (CV_MAJOR_VERSION <= 2)
-    #include <opencv2/contrib/contrib.hpp>
+#include <opencv2/contrib/contrib.hpp>
 #else
-    #include "gencolors.cpp"
+#include "gencolors.cpp"
 #endif
 
 namespace darknet
@@ -176,11 +177,11 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
             if (in_objects[i].h < 0)
                 obj.height = 0;
 
-//            int class_idx = in_objects[i].GetClassInt();
-//            obj.color.r = colors_[class_idx].val[0];
-//            obj.color.g = colors_[class_idx].val[1];
-//            obj.color.b = colors_[class_idx].val[2];
-//            obj.color.a = 1.0f;
+            int class_idx = in_objects[i].GetClassInt();
+            obj.color.r = colors_[in_objects[i].class_type].val[0];
+            obj.color.g = colors_[in_objects[i].class_type].val[1];
+            obj.color.b = colors_[in_objects[i].class_type].val[2];
+            obj.color.a = 1.0f;
 //            ROS_INFO("Class IDX: %i", class_idx);
 
             obj.score = in_objects[i].score;
@@ -210,10 +211,10 @@ image Yolo3DetectorNode::convert_ipl_to_image(const sensor_msgs::ImageConstPtr& 
     cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, "bgr8");//toCvCopy(image_source, sensor_msgs::image_encodings::BGR8);
     cv::Mat mat_image = cv_image->image;
 
-    uint32_t network_input_width = yolo_detector_.get_network_width();
-    uint32_t network_input_height = yolo_detector_.get_network_height();
+    int network_input_width = yolo_detector_.get_network_width();
+    int network_input_height = yolo_detector_.get_network_height();
 
-    uint32_t image_height = msg->height,
+    int image_height = msg->height,
             image_width = msg->width;
 
     IplImage ipl_image;
@@ -232,7 +233,6 @@ image Yolo3DetectorNode::convert_ipl_to_image(const sensor_msgs::ImageConstPtr& 
                            image_top_bottom_border_, image_top_bottom_border_,
                            image_left_right_border_, image_left_right_border_,
                            cv::BORDER_CONSTANT, cv::Scalar(0,0,0));
-
     }
     else
         final_mat = mat_image;
@@ -261,20 +261,16 @@ image Yolo3DetectorNode::convert_ipl_to_image(const sensor_msgs::ImageConstPtr& 
 
 void Yolo3DetectorNode::image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 {
-    ROS_INFO("Beginning of the image callback");
     std::vector< RectClassScore<float> > detections;
 
-    ROS_INFO("RectClassScores were defined");
     darknet_image_ = convert_ipl_to_image(in_image_message);
 
-    ROS_INFO("Image converted for YOLO");
     detections = yolo_detector_.detect(darknet_image_);
 
     //Prepare Output message
     autoware_msgs::DetectedObjectArray output_message;
     output_message.header = in_image_message->header;
 
-    ROS_INFO("Publishing detections");
     convert_rect_to_image_obj(detections, output_message);
 
     publisher_objects_.publish(output_message);
@@ -339,7 +335,7 @@ void Yolo3DetectorNode::Run()
 
     ROS_INFO("Initializating Colors");
     #if (CV_MAJOR_VERSION <= 2)
-        cv::generateColors(colors_, 20);
+        cv::generateColors(colors_, 80);
     #else
         generateColors(colors_, 80);
     #endif
