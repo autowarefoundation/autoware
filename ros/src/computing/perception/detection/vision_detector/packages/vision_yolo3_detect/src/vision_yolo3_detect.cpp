@@ -34,6 +34,11 @@
  *  Created on: April 4th, 2018
  */
 #include "vision_yolo3_detect.h"
+#if (CV_MAJOR_VERSION <= 2)
+    #include <opencv2/contrib/contrib.hpp>
+#else
+    #include "gencolors.cpp"
+#endif
 
 namespace darknet
 {
@@ -156,27 +161,34 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
     for (unsigned int i = 0; i < in_objects.size(); ++i)
     {
         {
-            autoware_msgs::DetectedObject obj_msg;
+            autoware_msgs::DetectedObject obj;
 
-            obj_msg.x = (in_objects[i].x /image_ratio_) - image_left_right_border_/image_ratio_;
-            obj_msg.y = (in_objects[i].y /image_ratio_) - image_top_bottom_border_/image_ratio_;
-            obj_msg.width = in_objects[i].w /image_ratio_;
-            obj_msg.height = in_objects[i].h /image_ratio_;
+            obj.x = (in_objects[i].x /image_ratio_) - image_left_right_border_/image_ratio_;
+            obj.y = (in_objects[i].y /image_ratio_) - image_top_bottom_border_/image_ratio_;
+            obj.width = in_objects[i].w /image_ratio_;
+            obj.height = in_objects[i].h /image_ratio_;
             if (in_objects[i].x < 0)
-                obj_msg.x = 0;
+                obj.x = 0;
             if (in_objects[i].y < 0)
-                obj_msg.y = 0;
+                obj.y = 0;
             if (in_objects[i].w < 0)
-                obj_msg.width = 0;
+                obj.width = 0;
             if (in_objects[i].h < 0)
-                obj_msg.height = 0;
+                obj.height = 0;
 
-            obj_msg.score = in_objects[i].score;
-            obj_msg.label = in_objects[i].GetClassString();
+//            int class_idx = in_objects[i].GetClassInt();
+//            obj.color.r = colors_[class_idx].val[0];
+//            obj.color.g = colors_[class_idx].val[1];
+//            obj.color.b = colors_[class_idx].val[2];
+//            obj.color.a = 1.0f;
+//            ROS_INFO("Class IDX: %i", class_idx);
+
+            obj.score = in_objects[i].score;
+            obj.label = in_objects[i].GetClassString();
 
             //std::cout << "x "<< rect.x<< " y " << rect.y << " w "<< rect.width << " h "<< rect.height<< " s " << rect.score << " c " << in_objects[i].class_type << std::endl;
 
-            out_message.objects.push_back(obj_msg);
+            out_message.objects.push_back(obj);
 
         }
     }
@@ -249,16 +261,20 @@ image Yolo3DetectorNode::convert_ipl_to_image(const sensor_msgs::ImageConstPtr& 
 
 void Yolo3DetectorNode::image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 {
+    ROS_INFO("Beginning of the image callback");
     std::vector< RectClassScore<float> > detections;
 
+    ROS_INFO("RectClassScores were defined");
     darknet_image_ = convert_ipl_to_image(in_image_message);
 
+    ROS_INFO("Image converted for YOLO");
     detections = yolo_detector_.detect(darknet_image_);
 
     //Prepare Output message
     autoware_msgs::DetectedObjectArray output_message;
     output_message.header = in_image_message->header;
 
+    ROS_INFO("Publishing detections");
     convert_rect_to_image_obj(detections, output_message);
 
     publisher_objects_.publish(output_message);
@@ -268,7 +284,7 @@ void Yolo3DetectorNode::image_callback(const sensor_msgs::ImageConstPtr& in_imag
 
 void Yolo3DetectorNode::config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
 {
-    score_threshold_ 	= param->score_threshold;
+    score_threshold_ = param->score_threshold;
 }
 
 
@@ -319,6 +335,14 @@ void Yolo3DetectorNode::Run()
 
     ROS_INFO("Initializing Yolo3 on Darknet...");
     yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
+    ROS_INFO("Initialization complete.");
+
+    ROS_INFO("Initializating Colors");
+    #if (CV_MAJOR_VERSION <= 2)
+        cv::generateColors(colors_, 20);
+    #else
+        generateColors(colors_, 80);
+    #endif
     ROS_INFO("Initialization complete.");
 
     publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_vision", 1);
