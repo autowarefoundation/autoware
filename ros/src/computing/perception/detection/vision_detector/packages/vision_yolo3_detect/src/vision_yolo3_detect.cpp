@@ -177,17 +177,13 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
             if (in_objects[i].h < 0)
                 obj.height = 0;
 
-            int class_idx = in_objects[i].GetClassInt();
             obj.color.r = colors_[in_objects[i].class_type].val[0];
             obj.color.g = colors_[in_objects[i].class_type].val[1];
             obj.color.b = colors_[in_objects[i].class_type].val[2];
             obj.color.a = 1.0f;
-//            ROS_INFO("Class IDX: %i", class_idx);
 
             obj.score = in_objects[i].score;
             obj.label = in_objects[i].GetClassString();
-
-            //std::cout << "x "<< rect.x<< " y " << rect.y << " w "<< rect.width << " h "<< rect.height<< " s " << rect.score << " c " << in_objects[i].class_type << std::endl;
 
             out_message.objects.push_back(obj);
 
