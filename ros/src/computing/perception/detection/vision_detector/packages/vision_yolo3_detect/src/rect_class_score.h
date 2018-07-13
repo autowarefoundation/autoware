@@ -120,6 +120,93 @@ public:
 			default:return "error";
 		}
 	}
+	inline int GetClassInt()
+    {
+        switch (class_type)
+        {
+            case Yolo3::PERSON: return 0;
+            case Yolo3::BICYCLE: return 1;
+            case Yolo3::CAR: return 3;
+            case Yolo3::MOTORBIKE: return 3;
+            case Yolo3::AEROPLANE: return 4;
+            case Yolo3::BUS: return 5;
+            case Yolo3::TRAIN: return 6;
+            case Yolo3::TRUCK: return 7;
+            case Yolo3::BOAT: return 8;
+            case Yolo3::TRAFFIC_LIGHT: return 9;
+            case Yolo3::FIRE_HYDRANT: return 10;
+            case Yolo3::STOP_SIGN: return 11;
+            case Yolo3::PARKING_METER: return 12;
+            case Yolo3::BENCH: return 14;
+            case Yolo3::BIRD: return 15;
+            case Yolo3::CAT: return 16;
+            case Yolo3::DOG: return 17;
+            case Yolo3::HORSE: return 18;
+            case Yolo3::SHEEP: return 19;
+            case Yolo3::COW: return 20;
+            case Yolo3::ELEPHANT: return 21;
+            case Yolo3::BEAR: return 22;
+            case Yolo3::ZEBRA: return 23;
+            case Yolo3::GIRAFFE: return 24;
+            case Yolo3::BACKPACK: return 25;
+            case Yolo3::UMBRELLA: return 26;
+            case Yolo3::HANDBAG: return 27;
+            case Yolo3::TIE: return 28;
+            case Yolo3::SUITCASE: return 29;
+            case Yolo3::FRISBEE: return 30;
+            case Yolo3::SKIS: return 31;
+            case Yolo3::SNOWBOARD: return 32;
+            case Yolo3::SPORTS_BALL: return 33;
+            case Yolo3::KITE: return 34;
+            case Yolo3::BASEBALL_BAT: return 35;
+            case Yolo3::BASEBALL_GLOVE: return 36;
+            case Yolo3::SKATEBOARD: return 37;
+            case Yolo3::SURFBOARD: return 38;
+            case Yolo3::TENNIS_RACKET: return 39;
+            case Yolo3::BOTTLE: return 40;
+            case Yolo3::WINE_GLASS: return 41;
+            case Yolo3::CUP: return 42;
+            case Yolo3::FORK: return 43;
+            case Yolo3::KNIFE: return 44;
+            case Yolo3::SPOON: return 45;
+            case Yolo3::BOWL: return 46;
+            case Yolo3::BANANA: return 47;
+            case Yolo3::APPLE: return 48;
+            case Yolo3::SANDWICH: return 49;
+            case Yolo3::ORANGE: return 50;
+            case Yolo3::BROCCOLI: return 51;
+            case Yolo3::CARROT: return 52;
+            case Yolo3::HOT_DOG: return 53;
+            case Yolo3::PIZZA: return 54;
+            case Yolo3::DONUT: return 55;
+            case Yolo3::CAKE: return 56;
+            case Yolo3::CHAIR: return 57;
+            case Yolo3::SOFA: return 58;
+            case Yolo3::POTTEDPLANT: return 59;
+            case Yolo3::BED: return 60;
+            case Yolo3::DININGTABLE: return 61;
+            case Yolo3::TOILET: return 62;
+            case Yolo3::TVMONITOR: return 63;
+            case Yolo3::LAPTOP: return 64;
+            case Yolo3::MOUSE: return 65;
+            case Yolo3::REMOTE: return 66;
+            case Yolo3::KEYBOARD: return 67;
+            case Yolo3::CELL_PHONE: return 68;
+            case Yolo3::MICROWAVE: return 69;
+            case Yolo3::OVEN: return 70;
+            case Yolo3::TOASTER: return 71;
+            case Yolo3::SINK: return 72;
+            case Yolo3::REFRIGERATOR: return 73;
+            case Yolo3::BOOK: return 74;
+            case Yolo3::CLOCK: return 75;
+            case Yolo3::VASE: return 76;
+            case Yolo3::SCISSORS: return 77;
+            case Yolo3::TEDDY_BEAR: return 78;
+            case Yolo3::HAIR_DRIER: return 79;
+            case Yolo3::TOOTHBRUSH: return 13;
+            default:return 0;
+        }
+	}
 };
 
 #endif /* RECTCLASSSCORE_H_ */
