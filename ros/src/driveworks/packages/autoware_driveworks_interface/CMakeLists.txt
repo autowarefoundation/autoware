@@ -15,7 +15,7 @@ catkin_package(
         CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
 )
 
-if ("${ARCH}" STREQUAL "aarch64" AND CUDA_FOUND)
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
     find_package(Threads REQUIRED)
     find_package(OpenCV REQUIRED)
 
