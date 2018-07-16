@@ -1,6 +1,6 @@
-FROM multiarch/alpine:aarch64-latest-stable as bootstrap
+FROM multiarch/alpine:aarch64-latest-stable AS bootstrap
 
-FROM arm64v8/ubuntu:16.04 as sysroot
+FROM arm64v8/ubuntu:16.04 AS sysroot
 
 COPY --from=bootstrap /usr/bin/qemu-aarch64-static /usr/bin/qemu-aarch64-static
 
@@ -101,7 +101,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     symlinks
 RUN symlinks -cr /
 
-FROM ubuntu:16.04
+FROM ubuntu:16.04 AS builder
 COPY --from=sysroot /lib /sysroot/aarch64/lib
 COPY --from=sysroot /usr/include /sysroot/aarch64/usr/include
 COPY --from=sysroot /usr/lib /sysroot/aarch64/usr/lib
