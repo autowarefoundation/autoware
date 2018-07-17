@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+if [[ -d build-aarch64 ]]; then
+    rm -rf build-aarch64
+fi
+
+if [[ -d devel-aarch64 ]]; then
+    rm -rf devel-aarch64
+fi
+
+docker run \
+    -it \
+    --rm \
+    -v ${PWD}/../:/home/nvidia/Autoware \
+    -w /home/nvidia/Autoware/ros \
+    -u ${UID}:${UID} \
+    autoware-kinetic:crossbuild-aarch64 \
+    bash \
+    -c "\
+    source /opt/ros/kinetic/setup.bash && \
+    catkin_make \
+        -DCMAKE_TOOLCHAIN_FILE=/sysroot/aarch64/aarch64_toolchain.cmake \
+        -DCATKIN_DEVEL_PREFIX=/home/nvidia/Autoware/ros/devel-aarch64 \
+        --build /home/nvidia/Autoware/ros/build-aarch64 \
+        clean && \
+    source devel-aarch64/setup.bash && \
+    catkin_make \
+        -DCMAKE_TOOLCHAIN_FILE=/sysroot/aarch64/aarch64_toolchain.cmake \
+        -DCATKIN_DEVEL_PREFIX=/home/nvidia/Autoware/ros/devel-aarch64 \
+        --build /home/nvidia/Autoware/ros/build-aarch64 \
+        -DCMAKE_BUILD_TYPE=Release $@
+    "
+
+find devel-aarch64/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e 's#/sysroot/aarch64##g' {} \;
