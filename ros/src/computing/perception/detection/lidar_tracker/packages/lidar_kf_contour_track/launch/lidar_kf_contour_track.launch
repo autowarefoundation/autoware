@@ -17,9 +17,6 @@
 	
 	<arg name="vector_map_filter_distance" default="2.0" />
 	<arg name="enableLogging" default="false" />
-	
-	<arg name="enableTTC" default="false" />
-
 
 	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track" output="screen">
 
@@ -41,8 +38,7 @@
 			
 		<param name="vector_map_filter_distance" value="$(arg vector_map_filter_distance)" />
 		<param name="enableLogging" value="$(arg enableLogging)" />
-		
-		<param name="enableTTC" value="$(arg enableTTC)" />
+				
 
   </node>
 

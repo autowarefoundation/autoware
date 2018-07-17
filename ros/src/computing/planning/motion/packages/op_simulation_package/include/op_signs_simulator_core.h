@@ -31,9 +31,19 @@
 #ifndef OP_SIGNS_SIMULATOR
 #define OP_SIGNS_SIMULATOR
 
-// ROS includes
 #include <ros/ros.h>
 //#include <runtime_manager/traffic_light.h>
+
+#include "vector_map_msgs/PointArray.h"
+#include "vector_map_msgs/LaneArray.h"
+#include "vector_map_msgs/NodeArray.h"
+#include "vector_map_msgs/StopLineArray.h"
+#include "vector_map_msgs/DTLaneArray.h"
+#include "vector_map_msgs/LineArray.h"
+#include "vector_map_msgs/AreaArray.h"
+#include "vector_map_msgs/SignalArray.h"
+#include "vector_map_msgs/StopLine.h"
+#include "vector_map_msgs/VectorArray.h"
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -54,6 +64,7 @@
 #include <op_planner/RoadNetwork.h>
 #include <op_planner/MappingHelpers.h>
 #include "op_planner/PlannerCommonDef.h"
+#include "op_utility/DataRW.h"
 
 
 namespace SignsSimulatorNS
@@ -126,6 +137,41 @@ public:
 	OpenPlannerSimulatorSigns();
 	virtual ~OpenPlannerSimulatorSigns();
 	void MainLoop();
+
+	//Mapping Section
+
+	UtilityHNS::MapRaw m_MapRaw;
+
+	ros::Subscriber sub_lanes;
+	ros::Subscriber sub_points;
+	ros::Subscriber sub_dt_lanes;
+	ros::Subscriber sub_intersect;
+	ros::Subscriber sup_area;
+	ros::Subscriber sub_lines;
+	ros::Subscriber sub_stop_line;
+	ros::Subscriber sub_signals;
+	ros::Subscriber sub_vectors;
+	ros::Subscriber sub_curbs;
+	ros::Subscriber sub_edges;
+	ros::Subscriber sub_way_areas;
+	ros::Subscriber sub_cross_walk;
+	ros::Subscriber sub_nodes;
+
+
+	void callbackGetVMLanes(const vector_map_msgs::LaneArray& msg);
+	void callbackGetVMPoints(const vector_map_msgs::PointArray& msg);
+	void callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg);
+	void callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg);
+	void callbackGetVMAreas(const vector_map_msgs::AreaArray& msg);
+	void callbackGetVMLines(const vector_map_msgs::LineArray& msg);
+	void callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg);
+	void callbackGetVMSignal(const vector_map_msgs::SignalArray& msg);
+	void callbackGetVMVectors(const vector_map_msgs::VectorArray& msg);
+	void callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg);
+	void callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg);
+	void callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg);
+	void callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg);
+	void callbackGetVMNodes(const vector_map_msgs::NodeArray& msg);
 };
 
 }

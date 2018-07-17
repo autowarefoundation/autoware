@@ -51,7 +51,6 @@ ContourTracker::ContourTracker()
 	m_PolyEstimationTime = 0;
 	m_MapType = PlannerHNS::MAP_KML_FILE;
 	bMap = false;
-	bVectorMapCheck = true;
 	bNewCurrentPos = false;
 	ReadNodeParams();
 	ReadCommonParams();
@@ -70,6 +69,21 @@ ContourTracker::ContourTracker()
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("op_planner_tracked_boxes", 1);
 	pub_TTC_PathRviz		= nh.advertise<visualization_msgs::MarkerArray>("ttc_direct_path", 1);
 
+	//Mapping Section
+	sub_lanes = nh.subscribe("/vector_map_info/lane", 1, &ContourTracker::callbackGetVMLanes,  this);
+	sub_points = nh.subscribe("/vector_map_info/point", 1, &ContourTracker::callbackGetVMPoints,  this);
+	sub_dt_lanes = nh.subscribe("/vector_map_info/dtlane", 1, &ContourTracker::callbackGetVMdtLanes,  this);
+	sub_intersect = nh.subscribe("/vector_map_info/cross_road", 1, &ContourTracker::callbackGetVMIntersections,  this);
+	sup_area = nh.subscribe("/vector_map_info/area", 1, &ContourTracker::callbackGetVMAreas,  this);
+	sub_lines = nh.subscribe("/vector_map_info/line", 1, &ContourTracker::callbackGetVMLines,  this);
+	sub_stop_line = nh.subscribe("/vector_map_info/stop_line", 1, &ContourTracker::callbackGetVMStopLines,  this);
+	sub_signals = nh.subscribe("/vector_map_info/signal", 1, &ContourTracker::callbackGetVMSignal,  this);
+	sub_vectors = nh.subscribe("/vector_map_info/vector", 1, &ContourTracker::callbackGetVMVectors,  this);
+	sub_curbs = nh.subscribe("/vector_map_info/curb", 1, &ContourTracker::callbackGetVMCurbs,  this);
+	sub_edges = nh.subscribe("/vector_map_info/road_edge", 1, &ContourTracker::callbackGetVMRoadEdges,  this);
+	sub_way_areas = nh.subscribe("/vector_map_info/way_area", 1, &ContourTracker::callbackGetVMWayAreas,  this);
+	sub_cross_walk = nh.subscribe("/vector_map_info/cross_walk", 1, &ContourTracker::callbackGetVMCrossWalks,  this);
+	sub_nodes = nh.subscribe("/vector_map_info/node", 1, &ContourTracker::callbackGetVMNodes,  this);
 
 	m_nDummyObjPerRep = 150;
 	m_nDetectedObjRepresentations = 5;
@@ -111,6 +125,9 @@ void ContourTracker::ReadNodeParams()
 	_nh.getParam("/lidar_kf_contour_track/max_association_distance" , m_ObstacleTracking.m_MAX_ASSOCIATION_DISTANCE);
 	_nh.getParam("/lidar_kf_contour_track/max_association_size_diff" , m_ObstacleTracking.m_MAX_ASSOCIATION_SIZE_DIFF);
 	_nh.getParam("/lidar_kf_contour_track/enableLogging" , m_Params.bEnableLogging);
+	//_nh.getParam("/lidar_kf_contour_track/enableTTC" , m_Params.bEnableTTC);
+
+
 	int tracking_type = 0;
 	_nh.getParam("/lidar_kf_contour_track/tracking_type" 			, tracking_type);
 	if(tracking_type==0)
@@ -134,22 +151,14 @@ void ContourTracker::ReadCommonParams()
 	m_ObstacleTracking.m_CirclesResolution = m_Params.DetectionRadius*0.05;
 
 	int iSource = 0;
-	if(_nh.getParam("/op_common_params/mapSource" , iSource))
-	{
-		if(iSource == 0)
-			m_MapType = PlannerHNS::MAP_AUTOWARE;
-		else if (iSource == 1)
-			m_MapType = PlannerHNS::MAP_FOLDER;
-		else if(iSource == 2)
-			m_MapType = PlannerHNS::MAP_KML_FILE;
+	if(iSource == 0)
+		m_MapType = PlannerHNS::MAP_AUTOWARE;
+	else if (iSource == 1)
+		m_MapType = PlannerHNS::MAP_FOLDER;
+	else if(iSource == 2)
+		m_MapType = PlannerHNS::MAP_KML_FILE;
 
-		_nh.getParam("/op_common_params/mapFileName" , m_MapPath);
-		bVectorMapCheck = true;
-	}
-	else
-	{
-		bVectorMapCheck = false;
-	}
+	_nh.getParam("/op_common_params/mapFileName" , m_MapPath);
 }
 
 void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg)
@@ -171,7 +180,10 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 		LogAndSend();
 		VisualizeLocalTracking();
 
-		CalculateTTC(m_ObstacleTracking.m_DetectedObjects, m_CurrentPos, m_Map);
+		if(m_Params.bEnableTTC)
+		{
+			CalculateTTC(m_ObstacleTracking.m_DetectedObjects, m_CurrentPos, m_Map);
+		}
 	}
 }
 
@@ -479,13 +491,11 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 	std::vector<PlannerHNS::WayPoint> direct_paths;
 	if(closest_path_id >= 0 && closest_obj_id >= 0)
 	{
-		for(unsigned int i=i_start; i<i_end; i++)
+		for(unsigned int i=i_start; i<=i_end; i++)
 		{
 			direct_paths.push_back(paths.at(closest_path_id).at(i));
 		}
 	}
-
-	cout << "TTC Path Size: " << direct_paths.size() << endl;
 
 	//Visualize Direct Path
 	m_TTC_Path.markers.clear();
@@ -493,6 +503,21 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 		direct_paths.push_back(currState);
 	PlannerHNS::RosHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
 	pub_TTC_PathRviz.publish(m_TTC_Path);
+
+
+	//calculate TTC
+	if(direct_paths.size() > 2 && closest_obj_id >= 0)
+	{
+		double dd = min_d;
+		double dv = objs.at(closest_obj_id).center.v - currState.v;
+		if(fabs(dv) > 0.1)
+		{
+			double ttc = (dd - 4) / dv;
+			cout << "TTC: " << ttc << ", dv: << " << dv <<", dd:" << dd << endl;
+		}
+		else
+			cout << "TTC: Inf" << endl;
+	}
 }
 
 void ContourTracker::MainLoop()
@@ -503,7 +528,7 @@ void ContourTracker::MainLoop()
 	{
 		ReadCommonParams();
 
-		if(bVectorMapCheck && m_MapType == PlannerHNS::MAP_KML_FILE && !bMap)
+		if(m_MapFilterDistance > 0 && m_MapType == PlannerHNS::MAP_KML_FILE && !bMap)
 		{
 			PlannerHNS::MappingHelpers::LoadKML(m_MapPath, m_Map);
 			if(m_Map.roadSegments.size() > 0)
@@ -512,11 +537,48 @@ void ContourTracker::MainLoop()
 				std::cout << " ******* Map Is Loaded successfully from the tracker !! " << std::endl;
 			}
 		}
-		else if (bVectorMapCheck && m_MapType == PlannerHNS::MAP_FOLDER && !bMap)
+		else if (m_MapFilterDistance > 0 && m_MapType == PlannerHNS::MAP_FOLDER && !bMap)
 		{
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_MapPath, m_Map, true);
 			if(m_Map.roadSegments.size() > 0)
+			{
+				std::cout << " ******* Map Is Loaded successfully from the tracker !! " << std::endl;
 				bMap = true;
+			}
+		}
+		else if (m_MapFilterDistance > 0 && m_MapType == PlannerHNS::MAP_AUTOWARE && !bMap)
+		{
+			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
+
+			if(m_MapRaw.GetVersion()==2)
+			{
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
+						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
+						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true);
+
+				if(m_Map.roadSegments.size() > 0)
+				{
+					bMap = true;
+					std::cout << " ******* Map Is Loaded successfully from the tracker !! " << std::endl;
+				}
+			}
+			else if(m_MapRaw.GetVersion()==1)
+			{
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
+						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
+						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true);
+
+				if(m_Map.roadSegments.size() > 0)
+				{
+					bMap = true;
+					std::cout << " ******* Map Is Loaded successfully from the tracker !! " << std::endl;
+				}
+			}
 		}
 
 		ros::spinOnce();
@@ -524,4 +586,105 @@ void ContourTracker::MainLoop()
 	}
 
 }
+
+//Mapping Section
+
+void ContourTracker::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
+{
+	std::cout << "Received Lanes" << endl;
+	if(m_MapRaw.pLanes == nullptr)
+		m_MapRaw.pLanes = new UtilityHNS::AisanLanesFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
+{
+	std::cout << "Received Points" << endl;
+	if(m_MapRaw.pPoints  == nullptr)
+		m_MapRaw.pPoints = new UtilityHNS::AisanPointsFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg)
+{
+	std::cout << "Received dtLanes" << endl;
+	if(m_MapRaw.pCenterLines == nullptr)
+		m_MapRaw.pCenterLines = new UtilityHNS::AisanCenterLinesFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg)
+{
+	std::cout << "Received CrossRoads" << endl;
+	if(m_MapRaw.pIntersections == nullptr)
+		m_MapRaw.pIntersections = new UtilityHNS::AisanIntersectionFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMAreas(const vector_map_msgs::AreaArray& msg)
+{
+	std::cout << "Received Areas" << endl;
+	if(m_MapRaw.pAreas == nullptr)
+		m_MapRaw.pAreas = new UtilityHNS::AisanAreasFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMLines(const vector_map_msgs::LineArray& msg)
+{
+	std::cout << "Received Lines" << endl;
+	if(m_MapRaw.pLines == nullptr)
+		m_MapRaw.pLines = new UtilityHNS::AisanLinesFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
+{
+	std::cout << "Received StopLines" << endl;
+	if(m_MapRaw.pStopLines == nullptr)
+		m_MapRaw.pStopLines = new UtilityHNS::AisanStopLineFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMSignal(const vector_map_msgs::SignalArray& msg)
+{
+	std::cout << "Received Signals" << endl;
+	if(m_MapRaw.pSignals  == nullptr)
+		m_MapRaw.pSignals = new UtilityHNS::AisanSignalFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMVectors(const vector_map_msgs::VectorArray& msg)
+{
+	std::cout << "Received Vectors" << endl;
+	if(m_MapRaw.pVectors  == nullptr)
+		m_MapRaw.pVectors = new UtilityHNS::AisanVectorFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg)
+{
+	std::cout << "Received Curbs" << endl;
+	if(m_MapRaw.pCurbs == nullptr)
+		m_MapRaw.pCurbs = new UtilityHNS::AisanCurbFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg)
+{
+	std::cout << "Received Edges" << endl;
+	if(m_MapRaw.pRoadedges  == nullptr)
+		m_MapRaw.pRoadedges = new UtilityHNS::AisanRoadEdgeFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg)
+{
+	std::cout << "Received Wayareas" << endl;
+	if(m_MapRaw.pWayAreas  == nullptr)
+		m_MapRaw.pWayAreas = new UtilityHNS::AisanWayareaFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg)
+{
+	std::cout << "Received CrossWalks" << endl;
+	if(m_MapRaw.pCrossWalks == nullptr)
+		m_MapRaw.pCrossWalks = new UtilityHNS::AisanCrossWalkFileReader(msg);
+}
+
+void ContourTracker::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
+{
+	std::cout << "Received Nodes" << endl;
+	if(m_MapRaw.pNodes == nullptr)
+		m_MapRaw.pNodes = new UtilityHNS::AisanNodesFileReader(msg);
+}
+
 }

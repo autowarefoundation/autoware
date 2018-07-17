@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_simu  
   op_ros_helpers
   waypoint_follower
+  vector_map_msgs
 )
 
 ## System dependencies are found with CMake's conventions

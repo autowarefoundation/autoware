@@ -530,13 +530,13 @@ subs :
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
         param: astar_navi
-    - name : way_planner (OpenPlanner - old ver)
-      desc : Global planner for OpenPlanner
-      subs :
-      - name : way_planner
-        desc : for global planning
-        cmd  : roslaunch way_planner way_planner.launch
-        param: way_planner
+#    - name : way_planner (OpenPlanner - old ver)
+#      desc : Global planner for OpenPlanner
+#      subs :
+#      - name : way_planner
+#        desc : for global planning
+#        cmd  : roslaunch way_planner way_planner.launch
+#        param: way_planner
     - name : OpenPlanner - Global Planning
       desc : Global planner for OpenPlanner
       subs :
@@ -549,17 +549,17 @@ subs :
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : dp_planner (OpenPlanner - old ver)
-      desc : Local Planner for OpenPlanner
-      subs :
-      - name : dp_planner
-        desc : for behavior and path planning
-        cmd  : roslaunch dp_planner dp_planner.launch
-        param: dp_planner
-      - name : ff_waypoint_follower
-        desc : Feedforward PID waypoint follower
-        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
-        param: ff_waypoint_follower
+#    - name : dp_planner (OpenPlanner - old ver)
+#      desc : Local Planner for OpenPlanner
+#      subs :
+#      - name : dp_planner
+#        desc : for behavior and path planning
+#        cmd  : roslaunch dp_planner dp_planner.launch
+#        param: dp_planner
+#      - name : ff_waypoint_follower
+#        desc : Feedforward PID waypoint follower
+#        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
+#        param: ff_waypoint_follower
     - name : OpenPlanner - Local planning
       desc : Local Planner for OpenPlanner
       subs :
@@ -1191,7 +1191,7 @@ params :
     - name : vector_map_filter_distance
       desc : Filtering distance from object to vector map center line if available
       label: Vector Map Filter Distance
-      min  : 0.01
+      min  : 0.0
       max  : 20.0
       v    : 2.0
       cmd_param:
@@ -2641,7 +2641,7 @@ params :
     vars  :
     - name : enableLaneChange
       desc : global plan extended by lane changes
-      label: Enable Lane Changing
+      label: Lane Changing
       kind : checkbox
       v    : False
       cmd_param:
@@ -2649,7 +2649,7 @@ params :
         delim    : ':='
     - name : enableReplan
       desc : infinite replanning to multiple goals including the start position
-      label: Enable Replanning
+      label: Replanning
       kind : checkbox
       v    : False
       cmd_param:
@@ -2657,7 +2657,7 @@ params :
         delim    : ':='
     - name : enableSmoothing
       desc : smooth and fix global path
-      label: Enable Smoothing
+      label: Smoothing
       kind : checkbox
       v    : False
       cmd_param:
@@ -2697,29 +2697,29 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : mapSource
-      desc : select map source
-      label: Map Source
-      kind : radio_box
-      choices:
-      - Autoware
-      - Folder
-      - KML
-      descs :
-      - use Autoware Map
-      - custom read from folder
-      - custom read from kml file
-      v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable
-      label: Map File
-      kind : path
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+#    - name : mapSource
+#      desc : select map source
+#      label: Map Source
+#      kind : radio_box
+#      choices:
+#      - Autoware
+#      - Folder
+#      - KML
+#      descs :
+#      - use Autoware Map
+#      - custom read from folder
+#      - custom read from kml file
+#      v   : 0
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
+#    - name : mapFileName
+#      desc : select kml map file if applicable
+#      label: Map File
+#      kind : path
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
 
   - name  : dp_planner
     vars  :
@@ -3019,29 +3019,29 @@ params :
         delim    : ':='
   - name  : op_common_params
     vars  :
-    - name : mapSource
-      desc : select map source
-      label: Map Source
-      kind : radio_box
-      choices:
-      - Autoware
-      - Folder
-      - KML
-      descs :
-      - use Autoware Map
-      - custom read from folder
-      - custom read from kml file
-      v   : 1
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable
-      label: Map File
-      kind : path
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+#    - name : mapSource
+#      desc : select map source
+#      label: Map Source
+#      kind : radio_box
+#      choices:
+#      - Autoware
+#      - Folder
+#      - KML
+#      descs :
+#      - use Autoware Map
+#      - custom read from folder
+#      - custom read from kml file
+#      v   : 1
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
+#    - name : mapFileName
+#      desc : select kml map file if applicable
+#      label: Map File
+#      kind : path
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
     - name : horizonDistance
       desc : Horizon distance
       label: Horizon
@@ -3320,29 +3320,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-  - name  : op_data_logger
-    vars  :
-    - name : mapSource
-      desc : select map source
-      label: Map Source
-      kind : radio_box
-      choices:
-      - Folder
-      - KML
-      descs :
-      - custom read from folder
-      - custom read from kml file
-      v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable
-      label: Map File
-      kind : path
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : op_perception_simulator
     vars  :
@@ -3366,27 +3343,27 @@ params :
         delim    : ':='
   - name  : op_signs_simulator
     vars  :
-    - name : mapSource
-      desc : select map source
-      label: Map Source
-      kind : radio_box
-      choices:
-      - Folder
-      - KML
-      descs :
-      - custom read from folder
-      - custom read from kml file
-      v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable
-      label: Map File
-      kind : path
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+#    - name : mapSource
+#      desc : select map source
+#      label: Map Source
+#      kind : radio_box
+#      choices:
+#      - Folder
+#      - KML
+#      descs :
+#      - custom read from folder
+#      - custom read from kml file
+#      v   : 0
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
+#    - name : mapFileName
+#      desc : select kml map file if applicable
+#      label: Map File
+#      kind : path
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
     - name : first_signs_list_ids
       desc : First Traffic Light Ids
       label: First Light Ids
@@ -3638,27 +3615,27 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : mapSource
-      desc : select map source
-      label: Map Source
-      kind : radio_box
-      choices:
-      - Folder
-      - KML
-      descs :
-      - custom read from folder
-      - custom read from kml file
-      v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : mapFileName
-      desc : select kml map file if applicable
-      label: Map File
-      kind : path
-      cmd_param:
-        dash     : ''
-        delim    : ':='
+#    - name : mapSource
+#      desc : select map source
+#      label: Map Source
+#      kind : radio_box
+#      choices:
+#      - Folder
+#      - KML
+#      descs :
+#      - custom read from folder
+#      - custom read from kml file
+#      v   : 0
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
+#    - name : mapFileName
+#      desc : select kml map file if applicable
+#      label: Map File
+#      kind : path
+#      cmd_param:
+#        dash     : ''
+#        delim    : ':='
     - name : enableStepByStepSignal
       desc : Enable Step by Step simulation motion (Testing App Required)
       label: Enable Frame by Frame

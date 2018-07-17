@@ -56,8 +56,10 @@ OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 	int iSource = 0;
 	_nh.getParam("mapSource" , iSource);
 	if(iSource == 0)
-		m_MapType = PlannerHNS::MAP_FOLDER;
+		m_MapType = PlannerHNS::MAP_AUTOWARE;
 	else if(iSource == 1)
+		m_MapType = PlannerHNS::MAP_FOLDER;
+	else if(iSource == 2)
 		m_MapType = PlannerHNS::MAP_KML_FILE;
 
 	_nh.getParam("mapFileName" , m_MapPath);
@@ -88,6 +90,23 @@ OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 
 	UtilityHNS::UtilityH::GetTickCount(m_Timer);
 	m_CurrLightState = PlannerHNS::GREEN_LIGHT;
+
+
+	//Mapping Section
+	sub_lanes = nh.subscribe("/vector_map_info/lane", 1, &OpenPlannerSimulatorSigns::callbackGetVMLanes,  this);
+	sub_points = nh.subscribe("/vector_map_info/point", 1, &OpenPlannerSimulatorSigns::callbackGetVMPoints,  this);
+	sub_dt_lanes = nh.subscribe("/vector_map_info/dtlane", 1, &OpenPlannerSimulatorSigns::callbackGetVMdtLanes,  this);
+	sub_intersect = nh.subscribe("/vector_map_info/cross_road", 1, &OpenPlannerSimulatorSigns::callbackGetVMIntersections,  this);
+	sup_area = nh.subscribe("/vector_map_info/area", 1, &OpenPlannerSimulatorSigns::callbackGetVMAreas,  this);
+	sub_lines = nh.subscribe("/vector_map_info/line", 1, &OpenPlannerSimulatorSigns::callbackGetVMLines,  this);
+	sub_stop_line = nh.subscribe("/vector_map_info/stop_line", 1, &OpenPlannerSimulatorSigns::callbackGetVMStopLines,  this);
+	sub_signals = nh.subscribe("/vector_map_info/signal", 1, &OpenPlannerSimulatorSigns::callbackGetVMSignal,  this);
+	sub_vectors = nh.subscribe("/vector_map_info/vector", 1, &OpenPlannerSimulatorSigns::callbackGetVMVectors,  this);
+	sub_curbs = nh.subscribe("/vector_map_info/curb", 1, &OpenPlannerSimulatorSigns::callbackGetVMCurbs,  this);
+	sub_edges = nh.subscribe("/vector_map_info/road_edge", 1, &OpenPlannerSimulatorSigns::callbackGetVMRoadEdges,  this);
+	sub_way_areas = nh.subscribe("/vector_map_info/way_area", 1, &OpenPlannerSimulatorSigns::callbackGetVMWayAreas,  this);
+	sub_cross_walk = nh.subscribe("/vector_map_info/cross_walk", 1, &OpenPlannerSimulatorSigns::callbackGetVMCrossWalks,  this);
+	sub_nodes = nh.subscribe("/vector_map_info/node", 1, &OpenPlannerSimulatorSigns::callbackGetVMNodes,  this);
 
 	std::cout << "OpenPlannerSimulatorSigns initialized successfully " << std::endl;
 
@@ -150,6 +169,40 @@ void OpenPlannerSimulatorSigns::MainLoop()
 		{
 			bMap = true;
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_MapPath, m_Map, true);
+		}
+		else if (m_MapType == PlannerHNS::MAP_AUTOWARE && !bMap)
+		{
+			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
+
+			if(m_MapRaw.GetVersion()==2)
+			{
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
+						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
+						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true);
+
+				if(m_Map.roadSegments.size() > 0)
+				{
+					bMap = true;
+					std::cout << " ******* Map V2 Is Loaded successfully from the Sign Simulator!! " << std::endl;
+				}
+			}
+			else if(m_MapRaw.GetVersion()==1)
+			{
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
+						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
+						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true);
+
+				if(m_Map.roadSegments.size() > 0)
+				{
+					bMap = true;
+					std::cout << " ******* Map V1 Is Loaded successfully from the Sign Simulator !! " << std::endl;
+				}
+			}
 		}
 
 		if(m_CurrLightState == PlannerHNS::GREEN_LIGHT)
@@ -233,6 +286,106 @@ void OpenPlannerSimulatorSigns::MainLoop()
 
 		loop_rate.sleep();
 	}
+}
+
+//Mapping Section
+
+void OpenPlannerSimulatorSigns::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
+{
+	std::cout << "Received Lanes" << endl;
+	if(m_MapRaw.pLanes == nullptr)
+		m_MapRaw.pLanes = new UtilityHNS::AisanLanesFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
+{
+	std::cout << "Received Points" << endl;
+	if(m_MapRaw.pPoints  == nullptr)
+		m_MapRaw.pPoints = new UtilityHNS::AisanPointsFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg)
+{
+	std::cout << "Received dtLanes" << endl;
+	if(m_MapRaw.pCenterLines == nullptr)
+		m_MapRaw.pCenterLines = new UtilityHNS::AisanCenterLinesFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg)
+{
+	std::cout << "Received CrossRoads" << endl;
+	if(m_MapRaw.pIntersections == nullptr)
+		m_MapRaw.pIntersections = new UtilityHNS::AisanIntersectionFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMAreas(const vector_map_msgs::AreaArray& msg)
+{
+	std::cout << "Received Areas" << endl;
+	if(m_MapRaw.pAreas == nullptr)
+		m_MapRaw.pAreas = new UtilityHNS::AisanAreasFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMLines(const vector_map_msgs::LineArray& msg)
+{
+	std::cout << "Received Lines" << endl;
+	if(m_MapRaw.pLines == nullptr)
+		m_MapRaw.pLines = new UtilityHNS::AisanLinesFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
+{
+	std::cout << "Received StopLines" << endl;
+	if(m_MapRaw.pStopLines == nullptr)
+		m_MapRaw.pStopLines = new UtilityHNS::AisanStopLineFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMSignal(const vector_map_msgs::SignalArray& msg)
+{
+	std::cout << "Received Signals" << endl;
+	if(m_MapRaw.pSignals  == nullptr)
+		m_MapRaw.pSignals = new UtilityHNS::AisanSignalFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMVectors(const vector_map_msgs::VectorArray& msg)
+{
+	std::cout << "Received Vectors" << endl;
+	if(m_MapRaw.pVectors  == nullptr)
+		m_MapRaw.pVectors = new UtilityHNS::AisanVectorFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg)
+{
+	std::cout << "Received Curbs" << endl;
+	if(m_MapRaw.pCurbs == nullptr)
+		m_MapRaw.pCurbs = new UtilityHNS::AisanCurbFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg)
+{
+	std::cout << "Received Edges" << endl;
+	if(m_MapRaw.pRoadedges  == nullptr)
+		m_MapRaw.pRoadedges = new UtilityHNS::AisanRoadEdgeFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg)
+{
+	std::cout << "Received Wayareas" << endl;
+	if(m_MapRaw.pWayAreas  == nullptr)
+		m_MapRaw.pWayAreas = new UtilityHNS::AisanWayareaFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg)
+{
+	std::cout << "Received CrossWalks" << endl;
+	if(m_MapRaw.pCrossWalks == nullptr)
+		m_MapRaw.pCrossWalks = new UtilityHNS::AisanCrossWalkFileReader(msg);
+}
+
+void OpenPlannerSimulatorSigns::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
+{
+	std::cout << "Received Nodes" << endl;
+	if(m_MapRaw.pNodes == nullptr)
+		m_MapRaw.pNodes = new UtilityHNS::AisanNodesFileReader(msg);
 }
 
 }

@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   	op_planner
   	op_ros_helpers
   	pcl_conversions
+  	vector_map_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -31,7 +32,7 @@ find_package(Threads REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs map_file op_utility op_planner op_ros_helpers pcl_conversions
+  CATKIN_DEPENDS roscpp geometry_msgs map_file op_utility op_planner op_ros_helpers pcl_conversions vector_map_msgs
   DEPENDS system_lib
 )
 
@@ -46,7 +47,6 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -O0 -g -Wall -Wno-unused-result -DROS ${CMAKE_CX
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 link_directories(lib)
-
 
 add_executable(op_pose2tf nodes/op_pose2tf/op_pose2tf.cpp nodes/op_pose2tf/op_pose2tf_core.cpp)
 target_link_libraries(op_pose2tf ${catkin_LIBRARIES} ${PCL_LIBRARIES})

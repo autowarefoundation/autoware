@@ -1,6 +1,6 @@
 <!-- -->
 <launch>
-	<arg name="mapSource" 				default="0" /> <!-- Vector Map Folder=0, kml=1 -->
+	<arg name="mapSource" 				default="0" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
 	<arg name="mapFileName" 			default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
 	
 	<arg name="first_signs_list_ids"			default=",9,10," />

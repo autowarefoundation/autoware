@@ -15,6 +15,23 @@
 #include <iostream>
 #include <limits>
 
+#include "vector_map_msgs/PointArray.h"
+#include "vector_map_msgs/LaneArray.h"
+#include "vector_map_msgs/NodeArray.h"
+#include "vector_map_msgs/StopLineArray.h"
+#include "vector_map_msgs/DTLaneArray.h"
+#include "vector_map_msgs/LineArray.h"
+#include "vector_map_msgs/AreaArray.h"
+#include "vector_map_msgs/WayAreaArray.h"
+#include "vector_map_msgs/SignalArray.h"
+#include "vector_map_msgs/VectorArray.h"
+#include "vector_map_msgs/CrossRoadArray.h"
+#include "vector_map_msgs/RoadSignArray.h"
+#include "vector_map_msgs/CurbArray.h"
+#include "vector_map_msgs/RoadEdgeArray.h"
+#include "vector_map_msgs/CrossWalkArray.h"
+
+
 namespace UtilityHNS {
 
 class DataRW
@@ -68,6 +85,7 @@ public:
 	SimpleReaderBase(const std::string& fileName, const int& nHeaders = 2, const char& separator = ',',
 			const int& iDataTitles = 1, const int& nVariablesForOneObject = 0,
 			const int& nLineHeaders = 0, const std::string& headerRepeatKey = "...");
+
 	~SimpleReaderBase();
 
 protected:
@@ -166,12 +184,15 @@ public:
 	{
 		m_min_id = std::numeric_limits<int>::max();
 	}
+
+	AisanPointsFileReader(const vector_map_msgs::PointArray& _points);
 	~AisanPointsFileReader(){}
 
-	std::vector<AisanPoints> m_data_list;
 	bool ReadNextLine(AisanPoints& data);
 	int ReadAllData(std::vector<AisanPoints>& data_list);
+	void ParseNextLine(const vector_map_msgs::Point& _rec, AisanPoints& data);
 	AisanPoints* GetDataRowById(int _pid);
+	std::vector<AisanPoints> m_data_list;
 
 private:
 	int m_min_id;
@@ -192,13 +213,15 @@ public:
 	{
 		m_min_id = std::numeric_limits<int>::max();
 	}
+
+	AisanNodesFileReader(const vector_map_msgs::NodeArray& _nodes);
 	~AisanNodesFileReader(){}
 
-	std::vector<AisanNode> m_data_list;
 	bool ReadNextLine(AisanNode& data);
 	int ReadAllData(std::vector<AisanNode>& data_list);
+	void ParseNextLine(const vector_map_msgs::Node& _rec, AisanNode& data);
 	AisanNode* GetDataRowById(int _nid);
-
+	std::vector<AisanNode> m_data_list;
 
 private:
 	int m_min_id;
@@ -222,37 +245,18 @@ public:
 	{
 		m_min_id = std::numeric_limits<int>::max();
 	}
+	AisanLinesFileReader(const vector_map_msgs::LineArray & _lines);
 	~AisanLinesFileReader(){}
 
-	std::vector<AisanLine> m_data_list;
 	bool ReadNextLine(AisanLine& data);
 	int ReadAllData(std::vector<AisanLine>& data_list);
+	void ParseNextLine(const vector_map_msgs::Line& _rec, AisanLine& data);
 	AisanLine* GetDataRowById(int _lid);
+	std::vector<AisanLine> m_data_list;
 
 private:
 	int m_min_id;
 	std::vector<AisanLine*> m_data_map;
-};
-
-class AisanCLinesFileReader : public SimpleReaderBase
-{
-public:
-
-	struct AisanCLine
-	{
-		int ID;
-		int LID;
-		double width;
-		char color;
-		int type;
-		int LinkID;
-	};
-
-	AisanCLinesFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
-	~AisanCLinesFileReader(){}
-
-	bool ReadNextLine(AisanCLine& data);
-	int ReadAllData(std::vector<AisanCLine>& data_list);
 };
 
 class AisanCenterLinesFileReader : public SimpleReaderBase
@@ -273,11 +277,22 @@ public:
 		double 	RW;
 	};
 
-	AisanCenterLinesFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanCenterLinesFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanCenterLinesFileReader(const vector_map_msgs::DTLaneArray& _dtLanes);
 	~AisanCenterLinesFileReader(){}
 
 	bool ReadNextLine(AisanCenterLine& data);
 	int ReadAllData(std::vector<AisanCenterLine>& data_list);
+	void ParseNextLine(const vector_map_msgs::DTLane& _rec, AisanCenterLine& data);
+	AisanCenterLine* GetDataRowById(int _lnid);
+	std::vector<AisanCenterLine> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanCenterLine*> m_data_map;
 };
 
 class AisanAreasFileReader : public SimpleReaderBase
@@ -291,11 +306,22 @@ public:
 		int 	ELID;
 	};
 
-	AisanAreasFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanAreasFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanAreasFileReader(const vector_map_msgs::AreaArray& _areas);
 	~AisanAreasFileReader(){}
 
 	bool ReadNextLine(AisanArea& data);
 	int ReadAllData(std::vector<AisanArea>& data_list);
+	void ParseNextLine(const vector_map_msgs::Area& _rec, AisanArea& data);
+	AisanArea* GetDataRowById(int _lnid);
+	std::vector<AisanArea> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanArea*> m_data_map;
 };
 
 class AisanIntersectionFileReader : public SimpleReaderBase
@@ -309,11 +335,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanIntersectionFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanIntersectionFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanIntersectionFileReader(const vector_map_msgs::CrossRoadArray& _inters);
 	~AisanIntersectionFileReader(){}
 
 	bool ReadNextLine(AisanIntersection& data);
 	int ReadAllData(std::vector<AisanIntersection>& data_list);
+	void ParseNextLine(const vector_map_msgs::CrossRoad& _rec, AisanIntersection& data);
+	AisanIntersection* GetDataRowById(int _lnid);
+	std::vector<AisanIntersection> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanIntersection*> m_data_map;
 };
 
 class AisanLanesFileReader : public SimpleReaderBase
@@ -356,12 +393,14 @@ public:
 	{
 		m_min_id = std::numeric_limits<int>::max();
 	}
+	AisanLanesFileReader(const vector_map_msgs::LaneArray& _lanes);
 	~AisanLanesFileReader(){}
 
-	std::vector<AisanLane> m_data_list;
 	bool ReadNextLine(AisanLane& data);
 	int ReadAllData(std::vector<AisanLane>& data_list);
+	void ParseNextLine(const vector_map_msgs::Lane& _rec, AisanLane& data);
 	AisanLane* GetDataRowById(int _lnid);
+	std::vector<AisanLane> m_data_list;
 
 private:
 	int m_min_id;
@@ -381,11 +420,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanStopLineFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanStopLineFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanStopLineFileReader(const vector_map_msgs::StopLineArray& _stopLines);
 	~AisanStopLineFileReader(){}
 
 	bool ReadNextLine(AisanStopLine& data);
 	int ReadAllData(std::vector<AisanStopLine>& data_list);
+	void ParseNextLine(const vector_map_msgs::StopLine& _rec, AisanStopLine& data);
+	AisanStopLine* GetDataRowById(int _lnid);
+	std::vector<AisanStopLine> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanStopLine*> m_data_map;
 };
 
 class AisanRoadSignFileReader : public SimpleReaderBase
@@ -401,11 +451,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanRoadSignFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanRoadSignFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanRoadSignFileReader(const vector_map_msgs::RoadSignArray& _signs);
 	~AisanRoadSignFileReader(){}
 
 	bool ReadNextLine(AisanRoadSign& data);
 	int ReadAllData(std::vector<AisanRoadSign>& data_list);
+	void ParseNextLine(const vector_map_msgs::RoadSign& _rec, AisanRoadSign& data);
+	AisanRoadSign* GetDataRowById(int _lnid);
+	std::vector<AisanRoadSign> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanRoadSign*> m_data_map;
 };
 
 class AisanSignalFileReader : public SimpleReaderBase
@@ -421,11 +482,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanSignalFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanSignalFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanSignalFileReader(const vector_map_msgs::SignalArray& _signals);
 	~AisanSignalFileReader(){}
 
 	bool ReadNextLine(AisanSignal& data);
 	int ReadAllData(std::vector<AisanSignal>& data_list);
+	void ParseNextLine(const vector_map_msgs::Signal& _rec, AisanSignal& data);
+	AisanSignal* GetDataRowById(int _lnid);
+	std::vector<AisanSignal> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanSignal*> m_data_map;
 };
 
 class AisanVectorFileReader : public SimpleReaderBase
@@ -440,11 +512,22 @@ public:
 		double 	Vang;
 	};
 
-	AisanVectorFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanVectorFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanVectorFileReader(const vector_map_msgs::VectorArray& _vectors);
 	~AisanVectorFileReader(){}
 
 	bool ReadNextLine(AisanVector& data);
 	int ReadAllData(std::vector<AisanVector>& data_list);
+	void ParseNextLine(const vector_map_msgs::Vector& _rec, AisanVector& data);
+	AisanVector* GetDataRowById(int _lnid);
+	std::vector<AisanVector> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanVector*> m_data_map;
 };
 
 class AisanCurbFileReader : public SimpleReaderBase
@@ -461,11 +544,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanCurbFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanCurbFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanCurbFileReader(const vector_map_msgs::CurbArray& _curbs);
 	~AisanCurbFileReader(){}
 
 	bool ReadNextLine(AisanCurb& data);
 	int ReadAllData(std::vector<AisanCurb>& data_list);
+	void ParseNextLine(const vector_map_msgs::Curb& _rec, AisanCurb& data);
+	AisanCurb* GetDataRowById(int _lnid);
+	std::vector<AisanCurb> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanCurb*> m_data_map;
 };
 
 class AisanRoadEdgeFileReader : public SimpleReaderBase
@@ -479,11 +573,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanRoadEdgeFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanRoadEdgeFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanRoadEdgeFileReader(const vector_map_msgs::RoadEdgeArray& _roadEdges);
 	~AisanRoadEdgeFileReader(){}
 
 	bool ReadNextLine(AisanRoadEdge& data);
 	int ReadAllData(std::vector<AisanRoadEdge>& data_list);
+	void ParseNextLine(const vector_map_msgs::RoadEdge& _rec, AisanRoadEdge& data);
+	AisanRoadEdge* GetDataRowById(int _lnid);
+	std::vector<AisanRoadEdge> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanRoadEdge*> m_data_map;
 };
 
 class AisanCrossWalkFileReader : public SimpleReaderBase
@@ -499,11 +604,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanCrossWalkFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanCrossWalkFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanCrossWalkFileReader(const vector_map_msgs::CrossWalkArray& _crossWalks);
 	~AisanCrossWalkFileReader(){}
 
 	bool ReadNextLine(AisanCrossWalk& data);
 	int ReadAllData(std::vector<AisanCrossWalk>& data_list);
+	void ParseNextLine(const vector_map_msgs::CrossWalk& _rec, AisanCrossWalk& data);
+	AisanCrossWalk* GetDataRowById(int _lnid);
+	std::vector<AisanCrossWalk> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanCrossWalk*> m_data_map;
 };
 
 class AisanWayareaFileReader : public SimpleReaderBase
@@ -517,11 +633,22 @@ public:
 		int 	LinkID;
 	};
 
-	AisanWayareaFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1){}
+	AisanWayareaFileReader(const std::string& fileName) : SimpleReaderBase(fileName, 1)
+	{
+		m_min_id = std::numeric_limits<int>::max();
+	}
+	AisanWayareaFileReader(const vector_map_msgs::WayAreaArray& _wayArea);
 	~AisanWayareaFileReader(){}
 
 	bool ReadNextLine(AisanWayarea& data);
 	int ReadAllData(std::vector<AisanWayarea>& data_list);
+	void ParseNextLine(const vector_map_msgs::WayArea& _rec, AisanWayarea& data);
+	AisanWayarea* GetDataRowById(int _lnid);
+	std::vector<AisanWayarea> m_data_list;
+
+private:
+	int m_min_id;
+	std::vector<AisanWayarea*> m_data_map;
 };
 
 class AisanDataConnFileReader : public SimpleReaderBase
@@ -543,6 +670,181 @@ public:
 	int ReadAllData(std::vector<DataConn>& data_list);
 };
 
+class MapRaw
+{
+public:
+	UtilityHNS::AisanLanesFileReader* pLanes;
+	UtilityHNS::AisanPointsFileReader* pPoints;
+	UtilityHNS::AisanCenterLinesFileReader* pCenterLines;
+	UtilityHNS::AisanIntersectionFileReader* pIntersections;
+	UtilityHNS::AisanAreasFileReader* pAreas;
+	UtilityHNS::AisanLinesFileReader* pLines;
+	UtilityHNS::AisanStopLineFileReader* pStopLines;
+	UtilityHNS::AisanSignalFileReader* pSignals;
+	UtilityHNS::AisanVectorFileReader* pVectors;
+	UtilityHNS::AisanCurbFileReader* pCurbs;
+	UtilityHNS::AisanRoadEdgeFileReader* pRoadedges;
+	UtilityHNS::AisanWayareaFileReader* pWayAreas;
+	UtilityHNS::AisanCrossWalkFileReader* pCrossWalks;
+	UtilityHNS::AisanNodesFileReader* pNodes;
+
+	MapRaw()
+	{
+		pLanes = nullptr;
+		pPoints = nullptr;
+		pCenterLines = nullptr;
+		pIntersections = nullptr;
+		pAreas = nullptr;
+		pLines = nullptr;
+		pStopLines = nullptr;
+		pSignals = nullptr;
+		pVectors = nullptr;
+		pCurbs = nullptr;
+		pRoadedges = nullptr;
+		pWayAreas = nullptr;
+		pCrossWalks = nullptr;
+		pNodes = nullptr;
+	}
+
+	~MapRaw()
+	{
+		if(pLanes != nullptr)
+		{
+			delete pLanes;
+			pLanes = nullptr;
+		}
+
+		if(pPoints != nullptr)
+		{
+			delete pPoints;
+			pPoints = nullptr;
+		}
+
+		if(pCenterLines != nullptr)
+		{
+			delete pCenterLines;
+			pCenterLines = nullptr;
+		}
+
+		if(pIntersections != nullptr)
+		{
+			delete pIntersections;
+			pIntersections = nullptr;
+		}
+
+		if(pAreas != nullptr)
+		{
+			delete pAreas;
+			pAreas = nullptr;
+		}
+
+		if(pLines != nullptr)
+		{
+			delete pLines;
+			pLines = nullptr;
+		}
+
+		if(pStopLines != nullptr)
+		{
+			delete pStopLines;
+			pStopLines = nullptr;
+		}
+
+		if(pSignals != nullptr)
+		{
+			delete pSignals;
+			pSignals = nullptr;
+		}
+
+		if(pVectors != nullptr)
+		{
+			delete pVectors;
+			pVectors = nullptr;
+		}
+
+		if(pCurbs != nullptr)
+		{
+			delete pCurbs;
+			pCurbs = nullptr;
+		}
+
+		if(pRoadedges != nullptr)
+		{
+			delete pRoadedges;
+			pRoadedges = nullptr;
+		}
+
+		if(pWayAreas != nullptr)
+		{
+			delete pWayAreas;
+			pWayAreas = nullptr;
+		}
+
+		if(pCrossWalks != nullptr)
+		{
+			delete pCrossWalks;
+			pCrossWalks = nullptr;
+		}
+
+		if(pNodes != nullptr)
+		{
+			delete pNodes;
+			pNodes = nullptr;
+		}
+	}
+
+	int GetVersion()
+	{
+		bool bLoaded =  pLanes != nullptr && pPoints != nullptr && pCenterLines  != nullptr && pNodes  != nullptr;
+		int iVersion = 0;
+		if(bLoaded)
+		{
+			iVersion = 2;
+		}
+		else
+		{
+			bLoaded =  pLanes != nullptr && pPoints != nullptr && pCenterLines  != nullptr;
+			if(bLoaded)
+			{
+				iVersion = 1;
+				if(pNodes  == nullptr)
+					pNodes = new AisanNodesFileReader(vector_map_msgs::NodeArray());
+			}
+		}
+
+		if(bLoaded)
+		{
+			if(pIntersections  == nullptr)
+				pIntersections  = new AisanIntersectionFileReader(vector_map_msgs::CrossRoadArray());
+
+			if(pLines  == nullptr)
+				pLines  = new AisanLinesFileReader(vector_map_msgs::LineArray());
+
+			if(pStopLines  == nullptr)
+				pStopLines  = new AisanStopLineFileReader(vector_map_msgs::StopLineArray());
+
+			if(pSignals  == nullptr)
+				pSignals  = new AisanSignalFileReader(vector_map_msgs::SignalArray());
+
+			if(pVectors  == nullptr)
+				pVectors  = new AisanVectorFileReader(vector_map_msgs::VectorArray());
+
+			if(pCurbs  == nullptr)
+				pCurbs  = new AisanCurbFileReader(vector_map_msgs::CurbArray());
+
+			if(pRoadedges  == nullptr)
+				pRoadedges  = new AisanRoadEdgeFileReader(vector_map_msgs::RoadEdgeArray());
+
+			if(pWayAreas  == nullptr)
+				pWayAreas  = new AisanWayareaFileReader(vector_map_msgs::WayAreaArray());
+
+			if(pCrossWalks  == nullptr)
+				pCrossWalks  = new AisanCrossWalkFileReader(vector_map_msgs::CrossWalkArray());
+		}
+
+		return iVersion;
+	}
+};
 
 } /* namespace UtilityHNS */
 

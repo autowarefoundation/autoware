@@ -4,7 +4,9 @@ project(op_utility)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+	vector_map_msgs
+)
 
 find_package(TinyXML REQUIRED)
 
@@ -14,6 +16,7 @@ find_package(TinyXML REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         LIBRARIES op_utility
+        CATKIN_DEPENDS vector_map_msgs
 )
 
 ###########

@@ -1,7 +1,7 @@
 <launch>
 
-	<arg name="mapSource" 				default="1" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
-	<arg name="mapFileName" 			default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+	<arg name="mapSource" 				default="0" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+	<arg name="mapFileName" 			default="" />
 		
 	<arg name="pathDensity" 			default="0.5" />
 	<arg name="rollOutDensity" 			default="0.5" />
