@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(vision_yolo3_detect)
+project(vision_darknet_detect)
 
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
@@ -30,7 +30,7 @@ IF (CUDA_FOUND)
     SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
 
     #darknet
-    cuda_add_library(vision_yolo3_detect_lib SHARED
+    cuda_add_library(vision_darknet_detect_lib SHARED
             darknet/src/activation_kernels.cu
             darknet/src/avgpool_layer_kernels.cu
             darknet/src/convolutional_kernels.cu
@@ -87,17 +87,17 @@ IF (CUDA_FOUND)
             darknet/src/yolo_layer.c
             )
 
-    target_compile_definitions(vision_yolo3_detect_lib PUBLIC -DGPU)
-    cuda_add_cublas_to_target(vision_yolo3_detect_lib)
+    target_compile_definitions(vision_darknet_detect_lib PUBLIC -DGPU)
+    cuda_add_cublas_to_target(vision_darknet_detect_lib)
 
     if (OPENMP_FOUND)
-        set_target_properties(vision_yolo3_detect_lib PROPERTIES
+        set_target_properties(vision_darknet_detect_lib PROPERTIES
                 COMPILE_FLAGS ${OpenMP_CXX_FLAGS}
                 LINK_FLAGS ${OpenMP_CXX_FLAGS}
                 )
     endif ()
 
-    target_include_directories(vision_yolo3_detect_lib PRIVATE
+    target_include_directories(vision_darknet_detect_lib PRIVATE
             ${OpenCV_INCLUDE_DIR}
             ${catkin_INCLUDE_DIRS}
             ${Boost_INCLUDE_DIRS}
@@ -107,7 +107,7 @@ IF (CUDA_FOUND)
             ${PROJECT_SOURCE_DIR}/src
             )
 
-    target_link_libraries(vision_yolo3_detect_lib
+    target_link_libraries(vision_darknet_detect_lib
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
@@ -117,20 +117,20 @@ IF (CUDA_FOUND)
             ${CUDA_curand_LIBRARY}
             )
 
-    add_dependencies(vision_yolo3_detect_lib
+    add_dependencies(vision_darknet_detect_lib
             ${catkin_EXPORTED_TARGETS}
             )
 
     #ros node
-    cuda_add_executable(vision_yolo3_detect
-            src/vision_yolo3_detect_node.cpp
-            src/vision_yolo3_detect.cpp
-            src/vision_yolo3_detect.h
+    cuda_add_executable(vision_darknet_detect
+            src/vision_darknet_detect_node.cpp
+            src/vision_darknet_detect.cpp
+            src/vision_darknet_detect.h
             )
 
-    target_compile_definitions(vision_yolo3_detect PUBLIC -DGPU)
+    target_compile_definitions(vision_darknet_detect PUBLIC -DGPU)
 
-    target_include_directories(vision_yolo3_detect PRIVATE
+    target_include_directories(vision_darknet_detect PRIVATE
             ${CUDA_INCLUDE_DIRS}
             ${catkin_INCLUDE_DIRS}
             ${PROJECT_SOURCE_DIR}/darknet
@@ -138,22 +138,22 @@ IF (CUDA_FOUND)
             ${PROJECT_SOURCE_DIR}/src
             )
 
-    target_link_libraries(vision_yolo3_detect
+    target_link_libraries(vision_darknet_detect
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
-            vision_yolo3_detect_lib
+            vision_darknet_detect_lib
             )
-    add_dependencies(vision_yolo3_detect
+    add_dependencies(vision_darknet_detect
             ${catkin_EXPORTED_TARGETS}
             )
-    install(TARGETS vision_yolo3_detect_lib vision_yolo3_detect
+    install(TARGETS vision_darknet_detect_lib vision_darknet_detect
             ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
 ELSE()
-    message("YOLO3 won't be built, CUDA was not found.")
+    message("darknet won't be built, CUDA was not found.")
 ENDIF ()

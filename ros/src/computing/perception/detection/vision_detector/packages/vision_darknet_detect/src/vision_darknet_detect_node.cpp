@@ -32,11 +32,11 @@
  *  Created on: April 4th, 2018
  */
 
-#include "vision_yolo3_detect.h"
+#include "vision_darknet_detect.h"
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "vision_yolo3_detect");
+    ros::init(argc, argv, "vision_darknet_detect");
 
     Yolo3DetectorNode app;
 

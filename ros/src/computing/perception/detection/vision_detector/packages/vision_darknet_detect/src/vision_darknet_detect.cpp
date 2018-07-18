@@ -33,7 +33,7 @@
  *
  *  Created on: April 4th, 2018
  */
-#include "vision_yolo3_detect.h"
+#include "vision_darknet_detect.h"
 
 #if (CV_MAJOR_VERSION <= 2)
 #include <opencv2/contrib/contrib.hpp>
@@ -325,17 +325,15 @@ void Yolo3DetectorNode::Run()
     ROS_INFO("[%s] nms_threshold: %f",__APP_NAME__, nms_threshold_);
 
 
-    ROS_INFO("Initializing Yolo3 on Darknet...");
+    ROS_INFO("Initializing Yolo on Darknet...");
     yolo_detector_.load(network_definition_file, pretrained_model_file, score_threshold_, nms_threshold_);
     ROS_INFO("Initialization complete.");
 
-    ROS_INFO("Initializating Colors");
     #if (CV_MAJOR_VERSION <= 2)
         cv::generateColors(colors_, 80);
     #else
         generateColors(colors_, 80);
     #endif
-    ROS_INFO("Initialization complete.");
 
     publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_vision", 1);
 
@@ -349,6 +347,6 @@ void Yolo3DetectorNode::Run()
     ROS_INFO_STREAM( __APP_NAME__ << "" );
 
     ros::spin();
-    ROS_INFO("END Yolo3");
+    ROS_INFO("END Yolo");
 
 }
