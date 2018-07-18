@@ -1,21 +1,23 @@
-# Vision Yolo3 Detect
+# Vision Darknet Detect
 
-Autoware package based on Yolov3 image detector.
+Autoware package based on Darknet that supports Yolov3 and Yolov2 image detector.
 
 ### Requirements
 
 * NVIDIA GPU with CUDA installed
-* Pretrained YOLOv3 model on COCO dataset.
+* Pretrained [YOLOv3](https://pjreddie.com/media/files/yolov3.weights) or [YOLOv2](https://pjreddie.com/media/files/yolov2.weights) model on COCO dataset, specifically the 608x608 models found on the [YOLO website](https://pjreddie.com/darknet/yolo/). The weights file must be placed in vision_darknet_detect/darknet/data/.
 
 ### How to launch
 
 * From a sourced terminal:
 
-`roslaunch vision_yolo3_detect vision_yolo3_detect.launch`
+`roslaunch vision_dark_detect vision_yolo3_detect.launch`
+`roslaunch vision_dark_detect vision_yolo2_detect.launch`
 
 * From Runtime Manager:
 
-Computing Tab -> Detection/ vision_detector -> `vision_yolo3_detect`
+Computing Tab -> Detection/ vision_detector -> `vision_darknet_detect`
+You can change the config and weights file, as well as other parameters, by clicking [app]
 
 ### Parameters
 
