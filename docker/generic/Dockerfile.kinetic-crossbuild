@@ -100,9 +100,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-visualization-msgs \
     ros-kinetic-xacro
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    symlinks
-RUN symlinks -cr /
+RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
 FROM ubuntu:16.04 AS builder
 ARG SYSROOT_ARCH
