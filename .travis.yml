@@ -64,7 +64,20 @@ before_script:
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
   - if [ "${CROSS_COMPILE}" == "1" ]; then
-      docker run --rm -v ${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR} -w ${TRAVIS_BUILD_DIR}/ros esteve/autoware-kinetic:crossbuild-aarch64 bash -c "source /opt/ros/kinetic/setup.bash && catkin_make -DCMAKE_TOOLCHAIN_FILE=/sysroot/aarch64/aarch64_toolchain.cmake clean && source devel/setup.bash && catkin_make -DCMAKE_TOOLCHAIN_FILE=/sysroot/aarch64/aarch64_toolchain.cmake -j4";
+      docker run \
+        --rm \
+        -v ${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR} \
+        -w ${TRAVIS_BUILD_DIR}/ros \
+        esteve/autoware-kinetic:crossbuild-aarch64 \
+        bash \
+          -c "source /opt/ros/kinetic/setup.bash && \
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/ros/cross_toolchain.cmake \
+                -DCMAKE_SYSTEM_PROCESSOR=aarch64 clean && \
+              source devel/setup.bash && \
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/ros/cross_toolchain.cmake \
+                -DCMAKE_SYSTEM_PROCESSOR=aarch64 -j4";
     else
       catkin_make clean;
       source devel/setup.bash;
