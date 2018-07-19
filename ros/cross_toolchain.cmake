@@ -30,4 +30,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(THREADS_PTHREAD_ARG "0"
   CACHE STRING "Result from TRY_RUN" FORCE)
 
-set(SickLDMRS_DIR "${CMAKE_CURRENT_LIST_DIR}/build-${CMAKE_SYSTEM_PROCESSOR}/sensing/drivers/lidar/packages/sick/ldmrs/sick_ldmrs_driver/src/driver/")
+# The following is extremely fragile and likely wrong
+get_filename_component(AUTOWARE_BASE_BUILD_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
+get_filename_component(AUTOWARE_BASE_BUILD_DIR ${AUTOWARE_BASE_BUILD_DIR} DIRECTORY)
+set(SickLDMRS_DIR "${AUTOWARE_BASE_BUILD_DIR}/sensing/drivers/lidar/packages/sick/ldmrs/sick_ldmrs_driver/src/driver/")
