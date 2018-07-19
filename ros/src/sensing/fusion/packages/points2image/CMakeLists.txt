@@ -56,6 +56,9 @@ add_library(points_image
         lib/points_image/points_image.cpp
         )
 add_dependencies(points_image ${catkin_EXPORTED_TARGETS})
+target_link_libraries(points_image
+        ${OpenCV_LIBS}
+        )
 
 qt5_wrap_ui(points2vscan_ui_mainwindow nodes/points2vscan/mainwindow.ui)
 
@@ -73,6 +76,7 @@ target_link_libraries(points2vscan
         Qt5::Widgets
         points_image
         ${OPENGL_LIBRARIES}
+        ${OpenCV_LIBS}
         )
 add_dependencies(points2vscan
         ${catkin_EXPORTED_TARGETS}
