@@ -35,6 +35,9 @@ add_library(fastvirtualscan
         FastVirtualScan/fastvirtualscan.cpp
         )
 
+target_link_libraries(fastvirtualscan
+        Qt5::Core
+        )
 #############
 ## Install ##
 #############
