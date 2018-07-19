@@ -40,7 +40,7 @@ uint8 BRANCH_RIGHT_STATE        = 3
 uint8 YIELDING_STATE            = 4
 uint8 ACCELERATING_STATE        = 5
 uint8 SLOWDOWN_STATE            = 6
-uint8                           behavior_stae
+uint8                           behavior_state
 
 #
 string[]                        user_defined_info
