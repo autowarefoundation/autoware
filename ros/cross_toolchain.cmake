@@ -29,8 +29,3 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 # (this emulates that the return of the TRY_RUN is a return code "0"
 set(THREADS_PTHREAD_ARG "0"
   CACHE STRING "Result from TRY_RUN" FORCE)
-
-# The following is extremely fragile and likely wrong
-get_filename_component(AUTOWARE_BASE_BUILD_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
-get_filename_component(AUTOWARE_BASE_BUILD_DIR ${AUTOWARE_BASE_BUILD_DIR} DIRECTORY)
-set(SickLDMRS_DIR "${AUTOWARE_BASE_BUILD_DIR}/sensing/drivers/lidar/packages/sick/ldmrs/sick_ldmrs_driver/src/driver/")
