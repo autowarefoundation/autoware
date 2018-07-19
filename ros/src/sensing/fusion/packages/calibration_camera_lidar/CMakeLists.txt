@@ -85,6 +85,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL
+            nlopt
             )
 
 endif ()
