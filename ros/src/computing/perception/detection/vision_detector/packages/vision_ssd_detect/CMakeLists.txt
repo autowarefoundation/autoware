@@ -20,12 +20,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
 
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 catkin_package(
         CATKIN_DEPENDS cv_bridge
         image_transport
@@ -50,7 +44,7 @@ include_directories(
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 
-    IF ("${ARCHITECTURE}" MATCHES "^arm")
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
 ENDIF ()

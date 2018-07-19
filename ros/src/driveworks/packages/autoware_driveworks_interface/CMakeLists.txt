@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_driveworks_interface)
 
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCH
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
 set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
 
 
@@ -21,7 +15,7 @@ catkin_package(
         CATKIN_DEPENDS std_msgs sensor_msgs autoware_msgs
 )
 
-if ("${ARCH}" STREQUAL "aarch64" AND CUDA_FOUND)
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
     find_package(Threads REQUIRED)
     find_package(OpenCV REQUIRED)
 
