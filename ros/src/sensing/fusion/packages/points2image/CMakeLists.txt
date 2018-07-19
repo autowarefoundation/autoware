@@ -29,6 +29,8 @@ find_package(Qt5Widgets REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 
+find_package(OpenGL REQUIRED)
+
 catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
