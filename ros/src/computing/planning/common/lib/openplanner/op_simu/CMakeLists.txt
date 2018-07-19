@@ -68,6 +68,7 @@ target_link_libraries(${PROJECT_NAME}
         ${GLUT_LIBRARIES}
         ${GLEW_LIBRARIES}
         ${X11_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 add_executable(Simu
         ${SIMUH_SRC}
