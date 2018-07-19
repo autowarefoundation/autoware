@@ -18,14 +18,7 @@ catkin_package(
 )
 
 
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-
-IF ("${ARCHITECTURE}" STREQUAL "aarch64")
+IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     set(LIB_ARCH _aarch64)
 ELSE ()
     unset(LIB_ARCH)
