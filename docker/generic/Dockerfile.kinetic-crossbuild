@@ -141,5 +141,4 @@ ENV CC /usr/bin/${SYSROOT_ARCH}-linux-gnu-gcc
 ENV CXX /usr/bin/${SYSROOT_ARCH}-linux-gnu-g++
 ENV AR /usr/bin/${SYSROOT_ARCH}-linux-gnu-ar
 ENV CPP /usr/bin/${SYSROOT_ARCH}-linux-gnu-cpp
-COPY ${SYSROOT_ARCH}_toolchain.cmake /sysroot/${SYSROOT_ARCH}
 CMD . /opt/ros/kinetic/setup.sh && /bin/bash
