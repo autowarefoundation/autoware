@@ -57,28 +57,21 @@ void configCallback(const autoware_msgs::ConfigTwistFilterConstPtr &config)
 
 void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  geometry_msgs::TwistStamped tp = *msg;
 
-  double v = msg->twist.linear.x;
-  double omega = msg->twist.angular.z;
-
-  if(fabs(omega) < ERROR){
-    g_twist_pub.publish(*msg);
-    return;
+  const double &vel = tp.twist.linear.x;
+  const double &omega = tp.twist.angular.z;
+  if (fabs(omega) >= ERROR)
+  {
+    int sgn = (vel < 0) ? -1 : 1;
+    const double max_v = sgn * fabs(g_lateral_accel_limit / omega);
+    const double acc = vel * omega;
+    ROS_INFO("lateral accel = %lf", acc);
+    if (fabs(acc) > g_lateral_accel_limit)
+    {
+      tp.twist.linear.x =  max_v;
+    }
   }
-
-  int sgn = (v < 0) ? -1 : 1;
-  double max_v = sgn * fabs(g_lateral_accel_limit / omega);
-
-  geometry_msgs::TwistStamped tp;
-  tp.header = msg->header;
-
-  double a = v * omega;
-  ROS_INFO("lateral accel = %lf", a);
-
-
-  tp.twist.linear.x = fabs(a) > g_lateral_accel_limit ? max_v
-                    : v;
-  tp.twist.angular.z = omega;
 
   static double lowpass_linear_x = 0;
   static double lowpass_angular_z = 0;
@@ -88,7 +81,7 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
   tp.twist.linear.x = lowpass_linear_x;
   tp.twist.angular.z = lowpass_angular_z;
 
-  ROS_INFO("v: %f -> %f",v,tp.twist.linear.x);
+  ROS_INFO("v: %f -> %f", vel, tp.twist.linear.x);
   g_twist_pub.publish(tp);
 
 }
