@@ -34,6 +34,7 @@ else ()
 endif ()
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         nav_msgs

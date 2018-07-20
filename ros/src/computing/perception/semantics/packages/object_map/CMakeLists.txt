@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(object_map)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         pcl_ros
         pcl_conversions

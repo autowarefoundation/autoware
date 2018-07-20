@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
 
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs sensor_msgs autoware_msgs
         )

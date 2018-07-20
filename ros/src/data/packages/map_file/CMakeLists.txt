@@ -3,6 +3,7 @@ project(map_file)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
   visualization_msgs

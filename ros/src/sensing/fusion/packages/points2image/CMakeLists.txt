@@ -3,6 +3,7 @@ project(points2image)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         sensor_msgs

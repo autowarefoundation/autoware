@@ -3,6 +3,7 @@ project(glviewer)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         )
 

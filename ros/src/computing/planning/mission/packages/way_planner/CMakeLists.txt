@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(way_planner)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   geometry_msgs
   vector_map_msgs
   roscpp

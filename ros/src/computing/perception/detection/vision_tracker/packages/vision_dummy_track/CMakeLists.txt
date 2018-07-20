@@ -6,6 +6,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         autoware_msgs
         )

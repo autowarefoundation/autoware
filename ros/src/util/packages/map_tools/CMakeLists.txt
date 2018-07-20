@@ -4,6 +4,7 @@ project(map_tools)
 find_package(PCL REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         tf
         sensor_msgs

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(dp_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
         autoware_msgs

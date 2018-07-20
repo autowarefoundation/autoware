@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(pixel_cloud_fusion)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         pcl_conversions

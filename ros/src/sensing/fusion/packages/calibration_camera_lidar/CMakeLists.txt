@@ -5,6 +5,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 include(FindLibXml2 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         rosconsole
         std_msgs

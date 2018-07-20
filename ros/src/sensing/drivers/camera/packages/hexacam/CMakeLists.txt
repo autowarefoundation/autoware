@@ -5,6 +5,7 @@ project(hexacam)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
   message_generation

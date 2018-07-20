@@ -8,6 +8,7 @@
   <license>BSD</license>
   <author email="yusuke.fujii@tier4.jp">Yusuke FUJII</author>
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>autoware_msgs</build_depend>
   <run_depend>roscpp</run_depend>

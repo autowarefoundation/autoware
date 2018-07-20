@@ -3,6 +3,7 @@ project(sample_data)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         gnss
         std_msgs
