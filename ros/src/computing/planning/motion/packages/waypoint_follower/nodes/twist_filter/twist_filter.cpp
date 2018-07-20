@@ -66,7 +66,8 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr &msg)
     return;
   }
 
-  double max_v = g_lateral_accel_limit / omega;
+  int sgn = (v < 0) ? -1 : 1;
+  double max_v = sgn * fabs(g_lateral_accel_limit / omega);
 
   geometry_msgs::TwistStamped tp;
   tp.header = msg->header;
