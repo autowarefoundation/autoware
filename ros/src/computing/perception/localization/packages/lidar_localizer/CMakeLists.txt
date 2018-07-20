@@ -125,6 +125,7 @@ target_include_directories(ndt_matching_monitor_lib PRIVATE
 add_dependencies(ndt_matching_monitor_lib
         ${catkin_EXPORTED_TARGETS}
         )
+target_link_libraries(ndt_matching_monitor_lib ${catkin_LIBRARIES})
 
 add_executable(ndt_matching_monitor nodes/ndt_matching_monitor/ndt_matching_monitor_node.cpp)
 target_link_libraries(ndt_matching_monitor ndt_matching_monitor_lib ${catkin_LIBRARIES})

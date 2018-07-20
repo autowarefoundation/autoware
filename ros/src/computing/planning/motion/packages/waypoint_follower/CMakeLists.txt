@@ -50,6 +50,7 @@ add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
 add_dependencies(libwaypoint_follower
         ${catkin_EXPORTED_TARGETS}
         )
+target_link_libraries(libwaypoint_follower ${catkin_LIBRARIES})
 
 add_executable(pure_pursuit
         nodes/pure_pursuit/pure_pursuit_node.cpp
