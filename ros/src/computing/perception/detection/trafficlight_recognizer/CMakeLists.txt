@@ -46,6 +46,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(OpenGL REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -108,6 +110,7 @@ target_link_libraries(region_tlr
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         libcontext
+        ${OPENGL_LIBRARIES}
         )
 
 add_dependencies(region_tlr
@@ -168,6 +171,7 @@ target_link_libraries(tlr_tuner
         ${OpenCV_LIBS}
         Qt5::Core
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 
@@ -230,6 +234,7 @@ target_link_libraries(label_maker
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 

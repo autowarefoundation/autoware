@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         )
 find_package(OpenCV REQUIRED)
+find_package(OpenGL REQUIRED)
 
 catkin_package(
         #  INCLUDE_DIRS include
@@ -33,6 +34,7 @@ add_executable(vision_lane_detect
 target_link_libraries(vision_lane_detect
         ${catkin_LIBRARIES}
         ${OpenCV_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         )
 add_dependencies(vision_lane_detect
         ${catkin_EXPORTED_TARGETS}
