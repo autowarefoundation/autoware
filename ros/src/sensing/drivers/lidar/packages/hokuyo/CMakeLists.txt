@@ -14,7 +14,7 @@ catkin_package(
     DEPENDS roscpp sensor_msgs
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 include_directories(${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_executable(hokuyo_3d nodes/hokuyo_3d/hokuyo_3d.cpp nodes/hokuyo_3d/vssp.hpp)

@@ -35,7 +35,7 @@ catkin_package(CATKIN_DEPENDS
     vector_map
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Road Occupancy Processor Library
 add_library(road_occupancy_processor_lib SHARED

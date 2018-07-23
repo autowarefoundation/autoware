@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenMP)
 find_package(OpenCV REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS

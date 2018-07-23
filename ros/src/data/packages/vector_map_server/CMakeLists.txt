@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         message_generation
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_service_files(
         FILES

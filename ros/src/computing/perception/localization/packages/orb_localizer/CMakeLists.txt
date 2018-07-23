@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 
 # Force using C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 find_package(Boost REQUIRED COMPONENTS system serialization python)
 find_package(OpenCV REQUIRED)
