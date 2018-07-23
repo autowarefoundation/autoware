@@ -4,7 +4,7 @@ To use the cross build tool, first make sure Docker is properly installed.
 [Docker installation](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/)
 
 ## How to Build Docker
-Autoware users can skip this step.
+Autoware users skip this step.
 ```
 $ cd Autoware/docker/crossbuild/
 
