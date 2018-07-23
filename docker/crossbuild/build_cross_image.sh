@@ -11,7 +11,7 @@ then
     docker run --rm --privileged multiarch/qemu-user-static:register
 
     # Build Docker Image
-    docker build --build-arg DOCKER_ARCH=${DOCKER_ARCH} --build-arg SYSROOT_ARCH=$1 -t autoware-kinetic:crossbuild-$1 -f Dockerfile.kinetic-crossbuild .
+    docker build --build-arg DOCKER_ARCH=${DOCKER_ARCH} --build-arg SYSROOT_ARCH=$1 -t autoware/crossbuild:$1-kinetic-1.0.0 -f Dockerfile.kinetic-crossbuild .
 
     # Deregister QEMU as a handler for non-x86 targets
     docker run --rm --privileged multiarch/qemu-user-static:register --reset

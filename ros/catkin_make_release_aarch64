@@ -23,7 +23,7 @@ docker run \
     -v ${PWD}/../:${AUTOWARE_HOME} \
     -w ${AUTOWARE_HOME}/ros \
     -u ${UID}:${UID} \
-    autoware-kinetic:crossbuild-${AUTOWARE_TARGET_ARCH} \
+    autoware/crossbuild:${AUTOWARE_TARGET_ARCH}-kinetic-1.0.0 \
     bash \
     -c "\
     source /opt/ros/kinetic/setup.bash && \
