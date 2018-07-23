@@ -13,15 +13,13 @@
 #include "draw_rects.h"
 #include "draw_points.h"
 
-#define XSTR(x) #x
-#define STR(x) XSTR(x)
-
 namespace integrated_viewer {
     const QString     ImageViewerPlugin::kImageDataType                 = "sensor_msgs/Image";
     const QString     ImageViewerPlugin::kDetectedObjectDataTypeBase    = "autoware_msgs/DetectedObjectArray";
     const QString     ImageViewerPlugin::kPointDataType                 = "autoware_msgs/PointsImage";
     const QString     ImageViewerPlugin::kLaneDataType                  = "autoware_msgs/ImageLaneObjects";
     const QString     ImageViewerPlugin::kBlankTopic                    = "-----";
+
 
     ImageViewerPlugin::ImageViewerPlugin(QWidget *parent)
             : rviz::Panel(parent) {
@@ -34,7 +32,7 @@ namespace integrated_viewer {
         ui_.point_size_spin_box_->setValue(3);   // Set default size to 3
 
         // Load default image
-        default_image_ = cv::imread(STR(IMAGE_VIEWER_DEFAULT_IMAGE));
+        default_image_ = cv::imread( DEFAULT_PATH + "autoware_logo.png");
 
         points_msg_ = NULL;
         detected_objects_msg_ = NULL;
@@ -276,7 +274,7 @@ namespace integrated_viewer {
         // Additional things will be drawn if shown image is not default one
         if (!default_image_shown_) {
             // Draw detection result rectangles on the image
-            rects_drawer_.DrawImageObj(detected_objects_msg_, viewed_image_);
+            rects_drawer_.DrawImageRect(detected_objects_msg_, viewed_image_);
 
             // Draw points on the image
             int point_size = ui_.point_size_spin_box_->value();

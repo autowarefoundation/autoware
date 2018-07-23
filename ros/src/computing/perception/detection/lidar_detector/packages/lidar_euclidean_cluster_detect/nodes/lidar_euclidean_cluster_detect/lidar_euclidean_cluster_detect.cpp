@@ -239,7 +239,7 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
     {
         autoware_msgs::DetectedObject detected_object;
         detected_object.header = in_clusters.header;
-        detected_object.label = "Unknown";
+        detected_object.label = "unknown";
         detected_object.id = i;
         detected_object.score = 1.;
         detected_object.space_frame = in_clusters.header.frame_id;
