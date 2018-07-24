@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(road_occupancy_processor)
 
 find_package(catkin REQUIRED COMPONENTS
+    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions

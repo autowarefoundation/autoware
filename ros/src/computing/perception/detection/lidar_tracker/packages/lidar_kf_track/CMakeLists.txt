@@ -3,6 +3,7 @@ project(lidar_kf_track)
 
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   pcl_ros
   roscpp
   std_msgs

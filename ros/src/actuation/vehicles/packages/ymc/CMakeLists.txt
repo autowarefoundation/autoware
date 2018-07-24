@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(
         catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
         rosconsole

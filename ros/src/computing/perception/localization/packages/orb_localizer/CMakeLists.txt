@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(orb_localizer)
 
-find_package(catkin REQUIRED
-        COMPONENTS
+find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         tf
         sensor_msgs

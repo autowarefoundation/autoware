@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vector_map_server)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
         visualization_msgs

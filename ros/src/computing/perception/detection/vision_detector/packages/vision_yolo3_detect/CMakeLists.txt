@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(vision_yolo3_detect)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp

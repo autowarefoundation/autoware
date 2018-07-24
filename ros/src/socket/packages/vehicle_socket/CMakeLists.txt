@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vehicle_socket)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         autoware_msgs

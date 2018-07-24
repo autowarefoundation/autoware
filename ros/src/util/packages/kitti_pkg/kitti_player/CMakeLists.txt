@@ -4,6 +4,7 @@ project(kitti_player)
 SET(CMAKE_CXX_FLAGS "-O3 -std=c++11")
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         tf
         tf2

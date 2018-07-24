@@ -4,6 +4,7 @@ project(autoware_camera_lidar_calibrator)
 include(FindPkgConfig)
 
 find_package(catkin REQUIRED COMPONENTS
+    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions

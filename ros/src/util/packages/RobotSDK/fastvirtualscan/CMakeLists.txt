@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fastvirtualscan)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         sensor_msgs
         )
@@ -34,6 +35,9 @@ add_library(fastvirtualscan
         FastVirtualScan/fastvirtualscan.cpp
         )
 
+target_link_libraries(fastvirtualscan
+        Qt5::Core
+        )
 #############
 ## Install ##
 #############

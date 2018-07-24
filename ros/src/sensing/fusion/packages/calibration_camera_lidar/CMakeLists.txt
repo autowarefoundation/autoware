@@ -5,6 +5,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 include(FindLibXml2 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         rosconsole
         std_msgs
@@ -84,6 +85,7 @@ if ("${ROS_VERSION}" MATCHES "(indigo|jade|kinetic)")
             Qt5::Core
             Qt5::Widgets
             Qt5::OpenGL
+            nlopt
             )
 
 endif ()

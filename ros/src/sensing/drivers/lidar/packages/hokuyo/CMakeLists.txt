@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hokuyo)
 
 ## Find catkin and any catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs)
+find_package(catkin REQUIRED COMPONENTS
+    autoware_build_flags
+    roscpp
+    sensor_msgs
+    )
 find_package(Boost 1.53 REQUIRED system serialization)
 
 ## Declare a catkin package

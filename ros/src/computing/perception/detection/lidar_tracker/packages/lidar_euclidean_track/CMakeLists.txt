@@ -6,6 +6,7 @@ project(lidar_euclidean_track)
 ## is used, also find other catkin packages
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   geometry_msgs
   autoware_msgs

@@ -3,6 +3,7 @@ project(map_file)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
   visualization_msgs
@@ -28,11 +29,7 @@ if(NOT "${PCL_LIBRARIES}" STREQUAL "")
     "vtkRenderingQt")
 endif()
 
-include(FindCURL)
-if(NOT CURL_FOUND)
-  message("CURL not found!  Aborting...")
-  fail()
-endif(NOT CURL_FOUND)
+find_package(CURL REQUIRED)
 
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -54,6 +51,7 @@ include_directories(
 add_library(get_file
   lib/map_file/get_file.cpp
   )
+target_link_libraries(get_file ${CURL_LIBRARIES})
 
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES} ${PCL_IO_LIBRARIES})

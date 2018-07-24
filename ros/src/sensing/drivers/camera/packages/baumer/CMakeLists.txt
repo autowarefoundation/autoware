@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vlg22c_cam)
 
 find_package(catkin REQUIRED COMPONENTS 
+    autoware_build_flags
     image_transport
     roscpp
     std_msgs

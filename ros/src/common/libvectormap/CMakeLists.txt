@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(libvectormap)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         vector_map
         )
 

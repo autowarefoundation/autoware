@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         pcl_ros
         sensor_msgs

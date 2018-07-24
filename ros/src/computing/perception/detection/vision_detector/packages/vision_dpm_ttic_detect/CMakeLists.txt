@@ -4,6 +4,7 @@ project(vision_dpm_ttic_detect)
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         roscpp
         sensor_msgs

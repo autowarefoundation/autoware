@@ -3,6 +3,7 @@ project(rosinterface)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED
+        autoware_build_flags
         roscpp
         tf
         )

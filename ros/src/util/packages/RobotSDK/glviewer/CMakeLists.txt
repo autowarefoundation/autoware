@@ -3,6 +3,7 @@ project(glviewer)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         )
 
@@ -30,6 +31,8 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Gui REQUIRED)
+
+find_package(OpenGL REQUIRED)
 
 catkin_package(
         INCLUDE_DIRS include
@@ -62,6 +65,7 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}"
             Qt5::Widgets
             Qt5::OpenGL
             Qt5::Gui
+            ${OPENGL_LIBRARIES}
             )
 
     install(DIRECTORY include/${PROJECT_NAME}/

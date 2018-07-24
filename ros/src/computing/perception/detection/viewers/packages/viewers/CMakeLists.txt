@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(viewers)
 
 find_package(catkin REQUIRED COMPONENTS
-        roscpp sensor_msgs std_msgs autoware_msgs cv_bridge image_transport
+        autoware_build_flags
+        roscpp
+        sensor_msgs
+        std_msgs
+        autoware_msgs
+        cv_bridge
+        image_transport
         )
 
 find_package(OpenCV REQUIRED)
