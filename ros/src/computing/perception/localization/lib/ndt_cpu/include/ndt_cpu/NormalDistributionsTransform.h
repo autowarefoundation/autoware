@@ -30,11 +30,15 @@ public:
 
 	int getRealIterations();
 
+	std::vector<Eigen::Vector3d> getCentroid() const;
+	std::vector<Eigen::Matrix3d> getCovariance() const;
+
 	/* Set the input map points */
 	void setInputTarget(typename pcl::PointCloud<PointTargetType>::Ptr input);
 
 	/* Compute and get fitness score */
 	double getFitnessScore(double max_range = DBL_MAX);
+	double getFitnessScore(typename pcl::PointCloud<PointSourceType>::ConstPtr source_cloud, int* const nr, double max_range = DBL_MAX);
 
 	void updateVoxelGrid(typename pcl::PointCloud<PointTargetType>::Ptr new_cloud);
 

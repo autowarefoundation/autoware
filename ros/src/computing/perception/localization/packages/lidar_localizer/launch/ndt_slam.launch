@@ -1,0 +1,52 @@
+<!-- -->
+<launch>
+
+  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+
+  <arg name="sensor_frame" default="/velodyne" />
+  <arg name="base_link_frame" default="/base_link" />
+  <arg name="map_frame" default="/map" />
+
+  <arg name="init_pos_gnss" default="false" />
+
+  <arg name="resolution" default="1.0" />
+  <arg name="error_threshold" default="1.0" />
+  <arg name="step_size" default="0.1" />
+  <arg name="trans_epsilon" default="0.01" />
+
+  <arg name="with_mapping" default="false" />
+  <arg name="save_map_size" default="100.0" />
+  <arg name="save_map_leaf_size" default="0.2" />
+  <arg name="min_scan_range" default="5.0" />
+  <arg name="min_add_scan_shift" default="1.0" />
+
+  <arg name="use_odometry" default="false" />
+  <arg name="odometry_topic" default="/odom" />
+
+
+  <!-- rosrun lidar_localizer ndt_mapping  -->
+  <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
+    <param name="method_type" value="$(arg method_type)" />
+
+    <param name="sensor_frame" value="$(arg sensor_frame)" />
+    <param name="base_link_frame" value="$(arg base_link_frame)" />
+    <param name="map_frame" value="$(arg map_frame)" />
+
+    <param name="init_pos_gnss" value="$(arg init_pos_gnss)" />
+
+    <param name="resolution" value="$(arg resolution)" />
+    <param name="error_threshold" value="$(arg error_threshold)" />
+    <param name="step_size" value="$(arg step_size)" />
+    <param name="trans_epsilon" value="$(arg trans_epsilon)" />
+
+    <param name="with_mapping" value="$(arg with_mapping)" />
+    <param name="map_size" value="$(arg save_map_size)" />
+    <param name="map_leaf_size" value="$(arg save_map_leaf_size)" />
+    <param name="min_scan_range" value="$(arg min_scan_range)" />
+    <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
+
+    <param name="use_odometry" value="$(arg use_odometry)" />
+    <remap from="odometry_topic" to="$(arg odometry_topic)" />
+  </node>
+
+</launch>

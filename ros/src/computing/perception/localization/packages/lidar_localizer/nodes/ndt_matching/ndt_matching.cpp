@@ -997,6 +997,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
+    double match_ratio = 0;
     if (_method_type == MethodType::PCL_GENERIC)
     {
       align_start = std::chrono::system_clock::now();
@@ -1026,7 +1027,24 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       iteration = anh_ndt.getFinalNumIteration();
 
       getFitnessScore_start = std::chrono::system_clock::now();
-      fitness_score = anh_ndt.getFitnessScore();
+      pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_scan(new pcl::PointCloud<pcl::PointXYZ>);
+      pcl::PointXYZ p;
+      for (pcl::PointCloud<pcl::PointXYZ>::const_iterator item = filtered_scan_ptr->begin(); item != filtered_scan_ptr->end(); item++)
+      {
+
+        p.x = (double)item->x;
+        p.y = (double)item->y;
+        p.z = (double)item->z;
+
+        if (p.z >= 2.0)
+        {
+          tmp_scan->push_back(p);
+        }
+      }
+    //   fitness_score = anh_ndt.getFitnessScore();
+      int nr = 0;
+      fitness_score = anh_ndt.getFitnessScore(tmp_scan, &nr, 1.0);
+      match_ratio = (tmp_scan->points.size() >= 0) ? ((double)(nr) / (double)(tmp_scan->points.size())) : 0;
       getFitnessScore_end = std::chrono::system_clock::now();
 
       trans_probability = anh_ndt.getTransformationProbability();
@@ -1114,8 +1132,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     {
       use_predict_pose = 1;
     }
-    use_predict_pose = 0;
 
+    use_predict_pose = 0;
     if (use_predict_pose == 0)
     {
       current_pose.x = ndt_pose.x;
@@ -1402,7 +1420,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
         << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
         << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
         << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
+        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time << "," << match_ratio
         << std::endl;
 
     std::cout << "-----------------------------------------------------------------" << std::endl;

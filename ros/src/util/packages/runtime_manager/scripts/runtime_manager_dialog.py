@@ -61,6 +61,7 @@ from autoware_msgs.msg import ConfigCarDpm
 from autoware_msgs.msg import ConfigPedestrianDpm
 from autoware_msgs.msg import ConfigNdt
 from autoware_msgs.msg import ConfigNdtMapping
+from autoware_msgs.msg import ConfigNdtSlam
 from autoware_msgs.msg import ConfigApproximateNdtMapping
 from autoware_msgs.msg import ConfigNdtMappingOutput
 from autoware_msgs.msg import ConfigICP

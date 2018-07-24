@@ -11,6 +11,7 @@ find_package(OpenMP)
 if (OPENMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DOPENMP_FOUND)
 endif ()
 
 find_package(CUDA)
@@ -35,16 +36,19 @@ endif ()
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
+        tf
         std_msgs
         nav_msgs
-        tf
-        pcl_ros
         sensor_msgs
         autoware_msgs
-        pcl_conversions
+        visualization_msgs
+        message_filters
         velodyne_pointcloud
+        pcl_ros
+        pcl_conversions
         ndt_tku
         ndt_cpu
+        points_localizer_library
         ${PCL_OPENMP_PACKAGES}
         )
 
@@ -53,7 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 catkin_package(
         CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
-        DEPENDS PCL
+        DEPENDS PCL points_localizer_library
 )
 
 ###########
@@ -112,6 +116,17 @@ add_dependencies(ndt_mapping_tku ${catkin_EXPORTED_TARGETS})
 add_executable(mapping nodes/ndt_mapping_tku/mapping.cpp)
 target_link_libraries(mapping ${catkin_LIBRARIES})
 add_dependencies(mapping ${catkin_EXPORTED_TARGETS})
+
+add_executable(ndt_slam
+  nodes/ndt_slam/ndt_slam_node.cpp
+  nodes/ndt_slam/ndt_slam_core.cpp
+)
+if(CUDA_FOUND)
+target_include_directories(ndt_slam PRIVATE ${CUDA_INCLUDE_DIRS})
+endif()
+target_link_libraries(ndt_slam ${catkin_LIBRARIES})
+add_dependencies(ndt_slam autoware_msgs_generate_messages_cpp)
+
 
 add_library(ndt_matching_monitor_lib SHARED
         nodes/ndt_matching_monitor/ndt_matching_monitor.h

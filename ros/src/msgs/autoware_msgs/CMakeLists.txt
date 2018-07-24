@@ -72,6 +72,7 @@ add_message_files(
             config/ConfigNdt.msg
             config/ConfigNdtMapping.msg
             config/ConfigNdtMappingOutput.msg
+            config/ConfigNdtSlam.msg
             config/ConfigPedestrianDpm.msg
             config/ConfigPedestrianFusion.msg
             config/ConfigPedestrianKf.msg

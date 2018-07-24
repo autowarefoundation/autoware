@@ -75,6 +75,40 @@ subs :
       - name : icp_matching
         cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+      - name : ndt_slam
+        desc : ndt_slam
+        cmd  : roslaunch lidar_localizer ndt_slam.launch
+        param: ndt_slam
+        gui  :
+          dialog_width  : 700
+          dialog_height : 600
+          map_frame :
+            flags : [ nl ]
+          x  :
+            user_category : ''
+          yaw:
+            flags : [ nl ]
+          max_iterations:
+            flags : [ nl ]
+          with_mapping :
+            user_category : ''
+            flags : [ nl ]
+          save_map_size :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          save_map_leaf_size :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          min_scan_range :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          min_add_scan_shift:
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+             flags : [ nl ]
+          odometry_topic :
+             depend      : use_odom
+             depend_bool : 'lambda v : v == 1'
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -1080,7 +1114,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type
@@ -1475,6 +1509,186 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
+
+  - name  : ndt_slam
+    topic : /config/ndtslam
+    msg   : ConfigNdtSlam
+    vars  :
+    - name  : method_type
+      desc  : Method Type
+      label : Method Type
+      kind  : radio_box
+      choices:
+      - pcl_generic
+      - pcl_anh
+      - pcl_anh_gpu
+      - pcl_openmp
+      descs :
+      - PCL Generic Implementation
+      - PCL ANH Implementation
+      - PCL ANH GPU Implementation
+      - PCL OpenMP  Implementation
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : sensor_frame
+      desc      : sensor_frame desc sample
+      label     : Sensor Frame
+      v         : /velodyne
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : base_link_frame
+      desc      : base_link desc sample
+      label     : Base Link Frame
+      v         : /base_link
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : map_frame
+      desc      : map_frame desc sample
+      label     : Map Frame
+      v         : /map
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : init_pos_gnss
+      desc  : init_pos_gnss desc sample
+      kind  : radio_box
+      choices:
+      - Initial Pos
+      - GNSS
+      descs :
+      - Initial Pos desc sample
+      - GNSS desc sample
+      v     : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : x
+      desc  : x desc sample
+      label : 'x:'
+      v     : 0.0
+    - name  : y
+      desc  : y desc sample
+      label : 'y:'
+      v     : 0.0
+    - name  : z
+      desc  : z desc sample
+      label : 'z:'
+      v     : 0.0
+    - name  : roll
+      desc  : roll desc sample
+      label : 'roll:'
+      v     : 0.0
+    - name  : pitch
+      desc  : pitch desc sample
+      label : 'pitch:'
+      v     : 0.0
+    - name  : yaw
+      desc  : yaw desc sample
+      label : 'yaw:'
+      v     : 0.0
+    - name  : resolution
+      desc  : resolution desc sample
+      label : Resolution
+      min   : 0
+      max   : 10
+      v     : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : step_size
+      desc  : step_size desc sample
+      label : Step Size
+      min   : 0
+      max   : 1
+      v     : 0.1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : trans_epsilon
+      desc  : trans_epsilon desc sample
+      label : Transformation Epsilon
+      min   : 0
+      max   : 0.1
+      v     : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : max_iterations
+      desc  : max_iterations desc sample
+      label : Maximum Iterations
+      min   : 1
+      max   : 300
+      v     : 30
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : with_mapping
+      desc  : with mapping
+      label : With Mapping
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : save_map_size
+      desc  : save_map_size
+      label : Save Map Size
+      min   : 0.0
+      max   : 200.0
+      v     : 100.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : save_map_leaf_size
+      desc  : save_map_leaf_size
+      label : Save Map Leaf Size
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : min_scan_range
+      desc  : Ignore points closer than this value (meters) (default 5.0)
+      label : Min Scan Range
+      min   : 0.0
+      max   : 30.0
+      v     : 5.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : min_add_scan_shift
+      desc  : Minimum distance between points to be added to the final map (default 1.0)
+      label : Min Add Scan Shift
+      min   : 0.0
+      max   : 10.0
+      v     : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : use_odometry
+      desc  : Use Odometry to try to reduce errors
+      label : Use Odometry
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : odometry_topic
+      desc  : odometry_topic
+      label : Odomery Topic
+      v     : /odom
+      kind  : str
+      cmd_param:
+        dash      : ''
+        delim    : ':='
 
   - name  : vel_pose_connect
     vars  :
