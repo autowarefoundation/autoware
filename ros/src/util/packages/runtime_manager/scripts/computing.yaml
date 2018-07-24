@@ -996,38 +996,46 @@ params :
     vars  :
     - name    : tracker_input_topic
       desc    : input_topic desc sample
-      label   : input topic
+      label   : 'input topic'
       kind    : str
       v       : /detected_objects_range
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : output_topic_
-      desc    : output_topic desc sample
-      label   : output topic
+    - name    : tracker_output_jskbb_topic
+      desc    : tracker_output_jskbb_topic desc sample
+      label   : 'output jskbb topic'
       kind    : str
-      v       : /tracked_objects_array
+      v       : /bounding_boxes_tracked
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : pointcloud_frame_
-      desc    : pointcloud_frame_ desc sample
+    - name    : tracker_output_detected_topic
+      desc    : tracker_output_detected_topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /detected_objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : pointcloud_frame
+      desc    : pointcloud_frame desc sample
       label   : 'pointcloud frame'
       kind    : str
       v       : velodyne
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracking_frame_
-      desc    : trakcing_frame_ desc sample
+    - name    : tracking_frame
+      desc    : trakcing_frame desc sample
       label   : 'tracking frame'
       kind    : str
       v       : world
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : life_time_thres_
-      desc    : life_time_thres_ desc sample
+    - name    : life_time_thres
+      desc    : life_time_thres desc sample
       label   : 'life time thres'
       min       : 1
       max       : 20
@@ -1035,17 +1043,17 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : gating_thres_
-      desc    : gating_thres_ desc sample
+    - name    : gating_thres
+      desc    : gating_thres desc sample
       label   : 'gating thres'
       min       : 0
       max       : 100
-      v       : 99
+      v       : 100
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : gate_probability_
-      desc    : gate_probability_ desc sample
+    - name    : gate_probability
+      desc    : gate_probability desc sample
       label   : 'gate probability'
       min       : 0
       max       : 1
@@ -1053,8 +1061,8 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : detection_probability_
-      desc    : detection_probability_ desc sample
+    - name    : detection_probability
+      desc    : detection_probability desc sample
       label   : 'detection probability'
       min       : 0
       max       : 1
@@ -1062,8 +1070,8 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance_thres_
-      desc    : distance_thres_ desc sample
+    - name    : distance_thres
+      desc    : distance_thres desc sample
       label   : 'distance thres'
       min       : 0
       max       : 100
@@ -1071,12 +1079,12 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : static_distance_thres_
-      desc    : static_distance_thres_ desc sample
-      label   : 'static distance thres'
+    - name    : static_velocity_thres
+      desc    : static_velocity_thres desc sample
+      label   : 'static velocity thres'
       min       : 0
-      max       : 10
-      v       : 3.0
+      max       : 3
+      v       : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
