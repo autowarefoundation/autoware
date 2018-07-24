@@ -82,11 +82,6 @@ void LibDeadRekoner::updateOdometry(const sensor_msgs::Imu& imu)
 
     static bool is_first = true;
     static geometry_msgs::Quaternion imu_orientation_first = imu.orientation;
-    // imu_orientation.x = imu.orientation.x - imu_orientation_first.x;
-    // imu_orientation.y = imu.orientation.y - imu_orientation_first.y;
-    // imu_orientation.z = imu.orientation.z - imu_orientation_first.z;
-    // imu_orientation.w = imu.orientation.w - imu_orientation_first.w;
-
 
     double fr = 0, fp = 0, fa = 0;
     tf::Quaternion ftf_quaternion;

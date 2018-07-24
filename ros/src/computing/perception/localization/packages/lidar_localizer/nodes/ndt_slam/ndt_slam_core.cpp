@@ -96,6 +96,7 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     localizer_ptr_->setMaximumIterations(max_iterations);
     ROS_INFO("trans_epsilon: %lf, step_size: %lf, resolution: %lf, max_iterations: %d", trans_epsilon, step_size, resolution, max_iterations);
 
+    //TODO save_map_size get param
     double save_map_size = 100.0;
     double save_map_leaf_size = 0.2;
     double min_scan_range = 5.0;
@@ -122,13 +123,6 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     nh_.getParam("tf_pitch", tf_pose.pitch);
     nh_.getParam("tf_yaw", tf_pose.yaw);
     ROS_INFO("tf(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf", tf_pose.x, tf_pose.y, tf_pose.z, tf_pose.roll, tf_pose.pitch, tf_pose.yaw);
-
-    // tf_pose.x *= -1;
-    // tf_pose.y *= -1;
-    // tf_pose.z *= -1;
-    // tf_pose.roll *= -1;
-    // tf_pose.pitch *= -1;
-    // tf_pose.yaw *= -1;
 
     tf_btol_ = convertToEigenMatrix4f(tf_pose);
 
@@ -271,7 +265,7 @@ void NdtSlam::pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstP
 //    if(1) {
         pcl::PointCloud<PointSource> points_raw;
         pcl::fromROSMsg(*points_raw_msg_ptr, points_raw);
-        //localizer_ptr_->updateMap(points_raw);
+        localizer_ptr_->updateMap(points_raw);
         static int loop_count = 0;
         //TODO timer
         if(++loop_count >= 30) {
