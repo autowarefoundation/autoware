@@ -1,0 +1,18 @@
+<launch>
+    <arg name="detected_objects_range" default="/detected_objects_range" /> <!-- PointCloud source topic-->
+    <arg name="detected_objects_vision" default="/detected_objects_vision" /> <!-- Raw Image source topic to be rectified-->
+    <arg name="camera_info_src" default="/camera_info" /> <!-- CameraInfo source topic-->
+    <arg name="sync_topics" default="false" /> <!-- CameraInfo source topic-->
+
+    <node name="autoware_image_rectifier" pkg="image_processor" type="image_rectifier" output="screen">
+        <param name="image_src" value="$(arg image_src)" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+    <node name="range_vision_fusion_01" pkg="range_vision_fusion" type="range_vision_fusion" output="screen">
+        <param name="detected_objects_range" value="$(arg points_src)" />
+        <param name="detected_objects_vision" value="$(arg detected_objects_vision)" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+
+</launch>
