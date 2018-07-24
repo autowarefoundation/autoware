@@ -36,6 +36,9 @@ if (LIBSSH2_FOUND)
             lib/pos_db/SendData.cpp
             lib/pos_db/util.cpp
             )
+    target_link_libraries(pos_db
+            ${LIBSSH2_LIBRARIES}
+            )
 
     add_executable(pos_downloader
             nodes/pos_downloader/pos_downloader.cpp)
