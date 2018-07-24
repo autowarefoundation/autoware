@@ -262,7 +262,7 @@ subs :
       - name : lidar_imm_ukf_pda_track
         desc : lidar_imm_ukf_pda_track desc sample
         cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
-        param: imm_ukf_pda_tracker
+        param: immukfpda_param
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -992,21 +992,21 @@ params :
       max   : 10
       v     : 9
 
-  - name  : lidar_imm_ukf_pda_track
+  - name  : immukfpda_param
     vars  :
-    - name    : input_topic_
+    - name    : tracker_input_topic
       desc    : input_topic desc sample
-      label   : 'input topic'
+      label   : input topic
       kind    : str
-      v       : /cloud_clusters
+      v       : /detected_objects_range
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : output_topic_
       desc    : output_topic desc sample
-      label   : 'output topic'
+      label   : output topic
       kind    : str
-      v       : /tracking_cluster_array
+      v       : /tracked_objects_array
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1039,8 +1039,8 @@ params :
       desc    : gating_thres_ desc sample
       label   : 'gating thres'
       min       : 0
-      max       : 20
-      v       : 9.22
+      max       : 100
+      v       : 99
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1080,7 +1080,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : kf_contour_tracker
     vars  :
     - name : tracking_type

@@ -145,8 +145,10 @@ UKF::UKF()
   x_merge_yaw_ = 0;
 }
 
-void UKF::initialize(const Eigen::VectorXd& z, const double timestamp)
+void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
 {
+  ukf_id_ = target_id;
+
   // first measurement
   x_merge_ << 1, 1, 0, 0, 0.1;
 
@@ -189,6 +191,9 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp)
 
   // prevent transform pose error, if the condition meets, target_.jskBB_ would be updated
   jsk_bb_.pose.orientation.x = 1.0;
+
+  nis_paths_.push_back(0);
+  nis_paths_.push_back(0);
 }
 
 void UKF::updateModeProb(const std::vector<double>& lambda_vec)
@@ -414,7 +419,7 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
 {
   double px_p = p_x;
   double py_p = p_y;
-  double v_p = v;
+  double v_p = v*0.9; // aim to converge velocity for static objects
 
   double yaw_p = yaw;
   double yawd_p = yawd;

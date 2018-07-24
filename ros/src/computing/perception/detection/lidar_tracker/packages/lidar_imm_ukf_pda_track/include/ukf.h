@@ -2,17 +2,38 @@
 #define OBJECT_TRACKING_UKF_H
 
 #include "Eigen/Dense"
+#include <ros/ros.h>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
+#include <geometry_msgs/PoseStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
+
+class LanePoint
+{
+public:
+  int lnid;
+  int flid;
+  int fpid;
+  double lw;
+  double rw;
+  double lw_ly;
+  double lw_bx;
+  double rw_ly;
+  double rw_bx;
+  double direction;
+  double curvature;
+  geometry_msgs::PoseStamped map_fp_pose;
+};
 
 class UKF
 {
 public:
+  int ukf_id_;
+
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -155,9 +176,14 @@ public:
   // for env classification
   Eigen::VectorXd init_meas_;
   double dist_from_init_;
+  std::vector<double> vel_history_;
 
   std::vector<Eigen::VectorXd> local2local_;
   std::vector<double> local2localYawVec_;
+
+  std::vector<std::vector<LanePoint>> objectPaths;
+
+  std::vector<double> nis_paths_;
 
   double x_merge_yaw_;
 
@@ -170,7 +196,7 @@ public:
 
   void updateYawWithHighProb();
 
-  void initialize(const Eigen::VectorXd& z, const double timestamp);
+  void initialize(const Eigen::VectorXd& z, const double timestamp, const int target_ind);
 
   void updateModeProb(const std::vector<double>& lambda_vec);
 
