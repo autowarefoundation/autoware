@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_driveworks_interface)
 
-set(CMAKE_CXX_FLAGS "-O2 -s  -std=c++11 -Wno-error=unused-parameter")
+set(CMAKE_CXX_FLAGS "-O2 -s  -Wno-error=unused-parameter")
 
 
 find_package(catkin REQUIRED COMPONENTS

@@ -23,7 +23,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS} 
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_executable(vectacam_node nodes/vectacam/vectacam_node.cpp nodes/vectacam/VectaCam.cpp)
 

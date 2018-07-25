@@ -46,7 +46,7 @@ catkin_package(
         autoware_msgs
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -g ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall -g ${CMAKE_CXX_FLAGS}")
 
 EXECUTE_PROCESS(
         COMMAND pkg-config --variable=host_bins Qt5Core

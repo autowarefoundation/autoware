@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PCL)
 find_package(Qt5Core REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS

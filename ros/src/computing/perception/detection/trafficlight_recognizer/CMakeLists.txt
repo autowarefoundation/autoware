@@ -78,7 +78,7 @@ catkin_package(
         LIBRARIES libcontext
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
