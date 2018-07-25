@@ -9,10 +9,10 @@
 
   <arg name="init_pos_gnss" default="false" />
 
-  <arg name="resolution" default="1.0" />
-  <arg name="error_threshold" default="1.0" />
-  <arg name="step_size" default="0.1" />
   <arg name="trans_epsilon" default="0.01" />
+  <arg name="step_size" default="0.1" />
+  <arg name="resolution" default="1.0" />
+  <arg name="max_iterations" default="30.0" />
 
   <arg name="with_mapping" default="false" />
   <arg name="save_map_size" default="100.0" />
@@ -34,14 +34,14 @@
 
     <param name="init_pos_gnss" value="$(arg init_pos_gnss)" />
 
-    <param name="resolution" value="$(arg resolution)" />
-    <param name="error_threshold" value="$(arg error_threshold)" />
-    <param name="step_size" value="$(arg step_size)" />
     <param name="trans_epsilon" value="$(arg trans_epsilon)" />
+    <param name="step_size" value="$(arg step_size)" />
+    <param name="resolution" value="$(arg resolution)" />
+    <param name="max_iterations" value="$(arg max_iterations)" />
 
     <param name="with_mapping" value="$(arg with_mapping)" />
-    <param name="map_size" value="$(arg save_map_size)" />
-    <param name="map_leaf_size" value="$(arg save_map_leaf_size)" />
+    <param name="save_map_size" value="$(arg save_map_size)" />
+    <param name="save_map_leaf_size" value="$(arg save_map_leaf_size)" />
     <param name="min_scan_range" value="$(arg min_scan_range)" />
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
 
