@@ -391,6 +391,9 @@ namespace pcl_omp
       getFitnessScore (double max_range = std::numeric_limits<double>::max ());
 
 
+      inline double
+      getFitnessScore (PointCloudSourceConstPtr source_cloud, int* const nr, double max_range = std::numeric_limits<double>::max ());
+
       /** \brief Obtain the Euclidean fitness score (e.g., sum of squared distances from the source to the target)
         * from two sets of correspondence distances (distances between source and target points)
         * \param[in] distances_a the first set of distances between correspondences

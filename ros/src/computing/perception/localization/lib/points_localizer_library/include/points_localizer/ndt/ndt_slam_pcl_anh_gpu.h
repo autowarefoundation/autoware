@@ -84,6 +84,7 @@
         protected:
             void align(const Pose& predict_pose) override;
             double getFitnessScore() override;
+            double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override;
             void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override;
             void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override;
             Pose getFinalPose() override;
@@ -166,6 +167,7 @@
     template <class PointSource, class PointTarget>
     void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
     {
+        //TODO
         boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
         ndt_ptr_->setInputTarget(non_const_map_ptr);
     }
@@ -173,6 +175,7 @@
     template <class PointSource, class PointTarget>
     void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
     {
+        //TODO
         boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_scan_ptr(new pcl::PointCloud<PointSource>(*scan_ptr));
         ndt_ptr_->setInputSource(non_const_scan_ptr);
     }
@@ -181,6 +184,14 @@
     double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore()
     {
         return ndt_ptr_->getFitnessScore();
+    }
+
+    template <class PointSource, class PointTarget>
+    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
+    {
+        //TODO
+        boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_source_ptr(new pcl::PointCloud<PointSource>(*source_cloud));
+        return ndt_ptr_->getFitnessScore(non_const_source_ptr, nr, max_range); //TODO
     }
 
     template <class PointSource, class PointTarget>

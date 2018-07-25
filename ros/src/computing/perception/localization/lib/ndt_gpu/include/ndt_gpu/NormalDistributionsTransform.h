@@ -37,7 +37,8 @@ public:
 
 	/* Compute and get fitness score */
 	double getFitnessScore(double max_range = DBL_MAX);
-
+	double getFitnessScore(pcl::PointCloud<pcl::PointXYZ>::Ptr input, int* const nr, double max_range = DBL_MAX);
+	double getFitnessScore(pcl::PointCloud<pcl::PointXYZI>::Ptr input, int* const nr, double max_range = DBL_MAX);
 	~GNormalDistributionsTransform();
 
 protected:

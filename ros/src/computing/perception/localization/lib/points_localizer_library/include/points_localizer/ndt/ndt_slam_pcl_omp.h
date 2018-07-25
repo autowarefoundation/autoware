@@ -85,6 +85,7 @@
         protected:
             void align(const Pose& predict_pose) override;
             double getFitnessScore() override;
+            double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override;
             void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& map_ptr) override;
             void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& scan_ptr) override;
             Pose getFinalPose() override;
@@ -180,6 +181,12 @@
     double LibNdtSlamPCLOMP<PointSource, PointTarget>::getFitnessScore()
     {
         return ndt_ptr_->getFitnessScore();
+    }
+
+    template <class PointSource, class PointTarget>
+    double LibNdtSlamPCLOMP<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
+    {
+        return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range);
     }
 
     template <class PointSource, class PointTarget>

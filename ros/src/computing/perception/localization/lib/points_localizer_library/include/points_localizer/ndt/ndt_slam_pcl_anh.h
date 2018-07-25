@@ -171,9 +171,7 @@ double LibNdtSlamPCLANH<PointSource, PointTarget>::getFitnessScore()
 template <class PointSource, class PointTarget>
 double LibNdtSlamPCLANH<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
 {
-    double s = ndt_ptr_->getFitnessScore(source_cloud, nr, max_range);
-    score = (source_cloud->points.size() > 0) ? (static_cast<double>(*nr) / static_cast<double>(source_cloud->points.size())) : 0;
-    return s;
+    return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range);
 }
 
 template <class PointSource, class PointTarget>

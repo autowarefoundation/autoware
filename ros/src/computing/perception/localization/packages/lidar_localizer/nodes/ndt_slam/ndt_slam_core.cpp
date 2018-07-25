@@ -168,6 +168,7 @@ void NdtSlam::configCallback(const autoware_msgs::ConfigNdtSlam::ConstPtr& confi
     init_pos_gnss_ = config_msg_ptr->init_pos_gnss;
     static Pose static_initial_pose = Pose(0, 0, 0, 0, 0, 0);
     const Pose initial_pose = Pose(config_msg_ptr->x, config_msg_ptr->y, config_msg_ptr->z, config_msg_ptr->roll, config_msg_ptr->pitch, config_msg_ptr->yaw);
+    //TODO
     if(init_pos_gnss_ == false && static_initial_pose != initial_pose) {
         static_initial_pose = initial_pose;
         const auto initial_localizer_pose = transformToPose(initial_pose, tf_btol_);
@@ -285,6 +286,9 @@ void NdtSlam::pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstP
     }
     int nr = 0;
     const double score = localizer_ptr_->getFitnessScore(points_filtered_tmp, &nr, 1.0);
+    //const double score = localizer_ptr_->getFitnessScore();
+    std::cout << "FitnessScore: " << score << std::endl;
+    std::cout << "nr: " << nr << std::endl;
     const double ratio = (points_filtered_tmp->points.size() > 0) ? (static_cast<double>(nr) / static_cast<double>(points_filtered_tmp->points.size())) : 0;
 
     reliability_.setScore(ratio);

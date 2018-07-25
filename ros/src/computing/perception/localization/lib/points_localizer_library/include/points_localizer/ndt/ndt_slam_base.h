@@ -72,11 +72,7 @@ class LibNdtSlamBase : public LibLocalizer<PointSource, PointTarget>
         virtual double getTransformationProbability() const = 0;
 
         virtual double getFitnessScore() = 0;
-        //TODO
-        virtual double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
-        {
-            return getFitnessScore();
-        };
+        virtual double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) = 0;
 
         virtual std::stringstream logFileContent() const override;
 };
