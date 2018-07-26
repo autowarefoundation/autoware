@@ -1,7 +1,7 @@
 # OpenPlanner - Local Planner
 
 previously known as dp_planner, now it is a collection of node with each task of local planning is separated.
-for more details about OpenPlanner check our paper [Open Source Integrated Planner for Autonomous Navigation in Highly Dynamic Environments] (https://www.fujipress.jp/jrm/rb/robot002900040668/)
+for more details about OpenPlanner check our paper [Open Source Integrated Planner for Autonomous Navigation in Highly Dynamic Environments](https://www.fujipress.jp/jrm/rb/robot002900040668/)
 
 to run the local planner user needs to run all nodes in "OpenPlanner - Local planning"
 for more details about how to run [check tutorial video](https://youtu.be/BS5nLtBsXPE)
