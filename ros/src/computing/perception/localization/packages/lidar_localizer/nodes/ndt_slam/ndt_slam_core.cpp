@@ -96,7 +96,6 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
     localizer_ptr_->setMaximumIterations(max_iterations);
     ROS_INFO("trans_epsilon: %lf, step_size: %lf, resolution: %lf, max_iterations: %d", trans_epsilon, step_size, resolution, max_iterations);
 
-    //TODO save_map_size get param
     double save_map_size = 100.0;
     double save_map_leaf_size = 0.2;
     double min_scan_range = 5.0;
@@ -114,16 +113,31 @@ NdtSlam::NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh)
 
     private_nh_.getParam("use_odometry", use_odometry_);
 
-    //TODO: get from tf
     Pose tf_pose;
-    nh_.getParam("tf_x", tf_pose.x);
-    nh_.getParam("tf_y", tf_pose.y);
-    nh_.getParam("tf_z", tf_pose.z);
-    nh_.getParam("tf_roll", tf_pose.roll);
-    nh_.getParam("tf_pitch", tf_pose.pitch);
-    nh_.getParam("tf_yaw", tf_pose.yaw);
-    ROS_INFO("tf(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf", tf_pose.x, tf_pose.y, tf_pose.z, tf_pose.roll, tf_pose.pitch, tf_pose.yaw);
+    try {
+        tf::StampedTransform tf_base_link_to_sensor;
+        ros::Duration(0.1).sleep();  //wait for tf. especially use sim_time
+        tf_listener_.waitForTransform(base_link_frame_, sensor_frame_, ros::Time(0), ros::Duration(1.0));
+        tf_listener_.lookupTransform(base_link_frame_, sensor_frame_, ros::Time(0), tf_base_link_to_sensor);
+        tf_pose.x = tf_base_link_to_sensor.getOrigin().x();
+        tf_pose.y = tf_base_link_to_sensor.getOrigin().y();
+        tf_pose.z = tf_base_link_to_sensor.getOrigin().z();
+        tf::Matrix3x3(tf_base_link_to_sensor.getRotation()).getRPY(tf_pose.roll, tf_pose.pitch, tf_pose.yaw);
+    }
+    catch (tf::TransformException ex) {
+        ROS_ERROR("%s", ex.what());
+        ROS_ERROR("Please publish TF %s to %s", base_link_frame_.c_str(), sensor_frame_.c_str());
+        //exit(1);
 
+        // nh_.getParam("tf_x", tf_pose.x);
+        // nh_.getParam("tf_y", tf_pose.y);
+        // nh_.getParam("tf_z", tf_pose.z);
+        // nh_.getParam("tf_roll", tf_pose.roll);
+        // nh_.getParam("tf_pitch", tf_pose.pitch);
+        // nh_.getParam("tf_yaw", tf_pose.yaw);
+    }
+
+    ROS_INFO("tf(x, y, z, roll, pitch, yaw): %lf, %lf, %lf, %lf, %lf, %lf", tf_pose.x, tf_pose.y, tf_pose.z, tf_pose.roll, tf_pose.pitch, tf_pose.yaw);
     tf_btol_ = convertToEigenMatrix4f(tf_pose);
 
     const int points_buffer = with_mapping_ ? 10000 : 1; //TODO
