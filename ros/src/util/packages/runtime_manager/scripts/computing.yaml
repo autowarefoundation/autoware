@@ -81,7 +81,11 @@ subs :
         param: ndt_slam
         gui  :
           dialog_width  : 700
-          dialog_height : 600
+          dialog_height : 700
+          method_type :
+            flags : [ nl ]
+          points_filtered_topic :
+            flags : [ nl ]
           map_frame :
             flags : [ nl ]
           x  :
@@ -107,7 +111,7 @@ subs :
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
           odometry_topic :
-             depend      : use_odom
+             depend      : use_odometry
              depend_bool : 'lambda v : v == 1'
 
     - name : autoware_connector
@@ -1532,6 +1536,22 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name      : points_raw_topic
+      desc      : points_raw_topic
+      label     : Raw Points Topic
+      v         : /points_raw
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : points_filtered_topic
+      desc      : points_filtered_topic
+      label     : Filtered Points Topic
+      v         : /filtered_points
+      kind      : str
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : sensor_frame
       desc      : sensor_frame desc sample
       label     : Sensor Frame

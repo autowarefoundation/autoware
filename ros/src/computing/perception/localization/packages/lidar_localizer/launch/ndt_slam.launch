@@ -3,6 +3,9 @@
 
   <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
+  <arg name="points_raw_topic" default="/points_raw" />
+  <arg name="points_filtered_topic" default="/filtered_points" />
+
   <arg name="sensor_frame" default="/velodyne" />
   <arg name="base_link_frame" default="/base_link" />
   <arg name="map_frame" default="/map" />
@@ -28,6 +31,9 @@
   <node pkg="lidar_localizer" type="ndt_slam" name="ndt_slam" output="screen">
     <param name="method_type" value="$(arg method_type)" />
 
+    <remap from="points_raw" to="$(arg points_raw_topic)" />
+    <remap from="filtered_points" to="$(arg points_filtered_topic)" />
+
     <param name="sensor_frame" value="$(arg sensor_frame)" />
     <param name="base_link_frame" value="$(arg base_link_frame)" />
     <param name="map_frame" value="$(arg map_frame)" />
@@ -46,7 +52,7 @@
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
 
     <param name="use_odometry" value="$(arg use_odometry)" />
-    <remap from="odometry_topic" to="$(arg odometry_topic)" />
+    <remap from="odom" to="$(arg odometry_topic)" />
   </node>
 
 </launch>
