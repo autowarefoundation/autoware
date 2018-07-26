@@ -40,7 +40,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
 
     visualization_msgs::Marker id;
 
-    id.lifetime = ros::Duration(0.2);
+    id.lifetime = ros::Duration(1.0);
     id.header.frame_id = pointcloud_frame_;
     id.header.stamp = input.header.stamp;
     id.ns = "id";
@@ -49,6 +49,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     // green
     id.color.g = 1.0f;
     id.color.a = 1.0;
+    // id.id = input.objects[i].id;
     id.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
@@ -83,7 +84,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     pub_id_.publish(id);
 
     visualization_msgs::Marker arrow;
-    arrow.lifetime = ros::Duration(0.1);
+    arrow.lifetime = ros::Duration(1.0);
 
     // visualize velocity arrow only if its status is Stable
     std::string label = input.objects[i].label;
@@ -100,6 +101,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     // green
     arrow.color.g = 1.0f;
     arrow.color.a = 1.0;
+  // arrow.id = input.objects[i].id;
     arrow.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header

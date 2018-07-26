@@ -121,7 +121,8 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
 {
   transformed_input.header = input.header;
   try{
-    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(1.0));
+    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+    // todo: make transform obejct for later use
   }
   catch (tf::TransformException ex){
     std::cout << "cannot transform" << std::endl;
