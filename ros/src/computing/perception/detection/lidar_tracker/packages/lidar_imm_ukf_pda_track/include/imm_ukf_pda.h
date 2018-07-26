@@ -74,6 +74,8 @@ private:
 
   ModelBasePrediction prediction_;
 
+  std::ofstream csv_file_;
+
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
   void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,

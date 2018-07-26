@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
@@ -29,6 +31,10 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
+  csv_file_.open ("/home/kosuke/example.csv", std::ios::app);
+  // csv_file_.open ("/home/kosuke/example.csv");
+  csv_file_ << "Num tracking targets"<<";"<<" Time(ms)"<<std::endl;
+
   pub_jskbbox_array_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes_tracked", 1);
   pub_object_array_  = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
   pub_points_        = node_handle_.advertise<visualization_msgs::Marker>("/points/debug", 1);
@@ -47,8 +53,17 @@ void ImmUkfPda::run()
   sub_detected_array_ = node_handle_.subscribe("/detected_objects_range", 1, &ImmUkfPda::callback, this);
 }
 
+double calcTime()
+{
+  struct::timespec getTime;
+  clock_gettime(CLOCK_MONOTONIC, &getTime);
+  return (getTime.tv_sec + getTime.tv_nsec*1e-9) *1000;
+}
+
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
+  double start = calcTime();
+
   autoware_msgs::DetectedObjectArray transformed_input;
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
@@ -61,6 +76,11 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
+
+  double end = calcTime();
+  double elapsed = end - start;
+   csv_file_ << targets_.size() << ";" << elapsed << std::endl;
+
 
   if(use_vectormap_)
   {

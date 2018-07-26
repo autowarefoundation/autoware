@@ -6,9 +6,6 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <tf/transform_listener.h>
 
-// #include "autoware_msgs/CloudCluster.h"
-// #include "autoware_msgs/CloudClusterArray.h"
-
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 

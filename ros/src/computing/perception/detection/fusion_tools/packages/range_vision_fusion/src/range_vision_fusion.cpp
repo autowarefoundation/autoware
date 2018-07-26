@@ -352,6 +352,27 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
         }
     }
 
+    autoware_msgs::DetectedObjectArray all_objects;
+    all_objects.header = in_range_detections->header;
+    for(size_t i_in_range_object = 0; i_in_range_object < in_range_detections->objects.size(); i_in_range_object++)
+    {
+      bool is_fused_object= false;
+      for(size_t i_fused_object = 0; i_fused_object < fused_objects.objects.size(); i_fused_object++)
+      {
+        if(in_range_detections->objects[i_in_range_object].id == fused_objects.objects[i_fused_object].id)
+        {
+          all_objects.objects.push_back(fused_objects.objects[i_fused_object]);
+          is_fused_object = true;
+          break;
+        }
+      }
+      if(!is_fused_object)
+      {
+        all_objects.objects.push_back(in_range_detections->objects[i_in_range_object]);
+      }
+    }
+    fused_objects = all_objects;
+
     /*
     for(size_t i = 0; i < vision_range_assignments.size(); i++)
     {
@@ -406,7 +427,6 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         }
         return;
     }
-
     if (!camera_lidar_tf_ok_)
     {
         camera_lidar_tf_ = FindTransform(image_frame_id_,
@@ -441,6 +461,10 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
 
     for(const autoware_msgs::DetectedObject& object : in_objects.objects)
     {
+      if(object.label == "unknown")
+      {
+        continue;
+      }
         visualization_msgs::Marker marker;
         marker.header = in_objects.header;
         marker.ns = "range_vision_fusion";
@@ -591,7 +615,7 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detected_objects_vision");
     ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
 
-    in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
+    in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera0_rotated/camera_info");
     ROS_INFO("[%s] camera_info_src: %s", __APP_NAME__, camera_info_src.c_str());
 
     in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.5);

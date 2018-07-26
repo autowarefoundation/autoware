@@ -96,29 +96,29 @@ void ModelBasePrediction::adasMapAssitDirectionAndPrediction(const autoware_msgs
               // map_pose.pose.orientation.w = quat.getW();
 
 
-              visualization_msgs::Marker arrow;
-              arrow.lifetime = ros::Duration(0.1);
-              arrow.header.frame_id = "map";
-              arrow.header.stamp = input.header.stamp;
-              arrow.ns = "arrow";
-              arrow.action = visualization_msgs::Marker::ADD;
-              arrow.type = visualization_msgs::Marker::ARROW;
-              // green
-              arrow.color.g = 1.0f;
-              arrow.color.a = 1.0;
-
-              arrow.color.r = 1.0;
-              arrow.id = i*10+ith_path;
-
-              // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-              arrow.pose = map_pose.pose;
-
-              // Set the scale of the arrow -- 1x1x1 here means 1m on a side
-              arrow.scale.x = 3;
-              arrow.scale.y = 0.5;
-              arrow.scale.z = 0.5;
-
-              directionMarkers.markers.push_back(arrow);
+              // visualization_msgs::Marker arrow;
+              // arrow.lifetime = ros::Duration(0.1);
+              // arrow.header.frame_id = "map";
+              // arrow.header.stamp = input.header.stamp;
+              // arrow.ns = "arrow";
+              // arrow.action = visualization_msgs::Marker::ADD;
+              // arrow.type = visualization_msgs::Marker::ARROW;
+              // // green
+              // arrow.color.g = 1.0f;
+              // arrow.color.a = 1.0;
+              //
+              // arrow.color.r = 1.0;
+              // arrow.id = i*10+ith_path;
+              //
+              // // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+              // arrow.pose = map_pose.pose;
+              //
+              // // Set the scale of the arrow -- 1x1x1 here means 1m on a side
+              // arrow.scale.x = 3;
+              // arrow.scale.y = 0.5;
+              // arrow.scale.z = 0.5;
+              //
+              // directionMarkers.markers.push_back(arrow);
             }
 
             //add new lane point
