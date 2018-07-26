@@ -127,10 +127,10 @@ protected:
 	ros::Publisher pub_Paths;
 	ros::Publisher pub_PathsRviz;
 	ros::Publisher pub_TrafficInfo;
-	ros::Publisher pub_TrafficInfoRviz;
-	ros::Publisher pub_StartPointRviz;
-	ros::Publisher pub_GoalPointRviz;
-	ros::Publisher pub_NodesListRviz;
+	//ros::Publisher pub_TrafficInfoRviz;
+	//ros::Publisher pub_StartPointRviz;
+	//ros::Publisher pub_GoalPointRviz;
+	//ros::Publisher pub_NodesListRviz;
 	ros::Publisher pub_GoalsListRviz;
 
 	ros::Subscriber sub_robot_odom;
