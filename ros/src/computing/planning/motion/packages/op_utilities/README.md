@@ -9,11 +9,11 @@ publish topics for points_raw, ndt_pose, and image_raw
 
 
 ### Options
-play data forward (space)
-pause (space)
-step forward by one frame (up button)
-step backwards by one frame (down button)
-exit (Esc button) 
+ * play data forward (space)
+ * pause (space)
+ * step forward by one frame (up button)
+ * step backwards by one frame (down button)
+ * exit (Esc button) 
 
 
 ### Requirements
