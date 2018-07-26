@@ -16,7 +16,7 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define _FIND_LEFT_RIGHT_LANES
+#define FIND_LEFT_RIGHT_LANES
 #define RIGHT_INITIAL_TURNS_COST 0
 #define LEFT_INITIAL_TURNS_COST 0
 #define DEBUG_MAP_PARSING 0

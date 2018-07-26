@@ -746,6 +746,8 @@ int OpenPlannerCarSimulator::LoadSimulationData(PlannerHNS::WayPoint& start_p, P
 
 	start_p.v = data.startPoint.v;
 	start_p.cost = data.startPoint.c;
+
+	std::cout << "Loading from simulation File " << start_p.pos.ToString() << std::endl;
 	return nData;
 }
 
@@ -820,6 +822,7 @@ void OpenPlannerCarSimulator::MainLoop()
 				if(m_Map.roadSegments.size() > 0)
 				{
 					m_bMap = true;
+					InitializeSimuCar(m_SimParams.startPose);
 					std::cout << " ******* Map V2 Is Loaded successfully from the Behavior Selector !! " << std::endl;
 				}
 			}
@@ -834,6 +837,7 @@ void OpenPlannerCarSimulator::MainLoop()
 				if(m_Map.roadSegments.size() > 0)
 				{
 					m_bMap = true;
+					InitializeSimuCar(m_SimParams.startPose);
 					std::cout << " ******* Map V1 Is Loaded successfully from the Behavior Selector !! " << std::endl;
 				}
 			}

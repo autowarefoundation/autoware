@@ -448,6 +448,7 @@ void GlobalPlanner::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
+				std::cout << "Map Version 2" << endl;
 				m_bKmlMap = true;
 				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
@@ -458,6 +459,7 @@ void GlobalPlanner::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
+				std::cout << "Map Version 1" << endl;
 				m_bKmlMap = true;
 				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
@@ -525,98 +527,98 @@ void GlobalPlanner::MainLoop()
 
 void GlobalPlanner::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
 {
-	std::cout << "Received Lanes" << endl;
+	std::cout << "Received Lanes" << msg.data.size() << endl;
 	if(m_MapRaw.pLanes == nullptr)
 		m_MapRaw.pLanes = new UtilityHNS::AisanLanesFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
-	std::cout << "Received Points" << endl;
+	std::cout << "Received Points" << msg.data.size() << endl;
 	if(m_MapRaw.pPoints  == nullptr)
 		m_MapRaw.pPoints = new UtilityHNS::AisanPointsFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg)
 {
-	std::cout << "Received dtLanes" << endl;
+	std::cout << "Received dtLanes" << msg.data.size() << endl;
 	if(m_MapRaw.pCenterLines == nullptr)
 		m_MapRaw.pCenterLines = new UtilityHNS::AisanCenterLinesFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg)
 {
-	std::cout << "Received CrossRoads" << endl;
+	std::cout << "Received CrossRoads" << msg.data.size() << endl;
 	if(m_MapRaw.pIntersections == nullptr)
 		m_MapRaw.pIntersections = new UtilityHNS::AisanIntersectionFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMAreas(const vector_map_msgs::AreaArray& msg)
 {
-	std::cout << "Received Areas" << endl;
+	std::cout << "Received Areas" << msg.data.size() << endl;
 	if(m_MapRaw.pAreas == nullptr)
 		m_MapRaw.pAreas = new UtilityHNS::AisanAreasFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMLines(const vector_map_msgs::LineArray& msg)
 {
-	std::cout << "Received Lines" << endl;
+	std::cout << "Received Lines" << msg.data.size() << endl;
 	if(m_MapRaw.pLines == nullptr)
 		m_MapRaw.pLines = new UtilityHNS::AisanLinesFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
 {
-	std::cout << "Received StopLines" << endl;
+	std::cout << "Received StopLines" << msg.data.size() << endl;
 	if(m_MapRaw.pStopLines == nullptr)
 		m_MapRaw.pStopLines = new UtilityHNS::AisanStopLineFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMSignal(const vector_map_msgs::SignalArray& msg)
 {
-	std::cout << "Received Signals" << endl;
+	std::cout << "Received Signals" << msg.data.size() << endl;
 	if(m_MapRaw.pSignals  == nullptr)
 		m_MapRaw.pSignals = new UtilityHNS::AisanSignalFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMVectors(const vector_map_msgs::VectorArray& msg)
 {
-	std::cout << "Received Vectors" << endl;
+	std::cout << "Received Vectors" << msg.data.size() << endl;
 	if(m_MapRaw.pVectors  == nullptr)
 		m_MapRaw.pVectors = new UtilityHNS::AisanVectorFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg)
 {
-	std::cout << "Received Curbs" << endl;
+	std::cout << "Received Curbs" << msg.data.size() << endl;
 	if(m_MapRaw.pCurbs == nullptr)
 		m_MapRaw.pCurbs = new UtilityHNS::AisanCurbFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg)
 {
-	std::cout << "Received Edges" << endl;
+	std::cout << "Received Edges" << msg.data.size() << endl;
 	if(m_MapRaw.pRoadedges  == nullptr)
 		m_MapRaw.pRoadedges = new UtilityHNS::AisanRoadEdgeFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg)
 {
-	std::cout << "Received Wayareas" << endl;
+	std::cout << "Received Wayareas" << msg.data.size() << endl;
 	if(m_MapRaw.pWayAreas  == nullptr)
 		m_MapRaw.pWayAreas = new UtilityHNS::AisanWayareaFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg)
 {
-	std::cout << "Received CrossWalks" << endl;
+	std::cout << "Received CrossWalks" << msg.data.size() << endl;
 	if(m_MapRaw.pCrossWalks == nullptr)
 		m_MapRaw.pCrossWalks = new UtilityHNS::AisanCrossWalkFileReader(msg);
 }
 
 void GlobalPlanner::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
 {
-	std::cout << "Received Nodes" << endl;
+	std::cout << "Received Nodes" << msg.data.size() << endl;
 	if(m_MapRaw.pNodes == nullptr)
 		m_MapRaw.pNodes = new UtilityHNS::AisanNodesFileReader(msg);
 }

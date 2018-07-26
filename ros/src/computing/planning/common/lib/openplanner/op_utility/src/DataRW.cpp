@@ -458,6 +458,8 @@ int LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list)
 
 AisanNodesFileReader::AisanNodesFileReader(const vector_map_msgs::NodeArray& _nodes) : SimpleReaderBase("d", 1)
 {
+	if(_nodes.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	//TODO Fix PID and NID problem
@@ -562,6 +564,8 @@ int AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
 
 AisanPointsFileReader::AisanPointsFileReader(const vector_map_msgs::PointArray& _points) : SimpleReaderBase("d", 1)
 {
+	if(_points.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -681,6 +685,8 @@ int AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
 
 AisanLinesFileReader::AisanLinesFileReader(const vector_map_msgs::LineArray& _nodes) : SimpleReaderBase("d", 1)
 {
+	if(_nodes.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -789,6 +795,8 @@ int AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
 
 AisanCenterLinesFileReader::AisanCenterLinesFileReader(const vector_map_msgs::DTLaneArray& _Lines) : SimpleReaderBase("d", 1)
 {
+	if(_Lines.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -895,6 +903,8 @@ int AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
 
 AisanLanesFileReader::AisanLanesFileReader(const vector_map_msgs::LaneArray& _lanes) : SimpleReaderBase("d", 1)
 {
+	if(_lanes.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1066,6 +1076,8 @@ int AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
 
 AisanAreasFileReader::AisanAreasFileReader(const vector_map_msgs::AreaArray& _areas) : SimpleReaderBase("d", 1)
 {
+	if(_areas.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1158,6 +1170,8 @@ int AisanAreasFileReader::ReadAllData(vector<AisanArea>& data_list)
 
 AisanIntersectionFileReader::AisanIntersectionFileReader(const vector_map_msgs::CrossRoadArray& _inters) : SimpleReaderBase("d", 1)
 {
+	if(_inters.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1250,6 +1264,8 @@ int AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_lis
 
 AisanStopLineFileReader::AisanStopLineFileReader(const vector_map_msgs::StopLineArray& _stopLines) : SimpleReaderBase("d", 1)
 {
+	if(_stopLines.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1346,6 +1362,8 @@ int AisanStopLineFileReader::ReadAllData(vector<AisanStopLine>& data_list)
 
 AisanRoadSignFileReader::AisanRoadSignFileReader(const vector_map_msgs::RoadSignArray& _signs) : SimpleReaderBase("d", 1)
 {
+	if(_signs.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1442,6 +1460,8 @@ int AisanRoadSignFileReader::ReadAllData(vector<AisanRoadSign>& data_list)
 
 AisanSignalFileReader::AisanSignalFileReader(const vector_map_msgs::SignalArray& _signal) : SimpleReaderBase("d", 1)
 {
+	if(_signal.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1539,6 +1559,8 @@ int AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
 
 AisanVectorFileReader::AisanVectorFileReader(const vector_map_msgs::VectorArray& _vectors) : SimpleReaderBase("d", 1)
 {
+	if(_vectors.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1633,6 +1655,8 @@ int AisanVectorFileReader::ReadAllData(vector<AisanVector>& data_list)
 
 AisanCurbFileReader::AisanCurbFileReader(const vector_map_msgs::CurbArray& _curbs) : SimpleReaderBase("d", 1)
 {
+	if(_curbs.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1731,6 +1755,8 @@ int AisanCurbFileReader::ReadAllData(vector<AisanCurb>& data_list)
 
 AisanRoadEdgeFileReader::AisanRoadEdgeFileReader(const vector_map_msgs::RoadEdgeArray& _edges) : SimpleReaderBase("d", 1)
 {
+	if(_edges.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1823,6 +1849,8 @@ int AisanRoadEdgeFileReader::ReadAllData(vector<AisanRoadEdge>& data_list)
 
 AisanCrossWalkFileReader::AisanCrossWalkFileReader(const vector_map_msgs::CrossWalkArray& _crossWalks) : SimpleReaderBase("d", 1)
 {
+	if(_crossWalks.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();
@@ -1919,6 +1947,8 @@ int AisanCrossWalkFileReader::ReadAllData(vector<AisanCrossWalk>& data_list)
 
 AisanWayareaFileReader::AisanWayareaFileReader(const vector_map_msgs::WayAreaArray& _wayAreas) : SimpleReaderBase("d", 1)
 {
+	if(_wayAreas.data.size()==0) return;
+
 	m_min_id = std::numeric_limits<int>::max();
 
 	m_data_list.clear();

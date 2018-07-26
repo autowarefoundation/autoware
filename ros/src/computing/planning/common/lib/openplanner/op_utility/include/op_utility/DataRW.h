@@ -31,6 +31,7 @@
 #include "vector_map_msgs/RoadEdgeArray.h"
 #include "vector_map_msgs/CrossWalkArray.h"
 
+#include "UtilityH.h"
 
 namespace UtilityHNS {
 
@@ -688,6 +689,8 @@ public:
 	UtilityHNS::AisanCrossWalkFileReader* pCrossWalks;
 	UtilityHNS::AisanNodesFileReader* pNodes;
 
+	struct timespec _time_out;
+
 	MapRaw()
 	{
 		pLanes = nullptr;
@@ -704,6 +707,8 @@ public:
 		pWayAreas = nullptr;
 		pCrossWalks = nullptr;
 		pNodes = nullptr;
+
+		UtilityH::GetTickCount(_time_out);
 	}
 
 	~MapRaw()
@@ -795,24 +800,29 @@ public:
 
 	int GetVersion()
 	{
+		bool bTimeOut = UtilityH::GetTimeDiffNow(_time_out) > 2.0;
 		bool bLoaded =  pLanes != nullptr && pPoints != nullptr && pCenterLines  != nullptr && pNodes  != nullptr;
 		int iVersion = 0;
-		if(bLoaded)
+		if(bLoaded && bTimeOut)
 		{
 			iVersion = 2;
-		}
-		else
-		{
-			bLoaded =  pLanes != nullptr && pPoints != nullptr && pCenterLines  != nullptr;
-			if(bLoaded)
+			if(pNodes->m_data_list.size() == 0)
 			{
 				iVersion = 1;
-				if(pNodes  == nullptr)
-					pNodes = new AisanNodesFileReader(vector_map_msgs::NodeArray());
 			}
 		}
+//		else
+//		{
+//			bLoaded =  pLanes != nullptr && pPoints != nullptr && pCenterLines  != nullptr;
+//			if(bLoaded && bTimeOut)
+//			{
+//				iVersion = 1;
+//				if(pNodes  == nullptr)
+//					pNodes = new AisanNodesFileReader(vector_map_msgs::NodeArray());
+//			}
+//		}
 
-		if(bLoaded)
+		if(bLoaded && bTimeOut)
 		{
 			if(pIntersections  == nullptr)
 				pIntersections  = new AisanIntersectionFileReader(vector_map_msgs::CrossRoadArray());

@@ -15,7 +15,7 @@
 	<arg name="enableSimulationMode" default="false" />
 	<arg name="enableStepByStepMode" default="false" />
 	
-	<arg name="vector_map_filter_distance" default="2.0" />
+	<arg name="vector_map_filter_distance" default="2.0" /> <!-- set 0 to disable vector map filtering  -->
 	<arg name="enableLogging" default="false" />
 
 	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track" output="screen">

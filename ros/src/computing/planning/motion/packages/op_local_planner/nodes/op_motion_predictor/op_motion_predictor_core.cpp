@@ -260,7 +260,7 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 		{
 			curr_curbs_obstacles.clear();
 			GenerateCurbsObstacles(curr_curbs_obstacles);
-			std::cout << "Curbs No: " << curr_curbs_obstacles.size() << endl;
+			//std::cout << "Curbs No: " << curr_curbs_obstacles.size() << endl;
 			for(unsigned int i = 0 ; i <curr_curbs_obstacles.size(); i++)
 			{
 				PlannerHNS::RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(curr_curbs_obstacles.at(i), false, pred_obj);

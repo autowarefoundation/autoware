@@ -170,7 +170,7 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 		struct timespec  tracking_timer;
 		UtilityHNS::UtilityH::GetTickCount(tracking_timer);
 
-		//std::cout << "Filter the detected Obstacles: " << msg->clusters.size() << std::endl;
+		//std::cout << "Filter the detected Obstacles: " << msg->clusters.size() << ", " << m_OriginalClusters.size() << std::endl;
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters, m_Params.trackingType);
 
 		m_tracking_time = UtilityHNS::UtilityH::GetTimeDiffNow(tracking_timer);
@@ -286,12 +286,15 @@ bool ContourTracker::IsCar(const PlannerHNS::DetectedObject& obj, const PlannerH
 			return false;
 	}
 
-	double object_size = hypot(obj.w, obj.l);
+	if(!m_Params.bEnableSimulation)
+	{
+		double object_size = hypot(obj.w, obj.l);
 
-	//std::cout << "Filter the detected Obstacles: (" <<  obj.distance_to_center  << ",>" <<  m_Params.DetectionRadius << " | "<< object_size << ",< " <<  m_Params.MinObjSize  << "| " <<  object_size << ", >" <<  m_Params.MaxObjSize << ")"<< std::endl;
+		//std::cout << "Filter the detected Obstacles: (" <<  obj.distance_to_center  << ",>" <<  m_Params.DetectionRadius << " | "<< object_size << ",< " <<  m_Params.MinObjSize  << "| " <<  object_size << ", >" <<  m_Params.MaxObjSize << ")"<< std::endl;
 
-	if(obj.distance_to_center > m_Params.DetectionRadius || object_size < m_Params.MinObjSize || object_size > m_Params.MaxObjSize)
-		return false;
+		if(obj.distance_to_center > m_Params.DetectionRadius || object_size < m_Params.MinObjSize || object_size > m_Params.MaxObjSize)
+			return false;
+	}
 
 	if(m_Params.bEnableSimulation)
 	{

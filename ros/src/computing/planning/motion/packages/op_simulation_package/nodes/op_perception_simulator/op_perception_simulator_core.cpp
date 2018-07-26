@@ -137,6 +137,8 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	//	ROS_INFO("Insert Obj ID = %d", c.id);
 	}
 
+	//std::cout << "Current Simulated Objects : " << m_ObjClustersArray.clusters.size() << std::endl;
+
 }
 
 
