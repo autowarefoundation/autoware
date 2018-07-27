@@ -1095,9 +1095,9 @@ int main(int argc, char **argv) {
     _transform_listener = &listener;
 
 #if (CV_MAJOR_VERSION == 3)
-    generateColors(_colors, 100);
+    generateColors(_colors, 255);
 #else
-    cv::generateColors(_colors, 100);
+    cv::generateColors(_colors, 255);
 #endif
 
     _pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster", 1);

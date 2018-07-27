@@ -1,6 +1,6 @@
 #include "visualize_detected_objects.h"
 
-#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <tf/transform_datatypes.h>
 #include <cmath>
 
@@ -10,8 +10,8 @@ VisualizeDetectedObjects::VisualizeDetectedObjects()
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
 
   sub_cloud_array_ = node_handle_.subscribe("/detected_objects", 1, &VisualizeDetectedObjects::callBack, this);
-  pub_arrow_ = node_handle_.advertise<visualization_msgs::Marker>("/detected_objects/velocity_arrow", 10);
-  pub_id_ = node_handle_.advertise<visualization_msgs::Marker>("/detected_objects/target_id", 10);
+  pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detected_objects/velocity_arrow", 10);
+  pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detected_objects/target_id", 10);
 }
 
 void VisualizeDetectedObjects::callBack(const autoware_msgs::DetectedObjectArray& input)
@@ -21,6 +21,8 @@ void VisualizeDetectedObjects::callBack(const autoware_msgs::DetectedObjectArray
 
 void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArray& input)
 {
+  visualization_msgs::MarkerArray marker_ids, marker_arows;
+
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double tv = input.objects[i].velocity.linear.x;
@@ -40,7 +42,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
 
     visualization_msgs::Marker id;
 
-    id.lifetime = ros::Duration(1.0);
+    id.lifetime = ros::Duration(0.2);
     id.header.frame_id = pointcloud_frame_;
     id.header.stamp = input.header.stamp;
     id.ns = "id";
@@ -49,8 +51,8 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     // green
     id.color.g = 1.0f;
     id.color.a = 1.0;
-    // id.id = input.objects[i].id;
-    id.id = i;
+    id.id = input.objects[i].id;
+    // id.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = input.objects[i].pose.position.x;
@@ -81,14 +83,18 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
 
-    pub_id_.publish(id);
+    marker_ids.markers.push_back(id);
 
     visualization_msgs::Marker arrow;
-    arrow.lifetime = ros::Duration(1.0);
+    arrow.lifetime = ros::Duration(0.2);
 
     // visualize velocity arrow only if its status is Stable
     std::string label = input.objects[i].label;
     if (label == "None" || label == "Initialized" || label == "Lost" || label == "Static")
+    {
+      continue;
+    }
+    if(abs(tv) < 0.25)
     {
       continue;
     }
@@ -101,8 +107,8 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     // green
     arrow.color.g = 1.0f;
     arrow.color.a = 1.0;
-  // arrow.id = input.objects[i].id;
-    arrow.id = i;
+    arrow.id = input.objects[i].id;
+    // arrow.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     arrow.pose.position.x = input.objects[i].pose.position.x;
@@ -120,6 +126,8 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     arrow.scale.y = 0.1;
     arrow.scale.z = 0.1;
 
-    pub_arrow_.publish(arrow);
+    marker_arows.markers.push_back(arrow);
   }// end input.objects loop
+  pub_id_.publish(marker_ids);
+  pub_arrow_.publish(marker_arows);
 }
