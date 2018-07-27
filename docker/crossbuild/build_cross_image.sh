@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build Docker Image
-if [ "$1" = "aarch64" ]
+if [ "$1" = "synquacer" ] || [ "$1" = "generic-aarch64" ]
 then
     # Once we support for targets, change this to the appropriate Docker image
     AUTOWARE_DOCKER_ARCH=arm64v8
@@ -23,5 +23,5 @@ then
     # Deregister QEMU as a handler for non-x86 targets
     docker run --rm --privileged multiarch/qemu-user-static:register --reset
 else
-    echo "Select target platform: aarch64"
+    echo "Select target platform: synquacer, generic-aarch64"
 fi

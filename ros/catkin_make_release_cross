@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-if [ "$1" = "aarch64" ]
+if [ "$1" = "synquacer" ] || [ "$1" = "generic-aarch64" ]
 then
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
@@ -47,6 +47,6 @@ then
 
     find devel-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
 else
-    echo "Select target platform: aarch64"
+    echo "Select target platform: synquacer, generic-aarch64"
 fi
 
