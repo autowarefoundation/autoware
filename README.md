@@ -72,7 +72,7 @@ Autoware is provided under the [New BSD License](https://github.com/CPFL/Autowar
 
 ## Contact
 
-Autoware Developers Slack Team (https://autoware-developer.slack.com/)
+Autoware Developers Slack Team (https://autoware.herokuapp.com/)
 
 Autoware Developers (<autoware@googlegroups.com>)
 

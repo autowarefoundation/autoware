@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(vision_yolo3_detect)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
@@ -23,7 +24,7 @@ catkin_package(CATKIN_DEPENDS
         autoware_msgs
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 IF (CUDA_FOUND)
     list(APPEND CUDA_NVCC_FLAGS "--std=c++11 -I$${PROJECT_SOURCE_DIR}/darknet/src -I${PROJECT_SOURCE_DIR}/src -DGPU")

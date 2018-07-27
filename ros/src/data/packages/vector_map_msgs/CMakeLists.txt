@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vector_map_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   std_msgs
   message_generation
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 add_message_files(
   FILES

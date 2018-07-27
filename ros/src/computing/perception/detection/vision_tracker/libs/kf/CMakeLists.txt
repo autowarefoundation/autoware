@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(kf_lib)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
@@ -25,7 +26,7 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(${catkin_INCLUDE_DIRS}
         include)

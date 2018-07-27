@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(state_machine_lib)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         autoware_msgs
         )
@@ -12,7 +13,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp autoware_msgs
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include

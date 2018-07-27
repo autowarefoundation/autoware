@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e
+
+AUTOWARE_TARGET_ARCH=aarch64
+
+if [[ -d build-${AUTOWARE_TARGET_ARCH} ]]; then
+    rm -rf build-${AUTOWARE_TARGET_ARCH}
+fi
+
+if [[ -d devel-${AUTOWARE_TARGET_ARCH} ]]; then
+    rm -rf devel-${AUTOWARE_TARGET_ARCH}
+fi
+
+AUTOWARE_HOME=/home/nvidia/Autoware
+AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_ARCH}
+AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_ARCH}
+AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake
+AUTOWARE_SYSROOT_PATH=/sysroot/${AUTOWARE_TARGET_ARCH}
+
+docker run \
+    -it \
+    --rm \
+    -v ${PWD}/../:${AUTOWARE_HOME} \
+    -w ${AUTOWARE_HOME}/ros \
+    -u ${UID}:${UID} \
+    autoware-kinetic:crossbuild-${AUTOWARE_TARGET_ARCH} \
+    bash \
+    -c "\
+    source /opt/ros/kinetic/setup.bash && \
+    catkin_make \
+        -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+        -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+        -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+        --build ${AUTOWARE_BUILD_PATH} \
+        clean && \
+    source devel-${AUTOWARE_TARGET_ARCH}/setup.bash && \
+    catkin_make \
+        -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+        -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+        -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+        --build ${AUTOWARE_BUILD_PATH} \
+        -DCMAKE_BUILD_TYPE=Release $@
+    "
+
+find devel-${AUTOWARE_TARGET_ARCH}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT_PATH}##g" {} \;
+

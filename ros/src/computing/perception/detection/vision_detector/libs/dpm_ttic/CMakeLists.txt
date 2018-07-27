@@ -2,17 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(libdpm_ttic)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         sensor_msgs
         std_msgs
         )
 find_package(OpenCV REQUIRED)
 find_package(CUDA)
-
-execute_process(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 catkin_package(
         INCLUDE_DIRS include
@@ -20,7 +15,7 @@ catkin_package(
 )
 
 set(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 if(CUDA_FOUND)
     include_directories(
@@ -32,7 +27,7 @@ if(CUDA_FOUND)
             "gpu"
     )
 
-    if("${ARCHITECTURE}" MATCHES "^arm")
+    if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif()
 
@@ -56,7 +51,7 @@ if(CUDA_FOUND)
 
     set(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
 
-    if("${ARCHITECTURE}" MATCHES "^arm")
+    if("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         set(CUDA_LDFLAGS -L/usr/lib/arm-linux-gnueabihf/tegra -lcuda)
     else()
         set(CUDA_LDFLAGS -lcuda)

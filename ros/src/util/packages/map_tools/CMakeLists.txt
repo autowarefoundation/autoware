@@ -4,6 +4,7 @@ project(map_tools)
 find_package(PCL REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         tf
         sensor_msgs
@@ -20,7 +21,7 @@ catkin_package(
         DEPENDS PCL
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

@@ -2,15 +2,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_kf_contour_track)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   autoware_msgs
   tf
   jsk_recognition_msgs
   op_ros_helpers
   )
-
-
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS

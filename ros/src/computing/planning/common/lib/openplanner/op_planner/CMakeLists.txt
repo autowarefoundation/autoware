@@ -5,6 +5,7 @@ project(op_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
 		op_utility
 )
 
@@ -23,7 +24,6 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -g -fPIC ${CMAKE_CXX_FLAGS}")
 
 include_directories(${catkin_INCLUDE_DIRS}
 		include
