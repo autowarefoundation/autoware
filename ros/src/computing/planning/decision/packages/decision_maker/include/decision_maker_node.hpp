@@ -4,7 +4,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <autoware_msgs/ConfigDecisionMaker.h>
+#include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/LaneArray.h>
 #include <autoware_msgs/Waypoint.h>
@@ -231,7 +231,7 @@ private:
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker &msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);

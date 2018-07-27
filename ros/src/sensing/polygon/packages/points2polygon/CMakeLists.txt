@@ -5,7 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
         sensor_msgs
-        autoware_msgs
+        autoware_config_msgs
         pcl_conversions
         )
 
@@ -18,7 +18,7 @@ catkin_package(
         CATKIN_DEPENDS
         roscpp
         sensor_msgs
-        autoware_msgs
+        autoware_config_msgs
         pcl_conversions
 )
 

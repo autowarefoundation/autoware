@@ -89,7 +89,7 @@ void DecisionMakerNode::callbackFromLaneChangeFlag(const std_msgs::Int32 &msg)
   }
 }
 
-void DecisionMakerNode::callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg)
+void DecisionMakerNode::callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker &msg)
 {
   ROS_INFO("Param setted by Runtime Manager");
   enableDisplayMarker = msg.enable_display_marker;

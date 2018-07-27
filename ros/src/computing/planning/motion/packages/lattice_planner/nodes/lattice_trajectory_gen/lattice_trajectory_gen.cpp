@@ -49,7 +49,7 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64MultiArray.h>
-#include "autoware_msgs/ConfigWaypointFollower.h"
+#include "autoware_config_msgs/ConfigWaypointFollower.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "libtraj_gen.h"
 #include "autoware_msgs/CanInfo.h"
@@ -102,7 +102,7 @@ static double g_minimum_look_ahead_threshold = 6.0; // the next waypoint must be
 
 static WayPoints g_current_waypoints;
 
-static void ConfigCallback(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)
+static void ConfigCallback(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config)
 {
   g_param_flag = config->param_flag;
   g_lookahead_threshold = config->lookahead_distance;

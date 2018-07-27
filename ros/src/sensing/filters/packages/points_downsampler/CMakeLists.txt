@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         velodyne_pointcloud
         message_generation
-        autoware_msgs
+        autoware_config_msgs
         )
 
 add_message_files(
@@ -30,7 +30,7 @@ catkin_package(
         pcl_conversions
         velodyne_pointcloud
         message_generation
-        autoware_msgs
+        autoware_config_msgs
 )
 
 ###########

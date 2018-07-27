@@ -45,7 +45,7 @@
 #include <tuple>
 
 // User defined includes
-#include "autoware_msgs/ConfigLaneSelect.h"
+#include "autoware_config_msgs/ConfigLaneSelect.h"
 #include "autoware_msgs/LaneArray.h"
 #include "autoware_msgs/State.h"
 #include "hermite_curve.h"
@@ -113,7 +113,7 @@ private:
   void callbackFromTwistStamped(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromState(const std_msgs::StringConstPtr &msg);
   void callbackFromStates(const autoware_msgs::StateConstPtr &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigLaneSelectConstPtr &msg);
 
   // initializer
   void initForROS();

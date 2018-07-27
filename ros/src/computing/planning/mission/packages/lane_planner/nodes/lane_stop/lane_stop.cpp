@@ -30,7 +30,7 @@
 
 #include <ros/console.h>
 
-#include "autoware_msgs/ConfigLaneStop.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
 #include "autoware_msgs/TrafficLight.h"
 #include "autoware_msgs/LaneArray.h"
 
@@ -97,7 +97,7 @@ void cache_green_lane(const autoware_msgs::LaneArray& msg)
 	current_green_lane = msg;
 }
 
-void config_parameter(const autoware_msgs::ConfigLaneStop& msg)
+void config_parameter(const autoware_config_msgs::ConfigLaneStop& msg)
 {
 	config_manual_detection = msg.manual_detection;
 }
