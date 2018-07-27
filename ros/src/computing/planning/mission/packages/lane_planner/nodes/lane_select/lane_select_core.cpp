@@ -707,7 +707,7 @@ void LaneSelectNode::callbackFromStates(const autoware_msgs::StateConstPtr &msg)
     processing();
 }
 
-void LaneSelectNode::callbackFromConfig(const autoware_msgs::ConfigLaneSelectConstPtr &msg)
+void LaneSelectNode::callbackFromConfig(const autoware_config_msgs::ConfigLaneSelectConstPtr &msg)
 {
   distance_threshold_ = msg->distance_threshold_neighbor_lanes;
   lane_change_interval_ = msg->lane_change_interval;

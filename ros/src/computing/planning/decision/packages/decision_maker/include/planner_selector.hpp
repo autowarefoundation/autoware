@@ -1,7 +1,7 @@
 #ifndef __PLANNER_SELECTOR_HPP__
 #define __PLANNER_SELECTOR_HPP__
 
-#include <autoware_msgs/ConfigPlannerSelector.h>
+#include <autoware_config_msgs/ConfigPlannerSelector.h>
 #include <autoware_msgs/Lane.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
@@ -62,7 +62,7 @@ public:
   void callbackFromClosest(const ros::MessageEvent<std_msgs::Int32> &event);
   void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::Lane const> &event);
   void callbackFromLattice(const std_msgs::Int32 &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigPlannerSelector &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
 };
 }

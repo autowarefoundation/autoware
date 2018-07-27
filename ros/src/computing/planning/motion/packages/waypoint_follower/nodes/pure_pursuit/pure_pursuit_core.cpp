@@ -192,7 +192,7 @@ double PurePursuitNode::computeAngularGravity(double velocity, double kappa) con
   return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
-void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)
+void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config)
 {
   param_flag_ = config->param_flag;
   const_lookahead_distance_ = config->lookahead_distance;

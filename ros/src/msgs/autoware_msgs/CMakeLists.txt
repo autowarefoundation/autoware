@@ -56,37 +56,6 @@ add_message_files(
             TrafficLightResult.msg
             TrafficLightResultArray.msg
 
-            ## Runtime Manager ##
-            config/ConfigApproximateNdtMapping.msg
-            config/ConfigCarDpm.msg
-            config/ConfigCarFusion.msg
-            config/ConfigCarKf.msg
-            config/ConfigCompareMapFilter.msg
-            config/ConfigDecisionMaker.msg
-            config/ConfigDistanceFilter.msg
-            config/ConfigRingGroundFilter.msg
-            config/ConfigICP.msg
-            config/ConfigLaneRule.msg
-            config/ConfigLaneSelect.msg
-            config/ConfigLaneStop.msg
-            config/ConfigLatticeVelocitySet.msg
-            config/ConfigNdt.msg
-            config/ConfigNdtMapping.msg
-            config/ConfigNdtMappingOutput.msg
-            config/ConfigPedestrianDpm.msg
-            config/ConfigPedestrianFusion.msg
-            config/ConfigPedestrianKf.msg
-            config/ConfigPlannerSelector.msg
-            config/ConfigPoints2Polygon.msg
-            config/ConfigRandomFilter.msg
-            config/ConfigRingFilter.msg
-            config/ConfigRayGroundFilter.msg
-            config/ConfigSsd.msg
-            config/ConfigTwistFilter.msg
-            config/ConfigVelocitySet.msg
-            config/ConfigVoxelGridFilter.msg
-            config/ConfigWaypointLoader.msg
-            config/ConfigWaypointFollower.msg
             AccelCmd.msg
             AdjustXY.msg
             BrakeCmd.msg

@@ -42,7 +42,7 @@ Launch file available parameters:
 |Topic|Type|Objective|
 ------|----|---------
 |`/image_raw`|`sensor_msgs/Image`|Source image stream to perform detection.|
-|`/config/Yolo3`|`autoware_msgs/ConfigSsd`|Configuration adjustment for threshold.|
+|`/config/Yolo3`|`autoware_config_msgs/ConfigSsd`|Configuration adjustment for threshold.|
 
 ### Published topics
 

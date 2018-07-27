@@ -42,6 +42,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_ros
         sensor_msgs
         autoware_msgs
+        autoware_config_msgs
         pcl_conversions
         velodyne_pointcloud
         ndt_tku
@@ -53,7 +54,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
+        CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs autoware_config_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
         DEPENDS PCL
 )
 

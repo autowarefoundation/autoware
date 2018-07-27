@@ -77,7 +77,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl_ros/transforms.h>
 
-#include <autoware_msgs/ConfigNdt.h>
+#include <autoware_config_msgs/ConfigNdt.h>
 
 #include <autoware_msgs/NDTStat.h>
 
@@ -243,7 +243,7 @@ static unsigned int points_map_num = 0;
 
 pthread_mutex_t mutex;
 
-static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
+static void param_callback(const autoware_config_msgs::ConfigNdt::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {

@@ -95,10 +95,10 @@ private:
 
   // initializer
   void initPubSub();
-  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
-  void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void configCallback(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
   void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
   void createLaneWaypoint(const std::string& file_path, autoware_msgs::Lane* lane);
   void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
