@@ -1,5 +1,5 @@
 .PHONY: all
 
 all:
-	plantuml ComponentDiagram.pu
+	plantuml ComponentDiagram.pu ComponentDiagram2.pu
 

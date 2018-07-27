@@ -1,0 +1,159 @@
+@startuml
+
+title Autoware Component Dependencies (Now)
+
+() "sensor_msgs::Image\n/image_raw" as image_raw
+() "sensor_msgs::PointCloud2\n/points_raw" as points_raw
+() "sensor_msgs::PointCloud2\n/filtered_points" as filtered_points
+() "sensor_msgs::Imu\n/imu_raw" as imu_raw 
+() "nmea_msgs::Sentence\n/nmea_sentence" as nmea_sentence
+
+folder sensing {
+    [camera]
+    'outputs
+    camera --> image_raw
+
+    [lidar]
+    'outputs
+    lidar --> points_raw
+
+    [filters]
+    'inputs
+    points_raw --> filters
+    'outputs
+    filters --> filtered_points
+
+    [imu]
+    'outputs
+    imu --> imu_raw
+
+    [gnss]
+    'outputs
+    gnss --> nmea_sentence
+}
+
+'gnss_localizer
+
+'lidar_localizer
+() "sensor_msgs::PointCloud2\n/points_map" as points_map
+() "sensor_msgs::PointCloud2\n/ndt_map" as ndt_map
+
+'vel_pose_connect
+() "geometry_msgs::PoseStamped\n/current_pose" as current_pose
+() "geometry_msgs::TwistStamped\n/current_velocity" as current_velocity
+
+folder localization {
+    () "geometry_msgs::PoseStamped\n/gnss_pose" as gnss_pose
+    () "geometry_msgs::TwistStamped\n/estimate_twist" as estimate_twist
+    () "geometry_msgs::PoseStamped\n/ndt_pose" as ndt_pose
+
+    [gnss_localizer]
+    'inputs
+    nmea_sentence --> gnss_localizer
+    'outputs
+    gnss_localizer --> gnss_pose
+
+    [lidar_localizer]
+    'inputs
+    gnss_pose --> lidar_localizer
+    filtered_points --> lidar_localizer
+    points_map --> lidar_localizer
+    imu_raw --> lidar_localizer
+    'outputs
+    lidar_localizer --> estimate_twist
+    lidar_localizer --> ndt_pose
+    lidar_localizer --> ndt_map
+
+    [vel_pose_connect]
+    'inputs
+    estimate_twist --> vel_pose_connect
+    ndt_pose --> vel_pose_connect
+    'outputs
+    vel_pose_connect --> current_pose
+    vel_pose_connect --> current_velocity
+
+    '[dead_reckoner] @ Autoware v2.0
+}
+
+
+() "autoware_msgs::ObjectArray\n/tracked_objects" as tracked_objects
+
+folder detection {
+    () "autoware_msgs::ObjectArray\n/detected_objects_vision" as detected_objects_vision
+    () "autoware_msgs::ObjectArray\n/detected_objects_lidar" as detected_objects_lidar
+    () "autoware_msgs::ObjectArray\n/detected_objects_fused" as detected_objects_fused
+    () "autoware_msgs::ObjectArray\n/detected_objects" as detected_objects
+
+    [vision_detector]
+    'inputs
+    image_raw --> vision_detector
+    'outputs
+    vision_detector --> detected_objects_vision
+
+    [lidar_detector]
+    'inputs
+    points_raw --> lidar_detector
+    'outputs
+    lidar_detector --> detected_objects_lidar
+
+    [object_tracker]
+    'inputs
+    detected_objects --> object_tracker
+    'outputs
+    object_tracker --> tracked_objects
+
+    [fusion_tools]
+    'inputs
+    detected_objects_vision --> fusion_tools
+    detected_objects_lidar --> fusion_tools
+    'outputs
+    fusion_tools --> detected_objects_fused
+
+    '[fusion_detector] @ Autoware v2.0
+
+    '[fusion_tracker] @ Autoware v2.0
+
+    'connection
+    detected_objects_vision --> detected_objects
+    detected_objects_lidar --> detected_objects
+    detected_objects_fused --> detected_objects
+}
+
+/' @ Autoware v2.0
+folder prediction {
+    [moving_predictor]
+
+    [collision_predictor]
+
+    [cutin_predictor]
+}
+'/
+
+/' @ Autoware v2.0
+folder intelligence {
+    [decision_maker]
+}
+'/
+
+/' @ Autoware v2.0
+folder state {
+    [state_machine]
+}
+'/
+
+() "autoware_msgs::lane\n/final_waypoints" as final_waypoints
+() "geometry_msgs::TwistStamped\n/twist_cmd" as twist_cmd
+() "autoware_msgs::ControlCommandStamped\n/ctrl_cmd" as ctrl_cmd
+
+folder motion {
+    [waypoint_follower]
+    'inputs
+    current_pose --> waypoint_follower
+    current_velocity --> waypoint_follower
+    final_waypoints --> waypoint_follower
+    'outputs
+    waypoint_follower --> twist_cmd
+    waypoint_follower --> ctrl_cmd
+}
+
+@enduml
