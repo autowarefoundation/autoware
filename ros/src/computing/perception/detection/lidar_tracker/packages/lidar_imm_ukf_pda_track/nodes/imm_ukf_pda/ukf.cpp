@@ -31,6 +31,9 @@ UKF::UKF()
   // initial covariance matrix
   p_rm_ = Eigen::MatrixXd(5, 5);
 
+  // convariance Q
+  covar_q_ = Eigen::MatrixXd(5, 5);
+
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_cv_ = 2;
   std_a_ctrv_ = 2;
@@ -192,6 +195,7 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   // prevent transform pose error, if the condition meets, target_.jskBB_ would be updated
   jsk_bb_.pose.orientation.x = 1.0;
 
+  // todo: modify here
   nis_paths_.push_back(0);
   nis_paths_.push_back(0);
 }
@@ -431,6 +435,26 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
   state[4] = yawd_p;
 }
 
+void UKF::updateCovarQ(const double dt, const double yaw, const double std_a, const double std_yawdd)
+{
+  double dt_2 = dt*dt;
+  double dt_3 = dt_2*dt;
+  double dt_4 = dt_3*dt;
+  double cos_yaw = cos(yaw);
+  double sin_yaw = sin(yaw);
+  double cos_2_yaw = cos(yaw) * cos(yaw);
+  double sin_2_yaw = sin(yaw) * sin(yaw);
+  double cos_sin = cos_yaw * sin_yaw;
+  double var_a = std_a * std_a;
+  double var_yawdd = std_yawdd * std_yawdd
+
+  covar_q_ << 0.5*0.5*dt_4*cos_2_yaw*var_a,   0.5*0.5*dt_4*cos_sin*var_a, 0.5*dt_3*cos_yaw*var_a,                      0,                  0,
+              0.5*0.5*dt_4*cos_sin*var_a  , 0.5*0.5*dt_4*sin_2_yaw*var_a, 0.5*dt_3*sin_yaw*var_a,                      0,                  0,
+              0.5*dt_3*cos_yaw*var_a      ,       0.5*dt_3*sin_yaw*var_a,             dt_2*var_a,                      0,                  0,
+                                         0,                            0,                      0, 0.5*0,5*dt_4*var_yawdd, 0.5*dt_3*var_yawdd,
+                                         0,                            0,                      0,     0.5*dt_3*var_yawdd,     dt_2*var_yawdd;
+}
+
 
 void UKF::prediction(const double delta_t, const int model_ind)
 {
@@ -438,33 +462,35 @@ void UKF::prediction(const double delta_t, const int model_ind)
  *  Initialize model parameters
  ****************************************************************************/
   double std_yawdd, std_a;
-  Eigen::MatrixXd x_(x_cv_.rows(), 1);
-  Eigen::MatrixXd p_(p_cv_.rows(), p_cv_.cols());
-  Eigen::MatrixXd x_sig_pred_(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
+  Eigen::MatrixXd x(x_cv_.rows(), 1);
+  Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+  Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
   if (model_ind == 0)
   {
-    x_ = x_cv_.col(0);
-    p_ = p_cv_;
-    x_sig_pred_ = x_sig_pred_cv_;
+    x = x_cv_.col(0);
+    p = p_cv_;
+    x_sig_pred = x_sig_pred_cv_;
     std_yawdd = std_cv_yawdd_;
     std_a = std_a_cv_;
   }
   else if (model_ind == 1)
   {
-    x_ = x_ctrv_.col(0);
-    p_ = p_ctrv_;
-    x_sig_pred_ = x_sig_pred_ctrv_;
+    x = x_ctrv_.col(0);
+    p = p_ctrv_;
+    x_sig_pred = x_sig_pred_ctrv_;
     std_yawdd = std_ctrv_yawdd_;
     std_a = std_a_ctrv_;
   }
   else
   {
-    x_ = x_rm_.col(0);
-    p_ = p_rm_;
-    x_sig_pred_ = x_sig_pred_rm_;
+    x = x_rm_.col(0);
+    p = p_rm_;
+    x_sig_pred = x_sig_pred_rm_;
     std_yawdd = std_rm_yawdd_;
     std_a = std_a_rm_;
   }
+
+  uodateCovarQ(delta_t, x(3), std_a, std_yawdd);
 
   /*****************************************************************************
   *  Augment Sigma Points
@@ -479,13 +505,13 @@ void UKF::prediction(const double delta_t, const int model_ind)
   Eigen::MatrixXd x_sig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1);
 
   // create augmented mean state
-  x_aug.head(5) = x_;
+  x_aug.head(5) = x;
   x_aug(5) = 0;
   x_aug(6) = 0;
 
   // create augmented covariance matrix
   p_aug.fill(0.0);
-  p_aug.topLeftCorner(5, 5) = p_;
+  p_aug.topLeftCorner(5, 5) = p;
   p_aug(5, 5) = std_a * std_a;
   p_aug(6, 6) = std_yawdd * std_yawdd;
 
@@ -524,39 +550,39 @@ void UKF::prediction(const double delta_t, const int model_ind)
       randomMotion(p_x, p_y, v, yaw, yawd, nu_a, nu_yawdd, delta_t, state);
 
     // write predicted sigma point into right column
-    x_sig_pred_(0, i) = state[0];
-    x_sig_pred_(1, i) = state[1];
-    x_sig_pred_(2, i) = state[2];
-    x_sig_pred_(3, i) = state[3];
-    x_sig_pred_(4, i) = state[4];
+    x_sig_pred(0, i) = state[0];
+    x_sig_pred(1, i) = state[1];
+    x_sig_pred(2, i) = state[2];
+    x_sig_pred(3, i) = state[3];
+    x_sig_pred(4, i) = state[4];
   }
 
   /*****************************************************************************
   *  Convert Predicted Sigma Points to Mean/Covariance
   ****************************************************************************/
   // predicted state mean
-  x_.fill(0.0);
+  x.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++)
   {  // iterate over sigma points
-    x_ = x_ + weights_(i) * x_sig_pred_.col(i);
+    x = x + weights_(i) * x_sig_pred.col(i);
   }
 
-  while (x_(3) > M_PI)
-    x_(3) -= 2. * M_PI;
-  while (x_(3) < -M_PI)
-    x_(3) += 2. * M_PI;
+  while (x(3) > M_PI)
+    x(3) -= 2. * M_PI;
+  while (x(3) < -M_PI)
+    x(3) += 2. * M_PI;
   // predicted state covariance matrix
-  p_.fill(0.0);
+  p.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++)
   {  // iterate over sigma points
     // state difference
-    Eigen::VectorXd x_diff = x_sig_pred_.col(i) - x_;
+    Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
     // angle normalization
     while (x_diff(3) > M_PI)
       x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)
       x_diff(3) += 2. * M_PI;
-    p_ = p_ + weights_(i) * x_diff * x_diff.transpose();
+    p = p + weights_(i) * x_diff * x_diff.transpose();
   }
 
   /*****************************************************************************
@@ -564,21 +590,21 @@ void UKF::prediction(const double delta_t, const int model_ind)
   ****************************************************************************/
   if (model_ind == 0)
   {
-    x_cv_.col(0) = x_;
-    p_cv_ = p_;
-    x_sig_pred_cv_ = x_sig_pred_;
+    x_cv_.col(0) = x;
+    p_cv_ = p;
+    x_sig_pred_cv_ = x_sig_pred;
   }
   else if (model_ind == 1)
   {
-    x_ctrv_.col(0) = x_;
-    p_ctrv_ = p_;
-    x_sig_pred_ctrv_ = x_sig_pred_;
+    x_ctrv_.col(0) = x;
+    p_ctrv_ = p;
+    x_sig_pred_ctrv_ = x_sig_pred;
   }
   else
   {
-    x_rm_.col(0) = x_;
-    p_rm_ = p_;
-    x_sig_pred_rm_ = x_sig_pred_;
+    x_rm_.col(0) = x;
+    p_rm_ = p;
+    x_sig_pred_rm_ = x_sig_pred;
   }
 }
 

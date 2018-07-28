@@ -189,6 +189,8 @@ public:
 
   int tracking_num_;
 
+  Eigen::MatrixXd covar_q_;
+
   /**
    * Constructor
    */
@@ -219,7 +221,9 @@ public:
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double nu_a, const double nu_yawdd, const double delta_t, std::vector<double>& state);
 
-  void prediction(const double delta_t, const int model_ind);
+  void updateCovarQ(const double dt, const double yaw);
+
+  void prediction(const double delta_t, const int model_ind, const double std_a, const double std_yawdd);
 
   void updateLidar(const int model_ind);
 
