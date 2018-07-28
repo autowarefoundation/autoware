@@ -7,6 +7,7 @@ include(FindPkgConfig)
 
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
@@ -19,12 +20,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
 
 FIND_PACKAGE(CUDA)
 FIND_PACKAGE(OpenCV REQUIRED)
-
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 catkin_package(
         CATKIN_DEPENDS cv_bridge
@@ -41,7 +36,7 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
@@ -50,7 +45,7 @@ include_directories(
 IF (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 
-    IF ("${ARCHITECTURE}" MATCHES "^arm")
+    IF ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^arm")
         link_directories(/usr/lib/arm-linux-gnueabihf/tegra)
     endif ()
 ENDIF ()

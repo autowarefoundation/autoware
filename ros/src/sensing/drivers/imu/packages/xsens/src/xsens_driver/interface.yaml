@@ -1,0 +1,5 @@
+- {name: /mtdevice}
+- name: /mtnode
+  publish: [/imu_raw, /mti/sensor/sample, /mti/sensor/magnetic, /mti/sensor/pressure,
+    /mti/sensor/gnssPvt, /mti/filter/orientation, /mti/filter/velocity,
+    /mti/filter/position, /temperature]

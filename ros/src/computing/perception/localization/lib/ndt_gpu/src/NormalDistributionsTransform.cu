@@ -207,10 +207,13 @@ void GNormalDistributionsTransform::computeTransformation(const Eigen::Matrix<fl
 
 		delta_p *= delta_p_norm;
 
-		transformation_ = (Eigen::Translation<float, 3>(static_cast<float>(delta_p(0)), static_cast<float>(delta_p(1)), static_cast<float>(delta_p(2))) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(3)), Eigen::Vector3f::UnitX()) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(4)), Eigen::Vector3f::UnitY()) *
-							Eigen::AngleAxis<float>(static_cast<float>(delta_p(5)), Eigen::Vector3f::UnitZ())).matrix();
+		Eigen::Translation<float, 3> translation(static_cast<float>(delta_p(0)), static_cast<float>(delta_p(1)), static_cast<float>(delta_p(2)));
+		Eigen::AngleAxis<float> tmp1(static_cast<float>(delta_p(3)), Eigen::Vector3f::UnitX());
+		Eigen::AngleAxis<float> tmp2(static_cast<float>(delta_p(4)), Eigen::Vector3f::UnitY());
+		Eigen::AngleAxis<float> tmp3(static_cast<float>(delta_p(5)), Eigen::Vector3f::UnitZ());
+		Eigen::AngleAxis<float> tmp4(tmp1 * tmp2 * tmp3);
+
+		transformation_ = (translation * tmp4).matrix();
 
 		p = p + delta_p;
 
@@ -1235,10 +1238,13 @@ double GNormalDistributionsTransform::computeStepLengthMT(const Eigen::Matrix<do
 
 	x_t = x + step_dir * a_t;
 
-	final_transformation_ = (Eigen::Translation<float, 3>(static_cast<float>(x_t(0)), static_cast<float>(x_t(1)), static_cast<float>(x_t(2))) *
-								Eigen::AngleAxis<float>(static_cast<float>(x_t(3)), Eigen::Vector3f::UnitX()) *
-								Eigen::AngleAxis<float>(static_cast<float>(x_t(4)), Eigen::Vector3f::UnitY()) *
-								Eigen::AngleAxis<float>(static_cast<float>(x_t(5)), Eigen::Vector3f::UnitZ())).matrix();
+	Eigen::Translation<float, 3> translation(static_cast<float>(x_t(0)), static_cast<float>(x_t(1)), static_cast<float>(x_t(2)));
+	Eigen::AngleAxis<float> tmp1(static_cast<float>(x_t(3)), Eigen::Vector3f::UnitX());
+	Eigen::AngleAxis<float> tmp2(static_cast<float>(x_t(4)), Eigen::Vector3f::UnitY());
+	Eigen::AngleAxis<float> tmp3(static_cast<float>(x_t(5)), Eigen::Vector3f::UnitZ());
+	Eigen::AngleAxis<float> tmp4(tmp1 * tmp2 * tmp3);
+
+	final_transformation_ = (translation * tmp4).matrix();
 
 	transformPointCloud(x_, y_, z_, trans_x, trans_y, trans_z, points_num, final_transformation_);
 
@@ -1261,11 +1267,13 @@ double GNormalDistributionsTransform::computeStepLengthMT(const Eigen::Matrix<do
 
 		x_t = x + step_dir * a_t;
 
+		translation = Eigen::Translation<float, 3>(static_cast<float>(x_t(0)), static_cast<float>(x_t(1)), static_cast<float>(x_t(2)));
+		tmp1 = Eigen::AngleAxis<float>(static_cast<float>(x_t(3)), Eigen::Vector3f::UnitX());
+		tmp2 = Eigen::AngleAxis<float>(static_cast<float>(x_t(4)), Eigen::Vector3f::UnitY());
+		tmp3 = Eigen::AngleAxis<float>(static_cast<float>(x_t(5)), Eigen::Vector3f::UnitZ());
+		tmp4 = tmp1 * tmp2 * tmp3;
 
-		final_transformation_ = (Eigen::Translation<float, 3>(static_cast<float>(x_t(0)), static_cast<float>(x_t(1)), static_cast<float>(x_t(2))) *
-								 Eigen::AngleAxis<float>(static_cast<float>(x_t(3)), Eigen::Vector3f::UnitX()) *
-								 Eigen::AngleAxis<float>(static_cast<float>(x_t(4)), Eigen::Vector3f::UnitY()) *
-								 Eigen::AngleAxis<float>(static_cast<float>(x_t(5)), Eigen::Vector3f::UnitZ())).matrix();
+		final_transformation_ = (translation * tmp4).matrix();
 
 		transformPointCloud(x_, y_, z_, trans_x, trans_y, trans_z, points_num, final_transformation_);
 

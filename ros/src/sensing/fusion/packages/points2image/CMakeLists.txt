@@ -3,6 +3,7 @@ project(points2image)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         sensor_msgs
@@ -25,6 +26,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(GLUT REQUIRED)
+find_package(OpenGL REQUIRED)
+
+find_package(OpenGL REQUIRED)
+
 catkin_package(
         CATKIN_DEPENDS roscpp
         std_msgs
@@ -38,7 +44,7 @@ catkin_package(
         pcl_conversions
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
@@ -52,6 +58,9 @@ add_library(points_image
         lib/points_image/points_image.cpp
         )
 add_dependencies(points_image ${catkin_EXPORTED_TARGETS})
+target_link_libraries(points_image
+        ${OpenCV_LIBS}
+        )
 
 qt5_wrap_ui(points2vscan_ui_mainwindow nodes/points2vscan/mainwindow.ui)
 
@@ -68,6 +77,8 @@ target_link_libraries(points2vscan
         Qt5::Core
         Qt5::Widgets
         points_image
+        ${OPENGL_LIBRARIES}
+        ${OpenCV_LIBS}
         )
 add_dependencies(points2vscan
         ${catkin_EXPORTED_TARGETS}

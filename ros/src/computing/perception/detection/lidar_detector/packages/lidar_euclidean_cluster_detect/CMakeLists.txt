@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         pcl_ros
         roscpp
         geometry_msgs
@@ -20,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenMP)
 find_package(OpenCV REQUIRED)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS
@@ -52,7 +53,6 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 add_executable(lidar_euclidean_cluster_detect
         nodes/lidar_euclidean_cluster_detect/lidar_euclidean_cluster_detect.cpp
         nodes/lidar_euclidean_cluster_detect/cluster.cpp)
-
 
 find_package(CUDA)
 if (${CUDA_FOUND})
@@ -91,7 +91,6 @@ endif ()
 add_dependencies(lidar_euclidean_cluster_detect
         ${catkin_EXPORTED_TARGETS}
         )
-
 
 if (OPENMP_FOUND)
     set_target_properties(lidar_euclidean_cluster_detect PROPERTIES

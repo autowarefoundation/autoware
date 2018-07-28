@@ -1,0 +1,9 @@
+- name: /vector_map_client
+  publish: [/vector_map_client]
+  subscribe: [/vector_map_info/*, /current_pose, /final_waypoints]
+  client: [/vector_map_server/get_white_line, /vector_map_server/get_stop_line,
+    /vector_map_server/get_cross_walk, /vector_map_server/get_signal]
+- name: /vector_map_server
+  publish: [/vector_map_server]
+  subscribe: [/vector_map_info/*]
+  server: [/vector_map_server/*]

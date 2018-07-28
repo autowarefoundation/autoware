@@ -242,7 +242,7 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
   }
   // check whether curvature is valid or not
   bool is_valid_curve = false;
-  for (const auto& el : current_waypoints_)
+  for (const auto &el : current_waypoints_)
   {
     if (getPlaneDistance(el.pose.pose.position, current_pose_.position) > minimum_lookahead_distance_)
     {

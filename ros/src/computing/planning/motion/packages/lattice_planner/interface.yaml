@@ -1,14 +1,16 @@
-- name: lattice_trajectry_gen
-  publish: [/next_waypoint_mark, /spline, /state, /cubic_splines_viz]
-  subscribe: [/base_waypoints, /odom_pose, /control_pose, /config/waypoint_follower,
+- name: /lattice_trajectry_gen
+  publish: [/next_waypoint_mark, /wf_stat, /spline, /state, /cubic_splines_viz]
+  subscribe: [/final_waypoints, /current_pose, /current_velocity, /config/waypoint_follower,
     /can_info]
-- name: lattice_twist_convert
+- name: /command_converter
   publish: [/twist_raw]
   subscribe: [/spline, /state]
-- name: velocity_set
-  publish: [/temporal_waypoints, /closest_waypoint]
-  subscribe: [/localizer_pose, /control_pose, /odom_pose, /vscan_points,
-    /base_waypoints, /obj_X/obj_pose, /estimated_vel_mps]
-- name: path_select
+- name: /lattice_velocity_set
+  publish: [/detection_range, /sound_player, /temporal_waypoints, /closest_waypoint,
+    /obstacle]
+  subscribe: [/localizer_pose, /current_pose, /vscan_points, /base_waypoints,
+    /obj_pose, /current_velocity, /config/lattice_velocity_set,
+    /vector_map_info/*]
+- name: /path_select
   publish: [/final_waypoints]
   subscribe: [/temporal_waypoints]

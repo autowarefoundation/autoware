@@ -83,6 +83,7 @@ void PurePursuitNode::initForROS()
   pub14_ = nh_.advertise<visualization_msgs::Marker>("line_point_mark", 0);  // debug tool
   pub15_ = nh_.advertise<visualization_msgs::Marker>("trajectory_circle_mark", 0);
   pub16_ = nh_.advertise<std_msgs::Float32>("angular_gravity", 0);
+  pub17_ = nh_.advertise<std_msgs::Float32>("deviation_of_current_position", 0);
   // pub7_ = nh.advertise<std_msgs::Bool>("wf_stat", 0);
 }
 
@@ -117,6 +118,8 @@ void PurePursuitNode::run()
     std_msgs::Float32 angular_gravity_msg;
     angular_gravity_msg.data = computeAngularGravity(computeCommandVelocity(), kappa);
     pub16_.publish(angular_gravity_msg);
+
+    publishDeviationCurrentPosition(pp_.getCurrentPose().position, pp_.getCurrentWaypoints());
 
     is_pose_set_ = false;
     is_velocity_set_ = false;
@@ -197,6 +200,26 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
   is_config_set_ = true;
+}
+
+void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
+                                                      const std::vector<autoware_msgs::waypoint> &waypoints) const
+{
+  // Calculate the deviation of current position from the waypoint approximate line
+
+  if (waypoints.size() < 3)
+  {
+    return;
+  }
+
+  double a, b, c;
+  double linear_flag_in =
+      getLinearEquation(waypoints.at(2).pose.pose.position, waypoints.at(1).pose.pose.position, &a, &b, &c);
+
+  std_msgs::Float32 msg;
+  msg.data = getDistanceBetweenLineAndPoint(point, a, b, c);
+
+  pub17_.publish(msg);
 }
 
 void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
