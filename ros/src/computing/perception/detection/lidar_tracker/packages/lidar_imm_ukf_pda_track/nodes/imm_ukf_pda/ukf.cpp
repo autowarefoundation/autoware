@@ -58,25 +58,25 @@ UKF::UKF()
   n_x_ = 5;
 
   // Augmented state dimension
-  n_aug_ = 7;
+  // n_aug_ = 7;
 
   // Sigma point spreading parameter
   lambda_ = 3 - n_x_;
 
   // Augmented sigma point spreading parameter
-  lambda_aug_ = 3 - n_aug_;
+  // lambda_aug_ = 3 - n_aug_;
 
   // predicted sigma points matrix
-  x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_aug_ + 1);
+  x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_aug_ + 1);
+  x_sig_pred_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_rm_ = Eigen::MatrixXd(n_x_, 2 * n_aug_ + 1);
+  x_sig_pred_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
   // create vector for weights
-  weights_ = Eigen::VectorXd(2 * n_aug_ + 1);
+  weights_ = Eigen::VectorXd(2 * n_x_ + 1);
 
   count_ = 0;
   count_empty_ = 0;
@@ -159,11 +159,11 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   p_merge_ << 0.5, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 1;
 
   // set weights
-  double weight_0 = lambda_aug_ / (lambda_aug_ + n_aug_);
+  double weight_0 = lambda_ / (lambda_ + n_x_);
   weights_(0) = weight_0;
-  for (int i = 1; i < 2 * n_aug_ + 1; i++)
+  for (int i = 1; i < 2 * n_x_ + 1; i++)
   {  // 2n+1 weights
-    double weight = 0.5 / (n_aug_ + lambda_aug_);
+    double weight = 0.5 / (n_x_ + lambda_);
     weights_(i) = weight;
   }
 
@@ -355,7 +355,7 @@ void UKF::updateIMMUKF(const std::vector<double>& lambda_vec)
 }
 
 void UKF::ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-               const double nu_a, const double nu_yawdd, const double delta_t, std::vector<double>& state)
+               const double delta_t, std::vector<double>& state)
 {
   // predicted state values
   double px_p, py_p;
@@ -375,14 +375,6 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
   double yaw_p = yaw + yawd * delta_t;
   double yawd_p = yawd;
 
-  // add noise
-  px_p = px_p + 0.5 * nu_a * delta_t * delta_t * cos(yaw);
-  py_p = py_p + 0.5 * nu_a * delta_t * delta_t * sin(yaw);
-  v_p = v_p + nu_a * delta_t;
-
-  yaw_p = yaw_p + 0.5 * nu_yawdd * delta_t * delta_t;
-  yawd_p = yawd_p + nu_yawdd * delta_t;
-
   state[0] = px_p;
   state[1] = py_p;
   state[2] = v_p;
@@ -390,8 +382,8 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
   state[4] = yawd_p;
 }
 
-void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double nu_a,
-             const double nu_yawdd, const double delta_t, std::vector<double>& state)
+void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
+             const double delta_t, std::vector<double>& state)
 {
   // predicted state values
   double px_p = p_x + v * cos(yaw) * delta_t;
@@ -403,14 +395,6 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
 
   double yawd_p = yawd;
 
-  // add noise
-  px_p = px_p + 0.5 * nu_a * delta_t * delta_t * cos(yaw);
-  py_p = py_p + 0.5 * nu_a * delta_t * delta_t * sin(yaw);
-  v_p = v_p + nu_a * delta_t;
-
-  yaw_p = yaw_p + 0.5 * nu_yawdd * delta_t * delta_t;
-  yawd_p = yawd_p + nu_yawdd * delta_t;
-
   state[0] = px_p;
   state[1] = py_p;
   state[2] = v_p;
@@ -419,7 +403,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
 }
 
 void UKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-                       const double nu_a, const double nu_yawdd, const double delta_t, std::vector<double>& state)
+                       const double delta_t, std::vector<double>& state)
 {
   double px_p = p_x;
   double py_p = p_y;
@@ -495,59 +479,64 @@ void UKF::prediction(const double delta_t, const int model_ind)
   /*****************************************************************************
   *  Augment Sigma Points
   ****************************************************************************/
-  // create augmented mean vector
-  Eigen::VectorXd x_aug = Eigen::VectorXd(n_aug_);
+  // // create augmented mean vector
+  // Eigen::VectorXd x_aug = Eigen::VectorXd(n_aug_);
+  //
+  // // create augmented state covariance
+  // Eigen::MatrixXd p_aug = Eigen::MatrixXd(n_aug_, n_aug_);
+  //
+  // // create sigma point matrix
+  // Eigen::MatrixXd x_sig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1);
+  //
+  // // create augmented mean state
+  // x_aug.head(5) = x;
+  // x_aug(5) = 0;
+  // x_aug(6) = 0;
+  //
+  // // create augmented covariance matrix
+  // p_aug.fill(0.0);
+  // p_aug.topLeftCorner(5, 5) = p;
+  // p_aug(5, 5) = std_a * std_a;
+  // p_aug(6, 6) = std_yawdd * std_yawdd;
 
-  // create augmented state covariance
-  Eigen::MatrixXd p_aug = Eigen::MatrixXd(n_aug_, n_aug_);
 
-  // create sigma point matrix
-  Eigen::MatrixXd x_sig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1);
+  /*****************************************************************************
+  *  Create Sigma Points
+  ****************************************************************************/
 
-  // create augmented mean state
-  x_aug.head(5) = x;
-  x_aug(5) = 0;
-  x_aug(6) = 0;
-
-  // create augmented covariance matrix
-  p_aug.fill(0.0);
-  p_aug.topLeftCorner(5, 5) = p;
-  p_aug(5, 5) = std_a * std_a;
-  p_aug(6, 6) = std_yawdd * std_yawdd;
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
   // create square root matrix
-  Eigen::MatrixXd L = p_aug.llt().matrixL();
+  Eigen::MatrixXd L = p.llt().matrixL();
 
   // create augmented sigma points
-  x_sig_aug.col(0) = x_aug;
-  for (int i = 0; i < n_aug_; i++)
+  x_sig.col(0) = x;
+  for (int i = 0; i < n_x_; i++)
   {
-    x_sig_aug.col(i + 1) = x_aug + sqrt(lambda_aug_ + n_aug_) * L.col(i);
-    x_sig_aug.col(i + 1 + n_aug_) = x_aug - sqrt(lambda_aug_ + n_aug_) * L.col(i);
+    x_sig.col(i + 1)        = x + sqrt(lambda_ + n_x_) * L.col(i);
+    x_sig.col(i + 1 + n_x_) = x - sqrt(lambda_ + n_x_) * L.col(i);
   }
 
   /*****************************************************************************
   *  Predict Sigma Points
   ****************************************************************************/
   // predict sigma points
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     // extract values for better readability
-    double p_x = x_sig_aug(0, i);
-    double p_y = x_sig_aug(1, i);
-    double v = x_sig_aug(2, i);
-    double yaw = x_sig_aug(3, i);
-    double yawd = x_sig_aug(4, i);
-    double nu_a = x_sig_aug(5, i);
-    double nu_yawdd = x_sig_aug(6, i);
+    double p_x      = x_sig(0, i);
+    double p_y      = x_sig(1, i);
+    double v        = x_sig(2, i);
+    double yaw      = x_sig(3, i);
+    double yawd     = x_sig(4, i);
 
     std::vector<double> state(5);
     if (model_ind == 0)
-      cv(p_x, p_y, v, yaw, yawd, nu_a, nu_yawdd, delta_t, state);
+      cv(p_x, p_y, v, yaw, yawd, delta_t, state);
     else if (model_ind == 1)
-      ctrv(p_x, p_y, v, yaw, yawd, nu_a, nu_yawdd, delta_t, state);
+      ctrv(p_x, p_y, v, yaw, yawd, delta_t, state);
     else
-      randomMotion(p_x, p_y, v, yaw, yawd, nu_a, nu_yawdd, delta_t, state);
+      randomMotion(p_x, p_y, v, yaw, yawd, delta_t, state);
 
     // write predicted sigma point into right column
     x_sig_pred(0, i) = state[0];
@@ -562,7 +551,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
   ****************************************************************************/
   // predicted state mean
   x.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // iterate over sigma points
     x = x + weights_(i) * x_sig_pred.col(i);
   }
@@ -573,7 +562,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
     x(3) += 2. * M_PI;
   // predicted state covariance matrix
   p.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // iterate over sigma points
     // state difference
     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
@@ -584,6 +573,8 @@ void UKF::prediction(const double delta_t, const int model_ind)
       x_diff(3) += 2. * M_PI;
     p = p + weights_(i) * x_diff * x_diff.transpose();
   }
+
+  p = p + covar_q_;
 
   /*****************************************************************************
   *  Update model parameters
@@ -640,10 +631,10 @@ void UKF::updateLidar(const int model_ind)
   int n_z = 2;
 
   // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_aug_ + 1);
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
 
   // transform sigma points into measurement space
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // 2n+1 simga points
     // extract values for better readibility
     double p_x = x_sig_pred(0, i);
@@ -657,7 +648,7 @@ void UKF::updateLidar(const int model_ind)
   // mean predicted measurement
   Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
   z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     z_pred = z_pred + weights_(i) * z_sig.col(i);
   }
@@ -665,7 +656,7 @@ void UKF::updateLidar(const int model_ind)
   // measurement covariance matrix S
   Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
   S.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
@@ -674,7 +665,8 @@ void UKF::updateLidar(const int model_ind)
 
   // add measurement noise covariance matrix
   Eigen::MatrixXd R = Eigen::MatrixXd(n_z, n_z);
-  R << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
+  R << std_laspx_ * std_laspx_,                        0,
+                              0, std_laspy_ * std_laspy_;
   S = S + R;
 
   // create matrix for cross correlation Tc
@@ -685,7 +677,7 @@ void UKF::updateLidar(const int model_ind)
   ****************************************************************************/
   // calculate cross correlation matrix
   Tc.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++)
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
