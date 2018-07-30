@@ -446,7 +446,7 @@ void UKF::updateCovarQ(const double dt, const double yaw, const double std_a, co
   double sin_2_yaw = sin(yaw) * sin(yaw);
   double cos_sin = cos_yaw * sin_yaw;
   double var_a = std_a * std_a;
-  double var_yawdd = std_yawdd * std_yawdd
+  double var_yawdd = std_yawdd * std_yawdd;
 
   covar_q_ << 0.5*0.5*dt_4*cos_2_yaw*var_a,   0.5*0.5*dt_4*cos_sin*var_a, 0.5*dt_3*cos_yaw*var_a,                      0,                  0,
               0.5*0.5*dt_4*cos_sin*var_a  , 0.5*0.5*dt_4*sin_2_yaw*var_a, 0.5*dt_3*sin_yaw*var_a,                      0,                  0,
@@ -490,7 +490,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
     std_a = std_a_rm_;
   }
 
-  uodateCovarQ(delta_t, x(3), std_a, std_yawdd);
+  updateCovarQ(delta_t, x(3), std_a, std_yawdd);
 
   /*****************************************************************************
   *  Augment Sigma Points
