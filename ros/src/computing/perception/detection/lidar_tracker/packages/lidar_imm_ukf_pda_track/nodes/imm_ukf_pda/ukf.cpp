@@ -451,7 +451,7 @@ void UKF::updateCovarQ(const double dt, const double yaw, const double std_a, co
   covar_q_ << 0.5*0.5*dt_4*cos_2_yaw*var_a,   0.5*0.5*dt_4*cos_sin*var_a, 0.5*dt_3*cos_yaw*var_a,                      0,                  0,
               0.5*0.5*dt_4*cos_sin*var_a  , 0.5*0.5*dt_4*sin_2_yaw*var_a, 0.5*dt_3*sin_yaw*var_a,                      0,                  0,
               0.5*dt_3*cos_yaw*var_a      ,       0.5*dt_3*sin_yaw*var_a,             dt_2*var_a,                      0,                  0,
-                                         0,                            0,                      0, 0.5*0,5*dt_4*var_yawdd, 0.5*dt_3*var_yawdd,
+                                         0,                            0,                      0, 0.5*0.5*dt_4*var_yawdd, 0.5*dt_3*var_yawdd,
                                          0,                            0,                      0,     0.5*dt_3*var_yawdd,     dt_2*var_yawdd;
 }
 
