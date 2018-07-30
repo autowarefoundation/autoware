@@ -12,6 +12,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 
+#include "autoware_msgs/DetectedObject.h"
+
 class LanePoint
 {
 public:
@@ -204,6 +206,11 @@ public:
   void interaction();
 
   void predictionIMMUKF(const double dt);
+
+  void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
+
+  void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
+                        const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
 
   void updateIMMUKF(const std::vector<double>& lambda_vec);
 

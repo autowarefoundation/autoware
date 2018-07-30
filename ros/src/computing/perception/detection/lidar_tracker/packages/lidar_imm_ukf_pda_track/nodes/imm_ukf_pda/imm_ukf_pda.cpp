@@ -147,39 +147,39 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 }
 
-void ImmUkfPda::findMaxZandS(const UKF& target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
-{
-  double cv_det = target.s_cv_.determinant();
-  double ctrv_det = target.s_ctrv_.determinant();
-  double rm_det = target.s_rm_.determinant();
-
-  if (cv_det > ctrv_det)
-  {
-    if (cv_det > rm_det)
-    {
-      max_det_z = target.z_pred_cv_;
-      max_det_s = target.s_cv_;
-    }
-    else
-    {
-      max_det_z = target.z_pred_rm_;
-      max_det_s = target.s_rm_;
-    }
-  }
-  else
-  {
-    if (ctrv_det > rm_det)
-    {
-      max_det_z = target.z_pred_ctrv_;
-      max_det_s = target.s_ctrv_;
-    }
-    else
-    {
-      max_det_z = target.z_pred_rm_;
-      max_det_s = target.s_rm_;
-    }
-  }
-}
+// void ImmUkfPda::findMaxZandS(const UKF& target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
+// {
+//   double cv_det = target.s_cv_.determinant();
+//   double ctrv_det = target.s_ctrv_.determinant();
+//   double rm_det = target.s_rm_.determinant();
+//
+//   if (cv_det > ctrv_det)
+//   {
+//     if (cv_det > rm_det)
+//     {
+//       max_det_z = target.z_pred_cv_;
+//       max_det_s = target.s_cv_;
+//     }
+//     else
+//     {
+//       max_det_z = target.z_pred_rm_;
+//       max_det_s = target.s_rm_;
+//     }
+//   }
+//   else
+//   {
+//     if (ctrv_det > rm_det)
+//     {
+//       max_det_z = target.z_pred_ctrv_;
+//       max_det_s = target.s_ctrv_;
+//     }
+//     else
+//     {
+//       max_det_z = target.z_pred_rm_;
+//       max_det_s = target.s_rm_;
+//     }
+//   }
+// }
 
 void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF& target, const bool second_init,
                                       const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
@@ -228,165 +228,6 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   {
     object_vec.push_back(smallest_meas_object);
   }
-}
-
-void ImmUkfPda::filterPDA(UKF& target,
-                          const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                          std::vector<double>& lambda_vec)
-{
-  // calculating association probability
-  double num_meas = object_vec.size();
-  double b = 2 * num_meas * (1 - detection_probability_ * gate_probability_) / (gating_thres_ * detection_probability_);
-  double e_cv_sum = 0;
-  double e_ctrv_sum = 0;
-  double e_rm_sum = 0;
-
-  std::vector<double> e_cv_vec;
-  std::vector<double> e_ctrv_vec;
-  std::vector<double> e_rm_vec;
-
-  std::vector<Eigen::VectorXd> diff_cv_vec;
-  std::vector<Eigen::VectorXd> diff_ctrv_vec;
-  std::vector<Eigen::VectorXd> diff_rm_vec;
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    Eigen::VectorXd meas_vec = Eigen::VectorXd(2);
-    meas_vec(0) = object_vec[i].pose.position.x;
-    meas_vec(1) = object_vec[i].pose.position.y;
-
-    Eigen::VectorXd diff_cv   = meas_vec - target.z_pred_cv_;
-    Eigen::VectorXd diff_ctrv = meas_vec - target.z_pred_ctrv_;
-    Eigen::VectorXd diff_rm   = meas_vec - target.z_pred_rm_;
-
-    diff_cv_vec.push_back(diff_cv);
-    diff_ctrv_vec.push_back(diff_ctrv);
-    diff_rm_vec.push_back(diff_rm);
-
-    double e_cv = exp(-0.5 * diff_cv.transpose() * target.s_cv_.inverse() * diff_cv);
-    double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * target.s_ctrv_.inverse() * diff_ctrv);
-    double e_rm = exp(-0.5 * diff_rm.transpose() * target.s_rm_.inverse() * diff_rm);
-
-    e_cv_vec.push_back(e_cv);
-    e_ctrv_vec.push_back(e_ctrv);
-    e_rm_vec.push_back(e_rm);
-
-    e_cv_sum += e_cv;
-    e_ctrv_sum += e_ctrv;
-    e_rm_sum += e_rm;
-  }
-  double beta_cv_zero = b / (b + e_cv_sum);
-  double beta_ctrv_zero = b / (b + e_ctrv_sum);
-  double beta_rm_zero = b / (b + e_rm_sum);
-
-  std::vector<double> beta_cv;
-  std::vector<double> beta_ctrv;
-  std::vector<double> beta_rm;
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    double temp_cv = e_cv_vec[i] / (b + e_cv_sum);
-    double temp_ctrv = e_ctrv_vec[i] / (b + e_ctrv_sum);
-    double temp_rm = e_rm_vec[i] / (b + e_rm_sum);
-
-    beta_cv.push_back(temp_cv);
-    beta_ctrv.push_back(temp_ctrv);
-    beta_rm.push_back(temp_rm);
-  }
-  Eigen::VectorXd sigma_x_cv;
-  Eigen::VectorXd sigma_x_ctrv;
-  Eigen::VectorXd sigma_x_rm;
-  sigma_x_cv.setZero(2);
-  sigma_x_ctrv.setZero(2);
-  sigma_x_rm.setZero(2);
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    sigma_x_cv += beta_cv[i] * diff_cv_vec[i];
-    sigma_x_ctrv += beta_ctrv[i] * diff_ctrv_vec[i];
-    sigma_x_rm += beta_rm[i] * diff_rm_vec[i];
-  }
-
-  Eigen::MatrixXd sigma_p_cv;
-  Eigen::MatrixXd sigma_p_ctrv;
-  Eigen::MatrixXd sigma_p_rm;
-  sigma_p_cv.setZero(2, 2);
-  sigma_p_ctrv.setZero(2, 2);
-  sigma_p_rm.setZero(2, 2);
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    sigma_p_cv += (beta_cv[i] * diff_cv_vec[i] * diff_cv_vec[i].transpose() - sigma_x_cv * sigma_x_cv.transpose());
-    sigma_p_ctrv +=
-        (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
-    sigma_p_rm += (beta_rm[i] * diff_rm_vec[i] * diff_rm_vec[i].transpose() - sigma_x_rm * sigma_x_rm.transpose());
-  }
-
-  // update x and P
-  target.x_cv_ = target.x_cv_ + target.k_cv_ * sigma_x_cv;
-  target.x_ctrv_ = target.x_ctrv_ + target.k_ctrv_ * sigma_x_ctrv;
-  target.x_rm_ = target.x_rm_ + target.k_rm_ * sigma_x_rm;
-
-  while (target.x_cv_(3) > M_PI)
-    target.x_cv_(3) -= 2. * M_PI;
-  while (target.x_cv_(3) < -M_PI)
-    target.x_cv_(3) += 2. * M_PI;
-  while (target.x_ctrv_(3) > M_PI)
-    target.x_ctrv_(3) -= 2. * M_PI;
-  while (target.x_ctrv_(3) < -M_PI)
-    target.x_ctrv_(3) += 2. * M_PI;
-  while (target.x_rm_(3) > M_PI)
-    target.x_rm_(3) -= 2. * M_PI;
-  while (target.x_rm_(3) < -M_PI)
-    target.x_rm_(3) += 2. * M_PI;
-
-  if (num_meas != 0)
-  {
-    target.p_cv_ = beta_cv_zero * target.p_cv_ +
-                   (1 - beta_cv_zero) * (target.p_cv_ - target.k_cv_ * target.s_cv_ * target.k_cv_.transpose()) +
-                   target.k_cv_ * sigma_p_cv * target.k_cv_.transpose();
-    target.p_ctrv_ =
-        beta_ctrv_zero * target.p_ctrv_ +
-        (1 - beta_ctrv_zero) * (target.p_ctrv_ - target.k_ctrv_ * target.s_ctrv_ * target.k_ctrv_.transpose()) +
-        target.k_ctrv_ * sigma_p_ctrv * target.k_ctrv_.transpose();
-    target.p_rm_ = beta_rm_zero * target.p_rm_ +
-                   (1 - beta_rm_zero) * (target.p_rm_ - target.k_rm_ * target.s_rm_ * target.k_rm_.transpose()) +
-                   target.k_rm_ * sigma_p_rm * target.k_rm_.transpose();
-  }
-  else
-  {
-    target.p_cv_ = target.p_cv_ - target.k_cv_ * target.s_cv_ * target.k_cv_.transpose();
-    target.p_ctrv_ = target.p_ctrv_ - target.k_ctrv_ * target.s_ctrv_ * target.k_ctrv_.transpose();
-    target.p_rm_ = target.p_rm_ - target.k_rm_ * target.s_rm_ * target.k_rm_.transpose();
-  }
-
-  Eigen::VectorXd max_det_z;
-  Eigen::MatrixXd max_det_s;
-
-  findMaxZandS(target, max_det_z, max_det_s);
-  double Vk = M_PI * sqrt(gating_thres_ * max_det_s.determinant());
-
-  double lambda_cv, lambda_ctrv, lambda_rm;
-  if (num_meas != 0)
-  {
-    lambda_cv = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas) +
-                detection_probability_ * pow(Vk, 1 - num_meas) * e_cv_sum /
-                    (num_meas * sqrt(2 * M_PI * target.s_cv_.determinant()));
-    lambda_ctrv = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas) +
-                  detection_probability_ * pow(Vk, 1 - num_meas) * e_ctrv_sum /
-                      (num_meas * sqrt(2 * M_PI * target.s_ctrv_.determinant()));
-    lambda_rm = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas) +
-                detection_probability_ * pow(Vk, 1 - num_meas) * e_rm_sum /
-                    (num_meas * sqrt(2 * M_PI * target.s_rm_.determinant()));
-  }
-  else
-  {
-    lambda_cv = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas);
-    lambda_ctrv = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas);
-    lambda_rm = (1 - gate_probability_ * detection_probability_) / pow(Vk, num_meas);
-  }
-  lambda_vec.push_back(lambda_cv);
-  lambda_vec.push_back(lambda_ctrv);
-  lambda_vec.push_back(lambda_rm);
 }
 
 void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
@@ -638,14 +479,13 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
 
 void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                              const double det_explode_param, std::vector<bool>& matching_vec,
-                                             std::vector<double>& lambda_vec, UKF& target, bool& is_skip_target)
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target, bool& is_skip_target)
 {
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
-  std::vector<autoware_msgs::DetectedObject> object_vec;
   is_skip_target = false;
   // find maxDetS associated with predZ
-  findMaxZandS(target, max_det_z, max_det_s);
+  target.findMaxZandS(max_det_z, max_det_s);
 
   double det_s = max_det_s.determinant();
 
@@ -690,7 +530,6 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     is_skip_target = true;
     return;
   }
-  filterPDA(target, object_vec, lambda_vec);
 }
 
 void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec)
@@ -941,10 +780,14 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     targets_[i].predictionIMMUKF(dt);
 
     bool is_skip_target;
-    std::vector<double> lambda_vec;
-    probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, lambda_vec, targets_[i], is_skip_target);
+    std::vector<autoware_msgs::DetectedObject> object_vec;
+    probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, object_vec, targets_[i], is_skip_target);
     if (is_skip_target)
       continue;
+
+    // update each motion's x and p
+    std::vector<double> lambda_vec;
+    targets_[i].updateEachMotion(detection_probability_, gate_probability_ , gating_thres_, object_vec, lambda_vec);
 
     // immukf update step
     targets_[i].updateIMMUKF(lambda_vec);
