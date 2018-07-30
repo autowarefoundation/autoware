@@ -56,8 +56,8 @@ BehaviorGen::BehaviorGen()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_LocalPath = nh.advertise<autoware_msgs::lane>("final_waypoints", 1,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>("base_waypoints", 1,true);
+	pub_LocalPath = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1,true);
+	pub_LocalBasePath = nh.advertise<autoware_msgs::Lane>("base_waypoints", 1,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>("closest_waypoint", 1,true);
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
 	pub_SimuBoxPose	  = nh.advertise<geometry_msgs::PoseArray>("sim_box_pose_ego", 1);
@@ -307,7 +307,7 @@ void BehaviorGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayCon
 	}
 }
 
-void BehaviorGen::callbackGetLocalTrajectoryCost(const autoware_msgs::laneConstPtr& msg)
+void BehaviorGen::callbackGetLocalTrajectoryCost(const autoware_msgs::LaneConstPtr& msg)
 {
 	bBestCost = true;
 	m_TrajectoryBestCost.bBlocked = msg->is_blocked;
@@ -356,7 +356,7 @@ void BehaviorGen::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayCons
 	}
 }
 
-void BehaviorGen::callbackGetTrafficLightStatus(const autoware_msgs::traffic_light& msg)
+void BehaviorGen::callbackGetTrafficLightStatus(const autoware_msgs::TrafficLight& msg)
 {
 	std::cout << "Received Traffic Light Status : " << msg.traffic_light << std::endl;
 	bNewLightStatus = true;

@@ -6,9 +6,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <rviz/panel.h>
-#include "autoware_msgs/image_obj.h"
-#include "autoware_msgs/image_obj_ranged.h"
-#include "autoware_msgs/image_obj_tracked.h"
+#include "autoware_msgs/ImageObj.h"
+#include "autoware_msgs/ImageObjRanged.h"
+#include "autoware_msgs/ImageObjTracked.h"
 #include "autoware_msgs/PointsImage.h"
 
 #include <string>

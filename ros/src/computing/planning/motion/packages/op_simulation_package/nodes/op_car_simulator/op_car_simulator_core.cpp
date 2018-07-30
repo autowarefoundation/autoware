@@ -100,7 +100,7 @@ OpenPlannerCarSimulator::OpenPlannerCarSimulator()
 	pub_PointerBehaviorStateRviz	= nh.advertise<visualization_msgs::Marker>(str_s2.str(), 1);
 	pub_InternalInfoRviz			= nh.advertise<visualization_msgs::MarkerArray>(str_s7.str(), 1);
 
-	pub_CurrentLocalPath 			= nh.advertise<autoware_msgs::lane>(str_s8.str(), 1);
+	pub_CurrentLocalPath 			= nh.advertise<autoware_msgs::Lane>(str_s8.str(), 1);
 
 	sub_joystick = nh.subscribe("/joy", 		1, &OpenPlannerCarSimulator::callbackGetJoyStickInfo, 		this);
 	sub_StepSignal = nh.subscribe("/simu_step_signal", 		1, &OpenPlannerCarSimulator::callbackGetStepForwardSignals, 		this);
@@ -1011,7 +1011,7 @@ void OpenPlannerCarSimulator::MainLoop()
 
 			if(m_SimParams.bEnableLogs)
 			{
-				autoware_msgs::lane lane;
+				autoware_msgs::Lane lane;
 				PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_LocalPlanner->m_Path, lane);
 				lane.lane_id = m_SimParams.id;
 				lane.lane_index = (int)m_CurrBehavior.state;

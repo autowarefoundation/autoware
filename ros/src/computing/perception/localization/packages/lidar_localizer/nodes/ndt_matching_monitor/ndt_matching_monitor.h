@@ -65,7 +65,7 @@
 
 #include <jsk_rviz_plugins/OverlayText.h>
 
-#include <autoware_msgs/ndt_stat.h>
+#include <autoware_msgs/NDTStat.h>
 
 #define __APP_NAME__ "RosNdtMatchingMonitor"
 
@@ -123,7 +123,7 @@ class RosNdtMatchingMonitor
 	 * Callback for NDT statistics
 	 * @param input message published by ndt
 	 */
-	void ndt_stat_callback(const autoware_msgs::ndt_stat::ConstPtr& input);
+	void ndt_stat_callback(const autoware_msgs::NDTStat::ConstPtr& input);
 
 	/*!
 	 * Callback for transformation result from NDT

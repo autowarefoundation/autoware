@@ -12,7 +12,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/Signals.h>
 #include <autoware_msgs/TunedResult.h>
 #include <autoware_msgs/TrafficLightResultArray.h>
@@ -209,7 +209,7 @@ static void extractedPos_cb(const autoware_msgs::Signals::ConstPtr &extractedPos
 	detector.brightnessDetect(frame);
 
 	/* publish result */
-	autoware_msgs::traffic_light state_msg;
+	autoware_msgs::TrafficLight state_msg;
 	autoware_msgs::TrafficLightResultArray tlr_result_array_msg;
 	tlr_result_array_msg.header = extractedPos->header;
 
@@ -495,7 +495,7 @@ int main(int argc, char *argv[])
 	ros::Subscriber tunedResult_sub = n.subscribe("/tuned_result", 1, tunedResult_cb);
 	ros::Subscriber superimpose_sub = n.subscribe("/config/superimpose", 1, superimpose_cb);
 
-	signalState_pub = n.advertise<autoware_msgs::traffic_light>(camera_light_color_topic_name, ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
+	signalState_pub = n.advertise<autoware_msgs::TrafficLight>(camera_light_color_topic_name, ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
 	signalStateString_pub = n.advertise<std_msgs::String>("/sound_player", ADVERTISE_QUEUE_SIZE);
 	marker_pub = n.advertise<visualization_msgs::MarkerArray>("tlr_result", ADVERTISE_QUEUE_SIZE);
 	superimpose_image_pub = n.advertise<sensor_msgs::Image>("tlr_superimpose_image", ADVERTISE_QUEUE_SIZE);

@@ -281,7 +281,7 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
-		autoware_msgs::lane lane;
+		autoware_msgs::Lane lane;
 		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(generatedTotalPaths.at(i), lane);
 		lane_array.lanes.push_back(lane);
 	}

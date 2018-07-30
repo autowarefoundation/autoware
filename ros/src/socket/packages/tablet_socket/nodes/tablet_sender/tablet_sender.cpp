@@ -40,7 +40,7 @@
 #include <tablet_socket_msgs/error_info.h>
 #include <tablet_socket_msgs/mode_info.h>
 #include "autoware_msgs/CanInfo.h"
-#include "autoware_msgs/ndt_stat.h"
+#include "autoware_msgs/NDTStat.h"
 
 static constexpr int DEFAULT_PORT = 5777;
 static constexpr int LISTEN_BACKLOG = 10;
@@ -94,7 +94,7 @@ struct ndt_request {
 	float acceleration;
 	int32_t use_predict_pose;
 
-	ndt_request(const autoware_msgs::ndt_stat& msg) {
+	ndt_request(const autoware_msgs::NDTStat& msg) {
 		type = NDT_STAT_TYPE;
 		exe_time = msg.exe_time;
 		iteration = msg.iteration;
@@ -214,7 +214,7 @@ static void subscribe_mode_info(const tablet_socket_msgs::mode_info& msg)
 	}
 }
 
-static void subscribe_ndt_stat(const autoware_msgs::ndt_stat& msg)
+static void subscribe_ndt_stat(const autoware_msgs::NDTStat& msg)
 {
 	ndt_request request(msg);
 	int response;

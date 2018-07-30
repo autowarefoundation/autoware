@@ -33,23 +33,23 @@ add_message_files(
             Signals.msg
             TunedResult.msg
             ValueSet.msg
-            centroids.msg
-            dtlane.msg
-            geometric_rectangle.msg
-            icp_stat.msg
-            image_obj.msg
-            image_obj_ranged.msg
-            image_obj_tracked.msg
-            image_rect.msg
-            image_rect_ranged.msg
-            lane.msg
-            ndt_stat.msg
-            obj_label.msg
-            obj_pose.msg
-            projection_matrix.msg
-            vscan_tracked.msg
-            vscan_tracked_array.msg
-            waypoint.msg
+            Centroids.msg
+            DTLane.msg
+            GeometricRectangle.msg
+            ICPStat.msg
+            ImageObj.msg
+            ImageObjRanged.msg
+            ImageObjTracked.msg
+            ImageRect.msg
+            ImageRectRanged.msg
+            Lane.msg
+            NDTStat.msg
+            ObjLabel.msg
+            ObjPose.msg
+            ProjectionMatrix.msg
+            VscanTracked.msg
+            VscanTrackedArray.msg
+            Waypoint.msg
             WaypointState.msg
             VehicleCmd.msg
             VehicleStatus.msg
@@ -87,18 +87,18 @@ add_message_files(
             config/ConfigVoxelGridFilter.msg
             config/ConfigWaypointLoader.msg
             config/ConfigWaypointFollower.msg
-            accel_cmd.msg
-            adjust_xy.msg
-            brake_cmd.msg
-            indicator_cmd.msg
-            lamp_cmd.msg
-            steer_cmd.msg
-            traffic_light.msg
-            state_cmd.msg
-            state.msg
+            AccelCmd.msg
+            AdjustXY.msg
+            BrakeCmd.msg
+            IndicatorCmd.msg
+            LampCmd.msg
+            SteerCmd.msg
+            TrafficLight.msg
+            StateCmd.msg
+            State.msg
             ## Sync
-            Sync_time_monitor.msg
-            Sync_time_diff.msg
+            SyncTimeMonitor.msg
+            SyncTimeDiff.msg
 
             ## Remote Control
             RemoteCmd.msg
