@@ -57,15 +57,9 @@ UKF::UKF()
   // state dimension
   n_x_ = 5;
 
-  // Augmented state dimension
-  // n_aug_ = 7;
-
   // Sigma point spreading parameter
   lambda_ = 3 - n_x_;
-
-  // Augmented sigma point spreading parameter
-  // lambda_aug_ = 3 - n_aug_;
-
+  
   // predicted sigma points matrix
   x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
@@ -475,30 +469,6 @@ void UKF::prediction(const double delta_t, const int model_ind)
   }
 
   updateCovarQ(delta_t, x(3), std_a, std_yawdd);
-
-  /*****************************************************************************
-  *  Augment Sigma Points
-  ****************************************************************************/
-  // // create augmented mean vector
-  // Eigen::VectorXd x_aug = Eigen::VectorXd(n_aug_);
-  //
-  // // create augmented state covariance
-  // Eigen::MatrixXd p_aug = Eigen::MatrixXd(n_aug_, n_aug_);
-  //
-  // // create sigma point matrix
-  // Eigen::MatrixXd x_sig_aug = Eigen::MatrixXd(n_aug_, 2 * n_aug_ + 1);
-  //
-  // // create augmented mean state
-  // x_aug.head(5) = x;
-  // x_aug(5) = 0;
-  // x_aug(6) = 0;
-  //
-  // // create augmented covariance matrix
-  // p_aug.fill(0.0);
-  // p_aug.topLeftCorner(5, 5) = p;
-  // p_aug(5, 5) = std_a * std_a;
-  // p_aug(6, 6) = std_yawdd * std_yawdd;
-
 
   /*****************************************************************************
   *  Create Sigma Points

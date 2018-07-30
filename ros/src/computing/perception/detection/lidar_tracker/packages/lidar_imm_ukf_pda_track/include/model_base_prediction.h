@@ -11,7 +11,6 @@
 
 
 #include "ukf.h"
-// #include "imm_ukf_pda.h"
 
 class ModelBasePrediction
 {
@@ -19,9 +18,6 @@ private:
   int num_path_points_;
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
-
-  // Eigen::MatrixXd x_p_;
-  // Eigen::MatrixXd x_l_;
 
   Eigen::VectorXd x_p_;
   Eigen::VectorXd x_l_;
