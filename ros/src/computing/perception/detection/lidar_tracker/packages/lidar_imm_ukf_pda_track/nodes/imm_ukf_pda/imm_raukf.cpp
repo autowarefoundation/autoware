@@ -1,10 +1,10 @@
 
-#include "ukf.h"
+#include "imm_raukf.h"
 
 /**
 * Initializes Unscented Kalman filter
 */
-UKF::UKF()
+IMM_RAUKF::IMM_RAUKF()
 {
 
   // initial state vector
@@ -142,7 +142,7 @@ UKF::UKF()
   x_merge_yaw_ = 0;
 }
 
-void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
+void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
 {
   ukf_id_ = target_id;
 
@@ -194,7 +194,7 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   nis_paths_.push_back(0);
 }
 
-void UKF::updateModeProb(const std::vector<double>& lambda_vec)
+void IMM_RAUKF::updateModeProb(const std::vector<double>& lambda_vec)
 {
   double cvGauss = lambda_vec[0];
   double ctrvGauss = lambda_vec[1];
@@ -212,7 +212,7 @@ void UKF::updateModeProb(const std::vector<double>& lambda_vec)
     mode_prob_rm_ = 0.0001;
 }
 
-void UKF::updateYawWithHighProb()
+void IMM_RAUKF::updateYawWithHighProb()
 {
   if (mode_prob_cv_ > mode_prob_ctrv_)
   {
@@ -239,7 +239,7 @@ void UKF::updateYawWithHighProb()
   x_merge_(3) = x_merge_yaw_;
 }
 
-void UKF::mergeEstimationAndCovariance()
+void IMM_RAUKF::mergeEstimationAndCovariance()
 {
   x_merge_ = mode_prob_cv_ * x_cv_ + mode_prob_ctrv_ * x_ctrv_ + mode_prob_rm_ * x_rm_;
   while (x_merge_(3) > M_PI)
@@ -255,7 +255,7 @@ void UKF::mergeEstimationAndCovariance()
              mode_prob_rm_ * (p_rm_ + (x_rm_ - x_merge_) * (x_rm_ - x_merge_).transpose());
 }
 
-void UKF::mixingProbability()
+void IMM_RAUKF::mixingProbability()
 {
   double sumProb1 = mode_prob_cv_ * p1_[0] + mode_prob_ctrv_ * p2_[0] + mode_prob_rm_ * p3_[0];
   double sumProb2 = mode_prob_cv_ * p1_[1] + mode_prob_ctrv_ * p2_[1] + mode_prob_rm_ * p3_[1];
@@ -273,7 +273,7 @@ void UKF::mixingProbability()
   mode_match_prob_rm2rm_ = mode_prob_rm_ * p3_[2] / sumProb3;
 }
 
-void UKF::interaction()
+void IMM_RAUKF::interaction()
 {
   Eigen::MatrixXd x_pre_cv = x_cv_;
   Eigen::MatrixXd x_pre_ctrv = x_ctrv_;
@@ -317,7 +317,7 @@ void UKF::interaction()
 }
 
 
-void UKF::predictionIMMUKF(const double dt)
+void IMM_RAUKF::predictionIMMUKF(const double dt)
 {
   /*****************************************************************************
   *  IMM Mixing and Interaction
@@ -339,7 +339,7 @@ void UKF::predictionIMMUKF(const double dt)
   updateLidar(2);
 }
 
-void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
+void IMM_RAUKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
 {
   double cv_det   = s_cv_.determinant();
   double ctrv_det = s_ctrv_.determinant();
@@ -373,7 +373,7 @@ void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
   }
 }
 
-void UKF::updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
+void IMM_RAUKF::updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                            const std::vector<autoware_msgs::DetectedObject>& object_vec,
                            std::vector<double>& lambda_vec)
 {
@@ -531,7 +531,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   lambda_vec.push_back(lambda_rm);
 }
 
-void UKF::updateIMMUKF(const std::vector<double>& lambda_vec)
+void IMM_RAUKF::updateIMMUKF(const std::vector<double>& lambda_vec)
 {
   /*****************************************************************************
   *  IMM Merge Step
@@ -540,7 +540,7 @@ void UKF::updateIMMUKF(const std::vector<double>& lambda_vec)
   mergeEstimationAndCovariance();
 }
 
-void UKF::ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
+void IMM_RAUKF::ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                const double delta_t, std::vector<double>& state)
 {
   // predicted state values
@@ -568,7 +568,7 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
   state[4] = yawd_p;
 }
 
-void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
+void IMM_RAUKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
              const double delta_t, std::vector<double>& state)
 {
   // predicted state values
@@ -588,7 +588,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
   state[4] = yawd_p;
 }
 
-void UKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
+void IMM_RAUKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                        const double delta_t, std::vector<double>& state)
 {
   double px_p = p_x;
@@ -605,7 +605,7 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
   state[4] = yawd_p;
 }
 
-void UKF::updateCovarQ(const double dt, const double yaw, const double std_a, const double std_yawdd)
+void IMM_RAUKF::updateCovarQ(const double dt, const double yaw, const double std_a, const double std_yawdd)
 {
   double dt_2 = dt*dt;
   double dt_3 = dt_2*dt;
@@ -626,7 +626,7 @@ void UKF::updateCovarQ(const double dt, const double yaw, const double std_a, co
 }
 
 
-void UKF::prediction(const double delta_t, const int model_ind)
+void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
 {
   /*****************************************************************************
  *  Initialize model parameters
@@ -762,7 +762,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
 }
 
 
-void UKF::updateLidar(const int model_ind)
+void IMM_RAUKF::updateLidar(const int model_ind)
 {
   /*****************************************************************************
  *  Initialize model parameters

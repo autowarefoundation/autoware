@@ -31,7 +31,7 @@ public:
   geometry_msgs::PoseStamped map_fp_pose;
 };
 
-class UKF
+class IMM_RAUKF
 {
 public:
   int ukf_id_;
@@ -191,7 +191,7 @@ public:
   /**
    * Constructor
    */
-  UKF();
+  IMM_RAUKF();
 
   void updateYawWithHighProb();
 

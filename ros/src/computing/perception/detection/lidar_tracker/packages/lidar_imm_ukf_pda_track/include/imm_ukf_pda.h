@@ -20,7 +20,7 @@
 
 #include "vector_map/vector_map.h"
 
-#include "ukf.h"
+#include "imm_raukf.h"
 #include "model_base_prediction.h"
 
 class ImmUkfPda
@@ -31,7 +31,7 @@ private:
   bool use_vectormap_;
   double timestamp_;
 
-  std::vector<UKF> targets_;
+  std::vector<IMM_RAUKF> targets_;
 
   // probabilistic data association params
   double gating_thres_;           // 9.22
@@ -84,29 +84,29 @@ private:
                                    autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
-  void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
+  void measurementValidation(const autoware_msgs::DetectedObjectArray& input, IMM_RAUKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
-  void getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
+  void getNearestEuclidCluster(const IMM_RAUKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                autoware_msgs::DetectedObject& object, double& min_dist);
   void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
-  void associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
-  double getBBoxYaw(const UKF target);
+  void associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target);
+  double getBBoxYaw(const IMM_RAUKF target);
   double getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb);
   double getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox& jsk_bb);
-  void updateBB(UKF& target);
-  void mergeOverSegmentation(const std::vector<UKF> targets);
+  void updateBB(IMM_RAUKF& target);
+  void mergeOverSegmentation(const std::vector<IMM_RAUKF> targets);
 
-  void updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd);
-  void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
+  void updateLabel(const IMM_RAUKF& target, autoware_msgs::DetectedObject& dd);
+  void updateJskLabel(const IMM_RAUKF& target, jsk_recognition_msgs::BoundingBox& bb);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
-  void secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt);
+  void secondInit(IMM_RAUKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt);
 
-  void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
+  void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target);
 
   void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt, const double det_explode_param,
-                                    std::vector<bool>& matching_vec, std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
+                                    std::vector<bool>& matching_vec, std::vector<autoware_msgs::DetectedObject>& lambda_vec, IMM_RAUKF& target,
                                     bool& is_skip_target);
   void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec);
 

@@ -147,7 +147,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 }
 
-void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF& target, const bool second_init,
+void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, IMM_RAUKF& target, const bool second_init,
                                       const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
                                       std::vector<autoware_msgs::DetectedObject>& object_vec,
                                       std::vector<bool>& matching_vec)
@@ -196,7 +196,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   }
 }
 
-void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
+void ImmUkfPda::getNearestEuclidCluster(const IMM_RAUKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                         autoware_msgs::DetectedObject& object, double& min_dist)
 {
   int min_ind = 0;
@@ -219,7 +219,7 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<aut
   object = object_vec[min_ind];
 }
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target)
 {
   // skip if no validated measurement
   if (object_vec.size() == 0)
@@ -255,7 +255,7 @@ double ImmUkfPda::getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb
   return area;
 }
 
-void ImmUkfPda::updateBB(UKF& target)
+void ImmUkfPda::updateBB(IMM_RAUKF& target)
 {
   // skip to prevent memory leak by accessing empty target.bbox_
   if (!target.is_vis_bb_)
@@ -312,7 +312,7 @@ void ImmUkfPda::updateBB(UKF& target)
   }
 }
 
-void ImmUkfPda::updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd)
+void ImmUkfPda::updateLabel(const IMM_RAUKF& target, autoware_msgs::DetectedObject& dd)
 {
   int tracking_num = target.tracking_num_;
   // cout << "trackingnum "<< trackingNum << endl;
@@ -338,7 +338,7 @@ void ImmUkfPda::updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd
   }
 }
 
-void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb)
+void ImmUkfPda::updateJskLabel(const IMM_RAUKF& target, jsk_recognition_msgs::BoundingBox& bb)
 {
   int tracking_num = target.tracking_num_;
   if (target.is_static_)
@@ -360,7 +360,7 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
     Eigen::VectorXd init_meas = Eigen::VectorXd(2);
     init_meas << px, py;
 
-    UKF ukf;
+    IMM_RAUKF ukf;
     ukf.initialize(init_meas, timestamp, target_id_);
     targets_.push_back(ukf);
     target_id_ ++;
@@ -370,7 +370,7 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
   return;
 }
 
-void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
+void ImmUkfPda::secondInit(IMM_RAUKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
 {
   if (object_vec.size() == 0)
   {
@@ -403,7 +403,7 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::Detecte
   return;
 }
 
-void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target)
 {
   if (object_vec.size() > 0)
   {
@@ -445,7 +445,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
 
 void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                              const double det_explode_param, std::vector<bool>& matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target, bool& is_skip_target)
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target, bool& is_skip_target)
 {
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
@@ -509,7 +509,7 @@ void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::Dete
       Eigen::VectorXd init_meas = Eigen::VectorXd(2);
       init_meas << px, py;
 
-      UKF ukf;
+      IMM_RAUKF ukf;
       ukf.initialize(init_meas, timestamp, target_id_);
       targets_.push_back(ukf);
       target_id_ ++;
@@ -604,7 +604,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
 
 void ImmUkfPda::removeUnnecessaryTarget()
 {
-  std::vector<UKF> temp_targets;
+  std::vector<IMM_RAUKF> temp_targets;
   for(size_t i = 0; i < targets_.size(); i++)
   {
     if(targets_[i].tracking_num_ != TrackingState::Die)
@@ -612,7 +612,7 @@ void ImmUkfPda::removeUnnecessaryTarget()
       temp_targets.push_back(targets_[i]);
     }
   }
-  std::vector<UKF>().swap(targets_);
+  std::vector<IMM_RAUKF>().swap(targets_);
   targets_ = temp_targets;
 }
 

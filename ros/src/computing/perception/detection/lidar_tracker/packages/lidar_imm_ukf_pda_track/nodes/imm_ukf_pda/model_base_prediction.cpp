@@ -24,7 +24,7 @@ ModelBasePrediction::ModelBasePrediction()
 
 void ModelBasePrediction::adasMapAssitDirectionAndPrediction(const autoware_msgs::DetectedObjectArray& input,
                                                              const tf::TransformListener &tf_listen_,
-                                              std::vector<UKF> &targets,
+                                              std::vector<IMM_RAUKF> &targets,
                                               visualization_msgs::MarkerArray &directionMarkers,
                                               visualization_msgs::MarkerArray &predictionMarkers)
 {
@@ -389,7 +389,7 @@ void ModelBasePrediction::adasMapAssitDirectionAndPrediction(const autoware_msgs
   }//end loop for targets.size()
 }
 
-void ModelBasePrediction::initObjectPaths(const geometry_msgs::PoseStamped& map_pose, UKF &target)
+void ModelBasePrediction::initObjectPaths(const geometry_msgs::PoseStamped& map_pose, IMM_RAUKF &target)
 {
   int min_fnid = 0;
   int min_flid = 0;
@@ -529,7 +529,7 @@ void ModelBasePrediction::initObjectPaths(const geometry_msgs::PoseStamped& map_
   }//end while loop
 }
 
-void ModelBasePrediction::maneuverRecognition(geometry_msgs::PoseStamped& map_pose, UKF& target)
+void ModelBasePrediction::maneuverRecognition(geometry_msgs::PoseStamped& map_pose, IMM_RAUKF& target)
 {
   for(size_t ith_path = 0; ith_path < target.objectPaths.size(); ith_path++)
   {
