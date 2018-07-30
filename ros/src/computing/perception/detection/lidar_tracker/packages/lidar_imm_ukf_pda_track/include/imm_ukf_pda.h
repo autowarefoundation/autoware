@@ -84,12 +84,9 @@ private:
                                    autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
-  // void findMaxZandS(const UKF &target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
-  // void filterPDA(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-  //                std::vector<double>& lambda_vec);
   void getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                autoware_msgs::DetectedObject& object, double& min_dist);
   void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);

@@ -147,40 +147,6 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 }
 
-// void ImmUkfPda::findMaxZandS(const UKF& target, Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
-// {
-//   double cv_det = target.s_cv_.determinant();
-//   double ctrv_det = target.s_ctrv_.determinant();
-//   double rm_det = target.s_rm_.determinant();
-//
-//   if (cv_det > ctrv_det)
-//   {
-//     if (cv_det > rm_det)
-//     {
-//       max_det_z = target.z_pred_cv_;
-//       max_det_s = target.s_cv_;
-//     }
-//     else
-//     {
-//       max_det_z = target.z_pred_rm_;
-//       max_det_s = target.s_rm_;
-//     }
-//   }
-//   else
-//   {
-//     if (ctrv_det > rm_det)
-//     {
-//       max_det_z = target.z_pred_ctrv_;
-//       max_det_s = target.s_ctrv_;
-//     }
-//     else
-//     {
-//       max_det_z = target.z_pred_rm_;
-//       max_det_s = target.s_rm_;
-//     }
-//   }
-// }
-
 void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF& target, const bool second_init,
                                       const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
                                       std::vector<autoware_msgs::DetectedObject>& object_vec,
