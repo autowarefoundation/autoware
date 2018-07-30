@@ -183,6 +183,7 @@ public:
 
   int tracking_num_;
 
+  //todo: make covariance Q and R for each motion models
   Eigen::MatrixXd covar_q_;
 
   /**
