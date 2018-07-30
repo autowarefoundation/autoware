@@ -1,0 +1,12 @@
+#ifndef OBJECT_TRACKING_NOISE_ESTIMATION_H
+#define OBJECT_TRACKING_NOISE_ESTIMATION_H
+
+class NoiesEstimation
+{
+private:
+
+public:
+
+};
+
+#endif  // OBJECT_TRACKING_NOISE_ESTIMATION_H
