@@ -36,7 +36,8 @@ before_install:
       sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
       travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
       travis_retry sudo apt-get update;
-      travis_retry sudo apt-get install -y  python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin;
+      travis_retry sudo apt-get install -y dpkg;
+      travis_retry sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin;
       source /opt/ros/${ROS_DISTRO}/setup.bash;
       travis_retry sudo rosdep init;
       travis_retry rosdep update;
