@@ -468,7 +468,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   Eigen::Matrix4f t_localizer(Eigen::Matrix4f::Identity());
   Eigen::Matrix4f t_base_link(Eigen::Matrix4f::Identity());
-  tf::TransformBroadcaster br;
+  static tf::TransformBroadcaster br;
   tf::Transform transform;
 
   current_scan_time = input->header.stamp;
