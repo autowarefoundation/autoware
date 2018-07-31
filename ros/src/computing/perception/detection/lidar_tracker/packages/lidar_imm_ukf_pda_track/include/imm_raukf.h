@@ -185,8 +185,13 @@ public:
 
   int tracking_num_;
 
+  // robust adaptive unscented kalman filter
   //todo: make covariance Q and R for each motion models
+  bool is_meas_;
   Eigen::MatrixXd covar_q_;
+  Eigen::VectorXd cv_meas_;
+  Eigen::VectorXd ctrv_meas_;
+  Eigen::VectorXd rm_meas_;
 
   /**
    * Constructor
@@ -211,6 +216,10 @@ public:
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
+
+  void noiseEstimation();
+
+  void faultDetection();
 
   void updateIMMUKF(const std::vector<double>& lambda_vec);
 

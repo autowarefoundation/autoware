@@ -156,6 +156,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::DetectedObject smallest_meas_object;
+  // std::cout << "ukf id "<<target.ukf_id_ << std::endl;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -166,6 +167,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
 
     Eigen::VectorXd diff = meas - max_det_z;
     double nis = diff.transpose() * max_det_s.inverse() * diff;
+
+    // std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
 
     if (nis < gating_thres_)
     {  // x^2 99% range
@@ -421,6 +424,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
     }
     else if (target.tracking_num_ == TrackingState::Lost)
     {
+      std::cout << target.ukf_id_ <<" target die though found meas in the lost state" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
   }
@@ -428,6 +432,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
   {
     if (target.tracking_num_ < TrackingState::Stable)
     {
+      std::cout << target.ukf_id_ <<" target lost because of lost before stable" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
     else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
@@ -436,6 +441,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
     }
     else if (target.tracking_num_ == TrackingState::Lost)
     {
+      std::cout << target.ukf_id_ <<" target lost after lost state" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
   }
@@ -458,6 +464,7 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   // prevent ukf not to explode
   if (std::isnan(det_s) || det_s > det_explode_param)
   {
+    std::cout << target.ukf_id_ <<" target lost because of det explode" << std::endl;
     target.tracking_num_ = TrackingState::Die;
     is_skip_target = true;
     return;
@@ -643,12 +650,9 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
   meas_points.color.g = 1.0f;
   meas_points.color.a = 1.0;
 
+  // targets text
   for(size_t i = 0; i < targets_.size(); i++)
   {
-    // std::cout << "target id "<< targets_[i].ukf_id_ << std::endl;
-    // std::cout << "tracking num " << targets_[i].tracking_num_ << std::endl;
-    // std::cout << "pos " << targets_[i].x_merge_(0) << " " << targets_[i].x_merge_(1) << std::endl;
-
     geometry_msgs::Point p;
     p.x = targets_[i].x_merge_(0);
     p.y = targets_[i].x_merge_(1);
@@ -662,7 +666,7 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
     id.ns ="target_points";
     id.action = visualization_msgs::Marker::ADD;
     id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    id.id = i;
+    id.id = targets_[i].ukf_id_ * 100;
     id.lifetime = ros::Duration(0.1);
 
     id.color.g = 1.0f;
@@ -671,9 +675,9 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = targets_[i].x_merge_(0);
     id.pose.position.y = targets_[i].x_merge_(1);
-    id.pose.position.z = 1.5;
+    id.pose.position.z = 2.5;
 
-    id.scale.z = 1.0;
+    id.scale.z = 0.5;
 
     double tv = targets_[i].x_merge_(2);
     // not to visualize '-0.0'
@@ -683,9 +687,42 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
     }
     std::string s_velocity = std::to_string(tv*3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".")+3);
-    std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">"
-                      +" " + std::to_string(targets_[i].tracking_num_) + " "
-                      + modified_sv + " km/h";
+    // std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">"
+    //                   +" " + std::to_string(targets_[i].tracking_num_) + " "
+    //                   + modified_sv + " km/h";
+    std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
+                      + modified_sv + " km/h";;
+    // id.text = std::to_string(input.objects[i].id);
+    id.text = text;
+    texts_markers.markers.push_back(id);
+  }
+
+  // meas text
+  for(size_t i = 0; i < input.objects.size(); i++)
+  {
+    visualization_msgs::Marker id;
+    id.header.frame_id =  "/world";
+    id.header.stamp = input.header.stamp;
+    id.ns ="target_points";
+    id.action = visualization_msgs::Marker::ADD;
+    id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    id.id = i;
+    id.lifetime = ros::Duration(0.1);
+
+    id.color.g = 1.0f;
+    id.color.a = 1.0;
+
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+    id.pose.position.x = input.objects[i].pose.position.x;
+    id.pose.position.y = input.objects[i].pose.position.y;
+    id.pose.position.z = 1.5;
+
+    id.scale.z = 0.5;
+
+    std::string s_px = std::to_string(input.objects[i].pose.position.x);
+    std::string s_py = std::to_string(input.objects[i].pose.position.y);
+
+    std::string text = "(" + s_px+", " + s_py + ")";
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
     texts_markers.markers.push_back(id);
@@ -739,6 +776,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // prevent ukf not to explode
     if (targets_[i].p_merge_.determinant() > det_explode_param || targets_[i].p_merge_(4, 4) > cov_explode_param)
     {
+      std::cout << targets_[i].ukf_id_<<" target lost because of explosion " << std::endl;
       targets_[i].tracking_num_ = TrackingState::Die;
       continue;
     }
@@ -754,6 +792,9 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // update each motion's x and p
     std::vector<double> lambda_vec;
     targets_[i].updateEachMotion(detection_probability_, gate_probability_ , gating_thres_, object_vec, lambda_vec);
+
+    // noise estimation/correction if fault is detected
+    targets_[i].noiseEstimation();
 
     // immukf update step
     targets_[i].updateIMMUKF(lambda_vec);

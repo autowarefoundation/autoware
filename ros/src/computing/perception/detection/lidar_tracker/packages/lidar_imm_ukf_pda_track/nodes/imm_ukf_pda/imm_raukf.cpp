@@ -1,6 +1,13 @@
 
 #include "imm_raukf.h"
 
+enum MotionModel : int
+{
+  CV = 0,      // constant velocity
+  CTRV = 1,    // constant turn rate and velocity
+  RM = 2,      // random motion
+};
+
 /**
 * Initializes Unscented Kalman filter
 */
@@ -140,6 +147,11 @@ IMM_RAUKF::IMM_RAUKF()
   dist_from_init_ = 0;
 
   x_merge_yaw_ = 0;
+
+  // for raukf
+  cv_meas_   = Eigen::VectorXd(2);
+  ctrv_meas_ = Eigen::VectorXd(2);
+  rm_meas_   = Eigen::VectorXd(2);
 }
 
 void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -196,13 +208,13 @@ void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, con
 
 void IMM_RAUKF::updateModeProb(const std::vector<double>& lambda_vec)
 {
-  double cvGauss = lambda_vec[0];
+  double cvGauss   = lambda_vec[0];
   double ctrvGauss = lambda_vec[1];
-  double rmGauss = lambda_vec[2];
-  double sumGauss = cvGauss * mode_prob_cv_ + ctrvGauss * mode_prob_ctrv_ + rmGauss * mode_prob_rm_;
-  mode_prob_cv_ = (cvGauss * mode_prob_cv_) / sumGauss;
-  mode_prob_ctrv_ = (ctrvGauss * mode_prob_ctrv_) / sumGauss;
-  mode_prob_rm_ = (rmGauss * mode_prob_rm_) / sumGauss;
+  double rmGauss   = lambda_vec[2];
+  double sumGauss  = cvGauss * mode_prob_cv_ + ctrvGauss * mode_prob_ctrv_ + rmGauss * mode_prob_rm_;
+  mode_prob_cv_    = (cvGauss * mode_prob_cv_) / sumGauss;
+  mode_prob_ctrv_  = (ctrvGauss * mode_prob_ctrv_) / sumGauss;
+  mode_prob_rm_    = (rmGauss * mode_prob_rm_) / sumGauss;
   // prevent each prob from becoming 0
   if (fabs(mode_prob_cv_) < 0.0001)
     mode_prob_cv_ = 0.0001;
@@ -275,45 +287,44 @@ void IMM_RAUKF::mixingProbability()
 
 void IMM_RAUKF::interaction()
 {
-  Eigen::MatrixXd x_pre_cv = x_cv_;
+  Eigen::MatrixXd x_pre_cv   = x_cv_;
   Eigen::MatrixXd x_pre_ctrv = x_ctrv_;
-  Eigen::MatrixXd x_pre_rm = x_rm_;
-  Eigen::MatrixXd p_pre_cv = p_cv_;
+  Eigen::MatrixXd x_pre_rm   = x_rm_;
+  Eigen::MatrixXd p_pre_cv   = p_cv_;
   Eigen::MatrixXd p_pre_ctrv = p_ctrv_;
-  Eigen::MatrixXd p_pre_rm = p_rm_;
-  x_cv_ = mode_match_prob_cv2cv_ * x_pre_cv + mode_match_prob_ctrv2cv_ * x_pre_ctrv + mode_match_prob_rm2cv_ * x_pre_rm;
-  x_ctrv_ = mode_match_prob_cv2ctrv_ * x_pre_cv + mode_match_prob_ctrv2ctrv_ * x_pre_ctrv +
-            mode_match_prob_rm2ctrv_ * x_pre_rm;
-  x_rm_ = mode_match_prob_cv2rm_ * x_pre_cv + mode_match_prob_ctrv2rm_ * x_pre_ctrv + mode_match_prob_rm2rm_ * x_pre_rm;
+  Eigen::MatrixXd p_pre_rm   = p_rm_;
+  x_cv_   = mode_match_prob_cv2cv_ * x_pre_cv   + mode_match_prob_ctrv2cv_ * x_pre_ctrv   + mode_match_prob_rm2cv_ * x_pre_rm;
+  x_ctrv_ = mode_match_prob_cv2ctrv_ * x_pre_cv + mode_match_prob_ctrv2ctrv_ * x_pre_ctrv + mode_match_prob_rm2ctrv_ * x_pre_rm;
+  x_rm_   = mode_match_prob_cv2rm_ * x_pre_cv   + mode_match_prob_ctrv2rm_ * x_pre_ctrv   + mode_match_prob_rm2rm_ * x_pre_rm;
 
   // not interacting yaw(-pi ~ pi)
-  x_cv_(3) = x_pre_cv(3);
+  x_cv_(3)   = x_pre_cv(3);
   x_ctrv_(3) = x_pre_ctrv(3);
-  x_rm_(3) = x_pre_rm(3);
+  x_rm_(3)   = x_pre_rm(3);
 
   // normalizing angle
   while (x_cv_(3) > M_PI)
-    x_cv_(3) -= 2. * M_PI;
+         x_cv_(3) -= 2. * M_PI;
   while (x_cv_(3) < -M_PI)
-    x_cv_(3) += 2. * M_PI;
+         x_cv_(3) += 2. * M_PI;
   while (x_ctrv_(3) > M_PI)
-    x_ctrv_(3) -= 2. * M_PI;
+         x_ctrv_(3) -= 2. * M_PI;
   while (x_ctrv_(3) < -M_PI)
-    x_ctrv_(3) += 2. * M_PI;
+         x_ctrv_(3) += 2. * M_PI;
   while (x_rm_(3) > M_PI)
-    x_rm_(3) -= 2. * M_PI;
+         x_rm_(3) -= 2. * M_PI;
   while (x_rm_(3) < -M_PI)
-    x_rm_(3) += 2. * M_PI;
+         x_rm_(3) += 2. * M_PI;
 
-  p_cv_ = mode_match_prob_cv2cv_ * (p_pre_cv + (x_pre_cv - x_cv_) * (x_pre_cv - x_cv_).transpose()) +
-          mode_match_prob_ctrv2cv_ * (p_pre_ctrv + (x_pre_ctrv - x_cv_) * (x_pre_ctrv - x_cv_).transpose()) +
-          mode_match_prob_rm2cv_ * (p_pre_rm + (x_pre_rm - x_cv_) * (x_pre_rm - x_cv_).transpose());
+  p_cv_   = mode_match_prob_cv2cv_ * (p_pre_cv + (x_pre_cv - x_cv_) * (x_pre_cv - x_cv_).transpose()) +
+            mode_match_prob_ctrv2cv_ * (p_pre_ctrv + (x_pre_ctrv - x_cv_) * (x_pre_ctrv - x_cv_).transpose()) +
+            mode_match_prob_rm2cv_ * (p_pre_rm + (x_pre_rm - x_cv_) * (x_pre_rm - x_cv_).transpose());
   p_ctrv_ = mode_match_prob_cv2ctrv_ * (p_pre_cv + (x_pre_cv - x_ctrv_) * (x_pre_cv - x_ctrv_).transpose()) +
             mode_match_prob_ctrv2ctrv_ * (p_pre_ctrv + (x_pre_ctrv - x_ctrv_) * (x_pre_ctrv - x_ctrv_).transpose()) +
             mode_match_prob_rm2ctrv_ * (p_pre_rm + (x_pre_rm - x_ctrv_) * (x_pre_rm - x_ctrv_).transpose());
-  p_rm_ = mode_match_prob_cv2rm_ * (p_pre_cv + (x_pre_cv - x_rm_) * (x_pre_cv - x_rm_).transpose()) +
-          mode_match_prob_ctrv2rm_ * (p_pre_ctrv + (x_pre_ctrv - x_rm_) * (x_pre_ctrv - x_rm_).transpose()) +
-          mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
+  p_rm_   = mode_match_prob_cv2rm_ * (p_pre_cv + (x_pre_cv - x_rm_) * (x_pre_cv - x_rm_).transpose()) +
+            mode_match_prob_ctrv2rm_ * (p_pre_ctrv + (x_pre_ctrv - x_rm_) * (x_pre_ctrv - x_rm_).transpose()) +
+            mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
 }
 
 
@@ -380,9 +391,9 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
   // calculating association probability
   double num_meas = object_vec.size();
   double b = 2 * num_meas * (1 - detection_probability * gate_probability) / (gating_thres * detection_probability);
-  double e_cv_sum = 0;
+  double e_cv_sum   = 0;
   double e_ctrv_sum = 0;
-  double e_rm_sum = 0;
+  double e_rm_sum   = 0;
 
   std::vector<double> e_cv_vec;
   std::vector<double> e_ctrv_vec;
@@ -392,49 +403,83 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
   std::vector<Eigen::VectorXd> diff_ctrv_vec;
   std::vector<Eigen::VectorXd> diff_rm_vec;
 
+  std::vector<Eigen::VectorXd> meas_vec;
+
   for (size_t i = 0; i < num_meas; i++)
   {
-    Eigen::VectorXd meas_vec = Eigen::VectorXd(2);
-    meas_vec(0) = object_vec[i].pose.position.x;
-    meas_vec(1) = object_vec[i].pose.position.y;
+    Eigen::VectorXd meas = Eigen::VectorXd(2);
+    meas(0) = object_vec[i].pose.position.x;
+    meas(1) = object_vec[i].pose.position.y;
+    meas_vec.push_back(meas);
 
-    Eigen::VectorXd diff_cv   = meas_vec - z_pred_cv_;
-    Eigen::VectorXd diff_ctrv = meas_vec - z_pred_ctrv_;
-    Eigen::VectorXd diff_rm   = meas_vec - z_pred_rm_;
+    Eigen::VectorXd diff_cv   = meas - z_pred_cv_;
+    Eigen::VectorXd diff_ctrv = meas - z_pred_ctrv_;
+    Eigen::VectorXd diff_rm   = meas - z_pred_rm_;
 
     diff_cv_vec.push_back(diff_cv);
     diff_ctrv_vec.push_back(diff_ctrv);
     diff_rm_vec.push_back(diff_rm);
 
-    double e_cv = exp(-0.5 * diff_cv.transpose() * s_cv_.inverse() * diff_cv);
+    double e_cv   = exp(-0.5 * diff_cv.transpose() * s_cv_.inverse() * diff_cv);
     double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_ctrv_.inverse() * diff_ctrv);
-    double e_rm = exp(-0.5 * diff_rm.transpose() * s_rm_.inverse() * diff_rm);
+    double e_rm   = exp(-0.5 * diff_rm.transpose() * s_rm_.inverse() * diff_rm);
 
     e_cv_vec.push_back(e_cv);
     e_ctrv_vec.push_back(e_ctrv);
     e_rm_vec.push_back(e_rm);
 
-    e_cv_sum += e_cv;
+    e_cv_sum   += e_cv;
     e_ctrv_sum += e_ctrv;
-    e_rm_sum += e_rm;
+    e_rm_sum   += e_rm;
   }
-  double beta_cv_zero = b / (b + e_cv_sum);
+  double beta_cv_zero   = b / (b + e_cv_sum);
   double beta_ctrv_zero = b / (b + e_ctrv_sum);
-  double beta_rm_zero = b / (b + e_rm_sum);
+  double beta_rm_zero   = b / (b + e_rm_sum);
 
   std::vector<double> beta_cv;
   std::vector<double> beta_ctrv;
   std::vector<double> beta_rm;
 
+  // for noise estimation
+  is_meas_ = false;
+  if(num_meas != 0)
+  {
+    is_meas_ = true;
+    std::vector<double>::iterator max_cv_iter   = std::max_element(e_cv_vec.begin(), e_cv_vec.end());
+    std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
+    std::vector<double>::iterator max_rm_iter   = std::max_element(e_rm_vec.begin(), e_rm_vec.end());
+    int max_cv_ind   = std::distance(e_cv_vec.begin()  , max_cv_iter);
+    int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
+    int max_rm_ind   = std::distance(e_rm_vec.begin()  , max_rm_iter);
+    cv_meas_   = meas_vec[max_cv_ind];
+    ctrv_meas_ = meas_vec[max_ctrv_ind];
+    rm_meas_   = meas_vec[max_rm_ind];
+  }
+  // std::cout <<"meas size "<< num_meas<< " ind " << max_cv_ind << " " << max_ctrv_ind << " " << max_rm_ind<< std::endl;
+  // cv_meas_   = meas_vec[max_cv_ind];
+  // ctrv_meas_ = meas_vec[max_ctrv_ind];
+  // rm_meas_   = meas_vec[max_rm_ind];
+
+  // std::cout << "id " << ukf_id_ << " tracking num: "<< tracking_num_ <<std::endl;
+  // std::cout << "b " << b << " num_meas "<<num_meas <<std::endl;
+  // std::cout << "e cv sume " << e_cv_sum << std::endl;
+  // std::cout << "e ctrv sum " << e_ctrv_sum << std::endl;
+  // std::cout << "e rm sum " << e_rm_sum << std::endl;
+
   for (size_t i = 0; i < num_meas; i++)
   {
-    double temp_cv = e_cv_vec[i] / (b + e_cv_sum);
+    double temp_cv   = e_cv_vec[i]   / (b + e_cv_sum);
     double temp_ctrv = e_ctrv_vec[i] / (b + e_ctrv_sum);
-    double temp_rm = e_rm_vec[i] / (b + e_rm_sum);
+    double temp_rm   = e_rm_vec[i]   / (b + e_rm_sum);
 
     beta_cv.push_back(temp_cv);
     beta_ctrv.push_back(temp_ctrv);
     beta_rm.push_back(temp_rm);
+
+    // std::cout << "meas "<< object_vec[i].pose.position.x << " " << object_vec[i].pose.position.y << std::endl;
+    // std::cout << "temp cv "   << temp_cv << std::endl;
+    // std::cout << "temp ctrv " << temp_ctrv << std::endl;
+    // std::cout << "temp rm "   << temp_rm << std::endl;
   }
   Eigen::VectorXd sigma_x_cv;
   Eigen::VectorXd sigma_x_ctrv;
@@ -445,9 +490,9 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
 
   for (size_t i = 0; i < num_meas; i++)
   {
-    sigma_x_cv += beta_cv[i] * diff_cv_vec[i];
+    sigma_x_cv   += beta_cv[i] * diff_cv_vec[i];
     sigma_x_ctrv += beta_ctrv[i] * diff_ctrv_vec[i];
-    sigma_x_rm += beta_rm[i] * diff_rm_vec[i];
+    sigma_x_rm   += beta_rm[i] * diff_rm_vec[i];
   }
 
   Eigen::MatrixXd sigma_p_cv;
@@ -458,10 +503,9 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
   sigma_p_rm.setZero(2, 2);
   for (size_t i = 0; i < num_meas; i++)
   {
-    sigma_p_cv += (beta_cv[i] * diff_cv_vec[i] * diff_cv_vec[i].transpose() - sigma_x_cv * sigma_x_cv.transpose());
-    sigma_p_ctrv +=
-        (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
-    sigma_p_rm += (beta_rm[i] * diff_rm_vec[i] * diff_rm_vec[i].transpose() - sigma_x_rm * sigma_x_rm.transpose());
+    sigma_p_cv   += (beta_cv[i] * diff_cv_vec[i] * diff_cv_vec[i].transpose()       - sigma_x_cv * sigma_x_cv.transpose());
+    sigma_p_ctrv += (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
+    sigma_p_rm   += (beta_rm[i] * diff_rm_vec[i] * diff_rm_vec[i].transpose()       - sigma_x_rm * sigma_x_rm.transpose());
   }
 
   // update x and P
@@ -522,13 +566,36 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
   }
   else
   {
-    lambda_cv = (1 - gate_probability * detection_probability) / pow(Vk, num_meas);
+    lambda_cv   = (1 - gate_probability * detection_probability) / pow(Vk, num_meas);
     lambda_ctrv = (1 - gate_probability * detection_probability) / pow(Vk, num_meas);
-    lambda_rm = (1 - gate_probability * detection_probability) / pow(Vk, num_meas);
+    lambda_rm   = (1 - gate_probability * detection_probability) / pow(Vk, num_meas);
   }
+
+  std::cout << ukf_id_ <<" lambda " << lambda_cv << " " << lambda_ctrv << " " << lambda_rm << std::endl;
   lambda_vec.push_back(lambda_cv);
   lambda_vec.push_back(lambda_ctrv);
   lambda_vec.push_back(lambda_rm);
+}
+
+void IMM_RAUKF::faultDetection()
+{
+
+}
+
+void IMM_RAUKF::noiseEstimation()
+{
+  // if no measurement, no correction/estimation is made
+  if(!is_meas_)
+  {
+    return;
+  }
+
+  // if no fault detected, nothing is updated
+  faultDetection();
+  // if(!faultDetection())
+  // {
+  //   return;
+  // }
 }
 
 void IMM_RAUKF::updateIMMUKF(const std::vector<double>& lambda_vec)
@@ -635,7 +702,7 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
   Eigen::MatrixXd x(x_cv_.rows(), 1);
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  if (model_ind == 0)
+  if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
     p = p_cv_;
@@ -643,7 +710,7 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
     std_yawdd = std_cv_yawdd_;
     std_a = std_a_cv_;
   }
-  else if (model_ind == 1)
+  else if (model_ind == MotionModel::CTRV)
   {
     x = x_ctrv_.col(0);
     p = p_ctrv_;
@@ -693,9 +760,9 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
     double yawd     = x_sig(4, i);
 
     std::vector<double> state(5);
-    if (model_ind == 0)
+    if (model_ind == MotionModel::CV)
       cv(p_x, p_y, v, yaw, yawd, delta_t, state);
-    else if (model_ind == 1)
+    else if (model_ind == MotionModel::CTRV)
       ctrv(p_x, p_y, v, yaw, yawd, delta_t, state);
     else
       randomMotion(p_x, p_y, v, yaw, yawd, delta_t, state);
@@ -741,13 +808,13 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
   /*****************************************************************************
   *  Update model parameters
   ****************************************************************************/
-  if (model_ind == 0)
+  if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
     p_cv_ = p;
     x_sig_pred_cv_ = x_sig_pred;
   }
-  else if (model_ind == 1)
+  else if (model_ind == MotionModel::CTRV)
   {
     x_ctrv_.col(0) = x;
     p_ctrv_ = p;
@@ -770,13 +837,13 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd P(p_cv_.rows(), p_cv_.cols());
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  if (model_ind == 0)
+  if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
     P = p_cv_;
     x_sig_pred = x_sig_pred_cv_;
   }
-  else if (model_ind == 1)
+  else if (model_ind == MotionModel::CTRV)
   {
     x = x_ctrv_.col(0);
     P = p_ctrv_;
@@ -855,7 +922,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   /*****************************************************************************
   *  Update model parameters
   ****************************************************************************/
-  if (model_ind == 0)
+  if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
     p_cv_ = P;
@@ -864,7 +931,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
     s_cv_ = S;
     k_cv_ = K;
   }
-  else if (model_ind == 1)
+  else if (model_ind == MotionModel::CTRV)
   {
     x_ctrv_.col(0) = x;
     p_ctrv_ = P;
