@@ -32,6 +32,9 @@ env:
 
 # Install system dependencies, and Autoware pre requisites (non-ros)
 before_install:
+  - if [ -n "${TRAVIS_PULL_REQUEST_BRANCH}" ]; then
+      git rebase "${TRAVIS_BRANCH}" || git rebase --abort;
+    fi
   - if [ "${CROSS_COMPILE}" != "1" ]; then
       sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
       travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
