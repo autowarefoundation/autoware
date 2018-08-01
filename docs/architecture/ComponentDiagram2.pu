@@ -1,6 +1,6 @@
 @startuml
 
-title Autoware Component Dependencies (Now)
+title Autoware Component Dependencies (Future)
 
 () "sensor_msgs::Image\n/image_raw" as image_raw
 () "sensor_msgs::PointCloud2\n/points_raw" as points_raw
@@ -76,13 +76,14 @@ folder localization {
 }
 
 
-() "autoware_msgs::ObjectArray\n/tracked_objects" as tracked_objects
+() "autoware_detection_msgs::ObjectArray\n/detection/tracked_objects" as tracked_objects
 
 folder detection {
-    () "autoware_msgs::ObjectArray\n/detected_objects_vision" as detected_objects_vision
-    () "autoware_msgs::ObjectArray\n/detected_objects_lidar" as detected_objects_lidar
-    () "autoware_msgs::ObjectArray\n/detected_objects_fused" as detected_objects_fused
-    () "autoware_msgs::ObjectArray\n/detected_objects" as detected_objects
+    () "autoware_detection_msgs::ObjectArray\n/detection/vision_objects" as detected_objects_vision
+    () "autoware_detection_msgs::ObjectArray\n/detection/lidar_objects" as detected_objects_lidar
+    () "autoware_detection_msgs::ObjectArray\n/detection/combined_objects" as detected_objects_combined
+    () "autoware_detection_msgs::ObjectArray\n/detection/fused_objects" as detected_objects_fused
+    () "autoware_detection_msgs::ObjectArray\n/detection/detected_objects" as detected_objects
 
     [vision_detector]
     'inputs
@@ -102,12 +103,19 @@ folder detection {
     'outputs
     object_tracker --> tracked_objects
 
+    [fusion_detector]
+    'inputs
+    image_raw --> fusion_detector
+    points_raw --> fusion_detector
+    'outputs
+    fusion_detector --> detected_objects_fused
+
     [fusion_tools]
     'inputs
     detected_objects_vision --> fusion_tools
     detected_objects_lidar --> fusion_tools
     'outputs
-    fusion_tools --> detected_objects_fused
+    fusion_tools --> detected_objects_combined
 
     '[fusion_detector] @ Autoware v2.0
 
@@ -116,6 +124,7 @@ folder detection {
     'connection
     detected_objects_vision --> detected_objects
     detected_objects_lidar --> detected_objects
+    detected_objects_combined --> detected_objects
     detected_objects_fused --> detected_objects
 }
 
