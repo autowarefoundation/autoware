@@ -154,6 +154,9 @@ static double submap_size = 0.0;
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
 
+static std::ofstream ofs;
+static std::string filename;
+
 static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
@@ -733,6 +736,34 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     submap_num++;
   }
 
+  // Write log
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << input->header.seq << ","
+      << input->header.stamp << ","
+      << input->header.frame_id << ","
+      << scan_ptr->size() << ","
+      << filtered_scan_ptr->size() << ","
+      << std::fixed << std::setprecision(5) << current_pose.x << ","
+      << std::fixed << std::setprecision(5) << current_pose.y << ","
+      << std::fixed << std::setprecision(5) << current_pose.z << ","
+      << current_pose.roll << ","
+      << current_pose.pitch << ","
+      << current_pose.yaw << ","
+      << ndt_res << ","
+      << step_size << ","
+      << trans_eps << ","
+      << max_iter << ","
+      << voxel_leaf_size << ","
+      << min_scan_range << ","
+      << max_scan_range << ","
+      << min_add_scan_shift << ","
+      << max_submap_size << std::endl;
+
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Sequence number: " << input->header.seq << std::endl;
   std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
@@ -826,6 +857,42 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  // Set log file name.
+  char buffer[80];
+  std::time_t now = std::time(NULL);
+  std::tm* pnow = std::localtime(&now);
+  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+  filename = "approximate_ndt_mapping_" + std::string(buffer) + ".csv";
+  ofs.open(filename.c_str(), std::ios::app);
+
+  // write header for log file
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << "input->header.seq" << ","
+      << "input->header.stamp" << ","
+      << "input->header.frame_id" << ","
+      << "scan_ptr->size()" << ","
+      << "filtered_scan_ptr->size()" << ","
+      << "current_pose.x" << ","
+      << "current_pose.y" << ","
+      << "current_pose.z" << ","
+      << "current_pose.roll" << ","
+      << "current_pose.pitch" << ","
+      << "current_pose.yaw" << ","
+      << "ndt_res" << ","
+      << "step_size" << ","
+      << "trans_eps" << ","
+      << "max_iter" << ","
+      << "voxel_leaf_size" << ","
+      << "min_scan_range" << ","
+      << "max_scan_range" << ","
+      << "min_add_scan_shift" << ","
+      << "max_submap_size" << std::endl;
 
   // setting parameters
   private_nh.getParam("use_openmp", _use_openmp);

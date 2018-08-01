@@ -168,9 +168,13 @@ static std::string _imu_topic = "/imu_raw";
 static double fitness_score;
 static bool has_converged;
 static int final_num_iteration;
+static double transformation_probability;
 
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
+
+static std::ofstream ofs;
+static std::string filename;
 
 static void param_callback(const autoware_msgs::ConfigNdtMapping::ConstPtr& input)
 {
@@ -612,6 +616,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     t_localizer = ndt.getFinalTransformation();
     has_converged = ndt.hasConverged();
     final_num_iteration = ndt.getFinalNumIteration();
+    transformation_probability = ndt.getTransformationProbability();
   }
   else if (_method_type == MethodType::PCL_ANH)
   {
@@ -804,6 +809,35 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
   current_pose_pub.publish(current_pose_msg);
 
+  // Write log
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << input->header.seq << ","
+      << input->header.stamp << ","
+      << input->header.frame_id << ","
+      << scan_ptr->size() << ","
+      << filtered_scan_ptr->size() << ","
+      << std::fixed << std::setprecision(5) << current_pose.x << ","
+      << std::fixed << std::setprecision(5) << current_pose.y << ","
+      << std::fixed << std::setprecision(5) << current_pose.z << ","
+      << current_pose.roll << ","
+      << current_pose.pitch << ","
+      << current_pose.yaw << ","
+      << final_num_iteration << ","
+      << fitness_score << ","
+      << ndt_res << ","
+      << step_size << ","
+      << trans_eps << ","
+      << max_iter << ","
+      << voxel_leaf_size << ","
+      << min_scan_range << ","
+      << max_scan_range << ","
+      << min_add_scan_shift << std::endl;
+
   std::cout << "-----------------------------------------------------------------" << std::endl;
   std::cout << "Sequence number: " << input->header.seq << std::endl;
   std::cout << "Number of scan points: " << scan_ptr->size() << " points." << std::endl;
@@ -896,6 +930,43 @@ int main(int argc, char** argv)
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
+
+  // Set log file name.
+  char buffer[80];
+  std::time_t now = std::time(NULL);
+  std::tm* pnow = std::localtime(&now);
+  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+  filename = "ndt_mapping_" + std::string(buffer) + ".csv";
+  ofs.open(filename.c_str(), std::ios::app);
+
+  // write header for log file
+  if (!ofs)
+  {
+    std::cerr << "Could not open " << filename << "." << std::endl;
+    exit(1);
+  }
+
+  ofs << "input->header.seq" << ","
+      << "input->header.stamp" << ","
+      << "input->header.frame_id" << ","
+      << "scan_ptr->size()" << ","
+      << "filtered_scan_ptr->size()" << ","
+      << "current_pose.x" << ","
+      << "current_pose.y" << ","
+      << "current_pose.z" << ","
+      << "current_pose.roll" << ","
+      << "current_pose.pitch" << ","
+      << "current_pose.yaw" << ","
+      << "final_num_iteration" << ","
+      << "fitness_score" << ","
+      << "ndt_res" << ","
+      << "step_size" << ","
+      << "trans_eps" << ","
+      << "max_iter" << ","
+      << "voxel_leaf_size" << ","
+      << "min_scan_range" << ","
+      << "max_scan_range" << ","
+      << "min_add_scan_shift" << std::endl;
 
   // setting parameters
   int method_type_tmp = 0;
