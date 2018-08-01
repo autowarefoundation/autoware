@@ -3138,6 +3138,12 @@ params :
       min       : 0.0
       max       : 30.0
       v         : 5.0
+    - name      : max_scan_range
+      desc      : Ignore points far than this value (meters) (default 200.0)
+      label     : Maximum Scan Range
+      min       : 10.0
+      max       : 200.0
+      v         : 200.0
     - name      : min_add_scan_shift
       desc      : Minimum distance between points to be added to the final map (default 1.0)
       label     : Minimum Add Scan Shift
@@ -3246,6 +3252,12 @@ params :
       min       : 0.0
       max       : 30.0
       v         : 5.0
+    - name      : max_scan_range
+      desc      : Ignore points far than this value (meters) (default 200.0)
+      label     : Maximum Scan Range
+      min       : 10.0
+      max       : 200.0
+      v         : 200.0
     - name      : min_add_scan_shift
       desc      : Minimum distance between points to be added to the final map (default 1.0)
       label     : Minimum Add Scan Shift

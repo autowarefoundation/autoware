@@ -151,6 +151,7 @@ static int initial_scan_loaded = 0;
 static Eigen::Matrix4f gnss_transform = Eigen::Matrix4f::Identity();
 
 static double min_scan_range = 5.0;
+static double max_scan_range = 200.0;
 static double min_add_scan_shift = 1.0;
 
 static double _tf_x, _tf_y, _tf_z, _tf_roll, _tf_pitch, _tf_yaw;
@@ -179,6 +180,7 @@ static void param_callback(const autoware_msgs::ConfigNdtMapping::ConstPtr& inpu
   max_iter = input->max_iterations;
   voxel_leaf_size = input->leaf_size;
   min_scan_range = input->min_scan_range;
+  max_scan_range = input->max_scan_range;
   min_add_scan_shift = input->min_add_scan_shift;
 
   std::cout << "param_callback" << std::endl;
@@ -188,6 +190,7 @@ static void param_callback(const autoware_msgs::ConfigNdtMapping::ConstPtr& inpu
   std::cout << "max_iter: " << max_iter << std::endl;
   std::cout << "voxel_leaf_size: " << voxel_leaf_size << std::endl;
   std::cout << "min_scan_range: " << min_scan_range << std::endl;
+  std::cout << "max_scan_range: " << max_scan_range << std::endl;
   std::cout << "min_add_scan_shift: " << min_add_scan_shift << std::endl;
 }
 
@@ -483,7 +486,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     p.intensity = (double)item->intensity;
 
     r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-    if (r > min_scan_range)
+    if (min_scan_range < r && r < max_scan_range)
     {
       scan.push_back(p);
     }
