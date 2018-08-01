@@ -44,7 +44,7 @@ subs :
         gui  :
           dialog : MyDialogNdtMapping
           dialog_width  : 700
-          dialog_height : 450
+          dialog_height : 470
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch lidar_localizer ndt_matching.launch
