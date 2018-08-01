@@ -56,7 +56,7 @@
 
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 #include <visualization_msgs/MarkerArray.h>
 
 #include "op_planner/PlannerCommonDef.h"
@@ -156,7 +156,7 @@ private:
   void callbackGetStartPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
   void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
   void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-  void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+  void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
   void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
   void callbackGetRoadStatusOccupancyGrid(const nav_msgs::OccupancyGridConstPtr& msg);
 

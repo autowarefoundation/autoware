@@ -133,7 +133,7 @@ if(m_params.bEnableHMI)
 	else if(bVelSource == 1)
 		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&way_planner_core::callbackGetVehicleStatus, 	this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCanInfo, 	this);
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCANInfo, 	this);
 
 	//sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
 	sub_nodes_list 			= nh.subscribe("/GlobalNodesList", 			1, 		&way_planner_core::callbackGetNodesList, 		this);
@@ -225,7 +225,7 @@ void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampe
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
-void way_planner_core::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void way_planner_core::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * 0.45 / 660;

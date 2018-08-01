@@ -53,7 +53,7 @@
 #include <autoware_msgs/LaneArray.h>
 #include <std_msgs/Int32.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
-#include <autoware_msgs/CanInfo.h>
+#include <autoware_can_msgs/CANInfo.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/Signals.h>
@@ -145,7 +145,7 @@ protected: //Planning Related variables
 	// Callback function for subscriber.
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg);
+	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);

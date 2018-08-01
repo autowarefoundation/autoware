@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_utility
   op_planner
   op_simu
-  autoware_msgs
+  autoware_can_msgs
 )
 
 
