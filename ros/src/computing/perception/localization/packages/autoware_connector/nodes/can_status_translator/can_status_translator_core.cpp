@@ -67,7 +67,7 @@ void CanStatusTranslatorNode::initForROS()
     v_info_.is_stored = true;
   }
   // setup subscriber
-  sub1_ = nh_.subscribe("can_info", 100, &CanStatusTranslatorNode::callbackFromCanInfo, this);
+  sub1_ = nh_.subscribe("can_info", 100, &CanStatusTranslatorNode::callbackFromCANInfo, this);
   sub2_ = nh_.subscribe("vehicle_status", 10, &CanStatusTranslatorNode::callbackFromVehicleStatus, this);
 
   // setup publisher
@@ -102,13 +102,13 @@ void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::VehicleSta
   pub2_.publish(fl);
 }
 
-void CanStatusTranslatorNode::publishVehicleStatus(const autoware_msgs::CanInfoConstPtr& msg)
+void CanStatusTranslatorNode::publishVehicleStatus(const autoware_can_msgs::CANInfoConstPtr& msg)
 {
   // currently, this function is only support to autoware_socket format.
   autoware_msgs::VehicleStatus vs;
   vs.header = msg->header;
   vs.tm = msg->tm;
-  vs.drivemode = msg->devmode;  // I think devmode is typo in CanInfo...
+  vs.drivemode = msg->devmode;  // I think devmode is typo in CANInfo...
   vs.steeringmode = msg->strmode;
   vs.gearshift = msg->driveshift;
   vs.speed = msg->speed;
@@ -127,7 +127,7 @@ void CanStatusTranslatorNode::callbackFromVehicleStatus(const autoware_msgs::Veh
   publishVelocityViz(msg);
 }
 
-void CanStatusTranslatorNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr& msg)
+void CanStatusTranslatorNode::callbackFromCANInfo(const autoware_can_msgs::CANInfoConstPtr& msg)
 {
   publishVehicleStatus(msg);
 }

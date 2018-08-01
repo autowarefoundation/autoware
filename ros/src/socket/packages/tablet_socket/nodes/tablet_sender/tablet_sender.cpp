@@ -39,7 +39,7 @@
 #include <std_msgs/Bool.h>
 #include <tablet_socket_msgs/error_info.h>
 #include <tablet_socket_msgs/mode_info.h>
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 #include "autoware_msgs/NDTStat.h"
 
 static constexpr int DEFAULT_PORT = 5777;
@@ -71,7 +71,7 @@ struct can_request {
 	int32_t type;
 	int32_t driveshift;
 
-	can_request(const autoware_msgs::CanInfo& msg)
+	can_request(const autoware_can_msgs::CANInfo& msg)
 	: type(CAN_INFO_TYPE), driveshift(msg.driveshift) {
 	}
 };
@@ -148,7 +148,7 @@ static void subscribe_error_info(const tablet_socket_msgs::error_info& msg)
 	}
 }
 
-static void subscribe_can_info(const autoware_msgs::CanInfo& msg)
+static void subscribe_can_info(const autoware_can_msgs::CANInfo& msg)
 {
 	can_request request(msg);
 	int response;

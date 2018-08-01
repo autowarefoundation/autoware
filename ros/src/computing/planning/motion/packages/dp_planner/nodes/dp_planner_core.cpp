@@ -140,7 +140,7 @@ PlannerX::PlannerX()
 	else if(bVelSource == 1)
 		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCanInfo, 	this);
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCANInfo, 	this);
 
 
 
@@ -449,7 +449,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 	//std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
-void PlannerX::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void PlannerX::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * m_LocalPlanner.m_CarInfo.max_steer_angle / m_LocalPlanner.m_CarInfo.max_steer_value;

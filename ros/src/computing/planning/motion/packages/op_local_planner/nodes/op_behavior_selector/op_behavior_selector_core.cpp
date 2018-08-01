@@ -73,7 +73,7 @@ BehaviorGen::BehaviorGen()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &BehaviorGen::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &BehaviorGen::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &BehaviorGen::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &BehaviorGen::callbackGetGlobalPlannerPath, this);
 	sub_LocalPlannerPaths = nh.subscribe("/local_weighted_trajectories", 1, &BehaviorGen::callbackGetLocalPlannerPath, this);
@@ -213,7 +213,7 @@ void BehaviorGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCons
 	bVehicleStatus = true;
 }
 
-void BehaviorGen::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void BehaviorGen::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_CurrentPos.v = m_VehicleStatus.speed;

@@ -14,9 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
         DIRECTORY msg
         FILES
-            CanInfo.msg
-            CANData.msg
-            CANPacket.msg
             ControlCommandStamped.msg
             CloudCluster.msg
             CloudClusterArray.msg
