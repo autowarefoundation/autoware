@@ -3,14 +3,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-enum TrackingState : int
-{
-  Die = 0,     // No longer tracking
-  Init = 1,    // Start tracking
-  Stable = 4,  // Stable tracking
-  Lost = 10,   // About to lose target
-};
-
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
@@ -402,6 +394,8 @@ void ImmUkfPda::secondInit(IMM_RAUKF& target, const std::vector<autoware_msgs::D
   target.x_merge_(2) = target.x_cv_(2) = target.x_ctrv_(2) = target.x_rm_(2) = target_v;
   target.x_merge_(3) = target.x_cv_(3) = target.x_ctrv_(3) = target.x_rm_(3) = target_yaw;
 
+  // target.initCovarQs(dt, target_yaw);
+
   target.tracking_num_++;
   return;
 }
@@ -690,8 +684,13 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
     // std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">"
     //                   +" " + std::to_string(targets_[i].tracking_num_) + " "
     //                   + modified_sv + " km/h";
+
+    // std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
+    //                   + modified_sv + " km/h";
+
     std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
-                      + modified_sv + " km/h";;
+                      + std::to_string(targets_[i].x_merge_(2)) + " m/s "
+                      + "(" + std::to_string(targets_[i].x_merge_(0))+", " + std::to_string(targets_[i].x_merge_(1)) + ")";
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
     texts_markers.markers.push_back(id);
@@ -777,6 +776,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     if (targets_[i].p_merge_.determinant() > det_explode_param || targets_[i].p_merge_(4, 4) > cov_explode_param)
     {
       std::cout << targets_[i].ukf_id_<<" target lost because of explosion " << std::endl;
+      std::cout << "det " << targets_[i].p_merge_.determinant()<< "cov yaw rate "<< targets_[i].p_merge_(4, 4) << std::endl;
       targets_[i].tracking_num_ = TrackingState::Die;
       continue;
     }
@@ -789,15 +789,11 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     if (is_skip_target)
       continue;
 
-    // update each motion's x and p
-    std::vector<double> lambda_vec;
-    targets_[i].updateEachMotion(detection_probability_, gate_probability_ , gating_thres_, object_vec, lambda_vec);
-
-    // noise estimation/correction if fault is detected
-    targets_[i].noiseEstimation();
-
     // immukf update step
-    targets_[i].updateIMMUKF(lambda_vec);
+    targets_[i].updateIMMUKF(detection_probability_, gate_probability_ , gating_thres_, object_vec);
+
+    // std::cout << "x " << std::endl<<targets_[i].x_merge_ << std::endl;
+    // std::cout << "p " << std::endl<<targets_[i].p_merge_ << std::endl;
   }
   // end UKF process
 

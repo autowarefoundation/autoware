@@ -14,6 +14,14 @@
 
 #include "autoware_msgs/DetectedObject.h"
 
+enum TrackingState : int
+{
+  Die = 0,     // No longer tracking
+  Init = 1,    // Start tracking
+  Stable = 4,  // Stable tracking
+  Lost = 10,   // About to lose target
+};
+
 class LanePoint
 {
 public:
@@ -188,10 +196,18 @@ public:
   // robust adaptive unscented kalman filter
   //todo: make covariance Q and R for each motion models
   bool is_meas_;
-  Eigen::MatrixXd covar_q_;
+  // Eigen::MatrixXd covar_q_;
   Eigen::VectorXd cv_meas_;
   Eigen::VectorXd ctrv_meas_;
   Eigen::VectorXd rm_meas_;
+
+  Eigen::MatrixXd q_cv_;
+  Eigen::MatrixXd q_ctrv_;
+  Eigen::MatrixXd q_rm_;
+
+  Eigen::MatrixXd r_cv_;
+  Eigen::MatrixXd r_ctrv_;
+  Eigen::MatrixXd r_rm_;
 
   /**
    * Constructor
@@ -219,9 +235,12 @@ public:
 
   void noiseEstimation();
 
-  void faultDetection();
+  void faultDetection(const int model_ind, bool& is_fault);
 
-  void updateIMMUKF(const std::vector<double>& lambda_vec);
+  void adaptiveAdjustmentQ(const int model_ind);
+
+  void updateIMMUKF(const double detection_probability, const double gate_probability,
+     const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
             const double delta_t, std::vector<double>& state);
@@ -232,7 +251,7 @@ public:
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double delta_t, std::vector<double>& state);
 
-  void updateCovarQ(const double dt, const double yaw, const double std_a, const double std_yawdd);
+  void initCovarQs(const double dt, const double yaw);
 
   void prediction(const double delta_t, const int model_ind);
 
