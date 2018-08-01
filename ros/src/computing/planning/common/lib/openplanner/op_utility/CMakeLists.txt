@@ -25,7 +25,6 @@ catkin_package(
 ## Build ##
 ###########
 
-
 include_directories(${catkin_INCLUDE_DIRS}
         include)
 

@@ -47,9 +47,12 @@ private:
 	Label 		class_label_[64];
 	double	radius_table_[64];
 
-	boost::chrono::high_resolution_clock::time_point t1_;
-	boost::chrono::high_resolution_clock::time_point t2_;
-	boost::chrono::nanoseconds elap_time_;
+	//boost::chrono::high_resolution_clock::time_point t1_;
+	//boost::chrono::high_resolution_clock::time_point t2_;
+	//boost::chrono::nanoseconds elap_time_;
+	ros::Time t1_;
+	ros::Time t2_;
+	ros::Duration elap_time_;
 
 	const int 	DEFAULT_HOR_RES = 2000;
 
@@ -314,7 +317,7 @@ void GroundFilter::FilterGround(const pcl::PointCloud<velodyne_pointcloud::Point
 void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
 {
 
-	t1_ = boost::chrono::high_resolution_clock::now();
+	//t1_ = ros::Time().now();
 	pcl::PointCloud<velodyne_pointcloud::PointXYZIR> vertical_points;
 	pcl::PointCloud<velodyne_pointcloud::PointXYZIR> ground_points;
 	vertical_points.header = in_cloud_msg->header;
@@ -331,9 +334,10 @@ void GroundFilter::VelodyneCallback(const pcl::PointCloud<velodyne_pointcloud::P
 
 	groundless_points_pub_.publish(vertical_points);
 	ground_points_pub_.publish(ground_points);
-	t2_ = boost::chrono::high_resolution_clock::now();
-	elap_time_ = boost::chrono::duration_cast<boost::chrono::nanoseconds>(t2_-t1_);
-	std::cout << "Computational Time for one frame: " << elap_time_ << '\n';
+	//t2_ = boost::chrono::high_resolution_clock::now();
+	//t2_ = ros::Time().now();
+	//elap_time_ = t2_ - t1_;//boost::chrono::duration_cast<boost::chrono::nanoseconds>(t2_-t1_);
+	//std::cout << "Computational Time for one frame: " << elap_time_ << '\n';
 }
 
 int main(int argc, char **argv)

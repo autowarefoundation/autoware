@@ -140,7 +140,7 @@ bool PlanningHelpers::GetRelativeInfo(const std::vector<WayPoint>& trajectory, c
 	double m = (p1.pos.y-p0.pos.y)/(p1.pos.x-p0.pos.x);
 	info.perp_distance = p1.pos.y - m*p1.pos.x; // solve for x = 0
 
-	if(isnan(info.perp_distance) || isinf(info.perp_distance)) info.perp_distance = 0;
+	if(std::isnan(info.perp_distance) || std::isinf(info.perp_distance)) info.perp_distance = 0;
 
 	info.to_front_distance = fabs(p1.pos.x); // distance on the x axes
 
@@ -214,7 +214,7 @@ bool PlanningHelpers::GetRelativeInfoLimited(const std::vector<WayPoint>& trajec
 		double m = (p1.pos.y-p0.pos.y)/(p1.pos.x-p0.pos.x);
 		info.perp_distance = p1.pos.y - m*p1.pos.x; // solve for x = 0
 
-		if(isnan(info.perp_distance) || isinf(info.perp_distance)) info.perp_distance = 0;
+		if(std::isnan(info.perp_distance) || std::isinf(info.perp_distance)) info.perp_distance = 0;
 
 		info.to_front_distance = fabs(p1.pos.x); // distance on the x axes
 
@@ -289,7 +289,7 @@ bool PlanningHelpers::GetRelativeInfoLimited(const std::vector<WayPoint>& trajec
 		double m = (p1.pos.y-p0.pos.y)/(p1.pos.x-p0.pos.x);
 		info.perp_distance = p1.pos.y - m*p1.pos.x; // solve for x = 0
 
-		if(isnan(info.perp_distance) || isinf(info.perp_distance)) info.perp_distance = 0;
+		if(std::isnan(info.perp_distance) || std::isinf(info.perp_distance)) info.perp_distance = 0;
 
 		info.to_front_distance = fabs(p1.pos.x); // distance on the x axes
 
@@ -356,7 +356,7 @@ bool PlanningHelpers::GetThreePointsInfo(const WayPoint& p0, const WayPoint& p1,
 	double m = (perp_p.pos.y-first_p.pos.y)/(perp_p.pos.x-first_p.pos.x);
 	lat_d = perp_p.pos.y - m*perp_p.pos.x; // solve for x = 0
 
-	if(isnan(lat_d) || isinf(lat_d)) return false;
+	if(std::isnan(lat_d) || std::isinf(lat_d)) return false;
 
 	if(perp_p.pos.x < 0)
 		return false;
@@ -871,7 +871,7 @@ double PlanningHelpers::GetPerpDistanceToTrajectorySimple_obsolete(const vector<
 	double m = (p1.pos.y-p0.pos.y)/(p1.pos.x-p0.pos.x);
 	double d = p1.pos.y - m*p1.pos.x;
 
-	if(isnan(d) || isinf(d))
+	if(std::isnan(d) || std::isinf(d))
 	{
 	  //assert(false);
 	  d = 0;
@@ -895,7 +895,7 @@ double PlanningHelpers::GetPerpDistanceToVectorSimple_obsolete(const WayPoint& p
 	double m = (p2.pos.y-p1.pos.y)/(p2.pos.x-p1.pos.x);
 	double d = p2.pos.y - m*p2.pos.x;
 
-	if(isnan(d) || isinf(d))
+	if(std::isnan(d) || std::isinf(d))
 	{
 	  //assert(false);
 	  d = 0;
@@ -1334,7 +1334,7 @@ double PlanningHelpers::CalcAngleAndCostAndCurvatureAnd2D(vector<WayPoint>& path
 	for(unsigned int j = 1; j < path.size()-1; j++)
 	{
 		k =  CalcCircle(path[j-1].pos,path[j].pos, path[j+1].pos, center);
-		if(k > 150.0 || isnan(k))
+		if(k > 150.0 || std::isnan(k))
 			k = 150.0;
 
 		if(k<1.0)

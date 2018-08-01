@@ -32,8 +32,6 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-
 include_directories(${catkin_INCLUDE_DIRS}
         include
         ${OpenCV_INCLUDE_DIRS}

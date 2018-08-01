@@ -8,8 +8,8 @@
 #define UTILITYH_H_
 
 #include <assert.h>
-#include <math.h>
 #include <string>
+#include <math.h>
 
 
 namespace UtilityHNS
