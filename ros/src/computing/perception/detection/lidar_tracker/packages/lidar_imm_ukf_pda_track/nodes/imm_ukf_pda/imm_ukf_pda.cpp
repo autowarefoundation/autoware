@@ -748,7 +748,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 {
   double timestamp = input.header.stamp.toSec();
 
-  const double det_explode_param = 10;
+  const double det_explode_param = 100;
   const double cov_explode_param = 1000;
 
   if (!init_)
@@ -771,7 +771,9 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
     // todo: modify here. This skips irregular measurement and nan
     if (targets_[i].tracking_num_ == TrackingState::Die)
+    {
       continue;
+    }
     // prevent ukf not to explode
     if (targets_[i].p_merge_.determinant() > det_explode_param || targets_[i].p_merge_(4, 4) > cov_explode_param)
     {
@@ -783,17 +785,21 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // immukf prediction step
     targets_[i].predictionIMMUKF(dt);
 
+    // data association
     bool is_skip_target;
     std::vector<autoware_msgs::DetectedObject> object_vec;
     probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, object_vec, targets_[i], is_skip_target);
     if (is_skip_target)
+    {
       continue;
+    }
 
     // immukf update step
     targets_[i].updateIMMUKF(detection_probability_, gate_probability_ , gating_thres_, object_vec);
 
     // std::cout << "x " << std::endl<<targets_[i].x_merge_ << std::endl;
     // std::cout << "p " << std::endl<<targets_[i].p_merge_ << std::endl;
+    std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
   }
   // end UKF process
 

@@ -12,6 +12,10 @@ enum MotionModel : int
 * Initializes Unscented Kalman filter
 */
 IMM_RAUKF::IMM_RAUKF()
+// :
+  // raukf_delta_zero_(0.2),
+  // raukf_lambda_zero_(0.2)
+  // a_(1)
 {
 
   // initial state vector
@@ -115,17 +119,17 @@ IMM_RAUKF::IMM_RAUKF()
   mode_prob_ctrv_ = 0.33;
   mode_prob_rm_ = 0.33;
 
-  z_pred_cv_ = Eigen::VectorXd(2);
+  z_pred_cv_   = Eigen::VectorXd(2);
   z_pred_ctrv_ = Eigen::VectorXd(2);
-  z_pred_rm_ = Eigen::VectorXd(2);
+  z_pred_rm_   = Eigen::VectorXd(2);
 
-  s_cv_ = Eigen::MatrixXd(2, 2);
+  s_cv_   = Eigen::MatrixXd(2, 2);
   s_ctrv_ = Eigen::MatrixXd(2, 2);
-  s_rm_ = Eigen::MatrixXd(2, 2);
+  s_rm_   = Eigen::MatrixXd(2, 2);
 
-  k_cv_ = Eigen::MatrixXd(2, 2);
-  k_ctrv_ = Eigen::MatrixXd(2, 2);
-  k_rm_ = Eigen::MatrixXd(2, 2);
+  k_cv_   = Eigen::MatrixXd(5, 2);
+  k_ctrv_ = Eigen::MatrixXd(5, 2);
+  k_rm_   = Eigen::MatrixXd(5, 2);
 
   // gamma_g_ = 9.21;
   pd_ = 0.9;
@@ -160,6 +164,35 @@ IMM_RAUKF::IMM_RAUKF()
   q_cv_      = Eigen::MatrixXd(5, 5);
   q_ctrv_    = Eigen::MatrixXd(5, 5);
   q_rm_      = Eigen::MatrixXd(5, 5);
+
+  nis_cv_    = 0;
+  nis_ctrv_  = 0;
+  nis_rm_    = 0;
+
+  raukf_lambda_zero_ = 0.2;
+  raukf_delta_zero_  = 0.2;
+
+  raukf_q_param_ = 5;
+  raukf_r_param_ = 5;
+
+  // todo: choose param now 95% with 2 df
+  raukf_chi_thres_param_ = 5.9915;
+
+  new_x_sig_cv_   = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_rm_   = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+
+  new_z_sig_cv_   = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_rm_   = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+
+  new_z_pred_cv_  = Eigen::VectorXd(2);
+  new_z_pred_ctrv_= Eigen::VectorXd(2);
+  new_z_pred_rm_  = Eigen::VectorXd(2);
+
+  new_s_cv_   = Eigen::MatrixXd(2, 2);
+  new_s_ctrv_ = Eigen::MatrixXd(2, 2);
+  new_s_rm_   = Eigen::MatrixXd(2, 2);
 }
 
 void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -339,7 +372,6 @@ void IMM_RAUKF::interaction()
             mode_match_prob_ctrv2rm_ * (p_pre_ctrv + (x_pre_ctrv - x_rm_) * (x_pre_ctrv - x_rm_).transpose()) +
             mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
 }
-
 
 void IMM_RAUKF::predictionIMMUKF(const double dt)
 {
@@ -630,47 +662,302 @@ void IMM_RAUKF::faultDetection(const int model_ind, bool& is_fault)
   // std::cout << "nis z cov  " << std::endl << z_cov << std::endl;
   std::cout << "nis for dault detection " << nis << std::endl;
 
-  // todo: choose param now 95%
-  if(nis > 5.9915)
+  // todo: choose param now 95% with 2 df
+  if(nis > raukf_chi_thres_param_)
   {
     is_fault = true;
+  }
+
+  if(model_ind == MotionModel::CV)
+  {
+    nis_cv_   = nis;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    nis_ctrv_ = nis;
+  }
+  else
+  {
+    nis_rm_   = nis;
   }
 
 }
 
 void IMM_RAUKF::adaptiveAdjustmentQ(const int model_ind)
 {
-  // λ = max { λ 0 , ( φ k − b × χ 2 σ,s ) /φ k } ;
-  Eigen::VectorXd z_meas;
-  Eigen::VectorXd z_pred;
+  double nis = 0;
+  Eigen::VectorXd mu;
   Eigen::MatrixXd q;
   Eigen::MatrixXd k;
+  if(model_ind == MotionModel::CV)
+  {
+    mu     = cv_meas_ - z_pred_cv_;
+    q      = q_cv_;
+    k      = k_cv_;
+    nis    = nis_cv_;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    mu     = ctrv_meas_ - z_pred_ctrv_;
+    q      = q_ctrv_;
+    k      = k_ctrv_;
+    nis    = nis_ctrv_;
+  }
+  else
+  {
+    mu     = rm_meas_ - z_pred_rm_;
+    q      = q_rm_;
+    k      = k_rm_;
+    nis    = nis_rm_;
+  }
+
+  double calculated_lambda = (nis - raukf_q_param_ * raukf_chi_thres_param_) / nis;
+  double lambda = std::max(raukf_lambda_zero_, calculated_lambda);
+  Eigen::MatrixXd corrected_q = (1 - lambda)*q + lambda*(k * mu * mu.transpose() * k.transpose());
+
+  if(model_ind == MotionModel::CV)
+  {
+    q_cv_ = corrected_q;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    q_ctrv_ = corrected_q;
+  }
+  else
+  {
+    q_rm_ = corrected_q;
+  }
+}
+
+void IMM_RAUKF::adaptiveAdjustmentR(const int model_ind)
+{
+  double nis = 0;
+  Eigen::VectorXd epsilon(cv_meas_.rows());
+  Eigen::VectorXd estimated_z(cv_meas_.rows());
+  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
+  Eigen::VectorXd x(x_cv_.rows());
+  Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+  if(model_ind == MotionModel::CV)
+  {
+    estimated_z << x_cv_(0), x_cv_(1);
+    epsilon= cv_meas_ - estimated_z;
+    r      = r_cv_;
+    nis    = nis_cv_;
+    x      = x_cv_.col(0);
+    p      = p_cv_;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    estimated_z << x_ctrv_(0), x_ctrv_(1);
+    epsilon= ctrv_meas_ - estimated_z;
+    r      = r_ctrv_;
+    nis    = nis_ctrv_;
+    x      = x_ctrv_.col(0);
+    p      = p_ctrv_;
+  }
+  else
+  {
+    estimated_z << x_rm_(0), x_rm_(1);
+    epsilon= rm_meas_ - estimated_z;
+    r      = r_rm_;
+    nis    = nis_rm_;
+    x      = x_rm_.col(0);
+    p      = p_rm_;
+  }
+
+  //1, make sigma poitns from estiated x
+  // todo:refacotr, make function for preventing redundunt codes
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  // create square root matrix
+  Eigen::MatrixXd L = p.llt().matrixL();
+  // create augmented sigma points
+  x_sig.col(0) = x;
+  for (int i = 0; i < n_x_; i++)
+  {
+    x_sig.col(i + 1)        = x + sqrt(lambda_ + n_x_) * L.col(i);
+    x_sig.col(i + 1 + n_x_) = x - sqrt(lambda_ + n_x_) * L.col(i);
+  }
+  // set measurement dimension, lidar can measure p_x and p_y
+  int n_z = 2;
+  // create matrix for sigma points in measurement space
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
+  // transform sigma points into measurement space
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {  // 2n+1 simga points
+    // extract values for better readibility
+    double p_x = x_sig(0, i);
+    double p_y = x_sig(1, i);
+    // measurement model
+    z_sig(0, i) = p_x;
+    z_sig(1, i) = p_y;
+  }
+
+  // mean predicted measurement
+  Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
+  z_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    z_pred = z_pred + weights_(i) * z_sig.col(i);
+  }
+
+  // measurement covariance matrix S
+  Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
+  S.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    S = S + weights_(i) * z_diff * z_diff.transpose();
+  }
+  //2, calculate delta
+  double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
+  double delta = std::max(raukf_delta_zero_, calculated_delta);
+  //3, correct R
+  Eigen::MatrixXd corrected_r = (1 - delta)*r + delta*(epsilon*epsilon.transpose() + S);
+
+  if(model_ind == MotionModel::CV)
+  {
+    r_cv_         = corrected_r;
+    new_x_sig_cv_ = x_sig;
+    new_z_sig_cv_ = z_sig;
+    new_z_pred_cv_= z_pred;
+    new_s_cv_     = S;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    r_ctrv_         = corrected_r;
+    new_x_sig_ctrv_ = x_sig;
+    new_z_sig_ctrv_ = z_sig;
+    new_z_pred_ctrv_= z_pred;
+    new_s_ctrv_     = S;
+  }
+  else
+  {
+    r_rm_         = corrected_r;
+    new_x_sig_rm_ = x_sig;
+    new_z_sig_rm_ = z_sig;
+    new_z_pred_rm_= z_pred;
+    new_s_rm_     = S;
+  }
+}
+
+void IMM_RAUKF::estimationUpdate(const int model_ind)
+{
+  Eigen::VectorXd x(x_cv_.rows());
+  Eigen::VectorXd z(cv_meas_.rows());
+  Eigen::VectorXd z_pred(cv_meas_.rows());
+  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
+  Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
+  Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
+  Eigen::MatrixXd x_sig(n_x_, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig(2   , 2 * 2    + 1);
+  if(model_ind == MotionModel::CV)
+  {
+    x     = x_cv_;
+    z     = cv_meas_;
+    z_pred= new_z_pred_cv_;
+    r     = r_cv_;
+    q     = q_cv_;
+    s     = new_s_cv_;
+    x_sig = new_x_sig_cv_;
+    z_sig = new_z_sig_cv_;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    x     = x_ctrv_;
+    z     = ctrv_meas_;
+    z_pred= new_z_pred_ctrv_;
+    r     = r_ctrv_;
+    q     = q_ctrv_;
+    s     = new_s_ctrv_;
+    x_sig = new_x_sig_ctrv_;
+    z_sig = new_z_sig_ctrv_;
+  }
+  else
+  {
+    x     = x_rm_;
+    z     = rm_meas_;
+    z_pred= new_z_pred_rm_;
+    r     = r_rm_;
+    q     = q_rm_;
+    s     = new_s_rm_;
+    x_sig = new_x_sig_rm_;
+    z_sig = new_z_sig_rm_;
+  }
+
+  std::cout << "lifetime " << lifetime_ << std::endl;
+  if(model_ind == MotionModel::CV)
+  {
+    std::cout << "p k|k-1 " << std::endl << p_cv_ << std::endl;
+  }
+  else if(model_ind == MotionModel::CTRV)
+  {
+    std::cout << "p k|k-1 " << std::endl << p_ctrv_ << std::endl;
+  }
+  else
+  {
+    std::cout << "p k|k-1 " << std::endl << p_rm_ << std::endl;
+  }
+  Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+  p.fill(0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd x_diff = x_sig.col(i) - x;
+    // angle normalization
+    while (x_diff(3) > M_PI)
+           x_diff(3) -= 2. * M_PI;
+    while (x_diff(3) < -M_PI)
+           x_diff(3) += 2. * M_PI;
+    p = p + weights_(i) * x_diff * x_diff.transpose();
+  }
+  std::cout << "p x,x k|k-1 " << std::endl << p << std::endl;
+  // p = p + q;
+
+  Eigen::MatrixXd cross_covariance(n_x_, 2);
+  cross_covariance.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    // state difference
+    Eigen::VectorXd x_diff = x_sig.col(i) - x;
+
+    cross_covariance = cross_covariance + weights_(i) * x_diff * z_diff.transpose();
+  }
+
+  // Eigen::MatrixXd innovation_covariance = s + r;
+  Eigen::MatrixXd innovation_covariance = s;
+
+  Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
+
+  x = x + kalman_gain*(z - z_pred);
+  std::cout <<"corrected r "<< std::endl <<r << std::endl;
+  std::cout <<"corrected q "<< std::endl <<q << std::endl;
+  std::cout <<"before p "<< std::endl <<p << std::endl;
+  p = p - kalman_gain*innovation_covariance*kalman_gain.transpose();
+
+  std::cout <<"x "<< std::endl <<x << std::endl;
+  std::cout <<"p "<< std::endl <<p << std::endl;
   // if(model_ind == MotionModel::CV)
   // {
-  //   z_meas = cv_meas_;
-  //   z_pred = z_pred_cv_;
-  //   q      = q_cv_;
+  //   std::cout << "aaa"<< std::endl;
+  //   x_cv_ = x;
+  //   std::cout << "aaa"<< std::endl;
+  //   p_cv_ = p;
+  //   std::cout << "aaa"<< std::endl;
   // }
   // else if(model_ind == MotionModel::CTRV)
   // {
-  //   z_meas = ctrv_meas_;
-  //   z_pred = z_pred_ctrv_;
-  //   z_cov  = s_ctrv_;
-  //   // r      = ctrv_r_;
+  //   x_ctrv_ = x;
+  //   p_ctrv_ = p;
   // }
   // else
   // {
-  //   z_meas = rm_meas_;
-  //   z_pred = z_pred_rm_;
-  //   z_cov  = s_rm_;
-  //   // r      = rm_r_;
+  //   x_rm_ = x;
+  //   p_rm_ = p;
   // }
-
 }
 
-void IMM_RAUKF::noiseEstimation()
+void IMM_RAUKF::robustAdaptiveFilter()
 {
-  std::cout << "ukf id ------------------------------------------------------------------" << ukf_id_ << std::endl;
 
   // if no measurement, no correction/estimation is made
   if(!is_meas_)
@@ -688,13 +975,9 @@ void IMM_RAUKF::noiseEstimation()
     }
 
     adaptiveAdjustmentQ(model_ind);
+    adaptiveAdjustmentR(model_ind);
+    estimationUpdate(model_ind);
   }
-  // if no fault detected, nothing is updated
-  // faultDetection();
-  // if(!faultDetection())
-  // {
-  //   return;
-  // }
 }
 
 void IMM_RAUKF::updateIMMUKF(const double detection_probability, const double gate_probability,
@@ -703,10 +986,18 @@ void IMM_RAUKF::updateIMMUKF(const double detection_probability, const double ga
   /*****************************************************************************
   *  IMM Update & Fault detection
   ****************************************************************************/
+    std::cout << "ukf id ------------------------------------------------------------------" << ukf_id_ << std::endl;
+  std::cout << "before update each motion cv " << std::endl << p_cv_ << std::endl;
+  std::cout << "before update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
+  std::cout << "before update each motion rm " << std::endl << p_rm_ << std::endl;
   // update each motion's x and p
   std::vector<double> lambda_vec;
   updateEachMotion(detection_probability, gate_probability , gating_thres, object_vec, lambda_vec);
-  noiseEstimation(); // noise estimation/correction if fault is detected
+  std::cout << "after update each motion cv " << std::endl << p_cv_ << std::endl;
+  std::cout << "after update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
+  std::cout << "after update each motion rm " << std::endl << p_rm_ << std::endl;
+  robustAdaptiveFilter(); // noise estimation/correction if fault is detected
+  std::cout << "after ra filte " << std::endl;
 
   /*****************************************************************************
   *  IMM Merge Step
@@ -786,7 +1077,6 @@ void IMM_RAUKF::initCovarQs(const double dt, const double yaw)
   {
     return;
   }
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
   double dt_2 = dt*dt;
   double dt_3 = dt_2*dt;
   double dt_4 = dt_3*dt;
@@ -810,20 +1100,16 @@ void IMM_RAUKF::initCovarQs(const double dt, const double yaw)
               0.5*dt_3*cos_yaw*cv_var_a      ,       0.5*dt_3*sin_yaw*cv_var_a,             dt_2*cv_var_a,                         0,                     0,
                                             0,                               0,                         0, 0.5*0.5*dt_4*cv_var_yawdd, 0.5*dt_3*cv_var_yawdd,
                                             0,                               0,                         0,     0.5*dt_3*cv_var_yawdd,     dt_2*cv_var_yawdd;
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
   q_ctrv_  << 0.5*0.5*dt_4*cos_2_yaw*ctrv_var_a,   0.5*0.5*dt_4*cos_sin*ctrv_var_a, 0.5*dt_3*cos_yaw*ctrv_var_a,                           0,                       0,
               0.5*0.5*dt_4*cos_sin*ctrv_var_a  , 0.5*0.5*dt_4*sin_2_yaw*ctrv_var_a, 0.5*dt_3*sin_yaw*ctrv_var_a,                           0,                       0,
               0.5*dt_3*cos_yaw*ctrv_var_a      ,       0.5*dt_3*sin_yaw*ctrv_var_a,             dt_2*ctrv_var_a,                           0,                       0,
                                               0,                                 0,                           0, 0.5*0.5*dt_4*ctrv_var_yawdd, 0.5*dt_3*ctrv_var_yawdd,
                                               0,                                 0,                           0,     0.5*dt_3*ctrv_var_yawdd,     dt_2*ctrv_var_yawdd;
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
   q_rm_    << 0.5*0.5*dt_4*cos_2_yaw*rm_var_a,   0.5*0.5*dt_4*cos_sin*rm_var_a, 0.5*dt_3*cos_yaw*rm_var_a,                         0,                     0,
               0.5*0.5*dt_4*cos_sin*rm_var_a  , 0.5*0.5*dt_4*sin_2_yaw*rm_var_a, 0.5*dt_3*sin_yaw*rm_var_a,                         0,                     0,
               0.5*dt_3*cos_yaw*rm_var_a      ,       0.5*dt_3*sin_yaw*rm_var_a,             dt_2*rm_var_a,                         0,                     0,
                                             0,                               0,                         0, 0.5*0.5*dt_4*rm_var_yawdd, 0.5*dt_3*rm_var_yawdd,
                                             0,                               0,                         0,     0.5*dt_3*rm_var_yawdd,     dt_2*rm_var_yawdd;
-
-  std::cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << std::endl;
 }
 
 void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
@@ -831,7 +1117,6 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
   /*****************************************************************************
  *  Initialize model parameters
  ****************************************************************************/
-  double std_yawdd, std_a;
   Eigen::MatrixXd x(x_cv_.rows(), 1);
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   Eigen::MatrixXd q(p_cv_.rows(), p_cv_.cols());
@@ -842,8 +1127,6 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
     p = p_cv_;
     q = q_cv_;
     x_sig_pred = x_sig_pred_cv_;
-    std_yawdd = std_cv_yawdd_;
-    std_a = std_a_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
@@ -851,8 +1134,6 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
     p = p_ctrv_;
     q = q_ctrv_;
     x_sig_pred = x_sig_pred_ctrv_;
-    std_yawdd = std_ctrv_yawdd_;
-    std_a = std_a_ctrv_;
   }
   else
   {
@@ -860,8 +1141,6 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
     p = p_rm_;
     q = q_rm_;
     x_sig_pred = x_sig_pred_rm_;
-    std_yawdd = std_rm_yawdd_;
-    std_a = std_a_rm_;
   }
 
   /*****************************************************************************
@@ -976,21 +1255,21 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
-    P = p_cv_;
+    // P = p_cv_;
     r = r_cv_;
     x_sig_pred = x_sig_pred_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
     x = x_ctrv_.col(0);
-    P = p_ctrv_;
+    // P = p_ctrv_;
     r = r_ctrv_;
     x_sig_pred = x_sig_pred_ctrv_;
   }
   else
   {
     x = x_rm_.col(0);
-    P = p_rm_;
+    // P = p_rm_;
     r = r_rm_;
     x_sig_pred = x_sig_pred_rm_;
   }
@@ -1061,7 +1340,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
-    p_cv_ = P;
+    // p_cv_ = P;
     x_sig_pred_cv_ = x_sig_pred;
     z_pred_cv_ = z_pred;
     s_cv_ = S;
@@ -1070,7 +1349,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   else if (model_ind == MotionModel::CTRV)
   {
     x_ctrv_.col(0) = x;
-    p_ctrv_ = P;
+    // p_ctrv_ = P;
     x_sig_pred_ctrv_ = x_sig_pred;
     z_pred_ctrv_ = z_pred;
     s_ctrv_ = S;
@@ -1079,7 +1358,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   else
   {
     x_rm_.col(0) = x;
-    p_rm_ = P;
+    // p_rm_ = P;
     x_sig_pred_rm_ = x_sig_pred;
     z_pred_rm_ = z_pred;
     s_rm_ = S;
