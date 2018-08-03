@@ -9,6 +9,8 @@
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
     <build_depend>op_utility</build_depend>
+    <build_depend>tinyxml</build_depend>
     <run_depend>op_utility</run_depend>
+    <run_depend>tinyxml</run_depend>
 
 </package>

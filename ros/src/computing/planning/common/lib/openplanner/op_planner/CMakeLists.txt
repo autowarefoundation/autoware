@@ -5,11 +5,13 @@ project(op_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
+		cmake_modules
         autoware_build_flags
 		op_utility
 )
 
 find_package(OpenCV REQUIRED)
+find_package(TinyXML REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -18,6 +20,7 @@ catkin_package(
    INCLUDE_DIRS include
    LIBRARIES  op_planner
    CATKIN_DEPENDS op_utility
+   DEPENDS TinyXML
 )
 
 ###########
@@ -26,6 +29,7 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS}
 		include
+		${TinyXML_INCLUDE_DIRS}
 )
 
 set(PLANNERH_SRC
@@ -51,6 +55,7 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
 		${catkin_LIBRARIES}
 		${OpenCV_LIBS}
+		${TinyXML_LIBRARIES}
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/

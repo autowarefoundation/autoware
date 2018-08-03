@@ -8,7 +8,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   op_ros_helpers
+  cv_bridge
   )
+
+find_package(OpenCV REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -17,10 +20,12 @@ catkin_package(
   tf
   jsk_recognition_msgs
   op_ros_helpers
+  cv_bridge
   )
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
         include
 )
 
@@ -32,7 +37,8 @@ add_executable(lidar_kf_contour_track
   nodes/lidar_kf_contour_track/SimpleTracker.cpp
 )
 target_link_libraries(lidar_kf_contour_track
-${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 add_dependencies(lidar_kf_contour_track
 ${catkin_EXPORTED_TARGETS}
