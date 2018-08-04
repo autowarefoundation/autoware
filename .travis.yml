@@ -34,12 +34,13 @@ env:
 before_install:
   - if [ "${CROSS_COMPILE}" != "1" ]; then
       sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
-      sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
-      sudo apt-get update;
-      sudo apt-get install -y  python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin;
+      travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
+      travis_retry sudo apt-get update;
+      travis_retry sudo apt-get install -y dpkg;
+      travis_retry sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin;
       source /opt/ros/${ROS_DISTRO}/setup.bash;
-      sudo rosdep init;
-      rosdep update;
+      travis_retry sudo rosdep init;
+      travis_retry rosdep update;
     fi
 
 # Install all ros dependencies, using wstool first and rosdep second.
@@ -49,9 +50,9 @@ before_script:
       cd ros/src;
       wstool init;
       test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}";
-      wstool up;
+      travis_retry wstool up;
       cd ..;
-      rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO};
+      travis_retry rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO};
     fi
 
 # Compile and test (mark the build as failed if any step fails). If the
@@ -64,11 +65,11 @@ before_script:
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
   - if [ "${CROSS_COMPILE}" == "1" ]; then
-      docker run
+      travis_retry docker run
         --rm
         -v ${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR}
         -w ${TRAVIS_BUILD_DIR}/ros
-        esteve/autoware-kinetic:crossbuild-aarch64
+        autoware/crossbuild:aarch64-kinetic-1.0.0
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make

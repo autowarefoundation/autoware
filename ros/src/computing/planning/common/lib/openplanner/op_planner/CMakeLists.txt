@@ -5,8 +5,8 @@ project(op_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
+		autoware_build_flags
 		cmake_modules
-        autoware_build_flags
 		op_utility
 )
 
