@@ -69,7 +69,7 @@ IMM_RAUKF::IMM_RAUKF()
   n_x_ = 5;
 
   // Sigma point spreading parameter
-  lambda_ = 3 - n_x_;
+  // lambda_ = 3 - n_x_;
 
   // predicted sigma points matrix
   x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
@@ -81,7 +81,8 @@ IMM_RAUKF::IMM_RAUKF()
   x_sig_pred_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
   // create vector for weights
-  weights_ = Eigen::VectorXd(2 * n_x_ + 1);
+  weights_c_ = Eigen::VectorXd(2 * n_x_ + 1);
+  weights_s_ = Eigen::VectorXd(2 * n_x_ + 1);
 
   count_ = 0;
   count_empty_ = 0;
@@ -205,13 +206,24 @@ void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, con
   // init covariance matrix
   p_merge_ << 0.5, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 1;
 
+
   // set weights
-  double weight_0 = lambda_ / (lambda_ + n_x_);
-  weights_(0) = weight_0;
+  // reference from "The Unscented Kalman Filter for Nonlinear Estimation, Eric A. Wan and Rudolph van der Merwe, 2000"
+  // alpha = 0.0025, beta = 2, k = 0
+  double alpha = 0.0025;
+  double beta  = 2;
+  double k     = 0;
+  lambda_ = alpha*alpha*(n_x_ + k) - n_x_;
+  // double weight_0 = lambda_ / (lambda_ + n_x_);
+  double weight_s_0 = lambda_ / (lambda_ + n_x_);
+  double weight_c_0 = lambda_ / (lambda_ + n_x_) + (1 - alpha*alpha + beta);
+  weights_s_(0) = weight_s_0;
+  weights_c_(0) = weight_c_0;
   for (int i = 1; i < 2 * n_x_ + 1; i++)
   {  // 2n+1 weights
     double weight = 0.5 / (n_x_ + lambda_);
-    weights_(i) = weight;
+    weights_s_(i) = weight;
+    weights_c_(i) = weight;
   }
 
   // init timestamp
@@ -258,9 +270,9 @@ void IMM_RAUKF::updateModeProb(const std::vector<double>& lambda_vec)
   double ctrvGauss = lambda_vec[1];
   double rmGauss   = lambda_vec[2];
   double sumGauss  = cvGauss * mode_prob_cv_ + ctrvGauss * mode_prob_ctrv_ + rmGauss * mode_prob_rm_;
-  mode_prob_cv_    = (cvGauss * mode_prob_cv_) / sumGauss;
+  mode_prob_cv_    = (cvGauss   * mode_prob_cv_)   / sumGauss;
   mode_prob_ctrv_  = (ctrvGauss * mode_prob_ctrv_) / sumGauss;
-  mode_prob_rm_    = (rmGauss * mode_prob_rm_) / sumGauss;
+  mode_prob_rm_    = (rmGauss   * mode_prob_rm_)   / sumGauss;
   // prevent each prob from becoming 0
   if (fabs(mode_prob_cv_) < 0.0001)
     mode_prob_cv_ = 0.0001;
@@ -318,17 +330,17 @@ void IMM_RAUKF::mixingProbability()
   double sumProb1 = mode_prob_cv_ * p1_[0] + mode_prob_ctrv_ * p2_[0] + mode_prob_rm_ * p3_[0];
   double sumProb2 = mode_prob_cv_ * p1_[1] + mode_prob_ctrv_ * p2_[1] + mode_prob_rm_ * p3_[1];
   double sumProb3 = mode_prob_cv_ * p1_[2] + mode_prob_ctrv_ * p2_[2] + mode_prob_rm_ * p3_[2];
-  mode_match_prob_cv2cv_ = mode_prob_cv_ * p1_[0] / sumProb1;
-  mode_match_prob_ctrv2cv_ = mode_prob_ctrv_ * p2_[0] / sumProb1;
-  mode_match_prob_rm2cv_ = mode_prob_rm_ * p3_[0] / sumProb1;
+  mode_match_prob_cv2cv_     = mode_prob_cv_   * p1_[0] / sumProb1;
+  mode_match_prob_ctrv2cv_   = mode_prob_ctrv_ * p2_[0] / sumProb1;
+  mode_match_prob_rm2cv_     = mode_prob_rm_   * p3_[0] / sumProb1;
 
-  mode_match_prob_cv2ctrv_ = mode_prob_cv_ * p1_[1] / sumProb2;
+  mode_match_prob_cv2ctrv_   = mode_prob_cv_   * p1_[1] / sumProb2;
   mode_match_prob_ctrv2ctrv_ = mode_prob_ctrv_ * p2_[1] / sumProb2;
-  mode_match_prob_rm2ctrv_ = mode_prob_rm_ * p3_[1] / sumProb2;
+  mode_match_prob_rm2ctrv_   = mode_prob_rm_   * p3_[1] / sumProb2;
 
-  mode_match_prob_cv2rm_ = mode_prob_cv_ * p1_[2] / sumProb3;
-  mode_match_prob_ctrv2rm_ = mode_prob_ctrv_ * p2_[2] / sumProb3;
-  mode_match_prob_rm2rm_ = mode_prob_rm_ * p3_[2] / sumProb3;
+  mode_match_prob_cv2rm_     = mode_prob_cv_   * p1_[2] / sumProb3;
+  mode_match_prob_ctrv2rm_   = mode_prob_ctrv_ * p2_[2] / sumProb3;
+  mode_match_prob_rm2rm_     = mode_prob_rm_   * p3_[2] / sumProb3;
 }
 
 void IMM_RAUKF::interaction()
@@ -339,9 +351,9 @@ void IMM_RAUKF::interaction()
   Eigen::MatrixXd p_pre_cv   = p_cv_;
   Eigen::MatrixXd p_pre_ctrv = p_ctrv_;
   Eigen::MatrixXd p_pre_rm   = p_rm_;
-  x_cv_   = mode_match_prob_cv2cv_ * x_pre_cv   + mode_match_prob_ctrv2cv_ * x_pre_ctrv   + mode_match_prob_rm2cv_ * x_pre_rm;
+  x_cv_   = mode_match_prob_cv2cv_   * x_pre_cv + mode_match_prob_ctrv2cv_   * x_pre_ctrv + mode_match_prob_rm2cv_   * x_pre_rm;
   x_ctrv_ = mode_match_prob_cv2ctrv_ * x_pre_cv + mode_match_prob_ctrv2ctrv_ * x_pre_ctrv + mode_match_prob_rm2ctrv_ * x_pre_rm;
-  x_rm_   = mode_match_prob_cv2rm_ * x_pre_cv   + mode_match_prob_ctrv2rm_ * x_pre_ctrv   + mode_match_prob_rm2rm_ * x_pre_rm;
+  x_rm_   = mode_match_prob_cv2rm_   * x_pre_cv + mode_match_prob_ctrv2rm_   * x_pre_ctrv + mode_match_prob_rm2rm_   * x_pre_rm;
 
   // not interacting yaw(-pi ~ pi)
   x_cv_(3)   = x_pre_cv(3);
@@ -362,15 +374,15 @@ void IMM_RAUKF::interaction()
   while (x_rm_(3) < -M_PI)
          x_rm_(3) += 2. * M_PI;
 
-  p_cv_   = mode_match_prob_cv2cv_ * (p_pre_cv + (x_pre_cv - x_cv_) * (x_pre_cv - x_cv_).transpose()) +
-            mode_match_prob_ctrv2cv_ * (p_pre_ctrv + (x_pre_ctrv - x_cv_) * (x_pre_ctrv - x_cv_).transpose()) +
-            mode_match_prob_rm2cv_ * (p_pre_rm + (x_pre_rm - x_cv_) * (x_pre_rm - x_cv_).transpose());
-  p_ctrv_ = mode_match_prob_cv2ctrv_ * (p_pre_cv + (x_pre_cv - x_ctrv_) * (x_pre_cv - x_ctrv_).transpose()) +
+  p_cv_   = mode_match_prob_cv2cv_     * (p_pre_cv   + (x_pre_cv   - x_cv_)   * (x_pre_cv   - x_cv_).transpose()) +
+            mode_match_prob_ctrv2cv_   * (p_pre_ctrv + (x_pre_ctrv - x_cv_)   * (x_pre_ctrv - x_cv_).transpose()) +
+            mode_match_prob_rm2cv_     * (p_pre_rm   + (x_pre_rm   - x_cv_)   * (x_pre_rm   - x_cv_).transpose());
+  p_ctrv_ = mode_match_prob_cv2ctrv_   * (p_pre_cv   + (x_pre_cv   - x_ctrv_) * (x_pre_cv   - x_ctrv_).transpose()) +
             mode_match_prob_ctrv2ctrv_ * (p_pre_ctrv + (x_pre_ctrv - x_ctrv_) * (x_pre_ctrv - x_ctrv_).transpose()) +
-            mode_match_prob_rm2ctrv_ * (p_pre_rm + (x_pre_rm - x_ctrv_) * (x_pre_rm - x_ctrv_).transpose());
-  p_rm_   = mode_match_prob_cv2rm_ * (p_pre_cv + (x_pre_cv - x_rm_) * (x_pre_cv - x_rm_).transpose()) +
-            mode_match_prob_ctrv2rm_ * (p_pre_ctrv + (x_pre_ctrv - x_rm_) * (x_pre_ctrv - x_rm_).transpose()) +
-            mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
+            mode_match_prob_rm2ctrv_   * (p_pre_rm   + (x_pre_rm   - x_ctrv_) * (x_pre_rm   - x_ctrv_).transpose());
+  p_rm_   = mode_match_prob_cv2rm_     * (p_pre_cv   + (x_pre_cv   - x_rm_)   * (x_pre_cv   - x_rm_).transpose()) +
+            mode_match_prob_ctrv2rm_   * (p_pre_ctrv + (x_pre_ctrv - x_rm_)   * (x_pre_ctrv - x_rm_).transpose()) +
+            mode_match_prob_rm2rm_     * (p_pre_rm   + (x_pre_rm   - x_rm_)   * (x_pre_rm   - x_rm_).transpose());
 }
 
 void IMM_RAUKF::predictionIMMUKF(const double dt)
@@ -623,6 +635,27 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
   lambda_vec.push_back(lambda_cv);
   lambda_vec.push_back(lambda_ctrv);
   lambda_vec.push_back(lambda_rm);
+
+  if(p_cv_(0,0) < 0 || p_cv_(1,1) < 0 ||p_cv_(2,2) < 0 ||p_cv_(3,3) < 0 ||p_cv_(4,4) < 0 ||
+     p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 ||
+     p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0)
+     {
+       std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << " mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
+       std::cout << "lifetime " << lifetime_ << std::endl;
+     }
+
+  if(p_cv_(0,0) < 0 || p_cv_(1,1) < 0 ||p_cv_(2,2) < 0 ||p_cv_(3,3) < 0 ||p_cv_(4,4) < 0 )
+  {
+    ROS_ERROR("ukf id: %d Poorly made covariance p_cv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
+  }
+  if(p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 )
+  {
+    ROS_ERROR("ukf id: %d Poorly made covariance p_ctrv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
+  }
+  if(p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0 )
+  {
+    ROS_ERROR("ukf id: %d Poorly made covariance p_rm_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
+  }
 }
 
 void IMM_RAUKF::faultDetection(const int model_ind, bool& is_fault)
@@ -797,7 +830,7 @@ void IMM_RAUKF::adaptiveAdjustmentR(const int model_ind)
   z_pred.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
-    z_pred = z_pred + weights_(i) * z_sig.col(i);
+    z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
   // measurement covariance matrix S
@@ -806,7 +839,7 @@ void IMM_RAUKF::adaptiveAdjustmentR(const int model_ind)
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-    S = S + weights_(i) * z_diff * z_diff.transpose();
+    S = S + weights_c_(i) * z_diff * z_diff.transpose();
   }
   //2, calculate delta
   double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
@@ -884,19 +917,19 @@ void IMM_RAUKF::estimationUpdate(const int model_ind)
     z_sig = new_z_sig_rm_;
   }
 
-  std::cout << "lifetime " << lifetime_ << std::endl;
-  if(model_ind == MotionModel::CV)
-  {
-    std::cout << "p k|k-1 " << std::endl << p_cv_ << std::endl;
-  }
-  else if(model_ind == MotionModel::CTRV)
-  {
-    std::cout << "p k|k-1 " << std::endl << p_ctrv_ << std::endl;
-  }
-  else
-  {
-    std::cout << "p k|k-1 " << std::endl << p_rm_ << std::endl;
-  }
+  // std::cout << "lifetime " << lifetime_ << std::endl;
+  // if(model_ind == MotionModel::CV)
+  // {
+  //   std::cout << "p k|k-1 " << std::endl << p_cv_ << std::endl;
+  // }
+  // else if(model_ind == MotionModel::CTRV)
+  // {
+  //   std::cout << "p k|k-1 " << std::endl << p_ctrv_ << std::endl;
+  // }
+  // else
+  // {
+  //   std::cout << "p k|k-1 " << std::endl << p_rm_ << std::endl;
+  // }
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   p.fill(0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
@@ -907,9 +940,9 @@ void IMM_RAUKF::estimationUpdate(const int model_ind)
            x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)
            x_diff(3) += 2. * M_PI;
-    p = p + weights_(i) * x_diff * x_diff.transpose();
+    p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
-  std::cout << "p x,x k|k-1 " << std::endl << p << std::endl;
+  // std::cout << "p x,x k|k-1 " << std::endl << p << std::endl;
   // p = p + q;
 
   Eigen::MatrixXd cross_covariance(n_x_, 2);
@@ -920,7 +953,7 @@ void IMM_RAUKF::estimationUpdate(const int model_ind)
     // state difference
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
 
-    cross_covariance = cross_covariance + weights_(i) * x_diff * z_diff.transpose();
+    cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
   // Eigen::MatrixXd innovation_covariance = s + r;
@@ -929,13 +962,13 @@ void IMM_RAUKF::estimationUpdate(const int model_ind)
   Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
 
   x = x + kalman_gain*(z - z_pred);
-  std::cout <<"corrected r "<< std::endl <<r << std::endl;
-  std::cout <<"corrected q "<< std::endl <<q << std::endl;
-  std::cout <<"before p "<< std::endl <<p << std::endl;
+  // std::cout <<"corrected r "<< std::endl <<r << std::endl;
+  // std::cout <<"corrected q "<< std::endl <<q << std::endl;
+  // std::cout <<"before p "<< std::endl <<p << std::endl;
   p = p - kalman_gain*innovation_covariance*kalman_gain.transpose();
 
-  std::cout <<"x "<< std::endl <<x << std::endl;
-  std::cout <<"p "<< std::endl <<p << std::endl;
+  // std::cout <<"x "<< std::endl <<x << std::endl;
+  // std::cout <<"p "<< std::endl <<p << std::endl;
   // if(model_ind == MotionModel::CV)
   // {
   //   std::cout << "aaa"<< std::endl;
@@ -986,18 +1019,18 @@ void IMM_RAUKF::updateIMMUKF(const double detection_probability, const double ga
   /*****************************************************************************
   *  IMM Update & Fault detection
   ****************************************************************************/
-    std::cout << "ukf id ------------------------------------------------------------------" << ukf_id_ << std::endl;
-  std::cout << "before update each motion cv " << std::endl << p_cv_ << std::endl;
-  std::cout << "before update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
-  std::cout << "before update each motion rm " << std::endl << p_rm_ << std::endl;
+  // std::cout << "before update each motion cv " << std::endl << p_cv_ << std::endl;
+  // std::cout << "before update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
+  // std::cout << "before update each motion rm " << std::endl << p_rm_ << std::endl;
   // update each motion's x and p
   std::vector<double> lambda_vec;
   updateEachMotion(detection_probability, gate_probability , gating_thres, object_vec, lambda_vec);
-  std::cout << "after update each motion cv " << std::endl << p_cv_ << std::endl;
-  std::cout << "after update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
-  std::cout << "after update each motion rm " << std::endl << p_rm_ << std::endl;
+  // std::cout << "after update each motion cv " << std::endl << p_cv_ << std::endl;
+  // std::cout << "after update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
+  // std::cout << "after update each motion rm " << std::endl << p_rm_ << std::endl;
+
   robustAdaptiveFilter(); // noise estimation/correction if fault is detected
-  std::cout << "after ra filte " << std::endl;
+  // std::cout << "after ra filte " << std::endl;
 
   /*****************************************************************************
   *  IMM Merge Step
@@ -1196,7 +1229,7 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
   x.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {  // iterate over sigma points
-    x = x + weights_(i) * x_sig_pred.col(i);
+    x = x + weights_s_(i) * x_sig_pred.col(i);
   }
 
   while (x(3) > M_PI)
@@ -1214,7 +1247,7 @@ void IMM_RAUKF::prediction(const double delta_t, const int model_ind)
       x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)
       x_diff(3) += 2. * M_PI;
-    p = p + weights_(i) * x_diff * x_diff.transpose();
+    p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
 
   p = p + q;
@@ -1297,7 +1330,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   z_pred.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
-    z_pred = z_pred + weights_(i) * z_sig.col(i);
+    z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
   // measurement covariance matrix S
@@ -1307,7 +1340,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-    S = S + weights_(i) * z_diff * z_diff.transpose();
+    S = S + weights_c_(i) * z_diff * z_diff.transpose();
   }
 
   // add measurement noise covariance matrix
@@ -1328,7 +1361,7 @@ void IMM_RAUKF::updateLidar(const int model_ind)
     // state difference
     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
 
-    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+    Tc = Tc + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
   // Kalman gain K;

@@ -103,7 +103,8 @@ public:
   double std_laspy_;
 
   ///* Weights of sigma points
-  Eigen::VectorXd weights_;
+  Eigen::VectorXd weights_c_;
+  Eigen::VectorXd weights_s_;
 
   ///* State dimension
   int n_x_;

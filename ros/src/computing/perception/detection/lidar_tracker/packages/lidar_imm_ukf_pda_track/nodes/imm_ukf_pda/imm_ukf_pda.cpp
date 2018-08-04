@@ -3,6 +3,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
+// for debug
+int g_count_ = 0;
+
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
@@ -148,7 +151,49 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::DetectedObject smallest_meas_object;
-  // std::cout << "ukf id "<<target.ukf_id_ << std::endl;
+  std::cout << "ukf id "<<target.ukf_id_ << std::endl;
+  // for (size_t i = 0; i < input.objects.size(); i++)
+  // {
+  //   double x = input.objects[i].pose.position.x;
+  //   double y = input.objects[i].pose.position.y;
+  //
+  //   Eigen::VectorXd meas = Eigen::VectorXd(2);
+  //   meas << x, y;
+  //
+  //   Eigen::VectorXd diff = meas - max_det_z;
+  //   double nis = diff.transpose() * max_det_s.inverse() * diff;
+  //
+  //   // std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
+  //
+  //   if (nis < gating_thres_)
+  //   {  // x^2 99% range
+  //     std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
+  //     count++;
+  //     if (matching_vec[i] == false)
+  //       target.lifetime_++;
+  //     // pick one meas with smallest nis
+  //     if (second_init)
+  //     {
+  //       if (nis < smallest_nis)
+  //       {
+  //         smallest_nis = nis;
+  //         smallest_meas_object = input.objects[i];
+  //         matching_vec[i] = true;
+  //         second_init_done = true;
+  //       }
+  //     }
+  //     else
+  //     {
+  //       object_vec.push_back(input.objects[i]);
+  //       matching_vec[i] = true;
+  //     }
+  //   }
+  // }
+  // if (second_init_done)
+  // {
+  //   object_vec.push_back(smallest_meas_object);
+  // }
+
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -164,12 +209,13 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
 
     if (nis < gating_thres_)
     {  // x^2 99% range
+      std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
       count++;
       if (matching_vec[i] == false)
         target.lifetime_++;
       // pick one meas with smallest nis
-      if (second_init)
-      {
+      // if (second_init)
+      // {
         if (nis < smallest_nis)
         {
           smallest_nis = nis;
@@ -177,12 +223,12 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
           matching_vec[i] = true;
           second_init_done = true;
         }
-      }
-      else
-      {
-        object_vec.push_back(input.objects[i]);
-        matching_vec[i] = true;
-      }
+      // }
+      // else
+      // {
+      //   object_vec.push_back(input.objects[i]);
+      //   matching_vec[i] = true;
+      // }
     }
   }
   if (second_init_done)
@@ -751,6 +797,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   const double det_explode_param = 100;
   const double cov_explode_param = 1000;
 
+  g_count_ ++;
+  std::cout << "<<global callback count>> " << g_count_ << std::endl;
   if (!init_)
   {
     initTracker(input, timestamp);
@@ -758,6 +806,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
 
   double dt = (timestamp - timestamp_);
+  std::cout << "dt " << dt << std::endl;
   timestamp_ = timestamp;
   // // used for making new target with no data association
   std::vector<bool> matching_vec(input.objects.size(), false);  // make 0 vector
@@ -765,6 +814,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
+    std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
     // reset is_vis_bb_ to false
     targets_[i].is_vis_bb_ = false;
     targets_[i].is_static_ = false;
@@ -799,7 +849,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
     // std::cout << "x " << std::endl<<targets_[i].x_merge_ << std::endl;
     // std::cout << "p " << std::endl<<targets_[i].p_merge_ << std::endl;
-    std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
+    // std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
   }
   // end UKF process
 
