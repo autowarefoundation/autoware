@@ -1029,7 +1029,7 @@ void IMM_RAUKF::updateIMMUKF(const double detection_probability, const double ga
   // std::cout << "after update each motion ctrv " << std::endl << p_ctrv_ << std::endl;
   // std::cout << "after update each motion rm " << std::endl << p_rm_ << std::endl;
 
-  robustAdaptiveFilter(); // noise estimation/correction if fault is detected
+  // robustAdaptiveFilter(); // noise estimation/correction if fault is detected
   // std::cout << "after ra filte " << std::endl;
 
   /*****************************************************************************

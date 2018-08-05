@@ -78,11 +78,11 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     }
     std::string s_velocity = std::to_string(tv*3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".")+3);
-    // std::string text = "<" + std::to_string(input.objects[i].id) + "> " +
-    //                          modified_sv + " km/h";
+    std::string text = "<" + std::to_string(input.objects[i].id) + "> " +
+                             modified_sv + " km/h";
 
-    std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
-                 + std::to_string(tv) + " m/s";
+    // std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
+    //              + std::to_string(tv) + " m/s";
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
 
