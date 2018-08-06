@@ -9,6 +9,7 @@ execute_process(
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         autoware_msgs
         cmake_modules
         cv_bridge
@@ -46,6 +47,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
+find_package(OpenGL REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -75,7 +78,7 @@ catkin_package(
         LIBRARIES libcontext
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall -Wunused-variable ${CMAKE_CXX_FLAGS}")
 
 ###########
 ## Build ##
@@ -108,6 +111,7 @@ target_link_libraries(region_tlr
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         libcontext
+        ${OPENGL_LIBRARIES}
         )
 
 add_dependencies(region_tlr
@@ -168,6 +172,7 @@ target_link_libraries(tlr_tuner
         ${OpenCV_LIBS}
         Qt5::Core
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 
@@ -230,6 +235,7 @@ target_link_libraries(label_maker
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets
+        ${OPENGL_LIBRARIES}
         )
 
 

@@ -9,6 +9,7 @@
   <author email="yuki@ertl.jp">Yuki Kitsukawa</author> -->
   
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
   
   <build_depend>nmea_msgs</build_depend>
   <build_depend>roscpp</build_depend>

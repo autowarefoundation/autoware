@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mqtt_socket)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         roslib
         std_msgs
@@ -14,7 +15,7 @@ catkin_package(
 )
 
 if (EXISTS /usr/include/mosquitto.h)
-    set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-O2 -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
 
     include_directories(
             include

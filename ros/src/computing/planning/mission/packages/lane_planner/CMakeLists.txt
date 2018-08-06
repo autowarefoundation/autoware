@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(lane_planner)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         tablet_socket
@@ -11,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         INCLUDE_DIRS include

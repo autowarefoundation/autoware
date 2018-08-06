@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_simulator_perception)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
         pcl_conversions
@@ -16,7 +17,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp geometry_msgs op_utility op_planner autoware_msgs
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
