@@ -276,6 +276,9 @@ public:
 
   void estimationUpdate(const int model_ind);
 
+  // this is for debug, try SUKF
+  void onlyUpdateCV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
   void updateIMMUKF(const double detection_probability, const double gate_probability,
      const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
 

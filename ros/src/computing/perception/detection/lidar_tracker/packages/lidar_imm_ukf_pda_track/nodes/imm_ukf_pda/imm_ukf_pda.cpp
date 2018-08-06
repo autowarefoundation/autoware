@@ -151,7 +151,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::DetectedObject smallest_meas_object;
-  std::cout << "ukf id "<<target.ukf_id_ << std::endl;
+  // std::cout << "ukf id "<<target.ukf_id_ << std::endl;
   // for (size_t i = 0; i < input.objects.size(); i++)
   // {
   //   double x = input.objects[i].pose.position.x;
@@ -209,7 +209,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
 
     if (nis < gating_thres_)
     {  // x^2 99% range
-      std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
+      // std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
       count++;
       if (matching_vec[i] == false)
         target.lifetime_++;
@@ -500,6 +500,10 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   target.findMaxZandS(max_det_z, max_det_s);
 
   double det_s = max_det_s.determinant();
+
+  max_det_z = target.z_pred_ctrv_;
+  max_det_s = target.s_ctrv_;
+  det_s     = max_det_s.determinant();
 
   // prevent ukf not to explode
   if (std::isnan(det_s) || det_s > det_explode_param)
@@ -806,7 +810,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
 
   double dt = (timestamp - timestamp_);
-  std::cout << "dt " << dt << std::endl;
+  // std::cout << "dt " << dt << std::endl;
   timestamp_ = timestamp;
   // // used for making new target with no data association
   std::vector<bool> matching_vec(input.objects.size(), false);  // make 0 vector
@@ -815,6 +819,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   for (size_t i = 0; i < targets_.size(); i++)
   {
     std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
+    std::cout << "target lifiteme " << targets_[i].lifetime_ << std::endl;
+    std::cout << "target tracking num " << targets_[i].tracking_num_ << std::endl;
     // reset is_vis_bb_ to false
     targets_[i].is_vis_bb_ = false;
     targets_[i].is_static_ = false;
@@ -847,8 +853,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // immukf update step
     targets_[i].updateIMMUKF(detection_probability_, gate_probability_ , gating_thres_, object_vec);
 
-    // std::cout << "x " << std::endl<<targets_[i].x_merge_ << std::endl;
-    // std::cout << "p " << std::endl<<targets_[i].p_merge_ << std::endl;
+    // std::cout << "x " << std::endl<<targets_[i].x_ctrv_ << std::endl;
+    // std::cout << "p " << std::endl<<targets_[i].p_ctrv_ << std::endl;
     // std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
   }
   // end UKF process
