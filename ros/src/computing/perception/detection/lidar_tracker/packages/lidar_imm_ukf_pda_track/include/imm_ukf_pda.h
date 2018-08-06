@@ -52,6 +52,12 @@ private:
   int stable_num_;
   int lost_num_;
 
+  //switch sukf and ImmUkfPda
+  bool use_sukf_;
+
+  //switch robust adaptive filter
+  bool use_robust_adaptive_filter_;
+
   std::string input_topic_;
   std::string output_topic_;
 

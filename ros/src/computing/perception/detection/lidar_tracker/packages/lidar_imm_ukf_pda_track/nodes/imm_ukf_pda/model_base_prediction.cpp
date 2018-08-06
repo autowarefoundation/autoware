@@ -367,7 +367,7 @@ void ModelBasePrediction::adasMapAssitDirectionAndPrediction(const autoware_msgs
 
           line.id = ith_path + i*10;
           line.scale.x = 0.1;
-          for (size_t path_point_i = 0; path_point_i < num_path_points_; path_point_i ++)
+          for (int path_point_i = 0; path_point_i < num_path_points_; path_point_i ++)
           {
             geometry_msgs::PoseStamped map_fp_pose;
             map_fp_pose = targets[i].objectPaths[ith_path][path_point_i].map_fp_pose;
@@ -391,7 +391,7 @@ void ModelBasePrediction::adasMapAssitDirectionAndPrediction(const autoware_msgs
 
 void ModelBasePrediction::initObjectPaths(const geometry_msgs::PoseStamped& map_pose, IMM_RAUKF &target)
 {
-  int min_fnid = 0;
+  // int min_fnid = 0;
   int min_flid = 0;
   int target_flid = 0;
   double min_dist = 9999;
@@ -425,7 +425,7 @@ void ModelBasePrediction::initObjectPaths(const geometry_msgs::PoseStamped& map_
       min_fn_pose.pose.orientation.z = quat.getZ();
       min_fn_pose.pose.orientation.w = quat.getW();
       min_dist = dist;
-      min_fnid = lane.fnid;
+      // min_fnid = lane.fnid;
       min_flid = lane.flid;
     }
   }

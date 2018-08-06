@@ -226,9 +226,9 @@ public:
   Eigen::MatrixXd new_x_sig_ctrv_;
   Eigen::MatrixXd new_x_sig_rm_;
 
-  Eigen::VectorXd new_z_sig_cv_;
-  Eigen::VectorXd new_z_sig_ctrv_;
-  Eigen::VectorXd new_z_sig_rm_;
+  Eigen::MatrixXd new_z_sig_cv_;
+  Eigen::MatrixXd new_z_sig_ctrv_;
+  Eigen::MatrixXd new_z_sig_rm_;
 
   Eigen::VectorXd new_z_pred_cv_;
   Eigen::VectorXd new_z_pred_ctrv_;
@@ -259,14 +259,18 @@ public:
 
   void interaction();
 
+  void predictionSUKF(const double dt);
+
   void predictionIMMUKF(const double dt);
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
+  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
 
-  void robustAdaptiveFilter();
+  void robustAdaptiveFilter(const bool use_sukf);
 
   void faultDetection(const int model_ind, bool& is_fault);
 
@@ -277,7 +281,7 @@ public:
   void estimationUpdate(const int model_ind);
 
   // this is for debug, try SUKF
-  void onlyUpdateCV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void updateIMMUKF(const double detection_probability, const double gate_probability,
      const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
