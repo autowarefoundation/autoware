@@ -4,6 +4,7 @@
 
 
 #include <opencv2/core/version.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include "draw_rects.h"
 
 #if (CV_MAJOR_VERSION == 3)
