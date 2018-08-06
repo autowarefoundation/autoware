@@ -1,6 +1,6 @@
 <launch>
-    <arg name="detected_objects_range" default="/detected_objects_range" /> <!-- PointCloud source topic-->
-    <arg name="detected_objects_vision" default="/detected_objects_vision" /> <!-- Raw Image source topic to be rectified-->
+    <arg name="detected_objects_range" default="/detection/lidar_objects" /> <!-- PointCloud source topic-->
+    <arg name="detected_objects_vision" default="/detection/vision_objects" /> <!-- Raw Image source topic to be rectified-->
     <arg name="camera_info_src" default="/camera_info" /> <!-- CameraInfo source topic-->
     <arg name="sync_topics" default="false" /> <!-- CameraInfo source topic-->
 

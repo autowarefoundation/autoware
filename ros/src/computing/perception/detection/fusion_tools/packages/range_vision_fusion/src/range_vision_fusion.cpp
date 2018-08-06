@@ -579,16 +579,16 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 {
     //get params
     std::string camera_info_src, detected_objects_vision;
-    std::string detected_objects_range, fused_topic_str = "/detected_objects_fused", fused_boxes_str = "/bounding_boxes_fused";
-    std::string fused_text_str = "/detected_objects_labels";
+    std::string detected_objects_range, fused_topic_str = "/detection/combined_objects", fused_boxes_str = "/detection/combined_objects_boxes";
+    std::string fused_text_str = "detection/combined_objects_labels";
     std::string name_space_str = ros::this_node::getNamespace();
     bool sync_topics = false;
 
     ROS_INFO("[%s] This node requires: Registered TF(Lidar-Camera), CameraInfo, Vision and Range Detections being published.", __APP_NAME__);
-    in_private_handle.param<std::string>("detected_objects_range", detected_objects_range, "/detected_objects_range");
+    in_private_handle.param<std::string>("detected_objects_range", detected_objects_range, "/detection/lidar_objects");
     ROS_INFO("[%s] detected_objects_range: %s", __APP_NAME__, detected_objects_range.c_str());
 
-    in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detected_objects_vision");
+    in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detection/vision_objects");
     ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
 
     in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");

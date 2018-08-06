@@ -1093,7 +1093,7 @@ int main(int argc, char **argv) {
     _pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes", 1);
     _pub_jsk_hulls = h.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls", 1);
     _pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters", 1);
-    _pub_detected_objects = h.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects_range", 1);
+    _pub_detected_objects = h.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects", 1);
     _pub_text_pictogram = h.advertise<jsk_rviz_plugins::PictogramArray>("cluster_ids", 10);
     ROS_INFO("output pictograms topic: %s", "cluster_id");
 
