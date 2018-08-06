@@ -29,8 +29,8 @@ namespace integrated_viewer
 #else
         cv::generateColors(color_map_, 25);
 #endif
-        car_image_ = cv::imread(DEFAULT_PATH + "car.png", IMREAD_UNCHANGED);
-        pedestrian_image_ = cv::imread(DEFAULT_PATH + "pedestrian.png", IMREAD_UNCHANGED);
+        car_image_ = cv::imread(DEFAULT_PATH + "car.png", cv::IMREAD_UNCHANGED);
+        pedestrian_image_ = cv::imread(DEFAULT_PATH + "pedestrian.png", cv::IMREAD_UNCHANGED);
 
     } // DrawRects::DrawRects()
 
