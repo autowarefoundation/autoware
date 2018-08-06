@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_yolo2_detect</name>
-    <version>1.7.0</version>
+    <version>1.7.1</version>
     <description>vision yolo2 detect package</description>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>BSD</license>

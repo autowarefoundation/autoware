@@ -2,6 +2,11 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.7.1 (2018-05-22)
+------------------
+* Bug fix for not opening app in computing tab
+* Contributors: Kosuke Murakami
+
 1.7.0 (2018-05-18)
 ------------------
 * Delete duplicated nodes on Runtime Manager
