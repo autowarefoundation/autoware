@@ -5,6 +5,7 @@ if [ "$1" = "synquacer" ] || [ "$1" = "generic-aarch64" ]
 then
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
+    shift
 
     if [[ -d build-${AUTOWARE_TARGET_PLATFORM} ]]; then
         rm -rf build-${AUTOWARE_TARGET_PLATFORM}
