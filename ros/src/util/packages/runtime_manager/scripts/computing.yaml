@@ -238,7 +238,7 @@ subs :
         param: pixel_cloud_fusion_params
       - name : range_vision_fusion
         desc : Combines the 2D and 3D detection results
-        cmd  : roslaunch range_vison_fusion range_vision_fusion.launch
+        cmd  : roslaunch range_vision_fusion range_vision_fusion.launch
         param: range_vision_fusion_params
 
     - name : lidar_tracker
@@ -4268,17 +4268,17 @@ params :
     vars  :
     - name  : detected_objects_range
       desc  : Point cloud source topic
-      label : points_src
+      label : detected_objects_range
       kind  : str
-      v     : /points_raw
+      v     : /detection/lidar_objects
       cmd_param :
         dash      : ''
         delim     : ':='
     - name  : detected_objects_vision
       desc  : Image source topic
-      label : image_src
+      label : detected_objects_vision
       kind  : str
-      v     : /image_raw
+      v     : /detection/vision_objects
       cmd_param :
         dash      : ''
         delim     : ':='
