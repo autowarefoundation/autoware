@@ -18,11 +18,12 @@ then
     AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
     AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
     AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake
-    AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_ARCH}
+    AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
     docker run \
         -it \
         --rm \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
         -v ${PWD}/../:${AUTOWARE_HOME} \
         -w ${AUTOWARE_HOME}/ros \
         -u ${UID}:${UID} \
