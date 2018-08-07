@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_follower)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         tf
@@ -38,7 +39,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
@@ -49,6 +50,7 @@ add_library(libwaypoint_follower lib/libwaypoint_follower.cpp)
 add_dependencies(libwaypoint_follower
         ${catkin_EXPORTED_TARGETS}
         )
+target_link_libraries(libwaypoint_follower ${catkin_LIBRARIES})
 
 add_executable(pure_pursuit
         nodes/pure_pursuit/pure_pursuit_node.cpp

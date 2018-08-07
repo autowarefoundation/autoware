@@ -4,6 +4,7 @@ project(autoware_camera_lidar_calibrator)
 include(FindPkgConfig)
 
 find_package(catkin REQUIRED COMPONENTS
+    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions
@@ -30,7 +31,7 @@ catkin_package(CATKIN_DEPENDS
     tf
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
     ${catkin_INCLUDE_DIRS}

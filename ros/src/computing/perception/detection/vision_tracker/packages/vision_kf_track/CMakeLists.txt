@@ -6,6 +6,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   cv_bridge
   roscpp
   sensor_msgs
@@ -13,12 +14,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   )
 
 FIND_PACKAGE(OpenCV REQUIRED)
-
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
 catkin_package(
   CATKIN_DEPENDS 
@@ -32,7 +27,7 @@ catkin_package(
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}

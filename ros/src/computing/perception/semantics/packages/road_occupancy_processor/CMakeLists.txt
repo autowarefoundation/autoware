@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.12)
 project(road_occupancy_processor)
 
 find_package(catkin REQUIRED COMPONENTS
+    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions
@@ -34,7 +35,7 @@ catkin_package(CATKIN_DEPENDS
     vector_map
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Road Occupancy Processor Library
 add_library(road_occupancy_processor_lib SHARED

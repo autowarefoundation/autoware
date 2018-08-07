@@ -284,7 +284,7 @@ int main(int argc, char **argv)
 
   private_nh.param("position_error", g_position_error, double(0.0));
   private_nh.param("angle_error", g_angle_error, double(0.0));
-  private_nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
+  nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
 
   private_nh.param("use_ctrl_cmd", _use_ctrl_cmd, false);
   // publish topic

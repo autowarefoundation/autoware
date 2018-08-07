@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_imm_ukf_pda_track)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   pcl_ros
   autoware_msgs
@@ -12,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   )
 
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS

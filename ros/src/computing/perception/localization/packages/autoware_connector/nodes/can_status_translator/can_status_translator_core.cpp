@@ -68,6 +68,7 @@ void CanStatusTranslatorNode::initForROS()
   }
   // setup subscriber
   sub1_ = nh_.subscribe("can_info", 100, &CanStatusTranslatorNode::callbackFromCanInfo, this);
+  sub2_ = nh_.subscribe("vehicle_status", 10, &CanStatusTranslatorNode::callbackFromVehicleStatus, this);
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("can_velocity", 10);
@@ -80,7 +81,7 @@ void CanStatusTranslatorNode::run()
   ros::spin();
 }
 
-void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::VehicleStatusConstPtr& msg)
 {
   geometry_msgs::TwistStamped tw;
   tw.header = msg->header;
@@ -94,14 +95,14 @@ void CanStatusTranslatorNode::publishVelocity(const autoware_msgs::CanInfoConstP
   pub1_.publish(tw);
 }
 
-void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVelocityViz(const autoware_msgs::VehicleStatusConstPtr& msg)
 {
   std_msgs::Float32 fl;
   fl.data = msg->speed;
   pub2_.publish(fl);
 }
 
-void CanStatusTranslatorNode::publishVehicleStatus(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::publishVehicleStatus(const autoware_msgs::CanInfoConstPtr& msg)
 {
   // currently, this function is only support to autoware_socket format.
   autoware_msgs::VehicleStatus vs;
@@ -120,10 +121,14 @@ void CanStatusTranslatorNode::publishVehicleStatus(const autoware_msgs::CanInfoC
   pub3_.publish(vs);
 }
 
-void CanStatusTranslatorNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void CanStatusTranslatorNode::callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr& msg)
 {
   publishVelocity(msg);
   publishVelocityViz(msg);
+}
+
+void CanStatusTranslatorNode::callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr& msg)
+{
   publishVehicleStatus(msg);
 }
 
