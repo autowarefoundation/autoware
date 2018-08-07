@@ -9,12 +9,19 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         autoware_msgs
         jsk_recognition_utils
+        eigen_conversions
+        tf_conversions
+        jsk_topic_tools
+        image_geometry
+        jsk_topic_tools
         visualization_msgs
         )
 
 find_package(OpenCV REQUIRED)
 
 find_package(Eigen3 QUIET)
+
+find_package(OpenGL REQUIRED)
 
 if (NOT EIGEN3_FOUND)
     # Fallback to cmake_modules
@@ -38,6 +45,11 @@ catkin_package(
         tf
         autoware_msgs
         jsk_recognition_utils
+        eigen_conversions
+        tf_conversions
+        jsk_topic_tools
+        image_geometry
+        jsk_topic_tools
         visualization_msgs
 )
 
@@ -60,12 +72,14 @@ target_include_directories(range_vision_fusion_lib PRIVATE
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
+        ${OPENGL_INCLUDE_DIRS}
         include
         )
 
 target_link_libraries(range_vision_fusion_lib
         ${OpenCV_LIBRARIES}
         ${EIGEN3_LIBRARIES}
+        ${OPENGL_LIBRARIES}
         ${catkin_LIBRARIES}
         )
 
