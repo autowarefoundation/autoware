@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$1" = "synquacer" ] || [ "$1" = "generic-aarch64" ]
+then
+    AUTOWARE_TARGET_ARCH=aarch64
+    AUTOWARE_TARGET_PLATFORM=$1
+    shift
+
+    if [[ -d build-${AUTOWARE_TARGET_PLATFORM} ]]; then
+        rm -rf build-${AUTOWARE_TARGET_PLATFORM}
+    fi
+
+    if [[ -d devel-${AUTOWARE_TARGET_PLATFORM} ]]; then
+        rm -rf devel-${AUTOWARE_TARGET_PLATFORM}
+    fi
+
+    AUTOWARE_HOME=/home/autoware/Autoware
+    AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake
+    AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
+
+    docker run \
+        -it \
+        --rm \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
+        -v ${PWD}/../:${AUTOWARE_HOME} \
+        -w ${AUTOWARE_HOME}/ros \
+        -u ${UID}:${UID} \
+        autoware/crossbuild:${AUTOWARE_TARGET_PLATFORM}-kinetic-1.0.0 \
+        bash \
+        -c "\
+        source /opt/ros/kinetic/setup.bash && \
+        catkin_make \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            clean && \
+        source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash && \
+        catkin_make \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            -DCMAKE_BUILD_TYPE=Release $@
+        "
+
+    find devel-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
+else
+    echo "Select target platform: synquacer, generic-aarch64"
+fi
+
