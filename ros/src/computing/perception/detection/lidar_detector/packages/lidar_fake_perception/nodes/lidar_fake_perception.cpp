@@ -5,7 +5,7 @@
 
 LidarFakePerception::LidarFakePerception() : nh_(), private_nh_("~")
 {
-  private_nh_.param<bool>("publish_object", publish_object_, true);
+  private_nh_.param<bool>("publish_objects", publish_objects_, true);
   private_nh_.param<bool>("publish_points", publish_points_, true);
   private_nh_.param<double>("publish_rate", publish_rate_, 10.0);
 
@@ -238,7 +238,7 @@ void LidarFakePerception::publishFakes()
     fake_points_.header = pcl_conversions::toPCL(fake_object_.header);
   }
 
-  if (publish_object_)
+  if (publish_objects_)
   {
     fake_objects_pub_.publish(fake_objects_);
   }

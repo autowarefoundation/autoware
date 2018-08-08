@@ -12,7 +12,7 @@
   <arg name="fake_points_topic" default="/fake_points" />
 
   <!-- param, publishing -->
-  <arg name="publish_object" default="true" />
+  <arg name="publish_objects" default="true" />
   <arg name="publish_points" default="true" />
   <arg name="publish_rate" default="10.0" />
 
