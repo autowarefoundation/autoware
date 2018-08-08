@@ -2,37 +2,37 @@
 <launch>
 
   <!-- publisher -->
-  <arg name="initial_pose_topic" value="/move_base_simple/goal" />
-  <arg name="real_objects_topic" value="/detected_objects" />
-  <arg name="real_points_topic" value="/points_raw" />
-  <arg name="fake_twist_topic" value="/fake_twist" />
+  <arg name="initial_pose_topic" default="/move_base_simple/goal" />
+  <arg name="real_objects_topic" default="/detected_objects" />
+  <arg name="real_points_topic" default="/points_raw" />
+  <arg name="fake_twist_topic" default="/fake_twist" />
 
   <!-- subscriber -->
-  <arg name="fake_objects_topic" value="/fake_objects" />
-  <arg name="fake_points_topic" value="/fake_points" />
+  <arg name="fake_objects_topic" default="/fake_objects" />
+  <arg name="fake_points_topic" default="/fake_points" />
 
   <!-- param, publishing -->
-  <arg name="publish_object" value="true" />
-  <arg name="publish_points" value="true" />
-  <arg name="publish_rate" value="10.0" />
+  <arg name="publish_object" default="true" />
+  <arg name="publish_points" default="true" />
+  <arg name="publish_rate" default="10.0" />
 
   <!-- param, object shape -->
-  <arg name="object_length" value="5.0" />
-  <arg name="object_width" value="2.0" />
-  <arg name="object_height" value="2.0" />
-  <arg name="object_z_offset" value="-2.0" />
+  <arg name="object_length" default="5.0" />
+  <arg name="object_width" default="2.0" />
+  <arg name="object_height" default="2.0" />
+  <arg name="object_z_offset" default="-2.0" />
 
   <!-- param, object motion -->
-  <arg name="use_fake_twist" value="true" />
-  <arg name="object_velocity" value="3.0" />
-  <arg name="object_angular_velocity" value="0.0" />
+  <arg name="use_fake_twist" default="true" />
+  <arg name="object_velocity" default="3.0" />
+  <arg name="object_angular_velocity" default="0.0" />
 
   <!-- param, object meta-info -->
-  <arg name="object_intensity" value="100.0" />
-  <arg name="object_lifetime" value="-1" />
-  <arg name="object_points_space" value="0.2" />
-  <arg name="object_label" value="Stable" />
-  <arg name="object_frame" value="velodyne" />
+  <arg name="object_intensity" default="100.0" />
+  <arg name="object_lifetime" default="-1" />
+  <arg name="object_points_space" default="0.2" />
+  <arg name="object_label" default="Stable" />
+  <arg name="object_frame" default="velodyne" />
 
 	<node pkg="lidar_fake_perception" type="lidar_fake_perception_node" name="lidar_fake_perception" output="screen">
     <remap from="/move_base_simple/goal" to="$(arg initial_pose_topic)" />
