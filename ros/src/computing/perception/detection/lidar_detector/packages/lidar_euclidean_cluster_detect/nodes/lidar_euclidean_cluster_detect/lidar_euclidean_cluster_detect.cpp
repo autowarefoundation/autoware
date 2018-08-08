@@ -143,6 +143,7 @@ static double _keep_lane_right_distance;
 static double _max_boundingbox_side;
 static double _remove_points_upto;
 static double _cluster_merge_threshold;
+static double _segment_distance;
 
 static bool _use_gpu;
 static std::chrono::system_clock::time_point _start, _end;
@@ -151,9 +152,6 @@ std::vector<std::vector<geometry_msgs::Point>> _way_area_points;
 std::vector<cv::Scalar> _colors;
 pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
 visualization_msgs::Marker _visualization_marker;
-
-std::vector<double> _clustering_thresholds;
-std::vector<double> _clustering_distances;
 
 tf::StampedTransform *_transform;
 tf::StampedTransform *_velodyne_output_transform;
@@ -235,7 +233,7 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
     autoware_msgs::DetectedObjectArray detected_objects;
     detected_objects.header = in_clusters.header;
 
-    for (auto i=0; i< in_clusters.clusters.size(); i++)
+    for (size_t i=0; i< in_clusters.clusters.size(); i++)
     {
         autoware_msgs::DetectedObject detected_object;
         detected_object.header = in_clusters.header;
@@ -589,12 +587,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
     //3 => 45-60 d=2.1
     //4 => >60   d=2.6
 
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
-
-    for (unsigned int i = 0; i < cloud_segments_array.size(); i++) {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        cloud_segments_array[i] = tmp_cloud;
-    }
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
     for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++) {
         pcl::PointXYZ current_point;
@@ -602,37 +595,21 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
         current_point.y = in_cloud_ptr->points[i].y;
         current_point.z = in_cloud_ptr->points[i].z;
 
-        float origin_distance = sqrt(pow(current_point.x, 2) + pow(current_point.y, 2));
-
-        if (origin_distance < _clustering_distances[0]) { cloud_segments_array[0]->points.push_back(current_point); }
-        else if (origin_distance < _clustering_distances[1]) {
-            cloud_segments_array[1]->points.push_back(current_point);
-        }
-        else if (origin_distance < _clustering_distances[2]) {
-            cloud_segments_array[2]->points.push_back(current_point);
-        }
-        else if (origin_distance < _clustering_distances[3]) {
-            cloud_segments_array[3]->points.push_back(current_point);
-        }
-        else { cloud_segments_array[4]->points.push_back(current_point); }
+        cloud_ptr->points.push_back(current_point);
     }
 
+    #ifdef GPU_CLUSTERING
     std::vector<ClusterPtr> all_clusters;
-    for (unsigned int i = 0; i < cloud_segments_array.size(); i++) {
-#ifdef GPU_CLUSTERING
-        std::vector<ClusterPtr> local_clusters;
-        if (_use_gpu) {
-            local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
-                                                in_out_centroids, _clustering_thresholds[i]);
-        } else {
-            local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
-                                             in_out_centroids, _clustering_thresholds[i]);
-        }
+     if (_use_gpu) {
+             all_clusters = clusterAndColorGpu(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+
+     } else {
+             all_clusters = clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+     }
 #else
-        std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
+        std::vector<ClusterPtr> all_clusters = clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
 #endif
-        all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
-    }
+
 
     //Clusters can be merged or checked in here
     //....
@@ -1079,9 +1056,9 @@ int main(int argc, char **argv) {
     _transform_listener = &listener;
 
 #if (CV_MAJOR_VERSION == 3)
-    generateColors(_colors, 100);
+    generateColors(_colors, 255);
 #else
-    cv::generateColors(_colors, 100);
+    cv::generateColors(_colors, 255);
 #endif
 
     _pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster", 1);
@@ -1142,8 +1119,6 @@ int main(int argc, char **argv) {
     ROS_INFO("keep_lane_left_distance: %f", _keep_lane_left_distance);
     private_nh.param("keep_lane_right_distance", _keep_lane_right_distance, 5.0);
     ROS_INFO("keep_lane_right_distance: %f", _keep_lane_right_distance);
-    private_nh.param("clustering_thresholds", _clustering_thresholds);
-    private_nh.param("clustering_distances", _clustering_distances);
     private_nh.param("max_boundingbox_side", _max_boundingbox_side, 10.0);
     ROS_INFO("max_boundingbox_side: %f", _max_boundingbox_side);
     private_nh.param("cluster_merge_threshold", _cluster_merge_threshold, 1.5);
@@ -1159,24 +1134,13 @@ int main(int argc, char **argv) {
     private_nh.param("remove_points_upto", _remove_points_upto, 0.0);
     ROS_INFO("remove_points_upto: %f", _remove_points_upto);
 
+    private_nh.param("segment_distance", _segment_distance, 0.75);
+    ROS_INFO("segment_distance: %f", _segment_distance);
+
     private_nh.param("use_gpu", _use_gpu, false);
     ROS_INFO("use_gpu: %d", _use_gpu);
 
     _velodyne_transform_available = false;
-
-    if (_clustering_distances.size() != 4) {
-        _clustering_distances = {15, 30, 45, 60};//maximum distance from sensor origin to separate segments
-    }
-    if (_clustering_thresholds.size() != 5) {
-        _clustering_thresholds = {0.5, 1.1, 1.6, 2.1, 2.6};//Nearest neighbor distance threshold for each segment
-    }
-
-    std::cout << "_clustering_thresholds: ";
-    for (auto i = _clustering_thresholds.begin(); i != _clustering_thresholds.end(); ++i) std::cout << *i << ' ';
-    std::cout << std::endl;
-    std::cout << "_clustering_distances: ";
-    for (auto i = _clustering_distances.begin(); i != _clustering_distances.end(); ++i) std::cout << *i << ' ';
-    std::cout << std::endl;
 
     // Create a ROS subscriber for the input point cloud
     ros::Subscriber sub = h.subscribe(points_topic, 1, velodyne_callback);

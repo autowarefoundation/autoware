@@ -15,8 +15,6 @@
 	<arg name="keep_lanes" default="false" />
 	<arg name="keep_lane_left_distance" default="3" />
 	<arg name="keep_lane_right_distance" default="3" />
-	<arg name="clustering_distances" default="[7,15,45,60]" /><!-- Distances to segment pointcloud -->
-	<arg name="clustering_thresholds" default="[0.1,0.2,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
 	<arg name="output_frame" default="map" />
 

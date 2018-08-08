@@ -15,10 +15,9 @@
 	<arg name="keep_lanes" default="false" />
 	<arg name="keep_lane_left_distance" default="5" />
 	<arg name="keep_lane_right_distance" default="5" />
-	<arg name="clustering_distances" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
-	<arg name="clustering_thresholds" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 	<arg name="max_boundingbox_side" default="10" />
 	<arg name="cluster_merge_threshold" default="1.5" />
+  <arg name="segment_distance" default="0.75" />
 
 	<arg name="use_vector_map" default="true" />
 	<arg name="vectormap_frame" default="map" />
@@ -55,6 +54,7 @@
 		<param name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)" />
 		<param name="wayarea_no_road_value" value="$(arg wayarea_no_road_value)" />
 		<param name="remove_points_upto" value="$(arg remove_points_upto)" />
+    <param name="segment_distance" value="$(arg segment_distance)" />
 		<param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
 		<param name="use_gpu" value="$(arg use_gpu)" />
 		<remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
