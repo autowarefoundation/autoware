@@ -31,19 +31,26 @@ ImmUkfPda::ImmUkfPda()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
 }
 
-void ImmUkfPda::callback(const autoware_msgs::CloudClusterArray& input)
+void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   autoware_msgs::CloudClusterArray transformed_input;
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
 
   // only transform pose(clusteArray.clusters.bouding_box.pose)
-  transformPoseToGlobal(input, transformed_input);
-  tracker(transformed_input, jskbboxes_output, detected_objects_output);
-  transformPoseToLocal(jskbboxes_output, detected_objects_output);
+  // transformPoseToGlobal(input, transformed_input);
+  // tracker(transformed_input, jskbboxes_output, detected_objects_output);
+  // transformPoseToLocal(jskbboxes_output, detected_objects_output);
+  makeJSKfromInput(input, jskbboxes_output);
 
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
+}
+
+void ImmUkfPda::makeJSKfromInput(const autoware_msgs::DetectedObjectArray& input,
+                                            jsk_recognition_msgs::BoundingBoxArray& transformed_input)
+{
+  
 }
 
 void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::CloudClusterArray& input,

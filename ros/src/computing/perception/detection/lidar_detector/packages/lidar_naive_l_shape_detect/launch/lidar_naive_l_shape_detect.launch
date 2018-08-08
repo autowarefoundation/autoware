@@ -1,0 +1,11 @@
+<!-- Launch file for L shape box fitting -->
+<launch>
+  <arg name="input_topic" default="cloud_clusters" /><!--CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
+	<arg name="output_topic" default="bbox_cloud_clusters" />
+  <node pkg="lidar_naive_l_shape_detect" type="lidar_naive_l_shape_detect"
+    name="lidar_naive_l_shape_detect" output="screen" >
+    <remap from="cloud_clusters" to="$(arg input_topic)" />
+    <remap from="bbox_cloud_clusters" to="$(arg output_topic)" />
+  </node>
+
+</launch>
