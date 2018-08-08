@@ -1,0 +1,60 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(lidar_fake_perception)
+
+add_compile_options(-std=c++11)
+
+find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
+  roscpp
+  tf
+  tf_conversions
+  pcl_ros
+  geometry_msgs
+  autoware_msgs
+)
+
+# find_package(Boost REQUIRED COMPONENTS system)
+
+## Generate messages in the 'msg' folder
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
+
+## Generate added messages and services with any dependencies listed here
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+# )
+
+catkin_package(
+  INCLUDE_DIRS include
+  CATKIN_DEPENDS
+    roscpp
+    tf
+    tf_conversions
+    pcl_ros
+    geometry_msgs
+    autoware_msgs
+)
+
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+)
+
+add_executable(lidar_fake_perception_node
+  nodes/lidar_fake_perception.cpp
+  nodes/lidar_fake_perception_node.cpp
+)
+target_link_libraries(lidar_fake_perception_node
+  ${catkin_LIBRARIES}
+)
+
+install(TARGETS
+  lidar_fake_perception_node
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
