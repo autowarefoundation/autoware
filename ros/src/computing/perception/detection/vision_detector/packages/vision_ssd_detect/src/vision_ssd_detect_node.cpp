@@ -32,8 +32,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include "autoware_msgs/image_obj.h"
 #include "autoware_msgs/ConfigSsd.h"
+#include "autoware_msgs/DetectedObject.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 
 #include <rect_class_score.h>
 
@@ -41,7 +42,9 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #if (CV_MAJOR_VERSION <= 2)
-#include <opencv2/contrib/contrib.hpp>
+    #include <opencv2/contrib/contrib.hpp>
+#else
+    #include "gencolors.cpp"
 #endif
 
 #include "vision_ssd_detect.h"
@@ -50,11 +53,11 @@ class RosSsdApp
 {
 	ros::Subscriber subscriber_image_raw_;
 	ros::Subscriber subscriber_ssd_config_;
-	ros::Publisher publisher_car_objects_;
-	ros::Publisher publisher_person_objects_;
+    ros::Publisher publisher_detected_objects_;
 	ros::NodeHandle node_handle_;
 
 	cv::Scalar pixel_mean_;
+    std::vector<cv::Scalar> colors_;
 
 	//Caffe based Object Detection ConvNet
 	SsdDetector* ssd_detector_;
@@ -71,40 +74,37 @@ class RosSsdApp
 	//vector of indices of the classes to search for
 	std::vector<unsigned int> detect_classes_;
 
-	void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::image_obj& out_message, cv::Mat& in_image, std::string in_class)
-	{
-		for (unsigned int i = 0; i < in_objects.size(); ++i)
-		{
-			if ( (in_objects[i].score > score_threshold_)
-				&& (	(in_class == "car" && (in_objects[i].class_type == Ssd::CAR || in_objects[i].class_type == Ssd::BUS))
-						|| (in_class == "person" && (in_objects[i].class_type == Ssd::PERSON || in_objects[i].class_type == Ssd::BICYCLE))
-					)
+	void convert_rect_to_detected_object(std::vector< RectClassScore<float> >& in_objects,
+                                         autoware_msgs::DetectedObjectArray& out_message,
+                                         cv::Mat& in_image)
+    {
+        for (unsigned int i = 0; i < in_objects.size(); ++i)
+        {
+            if (in_objects[i].score >= score_threshold_)
+            {
+                autoware_msgs::DetectedObject obj;
+                obj.header = out_message.header;
+                obj.id = i;
+                obj.label = in_objects[i].GetClassString();
+                obj.score = in_objects[i].score;
 
-				)//check if the score is larger than minimum required
-			{
-				//std::cout << in_objects[i].toString() << std::endl;
-				autoware_msgs::image_rect rect;
+                obj.color.r = colors_[in_objects[i].class_type].val[0];
+                obj.color.g = colors_[in_objects[i].class_type].val[1];
+                obj.color.b = colors_[in_objects[i].class_type].val[2];
+                obj.color.a = 1.0f;
 
-				rect.x = in_objects[i].x;
-				rect.y = in_objects[i].y;
-				rect.width = in_objects[i].w;
-				rect.height = in_objects[i].h;
-				if (in_objects[i].x < 0)
-					rect.x = 0;
-				if (in_objects[i].y < 0)
-					rect.y = 0;
-				if (in_objects[i].w < 0)
-					rect.width = 0;
-				if (in_objects[i].h < 0)
-					rect.height = 0;
+                obj.image_frame = out_message.header.frame_id;
+                obj.x = in_objects[i].x;
+                obj.y = in_objects[i].y;
+                obj.width = in_objects[i].w;
+                obj.height = in_objects[i].h;
 
-				rect.score = in_objects[i].score;
+                //obj.roi_image = in_image(cv::Rect(obj.x, obj.y, obj.width, obj.height));
 
-				out_message.obj.push_back(rect);
-
-			}
-		}
-	}
+                out_message.objects.push_back(obj);
+            }
+        }
+    }
 
 	void image_callback(const sensor_msgs::Image& image_source)
 	{
@@ -117,26 +117,17 @@ class RosSsdApp
 		//cv::TickMeter timer; timer.start();
 		//std::cout << "score:" << score_threshold_ << " slices:" << image_slices_ << " slices overlap:" << slices_overlap_ << "nms" << group_threshold_ << std::endl;
 		detections = ssd_detector_->Detect(image);
-
 		//timer.stop();
 		//std::cout << "Detection took: " << timer.getTimeMilli() << std::endl;
 
 		//Prepare Output message
-		autoware_msgs::image_obj output_car_message;
-		autoware_msgs::image_obj output_person_message;
-		output_car_message.header = image_source.header;
-		output_car_message.type = "car";
-
-		output_person_message.header = image_source.header;
-		output_person_message.type = "person";
-
 		//Convert Objects to Message type
 		//timer.reset(); timer.start();
-		convert_rect_to_image_obj(detections, output_car_message, image, "car");
-		convert_rect_to_image_obj(detections, output_person_message, image, "person");
+        autoware_msgs::DetectedObjectArray output_detected_message;
+        output_detected_message.header = image_source.header;
+        convert_rect_to_detected_object(detections, output_detected_message, image);
 
-		publisher_car_objects_.publish(output_car_message);
-		publisher_person_objects_.publish(output_person_message);
+		publisher_detected_objects_.publish(output_detected_message);
 	}
 
 
@@ -211,8 +202,13 @@ public:
 		}
 		ROS_INFO("SSD Detector initialized.");
 
-		publisher_car_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_car/image_obj", 1);
-		publisher_person_objects_ = node_handle_.advertise<autoware_msgs::image_obj>("/obj_person/image_obj", 1);
+        #if (CV_MAJOR_VERSION <= 2)
+            cv::generateColors(colors_, 20);
+        #else
+            generateColors(colors_, 20);
+        #endif
+
+        publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
 		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);

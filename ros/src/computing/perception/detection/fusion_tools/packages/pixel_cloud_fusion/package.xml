@@ -3,7 +3,7 @@
     <name>pixel_cloud_fusion</name>
     <version>1.0.0</version>
     <description>Pixel/Point Cloud fusion node</description>
-    <maintainer email="abraham.monrroy@tier4.com">Abraham Monrroy</maintainer>
+    <maintainer email="abraham.monrroy@tier4.jp">Abraham Monrroy</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
