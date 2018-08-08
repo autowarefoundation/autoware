@@ -142,15 +142,15 @@ subs :
             border : 16
             flags : [ all ]
 
-      - name : vision_yolo2_detect
-        desc : Yolo2 Image based detector
-        cmd  : roslaunch vision_yolo2_detect vision_yolo2_detect.launch
-        param: vision_yolo2_detect
+      - name : vision_darknet_yolo3
+        desc : Darknet Yolo3 Image based detector
+        cmd  : roslaunch vision_darknet_detect vision_yolo3_detect.launch
+        param: darknet_yolo3
 
-      - name : vision_yolo3_detect
-        desc : Yolo3 Image based detector
-        cmd  : roslaunch vision_yolo3_detect vision_yolo3_detect.launch
-        param: yolo3
+      - name : vision_darknet_yolo2
+        desc : Darknet Yolo2 Image based detector
+        cmd  : roslaunch vision_darknet_detect vision_yolo2_detect.launch
+        param: darknet_yolo2
 
 
     - name : vision_tracker
@@ -228,6 +228,18 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+
+    - name : fusion_tools
+      desc : fusion_tools
+      subs :
+      - name : pixel_cloud_fusion
+        desc : Creates a colored point cloud with the help of the intrinsic and extrinsic parameters
+        cmd  : roslaunch pixel_cloud_fusion pixel_cloud_fusion.launch
+        param: pixel_cloud_fusion_params
+      - name : range_vision_fusion
+        desc : Combines the 2D and 3D detection results
+        cmd  : roslaunch range_vision_fusion range_vision_fusion.launch
+        param: range_vision_fusion_params
 
     - name : lidar_tracker
       desc : lidar_tracker desc sample
@@ -3874,7 +3886,7 @@ params :
         dash      : ''
         delim     : ':='
 
-  - name  : vision_yolo2_detect
+  - name  : darknet_yolo3
     vars  :
     - name  : score_threshold
       desc  : Detections with a confidence value larger than this value will be displayed.
@@ -3906,7 +3918,7 @@ params :
       desc     : Configuration file defining the network
       label    : 'network_definition (cfg)'
       kind     : path
-      v        : $(echo $HOME)/darknet/cfg/yolo.cfg
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/yolov3.cfg
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3914,7 +3926,7 @@ params :
       desc     : Pre-trained  model
       label    : 'pre_trained_model (weights)'
       kind     : path
-      v        : $(echo $HOME)/darknet/data/yolo.weights
+      v        : $(rospack find vision_darknet_detect)/darknet/data/yolov3.weights
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3937,7 +3949,7 @@ params :
         dash         : ''
         delim        : ':='
 
-  - name  : yolo3
+  - name  : darknet_yolo2
     vars  :
     - name  : score_threshold
       desc  : Detections with a confidence value larger than this value will be displayed.
@@ -3969,7 +3981,7 @@ params :
       desc     : Configuration file defining the network
       label    : 'network_definition (cfg)'
       kind     : path
-      v        : $(rospack find vision_yolo3_detect)/darknet/cfg/yolov3.cfg
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/yolov2.cfg
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3977,7 +3989,7 @@ params :
       desc     : Pre-trained  model
       label    : 'pre_trained_model (weights)'
       kind     : path
-      v        : $(rospack find vision_yolo3_detect)/darknet/data/yolov3.weights
+      v        : $(rospack find vision_darknet_detect)/darknet/data/yolov2.weights
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4222,3 +4234,67 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+
+  - name  : pixel_cloud_fusion_params
+    vars  :
+    - name  : points_src
+      desc  : Point cloud source topic
+      label : points_src
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : image_src
+      desc  : Image source topic
+      label : image_src
+      kind  : str
+      v     : /image_raw
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : camera_info_src
+      desc  : CameraInfo source topic
+      label : camera_info_src
+      kind  : str
+      v     : /camera_info
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+
+  - name  : range_vision_fusion_params
+    vars  :
+    - name  : detected_objects_range
+      desc  : Point cloud source topic
+      label : detected_objects_range
+      kind  : str
+      v     : /detection/lidar_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : detected_objects_vision
+      desc  : Image source topic
+      label : detected_objects_vision
+      kind  : str
+      v     : /detection/vision_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : camera_info_src
+      desc  : CameraInfo source topic
+      label : camera_info_src
+      kind  : str
+      v     : /camera_info
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : sync_topics
+      desc  : Defines if synchronization is performed on the detection source topics
+      label : sync_topics
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
