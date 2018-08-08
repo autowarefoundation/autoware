@@ -21,7 +21,7 @@ ImmUkfPda::ImmUkfPda()
   init_                       = false;
   use_vectormap_              = false;
   use_sukf_                   = false;
-  use_robust_adaptive_filter_ = false;
+  use_robust_adaptive_filter_ = true;
   // assign unique ukf_id_ to each tracking targets
   target_id_ = 0;
 }
@@ -58,7 +58,6 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
   // relayJskbbox(input, jskbboxes_output);
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
-
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
 
@@ -150,11 +149,13 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
                                       std::vector<autoware_msgs::DetectedObject>& object_vec,
                                       std::vector<bool>& matching_vec)
 {
+  // alert: different from original imm-pda filter, here picking most likely measurement
+  // if making it allows to have more than one measurement, you will see non semipositive definite covariance
+
   int count = 0;
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::DetectedObject smallest_meas_object;
-  // std::cout << "ukf id "<<target.ukf_id_ << std::endl;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -173,22 +174,16 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
       // std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
       count++;
       if (matching_vec[i] == false)
+      {
         target.lifetime_++;
-      // pick one meas with smallest nis
-      if (second_init)
-      {
-        if (nis < smallest_nis)
-        {
-          smallest_nis = nis;
-          smallest_meas_object = input.objects[i];
-          matching_vec[i] = true;
-          second_init_done = true;
-        }
       }
-      else
+
+      if (nis < smallest_nis)
       {
-        object_vec.push_back(input.objects[i]);
+        smallest_nis = nis;
+        smallest_meas_object = input.objects[i];
         matching_vec[i] = true;
+        second_init_done = true;
       }
     }
   }
@@ -454,21 +449,33 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
                                              const double det_explode_param, std::vector<bool>& matching_vec,
                                              std::vector<autoware_msgs::DetectedObject>& object_vec, IMM_RAUKF& target, bool& is_skip_target)
 {
+  double det_s = 0;
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
   is_skip_target = false;
-  // find maxDetS associated with predZ
-  target.findMaxZandS(max_det_z, max_det_s);
 
-  double det_s = max_det_s.determinant();
 
-  max_det_z = target.z_pred_ctrv_;
-  max_det_s = target.s_ctrv_;
-  det_s     = max_det_s.determinant();
+  if(use_sukf_)
+  {
+    max_det_z = target.z_pred_ctrv_;
+    max_det_s = target.s_ctrv_;
+    det_s     = max_det_s.determinant();
+  }
+  else
+  {
+    // find maxDetS associated with predZ
+    target.findMaxZandS(max_det_z, max_det_s);
+    det_s = max_det_s.determinant();
+  }
 
   // prevent ukf not to explode
   if (std::isnan(det_s) || det_s > det_explode_param)
   {
+    std::cout << "max det z" << std::endl << max_det_z << std::endl;
+    std::cout << "max det s" << std::endl << max_det_s << std::endl;
+    std::cout << "x cv " << std::endl << target.x_cv_ << std::endl;
+    std::cout << "x ctrv " << std::endl << target.x_ctrv_ << std::endl;
+    std::cout << "x rm " << std::endl << target.x_rm_ << std::endl;
     std::cout << target.ukf_id_ <<" target lost because of det explode" << std::endl;
     target.tracking_num_ = TrackingState::Die;
     is_skip_target = true;
@@ -779,7 +786,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
+    std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
     // std::cout << "target lifiteme " << targets_[i].lifetime_ << std::endl;
     // std::cout << "target tracking num " << targets_[i].tracking_num_ << std::endl;
     // reset is_vis_bb_ to false
@@ -839,6 +846,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // std::cout << "x " << std::endl<<targets_[i].x_ctrv_ << std::endl;
     // std::cout << "p " << std::endl<<targets_[i].p_ctrv_ << std::endl;
     // std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
+    std::cout << "mode prob " << targets_[i].mode_prob_cv_ << " " << targets_[i].mode_prob_ctrv_ << " " << targets_[i].mode_prob_rm_ << std::endl;
+
   }
   // end UKF process
 
