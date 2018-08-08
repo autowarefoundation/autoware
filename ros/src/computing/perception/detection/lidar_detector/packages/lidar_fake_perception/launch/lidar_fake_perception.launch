@@ -1,21 +1,33 @@
 <!--  -->
 <launch>
 
+  <!-- publisher -->
   <arg name="initial_pose_topic" value="/move_base_simple/goal" />
   <arg name="real_objects_topic" value="/detected_objects" />
   <arg name="real_points_topic" value="/points_raw" />
+  <arg name="fake_twist_topic" value="/fake_twist" />
+
+  <!-- subscriber -->
   <arg name="fake_objects_topic" value="/fake_objects" />
   <arg name="fake_points_topic" value="/fake_points" />
 
+  <!-- param, publishing -->
   <arg name="publish_object" value="true" />
   <arg name="publish_points" value="true" />
   <arg name="publish_rate" value="10.0" />
+
+  <!-- param, object shape -->
   <arg name="object_length" value="5.0" />
   <arg name="object_width" value="2.0" />
   <arg name="object_height" value="2.0" />
-  <arg name="object_z_offset" value="0.0" />
+  <arg name="object_z_offset" value="-2.0" />
+
+  <!-- param, object motion -->
+  <arg name="use_fake_twist" value="true" />
   <arg name="object_velocity" value="3.0" />
   <arg name="object_angular_velocity" value="0.0" />
+
+  <!-- param, object meta-info -->
   <arg name="object_intensity" value="100.0" />
   <arg name="object_lifetime" value="-1" />
   <arg name="object_points_space" value="0.2" />
@@ -26,6 +38,8 @@
     <remap from="/move_base_simple/goal" to="$(arg initial_pose_topic)" />
     <remap from="/detected_objects" to="$(arg real_objects_topic)" />
     <remap from="/points_raw" to="$(arg real_points_topic)" />
+    <remap from="/fake_twist" to="$(arg fake_twist_topic)" />
+
     <remap from="/fake_objects" to="$(arg fake_objects_topic)" />
     <remap from="/fake_points" to="$(arg fake_points_topic)" />
 
@@ -36,8 +50,11 @@
     <param name="object_width" value="$(arg object_width)" />
     <param name="object_height" value="$(arg object_height)" />
     <param name="object_z_offset" value="$(arg object_z_offset)" />
+
+    <param name="use_fake_twist" value="$(arg use_fake_twist)" />
     <param name="object_velocity" value="$(arg object_velocity)" />
     <param name="object_angular_velocity" value="$(arg object_angular_velocity)" />
+
     <param name="object_intensity" value="$(arg object_intensity)" />
     <param name="object_lifetime" value="$(arg object_lifetime)" />
     <param name="object_points_space" value="$(arg object_points_space)" />

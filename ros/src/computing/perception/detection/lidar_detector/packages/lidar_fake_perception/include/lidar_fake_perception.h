@@ -11,6 +11,7 @@
 #include <tf/transform_listener.h>
 #include <tf_conversions/tf_eigen.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <autoware_msgs/DetectedObject.h>
 #include <autoware_msgs/DetectedObjectArray.h>
@@ -43,22 +44,30 @@ private:
 
   // subscriber
   ros::Subscriber object_initial_pose_sub_;
-  ros::Subscriber objects_sub_;
-  ros::Subscriber points_sub_;
+  ros::Subscriber real_objects_sub_;
+  ros::Subscriber real_points_sub_;
+  ros::Subscriber fake_twist_sub_;
 
   // tf
   tf::TransformListener tf_listener_;
 
-  // rosparam
+  // param, publishing
   bool publish_object_;
   bool publish_points_;
   double publish_rate_;   // [Hz]
+
+  // param, object shape
   double object_length_;  // [m]
   double object_width_;  // [m]
   double object_height_;  // [m]
   double object_z_offset_;  // [m]
+
+  // param, object motion
+  bool use_fake_twist_;
   double object_velocity_;  // [m/s]
   double object_angular_velocity_;  // [rad/s]
+
+  // param, object meta-info
   double object_intensity_;  // 0-255 [-]
   double object_lifetime_;  // minus value -> inifinity [s]
   double object_points_space_;  // [m]
@@ -71,18 +80,23 @@ private:
   ros::Time fake_object_initial_time_;
   std::string global_frame_;
   tf::Transform fake_object_pose_;  // global
+  geometry_msgs::Twist fake_object_twist_;
   autoware_msgs::DetectedObject fake_object_;
   autoware_msgs::DetectedObjectArray fake_objects_;
   autoware_msgs::DetectedObjectArray real_objects_;
   PointCloudT fake_points_;
   PointCloudT real_points_;
 
-
+  // functions, callback
   void objectInitialPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
   void objectsCallback(const autoware_msgs::DetectedObjectArray& msg);
   void pointsCallback(const sensor_msgs::PointCloud2& msg);
+  void twistCallback(const geometry_msgs::Twist& msg);
+
+  // functions, mainloop
   void updateFakes();
   bool updateFakeObject();
+  void updatePose(const double& dt, const geometry_msgs::Twist& twist, tf::Transform& tf);
   void updateFakePoints();
   void convertObjectToPoints(const autoware_msgs::DetectedObject& obj, PointCloudT& points);
   void publishFakes();
