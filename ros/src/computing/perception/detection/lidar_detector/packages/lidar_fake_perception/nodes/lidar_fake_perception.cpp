@@ -9,9 +9,9 @@ LidarFakePerception::LidarFakePerception() : nh_(), private_nh_("~")
   private_nh_.param<bool>("publish_points", publish_points_, true);
   private_nh_.param<double>("publish_rate", publish_rate_, 10.0);
 
-  private_nh_.param<double>("object_length", object_length_, 5.0);
-  private_nh_.param<double>("object_width", object_width_, 2.0);
-  private_nh_.param<double>("object_height", object_height_, 2.0);
+  private_nh_.param<double>("object_length", object_length_, 4.8);
+  private_nh_.param<double>("object_width", object_width_, 1.8);
+  private_nh_.param<double>("object_height", object_height_, 1.8);
   private_nh_.param<double>("object_z_offset", object_z_offset_, 0.0);
 
   private_nh_.param<bool>("use_fake_twist", use_fake_twist_, false);

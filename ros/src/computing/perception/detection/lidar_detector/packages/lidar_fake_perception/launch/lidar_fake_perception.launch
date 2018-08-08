@@ -17,13 +17,13 @@
   <arg name="publish_rate" default="10.0" />
 
   <!-- param, object shape -->
-  <arg name="object_length" default="5.0" />
-  <arg name="object_width" default="2.0" />
-  <arg name="object_height" default="2.0" />
+  <arg name="object_length" default="4.8" />
+  <arg name="object_width" default="1.8" />
+  <arg name="object_height" default="1.8" />
   <arg name="object_z_offset" default="-2.0" />
 
   <!-- param, object motion -->
-  <arg name="use_fake_twist" default="true" />
+  <arg name="use_fake_twist" default="false" />
   <arg name="object_velocity" default="3.0" />
   <arg name="object_angular_velocity" default="0.0" />
 
