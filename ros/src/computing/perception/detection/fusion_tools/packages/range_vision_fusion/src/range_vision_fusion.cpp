@@ -134,15 +134,22 @@ cv::Rect RosRangeVisionFusionApp::ProjectDetectionToRect(const autoware_msgs::De
 
 void
 RosRangeVisionFusionApp::TransformRangeToVision(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
-                                                      autoware_msgs::DetectedObjectArray &out_range_detections)
+                                                      autoware_msgs::DetectedObjectArray &out_in_cv_range_detections,
+                                                      autoware_msgs::DetectedObjectArray &out_out_cv_range_detections)
 {
-    out_range_detections.header = in_range_detections->header;
-    out_range_detections.objects.clear();
+    out_in_cv_range_detections.header = in_range_detections->header;
+    out_in_cv_range_detections.objects.clear();
+    out_out_cv_range_detections.header = in_range_detections->header;
+    out_out_cv_range_detections.objects.clear();
     for (size_t i= 0; i < in_range_detections->objects.size(); i++)
     {
         if(IsObjectInImage(in_range_detections->objects[i]))
         {
-            out_range_detections.objects.push_back(in_range_detections->objects[i]);
+            out_in_cv_range_detections.objects.push_back(in_range_detections->objects[i]);
+        }
+        else
+        {
+            out_out_cv_range_detections.objects.push_back(in_range_detections->objects[i]);
         }
     }
 }
@@ -174,17 +181,14 @@ RosRangeVisionFusionApp::CalculateObjectFeatures(autoware_msgs::DetectedObject &
         if(point.y>max_y)	max_y = point.y;
         if(point.z>max_z)	max_z = point.z;
 
-        //convex hull
         cv::Point2f pt;
         pt.x = point.x;
         pt.y = point.y;
         object_2d_points.push_back(pt);
     }
-    //min, max points
     min_point.x = min_x;	min_point.y = min_y;	min_point.z = min_z;
     max_point.x = max_x;	max_point.y = max_y;	max_point.z = max_z;
 
-    //calculate centroid, average
     if (in_cloud.points.size() > 0)
     {
         centroid.x /= in_cloud.points.size();
@@ -198,12 +202,10 @@ RosRangeVisionFusionApp::CalculateObjectFeatures(autoware_msgs::DetectedObject &
 
     average_point.x = average_x; average_point.y = average_y;	average_point.z = average_z;
 
-    //calculate bounding box
     length = max_point.x - min_point.x;
     width = max_point.y - min_point.y;
     height = max_point.z - min_point.z;
 
-    //calculate hull
     geometry_msgs::PolygonStamped  convex_hull;
     std::vector<cv::Point2f> hull_points;
     if (object_2d_points.size() > 0)
@@ -291,7 +293,8 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
 {
 
     autoware_msgs::DetectedObjectArray range_in_cv;
-    TransformRangeToVision(in_range_detections, range_in_cv);
+    autoware_msgs::DetectedObjectArray range_out_cv;
+    TransformRangeToVision(in_range_detections, range_in_cv, range_out_cv);
 
     autoware_msgs::DetectedObjectArray fused_objects;
     fused_objects.header = in_range_detections->header;
@@ -352,27 +355,6 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
         }
     }
 
-    autoware_msgs::DetectedObjectArray all_objects;
-    all_objects.header = in_range_detections->header;
-    for(size_t i_in_range_object = 0; i_in_range_object < in_range_detections->objects.size(); i_in_range_object++)
-    {
-      bool is_fused_object= false;
-      for(size_t i_fused_object = 0; i_fused_object < fused_objects.objects.size(); i_fused_object++)
-      {
-        if(in_range_detections->objects[i_in_range_object].id == fused_objects.objects[i_fused_object].id)
-        {
-          all_objects.objects.push_back(fused_objects.objects[i_fused_object]);
-          is_fused_object = true;
-          break;
-        }
-      }
-      if(!is_fused_object)
-      {
-        all_objects.objects.push_back(in_range_detections->objects[i_in_range_object]);
-      }
-    }
-    fused_objects = all_objects;
-
     /*
     for(size_t i = 0; i < vision_range_assignments.size(); i++)
     {
@@ -392,16 +374,13 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
             CalculateObjectFeatures(merged_object, true);
             fused_objects.objects.push_back(merged_object);
         }
-    }
+    }*/
 
     //add objects outside image
-    for(size_t i=0; i < range_in_cv.objects.size(); i++)
+    for(size_t i=0; i < range_out_cv.objects.size(); i++)
     {
-        if (!used_range_detections[i])
-        {
-            fused_objects.objects.push_back(range_in_cv.objects[i]);
-        }
-    }*/
+        fused_objects.objects.push_back(range_out_cv.objects[i]);
+    }
 
     return fused_objects;
 }
@@ -427,6 +406,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         }
         return;
     }
+
     if (!camera_lidar_tf_ok_)
     {
         camera_lidar_tf_ = FindTransform(image_frame_id_,
@@ -461,29 +441,28 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
 
     for(const autoware_msgs::DetectedObject& object : in_objects.objects)
     {
-      if(object.label == "unknown")
-      {
-        continue;
-      }
-        visualization_msgs::Marker marker;
-        marker.header = in_objects.header;
-        marker.ns = "range_vision_fusion";
-        marker.id = object.id;
-        marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-        marker.scale.z = 1.0;
-        marker.text = object.label;
-        marker.pose.position = object.pose.position;
-        marker.pose.position.z += 1.5;
-        marker.color.r = 1.0;
-        marker.color.g = 1.0;
-        marker.color.b = 1.0;
-        marker.color.a = 1.0;
-        marker.scale.x = 1.5;
-        marker.scale.y = 1.5;
-        marker.scale.z = 1.5;
+        if (object.label != "unknown")
+        {
+            visualization_msgs::Marker marker;
+            marker.header = in_objects.header;
+            marker.ns = "range_vision_fusion";
+            marker.id = object.id;
+            marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+            marker.scale.z = 1.0;
+            marker.text = object.label;
+            marker.pose.position = object.pose.position;
+            marker.pose.position.z += 1.5;
+            marker.color.r = 1.0;
+            marker.color.g = 1.0;
+            marker.color.b = 1.0;
+            marker.color.a = 1.0;
+            marker.scale.x = 1.5;
+            marker.scale.y = 1.5;
+            marker.scale.z = 1.5;
 
-        marker.lifetime = ros::Duration(0.1);
-        final_markers.markers.push_back(marker);
+            marker.lifetime = ros::Duration(0.1);
+            final_markers.markers.push_back(marker);
+        }
     }
     return final_markers;
 }
@@ -615,7 +594,7 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detection/vision_objects");
     ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
 
-    in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera0_rotated/camera_info");
+    in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
     ROS_INFO("[%s] camera_info_src: %s", __APP_NAME__, camera_info_src.c_str());
 
     in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.5);

@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
         autoware_msgs
+        autoware_build_flags
         jsk_recognition_utils
         eigen_conversions
         tf_conversions
@@ -34,7 +35,7 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS

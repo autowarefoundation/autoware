@@ -137,7 +137,8 @@ class RosRangeVisionFusionApp
     bool IsObjectInImage(const autoware_msgs::DetectedObject &in_detection);
 
     void TransformRangeToVision(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
-                                autoware_msgs::DetectedObjectArray &out_range_detections);
+                                autoware_msgs::DetectedObjectArray &out_range_detections,
+                                autoware_msgs::DetectedObjectArray &out_out_cv_range_detections);
 
     autoware_msgs::DetectedObject TransformObject(const autoware_msgs::DetectedObject &in_detection,
                                                    const tf::StampedTransform& in_transform);

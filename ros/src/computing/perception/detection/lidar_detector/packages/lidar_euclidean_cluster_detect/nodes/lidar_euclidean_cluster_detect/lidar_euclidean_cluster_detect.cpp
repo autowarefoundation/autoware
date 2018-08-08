@@ -620,23 +620,6 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
         else { cloud_segments_array[4]->points.push_back(current_point); }
     }
 
-//     std::vector<ClusterPtr> all_clusters;
-//     for (unsigned int i = 0; i < cloud_segments_array.size(); i++) {
-// #ifdef GPU_CLUSTERING
-//         std::vector<ClusterPtr> local_clusters;
-//         if (_use_gpu) {
-//             local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
-//                                                 in_out_centroids, _clustering_thresholds[i]);
-//         } else {
-//             local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
-//                                              in_out_centroids, _clustering_thresholds[i]);
-//         }
-// #else
-//         std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
-// #endif
-//         all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
-//     }
-
     #ifdef GPU_CLUSTERING
     std::vector<ClusterPtr> all_clusters;
      if (_use_gpu) {
