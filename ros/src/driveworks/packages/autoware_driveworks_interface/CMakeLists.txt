@@ -43,6 +43,11 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
             /usr/lib/
             lib
             /usr/local/driveworks/lib/
+            ${DRIVEWORKS_TOOLKIT_TARGET_DIR}/lib
+            ${CUDA_TOOLKIT_TARGET_DIR}/lib
+            ${CUDA_TOOLKIT_TARGET_DIR}/lib/stubs
+            ${NVIDIA_DRIVE_SDK_TARGET_DIR}/usr/lib
+            ${NVIDIA_TENSORRT_TARGET_DIR}/lib
     )
 
     add_executable(gmsl_interface
@@ -55,7 +60,10 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
 
     target_link_libraries(gmsl_interface
             ${catkin_LIBRARIES}
-            -lautoware_driveworks
+            autoware_driveworks
+            driveworks
+            cudart
+            cuda
             )
 
     add_executable(tensorrt_interface
@@ -68,7 +76,10 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
 
     target_link_libraries(tensorrt_interface
             ${catkin_LIBRARIES}
-            -lautoware_driveworks
+            autoware_driveworks
+            driveworks
+            cudart
+            cuda
             )
 ELSE()
     message("autoware_driveworks_interface won't be built, CUDA and aarch64 are required.")
