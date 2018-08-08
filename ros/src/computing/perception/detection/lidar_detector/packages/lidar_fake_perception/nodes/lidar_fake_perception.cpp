@@ -105,6 +105,7 @@ void LidarFakePerception::updateFakes()
     if (updateFakeObject())
     {
       updateFakePoints();
+      fake_objects_.objects.push_back(fake_object_);
     }
   }
 }
@@ -120,7 +121,7 @@ bool LidarFakePerception::updateFakeObject()
     }
   }
 
-  // world -> sensor frame
+  // obtain world -> sensor frame
   tf::StampedTransform global2local;
   try
   {
@@ -134,19 +135,20 @@ bool LidarFakePerception::updateFakeObject()
   }
 
   // update pose
+  geometry_msgs::Twist twist;
   if (use_fake_twist_)
   {
     // update pose by subscribed twist
-    updatePose(1./publish_rate_, fake_object_twist_, fake_object_pose_);
+    twist = fake_object_twist_;
   }
   else
   {
     // update pose by rosparam
-    geometry_msgs::Twist twist;
     twist.linear.x = object_velocity_;
     twist.angular.z = object_angular_velocity_;
-    updatePose(1./publish_rate_, twist, fake_object_pose_);
+
   }
+  updatePose(1./publish_rate_, twist, fake_object_pose_);
 
   // fix height
   tf::Vector3 objpos = fake_object_pose_.getOrigin();
@@ -160,10 +162,9 @@ bool LidarFakePerception::updateFakeObject()
   fake_object_.dimensions.x = object_length_;
   fake_object_.dimensions.y = object_width_;
   fake_object_.dimensions.z = object_height_;
-  fake_object_.velocity.linear.x = object_velocity_;
-  fake_object_.velocity.angular.z = object_angular_velocity_;
+  fake_object_.velocity = twist;
+  fake_object_.acceleration = geometry_msgs::Twist();  // NOTE: by constant velocity model
   tf::poseTFToMsg(global2local.inverse() * fake_object_pose_, fake_object_.pose); // local
-  fake_objects_.objects.push_back(fake_object_);
 
   // debug
   double r, p, y;
@@ -190,6 +191,7 @@ void LidarFakePerception::updateFakePoints()
   convertObjectToPoints(fake_object_, points);
   fake_points_ += points;
   fake_points_.header = pcl_conversions::toPCL(fake_object_.header);
+  pcl::toROSMsg(fake_points_, fake_object_.pointcloud);
 }
 
 void LidarFakePerception::convertObjectToPoints(const autoware_msgs::DetectedObject& obj, PointCloudT& points)
