@@ -20,6 +20,7 @@
 #include <QStringList>
 #include <QWidget>
 #include <QEvent>
+#include <autoware_msgs/DetectedObjectArray.h>
 
 #include "convert_image.h"
 #include "ui_image_viewer_form.h"
@@ -48,9 +49,7 @@ namespace integrated_viewer
     
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
-    void ImageObjCallback(const autoware_msgs::image_obj::ConstPtr& msg);
-    void ImageObjRangedCallback(const autoware_msgs::image_obj_ranged::ConstPtr& msg);
-    void ImageObjTrackedCallback(const autoware_msgs::image_obj_tracked::ConstPtr& msg);
+    void DetectedObjCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &msg);
     void PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg);
     void LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg);
 
@@ -59,16 +58,12 @@ namespace integrated_viewer
 
     // The data type of the topic that will be shown in each combo box
     static const QString kImageDataType;
-    static const QString kRectDataTypeBase;
+    static const QString kDetectedObjectDataTypeBase;
     static const QString kPointDataType;
     static const QString kLaneDataType;
 
     // The blank topic name
     static const QString kBlankTopic;
-
-    // The base topic name of detection result rectangles
-    static const std::string  kRectDataTypeImageObjRanged;
-    static const std::string  kRectDataTypeImageObjTracked;
 
     // The ROS node handle.
     ros::NodeHandle node_handle_;
@@ -89,13 +84,8 @@ namespace integrated_viewer
 
     // Data pointer to hold subscribed data
     autoware_msgs::PointsImage::ConstPtr points_msg_;
-    autoware_msgs::image_obj::ConstPtr image_obj_msg_;
-    autoware_msgs::image_obj_ranged::ConstPtr image_obj_ranged_msg_;
-    autoware_msgs::image_obj_tracked::ConstPtr image_obj_tracked_msg_;
+    autoware_msgs::DetectedObjectArray::ConstPtr detected_objects_msg_;
     autoware_msgs::ImageLaneObjects::ConstPtr lane_msg_;
-
-    // data structure to hold topic information for detection result
-    std::map<std::string, std::string> rect_topic_info_;
 
     // The helper-class constructor for drawing
     DrawRects rects_drawer_;
