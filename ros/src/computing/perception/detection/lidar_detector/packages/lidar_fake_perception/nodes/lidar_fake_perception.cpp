@@ -25,7 +25,8 @@ LidarFakePerception::LidarFakePerception() : nh_(), private_nh_("~")
   private_nh_.param<std::string>("object_label", object_label_, "Stable");
   private_nh_.param<std::string>("object_frame", object_frame_, "velodyne");
 
-  object_initial_pose_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &LidarFakePerception::objectInitialPoseCallback, this);
+  object_initial_pose_sub_ =
+      nh_.subscribe("/move_base_simple/goal", 1, &LidarFakePerception::objectInitialPoseCallback, this);
   real_objects_sub_ = nh_.subscribe("/detected_objects", 1, &LidarFakePerception::objectsCallback, this);
   real_points_sub_ = nh_.subscribe("/points_raw", 1, &LidarFakePerception::pointsCallback, this);
   fake_twist_sub_ = nh_.subscribe("/fake_twist", 1, &LidarFakePerception::twistCallback, this);
@@ -33,7 +34,7 @@ LidarFakePerception::LidarFakePerception() : nh_(), private_nh_("~")
   fake_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/fake_objects", 1);
   fake_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/fake_points", 1);
 
-  fake_object_id_ = 0;  // overwritten by real object ids
+  fake_object_id_ = 0;      // overwritten by real object ids
   global_frame_ = "world";  // overwritten by object initial pose
 
   fake_object_pose_initialized_ = false;
@@ -91,7 +92,7 @@ void LidarFakePerception::updateFakes()
   {
     fake_objects_.objects.resize(real_objects_.objects.size());
     std::copy(real_objects_.objects.begin(), real_objects_.objects.end(), fake_objects_.objects.begin());
-    fake_object_id_ = (real_objects_.objects.end()-1)->id + 1;  // using incremented id
+    fake_object_id_ = (real_objects_.objects.end() - 1)->id + 1;  // using incremented id
   }
 
   if (real_points_.size() != 0)
@@ -146,13 +147,12 @@ bool LidarFakePerception::updateFakeObject()
     // update pose by rosparam
     twist.linear.x = object_velocity_;
     twist.angular.z = object_angular_velocity_;
-
   }
-  updatePose(1./publish_rate_, twist, fake_object_pose_);
+  updatePose(1. / publish_rate_, twist, fake_object_pose_);
 
   // fix height
   tf::Vector3 objpos = fake_object_pose_.getOrigin();
-  fake_object_pose_.setOrigin(tf::Vector3(objpos.x(), objpos.y(), object_z_offset_+ object_height_/2.));
+  fake_object_pose_.setOrigin(tf::Vector3(objpos.x(), objpos.y(), object_z_offset_ + object_height_ / 2.));
 
   // update msg
   fake_object_.header.stamp = ros::Time::now();
@@ -163,13 +163,8 @@ bool LidarFakePerception::updateFakeObject()
   fake_object_.dimensions.y = object_width_;
   fake_object_.dimensions.z = object_height_;
   fake_object_.velocity = twist;
-  fake_object_.acceleration = geometry_msgs::Twist();  // NOTE: by constant velocity model
-  tf::poseTFToMsg(global2local.inverse() * fake_object_pose_, fake_object_.pose); // local
-
-  // debug
-  double r, p, y;
-  (global2local.inverse()*fake_object_pose_).getBasis().getRPY(r, p, y);
-  fake_object_.velocity.linear.y = y;
+  fake_object_.acceleration = geometry_msgs::Twist();                              // NOTE: by constant velocity model
+  tf::poseTFToMsg(global2local.inverse() * fake_object_pose_, fake_object_.pose);  // local
 
   return true;
 }
@@ -179,10 +174,10 @@ void LidarFakePerception::updatePose(const double& dt, const geometry_msgs::Twis
   // update pose by constant velocity model
   tf::Transform dpose;
   tf::Quaternion dquat;
-  dpose.setOrigin(tf::Vector3(twist.linear.x*dt, twist.linear.y*dt, twist.linear.z*dt));
-  dquat.setRPY(twist.angular.x*dt, twist.angular.y*dt, twist.angular.z*dt);
+  dpose.setOrigin(tf::Vector3(twist.linear.x * dt, twist.linear.y * dt, twist.linear.z * dt));
+  dquat.setRPY(twist.angular.x * dt, twist.angular.y * dt, twist.angular.z * dt);
   dpose.setRotation(dquat);
-  fake_object_pose_ *= dpose; // transform
+  fake_object_pose_ *= dpose;  // transform
 }
 
 void LidarFakePerception::updateFakePoints()

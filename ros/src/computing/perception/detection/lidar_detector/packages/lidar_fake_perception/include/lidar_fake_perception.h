@@ -39,14 +39,14 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher fake_objects_pub_; // output objects, input and fake object are merged
-  ros::Publisher fake_points_pub_;  // output points, input and fake points are merged
+  ros::Publisher fake_objects_pub_;  // output objects, input and fake object are merged
+  ros::Publisher fake_points_pub_;   // output points, input and fake points are merged
 
   // subscriber
-  ros::Subscriber object_initial_pose_sub_; // initial fake object pose
-  ros::Subscriber real_objects_sub_;  // input objects
-  ros::Subscriber real_points_sub_; // input points
-  ros::Subscriber fake_twist_sub_;  // input twist command, controlling fake object
+  ros::Subscriber object_initial_pose_sub_;  // initial fake object pose
+  ros::Subscriber real_objects_sub_;         // input objects
+  ros::Subscriber real_points_sub_;          // input points
+  ros::Subscriber fake_twist_sub_;           // input twist command, controlling fake object
 
   // tf
   tf::TransformListener tf_listener_;
@@ -57,22 +57,23 @@ private:
   double publish_rate_;   // publish rate of fake objects/points [Hz]
 
   // param, object shape
-  double object_length_;  // length [m]
-  double object_width_;   // width [m]
-  double object_height_;  // height [m]
+  double object_length_;    // length [m]
+  double object_width_;     // width [m]
+  double object_height_;    // height [m]
   double object_z_offset_;  // offset from global frame [m]
 
   // param, object motion
-  bool use_fake_twist_;   // using subscribed twist
-  double object_velocity_;  // constant velocity instead of subscribed twist [m/s]
+  bool use_fake_twist_;             // using subscribed twist
+  double object_velocity_;          // constant velocity instead of subscribed twist [m/s]
   double object_angular_velocity_;  // constant angular velocity instead of subscribed twist [rad/s]
 
   // param, object meta-info
   double object_intensity_;  // constant intensity value of fake points, 0-255 [-]
-  double object_lifetime_;  // object meta-info, fake object lifetime (NOTE: when this is negative value, lifetime is inifinity) [s]
+  double object_lifetime_;   // object meta-info, fake object lifetime (NOTE: when this is negative value, lifetime is
+                             // inifinity) [s]
   double object_points_space_;  // fake points space [m]
-  std::string object_label_;  // fake object label (e.g. tracking state)
-  std::string object_frame_;  // fake object frame_id (NOTE: not affected to input object)
+  std::string object_label_;    // fake object label (e.g. tracking state)
+  std::string object_frame_;    // fake object frame_id (NOTE: not affected to input object)
 
   // variables
   int fake_object_id_;
