@@ -17,5 +17,5 @@ $ ./build_cross_image.sh aarch64
 $ cd Autoware/ros/
 
 # aarch64
-$ ./catkin_make_release_aarch64
+$ ./catkin_make_release_cross aarch64
 ```
