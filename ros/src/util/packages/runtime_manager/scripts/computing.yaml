@@ -1017,7 +1017,7 @@ params :
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
-      v       : /detection/lidar_objects
+      v       : /cloud_clusters
       cmd_param :
         dash        : ''
         delim       : ':='
