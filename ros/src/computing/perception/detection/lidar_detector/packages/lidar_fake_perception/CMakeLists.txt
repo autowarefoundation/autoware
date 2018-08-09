@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   pcl_ros
+  sensor_msgs
   geometry_msgs
   autoware_msgs
 )
@@ -16,12 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
-    roscpp
-    tf
-    tf_conversions
-    pcl_ros
-    geometry_msgs
-    autoware_msgs
+  roscpp
+  tf
+  tf_conversions
+  pcl_ros
+  sensor_msgs
+  geometry_msgs
+  autoware_msgs
 )
 
 include_directories(

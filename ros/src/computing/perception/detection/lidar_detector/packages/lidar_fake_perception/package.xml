@@ -11,6 +11,7 @@
   <author email="aohsato@gmail.com">Akihito Ohsato</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
 
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
