@@ -60,7 +60,7 @@ private:
   double object_length_;    // length [m]
   double object_width_;     // width [m]
   double object_height_;    // height [m]
-  double object_z_offset_;  // offset from global frame [m]
+  double object_z_offset_;  // z offset from global frame [m]
 
   // param, object motion
   bool use_fake_twist_;             // using subscribed twist
@@ -69,8 +69,7 @@ private:
 
   // param, object meta-info
   double object_intensity_;  // constant intensity value of fake points, 0-255 [-]
-  double object_lifetime_;   // object meta-info, fake object lifetime (NOTE: when this is negative value, lifetime is
-                             // inifinity) [s]
+  double object_lifetime_;   // fake object lifetime (NOTE: when this is negative value, lifetime is inifinity) [s]
   double object_points_space_;  // fake points space [m]
   std::string object_label_;    // fake object label (e.g. tracking state)
   std::string object_frame_;    // fake object frame_id (NOTE: not affected to input object)

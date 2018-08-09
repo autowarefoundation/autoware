@@ -20,7 +20,7 @@
   <arg name="object_length" default="4.8" />
   <arg name="object_width" default="1.8" />
   <arg name="object_height" default="1.8" />
-  <arg name="object_z_offset" default="-2.0" />
+  <arg name="object_z_offset" default="0.0" />
 
   <!-- param, object motion -->
   <arg name="use_fake_twist" default="false" />

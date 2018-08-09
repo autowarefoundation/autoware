@@ -4292,15 +4292,6 @@ params :
       cmd_param :
         dash  : ''
         delim : ':='
-    - name    : publish_rate
-      desc    : publish rate of fake objects/points [Hz]
-      label   : 'object length'
-      min     : 0.01
-      max     : 100.0
-      v       : 10.0
-      cmd_param :
-        dash  : ''
-        delim : ':='
     - name    : object_length
       desc    : object shape, length [m]
       label   : 'object length'
@@ -4329,7 +4320,7 @@ params :
         dash  : ''
         delim : ':='
     - name    : object_z_offset
-      desc    : object z position, offset from global frame [m]
+      desc    : object z position, z offset from global frame [m]
       label   : 'object z offset'
       min     : -10.0
       max     : 10.0
@@ -4379,6 +4370,15 @@ params :
       min     : 0.01
       max     : 1.0
       v       : 0.2
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : publish_rate
+      desc    : publish rate of fake objects/points [Hz]
+      label   : 'publish rate'
+      min     : 0.01
+      max     : 100.0
+      v       : 10.0
       cmd_param :
         dash  : ''
         delim : ':='
