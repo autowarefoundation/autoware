@@ -66,6 +66,7 @@ before_script:
 script:
   - if [ "${CROSS_COMPILE}" == "1" ]; then
       travis_retry docker run
+        -e AUTOWARE_SYSROOT=/sysroot/aarch64
         --rm
         -v ${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR}
         -w ${TRAVIS_BUILD_DIR}/ros
