@@ -1,18 +1,12 @@
 //
 // Created by kosuke on 11/29/17.
 //
-#include <ros/ros.h>
 //
-#include <array>
-#include <opencv2/opencv.hpp>
-#include <pcl/io/pcd_io.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <random>
 //
 #include <tf/transform_datatypes.h>
 //
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
 
 #include "lidar_naive_l_shape_detect.h"
 
@@ -32,17 +26,17 @@ ClusterFilter::ClusterFilter() {
 
   sensor_height_ = 2.35;
 
-  sub_cloud_array_ = node_handle_.subscribe("/cloud_clusters", 1, &ClusterFilter::callBack, this);
-  pub_cloud_array_ = node_handle_.advertise<autoware_msgs::CloudClusterArray>("/bbox_cloud_clusters", 1);
+  sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ClusterFilter::callBack, this);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
 }
 
-void ClusterFilter::callBack(const autoware_msgs::CloudClusterArray& input) {
-  autoware_msgs::CloudClusterArray out_cluster;
-  autoware_msgs::CloudClusterArray copy_cluster;
-  copy_cluster = input;
-  getBBoxes(copy_cluster, out_cluster);
-  out_cluster.header = input.header;
-  pub_cloud_array_.publish(out_cluster);
+void ClusterFilter::callBack(const autoware_msgs::DetectedObjectArray& input) {
+  autoware_msgs::DetectedObjectArray out_objects;
+  autoware_msgs::DetectedObjectArray copy_objects;
+  copy_objects = input;
+  getLShapeBB(copy_objects, out_objects);
+  out_objects.header = input.header;
+  pub_object_array_.publish(out_objects);
   g_count++;
 }
 
@@ -72,7 +66,7 @@ void ClusterFilter::getPointsInPcFrame(cv::Point2f rect_points[],
 
 
 void ClusterFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
-                                       autoware_msgs::CloudCluster &cluster) {
+                                       autoware_msgs::DetectedObject &object) {
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
   cv::Point2f p3 = pc_points[2];
@@ -87,9 +81,9 @@ void ClusterFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points
 
   // std::cout << "cp from euclidean cluster " << cluster.bounding_box.pose.position.x << " "<<cluster.bounding_box.pose.position.y<<std::endl;
   // std::cout << "cp from l shape "<<cx << " "<< cy << std::endl;
-  cluster.bounding_box.pose.position.x = cx;
-  cluster.bounding_box.pose.position.y = cy;
-  cluster.bounding_box.pose.position.z = -sensor_height_ / 2;
+  object.pose.position.x = cx;
+  object.pose.position.y = cy;
+  object.pose.position.z = -sensor_height_ / 2;
 }
 
 void ClusterFilter::toRightAngleBBox(std::vector<cv::Point2f> &pc_points) {
@@ -130,28 +124,26 @@ void ClusterFilter::toRightAngleBBox(std::vector<cv::Point2f> &pc_points) {
 }
 
 void ClusterFilter::updateDimentionAndEstimatedAngle(
-    const std::vector<cv::Point2f>& pc_points, autoware_msgs::CloudCluster &cluster) {
+    const std::vector<cv::Point2f>& pc_points, autoware_msgs::DetectedObject &object) {
 
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
   cv::Point2f p3 = pc_points[2];
 
-  double dist1 =
-      sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-  double dist2 =
-      sqrt((p3.x - p2.x) * (p3.x - p2.x) + (p3.y - p2.y) * (p3.y - p2.y));
+  double dist1 = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+  double dist2 = sqrt((p3.x - p2.x) * (p3.x - p2.x) + (p3.y - p2.y) * (p3.y - p2.y));
   double bb_yaw;
   // dist1 is length
   if (dist1 > dist2) {
     bb_yaw = atan2(p1.y - p2.y, p1.x - p2.x);
-    cluster.bounding_box.dimensions.x = dist1;
-    cluster.bounding_box.dimensions.y = dist2;
-    cluster.bounding_box.dimensions.z = 2;
+    object.dimensions.x = dist1;
+    object.dimensions.y = dist2;
+    object.dimensions.z = 2;
   } else {
     bb_yaw = atan2(p3.y - p2.y, p3.x - p2.x);
-    cluster.bounding_box.dimensions.x = dist2;
-    cluster.bounding_box.dimensions.y = dist1;
-    cluster.bounding_box.dimensions.z = 2;
+    object.dimensions.x = dist2;
+    object.dimensions.y = dist1;
+    object.dimensions.z = 2;
   }
   // convert yaw to quartenion
   tf::Matrix3x3 obs_mat;
@@ -159,29 +151,27 @@ void ClusterFilter::updateDimentionAndEstimatedAngle(
 
   tf::Quaternion q_tf;
   obs_mat.getRotation(q_tf);
-  cluster.bounding_box.pose.orientation.x = q_tf.getX();
-  cluster.bounding_box.pose.orientation.y = q_tf.getY();
-  cluster.bounding_box.pose.orientation.z = q_tf.getZ();
-  cluster.bounding_box.pose.orientation.w = q_tf.getW();
+  object.pose.orientation.x = q_tf.getX();
+  object.pose.orientation.y = q_tf.getY();
+  object.pose.orientation.z = q_tf.getZ();
+  object.pose.orientation.w = q_tf.getW();
 }
 
-void ClusterFilter::getBBoxes(
-    autoware_msgs::CloudClusterArray& in_cluster_array,
-    autoware_msgs::CloudClusterArray& out_cluster_array) {
+void ClusterFilter::getLShapeBB(
+    autoware_msgs::DetectedObjectArray&  in_object_array,
+    autoware_msgs::DetectedObjectArray& out_object_array) {
 
-  out_cluster_array.header = in_cluster_array.header;
+  out_object_array.header = in_object_array.header;
 
   // std::cout << "-------------" << std::endl;
-  for (size_t i_cluster = 0; i_cluster < in_cluster_array.clusters.size();
-       i_cluster++) {
+  for (size_t i_object = 0; i_object < in_object_array.objects.size();
+       i_object++) {
     pcl::PointCloud<pcl::PointXYZ> cloud;
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+
     // Convert from ros msg to PCL::PointCloud data type
-    assert(i_cluster <= in_cluster_array.clusters.size());
-    // std::cout << i_cluster << "th cluster in size of " << in_cluster_array.clusters.size()<<std::endl;
-    pcl::fromROSMsg(in_cluster_array.clusters[i_cluster].cloud, cloud);
-    // std::cout << i_cluster << "th cluster"<<std::endl;
-    // calculating offset so that shape fitting would be visualized nicely
+    pcl::fromROSMsg(in_object_array.objects[i_object].pointcloud, cloud);
+
+    // calculating offset so that projecting pointcloud into cv::mat
     cv::Mat m(pic_scale_ * roi_m_, pic_scale_ * roi_m_, CV_8UC1, cv::Scalar(0));
     float init_px = cloud[0].x + roi_m_ / 2;
     float init_py = cloud[0].y + roi_m_ / 2;
@@ -231,9 +221,9 @@ void ClusterFilter::getBBoxes(
         // std::cout << offset_x <<" "<<offset_y <<" are not in the image coordinate" << std::endl;
         continue;
       }
+      // cast the pointcloud into cv::mat
       m.at<uchar>(offset_y, offset_x) = 255;
       point_vec[i_point] = cv::Point(offset_x, offset_y);
-      // std::cout << i_point << "inside loop size of "<< num_points<<std::endl;
       // calculate min and max slope for x1, x3(edge points)
       float delta_m = p_y / p_x;
       if (delta_m < min_m) {
@@ -267,7 +257,7 @@ void ClusterFilter::getBBoxes(
 
     // random variable
     std::mt19937_64 mt;
-    mt.seed(in_cluster_array.header.stamp.toSec());
+    mt.seed(in_object_array.header.stamp.toSec());
     // mt.seed(0);
     std::uniform_int_distribution<> rand_points(0, num_points - 1);
 
@@ -393,16 +383,16 @@ void ClusterFilter::getBBoxes(
     }
 
     // std::cout << i_cluster << "th cluster"<<std::endl;
-    updateCpFromPoints(pc_points, in_cluster_array.clusters[i_cluster]);
-    // std::cout << iCluster << "th cx
-    // "<<inClusterArray.clusters[iCluster].centroid_point.point.x << std::endl;
+    updateCpFromPoints(pc_points, in_object_array.objects[i_object]);
+    // std::cout << iobject << "th cx
+    // "<<inobjectArray.objects[iobject].centroid_point.point.x << std::endl;
     // update pcPoints to make it right angle bbox
     toRightAngleBBox(pc_points);
 
     updateDimentionAndEstimatedAngle(pc_points,
-                                     in_cluster_array.clusters[i_cluster]);
+                                     in_object_array.objects[i_object]);
 
-    out_cluster_array.clusters.push_back(in_cluster_array.clusters[i_cluster]);
+    out_object_array.objects.push_back(in_object_array.objects[i_object]);
     // std::cout
     //     << "x: "
     //     << in_cluster_array.clusters[i_cluster].bounding_box.pose.position.x
