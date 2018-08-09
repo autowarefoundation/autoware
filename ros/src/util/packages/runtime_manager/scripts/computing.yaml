@@ -1092,7 +1092,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -1850,6 +1850,12 @@ params :
     topic : /config/twist_filter
     msg   : ConfigTwistFilter
     vars  :
+    - name    : omega_limit
+      desc    : omega_limit  desc sample
+      label   : 'omega_limit :'
+      min   : 0
+      max   : 1.0
+      v         : 0.1
     - name    : lateral_accel_limit
       desc    : lateral_accel_limit  desc sample
       label   : 'lateral_accel_limit :'
