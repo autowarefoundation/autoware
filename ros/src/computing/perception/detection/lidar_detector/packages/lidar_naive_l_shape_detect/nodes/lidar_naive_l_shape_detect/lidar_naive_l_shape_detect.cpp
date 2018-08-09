@@ -4,9 +4,8 @@
 //
 #include <pcl_conversions/pcl_conversions.h>
 #include <random>
-//
+
 #include <tf/transform_datatypes.h>
-//
 
 #include "lidar_naive_l_shape_detect.h"
 
@@ -15,7 +14,7 @@ using namespace pcl;
 
 int g_count = 0;
 
-ClusterFilter::ClusterFilter() {
+LShapeFilter::LShapeFilter() {
   roi_m_ = 120;
   pic_scale_ = 1800 / roi_m_;
   ram_points_ = 80;
@@ -26,11 +25,11 @@ ClusterFilter::ClusterFilter() {
 
   sensor_height_ = 2.35;
 
-  sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ClusterFilter::callBack, this);
+  sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callBack, this);
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
 }
 
-void ClusterFilter::callBack(const autoware_msgs::DetectedObjectArray& input) {
+void LShapeFilter::callBack(const autoware_msgs::DetectedObjectArray& input) {
   autoware_msgs::DetectedObjectArray out_objects;
   autoware_msgs::DetectedObjectArray copy_objects;
   copy_objects = input;
@@ -40,7 +39,7 @@ void ClusterFilter::callBack(const autoware_msgs::DetectedObjectArray& input) {
   g_count++;
 }
 
-void ClusterFilter::getPointsInPcFrame(cv::Point2f rect_points[],
+void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[],
                                        std::vector<cv::Point2f> &pc_points,
                                        int offset_x, int offset_y) {
   // loop 4 rect points
@@ -65,7 +64,7 @@ void ClusterFilter::getPointsInPcFrame(cv::Point2f rect_points[],
 }
 
 
-void ClusterFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
+void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
                                        autoware_msgs::DetectedObject &object) {
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
@@ -79,18 +78,15 @@ void ClusterFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points
   double cx = p1.x + (p3.x - p1.x) * s1 / (s1 + s2);
   double cy = p1.y + (p3.y - p1.y) * s1 / (s1 + s2);
 
-  // std::cout << "cp from euclidean cluster " << cluster.bounding_box.pose.position.x << " "<<cluster.bounding_box.pose.position.y<<std::endl;
-  // std::cout << "cp from l shape "<<cx << " "<< cy << std::endl;
   object.pose.position.x = cx;
   object.pose.position.y = cy;
   object.pose.position.z = -sensor_height_ / 2;
 }
 
-void ClusterFilter::toRightAngleBBox(std::vector<cv::Point2f> &pc_points) {
+void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f> &pc_points) {
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
   cv::Point2f p3 = pc_points[2];
-  // cv::Point2f p4 = pc_points[3];
 
   double vec1x = p2.x - p1.x;
   double vec1y = p2.y - p1.y;
@@ -123,7 +119,7 @@ void ClusterFilter::toRightAngleBBox(std::vector<cv::Point2f> &pc_points) {
   }
 }
 
-void ClusterFilter::updateDimentionAndEstimatedAngle(
+void LShapeFilter::updateDimentionAndEstimatedAngle(
     const std::vector<cv::Point2f>& pc_points, autoware_msgs::DetectedObject &object) {
 
   cv::Point2f p1 = pc_points[0];
@@ -157,13 +153,12 @@ void ClusterFilter::updateDimentionAndEstimatedAngle(
   object.pose.orientation.w = q_tf.getW();
 }
 
-void ClusterFilter::getLShapeBB(
+void LShapeFilter::getLShapeBB(
     autoware_msgs::DetectedObjectArray&  in_object_array,
     autoware_msgs::DetectedObjectArray& out_object_array) {
 
   out_object_array.header = in_object_array.header;
 
-  // std::cout << "-------------" << std::endl;
   for (size_t i_object = 0; i_object < in_object_array.objects.size();
        i_object++) {
     pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -193,9 +188,6 @@ void ClusterFilter::getLShapeBB(
     float max_m = -999;
     float max_z = -99;
 
-    // for center of gravity
-    // float sumX = 0; float sumY = 0;
-    // std::cout << i_cluster << "before second loop"<<std::endl;
     for (int i_point = 0; i_point < num_points; i_point++) {
       float p_x = cloud[i_point].x;
       float p_y = cloud[i_point].y;
@@ -218,7 +210,6 @@ void ClusterFilter::getLShapeBB(
          offset_x < 0                     ||
          offset_y < 0                     ||
          offset_y > (pic_scale_ * roi_m_)){
-        // std::cout << offset_x <<" "<<offset_y <<" are not in the image coordinate" << std::endl;
         continue;
       }
       // cast the pointcloud into cv::mat
@@ -243,12 +234,7 @@ void ClusterFilter::getLShapeBB(
       {
         max_z = p_z;
       }
-
-      // for center of gravity
-      // sumX += offsetX;
-      // sumY += offsetY;
     }
-    // std::cout << i_cluster << "after second loop"<<std::endl;
     // L shape fitting parameters
     float x_dist = max_mx - min_mx;
     float y_dist = max_my - min_my;
@@ -261,15 +247,13 @@ void ClusterFilter::getLShapeBB(
     // mt.seed(0);
     std::uniform_int_distribution<> rand_points(0, num_points - 1);
 
-    // std::cout << i_cluster << "after random"<<std::endl;
     // start l shape fitting for car like object
-    // lSlopeDist_ = 2.0m
     if (slope_dist > slope_dist_thres_ && num_points > num_points_thres_) {
       float max_dist = 0;
       float max_dx = 0;
       float max_dy = 0;
 
-      // 80 random points, get max distance
+      // num_random_points, get max distance
       for (int i = 0; i < ram_points_; i++) {
         int p_ind = rand_points(mt);
         assert(p_ind >= 0 && p_ind < (cloud.size()-1));
@@ -285,11 +269,6 @@ void ClusterFilter::getLShapeBB(
           max_dy = y_i;
         }
       }
-
-      // for center of gravity
-      // maxDx = sumX/cloud.size();
-      // maxDy = sumY/cloud.size();
-
       // vector adding
       float max_m_vec_x = max_mx - max_dx;
       float max_m_vec_y = max_my - max_dy;
@@ -302,90 +281,16 @@ void ClusterFilter::getLShapeBB(
       pc_points[1] = cv::Point2f(max_dx, max_dy);
       pc_points[2] = cv::Point2f(max_mx, max_my);
       pc_points[3] = cv::Point2f(last_x, last_y);
-
-      // std::cout << "(min_mx, min_my) " << min_mx << " "<<min_my << std::endl;
-      // std::cout << "(max_dx, max_dy) " << max_dx << " "<<max_dy << std::endl;
-      // std::cout << "(max_mx, max_my) " << max_mx << " "<<max_my << std::endl;
-      // std::cout << "(last_x, last_y) " << last_x << " "<<last_y << std::endl;
-      // bool is_promising = ruleBasedFilter(pc_points, max_z, num_points);
-      // if (!is_promising)
-      //   continue;
-      // ------start visualization-----
-      // cast (-15 < x,y < 15) into (0 < x,y < 30)
-      //            float a = maxMx + roi_m_/2;
-      //            float b = maxMy + roi_m_/2;
-      //            float c = minMx + roi_m_/2;
-      //            float d = minMy + roi_m_/2;
-      //            float e = maxDx + roi_m_/2;
-      //            float f = maxDy + roi_m_/2;
-      //            float g = lastX + roi_m_/2;
-      //            float h = lastY + roi_m_/2;
-      //            // cast 30mx30m into 900x900 scale
-      //            int aa = floor(a*pic_scale_);
-      //            int bb = floor(b*pic_scale_);
-      //            int cc = floor(c*pic_scale_);
-      //            int dd = floor(d*pic_scale_);
-      //            int ee = floor(e*pic_scale_);
-      //            int ff = floor(f*pic_scale_);
-      //            int gg = floor(g*pic_scale_);
-      //            int hh = floor(h*pic_scale_);
-      //            // cast into image coordinate
-      //            int aaa = aa;
-      //            int bbb = pic_scale_*roi_m_ - bb;
-      //            int ccc = cc;
-      //            int ddd = pic_scale_*roi_m_ - dd;
-      //            int eee = ee;
-      //            int fff = pic_scale_*roi_m_ - ff;
-      //            int ggg = gg;
-      //            int hhh = pic_scale_*roi_m_ - hh;
-      //            // offset so that the object would be locate at the center
-      //            int aaaa = aaa + offsetInitX;
-      //            int bbbb = bbb + offsetInitY;
-      //            int cccc = ccc + offsetInitX;
-      //            int dddd = ddd + offsetInitY;
-      //            int eeee = eee + offsetInitX;
-      //            int ffff = fff + offsetInitY;
-      //            int gggg = ggg + offsetInitX;
-      //            int hhhh = hhh + offsetInitY;
-      //
-      //            line( m, Point(aaaa, bbbb), Point(cccc, dddd),
-      //            Scalar(255,255,0), 1, 8 );
-      //            line( m, Point(aaaa, bbbb), Point(eeee, ffff),
-      //            Scalar(255,255,0), 1, 8 );
-      //            line( m, Point(cccc, dddd), Point(eeee, ffff),
-      //            Scalar(255,255,0), 1, 8 );
-      //            line( m, Point(aaaa, bbbb), Point(gggg, hhhh),
-      //            Scalar(255,255,0), 1, 8 );
-      //            line( m, Point(cccc, dddd), Point(gggg, hhhh),
-      //            Scalar(255,255,0), 1, 8 );
-      //
-      //            imshow("Display Image", m);
-      //            waitKey(0);
-      // --------end visualization -----------
-
     } else {
       // MAR fitting
       cv::RotatedRect rect_info = cv::minAreaRect(point_vec);
       cv::Point2f rect_points[4];
       rect_info.points(rect_points);
       // covert points back to lidar coordinate
-      getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y);
-      // rule based filter
-      // bool is_promising = ruleBasedFilter(pc_points, max_z, num_points);
-      // if (!is_promising)
-      //   continue;
-      // for visualization
-      //            for( int j = 0; j < 4; j++ )
-      //                line( m, rectPoints[j], rectPoints[(j+1)%4],
-      //                Scalar(255,255,0), 1, 8 );
-      //            imshow("Display Image", m);
-      //            waitKey(0);
+      getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y
     }
-
-    // std::cout << i_cluster << "th cluster"<<std::endl;
     updateCpFromPoints(pc_points, in_object_array.objects[i_object]);
-    // std::cout << iobject << "th cx
-    // "<<inobjectArray.objects[iobject].centroid_point.point.x << std::endl;
+
     // update pcPoints to make it right angle bbox
     toRightAngleBBox(pc_points);
 
@@ -393,15 +298,5 @@ void ClusterFilter::getLShapeBB(
                                      in_object_array.objects[i_object]);
 
     out_object_array.objects.push_back(in_object_array.objects[i_object]);
-    // std::cout
-    //     << "x: "
-    //     << in_cluster_array.clusters[i_cluster].bounding_box.pose.position.x
-    //     << std::endl;
-    // std::cout
-    //     << "y: "
-    //     << in_cluster_array.clusters[i_cluster].bounding_box.pose.position.y
-    //     << std::endl;
-    // std::cout << i_cluster << "th cluster"<<std::endl;
   }
-  // std::cout << "end call back" <<std::endl;
 }

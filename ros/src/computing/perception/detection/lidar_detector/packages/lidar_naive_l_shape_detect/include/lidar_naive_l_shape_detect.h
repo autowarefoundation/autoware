@@ -16,7 +16,7 @@
 #include "autoware_msgs/DetectedObjectArray.h"
 
 
-class ClusterFilter {
+class LShapeFilter {
 private:
   float sensor_height_;
   float roi_m_;
@@ -57,7 +57,7 @@ private:
                    autoware_msgs::DetectedObjectArray& out_object_array);
 
 public:
-  ClusterFilter();
+  LShapeFilter();
 };
 
 #endif // OBJECT_TRACKING_BOX_FITTING_H
