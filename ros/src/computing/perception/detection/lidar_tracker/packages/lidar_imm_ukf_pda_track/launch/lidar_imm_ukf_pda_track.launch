@@ -22,13 +22,13 @@
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
     <param name="tracking_frame" value="$(arg tracking_frame)" />
 
-    <remap from="cloud_clusters" to="$(arg tracker_input_topic)" />
-    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
+    <remap from="/detection/lidar_objects" to="$(arg tracker_input_topic)" />
+    <remap from="/detection/tracked_objects" to="$(arg tracker_output_topic)" />
   </node>
 
   <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
 
-    <remap from="tracking_cluster_array" to="$(arg tracker_output_topic)" />
+    <remap from="/detection/tracked_objects" to="$(arg tracker_output_topic)" />
   </node>
 </launch>
