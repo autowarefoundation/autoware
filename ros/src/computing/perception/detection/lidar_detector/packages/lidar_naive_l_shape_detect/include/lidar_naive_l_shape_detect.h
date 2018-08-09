@@ -15,7 +15,6 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-
 class LShapeFilter {
 private:
   float sensor_height_;
@@ -23,38 +22,27 @@ private:
   float pic_scale_; // picScale * roiM = 30 * 30
   // const float picScale = 30;
   int ram_points_;
-  int slope_dist_thres_;
+  float slope_dist_thres_;
   int num_points_thres_;
-
-  float height_min_;
-  float height_max_;
-  float width_min_;
-  float width_max_;
-  float len_min_;
-  float len_max_;
-  float area_max_;
-  float ratio_min_;
-  float ratio_max_;
-  float min_len_ratio_;
-  float pt_num_per_vol_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_object_array_;
-  ros::Publisher  pub_object_array_;
+  ros::Publisher pub_object_array_;
 
-  void callBack(const autoware_msgs::DetectedObjectArray& input);
-  void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
+  void callBack(const autoware_msgs::DetectedObjectArray &input);
+  void updateCpFromPoints(const std::vector<cv::Point2f> &pc_points,
                           autoware_msgs::DetectedObject &cluster);
   void toRightAngleBBox(std::vector<cv::Point2f> &pc_points);
-  void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
-                                        autoware_msgs::DetectedObject &object);
+  void
+  updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f> &pcPoints,
+                                   autoware_msgs::DetectedObject &object);
   void getPointsInPcFrame(cv::Point2f rect_points[],
                           std::vector<cv::Point2f> &pc_points, int offset_x,
                           int offset_y);
   bool ruleBasedFilter(std::vector<cv::Point2f> pc_points, float max_z,
                        int num_points);
-  void getLShapeBB(autoware_msgs::DetectedObjectArray&  in_object_array,
-                   autoware_msgs::DetectedObjectArray& out_object_array);
+  void getLShapeBB(autoware_msgs::DetectedObjectArray &in_object_array,
+                   autoware_msgs::DetectedObjectArray &out_object_array);
 
 public:
   LShapeFilter();

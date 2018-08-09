@@ -17,13 +17,14 @@ int g_count = 0;
 LShapeFilter::LShapeFilter() {
   roi_m_ = 120;
   pic_scale_ = 1800 / roi_m_;
-  ram_points_ = 80;
+
 
   // l-shape fitting params
-  slope_dist_thres_ = 2.0;
-  num_points_thres_ = 10;
-
-  sensor_height_ = 2.35;
+  ros::NodeHandle private_nh_("~");
+  private_nh_.param<int>("ram_points", ram_points_, 80);
+  private_nh_.param<float>("slope_dist_thres", slope_dist_thres_, 2.0);
+  private_nh_.param<int>("num_points_thres", num_points_thres_, 10);
+  private_nh_.param<float>("sensor_height", sensor_height_, 2.35);
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callBack, this);
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
@@ -180,13 +181,15 @@ void LShapeFilter::getLShapeBB(
     int num_points = cloud.size();
     std::vector<cv::Point> point_vec(num_points);
     std::vector<cv::Point2f> pc_points(4);
+
+    // init variables
     float min_mx = 0;
     float min_my = 0;
     float max_mx = 0;
     float max_my = 0;
-    float min_m = 999;
-    float max_m = -999;
-    float max_z = -99;
+    float min_m  = std::numeric_limits<float>::max();
+    float max_m  = std::numeric_limits<float>::min();
+    float max_z  = std::numeric_limits<float>::min();
 
     for (int i_point = 0; i_point < num_points; i_point++) {
       float p_x = cloud[i_point].x;
@@ -234,6 +237,13 @@ void LShapeFilter::getLShapeBB(
       {
         max_z = p_z;
       }
+    }
+
+    if(max_m == std::numeric_limits<float>::min() ||
+       min_m == std::numeric_limits<float>::max() ||
+       max_z == std::numeric_limits<float>::min())
+    {
+      continue;
     }
     // L shape fitting parameters
     float x_dist = max_mx - min_mx;
@@ -287,7 +297,7 @@ void LShapeFilter::getLShapeBB(
       cv::Point2f rect_points[4];
       rect_info.points(rect_points);
       // covert points back to lidar coordinate
-      getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y
+      getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y);
     }
     updateCpFromPoints(pc_points, in_object_array.objects[i_object]);
 
