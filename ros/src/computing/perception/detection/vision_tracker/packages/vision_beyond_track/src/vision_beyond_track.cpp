@@ -43,7 +43,7 @@ const static double THRES_SCORE = 1000;
 static double avg_car_sz[3] = {4.3, 2, 2};
 static double sz_ub[3] = {34, 31.5, 31.5};
 static double sz_lb[3] = {-34, -31.5, -31.5};
-ObjectCuboid Detection::params_carCuboid = ObjectCuboid(avg_car_sz, sz_ub, sz_lb);
+beyondtrack::ObjectCuboid beyondtrack::Detection::params_carCuboid = beyondtrack::ObjectCuboid(avg_car_sz, sz_ub, sz_lb);
 
 namespace beyondtrack {
   void BeyondTracker::initialize(cv::Mat n, double h) {
@@ -92,9 +92,9 @@ namespace beyondtrack {
         // std::cout << "Score 2d: " << score_2d << '\n';
         // std::cout << "Score 3d: " << score_3d << '\n';
         // std::cout << "Score: " << score << '\n';
-        std::cout << score << '\t';
+        // std::cout << score << '\t';
       }
-      std::cout << '\n';
+      // std::cout << '\n';
       array.push_back(tmp_array);
     }
     return array;
@@ -120,35 +120,35 @@ namespace beyondtrack {
     }
 
     motion = -(cur_pose - prev_pose);
-    motion.at<double>(0, 3) = deg2rad(0);
-    motion *= (1.72 / 44);
+    motion.at<double>(0, 3) = deg2rad(0); // TODO: subscribe from lidar localizer or camera localizer
+    // motion *= (1.72 / 44);
 
-    auto start = std::chrono::system_clock::now();
+    // auto start = std::chrono::system_clock::now();
     propagate_detections(n, h);
-    auto end = std::chrono::system_clock::now();
-    auto dur = end - start;
-    auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-    std::cout << "propagate_detections: " << msec << " milli sec \n";
+    // auto end = std::chrono::system_clock::now();
+    // auto dur = end - start;
+    // auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    // std::cout << "propagate_detections: " << msec << " milli sec \n";
 
     // Cost estimation
-    start = std::chrono::system_clock::now();
+    // start = std::chrono::system_clock::now();
     vector<vector<double>> cost_matrix = generateScoreMatrices();
-    end = std::chrono::system_clock::now();
-    dur = end - start;
-    msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-    std::cout << "generateScoreMatrices: " << msec << " milli sec \n";
+    // end = std::chrono::system_clock::now();
+    // dur = end - start;
+    // msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    // std::cout << "generateScoreMatrices: " << msec << " milli sec \n";
 
-    start = std::chrono::system_clock::now();
+    // start = std::chrono::system_clock::now();
     HungarianAlgorithm HungAlgo;
     vector<int> assignment;
 
     //double cost =
     HungAlgo.Solve(cost_matrix, assignment);
 
-    end = std::chrono::system_clock::now();
-    dur = end - start;
-    msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
-    std::cout << "HungarianAlgorithm: " << msec << " milli sec \n";
+    // end = std::chrono::system_clock::now();
+    // dur = end - start;
+    // msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+    // std::cout << "HungarianAlgorithm: " << msec << " milli sec \n";
 
     for (unsigned int x = 0; x < cost_matrix.size(); x++) {
       if ((assignment[x] != -1) && (cost_matrix[x][assignment[x]] < THRES_SCORE)) {
@@ -165,6 +165,11 @@ namespace beyondtrack {
 
   vector<Detection> BeyondTracker::get_results() {
     return cur_det;
+  }
+
+  void BeyondTracker::set_intrinsic(cv::Mat k_) {
+    k = k_;
+    inv_k = k.inv();
   }
 
   double BeyondTracker::get_3d2d_score(Detection cd, Detection pd) {
@@ -200,53 +205,24 @@ namespace beyondtrack {
   }
 }
 
-
-///////////////////
-
-//void BeyondTrackerNode::convert_rect_to_image_obj(std::vector<RectClassScore<float>>& in_objects, autoware_msgs::DetectedObjectArray& out_message)
-//{
-    // for (unsigned int i = 0; i < in_objects.size(); ++i)
-    // {
-    //     {
-    //         autoware_msgs::DetectedObject obj;
-    //
-    //         obj.x = (in_objects[i].x /image_ratio_) - image_left_right_border_/image_ratio_;
-    //         obj.y = (in_objects[i].y /image_ratio_) - image_top_bottom_border_/image_ratio_;
-    //         obj.width = in_objects[i].w /image_ratio_;
-    //         obj.height = in_objects[i].h /image_ratio_;
-    //         if (in_objects[i].x < 0)
-    //             obj.x = 0;
-    //         if (in_objects[i].y < 0)
-    //             obj.y = 0;
-    //         if (in_objects[i].w < 0)
-    //             obj.width = 0;
-    //         if (in_objects[i].h < 0)
-    //             obj.height = 0;
-    //
-    //         obj.color.r = colors_[in_objects[i].class_type].val[0];
-    //         obj.color.g = colors_[in_objects[i].class_type].val[1];
-    //         obj.color.b = colors_[in_objects[i].class_type].val[2];
-    //         obj.color.a = 1.0f;
-    //
-    //         obj.score = in_objects[i].score;
-    //         obj.label = in_objects[i].GetClassString();
-    //
-    //         out_message.objects.push_back(obj);
-    //
-    //     }
-    // }
-//}
-
-
-cv::Mat BeyondTrackerNode::extract_mat(const sensor_msgs::ImageConstPtr& msg)
+void BeyondTrackerNode::parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
-    cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(msg, "bgr8");
-    cv::Mat mat_image = cv_image->image;
+  // TODO
+}
 
-    int image_height = msg->height;
-    int image_width = msg->width;
+void BeyondTrackerNode::vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
+{
+    if (camera_info_ok_) {
+      if (!use_motion_) {
+        pose_ = cv::Mat::zeros(1, 4, CV_64FC1);
+      } else {
+        // TODO
+      }
 
-    return mat_image;
+      parse_detected_object(in_vision_detections);
+
+      tracker_.process(detections_, pose_, ground_angle_, camera_height_);
+    }
 }
 
 
@@ -255,54 +231,38 @@ void BeyondTrackerNode::intrinsics_callback(const sensor_msgs::CameraInfo &in_me
 	image_size_.height = in_message.height;
 	image_size_.width = in_message.width;
 
-	// camera_instrinsics_ = cv::Mat(3, 3, CV_64F);
-	// for (int row = 0; row < 3; row++)
-	// {
-	// 	for (int col = 0; col < 3; col++)
-	// 	{
-	// 		camera_instrinsics_.at<double>(row, col) = in_message.K[row * 3 + col];
-	// 	}
-	// }
-  //
-	// distortion_coefficients_ = cv::Mat(1, 5, CV_64F);
-	// for (int col = 0; col < 5; col++)
-	// {
-	// 	distortion_coefficients_.at<double>(col) = in_message.D[col];
-	// }
-  //
-	// fx_ = static_cast<float>(in_message.P[0]);
-	// fy_ = static_cast<float>(in_message.P[5]);
-	// cx_ = static_cast<float>(in_message.P[2]);
-	// cy_ = static_cast<float>(in_message.P[6]);
-  //
-	// intrinsics_subscriber_.shutdown();
-	// camera_info_ok_ = true;
-	// ROS_INFO("[%s] CameraIntrinsics obtained.", __APP_NAME__);
+	camera_instrinsics_ = cv::Mat(3, 3, CV_64FC1);
+	for (int row = 0; row < 3; ++row)
+	{
+		for (int col = 0; col < 3; ++col)
+		{
+			camera_instrinsics_.at<double>(row, col) = in_message.K[row * 3 + col];
+		}
+	}
+
+  tracker_.set_intrinsic(camera_instrinsics_);
+
+	intrinsics_subscriber_.shutdown();
+	camera_info_ok_ = true;
+	ROS_INFO("[%s] CameraIntrinsics obtained.", __APP_NAME__);
 }
 
 
 void BeyondTrackerNode::image_callback(const sensor_msgs::ImageConstPtr& in_image_message)
 {
-    // std::vector<RectClassScore<float>> detections;
-    //
-    // darknet_image_ = convert_ipl_to_image(in_image_message);
-    //
-    // detections = yolo_detector_.detect(darknet_image_);
-    //
-    // //Prepare Output message
-    // autoware_msgs::DetectedObjectArray output_message;
-    // output_message.header = in_image_message->header;
-    //
-    // convert_rect_to_image_obj(detections, output_message);
-    //
-    // publisher_objects_.publish(output_message);
-    //
-    // free(darknet_image_.data);
+  cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(in_image_message, "bgr8");
+  mat_image_ = cv_image->image;
+
+  // int image_height = msg->height;
+  // int image_width = msg->width;
+  image_ok_ = true;
+  ROS_INFO("[%s] Image obtained.", __APP_NAME__);
 }
 
 void BeyondTrackerNode::config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
 {
     // score_threshold_ = param->score_threshold;
+    // TODO
 }
 
 
@@ -319,7 +279,7 @@ void BeyondTrackerNode::Run()
     }
     else
     {
-        ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_rectified:=YOUR_TOPIC");
+        // ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_rectified:=YOUR_TOPIC");
         image_rect_str = "/image_rectified";
     }
 
@@ -330,18 +290,24 @@ void BeyondTrackerNode::Run()
     }
     else
     {
-      ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_raw_node:=YOUR_TOPIC");
+      // ROS_INFO("No image node received, defaulting to /camera_info, you can use _image_raw_node:=YOUR_TOPIC");
       camera_info_str = "/camera_info";
     }
 
-    private_node_handle.param<std::string>("image_src", image_rect_str, "/image_rectified");
-    private_node_handle.param<std::string>("camera_info_str", camera_info_str, "/camera_info");
+    std::string detected_objects_vision_str;
+    if (private_node_handle.getParam("detected_objects_vision_str", detected_objects_vision_str))
+    {
+        ROS_INFO("Intrinsics topic: %s", detected_objects_vision_str.c_str());
+    }
+    else
+    {
+      // ROS_INFO("No image node received, defaulting to /image_raw, you can use _image_raw_node:=YOUR_TOPIC");
+      detected_objects_vision_str = "/detection/vision_objects";
+    }
 
-    //#if (CV_MAJOR_VERSION <= 2)
-    //    cv::generateColors(colors_, 80);
-    //#else
-    //    generateColors(colors_, 80);
-    //#endif
+    private_node_handle.param<std::string>("image_str", image_rect_str, "/image_rectified");
+    private_node_handle.param<std::string>("camera_info_str", camera_info_str, "/camera_info");
+    private_node_handle.param<std::string>("detected_objects_vision", detected_objects_vision_str, "/detection/vision_objects");
 
     // publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
 
@@ -353,9 +319,25 @@ void BeyondTrackerNode::Run()
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, camera_info_str.c_str());
     intrinsics_subscriber_ = private_node_handle.subscribe(
                                  camera_info_str, 1, &BeyondTrackerNode::intrinsics_callback, this);
+
+    ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, detected_objects_vision_str.c_str());
+    detections_vision_subscriber_ = private_node_handle.subscribe(detected_objects_vision_str,
+                                        1, &BeyondTrackerNode::vision_detection_callback, this);
+
+    // TODO
+    ground_angle_ = cv::Mat::zeros(1, 3, CV_64FC1);
+    ground_angle_.at<double>(0, 1) = 1;
+
+    // TODO
+    private_node_handle.param<double>("camera_height", camera_height_, 1.72);
+    ROS_INFO("[%s] camera height: %f",__APP_NAME__, camera_height_);
+
+
     ROS_INFO_STREAM( __APP_NAME__ << "" );
 
-    ros::spin();
-    ROS_INFO("END beyond_tracker");
+    tracker_ = beyondtrack::BeyondTracker();
 
+    ros::spin();
+
+    ROS_INFO("END beyond_tracker");
 }

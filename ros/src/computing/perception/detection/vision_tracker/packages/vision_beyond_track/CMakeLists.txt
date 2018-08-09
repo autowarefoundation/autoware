@@ -44,14 +44,13 @@ add_library(
   lib/clipper.cpp
 )
 
-add_executable(exec
+add_executable(vision_beyond_track
   src/vision_beyond_track_node.cpp
   #src/main_script_test.cpp
   src/vision_beyond_track.cpp
-  #src/vision_beyond_track_node.cpp
   )
 
-target_link_libraries(exec
+target_link_libraries(vision_beyond_track
   ${OpenCV_LIBS}
   ${catkin_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
@@ -59,6 +58,6 @@ target_link_libraries(exec
   third_lib
 )
 
-add_dependencies(exec
+add_dependencies(vision_beyond_track
             ${catkin_EXPORTED_TARGETS}
             )

@@ -1,3 +1,37 @@
+/*
+ *  Copyright (c) 2018, Tokyo University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ********************
+ *  v1.0: Yuki Tsuji (yukitsuji020832@gmail.com)
+ *
+ *  Created on: Aug 8th, 2018
+ */
+
 #ifndef VISION_BEYOND_TRACK_H
 #define VISION_BEYOND_TRACK_H
 
@@ -59,6 +93,8 @@ namespace beyondtrack {
 
     vector<Detection> get_results();
 
+    void set_intrinsic(cv::Mat k_);
+
     double get_3d2d_score(Detection cd, Detection pd);
 
     double get_3d3d_score(Detection cd, Detection pd);
@@ -69,7 +105,9 @@ namespace beyondtrack {
 class BeyondTrackerNode {
   ros::Subscriber rect_image_subscriber_;
   ros::Subscriber intrinsics_subscriber_;
-  // ros::Subscriber subscriber_yolo_config_;
+  ros::Subscriber detections_vision_subscriber_;
+  ros::Subscriber ego_motion_subscriber_;
+
   ros::Publisher publisher_objects_;
   ros::NodeHandle node_handle_;
 
@@ -83,9 +121,23 @@ class BeyondTrackerNode {
   std::vector<cv::Scalar> colors_;
 
   cv::Size image_size_;
+  cv::Mat camera_instrinsics_;
+  bool camera_info_ok_;
 
-  //void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::DetectedObjectArray& out_message);
-  cv::Mat extract_mat(const sensor_msgs::ImageConstPtr& msg);
+  cv::Mat mat_image_;
+  bool image_ok_ = false;
+
+  bool processing_;
+
+  bool use_motion_ = false;
+
+  std::vector<beyondtrack::Detection> detections_;
+  cv::Mat pose_;
+  cv::Mat ground_angle_;
+  double camera_height_;
+
+  void parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
+  void vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
   void image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
   void intrinsics_callback(const sensor_msgs::CameraInfo &in_message);
   void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param);
