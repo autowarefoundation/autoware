@@ -67,6 +67,8 @@
 
 #include <tf/tf.h>
 
+#include <yaml-cpp/yaml.h>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <opencv2/core/version.hpp>
@@ -1289,44 +1291,30 @@ int main(int argc, char** argv)
   private_nh.param("use_gpu", _use_gpu, false);
   ROS_INFO("use_gpu: %d", _use_gpu);
 
-  double first_clustering_distance;
-  double second_clustering_distance;
-  double third_clustering_distance;
-  double fourth_clustering_distance;
-  double fifth_clustering_distance;
-
-  double first_clustering_range;
-  double second_clustering_range;
-  double third_clustering_range;
-  double fourth_clustering_range;
-
   private_nh.param("use_multiple_thres", _use_multiple_thres, false);
   ROS_INFO("use_multiple_thres: %d", _use_multiple_thres);
 
-  private_nh.param("first_clustering_distance", first_clustering_distance, 0.5);
-  ROS_INFO("first_clustering_distance: %f", first_clustering_distance);
-  private_nh.param("second_clustering_distance", second_clustering_distance, 1.1);
-  ROS_INFO("second_clustering_distance: %f", second_clustering_distance);
-  private_nh.param("third_clustering_distance", third_clustering_distance, 1.6);
-  ROS_INFO("third_clustering_distance: %f", third_clustering_distance);
-  private_nh.param("fourth_clustering_distance", fourth_clustering_distance, 2.1);
-  ROS_INFO("fourth_clustering_distance: %f", fourth_clustering_distance);
-  private_nh.param("fifth_clustering_distance", fifth_clustering_distance, 2.6);
-  ROS_INFO("fifth_clustering_distance: %f", fifth_clustering_distance);
+  std::string str_distances;
+  std::string str_ranges;
+  private_nh.param("clustering_distances", str_distances, std::string("[0.5,1.1,1.6,2.1,2.6]"));
+  ROS_INFO("clustering_distances: %s", str_distances.c_str());
+  private_nh.param("clustering_ranges", str_ranges, std::string("[15,30,45,60]"));
+  ROS_INFO("clustering_ranges: %s", str_ranges.c_str());
 
-  private_nh.param("first_clustering_range", first_clustering_range, 15.0);
-  ROS_INFO("first_clustering_range: %f", first_clustering_range);
-  private_nh.param("second_clustering_range", second_clustering_range, 30.0);
-  ROS_INFO("second_clustering_range: %f", second_clustering_range);
-  private_nh.param("third_clustering_range", third_clustering_range, 45.0);
-  ROS_INFO("third_clustering_range: %f", third_clustering_range);
-  private_nh.param("fourth_clustering_range", fourth_clustering_range, 60.0);
-  ROS_INFO("fourth_clustering_range: %f", fourth_clustering_range);
-
-  _clustering_distances = { first_clustering_distance, second_clustering_distance, third_clustering_distance,
-                            fourth_clustering_distance, fifth_clustering_distance };
-  _clustering_ranges = { first_clustering_range, second_clustering_range, third_clustering_range,
-                         fourth_clustering_range };
+  YAML::Node distances = YAML::Load(str_distances);
+  YAML::Node ranges = YAML::Load(str_ranges);
+  size_t distances_size = distances.size();
+  size_t ranges_size = ranges.size();
+  if (distances_size != 5 || ranges_size != 4)
+  {
+    ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
+    The size of clustering distance and clustering_ranges shoule be 5 and 4 respectively");
+    ros::shutdown();
+  }
+  _clustering_distances = { distances[0].as<double>(), distances[1].as<double>(), distances[2].as<double>(),
+                            distances[3].as<double>(), distances[4].as<double>() };
+  _clustering_ranges = { ranges[0].as<double>(), ranges[1].as<double>(), ranges[2].as<double>(),
+                         ranges[3].as<double>() };
 
   _velodyne_transform_available = false;
 

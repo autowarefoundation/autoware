@@ -32,17 +32,8 @@
   <arg name="use_gpu" default="false" />
 
   <arg name="use_multiple_thres" default="false" />
-
-  <arg name="first_clustering_distance" default="0.5" />
-  <arg name="second_clustering_distance" default="1.1" />
-  <arg name="third_clustering_distance" default="1.6" />
-  <arg name="fourth_clustering_distance" default="2.1" />
-  <arg name="fifth_clustering_distance" default="2.6" />
-
-  <arg name="first_clustering_range" default="15.0" />
-  <arg name="second_clustering_range" default="30.0" />
-  <arg name="third_clustering_range" default="45.0" />
-  <arg name="fourth_clustering_range" default="60.0" />
+  <arg name="clustering_ranges" default="[15,30,45,60]" /><!-- Distances to segment pointcloud -->
+  <arg name="clustering_distances" default="[0.5,1.1,1.6,2.1,2.6]" /><!-- Euclidean Clustering threshold distance for each segment -->
 
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
@@ -71,15 +62,8 @@
     <param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
     <param name="use_gpu" value="$(arg use_gpu)" />
     <param name="use_multiple_thres" value="$(arg use_multiple_thres)" />
-    <param name="first_clustering_distance" value="$(arg first_clustering_distance)" />
-    <param name="second_clustering_distance" value="$(arg second_clustering_distance)" />
-    <param name="third_clustering_distance" value="$(arg third_clustering_distance)" />
-    <param name="fourth_clustering_distance" value="$(arg fourth_clustering_distance)" />
-    <param name="fifth_clustering_distance" value="$(arg fifth_clustering_distance)" />
-    <param name="first_clustering_range" value="$(arg first_clustering_range)" />
-    <param name="second_clustering_range" value="$(arg second_clustering_range)" />
-    <param name="third_clustering_range" value="$(arg third_clustering_range)" />
-    <param name="fourth_clustering_range" value="$(arg fourth_clustering_range)" />
+    <param name="clustering_ranges" value="$(arg clustering_ranges)" /><!-- Distances to segment pointcloud -->
+    <param name="clustering_distances" value="$(arg clustering_distances)" /><!-- Euclidean Clustering threshold distance for each segment -->
 
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>

@@ -4235,84 +4235,19 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : first_clustering_distance
-      desc    : first_clustering_distance desc sample
-      label   : 'first_clustering_distance'
-      min       : 0
-      max       : 10
-      v       : 0.5
+    - name    : clustering_ranges
+      desc    : clustering_ranges desc sample
+      label   : 'clustering_ranges (4 with no space)'
+      kind    : str
+      v       : '[15,30,45,60]'
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : second_clustering_distance
-      desc    : second_clustering_distance desc sample
-      label   : 'second_clustering_distance'
-      min       : 0
-      max       : 10
-      v       : 1.1
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  third_clustering_distance
-      desc    :  third_clustering_distance desc sample
-      label   : 'third_clustering_distance'
-      min       : 0
-      max       : 10
-      v       : 1.6
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  fourth_clustering_distance
-      desc    :  fourth_clustering_distance desc sample
-      label   : 'fourth_clustering_distance'
-      min       : 0
-      max       : 10
-      v       : 2.1
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  fifth_clustering_distance
-      desc    :  fifth_clustering_distance desc sample
-      label   : 'fifth_clustering_distance'
-      min       : 0
-      max       : 10
-      v       : 2.6
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  first_clustering_range
-      desc    :  first_clustering_range desc sample
-      label   : 'first_clustering_range'
-      min       : 0
-      max       : 100
-      v       : 15.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  second_clustering_range
-      desc    :  second_clustering_range desc sample
-      label   : 'second_clustering_range'
-      min       : 0
-      max       : 100
-      v       : 30.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  third_clustering_range
-      desc    :  third_clustering_range desc sample
-      label   : 'third_clustering_range'
-      min       : 0
-      max       : 100
-      v       : 45.0
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    :  fourth_clustering_range
-      desc    :  fourth_clustering_range desc sample
-      label   : 'fourth_clustering_range'
-      min       : 0
-      max       : 100
-      v       : 60.0
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (5 with no space)'
+      kind    : str
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
       cmd_param :
         dash        : ''
         delim       : ':='
