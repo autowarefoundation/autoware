@@ -1092,7 +1092,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -1568,6 +1568,14 @@ params :
     - name    : is_linear_interpolation
       desc    : linear_interpolate_mode desc sample
       label   : 'Linear Interpolation'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : velocity_interpolation_mode
+      desc    : linear_interpolate_mode desc sample
+      label   : 'Velocity Interpolation Mode'
       kind    : checkbox
       v       : True
       cmd_param :

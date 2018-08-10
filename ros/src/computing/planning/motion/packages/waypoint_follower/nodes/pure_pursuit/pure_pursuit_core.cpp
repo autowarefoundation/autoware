@@ -199,6 +199,7 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   const_velocity_ = config->velocity;
   lookahead_distance_ratio_ = config->lookahead_ratio;
   minimum_lookahead_distance_ = config->minimum_lookahead_distance;
+  velocity_interpolation_mode_ = config->velocity_interpolation_mode;
   is_config_set_ = true;
 }
 
@@ -237,10 +238,9 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
 {
-  if (!msg->waypoints.empty())
-    command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
-  else
-    command_linear_velocity_ = 0;
+  command_linear_velocity_ = (msg->waypoints.empty()) ? 0 :
+                             (velocity_interpolation_mode_) ? pp_.calcInterpolateVelocity() :
+                             msg->waypoints.at(0).twist.twist.linear.x;
 
   pp_.setCurrentWaypoints(msg->waypoints);
   is_waypoint_set_ = true;

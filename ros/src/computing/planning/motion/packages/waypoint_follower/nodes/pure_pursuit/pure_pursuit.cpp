@@ -41,6 +41,7 @@ PurePursuit::PurePursuit()
   , lookahead_distance_(0)
   , current_linear_velocity_(0)
   , minimum_lookahead_distance_(6)
+  , past_closest_waypoints_(2)
 {
 }
 
@@ -276,6 +277,54 @@ bool PurePursuit::canGetCurvature(double *output_kappa)
 
   *output_kappa = calcCurvature(next_target_position_);
   return true;
+}
+
+double PurePursuit::calcInterpolateVelocity()
+{
+  if (current_waypoints_.empty())
+  {
+    return 0.0;
+  }
+  else if (current_waypoints_.size() < 1)
+  {
+    return current_waypoints_.at(0).twist.twist.linear.x;
+  }
+
+  const autoware_msgs::waypoint& wp = current_waypoints_.at(1);
+  const geometry_msgs::Point& pw = wp.pose.pose.position;
+  double dist = 0.0;
+  if (past_closest_waypoints_.size() == 2)
+  {
+    const geometry_msgs::Point& p1 = past_closest_waypoints_[1].pose.pose.position;
+    dist = std::hypot(pw.x - p1.x, pw.y - p1.y);
+  }
+  if (past_closest_waypoints_.size() < 2 || dist > 0.0)
+  {
+    past_closest_waypoints_.push_back(wp);
+  }
+
+  const geometry_msgs::Point& p0 = past_closest_waypoints_[0].pose.pose.position;
+  const geometry_msgs::Point& pc = current_pose_.position;
+  const double v0 = past_closest_waypoints_[0].twist.twist.linear.x;
+  const double v1 = wp.twist.twist.linear.x;
+  const double d[3] =
+  {
+    (pw.x - p0.x) * (pw.x - p0.x) + (pw.y - p0.y) * (pw.y - p0.y),
+    (pc.x - p0.x) * (pc.x - p0.x) + (pc.y - p0.y) * (pc.y - p0.y),
+    (pw.x - pc.x) * (pw.x - pc.x) + (pw.y - pc.y) * (pw.y - pc.y)
+  };
+  if (d[0] < 1e-8)
+  {
+    return v0;
+  }
+  else
+  {
+    const double rate = (d[0] + d[1] - d[2]) / (2 * d[0]);
+    const double vel = (rate < 0.0) ? v0 :
+                       (rate > 1.0) ? v1 :
+                       v1 * rate + v0 * (1.0 - rate);
+    return vel;
+  }
 }
 
 }  // waypoint_follower
