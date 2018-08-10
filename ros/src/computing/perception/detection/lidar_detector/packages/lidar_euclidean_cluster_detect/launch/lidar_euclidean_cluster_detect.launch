@@ -17,7 +17,7 @@
   <arg name="keep_lane_right_distance" default="5" />
   <arg name="max_boundingbox_side" default="10" />
   <arg name="cluster_merge_threshold" default="1.5" />
-  <arg name="segment_distance" default="0.75" />
+  <arg name="clustering_distance" default="0.75" />
 
   <arg name="use_vector_map" default="true" />
   <arg name="vectormap_frame" default="map" />
@@ -33,16 +33,16 @@
 
   <arg name="use_multiple_thres" default="false" />
 
-  <arg name="first_euclid_thres" default="0.5" />
-  <arg name="second_euclid_thres" default="1.1" />
-  <arg name="third_euclid_thres" default="1.6" />
-  <arg name="fourth_euclid_thres" default="2.1" />
-  <arg name="fifth_euclid_thres" default="2.6" />
+  <arg name="first_clustering_distance" default="0.5" />
+  <arg name="second_clustering_distance" default="1.1" />
+  <arg name="third_clustering_distance" default="1.6" />
+  <arg name="fourth_clustering_distance" default="2.1" />
+  <arg name="fifth_clustering_distance" default="2.6" />
 
-  <arg name="first_segment_range" default="15.0" />
-  <arg name="second_segment_range" default="30.0" />
-  <arg name="third_segment_range" default="45.0" />
-  <arg name="fourth_segment_range" default="60.0" />
+  <arg name="first_clustering_range" default="15.0" />
+  <arg name="second_clustering_range" default="30.0" />
+  <arg name="third_clustering_range" default="45.0" />
+  <arg name="fourth_clustering_range" default="60.0" />
 
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
@@ -67,19 +67,19 @@
     <param name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)" />
     <param name="wayarea_no_road_value" value="$(arg wayarea_no_road_value)" />
     <param name="remove_points_upto" value="$(arg remove_points_upto)" />
-    <param name="segment_distance" value="$(arg segment_distance)" />
+    <param name="clustering_distance" value="$(arg clustering_distance)" />
     <param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
     <param name="use_gpu" value="$(arg use_gpu)" />
     <param name="use_multiple_thres" value="$(arg use_multiple_thres)" />
-    <param name="first_euclid_thres" value="$(arg first_euclid_thres)" />
-    <param name="second_euclid_thres" value="$(arg second_euclid_thres)" />
-    <param name="third_euclid_thres" value="$(arg third_euclid_thres)" />
-    <param name="fourth_euclid_thres" value="$(arg fourth_euclid_thres)" />
-    <param name="fifth_euclid_thres" value="$(arg fifth_euclid_thres)" />
-    <param name="first_segment_range" value="$(arg first_segment_range)" />
-    <param name="second_segment_range" value="$(arg second_segment_range)" />
-    <param name="third_segment_range" value="$(arg third_segment_range)" />
-    <param name="fourth_segment_range" value="$(arg fourth_segment_range)" />
+    <param name="first_clustering_distance" value="$(arg first_clustering_distance)" />
+    <param name="second_clustering_distance" value="$(arg second_clustering_distance)" />
+    <param name="third_clustering_distance" value="$(arg third_clustering_distance)" />
+    <param name="fourth_clustering_distance" value="$(arg fourth_clustering_distance)" />
+    <param name="fifth_clustering_distance" value="$(arg fifth_clustering_distance)" />
+    <param name="first_clustering_range" value="$(arg first_clustering_range)" />
+    <param name="second_clustering_range" value="$(arg second_clustering_range)" />
+    <param name="third_clustering_range" value="$(arg third_clustering_range)" />
+    <param name="fourth_clustering_range" value="$(arg fourth_clustering_range)" />
 
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>

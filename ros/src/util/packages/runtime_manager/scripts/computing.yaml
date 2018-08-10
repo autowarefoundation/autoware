@@ -4092,9 +4092,9 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : segment_distance
-      desc    : segment_distance desc sample
-      label   : 'segment distance'
+    - name    : clustering_distance
+      desc    : clustering_distance desc sample
+      label   : 'clustering distance'
       min       : 0
       max       : 10
       v       : 0.75
@@ -4235,81 +4235,81 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : first_euclid_thres
-      desc    : first_euclid_thres desc sample
-      label   : 'first_euclid_thres'
+    - name    : first_clustering_distance
+      desc    : first_clustering_distance desc sample
+      label   : 'first_clustering_distance'
       min       : 0
       max       : 10
       v       : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : second_euclid_thres
-      desc    : second_euclid_thres desc sample
-      label   : 'second_euclid_thres'
+    - name    : second_clustering_distance
+      desc    : second_clustering_distance desc sample
+      label   : 'second_clustering_distance'
       min       : 0
       max       : 10
       v       : 1.1
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  third_euclid_thres
-      desc    :  third_euclid_thres desc sample
-      label   : 'third_euclid_thres'
+    - name    :  third_clustering_distance
+      desc    :  third_clustering_distance desc sample
+      label   : 'third_clustering_distance'
       min       : 0
       max       : 10
       v       : 1.6
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  fourth_euclid_thres
-      desc    :  fourth_euclid_thres desc sample
-      label   : 'fourth_euclid_thres'
+    - name    :  fourth_clustering_distance
+      desc    :  fourth_clustering_distance desc sample
+      label   : 'fourth_clustering_distance'
       min       : 0
       max       : 10
       v       : 2.1
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  fifth_euclid_thres
-      desc    :  fifth_euclid_thres desc sample
-      label   : 'fifth_euclid_thres'
+    - name    :  fifth_clustering_distance
+      desc    :  fifth_clustering_distance desc sample
+      label   : 'fifth_clustering_distance'
       min       : 0
       max       : 10
       v       : 2.6
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  first_segment_range
-      desc    :  first_segment_range desc sample
-      label   : 'first_segment_range'
+    - name    :  first_clustering_range
+      desc    :  first_clustering_range desc sample
+      label   : 'first_clustering_range'
       min       : 0
       max       : 100
       v       : 15.0
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  second_segment_range
-      desc    :  second_segment_range desc sample
-      label   : 'second_segment_range'
+    - name    :  second_clustering_range
+      desc    :  second_clustering_range desc sample
+      label   : 'second_clustering_range'
       min       : 0
       max       : 100
       v       : 30.0
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  third_segment_range
-      desc    :  third_segment_range desc sample
-      label   : 'third_segment_range'
+    - name    :  third_clustering_range
+      desc    :  third_clustering_range desc sample
+      label   : 'third_clustering_range'
       min       : 0
       max       : 100
       v       : 45.0
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    :  fourth_segment_range
-      desc    :  fourth_segment_range desc sample
-      label   : 'fourth_segment_range'
+    - name    :  fourth_clustering_range
+      desc    :  fourth_clustering_range desc sample
+      label   : 'fourth_clustering_range'
       min       : 0
       max       : 100
       v       : 60.0
