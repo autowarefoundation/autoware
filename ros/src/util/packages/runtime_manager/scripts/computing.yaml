@@ -269,12 +269,12 @@ subs :
       - name : lidar_kf_contour_track
         desc : part of open planner perception package
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
-        param: lidar_kf_contour_track
+        param: lidar_kf_contour_track_param
 
       - name : lidar_imm_ukf_pda_track
         desc : lidar_imm_ukf_pda_track desc sample
         cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
-        param: imm_ukf_pda_tracker
+        param: lidar_imm_ukf_pda_track_param
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -1004,9 +1004,9 @@ params :
       max   : 10
       v     : 9
 
-  - name  : lidar_imm_ukf_pda_track
+  - name  : lidar_imm_ukf_pda_track_param
     vars  :
-    - name    : input_topic_
+    - name    : tracker_input_topic
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
@@ -1014,7 +1014,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : output_topic_
+    - name    : tracker_output_topic
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
@@ -1022,7 +1022,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : pointcloud_frame_
+    - name    : pointcloud_frame
       desc    : pointcloud_frame_ desc sample
       label   : 'pointcloud frame'
       kind    : str
@@ -1030,7 +1030,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracking_frame_
+    - name    : tracking_frame
       desc    : trakcing_frame_ desc sample
       label   : 'tracking frame'
       kind    : str
@@ -1038,7 +1038,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : life_time_thres_
+    - name    : life_time_thres
       desc    : life_time_thres_ desc sample
       label   : 'life time thres'
       min       : 1
@@ -1047,16 +1047,16 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : gating_thres_
+    - name    : gating_thres
       desc    : gating_thres_ desc sample
       label   : 'gating thres'
       min       : 0
-      max       : 20
+      max       : 100
       v       : 9.22
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : gate_probability_
+    - name    : gate_probability
       desc    : gate_probability_ desc sample
       label   : 'gate probability'
       min       : 0
@@ -1065,7 +1065,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : detection_probability_
+    - name    : detection_probability
       desc    : detection_probability_ desc sample
       label   : 'detection probability'
       min       : 0
@@ -1074,7 +1074,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance_thres_
+    - name    : distance_thres
       desc    : distance_thres_ desc sample
       label   : 'distance thres'
       min       : 0
@@ -1083,7 +1083,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : static_distance_thres_
+    - name    : static_distance_thres
       desc    : static_distance_thres_ desc sample
       label   : 'static distance thres'
       min       : 0
@@ -1093,7 +1093,7 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : kf_contour_tracker
+  - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
       desc : select the type of tracking
