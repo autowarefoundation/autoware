@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_fake_perception)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
