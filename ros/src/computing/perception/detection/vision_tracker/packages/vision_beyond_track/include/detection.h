@@ -96,6 +96,18 @@ namespace beyondtrack {
     Paths pd_3d_convhull_clip_;
     Paths cd_3d_convhull_clip_;
 
+    Detection(int x, int y, int width, int height) {
+      dno = -1;
+      bbox[0] = (double)x;
+      bbox[1] = (double)y;
+      bbox[2] = (double)(x + width);
+      bbox[3] = (double)(y + height);
+      std::cout << "bbox: " << bbox[0] << '\t' << bbox[1] << '\t' << bbox[2] << '\t' << bbox[3] << '\n';
+      yaw = deg2rad(-90);
+      sigma_3D = (cv::Mat_<double>(4, 4) <<
+                    1.3, 0, 0, 0, 0, 1.1, 0, 0, 0, 0, 1.1, 0, 0, 0, 0, deg2rad(0));
+    }
+
     Detection(vector<double> det) {
       dno = -1;
       bbox[0] = det[0];
@@ -105,7 +117,6 @@ namespace beyondtrack {
       yaw = deg2rad(-90);
       sigma_3D = (cv::Mat_<double>(4, 4) <<
                     1.3, 0, 0, 0, 0, 1.1, 0, 0, 0, 0, 1.1, 0, 0, 0, 0, deg2rad(0));
-
     }
 
     void propagate_prev_det(cv::Mat k, cv::Mat motion) {

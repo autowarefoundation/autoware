@@ -112,7 +112,8 @@ int main(int argc, const char** argv) {
     auto msec = std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
     std::cout << "Tracking: " << msec << " milli sec \n";
 
-    visualize_results(img_list[sn], tracker.get_results());
+    cv::Mat src_img = cv::imread(img_list[sn], 1);
+    beyondtrack::visualize_results(src_img, tracker.get_results());
   }
   return 0;
 }

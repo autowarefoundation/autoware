@@ -33,6 +33,7 @@
  */
 
 #include "vision_beyond_track.h"
+#include "visualizer.h"
 #include <chrono>
 
 using namespace cv;
@@ -47,7 +48,6 @@ beyondtrack::ObjectCuboid beyondtrack::Detection::params_carCuboid = beyondtrack
 
 namespace beyondtrack {
   void BeyondTracker::initialize(cv::Mat n, double h) {
-    std::cout << "Initialize Tracker\n";
     for (auto&& cd: cur_det) {
       cd.dno = global_id;
       global_id++;
@@ -208,21 +208,39 @@ namespace beyondtrack {
 void BeyondTrackerNode::parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
   // TODO
+  detections_.clear();
+  for (const auto& e: in_vision_detections->objects) {
+    if (e.label == "person" || e.label == "car" || e.label == "truck") {
+      beyondtrack::Detection detection(e.x, e.y, e.width, e.height);
+      detections_.push_back(detection);
+      // std::cout << "##########################\n";
+      // std::cout << "Class: " << e.id << '\t' << e.label << '\t' << e.score << '\n';
+      // std::cout << "Input bbox: " << detection.bbox[0] << '\t' << detection.bbox[1] << '\t' << detection.bbox[2] << '\t' << detection.bbox[3] << '\n';
+    }
+  }
 }
 
 void BeyondTrackerNode::vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
-    if (camera_info_ok_) {
-      if (!use_motion_) {
-        pose_ = cv::Mat::zeros(1, 4, CV_64FC1);
-      } else {
-        // TODO
-      }
+  ROS_INFO("[%s] DetectedObjectArray obtained. Size: %d", __APP_NAME__, in_vision_detections->objects.size());
 
-      parse_detected_object(in_vision_detections);
-
-      tracker_.process(detections_, pose_, ground_angle_, camera_height_);
+  if (camera_info_ok_) {
+    if (!use_motion_) {
+      pose_ = cv::Mat::zeros(1, 4, CV_64FC1);
+    } else {
+      // TODO
     }
+
+    parse_detected_object(in_vision_detections);
+
+    tracker_.process(detections_, pose_, ground_angle_, camera_height_);
+  }
+
+  if (image_ok_) {
+    beyondtrack::visualize_results(mat_image_, tracker_.get_results());
+    // cv::imshow("Image", mat_image_);
+    // cv::waitKey(200);
+  }
 }
 
 
@@ -256,7 +274,6 @@ void BeyondTrackerNode::image_callback(const sensor_msgs::ImageConstPtr& in_imag
   // int image_height = msg->height;
   // int image_width = msg->width;
   image_ok_ = true;
-  ROS_INFO("[%s] Image obtained.", __APP_NAME__);
 }
 
 void BeyondTrackerNode::config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
@@ -325,15 +342,14 @@ void BeyondTrackerNode::Run()
                                         1, &BeyondTrackerNode::vision_detection_callback, this);
 
     // TODO
-    ground_angle_ = cv::Mat::zeros(1, 3, CV_64FC1);
-    ground_angle_.at<double>(0, 1) = 1;
-
-    // TODO
-    private_node_handle.param<double>("camera_height", camera_height_, 1.72);
+    private_node_handle.param<double>("camera_height", camera_height_, 1.2);
     ROS_INFO("[%s] camera height: %f",__APP_NAME__, camera_height_);
 
 
     ROS_INFO_STREAM( __APP_NAME__ << "" );
+
+    ground_angle_ = cv::Mat::zeros(1, 3, CV_64FC1);
+    ground_angle_.at<double>(0, 1) = 1;
 
     tracker_ = beyondtrack::BeyondTracker();
 

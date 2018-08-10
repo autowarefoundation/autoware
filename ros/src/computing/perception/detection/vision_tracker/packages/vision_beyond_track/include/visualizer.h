@@ -37,6 +37,7 @@
 
 #include "detection.h"
 #include <opencv2/opencv.hpp>
+#include <iostream>
 
 namespace beyondtrack {
   static cv::Scalar color_list[26] = {
@@ -68,20 +69,42 @@ namespace beyondtrack {
     cv::Scalar(123, 97, 114),
   };
 
-  void visualize_results(string img_path, vector<Detection> outputs){
-    cv::Mat src_img = cv::imread(img_path, 1);
-    for (const auto& e: outputs) {
-      cv::Rect rec = cv::Rect(e.bbox[0], e.bbox[1], e.bbox[2]-e.bbox[0], e.bbox[3]-e.bbox[1]);
-      cv::Scalar c = color_list[e.dno % 26]; //cv::Scalar(0, 125, 125);
+  void visualize_results(cv::Mat src_img, vector<Detection> outputs){
+    // std::cout << "Image width, height: " << src_img.size() << "\n";
+    int width = src_img.size().width;
+    int height = src_img.size().height;
+    for (auto&& e: outputs) {
+      // std::cout << "Output bbox: " << e.bbox[0] << '\t' << e.bbox[1] << '\t' << e.bbox[2] << '\t' << e.bbox[3] << '\n';
+      double bbox[4];
+
+      for (int i=0; i<4; ++i) {
+        double thres;
+        if (i % 2 == 0) {
+          thres = width;
+        } else {
+          thres = height;
+        }
+
+        bbox[i] = e.bbox[i];
+
+        if (bbox[i] < 0) bbox[i] = 0;
+        if (bbox[i] >= thres) bbox[i] = thres - 1;
+      }
+
+      cv::Rect rec = cv::Rect(bbox[0],
+                              bbox[1],
+                              bbox[2]-bbox[0],
+                              bbox[3]-bbox[1]);
+      cv::Scalar c = color_list[e.dno % 26];
       cv::Mat roi = src_img(rec);
       cv::Mat color(roi.size(), CV_8UC3, c);
       double alpha = 0.4;
       cv::addWeighted(color, alpha, roi, 1.0 - alpha , 0.0, roi);
       cv::rectangle(src_img, rec, c, 2, 1);
       if (e.dno > 100) {
-        rec = cv::Rect(e.bbox[0], e.bbox[1]-15, 27, 15);
+        rec = cv::Rect(bbox[0], bbox[1]-15, 27, 15);
       } else {
-        rec = cv::Rect(e.bbox[0], e.bbox[1]-15, 20, 15);
+        rec = cv::Rect(bbox[0], bbox[1]-15, 20, 15);
       }
       c = color_list[0]; //cv::Scalar(0, 125, 125);
       roi = src_img(rec);
@@ -90,9 +113,9 @@ namespace beyondtrack {
       cv::addWeighted(white, alpha, roi, 1.0 - alpha , 0.0, roi);
       cv::Point txt_p;
       if (e.dno >= 10) {
-        txt_p = cv::Point(e.bbox[0], e.bbox[1]-3);
+        txt_p = cv::Point(bbox[0], bbox[1]-3);
       } else {
-        txt_p = cv::Point(e.bbox[0]+5, e.bbox[1]-3);
+        txt_p = cv::Point(bbox[0]+5, bbox[1]-3);
       }
 
       int fontface = cv::FONT_HERSHEY_SIMPLEX;
