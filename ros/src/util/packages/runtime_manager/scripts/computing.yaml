@@ -4227,6 +4227,95 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : use_multiple_thres
+      desc    : use_multiple_thres desc sample
+      label   : 'use_multiple_thres'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : first_euclid_thres
+      desc    : first_euclid_thres desc sample
+      label   : 'first_euclid_thres'
+      min       : 0
+      max       : 10
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : second_euclid_thres
+      desc    : second_euclid_thres desc sample
+      label   : 'second_euclid_thres'
+      min       : 0
+      max       : 10
+      v       : 1.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  third_euclid_thres
+      desc    :  third_euclid_thres desc sample
+      label   : 'third_euclid_thres'
+      min       : 0
+      max       : 10
+      v       : 1.6
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  fourth_euclid_thres
+      desc    :  fourth_euclid_thres desc sample
+      label   : 'fourth_euclid_thres'
+      min       : 0
+      max       : 10
+      v       : 2.1
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  fifth_euclid_thres
+      desc    :  fifth_euclid_thres desc sample
+      label   : 'fifth_euclid_thres'
+      min       : 0
+      max       : 10
+      v       : 2.6
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  first_segment_range
+      desc    :  first_segment_range desc sample
+      label   : 'first_segment_range'
+      min       : 0
+      max       : 100
+      v       : 15.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  second_segment_range
+      desc    :  second_segment_range desc sample
+      label   : 'second_segment_range'
+      min       : 0
+      max       : 100
+      v       : 30.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  third_segment_range
+      desc    :  third_segment_range desc sample
+      label   : 'third_segment_range'
+      min       : 0
+      max       : 100
+      v       : 45.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    :  fourth_segment_range
+      desc    :  fourth_segment_range desc sample
+      label   : 'fourth_segment_range'
+      min       : 0
+      max       : 100
+      v       : 60.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
 
   - name  : pixel_cloud_fusion_params

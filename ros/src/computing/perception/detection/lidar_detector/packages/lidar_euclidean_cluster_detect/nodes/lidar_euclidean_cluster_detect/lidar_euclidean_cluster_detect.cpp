@@ -152,6 +152,10 @@ std::vector<cv::Scalar> _colors;
 pcl::PointCloud<pcl::PointXYZ> _sensor_cloud;
 visualization_msgs::Marker _visualization_marker;
 
+static bool _use_multiple_thres;
+std::vector<double> _clustering_thresholds;
+std::vector<double> _clustering_distances;
+
 tf::StampedTransform* _transform;
 tf::StampedTransform* _velodyne_output_transform;
 tf::TransformListener* _transform_listener;
@@ -635,34 +639,92 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
   // 3 => 45-60 d=2.1
   // 4 => >60   d=2.6
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
-
-  for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++)
-  {
-    pcl::PointXYZ current_point;
-    current_point.x = in_cloud_ptr->points[i].x;
-    current_point.y = in_cloud_ptr->points[i].y;
-    current_point.z = in_cloud_ptr->points[i].z;
-
-    cloud_ptr->points.push_back(current_point);
-  }
-
-#ifdef GPU_CLUSTERING
   std::vector<ClusterPtr> all_clusters;
-  if (_use_gpu)
+
+  if(!_use_multiple_thres)
   {
-    all_clusters =
-        clusterAndColorGpu(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++)
+    {
+      pcl::PointXYZ current_point;
+      current_point.x = in_cloud_ptr->points[i].x;
+      current_point.y = in_cloud_ptr->points[i].y;
+      current_point.z = in_cloud_ptr->points[i].z;
+
+      cloud_ptr->points.push_back(current_point);
+    }
+#ifdef GPU_CLUSTERING
+    if (_use_gpu)
+    {
+      all_clusters =
+          clusterAndColorGpu(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+    }
+    else
+    {
+      all_clusters =
+          clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+    }
+#else
+    std::vector<ClusterPtr> all_clusters =
+        clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+#endif
   }
   else
   {
-    all_clusters =
-        clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
-  }
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
+    for (unsigned int i = 0; i < cloud_segments_array.size(); i++)
+    {
+      pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+      cloud_segments_array[i] = tmp_cloud;
+    }
+
+    for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++) {
+      pcl::PointXYZ current_point;
+      current_point.x = in_cloud_ptr->points[i].x;
+      current_point.y = in_cloud_ptr->points[i].y;
+      current_point.z = in_cloud_ptr->points[i].z;
+
+      float origin_distance = sqrt(pow(current_point.x, 2) + pow(current_point.y, 2));
+
+      if (origin_distance < _clustering_distances[0])
+      {
+        cloud_segments_array[0]->points.push_back(current_point);
+      }
+      else if (origin_distance < _clustering_distances[1])
+      {
+        cloud_segments_array[1]->points.push_back(current_point);
+      }
+      else if (origin_distance < _clustering_distances[2])
+      {
+        cloud_segments_array[2]->points.push_back(current_point);
+      }
+      else if (origin_distance < _clustering_distances[3])
+      {
+        cloud_segments_array[3]->points.push_back(current_point);
+      }
+      else
+      {
+        cloud_segments_array[4]->points.push_back(current_point);
+      }
+    }
+
+    for (unsigned int i = 0; i < cloud_segments_array.size(); i++) {
+#ifdef GPU_CLUSTERING
+        std::vector<ClusterPtr> local_clusters;
+        if (_use_gpu) {
+            local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
+                                                in_out_centroids, _clustering_thresholds[i]);
+        } else {
+            local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
+                                             in_out_centroids, _clustering_thresholds[i]);
+        }
 #else
-  std::vector<ClusterPtr> all_clusters =
-      clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _segment_distance);
+        std::vector<ClusterPtr> local_clusters = clusterAndColor(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_thresholds[i]);
 #endif
+        all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
+    }
+  }
 
   // Clusters can be merged or checked in here
   //....
@@ -1220,6 +1282,43 @@ int main(int argc, char** argv)
 
   private_nh.param("use_gpu", _use_gpu, false);
   ROS_INFO("use_gpu: %d", _use_gpu);
+
+  double first_euclid_thres;
+  double second_euclid_thres;
+  double third_euclid_thres;
+  double fourth_euclid_thres;
+  double fifth_euclid_thres;
+
+  double first_segment_range;
+  double second_segment_range;
+  double third_segment_range;
+  double fourth_segment_range;
+
+  private_nh.param("use_multiple_thres", _use_multiple_thres, false);
+  ROS_INFO("use_multiple_thres: %d", _use_multiple_thres);
+
+  private_nh.param("first_euclid_thres",  first_euclid_thres, 0.5);
+  ROS_INFO("first_euclid_thres: %f",      first_euclid_thres);
+  private_nh.param("second_euclid_thres", second_euclid_thres, 1.1);
+  ROS_INFO("second_euclid_thres: %f",     second_euclid_thres);
+  private_nh.param("third_euclid_thres",  third_euclid_thres, 1.6);
+  ROS_INFO("third_euclid_thres: %f",      third_euclid_thres);
+  private_nh.param("fourth_euclid_thres", fourth_euclid_thres, 2.1);
+  ROS_INFO("fourth_euclid_thres: %f",     fourth_euclid_thres);
+  private_nh.param("fifth_euclid_thres",  fifth_euclid_thres, 2.6);
+  ROS_INFO("fifth_euclid_thres: %f",      fifth_euclid_thres);
+
+  private_nh.param("first_segment_range",  first_segment_range, 15.0);
+  ROS_INFO("first_segment_range: %f",      first_segment_range);
+  private_nh.param("second_segment_range", second_segment_range, 30.0);
+  ROS_INFO("second_segment_range: %f",     second_segment_range);
+  private_nh.param("third_segment_range",  third_segment_range, 45.0);
+  ROS_INFO("third_segment_range: %f",      third_segment_range);
+  private_nh.param("fourth_segment_range", fourth_segment_range, 60.0);
+  ROS_INFO("fourth_segment_range: %f",     fourth_segment_range);
+
+  _clustering_thresholds = {first_euclid_thres, second_euclid_thres, third_euclid_thres, fourth_euclid_thres, fifth_euclid_thres};
+  _clustering_distances  = {first_segment_range, second_segment_range, third_segment_range, fourth_segment_range};
 
   _velodyne_transform_available = false;
 

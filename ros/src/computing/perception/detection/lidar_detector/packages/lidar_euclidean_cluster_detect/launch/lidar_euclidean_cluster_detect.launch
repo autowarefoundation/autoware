@@ -31,6 +31,19 @@
 
   <arg name="use_gpu" default="false" />
 
+  <arg name="use_multiple_thres" default="false" />
+
+  <arg name="first_euclid_thres" default="0.5" />
+  <arg name="second_euclid_thres" default="1.1" />
+  <arg name="third_euclid_thres" default="1.6" />
+  <arg name="fourth_euclid_thres" default="2.1" />
+  <arg name="fifth_euclid_thres" default="2.6" />
+
+  <arg name="first_segment_range" default="15.0" />
+  <arg name="second_segment_range" default="30.0" />
+  <arg name="third_segment_range" default="45.0" />
+  <arg name="fourth_segment_range" default="60.0" />
+
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
     <param name="points_node" value="$(arg points_node)" /> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
@@ -57,6 +70,17 @@
     <param name="segment_distance" value="$(arg segment_distance)" />
     <param name="cluster_merge_threshold" value="$(arg cluster_merge_threshold)" />
     <param name="use_gpu" value="$(arg use_gpu)" />
+    <param name="use_multiple_thres" value="$(arg use_multiple_thres)" />
+    <param name="first_euclid_thres" value="$(arg first_euclid_thres)" />
+    <param name="second_euclid_thres" value="$(arg second_euclid_thres)" />
+    <param name="third_euclid_thres" value="$(arg third_euclid_thres)" />
+    <param name="fourth_euclid_thres" value="$(arg fourth_euclid_thres)" />
+    <param name="fifth_euclid_thres" value="$(arg fifth_euclid_thres)" />
+    <param name="first_segment_range" value="$(arg first_segment_range)" />
+    <param name="second_segment_range" value="$(arg second_segment_range)" />
+    <param name="third_segment_range" value="$(arg third_segment_range)" />
+    <param name="fourth_segment_range" value="$(arg fourth_segment_range)" />
+
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
 
