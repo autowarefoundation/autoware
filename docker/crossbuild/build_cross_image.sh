@@ -17,7 +17,7 @@ then
         --build-arg AUTOWARE_DOCKER_ARCH=${AUTOWARE_DOCKER_ARCH} \
         --build-arg AUTOWARE_TARGET_ARCH=${AUTOWARE_TARGET_ARCH} \
         --build-arg AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM} \
-        -t autoware/crossbuild:${AUTOWARE_TARGET_PLATFORM}-kinetic-1.0.0 \
+        -t autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809 \
         -f Dockerfile.kinetic-crossbuild .
 
     # Deregister QEMU as a handler for non-x86 targets

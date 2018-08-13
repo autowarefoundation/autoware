@@ -28,7 +28,7 @@ then
         -v ${PWD}/../:${AUTOWARE_HOME} \
         -w ${AUTOWARE_HOME}/ros \
         -u ${UID}:${UID} \
-        autoware/crossbuild:${AUTOWARE_TARGET_PLATFORM}-kinetic-1.0.0 \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809 \
         bash \
         -c "\
         source /opt/ros/kinetic/setup.bash && \
