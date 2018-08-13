@@ -4237,7 +4237,7 @@ params :
         delim       : ':='
     - name    : clustering_ranges
       desc    : clustering_ranges desc sample
-      label   : 'clustering_ranges (4 with no space)'
+      label   : 'clustering_ranges (no space)'
       kind    : str
       v       : '[15,30,45,60]'
       cmd_param :
@@ -4245,7 +4245,7 @@ params :
         delim       : ':='
     - name    : clustering_distances
       desc    : clustering_distances desc sample
-      label   : 'clustering_distances (5 with no space)'
+      label   : 'clustering_distances (no space)'
       kind    : str
       v       : '[0.5,1.1,1.6,2.1,2.6]'
       cmd_param :

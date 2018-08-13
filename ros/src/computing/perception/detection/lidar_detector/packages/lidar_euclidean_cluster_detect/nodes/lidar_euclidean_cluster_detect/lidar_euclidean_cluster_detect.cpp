@@ -1305,16 +1305,26 @@ int main(int argc, char** argv)
   YAML::Node ranges = YAML::Load(str_ranges);
   size_t distances_size = distances.size();
   size_t ranges_size = ranges.size();
-  if (distances_size != 5 || ranges_size != 4)
+  if (distances_size == 0 || ranges_size == 0)
   {
     ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
-    The size of clustering distance and clustering_ranges shoule be 5 and 4 respectively");
+    The size of clustering distance and clustering_ranges shoule not be 0");
     ros::shutdown();
   }
-  _clustering_distances = { distances[0].as<double>(), distances[1].as<double>(), distances[2].as<double>(),
-                            distances[3].as<double>(), distances[4].as<double>() };
-  _clustering_ranges = { ranges[0].as<double>(), ranges[1].as<double>(), ranges[2].as<double>(),
-                         ranges[3].as<double>() };
+  if ((distances_size - ranges_size) != 1)
+  {
+    ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
+    Expecting that (distances_size - ranges_size) == 1 ");
+    ros::shutdown();
+  }
+  for (size_t i_distance = 0; i_distance < distances_size; i_distance++)
+  {
+    _clustering_distances.push_back(distances[i_distance].as<double>());
+  }
+  for (size_t i_range = 0; i_range < ranges_size; i_range++)
+  {
+    _clustering_ranges.push_back(ranges[i_range].as<double>());
+  }
 
   _velodyne_transform_available = false;
 
