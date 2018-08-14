@@ -14,8 +14,8 @@ Autoware package based on Darknet that supports Yolov3 and Yolov2 image detector
 
 * From a sourced terminal:
 
-`roslaunch vision_darknet_detect vision_yolo3_detect.launch`
-`roslaunch vision_darknet_detect vision_yolo2_detect.launch`
+    - `roslaunch vision_darknet_detect vision_yolo3_detect.launch`
+    - `roslaunch vision_darknet_detect vision_yolo2_detect.launch`
 
 * From Runtime Manager:
 
@@ -46,8 +46,7 @@ Launch file available parameters:
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/obj_car/image_obj`|`autoware_msgs/image_obj`|Contains the coordinates of the bounding box in image coordinates for objects detected as vehicles.|
-|`/obj_person/image_obj`|`autoware_msgs/image_obj`|Contains the coordinates of the bounding box in image coordinates for objects detected as pedestrian.|
+|`/detection/vision_objects`|`autoware_msgs::DetectedObjectArray`|Contains the coordinates of the bounding box in image coordinates for detected objects.|
 
 ### Video
 

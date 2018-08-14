@@ -1,5 +1,5 @@
 #include <chrono>
-
+#include <ros/package.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
@@ -22,6 +22,7 @@ ImmUkfPda::ImmUkfPda()
   use_vectormap_              = false;
   use_sukf_                   = false;
   use_robust_adaptive_filter_ = true;
+  use_benchmark_              = true;
   // assign unique ukf_id_ to each tracking targets
   target_id_ = 0;
 }
@@ -635,6 +636,15 @@ void ImmUkfPda::removeUnnecessaryTarget()
   targets_ = temp_targets;
 }
 
+void ImmUkfPda::dumpResultText()
+{
+  std::string path = ros::package::getPath("lidar_imm_ukf_pda_track");
+  std::cout << "pkg path " << path << std::endl;
+  // ofstream outputfile("test.txt");
+  // outputfile<<"test";
+  // outputfile.close();
+}
+
 void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
 {
   visualization_msgs::MarkerArray texts_markers;
@@ -864,6 +874,11 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   makeOutput(input, jskbboxes_output, detected_objects_output);
 
   removeUnnecessaryTarget();
+
+  if(use_benchmark_)
+  {
+    dumpResultText();
+  }
 
   if(jskbboxes_output.boxes.size() != detected_objects_output.objects.size())
   {

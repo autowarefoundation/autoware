@@ -58,6 +58,9 @@ private:
   //switch robust adaptive filter
   bool use_robust_adaptive_filter_;
 
+  // dumping tesult text for benchmark
+  bool use_benchmark_;
+
   std::string input_topic_;
   std::string output_topic_;
 
@@ -122,6 +125,8 @@ private:
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
+
+  void dumpResultText();
 
   void pubPoints(const autoware_msgs::DetectedObjectArray& input);
 
