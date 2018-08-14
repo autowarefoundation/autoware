@@ -3,8 +3,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-// for debug
-int g_count_ = 0;
 
 ImmUkfPda::ImmUkfPda()
 {
@@ -25,6 +23,7 @@ ImmUkfPda::ImmUkfPda()
   use_benchmark_              = true;
   // assign unique ukf_id_ to each tracking targets
   target_id_ = 0;
+  frame_count_ = 0;
 }
 
 
@@ -639,8 +638,13 @@ void ImmUkfPda::removeUnnecessaryTarget()
 void ImmUkfPda::dumpResultText()
 {
   std::string path = ros::package::getPath("lidar_imm_ukf_pda_track");
-  std::cout << "pkg path " << path << std::endl;
-  // ofstream outputfile("test.txt");
+  // std::cout << "pkg path " << path << std::endl;
+  std::ofstream outputfile(path + "/result.txt");
+  for(size_t i = 0; i < targets_.size(); i++)
+  {
+    outputfile << std::to_string(frame_count_);
+  }
+  // outputfile<<"test";
   // outputfile<<"test";
   // outputfile.close();
 }
@@ -779,8 +783,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   const double det_explode_param = 100;
   const double cov_explode_param = 1000;
 
-  g_count_ ++;
-  std::cout << "<<global callback count>> " << g_count_ << std::endl;
+  std::cout << "<<global callback count>> " << frame_count_ << std::endl;
   if (!init_)
   {
     initTracker(input, timestamp);
@@ -796,7 +799,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
+    // std::cout << "----ukf id ------" << targets_[i].ukf_id_ << std::endl;
     // std::cout << "target lifiteme " << targets_[i].lifetime_ << std::endl;
     // std::cout << "target tracking num " << targets_[i].tracking_num_ << std::endl;
     // reset is_vis_bb_ to false
@@ -856,7 +859,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // std::cout << "x " << std::endl<<targets_[i].x_ctrv_ << std::endl;
     // std::cout << "p " << std::endl<<targets_[i].p_ctrv_ << std::endl;
     // std::cout << "k " << std::endl<<targets_[i].k_cv_ << std::endl;
-    std::cout << "mode prob " << targets_[i].mode_prob_cv_ << " " << targets_[i].mode_prob_ctrv_ << " " << targets_[i].mode_prob_rm_ << std::endl;
+    // std::cout << "mode prob " << targets_[i].mode_prob_cv_ << " " << targets_[i].mode_prob_ctrv_ << " " << targets_[i].mode_prob_rm_ << std::endl;
 
   }
   // end UKF process
@@ -879,6 +882,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   {
     dumpResultText();
   }
+
+  frame_count_ ++;
 
   if(jskbboxes_output.boxes.size() != detected_objects_output.objects.size())
   {

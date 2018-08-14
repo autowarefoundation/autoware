@@ -59,6 +59,7 @@ private:
   bool use_robust_adaptive_filter_;
 
   // dumping tesult text for benchmark
+  int frame_count_;
   bool use_benchmark_;
 
   std::string input_topic_;
