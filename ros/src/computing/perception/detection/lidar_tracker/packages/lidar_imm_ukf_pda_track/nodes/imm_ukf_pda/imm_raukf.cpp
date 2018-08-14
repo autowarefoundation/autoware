@@ -143,6 +143,8 @@ IMM_RAUKF::IMM_RAUKF()
   // bounding box params
   is_best_jsk_bb_empty_ = false;
   is_vis_bb_ = false;
+  jsk_bb_.dimensions.x = 1.0;
+  jsk_bb_.dimensions.y = 1.0;
   best_yaw_ = 100;
   bb_yaw_ = 0;
   bb_area_ = 0;

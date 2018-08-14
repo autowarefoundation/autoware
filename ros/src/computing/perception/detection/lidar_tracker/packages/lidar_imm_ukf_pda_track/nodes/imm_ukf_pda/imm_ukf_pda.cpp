@@ -1,4 +1,5 @@
 #include <chrono>
+#include <stdio.h>
 #include <ros/package.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
@@ -17,13 +18,22 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
 
   init_                       = false;
+
+  // could change below param fot get better performance
   use_vectormap_              = false;
   use_sukf_                   = false;
-  use_robust_adaptive_filter_ = true;
-  use_benchmark_              = true;
+  use_robust_adaptive_filter_ = false;
+  is_benchmark_               = true;
   // assign unique ukf_id_ to each tracking targets
   target_id_ = 0;
   frame_count_ = 0;
+
+  if(is_benchmark_)
+  {
+    std::string path = ros::package::getPath("lidar_imm_ukf_pda_track");
+    result_file_path_ = path + "/benchmark/results/result.txt";
+    remove(result_file_path_.c_str());
+  }
 }
 
 
@@ -234,6 +244,14 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
       target.jsk_bb_.pose       = nearest_object.pose;
       target.jsk_bb_.dimensions = nearest_object.dimensions;
     }
+  }
+  else
+  {
+    autoware_msgs::DetectedObject nearest_object;
+    double min_dist = std::numeric_limits<double>::max();
+    getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
+    target.jsk_bb_.pose       = nearest_object.pose;
+    target.jsk_bb_.dimensions = nearest_object.dimensions;
   }
 }
 
@@ -471,11 +489,11 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   // prevent ukf not to explode
   if (std::isnan(det_s) || det_s > det_explode_param)
   {
-    std::cout << "max det z" << std::endl << max_det_z << std::endl;
-    std::cout << "max det s" << std::endl << max_det_s << std::endl;
-    std::cout << "x cv " << std::endl << target.x_cv_ << std::endl;
-    std::cout << "x ctrv " << std::endl << target.x_ctrv_ << std::endl;
-    std::cout << "x rm " << std::endl << target.x_rm_ << std::endl;
+    // std::cout << "max det z" << std::endl << max_det_z << std::endl;
+    // std::cout << "max det s" << std::endl << max_det_s << std::endl;
+    // std::cout << "x cv " << std::endl << target.x_cv_ << std::endl;
+    // std::cout << "x ctrv " << std::endl << target.x_ctrv_ << std::endl;
+    // std::cout << "x rm " << std::endl << target.x_rm_ << std::endl;
     std::cout << target.ukf_id_ <<" target lost because of det explode" << std::endl;
     target.tracking_num_ = TrackingState::Die;
     is_skip_target = true;
@@ -637,16 +655,24 @@ void ImmUkfPda::removeUnnecessaryTarget()
 
 void ImmUkfPda::dumpResultText()
 {
-  std::string path = ros::package::getPath("lidar_imm_ukf_pda_track");
-  // std::cout << "pkg path " << path << std::endl;
-  std::ofstream outputfile(path + "/result.txt");
+  std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
   for(size_t i = 0; i < targets_.size(); i++)
   {
-    outputfile << std::to_string(frame_count_);
+    outputfile << std::to_string(frame_count_)                     <<" "
+               << std::to_string(targets_[i].ukf_id_)              <<" "
+               << "Unknown"                                        <<" "
+               << "-1"                                             <<" "
+               << "-1"                                             <<" "
+               << "-10"                                            <<" "
+               << "-1 -1 -1 -1"                                    <<" "
+               << std::to_string(targets_[i].jsk_bb_.dimensions.x) <<" "
+               << std::to_string(targets_[i].jsk_bb_.dimensions.y) <<" "
+               << "-1"                                             <<" "
+               << std::to_string(targets_[i].x_merge_(0))          <<" "
+               << std::to_string(targets_[i].x_merge_(1))          <<" "
+               << "-1"                                             <<" "
+               << std::to_string(targets_[i].x_merge_(3))          <<"\n";
   }
-  // outputfile<<"test";
-  // outputfile<<"test";
-  // outputfile.close();
 }
 
 void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
@@ -787,6 +813,11 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   if (!init_)
   {
     initTracker(input, timestamp);
+    if(is_benchmark_)
+    {
+      dumpResultText();
+    }
+    frame_count_ ++;
     return;
   }
 
@@ -878,11 +909,10 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
   removeUnnecessaryTarget();
 
-  if(use_benchmark_)
+  if(is_benchmark_)
   {
     dumpResultText();
   }
-
   frame_count_ ++;
 
   if(jskbboxes_output.boxes.size() != detected_objects_output.objects.size())

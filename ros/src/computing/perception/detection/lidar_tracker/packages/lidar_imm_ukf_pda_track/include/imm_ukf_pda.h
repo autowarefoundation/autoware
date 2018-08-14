@@ -60,7 +60,9 @@ private:
 
   // dumping tesult text for benchmark
   int frame_count_;
-  bool use_benchmark_;
+  bool is_benchmark_;
+  std::string result_file_path_;
+  // std::ofstream result_file_;
 
   std::string input_topic_;
   std::string output_topic_;
@@ -84,7 +86,7 @@ private:
 
   ModelBasePrediction prediction_;
 
-  std::ofstream csv_file_;
+  // std::ofstream csv_file_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
