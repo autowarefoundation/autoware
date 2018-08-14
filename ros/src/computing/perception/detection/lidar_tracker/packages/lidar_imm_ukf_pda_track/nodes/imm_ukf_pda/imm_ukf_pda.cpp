@@ -141,16 +141,23 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 {
   for (size_t i = 0; i < jskbboxes_output.boxes.size(); i++)
   {
-    geometry_msgs::PoseStamped pose_in, pose_out;
+    geometry_msgs::PoseStamped jsk_pose_in, jsk_pose_out, detected_pose_in, detected_pose_out;
 
-    pose_in.header = jskbboxes_output.header;
-    pose_in.header.frame_id = tracking_frame_;
-    pose_in.pose = jskbboxes_output.boxes[i].pose;
+    jsk_pose_in.header               = jskbboxes_output.header;
+    jsk_pose_in.header.frame_id      = tracking_frame_;
+    jsk_pose_in.pose                 = jskbboxes_output.boxes[i].pose;
+    detected_pose_in.header          = jskbboxes_output.header;
+    detected_pose_in.header.frame_id = tracking_frame_;
+    detected_pose_in.pose            = detected_objects_output.objects[i].pose;
 
-    tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), pose_in, tracking_frame_, pose_out);
-    pose_out.header.frame_id = jskbboxes_output.header.frame_id = pointcloud_frame_;
-    jskbboxes_output.boxes[i].pose = pose_out.pose;
-    detected_objects_output.objects[i].pose = pose_out.pose;
+    tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), jsk_pose_in, tracking_frame_, jsk_pose_out);
+    tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
+    jsk_pose_out.header.frame_id            = pointcloud_frame_;
+    jskbboxes_output.header.frame_id        = pointcloud_frame_;
+    jskbboxes_output.boxes[i].pose          = jsk_pose_out.pose;
+    detected_pose_out.header.frame_id       = pointcloud_frame_;
+    detected_objects_output.header.frame_id = pointcloud_frame_;
+    detected_objects_output.objects[i].pose = detected_pose_out.pose;
   }
 }
 
@@ -584,58 +591,45 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
                            jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
-  tf::StampedTransform transform;
-  tf_listener_.lookupTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), transform);
-
-  // get yaw angle from tracking_frame_ to pointcloud_frame_ for direction(arrow) visualization
-  tf::Matrix3x3 m(transform.getRotation());
-  double roll, pitch, yaw;
-  m.getRPY(roll, pitch, yaw);
-
   // output.header = input.header;
   jskbboxes_output.header = input.header;
   detected_objects_output.header = input.header;
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // if (targets_[i].is_vis_bb_ && isVisible(targets_[i]))
+    double tx = targets_[i].x_merge_(0);
+    double ty = targets_[i].x_merge_(1);
+
+    double tv = targets_[i].x_merge_(2);
+    double tyaw = targets_[i].x_merge_(3);
+    while (tyaw > M_PI)
+      tyaw -= 2. * M_PI;
+    while (tyaw < -M_PI)
+      tyaw += 2. * M_PI;
+
     if (targets_[i].is_vis_bb_ )
     {
-      double tx = targets_[i].x_merge_(0);
-      double ty = targets_[i].x_merge_(1);
-      double mx = targets_[i].init_meas_(0);
-      double my = targets_[i].init_meas_(1);
-
-      // for static classification
-      targets_[i].dist_from_init_ = sqrt((tx - mx) * (tx - mx) + (ty - my) * (ty - my));
-
-      double tv = targets_[i].x_merge_(2);
-      double tyaw = targets_[i].x_merge_(3) - yaw;
-
-      // std::cout << "ukf_id "<< targets_[i].ukf_id_ << std::endl;
-      // std::cout << "world yaw "<< targets_[i].x_merge_(3) << std::endl;
-
-      while (tyaw > M_PI)
-        tyaw -= 2. * M_PI;
-      while (tyaw < -M_PI)
-        tyaw += 2. * M_PI;
-
       jsk_recognition_msgs::BoundingBox bb;
       bb.header = input.header;
       bb = targets_[i].jsk_bb_;
       updateJskLabel(targets_[i], bb);
       jskbboxes_output.boxes.push_back(bb);
-
-      autoware_msgs::DetectedObject dd;
-      dd.header = input.header;
-      dd.id = targets_[i].ukf_id_;
-      dd.velocity.linear.x = tv;
-      dd.pose = targets_[i].jsk_bb_.pose;
-      dd.dimensions = targets_[i].jsk_bb_.dimensions;
-      // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
-      dd.velocity.linear.y = tyaw;
-      updateLabel(targets_[i], dd);
-      detected_objects_output.objects.push_back(dd);
     }
+    // RPY to convert: 0, 0, targets_[i].x_merge_(3)
+    tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
+    autoware_msgs::DetectedObject dd;
+    dd.header             = input.header;
+    dd.id                 = targets_[i].ukf_id_;
+    dd.velocity.linear.x  = tv;
+    dd.pose               = targets_[i].jsk_bb_.pose;
+    dd.pose.orientation.x = q[0];
+    dd.pose.orientation.y = q[1];
+    dd.pose.orientation.z = q[2];
+    dd.pose.orientation.w = q[3];
+    dd.dimensions         = targets_[i].jsk_bb_.dimensions;
+    dd.pose_reliable      = targets_[i].is_vis_bb_;
+    // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
+    updateLabel(targets_[i], dd);
+    detected_objects_output.objects.push_back(dd);
   }
 }
 
@@ -908,12 +902,6 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   makeOutput(input, jskbboxes_output, detected_objects_output);
 
   removeUnnecessaryTarget();
-
-  if(is_benchmark_)
-  {
-    dumpResultText();
-  }
-  frame_count_ ++;
 
   if(jskbboxes_output.boxes.size() != detected_objects_output.objects.size())
   {

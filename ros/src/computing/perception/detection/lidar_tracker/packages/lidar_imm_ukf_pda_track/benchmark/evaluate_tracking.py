@@ -71,7 +71,7 @@ class trackingEvaluation(object):
              missed         - number of missed targets (FN)
     """
 
-    def __init__(self, data_num, gt_path="../training", min_overlap=0.5, max_truncation = 0, min_height = 25, max_occlusion = 2):
+    def __init__(self, data_num, gt_path="../training", min_overlap=0.01, max_truncation = 0, min_height = 25, max_occlusion = 2):
         # data and parameter
         self.n_frames          = data_num
         self.result_data       = -1
@@ -129,8 +129,6 @@ class trackingEvaluation(object):
 
         # this should be enough to hold all groundtruth trajectories
         # is expanded if necessary and reduced in any case
-        # self.gt_trajectories            = [[] for x in xrange(self.n_sequences)]
-        # self.ign_trajectories           = [[] for x in xrange(self.n_sequences)]
 
     def loadTrackedData(self, result_file_path):
         """
@@ -167,16 +165,12 @@ class trackingEvaluation(object):
         eval_3d = True
         eval_2d = False
 
-        # seq_data           = []
         n_trajectories     = 0
-        # n_trajectories_seq = []
-        # for seq, s_name in enumerate(self.sequence_name):
 
         i              = 0
-        # filename       = os.path.join(root_dir, "%s.txt" % s_name)
         f              = open(file_path, "r")
 
-        f_data         = [[] for x in xrange(self.n_frames)] # current set has only 1059 entries, sufficient length is checked anyway
+        f_data         = [[] for x in range(self.n_frames)] # current set has only 1059 entries, sufficient length is checked anyway
         ids            = []
         n_in_seq       = 0
         id_frame_cache = []
@@ -207,13 +201,14 @@ class trackingEvaluation(object):
             t_data.Z            = float(fields[15])         # Z [m]
             t_data.yaw          = float(fields[16])         # yaw angle [rad]
 
-            # print(t_data)
-            # print(fields)
             # do not consider objects marked as invalid
             # do not consider objects marked as invalid
             if t_data.track_id is -1 and t_data.obj_type != "DontCare":
                 continue
             idx = t_data.frame
+
+            if t_data.frame >= self.n_frames:
+                continue
 
             try:
                 id_frame = (t_data.frame,t_data.track_id)
@@ -231,34 +226,16 @@ class trackingEvaluation(object):
             if t_data.track_id not in ids and t_data.obj_type!="DontCare":
                 ids.append(t_data.track_id)
                 n_trajectories +=1
-                # n_in_seq +=1
-
-            # check if uploaded data provides information for 2D and 3D evaluation
-            # if not loading_groundtruth and eval_2d is True and(t_data.x1==-1 or t_data.x2==-1 or t_data.y1==-1 or t_data.y2==-1):
-            #     eval_2d = False
-            # if not loading_groundtruth and eval_3d is True and(t_data.X==-1000 or t_data.Y==-1000 or t_data.Z==-1000):
-            #     eval_3d = False
-
-        # only add existing frames
-        # n_trajectories_seq.append(n_in_seq)
-        # seq_data.append(f_data)
         f.close()
 
 
         if not loading_groundtruth:
             self.n_tr_trajectories=n_trajectories
             self.result_data = f_data
-            # self.eval_2d = eval_2d
-            # self.eval_3d = eval_3d
-            # self.n_tr_seq = n_trajectories_seq
-            # if self.n_tr_trajectories==0:
-            #     return False
         else:
             # split ground truth and DontCare areas
             self.dcareas     = []
             self.groundtruth = []
-            # for seq_idx in range(len(seq_data)):
-            #     seq_gt = seq_data[seq_idx]
             s_g, s_dc = [],[]
             for f in range(len(f_data)):
                 frame_gts = f_data[f]
@@ -272,7 +249,6 @@ class trackingEvaluation(object):
                 s_dc.append(dc)
             self.dcareas = s_dc
             self.groundtruth = s_g
-            # self.n_gt_seq=n_trajectories_seq
             self.n_gt_trajectories=n_trajectories
         return True
 
@@ -301,8 +277,6 @@ class trackingEvaluation(object):
 
         # go through all frames and associate ground truth and tracker results
         # groundtruth and tracker contain lists for every single frame containing lists of KITTI format detections
-        # fr = 0
-        # ids = 0
         seq_gt                = self.groundtruth
         seq_dc                = self.dcareas # don't care areas
         seq_result_data       = self.result_data
@@ -325,6 +299,7 @@ class trackingEvaluation(object):
         n_gts = 0
         n_trs = 0
 
+
         for i_frame in range(len(seq_gt)):
             frame_gts      = seq_gt[i_frame]
             frame_dcs      = seq_dc[i_frame]
@@ -341,11 +316,9 @@ class trackingEvaluation(object):
             # build cost matrix
             cost_matrix = []
             frame_ids = [[],[]]
-            # print("seq_trajectories ", seq_trajectories)
-            # print("frame gts ",     frame_gts )
-            # print("frame results ", frame_results )
             # loop over ground truth objects in one frame
             for gt in frame_gts:
+                print("location ", gt.X, gt.Y)
                 # save current ids
                 frame_ids[0].append(gt.track_id)
                 frame_ids[1].append(-1)
@@ -373,7 +346,6 @@ class trackingEvaluation(object):
                 seq_trajectories[gt.track_id].append(-1)
                 seq_ignored[gt.track_id].append(False)
 
-            # print("cost matrix ",     cost_matrix )
             if len(frame_gts) is 0:
                 cost_matrix=[[]]
             # associate
@@ -389,10 +361,6 @@ class trackingEvaluation(object):
                                # later such that the corrsponding overlaps can
                                # be subtracted from tmpc for MODP computation
 
-            # print("tmpcs ", tmpcs)
-            # print("seq_ignored ", seq_ignored)
-            # print("seq_ignored ", seq_ignored[0][0])
-            # print("assocition mtr ",association_matrix)
             # mapping for tracker ids and ground truth ids
             for row,col in association_matrix:
                 # apply gating on boxoverlap
@@ -424,25 +392,6 @@ class trackingEvaluation(object):
                                      # this is used to avoid double counting ignored
                                      # cases, see the next loop
 
-            # for result in frame_results:
-            #     ignoredtrackers[result.track_id] = -1
-            #     # ignore detection if it belongs to a neighboring class or is
-            #     # smaller or equal to the minimum height
-            #
-            #     tt_height = abs(tt.y1 - tt.y2)
-            #     if ((self.cls=="car" and tt.obj_type=="van") or (self.cls=="pedestrian" and tt.obj_type=="person_sitting") or tt_height<=self.min_height) and not tt.valid:
-            #         nignoredtracker+= 1
-            #         tt.ignored      = True
-            #         ignoredtrackers[tt.track_id] = 1
-            #         continue
-            #     for d in dc:
-            #         overlap = self.boxoverlap(tt,d,"a")
-            #         if overlap>0.5 and not tt.valid:
-            #             tt.ignored      = True
-            #             nignoredtracker+= 1
-            #             ignoredtrackers[tt.track_id] = 1
-            #             break
-
             # check for ignored FN/TP (truncation or neighboring object class)
             nignoredfn  = 0 # the number of ignored false negatives
             nignoredtp = 0 # the number of ignored true positives
@@ -463,11 +412,6 @@ class trackingEvaluation(object):
                         seq_ignored[gt.track_id][-1] = True
                         gt.ignored = True
                         nignoredtp += 1
-
-                        # if the associated tracker detection is already ignored,
-                        # we want to avoid double counting ignored detections
-                        # if ignoredtrackers[gg.tracker] > 0:
-                        #     nignoredpairs += 1
 
                         # for computing MODP, the overlaps from ignored detections
                         # are subtracted
@@ -493,12 +437,7 @@ class trackingEvaluation(object):
             # count the number of ignored tracker objects
             self.n_itr += nignoredtracker
 
-            # count the number of ignored pairs, i.e. associated tracker and
-            # ground truth objects that are both ignored
-            # self.n_igttr += nignoredpairs
-
             # false negatives = associated gt bboxes exceding association threshold + non-associated gt bboxes
-            #
             tmpfn   += len(frame_gts)-len(association_matrix)-nignoredfn
             self.fn += len(frame_gts)-len(association_matrix)-nignoredfn
             self.ifn += nignoredfn
@@ -507,8 +446,6 @@ class trackingEvaluation(object):
             # mismatches (mme_t)
             tmpfp   += len(frame_results) - tmptp - nignoredtracker - nignoredtp
             self.fp += len(frame_results) - tmptp - nignoredtracker - nignoredtp
-            #tmpfp   = len(t) - tmptp - nignoredtp # == len(t) - (tp - ignoredtp) - ignoredtp
-            #self.fp += len(t) - tmptp - nignoredtp
 
             # update sequence data
             seqtp  += tmptp
@@ -584,24 +521,6 @@ class trackingEvaluation(object):
             if tmptp!=0:
                 MODP_t = tmpc/float(tmptp)
             self.MODP_t.append(MODP_t)
-
-            # print("seq_trajectories ", seq_trajectories)
-            # return
-
-        # remove empty lists for current gt trajectories
-        # self.gt_trajectories[seq_idx]             = seq_trajectories
-        # self.ign_trajectories[seq_idx]            = seq_ignored
-
-        # gather statistics for "per sequence" statistics.
-        # self.n_gts.append(n_gts)
-        # self.n_trs.append(n_trs)
-        # self.tps.append(seqtp)
-        # self.itps.append(seqitp)
-        # self.fps.append(seqfp)
-        # self.fns.append(seqfn)
-        # self.ifns.append(seqifn)
-        # self.n_igts.append(seqigt)
-        # self.n_itrs.append(seqitr)
 
         # compute MT/PT/ML, fragments, idswitches for all groundtruth trajectories
         n_ignored_tr_total = 0
@@ -794,25 +713,9 @@ class trackingEvaluation(object):
         # write summary to file summary_cls.txt
         filename = os.path.join("./results", "summary.txt" )
         dump = open(filename, "w+")
-        print>>dump, summary
+        # print>>dump, summary
+        print(summary, end="", file=dump)
         dump.close()
-
-        # dump all the statistics to the corresponding stats_cls.txt file
-        filename = os.path.join("./results",  "stats.txt")
-        dump = open(filename, "w+")
-        print>>dump, "%.6f " * 21 \
-                % (self.MOTA, self.MOTP, self.MOTAL, self.MODA, self.MODP, \
-                   self.recall, self.precision, self.F1, self.FAR, \
-                   self.MT, self.PT, self.ML, self.tp, self.fp, self.fn, self.id_switches, self.fragments, \
-                   self.n_gt, self.n_gt_trajectories, self.n_tr, self.n_tr_trajectories)
-        dump.close()
-
-        # write description of statistics to description.txt
-        filename = os.path.join("./results",  "description.txt")
-        dump = open(filename, "w+")
-        print>>dump, "MOTA", "MOTP", "MOTAL", "MODA", "MODP", "recall", "precision", "F1", "FAR",
-        print>>dump, "MT", "PT", "ML", "tp", "fp", "fn", "id_switches", "fragments",
-        print>>dump, "n_gt", "n_gt_trajectories", "n_tr", "n_tr_trajectories"
 
 
 def evaluate(velo_data_num, result_file_path, gt_file_path):
@@ -876,4 +779,5 @@ if __name__ == "__main__":
     result_file_path = './results/result.txt'
     velo_data_num    = len(os.listdir(velo_dir))
     dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
-    success = evaluate(velo_data_num, result_file_path, gt_file_path)
+    # success = evaluate(velo_data_num, result_file_path, gt_file_path)
+    success = evaluate(1, result_file_path, gt_file_path)

@@ -151,7 +151,6 @@ IMM_RAUKF::IMM_RAUKF()
 
   // for env classification
   init_meas_ = Eigen::VectorXd(2);
-  dist_from_init_ = 0;
 
   x_merge_yaw_ = 0;
 
