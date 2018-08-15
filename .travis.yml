@@ -65,20 +65,35 @@ before_script:
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
   - if [ "${CROSS_COMPILE}" == "1" ]; then
+      AUTOWARE_HOME=${TRAVIS_BUILD_DIR};
+      AUTOWARE_TARGET_ARCH=aarch64;
+      AUTOWARE_TARGET_PLATFORM=generic-aarch64;
+      AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM};
+      AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM};
+      AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake;
+      AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM};
+
       travis_retry docker run
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
         --rm
-        -v ${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR}
-        -w ${TRAVIS_BUILD_DIR}/ros
-        autoware/crossbuild:aarch64-kinetic-1.0.0
+        -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
+        -w ${AUTOWARE_HOME}/ros
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make
-                -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/ros/cross_toolchain.cmake
-                -DCMAKE_SYSTEM_PROCESSOR=aarch64 clean &&
-              source devel/setup.bash &&
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                --build ${AUTOWARE_BUILD_PATH}
+                clean &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
               catkin_make
-                -DCMAKE_TOOLCHAIN_FILE=${TRAVIS_BUILD_DIR}/ros/cross_toolchain.cmake
-                -DCMAKE_SYSTEM_PROCESSOR=aarch64 -j4";
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                --build ${AUTOWARE_BUILD_PATH}
+                -j4";
     else
       catkin_make clean;
       source devel/setup.bash;

@@ -1,0 +1,12 @@
+<launch>
+    <arg name="detected_objects_range" default="/detection/lidar_objects" />
+    <arg name="detected_objects_vision" default="/detection/vision_objects" />
+    <arg name="camera_info_src" default="/camera_info" />
+    <arg name="sync_topics" default="false" />
+
+    <node name="range_vision_fusion_01" pkg="range_vision_fusion" type="range_vision_fusion" output="screen">
+        <param name="detected_objects_range" value="$(arg detected_objects_range)" />
+        <param name="detected_objects_vision" value="$(arg detected_objects_vision)" />
+        <param name="camera_info_src" value="$(arg camera_info_src)" />
+    </node>
+</launch>
