@@ -68,7 +68,6 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
   // relayJskbbox(input, jskbboxes_output);
-  std::cout << "size detected objects output "<<detected_objects_output.objects.size() << std::endl;
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
@@ -153,17 +152,6 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
     detected_objects_output.objects[i].pose            = detected_pose_out.pose;
-    if(detected_objects_output.objects[i].id == 52)
-    {
-      // std::cout << "52 pose " << detected_pose_out.pose << std::endl;
-      std::cout << "52 dim " << std::endl<<detected_objects_output.objects[i].dimensions << std::endl;
-      tf::Quaternion q(detected_pose_out.pose.orientation.x, detected_pose_out.pose.orientation.y,
-                       detected_pose_out.pose.orientation.z, detected_pose_out.pose.orientation.w);
-      double roll, pitch, yaw;
-      tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-      std::cout << "yaw " << yaw << std::endl;
-      std::cout << "timestamp "<< detected_objects_output.objects[i].header.frame_id << std::endl;
-    }
   }
   detected_objects_output.header.frame_id = pointcloud_frame_;
 
@@ -208,8 +196,6 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
 
     Eigen::VectorXd diff = meas - max_det_z;
     double nis = diff.transpose() * max_det_s.inverse() * diff;
-
-    // std::cout << "meas and nis " << x << " " << y << " " << nis << std::endl;
 
     if (nis < gating_thres_)
     {  // x^2 99% range
@@ -638,17 +624,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
       bb = targets_[i].jsk_bb_;
       updateJskLabel(targets_[i], bb);
       jskbboxes_output.boxes.push_back(bb);
-      if(targets_[i].ukf_id_ == 52)
-      {
-        // std::cout << "52 pose " << detected_pose_out.pose << std::endl;
-        std::cout << "jsk dim " << std::endl<<bb.dimensions << std::endl;
-        std::cout << "jsk pose.orientation " <<std::endl<< bb.pose.orientation << std::endl;
-        tf::Quaternion q(bb.pose.orientation.x, bb.pose.orientation.y,
-                         bb.pose.orientation.z, bb.pose.orientation.w);
-        double roll, pitch, yaw;
-        tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-        std::cout << "yaw " << yaw << std::endl;
-      }
     }
     // RPY to convert: 0, 0, targets_[i].x_merge_(3)
     tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
