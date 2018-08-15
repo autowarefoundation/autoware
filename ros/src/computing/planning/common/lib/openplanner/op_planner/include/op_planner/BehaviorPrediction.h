@@ -646,7 +646,7 @@ public:
 		}
 	};
 
-	void DeleteFromList(std::vector<TrajectoryTracker*>& delete_me_track, TrajectoryTracker* track)
+	void DeleteFromList(std::vector<TrajectoryTracker*>& delete_me_track, const TrajectoryTracker* track)
 	{
 		for(unsigned int k = 0; k < delete_me_track.size(); k++)
 		{
@@ -852,7 +852,7 @@ protected:
 
 public:
 	//move to CPP later
-	void DeleteFromList(std::vector<ObjParticles*>& delete_me, ObjParticles* pElement)
+	void DeleteFromList(std::vector<ObjParticles*>& delete_me, const ObjParticles* pElement)
 	{
 		for(unsigned int k = 0; k < delete_me.size(); k++)
 		{
