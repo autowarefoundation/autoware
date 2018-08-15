@@ -129,7 +129,7 @@ private:
 
   void removeUnnecessaryTarget();
 
-  void dumpResultText();
+  void dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void pubPoints(const autoware_msgs::DetectedObjectArray& input);
 

@@ -71,7 +71,7 @@ class trackingEvaluation(object):
              missed         - number of missed targets (FN)
     """
 
-    def __init__(self, data_num, gt_path="../training", min_overlap=0.01, max_truncation = 0, min_height = 25, max_occlusion = 2):
+    def __init__(self, data_num, gt_path="../training", min_overlap=0.99, max_truncation = 0, min_height = 25, max_occlusion = 2):
         # data and parameter
         self.n_frames          = data_num
         self.result_data       = -1
@@ -281,7 +281,6 @@ class trackingEvaluation(object):
         seq_dc                = self.dcareas # don't care areas
         seq_result_data       = self.result_data
         seq_trajectories      = defaultdict(list)
-        # todo: might be wrong, this is calculated based on camera coordinate occulusion and truncation
         seq_ignored           = defaultdict(list)
 
         # statistics over the current sequence, check the corresponding
@@ -327,19 +326,24 @@ class trackingEvaluation(object):
                 gt.fragmentation = 0
                 cost_row         = []
                 # loop over tracked objects in one frame
+                # print("gt", gt.X, gt.Y, gt.l, gt.w, gt.yaw)
                 for result in frame_results:
                     # overlap == 1 is cost ==0
                     # RotatedRect(cx, cy, l, w, angle)
-                    # todo might be wrong: camera coordinate height width length
+                    # todo might be wrong: euclidean cluster messed up calculating w, l
+                    # Better implementation if switching w and l based on box's quartenion
+                    # and self.min_overlap might be too big
                     r1   = RotatedRect(gt.X, gt.Y, gt.l, gt.w, gt.yaw)
                     r2   = RotatedRect(result.X, result.Y, result.l, result.w, result.yaw)
                     iou  = r1.intersection_over_union(r2)
+                    # print("iou ",iou)
                     cost = 1- iou
                     # gating for boxoverlap
                     if cost<=self.min_overlap:
                         cost_row.append(cost)
                     else:
                         cost_row.append(max_cost) # = 1e9
+                # return
                 cost_matrix.append(cost_row)
                 # all ground truth trajectories are initially not associated
                 # extend groundtruth trajectories lists (merge lists)
@@ -668,32 +672,21 @@ class trackingEvaluation(object):
         summary += self.printEntry("Mostly Lost", self.ML) + "\n"
         summary += "\n"
         summary += self.printEntry("True Positives", self.tp) + "\n"
-        #summary += self.printEntry("True Positives per Sequence", self.tps) + "\n"
         summary += self.printEntry("Ignored True Positives", self.itp) + "\n"
-        #summary += self.printEntry("Ignored True Positives per Sequence", self.itps) + "\n"
         summary += self.printEntry("False Positives", self.fp) + "\n"
-        #summary += self.printEntry("False Positives per Sequence", self.fps) + "\n"
         summary += self.printEntry("False Negatives", self.fn) + "\n"
-        #summary += self.printEntry("False Negatives per Sequence", self.fns) + "\n"
         summary += self.printEntry("Ignored False Negatives", self.ifn) + "\n"
-        #summary += self.printEntry("Ignored False Negatives per Sequence", self.ifns) + "\n"
         summary += self.printEntry("Missed Targets", self.fn) + "\n"
         summary += self.printEntry("ID-switches", self.id_switches) + "\n"
         summary += self.printEntry("Fragmentations", self.fragments) + "\n"
         summary += "\n"
         summary += self.printEntry("Ground Truth Objects (Total)", self.n_gt + self.n_igt) + "\n"
-        #summary += self.printEntry("Ground Truth Objects (Total) per Sequence", self.n_gts) + "\n"
         summary += self.printEntry("Ignored Ground Truth Objects", self.n_igt) + "\n"
-        #summary += self.printEntry("Ignored Ground Truth Objects per Sequence", self.n_igts) + "\n"
         summary += self.printEntry("Ground Truth Trajectories", self.n_gt_trajectories) + "\n"
         summary += "\n"
         summary += self.printEntry("Tracker Objects (Total)", self.n_tr) + "\n"
-        #summary += self.printEntry("Tracker Objects (Total) per Sequence", self.n_trs) + "\n"
         summary += self.printEntry("Ignored Tracker Objects", self.n_itr) + "\n"
-        #summary += self.printEntry("Ignored Tracker Objects per Sequence", self.n_itrs) + "\n"
         summary += self.printEntry("Tracker Trajectories", self.n_tr_trajectories) + "\n"
-        #summary += "\n"
-        #summary += self.printEntry("Ignored Tracker Objects with Associated Ignored Ground Truth Objects", self.n_igttr) + "\n"
         summary += "="*80
 
         return summary
@@ -732,7 +725,7 @@ def evaluate(velo_data_num, result_file_path, gt_file_path):
             "failed to load tracked data"
             return
         print("Loading Results - Success")
-
+        print("Size of result data ", len(e.result_data))
     except:
         print("Caught exception while loading result data.")
         return
@@ -740,6 +733,7 @@ def evaluate(velo_data_num, result_file_path, gt_file_path):
     if not e.loadGroundtruth(gt_file_path):
         raise ValueError("Ground truth not found.")
     print("Loading Groundtruth - Success")
+    print("Size of result data ", len(e.groundtruth))
     # sanity checks
     if len(e.groundtruth) is not len(e.result_data):
         print("The uploaded data does not provide results for every sequence.")
@@ -779,5 +773,5 @@ if __name__ == "__main__":
     result_file_path = './results/result.txt'
     velo_data_num    = len(os.listdir(velo_dir))
     dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
-    # success = evaluate(velo_data_num, result_file_path, gt_file_path)
-    success = evaluate(1, result_file_path, gt_file_path)
+    success = evaluate(velo_data_num, result_file_path, gt_file_path)
+    # success = evaluate(1, result_file_path, gt_file_path)

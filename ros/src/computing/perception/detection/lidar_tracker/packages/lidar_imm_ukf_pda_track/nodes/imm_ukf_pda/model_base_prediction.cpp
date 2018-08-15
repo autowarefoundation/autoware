@@ -6,12 +6,6 @@ ModelBasePrediction::ModelBasePrediction()
 {
   num_path_points_ = 10;
 
-  // // initial state vector
-  // x_p_ = Eigen::MatrixXd(4,1);
-  //
-  // // initial state vector
-  // x_l_ = Eigen::MatrixXd(4,1);
-
   // initial state vector
   x_p_ = Eigen::VectorXd(4);
 

@@ -104,21 +104,21 @@ IMM_RAUKF::IMM_RAUKF()
   p3_.push_back(0.05);
   p3_.push_back(0.9);
 
-  mode_match_prob_cv2cv_ = 0;
-  mode_match_prob_ctrv2cv_ = 0;
-  mode_match_prob_rm2cv_ = 0;
+  mode_match_prob_cv2cv_     = 0;
+  mode_match_prob_ctrv2cv_   = 0;
+  mode_match_prob_rm2cv_     = 0;
 
-  mode_match_prob_cv2ctrv_ = 0;
+  mode_match_prob_cv2ctrv_   = 0;
   mode_match_prob_ctrv2ctrv_ = 0;
-  mode_match_prob_rm2ctrv_ = 0;
+  mode_match_prob_rm2ctrv_   = 0;
 
-  mode_match_prob_cv2rm_ = 0;
-  mode_match_prob_ctrv2rm_ = 0;
-  mode_match_prob_rm2rm_ = 0;
+  mode_match_prob_cv2rm_     = 0;
+  mode_match_prob_ctrv2rm_   = 0;
+  mode_match_prob_rm2rm_     = 0;
 
-  mode_prob_cv_ = 0.33;
+  mode_prob_cv_   = 0.33;
   mode_prob_ctrv_ = 0.33;
-  mode_prob_rm_ = 0.33;
+  mode_prob_rm_   = 0.33;
 
   z_pred_cv_   = Eigen::VectorXd(2);
   z_pred_ctrv_ = Eigen::VectorXd(2);
@@ -137,17 +137,17 @@ IMM_RAUKF::IMM_RAUKF()
   pg_ = 0.99;
 
   // track parameter
-  lifetime_ = 0;
+  lifetime_  = 0;
   is_static_ = false;
 
   // bounding box params
   is_best_jsk_bb_empty_ = false;
-  is_vis_bb_ = false;
-  jsk_bb_.dimensions.x = 1.0;
-  jsk_bb_.dimensions.y = 1.0;
-  best_yaw_ = 100;
-  bb_yaw_ = 0;
-  bb_area_ = 0;
+  is_vis_bb_            = false;
+  jsk_bb_.dimensions.x  = 1.0;
+  jsk_bb_.dimensions.y  = 1.0;
+  best_yaw_             = 100;
+  bb_yaw_               = 0;
+  bb_area_              = 0;
 
   // for env classification
   init_meas_ = Eigen::VectorXd(2);

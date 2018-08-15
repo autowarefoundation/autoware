@@ -28,10 +28,12 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     // pose_reliable == true if tracking state is stable
+    // skip vizualizing if tracking state is unstable
     if(!input.objects[i].pose_reliable)
     {
       continue;
     }
+
     double velocity = input.objects[i].velocity.linear.x;
 
     tf::Quaternion q(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
@@ -53,16 +55,16 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
 
     visualization_msgs::Marker id;
 
-    id.lifetime = ros::Duration(0.2);
+    id.lifetime        = ros::Duration(0.2);
     id.header.frame_id = pointcloud_frame_;
-    id.header.stamp = input.header.stamp;
-    id.ns = "id";
-    id.action = visualization_msgs::Marker::ADD;
-    id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+    id.header.stamp    = input.header.stamp;
+    id.ns              = "id";
+    id.action          = visualization_msgs::Marker::ADD;
+    id.type            = visualization_msgs::Marker::TEXT_VIEW_FACING;
     // green
     id.color.g = 1.0f;
     id.color.a = 1.0;
-    id.id = input.objects[i].id;
+    id.id      = input.objects[i].id;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = input.objects[i].pose.position.x;
@@ -86,9 +88,9 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     {
       velocity = 0.0;
     }
-    std::string s_velocity = std::to_string(velocity*3.6);
+    std::string s_velocity  = std::to_string(velocity*3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".")+3);
-    std::string text = "<" + std::to_string(input.objects[i].id) + "> " +
+    std::string text        = "<" + std::to_string(input.objects[i].id) + "> " +
                              modified_sv + " km/h";
 
     // std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
@@ -113,14 +115,14 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     }
 
     arrow.header.frame_id = pointcloud_frame_;
-    arrow.header.stamp = input.header.stamp;
-    arrow.ns = "arrow";
-    arrow.action = visualization_msgs::Marker::ADD;
-    arrow.type = visualization_msgs::Marker::ARROW;
+    arrow.header.stamp    = input.header.stamp;
+    arrow.ns              = "arrow";
+    arrow.action          = visualization_msgs::Marker::ADD;
+    arrow.type            = visualization_msgs::Marker::ARROW;
     // green
     arrow.color.g = 1.0f;
     arrow.color.a = 1.0;
-    arrow.id = input.objects[i].id;
+    arrow.id      = input.objects[i].id;
     // arrow.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
