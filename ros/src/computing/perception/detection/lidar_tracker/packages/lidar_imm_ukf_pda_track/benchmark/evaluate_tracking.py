@@ -7,7 +7,7 @@ try:
     from ordereddict import OrderedDict # can be installed using pip
 except:
     from collections import OrderedDict # only included from python 2.7 on
-# import rospkg
+from tqdm import tqdm
 
 class tData:
     """
@@ -102,13 +102,9 @@ class trackingEvaluation(object):
         self.FAR               = 0
         self.total_cost        = 0
         self.itp               = 0 # number of ignored true positives
-        self.itps              = [] # number of ignored true positives PER SEQUENCE
         self.tp                = 0 # number of true positives including ignored true positives!
-        self.tps               = [] # number of true positives including ignored true positives PER SEQUENCE
         self.fn                = 0 # number of false negatives WITHOUT ignored false negatives
-        self.fns               = [] # number of false negatives WITHOUT ignored false negatives PER SEQUENCE
         self.ifn               = 0 # number of ignored false negatives
-        self.ifns              = [] # number of ignored false negatives PER SEQUENCE
         self.fp                = 0 # number of false positives
                                    # a bit tricky, the number of ignored false negatives and ignored true positives
                                    # is subtracted, but if both tracker detection and ground truth detection
@@ -136,8 +132,12 @@ class trackingEvaluation(object):
         """
 
         try:
-            if not self._loadData(result_file_path, loading_groundtruth=False):
-                return False
+            if(os.path.exists(result_file_path)):
+                if not self._loadData(result_file_path, loading_groundtruth=False):
+                    return False
+            else:
+                print("Error: There is no result data file")
+                raise
         except IOError:
             return False
         return True
@@ -148,7 +148,11 @@ class trackingEvaluation(object):
         """
 
         try:
-            self._loadData(gt_file_path, loading_groundtruth=True)
+            if(os.path.exists(gt_file_path)):
+                self._loadData(gt_file_path, loading_groundtruth=True)
+            else:
+                print("Error: There is no groundtruth file")
+                raise
         except IOError:
             return False
         return True
@@ -299,7 +303,7 @@ class trackingEvaluation(object):
         n_trs = 0
 
 
-        for i_frame in range(len(seq_gt)):
+        for i_frame in tqdm(range(len(seq_gt))):
             frame_gts      = seq_gt[i_frame]
             frame_dcs      = seq_dc[i_frame]
 
@@ -317,7 +321,7 @@ class trackingEvaluation(object):
             frame_ids = [[],[]]
             # loop over ground truth objects in one frame
             for gt in frame_gts:
-                print("location ", gt.X, gt.Y)
+                # print("location ", gt.X, gt.Y)
                 # save current ids
                 frame_ids[0].append(gt.track_id)
                 frame_ids[1].append(-1)
