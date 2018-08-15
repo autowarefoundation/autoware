@@ -29,7 +29,7 @@ env:
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
     - PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
-
+#
 # Install system dependencies, and Autoware pre requisites (non-ros)
 before_install:
   - if [ "${CROSS_COMPILE}" != "1" ]; then
