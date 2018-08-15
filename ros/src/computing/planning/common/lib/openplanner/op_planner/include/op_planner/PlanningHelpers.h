@@ -8,7 +8,6 @@
 #ifndef PLANNINGHELPERS_H_
 #define PLANNINGHELPERS_H_
 
-//#include <math.h>
 #include "RoadNetwork.h"
 #include "op_utility/UtilityH.h"
 #include "op_utility/DataRW.h"
