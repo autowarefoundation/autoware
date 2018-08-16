@@ -26,5 +26,7 @@
     <run_depend>jsk_recognition_msgs</run_depend>
     <run_depend>vector_map</run_depend>
 
+    <test_depend>rosunit</test_depend>
+
     <export></export>
 </package>

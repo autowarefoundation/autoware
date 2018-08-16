@@ -60,6 +60,21 @@ void ImmUkfPda::run()
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
+  std::ofstream file("/home/kosuke/size2.txt", std::ofstream::out | std::ofstream::app);
+  file<< frame_count_ << " " << input.objects.size() << "\n";
+  for(size_t i = 0; i < input.objects.size(); i++)
+  {
+    file<<input.objects[i].dimensions.x << " "
+        <<input.objects[i].dimensions.y << " "
+        <<input.objects[i].dimensions.z << " "
+        <<input.objects[i].pose.position.x << " "
+        <<input.objects[i].pose.position.y << " "
+        <<input.objects[i].pose.position.z << " "
+        <<input.objects[i].pose.orientation.x << " "
+        <<input.objects[i].pose.orientation.y << " "
+        <<input.objects[i].pose.orientation.z << " "
+        <<input.objects[i].pose.orientation.w << "\n";
+  }
   autoware_msgs::DetectedObjectArray transformed_input;
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
@@ -72,6 +87,21 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
 
+  std::ofstream file2("/home/kosuke/tracker_out2.txt", std::ofstream::out | std::ofstream::app);
+  file2<< frame_count_ << " " << detected_objects_output.objects.size() << "\n";
+  for(size_t i = 0; i < input.objects.size(); i++)
+  {
+    file2<<detected_objects_output.objects[i].dimensions.x << " "
+        <<detected_objects_output.objects[i].dimensions.y << " "
+        <<detected_objects_output.objects[i].dimensions.z << " "
+        <<detected_objects_output.objects[i].pose.position.x << " "
+        <<detected_objects_output.objects[i].pose.position.y << " "
+        <<detected_objects_output.objects[i].pose.position.z << " "
+        <<detected_objects_output.objects[i].pose.orientation.x << " "
+        <<detected_objects_output.objects[i].pose.orientation.y << " "
+        <<detected_objects_output.objects[i].pose.orientation.z << " "
+        <<detected_objects_output.objects[i].pose.orientation.w << "\n";
+  }
   if(use_vectormap_)
   {
     visualization_msgs::MarkerArray directionMarkers;
@@ -112,6 +142,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
   transformed_input.header = input.header;
   try{
     tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+    // tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(2.0));
     // todo: make transform obejct for later use
   }
   catch (tf::TransformException ex){
@@ -127,6 +158,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     pose_in.pose = input.objects[i].pose;
 
     tf_listener_.transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
+    // tf_listener_.transformPose(tracking_frame_, input.header.stamp, pose_in, input.header.frame_id, pose_out);
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
@@ -149,6 +181,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     detected_pose_in.pose            = detected_objects_output.objects[i].pose;
 
     tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
+    // tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, detected_pose_in, tracking_frame_, detected_pose_out);
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
     detected_objects_output.objects[i].pose            = detected_pose_out.pose;
@@ -162,6 +195,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     jsk_pose_in.header.frame_id      = tracking_frame_;
     jsk_pose_in.pose                 = jskbboxes_output.boxes[i].pose;
     tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), jsk_pose_in, tracking_frame_, jsk_pose_out);
+    // tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, jsk_pose_in, tracking_frame_, jsk_pose_out);
     jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;
     jskbboxes_output.boxes[i].pose            = jsk_pose_out.pose;
   }

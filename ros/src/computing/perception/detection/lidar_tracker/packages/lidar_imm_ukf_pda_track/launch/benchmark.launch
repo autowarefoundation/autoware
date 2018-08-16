@@ -58,7 +58,7 @@
 
   <arg name="remove_points_upto" default="0.0" />
 
-  <arg name="use_gpu" default="false" />
+  <arg name="use_gpu" default="true" />
 
 <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect" name="lidar_euclidean_cluster_detect" output="screen">
