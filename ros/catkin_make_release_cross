@@ -16,8 +16,6 @@ then
    fi
 
     AUTOWARE_HOME=/home/autoware/Autoware
-    AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
         if [[ ! -d "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_DRIVE_SDK_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_TENSORRT_ROOT_DIR}" ]]
@@ -46,6 +44,10 @@ END
         echo "Toolchain file: '${PWD}/${AUTOWARE_TOOLCHAIN_FILE}' not found"
         exit 1
     fi
+
+    AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+
     AUTOWARE_TOOLCHAIN_FILE_PATH="${AUTOWARE_HOME}/ros/${AUTOWARE_TOOLCHAIN_FILE}"
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
