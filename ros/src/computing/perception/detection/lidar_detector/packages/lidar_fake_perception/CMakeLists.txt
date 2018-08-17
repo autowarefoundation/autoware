@@ -39,8 +39,8 @@ target_link_libraries(lidar_fake_perception_node
   ${catkin_LIBRARIES}
 )
 add_dependencies(lidar_fake_perception_node
-        ${catkin_EXPORTED_TARGETS}
-        )
+  ${catkin_EXPORTED_TARGETS}
+)
 
 install(TARGETS
   lidar_fake_perception_node
