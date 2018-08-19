@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "astar_search.h"
+#include "astar_planner.h"
 #include "search_info_ros.h"
 
 #include <autoware_msgs/LaneArray.h>
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "obstacle_avoid");
   ros::NodeHandle n;
 
-  waypoint_planner::AstarSearch astar;
+  astar_planner::AstarSearch astar;
   waypoint_planner::SearchInfo search_info;
 
   // ROS subscribers

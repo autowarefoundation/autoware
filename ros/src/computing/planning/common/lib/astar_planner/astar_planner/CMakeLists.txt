@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES astar_planner
   CATKIN_DEPENDS
   roscpp
   tf
