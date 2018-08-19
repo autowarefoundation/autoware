@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, Nagoya University
+ *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -438,7 +438,7 @@ void MotionPrediction::MainLoop()
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
-						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true);
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_PlanningParams.enableLaneChange, true);
 
 				if(m_Map.roadSegments.size() > 0)
 				{

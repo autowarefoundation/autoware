@@ -8,6 +8,7 @@ execute_process(
 
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   geometry_msgs
   autoware_msgs  
@@ -40,8 +41,6 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
-SET(CMAKE_CXX_FLAGS "-std=c++11 -g ${CMAKE_CXX_FLAGS}")
 
 if ("${ROS_VERSION}" MATCHES "(kinetic)")
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")

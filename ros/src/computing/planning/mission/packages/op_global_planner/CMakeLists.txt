@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_global_planner)
 
 find_package(catkin REQUIRED COMPONENTS
+
+  autoware_build_flags
   geometry_msgs
   vector_map_msgs
   roscpp
@@ -35,8 +37,6 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-
-SET(CMAKE_CXX_FLAGS "-std=c++11 -g  ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include

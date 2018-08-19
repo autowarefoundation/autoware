@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, Nagoya University
+ *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "../include/op_car_simulator_core.h"
+#include "op_car_simulator_core.h"
 
 
 int main(int argc, char **argv)

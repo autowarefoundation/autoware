@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, Nagoya University
+ *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 */
 
 /**
- * @brief Way Planner represents the Global planning Module, to generate global plan (reference path) the nodes takes start position, goal position and return sequence of waypoints.
+ * @brief global Planner represents the Global planning Module, to generate global plan (reference path) the nodes takes start position, goal position and return sequence of waypoints.
  * @brief Once the node starts (depending on the mapping option) it will load the vector map (road network) and send it to be visualized by RViz. topic name "/vector_map_center_lines_rviz"
  * @param Start_Position in simulation environment like rviz, this node require the user to select start position using "2D Pose Estimate" button and select starting position from the global path, //
  * if localization node is working and ndt_pose or curr_pose messages are published the node will use localization as starting position instead of "2D Pose Estimate"

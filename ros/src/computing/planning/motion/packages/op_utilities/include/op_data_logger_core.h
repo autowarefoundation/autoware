@@ -1,5 +1,5 @@
 /*
-// *  Copyright (c) 2017, Nagoya University
+// *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -31,9 +31,8 @@
 #ifndef OP_DATALOGGER
 #define OP_DATALOGGER
 
-// ROS includes
+
 #include <ros/ros.h>
-//#include <runtime_manager/traffic_light.h>
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>

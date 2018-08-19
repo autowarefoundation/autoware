@@ -49,6 +49,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/PointStamped.h>
 #include <nav_msgs/Odometry.h>
 #include <autoware_msgs/LaneArray.h>
 #include <autoware_msgs/CanInfo.h>
@@ -111,9 +112,9 @@ protected:
 
 
 	ros::NodeHandle nh;
-	ros::Publisher  pub_predicted_objects_trajectories;
-	ros::Publisher  pub_PredictedTrajectoriesRviz ;
-	ros::Publisher  pub_CurbsRviz ;
+	ros::Publisher pub_predicted_objects_trajectories;
+	ros::Publisher pub_PredictedTrajectoriesRviz ;
+	ros::Publisher pub_CurbsRviz ;
 	ros::Publisher pub_ParticlesRviz;
 
 	// define subscribers.

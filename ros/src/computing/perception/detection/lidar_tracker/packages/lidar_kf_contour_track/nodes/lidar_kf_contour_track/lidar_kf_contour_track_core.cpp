@@ -1,11 +1,11 @@
 /*
+ *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice,
- * this
+ *  * Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
  *  * Redistributions in binary form must reproduce the above copyright notice,
@@ -18,18 +18,16 @@
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
  *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
+
 #include "lidar_kf_contour_track_core.h"
 #include "op_ros_helpers/op_RosHelpers.h"
 #include "op_planner/MappingHelpers.h"
@@ -150,6 +148,9 @@ void ContourTracker::ReadCommonParams()
 
 	m_ObstacleTracking.m_CirclesResolution = m_Params.DetectionRadius*0.05;
 
+	if(!_nh.getParam("/op_common_params/enableLaneChange" , m_Params.bEnableLaneChange))
+		m_Params.bEnableLaneChange = false;
+
 	int iSource = 0;
 	if(iSource == 0)
 		m_MapType = PlannerHNS::MAP_AUTOWARE;
@@ -171,6 +172,7 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 		UtilityHNS::UtilityH::GetTickCount(tracking_timer);
 
 		//std::cout << "Filter the detected Obstacles: " << msg->clusters.size() << ", " << m_OriginalClusters.size() << std::endl;
+
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters, m_Params.trackingType);
 
 		m_tracking_time = UtilityHNS::UtilityH::GetTimeDiffNow(tracking_timer);
@@ -560,7 +562,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
 						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,
-						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true);
+						m_MapRaw.pLanes, m_MapRaw.pPoints, m_MapRaw.pNodes, m_MapRaw.pLines, PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
 
 				if(m_Map.roadSegments.size() > 0)
 				{
@@ -574,7 +576,7 @@ void ContourTracker::MainLoop()
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
-						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true);
+						m_MapRaw.pCrossWalks->m_data_list, m_MapRaw.pNodes->m_data_list, conn_data,  PlannerHNS::GPSPoint(), m_Map, true, m_Params.bEnableLaneChange, true);
 
 				if(m_Map.roadSegments.size() > 0)
 				{

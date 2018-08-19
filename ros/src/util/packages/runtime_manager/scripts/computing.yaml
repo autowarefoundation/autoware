@@ -606,10 +606,6 @@ subs :
         desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
         cmd  : roslaunch op_utilities op_bag_player.launch
         param: op_bag_player
-      - name : op_data_logger
-        desc : Compare Results and Log useful information
-        cmd  : roslaunch op_utilities op_data_logger.launch
-        param: op_data_logger
     - name : OpenPlanner - Simulator
       desc : Car, Signs, Detection Simulation for OpenPlanner Test
       subs :
@@ -621,25 +617,9 @@ subs :
         desc : Simulate traffic Signs status for intersections included in the map
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
-      - name : op_car_simulator_1
+      - name : op_car_simulator
         desc : Simulate a car using OpenPlanner 
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
-        param: op_car_simulator
-      - name : op_car_simulator_2
-        desc : Simulate a car using OpenPlanner 
-        cmd  : roslaunch op_simulation_package op_car_simulator_2.launch
-        param: op_car_simulator
-      - name : op_car_simulator_3
-        desc : Simulate a car using OpenPlanner 
-        cmd  : roslaunch op_simulation_package op_car_simulator_3.launch
-        param: op_car_simulator
-      - name : op_car_simulator_4
-        desc : Simulate a car using OpenPlanner 
-        cmd  : roslaunch op_simulation_package op_car_simulator_4.launch
-        param: op_car_simulator
-      - name : op_car_simulator_5
-        desc : Simulate a car using OpenPlanner 
-        cmd  : roslaunch op_simulation_package op_car_simulator_5.launch
         param: op_car_simulator
 
 
@@ -2709,30 +2689,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#    - name : mapSource
-#      desc : select map source
-#      label: Map Source
-#      kind : radio_box
-#      choices:
-#      - Autoware
-#      - Folder
-#      - KML
-#      descs :
-#      - use Autoware Map
-#      - custom read from folder
-#      - custom read from kml file
-#      v   : 0
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
-#    - name : mapFileName
-#      desc : select kml map file if applicable
-#      label: Map File
-#      kind : path
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
-
   - name  : dp_planner
     vars  :
     - name : enabTrajectoryVelocities
@@ -3031,29 +2987,7 @@ params :
         delim    : ':='
   - name  : op_common_params
     vars  :
-#    - name : mapSource
-#      desc : select map source
-#      label: Map Source
-#      kind : radio_box
-#      choices:
-#      - Autoware
-#      - Folder
-#      - KML
-#      descs :
-#      - use Autoware Map
-#      - custom read from folder
-#      - custom read from kml file
-#      v   : 1
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
-#    - name : mapFileName
-#      desc : select kml map file if applicable
-#      label: Map File
-#      kind : path
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
+
     - name : horizonDistance
       desc : Horizon distance
       label: Horizon
@@ -3355,27 +3289,6 @@ params :
         delim    : ':='
   - name  : op_signs_simulator
     vars  :
-#    - name : mapSource
-#      desc : select map source
-#      label: Map Source
-#      kind : radio_box
-#      choices:
-#      - Folder
-#      - KML
-#      descs :
-#      - custom read from folder
-#      - custom read from kml file
-#      v   : 0
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
-#    - name : mapFileName
-#      desc : select kml map file if applicable
-#      label: Map File
-#      kind : path
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
     - name : first_signs_list_ids
       desc : First Traffic Light Ids
       label: First Light Ids
@@ -3627,27 +3540,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-#    - name : mapSource
-#      desc : select map source
-#      label: Map Source
-#      kind : radio_box
-#      choices:
-#      - Folder
-#      - KML
-#      descs :
-#      - custom read from folder
-#      - custom read from kml file
-#      v   : 0
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
-#    - name : mapFileName
-#      desc : select kml map file if applicable
-#      label: Map File
-#      kind : path
-#      cmd_param:
-#        dash     : ''
-#        delim    : ':='
     - name : enableStepByStepSignal
       desc : Enable Step by Step simulation motion (Testing App Required)
       label: Enable Frame by Frame

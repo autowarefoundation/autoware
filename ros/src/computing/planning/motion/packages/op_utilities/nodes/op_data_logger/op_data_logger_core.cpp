@@ -27,9 +27,8 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 #include "op_data_logger_core.h"
-
-
 #include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"

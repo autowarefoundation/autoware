@@ -16,11 +16,9 @@
 
 using namespace UtilityHNS;
 using namespace std;
-#define FIND_LEFT_RIGHT_LANES
 #define RIGHT_INITIAL_TURNS_COST 0
 #define LEFT_INITIAL_TURNS_COST 0
 #define DEBUG_MAP_PARSING 0
-#define MAP_PERF_ENABLE_CURB_AND_WAYAREA
 #define DEFAULT_REF_VELOCITY 60 //km/h
 
 namespace PlannerHNS
@@ -108,7 +106,8 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		const std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk>& crosswalk_data,
 		const std::vector<UtilityHNS::AisanNodesFileReader::AisanNode>& nodes_data,
 		const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
-		const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag)
+		const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag,
+		const bool& bFindLaneChangeLanes, const bool& bFindCurbsAndWayArea)
 {
 	vector<Lane> roadLanes;
 	Lane lane_obj;
@@ -427,10 +426,11 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 		}
 	}
 
-#ifdef FIND_LEFT_RIGHT_LANES
-	cout << " >> Extract Lane Change Information... " << endl;
-	FindAdjacentLanes(map);
-#endif
+	if(bFindLaneChangeLanes)
+	{
+		cout << " >> Extract Lane Change Information... " << endl;
+		FindAdjacentLanes(map);
+	}
 
 	//Extract Signals and StopLines
 	// Signals
@@ -448,13 +448,14 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<Utilit
 	LinkTrafficLightsAndStopLines(map);
 	//LinkTrafficLightsAndStopLinesConData(conn_data, id_replace_list, map);
 
-#ifdef MAP_PERF_ENABLE_CURB_AND_WAYAREA
-	//Curbs
-	ExtractCurbData(curb_data, line_data, points_data, origin, map);
+	if(bFindCurbsAndWayArea)
+	{
+		//Curbs
+		ExtractCurbData(curb_data, line_data, points_data, origin, map);
 
-	//Wayarea
-	ExtractWayArea(area_data, wayarea_data, line_data, points_data, origin, map);
-#endif
+		//Wayarea
+		ExtractWayArea(area_data, wayarea_data, line_data, points_data, origin, map);
+	}
 
 	//Fix angle for lanes
 	for(unsigned int rs = 0; rs < map.roadSegments.size(); rs++)
@@ -2287,7 +2288,8 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessageV2(const std::vector<Util
 		UtilityHNS::AisanPointsFileReader* pPointsData,
 		UtilityHNS::AisanNodesFileReader* pNodesData,
 		UtilityHNS::AisanLinesFileReader* pLinedata,
-		const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag)
+		const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag,
+		const bool& bFindLaneChangeLanes, const bool& bFindCurbsAndWayArea)
 {
 	vector<Lane> roadLanes;
 
@@ -2355,10 +2357,11 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessageV2(const std::vector<Util
 		}
 	}
 
-#ifdef FIND_LEFT_RIGHT_LANES
-	cout << " >> Extract Lane Change Information... " << endl;
-	FindAdjacentLanesV2(map);
-#endif
+	if(bFindLaneChangeLanes)
+	{
+		cout << " >> Extract Lane Change Information... " << endl;
+		FindAdjacentLanesV2(map);
+	}
 
 	//Extract Signals and StopLines
 	cout << " >> Extract Signal data ... " << endl;
@@ -2368,15 +2371,16 @@ void MappingHelpers::ConstructRoadNetworkFromRosMessageV2(const std::vector<Util
 	cout << " >> Extract Stop lines data ... " << endl;
 	ExtractStopLinesDataV2(stop_line_data, pLinedata, pPointsData, origin, map);
 
-#ifdef MAP_PERF_ENABLE_CURB_AND_WAYAREA
-	//Curbs
-	cout << " >> Extract curbs data ... " << endl;
-	ExtractCurbDataV2(curb_data, pLinedata, pPointsData, origin, map);
+	if(bFindCurbsAndWayArea)
+	{
+		//Curbs
+		cout << " >> Extract curbs data ... " << endl;
+		ExtractCurbDataV2(curb_data, pLinedata, pPointsData, origin, map);
 
-	//Wayarea
-	cout << " >> Extract wayarea data ... " << endl;
-	ExtractWayArea(area_data, wayarea_data, line_data, points_data, origin, map);
-#endif
+		//Wayarea
+		cout << " >> Extract wayarea data ... " << endl;
+		ExtractWayArea(area_data, wayarea_data, line_data, points_data, origin, map);
+	}
 
 	//Link waypoints
 	cout << " >> Link missing branches and waypoints... " << endl;

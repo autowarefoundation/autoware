@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017, Nagoya University
+ *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
 #include "op_perception_simulator_core.h"
 
 #include <pcl_conversions/pcl_conversions.h>
@@ -35,6 +36,7 @@
 #include <pcl/point_types.h>
 #include <boost/random.hpp>
 #include <boost/math/distributions/normal.hpp>
+#include "op_ros_helpers/op_RosHelpers.h"
 
 #include "op_utility/UtilityH.h"
 #include "math.h"
@@ -47,13 +49,22 @@ typedef boost::mt19937 ENG;
 typedef boost::normal_distribution<double> NormalDIST;
 typedef boost::variate_generator<ENG, NormalDIST> VariatGEN;
 
+constexpr double SIMU_OBSTACLE_WIDTH = 1.5;
+constexpr double SIMU_OBSTACLE_LENGTH = 1.5;
+constexpr double SIMU_OBSTACLE_HEIGHT = 1.4;
+constexpr double SIMU_OBSTACLE_POINTS_NUM = 50;
+constexpr int SIMU_OBSTACLE_ID = 100001;
+
 OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 {
+	m_bSetSimulatedObj = false;
 	nh.getParam("/op_perception_simulator/simObjNumber" , m_DecParams.nSimuObjs);
 	nh.getParam("/op_perception_simulator/GuassianErrorFactor" , m_DecParams.errFactor);
 	nh.getParam("/op_perception_simulator/pointCloudPointsNumber" , m_DecParams.nPointsPerObj);
 
 	pub_DetectedObjects = nh.advertise<autoware_msgs::CloudClusterArray>("cloud_clusters",1);
+
+	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 1, &OpenPlannerSimulatorPerception::callbackGetRvizPoint,	this);
 
 	for(int i=1; i <= m_DecParams.nSimuObjs; i++)
 	{
@@ -79,6 +90,26 @@ OpenPlannerSimulatorPerception::~OpenPlannerSimulatorPerception()
 {
 }
 
+
+void OpenPlannerSimulatorPerception::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
+{
+	tf::StampedTransform transform;
+	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+
+	geometry_msgs::Pose point;
+	point.position.x = msg->point.x + transform.getOrigin().x();
+	point.position.y = msg->point.y + transform.getOrigin().y();
+	point.position.z = msg->point.z + transform.getOrigin().z();
+	point.orientation =  tf::createQuaternionMsgFromRollPitchYaw(0, 0, 0);
+
+	m_SimulatedCluter = GenerateSimulatedObstacleCluster(SIMU_OBSTACLE_WIDTH , SIMU_OBSTACLE_LENGTH, SIMU_OBSTACLE_HEIGHT, SIMU_OBSTACLE_POINTS_NUM, point);
+	m_SimulatedCluter.id = SIMU_OBSTACLE_ID;
+	m_SimulatedCluter.score = 0; //zero velocity
+	m_SimulatedCluter.indicator_state = 3; // default indicator value
+
+	m_bSetSimulatedObj = true;
+}
+
 void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::PoseArray &msg)
 {
 	int obj_id = -1;
@@ -97,9 +128,6 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	{
 		indicator = msg.poses.at(3).orientation.w;
 	}
-
-//	ROS_INFO("Obj ID = %d", obj_id);
-
 
 	if(obj_id < 0)
 		return;
@@ -128,17 +156,12 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	{
 		m_ObjClustersArray.clusters.at(index) = c;
 		m_keepTime.at(index).second = OBJECT_KEEP_TIME;
-	//	ROS_INFO("Update Obj ID = %d", c.id);
 	}
 	else
 	{
 		m_ObjClustersArray.clusters.push_back(c);
 		m_keepTime.push_back(std::make_pair(c.id, OBJECT_KEEP_TIME));
-	//	ROS_INFO("Insert Obj ID = %d", c.id);
 	}
-
-	//std::cout << "Current Simulated Objects : " << m_ObjClustersArray.clusters.size() << std::endl;
-
 }
 
 
@@ -180,21 +203,10 @@ autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObs
 		srand(t.tv_nsec);
 
 		center_p.pos.x = ((double)(rand()%100)/100.0 - CONTOUR_DISTANCE_ERROR);
-//		if(center_p.pos.x >=0 && center_p.pos.x <= CONTOUR_DISTANCE_ERROR)
-//			center_p.pos.x += CONTOUR_DISTANCE_ERROR;
-//		else if(center_p.pos.x < 0 && center_p.pos.x >= -CONTOUR_DISTANCE_ERROR)
-//			center_p.pos.x -= CONTOUR_DISTANCE_ERROR;
-
 		center_p.pos.x *= width;
 
 		srand(t.tv_nsec/i);
 		center_p.pos.y = ((double)(rand()%100)/100.0 - CONTOUR_DISTANCE_ERROR);
-
-//		if(center_p.pos.y >=0 && center_p.pos.y <= CONTOUR_DISTANCE_ERROR)
-//			center_p.pos.y += CONTOUR_DISTANCE_ERROR;
-//		else if(center_p.pos.y < 0 && center_p.pos.y >= -CONTOUR_DISTANCE_ERROR)
-//			center_p.pos.y -= CONTOUR_DISTANCE_ERROR;
-
 		center_p.pos.y *= length;
 
 		srand(t.tv_nsec/i*i);
@@ -225,7 +237,6 @@ void OpenPlannerSimulatorPerception::MainLoop()
 	{
 		ros::spinOnce();
 
-		//if(m_ObjClustersArray.clusters.size()>0)
 		//clean old data
 		for(unsigned int i = 0 ; i < m_keepTime.size(); i++)
 		{
@@ -239,9 +250,16 @@ void OpenPlannerSimulatorPerception::MainLoop()
 				m_keepTime.at(i).second -= 1;
 		}
 
-		pub_DetectedObjects.publish(m_ObjClustersArray);
-
-	//	std::cout << "Number of Obstacles: (" << m_keepTime.size() << ", " << m_ObjClustersArray.clusters.size() << ") "<< std::endl;
+		if(m_bSetSimulatedObj)
+		{
+			m_AllObjClustersArray = m_ObjClustersArray;
+			m_AllObjClustersArray.clusters.push_back(m_SimulatedCluter);
+			pub_DetectedObjects.publish(m_AllObjClustersArray);
+		}
+		else
+		{
+			pub_DetectedObjects.publish(m_ObjClustersArray);
+		}
 
 		loop_rate.sleep();
 	}

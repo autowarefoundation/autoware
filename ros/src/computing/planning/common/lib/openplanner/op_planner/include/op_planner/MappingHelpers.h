@@ -39,7 +39,9 @@ public:
 			const std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk>& crosswalk_data,
 			const std::vector<UtilityHNS::AisanNodesFileReader::AisanNode>& nodes_data,
 			const std::vector<UtilityHNS::AisanDataConnFileReader::DataConn>& conn_data,
-			const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag = false);
+			const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag = false,
+			const bool& bFindLaneChangeLanes = false,
+			const bool& bFindCurbsAndWayArea = false);
 
 	static void ConstructRoadNetworkFromRosMessageV2(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 			const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
@@ -60,7 +62,9 @@ public:
 				UtilityHNS::AisanPointsFileReader* pPointsData,
 				UtilityHNS::AisanNodesFileReader* pNodesData,
 				UtilityHNS::AisanLinesFileReader* pLinedata,
-				const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag = false);
+				const GPSPoint& origin, RoadNetwork& map, const bool& bSpecialFlag = false,
+				const bool& bFindLaneChangeLanes = false,
+				const bool& bFindCurbsAndWayArea = false);
 
 	static void ConstructRoadNetworkFromDataFiles(const std::string vectoMapPath, RoadNetwork& map, const bool& bZeroOrigin = false);
 

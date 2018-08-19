@@ -1,5 +1,5 @@
 /*
-// *  Copyright (c) 2017, Nagoya University
+// *  Copyright (c) 2018, Nagoya University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -81,17 +81,23 @@ protected:
 	timespec m_Timer;
 	DetectionCommandParams m_DecParams;
 
+	autoware_msgs::CloudCluster m_SimulatedCluter;
+
 	autoware_msgs::CloudClusterArray m_ObjClustersArray;
+	autoware_msgs::CloudClusterArray m_AllObjClustersArray;
+	bool m_bSetSimulatedObj;
 	std::vector<std::pair<int, double> > m_keepTime;
 
 	ros::Publisher pub_DetectedObjects;
 
 	// define subscribers.
 	std::vector<ros::Subscriber> sub_objs;
+	ros::Subscriber sub_simulated_obstacle_pose_rviz;
 
 
 	// Callback function for subscriber.
 	void callbackGetSimuData(const geometry_msgs::PoseArray &msg);
+	void callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg);
 
 public:
 	OpenPlannerSimulatorPerception();
