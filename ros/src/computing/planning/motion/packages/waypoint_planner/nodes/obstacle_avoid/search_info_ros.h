@@ -41,7 +41,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
-namespace astar_planner
+namespace waypoint_planner
 {
 class SearchInfo
 {
@@ -196,6 +196,6 @@ private:
   double upper_bound_distance_;
 };
 
-}  // namespace astar_planner
+}  // namespace waypoint_planner
 
 #endif  // SEARCH_INFO_ROS_H

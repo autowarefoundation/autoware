@@ -579,16 +579,16 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
         param: op_trajectory_generator
 
-    - name : astar_planner
-      desc : astar_planner desc sample
+    - name : waypoint_planner
+      desc : waypoint_planner desc sample
       subs :
       - name : obstacle_avoid
         desc : obstacle_avoid desc sample
-        cmd  : roslaunch astar_planner obstacle_avoid.launch
+        cmd  : roslaunch waypoint_planner obstacle_avoid.launch
         param: obstacle_avoid
       - name : velocity_set
         desc : velocity_set desc sample
-        cmd  : roslaunch astar_planner velocity_set.launch
+        cmd  : roslaunch waypoint_planner velocity_set.launch
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }

@@ -30,7 +30,7 @@
 
 #include "astar_util.h"
 
-namespace astar_planner
+namespace waypoint_planner
 {
 WaveFrontNode::WaveFrontNode()
 {
@@ -49,4 +49,4 @@ SimpleNode::SimpleNode(int x, int y, int theta, double gc, double hc)
 {
 }
 
-}  // namespace astar_planner
+}  // namespace waypoint_planner

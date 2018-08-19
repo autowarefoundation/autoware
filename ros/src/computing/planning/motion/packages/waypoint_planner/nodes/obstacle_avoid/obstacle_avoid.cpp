@@ -55,7 +55,7 @@ autoware_msgs::lane createPublishWaypoints(const autoware_msgs::lane& ref_lane, 
   return follow_lane;
 }
 
-void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner::SearchInfo& search_info, int size,
+void createAvoidWaypoints(const nav_msgs::Path& astar_path, const waypoint_planner::SearchInfo& search_info, int size,
                           autoware_msgs::lane* avoid_lane, int* end_of_avoid_index)
 {
   int closest_waypoint_index = search_info.getClosestWaypointIndex();
@@ -108,26 +108,26 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "obstacle_avoid");
   ros::NodeHandle n;
 
-  astar_planner::AstarSearch astar;
-  astar_planner::SearchInfo search_info;
+  waypoint_planner::AstarSearch astar;
+  waypoint_planner::SearchInfo search_info;
 
   // ROS subscribers
   ros::Subscriber map_sub = n.subscribe("grid_map_visualization/distance_transform", 1,
-                                        &astar_planner::SearchInfo::mapCallback, &search_info);
+                                        &waypoint_planner::SearchInfo::mapCallback, &search_info);
   ros::Subscriber start_sub =
-      n.subscribe("current_pose", 1, &astar_planner::SearchInfo::currentPoseCallback, &search_info);
+      n.subscribe("current_pose", 1, &waypoint_planner::SearchInfo::currentPoseCallback, &search_info);
   ros::Subscriber waypoints_sub =
-      n.subscribe("base_waypoints", 1, &astar_planner::SearchInfo::waypointsCallback, &search_info);
+      n.subscribe("base_waypoints", 1, &waypoint_planner::SearchInfo::waypointsCallback, &search_info);
   ros::Subscriber obstacle_waypoint_sub =
-      n.subscribe("obstacle_waypoint", 1, &astar_planner::SearchInfo::obstacleWaypointCallback, &search_info);
+      n.subscribe("obstacle_waypoint", 1, &waypoint_planner::SearchInfo::obstacleWaypointCallback, &search_info);
   ros::Subscriber closest_waypoint_sub =
-      n.subscribe("closest_waypoint", 1, &astar_planner::SearchInfo::closestWaypointCallback, &search_info);
+      n.subscribe("closest_waypoint", 1, &waypoint_planner::SearchInfo::closestWaypointCallback, &search_info);
   // TODO: optional
-  // ros::Subscriber goal_sub = n.subscribe("/move_base_simple/goal", 1, &astar_planner::SearchInfo::goalCallback,
+  // ros::Subscriber goal_sub = n.subscribe("/move_base_simple/goal", 1, &waypoint_planner::SearchInfo::goalCallback,
   // &search_info);
   ros::Subscriber current_velocity_sub =
-      n.subscribe("current_velocity", 1, &astar_planner::SearchInfo::currentVelocityCallback, &search_info);
-  ros::Subscriber state_sub = n.subscribe("state", 1, &astar_planner::SearchInfo::stateCallback, &search_info);
+      n.subscribe("current_velocity", 1, &waypoint_planner::SearchInfo::currentVelocityCallback, &search_info);
+  ros::Subscriber state_sub = n.subscribe("state", 1, &waypoint_planner::SearchInfo::stateCallback, &search_info);
 
   // ROS publishers
   ros::Publisher path_pub = n.advertise<nav_msgs::Path>("astar_path", 1, true);
