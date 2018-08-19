@@ -28,7 +28,7 @@
   <arg name="upper_bound_ratio" default="1.20" />
   <arg name="avoidance" default="true" /> <!-- always avoid regardless of current state -->
   <arg name="switch_path" default="true" /> <!-- generate avoiding path and follow it -->
-  
+
   <node pkg="astar_planner" type="obstacle_avoid" name="obstacle_avoid" output="log">
     <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
     <param name="map_frame" value="$(arg map_frame)" />
@@ -57,19 +57,6 @@
     <param name="upper_bound_ratio" value="$(arg upper_bound_ratio)" />
     <param name="avoidance" value="$(arg avoidance)" />
     <param name="change_path" value="$(arg switch_path)" />
-  </node>
-
-  <!-- obstacle simulation node -->
-  <arg name="obstacle_height" default="1.0" />
-  <arg name="obstacle_width" default="1.0" />
-  <arg name="points_interval" default="0.1" />
-  <arg name="obstacle_frame" default="/velodyne" />
-
-  <node pkg="astar_planner" type="obstacle_sim" name="obstacle_sim" output="screen">
-    <param name="obstacle_height" value="$(arg obstacle_height)" />
-    <param name="obstacle_width" value="$(arg obstacle_width)" />
-    <param name="points_interval" value="$(arg points_interval)" />
-    <param name="obstacle_frame" value="$(arg obstacle_frame)" />
   </node>
 
 </launch>

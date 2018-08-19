@@ -51,7 +51,6 @@ VelocitySetInfo::VelocitySetInfo()
     velocity_change_limit_(2.77),
     temporal_waypoints_size_(100),
     set_pose_(false),
-    use_obstacle_sim_(false),
     wpidx_detectionResultByOtherNodes_(-1)
 {
   ros::NodeHandle private_nh_("~");
@@ -103,11 +102,6 @@ void VelocitySetInfo::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg
     points_.push_back(v);
   }
 
-  if (use_obstacle_sim_)
-  {
-    joinPoints(obstacle_sim_points_, &points_);
-    obstacle_sim_points_.clear();
-  }
 }
 
 void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
@@ -126,11 +120,4 @@ void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstP
 void VelocitySetInfo::localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
   localizer_pose_ = *msg;
-}
-
-void VelocitySetInfo::obstacleSimCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
-{
-  pcl::fromROSMsg(*msg, obstacle_sim_points_);
-
-  use_obstacle_sim_ = true;
 }
