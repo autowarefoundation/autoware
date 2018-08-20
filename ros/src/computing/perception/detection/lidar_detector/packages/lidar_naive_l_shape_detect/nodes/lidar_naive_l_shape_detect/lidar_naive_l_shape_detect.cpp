@@ -1,7 +1,3 @@
-//
-// Created by kosuke on 11/29/17.
-//
-//
 #include <pcl_conversions/pcl_conversions.h>
 #include <random>
 
@@ -9,9 +5,7 @@
 
 #include "lidar_naive_l_shape_detect.h"
 
-LShapeFilter::LShapeFilter():
-roi_m_(120),
-pic_scale_(1800/roi_m_)
+LShapeFilter::LShapeFilter() : roi_m_(120), pic_scale_(1800 / roi_m_)
 {
   // l-shape fitting params
   ros::NodeHandle private_nh_("~");
