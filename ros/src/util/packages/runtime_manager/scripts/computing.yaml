@@ -4098,6 +4098,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : clustering_distance
+      desc    : clustering_distance desc sample
+      label   : 'clustering distance'
+      min       : 0
+      max       : 10
+      v       : 0.75
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : clip_min_height
       desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_min_height (~sensor height)'
@@ -4192,22 +4201,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : clustering_distances
-      desc    : clustering_distances desc sample
-      label   : 'clustering_distances (no spaces)'
-      kind    : str
-      v       : '[15,30,45,60]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clustering_thresholds
-      desc    : clustering_thresholds desc sample
-      label   : 'clustering_thresholds (no spaces)'
-      kind    : str
-      v       : '[0.5,1.1,1.6,2.1,2.6]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : output_frame
       desc    : output_frame desc sample
       label   : 'output_frame'
@@ -4237,6 +4230,30 @@ params :
       label   : 'use_gpu'
       kind    : checkbox
       v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_multiple_thres
+      desc    : use_multiple_thres desc sample
+      label   : 'use_multiple_thres'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_ranges
+      desc    : clustering_ranges desc sample
+      label   : 'clustering_ranges (no space)'
+      kind    : str
+      v       : '[15,30,45,60]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (no space)'
+      kind    : str
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
       cmd_param :
         dash        : ''
         delim       : ':='
