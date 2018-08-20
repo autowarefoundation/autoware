@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sick_ldmrs_description</name>
+  <version>0.0.0</version>
+  <description>
+    This package contains an URDF description of the SICK LD-MRS scanner and all supporting mesh files.
+  </description>
+
+  <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
+  <author email="martin.guenther@dfki.de">Martin Günther</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/sick_ldmrs_description</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roslaunch</build_depend>
+
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+    <architecture_independent/>
+  </export>
+</package>

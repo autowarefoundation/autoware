@@ -8,6 +8,7 @@
     <!-- <url type="website">http://wiki.ros.org/log_tools</url> -->
     <author email="akihito.ohsato@tier4.jp">Akihito Ohsato</author>
     <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
 
     <run_depend>rospy</run_depend>
     <run_depend>python-flask</run_depend>

@@ -1,0 +1,14 @@
+- name: /sync_drivers/sync_drivers
+  publish: [/image_raw, /points_raw, /time_difference]
+  subscribe: [/image_raw, /points_raw]
+- name: /synchronization/*/time_monitor
+  publish: [/times]
+  subscribe: [/sync_drivers/image_raw, /sync_drivers/points_raw, /points_image,
+    /vscan_points, /vscan_image, /*/image_obj, /*/image_obj_ranged,
+    /*/image_obj_tracked, /current_pose, /*/obj_label, /cluster_centroids,
+    /*/obj_pose_timestamp, /sync_ranging/*/image_obj, /sync_tracking/*/image_obj_ranged,
+    /sync_reprojection/*/image_obj_tracked, /sync_obj_fusion/*/obj_label,
+    /time_difference]
+- name: /time_visualizer
+  publish: []
+  subscribe: [/synchronization/obj_car/times]

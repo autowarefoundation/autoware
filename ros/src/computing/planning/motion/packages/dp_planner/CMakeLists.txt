@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(dp_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
         autoware_msgs
@@ -48,7 +49,7 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 if ("${ROS_VERSION}" MATCHES "(kinetic)")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DROS_KINETIC")
 endif ()

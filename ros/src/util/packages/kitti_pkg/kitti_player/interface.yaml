@@ -1,0 +1,4 @@
+- name: /kitti_player
+  publish: [/grayscale/left/image_rect, /grayscale/right/image_rect,
+    /color/left/image_rect, /color/right/image_rect,
+    /hdl64e, /oxts/gps, /oxts/gps_initial, /oxts/imu, /preprocessed_disparity]

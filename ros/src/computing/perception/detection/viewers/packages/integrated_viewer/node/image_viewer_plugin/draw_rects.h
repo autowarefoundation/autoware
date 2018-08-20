@@ -2,27 +2,39 @@
 #define DRAW_RECTS_H
 
 #include <opencv/cv.h>
-#include "autoware_msgs/image_obj.h"
-#include "autoware_msgs/image_obj_ranged.h"
-#include "autoware_msgs/image_obj_tracked.h"
+#include <autoware_msgs/DetectedObjectArray.h>
 
-namespace integrated_viewer {
-  // helper class to draw detection result rectangle
-  class DrawRects{
-  public:
-    explicit DrawRects(void);
-    void DrawImageObj(const autoware_msgs::image_obj::ConstPtr& rect_data, cv::Mat& image);
-    void DrawImageObjRanged(const autoware_msgs::image_obj_ranged::ConstPtr& rect_data, cv::Mat& image);
-    void DrawImageObjTracked(const autoware_msgs::image_obj_tracked::ConstPtr& rect_data, cv::Mat& image);
+#define XSTR(x) #x
+#define STR(x) XSTR(x)
 
-  protected:
-    static const int kRectangleThickness;
-  
-  private:
-    void DrawLabel(const std::string& label, const cv::Point& rectangle_origin, cv::Mat& image);
-    std::vector<cv::Scalar> color_map_;
-    static const cv::Scalar kBlue;
-    static const cv::Scalar kGreen;
-  };
+const std::string DEFAULT_PATH                                      = STR(IMAGE_VIEWER_DEFAULT_PATH);
+
+namespace integrated_viewer
+{
+    // helper class to draw detection result rectangle
+    class DrawRects
+    {
+    public:
+        explicit DrawRects(void);
+
+        void DrawImageRect(const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
+        void DrawImageBox(const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
+
+    protected:
+        static const int kRectangleThickness;
+
+    private:
+        void DrawLabel(const autoware_msgs::DetectedObject& in_object, cv::Mat &image);
+
+        void OverlayImage(const cv::Mat &in_background, const cv::Mat &in_foreground,
+                          cv::Mat &output, cv::Point2i in_location);
+
+        std::vector<cv::Scalar> color_map_;
+        static const cv::Scalar kBlue;
+        static const cv::Scalar kGreen;
+
+        cv::Mat car_image_;
+        cv::Mat pedestrian_image_;
+    };
 }
 #endif // DRAW_RECTS_H

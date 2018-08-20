@@ -1,0 +1,4 @@
+- name: /op_simulator
+  publish: [/curr_simu_pose_, /sim_beh_txt_, /sim_box_pose_,
+    /safety_border_, /simu_local_trajectory_]
+  subscribe: [/initialpose, /cloud_clusters]

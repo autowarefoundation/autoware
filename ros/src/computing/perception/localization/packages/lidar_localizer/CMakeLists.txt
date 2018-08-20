@@ -34,6 +34,7 @@ else ()
 endif ()
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         nav_msgs
@@ -62,7 +63,7 @@ catkin_package(
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
@@ -124,6 +125,7 @@ target_include_directories(ndt_matching_monitor_lib PRIVATE
 add_dependencies(ndt_matching_monitor_lib
         ${catkin_EXPORTED_TARGETS}
         )
+target_link_libraries(ndt_matching_monitor_lib ${catkin_LIBRARIES})
 
 add_executable(ndt_matching_monitor nodes/ndt_matching_monitor/ndt_matching_monitor_node.cpp)
 target_link_libraries(ndt_matching_monitor ndt_matching_monitor_lib ${catkin_LIBRARIES})

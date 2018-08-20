@@ -6,6 +6,7 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         controller_manager
         gazebo_ros_control
         geometry_msgs
@@ -20,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system)

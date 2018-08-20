@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -e
+
+if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch64" ]
+then
+    AUTOWARE_TARGET_ARCH=aarch64
+    AUTOWARE_TARGET_PLATFORM=$1
+    shift
+
+   if [[ -d build-${AUTOWARE_TARGET_PLATFORM} ]]; then
+       rm -rf build-${AUTOWARE_TARGET_PLATFORM}
+   fi
+
+   if [[ -d devel-${AUTOWARE_TARGET_PLATFORM} ]]; then
+       rm -rf devel-${AUTOWARE_TARGET_PLATFORM}
+   fi
+
+    AUTOWARE_HOME=/home/autoware/Autoware
+    if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
+    then
+        if [[ ! -d "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_DRIVE_SDK_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_TENSORRT_ROOT_DIR}" ]]
+        then
+            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_DRIVE_SDK_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR"
+            exit 1
+        fi
+        AUTOWARE_HOME=/home/nvidia/Autoware
+        AUTOWARE_TOOLCHAIN_FILE=cross_toolchain_driveworks.cmake
+        AUTOWARE_DOCKER_EXTRA_ARGS=$(cat <<-END
+-v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:${DRIVEWORKS_TOOLKIT_ROOT_DIR}:ro
+-v ${CUDA_TOOLKIT_ROOT_DIR}:${CUDA_TOOLKIT_ROOT_DIR}:ro
+-v ${NVIDIA_DRIVE_SDK_ROOT_DIR}:${NVIDIA_DRIVE_SDK_ROOT_DIR}:ro
+-v ${NVIDIA_TENSORRT_ROOT_DIR}:${NVIDIA_TENSORRT_ROOT_DIR}:ro
+-e DRIVEWORKS_TOOLKIT_ROOT_DIR=${DRIVEWORKS_TOOLKIT_ROOT_DIR}
+-e CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
+-e NVIDIA_DRIVE_SDK_ROOT_DIR=${NVIDIA_DRIVE_SDK_ROOT_DIR}
+-e NVIDIA_TENSORRT_ROOT_DIR=${NVIDIA_TENSORRT_ROOT_DIR}
+END
+)
+        AUTOWARE_CUDA_ARCH=sm_61
+    else
+        AUTOWARE_TOOLCHAIN_FILE=cross_toolchain.cmake
+    fi
+    if [ ! -f "${PWD}/${AUTOWARE_TOOLCHAIN_FILE}" ]; then
+        echo "Toolchain file: '${PWD}/${AUTOWARE_TOOLCHAIN_FILE}' not found"
+        exit 1
+    fi
+
+    AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+
+    AUTOWARE_TOOLCHAIN_FILE_PATH="${AUTOWARE_HOME}/ros/${AUTOWARE_TOOLCHAIN_FILE}"
+    echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
+    AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
+
+    docker container run \
+        -it \
+        --rm \
+        ${AUTOWARE_DOCKER_EXTRA_ARGS} \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
+        -v ${PWD}/../:${AUTOWARE_HOME} \
+        -w ${AUTOWARE_HOME}/ros \
+        -u ${UID}:${UID} \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809 \
+        bash \
+        -c "\
+        source /opt/ros/kinetic/setup.bash && \
+        catkin_make \
+            -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            clean && \
+        source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash && \
+        catkin_make \
+            -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
+            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+            --build ${AUTOWARE_BUILD_PATH} \
+            -DCMAKE_BUILD_TYPE=Release $*
+        "
+
+    find devel-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
+else
+    echo "Select target platform: synquacer, driveworks, generic-aarch64"
+fi
+

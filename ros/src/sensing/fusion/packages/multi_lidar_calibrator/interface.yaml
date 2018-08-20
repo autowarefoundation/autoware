@@ -1,0 +1,3 @@
+- name: /multi_lidar_calibrator
+  publish: [/points_calibrated]
+  subscribe: [/lidar*/points_raw]

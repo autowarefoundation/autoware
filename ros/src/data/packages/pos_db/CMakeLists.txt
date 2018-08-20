@@ -2,16 +2,18 @@ cmake_minimum_required(VERSION 2.8.12)
 project(pos_db)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         gnss
         jsk_recognition_msgs
         tf
+        jsk_rviz_plugins
         autoware_msgs
         )
 
 include(FindLibSsh2.cmake)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS
@@ -33,6 +35,9 @@ if (LIBSSH2_FOUND)
     add_library(pos_db
             lib/pos_db/SendData.cpp
             lib/pos_db/util.cpp
+            )
+    target_link_libraries(pos_db
+            ${LIBSSH2_LIBRARIES}
             )
 
     add_executable(pos_downloader

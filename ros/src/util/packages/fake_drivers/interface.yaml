@@ -1,2 +1,2 @@
-- name: fake_camera
+- name: /fake_camera
   publish: [/image_raw]

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
@@ -12,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         )
 
 set(CMAKE_CXX_FLAGS
-        "-std=c++11 -Wall ${CMAKE_CXX_FLAGS}"
+        "-Wall ${CMAKE_CXX_FLAGS}"
         )
 
 catkin_package(
@@ -91,7 +92,7 @@ add_library(${PROJECT_NAME}
 set_target_properties(${PROJECT_NAME}
         PROPERTIES
         COMPILE_FLAGS
-        "-DIMAGE_VIEWER_DEFAULT_IMAGE=${CMAKE_CURRENT_SOURCE_DIR}/node/image_viewer_plugin/autoware_logo.png"
+        "-DIMAGE_VIEWER_DEFAULT_PATH=${CMAKE_CURRENT_SOURCE_DIR}/node/image_viewer_plugin/"
         )
 
 ## Specify libraries to link a library or executable target against

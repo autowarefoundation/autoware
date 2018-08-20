@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fake_drivers)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
   sensor_msgs
@@ -9,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(OpenCV REQUIRED)
 
