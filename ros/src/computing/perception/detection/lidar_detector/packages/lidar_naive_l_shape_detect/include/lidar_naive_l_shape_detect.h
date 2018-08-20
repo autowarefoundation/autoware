@@ -1,6 +1,3 @@
-//
-// Created by kosuke on 11/29/17.
-//
 
 #ifndef OBJECT_TRACKING_BOX_FITTING_H
 #define OBJECT_TRACKING_BOX_FITTING_H
