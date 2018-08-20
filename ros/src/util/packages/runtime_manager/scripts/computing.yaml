@@ -1092,6 +1092,23 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name      : use_sukf
+      desc      : Use SUKF
+      label     : use_sukf
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : is_debug
+      desc      : debug mode on/off
+      label     : is_debug
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
 
   - name  : lidar_kf_contour_track_param
     vars  :

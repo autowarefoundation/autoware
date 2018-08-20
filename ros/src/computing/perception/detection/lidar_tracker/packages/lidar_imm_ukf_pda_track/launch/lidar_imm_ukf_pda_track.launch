@@ -9,6 +9,8 @@
   <arg name="tracker_input_topic" default="/detected_objects_range" />
   <arg name="tracker_output_jskbb_topic" default="/bounding_boxes_tracked" />
   <arg name="tracker_output_detected_topic" default="/tracker_output_detected_topic" />
+  <arg name="use_sukf" default="use_sukf" />
+  <arg name="is_debug" default="is_debug" />
 
   <arg name="pointcloud_frame" default="/velodyne" />
   <arg name="tracking_frame" default="/world" />
@@ -23,6 +25,8 @@
     <param name="static_velocity_thres" value="$(arg static_velocity_thres)" />
     <param name="pointcloud_frame"      value="$(arg pointcloud_frame)" />
     <param name="tracking_frame"        value="$(arg tracking_frame)" />
+    <param name="use_sukf"              value="$(arg use_sukf)" />
+    <param name="is_debug"              value="$(arg is_debug)" />
 
     <remap from="/detection/lidar_objects"         to="$(arg tracker_input_topic)" />
     <remap from="/detection/tracked_objects/jskbb" to="$(arg tracker_output_jskbb_topic)" />
