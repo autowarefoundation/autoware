@@ -7,10 +7,8 @@
 
 #include <ros/ros.h>
 
-#include <array>
 #include <opencv2/opencv.hpp>
 #include <pcl/io/pcd_io.h>
-#include <vector>
 
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
@@ -18,10 +16,10 @@
 class LShapeFilter
 {
 private:
+  const float roi_m_;
+  const float pic_scale_;
+
   float sensor_height_;
-  float roi_m_;
-  float pic_scale_;  // picScale * roiM = 30 * 30
-  // const float picScale = 30;
   int ram_points_;
   float slope_dist_thres_;
   int num_points_thres_;

@@ -9,16 +9,10 @@
 
 #include "lidar_naive_l_shape_detect.h"
 
-using namespace std;
-using namespace pcl;
-
-int g_count = 0;
-
-LShapeFilter::LShapeFilter()
+LShapeFilter::LShapeFilter():
+roi_m_(120),
+pic_scale_(1800/roi_m_)
 {
-  roi_m_ = 120;
-  pic_scale_ = 1800 / roi_m_;
-
   // l-shape fitting params
   ros::NodeHandle private_nh_("~");
   private_nh_.param<int>("ram_points", ram_points_, 80);
@@ -39,7 +33,6 @@ void LShapeFilter::callBack(const autoware_msgs::DetectedObjectArray& input)
   getLShapeBB(copy_objects, out_objects);
   out_objects.header = input.header;
   pub_object_array_.publish(out_objects);
-  g_count++;
 }
 
 void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pc_points, int offset_x,
@@ -56,10 +49,10 @@ void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv:
     // reverse from image coordinate to eucledian coordinate
     float r_x = r_offset_x;
     float r_y = pic_scale_ * roi_m_ - r_offset_y;
-    // reverse to 30mx30m scale
+    // reverse to roi_m_*roi_m_ scale
     float rm_x = r_x / pic_scale_;
     float rm_y = r_y / pic_scale_;
-    // reverse from (0 < x,y < 30) to (-15 < x,y < 15)
+    // reverse from (0 < x,y < roi_m_) to (roi_m_/2 < x,y < roi_m_/2)
     float pc_x = rm_x - roi_m_ / 2;
     float pc_y = rm_y - roi_m_ / 2;
     cv::Point2f point(pc_x, pc_y);
@@ -167,7 +160,7 @@ void LShapeFilter::getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_arr
   {
     pcl::PointCloud<pcl::PointXYZ> cloud;
 
-    // Convert from ros msg to PCL::PointCloud data type
+    // Convert from ros msg to PCL::pic_scalePointCloud data type
     pcl::fromROSMsg(in_object_array.objects[i_object].pointcloud, cloud);
 
     // calculating offset so that projecting pointcloud into cv::mat
@@ -202,7 +195,7 @@ void LShapeFilter::getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_arr
       // cast (roi_m_/2 < x,y < roi_m_/2) into (0 < x,y < roi_m_)
       float roi_x = p_x + roi_m_ / 2;
       float roi_y = p_y + roi_m_ / 2;
-      // cast (roi_m_)mx(roi_m_)m into 900x900 scale
+      // cast (roi_m_)m*(roi_m_)m into  pic_scale_
       int x = floor(roi_x * pic_scale_);
       int y = floor(roi_y * pic_scale_);
       // cast into image coordinate
@@ -308,7 +301,7 @@ void LShapeFilter::getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_arr
     }
     updateCpFromPoints(pc_points, in_object_array.objects[i_object]);
 
-    // update pcPoints to make it right angle bbox
+    // update pc_points to make it right angle bbox
     toRightAngleBBox(pc_points);
 
     updateDimentionAndEstimatedAngle(pc_points, in_object_array.objects[i_object]);
