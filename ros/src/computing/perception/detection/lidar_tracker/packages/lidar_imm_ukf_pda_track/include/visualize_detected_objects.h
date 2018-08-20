@@ -18,11 +18,13 @@
 class VisualizeDetectedObjects
 {
 private:
+  const double vis_arrow_height_;
+  const double vis_id_height_;
   std::string input_topic_;
   std::string pointcloud_frame_;
 
   ros::NodeHandle node_handle_;
-  ros::Subscriber sub_cloud_array_;
+  ros::Subscriber sub_object_array_;
 
   ros::Publisher pub_arrow_;
   ros::Publisher pub_id_;

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
   )
 
 
@@ -22,6 +23,7 @@ catkin_package(
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
   )
 
 include_directories(
