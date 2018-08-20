@@ -4,7 +4,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-
 ImmUkfPda::ImmUkfPda()
 {
   ros::NodeHandle private_nh_("~");
@@ -19,21 +18,22 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
 
-  init_                       = false;
+  init_ = false;
 
   // assign unique ukf_id_ to each tracking targets
-  target_id_   = 0;
+  target_id_ = 0;
 }
-
 
 void ImmUkfPda::run()
 {
-  pub_jskbbox_array_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/tracked_objects/jskbb", 1);
-  pub_object_array_  = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
+  pub_jskbbox_array_ =
+      node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/tracked_objects/jskbb", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
 
   // for debug
-  pub_points_        = node_handle_.advertise<visualization_msgs::Marker>("/detection/tracked_objects/debug/points", 1);
-  pub_texts_array_   = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/tracked_objects/debug/texts", 1);
+  pub_points_ = node_handle_.advertise<visualization_msgs::Marker>("/detection/tracked_objects/debug/points", 1);
+  pub_texts_array_ =
+      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/tracked_objects/debug/texts", 1);
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 }
@@ -54,7 +54,7 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 }
 
 void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
-                                   jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output)
+                             jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output)
 {
   jskbboxes_output.header = input.header;
   for (size_t i = 0; i < input.objects.size(); i++)
@@ -68,16 +68,18 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
 }
 
 void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
-                                            autoware_msgs::DetectedObjectArray& transformed_input)
+                                      autoware_msgs::DetectedObjectArray& transformed_input)
 {
   transformed_input.header = input.header;
-  try{
+  try
+  {
     tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
     // todo: make transform obejct for later use
   }
-  catch (tf::TransformException ex){
+  catch (tf::TransformException ex)
+  {
     std::cout << "cannot transform" << std::endl;
-    ROS_ERROR("%s",ex.what());
+    ROS_ERROR("%s", ex.what());
     ros::Duration(1.0).sleep();
   }
   for (size_t i = 0; i < input.objects.size(); i++)
@@ -91,8 +93,8 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
-    dd        = input.objects[i];
-    dd.pose   = pose_out.pose;
+    dd = input.objects[i];
+    dd.pose = pose_out.pose;
 
     transformed_input.objects.push_back(dd);
   }
@@ -105,32 +107,33 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   {
     geometry_msgs::PoseStamped detected_pose_in, detected_pose_out;
 
-    detected_pose_in.header          = jskbboxes_output.header;
+    detected_pose_in.header = jskbboxes_output.header;
     detected_pose_in.header.frame_id = tracking_frame_;
-    detected_pose_in.pose            = detected_objects_output.objects[i].pose;
+    detected_pose_in.pose = detected_objects_output.objects[i].pose;
 
     tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
-    detected_objects_output.objects[i].pose            = detected_pose_out.pose;
+    detected_objects_output.objects[i].pose = detected_pose_out.pose;
   }
   detected_objects_output.header.frame_id = pointcloud_frame_;
 
   for (size_t i = 0; i < jskbboxes_output.boxes.size(); i++)
   {
     geometry_msgs::PoseStamped jsk_pose_in, jsk_pose_out;
-    jsk_pose_in.header               = jskbboxes_output.header;
-    jsk_pose_in.header.frame_id      = tracking_frame_;
-    jsk_pose_in.pose                 = jskbboxes_output.boxes[i].pose;
+    jsk_pose_in.header = jskbboxes_output.header;
+    jsk_pose_in.header.frame_id = tracking_frame_;
+    jsk_pose_in.pose = jskbboxes_output.boxes[i].pose;
     tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), jsk_pose_in, tracking_frame_, jsk_pose_out);
     jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;
-    jskbboxes_output.boxes[i].pose            = jsk_pose_out.pose;
+    jskbboxes_output.boxes[i].pose = jsk_pose_out.pose;
   }
-  jskbboxes_output.header.frame_id        = pointcloud_frame_;
+  jskbboxes_output.header.frame_id = pointcloud_frame_;
 }
 
-void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF& target, const bool second_init,
-                                      const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
+void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target,
+                                      const bool second_init, const Eigen::VectorXd& max_det_z,
+                                      const Eigen::MatrixXd& max_det_s,
                                       std::vector<autoware_msgs::DetectedObject>& object_vec,
                                       std::vector<bool>& matching_vec)
 {
@@ -162,10 +165,10 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
 
       if (nis < smallest_nis)
       {
-        smallest_nis         = nis;
+        smallest_nis = nis;
         smallest_meas_object = input.objects[i];
-        matching_vec[i]      = true;
-        second_init_done     = true;
+        matching_vec[i] = true;
+        second_init_done = true;
       }
     }
   }
@@ -191,7 +194,7 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<aut
     if (dist < min_dist)
     {
       min_dist = dist;
-      min_ind  = i;
+      min_ind = i;
     }
   }
 
@@ -213,7 +216,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
     if (min_dist < distance_thres_)
     {
       target.is_vis_bb_ = true;
-      target.jsk_bb_.pose       = nearest_object.pose;
+      target.jsk_bb_.pose = nearest_object.pose;
       target.jsk_bb_.dimensions = nearest_object.dimensions;
     }
   }
@@ -222,7 +225,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
     autoware_msgs::DetectedObject nearest_object;
     double min_dist = std::numeric_limits<double>::max();
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-    target.jsk_bb_.pose       = nearest_object.pose;
+    target.jsk_bb_.pose = nearest_object.pose;
     target.jsk_bb_.dimensions = nearest_object.dimensions;
   }
 }
@@ -264,20 +267,19 @@ void ImmUkfPda::updateBB(UKF& target)
   double diff_yaw = yaw - target.best_yaw_;
 
   // diffYaw is within the threshold, apply the diffYaw chamge
-  if(abs(diff_yaw) < bb_yaw_change_thres_)
+  if (abs(diff_yaw) < bb_yaw_change_thres_)
   {
-      target.best_jsk_bb_.pose.orientation = target.jsk_bb_.pose.orientation;
-      target.best_yaw_ = yaw;
+    target.best_jsk_bb_.pose.orientation = target.jsk_bb_.pose.orientation;
+    target.best_yaw_ = yaw;
   }
   else
   {
-      target.jsk_bb_.pose.orientation = target.best_jsk_bb_.pose.orientation;
+    target.jsk_bb_.pose.orientation = target.best_jsk_bb_.pose.orientation;
   }
 
   // // bbox area
   double area = getJskBBoxArea(target.jsk_bb_);
   double best_area = getJskBBoxArea(target.best_jsk_bb_);
-
 
   // start updating bbox params
   double delta_area = area - best_area;
@@ -350,7 +352,7 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
     UKF ukf;
     ukf.initialize(init_meas, timestamp, target_id_);
     targets_.push_back(ukf);
-    target_id_ ++;
+    target_id_++;
   }
   timestamp_ = timestamp;
   init_ = true;
@@ -434,19 +436,19 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
 
 void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                              const double det_explode_param, std::vector<bool>& matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target, bool& is_skip_target)
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
+                                             bool& is_skip_target)
 {
   double det_s = 0;
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
   is_skip_target = false;
 
-
-  if(use_sukf_)
+  if (use_sukf_)
   {
     max_det_z = target.z_pred_ctrv_;
     max_det_s = target.s_ctrv_;
-    det_s     = max_det_s.determinant();
+    det_s = max_det_s.determinant();
   }
   else
   {
@@ -498,7 +500,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   }
 }
 
-void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec)
+void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
+                               const std::vector<bool>& matching_vec)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
   {
@@ -512,7 +515,7 @@ void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::Dete
       UKF ukf;
       ukf.initialize(init_meas, timestamp, target_id_);
       targets_.push_back(ukf);
-      target_id_ ++;
+      target_id_++;
     }
   }
 }
@@ -522,8 +525,7 @@ void ImmUkfPda::staticClassification()
   for (size_t i = 0; i < targets_.size(); i++)
   {
     targets_[i].vel_history_.push_back(targets_[i].x_merge_(2));
-    if (targets_[i].tracking_num_ == TrackingState::Stable &&
-        targets_[i].lifetime_ > life_time_thres_)
+    if (targets_[i].tracking_num_ == TrackingState::Stable && targets_[i].lifetime_ > life_time_thres_)
     {
       double sum_vel = 0;
       double avg_vel = 0;
@@ -531,11 +533,10 @@ void ImmUkfPda::staticClassification()
       {
         sum_vel += targets_[i].vel_history_.end()[-ind];
       }
-      avg_vel = double(sum_vel/life_time_thres_);
+      avg_vel = double(sum_vel / life_time_thres_);
 
-      if ((avg_vel< static_velocity_thres_) &&
-         (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
-          targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
+      if ((avg_vel < static_velocity_thres_) && (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
+                                                 targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
       {
         targets_[i].is_static_ = true;
       }
@@ -562,7 +563,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     while (tyaw < -M_PI)
       tyaw += 2. * M_PI;
 
-    if (targets_[i].is_vis_bb_ )
+    if (targets_[i].is_vis_bb_)
     {
       jsk_recognition_msgs::BoundingBox bb;
       bb.header = input.header;
@@ -573,18 +574,18 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     // RPY to convert: 0, 0, targets_[i].x_merge_(3)
     tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
     autoware_msgs::DetectedObject dd;
-    dd.header             = input.header;
-    dd.id                 = targets_[i].ukf_id_;
-    dd.velocity.linear.x  = tv;
-    dd.pose               = targets_[i].jsk_bb_.pose;
-    dd.pose.position.x    = tx;
-    dd.pose.position.y    = ty;
+    dd.header = input.header;
+    dd.id = targets_[i].ukf_id_;
+    dd.velocity.linear.x = tv;
+    dd.pose = targets_[i].jsk_bb_.pose;
+    dd.pose.position.x = tx;
+    dd.pose.position.y = ty;
     dd.pose.orientation.x = q[0];
     dd.pose.orientation.y = q[1];
     dd.pose.orientation.z = q[2];
     dd.pose.orientation.w = q[3];
-    dd.dimensions         = targets_[i].jsk_bb_.dimensions;
-    dd.pose_reliable      = targets_[i].is_vis_bb_;
+    dd.dimensions = targets_[i].jsk_bb_.dimensions;
+    dd.pose_reliable = targets_[i].is_vis_bb_;
     // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
     updateLabel(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
@@ -594,9 +595,9 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
 void ImmUkfPda::removeUnnecessaryTarget()
 {
   std::vector<UKF> temp_targets;
-  for(size_t i = 0; i < targets_.size(); i++)
+  for (size_t i = 0; i < targets_.size(); i++)
   {
-    if(targets_[i].tracking_num_ != TrackingState::Die)
+    if (targets_[i].tracking_num_ != TrackingState::Die)
     {
       temp_targets.push_back(targets_[i]);
     }
@@ -609,11 +610,11 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 {
   visualization_msgs::MarkerArray texts_markers;
   visualization_msgs::Marker target_points, meas_points;
-  target_points.header.frame_id = meas_points.header.frame_id =  "/world";
+  target_points.header.frame_id = meas_points.header.frame_id = "/world";
   target_points.header.stamp = meas_points.header.stamp = input.header.stamp;
   target_points.ns = meas_points.ns = "target_points";
   target_points.action = meas_points.action = visualization_msgs::Marker::ADD;
-  target_points.pose.orientation.w =  meas_points.pose.orientation.w =1.0;
+  target_points.pose.orientation.w = meas_points.pose.orientation.w = 1.0;
 
   target_points.id = 0;
   meas_points.id = 1;
@@ -628,12 +629,12 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 
   // Points are green
   target_points.color.r = 1.0f;
-  target_points.color.a =1.0;
+  target_points.color.a = 1.0;
   meas_points.color.g = 1.0f;
   meas_points.color.a = 1.0;
 
   // targets text
-  for(size_t i = 0; i < targets_.size(); i++)
+  for (size_t i = 0; i < targets_.size(); i++)
   {
     geometry_msgs::Point p;
     p.x = targets_[i].x_merge_(0);
@@ -643,9 +644,9 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     target_points.points.push_back(p);
 
     visualization_msgs::Marker id;
-    id.header.frame_id =  "/world";
+    id.header.frame_id = "/world";
     id.header.stamp = input.header.stamp;
-    id.ns ="target_points";
+    id.ns = "target_points";
     id.action = visualization_msgs::Marker::ADD;
     id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     id.id = targets_[i].ukf_id_ * 100;
@@ -663,28 +664,28 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 
     double tv = targets_[i].x_merge_(2);
     // not to visualize '-0.0'
-    if(abs(tv) < 0.1)
+    if (abs(tv) < 0.1)
     {
       tv = 0.0;
     }
-    std::string s_velocity = std::to_string(tv*3.6);
-    std::string modified_sv = s_velocity.substr(0, s_velocity.find(".")+3);
+    std::string s_velocity = std::to_string(tv * 3.6);
+    std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
-    std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
-                      + std::to_string(targets_[i].x_merge_(2)) + " m/s "
-                      + "(" + std::to_string(targets_[i].x_merge_(0))+", " + std::to_string(targets_[i].x_merge_(1)) + ")";
+    std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) +
+                       " m/s " + "(" + std::to_string(targets_[i].x_merge_(0)) + ", " +
+                       std::to_string(targets_[i].x_merge_(1)) + ")";
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
     texts_markers.markers.push_back(id);
   }
 
   // meas text
-  for(size_t i = 0; i < input.objects.size(); i++)
+  for (size_t i = 0; i < input.objects.size(); i++)
   {
     visualization_msgs::Marker id;
-    id.header.frame_id =  "/world";
+    id.header.frame_id = "/world";
     id.header.stamp = input.header.stamp;
-    id.ns ="target_points";
+    id.ns = "target_points";
     id.action = visualization_msgs::Marker::ADD;
     id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
     id.id = i;
@@ -703,11 +704,10 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     std::string s_px = std::to_string(input.objects[i].pose.position.x);
     std::string s_py = std::to_string(input.objects[i].pose.position.y);
 
-    std::string text = "(" + s_px+", " + s_py + ")";
+    std::string text = "(" + s_px + ", " + s_py + ")";
     id.text = text;
     texts_markers.markers.push_back(id);
   }
-
 
   for (size_t i = 0; i < input.objects.size(); i++)
   {
@@ -763,7 +763,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       continue;
     }
 
-    if(use_sukf_)
+    if (use_sukf_)
     {
       // sukf prediction step
       targets_[i].predictionSUKF(dt);
@@ -778,7 +778,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       // sukf update step
       targets_[i].updateSUKF(object_vec);
     }
-    else //imm ukf pda filter
+    else  // imm ukf pda filter
     {
       // immukf prediction step
       targets_[i].predictionIMMUKF(dt);
@@ -791,13 +791,13 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
         continue;
       }
       // immukf update step
-      targets_[i].updateIMMUKF(detection_probability_, gate_probability_ , gating_thres_, object_vec);
+      targets_[i].updateIMMUKF(detection_probability_, gate_probability_, gating_thres_, object_vec);
     }
   }
   // end UKF process
 
-  //debug, green is for measurement points, red is for estimated points
-  if(is_debug_)
+  // debug, green is for measurement points, red is for estimated points
+  if (is_debug_)
   {
     pubDebugRosMarker(input);
   }

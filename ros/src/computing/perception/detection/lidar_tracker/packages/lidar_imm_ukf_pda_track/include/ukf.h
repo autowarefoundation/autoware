@@ -88,7 +88,6 @@ public:
   double std_a_ctrv_;
   double std_a_rm_;
 
-
   // CTRV
   double std_ctrv_yawdd_;
   // CV
@@ -252,14 +251,14 @@ public:
 
   void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
-  void updateIMMUKF(const double detection_probability, const double gate_probability,
-     const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
+                    const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
             const double delta_t, std::vector<double>& state);
 
-  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-          const double delta_t, std::vector<double>& state);
+  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
+          std::vector<double>& state);
 
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double delta_t, std::vector<double>& state);
@@ -269,7 +268,6 @@ public:
   void prediction(const double delta_t, const int model_ind);
 
   void updateLidar(const int model_ind);
-
 };
 
 #endif /* UKF_H */

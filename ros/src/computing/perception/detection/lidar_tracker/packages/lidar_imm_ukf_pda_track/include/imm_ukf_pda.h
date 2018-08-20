@@ -50,7 +50,7 @@ private:
   int stable_num_;
   int lost_num_;
 
-  //switch sukf and ImmUkfPda
+  // switch sukf and ImmUkfPda
   bool use_sukf_;
 
   bool is_debug_;
@@ -80,9 +80,9 @@ private:
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
   void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
-                          jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output);
+                    jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output);
   void transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
-                                   autoware_msgs::DetectedObjectArray& transformed_input);
+                             autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
@@ -106,21 +106,25 @@ private:
 
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
-  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt, const double det_explode_param,
-                                    std::vector<bool>& matching_vec, std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
+  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+                                    const double det_explode_param, std::vector<bool>& matching_vec,
+                                    std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
                                     bool& is_skip_target);
-  void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec);
+  void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
+                      const std::vector<bool>& matching_vec);
 
   void staticClassification();
 
-  void makeOutput(const autoware_msgs::DetectedObjectArray& input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+  void makeOutput(const autoware_msgs::DetectedObjectArray& input,
+                  jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
 
   void pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input);
 
-  void tracker(const autoware_msgs::DetectedObjectArray& transformed_input, jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+  void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
+               jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
 public:
