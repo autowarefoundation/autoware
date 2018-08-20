@@ -16,11 +16,11 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
+  private_nh_.param<bool>("use_sukf", use_sukf_, false);
+  private_nh_.param<bool>("is_debug", is_debug_, false);
 
   init_                       = false;
 
-  use_sukf_                   = false;
-  is_debug_                   = false;
   // assign unique ukf_id_ to each tracking targets
   target_id_   = 0;
 }
@@ -28,12 +28,14 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
-  pub_jskbbox_array_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes_tracked", 1);
-  pub_object_array_  = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detected_objects", 1);
-  pub_points_        = node_handle_.advertise<visualization_msgs::Marker>("/points/debug", 1);
-  pub_texts_array_   = node_handle_.advertise<visualization_msgs::MarkerArray>("/texts/debug", 1);
+  pub_jskbbox_array_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/tracked_objects/jskbb", 1);
+  pub_object_array_  = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
 
-  sub_detected_array_ = node_handle_.subscribe("/detected_objects_range", 1, &ImmUkfPda::callback, this);
+  // for debug
+  pub_points_        = node_handle_.advertise<visualization_msgs::Marker>("/detection/tracked_objects/debug/points", 1);
+  pub_texts_array_   = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/tracked_objects/debug/texts", 1);
+
+  sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
