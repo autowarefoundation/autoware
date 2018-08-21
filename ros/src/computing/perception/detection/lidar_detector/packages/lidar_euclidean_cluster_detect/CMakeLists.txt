@@ -41,6 +41,14 @@ catkin_package(
         INCLUDE_DIRS include
 )
 
+# Resolve system dependency on yaml-cpp, which apparently does not
+# provide a CMake find_package() module.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARY_DIRS})
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
@@ -78,13 +86,15 @@ if (${CUDA_FOUND})
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
+            ${YAML_CPP_LIBRARIES}
             gpu_euclidean_clustering)
 
 else ()
     target_link_libraries(lidar_euclidean_cluster_detect
             ${OpenCV_LIBRARIES}
             ${catkin_LIBRARIES}
-            ${PCL_LIBRARIES})
+            ${PCL_LIBRARIES}
+            ${YAML_CPP_LIBRARIES})
 
 endif ()
 

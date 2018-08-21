@@ -228,6 +228,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_fake_perception
+        desc : lidar_fake_perception desc sample
+        cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
+        param: lidar_fake_perception_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
     - name : fusion_tools
       desc : fusion_tools
@@ -1143,7 +1150,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -4736,6 +4742,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : clustering_distance
+      desc    : clustering_distance desc sample
+      label   : 'clustering distance'
+      min       : 0
+      max       : 10
+      v       : 0.75
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : clip_min_height
       desc    : Remove points below this value. Introduced value must match the input data frame coordinate system.
       label   : 'clip_min_height (~sensor height)'
@@ -4830,22 +4845,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : clustering_distances
-      desc    : clustering_distances desc sample
-      label   : 'clustering_distances (no spaces)'
-      kind    : str
-      v       : '[15,30,45,60]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : clustering_thresholds
-      desc    : clustering_thresholds desc sample
-      label   : 'clustering_thresholds (no spaces)'
-      kind    : str
-      v       : '[0.5,1.1,1.6,2.1,2.6]'
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : output_frame
       desc    : output_frame desc sample
       label   : 'output_frame'
@@ -4878,7 +4877,211 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : use_multiple_thres
+      desc    : use_multiple_thres desc sample
+      label   : 'use_multiple_thres'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_ranges
+      desc    : clustering_ranges desc sample
+      label   : 'clustering_ranges (no space)'
+      kind    : str
+      v       : '[15,30,45,60]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : clustering_distances
+      desc    : clustering_distances desc sample
+      label   : 'clustering_distances (no space)'
+      kind    : str
+      v       : '[0.5,1.1,1.6,2.1,2.6]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
+  - name  : lidar_fake_perception_param
+    vars  :
+    - name    : initial_pose_topic
+      desc    : initial fake object pose
+      label   : 'initial pose'
+      kind    : str
+      v       : /move_base_simple/goal
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : real_objects_topic
+      desc    : input objects
+      label   : 'input objects'
+      kind    : str
+      v       : /detected_objects
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : real_points_topic
+      desc    : input points
+      label   : 'input points'
+      kind    : str
+      v       : /points_raw
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : fake_twist_topic
+      desc    : input twist command, controlling fake object
+      label   : 'input twist'
+      kind    : str
+      v       : /fake_twist
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : fake_objects_topic
+      desc    : output objects, input and fake object are merged
+      label   : 'output objects'
+      kind    : str
+      v       : /fake_objects
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : fake_points_topic
+      desc    : output points, input and fake points are merged
+      label   : 'output points'
+      kind    : str
+      v       : /fake_points
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_length
+      desc    : object shape, length [m]
+      label   : 'object length'
+      min     : 0.0
+      max     : 10.0
+      v       : 4.8
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_width
+      desc    : object shape, width [m]
+      label   : 'object width'
+      min     : 0.0
+      max     : 10.0
+      v       : 1.8
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_height
+      desc    : object shape, height [m]
+      label   : 'object height'
+      min     : 0.0
+      max     : 10.0
+      v       : 1.8
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_z_offset
+      desc    : object z position, z offset from global frame [m]
+      label   : 'object z offset'
+      min     : -10.0
+      max     : 10.0
+      v       : 0.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_velocity
+      desc    : object motion, constant velocity instead of subscribed twist [m/s]
+      label   : 'object velocity'
+      min     : -20.0
+      max     : 20.0
+      v       : 3.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_angular_velocity
+      desc    : constant angular velocity instead of subscribed twist [rad/s]
+      label   : 'object angular velocity'
+      min     : -5.0
+      max     : 5.0
+      v       : 0.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_intensity
+      desc    : object meta-info, constant intensity value of fake points [-]
+      label   : 'object points intensity'
+      min     : 0.0
+      max     : 255.0
+      v       : 100.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_lifetime
+      desc    : object meta-info, fake object lifetime (NOTE, when this is negative value, lifetime is inifinity) [s]
+      label   : 'object lifetime'
+      min     : -1.0
+      max     : 600
+      v       : -1.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_points_space
+      desc    : object meta-info, fake points space [m]
+      label   : 'object points space'
+      min     : 0.01
+      max     : 1.0
+      v       : 0.2
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : publish_rate
+      desc    : publish rate of fake objects/points [Hz]
+      label   : 'publish rate'
+      min     : 0.01
+      max     : 100.0
+      v       : 10.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : publish_object
+      desc    : enable publishing fake objects
+      label   : 'publish object'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : publish_points
+      desc    : enable publishing fake points
+      label   : 'publish points'
+      kind    : checkbox
+      v       : True
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : use_fake_twist
+      desc    : object motion, using subscribed twist
+      label   : 'use input twist'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_label
+      desc    : object meta-info, fake object label (e.g. tracking state)
+      label   : 'output label'
+      kind    : str
+      v       : Stable
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name    : object_frame
+      desc    : output meta-info, fake object frame_id (NOTE, not affected to input object)
+      label   : 'output frame'
+      kind    : str
+      v       : /velodyne
+      cmd_param :
+        dash  : ''
+        delim : ':='
 
   - name  : pixel_cloud_fusion_params
     vars  :

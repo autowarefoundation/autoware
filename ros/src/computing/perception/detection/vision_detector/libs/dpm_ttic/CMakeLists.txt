@@ -46,7 +46,7 @@ if(CUDA_FOUND)
     target_link_libraries(libdpm_ttic
             ${catkin_LIBRARIES}
             ${OpenCV_LIBS}
-            cuda
+            ${CUDA_CUDA_LIBRARY}
             )
 
     set(CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
@@ -57,28 +57,34 @@ if(CUDA_FOUND)
         set(CUDA_LDFLAGS -lcuda)
     endif()
 
-    set(CUDA_CAPABILITY_VERSION_CHECKER
-            "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
-            )
-
-    execute_process(
-            COMMAND
-            ${CUDA_COMPILER}
-            -o ${CUDA_CAPABILITY_VERSION_CHECKER}
-            "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
-            ${CUDA_LDFLAGS}
-    )
-
-    execute_process(
-            COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
-            OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
-        set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+    if(CMAKE_CROSSCOMPILING)
+        if(NOT CUDA_ARCH)
+                message(FATAL_ERROR "Please define the CUDA_ARCH CMake variable")
+        endif()
     else()
-        set(CUDA_ARCH "sm_52")
+        set(CUDA_CAPABILITY_VERSION_CHECKER
+                "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker"
+                )
+
+        execute_process(
+                COMMAND
+                ${CUDA_COMPILER}
+                -o ${CUDA_CAPABILITY_VERSION_CHECKER}
+                "${CMAKE_CURRENT_SOURCE_DIR}/util/capability_version_checker.cpp"
+                ${CUDA_LDFLAGS}
+        )
+
+        execute_process(
+                COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+                OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        if("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+                set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+        else()
+                set(CUDA_ARCH "sm_52")
+        endif()
     endif()
 
     set(CUDA_FILE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/gpu")
