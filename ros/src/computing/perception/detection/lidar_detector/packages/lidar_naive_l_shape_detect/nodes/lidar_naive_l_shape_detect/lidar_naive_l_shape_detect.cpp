@@ -117,6 +117,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pc_points)
 void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pc_points,
                                                     autoware_msgs::DetectedObject& object)
 {
+  // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
   cv::Point2f p3 = pc_points[2];
@@ -124,7 +125,7 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
   double dist1 = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
   double dist2 = sqrt((p3.x - p2.x) * (p3.x - p2.x) + (p3.y - p2.y) * (p3.y - p2.y));
   double bb_yaw;
-  // dist1 is length
+  // dist1 is length, dist2 is width
   if (dist1 > dist2)
   {
     bb_yaw = atan2(p1.y - p2.y, p1.x - p2.x);
@@ -132,6 +133,7 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
     object.dimensions.y = dist2;
     object.dimensions.z = 2;
   }
+  // dist1 is width, dist2 is length
   else
   {
     bb_yaw = atan2(p3.y - p2.y, p3.x - p2.x);
