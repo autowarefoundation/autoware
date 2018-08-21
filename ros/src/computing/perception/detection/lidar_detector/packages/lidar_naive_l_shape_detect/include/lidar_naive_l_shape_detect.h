@@ -13,19 +13,19 @@
 class LShapeFilter
 {
 private:
-  const float roi_m_;
-  const float pic_scale_;
 
   float sensor_height_;
   int ram_points_;
   float slope_dist_thres_;
   int num_points_thres_;
 
+  float roi_m_;
+  float pic_scale_;
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_object_array_;
   ros::Publisher pub_object_array_;
 
-  void callBack(const autoware_msgs::DetectedObjectArray& input);
+  void callback(const autoware_msgs::DetectedObjectArray& input);
   void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points, autoware_msgs::DetectedObject& cluster);
   void toRightAngleBBox(std::vector<cv::Point2f>& pc_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,

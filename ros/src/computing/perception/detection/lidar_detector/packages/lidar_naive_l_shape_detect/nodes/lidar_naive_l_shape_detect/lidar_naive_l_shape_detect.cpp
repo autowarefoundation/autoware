@@ -5,7 +5,7 @@
 
 #include "lidar_naive_l_shape_detect.h"
 
-LShapeFilter::LShapeFilter() : roi_m_(120), pic_scale_(1800 / roi_m_)
+LShapeFilter::LShapeFilter()
 {
   // l-shape fitting params
   ros::NodeHandle private_nh_("~");
@@ -14,12 +14,18 @@ LShapeFilter::LShapeFilter() : roi_m_(120), pic_scale_(1800 / roi_m_)
   private_nh_.param<int>("num_points_thres", num_points_thres_, 10);
   private_nh_.param<float>("sensor_height", sensor_height_, 2.35);
 
-  sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callBack, this);
+  // Assuming pointcloud x and y range within roi_m_: 0 < x, y < roi_m_
+  private_nh_.param<float>("roi_m_", roi_m_, 120);
+  // Scale roi_m*roi_m_ to pic_scale_ times: will end up cv::Mat<roi_m_*pic_scale_, roi_m_*pic_scale_>
+  // in order to make MinAreaRect algo would work well
+  private_nh_.param<float>("pic_scale_", pic_scale_, 15);
+
+  sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callback, this);
   pub_object_array_ =
       node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
 }
 
-void LShapeFilter::callBack(const autoware_msgs::DetectedObjectArray& input)
+void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   autoware_msgs::DetectedObjectArray out_objects;
   autoware_msgs::DetectedObjectArray copy_objects;
