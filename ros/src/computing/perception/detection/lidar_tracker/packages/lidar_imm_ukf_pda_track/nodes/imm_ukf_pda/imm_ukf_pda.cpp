@@ -41,7 +41,6 @@ void ImmUkfPda::callback(const autoware_msgs::CloudClusterArray& input)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
-  // makeJSKfromInput(input, jskbboxes_output);
 
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
