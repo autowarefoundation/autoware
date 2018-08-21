@@ -98,7 +98,6 @@ private:
   void updateBB(UKF& target);
   void mergeOverSegmentation(const std::vector<UKF> targets);
 
-  void updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd);
   void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);

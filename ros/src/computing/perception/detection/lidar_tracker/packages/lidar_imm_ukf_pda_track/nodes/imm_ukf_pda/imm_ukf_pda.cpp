@@ -301,32 +301,6 @@ void ImmUkfPda::updateBB(UKF& target)
   }
 }
 
-void ImmUkfPda::updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd)
-{
-  int tracking_num = target.tracking_num_;
-  // cout << "trackingnum "<< trackingNum << endl;
-  if (target.is_static_)
-  {
-    dd.label = "Static";
-  }
-  else if (tracking_num > TrackingState::Die && tracking_num < TrackingState::Stable)
-  {
-    dd.label = "Initialized";
-  }
-  else if (tracking_num == TrackingState::Stable)
-  {
-    dd.label = "Stable";
-  }
-  else if (tracking_num > TrackingState::Stable && tracking_num <= TrackingState::Lost)
-  {
-    dd.label = "Lost";
-  }
-  else
-  {
-    dd.label = "None";
-  }
-}
-
 void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb)
 {
   int tracking_num = target.tracking_num_;
@@ -587,7 +561,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
     // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
-    updateLabel(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
   }
 }
