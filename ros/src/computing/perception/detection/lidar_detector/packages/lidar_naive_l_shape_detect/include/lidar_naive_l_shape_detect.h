@@ -26,14 +26,15 @@ private:
   ros::Publisher pub_object_array_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
-  void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points, autoware_msgs::DetectedObject& cluster);
+  void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points, 
+                                autoware_msgs::DetectedObject& output);
   void toRightAngleBBox(std::vector<cv::Point2f>& pc_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
                                         autoware_msgs::DetectedObject& object);
   void getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pc_points, int offset_x, int offset_y);
   bool ruleBasedFilter(std::vector<cv::Point2f> pc_points, float max_z, int num_points);
-  void getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_array,
-                   autoware_msgs::DetectedObjectArray& out_object_array);
+  void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
+                         autoware_msgs::DetectedObjectArray& out_object_array);
 
 public:
   LShapeFilter();

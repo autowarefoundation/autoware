@@ -28,9 +28,7 @@ LShapeFilter::LShapeFilter()
 void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   autoware_msgs::DetectedObjectArray out_objects;
-  autoware_msgs::DetectedObjectArray copy_objects;
-  copy_objects = input;
-  getLShapeBB(copy_objects, out_objects);
+  getLShapeBB(input, out_objects);
   out_objects.header = input.header;
   pub_object_array_.publish(out_objects);
 }
@@ -60,7 +58,8 @@ void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv:
   }
 }
 
-void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points, autoware_msgs::DetectedObject& object)
+void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
+                                            autoware_msgs::DetectedObject& output)
 {
   cv::Point2f p1 = pc_points[0];
   cv::Point2f p2 = pc_points[1];
@@ -72,9 +71,9 @@ void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
   double cx = p1.x + (p3.x - p1.x) * s1 / (s1 + s2);
   double cy = p1.y + (p3.y - p1.y) * s1 / (s1 + s2);
 
-  object.pose.position.x = cx;
-  object.pose.position.y = cy;
-  object.pose.position.z = -sensor_height_ / 2;
+  output.pose.position.x = cx;
+  output.pose.position.y = cy;
+  output.pose.position.z = -sensor_height_ / 2;
 }
 
 void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pc_points)
@@ -115,7 +114,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pc_points)
 }
 
 void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pc_points,
-                                                    autoware_msgs::DetectedObject& object)
+                                                          autoware_msgs::DetectedObject& object)
 {
   // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
   cv::Point2f p1 = pc_points[0];
@@ -153,17 +152,17 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
   object.pose.orientation.w = q_tf.getW();
 }
 
-void LShapeFilter::getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_array,
-                               autoware_msgs::DetectedObjectArray& out_object_array)
+void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
+                                     autoware_msgs::DetectedObjectArray& out_object_array)
 {
   out_object_array.header = in_object_array.header;
 
-  for (size_t i_object = 0; i_object < in_object_array.objects.size(); i_object++)
+  for (const auto& in_object: in_object_array.objects)
   {
     pcl::PointCloud<pcl::PointXYZ> cloud;
 
     // Convert from ros msg to PCL::pic_scalePointCloud data type
-    pcl::fromROSMsg(in_object_array.objects[i_object].pointcloud, cloud);
+    pcl::fromROSMsg(in_object.pointcloud, cloud);
 
     // calculating offset so that projecting pointcloud into cv::mat
     cv::Mat m(pic_scale_ * roi_m_, pic_scale_ * roi_m_, CV_8UC1, cv::Scalar(0));
@@ -301,13 +300,18 @@ void LShapeFilter::getLShapeBB(autoware_msgs::DetectedObjectArray& in_object_arr
       // covert points back to lidar coordinate
       getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y);
     }
-    updateCpFromPoints(pc_points, in_object_array.objects[i_object]);
+
+    autoware_msgs::DetectedObject output_object;
+    output_object = in_object;
+    //update output_object pose
+    updateCpFromPoints(pc_points, output_object);
 
     // update pc_points to make it right angle bbox
     toRightAngleBBox(pc_points);
 
-    updateDimentionAndEstimatedAngle(pc_points, in_object_array.objects[i_object]);
+    //update output_object dimensions
+    updateDimentionAndEstimatedAngle(pc_points, output_object);
 
-    out_object_array.objects.push_back(in_object_array.objects[i_object]);
+    out_object_array.objects.push_back(output_object);
   }
 }
