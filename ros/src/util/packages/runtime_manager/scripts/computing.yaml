@@ -84,7 +84,7 @@ subs :
           dialog_height : 700
           method_type :
             flags : [ nl ]
-          points_filtered_topic :
+          points_queue_size :
             flags : [ nl ]
           map_frame :
             flags : [ nl ]
@@ -94,25 +94,29 @@ subs :
             flags : [ nl ]
           max_iterations:
             flags : [ nl ]
-          with_mapping :
-            user_category : ''
-            flags : [ nl ]
-          save_map_size :
-             depend      : with_mapping
-             depend_bool : 'lambda v : v == 1'
           save_map_leaf_size :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
           min_scan_range :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
+          max_scan_range :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
           min_add_scan_shift:
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          separate_mapping :
+             depend      : with_mapping
+             depend_bool : 'lambda v : v == 1'
+          separate_map_size :
              depend      : with_mapping
              depend_bool : 'lambda v : v == 1'
              flags : [ nl ]
           odometry_topic :
              depend      : use_odometry
              depend_bool : 'lambda v : v == 1'
+
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -1532,7 +1536,7 @@ params :
       - PCL ANH Implementation
       - PCL ANH GPU Implementation
       - PCL OpenMP  Implementation
-      v     : 0
+      v     : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1552,6 +1556,11 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : points_queue_size
+      desc      : points_queue_size
+      label     : Points Queue Size
+      kind      : num
+      v         : 1
     - name      : sensor_frame
       desc      : sensor_frame desc sample
       label     : Sensor Frame
@@ -1657,15 +1666,6 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name  : save_map_size
-      desc  : save_map_size
-      label : Save Map Size
-      min   : 0.0
-      max   : 200.0
-      v     : 100.0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name  : save_map_leaf_size
       desc  : save_map_leaf_size
       label : Save Map Leaf Size
@@ -1679,8 +1679,17 @@ params :
       desc  : Ignore points closer than this value (meters) (default 5.0)
       label : Min Scan Range
       min   : 0.0
-      max   : 30.0
+      max   : 300.0
       v     : 5.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : max_scan_range
+      desc  : Ignore points more distan than this value (meters) (default 200.0)
+      label : Max Scan Range
+      min   : 0.0
+      max   : 300.0
+      v     : 200.0
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1690,6 +1699,23 @@ params :
       min   : 0.0
       max   : 10.0
       v     : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : separate_mapping
+      desc  : separate_mapping
+      label : Separate Mapping
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : separate_map_size
+      desc  : separate_map_size
+      label : Separate Map Size
+      min   : 0.0
+      max   : 200.0
+      v     : 100.0
       cmd_param:
         dash     : ''
         delim    : ':='

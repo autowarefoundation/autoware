@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(points_localizer_library)
+project(autoware_lidar_localizer)
+
+SET(LIB_NAME "autoware_lidar_localizer")
+
 execute_process(
   COMMAND rosversion -d
   OUTPUT_VARIABLE ROS_VERSION
@@ -9,7 +12,7 @@ execute_process(
 find_package(PCL REQUIRED)
 
 IF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
-SET(FAST_PCL_PACKAGES pcl_registration pcl_omp_registration ndt_cpu ndt_gpu)
+SET(PCL_LIBRARY_PACKAGES pcl_registration pcl_omp_registration ndt_cpu ndt_gpu)
 ENDIF(NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 find_package( OpenMP )
@@ -26,7 +29,7 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   pcl_ros
-  ${FAST_PCL_PACKAGES}
+  ${PCL_LIBRARY_PACKAGES}
 )
 
 ###################################
@@ -34,8 +37,8 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 catkin_package(
    INCLUDE_DIRS include
-   LIBRARIES points_localizer_library
-   CATKIN_DEPENDS ${FAST_PCL_PACKAGES}
+   LIBRARIES ${LIB_NAME}
+   CATKIN_DEPENDS ${PCL_LIBRARY_PACKAGES}
 #  DEPENDS ndt_tku
 #  DEPENDS system_lib
 )
@@ -47,15 +50,14 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
-
-add_library(points_localizer_library
-  src/points_localizer.cpp
-  include/points_localizer/reliability/slam_reliability.cpp
-  include/points_localizer/util/libconvert_ros_msgs.cpp
+add_library(${LIB_NAME}
+  src/lidar_localizer.cpp
+  include/lidar_localizer/reliability/slam_reliability.cpp
+  include/lidar_localizer/util/convert_ros_msgs.cpp
 )
 
 if(CUDA_FOUND)
-target_include_directories(points_localizer_library PRIVATE ${CUDA_INCLUDE_DIRS})
+target_include_directories(${LIB_NAME} PRIVATE ${CUDA_INCLUDE_DIRS})
 endif()
 
-target_link_libraries(points_localizer_library ${catkin_LIBRARIES})
+target_link_libraries(${LIB_NAME} ${catkin_LIBRARIES})

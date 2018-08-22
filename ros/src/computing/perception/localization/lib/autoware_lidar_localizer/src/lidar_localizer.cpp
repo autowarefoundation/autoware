@@ -28,30 +28,11 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBCONVERT_ROS_MSGS_H
-#define LIBCONVERT_ROS_MSGS_H
-
-#include <tf/tf.h>
-
-#include <sensor_msgs/Imu.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-
-#include "libdata_structs.h"
-
-geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose);
-geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose, const tf::Transform& local_transform);
-
-geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header& header, const Velocity& velocity);
-
-Pose convertFromROSMsg(const geometry_msgs::Pose& msg);
-Pose convertFromROSMsg(const geometry_msgs::PoseStamped& msg);
-Pose convertFromROSMsg(const geometry_msgs::PoseWithCovarianceStamped& msg);
-
-Velocity convertFromROSMsg(const geometry_msgs::Twist& msg);
-Velocity convertFromROSMsg(const geometry_msgs::TwistStamped& msg);
-
-#endif
+#include "lidar_localizer/lidar_localizer.h"
+//#include "lidar_localizer/icp/icp_slam_pcl.h"
+#include "lidar_localizer/ndt/ndt_slam_pcl.h"
+#include "lidar_localizer/ndt/ndt_slam_pcl_omp.h"
+#include "lidar_localizer/ndt/ndt_slam_pcl_anh.h"
+#include "lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h"
+#include "lidar_localizer/reliability/slam_reliability.h"
+#include "lidar_localizer/util/data_structs.h"

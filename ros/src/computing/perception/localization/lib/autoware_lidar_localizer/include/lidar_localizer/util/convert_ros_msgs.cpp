@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "libconvert_ros_msgs.h"
+#include "convert_ros_msgs.h"
 
 #include <tf/tf.h>
 
@@ -38,7 +38,7 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 
-#include "libdata_structs.h"
+#include "data_structs.h"
 
 
 geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose)

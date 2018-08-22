@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBDATA_STRUCTS_H
-#define LIBDATA_STRUCTS_H
+#ifndef DATA_STRUCTS_H
+#define DATA_STRUCTS_H
 
 #include <iostream>
 #include <cmath>

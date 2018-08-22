@@ -48,7 +48,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         ndt_tku
         ndt_cpu
-        points_localizer_library
+        autoware_lidar_localizer
         ${PCL_OPENMP_PACKAGES}
         )
 
@@ -57,7 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
 ###################################
 catkin_package(
         CATKIN_DEPENDS std_msgs velodyne_pointcloud autoware_msgs ndt_tku ndt_cpu ${PCL_OPENMP_PACKAGES}
-        DEPENDS PCL points_localizer_library
+        DEPENDS PCL autoware_lidar_localizer
 )
 
 ###########

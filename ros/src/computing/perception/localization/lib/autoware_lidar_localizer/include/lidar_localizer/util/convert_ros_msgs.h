@@ -28,58 +28,30 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "points_localizer/reliability/slam_reliability.h"
+#ifndef CONVERT_ROS_MSGS_H
+#define CONVERT_ROS_MSGS_H
 
-#include <ctime>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
+#include <tf/tf.h>
 
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 
-double average(const std::deque<double> &deque)
-{
-    const double sum = std::accumulate(std::begin(deque), std::end(deque), 0.0);
-    const double ave = (deque.size() > 0) ? (sum / deque.size()) : 0;
-    return ave;
-}
+#include "data_structs.h"
 
+geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose);
+geometry_msgs::PoseStamped convertToROSMsg(const std_msgs::Header& header, const Pose& pose, const tf::Transform& local_transform);
 
-double variance(const std::deque<double> &deque, const double ave)
-{
-    double sum = 0;
-    for(const auto &val : deque) {
-        sum += std::pow(val-ave, 2.0);
-    }
-    const double var = (deque.size() > 0) ? (sum / deque.size()) : 0;
-    return var;
-}
+geometry_msgs::TwistStamped convertToROSMsg(const std_msgs::Header& header, const Velocity& velocity);
 
-double variance(const std::deque<double> &deque)
-{
-    const double ave = average(deque);
-    return variance(deque, ave);
-}
+Pose convertFromROSMsg(const geometry_msgs::Pose& msg);
+Pose convertFromROSMsg(const geometry_msgs::PoseStamped& msg);
+Pose convertFromROSMsg(const geometry_msgs::PoseWithCovarianceStamped& msg);
 
-LibSlamReliability::LibSlamReliability()
-    : window_size_(10)
-{
-}
+Velocity convertFromROSMsg(const geometry_msgs::Twist& msg);
+Velocity convertFromROSMsg(const geometry_msgs::TwistStamped& msg);
 
-void LibSlamReliability::setScore(const double score)
-{
-    if(score_deque_.size() > window_size_) {
-        score_deque_.pop_front();
-    }
-    score_deque_.push_back(score);
-}
-
-double LibSlamReliability::getAverage() const
-{
-    return average(score_deque_);
-}
-
-double LibSlamReliability::getVariance() const
-{
-    return variance(score_deque_);
-}
+#endif

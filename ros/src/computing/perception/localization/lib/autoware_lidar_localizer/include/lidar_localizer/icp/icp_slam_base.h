@@ -28,39 +28,28 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBNDT_SLAM_DUMMY_H
-#define LIBNDT_SLAM_DUMMY_H
+#ifndef ICP_SLAM_BASE_H
+#define ICP_SLAM_BASE_H
 
-#include "points_localizer/ndt/ndt_slam_base.h"
+#include "lidar_localizer/lidar_localizer.h"
 
 template <class PointSource, class PointTarget>
-class LibNdtSlamDummy
-    : public LibNdtSlamBase <PointSource, PointTarget>
+class IcpSlamBase : public LidarLocalizer <PointSource, PointTarget>
 {
     public:
-        LibNdtSlamDummy() = default;
-        ~LibNdtSlamDummy() = default;
+        virtual ~IcpSlamBase() = default;
 
-        void setTransformationEpsilon(double trans_eps) override {};
-        void setStepSize(double step_size)  override {};
-        void setResolution(float res) override {};
-        void setMaximumIterations(int max_iter) override {};
+        virtual void setTransformationEpsilon(double epsilon) = 0;
+        virtual void setEuclideanFitnessEpsilon(double epsilon) = 0;
+        virtual void setMaxCorrespondenceDistance(double distance_threshold) = 0;
+        virtual void setRANSACOutlierRejectionThreshold(double inlier_threshold) = 0;
+        virtual void setMaximumIterations(int nr_iterations) = 0;
 
-        double getTransformationEpsilon() override {return 0;};
-        double getStepSize() const override {return 0;};
-        float getResolution() const override {return 0;};
-        int getMaximumIterations() override {return 0;};
-        double getTransformationProbability() const override {return 0;};
-
-    protected:
-        void align(const Pose& predict_pose) override {};
-        double getFitnessScore() override {return 0;};
-        double getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range) override {return 0;};
-        void setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override {};
-        void setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr) override {};
-        Pose getFinalPose() override {return Pose();};
-        void updateVoxelGrid(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr, const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr) override {};
-
+        virtual double getTransformationEpsilon() = 0;
+        virtual double getEuclideanFitnessEpsilon() = 0;
+        virtual double getMaxCorrespondenceDistance() = 0;
+        virtual double getRANSACOutlierRejectionThreshold() = 0;
+        virtual int getMaximumIterations() = 0;
 };
 
 #endif

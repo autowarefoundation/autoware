@@ -28,10 +28,10 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBICP_SLAM_PCL_H
-#define LIBICP_SLAM_PCL_H
+#ifndef ICP_SLAM_PCL_H
+#define ICP_SLAM_PCL_H
 
-#include "points_localizer/icp/icp_slam_base.h"
+#include "lidar_localizer/icp/icp_slam_base.h"
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
@@ -39,12 +39,12 @@
 #include <pcl/registration/icp.h>
 
 template <class PointSource, class PointTarget>
-class LibIcpSlamPCL
-    : public LibIcpSlamBase<PointSource, PointTarget>
+class IcpSlamPCL
+    : public IcpSlamBase<PointSource, PointTarget>
 {
     public:
-        LibIcpSlamPCL();
-        ~LibIcpSlamPCL() = default;
+        IcpSlamPCL();
+        ~IcpSlamPCL() = default;
         void setTransformationEpsilon(double epsilon) override;
         void setEuclideanFitnessEpsilon(double epsilon) override;
         void setMaxCorrespondenceDistance(double distance_threshold) override;
@@ -69,73 +69,73 @@ class LibIcpSlamPCL
 };
 
 template <class PointSource, class PointTarget>
-LibIcpSlamPCL<PointSource, PointTarget>::LibIcpSlamPCL()
+IcpSlamPCL<PointSource, PointTarget>::IcpSlamPCL()
 {
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setTransformationEpsilon(double epsilon)
+void IcpSlamPCL<PointSource, PointTarget>::setTransformationEpsilon(double epsilon)
 {
     icp_.setTransformationEpsilon(epsilon);
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setEuclideanFitnessEpsilon(double epsilon)
+void IcpSlamPCL<PointSource, PointTarget>::setEuclideanFitnessEpsilon(double epsilon)
 {
     icp_.setEuclideanFitnessEpsilon(epsilon);
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setMaxCorrespondenceDistance(double distance_threshold)
+void IcpSlamPCL<PointSource, PointTarget>::setMaxCorrespondenceDistance(double distance_threshold)
 {
     icp_.setMaxCorrespondenceDistance(distance_threshold);
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setRANSACOutlierRejectionThreshold(double inlier_threshold)
+void IcpSlamPCL<PointSource, PointTarget>::setRANSACOutlierRejectionThreshold(double inlier_threshold)
 {
     icp_.setRANSACOutlierRejectionThreshold(inlier_threshold);
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setMaximumIterations(int nr_iterations)
+void IcpSlamPCL<PointSource, PointTarget>::setMaximumIterations(int nr_iterations)
 {
     icp_.setMaximumIterations(nr_iterations);
 }
 
 template <class PointSource, class PointTarget>
-double LibIcpSlamPCL<PointSource, PointTarget>::getTransformationEpsilon()
+double IcpSlamPCL<PointSource, PointTarget>::getTransformationEpsilon()
 {
     return icp_.getTransformationEpsilon();
 }
 
 template <class PointSource, class PointTarget>
-double LibIcpSlamPCL<PointSource, PointTarget>::getEuclideanFitnessEpsilon()
+double IcpSlamPCL<PointSource, PointTarget>::getEuclideanFitnessEpsilon()
 {
     return icp_.getEuclideanFitnessEpsilon();
 }
 
 template <class PointSource, class PointTarget>
-double LibIcpSlamPCL<PointSource, PointTarget>::getMaxCorrespondenceDistance()
+double IcpSlamPCL<PointSource, PointTarget>::getMaxCorrespondenceDistance()
 {
     return icp_.getMaxCorrespondenceDistance();
 }
 
 template <class PointSource, class PointTarget>
-double LibIcpSlamPCL<PointSource, PointTarget>::getRANSACOutlierRejectionThreshold()
+double IcpSlamPCL<PointSource, PointTarget>::getRANSACOutlierRejectionThreshold()
 {
     return icp_.getRANSACOutlierRejectionThreshold();
 }
 
 template <class PointSource, class PointTarget>
-int LibIcpSlamPCL<PointSource, PointTarget>::getMaximumIterations()
+int IcpSlamPCL<PointSource, PointTarget>::getMaximumIterations()
 {
     return icp_.getMaximumIterations();
 }
 
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
+void IcpSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
 {
     const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
     pcl::PointCloud<PointSource> output_cloud;
@@ -143,25 +143,25 @@ void LibIcpSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void IcpSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
 {
     icp_.setInputTarget(map_ptr);
 }
 
 template <class PointSource, class PointTarget>
-void LibIcpSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+void IcpSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
 {
     icp_.setInputSource(scan_ptr);
 }
 
 template <class PointSource, class PointTarget>
-double LibIcpSlamPCL<PointSource, PointTarget>::getFitnessScore()
+double IcpSlamPCL<PointSource, PointTarget>::getFitnessScore()
 {
     return icp_.getFitnessScore();
 }
 
 template <class PointSource, class PointTarget>
-Pose LibIcpSlamPCL<PointSource, PointTarget>::getFinalPose()
+Pose IcpSlamPCL<PointSource, PointTarget>::getFinalPose()
 {
     return convertToPose(icp_.getFinalTransformation());
 }

@@ -1,10 +1,11 @@
 <!-- -->
 <launch>
 
-  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="method_type" default="1" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
 
   <arg name="points_raw_topic" default="/points_raw" />
   <arg name="points_filtered_topic" default="/filtered_points" />
+  <arg name="points_queue_size" default="1" />
 
   <arg name="sensor_frame" default="/velodyne" />
   <arg name="base_link_frame" default="/base_link" />
@@ -18,10 +19,12 @@
   <arg name="max_iterations" default="30.0" />
 
   <arg name="with_mapping" default="false" />
-  <arg name="save_map_size" default="100.0" />
   <arg name="save_map_leaf_size" default="0.2" />
   <arg name="min_scan_range" default="5.0" />
+  <arg name="max_scan_range" default="200.0" />
   <arg name="min_add_scan_shift" default="1.0" />
+  <arg name="separate_mapping" default="false" />
+  <arg name="separate_map_size" default="100.0" />
 
   <arg name="use_odometry" default="false" />
   <arg name="odometry_topic" default="/odom" />
@@ -33,6 +36,7 @@
 
     <remap from="points_raw" to="$(arg points_raw_topic)" />
     <remap from="filtered_points" to="$(arg points_filtered_topic)" />
+    <param name="points_queue_size" value="$(arg points_queue_size)" />
 
     <param name="sensor_frame" value="$(arg sensor_frame)" />
     <param name="base_link_frame" value="$(arg base_link_frame)" />
@@ -46,10 +50,11 @@
     <param name="max_iterations" value="$(arg max_iterations)" />
 
     <param name="with_mapping" value="$(arg with_mapping)" />
-    <param name="save_map_size" value="$(arg save_map_size)" />
     <param name="save_map_leaf_size" value="$(arg save_map_leaf_size)" />
-    <param name="min_scan_range" value="$(arg min_scan_range)" />
+    <param name="max_scan_range" value="$(arg max_scan_range)" />
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
+    <param name="separate_mapping" value="$(arg separate_mapping)" />
+    <param name="separate_map_size" value="$(arg separate_map_size)" />
 
     <param name="use_odometry" value="$(arg use_odometry)" />
     <remap from="odom" to="$(arg odometry_topic)" />

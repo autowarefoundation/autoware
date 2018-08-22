@@ -29,18 +29,18 @@
 */
 
 
-#ifndef LIBSLAM_RELIABILITY_H
-#define LIBSLAM_RELIABILITY_H
+#ifndef SLAM_RELIABILITY_H
+#define SLAM_RELIABILITY_H
 
 #include <deque>
 
-#include "points_localizer/util/libdata_structs.h"
+#include "lidar_localizer/util/data_structs.h"
 
-class LibSlamReliability
+class SlamReliability
 {
     public:
-        LibSlamReliability();
-        ~LibSlamReliability() = default;
+        SlamReliability();
+        ~SlamReliability() = default;
         void setScore(const double score);
         double getAverage() const;
         double getVariance() const;

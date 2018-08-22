@@ -28,11 +28,58 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "points_localizer/localizer.h"
-//#include "points_localizer/icp/icp_slam_pcl.h"
-#include "points_localizer/ndt/ndt_slam_pcl.h"
-#include "points_localizer/ndt/ndt_slam_pcl_omp.h"
-#include "points_localizer/ndt/ndt_slam_pcl_anh.h"
-#include "points_localizer/ndt/ndt_slam_pcl_anh_gpu.h"
-#include "points_localizer/reliability/slam_reliability.h"
-#include "points_localizer/util/libdata_structs.h"
+#include "lidar_localizer/reliability/slam_reliability.h"
+
+#include <ctime>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+
+
+double average(const std::deque<double> &deque)
+{
+    const double sum = std::accumulate(std::begin(deque), std::end(deque), 0.0);
+    const double ave = (deque.size() > 0) ? (sum / deque.size()) : 0;
+    return ave;
+}
+
+
+double variance(const std::deque<double> &deque, const double ave)
+{
+    double sum = 0;
+    for(const auto &val : deque) {
+        sum += std::pow(val-ave, 2.0);
+    }
+    const double var = (deque.size() > 0) ? (sum / deque.size()) : 0;
+    return var;
+}
+
+double variance(const std::deque<double> &deque)
+{
+    const double ave = average(deque);
+    return variance(deque, ave);
+}
+
+SlamReliability::SlamReliability()
+    : window_size_(10)
+{
+}
+
+void SlamReliability::setScore(const double score)
+{
+    if(score_deque_.size() > window_size_) {
+        score_deque_.pop_front();
+    }
+    score_deque_.push_back(score);
+}
+
+double SlamReliability::getAverage() const
+{
+    return average(score_deque_);
+}
+
+double SlamReliability::getVariance() const
+{
+    return variance(score_deque_);
+}

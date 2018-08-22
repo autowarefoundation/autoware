@@ -28,17 +28,17 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBNDT_SLAM_BASE_H
-#define LIBNDT_SLAM_BASE_H
+#ifndef NDT_SLAM_BASE_H
+#define NDT_SLAM_BASE_H
 
-#include "points_localizer/localizer.h"
+#include "lidar_localizer/lidar_localizer.h"
 
 template <class PointSource, class PointTarget>
-class LibNdtSlamBase : public LibLocalizer<PointSource, PointTarget>
+class NdtSlamBase : public LidarLocalizer<PointSource, PointTarget>
 {
     public:
-        LibNdtSlamBase();
-        virtual ~LibNdtSlamBase() = default;
+        NdtSlamBase();
+        virtual ~NdtSlamBase() = default;
 
         virtual void setTransformationEpsilon(double trans_eps) = 0;
         virtual void setStepSize(double step_size) = 0;
@@ -78,15 +78,15 @@ class LibNdtSlamBase : public LibLocalizer<PointSource, PointTarget>
 };
 
 template <class PointSource, class PointTarget>
-LibNdtSlamBase<PointSource, PointTarget>::LibNdtSlamBase()
+NdtSlamBase<PointSource, PointTarget>::NdtSlamBase()
 {
 
 }
 
 template <class PointSource, class PointTarget>
-std::stringstream LibNdtSlamBase<PointSource, PointTarget>::logFileContent() const
+std::stringstream NdtSlamBase<PointSource, PointTarget>::logFileContent() const
 {
-    std::stringstream content = LibLocalizer<PointSource, PointTarget>::logFileContent();
+    std::stringstream content = LidarLocalizer<PointSource, PointTarget>::logFileContent();
     content << ","
             << getTransformationProbability();
     return content;

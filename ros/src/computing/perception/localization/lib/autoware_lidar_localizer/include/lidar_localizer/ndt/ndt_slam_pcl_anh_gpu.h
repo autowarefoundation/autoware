@@ -28,24 +28,24 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBNDT_SLAM_PCL_ANH_GPU_H
-#define LIBNDT_SLAM_PCL_ANH_GPU_H
+#ifndef NDT_SLAM_PCL_ANH_GPU_H
+#define NDT_SLAM_PCL_ANH_GPU_H
 
 #ifndef CUDA_FOUND
 
-    #include "points_localizer/ndt/ndt_slam_dummy.h"
+    #include "lidar_localizer/ndt/ndt_slam_dummy.h"
 
     template <class PointSource, class PointTarget>
-    class LibNdtSlamPCLANHGPU
-        : public LibNdtSlamDummy<PointSource, PointTarget>
+    class NdtSlamPCLANHGPU
+        : public NdtSlamDummy<PointSource, PointTarget>
     {
         public:
-            LibNdtSlamPCLANHGPU();
-            ~LibNdtSlamPCLANHGPU() = default;
+            NdtSlamPCLANHGPU();
+            ~NdtSlamPCLANHGPU() = default;
     };
 
     template <class PointSource, class PointTarget>
-    LibNdtSlamPCLANHGPU<PointSource, PointTarget>::LibNdtSlamPCLANHGPU()
+    NdtSlamPCLANHGPU<PointSource, PointTarget>::NdtSlamPCLANHGPU()
     {
         std::cerr << "**************************************************************" << std::endl;
         std::cerr << "[ERROR]PCL_ANH_GPU is not built. Please use other method type." << std::endl;
@@ -55,7 +55,7 @@
 
 #else
 
-    #include "points_localizer/ndt/ndt_slam_base.h"
+    #include "lidar_localizer/ndt/ndt_slam_base.h"
 
     #include <pcl/io/io.h>
     #include <pcl/io/pcd_io.h>
@@ -63,12 +63,12 @@
     #include <ndt_gpu/NormalDistributionsTransform.h>
 
     template <class PointSource, class PointTarget>
-    class LibNdtSlamPCLANHGPU
-        : public LibNdtSlamBase<PointSource, PointTarget>
+    class NdtSlamPCLANHGPU
+        : public NdtSlamBase<PointSource, PointTarget>
     {
         public:
-            LibNdtSlamPCLANHGPU();
-            ~LibNdtSlamPCLANHGPU() = default;
+            NdtSlamPCLANHGPU();
+            ~NdtSlamPCLANHGPU() = default;
 
             void setTransformationEpsilon(double trans_eps) override;
             void setStepSize(double step_size) override;
@@ -97,75 +97,75 @@
         };
 
     template <class PointSource, class PointTarget>
-    LibNdtSlamPCLANHGPU<PointSource, PointTarget>::LibNdtSlamPCLANHGPU()
+    NdtSlamPCLANHGPU<PointSource, PointTarget>::NdtSlamPCLANHGPU()
         : ndt_ptr_(new gpu::GNormalDistributionsTransform)
         , swap_ndt_ptr_(ndt_ptr_)
     {
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
     {
         ndt_ptr_->setTransformationEpsilon(trans_eps);
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setStepSize(double step_size)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setStepSize(double step_size)
     {
         ndt_ptr_->setStepSize(step_size);
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setResolution(float res)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setResolution(float res)
     {
         ndt_ptr_->setResolution(res);
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setMaximumIterations(int max_iter)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setMaximumIterations(int max_iter)
     {
         ndt_ptr_->setMaximumIterations(max_iter);
     }
 
     template <class PointSource, class PointTarget>
-    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getTransformationEpsilon()
+    double NdtSlamPCLANHGPU<PointSource, PointTarget>::getTransformationEpsilon()
     {
         return ndt_ptr_->getTransformationEpsilon();
     }
 
     template <class PointSource, class PointTarget>
-    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getStepSize() const
+    double NdtSlamPCLANHGPU<PointSource, PointTarget>::getStepSize() const
     {
         return ndt_ptr_->getStepSize();
     }
 
     template <class PointSource, class PointTarget>
-    float LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getResolution() const
+    float NdtSlamPCLANHGPU<PointSource, PointTarget>::getResolution() const
     {
         return ndt_ptr_->getResolution();
     }
 
     template <class PointSource, class PointTarget>
-    int LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getMaximumIterations()
+    int NdtSlamPCLANHGPU<PointSource, PointTarget>::getMaximumIterations()
     {
         return ndt_ptr_->getMaximumIterations();
     }
 
     template <class PointSource, class PointTarget>
-    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getTransformationProbability() const
+    double NdtSlamPCLANHGPU<PointSource, PointTarget>::getTransformationProbability() const
     {
         return ndt_ptr_->getTransformationProbability();
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::align(const Pose& predict_pose)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::align(const Pose& predict_pose)
     {
         const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
         ndt_ptr_->align(predict_matrix);
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
     {
         //TODO
         boost::shared_ptr< pcl::PointCloud<PointTarget> > non_const_map_ptr(new pcl::PointCloud<PointTarget>(*map_ptr));
@@ -173,7 +173,7 @@
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
     {
         //TODO
         boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_scan_ptr(new pcl::PointCloud<PointSource>(*scan_ptr));
@@ -181,13 +181,13 @@
     }
 
     template <class PointSource, class PointTarget>
-    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore()
+    double NdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore()
     {
         return ndt_ptr_->getFitnessScore();
     }
 
     template <class PointSource, class PointTarget>
-    double LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
+    double NdtSlamPCLANHGPU<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
     {
         //TODO
         boost::shared_ptr< pcl::PointCloud<PointSource> > non_const_source_ptr(new pcl::PointCloud<PointSource>(*source_cloud));
@@ -195,13 +195,13 @@
     }
 
     template <class PointSource, class PointTarget>
-    Pose LibNdtSlamPCLANHGPU<PointSource, PointTarget>::getFinalPose()
+    Pose NdtSlamPCLANHGPU<PointSource, PointTarget>::getFinalPose()
     {
         return convertToPose(ndt_ptr_->getFinalTransformation());
     }
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
     {
         const auto trans_estimation = getTransformationEpsilon();
         const auto step_size = getStepSize();
@@ -230,7 +230,7 @@
 
 
     template <class PointSource, class PointTarget>
-    void LibNdtSlamPCLANHGPU<PointSource, PointTarget>::swapInstance()
+    void NdtSlamPCLANHGPU<PointSource, PointTarget>::swapInstance()
     {
         ndt_ptr_ = swap_ndt_ptr_;
     }

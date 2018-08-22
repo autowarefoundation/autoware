@@ -28,23 +28,24 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBNDT_SLAM_PCL_H
-#define LIBNDT_SLAM_PCL_H
+#ifndef NDT_SLAM_PCL_H
+#define NDT_SLAM_PCL_H
 
-#include "points_localizer/ndt/ndt_slam_base.h"
+#include "lidar_localizer/ndt/ndt_slam_base.h"
 
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl_registration/ndt.h>
+#include <pcl_registration/ndt.h> //TODO
+//#include <pcl/registration/ndt.h>
 
 template <class PointSource, class PointTarget>
-class LibNdtSlamPCL
-    : public LibNdtSlamBase<PointSource, PointTarget>
+class NdtSlamPCL
+    : public NdtSlamBase<PointSource, PointTarget>
 {
     public:
-        LibNdtSlamPCL();
-        ~LibNdtSlamPCL() = default;
+        NdtSlamPCL();
+        ~NdtSlamPCL() = default;
 
         void setTransformationEpsilon(double trans_eps) override;
         void setStepSize(double step_size) override;
@@ -56,21 +57,21 @@ class LibNdtSlamPCL
         float getResolution() const override;
         int getMaximumIterations() override;
         double getTransformationProbability() const override;
-        std::vector<Eigen::Vector3d> getCentroid() const override{
-            return ndt_ptr_->getCentroid();
-        };
-
-        virtual std::vector<Eigen::Vector3d> getEval() const {
-            return ndt_ptr_->getEval();
-        };
-
-        virtual std::vector<Eigen::Matrix3d> getEvec() const {
-            return ndt_ptr_->getEvec();
-        };
-
-        std::vector<Eigen::Matrix3d> getCovariance() const override{
-            return ndt_ptr_->getCovariance();
-        };
+        // std::vector<Eigen::Vector3d> getCentroid() const override{
+        //     return ndt_ptr_->getCentroid();
+        // };
+        //
+        // virtual std::vector<Eigen::Vector3d> getEval() const {
+        //     return ndt_ptr_->getEval();
+        // };
+        //
+        // virtual std::vector<Eigen::Matrix3d> getEvec() const {
+        //     return ndt_ptr_->getEvec();
+        // };
+        //
+        // std::vector<Eigen::Matrix3d> getCovariance() const override{
+        //     return ndt_ptr_->getCovariance();
+        // };
 
     protected:
         void align(const Pose& predict_pose) override;
@@ -89,68 +90,68 @@ class LibNdtSlamPCL
 };
 
 template <class PointSource, class PointTarget>
-LibNdtSlamPCL<PointSource, PointTarget>::LibNdtSlamPCL()
+NdtSlamPCL<PointSource, PointTarget>::NdtSlamPCL()
     : ndt_ptr_(new pcl::NormalDistributionsTransform<PointSource, PointTarget>)
     , swap_ndt_ptr_(ndt_ptr_)
 {
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
+void NdtSlamPCL<PointSource, PointTarget>::setTransformationEpsilon(double trans_eps)
 {
     ndt_ptr_->setTransformationEpsilon(trans_eps);
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setStepSize(double step_size)
+void NdtSlamPCL<PointSource, PointTarget>::setStepSize(double step_size)
 {
     ndt_ptr_->setStepSize(step_size);
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setResolution(float res)
+void NdtSlamPCL<PointSource, PointTarget>::setResolution(float res)
 {
     ndt_ptr_->setResolution(res);
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setMaximumIterations(int max_iter)
+void NdtSlamPCL<PointSource, PointTarget>::setMaximumIterations(int max_iter)
 {
     ndt_ptr_->setMaximumIterations(max_iter);
 }
 
 template <class PointSource, class PointTarget>
-double LibNdtSlamPCL<PointSource, PointTarget>::getTransformationEpsilon()
+double NdtSlamPCL<PointSource, PointTarget>::getTransformationEpsilon()
 {
     return ndt_ptr_->getTransformationEpsilon();
 }
 
 template <class PointSource, class PointTarget>
-double LibNdtSlamPCL<PointSource, PointTarget>::getStepSize() const
+double NdtSlamPCL<PointSource, PointTarget>::getStepSize() const
 {
     return ndt_ptr_->getStepSize();
 }
 
 template <class PointSource, class PointTarget>
-float LibNdtSlamPCL<PointSource, PointTarget>::getResolution() const
+float NdtSlamPCL<PointSource, PointTarget>::getResolution() const
 {
     return ndt_ptr_->getResolution();
 }
 
 template <class PointSource, class PointTarget>
-int LibNdtSlamPCL<PointSource, PointTarget>::getMaximumIterations()
+int NdtSlamPCL<PointSource, PointTarget>::getMaximumIterations()
 {
     return ndt_ptr_->getMaximumIterations();
 }
 
 template <class PointSource, class PointTarget>
-double LibNdtSlamPCL<PointSource, PointTarget>::getTransformationProbability() const
+double NdtSlamPCL<PointSource, PointTarget>::getTransformationProbability() const
 {
     return ndt_ptr_->getTransformationProbability();
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
+void NdtSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
 {
     const auto predict_matrix = convertToEigenMatrix4f(predict_pose);
     pcl::PointCloud<PointSource> output_cloud;
@@ -158,37 +159,38 @@ void LibNdtSlamPCL<PointSource, PointTarget>::align(const Pose& predict_pose)
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::setInputTarget(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
 {
     ndt_ptr_->setInputTarget(map_ptr);
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::setInputSource(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& scan_ptr)
 {
     ndt_ptr_->setInputSource(scan_ptr);
 }
 
 template <class PointSource, class PointTarget>
-double LibNdtSlamPCL<PointSource, PointTarget>::getFitnessScore()
+double NdtSlamPCL<PointSource, PointTarget>::getFitnessScore()
 {
     return ndt_ptr_->getFitnessScore();
 }
 
 template <class PointSource, class PointTarget>
-double LibNdtSlamPCL<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
+double NdtSlamPCL<PointSource, PointTarget>::getFitnessScore(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& source_cloud, int* const nr, const double max_range)
 {
-    return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range);
+    return ndt_ptr_->getFitnessScore();
+    //return ndt_ptr_->getFitnessScore(source_cloud, nr, max_range); //TODO
 }
 
 template <class PointSource, class PointTarget>
-Pose LibNdtSlamPCL<PointSource, PointTarget>::getFinalPose()
+Pose NdtSlamPCL<PointSource, PointTarget>::getFinalPose()
 {
     return convertToPose(ndt_ptr_->getFinalTransformation());
 }
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void NdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
 {
     const auto trans_estimation = getTransformationEpsilon();
     const auto step_size = getStepSize();
@@ -211,7 +213,7 @@ void LibNdtSlamPCL<PointSource, PointTarget>::buildMap(const boost::shared_ptr< 
 
 
 template <class PointSource, class PointTarget>
-void LibNdtSlamPCL<PointSource, PointTarget>::swapInstance()
+void NdtSlamPCL<PointSource, PointTarget>::swapInstance()
 {
     ndt_ptr_ = swap_ndt_ptr_;
 }

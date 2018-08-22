@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef LIBLOCALIZER_H
-#define LIBLOCALIZER_H
+#ifndef LidarLocalizer_H
+#define LidarLocalizer_H
 
 #include <iostream>
 #include <fstream>
@@ -47,7 +47,7 @@
 
 #include <tf/tf.h>
 
-#include "points_localizer/util/libdata_structs.h"
+#include "lidar_localizer/util/data_structs.h"
 
 static Eigen::Matrix4f convertToEigenMatrix4f(const Pose& pose)
 {
@@ -101,8 +101,8 @@ static Pose transformToPose(const Pose& pose, const Eigen::Matrix4f& m)
   return convertToPose(trans_pose);
 }
 
-template <class PointTarget>
-static void passThroughPointCloud(const boost::shared_ptr< pcl::PointCloud<PointTarget> > input_point_cloud_ptr, boost::shared_ptr< pcl::PointCloud<PointTarget> > output_point_cloud_ptr, const double x, const double y, const double width)
+template <class PointType>
+static void passThroughPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> const> &input_point_cloud_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> > output_point_cloud_ptr, const double x, const double y, const double width)
 {
     output_point_cloud_ptr->points.reserve(output_point_cloud_ptr->width);
     for(const auto& point : input_point_cloud_ptr->points)
@@ -116,68 +116,94 @@ static void passThroughPointCloud(const boost::shared_ptr< pcl::PointCloud<Point
     output_point_cloud_ptr->height = 1;
 }
 
-template <class PointTarget>
-static void addPointCloud(const boost::shared_ptr< pcl::PointCloud<PointTarget> > input_ptr, boost::shared_ptr< pcl::PointCloud<PointTarget> > &output_ptr, const Pose& pose)
+template <class PointType>
+static void addPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> const>& input_ptr, const boost::shared_ptr< pcl::PointCloud<PointType> >& output_ptr, const Pose& pose)
 {
-    boost::shared_ptr< pcl::PointCloud<PointTarget> > transformed_input_ptr(new pcl::PointCloud<PointTarget>);
+    boost::shared_ptr< pcl::PointCloud<PointType> > transformed_input_ptr(new pcl::PointCloud<PointType>);
     const auto eigen_pose = convertToEigenMatrix4f(pose);
     pcl::transformPointCloud(*input_ptr, *transformed_input_ptr, eigen_pose);
     *output_ptr += *transformed_input_ptr;
-
-        // size_t width = output_ptr->width;
-        // output_ptr->width = output_ptr->width + transformed_input_ptr->width;
-        // output_ptr->height = 1;
-        // // if(output_ptr->points.capacity() < output_ptr->width) {
-        // //     output_ptr->points.reserve(output_ptr->width * 2);
-        // // }
-        // //
-        // // for(const auto& point : transformed_input_ptr->points) {
-        // //     output_ptr->points.push_back(point);
-        // // }
-        //
-        // output_ptr->resize(output_ptr->width);
-        // for(size_t i = width; i < output_ptr->points.size(); ++i) {
-        //     output_ptr->points[i] = transformed_input_ptr->points[i -width];
-        // }
-
 }
 
-template <class PointTarget>
-static void removePointCloudAroundSensor(const boost::shared_ptr< pcl::PointCloud<PointTarget> > input_ptr, boost::shared_ptr< pcl::PointCloud<PointTarget> > output_ptr, double remove_range_meter)
+
+//TODO use std::minmax_element
+template <class T>
+double calcMaxX(const boost::shared_ptr< pcl::PointCloud<T> > &cloud)
 {
-    double r = 0;
-    for (const auto& p : input_ptr->points) {
-      r = sqrt(pow(p.x, 2.0) + pow(p.y, 2.0));
-      if (r > remove_range_meter) {
-        output_ptr->push_back(p);
-      }
-    }
+    if (cloud->empty())
+        return 0;
+    double height = std::max_element(cloud->begin(), cloud->end(), [](const T & lhs, const T & rhs)
+    {
+        return lhs.x < rhs.x;
+    })->x;
+    return height;
+}
+
+template <class T>
+double calcMinX(const boost::shared_ptr< pcl::PointCloud<T> > &cloud)
+{
+    if (cloud->empty())
+        return 0;
+    double height = std::min_element(cloud->begin(), cloud->end(), [](const T & lhs, const T & rhs)
+    {
+        return lhs.x < rhs.x;
+    })->x;
+    return height;
+}
+
+template <class T>
+double calcMaxY(const boost::shared_ptr< pcl::PointCloud<T> > &cloud)
+{
+    if (cloud->empty())
+        return 0;
+    double height = std::max_element(cloud->begin(), cloud->end(), [](const T & lhs, const T & rhs)
+    {
+        return lhs.y < rhs.y;
+    })->y;
+    return height;
+}
+
+template <class T>
+double calcMinY(const boost::shared_ptr< pcl::PointCloud<T> > &cloud)
+{
+    if (cloud->empty())
+        return 0;
+    double height = std::min_element(cloud->begin(), cloud->end(), [](const T & lhs, const T & rhs)
+    {
+        return lhs.y < rhs.y;
+    })->y;
+    return height;
 }
 
 template <class PointSource, class PointTarget>
-class LibLocalizer
+class LidarLocalizer
 {
     public:
-        LibLocalizer();
-//        virtual ~LibLocalizer() = default;
-        virtual ~LibLocalizer();
-        void setPointsMap(const pcl::PointCloud<PointTarget>& pointcloud);
-        void updatePointsMap(const pcl::PointCloud<PointTarget>& pointcloud);
+        LidarLocalizer();
+//        virtual ~LidarLocalizer() = default;
+        virtual ~LidarLocalizer();
+        void setPointsMap(boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
+        void updatePointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr);
         void updateManualPose(const Pose& pose, const double current_time_sec);
         void updateStaticPose(const Pose& pose, const double current_time_sec);
         void updateGnssPose(const Pose& pose, const double current_time_sec);
         void updateDeadReconing(const Velocity& velocity, const double current_time_sec);
-        bool updateLocalizer(const pcl::PointCloud<PointSource>& pointcloud, const double current_time_sec);
-        void updateMap(const pcl::PointCloud<PointSource>& pointcloud);
+        bool updateLocalizer(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr, const double current_time_sec);
+        void addMap(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr);
+        void saveSingleMap();
+        void saveSeparateMap();
+        void loadAroundMap();
+        void downsampleMap();
         void writeLogFile();
 
-        void setSaveMapSize(const double save_map_size);
+        void setSaveSeparateMapSize(const double separate_map_size);
         void setSaveMapLeafSize(const double save_map_leaf_size);
         void setMinScanRange(const double min_scan_range);
         void setMinAddScanShift(const double min_add_scan_shift);
+        double getSaveSeparateMapSize() const;
         Pose getLocalizerPose() const;
         Velocity getLocalizerVelocity() const;
-        pcl::PointCloud<PointTarget> getMap() const;
+        const boost::shared_ptr< pcl::PointCloud<PointTarget> > getMapPtr() const;
         double getAlignTime() const;
 
 
@@ -197,8 +223,6 @@ class LibLocalizer
         bool swapMap();
         Velocity computeVelocity(const Pose& previous_pose, const double previous_time_sec, const Pose& current_pose, const double current_time_sec) const;
         Pose predictNextPose(const Pose& previous_pose, const double previous_time_sec, const Velocity& velocity, const double next_time_sec) const;
-        void saveMap(const double x, const double y, const double width);
-        void loadMap(const double x, const double y, const double width);
 
         Pose localizer_pose_;
         Pose previous_localizer_pose_;
@@ -213,10 +237,8 @@ class LibLocalizer
         double previous_time_sec;
         double align_time_;
         double fitness_score_;
-        double save_map_size_;
+        double separate_map_size_;
         double save_map_leaf_size_;
-        double min_scan_range_;
-        double min_add_scan_shift_;
         std::string director_path_;
 
         enum class ThreadStatus{sleeping, running, finished};
@@ -224,61 +246,57 @@ class LibLocalizer
 };
 
 template <class PointSource, class PointTarget>
-LibLocalizer<PointSource, PointTarget>::LibLocalizer()
+LidarLocalizer<PointSource, PointTarget>::LidarLocalizer()
     :is_initial_pose_set_(false)
     ,current_time_sec(0)
     ,previous_time_sec(0)
     ,align_time_(0)
     ,fitness_score_(0)
-    ,save_map_size_(100.0)
+    ,separate_map_size_(100.0)
     ,save_map_leaf_size_(0.2)
-    ,min_scan_range_(5.0)
-    ,min_add_scan_shift_(1.0)
     ,thread_status_(ThreadStatus::sleeping)
 {
     const std::time_t now = std::time(NULL);
     const std::tm* pnow = std::localtime(&now);
     char buffer[80];
     std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
-    director_path_ = "points_localizer_" + std::string(buffer);
+    director_path_ = "lidar_localizer_" + std::string(buffer);
     mkdir(director_path_.c_str(), 0755);
 }
 
 template <class PointSource, class PointTarget>
-LibLocalizer<PointSource, PointTarget>::~LibLocalizer()
+LidarLocalizer<PointSource, PointTarget>::~LidarLocalizer()
 {
-    //TODO save last map
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::setPointsMap(const pcl::PointCloud<PointTarget>& pointcloud)
+void LidarLocalizer<PointSource, PointTarget>::setPointsMap(boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr)
 {
     std::cout << __func__ << std::endl;
-    if(map_raw_ptr_ == nullptr || pointcloud.points.size() != map_raw_ptr_->points.size()) {
-        map_raw_ptr_ = boost::make_shared< pcl::PointCloud<PointTarget> >();
-        removePointCloudAroundSensor(pointcloud.makeShared(), map_raw_ptr_, min_scan_range_);
+    if(map_raw_ptr_ == nullptr || pointcloud_ptr->points.size() != map_raw_ptr_->points.size()) {
+        map_raw_ptr_ = pointcloud_ptr;
         setInputTarget(map_raw_ptr_);
         is_initial_pose_set_ = true; //TODO
     }
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updatePointsMap(const pcl::PointCloud<PointTarget>& pointcloud)
+void LidarLocalizer<PointSource, PointTarget>::updatePointsMap(const boost::shared_ptr< pcl::PointCloud<PointTarget> >& pointcloud_ptr)
 {
     std::cout << __func__ << std::endl;
     if(map_raw_ptr_ == nullptr) {
-        map_raw_ptr_ = boost::make_shared< pcl::PointCloud<PointTarget> >(pointcloud);
+        map_raw_ptr_ = pointcloud_ptr;
         setInputTarget(map_raw_ptr_);
     }
-    else if (pointcloud.points.size() != map_raw_ptr_->points.size()){
-        map_raw_ptr_ = boost::make_shared< pcl::PointCloud<PointTarget> >(pointcloud);
+    else if (pointcloud_ptr->points.size() != map_raw_ptr_->points.size()){
+        map_raw_ptr_ = pointcloud_ptr;
         buildMapThread(map_raw_ptr_);
 
     }
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
+void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::shared_ptr< pcl::PointCloud<PointTarget> const>& map_ptr)
 {
     //not want to make many threads
     if(thread_status_ != ThreadStatus::sleeping) {
@@ -297,7 +315,7 @@ void LibLocalizer<PointSource, PointTarget>::buildMapThread(const boost::shared_
 }
 
 template <class PointSource, class PointTarget>
-bool LibLocalizer<PointSource, PointTarget>::swapMap()
+bool LidarLocalizer<PointSource, PointTarget>::swapMap()
 {
     if(thread_status_ != ThreadStatus::finished) {
         return false;
@@ -309,7 +327,7 @@ bool LibLocalizer<PointSource, PointTarget>::swapMap()
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updateManualPose(const Pose& pose, const double current_time_sec)
+void LidarLocalizer<PointSource, PointTarget>::updateManualPose(const Pose& pose, const double current_time_sec)
 {
     std::cout << __func__ << std::endl;
 
@@ -318,6 +336,7 @@ void LibLocalizer<PointSource, PointTarget>::updateManualPose(const Pose& pose, 
 
     localizer_pose_ = pose;
 
+    //TODO RANSAC?
     if(map_raw_ptr_ != nullptr) {
       double min_distance = DBL_MAX;
       double nearest_z = localizer_pose_.z;
@@ -339,7 +358,7 @@ void LibLocalizer<PointSource, PointTarget>::updateManualPose(const Pose& pose, 
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updateStaticPose(const Pose& pose, const double current_time_sec)
+void LidarLocalizer<PointSource, PointTarget>::updateStaticPose(const Pose& pose, const double current_time_sec)
 {
     std::cout << __func__ << std::endl;
 
@@ -356,11 +375,11 @@ void LibLocalizer<PointSource, PointTarget>::updateStaticPose(const Pose& pose, 
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updateGnssPose(const Pose& pose, const double current_time_sec)
+void LidarLocalizer<PointSource, PointTarget>::updateGnssPose(const Pose& pose, const double current_time_sec)
 {
     std::cout << __func__ << "   " << fitness_score_ <<std::endl;
-    if(is_initial_pose_set_ == false || fitness_score_ >= 500.0) {
-
+    //if(is_initial_pose_set_ == false || fitness_score_ >= 500.0) {
+    if(is_initial_pose_set_ == false) {
         previous_time_sec = previous_time_sec == 0 ? current_time_sec : this->current_time_sec;
         this->current_time_sec = current_time_sec;
 
@@ -375,7 +394,7 @@ void LibLocalizer<PointSource, PointTarget>::updateGnssPose(const Pose& pose, co
 }
 
 template <class PointSource, class PointTarget>
-Pose LibLocalizer<PointSource, PointTarget>::predictNextPose(const Pose& previous_pose, const double previous_time_sec, const Velocity& velocity, const double next_time_sec) const
+Pose LidarLocalizer<PointSource, PointTarget>::predictNextPose(const Pose& previous_pose, const double previous_time_sec, const Velocity& velocity, const double next_time_sec) const
 {
     const double time_diff_sec = next_time_sec - previous_time_sec;
 
@@ -392,7 +411,7 @@ Pose LibLocalizer<PointSource, PointTarget>::predictNextPose(const Pose& previou
 
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updateDeadReconing(const Velocity& velocity, const double current_time_sec)
+void LidarLocalizer<PointSource, PointTarget>::updateDeadReconing(const Velocity& velocity, const double current_time_sec)
 {
     previous_time_sec = previous_time_sec == 0 ? current_time_sec : this->current_time_sec;
     this->current_time_sec = current_time_sec;
@@ -408,7 +427,7 @@ void LibLocalizer<PointSource, PointTarget>::updateDeadReconing(const Velocity& 
 
 
 template <class PointSource, class PointTarget>
-Velocity LibLocalizer<PointSource, PointTarget>::computeVelocity(const Pose& previous_pose, const double previous_time_sec, const Pose& current_pose, const double current_time_sec) const
+Velocity LidarLocalizer<PointSource, PointTarget>::computeVelocity(const Pose& previous_pose, const double previous_time_sec, const Pose& current_pose, const double current_time_sec) const
 {
     const double diff_time = current_time_sec - previous_time_sec;
     const auto diff_pose = current_pose - previous_pose;
@@ -425,7 +444,7 @@ Velocity LibLocalizer<PointSource, PointTarget>::computeVelocity(const Pose& pre
 
 
 template <class PointSource, class PointTarget>
-bool LibLocalizer<PointSource, PointTarget>::updateLocalizer(const pcl::PointCloud<PointSource>& pointcloud, const double current_time_sec)
+bool LidarLocalizer<PointSource, PointTarget>::updateLocalizer(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr, const double current_time_sec)
 {
     std::cout << __func__ << std::endl;
 
@@ -444,8 +463,7 @@ bool LibLocalizer<PointSource, PointTarget>::updateLocalizer(const pcl::PointClo
     if(swapMap()) {
         std::cout << "map swapped" << std::endl;
     }
-
-    setInputSource(pointcloud.makeShared());
+    setInputSource(pointcloud_ptr);
 
     auto predict_pose = predictNextPose(localizer_pose_, previous_time_sec, localizer_velocity_, current_time_sec);
 
@@ -454,12 +472,6 @@ bool LibLocalizer<PointSource, PointTarget>::updateLocalizer(const pcl::PointClo
     const auto align_end = std::chrono::system_clock::now();
     align_time_ = std::chrono::duration_cast<std::chrono::microseconds>(align_end - align_start).count() / 1000.0;
     std::cout << "align_time: " << align_time_ << "ms" << std::endl;
-
-    // const auto calc_fitness_score_start = std::chrono::system_clock::now();
-    // fitness_score_ = getFitnessScore();
-    // //std::cout << fitness_score_ << std::endl;
-    // const auto calc_fitness_score_end = std::chrono::system_clock::now();
-    // const auto calc_fitness_score_time = std::chrono::duration_cast<std::chrono::microseconds>(calc_fitness_score_end - calc_fitness_score_start).count() / 1000.0;
 
     localizer_pose_ = getFinalPose();
     localizer_velocity_ = computeVelocity(previous_localizer_pose_, previous_time_sec, localizer_pose_, current_time_sec);
@@ -475,47 +487,80 @@ bool LibLocalizer<PointSource, PointTarget>::updateLocalizer(const pcl::PointClo
 }
 
 template <class PointSource, class PointTarget>
-Pose LibLocalizer<PointSource, PointTarget>::getLocalizerPose() const
+Pose LidarLocalizer<PointSource, PointTarget>::getLocalizerPose() const
 {
     return localizer_pose_;
 }
 
 template <class PointSource, class PointTarget>
-Velocity LibLocalizer<PointSource, PointTarget>::getLocalizerVelocity() const
+Velocity LidarLocalizer<PointSource, PointTarget>::getLocalizerVelocity() const
 {
     return localizer_velocity_;
 }
 
 template <class PointSource, class PointTarget>
-double LibLocalizer<PointSource, PointTarget>::getAlignTime() const
+double LidarLocalizer<PointSource, PointTarget>::getAlignTime() const
 {
     return align_time_;
 }
 
 template <class PointSource, class PointTarget>
-pcl::PointCloud<PointTarget> LibLocalizer<PointSource, PointTarget>::getMap() const
+const boost::shared_ptr< pcl::PointCloud<PointTarget> > LidarLocalizer<PointSource, PointTarget>::getMapPtr() const
 {
-    return *map_raw_ptr_;
+    return map_raw_ptr_;
 }
 
+template <class PointSource, class PointTarget>
+void LidarLocalizer<PointSource, PointTarget>::saveSingleMap()
+{
+    boost::shared_ptr< pcl::PointCloud<PointTarget> > map_filtered_tmp_ptr(new pcl::PointCloud<PointTarget>);
+
+    const auto down_start = std::chrono::system_clock::now();
+    pcl::VoxelGrid<PointTarget> voxel_grid_filter;
+    voxel_grid_filter.setLeafSize(save_map_leaf_size_, save_map_leaf_size_, save_map_leaf_size_);
+    voxel_grid_filter.setInputCloud(map_raw_ptr_);
+    voxel_grid_filter.filter(*map_filtered_tmp_ptr);
+    const auto down_end = std::chrono::system_clock::now();
+    const auto down_time = std::chrono::duration_cast<std::chrono::microseconds>(down_end - down_start).count() / 1000.0;
+    std::cout << "down_time: " << down_time << "ms" << std::endl;
+
+    std::string path = director_path_ + "/pointcloud_map.pcd";
+    pcl::io::savePCDFileBinary(path, *map_filtered_tmp_ptr);
+}
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::saveMap(const double x, const double y, const double width)
+void LidarLocalizer<PointSource, PointTarget>::saveSeparateMap()
 {
+    double min_x_m =  calcMinX(map_raw_ptr_);
+    double max_x_m =  calcMaxX(map_raw_ptr_);
+    double min_y_m =  calcMinY(map_raw_ptr_);
+    double max_y_m =  calcMaxY(map_raw_ptr_);
+
+    const int min_x = std::floor(min_x_m / separate_map_size_);
+    const int max_x = std::floor(max_x_m / separate_map_size_);
+    const int min_y = std::floor(min_y_m / separate_map_size_);
+    const int max_y = std::floor(max_y_m / separate_map_size_);
+
+    // std::cout << "min_x_m:" << min_x_m << " max_x_m:" << max_x_m << std::endl;
+    // std::cout << "min_y_m:" << min_y_m << " max_y_m:" << max_y_m << std::endl;
+    // std::cout << "min_x:" << min_x << " max_x:" << max_x << std::endl;
+    // std::cout << "min_y:" << min_y << " max_y:" << max_y << std::endl;
+
     const auto save_start = std::chrono::system_clock::now();
     //TODO
-    for(int i = -1; i <= 1; ++i) {
-        for(int j = -1; j <= 1; ++j) {
+    for(int i = min_x; i <= max_x; ++i) {
+        for(int j = min_y; j <= max_y; ++j) {
             boost::shared_ptr< pcl::PointCloud<PointTarget> > map_region_tmp_ptr(new pcl::PointCloud<PointTarget>);
-            passThroughPointCloud(map_raw_ptr_, map_region_tmp_ptr, i*width+x, j*width+y, width);
+            passThroughPointCloud<PointTarget>(map_raw_ptr_, map_region_tmp_ptr, i*separate_map_size_, j*separate_map_size_, separate_map_size_);
 
-            std::string path = director_path_ + "/pointcloud_map_" + std::to_string(i*width+x) + "_" + std::to_string(j*width+y) + ".pcd";
+            std::string path = director_path_ + "/pointcloud_map_" + std::to_string(i*separate_map_size_) + "_" + std::to_string(j*separate_map_size_) + ".pcd";
             boost::shared_ptr< pcl::PointCloud<PointTarget> > load_cloud(new pcl::PointCloud<PointTarget>);
 
             if(map_raw_ptr_map_.count(path)) {
-                std::cout << "exist " << path << std::endl;
+                //std::cout << "exist " << path << std::endl;
                 //load_cloud = map_raw_ptr_map_.at(path);
             }
+            //TODO check exist File
             else if (pcl::io::loadPCDFile(path.c_str(), *load_cloud) == -1) {
                 std::cerr << "load failed " << path << std::endl;
             }
@@ -567,26 +612,21 @@ void LibLocalizer<PointSource, PointTarget>::saveMap(const double x, const doubl
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::loadMap(const double x, const double y, const double width)
+void LidarLocalizer<PointSource, PointTarget>::loadAroundMap()
 {
     std::vector<std::string> path_arrary;
     static std::vector<std::string> prev_path_arrary;
 
+    const int x = std::floor(localizer_pose_.x / separate_map_size_);
+    const int y = std::floor(localizer_pose_.y / separate_map_size_);
+
     for(int i = -1; i <= 1; ++i) {
         for(int j = -1; j <= 1; ++j) {
-            std::string path = director_path_ + "/pointcloud_map_" + std::to_string(i*width+x) + "_" + std::to_string(j*width+y) + ".pcd";
+            std::string path = director_path_ + "/pointcloud_map_" + std::to_string((i+x)*separate_map_size_) + "_" + std::to_string((j+y)*separate_map_size_) + ".pcd";
             std::cout << path << std::endl;
             path_arrary.push_back(path);
         }
     }
-
-    // for(const auto& prev_path : prev_path_arrary) {
-    //     const auto it = std::find(std::begin(path_arrary), std::end(path_arrary), prev_path);
-    //     //if not exist
-    //     if(it == std::end(path_arrary)) {
-    //         path_arrary.push_back(prev_path);
-    //     }
-    // }
 
     std::map< std::string , boost::shared_ptr< pcl::PointCloud<PointTarget> > > map_raw_ptr_map_tmp;
     for(const auto& path : path_arrary) {
@@ -607,7 +647,6 @@ void LibLocalizer<PointSource, PointTarget>::loadMap(const double x, const doubl
 
     pcl::PointCloud<PointTarget> pointclouds;
     pointclouds.height = 1;
-    //pointclouds.points.reserve(30000000);
     for(const auto& pointcloud_map : map_raw_ptr_map_)
     {
         pointclouds.width += pointcloud_map.second->width;
@@ -619,85 +658,48 @@ void LibLocalizer<PointSource, PointTarget>::loadMap(const double x, const doubl
         }
     }
 
-    // pcl::PointCloud<PointTarget> pointclouds;
-    // pointclouds.height = 1;
-    // // //pointclouds.points.reserve(30000000);
-    // for(const auto& path : path_arrary) {
-    //     pcl::PointCloud<PointTarget> pointcloud;
-    //     if (pcl::io::loadPCDFile(path.c_str(), pointcloud) == -1) {
-    //         std::cerr << "load failed " << path << std::endl;
-    //         continue;
-    //     }
-    //     pointclouds.width = pointclouds.width + pointcloud.width;
-    //     if(pointclouds.points.capacity() < pointclouds.width) {
-    //         pointclouds.points.reserve(pointclouds.width);
-    //     }
-    //     for(const auto& point : pointcloud.points) {
-    //         pointclouds.points.push_back(point);
-    //     }
-    // }
 
     prev_path_arrary = path_arrary;
 
     if(map_raw_ptr_ == nullptr || pointclouds.points.size() != map_raw_ptr_->points.size()) {
         map_raw_ptr_ = pointclouds.makeShared();
-        //map_filtered_ptr_ = boost::make_shared< pcl::PointCloud<PointTarget> >(pointclouds);
-        map_raw_ptr_->points.reserve(30000000); //TODO
+        map_raw_ptr_->points.reserve(80000000); //TODO
         buildMapThread(map_raw_ptr_);
     }
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::updateMap(const pcl::PointCloud<PointSource>& pointcloud)
+void LidarLocalizer<PointSource, PointTarget>::addMap(const boost::shared_ptr< pcl::PointCloud<PointSource> const>& pointcloud_ptr)
 {
     std::cout << __func__ << std::endl;
 
-    static Pose added_pose;
-    const double add_scan_shift_meter = std::sqrt(std::pow(localizer_pose_.x - added_pose.x, 2.0) + std::pow(localizer_pose_.y - added_pose.y, 2.0));
-    if(add_scan_shift_meter >= min_add_scan_shift_) {
-
-        boost::shared_ptr< pcl::PointCloud<PointTarget> > scan_removed_around_sensor_ptr(new pcl::PointCloud<PointTarget>);
-        removePointCloudAroundSensor(pointcloud.makeShared(), scan_removed_around_sensor_ptr, min_scan_range_);
-
-        const auto add_start = std::chrono::system_clock::now();
-        addPointCloud(scan_removed_around_sensor_ptr, map_raw_ptr_, localizer_pose_);
-        const auto add_end = std::chrono::system_clock::now();
-        const auto add_time = std::chrono::duration_cast<std::chrono::microseconds>(add_end - add_start).count() / 1000.0;
-        std::cout << "add_time: " << add_time << "ms" << std::endl;
-        //addPointCloud(scan_removed_around_sensor_ptr, map_filtered_ptr_, localizer_pose_);
-
-        buildMapThread(map_raw_ptr_);
-    }
-
-    //TODO
-    const int x = std::floor(localizer_pose_.x / save_map_size_);
-    const int y = std::floor(localizer_pose_.y / save_map_size_);
-    static Pose reload_pose(x, y, 0, 0, 0, 0);
-
-    if(std::abs(x-reload_pose.x) > 0 || std::abs(y-reload_pose.y) > 0)
-    {
-        std::cout << "saveMap & loadMap" << std::endl;
-        const auto save_start = std::chrono::system_clock::now();
-        saveMap(reload_pose.x*save_map_size_, reload_pose.y*save_map_size_, save_map_size_);
-        const auto save_end = std::chrono::system_clock::now();
-        const auto save_time = std::chrono::duration_cast<std::chrono::microseconds>(save_end - save_start).count() / 1000.0;
-        std::cout << "save_time: " << save_time << "ms" << std::endl;
-
-        const auto load_start = std::chrono::system_clock::now();
-        loadMap(x*save_map_size_, y*save_map_size_, save_map_size_);
-        const auto load_end = std::chrono::system_clock::now();
-        const auto load_time = std::chrono::duration_cast<std::chrono::microseconds>(load_end - load_start).count() / 1000.0;
-        std::cout << "load_time: " << load_time << "ms" << std::endl;
-
-        reload_pose.x = x;
-        reload_pose.y = y;
-    }
+    const auto add_start = std::chrono::system_clock::now();
+    addPointCloud(pointcloud_ptr, map_raw_ptr_, localizer_pose_);
+    const auto add_end = std::chrono::system_clock::now();
+    const auto add_time = std::chrono::duration_cast<std::chrono::microseconds>(add_end - add_start).count() / 1000.0;
+    std::cout << "add_time: " << add_time << "ms" << std::endl;
+    buildMapThread(map_raw_ptr_);
 }
 
+template <class PointSource, class PointTarget>
+void LidarLocalizer<PointSource, PointTarget>::downsampleMap()
+{
+    const auto down_start = std::chrono::system_clock::now();
+    pcl::PointCloud<PointTarget> filterd_map;
 
+    pcl::VoxelGrid<PointTarget> voxel_grid_filter;
+    voxel_grid_filter.setLeafSize(save_map_leaf_size_, save_map_leaf_size_, save_map_leaf_size_);
+    voxel_grid_filter.setInputCloud(map_raw_ptr_);
+    voxel_grid_filter.filter(filterd_map);
+    map_raw_ptr_ = filterd_map.makeShared();
+    map_raw_ptr_->points.reserve(80000000); //TODO
+    const auto down_end = std::chrono::system_clock::now();
+    const auto down_time = std::chrono::duration_cast<std::chrono::microseconds>(down_end - down_start).count() / 1000.0;
+    std::cout << "down_time: " << down_time << "ms" << std::endl;
+}
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::writeLogFile()
+void LidarLocalizer<PointSource, PointTarget>::writeLogFile()
 {
     static std::ofstream log_file_stream;
     static bool is_first_call = true;
@@ -715,7 +717,7 @@ void LibLocalizer<PointSource, PointTarget>::writeLogFile()
 }
 
 template <class PointSource, class PointTarget>
-std::stringstream LibLocalizer<PointSource, PointTarget>::logFileContent() const
+std::stringstream LidarLocalizer<PointSource, PointTarget>::logFileContent() const
 {
     std::stringstream content;
     content << localizer_pose_.x << ","
@@ -729,27 +731,21 @@ std::stringstream LibLocalizer<PointSource, PointTarget>::logFileContent() const
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::setSaveMapSize(const double save_map_size)
+void LidarLocalizer<PointSource, PointTarget>::setSaveSeparateMapSize(const double separate_map_size)
 {
-    save_map_size_ = save_map_size;
+    separate_map_size_ = separate_map_size;
 }
 
 template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::setSaveMapLeafSize(const double save_map_leaf_size)
+double LidarLocalizer<PointSource, PointTarget>::getSaveSeparateMapSize() const
+{
+    return separate_map_size_;
+}
+
+template <class PointSource, class PointTarget>
+void LidarLocalizer<PointSource, PointTarget>::setSaveMapLeafSize(const double save_map_leaf_size)
 {
     save_map_leaf_size_ = save_map_leaf_size;
-}
-
-template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::setMinScanRange(const double min_scan_range)
-{
-    min_scan_range_ = min_scan_range;
-}
-
-template <class PointSource, class PointTarget>
-void LibLocalizer<PointSource, PointTarget>::setMinAddScanShift(const double min_add_scan_shift)
-{
-    min_add_scan_shift_ = min_add_scan_shift;
 }
 
 #endif

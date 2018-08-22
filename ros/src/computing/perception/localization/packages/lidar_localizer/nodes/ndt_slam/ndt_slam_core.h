@@ -53,11 +53,11 @@
 #include <nav_msgs/Odometry.h>
 #include <autoware_msgs/ConfigNdtSlam.h>
 
-#include <points_localizer/ndt/ndt_slam_pcl_omp.h>
-#include <points_localizer/ndt/ndt_slam_pcl_anh.h>
-#include <points_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
-#include <points_localizer/ndt/ndt_slam_pcl.h>
-#include <points_localizer/reliability/slam_reliability.h>
+#include <lidar_localizer/ndt/ndt_slam_pcl_omp.h>
+#include <lidar_localizer/ndt/ndt_slam_pcl_anh.h>
+#include <lidar_localizer/ndt/ndt_slam_pcl_anh_gpu.h>
+#include <lidar_localizer/ndt/ndt_slam_pcl.h>
+#include <lidar_localizer/reliability/slam_reliability.h>
 
 class NdtSlam
 {
@@ -75,6 +75,7 @@ class NdtSlam
 
     public:
         NdtSlam(ros::NodeHandle nh, ros::NodeHandle private_nh);
+        ~NdtSlam();
 
     private:
         void configCallback(const autoware_msgs::ConfigNdtSlam::ConstPtr& config_msg_ptr);
@@ -99,7 +100,7 @@ class NdtSlam
         ros::Publisher localizer_score_pub_;
         ros::Publisher localizer_score_ave_pub_;
         ros::Publisher localizer_score_var_pub_;
-        ros::Publisher ndt_marker_pub_;
+        ros::Publisher ndvoxel_marker_pub_;
 
         ros::Subscriber config_sub_;
         ros::Subscriber points_map_updated_sub_;
@@ -115,17 +116,21 @@ class NdtSlam
         tf::TransformBroadcaster tf_broadcaster_;
         tf::TransformListener tf_listener_;
 
-        std::unique_ptr< LibNdtSlamBase<PointSource, PointTarget> > localizer_ptr_;
-        LibSlamReliability reliability_;
+        std::unique_ptr< NdtSlamBase<PointSource, PointTarget> > localizer_ptr_;
+        SlamReliability reliability_;
 
         MethodType method_type_;
         Eigen::Matrix4f tf_btol_;
         bool with_mapping_;
+        bool separate_mapping_;
         bool init_pos_gnss_;
         bool use_odometry_;
         std::string sensor_frame_;
         std::string base_link_frame_;
         std::string map_frame_;
+        double min_scan_range_;
+        double max_scan_range_;
+        double min_add_scan_shift_;
 
 };
 
