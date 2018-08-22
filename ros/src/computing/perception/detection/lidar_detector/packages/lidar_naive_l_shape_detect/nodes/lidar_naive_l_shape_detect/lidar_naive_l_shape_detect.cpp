@@ -70,15 +70,11 @@ void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv:
   // loop 4 rect points
   for (int point_i = 0; point_i < 4; point_i++)
   {
-    float pic_x = rect_points[point_i].x;
-    float pic_y = rect_points[point_i].y;
-    cv::Point2f pic_point(pic_x, pic_y);
-
     cv::Point2f offset_point_float;
     offset_point_float = static_cast<cv::Point2f>(offset_point);
 
     // reverse offset
-    cv::Point2f reverse_offset_point = pic_point - offset_point_float;
+    cv::Point2f reverse_offset_point = rect_points[point_i] - offset_point_float;
     // reverse from image coordinate to eucledian coordinate
     float r_x = reverse_offset_point.x;
     float r_y = pic_scale_ * roi_m_ - reverse_offset_point.y;
@@ -116,20 +112,17 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points)
   cv::Point2f p2 = pointcloud_points[1];
   cv::Point2f p3 = pointcloud_points[2];
 
-  double vec1x = p2.x - p1.x;
-  double vec1y = p2.y - p1.y;
-  double vec2x = p3.x - p2.x;
-  double vec2y = p3.y - p2.y;
+  cv::Point2f vec1(p2.x - p1.x, p2.y - p1.y);
+  cv::Point2f vec2(p3.x - p2.x, p3.y - p2.y);
 
   // from the equation of inner product
-  double cos_theta =
-      (vec1x * vec2x + vec1y * vec2y) / (sqrt(vec1x * vec1x + vec2x * vec2x) + sqrt(vec1y * vec1y + vec2y * vec2y));
+  double cos_theta = vec1.dot(vec2) / (norm(vec1) + norm(vec2));
   double theta = acos(cos_theta);
   double diff_theta = theta - M_PI / 2;
 
   if (abs(diff_theta) > 0.1)
   {
-    double m1 = vec1y / vec1x;
+    double m1 = vec1.y / vec1.x;
     double b1 = p3.y - m1 * p3.x;
     double m2 = -1.0 / m1;
     double b2 = p2.y - (m2 * p2.x);
@@ -155,8 +148,10 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
   cv::Point2f p2 = pointcloud_points[1];
   cv::Point2f p3 = pointcloud_points[2];
 
-  double dist1 = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
-  double dist2 = sqrt((p3.x - p2.x) * (p3.x - p2.x) + (p3.y - p2.y) * (p3.y - p2.y));
+  cv::Point2f vec1 = p1 - p2;
+  cv::Point2f vec2 = p3 - p2;
+  double dist1 = norm(vec1);
+  double dist2 = norm(vec2);
   double bb_yaw;
   // dist1 is length, dist2 is width
   if (dist1 > dist2)
@@ -217,10 +212,8 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     std::vector<cv::Point2f> pointcloud_points(4);
 
     // init variables
-    float min_mx = 0;
-    float min_my = 0;
-    float max_mx = 0;
-    float max_my = 0;
+    cv::Point2f min_m_p(0,0);
+    cv::Point2f max_m_p(0,0);
     float min_m = std::numeric_limits<float>::max();
     float max_m = std::numeric_limits<float>::min();
 
@@ -228,7 +221,6 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     {
       float p_x = cloud[i_point].x;
       float p_y = cloud[i_point].y;
-      float p_z = cloud[i_point].z;
 
       // cast (roi_m_/2 < x,y < roi_m_/2) into (0 < x,y < roi_m_)
       cv::Point2f pointcloud_point(p_x, p_y);
@@ -257,15 +249,15 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       if (delta_m < min_m)
       {
         min_m = delta_m;
-        min_mx = p_x;
-        min_my = p_y;
+        min_m_p.x = p_x;
+        min_m_p.y = p_y;
       }
 
       if (delta_m > max_m)
       {
         max_m = delta_m;
-        max_mx = p_x;
-        max_my = p_y;
+        max_m_p.x = p_x;
+        max_m_p.y = p_y;
       }
     }
 
@@ -274,10 +266,9 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       continue;
     }
     // L shape fitting parameters
-    float x_dist = max_mx - min_mx;
-    float y_dist = max_my - min_my;
-    float slope_dist = sqrt(x_dist * x_dist + y_dist * y_dist);
-    float slope = (max_my - min_my) / (max_mx - min_mx);
+    cv::Point2f dist_vec = max_m_p - min_m_p;
+    float slope_dist = sqrt(dist_vec.x * dist_vec.x + dist_vec.y * dist_vec.y);
+    float slope = (max_m_p.y - min_m_p.y) / (max_m_p.x - min_m_p.x);
 
     // random variable
     std::mt19937_64 mt;
@@ -289,38 +280,32 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     if (slope_dist > slope_dist_thres_ && num_points > num_points_thres_)
     {
       float max_dist = 0;
-      float max_dx = 0;
-      float max_dy = 0;
+      cv::Point2f max_p(0,0);
 
       // get max distance from random sampling points
       for (int i = 0; i < random_points_; i++)
       {
         int p_ind = rand_points(mt);
         assert(p_ind >= 0 && p_ind < (cloud.size() - 1));
-        float x_i = cloud[p_ind].x;
-        float y_i = cloud[p_ind].y;
+        cv::Point2f p_i(cloud[p_ind].x, cloud[p_ind].y);
 
         // from equation of distance between line and point
-        float dist = abs(slope * x_i - 1 * y_i + max_my - slope * max_mx) / sqrt(slope * slope + 1);
+        float dist = abs(slope * p_i.x - 1 * p_i.y + max_m_p.y - slope * max_m_p.x) / sqrt(slope * slope + 1);
         if (dist > max_dist)
         {
           max_dist = dist;
-          max_dx = x_i;
-          max_dy = y_i;
+          max_p    = p_i;
         }
       }
       // vector adding
-      float max_m_vec_x = max_mx - max_dx;
-      float max_m_vec_y = max_my - max_dy;
-      float min_m_vec_x = min_mx - max_dx;
-      float min_m_vec_y = min_my - max_dy;
-      float last_x = max_dx + max_m_vec_x + min_m_vec_x;
-      float last_y = max_dy + max_m_vec_y + min_m_vec_y;
+      cv::Point2f max_m_vec = max_m_p - max_p;
+      cv::Point2f min_m_vec = min_m_p - max_p;
+      cv::Point2f last_p    = max_p + max_m_vec + min_m_vec;
 
-      pointcloud_points[0] = cv::Point2f(min_mx, min_my);
-      pointcloud_points[1] = cv::Point2f(max_dx, max_dy);
-      pointcloud_points[2] = cv::Point2f(max_mx, max_my);
-      pointcloud_points[3] = cv::Point2f(last_x, last_y);
+      pointcloud_points[0] = min_m_p;
+      pointcloud_points[1] = max_p;
+      pointcloud_points[2] = max_m_p;
+      pointcloud_points[3] = last_p;
     }
     else
     {
