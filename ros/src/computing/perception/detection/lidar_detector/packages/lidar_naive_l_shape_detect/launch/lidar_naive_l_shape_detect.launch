@@ -2,7 +2,7 @@
 <launch>
   <arg name="input_topic" default="/detection/lidar_objects" /><!--CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
   <arg name="output_topic" default="/detection/lidar_objects/l_shaped" />
-  <arg name="ram_points" default="80" />
+  <arg name="random_ponts" default="80" />
   <arg name="slope_dist_thres" default="2.0" />
   <arg name="num_points_thres" default="10" />
   <arg name="sensor_height" default="2.35" />
@@ -10,7 +10,7 @@
     name="lidar_naive_l_shape_detect" output="screen" >
     <remap from="/detection/lidar_objects" to="$(arg input_topic)" />
     <remap from="/detection/lidar_objects/l_shaped" to="$(arg output_topic)" />
-    <param name="ram_points" value="$(arg ram_points)" />
+    <param name="random_ponts" value="$(arg random_ponts)" />
     <param name="slope_dist_thres" value="$(arg slope_dist_thres)" />
     <param name="num_points_thres" value="$(arg num_points_thres)" />
     <param name="sensor_height" value="$(arg sensor_height)" />

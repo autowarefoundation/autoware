@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #include <pcl_conversions/pcl_conversions.h>
 #include <random>
 
@@ -39,7 +39,7 @@ LShapeFilter::LShapeFilter()
 {
   // l-shape fitting params
   ros::NodeHandle private_nh_("~");
-  private_nh_.param<int>("ram_points", ram_points_, 80);
+  private_nh_.param<int>("random_ponts", random_points_, 80);
   private_nh_.param<float>("slope_dist_thres", slope_dist_thres_, 2.0);
   private_nh_.param<int>("num_points_thres", num_points_thres_, 10);
   private_nh_.param<float>("sensor_height", sensor_height_, 2.35);
@@ -291,8 +291,8 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       float max_dx = 0;
       float max_dy = 0;
 
-      // num_random_points, get max distance
-      for (int i = 0; i < ram_points_; i++)
+      // get max distance from random sampling points
+      for (int i = 0; i < random_points_; i++)
       {
         int p_ind = rand_points(mt);
         assert(p_ind >= 0 && p_ind < (cloud.size() - 1));

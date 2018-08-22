@@ -27,7 +27,7 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 #ifndef OBJECT_TRACKING_BOX_FITTING_H
 #define OBJECT_TRACKING_BOX_FITTING_H
 
@@ -44,7 +44,7 @@ class LShapeFilter
 private:
 
   float sensor_height_;
-  int ram_points_;
+  int random_points_;
   float slope_dist_thres_;
   int num_points_thres_;
 
@@ -55,7 +55,7 @@ private:
   ros::Publisher pub_object_array_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
-  void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points, 
+  void updateCpFromPoints(const std::vector<cv::Point2f>& pc_points,
                                 autoware_msgs::DetectedObject& output);
   void toRightAngleBBox(std::vector<cv::Point2f>& pc_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,

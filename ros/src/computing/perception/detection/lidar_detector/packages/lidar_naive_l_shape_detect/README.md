@@ -25,7 +25,7 @@ Launch file available parameters for `lidar_naive_l_shape_detect`
 ----------|-----|--------
 |`input topic`|*String* |Input topic(type: autoware_msgs::DetectedObjectArray). Default `/detection/lidar_objects`.|
 |`output topic`|*String*|Output topic(type: autoware_msgs::DetectedObjectArray). Default `/detection/lidar_objects/l_shaped`.|
-|`ram_points`|*int*|Number of random sampling points. Default `80`.|
+|`random_ponts`|*int*|Number of random sampling points. Default `80`.|
 |`slope_dist_thres`|*float*|Threshold for applying L-shape fitting. Default `2.0`.|
 |`num_points_thres`|*int*|Threshold for applying L-shape fitting.  Default `10`.|
 |`sensor_height`|*float*|Lidar height from base_link. Default `2.3`.|

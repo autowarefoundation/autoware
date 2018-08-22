@@ -4260,8 +4260,8 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : ram_points
-      desc    : ram_points desc sample
+    - name    : random_ponts
+      desc    : random_ponts desc sample
       label   : 'random_points'
       min       : 0
       max       : 500
