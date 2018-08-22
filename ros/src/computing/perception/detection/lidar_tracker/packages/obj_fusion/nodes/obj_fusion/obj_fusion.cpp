@@ -24,6 +24,7 @@ using vector_map::Key;
 
 static constexpr uint32_t SUBSCRIBE_QUEUE_SIZE = 1;
 static constexpr uint32_t ADVERTISE_QUEUE_SIZE = 1;
+static constexpr uint32_t SYNCHRONIZE_QUEUE_SIZE = 10;
 static constexpr bool ADVERTISE_LATCH = false;
 static constexpr double LOOP_RATE = 15.0;
 
@@ -351,12 +352,12 @@ int main(int argc, char *argv[])
   private_n.param("vmap_threshold", vmap_threshold, 5.0);
   vmap_threshold *= vmap_threshold;  // squared
 
-  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::obj_label, autoware_msgs::CloudClusterArray>
-      SyncPolicy;
   message_filters::Subscriber<autoware_msgs::obj_label> obj_label_sub(n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
   message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(n, "/cloud_clusters",
                                                                                       SUBSCRIBE_QUEUE_SIZE);
-  message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub,
+  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::obj_label, autoware_msgs::CloudClusterArray>
+      SyncPolicy;
+  message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(SYNCHRONIZE_QUEUE_SIZE), obj_label_sub,
                                                  cluster_centroids_sub);
   sync.registerCallback(boost::bind(&fusion_cb, _1, _2));
 
