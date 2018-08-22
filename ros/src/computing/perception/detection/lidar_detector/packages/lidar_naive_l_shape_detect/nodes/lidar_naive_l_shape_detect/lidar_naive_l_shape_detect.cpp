@@ -223,7 +223,6 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     float max_my = 0;
     float min_m = std::numeric_limits<float>::max();
     float max_m = std::numeric_limits<float>::min();
-    float max_z = std::numeric_limits<float>::min();
 
     for (int i_point = 0; i_point < num_points; i_point++)
     {
@@ -268,16 +267,9 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
         max_mx = p_x;
         max_my = p_y;
       }
-
-      // get maxZ
-      if (p_z > max_z)
-      {
-        max_z = p_z;
-      }
     }
 
-    if (max_m == std::numeric_limits<float>::min() || min_m == std::numeric_limits<float>::max() ||
-        max_z == std::numeric_limits<float>::min())
+    if (max_m == std::numeric_limits<float>::min() || min_m == std::numeric_limits<float>::max())
     {
       continue;
     }

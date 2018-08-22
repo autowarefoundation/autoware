@@ -60,7 +60,6 @@ private:
                                         autoware_msgs::DetectedObject& object);
   void getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
                           const cv::Point& offset_point);
-  bool ruleBasedFilter(std::vector<cv::Point2f> pointcloud_points, float max_z, int num_points);
   void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
                    autoware_msgs::DetectedObjectArray& out_object_array);
 
