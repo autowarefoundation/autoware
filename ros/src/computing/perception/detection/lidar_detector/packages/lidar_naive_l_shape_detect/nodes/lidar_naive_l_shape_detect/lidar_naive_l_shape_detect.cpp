@@ -45,9 +45,10 @@ LShapeFilter::LShapeFilter()
   private_nh_.param<float>("sensor_height", sensor_height_, 2.35);
 
   // Assuming pointcloud x and y range within roi_m_: 0 < x, y < roi_m_
+  // Short for region of interest in meters
   private_nh_.param<float>("roi_m_", roi_m_, 120);
   // Scale roi_m*roi_m_ to pic_scale_ times: will end up cv::Mat<roi_m_*pic_scale_, roi_m_*pic_scale_>
-  // in order to make MinAreaRect algo would work well
+  // in order to make fitting algorithm work
   private_nh_.param<float>("pic_scale_", pic_scale_, 15);
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callback, this);
@@ -63,28 +64,31 @@ void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_object_array_.publish(out_objects);
 }
 
-void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pc_points, int offset_x,
-                                      int offset_y)
+void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pc_points,
+  const cv::Point &offset_point)
 {
   // loop 4 rect points
   for (int point_i = 0; point_i < 4; point_i++)
   {
     float pic_x = rect_points[point_i].x;
     float pic_y = rect_points[point_i].y;
+    cv::Point2f pic_point(pic_x, pic_y);
+
+    cv::Point2f offset_point_float;
+    offset_point_float = static_cast<cv::Point2f>(offset_point);
+
     // reverse offset
-    float r_offset_x = pic_x - offset_x;
-    float r_offset_y = pic_y - offset_y;
+    cv::Point2f reverse_offset_point = pic_point  - offset_point_float;
     // reverse from image coordinate to eucledian coordinate
-    float r_x = r_offset_x;
-    float r_y = pic_scale_ * roi_m_ - r_offset_y;
+    float r_x = reverse_offset_point.x;
+    float r_y = pic_scale_ * roi_m_ - reverse_offset_point.y;
+    cv::Point2f eucledian_coordinate_pic_point(r_x, r_y);
     // reverse to roi_m_*roi_m_ scale
-    float rm_x = r_x / pic_scale_;
-    float rm_y = r_y / pic_scale_;
+    cv::Point2f offset_pointcloud_point = eucledian_coordinate_pic_point - reverse_offset_point;
     // reverse from (0 < x,y < roi_m_) to (roi_m_/2 < x,y < roi_m_/2)
-    float pc_x = rm_x - roi_m_ / 2;
-    float pc_y = rm_y - roi_m_ / 2;
-    cv::Point2f point(pc_x, pc_y);
-    pc_points[point_i] = point;
+    cv::Point2f offset_vec_(roi_m_/2, roi_m_/2);
+    cv::Point2f pointcloud_point = offset_pointcloud_point - offset_vec_;
+    pc_points[point_i] = pointcloud_point;
   }
 }
 
@@ -196,14 +200,17 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
 
     // calculating offset so that projecting pointcloud into cv::mat
     cv::Mat m(pic_scale_ * roi_m_, pic_scale_ * roi_m_, CV_8UC1, cv::Scalar(0));
-    float init_px = cloud[0].x + roi_m_ / 2;
-    float init_py = cloud[0].y + roi_m_ / 2;
-    int init_x = floor(init_px * pic_scale_);
-    int init_y = floor(init_py * pic_scale_);
-    int init_pic_x = init_x;
-    int init_pic_y = pic_scale_ * roi_m_ - init_y;
-    int offset_init_x = roi_m_ * pic_scale_ / 2 - init_pic_x;
-    int offset_init_y = roi_m_ * pic_scale_ / 2 - init_pic_y;
+    cv::Point2f tmp_pointcloud_point(cloud[0].x, cloud[0].y);
+    cv::Point2f tmp_pointcloud_offset(roi_m_ /2, roi_m_/2);
+    cv::Point2f tmp_offset_pointcloud_point = tmp_pointcloud_point + tmp_pointcloud_offset;
+    cv::Point   tmp_pic_point          = tmp_offset_pointcloud_point * pic_scale_;
+
+    int tmp_init_pic_x = tmp_pic_point.x;
+    int tmp_init_pic_y = pic_scale_ * roi_m_ - tmp_pic_point.y;
+
+    cv::Point  tmp_init_pic_point(tmp_init_pic_x, tmp_init_pic_y);
+    cv::Point  tmp_init_offset_vec(roi_m_ * pic_scale_ / 2, roi_m_ * pic_scale_ / 2);
+    cv::Point  offset_init_pic_point = tmp_init_offset_vec - tmp_init_pic_point;
 
     int num_points = cloud.size();
     std::vector<cv::Point> point_vec(num_points);
@@ -223,27 +230,29 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       float p_x = cloud[i_point].x;
       float p_y = cloud[i_point].y;
       float p_z = cloud[i_point].z;
+
       // cast (roi_m_/2 < x,y < roi_m_/2) into (0 < x,y < roi_m_)
-      float roi_x = p_x + roi_m_ / 2;
-      float roi_y = p_y + roi_m_ / 2;
+      cv::Point2f pointcloud_point(p_x, p_y);
+      cv::Point2f pointcloud_offset_vec(roi_m_ / 2, roi_m_ / 2);
+      cv::Point2f offset_pointcloud_point = pointcloud_point + pointcloud_offset_vec;
       // cast (roi_m_)m*(roi_m_)m into  pic_scale_
-      int x = floor(roi_x * pic_scale_);
-      int y = floor(roi_y * pic_scale_);
+      cv::Point scaled_point = offset_pointcloud_point * pic_scale_;
       // cast into image coordinate
-      int pic_x = x;
-      int pic_y = pic_scale_ * roi_m_ - y;
+      int pic_x = scaled_point.x;
+      int pic_y = pic_scale_ * roi_m_ - scaled_point.y;
       // offset so that the object would be locate at the center
-      int offset_x = pic_x + offset_init_x;
-      int offset_y = pic_y + offset_init_y;
+      cv::Point pic_point(pic_x, pic_y);
+      cv::Point offset_point = pic_point + offset_init_pic_point;
 
       // Make sure points are inside the image size
-      if (offset_x > (pic_scale_ * roi_m_) || offset_x < 0 || offset_y < 0 || offset_y > (pic_scale_ * roi_m_))
+      if (offset_point.x > (pic_scale_ * roi_m_) || offset_point.x < 0 ||
+      offset_point.y < 0 || offset_point.y > (pic_scale_ * roi_m_))
       {
         continue;
       }
       // cast the pointcloud into cv::mat
-      m.at<uchar>(offset_y, offset_x) = 255;
-      point_vec[i_point] = cv::Point(offset_x, offset_y);
+      m.at<uchar>(offset_point.y, offset_point.x) = 255;
+      point_vec[i_point] = offset_point;
       // calculate min and max slope for x1, x3(edge points)
       float delta_m = p_y / p_x;
       if (delta_m < min_m)
@@ -323,16 +332,17 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     }
     else
     {
-      // MAR fitting
+      // MinAreaRect fitting
       cv::RotatedRect rect_info = cv::minAreaRect(point_vec);
       cv::Point2f rect_points[4];
       rect_info.points(rect_points);
       // covert points back to lidar coordinate
-      getPointsInPcFrame(rect_points, pc_points, offset_init_x, offset_init_y);
+      getPointsInPcFrame(rect_points, pc_points, offset_init_pic_point);
     }
 
     autoware_msgs::DetectedObject output_object;
     output_object = in_object;
+
     //update output_object pose
     updateCpFromPoints(pc_points, output_object);
 
