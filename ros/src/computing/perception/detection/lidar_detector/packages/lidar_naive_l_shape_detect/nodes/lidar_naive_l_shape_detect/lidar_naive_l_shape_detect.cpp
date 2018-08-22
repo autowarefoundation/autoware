@@ -64,7 +64,7 @@ void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_object_array_.publish(out_objects);
 }
 
-void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
+void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
                                       const cv::Point& offset_point)
 {
   // loop 4 rect points
@@ -314,7 +314,7 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       cv::Point2f rect_points[4];
       rect_info.points(rect_points);
       // covert points back to lidar coordinate
-      getPointsInPcFrame(rect_points, pointcloud_points, offset_init_pic_point);
+      getPointsInPointcloudFrame(rect_points, pointcloud_points, offset_init_pic_point);
     }
 
     autoware_msgs::DetectedObject output_object;

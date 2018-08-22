@@ -58,7 +58,7 @@ private:
   void toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
                                         autoware_msgs::DetectedObject& object);
-  void getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
+  void getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
                           const cv::Point& offset_point);
   void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
                    autoware_msgs::DetectedObjectArray& out_object_array);
