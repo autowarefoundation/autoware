@@ -42,7 +42,6 @@
 class LShapeFilter
 {
 private:
-
   float sensor_height_;
   int random_points_;
   float slope_dist_thres_;
@@ -55,15 +54,15 @@ private:
   ros::Publisher pub_object_array_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
-  void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_points,
-                                autoware_msgs::DetectedObject& output);
+  void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_points, autoware_msgs::DetectedObject& output);
   void toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
                                         autoware_msgs::DetectedObject& object);
-  void getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points, const cv::Point &offset_point);
+  void getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
+                          const cv::Point& offset_point);
   bool ruleBasedFilter(std::vector<cv::Point2f> pointcloud_points, float max_z, int num_points);
   void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
-                         autoware_msgs::DetectedObjectArray& out_object_array);
+                   autoware_msgs::DetectedObjectArray& out_object_array);
 
 public:
   LShapeFilter();

@@ -65,7 +65,7 @@ void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
 }
 
 void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
-  const cv::Point &offset_point)
+                                      const cv::Point& offset_point)
 {
   // loop 4 rect points
   for (int point_i = 0; point_i < 4; point_i++)
@@ -78,7 +78,7 @@ void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv:
     offset_point_float = static_cast<cv::Point2f>(offset_point);
 
     // reverse offset
-    cv::Point2f reverse_offset_point = pic_point  - offset_point_float;
+    cv::Point2f reverse_offset_point = pic_point - offset_point_float;
     // reverse from image coordinate to eucledian coordinate
     float r_x = reverse_offset_point.x;
     float r_y = pic_scale_ * roi_m_ - reverse_offset_point.y;
@@ -86,14 +86,14 @@ void LShapeFilter::getPointsInPcFrame(cv::Point2f rect_points[], std::vector<cv:
     // reverse to roi_m_*roi_m_ scale
     cv::Point2f offset_pointcloud_point = eucledian_coordinate_pic_point - reverse_offset_point;
     // reverse from (0 < x,y < roi_m_) to (roi_m_/2 < x,y < roi_m_/2)
-    cv::Point2f offset_vec_(roi_m_/2, roi_m_/2);
+    cv::Point2f offset_vec_(roi_m_ / 2, roi_m_ / 2);
     cv::Point2f pointcloud_point = offset_pointcloud_point - offset_vec_;
     pointcloud_points[point_i] = pointcloud_point;
   }
 }
 
 void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_points,
-                                            autoware_msgs::DetectedObject& output)
+                                      autoware_msgs::DetectedObject& output)
 {
   cv::Point2f p1 = pointcloud_points[0];
   cv::Point2f p2 = pointcloud_points[1];
@@ -148,7 +148,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points)
 }
 
 void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pointcloud_points,
-                                                          autoware_msgs::DetectedObject& object)
+                                                    autoware_msgs::DetectedObject& object)
 {
   // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
   cv::Point2f p1 = pointcloud_points[0];
@@ -187,11 +187,11 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
 }
 
 void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
-                                     autoware_msgs::DetectedObjectArray& out_object_array)
+                               autoware_msgs::DetectedObjectArray& out_object_array)
 {
   out_object_array.header = in_object_array.header;
 
-  for (const auto& in_object: in_object_array.objects)
+  for (const auto& in_object : in_object_array.objects)
   {
     pcl::PointCloud<pcl::PointXYZ> cloud;
 
@@ -201,16 +201,16 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     // calculating offset so that projecting pointcloud into cv::mat
     cv::Mat m(pic_scale_ * roi_m_, pic_scale_ * roi_m_, CV_8UC1, cv::Scalar(0));
     cv::Point2f tmp_pointcloud_point(cloud[0].x, cloud[0].y);
-    cv::Point2f tmp_pointcloud_offset(roi_m_ /2, roi_m_/2);
+    cv::Point2f tmp_pointcloud_offset(roi_m_ / 2, roi_m_ / 2);
     cv::Point2f tmp_offset_pointcloud_point = tmp_pointcloud_point + tmp_pointcloud_offset;
-    cv::Point   tmp_pic_point          = tmp_offset_pointcloud_point * pic_scale_;
+    cv::Point tmp_pic_point = tmp_offset_pointcloud_point * pic_scale_;
 
     int tmp_init_pic_x = tmp_pic_point.x;
     int tmp_init_pic_y = pic_scale_ * roi_m_ - tmp_pic_point.y;
 
-    cv::Point  tmp_init_pic_point(tmp_init_pic_x, tmp_init_pic_y);
-    cv::Point  tmp_init_offset_vec(roi_m_ * pic_scale_ / 2, roi_m_ * pic_scale_ / 2);
-    cv::Point  offset_init_pic_point = tmp_init_offset_vec - tmp_init_pic_point;
+    cv::Point tmp_init_pic_point(tmp_init_pic_x, tmp_init_pic_y);
+    cv::Point tmp_init_offset_vec(roi_m_ * pic_scale_ / 2, roi_m_ * pic_scale_ / 2);
+    cv::Point offset_init_pic_point = tmp_init_offset_vec - tmp_init_pic_point;
 
     int num_points = cloud.size();
     std::vector<cv::Point> point_vec(num_points);
@@ -245,8 +245,8 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       cv::Point offset_point = pic_point + offset_init_pic_point;
 
       // Make sure points are inside the image size
-      if (offset_point.x > (pic_scale_ * roi_m_) || offset_point.x < 0 ||
-      offset_point.y < 0 || offset_point.y > (pic_scale_ * roi_m_))
+      if (offset_point.x > (pic_scale_ * roi_m_) || offset_point.x < 0 || offset_point.y < 0 ||
+          offset_point.y > (pic_scale_ * roi_m_))
       {
         continue;
       }
@@ -343,13 +343,13 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
     autoware_msgs::DetectedObject output_object;
     output_object = in_object;
 
-    //update output_object pose
+    // update output_object pose
     updateCpFromPoints(pointcloud_points, output_object);
 
     // update pointcloud_points to make it right angle bbox
     toRightAngleBBox(pointcloud_points);
 
-    //update output_object dimensions
+    // update output_object dimensions
     updateDimentionAndEstimatedAngle(pointcloud_points, output_object);
 
     out_object_array.objects.push_back(output_object);
