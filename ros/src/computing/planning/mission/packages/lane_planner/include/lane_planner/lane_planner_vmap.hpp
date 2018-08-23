@@ -93,6 +93,24 @@ void publish_add_marker(const ros::Publisher& pub, const visualization_msgs::Mar
 			const std::vector<vector_map::Point>& points);
 void publish_delete_marker(const ros::Publisher& pub, const visualization_msgs::Marker& marker);
 
+vector_map::Point find_start_point(const VectorMap& vmap, const vector_map::Lane& lane);
+vector_map::Point find_end_point(const VectorMap& vmap, const vector_map::Lane& lane);
+vector_map::Point find_departure_point(const VectorMap& lane_vmap, int lno,
+				       const std::vector<vector_map::Point>& coarse_points,
+				       double search_radius);
+vector_map::Point find_arrival_point(const VectorMap& lane_vmap, int lno,
+				     const std::vector<vector_map::Point>& coarse_points,
+				     double search_radius);
+vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Point& point);
+std::vector<vector_map::Point> find_near_points(const VectorMap& vmap, const vector_map::Point& point,
+						double search_radius);
+
+vector_map::Lane find_lane(const VectorMap& vmap, int lno, const vector_map::Point& point);
+vector_map::Lane find_prev_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
+vector_map::Lane find_next_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
+vector_map::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane,
+					  double coarse_angle, double search_radius);
+
 } // namespace vmap
 
 } // namespace lane_planner

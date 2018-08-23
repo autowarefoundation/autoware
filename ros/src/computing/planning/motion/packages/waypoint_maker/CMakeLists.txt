@@ -50,6 +50,9 @@ add_dependencies(waypoint_saver
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
 target_link_libraries(waypoint_clicker ${catkin_LIBRARIES})
 
+add_executable(waypoint_generator nodes/waypoint_generator/waypoint_generator.cpp)
+target_link_libraries(waypoint_generator ${catkin_LIBRARIES})
+
 add_executable(waypoint_marker_publisher nodes/waypoint_marker_publisher/waypoint_marker_publisher.cpp)
 target_link_libraries(waypoint_marker_publisher ${catkin_LIBRARIES})
 add_dependencies(waypoint_marker_publisher
