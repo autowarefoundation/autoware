@@ -39,8 +39,8 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-class LShapeFilter
-{
+
+class LShapeFilter {
 private:
   float sensor_height_;
   int random_points_;
@@ -54,17 +54,18 @@ private:
   ros::Publisher pub_object_array_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
-  void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points, autoware_msgs::DetectedObject& output);
-  void toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_points);
+  void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points,
+                          autoware_msgs::DetectedObject &output);
+  void toRightAngleBBox(std::vector<cv::Point2f> &pointcloud_frame_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
-                                        autoware_msgs::DetectedObject& object);
+                                        autoware_msgs::DetectedObject &object);
   void getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_frame_points,
                           const cv::Point& offset_point);
-  void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
+  void getLShapeBB(autoware_msgs::DetectedObjectArray&  in_object_array,
                    autoware_msgs::DetectedObjectArray& out_object_array);
 
 public:
   LShapeFilter();
 };
 
-#endif  // OBJECT_TRACKING_BOX_FITTING_H
+#endif // OBJECT_TRACKING_BOX_FITTING_H
