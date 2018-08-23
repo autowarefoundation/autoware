@@ -30,7 +30,7 @@
 #include "SekonixGmslCamera.hpp"
 
 
-namespace DrivesWork
+namespace DriveWorks
 {
 	
 /* Constructor 
@@ -73,7 +73,7 @@ SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle pa
   CameraArguments.set("slave", slave_value); 
  	
   // create gmsl camera instance with the arguments 
-  gmsl_cam = new DrivesWorkApi(CameraArguments);
+  gmsl_cam = new DriveWorksApi(CameraArguments);
   // start camera frame grabber threads
   this->startup();
 }
@@ -201,4 +201,4 @@ void SekonixGmslCamera::feedImages(uint32_t port)
 }
 
 
-}/* DrivesWork ns */
+}/* DriveWorks ns */
