@@ -1,19 +1,42 @@
-//
-// Created by kosuke on 11/29/17.
-//
+/*
+ *  Copyright (c) 2018, Nagoya University
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  * Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 //
 #include <pcl_conversions/pcl_conversions.h>
-#include <random>
 //
 #include <tf/transform_datatypes.h>
 //
 
 #include "lidar_naive_l_shape_detect.h"
 
-using namespace std;
-using namespace pcl;
 
-int g_count = 0;
 
 LShapeFilter::LShapeFilter() {
   roi_m_ = 120;
@@ -37,7 +60,6 @@ void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input) {
   getLShapeBB(copy_objects, out_objects);
   out_objects.header = input.header;
   pub_object_array_.publish(out_objects);
-  g_count++;
 }
 
 void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[],
@@ -85,7 +107,8 @@ void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud
   object.pose.position.z = -sensor_height_ / 2;
 }
 
-void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f> &pointcloud_frame_points) {
+void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f> &pointcloud_frame_points)
+{
   cv::Point2f p1 = pointcloud_frame_points[0];
   cv::Point2f p2 = pointcloud_frame_points[1];
   cv::Point2f p3 = pointcloud_frame_points[2];
@@ -160,10 +183,12 @@ void LShapeFilter::getLShapeBB(
     autoware_msgs::DetectedObjectArray&  in_object_array,
     autoware_msgs::DetectedObjectArray& out_object_array) {
 
+
   out_object_array.header = in_object_array.header;
 
   for (size_t i_object = 0; i_object < in_object_array.objects.size();
        i_object++) {
+
     pcl::PointCloud<pcl::PointXYZ> cloud;
 
     // Convert from ros msg to PCL::PointCloud data type
@@ -183,6 +208,8 @@ void LShapeFilter::getLShapeBB(
     int num_points = cloud.size();
     std::vector<cv::Point> point_vec(num_points);
     std::vector<cv::Point2f> pointcloud_frame_points(4);
+
+
     float min_mx = 0;
     float min_my = 0;
     float max_mx = 0;
@@ -247,11 +274,9 @@ void LShapeFilter::getLShapeBB(
     float slope_dist = sqrt(x_dist * x_dist + y_dist * y_dist);
     float slope = (max_my - min_my) / (max_mx - min_mx);
 
-    // random variable
-    std::mt19937_64 mt;
+    std::mt19937 mt{ std::random_device{}() };
     mt.seed(in_object_array.header.stamp.toSec());
-    // mt.seed(0);
-    std::uniform_int_distribution<> rand_points(0, num_points - 1);
+    std::uniform_int_distribution<int> random_points(0, num_points - 1);
 
     // start l shape fitting for car like object
     if (slope_dist > slope_dist_thres_ && num_points > num_points_thres_) {
@@ -261,14 +286,13 @@ void LShapeFilter::getLShapeBB(
 
       // 80 random points, get max distance
       for (int i = 0; i < random_points_; i++) {
-        int p_ind = rand_points(mt);
-        assert(p_ind >= 0 && p_ind < (cloud.size()-1));
+        int p_ind = random_points(mt);
         float x_i = cloud[p_ind].x;
         float y_i = cloud[p_ind].y;
 
         // from equation of distance between line and point
-        float dist = abs(slope * x_i - 1 * y_i + max_my - slope * max_mx) /
-                     sqrt(slope * slope + 1);
+        float dist = std::abs(slope * x_i - 1 * y_i + max_my - slope * max_mx) /
+                     std::sqrt(slope * slope + 1);
         if (dist > max_dist) {
           max_dist = dist;
           max_dx = x_i;
