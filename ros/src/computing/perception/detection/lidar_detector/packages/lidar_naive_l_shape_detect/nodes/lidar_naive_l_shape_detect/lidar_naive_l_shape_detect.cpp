@@ -38,26 +38,31 @@
 
 
 
-LShapeFilter::LShapeFilter() {
-  roi_m_ = 120;
-  pic_scale_ = 1800 / roi_m_;
-  random_points_ = 80;
-
+LShapeFilter::LShapeFilter()
+{
   // l-shape fitting params
-  slope_dist_thres_ = 2.0;
-  num_points_thres_ = 10;
+  ros::NodeHandle private_nh_("~");
+  private_nh_.param<int>("random_ponts", random_points_, 80);
+  private_nh_.param<float>("slope_dist_thres", slope_dist_thres_, 2.0);
+  private_nh_.param<int>("num_points_thres", num_points_thres_, 10);
+  private_nh_.param<float>("sensor_height", sensor_height_, 2.35);
 
-  sensor_height_ = 2.35;
+  // Assuming pointcloud x and y range within roi_m_: 0 < x, y < roi_m_
+  // Short for region of interest in meters
+  private_nh_.param<float>("roi_m_", roi_m_, 120);
+  // Scale roi_m*roi_m_ to pic_scale_ times: will end up cv::Mat<roi_m_*pic_scale_, roi_m_*pic_scale_>
+  // in order to make fitting algorithm work
+  private_nh_.param<float>("pic_scale_", pic_scale_, 15);
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callback, this);
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
+  pub_object_array_ =
+      node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
 }
 
-void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input) {
+void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
+{
   autoware_msgs::DetectedObjectArray out_objects;
-  autoware_msgs::DetectedObjectArray copy_objects;
-  copy_objects = input;
-  getLShapeBB(copy_objects, out_objects);
+  getLShapeBB(input, out_objects);
   out_objects.header = input.header;
   pub_object_array_.publish(out_objects);
 }
@@ -100,8 +105,6 @@ void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud
   double cx = p1.x + (p3.x - p1.x) * s1 / (s1 + s2);
   double cy = p1.y + (p3.y - p1.y) * s1 / (s1 + s2);
 
-  // std::cout << "cp from euclidean cluster " << cluster.bounding_box.pose.position.x << " "<<cluster.bounding_box.pose.position.y<<std::endl;
-  // std::cout << "cp from l shape "<<cx << " "<< cy << std::endl;
   object.pose.position.x = cx;
   object.pose.position.y = cy;
   object.pose.position.z = -sensor_height_ / 2;
@@ -112,22 +115,18 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f> &pointcloud_frame_p
   cv::Point2f p1 = pointcloud_frame_points[0];
   cv::Point2f p2 = pointcloud_frame_points[1];
   cv::Point2f p3 = pointcloud_frame_points[2];
-  // cv::Point2f p4 = pointcloud_frame_points[3];
 
-  double vec1x = p2.x - p1.x;
-  double vec1y = p2.y - p1.y;
-  double vec2x = p3.x - p2.x;
-  double vec2y = p3.y - p2.y;
+  cv::Point2f vec1(p2.x - p1.x, p2.y - p1.y);
+  cv::Point2f vec2(p3.x - p2.x, p3.y - p2.y);
 
   // from the equation of inner product
-  double cos_theta =
-      (vec1x * vec2x + vec1y * vec2y) / (sqrt(vec1x * vec1x + vec2x * vec2x) +
-                                         sqrt(vec1y * vec1y + vec2y * vec2y));
+  double cos_theta = vec1.dot(vec2) / (norm(vec1) + norm(vec2));
   double theta = acos(cos_theta);
   double diff_theta = theta - M_PI / 2;
 
-  if (abs(diff_theta) > 0.1) {
-    double m1 = vec1y / vec1x;
+  if (abs(diff_theta) > 0.1)
+  {
+    double m1 = vec1.y / vec1.x;
     double b1 = p3.y - m1 * p3.x;
     double m2 = -1.0 / m1;
     double b2 = p2.y - (m2 * p2.x);
@@ -148,6 +147,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f> &pointcloud_frame_p
 void LShapeFilter::updateDimentionAndEstimatedAngle(
     const std::vector<cv::Point2f>& pointcloud_frame_points, autoware_msgs::DetectedObject &object) {
 
+  // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
   cv::Point2f p1 = pointcloud_frame_points[0];
   cv::Point2f p2 = pointcloud_frame_points[1];
   cv::Point2f p3 = pointcloud_frame_points[2];
@@ -155,7 +155,7 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(
   double dist1 = sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
   double dist2 = sqrt((p3.x - p2.x) * (p3.x - p2.x) + (p3.y - p2.y) * (p3.y - p2.y));
   double bb_yaw;
-  // dist1 is length
+  // dist1 is length, dist2 is width
   if (dist1 > dist2) {
     bb_yaw = atan2(p1.y - p2.y, p1.x - p2.x);
     object.dimensions.x = dist1;
@@ -180,10 +180,8 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(
 }
 
 void LShapeFilter::getLShapeBB(
-    autoware_msgs::DetectedObjectArray&  in_object_array,
+    const autoware_msgs::DetectedObjectArray&  in_object_array,
     autoware_msgs::DetectedObjectArray& out_object_array) {
-
-
   out_object_array.header = in_object_array.header;
 
   for (size_t i_object = 0; i_object < in_object_array.objects.size();
@@ -325,13 +323,16 @@ void LShapeFilter::getLShapeBB(
       getPointsInPointcloudFrame(rect_points, pointcloud_frame_points, offset_init_p);
     }
 
-    updateCpFromPoints(pointcloud_frame_points, in_object_array.objects[i_object]);
-    // update pcPoints to make it right angle bbox
+    autoware_msgs::DetectedObject output_object;
+    output_object = in_object_array.objects[i_object];
+    // update output_object pose
+    updateCpFromPoints(pointcloud_frame_points, output_object);
+    // update pointcloud_frame_points to make it right angle bbox
     toRightAngleBBox(pointcloud_frame_points);
-
+    // update output_object dimensions
     updateDimentionAndEstimatedAngle(pointcloud_frame_points,
-                                     in_object_array.objects[i_object]);
+                                     output_object);
 
-    out_object_array.objects.push_back(in_object_array.objects[i_object]);
+    out_object_array.objects.push_back(output_object);
   }
 }

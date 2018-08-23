@@ -61,7 +61,7 @@ private:
                                         autoware_msgs::DetectedObject &object);
   void getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_frame_points,
                           const cv::Point& offset_point);
-  void getLShapeBB(autoware_msgs::DetectedObjectArray&  in_object_array,
+  void getLShapeBB(const autoware_msgs::DetectedObjectArray&  in_object_array,
                    autoware_msgs::DetectedObjectArray& out_object_array);
 
 public:
