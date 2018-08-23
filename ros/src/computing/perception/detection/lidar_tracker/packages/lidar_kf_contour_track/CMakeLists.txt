@@ -8,10 +8,10 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   op_ros_helpers
+  cv_bridge
   )
 
-
-set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
+find_package(OpenCV REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -20,10 +20,12 @@ catkin_package(
   tf
   jsk_recognition_msgs
   op_ros_helpers
+  cv_bridge
   )
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
         include
 )
 
@@ -31,9 +33,12 @@ include_directories(
 add_executable(lidar_kf_contour_track
   nodes/lidar_kf_contour_track/lidar_kf_contour_track.cpp
   nodes/lidar_kf_contour_track/lidar_kf_contour_track_core.cpp
+  nodes/lidar_kf_contour_track/PolygonGenerator.cpp
+  nodes/lidar_kf_contour_track/SimpleTracker.cpp
 )
 target_link_libraries(lidar_kf_contour_track
-${catkin_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
 )
 add_dependencies(lidar_kf_contour_track
 ${catkin_EXPORTED_TARGETS}

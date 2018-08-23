@@ -130,35 +130,6 @@ PlannerX::PlannerX()
 	sub_bounding_boxs  	= nh.subscribe("/bounding_boxes",			1,		&PlannerX::callbackGetBoundingBoxes, 	this);
 	sub_WayPlannerPaths = nh.subscribe("/realtime_cost_map",		1,		&PlannerX::callbackGetCostMap, 	this);
 
-#ifdef DATASET_GENERATION_BLOCK
-
-	m_iRecordNumber = 0;
-//	tf::StampedTransform base_transform;
-//	int nFailedCounter = 0;
-//	while (1)
-//	{
-//		try
-//		{
-//			m_Transformation.lookupTransform("base_link", "world", ros::Time(0), base_transform);
-//			break;
-//		}
-//		catch (tf::TransformException& ex)
-//		{
-//			if(nFailedCounter > 2)
-//			{
-//				ROS_ERROR("%s", ex.what());
-//			}
-//			ros::Duration(1.0).sleep();
-//			nFailedCounter ++;
-//		}
-//	}
-
-	m_ImagesVectors.open("/home/user/data/db/input.csv");
-	m_TrajVectors.open("/home/user/data/db/output.csv");
-
-	sub_image_reader = nh.subscribe("/image_raw", 1, &PlannerX::callbackReadImage, 		this);
-#endif
-
 	/**
 	 * @todo This works only in simulation (Autoware or ff_Waypoint_follower), twist_cmd should be changed, consult team
 	 */
@@ -204,147 +175,8 @@ PlannerX::~PlannerX()
 			, m_LogData);
 #endif
 
-#ifdef DATASET_GENERATION_BLOCK
-	m_ImagesVectors.close();
-	m_TrajVectors.close();
-#endif
-}
-
-#ifdef DATASET_GENERATION_BLOCK
-void PlannerX::callbackReadImage(const sensor_msgs::ImageConstPtr& img)
-{
-	//std::cout << "Reading Image Data ... " << std::endl;
-	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
-	m_CurrImage = cv_image->image;
 
 }
-
-void PlannerX::ExtractPathFromDriveData(double max_extraction)
-{
-	double d = 0;
-	DataPairs dp;
-
-	for(int i = m_DrivePoints.size()-1; i >= 0 ; i--)
-	{
-		d += m_DrivePoints.at(i).currentPos.cost;
-
-		if(d >= 30)
-		{
-			dp.image =  m_DrivePoints.at(i).image.clone();
-			dp.currentPos =  m_DrivePoints.at(i).currentPos;
-			dp.vehicleState = m_DrivePoints.at(i).vehicleState;
-			cv::Mat gray_image;
-			cvtColor( dp.image, gray_image, cv::COLOR_BGR2GRAY);
-			cv::Rect roi;
-			roi.x = 0;
-			roi.y = gray_image.rows/3;
-			roi.width = gray_image.cols;
-			roi.height = gray_image.rows - gray_image.rows/3;
-			cv::Mat halfImg = gray_image(roi);
-
-			std::ostringstream image_name;
-			image_name << "/home/user/data/db/vis/image_" << m_iRecordNumber << ".png";
-			std::ostringstream half_image_name;
-			half_image_name <<  "/home/user/data/db/img/img_"  << m_iRecordNumber << ".png";
-			std::ostringstream label_name ;
-			label_name << "/home/user/data/db/csv/lbl_" << m_iRecordNumber << ".csv";
-
-
-			PlannerHNS::Mat3 rotationMat(-dp.currentPos.pos.a);
-			PlannerHNS::Mat3 translationMat(-dp.currentPos.pos.x, -dp.currentPos.pos.y);
-			for(unsigned int ip=0; ip < dp.path.size(); ip++)
-			{
-				dp.path.at(ip).pos = translationMat*dp.path.at(ip).pos;
-				dp.path.at(ip).pos = rotationMat*dp.path.at(ip).pos;
-			}
-
-			PlannerHNS::PlanningHelpers::SmoothPath(dp.path, 0.45, 0.3, 0.01);
-			PlannerHNS::PlanningHelpers::FixPathDensity(dp.path, d/20.0);
-			PlannerHNS::PlanningHelpers::SmoothPath(dp.path, 0.45, 0.35, 0.01);
-
-			for(unsigned int ip=0; ip <dp.path.size()-1; ip++)
-			{
-				cv::Point p1;
-				p1.y = dp.image.rows - (fabs(dp.path.at(ip).pos.x) *  halfImg.rows  / 40.0);
-				p1.x = halfImg.cols/2 + (-dp.path.at(ip).pos.y * halfImg.cols / 20.0);
-
-				cv::Point p2;
-				p2.y = dp.image.rows - (fabs(dp.path.at(ip+1).pos.x) *  halfImg.rows  / 40.0);
-				p2.x = halfImg.cols/2 + (-dp.path.at(ip+1).pos.y * halfImg.cols / 20.0);
-
-				cv::line(dp.image, p1, p2,  cv::Scalar( 0, 255, 0 ), 2, 8);
-			}
-
-			WritePathCSV(label_name.str(), dp.path);
-			imwrite(image_name.str(),  dp.image);
-			imwrite(half_image_name.str(),  halfImg);
-
-			WriteImageAndPathCSV(halfImg.clone(), dp.path);
-
-			for(int j = 0; j <= i; j++)
-				if(m_DrivePoints.size() > 0)
-					m_DrivePoints.erase(m_DrivePoints.begin()+0);
-
-			m_iRecordNumber++;
-			std::cout << "Extract Data: " << "Cost: " << d << ", Index: " << i << ", Path Size: " << dp.path.size() << std::endl;
-			return;
-		}
-
-		dp.path.insert(dp.path.begin(), m_DrivePoints.at(i).currentPos);
-	}
-}
-
-void PlannerX::WriteImageAndPathCSV(cv::Mat img,std::vector<PlannerHNS::WayPoint>& path)
-{
-	if(m_ImagesVectors.is_open())
-	{
-		ostringstream str_img;
-		str_img.precision(0);
-		for(int c=0; c<img.cols; c++)
-		{
-			for(int r=0; r<img.rows; r++)
-			{
-				short x = img.at<uchar>(r, c);
-				str_img << x << ',';
-			}
-		}
-
-		m_ImagesVectors << str_img.str() << "\r\n";
-	}
-
-	if(m_TrajVectors.is_open())
-	{
-		ostringstream strwp;
-		 for(unsigned int i=0; i<path.size(); i++)
-		 {
-			 strwp << path.at(i).pos.x<<","<< path.at(i).pos.y << ",";
-		 }
-		m_TrajVectors << strwp.str() << "\r\n";
-	}
-}
-
-void PlannerX::WritePathCSV(const std::string& fName, std::vector<PlannerHNS::WayPoint>& path)
-{
-	vector<string> dataList;
-	 for(unsigned int i=0; i<path.size(); i++)
-	 {
-		 ostringstream strwp;
-		 strwp << path.at(i).pos.x<<","<< path.at(i).pos.y <<","<< path.at(i).v << ",";
-		 dataList.push_back(strwp.str());
-	 }
-
-	 std::ofstream f(fName.c_str());
-
-	if(f.is_open())
-	{
-		for(unsigned int i = 0 ; i < dataList.size(); i++)
-			f << dataList.at(i) << "\r\n";
-	}
-
-	f.close();
-}
-
-#endif
 
 void PlannerX::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
@@ -511,43 +343,6 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 
 		pub_TrackedObstaclesRviz.publish(boxes_array);
 	}
-
-//	if(m_LocalPlanner.m_TotalPath.size() > 0)
-//	{
-//		vector<PlannerHNS::WayPoint> line;
-//		PlannerHNS::WayPoint p1(msg->point.x+m_OriginPos.position.x, msg->point.y+m_OriginPos.position.y, msg->point.z+m_OriginPos.position.z, 0);
-//
-//		//int index = PlannerHNS::PlanningHelpers::GetClosestNextPointIndex(m_LocalPlanner.m_TotalPath.at(0), p1);
-////		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index);
-////		if(index > 0)
-////			p_prev = m_LocalPlanner.m_TotalPath.at(0).at(index-1);
-////
-////
-////		double distance = 0;
-////		PlannerHNS::WayPoint p2 = PlannerHNS::PlanningHelpers::GetPerpendicularOnTrajectory(m_LocalPlanner.m_TotalPath.at(0), p1, distance);
-////
-////		double perpDistance = PlannerHNS::PlanningHelpers::GetPerpDistanceToTrajectorySimple(m_LocalPlanner.m_TotalPath.at(0), p1);
-////
-////		double back_distance = hypot(p2.pos.y - p_prev.pos.y, p2.pos.x - p_prev.pos.x);
-////		double direct_distance = hypot(p2.pos.y - p1.pos.y, p2.pos.x - p1.pos.x);
-//
-//
-//		PlannerHNS::RelativeInfo info;
-//		bool ret = PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_TotalPath.at(0), p1, info);
-//		PlannerHNS::WayPoint p_prev = m_LocalPlanner.m_TotalPath.at(0).at(info.iBack);
-//
-//		std::cout << "Perp D: " << info.perp_distance << ", F D: "<< info.to_front_distance << ", B D: " << info.from_back_distance << ", F Index: "<< info.iFront << ", B Index: " << info.iBack << ", Size: "<< m_LocalPlanner.m_TotalPath.at(0).size() << std::endl;
-//
-//		line.push_back(p1);
-//		line.push_back(info.perp_point);
-//		line.push_back(p_prev);
-//
-//		std::vector<std::vector<PlannerHNS::WayPoint> > lines;
-//		lines.push_back(line);
-//		visualization_msgs::MarkerArray line_vis;
-//		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(lines, line_vis);
-//		pub_TestLineRviz.publish(line_vis);
-//	}
 }
 
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -568,43 +363,6 @@ void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& 
 
 	bNewCurrentPos = true;
 	bInitPos = true;
-#ifdef DATASET_GENERATION_BLOCK
-
-	PlannerHNS::WayPoint p(m_CurrentPos.pos.x, m_CurrentPos.pos.y, 0, m_CurrentPos.pos.a);
-	p.v = m_VehicleState.speed;
-
-	DataPairs dp;
-	if(m_DrivePoints.size() == 0)
-	{
-		dp.image = m_CurrImage;
-		dp.currentPos = p;
-		dp.vehicleState = m_VehicleState;
-		m_DrivePoints.push_back(dp);
-	}
-	else
-	{
-		p.cost = hypot(p.pos.y - m_DrivePoints.at(m_DrivePoints.size()-1).currentPos.pos.y, p.pos.x - m_DrivePoints.at(m_DrivePoints.size()-1).currentPos.pos.x);
-		if(p.cost >= 0.25 && p.cost <= 3.0)
-		{
-			dp.image = m_CurrImage;
-			dp.currentPos = p;
-			dp.vehicleState = m_VehicleState;
-			m_DrivePoints.push_back(dp);
-			//std::cout << "Insert Pose: " << "Cost: " << p.cost << ", Speed: " << p.v << ", Size: " << m_DrivePoints.size() << std::endl;
-		}
-		else
-		{
-			//std::cout << "Miss Pose: " << "Cost: " << p.cost << ", Speed: " << p.v << ", Size: " << m_DrivePoints.size() << std::endl;
-			if(m_DrivePoints.size() == 1)
-				m_DrivePoints.clear();
-		}
-	}
-
-
-	if(m_DrivePoints.size() >= 20)
-		ExtractPathFromDriveData();
-
-#endif
 }
 
 autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose)
@@ -783,8 +541,8 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 				wp.laneId = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.y;
 				wp.stopLineID = msg->lanes.at(i).waypoints.at(j).twist.twist.linear.z;
 				wp.laneChangeCost = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.x;
-				wp.LeftLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
-				wp.RightLaneId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
+				wp.LeftPointId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.y;
+				wp.RightPointId = msg->lanes.at(i).waypoints.at(j).twist.twist.angular.z;
 
 				if(msg->lanes.at(i).waypoints.at(j).dtlane.dir == 0)
 					wp.bDir = PlannerHNS::FORWARD_DIR;
@@ -823,27 +581,6 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(path);
 
-//			int prevStopID = -1;
-//			for(unsigned int k= 0; k < path.size(); k++)
-//			{
-//				if(path.at(k).pLane)
-//				{
-//					for(unsigned int si = 0; si < path.at(k).pLane->stopLines.size(); si++)
-//					{
-//						if(prevStopID != path.at(k).pLane->stopLines.at(si).id)
-//						{
-//							PlannerHNS::WayPoint stopLineWP;
-//							stopLineWP.pos = path.at(k).pLane->stopLines.at(si).points.at(0);
-//							PlannerHNS::RelativeInfo info;
-//							PlannerHNS::PlanningHelpers::GetRelativeInfo(path, stopLineWP, info, k);
-//
-//							path.at(info.iFront).stopLineID = path.at(k).pLane->stopLines.at(si).id;
-//							prevStopID = path.at(info.iFront).stopLineID;
-//						}
-//					}
-//				}
-//			}
-
 			m_WayPlannerPaths.push_back(path);
 
 			if(bOldGlobalPath)
@@ -857,18 +594,9 @@ void PlannerX::callbackGetWayPlannerPath(const autoware_msgs::LaneArrayConstPtr&
 		{
 			bWayPlannerPath = true;
 			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bNewGlobalPath = true;
-			//m_CurrentGoal = m_WayPlannerPaths.at(0).at(m_WayPlannerPaths.at(0).size()-1);
 			m_LocalPlanner.m_TotalOriginalPath = m_WayPlannerPaths;
 
 			cout << "Global Lanes Size = " << msg->lanes.size() <<", Conv Size= " << m_WayPlannerPaths.size() << ", First Lane Size: " << m_WayPlannerPaths.at(0).size() << endl;
-
-//			for(unsigned int k= 0; k < m_WayPlannerPaths.at(0).size(); k++)
-//			{
-//				if(m_WayPlannerPaths.at(0).at(k).stopLineID > 0 && m_WayPlannerPaths.at(0).at(k).pLane && m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size()>0)
-//				{
-//					cout << "Stop Line IDs: " << m_WayPlannerPaths.at(0).at(k).stopLineID << ", Lane: " << m_WayPlannerPaths.at(0).at(k).pLane << ", Stop Lines: "<< m_WayPlannerPaths.at(0).at(k).pLane->stopLines.size() << endl;
-//				}
-//			}
 		}
 	}
 }
@@ -892,7 +620,6 @@ void PlannerX::PlannerMainLoop()
 		{
 			bKmlMapLoaded = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_KmlMapPath, m_Map);
-			//sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		}
 		else if(m_MapSource == MAP_FOLDER && !bKmlMapLoaded)
 		{
@@ -915,11 +642,6 @@ void PlannerX::PlannerMainLoop()
 		int iDirection = 0;
 		if(bInitPos && m_LocalPlanner.m_TotalOriginalPath.size()>0)
 		{
-//			bool bMakeNewPlan = false;
-//			double drift = hypot(m_LocalPlanner.state.pos.y-m_CurrentPos.pos.y, m_LocalPlanner.state .pos.x-m_CurrentPos.pos.x);
-//			if(drift > 10)
-//				bMakeNewPlan = true;
-
 			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 			m_LocalPlanner.state = m_CurrentPos;
 

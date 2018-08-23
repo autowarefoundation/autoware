@@ -1,9 +1,9 @@
-/*
- * PlannerCommonDef.h
- *
- *  Created on: Dec 14, 2016
- *      Author: hatem
- */
+
+/// \file PlannerCommonDef.h
+/// \brief Definition file for control related data types
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef PLANNERCOMMONDEF_H_
 #define PLANNERCOMMONDEF_H_
@@ -18,7 +18,9 @@ enum MAP_SOURCE_TYPE
 {
 	MAP_AUTOWARE,
 	MAP_FOLDER,
-	MAP_KML_FILE
+	MAP_KML_FILE,
+	MAP_ONE_CSV_FILE,
+	MAP_LANES_CSV_FILES
 };
 
 enum CAR_TYPE
