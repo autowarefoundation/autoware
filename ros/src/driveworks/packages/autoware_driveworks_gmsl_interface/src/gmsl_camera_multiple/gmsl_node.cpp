@@ -47,7 +47,7 @@ void signalHandler(int sig)
 }
 
 // Default device configuration (see DeviceArguments.hpp)
-std::vector<DrivesWork::option_t> options =
+std::vector<DriveWorks::option_t> options =
 {
   // making pair camera config key:value
   std::make_pair("type_ab", "ar0231-rccb"),
@@ -67,7 +67,7 @@ int main(int argc, const char **argv)
 {
 	
   // Create and init device arguments
-  DrivesWork::DeviceArguments CameraArguments(options);   
+  DriveWorks::DeviceArguments CameraArguments(options);   
  
   // Init ros node
   ros::init(argc, (char**)argv, "gmsl_cameras");
@@ -83,8 +83,7 @@ int main(int argc, const char **argv)
   signal(SIGSTOP, signalHandler); // kill command
   
   // Gmsl camera instance run
-  //DrivesWork::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, arguments);
-  DrivesWork::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, CameraArguments);
+  DriveWorks::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, CameraArguments);
 
   // other main thread: waiting for a signal to stop&shutdown 
   while(running & ros::ok())

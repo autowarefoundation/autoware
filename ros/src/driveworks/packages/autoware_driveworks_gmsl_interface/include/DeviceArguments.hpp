@@ -36,7 +36,7 @@
 #include <vector>
 #include <iostream>
 
-namespace DrivesWork
+namespace DriveWorks
 {
 
 typedef std::pair<std::string, std::string> option_t;

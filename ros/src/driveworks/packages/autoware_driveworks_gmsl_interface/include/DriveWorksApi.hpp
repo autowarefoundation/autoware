@@ -29,8 +29,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _DRIVES_WORK_API_H_
-#define _DRIVES_WORK_API_H_
+#ifndef _DRIVE_WORKS_API_H_
+#define _DRIVE_WORKS_API_H_
 
 #include <fstream>
 #include <stdio.h>
@@ -71,7 +71,7 @@
 #include "DeviceArguments.hpp"
 
 
-namespace DrivesWork
+namespace DriveWorks
 {
 
 // Combine by camera sensor
@@ -87,12 +87,12 @@ struct Camera {
 };
 
 
-// Driveswork SDK interface for GMSL Camera
-class DrivesWorkApi
+// Driveworks SDK interface for GMSL Camera
+class DriveWorksApi
 {
 public:
-  DrivesWorkApi(DeviceArguments arguments);
-  ~DrivesWorkApi(); 
+  DriveWorksApi(DeviceArguments arguments);
+  ~DriveWorksApi(); 
  
   void stopCameras(); 
   void grabImages(int port,std::vector<unsigned char*>& data_out, uint32_t& width, uint32_t& height);
@@ -103,7 +103,7 @@ public:
  
 private:
   void startCameras();
-  //Driveswork sdk interface 
+  //Driveworks sdk interface 
   void initSdk(dwContextHandle_t *context);
   void initSAL(dwSALHandle_t *sal, dwContextHandle_t context);
   void initSensors(std::vector<Camera> *cameras,
@@ -136,9 +136,12 @@ private:
   uint32_t g_numCameras;
   uint32_t g_numPort;
   std::vector<uint32_t> g_numCameraPort;
+  const uint32_t px_numPort = 3;           // fixed for px2, don't change
+  const uint32_t px_numCameraPort = 4;     // fixed for px2, don't change
+  const int32_t  px_imagePoolSize = 2;     // fixed for px2, don't change
 	
 	
-  //DrivesWork sdk 
+  //DriveWorks sdk 
   DeviceArguments g_arguments;
   std::vector<std::vector<dwImageNvMedia*>> g_frameRGBAPtr; 
   std::vector<Camera> cameras;

@@ -14,8 +14,4 @@
     <param name="slave" value="0" type="str" />
   </node>
 
-  <!-- live view 
-  <node pkg="rqt_gui" type="rqt_gui" name="rqt_gui_gmsl" />
-  -->
-
 </launch>
