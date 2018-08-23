@@ -6,11 +6,11 @@
     A collection of node(let)s that publish images from one or multiple gmsl cameras
   </description>
 
-  <maintainer email="punnu@parkopedia.com">nvidia</maintainer>
-  <license>GPLv3</license>
+  <maintainer email="punnu@parkopedia.com">Punnu PHAIRATT</maintainer>
+  <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>libglew-dev</build_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend> 
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -20,7 +20,6 @@
   <build_depend>camera_info_manager</build_depend>
   <build_depend>nodelet</build_depend>
 
-  <run_depend>libglew-dev</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>

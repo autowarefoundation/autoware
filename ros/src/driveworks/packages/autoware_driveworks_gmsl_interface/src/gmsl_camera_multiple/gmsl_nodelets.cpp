@@ -37,7 +37,7 @@
 #include "SekonixGmslCamera.hpp"
 
 // Default device options
-std::vector<DrivesWork::option_t> options =
+std::vector<DriveWorks::option_t> options =
 {
   // making pair camera config key:value
   std::make_pair("type_ab", "ar0231-rccb"),
@@ -50,7 +50,7 @@ std::vector<DrivesWork::option_t> options =
 };
 
 // Device arguments
-DrivesWork::DeviceArguments CameraArguments(options);
+DriveWorks::DeviceArguments CameraArguments(options);
 
 namespace gmsl_camera
 {
@@ -90,12 +90,12 @@ namespace gmsl_camera
 				ros::NodeHandle node  = getNodeHandle();
 				ros::NodeHandle pnode = getPrivateNodeHandle();
 				// spawn device thread when create this instance
-				camera = new DrivesWork::SekonixGmslCamera(node, pnode, CameraArguments);
+				camera = new DriveWorks::SekonixGmslCamera(node, pnode, CameraArguments);
 				running = true;
 			}
 			
 	  private:
-	    DrivesWork::SekonixGmslCamera *camera;
+	    DriveWorks::SekonixGmslCamera *camera;
 	    volatile bool running;
 			
 	};

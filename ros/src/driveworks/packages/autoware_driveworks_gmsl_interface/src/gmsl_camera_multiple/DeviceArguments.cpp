@@ -31,7 +31,7 @@
 #include "DeviceArguments.hpp"
 
 
-namespace DrivesWork
+namespace DriveWorks
 {
 
 //Constructor

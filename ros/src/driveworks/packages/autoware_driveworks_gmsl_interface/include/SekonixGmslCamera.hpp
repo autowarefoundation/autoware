@@ -65,11 +65,11 @@
 #include "cv_connection.hpp"
 
 // Camera driver api 
-#include "DrivesWorkApi.hpp"
+#include "DriveWorksApi.hpp"
 
 
 
-namespace DrivesWork
+namespace DriveWorks
 {
 
 // This class is running multiple threads to acquire images from gmsl cameras connected on PX2 
@@ -111,7 +111,7 @@ private:
 private:
   ros::NodeHandle node;                                           // Global ns
   ros::NodeHandle pnode;                                          // Private ns
-  DrivesWorkApi *gmsl_cam;                                        // GMSL camera instance
+  DriveWorksApi *gmsl_cam;                                        // GMSL camera instance
   std::vector<std::thread> camThreads;                            // Camera polling threads
   std::vector<bool> camThreadsActive;                             // State of camera threads
   int pub_width;                                                  // Image publishing width 
@@ -123,7 +123,7 @@ private:
 
 };//SekonixGmslCamera class
   	
-};//DrivesWork ns
+};//DriveWorks ns
 
 	
 
