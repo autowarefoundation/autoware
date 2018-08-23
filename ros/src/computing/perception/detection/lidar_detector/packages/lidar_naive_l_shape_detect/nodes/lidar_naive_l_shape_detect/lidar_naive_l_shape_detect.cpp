@@ -30,6 +30,7 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <random>
+#include <limits>
 
 #include <tf/transform_datatypes.h>
 
@@ -64,7 +65,7 @@ void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_object_array_.publish(out_objects);
 }
 
-void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_points,
+void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_frame_points,
                                       const cv::Point& offset_point)
 {
   // loop 4 rect points
@@ -84,17 +85,17 @@ void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[], std::ve
     // reverse from (0 < x,y < roi_m_) to (roi_m_/2 < x,y < roi_m_/2)
     cv::Point2f offset_vec_(roi_m_ / 2, roi_m_ / 2);
     cv::Point2f pointcloud_point = offset_pointcloud_point - offset_vec_;
-    pointcloud_points[point_i] = pointcloud_point;
+    pointcloud_frame_points[point_i] = pointcloud_point;
   }
 }
 
-void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_points,
+void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points,
                                       autoware_msgs::DetectedObject& output)
 {
-  cv::Point2f p1 = pointcloud_points[0];
-  cv::Point2f p2 = pointcloud_points[1];
-  cv::Point2f p3 = pointcloud_points[2];
-  cv::Point2f p4 = pointcloud_points[3];
+  cv::Point2f p1 = pointcloud_frame_points[0];
+  cv::Point2f p2 = pointcloud_frame_points[1];
+  cv::Point2f p3 = pointcloud_frame_points[2];
+  cv::Point2f p4 = pointcloud_frame_points[3];
 
   double s1 = ((p4.x - p2.x) * (p1.y - p2.y) - (p4.y - p2.y) * (p1.x - p2.x)) / 2;
   double s2 = ((p4.x - p2.x) * (p2.y - p3.y) - (p4.y - p2.y) * (p2.x - p3.x)) / 2;
@@ -106,11 +107,11 @@ void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud
   output.pose.position.z = -sensor_height_ / 2;
 }
 
-void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points)
+void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_points)
 {
-  cv::Point2f p1 = pointcloud_points[0];
-  cv::Point2f p2 = pointcloud_points[1];
-  cv::Point2f p3 = pointcloud_points[2];
+  cv::Point2f p1 = pointcloud_frame_points[0];
+  cv::Point2f p2 = pointcloud_frame_points[1];
+  cv::Point2f p3 = pointcloud_frame_points[2];
 
   cv::Point2f vec1(p2.x - p1.x, p2.y - p1.y);
   cv::Point2f vec2(p3.x - p2.x, p3.y - p2.y);
@@ -133,20 +134,20 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_points)
     double delta_x = x - p2.x;
     double delta_y = y - p2.y;
 
-    pointcloud_points[2].x = x;
-    pointcloud_points[2].y = y;
-    pointcloud_points[3].x = pointcloud_points[0].x + delta_x;
-    pointcloud_points[3].y = pointcloud_points[0].y + delta_y;
+    pointcloud_frame_points[2].x = x;
+    pointcloud_frame_points[2].y = y;
+    pointcloud_frame_points[3].x = pointcloud_frame_points[0].x + delta_x;
+    pointcloud_frame_points[3].y = pointcloud_frame_points[0].y + delta_y;
   }
 }
 
-void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pointcloud_points,
+void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pointcloud_frame_points,
                                                     autoware_msgs::DetectedObject& object)
 {
   // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
-  cv::Point2f p1 = pointcloud_points[0];
-  cv::Point2f p2 = pointcloud_points[1];
-  cv::Point2f p3 = pointcloud_points[2];
+  cv::Point2f p1 = pointcloud_frame_points[0];
+  cv::Point2f p2 = pointcloud_frame_points[1];
+  cv::Point2f p3 = pointcloud_frame_points[2];
 
   cv::Point2f vec1 = p1 - p2;
   cv::Point2f vec2 = p3 - p2;
@@ -209,18 +210,18 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
 
     int num_points = cloud.size();
     std::vector<cv::Point> point_vec(num_points);
-    std::vector<cv::Point2f> pointcloud_points(4);
+    std::vector<cv::Point2f> pointcloud_frame_points(4);
 
     // init variables
     cv::Point2f min_m_p(0,0);
     cv::Point2f max_m_p(0,0);
     float min_m = std::numeric_limits<float>::max();
-    float max_m = std::numeric_limits<float>::min();
+    float max_m = std::numeric_limits<float>::lowest();
 
     for (int i_point = 0; i_point < num_points; i_point++)
     {
-      float p_x = cloud[i_point].x;
-      float p_y = cloud[i_point].y;
+      const float p_x = cloud[i_point].x;
+      const float p_y = cloud[i_point].y;
 
       // cast (roi_m_/2 < x,y < roi_m_/2) into (0 < x,y < roi_m_)
       cv::Point2f pointcloud_point(p_x, p_y);
@@ -253,6 +254,7 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
         min_m_p.y = p_y;
       }
 
+
       if (delta_m > max_m)
       {
         max_m = delta_m;
@@ -260,8 +262,7 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
         max_m_p.y = p_y;
       }
     }
-
-    if (max_m == std::numeric_limits<float>::min() || min_m == std::numeric_limits<float>::max())
+    if (max_m == std::numeric_limits<float>::lowest() || min_m == std::numeric_limits<float>::max())
     {
       continue;
     }
@@ -302,10 +303,10 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       cv::Point2f min_m_vec = min_m_p - max_p;
       cv::Point2f last_p    = max_p + max_m_vec + min_m_vec;
 
-      pointcloud_points[0] = min_m_p;
-      pointcloud_points[1] = max_p;
-      pointcloud_points[2] = max_m_p;
-      pointcloud_points[3] = last_p;
+      pointcloud_frame_points[0] = min_m_p;
+      pointcloud_frame_points[1] = max_p;
+      pointcloud_frame_points[2] = max_m_p;
+      pointcloud_frame_points[3] = last_p;
     }
     else
     {
@@ -314,20 +315,20 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       cv::Point2f rect_points[4];
       rect_info.points(rect_points);
       // covert points back to lidar coordinate
-      getPointsInPointcloudFrame(rect_points, pointcloud_points, offset_init_pic_point);
+      getPointsInPointcloudFrame(rect_points, pointcloud_frame_points, offset_init_pic_point);
     }
 
     autoware_msgs::DetectedObject output_object;
     output_object = in_object;
 
     // update output_object pose
-    updateCpFromPoints(pointcloud_points, output_object);
+    updateCpFromPoints(pointcloud_frame_points, output_object);
 
-    // update pointcloud_points to make it right angle bbox
-    toRightAngleBBox(pointcloud_points);
+    // update pointcloud_frame_points to make it right angle bbox
+    toRightAngleBBox(pointcloud_frame_points);
 
     // update output_object dimensions
-    updateDimentionAndEstimatedAngle(pointcloud_points, output_object);
+    updateDimentionAndEstimatedAngle(pointcloud_frame_points, output_object);
 
     out_object_array.objects.push_back(output_object);
   }
