@@ -118,7 +118,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_p
   double theta = acos(cos_theta);
   double diff_theta = theta - M_PI / 2;
 
-  if (abs(diff_theta) > 0.1)
+  if (std::abs(diff_theta) > 0.1)
   {
     double m1 = vec1.y / vec1.x;
     double b1 = p3.y - m1 * p3.x;
