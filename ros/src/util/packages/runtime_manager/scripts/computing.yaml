@@ -549,35 +549,86 @@ subs :
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
         param: astar_navi
-    - name : way_planner (OpenPlanner)
+#    - name : way_planner (OpenPlanner - old ver)
+#      desc : Global planner for OpenPlanner
+#      subs :
+#      - name : way_planner
+#        desc : for global planning
+#        cmd  : roslaunch way_planner way_planner.launch
+#        param: way_planner
+    - name : OpenPlanner - Global Planning
       desc : Global planner for OpenPlanner
       subs :
-      - name : way_planner
-        desc : for global planning
-        cmd  : roslaunch way_planner way_planner.launch
-        param: way_planner
+      - name : op_global_planner
+        desc : global planner node from OpenPlanner
+        cmd  : roslaunch op_global_planner op_global_planner.launch
+        param: op_global_planner
+
 
   - name : Motion Planning
     desc : Motion Planning desc sample
     subs :
-    - name : dp_planner (OpenPlanner) (old ver)
-      desc : Local Planner for OpenPlanner
-      subs :
-      - name : dp_planner
-        desc : for behavior and path planning
-        cmd  : roslaunch dp_planner dp_planner.launch
-        param: dp_planner
-      - name : ff_waypoint_follower
-        desc : Feedforward PID waypoint follower
-        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
-        param: ff_waypoint_follower
+#    - name : dp_planner (OpenPlanner - old ver)
+#      desc : Local Planner for OpenPlanner
+#      subs :
+#      - name : dp_planner
+#        desc : for behavior and path planning
+#        cmd  : roslaunch dp_planner dp_planner.launch
+#        param: dp_planner
+#      - name : ff_waypoint_follower
+#        desc : Feedforward PID waypoint follower
+#        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
+#        param: ff_waypoint_follower
     - name : OpenPlanner - Local planning
       desc : Local Planner for OpenPlanner
       subs :
+      - name : op_common_params
+        desc : load common local planning parameters
+        cmd  : roslaunch op_local_planner op_common_params.launch
+        param: op_common_params
       - name : op_trajectory_generator
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
         param: op_trajectory_generator
+      - name : op_motion_predictor
+        desc : predict behavior and trajectories for moving vehicles
+        cmd  : roslaunch op_local_planner op_motion_predictor.launch
+        param: op_motion_predictor
+      - name : op_trajectory_evaluator
+        desc : evaluate candidate rollout trajectory against the tracked obstacles
+        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
+        param: op_trajectory_evaluator
+      - name : op_behavior_selector
+        desc : Decision making by selecting best behavior for local planner 
+        cmd  : roslaunch op_local_planner op_behavior_selector.launch
+
+    - name : OpenPlanner - Utilities
+      desc : Testing UI, Loggers , ..
+      subs :
+      - name : op_pose2tf
+        desc : Publish transformation from ndt_pose read from rosbag file 
+        cmd  : roslaunch op_utilities op_pose2tf.launch
+        param: op_pose2tf
+      - name : op_bag_player
+        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
+        cmd  : roslaunch op_utilities op_bag_player.launch
+        param: op_bag_player
+    - name : OpenPlanner - Simulator
+      desc : Car, Signs, Detection Simulation for OpenPlanner Test
+      subs :
+      - name : op_perception_simulator
+        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
+        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
+        param: op_perception_simulator
+      - name : op_signs_simulator
+        desc : Simulate traffic Signs status for intersections included in the map
+        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
+        param: op_signs_simulator
+      - name : op_car_simulator
+        desc : Simulate a car using OpenPlanner 
+        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
+        param: op_car_simulator
+
 
     - name : astar_planner
       desc : astar_planner desc sample
@@ -1117,38 +1168,11 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : vehicle_width
-      desc : Ego vehicle width
-      label: Vehicle Width
-      min  : 0
-      max  : 4
-      v    : 1.8
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : vehicle_length
-      desc : Ego vehicle Length
-      label: Vehicle Length
-      min  : 0
-      max  : 20
-      v    : 4.2
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : horizon
-      desc : Tracking horizon
-      label: Tracking Horizon
-      min  : 0
-      max  : 200
-      v    : 120
-      cmd_param:
-        dash     : ''
-        delim    : ':='
     - name : min_object_size
       desc : Minimum Object Size Filter
       label: Min Obj Size
       min  : 0
-      max  : 1.0
+      max  : 2.0
       v    : 0.1
       cmd_param:
         dash     : ''
@@ -1156,9 +1180,35 @@ params :
     - name : max_object_size
       desc : Maximum Object Size Filter
       label: Max Obj Size
-      min  : 0
-      max  : 40
-      v    : 20
+      min  : 0.0
+      max  : 100.0
+      v    : 10
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : vector_map_filter_distance
+      desc : Filtering distance from object to vector map center line if available
+      label: Vector Map Filter Distance
+      min  : 0.0
+      max  : 20.0
+      v    : 2.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLogging
+      desc : Enable Writ csv of internal tracking state 
+      label: Enable CSV Logs
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : splitter_topic
+      desc : splitter topic
+      label: Advanced Params -----------------------------------------------------------------
+      min  : 1
+      max  : 1
+      v    : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1175,8 +1225,8 @@ params :
       desc : Object Polygon Contour resolution
       label: Polygon Resolution
       min  : 0.25
-      max  : 5
-      v    : 1
+      max  : 5.0
+      v    : 0.5
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1184,8 +1234,8 @@ params :
       desc : Maximum Distance for associating two objects
       label: Association Distance
       min  : 0.5
-      max  : 10
-      v    : 4
+      max  : 10.0
+      v    : 3
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1193,8 +1243,8 @@ params :
       desc : Maximum Distance difference between object to match
       label: Association Size Difference
       min  : 0.0
-      max  : 5.0
-      v    : 1.5
+      max  : 30.0
+      v    : 2.5
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1212,16 +1262,23 @@ params :
       label: Trust Appearance Number
       min  : 1
       max  : 15
-      v    : 4
+      v    : 5
       cmd_param:
         dash     : ''
         delim    : ':='
-    - name : contours_circle_resolutions
-      desc : Contour minimum circle size
-      label: Contour Resolution
-      min  : 1.0
-      max  : 10
-      v    : 4.0
+    - name : enableSimulationMode
+      desc : Enable Representing Ego vehicle and simulated vehicles by special IDs
+      label: Enable OpenPlanner Perception Simulation
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStepByStepMode
+      desc : Enable Step by Step Tracking Test
+      label: Enable Step by Step Test
+      kind : checkbox
+      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2577,6 +2634,67 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
+  - name  : op_global_planner
+    vars  :
+    - name : enableLaneChange
+      desc : global plan extended by lane changes
+      label: Lane Changing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableReplan
+      desc : infinite replanning to multiple goals including the start position
+      label: Replanning
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSmoothing
+      desc : smooth and fix global path
+      label: Smoothing
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableRvizInput
+      desc : Enable Destination selection by Rviz or from Log file
+      label: Rviz Goals
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash   : ''
+        delim  : ':='
+
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.01
+      max  : 5.0
+      v    : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
   - name  : dp_planner
     vars  :
     - name : enabTrajectoryVelocities
@@ -2798,6 +2916,7 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+
   - name  : ff_waypoint_follower
     vars  :
     - name : maxVelocity
@@ -2865,21 +2984,460 @@ params :
       - Robot
       descs :
       - Simulation Mode
-      - Vehicle
+      - ZMP Vehicle
       - Autoware Other Nodes
       - Smaller Robot
       v   : 0
       cmd_param:
         dash     : ''
         delim    : ':='
+  - name  : op_common_params
+    vars  :
+
+    - name : horizonDistance
+      desc : Horizon distance
+      label: Horizon
+      min : 1.0
+      max : 250.0
+      v   : 120.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxLocalPlanDistance
+      desc : max length of the local plan
+      label: Plan Ditance
+      min  : 0.5
+      max  : 150.0
+      v    : 80.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : pathDensity
+      desc : distance between each two waypoints
+      label: Path Density
+      min  : 0.01
+      max  : 5.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutDensity
+      desc : Roll outs density
+      label: Horizontal Density
+      min  : 0.01
+      max  : 5.0
+      v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : rollOutsNumber
+      desc : Number of roll outs
+      label: Rollouts Number
+      min  : 0
+      max  : 20
+      v    : 4
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxVelocity
+      desc : maximum allowed velocity in meter/second
+      label: Max Velocity
+      min  : -1.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxAcceleration
+      desc : Maximum acceleration allowed 
+      label: Acceleration
+      min  : 0.01
+      max  : 25.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDeceleration
+      desc : Maximum deceleration
+      label: Deceleration
+      min  : -25.0
+      max  : -0.01
+      v    : -3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car
+      label: Follow Distance
+      min  : 0.5
+      max  : 100.0
+      v    : 30.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minDistanceToAvoid
+      desc : Avoidance and Following threshold Distance
+      label: Avoiding Distance
+      min  : 0.1
+      max  : 80.0
+      v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
+      min  : 0.05
+      max  : 60.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableTrafficLightBehavior
+      desc : Enable traffic light check
+      label: Enable Traffic Light
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLaneChange
+      desc : Enable Lane Change
+      label: Enable Lane Change
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.0
+      max : 10.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.0
+      max : 25.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : velocitySource
+      desc : Select vehicle velocities source
+      label: Velocities Source
+      kind : radio_box
+      choices:
+      - Odometry
+      - Autoware
+      - Car Info
+      descs :
+      - Odometry Standard Message
+      - Autoware's current_velocities
+      - From Sockets Car Info
+      v   : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : op_trajectory_generator
     vars  :
+    - name : samplingTipMargin
+      desc : Car Tip Initial Margin
+      label: Tip Margin
+      min  : 0.1
+      max  : 10.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : samplingOutMargin
+      desc : Roll In Margin
+      label: Roll In Margin
+      min  : 0.2
+      max  : 40.0
+      v    : 12.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_motion_predictor
+    vars  :
+    - name : enableCurbObstacles
+      desc : Enable using curb from map as obstacles 
+      label: Detect curbs from map
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableGenrateBranches
+      desc : to predict branching outside road network map
+      label: Enable Branching
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : max_distance_to_lane
+      desc : Distance to closest lane
+      label: Distance to closest lane
+      min  : 0.0
+      max  : 10.0
+      v    : 2.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : prediction_distance
+      desc : Max trajectory prediction distance
+      label: Prediction distance
+      min  : 1.0
+      max  : 75.0
+      v    : 25.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStepByStepSignal
+      desc : Enable Step by Step Prediction Test
+      label: Enable Step by Step Test
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableParticleFilterPrediction
+      desc : Use Particle Filter based trajectory predictor
+      label: Enable Particle Filter prediction
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_trajectory_evaluator
+    vars  :
+    - name : enablePrediction
+      desc : treat all obstacles as dynamic or as static 
+      label: Enable Prediction
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_pose2tf
+    vars  :
+    - name : pose_topic
+      desc : position topic name in rosbag file
+      label: Pose Topic
+      kind : str
+      v    : '/ndt_pose'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_bag_player
+    vars  :
+    - name : rosbag_file
+      desc : path to localization ready rosbag file
+      label: Rosbag Path
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
+  - name  : op_perception_simulator
+    vars  :
+    - name : simObjNumber
+      desc : Max Number of simulated objects
+      label: Simulated Objects Number
+      min  : 1
+      max  : 5
+      v    : 5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : GuassianErrorFactor
+      desc : Noise factor added to simulated car position
+      label: Guassian error factor
+      min  : 0.0
+      max  : 5.0
+      v    : 0.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_signs_simulator
+    vars  :
+    - name : first_signs_list_ids
+      desc : First Traffic Light Ids
+      label: First Light Ids
+      kind : str
+      v    : ',9,10,'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : first_green_time
+      desc : Time for 1st Traffic Light
+      label: First Light Timer
+      min  : 1
+      max  : 100
+      v    : 10
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : first_yellow_time
+      desc : Time for 1st Yellow Traffic Light
+      label: First Yellow Light Timer
+      min  : 1
+      max  : 20
+      v    : 5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : second_signs_list_ids
+      desc : Second Traffic Light Ids
+      label: Second Light Ids
+      kind : str
+      v    : ',7,8,'
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : second_green_time
+      desc : Time for 2nd Traffic Light
+      label: Second Light Timer
+      min  : 1
+      max  : 100
+      v    : 10
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : second_yellow_time
+      desc : Time for 2nd Yellow Traffic Light
+      label: Second Yellow Light Timer
+      min  : 1
+      max  : 20
+      v    : 5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+  - name  : op_car_simulator
+    vars  :
+    - name : enableRvizPoseSelect
+      desc : Select Start and Goal posistions from rviz
+      label: Rviz Start-Goal
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLooper
+      desc : Restart car after reaching the goal
+      label: Auto restart
+      kind : checkbox
+      v    : false
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : logFolder
+      desc : Folder for simulation data logging 
+      label: Log Folder
+      kind : path
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableCurbObstacles
+      desc : Detect curbs from Map
+      label: Detect Curbs
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableFollowing
+      desc : Enable stop and follow obstacles
+      label: Enable Following
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSwerving
+      desc : Enable avoidance inside the lane
+      label: Enable Avoidance
+      kind : checkbox
+      v    : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name : pathDensity
       desc : distance between each two waypoints
       label: Path Density
       min  : 0.1
       max  : 3.0
       v    : 0.5
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxVelocity
+      desc : maximum allowed velocity in meter/second
+      label: Max Velocity
+      min  : -1.0
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxAcceleration
+      desc : maximum allowed acceleration meter/second second
+      label: Max Acceleration
+      min  : 0.1
+      max  : 20.0
+      v    : 3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDeceleration
+      desc : maximum allowed deceleration in meter/second second
+      label: Max Deceleration
+      min  : -20.0
+      max  : -0.1
+      v    : -3.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxLocalPlanDistance
+      desc : max length of the local plan
+      label: Plan Ditance
+      min  : 10.0
+      max  : 150.0
+      v    : 60.0
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -2919,6 +3477,92 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name : minFollowingDistance
+      desc : Distance to start follow Next Car
+      label: Follow Distance
+      min  : 10.0
+      max  : 50.0
+      v    : 30.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : minDistanceToAvoid
+      desc : Avoidance and Following threshold Distance
+      label: Avoiding Distance
+      min  : 6.0
+      max  : 30.0
+      v    : 15.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : maxDistanceToAvoid
+      desc : Distance to give up avoidance
+      label: Avoidance Limit
+      min  : 1.0
+      max  : 6.0
+      v    : 4.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStopSignBehavior
+      desc : Enable stop sign check
+      label: Enable Stop Sign Stop
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableTrafficLightBehavior
+      desc : Enable traffic light check
+      label: Enable Traffic Light
+      kind : checkbox
+      v    : TRUE
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableLaneChange
+      desc : Enable Lane Change
+      label: Enable Lane Change
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : horizontalSafetyDistance
+      desc : Horizontal Safety Distance
+      label: Lateral Safety
+      min : 0.2
+      max : 2.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : verticalSafetyDistance
+      desc : Vertical Safety Distance
+      label: Longitudinal Safety
+      min : 0.5
+      max : 4.0
+      v   : 1.0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableStepByStepSignal
+      desc : Enable Step by Step simulation motion (Testing App Required)
+      label: Enable Frame by Frame
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : enableSimulatedVelodyne
+      desc : Enable broadcasting velodyne point cloud and TF from simulated car base_link
+      label: Enable Dynamic Map Test
+      kind : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+
   - name  : waypoint_saver
     vars  :
     - name      : save_filename
