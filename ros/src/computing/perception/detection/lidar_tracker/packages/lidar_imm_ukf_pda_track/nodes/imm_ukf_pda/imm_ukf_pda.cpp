@@ -490,7 +490,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
     }
     else if (target.tracking_num_ == TrackingState::Lost)
     {
-      std::cout << target.ukf_id_ <<" target die though found meas in the lost state" << std::endl;
+      // std::cout << target.ukf_id_ <<" target die though found meas in the lost state" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
   }
@@ -498,7 +498,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
   {
     if (target.tracking_num_ < TrackingState::Stable)
     {
-      std::cout << target.ukf_id_ <<" target lost because of lost before stable" << std::endl;
+      // std::cout << target.ukf_id_ <<" target lost because of lost before stable" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
     else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
@@ -507,7 +507,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
     }
     else if (target.tracking_num_ == TrackingState::Lost)
     {
-      std::cout << target.ukf_id_ <<" target lost after lost state" << std::endl;
+      // std::cout << target.ukf_id_ <<" target lost after lost state" << std::endl;
       target.tracking_num_ = TrackingState::Die;
     }
   }
@@ -546,7 +546,7 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     // std::cout << "x cv " << std::endl << target.x_cv_ << std::endl;
     // std::cout << "x ctrv " << std::endl << target.x_ctrv_ << std::endl;
     // std::cout << "x rm " << std::endl << target.x_rm_ << std::endl;
-    std::cout << target.ukf_id_ <<" target lost because of det explode" << std::endl;
+    // std::cout << target.ukf_id_ <<" target lost because of det explode" << std::endl;
     target.tracking_num_ = TrackingState::Die;
     is_skip_target = true;
     return;
@@ -886,8 +886,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     // prevent ukf not to explode
     if (targets_[i].p_merge_.determinant() > det_explode_param || targets_[i].p_merge_(4, 4) > cov_explode_param)
     {
-      std::cout << targets_[i].ukf_id_<<" target lost because of explosion " << std::endl;
-      std::cout << "det " << targets_[i].p_merge_.determinant()<< "cov yaw rate "<< targets_[i].p_merge_(4, 4) << std::endl;
+      // std::cout << targets_[i].ukf_id_<<" target lost because of explosion " << std::endl;
+      // std::cout << "det " << targets_[i].p_merge_.determinant()<< "cov yaw rate "<< targets_[i].p_merge_(4, 4) << std::endl;
       targets_[i].tracking_num_ = TrackingState::Die;
       continue;
     }

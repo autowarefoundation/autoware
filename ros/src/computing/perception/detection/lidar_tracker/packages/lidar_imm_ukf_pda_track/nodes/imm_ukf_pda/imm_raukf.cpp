@@ -678,42 +678,42 @@ void IMM_RAUKF::updateEachMotion(const double detection_probability, const doubl
      p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 ||
      p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0)
      {
-       std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << std::endl <<" mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
-       std::cout << "lifetime " << lifetime_ << std::endl;
-       std::cout << " innovation det " << s_cv_.determinant() << " " << s_ctrv_.determinant() << " " << s_rm_.determinant() << std::endl;
-       std::cout << " lambda " << lambda_cv << " " << lambda_ctrv << " " << lambda_rm << std::endl;
+       // std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << std::endl <<" mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
+       // std::cout << "lifetime " << lifetime_ << std::endl;
+       // std::cout << " innovation det " << s_cv_.determinant() << " " << s_ctrv_.determinant() << " " << s_rm_.determinant() << std::endl;
+       // std::cout << " lambda " << lambda_cv << " " << lambda_ctrv << " " << lambda_rm << std::endl;
        exit(EXIT_FAILURE);
      }
 
   if(p_cv_(0,0) < 0 || p_cv_(1,1) < 0 ||p_cv_(2,2) < 0 ||p_cv_(3,3) < 0 ||p_cv_(4,4) < 0 )
   {
     ROS_ERROR("ukf id: %d Poorly made covariance p_cv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
-    std::cout << " beta cv zero  " << beta_cv_zero << std::endl;
-    std::cout << " x cv " << std::endl << x_cv_ << std::endl;
-    std::cout << " p cv" << std::endl << p_cv_ << std::endl;
-    std::cout << " second factor " << std::endl << (p_pre_cv   - k_cv_   * s_cv_   * k_cv_.transpose()) << std::endl;
-    std::cout << "third factor " << std::endl << k_cv_   * sigma_p_cv   * k_cv_.transpose() << std::endl;
-    std::cout << "sigma p cv " << std::endl << sigma_p_cv<< std::endl;
+    // std::cout << " beta cv zero  " << beta_cv_zero << std::endl;
+    // std::cout << " x cv " << std::endl << x_cv_ << std::endl;
+    // std::cout << " p cv" << std::endl << p_cv_ << std::endl;
+    // std::cout << " second factor " << std::endl << (p_pre_cv   - k_cv_   * s_cv_   * k_cv_.transpose()) << std::endl;
+    // std::cout << "third factor " << std::endl << k_cv_   * sigma_p_cv   * k_cv_.transpose() << std::endl;
+    // std::cout << "sigma p cv " << std::endl << sigma_p_cv<< std::endl;
   }
   if(p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 )
   {
     ROS_ERROR("ukf id: %d Poorly made covariance p_ctrv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
-    std::cout << " beta ctrv zero  " << beta_ctrv_zero << std::endl;
-    std::cout << " x ctrv" << std::endl << x_ctrv_ << std::endl;
-    std::cout << " p ctrv" << std::endl << p_ctrv_ << std::endl;
-    std::cout << " second factor " << std::endl << (p_pre_ctrv   - k_ctrv_   * s_ctrv_   * k_ctrv_.transpose()) << std::endl;
-    std::cout << "third factor " << std::endl << k_ctrv_   * sigma_p_ctrv   * k_ctrv_.transpose() << std::endl;
-    std::cout << "sigma p ctrv " << std::endl << sigma_p_ctrv<< std::endl;
+    // std::cout << " beta ctrv zero  " << beta_ctrv_zero << std::endl;
+    // std::cout << " x ctrv" << std::endl << x_ctrv_ << std::endl;
+    // std::cout << " p ctrv" << std::endl << p_ctrv_ << std::endl;
+    // std::cout << " second factor " << std::endl << (p_pre_ctrv   - k_ctrv_   * s_ctrv_   * k_ctrv_.transpose()) << std::endl;
+    // std::cout << "third factor " << std::endl << k_ctrv_   * sigma_p_ctrv   * k_ctrv_.transpose() << std::endl;
+    // std::cout << "sigma p ctrv " << std::endl << sigma_p_ctrv<< std::endl;
 
   }
   if(p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0 )
   {
-    std::cout << " beta rm zero  " << beta_cv_zero << std::endl;
-    std::cout << " x rm" << std::endl << x_rm_ << std::endl;
-    std::cout << " p rm" << std::endl << p_rm_ << std::endl;
-    std::cout << " second factor " << std::endl << (p_pre_rm   - k_rm_   * s_rm_   * k_rm_.transpose()) << std::endl;
-    std::cout << "third factor " << std::endl << k_rm_   * sigma_p_rm   * k_rm_.transpose() << std::endl;
-    std::cout << "sigma p rm " << std::endl << sigma_p_rm<< std::endl;
+    // std::cout << " beta rm zero  " << beta_cv_zero << std::endl;
+    // std::cout << " x rm" << std::endl << x_rm_ << std::endl;
+    // std::cout << " p rm" << std::endl << p_rm_ << std::endl;
+    // std::cout << " second factor " << std::endl << (p_pre_rm   - k_rm_   * s_rm_   * k_rm_.transpose()) << std::endl;
+    // std::cout << "third factor " << std::endl << k_rm_   * sigma_p_rm   * k_rm_.transpose() << std::endl;
+    // std::cout << "sigma p rm " << std::endl << sigma_p_rm<< std::endl;
     ROS_ERROR("ukf id: %d Poorly made covariance p_rm_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
   }
 }
@@ -1046,8 +1046,8 @@ void IMM_RAUKF::estimationUpdate(const int model_ind)
   // std::cout <<"kalman gain "<< std::endl <<kalman_gain << std::endl;
   // std::cout <<"cross covariance " << std::endl << cross_covariance << std::endl;
   x = x + kalman_gain*(z - z_pred);
-  std::cout <<"corrected r "<< std::endl <<r << std::endl;
-  std::cout <<"corrected q "<< std::endl <<q << std::endl;
+  // std::cout <<"corrected r "<< std::endl <<r << std::endl;
+  // std::cout <<"corrected q "<< std::endl <<q << std::endl;
   // std::cout <<"before p "<< std::endl <<p << std::endl;
   // std::cout <<"innovation cov "<< std::endl <<innovation_covariance << std::endl;
   p = p - kalman_gain*innovation_covariance*kalman_gain.transpose();
@@ -1105,7 +1105,7 @@ void IMM_RAUKF::robustAdaptiveFilter(const bool use_sukf)
       {
         continue;
       }
-      std::cout << "ukf id "<< ukf_id_ << "running ra filter " << std::endl;
+      // std::cout << "ukf id "<< ukf_id_ << "running ra filter " << std::endl;
       adaptiveAdjustmentQ(model_ind);
       adaptiveAdjustmentR(model_ind);
       estimationUpdate(model_ind);
@@ -1144,11 +1144,11 @@ void IMM_RAUKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& obj
 {
   if(object_vec.size() == 0)
   {
-    std::cout << "no update for this frame since there are no associated mesurements" << std::endl;
+    // std::cout << "no update for this frame since there are no associated mesurements" << std::endl;
     return;
   }
 
-  // get most likely measurement ctrv_meas_
+  // update with most likely measurement ctrv_meas_
   updateLikelyMeasurementForCTRV(object_vec);
 
   Eigen::VectorXd z = Eigen::VectorXd(2);
@@ -1170,8 +1170,8 @@ void IMM_RAUKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& obj
   if(p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0)
      // p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0)
      {
-       std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << " mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
-       std::cout << "lifetime " << lifetime_ << std::endl;
+       // std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << " mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
+       // std::cout << "lifetime " << lifetime_ << std::endl;
        exit(EXIT_FAILURE);
      }
 
@@ -1285,10 +1285,10 @@ void IMM_RAUKF::initCovarQs(const double dt, const double yaw)
   double dt_2 = dt*dt;
   double dt_3 = dt_2*dt;
   double dt_4 = dt_3*dt;
-  double cos_yaw = cos(yaw);
-  double sin_yaw = sin(yaw);
-  double cos_2_yaw = cos(yaw) * cos(yaw);
-  double sin_2_yaw = sin(yaw) * sin(yaw);
+  double cos_yaw = std::cos(yaw);
+  double sin_yaw = std::sin(yaw);
+  double cos_2_yaw = std::cos(yaw) * std::cos(yaw);
+  double sin_2_yaw = std::sin(yaw) * std::sin(yaw);
   double cos_sin = cos_yaw * sin_yaw;
 
   double cv_var_a       = std_a_cv_ * std_a_cv_;

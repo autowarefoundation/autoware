@@ -3,7 +3,7 @@
 
 #include "imm_raukf.h"
 
-TEST(ImmRaukf, initialize)
+TEST(ImmRaukf, initializeProperly)
 {
   double px        = 0.7;
   double py        = 10.9;
@@ -13,19 +13,26 @@ TEST(ImmRaukf, initialize)
   init_meas << px, py;
   IMM_RAUKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
-  EXPECT_EQ( 0.7, ukf.x_merge_(0));
-  EXPECT_EQ(10.9, ukf.z_pred_cv_(1));
+  EXPECT_DOUBLE_EQ( 0.7, ukf.x_merge_(0));
+  EXPECT_DOUBLE_EQ(10.9, ukf.z_pred_cv_(1));
 }
 
-TEST(ImmRaukf, initCovarQs)
+TEST(ImmRaukf, initializeCovarianceQProperly)
 {
   IMM_RAUKF ukf;
-  double dt  = 1.25;
-  double yaw = 0.35;
+  double dt  = 0.1;
+  double yaw = 0;
   ukf.initCovarQs(dt, yaw);
-  // EXPECT_EQ( 0.7, ukf.q_cv_(0,0));
-  std::cout << "q_cv_ "<<ukf.q_cv_(0,0) << std::endl;
-  // EXPECT_EQ(10.9, ukf.z_pred_cv_(1));
+  EXPECT_NEAR(6.920451055917801e-310, ukf.q_cv_(0,0), 0.00001);
+}
+
+TEST(ImmRaukf, checkCTRV)
+{
+  IMM_RAUKF ukf;
+  double dt  = 0.1;
+  double yaw = 0;
+  ukf.initCovarQs(dt, yaw);
+  EXPECT_NEAR(6.920451055917801e-310, ukf.q_cv_(0,0), 0.00001);
 }
 
 
