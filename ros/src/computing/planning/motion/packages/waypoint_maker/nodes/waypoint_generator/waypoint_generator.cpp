@@ -33,15 +33,14 @@
 namespace waypoint_maker
 {
 
-WaypointGenerator::WaypointGenerator() : private_nh_("~")
+WaypointGenerator::WaypointGenerator() : private_nh_("~"), pose_ok_(false)
 {
-	int queue;
-	private_nh_.param<int>("sub_vmap_queue_size", queue, 1);
 	private_nh_.param<int>("waypoint_max", waypoint_max_, 100);
 	larray_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
-	vmap_point_sub_ = nh_.subscribe("/vector_map_info/point", queue, &WaypointGenerator::cachePoint, this);
-	vmap_lane_sub_ = nh_.subscribe("/vector_map_info/lane", queue, &WaypointGenerator::cacheLane, this);
-	vmap_node_sub_ = nh_.subscribe("/vector_map_info/node", queue, &WaypointGenerator::cacheNode, this);
+	pose_sub_ = nh_.subscribe("/current_pose", 1, &WaypointGenerator::poseCallback, this);
+	vmap_point_sub_ = nh_.subscribe("/vector_map_info/point", 1, &WaypointGenerator::cachePoint, this);
+	vmap_lane_sub_ = nh_.subscribe("/vector_map_info/lane", 1, &WaypointGenerator::cacheLane, this);
+	vmap_node_sub_ = nh_.subscribe("/vector_map_info/node", 1, &WaypointGenerator::cacheNode, this);
 }
 
 WaypointGenerator::~WaypointGenerator()
@@ -56,30 +55,61 @@ bool WaypointGenerator::checkEmpty(const VMap::VectorMap& vmap)
 void WaypointGenerator::cachePoint(const vector_map::PointArray& msg)
 {
 	all_vmap_.points = msg.data;
-	updateValues();
+	autoware_msgs::LaneArray larray;
+	if(calcLaneArray(&larray))
+	{
+		larray_pub_.publish(larray);
+	}
 }
 
 void WaypointGenerator::cacheLane(const vector_map::LaneArray& msg)
 {
 	all_vmap_.lanes = msg.data;
-	updateValues();
+	autoware_msgs::LaneArray larray;
+	if(calcLaneArray(&larray))
+	{
+		larray_pub_.publish(larray);
+	}
 }
 
 void WaypointGenerator::cacheNode(const vector_map::NodeArray& msg)
 {
 	all_vmap_.nodes = msg.data;
-	updateValues();
+	autoware_msgs::LaneArray larray;
+	if(calcLaneArray(&larray))
+	{
+		larray_pub_.publish(larray);
+	}
 }
 
-void WaypointGenerator::updateValues()
+void WaypointGenerator::poseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose)
 {
-	if (checkEmpty(all_vmap_))
+	current_pose_ = pose->pose;
+	pose_ok_ = true;
+	autoware_msgs::LaneArray larray;
+	if(calcLaneArray(&larray))
 	{
-		return;
+		larray_pub_.publish(larray);
+	}
+}
+
+bool WaypointGenerator::calcLaneArray(autoware_msgs::LaneArray *larray)
+{
+	if (checkEmpty(all_vmap_) || !pose_ok_)
+	{
+		return false;
 	}
 
 	lane_vmap_ = VMap::create_lane_vmap(all_vmap_, VMap::LNO_ALL);
-	createRoute();
+	const vector_map::Point vehicle(VMap::create_vector_map_point(current_pose_.position));
+	const vector_map::Point departure(VMap::find_nearest_point(lane_vmap_, vehicle));
+	const VMap::VectorMap vmap(createVMapWithLane(lane_vmap_, departure, waypoint_max_));
+	if (vmap.points.size() < 2)
+	{
+		return false;
+	}
+	convertVMapToLaneArray(vmap, larray);
+	return true;
 }
 
 vector_map::DTLane search(const std::vector<vector_map::DTLane>& dtlanes, int target_id)
@@ -112,10 +142,11 @@ vector_map::StopLine search(const std::vector<vector_map::StopLine>& stoplines, 
 	return stopline;
 }
 
-VMap::VectorMap WaypointGenerator::createVMapWithLane(const VMap::VectorMap& lane_vmap, int waypoint_max) const
+VMap::VectorMap WaypointGenerator::createVMapWithLane(const VMap::VectorMap& lane_vmap,
+	const vector_map::Point& departure, int waypoint_max) const
 {
 	VMap::VectorMap vmap;
-	vector_map::Point point = lane_vmap.points.front();
+	vector_map::Point point = departure;
 	vector_map::Lane lane = VMap::find_lane(lane_vmap, VMap::LNO_ALL, point);
 	if (lane.lnid < 0)
 	{
@@ -136,7 +167,7 @@ VMap::VectorMap WaypointGenerator::createVMapWithLane(const VMap::VectorMap& lan
 			break;
 		}
 		vmap.lanes.push_back(lane);
-		point = find_end_point(lane_vmap, lane);
+		point = VMap::find_end_point(lane_vmap, lane);
 		if (point.pid < 0)
 		{
 			return VMap::VectorMap();
@@ -189,21 +220,6 @@ void WaypointGenerator::convertVMapToLaneArray(const VMap::VectorMap& vmap, auto
 	}
 }
 
-void WaypointGenerator::createRoute()
-{
-	if (checkEmpty(all_vmap_))
-	{
-		return;
-	}
-	VMap::VectorMap vmap(createVMapWithLane(lane_vmap_, waypoint_max_));
-	if (vmap.points.size() < 2)
-	{
-		return;
-	}
-	autoware_msgs::LaneArray larray;
-	convertVMapToLaneArray(vmap, &larray);
-	larray_pub_.publish(larray);
-}
 
 } // namespace
 
@@ -211,7 +227,12 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "waypoint_generator");
 	waypoint_maker::WaypointGenerator wg;
-	ros::spin();
+	ros::Rate r(1);
+	while(ros::ok())
+	{
+		ros::spinOnce();
+		r.sleep();
+	}
 
 	return 0;
 }
