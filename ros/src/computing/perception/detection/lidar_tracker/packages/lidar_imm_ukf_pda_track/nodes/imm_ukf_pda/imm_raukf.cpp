@@ -196,6 +196,8 @@ IMM_RAUKF::IMM_RAUKF()
   new_s_cv_   = Eigen::MatrixXd(2, 2);
   new_s_ctrv_ = Eigen::MatrixXd(2, 2);
   new_s_rm_   = Eigen::MatrixXd(2, 2);
+
+  debug_object_num_meas_ = 0;
 }
 
 void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -264,6 +266,9 @@ void IMM_RAUKF::initialize(const Eigen::VectorXd& z, const double timestamp, con
   // todo: modify here
   nis_paths_.push_back(0);
   nis_paths_.push_back(0);
+
+  // initialize ctrv meas
+  ctrv_meas_.fill(0.0);
 }
 
 void IMM_RAUKF::updateModeProb(const std::vector<double>& lambda_vec)

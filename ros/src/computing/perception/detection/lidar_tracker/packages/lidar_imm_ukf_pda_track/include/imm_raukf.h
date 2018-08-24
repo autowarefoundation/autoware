@@ -237,6 +237,8 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
+  int debug_object_num_meas_ ;
+
   /**
    * Constructor
    */

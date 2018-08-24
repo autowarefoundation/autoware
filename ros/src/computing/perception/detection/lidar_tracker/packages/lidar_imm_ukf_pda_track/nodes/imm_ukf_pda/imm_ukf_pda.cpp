@@ -4,6 +4,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
+int g_take = 19;
 
 ImmUkfPda::ImmUkfPda()
 {
@@ -22,7 +23,7 @@ ImmUkfPda::ImmUkfPda()
 
   // could change below param fot get better performance
   use_vectormap_              = false;
-  use_sukf_                   = false;
+  use_sukf_                   = true;
   use_robust_adaptive_filter_ = false;
   is_benchmark_               = true;
   // assign unique ukf_id_ to each tracking targets
@@ -34,9 +35,13 @@ ImmUkfPda::ImmUkfPda()
     std::string path = ros::package::getPath("lidar_imm_ukf_pda_track");
     result_file_path_ = path + "/benchmark/results/result.txt";
     remove(result_file_path_.c_str());
+
+    std::string filepath1 = "/home/kosuke/cluster_out" +std::to_string(g_take) + ".txt";
+    std::string filepath2 = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+    remove(filepath1.c_str());
+    remove(filepath2.c_str());
   }
 }
-
 
 void ImmUkfPda::run()
 {
@@ -60,14 +65,12 @@ void ImmUkfPda::run()
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
-  std::ofstream file("/home/kosuke/size2.txt", std::ofstream::out | std::ofstream::app);
+  std::string filepath = "/home/kosuke/cluster_out" +std::to_string(g_take) + ".txt";
+  std::ofstream file(filepath, std::ofstream::out | std::ofstream::app);
   file<< frame_count_ << " " << input.objects.size() << "\n";
   for(size_t i = 0; i < input.objects.size(); i++)
   {
-    file<<input.objects[i].dimensions.x << " "
-        <<input.objects[i].dimensions.y << " "
-        <<input.objects[i].dimensions.z << " "
-        <<input.objects[i].pose.position.x << " "
+    file<<input.objects[i].pose.position.x << " "
         <<input.objects[i].pose.position.y << " "
         <<input.objects[i].pose.position.z << " "
         <<input.objects[i].pose.orientation.x << " "
@@ -87,21 +90,21 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
 
-  std::ofstream file2("/home/kosuke/tracker_out2.txt", std::ofstream::out | std::ofstream::app);
-  file2<< frame_count_ << " " << detected_objects_output.objects.size() << "\n";
-  for(size_t i = 0; i < input.objects.size(); i++)
-  {
-    file2<<detected_objects_output.objects[i].dimensions.x << " "
-        <<detected_objects_output.objects[i].dimensions.y << " "
-        <<detected_objects_output.objects[i].dimensions.z << " "
-        <<detected_objects_output.objects[i].pose.position.x << " "
-        <<detected_objects_output.objects[i].pose.position.y << " "
-        <<detected_objects_output.objects[i].pose.position.z << " "
-        <<detected_objects_output.objects[i].pose.orientation.x << " "
-        <<detected_objects_output.objects[i].pose.orientation.y << " "
-        <<detected_objects_output.objects[i].pose.orientation.z << " "
-        <<detected_objects_output.objects[i].pose.orientation.w << "\n";
-  }
+  // std::ofstream file2("/home/kosuke/tracker_out2.txt", std::ofstream::out | std::ofstream::app);
+  // file2<< frame_count_ << " " << detected_objects_output.objects.size() << "\n";
+  // for(size_t i = 0; i < input.objects.size(); i++)
+  // {
+  //   file2<<detected_objects_output.objects[i].dimensions.x << " "
+  //       <<detected_objects_output.objects[i].dimensions.y << " "
+  //       <<detected_objects_output.objects[i].dimensions.z << " "
+  //       <<detected_objects_output.objects[i].pose.position.x << " "
+  //       <<detected_objects_output.objects[i].pose.position.y << " "
+  //       <<detected_objects_output.objects[i].pose.position.z << " "
+  //       <<detected_objects_output.objects[i].pose.orientation.x << " "
+  //       <<detected_objects_output.objects[i].pose.orientation.y << " "
+  //       <<detected_objects_output.objects[i].pose.orientation.z << " "
+  //       <<detected_objects_output.objects[i].pose.orientation.w << "\n";
+  // }
   if(use_vectormap_)
   {
     visualization_msgs::MarkerArray directionMarkers;
@@ -859,6 +862,28 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   {
     initTracker(input, timestamp);
     makeOutput(input, jskbboxes_output, detected_objects_output);
+    std::string filepath = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+    std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
+    file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<timestamp<< "\n";
+    for(size_t i = 0; i < targets_.size(); i++)
+    {
+      file2<<targets_[i].ukf_id_ << " "
+           <<targets_[i].x_ctrv_(0) << " "
+           <<targets_[i].x_ctrv_(1) << " "
+           <<targets_[i].x_ctrv_(2) << " "
+           <<targets_[i].x_ctrv_(3) << " "
+           <<targets_[i].x_ctrv_(4) << " "
+           <<targets_[i].p_ctrv_(0,0) << " "
+           <<targets_[i].p_ctrv_(1,1) << " "
+           <<targets_[i].p_ctrv_(2,2) << " "
+           <<targets_[i].p_ctrv_(3,3) << " "
+           <<targets_[i].p_ctrv_(4,4) << "\n";
+           // <<targets_[i].p_merge_(0,0) << " "
+           // <<targets_[i].p_merge_(1,1) << " "
+           // <<targets_[i].p_merge_(2,2) << " "
+           // <<targets_[i].p_merge_(3,3) << " "
+           // <<targets_[i].p_merge_(4,4) << "\n";
+    }
     return;
   }
 
@@ -902,8 +927,10 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, object_vec, targets_[i], is_skip_target);
       if (is_skip_target)
       {
+        targets_[i].debug_object_num_meas_ = 0;
         continue;
       }
+      targets_[i].debug_object_num_meas_ = object_vec.size();
       // sukf update step
       targets_[i].updateSUKF(object_vec);
     }
@@ -935,6 +962,27 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
   }
   // end UKF process
+
+  std::string filepath = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+  std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
+  file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<dt <<"\n";
+  for(size_t i = 0; i < targets_.size(); i++)
+  {
+    file2<<targets_[i].ukf_id_ << " "
+         <<targets_[i].ctrv_meas_(0)<<" "
+         <<targets_[i].ctrv_meas_(1)<<" "
+         <<targets_[i].debug_object_num_meas_ << " "
+         <<targets_[i].x_ctrv_(0) << " "
+         <<targets_[i].x_ctrv_(1) << " "
+         <<targets_[i].x_ctrv_(2) << " "
+         <<targets_[i].x_ctrv_(3) << " "
+         <<targets_[i].x_ctrv_(4) << " "
+         <<targets_[i].p_ctrv_(0,0) << " "
+         <<targets_[i].p_ctrv_(1,1) << " "
+         <<targets_[i].p_ctrv_(2,2) << " "
+         <<targets_[i].p_ctrv_(3,3) << " "
+         <<targets_[i].p_ctrv_(4,4) << "\n";
+  }
 
   //debug, green is for measurement points, red is for estimated points
   pubPoints(input);
