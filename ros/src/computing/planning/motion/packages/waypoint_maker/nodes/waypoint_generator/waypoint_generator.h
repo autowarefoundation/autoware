@@ -56,14 +56,15 @@ private:
   ros::Subscriber vmap_point_sub_, vmap_lane_sub_, vmap_node_sub_, pose_sub_;
   VMap::VectorMap all_vmap_, lane_vmap_;
   geometry_msgs::Pose current_pose_;
-  bool pose_ok_;
+  bool vmap_ok_, pose_ok_;
   int waypoint_max_;
 
   bool checkEmpty(const VMap::VectorMap& vmap);
-  VMap::VectorMap createVMapWithLane(const VMap::VectorMap& lane_vmap,
+  std::vector<VMap::VectorMap> createVMapArray(const VMap::VectorMap& lane_vmap,
     const vector_map::Point& departure, int waypoint_max) const;
-  void initLaneArray(autoware_msgs::LaneArray *larray, unsigned int size);
-  void convertVMapToLaneArray(const VMap::VectorMap& vmap, autoware_msgs::LaneArray *larray);
+  void initLane(autoware_msgs::lane *lane, unsigned int size);
+  void convertVMapToLaneArray(const std::vector<VMap::VectorMap>& vmap, autoware_msgs::LaneArray *larray);
+  void createLane();
   bool calcLaneArray(autoware_msgs::LaneArray *larray);
   void cachePoint(const vector_map::PointArray& point);
   void cacheLane(const vector_map::LaneArray& lane);

@@ -33,7 +33,7 @@
 namespace waypoint_maker
 {
 
-WaypointGenerator::WaypointGenerator() : private_nh_("~"), pose_ok_(false)
+WaypointGenerator::WaypointGenerator() : private_nh_("~"), pose_ok_(false), vmap_ok_(false)
 {
 	private_nh_.param<int>("waypoint_max", waypoint_max_, 100);
 	larray_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/lane_waypoints_array", 10, true);
@@ -56,6 +56,7 @@ void WaypointGenerator::cachePoint(const vector_map::PointArray& msg)
 {
 	all_vmap_.points = msg.data;
 	autoware_msgs::LaneArray larray;
+	createLane();
 	if(calcLaneArray(&larray))
 	{
 		larray_pub_.publish(larray);
@@ -66,6 +67,7 @@ void WaypointGenerator::cacheLane(const vector_map::LaneArray& msg)
 {
 	all_vmap_.lanes = msg.data;
 	autoware_msgs::LaneArray larray;
+	createLane();
 	if(calcLaneArray(&larray))
 	{
 		larray_pub_.publish(larray);
@@ -76,6 +78,7 @@ void WaypointGenerator::cacheNode(const vector_map::NodeArray& msg)
 {
 	all_vmap_.nodes = msg.data;
 	autoware_msgs::LaneArray larray;
+	createLane();
 	if(calcLaneArray(&larray))
 	{
 		larray_pub_.publish(larray);
@@ -93,21 +96,25 @@ void WaypointGenerator::poseCallback(const geometry_msgs::PoseStamped::ConstPtr&
 	}
 }
 
+void WaypointGenerator::createLane()
+{
+	if (checkEmpty(all_vmap_))
+	{
+		return;
+	}
+	lane_vmap_ = VMap::create_lane_vmap(all_vmap_, VMap::LNO_ALL);
+	vmap_ok_ = true;
+}
+
 bool WaypointGenerator::calcLaneArray(autoware_msgs::LaneArray *larray)
 {
-	if (checkEmpty(all_vmap_) || !pose_ok_)
+	if (!vmap_ok_ || !pose_ok_)
 	{
 		return false;
 	}
-
-	lane_vmap_ = VMap::create_lane_vmap(all_vmap_, VMap::LNO_ALL);
 	const vector_map::Point vehicle(VMap::create_vector_map_point(current_pose_.position));
 	const vector_map::Point departure(VMap::find_nearest_point(lane_vmap_, vehicle));
-	const VMap::VectorMap vmap(createVMapWithLane(lane_vmap_, departure, waypoint_max_));
-	if (vmap.points.size() < 2)
-	{
-		return false;
-	}
+	const std::vector<VMap::VectorMap> vmap(createVMapArray(lane_vmap_, departure, waypoint_max_));
 	convertVMapToLaneArray(vmap, larray);
 	return true;
 }
@@ -142,81 +149,156 @@ vector_map::StopLine search(const std::vector<vector_map::StopLine>& stoplines, 
 	return stopline;
 }
 
-VMap::VectorMap WaypointGenerator::createVMapWithLane(const VMap::VectorMap& lane_vmap,
-	const vector_map::Point& departure, int waypoint_max) const
+vector_map::Lane findNextLane(const VMap::VectorMap& vmap, const vector_map::Lane& lane, int id)
 {
-	VMap::VectorMap vmap;
-	vector_map::Point point = departure;
-	vector_map::Lane lane = VMap::find_lane(lane_vmap, VMap::LNO_ALL, point);
-	if (lane.lnid < 0)
+	vector_map::Lane error;
+	error.lnid = -1;
+	const int flid = (id == 0) ? lane.flid :
+									(id == 1) ? lane.flid2 :
+									(id == 2) ? lane.flid3 :
+									(id == 3) ? lane.flid4 :
+									-1;
+	if (flid < 0)
 	{
-		return VMap::VectorMap();
+		return error;
 	}
 
-	bool finish = false;
-	for (int i = 0;; i++)
+	for (const vector_map::Lane& l : vmap.lanes)
 	{
-		vector_map::DTLane dtlane(search(lane_vmap.dtlanes, lane.did));
-		vector_map::StopLine stopline(search(lane_vmap.stoplines, lane.lnid));
+		if (l.lnid == flid)
+		{
+			return l;
+		}
+	}
+	return error;
+}
 
-		vmap.points.push_back(point);
-		vmap.dtlanes.push_back(dtlane);
-		vmap.stoplines.push_back(stopline);
-		if (finish)
+std::vector<VMap::VectorMap>
+	WaypointGenerator::createVMapArray(const VMap::VectorMap& lane_vmap,
+		const vector_map::Point& departure, int waypoint_max) const
+{
+	std::vector<VMap::VectorMap> vmap(1);
+	std::vector<vector_map::Point> point(1, departure);
+	std::vector<vector_map::Lane> lane(1, VMap::find_lane(lane_vmap, VMap::LNO_ALL, point[0]));
+	std::vector<int> active(1, true);
+	if (lane[0].lnid < 0)
+	{
+		return std::vector<VMap::VectorMap>();
+	}
+
+	for (int k = 0; k < waypoint_max - 1; k++)
+	{
+		bool active_any = false;
+		for (const auto& el : active)
+		{
+			active_any |= el;
+		}
+		if (!active_any)
 		{
 			break;
 		}
-		vmap.lanes.push_back(lane);
-		point = VMap::find_end_point(lane_vmap, lane);
-		if (point.pid < 0)
+		const int vmap_size = vmap.size();
+		for(int i = 0; i < vmap_size; i++)
 		{
-			return VMap::VectorMap();
-		}
-		if (i >= waypoint_max - 2)
-		{
-			finish = true;
-			continue;
-		}
-		lane = VMap::find_next_lane(lane_vmap, VMap::LNO_ALL, lane);
-		if (lane.lnid < 0)
-		{
-			return VMap::VectorMap();
+			if (!active[i])
+			{
+				continue;
+			}
+			vector_map::Point end(VMap::find_end_point(lane_vmap, lane[i]));
+			if (point[i].pid < 0)
+			{
+				active[i] = false;
+				continue;
+			}
+			vector_map::DTLane dtlane(search(lane_vmap.dtlanes, lane[i].did));
+			vector_map::StopLine stopline(search(lane_vmap.stoplines, lane[i].lnid));
+			vmap[i].points.push_back(point[i]);
+			vmap[i].dtlanes.push_back(dtlane);
+			vmap[i].stoplines.push_back(stopline);
+			vmap[i].lanes.push_back(lane[i]);
+			point[i] = end;
+			bool find_next = false;
+			for (int j = 0; j < 4; j++)
+			{
+				const vector_map::Lane next_lane(findNextLane(lane_vmap, lane[i], j));
+				if (next_lane.lnid < 0)
+				{
+					continue;
+				}
+				if (find_next)
+				{
+					vmap.push_back(vmap[i]);
+					point.push_back(point[i]);
+					lane.push_back(next_lane);
+				}
+				else
+				{
+					lane[i] = next_lane;
+					find_next = true;
+				}
+			}
+			if (!find_next)
+			{
+				active[i] = false;
+				continue;
+			}
 		}
 	}
+
+	const int vmap_size = vmap.size();
+	for (int i = vmap_size - 1; i >= 0; --i)
+	{
+		if (vmap[i].points.empty())
+		{
+			vmap.erase(vmap.begin() + i);
+			continue;
+		}
+		vector_map::DTLane dtlane(search(lane_vmap.dtlanes, lane[i].did));
+		vector_map::StopLine stopline(search(lane_vmap.stoplines, lane[i].lnid));
+
+		vmap[i].points.push_back(point[i]);
+		vmap[i].dtlanes.push_back(dtlane);
+		vmap[i].stoplines.push_back(stopline);
+	}
+
 	return vmap;
 }
 
-void WaypointGenerator::initLaneArray(autoware_msgs::LaneArray *larray, unsigned int size)
+void WaypointGenerator::initLane(autoware_msgs::lane *lane, unsigned int size)
 {
-	larray->lanes.clear();
-	larray->lanes.resize(1);
-	autoware_msgs::lane& lane = larray->lanes[0];
-	lane.header.stamp = ros::Time(0);
-	lane.header.frame_id = "/map";
-	lane.waypoints.resize(size);
+	lane->header.stamp = ros::Time(0);
+	lane->header.frame_id = "/map";
+	lane->waypoints.resize(size);
 }
 
-void WaypointGenerator::convertVMapToLaneArray(const VMap::VectorMap& vmap, autoware_msgs::LaneArray *larray)
+void WaypointGenerator::convertVMapToLaneArray(const std::vector<VMap::VectorMap>& vmap_vec, autoware_msgs::LaneArray *larray)
 {
-	const unsigned int size = vmap.points.size();
-	if (size < 2)
+	larray->lanes.clear();
+	larray->lanes.resize(vmap_vec.size());
+	for (const auto& vmap : vmap_vec)
 	{
-		return;
-	}
-	initLaneArray(larray, size);
-	autoware_msgs::lane& lane = larray->lanes[0];
-	for (unsigned int i = 0; i < size; i++)
-	{
-		const bool is_last_idx = (i == size - 1);
-		const int next_ptid = (is_last_idx) ? i - 1 : i + 1;
-		const int velid = (is_last_idx) ? i - 1 : i;
-		double yaw = (is_last_idx) ? -M_PI : 0.0;
-		const vector_map::Point& p0 = vmap.points[i];
-		const vector_map::Point& p1 = vmap.points[next_ptid];
-		yaw += atan2(p1.bx - p0.bx, p1.ly - p0.ly);
-		lane.waypoints[i].pose.pose.position = VMap::create_geometry_msgs_point(p0);
-		lane.waypoints[i].pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
-		lane.waypoints[i].twist.twist.linear.x = vmap.lanes[velid].limitvel / 3.6;
+		const unsigned int size = vmap.points.size();
+		if (size < 2)
+		{
+			continue;
+		}
+		autoware_msgs::lane& lane = larray->lanes[&vmap - &vmap_vec[0]];
+		initLane(&lane, size);
+		for (unsigned int i = 0; i < size; i++)
+		{
+			const bool is_last_idx = (i == size - 1);
+			const int next_ptid = (is_last_idx) ? i - 1 : i + 1;
+			const int velid = (is_last_idx) ? i - 1 : i;
+			double yaw = (is_last_idx) ? -M_PI : 0.0;
+			const vector_map::Point& p0 = vmap.points[i];
+			const vector_map::Point& p1 = vmap.points[next_ptid];
+			yaw += atan2(p1.bx - p0.bx, p1.ly - p0.ly);
+			lane.waypoints[i].pose.pose.position = VMap::create_geometry_msgs_point(p0);
+			lane.waypoints[i].pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+			double vel = vmap.lanes[velid].limitvel;
+			vel = (vel == 0.0) ? 5.0 : vel;
+			lane.waypoints[i].twist.twist.linear.x = vel / 3.6;
+		}
 	}
 }
 
