@@ -1,0 +1,10 @@
+# ICURO Santa Clara, CA
+# Authors: Jeremiah Liou, Arun Sunil, Cody Heiner
+
+# Simple bash script to build jetsontx2 image
+
+USERID="$(id -u)"
+sed -i "s/1000/$USERID/g" Dockerfile.tx2
+docker build --no-cache -t autoware-tx2 -f Dockerfile.tx2 .
+sed -i "s/$USERID/1000/g" Dockerfile.tx2
+

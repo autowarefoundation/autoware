@@ -1,0 +1,235 @@
+FROM ubuntu:16.04
+MAINTAINER jeremiah.liou@icuro.com
+
+# ICURO Santa Clara, CA
+# Authors: Jeremiah Liou, Arun Sunil, Cody Heiner
+
+############################################################
+################### Install JetPack ########################
+############################################################
+
+CMD ["/bin/bash"]
+
+WORKDIR /root
+
+RUN /bin/bash -c " \
+   # Install Dependencies
+      apt-get update; \
+      apt-get install -y sudo wget tar bzip2; \
+   # Install Drivers
+      cd /root; \
+      wget https://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2.1/m8u2ki/JetPackL4T_321_b23/Tegra186_Linux_R28.2.1_aarch64.tbz2; \
+      tar -xvjf Tegra186_Linux_R28.2.1_aarch64.tbz2; \
+      cd Linux_for_Tegra; bash apply_binaries.sh -r /; \
+      cd ..; \
+      rm -rf Linux_for_Tegra; \
+      rm Tegra186_Linux_R28.2.1_aarch64.tbz2; \
+   # Install CUDA
+      cd /root; \
+      wget https://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2.1/m8u2ki/JetPackL4T_321_b23/cuda-repo-l4t-9-0-local_9.0.252-1_arm64.deb; \
+      dpkg -i cuda-repo-l4t-9-0-local_9.0.252-1_arm64.deb; \
+      apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub; \
+      apt-get update; \
+      apt-get install -y cuda-toolkit-9.0; \
+      rm cuda-repo-l4t-9-0-local_9.0.252-1_arm64.deb; \
+   # Install cuDNN
+      cd /root; \
+      wget https://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2.1/m8u2ki/JetPackL4T_321_b23/libcudnn7_7.0.5.15-1+cuda9.0_arm64.deb; \
+      dpkg -i libcudnn7_7.0.5.15-1+cuda9.0_arm64.deb; \
+      wget https://developer.download.nvidia.com/devzone/devcenter/mobile/jetpack_l4t/3.2.1/m8u2ki/JetPackL4T_321_b23/libcudnn7-dev_7.0.5.15-1+cuda9.0_arm64.deb; \
+      dpkg -i libcudnn7-dev_7.0.5.15-1+cuda9.0_arm64.deb; \
+      rm libcudnn7_7.0.5.15-1+cuda9.0_arm64.deb; \
+      rm libcudnn7-dev_7.0.5.15-1+cuda9.0_arm64.deb; \
+   # Fix PATH, add KERNEL rule
+      echo \"export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:/usr/lib/aarch64-linux-gnu/tegra:\" >> /root/.bashrc; \
+      echo KERNEL==\"i2c-[0-7]\",MODE=\"0666\" > /etc/udev/rules.d/90-i2c.rules; \
+   # Add links for GPU usage
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.28.2.1 /usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.1; \
+      ln -sf /usr/lib/aarch64-linux-gnu/tegra/libGL.so /usr/lib/aarch64-linux-gnu/libGL.so; \
+      ln -s /usr/lib/aarch64-linux-gnu/libcuda.so /usr/lib/aarch64-linux-gnu/libcuda.so.1; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLX.so.0 /usr/lib/aarch64-linux-gnu/libGLX.so.0; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libGLdispatch.so.0 /usr/lib/aarch64-linux-gnu/libGLdispatch.so.0; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvll.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_graphics.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvdc.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvos.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvimp.so /usr/lib/aarch64-linux-gnu/; \
+      ln -sf /usr/lib/aarch64-linux-gnu/tegra/libGL.so.1 /usr/lib/aarch64-linux-gnu/libGL.so.1; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvrm_gpu.so /usr/lib/aarch64-linux-gnu/; \
+      ln -s /usr/lib/aarch64-linux-gnu/tegra/libnvidia-fatbinaryloader.so.28.2.1 /usr/lib/aarch64-linux-gnu/; \
+      echo \"source /opt/ros/kinetic/setup.bash\" >> ~/.bashrc"
+
+############################################################
+################### Setup Environment ######################
+############################################################
+
+ENV USERNAME autoware
+
+RUN /bin/bash -c " \
+   # Create User
+      export USERNAME=autoware; \
+      useradd -m \$USERNAME; \
+      usermod --shell /bin/bash \$USERNAME; \
+      usermod -aG sudo \$USERNAME; \
+      echo \"\$USERNAME ALL=(ALL) NOPASSWD:ALL\" >> /etc/sudoers.d/\$USERNAME; \
+      chmod 0440 /etc/sudoers.d/\$USERNAME; \
+      usermod --uid 1000 \$USERNAME; \
+      groupmod --gid 1000 \$USERNAME; \
+      usermod -a -G video \$USERNAME"
+
+# Change user
+USER autoware
+
+WORKDIR /home/autoware
+
+ENV LANG="en_US.UTF-8"
+
+RUN /bin/bash -c " \
+   # Setup User Configurations
+      sudo apt-get install -y vim tmux git nautilus locales gksu gnome-terminal xterm lxterminal; \
+      sudo locale-gen \"en_US.UTF-8\"; \
+      echo \"set mouse=a\" >> ~/.vimrc; \
+      echo \"set -g mouse on\" >> ~/.tmux.conf; \
+      echo \"set-option -g repeat-time 0\" >> ~/.tmux.conf; \
+      echo \"set -g default-terminal \"screen-256color\"\" >> ~/.tmux.conf; \
+      echo \"bind h select-pane -L\" >> ~/.tmux.conf; \
+      echo \"bind j select-pane -D\" >> ~/.tmux.conf; \
+      echo \"bind k select-pane -U\" >> ~/.tmux.conf; \
+      echo \"bind l select-pane -R\" >> ~/.tmux.conf; \
+      echo \"export LD_LIBRARY_PATH=/usr/local/cuda-9.0/lib64:/usr/lib/aarch64-linux-gnu/tegra:\" >> ~/.bashrc; \
+      echo \"export LANG=\"en_US.UTF-8\"\" >> ~/.bashrc; \
+      echo \"gsettings set org.gnome.Terminal.Legacy.Settings default-show-menubar false\" >> ~/.bashrc; \
+      gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/use_theme_background\" --type bool false; \
+      gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/use_theme_colors\" --type bool false; \
+      gconftool-2 --set "/apps/gnome-terminal/profiles/Default/foreground_color" --type string \"#FFFFFF\"; \
+      gconftool-2 --set \"/apps/gnome-terminal/profiles/Default/background_color\" --type string \"#230A30\""
+
+############################################################
+##################### Install ROS ##########################
+############################################################
+
+RUN sudo /bin/bash -c " \
+   # Install ROS, did not rosdep
+      sudo echo \"deb http://packages.ros.org/ros/ubuntu xenial main\" >> /etc/apt/sources.list.d/ros-latest.list; \
+      sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116; \
+      sudo apt-get update; \
+      sudo apt-get install -y ros-kinetic-desktop-full; \
+      echo \"export QT_X11_NOMITSHM=1\" >> ~/.bashrc"
+
+############################################################
+################## Install OpenCV ##########################
+############################################################
+
+RUN /bin/bash -c " \
+   # Install OpenCV Dependencies
+      sudo apt-get update; \
+      sudo apt-get install -y python-rosinstall python-rosinstall-generator python-wstool \
+                              build-essential cmake-qt-gui \
+                              make cmake cmake-curses-gui g++ \
+                              libglew-dev libtiff5-dev zlib1g-dev libjpeg-dev libpng12-dev \
+                              libjasper-dev libavcodec-dev libavformat-dev libavutil-dev \
+                              libpostproc-dev libswscale-dev libeigen3-dev libtbb-dev \
+                              libgtk2.0-dev \
+                              cmake \
+                              pkg-config; \ 
+      sudo apt-get install -y python-dev python-numpy python-py python-pytest \
+                              python3-dev python3-numpy python3-py python3-pytest \
+                              libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev; \
+   # Clone OpenCV
+      git clone https://github.com/opencv/opencv.git; \
+      cd opencv; \
+      git checkout -b v3.3.1 3.3.1; \
+   # Install OpenCV
+      cd ~/opencv; \
+      mkdir build; \
+      cd build; \
+      cmake \
+       -DCMAKE_BUILD_TYPE=Release \
+       -DCMAKE_INSTALL_PREFIX=/usr \
+       -DBUILD_PNG=OFF \
+       -DBUILD_TIFF=OFF \
+       -DBUILD_TBB=OFF \
+       -DBUILD_JPEG=OFF \
+       -DBUILD_JASPER=OFF \
+       -DBUILD_ZLIB=OFF \
+       -DBUILD_opencv_java=OFF \
+       -DBUILD_opencv_python2=ON \
+       -DBUILD_opencv_python3=ON \
+       -DENABLE_PRECOMPILED_HEADERS=OFF \
+       -DWITH_OPENCL=OFF \
+       -DWITH_OPENMP=OFF \
+       -DWITH_FFMPEG=ON \
+       -DWITH_GSTREAMER=ON \
+       -DWITH_GSTREAMER_0_10=OFF \
+       -DWITH_CUDA=ON \
+       -DWITH_GTK=ON \
+       -DWITH_VTK=OFF \
+       -DWITH_TBB=ON \
+       -DWITH_1394=OFF \
+       -DWITH_OPENEXR=OFF \
+       -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-9.0 \
+       -DCUDA_ARCH_BIN=6.2 \
+       -DCUDA_ARCH_PTX="" \
+       ../; \
+      make -j6; \
+      sudo make install; \
+      sudo ldconfig" 
+
+############################################################
+################## Install Autoware ########################
+############################################################
+
+RUN /bin/bash -c " \
+   # Install Autoware Dependencies
+      sudo apt-get update; \
+      sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-kinetic-catkin ros-kinetic-velodyne-pointcloud \
+                              ros-kinetic-grid-map libmosquitto-dev libcanberra-gtk3-module libcanberra-gtk* \
+                              libopenni0 libopenni-sensor-pointclouds0 libopenni2-0 libopenni-sensor-pointclouds-dev \
+                              libopenni2-dev libopenni-dev  openni2-doc openni2-utils openni-doc openni-utils; \
+      sudo ln -s /usr/lib/python2.7/dist-packages/vtk/libvtkRenderingPythonTkWidgets.aarch64-linux-gnu.so /usr/lib/aarch64-linux-gnu/libvtkRenderingPythonTkWidgets.so; \
+   # Clone Autoware
+      cd ~; \
+      git clone https://github.com/CPFL/Autoware.git --recurse-submodules; \
+      cd Autoware; \
+      git checkout develop; \
+      cd ros/src; \
+      rm -rf driveworks; \
+      cd ~/Autoware/ros/src/computing/perception/localization/lib/ndt_gpu/include/ndt_gpu; \
+   # Change BLOCK_SIZE_X to 512
+      sed -i \"s/1024/512/g\" common.h; \
+      sed -i \"s/4/2/g\" common.h; \
+   # Change sm_52 to sm_62
+      find ~/Autoware/ros/src -type f -exec sed -i \"s/sm_52/sm_62/g\" {} \;; \
+   # Install YOLO2   ** NOT NEEDED ANYMORE **
+   #   cd ~; \
+   #   git clone https://github.com/pjreddie/darknet.git; \
+   #   cd darknet; \
+   #   git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134; \
+   #   cd data; \
+   #   wget https://pjreddie.com/media/files/yolo.weights; \
+   # Add YOLO3 and YOLO3 tiny
+      cd ~/Autoware/ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/darknet; \
+      mkdir data; \
+      cd data; \
+      wget https://pjreddie.com/media/files/yolov3.weights; \
+      wget https://pjreddie.com/media/files/yolov3-tiny.weights; \
+      cd ~/Autoware/ros/src/computing/perception/detection/vision_detector/packages/vision_darknet_detect/darknet/cfg; \
+   #   wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg; \  
+   # Install Autoware
+      source ~/.bashrc; \
+      source /opt/ros/kinetic/setup.bash; \
+      cd ~/Autoware/ros/src; \
+      catkin_init_workspace; \
+      cd ../; \
+   # ROS rosdep here
+      sudo rosdep init; \
+      rosdep update; \
+      rosdep install -y --from-paths src --ignore-src --rosdistro kinetic; \
+      cd ~/Autoware/ros; \
+      catkin_make clean; \
+      source devel/setup.bash; \
+      export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH; \
+      catkin_make -DCMAKE_BUILD_TYPE=Release -j1; \
+      sed -i 's/<arg\ name=\"use_gnss\"\ default=\"1\"\ \/>/<arg\ name=\"use_gnss\"\ default=\"0\"\ \/>/g' ~/Autoware/ros/src/computing/perception/localization/packages/lidar_localizer/launch/ndt_matching.launch"

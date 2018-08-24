@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# This script has been modified from its original version 
+# created by Technica Corporation, Tegra Docker
+# https://github.com/Technica-Corporation/Tegra-Docker/blob/master/bin/tx2-docker
+
+# Original license shown below:
+
+# Copyright (c) 2017 Technica Corporation. All rights reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#Second script to run docker with GPU
+
+# Check docker run command
+if [[ $# -ge 2 && $1 == "run" ]]; then
+    # Let Docker find CUDA and CUDNN
+    LIB_MAPS="/usr/lib/aarch64-linux-gnu \
+              /usr/local/cuda \
+              /usr/local/cuda/lib64"
+
+    # Let Docker find CUDA Devices
+    DEVICES="/dev/nvhost-ctrl \
+             /dev/nvhost-ctrl-gpu \
+             /dev/nvhost-prof-gpu \
+             /dev/nvmap \
+             /dev/nvhost-gpu \
+             /dev/nvhost-as-gpu \
+             /dev/video1"
+    
+    NV_DOCKER_ARGS="--net=host"	
+
+	LIBS=""
+	for lib in $LIB_MAPS; do
+		LIBS="$LIBS -v $lib:$lib"
+	done
+	
+	DEVS=""
+	for dev in $DEVICES; do
+		DEVS="$DEVS --device=$dev"
+	done
+	
+	docker run $LIBS $DEVS $NV_DOCKER_ARGS ${@:2}
+else
+	docker $@
+fi
+
