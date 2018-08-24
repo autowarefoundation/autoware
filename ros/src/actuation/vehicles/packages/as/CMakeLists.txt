@@ -3,6 +3,7 @@ project(as)
 
 find_package(
         catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         geometry_msgs
@@ -23,7 +24,7 @@ catkin_package(
 set(AS_MSG_PATH "${CMAKE_SOURCE_DIR}/msgs/platform_automation_msgs/module_comm_msgs")
 if (EXISTS "${AS_MSG_PATH}")
 
-    SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
     include_directories(
             ${catkin_INCLUDE_DIRS}

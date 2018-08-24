@@ -1,0 +1,6 @@
+- name: /microstrain_3dm_gx5_15
+  publish: [/gps/fix, /imu_raw, /nav/odom, /nav/status]
+  server: [/reset_kf]
+- name: /microstrain_3dm_gx5_45_node
+  publish: [/gps/fix, /imu_raw, /nav/odom, /nav/status]
+  server: [/reset_kf]

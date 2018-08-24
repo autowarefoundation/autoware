@@ -33,8 +33,9 @@
 
 // ROS includes
 #include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
+
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 
 #include <visualization_msgs/Marker.h>
 

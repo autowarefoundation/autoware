@@ -19,6 +19,7 @@
     <author>Sean Whitsitt</author>
 
     <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
 
     <build_depend>controller_manager</build_depend>
     <build_depend>gazebo_ros_control</build_depend>

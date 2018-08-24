@@ -1,0 +1,4 @@
+- name: /pacmod_interface
+  publish: [/as/arbitrated_steering_commands, /as/arbitrated_speed_commands,
+    /as_current_twist]
+  subscribe: [/twist_cmd, /as/control_mode, /vehicle/steering_report]

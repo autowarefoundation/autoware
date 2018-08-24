@@ -6,6 +6,7 @@
     <maintainer email="hirabayashi@ertl.jp">Manato HIRABAYASHI</maintainer>
     <license>BSD</license>
     <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
     <build_depend>cmake_modules</build_depend>
     <build_depend>runtime_manager</build_depend>
     <build_depend>std_msgs</build_depend>

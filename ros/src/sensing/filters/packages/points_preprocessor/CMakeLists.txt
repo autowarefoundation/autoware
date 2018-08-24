@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(points_preprocessor)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         sensor_msgs
@@ -30,6 +31,14 @@ find_package(OpenCV REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 find_package(OpenMP)
 
+# Resolve system dependency on yaml-cpp, which apparently does not
+# provide a CMake find_package() module.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARY_DIRS})
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
 ###########
 ## Build ##
 ###########
@@ -39,7 +48,7 @@ include_directories(
         include
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 link_directories(${PCL_LIBRARY_DIRS})
 
@@ -115,10 +124,16 @@ add_executable(points_concat_filter
         nodes/points_concat_filter/points_concat_filter.cpp
         )
 
+target_include_directories(points_concat_filter PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
 target_link_libraries(points_concat_filter
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
+        ${YAML_CPP_LIBRARIES}
         )
+
 add_dependencies(points_concat_filter ${catkin_EXPORTED_TARGETS})
 
 #Cloud Transformer
@@ -141,7 +156,7 @@ add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
 #    find_package(rostest REQUIRED)
 #    find_package(roslaunch REQUIRED)
 
-#    add_rostest_gtest(test_points_preprocessor 
+#    add_rostest_gtest(test_points_preprocessor
 #			test/test_points_preprocessor.test
 #			test/src/test_points_preprocessor.cpp)
 #   target_include_directories(test_points_preprocessor PRIVATE

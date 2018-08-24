@@ -1,0 +1,2 @@
+- name: /garmin_gps_18x_lvc
+  publish: [/nmea_sentence, /gpstime]

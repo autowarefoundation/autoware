@@ -8,6 +8,7 @@
     <license>BSD</license>
 
     <buildtool_depend>catkin</buildtool_depend>
+    <buildtool_depend>autoware_build_flags</buildtool_depend>
 
     <build_depend>pcl_ros</build_depend>
     <build_depend>roscpp</build_depend>

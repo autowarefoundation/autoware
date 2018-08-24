@@ -1,0 +1,4 @@
+- name: /op_trajectory_generator
+  publish: [/final_waypoints, /base_waypoints, /local_trajectories]
+  subscribe: [/initialpose, /current_pose, /odom, /current_velocity,
+    /can_info, /lane_waypoints_array]

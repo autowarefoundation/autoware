@@ -1,0 +1,6 @@
+- name: /mqtt_receiver
+  publish: [/remote_cmd]
+  subscribe: [/vehicle/1/remote_cmd]
+- name: /mqtt_pose_receiver
+  publish: [/current_pose]
+  subscribe: [/vehicle/1/current_pose, /tf/baselink, /tf/map]

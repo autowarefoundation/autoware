@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# Main run script to startup docker with Autoware
+
+echo "nvpmodel -m 0"
+sudo nvpmodel -m 0
+echo "./jetson_clocks.sh"
+sudo bash ~/jetson_clocks.sh
+
+XSOCK=/tmp/.X11-unix
+XAUTH=/home/$USER/.Xauthority
+DIRNAME=shared_dir
+
+if [ "$#" -ne 0 ]; then
+    DIRNAME=$1    
+fi
+
+HOST_DIR=/home/$USER/$DIRNAME
+SHARED_DIR=/home/autoware/$DIRNAME
+
+sudo mkdir -p $HOST_DIR
+echo "Shared directory: ${HOST_DIR}"
+
+./txdocker run \
+    -it --rm \
+    --volume=$XSOCK:$XSOCK:rw \
+    --volume=$XAUTH:$XAUTH:rw \
+    --volume=$HOST_DIR:$SHARED_DIR:rw \
+    --env="XAUTHORITY=${XAUTH}" \
+    --env="DISPLAY=${DISPLAY}" \
+    -u autoware \
+    --privileged -v /tmp:/tmp \
+    --device=/dev/video0:/dev/video0:rw \
+    --net=host \
+    autoware-tx2

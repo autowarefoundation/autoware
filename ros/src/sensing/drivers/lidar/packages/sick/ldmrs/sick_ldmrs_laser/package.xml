@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>sick_ldmrs_laser</name>
+  <version>0.0.0</version>
+  <description>
+    A ROS driver for the SICK LD-MRS series of laser scanners.
+  </description>
+
+  <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
+  <author email="martin.guenther@dfki.de">Martin Günther</author>
+  <author email="ros@jochen.sprickerhof.de">Jochen Sprickerhof</author>
+
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/sick_ldmrs_laser</url>
+  <url type="repository">https://github.com/uos/sick_ldmrs_laser</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>sick_ldmrs_description</exec_depend>
+  <exec_depend>sick_ldmrs_driver</exec_depend>
+  <exec_depend>sick_ldmrs_msgs</exec_depend>
+  <exec_depend>sick_ldmrs_tools</exec_depend>
+
+  <export>
+    <metapackage/>
+    <architecture_independent/>
+  </export>
+</package>

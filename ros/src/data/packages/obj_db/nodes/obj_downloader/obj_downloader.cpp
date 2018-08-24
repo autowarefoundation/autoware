@@ -133,7 +133,7 @@ static void marker_publisher(const std_msgs::String& msg)
   visualization_msgs::Marker sphere_list;
   sphere_list.header.frame_id = "/mobility";
   sphere_list.header.stamp = ros::Time::now();
-  sphere_list.ns = "mo_marker";
+  sphere_list.ns = "mo_pictograms";
   sphere_list.id = 0;
   sphere_list.type = visualization_msgs::Marker::SPHERE_LIST;
   sphere_list.action = visualization_msgs::Marker::ADD;
@@ -278,7 +278,7 @@ int main(int argc, char **argv)
 
   cout << "obj_downloader" << endl;
 
-  pub = nh.advertise<visualization_msgs::Marker>("mo_marker",1);
+  pub = nh.advertise<visualization_msgs::Marker>("mo_pictograms",1);
 
   if(argc == 1){
     std::cout << "normal execution" << std::endl;
