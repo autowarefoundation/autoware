@@ -68,6 +68,48 @@ TEST(ImmRaukf, checkUpdateForSUKF)
   EXPECT_NEAR(0.0217008, tested_p, 0.00001);
 }
 
+TEST(ImmRaukf, checkPredictionForIMMUKFPDA)
+{
+  double px        = -9.61675;
+  double py        = -3.49989;
+  double timestamp = 1.31701e+09;
+  int target_id = 1;
+  Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+  init_meas << px, py;
+  IMM_RAUKF ukf;
+  ukf.initialize(init_meas, timestamp, target_id);
+  double dt  = 0.103288;
+  ukf.predictionIMMUKF(dt);
+  double cv_x_0 = ukf.x_cv_(0, 0);
+  double rm_x_1 = ukf.x_rm_(1, 0);
+  EXPECT_NEAR(-9.61675, cv_x_0, 0.00001);
+  EXPECT_NEAR(-3.49989, rm_x_1, 0.00001);
+}
+
+TEST(ImmRaukf, checkUpdateForIMMUKFPDA)
+{
+  double px        = -9.61675;
+  double py        = -3.49989;
+  double timestamp = 1.31701e+09;
+  int target_id = 1;
+  Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+  init_meas << px, py;
+  IMM_RAUKF ukf;
+  ukf.initialize(init_meas, timestamp, target_id);
+  double dt  = 0.103288;
+  ukf.predictionIMMUKF(dt);
+  std::vector<autoware_msgs::DetectedObject> object_vec;
+  autoware_msgs::DetectedObject dd;
+  dd.pose.position.x = -9.86449 ;
+  dd.pose.position.y =  -2.81236;
+  object_vec.push_back(dd);
+  ukf.updateSUKF(object_vec);
+  double tested_x_cv_2 = ukf.x_cv_(2,0);
+  double tested_p_cv_1 = ukf.p_cv_(1,1);
+  EXPECT_NEAR(0.0, tested_x_cv_2, 0.00001);
+  EXPECT_NEAR(0.5, tested_p_cv_1, 0.00001);
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
     testing::InitGoogleTest(&argc, argv);
