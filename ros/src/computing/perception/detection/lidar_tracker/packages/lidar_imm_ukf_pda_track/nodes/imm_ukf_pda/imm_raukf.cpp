@@ -1,13 +1,6 @@
 
 #include "imm_raukf.h"
 
-enum MotionModel : int
-{
-  CV   = 0,      // constant velocity
-  CTRV = 1,    // constant turn rate and velocity
-  RM   = 2,      // random motion
-};
-
 /**
 * Initializes Unscented Kalman filter
 */
@@ -1095,7 +1088,6 @@ void IMM_RAUKF::robustAdaptiveFilter(const bool use_sukf)
     {
       return;
     }
-    // std::cout << "-----------------------------------------------------------------------------------------------------running ra filter " << std::endl;
     adaptiveAdjustmentQ(MotionModel::CTRV);
     adaptiveAdjustmentR(MotionModel::CTRV);
     estimationUpdate(MotionModel::CTRV);

@@ -110,6 +110,75 @@ TEST(ImmRaukf, checkUpdateForIMMUKFPDA)
   EXPECT_NEAR(0.5, tested_p_cv_1, 0.00001);
 }
 
+TEST(ImmRaukf, checkFaultDetectionForRAFilter)
+{
+  double px        = -9.61675;
+  double py        = -3.49989;
+  double timestamp = 1.31701e+09;
+  int target_id = 1;
+  Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+  init_meas << px, py;
+  IMM_RAUKF ukf;
+  ukf.initialize(init_meas, timestamp, target_id);
+  double dt  = 0.103288;
+  ukf.predictionIMMUKF(dt);
+  std::vector<autoware_msgs::DetectedObject> object_vec;
+  autoware_msgs::DetectedObject dd;
+  dd.pose.position.x = -9.86449 ;
+  dd.pose.position.y =  -2.81236;
+  object_vec.push_back(dd);
+  ukf.updateSUKF(object_vec);
+  bool is_fault;
+  ukf.faultDetection(MotionModel::CTRV, is_fault);
+  EXPECT_TRUE(is_fault);
+}
+
+TEST(ImmRaukf, checkPassFaultDetectionForRAFilter)
+{
+  double px        = -9.61675;
+  double py        = -3.49989;
+  double timestamp = 1.31701e+09;
+  int target_id = 1;
+  Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+  init_meas << px, py;
+  IMM_RAUKF ukf;
+  ukf.initialize(init_meas, timestamp, target_id);
+  double dt  = 0.103288;
+  ukf.predictionIMMUKF(dt);
+  std::vector<autoware_msgs::DetectedObject> object_vec;
+  autoware_msgs::DetectedObject dd;
+  dd.pose.position.x = -9.86449 ;
+  dd.pose.position.y =  -3.21236;
+  object_vec.push_back(dd);
+  ukf.updateSUKF(object_vec);
+  bool is_fault;
+  ukf.faultDetection(MotionModel::CTRV, is_fault);
+  EXPECT_TRUE(!is_fault);
+}
+
+// TEST(ImmRaukf, checkFaultDetectionForRAFilter)
+// {
+//   double px        = -9.61675;
+//   double py        = -3.49989;
+//   double timestamp = 1.31701e+09;
+//   int target_id = 1;
+//   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+//   init_meas << px, py;
+//   IMM_RAUKF ukf;
+//   ukf.initialize(init_meas, timestamp, target_id);
+//   double dt  = 0.103288;
+//   ukf.predictionIMMUKF(dt);
+//   std::vector<autoware_msgs::DetectedObject> object_vec;
+//   autoware_msgs::DetectedObject dd;
+//   dd.pose.position.x = -9.86449 ;
+//   dd.pose.position.y =  -2.81236;
+//   object_vec.push_back(dd);
+//   ukf.updateSUKF(object_vec);
+//   bool is_fault;
+//   ukf.faultDetection(MotionModel::CTRV, is_fault);
+//   EXPECT_TRUE(is_fault);
+// }
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
     testing::InitGoogleTest(&argc, argv);
