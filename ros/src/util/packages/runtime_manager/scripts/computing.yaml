@@ -687,6 +687,10 @@ subs :
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
          param: waypoint_clicker
+       - name : waypoint_generator
+         desc : waypoint_generator desc sample
+         cmd  : rosrun waypoint_maker waypoint_generator
+         param: waypoint_generator
        - name : waypoint_velocity_visualizer
          desc : waypoint_velocity_visualizer desc sample
          cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
@@ -1092,7 +1096,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-        
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -2957,6 +2961,16 @@ params :
       path_type : save
       v         : /tmp/lane_waypoint.csv
       rosparam  : /waypoint_clicker/output_file
+
+  - name  : waypoint_generator
+    vars  :
+    - name      : waypoint_max
+      desc      : output_file desc sample
+      label     : waypoint max
+      min       : 2
+      max       : 10000
+      v         : 100
+      rosparam  : /waypoint_generator/waypoint_max
 
   - name  : waypoint_loader
     topic : /config/waypoint_loader
