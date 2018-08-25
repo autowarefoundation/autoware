@@ -1100,6 +1100,22 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name     : use_sukf
+      desc     : standard Unscented kalman filter
+      label    : use sukf
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : use_robust_adaptive_filter
+      desc     : robust adaptive filter
+      label    : use robust adaptive filter
+      kind     : checkbox
+      v        : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : lidar_kf_contour_track_param
     vars  :

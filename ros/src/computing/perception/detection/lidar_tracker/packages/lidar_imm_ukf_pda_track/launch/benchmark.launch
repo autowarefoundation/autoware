@@ -98,6 +98,8 @@
   <arg name="tracker_output_jskbb_topic" default="/bounding_boxes_tracked" />
   <arg name="tracker_output_detected_topic" default="/tracker_output_detected_topic" />
   <arg name="is_benchmark" default="true" />
+  <arg name="use_sukf" default="false" />
+  <arg name="use_robust_adaptive_filter" default="false" />
   <arg name="debug_nth_take" default="17" />
 
   <arg name="pointcloud_frame" default="/velodyne" />
@@ -114,6 +116,8 @@
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
     <param name="tracking_frame" value="$(arg tracking_frame)" />
     <param name="is_benchmark" value="$(arg is_benchmark)" />
+    <param name="use_sukf" value="$(arg use_sukf)" />
+    <param name="use_robust_adaptive_filter" value="$(arg use_robust_adaptive_filter)" />
     <param name="debug_nth_take" value="$(arg debug_nth_take)" />
 
     <remap from="detected_objects_range" to="$(arg tracker_input_topic)" />

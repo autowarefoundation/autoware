@@ -17,15 +17,14 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
+  private_nh_.param<bool>("use_sukf", use_sukf_, false);
+  private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, false);
   private_nh_.param<int>("debug_nth_take", debug_nth_take_, 0);
 
   init_                       = false;
 
   // could change below param fot better performance
   use_vectormap_              = false;
-  use_sukf_                   = false;
-  use_robust_adaptive_filter_ = false;
-  is_benchmark_               = true;
   // assign unique ukf_id_ to each tracking targets
   target_id_   = 0;
   frame_count_ = 0;
