@@ -1110,7 +1110,6 @@ void IMM_RAUKF::robustAdaptiveFilter(const bool use_sukf)
       {
         continue;
       }
-      // std::cout << "ukf id "<< ukf_id_ << "running ra filter " << std::endl;
       adaptiveAdjustmentQ(model_ind);
       adaptiveAdjustmentR(model_ind);
       estimationUpdate(model_ind);

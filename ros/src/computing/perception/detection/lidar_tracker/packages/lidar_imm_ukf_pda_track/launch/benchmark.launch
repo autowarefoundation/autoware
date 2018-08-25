@@ -98,9 +98,9 @@
   <arg name="tracker_output_jskbb_topic" default="/bounding_boxes_tracked" />
   <arg name="tracker_output_detected_topic" default="/tracker_output_detected_topic" />
   <arg name="is_benchmark" default="true" />
-  <arg name="use_sukf" default="false" />
-  <arg name="use_robust_adaptive_filter" default="false" />
-  <arg name="debug_nth_take" default="17" />
+  <arg name="use_sukf" default="true" />
+  <arg name="use_robust_adaptive_filter" default="true" />
+  <arg name="debug_nth_take" default="19" />
 
   <arg name="pointcloud_frame" default="/velodyne" />
   <arg name="tracking_frame" default="/world" />
