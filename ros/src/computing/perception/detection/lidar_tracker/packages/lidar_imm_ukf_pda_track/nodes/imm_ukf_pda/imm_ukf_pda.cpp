@@ -167,8 +167,14 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
 {
   transformed_input.header = input.header;
   try{
-    // tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(3.0));
+    if(is_benchmark_)
+    {
+      tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(3.0));
+    }
+    else
+    {
+      tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+    }
     // todo: make transform obejct for later use
   }
   catch (tf::TransformException ex){
@@ -183,8 +189,14 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     pose_in.header = input.header;
     pose_in.pose = input.objects[i].pose;
 
-    // tf_listener_.transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
-    tf_listener_.transformPose(tracking_frame_, input.header.stamp, pose_in, input.header.frame_id, pose_out);
+    if(is_benchmark_)
+    {
+      tf_listener_.transformPose(tracking_frame_, input.header.stamp, pose_in, input.header.frame_id, pose_out);
+    }
+    else
+    {
+      tf_listener_.transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
+    }
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
@@ -206,8 +218,14 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     detected_pose_in.header.frame_id = tracking_frame_;
     detected_pose_in.pose            = detected_objects_output.objects[i].pose;
 
-    tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
-    // tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, detected_pose_in, tracking_frame_, detected_pose_out);
+    if(is_benchmark_)
+    {
+      tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
+    }
+    else
+    {
+      tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, detected_pose_in, tracking_frame_, detected_pose_out);
+    }
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
     detected_objects_output.objects[i].pose            = detected_pose_out.pose;
@@ -220,8 +238,14 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     jsk_pose_in.header               = jskbboxes_output.header;
     jsk_pose_in.header.frame_id      = tracking_frame_;
     jsk_pose_in.pose                 = jskbboxes_output.boxes[i].pose;
-    tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), jsk_pose_in, tracking_frame_, jsk_pose_out);
-    // tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, jsk_pose_in, tracking_frame_, jsk_pose_out);
+    if(is_benchmark_)
+    {
+      tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, jsk_pose_in, tracking_frame_, jsk_pose_out);
+    }
+    else
+    {
+      tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), jsk_pose_in, tracking_frame_, jsk_pose_out);
+    }
     jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;
     jskbboxes_output.boxes[i].pose            = jsk_pose_out.pose;
   }
