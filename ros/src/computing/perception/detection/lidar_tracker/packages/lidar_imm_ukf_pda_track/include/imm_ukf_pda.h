@@ -64,6 +64,9 @@ private:
   std::string result_file_path_;
   // std::ofstream result_file_;
 
+  //for debug
+  int debug_nth_take_;
+
   std::string input_topic_;
   std::string output_topic_;
 

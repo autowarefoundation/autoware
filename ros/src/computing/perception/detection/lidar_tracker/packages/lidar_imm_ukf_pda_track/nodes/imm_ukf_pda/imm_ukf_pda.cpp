@@ -4,7 +4,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-int g_take = 19;
 
 ImmUkfPda::ImmUkfPda()
 {
@@ -18,12 +17,13 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
+  private_nh_.param<int>("debug_nth_take", debug_nth_take_, 0);
 
   init_                       = false;
 
-  // could change below param fot get better performance
+  // could change below param fot better performance
   use_vectormap_              = false;
-  use_sukf_                   = true;
+  use_sukf_                   = false;
   use_robust_adaptive_filter_ = false;
   is_benchmark_               = true;
   // assign unique ukf_id_ to each tracking targets
@@ -36,10 +36,12 @@ ImmUkfPda::ImmUkfPda()
     result_file_path_ = path + "/benchmark/results/result.txt";
     remove(result_file_path_.c_str());
 
-    std::string filepath1 = "/home/kosuke/cluster_out" +std::to_string(g_take) + ".txt";
-    std::string filepath2 = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+    std::string filepath1 = "/home/kosuke/pre_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+    std::string filepath2 = "/home/kosuke/post_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+    std::string filepath3 = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
     remove(filepath1.c_str());
     remove(filepath2.c_str());
+    remove(filepath3.c_str());
   }
 }
 
@@ -65,25 +67,46 @@ void ImmUkfPda::run()
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
-  std::string filepath = "/home/kosuke/cluster_out" +std::to_string(g_take) + ".txt";
-  std::ofstream file(filepath, std::ofstream::out | std::ofstream::app);
-  file<< frame_count_ << " " << input.objects.size() << "\n";
+  if(is_benchmark_)
+  {
+    if(frame_count_ == 0)
+    {
+      //skip fisrt frame
+      frame_count_ ++;
+      return;
+    }
+  }
+  // only transform pose(clusteArray.clusters.bouding_box.pose)
+  std::string filepath1 = "/home/kosuke/pre_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+  std::ofstream file1(filepath1, std::ofstream::out | std::ofstream::app);
+  file1<< frame_count_ << " " << input.objects.size() << "\n";
   for(size_t i = 0; i < input.objects.size(); i++)
   {
-    file<<input.objects[i].pose.position.x << " "
-        <<input.objects[i].pose.position.y << " "
-        <<input.objects[i].pose.position.z << " "
-        <<input.objects[i].pose.orientation.x << " "
-        <<input.objects[i].pose.orientation.y << " "
-        <<input.objects[i].pose.orientation.z << " "
-        <<input.objects[i].pose.orientation.w << "\n";
+    file1<<input.objects[i].pose.position.x << " "
+         <<input.objects[i].pose.position.y << " "
+         <<input.objects[i].pose.position.z << " "
+         <<input.objects[i].pose.orientation.x << " "
+         <<input.objects[i].pose.orientation.y << " "
+         <<input.objects[i].pose.orientation.z << " "
+         <<input.objects[i].pose.orientation.w << "\n";
   }
   autoware_msgs::DetectedObjectArray transformed_input;
+  transformPoseToGlobal(input, transformed_input);
+  std::string filepath2 = "/home/kosuke/post_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+  std::ofstream file2(filepath2, std::ofstream::out | std::ofstream::app);
+  file2<< frame_count_ << " " << input.objects.size() << "\n";
+  for(size_t i = 0; i < transformed_input.objects.size(); i++)
+  {
+    file2<<transformed_input.objects[i].pose.position.x << " "
+        <<transformed_input.objects[i].pose.position.y << " "
+        <<transformed_input.objects[i].pose.position.z << " "
+        <<transformed_input.objects[i].pose.orientation.x << " "
+        <<transformed_input.objects[i].pose.orientation.y << " "
+        <<transformed_input.objects[i].pose.orientation.z << " "
+        <<transformed_input.objects[i].pose.orientation.w << "\n";
+  }
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
-
-  // only transform pose(clusteArray.clusters.bouding_box.pose)
-  transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
   // relayJskbbox(input, jskbboxes_output);
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
@@ -144,8 +167,8 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
 {
   transformed_input.header = input.header;
   try{
-    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-    // tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(2.0));
+    // tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, input.header.stamp, ros::Duration(3.0));
     // todo: make transform obejct for later use
   }
   catch (tf::TransformException ex){
@@ -160,8 +183,8 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     pose_in.header = input.header;
     pose_in.pose = input.objects[i].pose;
 
-    tf_listener_.transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
-    // tf_listener_.transformPose(tracking_frame_, input.header.stamp, pose_in, input.header.frame_id, pose_out);
+    // tf_listener_.transformPose(tracking_frame_, ros::Time(0), pose_in, input.header.frame_id, pose_out);
+    tf_listener_.transformPose(tracking_frame_, input.header.stamp, pose_in, input.header.frame_id, pose_out);
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
@@ -862,7 +885,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   {
     initTracker(input, timestamp);
     makeOutput(input, jskbboxes_output, detected_objects_output);
-    std::string filepath = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+    std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
     std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
     file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<timestamp<< "\n";
     for(size_t i = 0; i < targets_.size(); i++)
@@ -963,7 +986,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
   // end UKF process
 
-  std::string filepath = "/home/kosuke/tracker_out" +std::to_string(g_take) + ".txt";
+  std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
   std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
   file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<dt <<"\n";
   for(size_t i = 0; i < targets_.size(); i++)
