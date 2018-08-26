@@ -1,9 +1,7 @@
-/*
- * SimpleTracker.cpp
- *
- *  Created on: Aug 11, 2016
- *      Author: hatem
- */
+/// \file SimpleTracker.cpp
+/// \brief Kalman Filter based object tracker
+/// \author Hatem Darweesh
+/// \date Aug 11, 2016
 
 #include "op_simu/SimpleTracker.h"
 #include "op_planner/MatrixOperations.h"

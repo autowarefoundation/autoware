@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+	<arg name="simObjNumber"				default="5" />
+	<arg name="GuassianErrorFactor"			default="0" />
+	<arg name="pointCloudPointsNumber"		default="75" />
+		
+	<node pkg="op_simulation_package" type="op_perception_simulator" name="op_perception_simulator" output="screen">		
+		<param name="simObjNumber" 					value="$(arg simObjNumber)" />		
+		<param name="GuassianErrorFactor" 			value="$(arg GuassianErrorFactor)" />
+		<param name="pointCloudPointsNumber" 		value="$(arg pointCloudPointsNumber)" />		
+	</node>
+
+</launch>

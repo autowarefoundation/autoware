@@ -79,8 +79,8 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.twist.twist.linear.y = path.at(i).laneId;
 		wp.twist.twist.linear.z = path.at(i).stopLineID;
 		wp.twist.twist.angular.x = path.at(i).laneChangeCost;
-		wp.twist.twist.angular.y = path.at(i).LeftLaneId;
-		wp.twist.twist.angular.z = path.at(i).RightLaneId;
+		wp.twist.twist.angular.y = path.at(i).LeftPointId;
+		wp.twist.twist.angular.z = path.at(i).RightPointId;
 		//std::cout << "PathID: " << i << ", LID:" << path.at(i).laneId << ", LeftLaneID: " <<  path.at(i).LeftLaneId << ", RightLaneID: " << path.at(i).RightLaneId << std::endl;
 
 		for(unsigned int iaction = 0; iaction < path.at(i).actionCost.size(); iaction++)

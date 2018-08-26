@@ -8,14 +8,20 @@ Autoware users skip this step.
 ```
 $ cd Autoware/docker/crossbuild/
 
-# aarch64
-$ ./build_cross_image.sh aarch64
+# generic-aarch64
+$ ./build_cross_image.sh generic-aarch64
+
+# synquacer
+$ ./build_cross_image.sh synquacer
 ```
 
 ## How to Build Cross
 ```
 $ cd Autoware/ros/
 
-# aarch64
-$ ./catkin_make_release_cross aarch64
+# generic-aarch64
+$ ./catkin_make_release_cross generic-aarch64
+
+# synquacer
+$ ./catkin_make_release_cross synquacer
 ```
