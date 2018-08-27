@@ -1,4 +1,3 @@
-string multi_lane_csv
 bool replanning_mode
 float32 velocity_max
 float32 velocity_min
@@ -7,6 +6,9 @@ float32 decel_limit
 float32 radius_thresh
 float32 radius_min
 bool resample_mode
+bool decel_curve_mode
+bool decel_endpoint_mode
+bool constant_vmax_mode
 float32 resample_interval
 int32 velocity_offset
 int32 end_point_offset

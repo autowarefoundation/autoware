@@ -43,7 +43,6 @@
 #include <unordered_map>
 
 #include "autoware_msgs/LaneArray.h"
-#include "velocity_replanner.h"
 
 namespace waypoint_maker
 {
@@ -74,6 +73,7 @@ class WaypointLoaderNode
 public:
   WaypointLoaderNode();
   ~WaypointLoaderNode();
+  void run();
 
 private:
   // handle
@@ -83,26 +83,18 @@ private:
   // publisher & subscriber
   ros::Publisher lane_pub_;
   ros::Subscriber config_sub_;
-  ros::Subscriber output_cmd_sub_;
 
   // variables
   std::string multi_lane_csv_;
-  bool disable_decision_maker_;
-  bool replanning_mode_;
-  VelocityReplanner replanner_;
   std::vector<std::string> multi_file_path_;
   autoware_msgs::LaneArray output_lane_array_;
 
   // initializer
   void initPubSub();
-  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
-  void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
-  void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
   void createLaneWaypoint(const std::string& file_path, autoware_msgs::lane* lane);
   void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
-  void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array);
 
   FileFormat checkFileFormat(const char* filename);
   bool verifyFileConsistency(const char* filename);
@@ -115,7 +107,6 @@ private:
                             autoware_msgs::waypoint* wp);
 };
 
-const std::string addFileSuffix(std::string file_path, std::string suffix);
 void parseColumns(const std::string& line, std::vector<std::string>* columns);
 size_t countColumns(const std::string& line);
 }

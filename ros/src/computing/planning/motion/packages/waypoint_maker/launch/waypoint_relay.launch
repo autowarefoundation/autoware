@@ -1,0 +1,8 @@
+<!-- -->
+<launch>
+	<arg name="input_topic" default="/based/lane_waypoints_array"/>
+	<arg name="output_topic" default="/lane_waypoints_array"/>
+	<!-- rosrun waypoint_maker waypoint_loader _multi_lane_csv:="path file" -->
+	<node pkg="topic_tools" type="relay" name="waypoint_relay" args="$(arg input_topic) $(arg output_topic)" />
+
+</launch>

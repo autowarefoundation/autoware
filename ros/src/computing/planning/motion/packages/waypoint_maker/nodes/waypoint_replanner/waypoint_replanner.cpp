@@ -1,5 +1,6 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2018, TierIV, Inc.
+
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -27,16 +28,68 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "waypoint_replanner.h"
 
-// ROS Includes
-#include <ros/ros.h>
+namespace waypoint_maker
+{
 
-#include "waypoint_loader_core.h"
+WaypointReplanner::WaypointReplanner() : replanning_mode_(false)
+{
+  lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_array", 10, true);
+  lane_sub_ = nh_.subscribe("/based/lane_waypoints_raw", 1, &WaypointReplanner::laneCallback, this);
+  config_sub_ = nh_.subscribe("/config/waypoint_replanner", 1, &WaypointReplanner::configCallback, this);
+}
+
+WaypointReplanner::~WaypointReplanner()
+{
+}
+
+void WaypointReplanner::replan(autoware_msgs::LaneArray* lane_array)
+{
+  if (!lane_array)
+  {
+    return;
+  }
+  for (auto &el : lane_array->lanes)
+  {
+    replanner_.replanLaneWaypointVel(&el);
+  }
+}
+
+void WaypointReplanner::publishLaneArray()
+{
+  autoware_msgs::LaneArray array(lane_array_);
+  if (replanning_mode_)
+  {
+    replan(&array);
+  }
+  lane_pub_.publish(array);
+}
+
+void WaypointReplanner::laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array)
+{
+  lane_array_ = *lane_array;
+  publishLaneArray();
+}
+
+void WaypointReplanner::configCallback(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf)
+{
+  replanning_mode_ = conf->replanning_mode;
+  replanner_.initParameter(conf);
+  if (lane_array_.lanes.empty())
+  {
+    return;
+  }
+  publishLaneArray();
+}
+
+}
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "waypoint_loader");
-  waypoint_maker::WaypointLoaderNode wln;
-  wln.run();
+  ros::init(argc, argv, "waypoint_replanner");
+  waypoint_maker::WaypointReplanner wr;
+  ros::spin();
+
   return 0;
 }

@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+	<node pkg="waypoint_maker" type="waypoint_replanner" name="waypoint_replanner" output="screen"/>
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
+
+</launch>

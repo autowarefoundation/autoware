@@ -1,5 +1,6 @@
 /*
- *  Copyright (c) 2015, Nagoya University
+ *  Copyright (c) 2018, TierIV, Inc.
+
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -27,16 +28,37 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#ifndef __WAYPOINT_REPLANNER_H__
+#define __WAYPOINT_REPLANNER_H__
 
-// ROS Includes
 #include <ros/ros.h>
+#include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/ConfigWaypointReplanner.h>
+#include <autoware_msgs/ConfigWaypointFollower.h>
+#include <std_msgs/String.h>
+#include "waypoint_replanner_core.h"
 
-#include "waypoint_loader_core.h"
-
-int main(int argc, char** argv)
+namespace waypoint_maker
 {
-  ros::init(argc, argv, "waypoint_loader");
-  waypoint_maker::WaypointLoaderNode wln;
-  wln.run();
-  return 0;
+
+class WaypointReplanner
+{
+public:
+  WaypointReplanner();
+  ~WaypointReplanner();
+
+private:
+  ros::NodeHandle nh_;
+  ros::Publisher lane_pub_;
+  ros::Subscriber lane_sub_, config_sub_;
+  bool replanning_mode_;
+  WaypointReplannerCore replanner_;
+  autoware_msgs::LaneArray lane_array_;
+  void replan(autoware_msgs::LaneArray *lane_array);
+  void publishLaneArray();
+  void laneCallback(const autoware_msgs::LaneArray::ConstPtr& lane_array);
+  void configCallback(const autoware_msgs::ConfigWaypointReplanner::ConstPtr& conf);
+};
+
 }
+#endif

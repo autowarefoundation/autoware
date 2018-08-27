@@ -84,7 +84,7 @@ add_message_files(
             config/ConfigTwistFilter.msg
             config/ConfigVelocitySet.msg
             config/ConfigVoxelGridFilter.msg
-            config/ConfigWaypointLoader.msg
+            config/ConfigWaypointReplanner.msg
             config/ConfigWaypointFollower.msg
             accel_cmd.msg
             adjust_xy.msg
