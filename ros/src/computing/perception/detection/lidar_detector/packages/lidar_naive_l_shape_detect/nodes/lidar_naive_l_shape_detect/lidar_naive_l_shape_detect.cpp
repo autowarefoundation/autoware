@@ -69,8 +69,7 @@ void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[],
   // loop 4 rect points
   for (int point_i = 0; point_i < 4; point_i++)
   {
-    cv::Point2f offset_point_float;
-    offset_point_float = static_cast<cv::Point2f>(offset_point);
+    cv::Point2f offset_point_float(offset_point.x, offset_point.y);
 
     cv::Point2f reverse_offset_point = rect_points[point_i] - offset_point_float;
     // reverse from image coordinate to eucledian coordinate
@@ -78,7 +77,7 @@ void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[],
     float r_y = pic_scale_ * roi_m_ - reverse_offset_point.y;
     cv::Point2f eucledian_coordinate_pic_point(r_x, r_y);
     // reverse to roi_m_*roi_m_ scale
-    cv::Point2f offset_pointcloud_point = eucledian_coordinate_pic_point / pic_scale_;
+    cv::Point2f offset_pointcloud_point = eucledian_coordinate_pic_point * float(1/pic_scale_);
     // reverse from (0 < x,y < roi_m_) to (roi_m_/2 < x,y < roi_m_/2)
     cv::Point2f offset_vec_(roi_m_ / 2, roi_m_ / 2);
     cv::Point2f pointcloud_point = offset_pointcloud_point - offset_vec_;
