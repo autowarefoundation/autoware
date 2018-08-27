@@ -1,4 +1,3 @@
-// Bring in gtest
 #include <gtest/gtest.h>
 
 #include "imm_raukf.h"
@@ -104,10 +103,10 @@ TEST(ImmRaukf, checkUpdateForIMMUKFPDA)
   dd.pose.position.y =  -2.81236;
   object_vec.push_back(dd);
   ukf.updateSUKF(object_vec);
-  double tested_x_cv_2 = ukf.x_cv_(2,0);
-  double tested_p_cv_1 = ukf.p_cv_(1,1);
-  EXPECT_NEAR(0.0, tested_x_cv_2, 0.00001);
-  EXPECT_NEAR(0.5, tested_p_cv_1, 0.00001);
+  double test_x_cv_2 = ukf.x_cv_(2,0);
+  double test_p_cv_1 = ukf.p_cv_(1,1);
+  EXPECT_NEAR(0.0, test_x_cv_2, 0.00001);
+  EXPECT_NEAR(0.5, test_p_cv_1, 0.00001);
 }
 
 TEST(ImmRaukf, checkFaultDetectionForRAFilter)
@@ -156,28 +155,33 @@ TEST(ImmRaukf, checkPassFaultDetectionForRAFilter)
   EXPECT_TRUE(!is_fault);
 }
 
-// TEST(ImmRaukf, checkFaultDetectionForRAFilter)
-// {
-//   double px        = -9.61675;
-//   double py        = -3.49989;
-//   double timestamp = 1.31701e+09;
-//   int target_id = 1;
-//   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
-//   init_meas << px, py;
-//   IMM_RAUKF ukf;
-//   ukf.initialize(init_meas, timestamp, target_id);
-//   double dt  = 0.103288;
-//   ukf.predictionIMMUKF(dt);
-//   std::vector<autoware_msgs::DetectedObject> object_vec;
-//   autoware_msgs::DetectedObject dd;
-//   dd.pose.position.x = -9.86449 ;
-//   dd.pose.position.y =  -2.81236;
-//   object_vec.push_back(dd);
-//   ukf.updateSUKF(object_vec);
-//   bool is_fault;
-//   ukf.faultDetection(MotionModel::CTRV, is_fault);
-//   EXPECT_TRUE(is_fault);
-// }
+TEST(ImmRaukf, checkRAFilter)
+{
+  double px        = -9.61675;
+  double py        = -3.49989;
+  double timestamp = 1.31701e+09;
+  int target_id = 1;
+  Eigen::VectorXd init_meas = Eigen::VectorXd(2);
+  init_meas << px, py;
+  IMM_RAUKF ukf;
+  ukf.initialize(init_meas, timestamp, target_id);
+  double dt  = 0.103288;
+  ukf.predictionIMMUKF(dt);
+  std::vector<autoware_msgs::DetectedObject> object_vec;
+  autoware_msgs::DetectedObject dd;
+  dd.pose.position.x = -9.86449 ;
+  dd.pose.position.y =  -2.81236;
+  object_vec.push_back(dd);
+  ukf.updateSUKF(object_vec);
+
+  ukf.adaptiveAdjustmentQ(MotionModel::CTRV);
+  ukf.adaptiveAdjustmentR(MotionModel::CTRV);
+  ukf.estimationUpdate(MotionModel::CTRV);
+  double test_x_ctrv_0  = ukf.x_ctrv_(0);
+  double test_p_ctrv_1  = ukf.p_ctrv_(1,1);
+  EXPECT_NEAR(-9.8593642, test_x_ctrv_0, 0.00001);
+  EXPECT_NEAR(0.09756984, test_p_ctrv_1, 0.00001);
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
