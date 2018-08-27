@@ -48,6 +48,7 @@ PurePursuitNode::PurePursuitNode()
   , const_velocity_(5.0)
   , lookahead_distance_ratio_(2.0)
   , minimum_lookahead_distance_(6.0)
+  , direction_(1)
 {
   initForROS();
 
@@ -145,7 +146,7 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
 
   autoware_msgs::ControlCommandStamped ccs;
   ccs.header.stamp = ros::Time::now();
-  ccs.cmd.linear_velocity = can_get_curvature ? computeCommandVelocity() : 0;
+  ccs.cmd.linear_velocity = can_get_curvature ? fabs(computeCommandVelocity()) : 0;
   ccs.cmd.linear_acceleration = can_get_curvature ? computeCommandAccel() : 0;
   ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
@@ -166,8 +167,9 @@ double PurePursuitNode::computeLookaheadDistance() const
 
 double PurePursuitNode::computeCommandVelocity() const
 {
+  const int sgn = (command_linear_velocity_ < 0) ? -1 : 1;
   if (param_flag_ == enumToInteger(Mode::dialog))
-    return kmph2mps(const_velocity_);
+    return sgn * kmph2mps(const_velocity_);
 
   return command_linear_velocity_;
 }
@@ -237,13 +239,36 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
 {
-  if (!msg->waypoints.empty())
-    command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
-  else
-    command_linear_velocity_ = 0;
-
-  pp_.setCurrentWaypoints(msg->waypoints);
+  command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
+  direction_ = (command_linear_velocity_ > 0.0) ? 1 : (command_linear_velocity_ < 0.0) ? -1 : direction_;
+  autoware_msgs::lane expanded_lane(*msg);
+  connectVirtualLastWaypoints(&expanded_lane);
+  pp_.setCurrentWaypoints(expanded_lane.waypoints);
   is_waypoint_set_ = true;
+}
+
+void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
+{
+  if (lane->waypoints.size() < 2)
+  {
+    return;
+  }
+  const geometry_msgs::Point& p0 = lane->waypoints[0].pose.pose.position;
+  const geometry_msgs::Point& p1 = lane->waypoints[1].pose.pose.position;
+  const geometry_msgs::Pose& pn = lane->waypoints.back().pose.pose;
+  const double interval = getPlaneDistance(p0, p1);
+
+  autoware_msgs::waypoint virtual_last_waypoint;
+  virtual_last_waypoint.pose.pose.orientation = pn.orientation;
+  virtual_last_waypoint.twist.twist.linear.x = 0.0;
+
+  geometry_msgs::Point virtual_last_point_rlt;
+  for (double dist = minimum_lookahead_distance_ * 10; dist > 0.0; dist -= interval)
+  {
+    virtual_last_point_rlt.x += interval * direction_;
+    virtual_last_waypoint.pose.pose.position = calcAbsoluteCoordinate(virtual_last_point_rlt, pn);
+    lane->waypoints.push_back(virtual_last_waypoint);
+  }
 }
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
