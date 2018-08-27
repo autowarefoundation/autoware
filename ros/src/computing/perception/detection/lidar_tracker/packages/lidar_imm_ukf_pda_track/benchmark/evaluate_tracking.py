@@ -737,7 +737,7 @@ def evaluate(velo_data_num, result_file_path, gt_file_path):
     if not e.loadGroundtruth(gt_file_path):
         raise ValueError("Ground truth not found.")
     print("Loading Groundtruth - Success")
-    print("Size of result data ", len(e.groundtruth))
+    print("Size of ground truth data ", len(e.groundtruth))
     # sanity checks
     if len(e.groundtruth) is not len(e.result_data):
         print("The uploaded data does not provide results for every sequence.")

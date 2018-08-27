@@ -219,11 +219,11 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 
     if(is_benchmark_)
     {
-      tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
+      tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, detected_pose_in, tracking_frame_, detected_pose_out);
     }
     else
     {
-      tf_listener_.transformPose(pointcloud_frame_, jskbboxes_output.header.stamp, detected_pose_in, tracking_frame_, detected_pose_out);
+      tf_listener_.transformPose(pointcloud_frame_, ros::Time(0), detected_pose_in, tracking_frame_, detected_pose_out);
     }
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
@@ -840,44 +840,48 @@ void ImmUkfPda::pubPoints(const autoware_msgs::DetectedObjectArray& input)
     // std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
     //                   + modified_sv + " km/h";
 
+    // std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
+    //                   + std::to_string(targets_[i].x_merge_(2)) + " m/s "
+    //                   + "(" + std::to_string(targets_[i].x_merge_(0))+", " + std::to_string(targets_[i].x_merge_(1)) + ")";
     std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " "
-                      + std::to_string(targets_[i].x_merge_(2)) + " m/s "
-                      + "(" + std::to_string(targets_[i].x_merge_(0))+", " + std::to_string(targets_[i].x_merge_(1)) + ")";
+    + std::to_string(targets_[i].mode_prob_cv_) + " "
+    + std::to_string(targets_[i].mode_prob_ctrv_) + " "
+    + std::to_string(targets_[i].mode_prob_rm_);
     // id.text = std::to_string(input.objects[i].id);
     id.text = text;
     texts_markers.markers.push_back(id);
   }
 
   // meas text
-  for(size_t i = 0; i < input.objects.size(); i++)
-  {
-    visualization_msgs::Marker id;
-    id.header.frame_id =  "/world";
-    id.header.stamp = input.header.stamp;
-    id.ns ="target_points";
-    id.action = visualization_msgs::Marker::ADD;
-    id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    id.id = i;
-    id.lifetime = ros::Duration(0.1);
-
-    id.color.g = 1.0f;
-    id.color.a = 1.0;
-
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    id.pose.position.x = input.objects[i].pose.position.x;
-    id.pose.position.y = input.objects[i].pose.position.y;
-    id.pose.position.z = 1.5;
-
-    id.scale.z = 0.5;
-
-    std::string s_px = std::to_string(input.objects[i].pose.position.x);
-    std::string s_py = std::to_string(input.objects[i].pose.position.y);
-
-    std::string text = "(" + s_px+", " + s_py + ")";
-    // id.text = std::to_string(input.objects[i].id);
-    id.text = text;
-    texts_markers.markers.push_back(id);
-  }
+  // for(size_t i = 0; i < input.objects.size(); i++)
+  // {
+  //   visualization_msgs::Marker id;
+  //   id.header.frame_id =  "/world";
+  //   id.header.stamp = input.header.stamp;
+  //   id.ns ="target_points";
+  //   id.action = visualization_msgs::Marker::ADD;
+  //   id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  //   id.id = i;
+  //   id.lifetime = ros::Duration(0.1);
+  //
+  //   id.color.g = 1.0f;
+  //   id.color.a = 1.0;
+  //
+  //   // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+  //   id.pose.position.x = input.objects[i].pose.position.x;
+  //   id.pose.position.y = input.objects[i].pose.position.y;
+  //   id.pose.position.z = 1.5;
+  //
+  //   id.scale.z = 0.5;
+  //
+  //   std::string s_px = std::to_string(input.objects[i].pose.position.x);
+  //   std::string s_py = std::to_string(input.objects[i].pose.position.y);
+  //
+  //   std::string text = "(" + s_px+", " + s_py + ")";
+  //   // id.text = std::to_string(input.objects[i].id);
+  //   id.text = text;
+  //   texts_markers.markers.push_back(id);
+  // }
 
 
   for (size_t i = 0; i < input.objects.size(); i++)

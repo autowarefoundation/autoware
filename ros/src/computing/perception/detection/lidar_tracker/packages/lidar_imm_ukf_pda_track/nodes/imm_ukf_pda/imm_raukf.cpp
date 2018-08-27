@@ -41,10 +41,10 @@ IMM_RAUKF::IMM_RAUKF()
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_cv_ = 2;
   std_a_ctrv_ = 2;
-  std_a_rm_ = 3;
+  std_a_rm_ = 2;
   std_ctrv_yawdd_ = 2;
   std_cv_yawdd_ = 2;
-  std_rm_yawdd_ = 3;
+  std_rm_yawdd_ = 2;
 
   //------------------
   // Laser measurement noise standard deviation position1 in m
@@ -1094,7 +1094,8 @@ void IMM_RAUKF::robustAdaptiveFilter(const bool use_sukf)
   }
   else
   {
-    for (int model_ind = 0; model_ind < 3; model_ind++)
+    // applying ra filter except for random motion model
+    for (int model_ind = 0; model_ind < 2; model_ind++)
     {
       bool is_fault = false;
       faultDetection(model_ind, is_fault);
@@ -1245,7 +1246,9 @@ void IMM_RAUKF::cv(const double p_x, const double p_y, const double v, const dou
   // not sure which one, works better in curve by using yaw
   double yaw_p = yaw;
 
-  double yawd_p = yawd;
+  //todo: might be different 
+  // double yawd_p = yawd;
+  double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -1259,8 +1262,8 @@ void IMM_RAUKF::randomMotion(const double p_x, const double p_y, const double v,
 {
   double px_p = p_x;
   double py_p = p_y;
-  double v_p = v*0.9; // aim to converge velocity for static objects
-  // double v_p = 0.0;
+  // double v_p = v*0.9; // aim to converge velocity for static objects
+  double v_p = 0.0;
 
   double yaw_p = yaw;
   double yawd_p = yawd;
