@@ -32,15 +32,11 @@ float32                         angle       # Angle [0 to 2*PI), allow rotated r
 
 sensor_msgs/Image               roi_image
 
-# Behavior State of the Detected Object
-uint8 FORWARD_STATE             = 0
-uint8 STOPPING_STATE            = 1
-uint8 BRANCH_LEFT_STATE         = 2
-uint8 BRANCH_RIGHT_STATE        = 3
-uint8 YIELDING_STATE            = 4
-uint8 ACCELERATING_STATE        = 5
-uint8 SLOWDOWN_STATE            = 6
-uint8                           behavior_state
+############### Indicator information
+uint8                          indicator_state # INDICATOR_LEFT = 0, INDICATOR_RIGHT = 1, INDICATOR_BOTH = 2, INDICATOR_NONE = 3
+
+############### Behavior State of the Detected Object
+uint8                           behavior_state # FORWARD_STATE = 0, STOPPING_STATE = 1, BRANCH_LEFT_STATE = 2, BRANCH_RIGHT_STATE = 3, YIELDING_STATE = 4, ACCELERATING_STATE = 5, SLOWDOWN_STATE = 6
 
 #
 string[]                        user_defined_info
