@@ -43,3 +43,8 @@ Launch file available parameters:
 |Topic|Type|Objective|
 ------|----|---------
 |`/detection/tracked_objects`|`autoware_msgs::DetectedObjectArray`|Contains the coordinates of the bounding boxes in image coordinates for the successfully tracked objects.|
+
+
+### Video
+
+[![Beyond Autoware](https://img.youtube.com/vi/KFfD3Mkkz4Y/0.jpg)](https://www.youtube.com/watch?v=KFfD3Mkkz4Y)
