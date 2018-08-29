@@ -1,9 +1,9 @@
-/*
- * BehaviorStateMachine.h
- *
- *  Created on: Jun 19, 2016
- *      Author: hatem
- */
+
+/// \file BehaviorStateMachine.h
+/// \author Hatem Darweesh
+/// \brief OpenPlanner's state machine implementation for different driving behaviors
+/// \date Jun 19, 2016
+
 
 #ifndef BEHAVIORSTATEMACHINE_H_
 #define BEHAVIORSTATEMACHINE_H_
@@ -27,6 +27,7 @@ public:
 	int m_currentStopSignID	;
 	int m_currentTrafficLightID ;
 	double decisionMakingTime;
+	int decisionMakingCount;
 	double m_zero_velocity;
 
 	PreCalculatedConditions* GetCalcParams()
@@ -52,6 +53,11 @@ public:
 	std::vector<BehaviorStateMachine*> pNextStates;
 
 	BehaviorStateMachine* FindBehaviorState(const STATE_TYPE& behavior);
+	void UpdateLogCount(BehaviorStateMachine* pState);
+	BehaviorStateMachine* FindBestState(int nMinCount);
+
+private:
+	std::vector<std::pair<BehaviorStateMachine*, int> > m_BehaviorsLog;
 };
 
 class ForwardState : public BehaviorStateMachine
@@ -63,12 +69,30 @@ public:
 	virtual BehaviorStateMachine* GetNextState();
 };
 
+class ForwardStateII : public BehaviorStateMachine
+{
+public:
+	ForwardStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FORWARD_STATE;}
+	virtual ~ForwardStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
 class MissionAccomplishedState : public BehaviorStateMachine
 {
 public:
 	MissionAccomplishedState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FINISH_STATE;}
 	virtual ~MissionAccomplishedState(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
+class MissionAccomplishedStateII : public BehaviorStateMachine
+{
+public:
+	MissionAccomplishedStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FINISH_STATE;}
+	virtual ~MissionAccomplishedStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 };
 
@@ -82,12 +106,32 @@ public:
 
 };
 
+class FollowStateII : public BehaviorStateMachine
+{
+public:
+	FollowStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = FOLLOW_STATE;}
+	virtual ~FollowStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class SwerveState : public BehaviorStateMachine
 {
 public:
 	SwerveState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
 	virtual ~SwerveState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class SwerveStateII : public BehaviorStateMachine
+{
+public:
+	SwerveStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = OBSTACLE_AVOIDANCE_STATE;}
+	virtual ~SwerveStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };
@@ -131,12 +175,32 @@ public:
 
 };
 
+class StopSignStopStateII : public BehaviorStateMachine
+{
+public:
+	StopSignStopStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_STOP_STATE;}
+	virtual ~StopSignStopStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
 class StopSignWaitState : public BehaviorStateMachine
 {
 public:
 	StopSignWaitState(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
 	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
 	virtual ~StopSignWaitState(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class StopSignWaitStateII : public BehaviorStateMachine
+{
+public:
+	StopSignWaitStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = STOP_SIGN_WAIT_STATE;}
+	virtual ~StopSignWaitStateII(){}
 	virtual BehaviorStateMachine* GetNextState();
 
 };
@@ -161,6 +225,15 @@ public:
 
 };
 
+class InitStateII : public BehaviorStateMachine
+{
+public:
+	InitStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = INITIAL_STATE;}
+	virtual ~InitStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
 class GoalState : public BehaviorStateMachine
 {
 public:
@@ -169,6 +242,34 @@ public:
 	virtual ~GoalState(){}
 	virtual BehaviorStateMachine* GetNextState();
 
+};
+
+class GoalStateII : public BehaviorStateMachine
+{
+public:
+	GoalStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = GOAL_STATE;}
+	virtual ~GoalStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+
+};
+
+class TrafficLightStopStateII : public BehaviorStateMachine
+{
+public:
+	TrafficLightStopStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = TRAFFIC_LIGHT_STOP_STATE;}
+	virtual ~TrafficLightStopStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
+};
+
+class TrafficLightWaitStateII : public BehaviorStateMachine
+{
+public:
+	TrafficLightWaitStateII(PlanningParams* pParams, PreCalculatedConditions* pPreCalcVal, BehaviorStateMachine* pNextState)
+	: BehaviorStateMachine(pParams, pPreCalcVal, pNextState){m_Behavior = TRAFFIC_LIGHT_WAIT_STATE;}
+	virtual ~TrafficLightWaitStateII(){}
+	virtual BehaviorStateMachine* GetNextState();
 };
 
 } /* namespace PlannerHNS */

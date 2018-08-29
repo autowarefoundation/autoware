@@ -1,0 +1,25 @@
+<!-- -->
+<launch>
+	<arg name="mapSource" 				default="0" /> <!-- Autoware=0, Vector Map Folder=1, kml=2 -->
+	<arg name="mapFileName" 			default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+	
+	<arg name="first_signs_list_ids"			default=",9,10," />
+	<arg name="first_green_time"				default="10" />
+	<arg name="second_signs_list_ids"			default=",7,8," />
+	<arg name="second_green_time"				default="10" />
+	<arg name="first_yellow_time"				default="5" />
+	<arg name="second_yellow_time"				default="5" />
+		
+	<node pkg="op_simulation_package" type="op_signs_simulator" name="op_signs_simulator" output="screen">
+		
+		<param name="mapSource" 				value="$(arg mapSource)" />
+		<param name="mapFileName" 				value="$(arg mapFileName)" />		
+		<param name="first_signs_list_ids" 			value="$(arg first_signs_list_ids)" />		
+		<param name="first_green_time" 				value="$(arg first_green_time)" />
+		<param name="second_signs_list_ids" 		value="$(arg second_signs_list_ids)" />				
+		<param name="second_green_time" 			value="$(arg second_green_time)" />
+		<param name="first_yellow_time" 			value="$(arg first_yellow_time)" />
+		<param name="second_yellow_time" 			value="$(arg second_yellow_time)" />
+	</node>
+
+</launch>
