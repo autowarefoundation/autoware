@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.13)
+cmake_minimum_required(VERSION 2.8.12)
 project(vision_beyond_track)
 
 find_package(OpenCV REQUIRED)
@@ -49,3 +49,9 @@ target_link_libraries(vision_beyond_track
 add_dependencies(vision_beyond_track
         ${catkin_EXPORTED_TARGETS}
 )
+
+install(TARGETS beyond_track_lib vision_beyond_track
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
