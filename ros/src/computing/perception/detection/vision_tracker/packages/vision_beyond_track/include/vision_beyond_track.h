@@ -35,10 +35,9 @@
 #ifndef VISION_BEYOND_TRACK_H
 #define VISION_BEYOND_TRACK_H
 
-#include "detection.h"
-// #include "visualizer.h"
-#include "hungarian.h"
 #include <iostream>
+#include <chrono>
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -48,102 +47,101 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <autoware_msgs/ConfigSsd.h>
 #include <autoware_msgs/DetectedObject.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 
-//#include <rect_class_score.h>
-
-using namespace std;
+#include "detection.h"
+#include "hungarian.h"
 
 #define __APP_NAME__ "vision_beyond_track"
 
-namespace beyondtrack {
-  class BeyondTracker {
-  private:
-    int global_id = 1;
-    bool initialized = false;
-    vector<Detection> cur_det;
-    vector<Detection> prev_det;
-    cv::Mat cur_pose;
-    cv::Mat prev_pose;
-    double all_wts[4] = {0.6, 0.4, 0.2, 0.0};
+namespace beyondtrack
+{
+    class BeyondTracker
+    {
+    private:
+        int global_id_ = 1;
+        bool initialized_ = false;
+        std::vector<Detection> cur_detections_;
+        std::vector<Detection> prev_detections_;
+        cv::Mat cur_pose_;
+        cv::Mat prev_pose_;
+        double all_wts_[4] = {0.6, 0.4, 0.2, 0.0};
 
-    cv::Mat k;
-    cv::Mat inv_k;
-    cv::Mat motion;
-    cv::Mat canonicalCuboid = create_cuboid();
+        cv::Mat camera_k_;
+        cv::Mat camera_inv_k_;
+        cv::Mat motion_;
+        cv::Mat canonical_cuboid_ = create_cuboid();
 
-    void initialize(cv::Mat n, double h);
+        void initialize(cv::Mat n, double h);
 
-    cv::Mat create_cuboid();
+        cv::Mat create_cuboid();
 
-    void propagate_detections(cv::Mat n, double h);
+        void propagate_detections(cv::Mat n, double h);
 
-    vector<vector<double>> generateScoreMatrices();
+        std::vector<vector<double>> generate_score_matrices();
 
-  public:
+    public:
 
-    BeyondTracker() {};
+        BeyondTracker()
+        {
+        };
 
-    BeyondTracker(cv::Mat k_);
+        BeyondTracker(cv::Mat k_);
 
-    ~BeyondTracker() {};
+        ~BeyondTracker()
+        {
+        };
 
-    void process(vector<Detection> detection, cv::Mat pose, cv::Mat n, double h);
+        void process(std::vector<Detection> in_detections, cv::Mat in_pose, cv::Mat in_angle, double in_height);
 
-    vector<Detection> get_results();
+        std::vector<Detection> get_results();
 
-    void set_intrinsic(cv::Mat k_);
+        void set_intrinsic(cv::Mat k_);
 
-    double get_3d2d_score(Detection cd, Detection pd);
+        double get_3d2d_score(Detection cd, Detection pd);
 
-    double get_3d3d_score(Detection cd, Detection pd);
+        double get_3d3d_score(Detection cd, Detection pd);
 
-  };
+    };
 }
 
-class BeyondTrackerNode {
-  ros::Subscriber rect_image_subscriber_;
-  ros::Subscriber intrinsics_subscriber_;
-  ros::Subscriber detections_vision_subscriber_;
-  ros::Subscriber ego_motion_subscriber_;
+class BeyondTrackerNode
+{
+    ros::Subscriber rect_image_subscriber_;
+    ros::Subscriber intrinsics_subscriber_;
+    ros::Subscriber detections_vision_subscriber_;
+    ros::Subscriber ego_motion_subscriber_;
 
-  ros::Publisher publisher_objects_;
-  ros::NodeHandle node_handle_;
+    ros::Publisher objects_publisher_;
+    ros::NodeHandle node_handle_;
 
-  beyondtrack::BeyondTracker tracker_;
+    beyondtrack::BeyondTracker tracker_;
 
-  float score_threshold_;
-  float nms_threshold_;
-  double image_ratio_;//resdize ratio used to fit input image to network input size
-  uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
-  uint32_t image_left_right_border_;
-  std::vector<cv::Scalar> colors_;
+    double image_ratio_;//resize ratio used to fit input image to network input size
+    uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
+    uint32_t image_left_right_border_;
+    std::vector<cv::Scalar> colors_;
 
-  cv::Size image_size_;
-  cv::Mat camera_instrinsics_;
-  bool camera_info_ok_;
+    cv::Size image_size_;
+    cv::Mat camera_instrinsics_;
+    bool camera_info_ok_;
 
-  cv::Mat mat_image_;
-  bool image_ok_ = false;
+    bool use_motion_ = false;
 
-  bool processing_;
+    //std::vector<beyondtrack::Detection> detections_;
+    cv::Mat pose_;
+    cv::Mat ground_angle_;
+    double camera_height_;
 
-  bool use_motion_ = false;
+    std::vector<beyondtrack::Detection>  parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
+    void vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
+    void intrinsics_callback(const sensor_msgs::CameraInfo &in_message);
+    void detection_to_objects(const std::vector<beyondtrack::Detection> &in_objects,
+                              autoware_msgs::DetectedObjectArray& out_message);
 
-  std::vector<beyondtrack::Detection> detections_;
-  cv::Mat pose_;
-  cv::Mat ground_angle_;
-  double camera_height_;
-
-  void parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
-  void vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections);
-  void image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
-  void intrinsics_callback(const sensor_msgs::CameraInfo &in_message);
-  void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param);
 public:
-  void Run();
+    void Run();
 };
 
 #endif
