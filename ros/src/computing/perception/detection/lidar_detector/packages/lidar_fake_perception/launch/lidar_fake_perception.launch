@@ -1,0 +1,65 @@
+<!-- -->
+<launch>
+
+  <!-- publisher -->
+  <arg name="initial_pose_topic" default="/move_base_simple/goal"/>
+  <arg name="real_objects_topic" default="/detected_objects"/>
+  <arg name="real_points_topic" default="/points_raw"/>
+  <arg name="fake_twist_topic" default="/fake_twist"/>
+
+  <!-- subscriber -->
+  <arg name="fake_objects_topic" default="/fake_objects"/>
+  <arg name="fake_points_topic" default="/fake_points"/>
+
+  <!-- param, publishing -->
+  <arg name="publish_objects" default="true"/>
+  <arg name="publish_points" default="true"/>
+  <arg name="publish_rate" default="10.0"/>
+
+  <!-- param, object shape -->
+  <arg name="object_length" default="4.8"/>
+  <arg name="object_width" default="1.8"/>
+  <arg name="object_height" default="1.8"/>
+  <arg name="object_z_offset" default="0.0"/>
+
+  <!-- param, object motion -->
+  <arg name="use_fake_twist" default="false"/>
+  <arg name="object_velocity" default="3.0"/>
+  <arg name="object_angular_velocity" default="0.0"/>
+
+  <!-- param, object meta-info -->
+  <arg name="object_intensity" default="100.0"/>
+  <arg name="object_lifetime" default="-1"/>
+  <arg name="object_points_space" default="0.2"/>
+  <arg name="object_label" default="Stable"/>
+  <arg name="object_frame" default="velodyne"/>
+
+  <node pkg="lidar_fake_perception" type="lidar_fake_perception_node" name="lidar_fake_perception" output="screen">
+    <remap from="/move_base_simple/goal" to="$(arg initial_pose_topic)"/>
+    <remap from="/detected_objects" to="$(arg real_objects_topic)"/>
+    <remap from="/points_raw" to="$(arg real_points_topic)"/>
+    <remap from="/fake_twist" to="$(arg fake_twist_topic)"/>
+
+    <remap from="/fake_objects" to="$(arg fake_objects_topic)"/>
+    <remap from="/fake_points" to="$(arg fake_points_topic)"/>
+
+    <param name="publish_object" value="$(arg publish_object)"/>
+    <param name="publish_points" value="$(arg publish_points)"/>
+    <param name="publish_rate" value="$(arg publish_rate)"/>
+    <param name="object_length" value="$(arg object_length)"/>
+    <param name="object_width" value="$(arg object_width)"/>
+    <param name="object_height" value="$(arg object_height)"/>
+    <param name="object_z_offset" value="$(arg object_z_offset)"/>
+
+    <param name="use_fake_twist" value="$(arg use_fake_twist)"/>
+    <param name="object_velocity" value="$(arg object_velocity)"/>
+    <param name="object_angular_velocity" value="$(arg object_angular_velocity)"/>
+
+    <param name="object_intensity" value="$(arg object_intensity)"/>
+    <param name="object_lifetime" value="$(arg object_lifetime)"/>
+    <param name="object_points_space" value="$(arg object_points_space)"/>
+    <param name="object_label" value="$(arg object_label)"/>
+    <param name="object_frame" value="$(arg object_frame)"/>
+  </node>
+
+</launch>

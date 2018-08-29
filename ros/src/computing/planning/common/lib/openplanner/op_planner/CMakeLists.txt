@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(OpenCV REQUIRED)
-
 find_package(TinyXML REQUIRED)
 
 ###################################
@@ -21,28 +20,31 @@ catkin_package(
    INCLUDE_DIRS include
    LIBRARIES  op_planner
    CATKIN_DEPENDS op_utility
+   DEPENDS TinyXML
 )
 
 ###########
 ## Build ##
 ###########
 
-set(CMAKE_CXX_FLAGS "-fPIC ${CMAKE_CXX_FLAGS}")
-
 include_directories(${catkin_INCLUDE_DIRS}
 		include
+		${TinyXML_INCLUDE_DIRS}
 )
 
 set(PLANNERH_SRC
+		src/BehaviorPrediction.cpp 
 		src/BehaviorStateMachine.cpp
-		src/MappingHelpers.cpp
-		src/RSPlanner.cpp		
-		src/MatrixOperations.cpp
-		src/TrajectoryCosts.cpp		
-		src/PlannerH.cpp		
+		src/DecisionMaker.cpp
 		src/LocalPlannerH.cpp
-		src/PlanningHelpers.cpp
-		src/TrajectoryPrediction.cpp
+		src/MappingHelpers.cpp
+		src/MatrixOperations.cpp
+		src/PassiveDecisionMaker.cpp
+		src/PlannerH.cpp		
+		src/PlanningHelpers.cpp				
+		src/SimuDecisionMaker.cpp
+		src/TrajectoryCosts.cpp
+		src/TrajectoryDynamicCosts.cpp
 )
 
 ## Declare a cpp library
