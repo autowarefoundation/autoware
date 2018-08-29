@@ -1,4 +1,7 @@
-#include "astar_search.h"
+/*
+*/
+
+#include "astar_planner.h"
 #include "search_info_ros.h"
 #include "autoware_msgs/LaneArray.h"
 
@@ -39,7 +42,7 @@ int main(int argc, char **argv)
   private_nh_.param<double>("waypoint_velocity_kmph", waypoint_velocity_kmph, 5.0);
   private_nh_.param<std::string>("map_topic", map_topic, "ring_ogm");
 
-  AstarSearch astar;
+  astar_planner::AstarSearch astar;
   SearchInfo search_info;
 
   // ROS subscribers
@@ -61,13 +64,17 @@ int main(int argc, char **argv)
       continue;
     }
 
+
     // Reset flag
     search_info.reset();
+
+    // Initialize vector for A* search, this runs only once
+    astar.initializeNode(search_info.getMap());
 
     auto start = std::chrono::system_clock::now();
 
     // Execute astar search
-    bool result = astar.makePlan(search_info.getStartPose().pose, search_info.getGoalPose().pose, search_info.getMap());
+    bool result = astar.makePlan(search_info.getStartPose().pose, search_info.getGoalPose().pose, search_info.getMap(), 100000.0);
 
     auto end = std::chrono::system_clock::now();
     auto usec = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
