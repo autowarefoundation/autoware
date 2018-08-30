@@ -4,7 +4,7 @@ Changelog for package lidar_kf_contour_track
 
 1.7.0 (2018-05-16)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
 * Contributors: Kosuke Murakami
 
 Forthcoming
@@ -21,8 +21,8 @@ Forthcoming
   Test Following
   Test Obstacle Avoidance
   Add Visualization information to rviz config file open_planner.rviz
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * Modify Map loading for OpenPlanner, now it reads from Autoware vector map messages, old behavior still works but from launch file only.
   Delete way_planner, dp_planner from UI, but they still accessible from roslaunch.
 * Fix Vector Map parser problem, tested with three different maps
@@ -53,7 +53,7 @@ Forthcoming
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

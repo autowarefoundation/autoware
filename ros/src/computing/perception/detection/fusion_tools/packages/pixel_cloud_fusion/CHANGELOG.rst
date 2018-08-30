@@ -4,7 +4,7 @@ Changelog for package pixel_cloud_fusion
 
 Forthcoming
 -----------
-* Feature/std perception msg (`#1418 <https://github.com/kfunaoka/Autoware/issues/1418>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:
   * SSD
@@ -33,14 +33,14 @@ Forthcoming
   * Added Runtime manager entry
   * * Added Publication of non fused objects
   * Fixed topic names
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
-* Changed frame_id to match each camera id on tierfusion (`#1313 <https://github.com/kfunaoka/Autoware/issues/1313>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Changed frame_id to match each camera id on tierfusion (`#1313 <https://github.com/CPFL/Autoware/pull/1313>`_)
   * Changed frame_id to match each camera id on tierfusion
   * Fix to check once the point has been transformed.
-* [feature] Pixel cloud fusion (`#1297 <https://github.com/kfunaoka/Autoware/issues/1297>`_)
+* [feature] Pixel cloud fusion (`#1297 <https://github.com/CPFL/Autoware/pull/1297>`_)
   * Initial Release of Pixel Cloud Fusion
   (includes a fix to the Calibration Publisher only publishing one time)
   * Fix README formatting for pixel_cloud_fusion
-  * Enable frame from TF, considering fix `#1296 <https://github.com/kfunaoka/Autoware/issues/1296>`_ merged for multi camera
+  * Enable frame from TF, considering fix `#1296 <https://github.com/CPFL/Autoware/pull/1296>`_ merged for multi camera
 * Contributors: Abraham Monrroy, Esteve Fernandez

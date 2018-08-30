@@ -4,25 +4,25 @@ Changelog for package autoware_camera_lidar_calibrator
 
 1.7.0 (2018-05-16)
 ------------------
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
-* [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/kfunaoka/Autoware/issues/1149>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
+* [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/CPFL/Autoware/pull/1149>`_)
 * Output file updated
 * fixed matlab chessboard detection
-* Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/kfunaoka/Autoware/issues/1131>`_)
+* Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/CPFL/Autoware/pull/1131>`_)
 * Contributors: AMC, Abraham Monrroy, Jacob Lambert
 
 Forthcoming
 -----------
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
-* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
 * Contributors: Esteve Fernandez, Kenji Funaoka
 
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Modify package xml version other than 1.6.3
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -55,12 +55,12 @@ Forthcoming
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/kfunaoka/Autoware/issues/1149>`_)
+* [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/CPFL/Autoware/pull/1149>`_)
   * Added missing Qt5Core dependency for PCL
   * Removed unnecessary library linking
 * Output file updated
 * fixed matlab chessboard detection
-* Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/kfunaoka/Autoware/issues/1131>`_)
+* Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/CPFL/Autoware/pull/1131>`_)
   * Initial Release Autoware Camera-LiDAR calibration tool
   * Update README
   File is saved now

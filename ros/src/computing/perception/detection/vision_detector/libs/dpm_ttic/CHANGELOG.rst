@@ -4,16 +4,16 @@ Changelog for package libdpm_ttic
 
 Forthcoming
 -----------
-* [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/kfunaoka/Autoware/issues/1447>`_)
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
-* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/kfunaoka/Autoware/issues/1375>`_)
+* [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/CPFL/Autoware/pull/1447>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/CPFL/Autoware/pull/1375>`_)
 * Contributors: Esteve Fernandez
 
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

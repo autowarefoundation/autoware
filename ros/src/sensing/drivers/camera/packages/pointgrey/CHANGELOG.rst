@@ -4,19 +4,19 @@ Changelog for package autoware_pointgrey_drivers
 
 Forthcoming
 -----------
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
-* Added ID for multiple camera frames (`#1296 <https://github.com/kfunaoka/Autoware/issues/1296>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Added ID for multiple camera frames (`#1296 <https://github.com/CPFL/Autoware/pull/1296>`_)
   * Added ID for multiple camera frames
   * Fixed indexing for Ladybug camera
   * Fixed camera index on grasshopper
-* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
 * Contributors: Abraham Monrroy, Esteve Fernandez, Kenji Funaoka
 
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -49,14 +49,14 @@ Forthcoming
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/kfunaoka/Autoware/issues/1154>`_)
+* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/CPFL/Autoware/pull/1154>`_)
   * Added timeout to the grasshopper camera node.
   * Added timeout to the launch file
-* Autoware PointGrey driver package README (`#1145 <https://github.com/kfunaoka/Autoware/issues/1145>`_)
+* Autoware PointGrey driver package README (`#1145 <https://github.com/CPFL/Autoware/pull/1145>`_)
   * Autoware PointGrey driver package README
   * Pushed latest README
   * Edited README
-* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/CPFL/Autoware/pull/1105>`_)
   * Grasshopper3 node modified to set the mode and pixel format
   * Baumer Type Readme
   * Baumer Auto Exposure Algorithm improvement

@@ -16,7 +16,7 @@ Forthcoming
 * bug fix in computing yaml
 * Add launcher and parameters to runtime_manager
 * Add only one segment distance
-* Feature/std perception msg (`#1418 <https://github.com/kfunaoka/Autoware/issues/1418>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:
   * SSD
@@ -72,7 +72,7 @@ Forthcoming
   Update UI computing.yaml for the new nodes and modifies parameters
   Update UI sensing.yaml for updated ring_ground_filter params
 * Renamed the package name to map_tf_generator and formatted the code with clang-format.
-* Support Sick LD-MRS Lidar (`#1287 <https://github.com/kfunaoka/Autoware/issues/1287>`_)
+* Support Sick LD-MRS Lidar (`#1287 <https://github.com/CPFL/Autoware/pull/1287>`_)
   * renamed sick_driver to sick_lms5xx
   * Squashed 'ros/src/sensing/drivers/lidar/packages/sick/ldmrs/' content from commit 27976ff
   git-subtree-dir: ros/src/sensing/drivers/lidar/packages/sick/ldmrs
@@ -83,7 +83,7 @@ Forthcoming
 * I have created the tf_genarator package and changed it to use StaticTransformBroadcaster instead of call.
 * Modify runtime_manager
 * Modify points_concat_filter to support up to 8 lidars
-* add tf generator `#1238 <https://github.com/kfunaoka/Autoware/issues/1238>`_
+* add tf generator `#1238 <https://github.com/CPFL/Autoware/pull/1238>`_
 * Contributors: Abraham Monrroy, Akihito Ohsato, Azumi SUZUKI, Kosuke Murakami, Yuki Kitsukawa, hatem-darweesh, yukikitsukawa
 
 1.7.0 (2018-05-18)
@@ -91,7 +91,7 @@ Forthcoming
 * Delete duplicated nodes on Runtime Manager
 * Update runtime_manager/scripts/launch_files
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code
@@ -224,7 +224,7 @@ Forthcoming
 * Rename class and functions filter->replan
 * Fix parameter limits and descriptions
 * Refactor codes
-* [feature] ndt matching safe monitor (`#1181 <https://github.com/kfunaoka/Autoware/issues/1181>`_)
+* [feature] ndt matching safe monitor (`#1181 <https://github.com/CPFL/Autoware/pull/1181>`_)
   * Initial release of ndt_matching_monitor safety node
   * Added extra instruction
   * * Removed Rviz warnings
@@ -238,7 +238,7 @@ Forthcoming
 * Modify roslaunch params
 * Add end point offset option
 * Fix default filetring_mode parameter = false
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -275,12 +275,12 @@ Forthcoming
 * add gear p
 * add ctrl_cmd/cmd/linear_acceletion
 * Add new imm_ukf_pda_tracker feature
-* [feature] Initial release of Yolo v3 node (`#1202 <https://github.com/kfunaoka/Autoware/issues/1202>`_)
+* [feature] Initial release of Yolo v3 node (`#1202 <https://github.com/CPFL/Autoware/pull/1202>`_)
   * Initial release of Yolo v3 node
   * Added extra documentation
   * * Missing header include
 * fix description
-* [Feature] region tlr mxnet (`#1048 <https://github.com/kfunaoka/Autoware/issues/1048>`_)
+* [Feature] region tlr mxnet (`#1048 <https://github.com/CPFL/Autoware/pull/1048>`_)
   * Initial commit of MxNet TLR based recognizer
   * Added result interpretation
   * Added
@@ -295,23 +295,23 @@ Forthcoming
 * Correspond to new version of waypoint_csv(for decision_maker)
 * Analog Devices ADIS16470 added to Runtime Manager
 * fix runtime_manager layout and description
-* Added support for Vimba SDK supportted cameras (`#1170 <https://github.com/kfunaoka/Autoware/issues/1170>`_)
+* Added support for Vimba SDK supportted cameras (`#1170 <https://github.com/CPFL/Autoware/pull/1170>`_)
 * Add config_callback for online waypoint tuning
 * Add velocity plan offset for system delay
 * fix launch files for ros parameter
-* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/kfunaoka/Autoware/issues/1154>`_)
+* [feature] Add timeout to the grasshopper camera node. (`#1154 <https://github.com/CPFL/Autoware/pull/1154>`_)
   * Added timeout to the grasshopper camera node.
   * Added timeout to the launch file
 * Added RTM UI controls
 * Add waypoint_filter functions
 * add gmsl button to runtime manager
-* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/kfunaoka/Autoware/issues/1105>`_)
+* [feature] Grasshopper3 node modified to set the mode and pixel format (`#1105 <https://github.com/CPFL/Autoware/pull/1105>`_)
   * Grasshopper3 node modified to set the mode and pixel format
   * Baumer Type Readme
   * Baumer Auto Exposure Algorithm improvement
   * Added Documentation to the package
   * Added runtime manager param controls for both Ladybug and Grasshopper nodes
-* [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/CPFL/Autoware/pull/1091>`_)
   * Replaced outdated Hokuyo node with new urg_node
   * Added description to RTM
   * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes
@@ -322,7 +322,7 @@ Forthcoming
 * Added hdl32c, fixed naming
 * Added descriptions and optional calibration files. Defaults are used if not defined.
 * improve config gui of NDT
-* Feature/occupancygrid filter (`#1002 <https://github.com/kfunaoka/Autoware/issues/1002>`_)
+* Feature/occupancygrid filter (`#1002 <https://github.com/CPFL/Autoware/pull/1002>`_)
   * Add grid map filter node
   * Add wayarea2grid node
   * Replace dist_transform with grid_map_filter
@@ -340,10 +340,10 @@ Forthcoming
   * Added Road Occupancy Processor package
   * Added extra documentation
   Added commands to RunTimeManager
-* add checkbox for IDS UI-3060CP (`#1058 <https://github.com/kfunaoka/Autoware/issues/1058>`_)
+* add checkbox for IDS UI-3060CP (`#1058 <https://github.com/CPFL/Autoware/pull/1058>`_)
   * add checkbox for IDS UI-3060CP
   * Added description
-* Add SICK LMS511 driver (`#1054 <https://github.com/kfunaoka/Autoware/issues/1054>`_)
+* Add SICK LMS511 driver (`#1054 <https://github.com/CPFL/Autoware/pull/1054>`_)
   * Add SICK LMS511 driver
   * remove unnecessary dependencies
   * Name of package changed
@@ -358,8 +358,8 @@ Forthcoming
 * add new param for decision_maker
 * add new state button on runtime manager
 * add new state for gui
-* add points_topic in app dialog for points_downsampler so that we can select the input topic (`#990 <https://github.com/kfunaoka/Autoware/issues/990>`_)
-* [Feature] Filter Clustered Objects using VectorMap info. (`#980 <https://github.com/kfunaoka/Autoware/issues/980>`_)
+* add points_topic in app dialog for points_downsampler so that we can select the input topic (`#990 <https://github.com/CPFL/Autoware/pull/990>`_)
+* [Feature] Filter Clustered Objects using VectorMap info. (`#980 <https://github.com/CPFL/Autoware/pull/980>`_)
   * Switched from VectorMapServer to Image based filtering
   Added OpenMP support
   * Missing header

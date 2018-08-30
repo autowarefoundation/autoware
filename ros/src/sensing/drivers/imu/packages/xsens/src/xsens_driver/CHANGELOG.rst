@@ -4,7 +4,7 @@ Changelog for package xsens_driver
 
 Forthcoming
 -----------
-* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
 * Contributors: Kenji Funaoka
 
 1.7.0 (2018-05-18)

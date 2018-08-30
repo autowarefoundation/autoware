@@ -4,7 +4,7 @@ Changelog for package integrated_viewer
 
 Forthcoming
 -----------
-* Feature/std perception msg (`#1418 <https://github.com/kfunaoka/Autoware/issues/1418>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:
   * SSD
@@ -33,14 +33,14 @@ Forthcoming
   * Added Runtime manager entry
   * * Added Publication of non fused objects
   * Fixed topic names
-* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
-* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * Contributors: Abraham Monrroy, Esteve Fernandez
 
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

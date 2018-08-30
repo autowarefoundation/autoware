@@ -4,13 +4,13 @@ Changelog for package model_publisher
 
 Forthcoming
 -----------
-* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
 * Contributors: Kenji Funaoka
 
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Feature] Collada Milee 3D model (`#982 <https://github.com/kfunaoka/Autoware/issues/982>`_)
+* [Feature] Collada Milee 3D model (`#982 <https://github.com/CPFL/Autoware/pull/982>`_)
   * Added Milee Collada Model
   * Added Launch file
 * Contributors: Abraham Monrroy, Kosuke Murakami

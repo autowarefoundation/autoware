@@ -2,16 +2,11 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
-------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
-* Contributors: Kosuke Murakami
-
 Forthcoming
 -----------
-* fixes two typos in yolo class name/id file (`#1486 <https://github.com/kfunaoka/Autoware/issues/1486>`_)
-* [Fix] README.md of vision_darknet_detect (`#1437 <https://github.com/kfunaoka/Autoware/issues/1437>`_)
-* Feature/std perception msg (`#1418 <https://github.com/kfunaoka/Autoware/issues/1418>`_)
+* fixes two typos in yolo class name/id file (`#1486 <https://github.com/CPFL/Autoware/pull/1486>`_)
+* [Fix] README.md of vision_darknet_detect (`#1437 <https://github.com/CPFL/Autoware/pull/1437>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:
   * SSD
@@ -42,11 +37,13 @@ Forthcoming
   * Fixed topic names
 * Contributors: Abraham Monrroy, Kenji Funaoka
 
+1.7.0 (2018-05-16)
+------------------
 * Add  code in cmakelists
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

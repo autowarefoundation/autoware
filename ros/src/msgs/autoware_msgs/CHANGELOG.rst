@@ -8,7 +8,7 @@ Forthcoming
   Only one simulated car available in the runtime manager
   update for copywrite note
   insert autoware_build_flags to new nodes
-* Feature/std perception msg (`#1418 <https://github.com/kfunaoka/Autoware/issues/1418>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:
   * SSD
@@ -51,7 +51,7 @@ Forthcoming
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code
@@ -187,7 +187,7 @@ Forthcoming
   - Support to output vehicle autonomous mode
 * add vehicle_status msg
 * Add end point offset option
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck

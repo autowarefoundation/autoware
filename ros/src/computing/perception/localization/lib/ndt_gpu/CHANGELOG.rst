@@ -4,7 +4,7 @@ Changelog for package ndt_gpu
 
 Forthcoming
 -----------
-* [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/kfunaoka/Autoware/issues/1447>`_)
+* [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/CPFL/Autoware/pull/1447>`_)
 * Fix ndt not working correctly on drivePx2 and JetsonTX2
 * Fix ndt_matching/ndt_mapping on drivePX2 and JetsonTX2
 * Contributors: Esteve Fernandez, anhnv3991
@@ -14,7 +14,7 @@ Forthcoming
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Removed unnecessary pakcage from ndt
 * Fix the bug ndt_mapping/matching use GPU resources even when selecting pcl_generic.
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
