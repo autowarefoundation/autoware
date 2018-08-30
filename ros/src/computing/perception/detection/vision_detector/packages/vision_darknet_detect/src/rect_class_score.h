@@ -46,7 +46,7 @@ public:
             case Yolo3::TRAIN: return "train";
             case Yolo3::TRUCK: return "truck";
             case Yolo3::BOAT: return "boat";
-            case Yolo3::TRAFFIC_LIGHT: return "traffic_lost";
+            case Yolo3::TRAFFIC_LIGHT: return "traffic_light";
             case Yolo3::FIRE_HYDRANT: return "fire_hydrant";
             case Yolo3::STOP_SIGN: return "stop_sign";
             case Yolo3::PARKING_METER: return "parking_meter";
@@ -126,7 +126,7 @@ public:
         {
             case Yolo3::PERSON: return 0;
             case Yolo3::BICYCLE: return 1;
-            case Yolo3::CAR: return 3;
+            case Yolo3::CAR: return 2;
             case Yolo3::MOTORBIKE: return 3;
             case Yolo3::AEROPLANE: return 4;
             case Yolo3::BUS: return 5;
