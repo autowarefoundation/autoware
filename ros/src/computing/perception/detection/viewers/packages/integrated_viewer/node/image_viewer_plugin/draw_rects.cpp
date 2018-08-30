@@ -78,18 +78,21 @@ namespace integrated_viewer
         // Draw rectangles for each object
         for (const auto &detected_object : detected_objects->objects)
         {
-            // Draw object information label
-            DrawLabel(detected_object, image);
+            if (detected_object.width > 0 && detected_object.height > 0)
+            {
+                // Draw object information label
+                DrawLabel(detected_object, image);
 
-            // Draw rectangle
-            cv::rectangle(image,
-                          cv::Point(detected_object.x, detected_object.y),
-                          cv::Point(detected_object.x + detected_object.width,
-                                    detected_object.y + detected_object.height),
-                          cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
-                          kRectangleThickness,
-                          CV_AA,
-                          0);
+                // Draw rectangle
+                cv::rectangle(image,
+                              cv::Point(detected_object.x, detected_object.y),
+                              cv::Point(detected_object.x + detected_object.width,
+                                        detected_object.y + detected_object.height),
+                              cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
+                              kRectangleThickness,
+                              CV_AA,
+                              0);
+            }
         }
     } // DrawRects::DrawImageRect()
 

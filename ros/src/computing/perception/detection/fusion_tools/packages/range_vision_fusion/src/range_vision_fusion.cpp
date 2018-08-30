@@ -334,6 +334,7 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
                 range_in_cv.objects[j].width = vision_object.width;
                 range_in_cv.objects[j].height = vision_object.height;
                 range_in_cv.objects[j].angle = vision_object.angle;
+                range_in_cv.objects[j].id = vision_object.id;
                 if(current_distance < closest_distance)
                 {
                     closest_index = j;
@@ -450,6 +451,8 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
             marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
             marker.scale.z = 1.0;
             marker.text = object.label;
+            if (object.id != 0)
+                marker.text += " " + std::to_string(object.id);
             marker.pose.position = object.pose.position;
             marker.pose.position.z += 1.5;
             marker.color.r = 1.0;
