@@ -221,6 +221,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_naive_l_shape_detect
+        desc : lidar_naive_l_shape_detect desc sample
+        cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
+        param: lidar_naive_l_shape_detect_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : lidar_svm_detect
         desc : lidar_svm_detect desc sample
         cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
@@ -1076,7 +1083,7 @@ params :
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /tracking_cluster_array
+      v       : /detection/tracked_objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1150,6 +1157,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -4898,6 +4906,61 @@ params :
       label   : 'clustering_distances (no space)'
       kind    : str
       v       : '[0.5,1.1,1.6,2.1,2.6]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : lidar_naive_l_shape_detect_param
+    vars  :
+    - name    : input_topic
+      desc    : input_topic desc sample
+      label   : 'input_topic'
+      kind    : str
+      v       : /detection/lidar_objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_topic
+      desc    : output_topic desc sample
+      label   : 'output_topic'
+      kind    : str
+      v       : /detection/lidar_objects/l_shaped
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : random_ponts
+      desc    : random_ponts desc sample
+      label   : 'random_points'
+      min       : 0
+      max       : 500
+      v       : 80
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : slope_dist_thres
+      desc    : slope_dist_thres desc sample
+      label   : 'slope_distance_threshold'
+      min       : 0
+      max       : 10
+      v       : 2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : num_points_thres
+      desc    : num_points_thres desc sample
+      label   : 'num_points_thres'
+      min       : 0
+      max       : 100
+      v       : 10
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : sensor_height
+      desc    : sensor_height desc sample
+      label   : 'sensor_height'
+      min       : 0
+      max       : 5
+      v       : 2.3
       cmd_param :
         dash        : ''
         delim       : ':='
