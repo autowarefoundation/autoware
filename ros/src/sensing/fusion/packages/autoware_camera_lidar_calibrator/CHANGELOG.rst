@@ -2,15 +2,6 @@
 Changelog for package autoware_camera_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
-------------------
-* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
-* [fix] Added missing Qt5Core dependency for PCL in autoware_calibration package (`#1149 <https://github.com/CPFL/Autoware/pull/1149>`_)
-* Output file updated
-* fixed matlab chessboard detection
-* Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/CPFL/Autoware/pull/1131>`_)
-* Contributors: AMC, Abraham Monrroy, Jacob Lambert
-
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
@@ -18,6 +9,8 @@ Changelog for package autoware_camera_lidar_calibrator
 * [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
 * Contributors: Esteve Fernandez, Kenji Funaoka
 
+1.7.0 (2018-05-16)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Modify package xml version other than 1.6.3
 * Remove history of sub-branches

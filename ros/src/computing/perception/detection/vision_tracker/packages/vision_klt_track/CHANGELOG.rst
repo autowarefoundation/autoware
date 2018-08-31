@@ -2,11 +2,6 @@
 Changelog for package vision_klt_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
-------------------
-* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
-* Contributors: Kosuke Murakami
-
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
@@ -16,6 +11,8 @@ Changelog for package vision_klt_track
   * CMake fixes for vision packages
 * Contributors: Abraham Monrroy, Esteve Fernandez
 
+1.7.0 (2018-05-16)
+------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst

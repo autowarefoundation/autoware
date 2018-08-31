@@ -2,11 +2,6 @@
 Changelog for package lidar_kf_contour_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
-------------------
-* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
-* Contributors: Kosuke Murakami
-
 1.8.0 (2018-08-31)
 ------------------
 * Support old behavior of insert static object for obstacle avoidance testing
@@ -49,6 +44,8 @@ Changelog for package lidar_kf_contour_track
   Update UI sensing.yaml for updated ring_ground_filter params
 * Contributors: Esteve Fernandez, Hatem Darweesh, hatem-darweesh, kitsukawa
 
+1.7.0 (2018-05-16)
+------------------
 * Add  code in cmakelists
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
