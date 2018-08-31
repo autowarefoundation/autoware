@@ -2,6 +2,12 @@
 Changelog for package lane_detector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/kfunaoka/Autoware/issues/1375>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

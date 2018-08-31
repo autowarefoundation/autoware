@@ -2,6 +2,17 @@
 Changelog for package waypoint_follower
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* fix to get wheel_base
+* Add to publish position deviation from waypoint
+  - apply clang-format
+  - add publisher of position deviation
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka, Yusuke FUJII
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

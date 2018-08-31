@@ -9,6 +9,10 @@ Changelog for package lidar_imm_ukf_pda_track
 
 Forthcoming
 -----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* Contributors: Esteve Fernandez
+
 * Add  code in cmakelists
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches

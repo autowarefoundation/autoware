@@ -2,6 +2,41 @@
 Changelog for package op_local_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Support old behavior of insert static object for obstacle avoidance testing
+  Only one simulated car available in the runtime manager
+  update for copywrite note
+  insert autoware_build_flags to new nodes
+* Update README.md
+* Add README files for OpenPlanner packages
+* Test Simulated Vehicles
+  Fix Simulated Vehicle Initialization
+  Test Following
+  Test Obstacle Avoidance
+  Add Visualization information to rviz config file open_planner.rviz
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* Modify Map loading for OpenPlanner, now it reads from Autoware vector map messages, old behavior still works but from launch file only.
+  Delete way_planner, dp_planner from UI, but they still accessible from roslaunch.
+* Fix Vector Map parser problem, tested with three different maps
+  Fix Global Planning function for the new map modification
+  Add OpenPlanner Simulator for perception, traffic lights, cars
+  Add OpenPlanner new version to replace wp_planner and dp_planner
+  Remove unnecessary files from OpenPlanner libraries
+  Test Global and Local planning
+  Test Tracking node (kf_contour_track)
+  Test Simulation Nodes
+  Test Utility Nodes
+* Update op_utility files for csv files loading
+  Update MappingHelpers with latest modifications
+  Update PlanningHelpers with latest modifications
+  add op_common_param node, for setting OpenPlanner parameter for all related nodes such as lidar_kf_contour_track
+  Improve tracking by including size different in association function
+  Update way_planner, dp_planner for compatibility with new Mapping Modifications, Map format is backward compatible
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* Contributors: Esteve Fernandez, Hatem Darweesh, Kenji Funaoka, hatem-darweesh
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

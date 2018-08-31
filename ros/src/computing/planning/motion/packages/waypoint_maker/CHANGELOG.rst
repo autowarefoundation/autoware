@@ -2,6 +2,13 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * Fix flashing marker & set lifetime

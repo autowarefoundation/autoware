@@ -2,6 +2,13 @@
 Changelog for package ndt_gpu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/kfunaoka/Autoware/issues/1447>`_)
+* Fix ndt not working correctly on drivePx2 and JetsonTX2
+* Fix ndt_matching/ndt_mapping on drivePX2 and JetsonTX2
+* Contributors: Esteve Fernandez, anhnv3991
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

@@ -2,6 +2,17 @@
 Changelog for package vlg22c_cam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* Added ID for multiple camera frames (`#1296 <https://github.com/kfunaoka/Autoware/issues/1296>`_)
+  * Added ID for multiple camera frames
+  * Fixed indexing for Ladybug camera
+  * Fixed camera index on grasshopper
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* Contributors: Abraham Monrroy, Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

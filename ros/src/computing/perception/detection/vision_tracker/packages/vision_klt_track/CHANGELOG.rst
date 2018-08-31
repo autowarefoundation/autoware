@@ -9,6 +9,13 @@ Changelog for package vision_klt_track
 
 Forthcoming
 -----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/kfunaoka/Autoware/issues/1375>`_)
+* * CUDA Fixes for indigo (`#1280 <https://github.com/kfunaoka/Autoware/issues/1280>`_)
+  * CMake fixes for vision packages
+* Contributors: Abraham Monrroy, Esteve Fernandez
+
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst

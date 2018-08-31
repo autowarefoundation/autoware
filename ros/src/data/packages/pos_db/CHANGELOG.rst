@@ -2,6 +2,30 @@
 Changelog for package pos_db
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/kfunaoka/Autoware/issues/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/kfunaoka/Autoware/issues/1385>`_)
+* wait for review
+* wait for review
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/kfunaoka/Autoware/issues/1291>`_)
+* wait for review
+* WIP
+* WIP
+* WIP: fix indent
+* WIP
+* WIP: update pictograms
+* WIP: comp sort db_data
+* WIP
+* wait for review
+* WIP
+* fix mo_marker to mo_pictogram
+* fix
+* fix pos_downloader temporary comp
+* fix pos_downloader WIP
+* add: jsk_rviz_plugins
+* Contributors: Esteve Fernandez, Kenji Funaoka, Masahiro Kitazawa
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
