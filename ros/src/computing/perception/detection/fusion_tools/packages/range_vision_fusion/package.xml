@@ -21,6 +21,7 @@
     <build_depend>image_geometry</build_depend>
     <build_depend>jsk_topic_tools</build_depend>
     <build_depend>visualization_msgs</build_depend>
+    <build_depend>yaml-cpp</build_depend>
 
     <run_depend>cv_bridge</run_depend>
     <run_depend>image_transport</run_depend>
@@ -35,5 +36,6 @@
     <run_depend>image_geometry</run_depend>
     <run_depend>jsk_topic_tools</run_depend>
     <run_depend>visualization_msgs</run_depend>
+    <run_depend>yaml-cpp</run_depend>
 
 </package>

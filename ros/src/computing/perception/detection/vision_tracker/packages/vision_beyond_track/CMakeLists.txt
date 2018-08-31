@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         autoware_msgs
+        tf
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -20,6 +21,7 @@ catkin_package(CATKIN_DEPENDS
         sensor_msgs
         std_msgs
         autoware_msgs
+        tf
         )
 
 include_directories(

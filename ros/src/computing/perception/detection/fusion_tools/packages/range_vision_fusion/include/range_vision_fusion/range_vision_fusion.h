@@ -63,6 +63,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -104,6 +106,9 @@ class RosRangeVisionFusionApp
     float                               fx_, fy_, cx_, cy_;
     double                              overlap_threshold_;
 
+    double                              car_width_, car_height_, car_depth_;
+    double                              person_width_, person_height_, person_depth_;
+
     size_t                              empty_frames_;
 
     typedef
@@ -115,6 +120,8 @@ class RosRangeVisionFusionApp
 
     message_filters::Synchronizer<SyncPolicyT>
                                         *detections_synchronizer_;
+
+    void CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object);
 
     jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 

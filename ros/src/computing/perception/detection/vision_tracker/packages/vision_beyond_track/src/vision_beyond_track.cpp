@@ -291,6 +291,10 @@ void BeyondTrackerNode::detection_to_objects(const std::vector<beyondtrack::Dete
             obj.id = in_objects[i].object_id_;
             obj.image_frame = out_message.header.frame_id;
 
+            // set bounding box direction
+            tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, in_objects[i].yaw_);
+            tf::quaternionTFToMsg(quat, obj.pose.orientation);
+
             out_message.objects.push_back(obj);
     }
 }
