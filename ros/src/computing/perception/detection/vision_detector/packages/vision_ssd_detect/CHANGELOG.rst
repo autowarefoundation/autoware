@@ -7,8 +7,8 @@ Changelog for package vision_ssd_detect
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
 * Contributors: Kosuke Murakami
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
   * New standard message definition for the perception nodes
   * New Detected Object message applied to:

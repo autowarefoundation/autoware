@@ -2,8 +2,8 @@
 Changelog for package op_utility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * Fix Indigo build issues
 * Test Simulated Vehicles
   Fix Simulated Vehicle Initialization

@@ -2,8 +2,8 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * fixes two typos in yolo class name/id file (`#1486 <https://github.com/CPFL/Autoware/pull/1486>`_)
 * [Fix] README.md of vision_darknet_detect (`#1437 <https://github.com/CPFL/Autoware/pull/1437>`_)
 * Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>autoware_build_flags</name>
-  <version>1.7.0</version>
+  <version>1.8.0</version>
   <description>Common build flags for Autoware.</description>
 
   <author email="esteve@apache.org">Esteve Fernandez</author>

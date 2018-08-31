@@ -7,8 +7,8 @@ Changelog for package lidar_euclidean_cluster_detect
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
 * Contributors: Kosuke Murakami
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * Add variable number of params for clustering_ranges and clustering_distances
 * load multiple thres params from string: less rosparam
 * Naming change from segment to clustering

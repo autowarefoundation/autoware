@@ -11,8 +11,8 @@ Changelog for package autoware_camera_lidar_calibrator
 * Initial Release Autoware Camera-LiDAR calibration tool (`#1131 <https://github.com/CPFL/Autoware/pull/1131>`_)
 * Contributors: AMC, Abraham Monrroy, Jacob Lambert
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
 * [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)

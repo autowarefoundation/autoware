@@ -10,8 +10,8 @@ Changelog for package multi_lidar_calibrator
 * Initial Release of Multi Lidar Calibrator Tool
 * Contributors: AMC, Abraham Monrroy
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
 * [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)

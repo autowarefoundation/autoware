@@ -2,8 +2,8 @@
 Changelog for package op_utilities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * Support old behavior of insert static object for obstacle avoidance testing
   Only one simulated car available in the runtime manager
   update for copywrite note

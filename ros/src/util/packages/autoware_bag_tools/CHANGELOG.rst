@@ -2,8 +2,8 @@
 Changelog for package autoware_bag_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.8.0 (2018-08-31)
+------------------
 * Update README.md
 * Add nmea2kml node to autoware_bag_tools, to extract kml and csv of GPS data from rosbag files.
 * Feature/bag tools progressbar (`#1316 <https://github.com/CPFL/Autoware/pull/1316>`_)
