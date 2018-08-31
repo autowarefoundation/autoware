@@ -27,6 +27,8 @@ Launch file available parameters:
 |`detected_objects_vision`|*String*|Name of the `DetectedObjectArray` topic to subscribe containing the detections on 2D space.|`/detection/vision_objects`|
 |`camera_info_src`|*String*|Name of the CameraInfo topic that contains the intrinsic matrix for the Image.|`/camera_info`|
 |`sync_topics`|*Bool*|Sync detection topics.|`false`|
+|`min_car_dimensions`|*Array*|Sets the minimum dimensions for a car (width, height, depth) in meters.|`[2,2,4]`|
+|`min_person_dimensions`|*Array*|Sets the minimum dimensions for a car (width, height, depth) in meters.|`[1,2,1]`|
 |`overlap_threshold`|*float*|A number between 0.1 and 1.0 representing the area of overlap between the detections.|`0.5`|
 
 ## Example of usage

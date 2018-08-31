@@ -2,6 +2,8 @@
     <arg name="detected_objects_range" default="/detection/lidar_objects" />
     <arg name="detected_objects_vision" default="/detection/vision_objects" />
     <arg name="camera_info_src" default="/camera_info" />
+    <arg name="min_car_dimensions" default="[2,2,4]" />
+    <arg name="min_person_dimensions" default="[1,2,1]" />
     <arg name="sync_topics" default="false" />
 
     <node name="range_vision_fusion_01" pkg="range_vision_fusion" type="range_vision_fusion" output="screen">

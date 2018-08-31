@@ -287,6 +287,28 @@ double RosRangeVisionFusionApp::GetDistanceToObject(const autoware_msgs::Detecte
                 in_object.dimensions.z*in_object.dimensions.z);
 }
 
+void RosRangeVisionFusionApp::CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object)
+{
+    if (in_out_object.label == "car")
+    {
+        if (in_out_object.dimensions.x < car_depth_)
+            in_out_object.dimensions.x = car_depth_;
+        if (in_out_object.dimensions.y < car_width_)
+            in_out_object.dimensions.y = car_width_;
+        if (in_out_object.dimensions.z < car_height_)
+            in_out_object.dimensions.z = car_height_;
+    }
+    if (in_out_object.label == "person")
+    {
+        if (in_out_object.dimensions.x < person_depth_)
+            in_out_object.dimensions.x = person_depth_;
+        if (in_out_object.dimensions.y < person_width_)
+            in_out_object.dimensions.y = person_width_;
+        if (in_out_object.dimensions.z < person_height_)
+            in_out_object.dimensions.z = person_height_;
+    }
+}
+
 autoware_msgs::DetectedObjectArray
 RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
                                                    const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
@@ -334,6 +356,14 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
                 range_in_cv.objects[j].width = vision_object.width;
                 range_in_cv.objects[j].height = vision_object.height;
                 range_in_cv.objects[j].angle = vision_object.angle;
+                range_in_cv.objects[j].id = vision_object.id;
+                CheckMinimumDimensions(range_in_cv.objects[j]);
+                if (vision_object.pose.orientation.x > 0
+                    || vision_object.pose.orientation.x > 0
+                    || vision_object.pose.orientation.x > 0)
+                {
+                    range_in_cv.objects[i].pose.orientation = vision_object.pose.orientation;
+                }
                 if(current_distance < closest_distance)
                 {
                     closest_index = j;
@@ -450,6 +480,8 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
             marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
             marker.scale.z = 1.0;
             marker.text = object.label;
+            if (object.id != 0)
+                marker.text += " " + std::to_string(object.id);
             marker.pose.position = object.pose.position;
             marker.pose.position.z += 1.5;
             marker.color.r = 1.0;
@@ -581,7 +613,7 @@ void
 RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 {
     //get params
-    std::string camera_info_src, detected_objects_vision;
+    std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions;
     std::string detected_objects_range, fused_topic_str = "/detection/combined_objects", fused_boxes_str = "/detection/combined_objects_boxes";
     std::string fused_text_str = "detection/combined_objects_labels";
     std::string name_space_str = ros::this_node::getNamespace();
@@ -600,9 +632,31 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.5);
     ROS_INFO("[%s] overlap_threshold: %f", __APP_NAME__, overlap_threshold_);
 
+    in_private_handle.param<std::string>("min_car_dimensions", min_car_dimensions, "[2,2,4]");//w,h,d
+    ROS_INFO("[%s] min_car_dimensions: %s", __APP_NAME__, min_car_dimensions.c_str());
+
+    in_private_handle.param<std::string>("min_person_dimensions", min_person_dimensions, "[1,2,1]");
+    ROS_INFO("[%s] min_person_dimensions: %s", __APP_NAME__, min_person_dimensions.c_str());
+
 
     in_private_handle.param<bool>("sync_topics", sync_topics, false);
     ROS_INFO("[%s] sync_topics: %d", __APP_NAME__, sync_topics);
+
+    YAML::Node car_dimensions = YAML::Load(min_car_dimensions);
+    YAML::Node person_dimensions = YAML::Load(min_person_dimensions);
+
+    if (car_dimensions.size() == 3)
+    {
+        car_width_ = car_dimensions[0].as<double>();
+        car_height_ = car_dimensions[1].as<double>();
+        car_depth_ = car_dimensions[2].as<double>();
+    }
+    if (person_dimensions.size() == 3)
+    {
+        person_width_ = person_dimensions[0].as<double>();
+        person_height_ = person_dimensions[1].as<double>();
+        person_depth_ = person_dimensions[2].as<double>();
+    }
 
     if (name_space_str != "/")
     {
@@ -618,10 +672,6 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     intrinsics_subscriber_ = in_private_handle.subscribe(camera_info_src,
                                                          1,
                                                          &RosRangeVisionFusionApp::IntrinsicsCallback, this);
-
-    /*image_subscriber_ = in_private_handle.subscribe("/image_raw",
-                                                    1,
-                                                    &RosRangeVisionFusionApp::ImageCallback, this);*/
 
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, detected_objects_vision.c_str());
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, detected_objects_range.c_str());
