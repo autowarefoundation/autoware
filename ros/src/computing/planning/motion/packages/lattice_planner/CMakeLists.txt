@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lattice_planner)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         pcl_ros
@@ -43,7 +44,7 @@ catkin_package(
         autoware_msgs
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include

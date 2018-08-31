@@ -1,9 +1,9 @@
-/*
- * TrajectoryCosts.h
- *
- *  Created on: Dec 14, 2016
- *      Author: user
- */
+
+/// \file TrajectoryCosts.h
+/// \brief Calculate collision costs for roll out trajectory for free trajectory evaluation for dp_planner
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef TRAJECTORYCOSTS_H_
 #define TRAJECTORYCOSTS_H_
@@ -49,8 +49,6 @@ private:
 	void NormalizeCosts(vector<TrajectoryCost>& trajectoryCosts);
 	void CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost>& trajectoryCosts, const vector<vector<vector<WayPoint> > >& rollOuts, const vector<vector<WayPoint> >& totalPaths, const WayPoint& currState, const vector<WayPoint>& contourPoints, const PlanningParams& params, const CAR_BASIC_INFO& carInfo, const VehicleState& vehicleState);
 	void CalculateTransitionCosts(vector<TrajectoryCost>& trajectoryCosts, const int& currTrajectoryIndex, const PlanningParams& params);
-	bool CalculateIntersectionVelocities(const std::vector<WayPoint>& path, const DetectedObject& obj, const WayPoint& currState,const CAR_BASIC_INFO& carInfo, WayPoint& collisionPoint);
-
 };
 
 }

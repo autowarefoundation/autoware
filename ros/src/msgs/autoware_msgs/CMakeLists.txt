@@ -77,7 +77,6 @@ add_message_files(
             config/ConfigPedestrianKf.msg
             config/ConfigPlannerSelector.msg
             config/ConfigPoints2Polygon.msg
-            config/ConfigPointsConcatFilter.msg
             config/ConfigRandomFilter.msg
             config/ConfigRingFilter.msg
             config/ConfigRayGroundFilter.msg

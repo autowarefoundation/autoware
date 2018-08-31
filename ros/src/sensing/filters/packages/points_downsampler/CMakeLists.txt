@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(points_downsampler)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         pcl_ros
         sensor_msgs
@@ -37,7 +38,7 @@ catkin_package(
 ###########
 
 include_directories(include ${catkin_INCLUDE_DIRS})
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 add_executable(voxel_grid_filter nodes/voxel_grid_filter/voxel_grid_filter.cpp)
 add_executable(ring_filter nodes/ring_filter/ring_filter.cpp)

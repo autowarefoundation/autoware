@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package>
+  <name>map_tf_generator</name>
+  <version>1.8.0</version>
+  <description>The map_tf_generator package</description>
+
+  <maintainer email="azumi.suzuki@tier4.jp">azumi-suzuki</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>tf</run_depend>
+
+  <export></export>
+</package>

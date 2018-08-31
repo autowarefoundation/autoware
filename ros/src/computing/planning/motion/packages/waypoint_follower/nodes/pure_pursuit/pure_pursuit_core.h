@@ -32,18 +32,18 @@
 #define PURE_PURSUIT_CORE_H
 
 // ROS includes
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
 #include "autoware_msgs/ConfigWaypointFollower.h"
-#include "autoware_msgs/lane.h"
 #include "autoware_msgs/ControlCommandStamped.h"
-#include "pure_pursuit_viz.h"
+#include "autoware_msgs/lane.h"
 #include "pure_pursuit.h"
+#include "pure_pursuit_viz.h"
 
 namespace waypoint_follower
 {
@@ -78,7 +78,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_;
+  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -110,6 +110,8 @@ private:
   // functions
   void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
+  void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
+                                       const std::vector<autoware_msgs::waypoint> &waypoints) const;
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;

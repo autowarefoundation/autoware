@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(image_processor)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         sensor_msgs
         cv_bridge
@@ -23,7 +24,7 @@ include_directories(
         include
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 #Image rotator
 add_executable(image_rotator

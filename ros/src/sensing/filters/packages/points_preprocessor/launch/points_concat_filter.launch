@@ -1,15 +1,13 @@
 <!-- -->
 <launch>
-  <arg name="output_frame" default="lidar_frame" />
-  <arg name="input0" default="/lidar0/points_raw" />
-  <arg name="input1" default="/lidar1/points_raw" />
-  <arg name="output" default="/points_concat" />
+  <arg name="input_topics" default="[/points_alpha, /points_beta]" />
+  <arg name="output_topic" default="/points_concat" />
+  <arg name="output_frame_id" default="velodyne" />
 
   <node pkg="points_preprocessor" type="points_concat_filter"
-        name="points_concat_filter" output="log">
-    <param name="output_frame" value="$(arg output_frame)" />
-    <remap from="/lidar0/points_raw" to="$(arg input0)" />
-    <remap from="/lidar1/points_raw" to="$(arg input1)" />
-    <remap from="/points_concat" to="$(arg output)" />
+        name="points_concat_filter" output="screen">
+    <param name="output_frame_id" value="$(arg output_frame_id)" />
+    <param name="input_topics" value="$(arg input_topics)" />
+    <remap from="/points_concat" to="$(arg output_topic)" />
   </node>
 </launch>

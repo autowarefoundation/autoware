@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vehicle_socket)
 
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         autoware_msgs
         tablet_socket_msgs
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS roscpp std_msgs autoware_msgs tablet_socket_msgs

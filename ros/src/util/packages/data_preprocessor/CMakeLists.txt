@@ -4,6 +4,7 @@ project(data_preprocessor)
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   cv_bridge
   #libpcl-all-dev
   pcl_conversions

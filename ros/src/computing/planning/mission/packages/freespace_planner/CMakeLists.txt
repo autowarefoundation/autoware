@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(freespace_planner)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   nav_msgs
   visualization_msgs
@@ -9,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
   CATKIN_DEPENDS autoware_msgs

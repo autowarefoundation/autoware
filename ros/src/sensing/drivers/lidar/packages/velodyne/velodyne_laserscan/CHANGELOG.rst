@@ -2,17 +2,22 @@
 Changelog for package velodyne_laserscan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Modify package xml version other than 1.6.3
-* [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/kfunaoka/Autoware/issues/1166>`_)
+* [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/CPFL/Autoware/pull/1166>`_)
   * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 776a358..1a70413
   1a70413 Merge branch 'master' into Autoware
   7976d12 support vlp32c now
   273520e Added hdl32c, fixed naming
-  e21b522 Merge pull request `#146 <https://github.com/kfunaoka/Autoware/issues/146>`_ from stsundermann/patch-2
-  0e5a200 Merge pull request `#150 <https://github.com/kfunaoka/Autoware/issues/150>`_ from ros-drivers/mikaelarguedas-patch-1
+  e21b522 Merge pull request `#146 <https://github.com/CPFL/Autoware/pull/146>`_ from stsundermann/patch-2
+  0e5a200 Merge pull request `#150 <https://github.com/CPFL/Autoware/pull/150>`_ from ros-drivers/mikaelarguedas-patch-1
   db6b5ee update to use non deprecated pluginlib macro
   560fe12 Use std::abs instead of fabsf
   git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne

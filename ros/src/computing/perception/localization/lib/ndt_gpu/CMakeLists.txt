@@ -21,20 +21,26 @@ endif ()
 if (CUDA_FOUND)
     set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
-    if (NOT DEFINED CUDA_CAPABILITY_VERSION_CHECKER)
-        set(CUDA_CAPABILITY_VERSION_CHECKER
-                "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")
-    endif ()
+    if(CMAKE_CROSSCOMPILING)
+        if(NOT CUDA_ARCH)
+                message(FATAL_ERROR "Please define the CUDA_ARCH CMake variable")
+        endif()
+    else()
+        if (NOT DEFINED CUDA_CAPABILITY_VERSION_CHECKER)
+            set(CUDA_CAPABILITY_VERSION_CHECKER
+                    "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")
+        endif ()
 
-    execute_process(COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
-            OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
-            OUTPUT_STRIP_TRAILING_WHITESPACE)
+        execute_process(COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+                OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    if ("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
-        set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
-    else ()
-        set(CUDA_ARCH "sm_52")
-    endif ()
+        if ("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+            set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+        else ()
+            set(CUDA_ARCH "sm_52")
+        endif ()
+    endif()
 
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++11;--ptxas-options=-v)
 

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>autoware_bag_tools</name>
+  <version>1.8.0</version>
+  <description>Autoware modified bag_tools; ROS tools and scripts related to bagfiles</description>
+  <maintainer email="jacob.lambert@tier4.jp">Jacob Lambert</maintainer>
+
+  <author>Jacob Lambert</author>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>rosbag</depend>
+  
+  <depend>nmea_msgs</depend>
+  <depend>roslib</depend>  
+</package>

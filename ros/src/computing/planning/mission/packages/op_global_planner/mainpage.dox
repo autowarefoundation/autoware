@@ -1,0 +1,13 @@
+/**
+
+\mainpage
+
+\htmlinclude manifest.html
+
+\b way_planner is a global planning node that enable generating global path from start position to goal position , 
+\b this global path has lane change information, and the node will return traffic signs, lights , lines information which related to the global path. 
+\b user can also pass list of junction nodes which will be used to generate global path from start position throught all node points to the last node point as goal.
+
+
+
+**/

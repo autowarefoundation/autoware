@@ -9,6 +9,12 @@ matrix:
       os: linux
       sudo: required
       env: ROS_DISTRO=kinetic
+    - dist: xenial
+      os: linux
+      sudo: required
+      services:
+        - docker
+      env: ROS_DISTRO=kinetic CROSS_COMPILE=1
     - dist: trusty
       compiler: gcc
       os: linux
@@ -22,36 +28,32 @@ env:
     - CI_SOURCE_PATH=$(pwd)
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
-    - PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
+    - PYTHONPATH=${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
 
 # Install system dependencies, and Autoware pre requisites (non-ros)
 before_install:
-  - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
-  - sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-  # Autoware pre requisites should be installed automatically by rosdep not in here
-  - sudo apt-get update
-  - sudo apt-get install -y  python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin
-  - source /opt/ros/$ROS_DISTRO/setup.bash
-  - sudo rosdep init
-  - rosdep update
-
-# Create a catkin workspace with the package under integration.
-install:
-  - cd ros/src
-  - catkin_init_workspace
-  - cd ..
+  - if [ "${CROSS_COMPILE}" != "1" ]; then
+      sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
+      travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
+      travis_retry sudo apt-get update;
+      travis_retry sudo apt-get install -y dpkg;
+      travis_retry sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin;
+      source /opt/ros/${ROS_DISTRO}/setup.bash;
+      travis_retry sudo rosdep init;
+      travis_retry rosdep update;
+    fi
 
 # Install all ros dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
 before_script:
-  # source dependencies: install using wstool.
-  - cd src
-  - wstool init
-  - if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
-  - wstool up
-  # package depdencies: install using rosdep.
-  - cd ..
-  - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
+  - if [ "${CROSS_COMPILE}" != "1" ]; then
+      cd ros/src;
+      wstool init;
+      test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}";
+      travis_retry wstool up;
+      cd ..;
+      travis_retry rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO};
+    fi
 
 # Compile and test (mark the build as failed if any step fails). If the
 # CATKIN_OPTIONS file exists, use it as an argument to catkin_make, for example
@@ -62,9 +64,41 @@ before_script:
 # fails. Running `catkin_test_results` aggregates all the results and returns
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
-  - catkin_make clean
-  - source devel/setup.bash
-  - catkin_make -j4
+  - if [ "${CROSS_COMPILE}" == "1" ]; then
+      AUTOWARE_HOME=${TRAVIS_BUILD_DIR};
+      AUTOWARE_TARGET_ARCH=aarch64;
+      AUTOWARE_TARGET_PLATFORM=generic-aarch64;
+      AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM};
+      AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM};
+      AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake;
+      AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM};
+
+      travis_retry docker run
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
+        --rm
+        -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
+        -w ${AUTOWARE_HOME}/ros
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+        bash
+          -c "source /opt/ros/kinetic/setup.bash &&
+              catkin_make
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                --build ${AUTOWARE_BUILD_PATH}
+                clean &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
+              catkin_make
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                --build ${AUTOWARE_BUILD_PATH}
+                -j4";
+    else
+      catkin_make clean;
+      source devel/setup.bash;
+      catkin_make -j4;
+    fi
 
 #sudo: required
 #dist: trusty

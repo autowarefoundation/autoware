@@ -1,4 +1,5 @@
-- {name: javad_serial_driver}
-- {name: javad_topic_driver}
-- name: javad_topic_serial_driver
+- {name: /javad_serial_driver}
+- name: /javad_topic_driver
+  subscribe: [/nmea_sentence]
+- name: /javad_topic_serial_reader
   publish: [/nmea_sentence]

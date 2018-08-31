@@ -3,6 +3,7 @@ project(glviewer)
 
 include(FindPkgConfig)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         )
 
@@ -24,12 +25,14 @@ set(CMAKE_AUTOMOC ON)
 #set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Gui REQUIRED)
+
+find_package(OpenGL REQUIRED)
 
 catkin_package(
         INCLUDE_DIRS include
@@ -37,13 +40,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
 )
 
-EXECUTE_PROCESS(
-        COMMAND uname -m
-        OUTPUT_VARIABLE ARCHITECTURE
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR "${ARCHITECTURE}" STREQUAL "aarch64")
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i686" OR "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
@@ -68,6 +65,7 @@ if ("${ARCHITECTURE}" STREQUAL "x86_64" OR "${ARCHITECTURE}" STREQUAL "i686" OR 
             Qt5::Widgets
             Qt5::OpenGL
             Qt5::Gui
+            ${OPENGL_LIBRARIES}
             )
 
     install(DIRECTORY include/${PROJECT_NAME}/
