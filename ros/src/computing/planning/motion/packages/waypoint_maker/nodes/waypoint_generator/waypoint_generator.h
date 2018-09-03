@@ -43,7 +43,6 @@
 
 namespace waypoint_maker
 {
-
 class WaypointGenerator
 {
 public:
@@ -60,17 +59,16 @@ private:
   int waypoint_max_;
 
   bool checkEmpty(const VMap::VectorMap& vmap);
-  std::vector<VMap::VectorMap> createVMapArray(const VMap::VectorMap& lane_vmap,
-    const vector_map::Point& departure, int waypoint_max) const;
-  void initLane(autoware_msgs::lane *lane, unsigned int size);
-  void convertVMapToLaneArray(const std::vector<VMap::VectorMap>& vmap, autoware_msgs::LaneArray *larray);
+  std::vector<VMap::VectorMap> createVMapArray(const VMap::VectorMap& lane_vmap, const vector_map::Point& departure,
+                                               int waypoint_max) const;
+  void initLane(autoware_msgs::lane* lane, unsigned int size);
+  void convertVMapToLaneArray(const std::vector<VMap::VectorMap>& vmap, autoware_msgs::LaneArray* larray);
   void createLane();
-  bool calcLaneArray(autoware_msgs::LaneArray *larray);
+  bool calcLaneArray(autoware_msgs::LaneArray* larray);
   void cachePoint(const vector_map::PointArray& point);
   void cacheLane(const vector_map::LaneArray& lane);
   void cacheNode(const vector_map::NodeArray& node);
   void poseCallback(const geometry_msgs::PoseStamped::ConstPtr& pose);
 };
-
 };
 #endif
