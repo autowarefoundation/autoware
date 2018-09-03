@@ -66,7 +66,8 @@ protected:
   void changeVelSign(autoware_msgs::lane* lane, bool positive) const;
   int getDirection(const autoware_msgs::lane& lane) const;
   void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane, int dir);
-  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane, int dir);
+  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane,
+                          int dir);
   void resampleOnCurve(const geometry_msgs::Point& target_point, const std::vector<double>& param,
                        autoware_msgs::lane* lane, int dir);
 
@@ -81,12 +82,14 @@ protected:
   void createCurveList(const std::vector<double>& curve_radius,
                        std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
 
-  void createVmaxList(const autoware_msgs::lane& lane, const std::unordered_map<unsigned long, std::pair<unsigned long, double> > &curve_list,
-                      unsigned long offset, std::unordered_map<unsigned long, std::pair<unsigned long, double> > *vmax_list);
+  void createVmaxList(const autoware_msgs::lane& lane,
+                      const std::unordered_map<unsigned long, std::pair<unsigned long, double> >& curve_list,
+                      unsigned long offset,
+                      std::unordered_map<unsigned long, std::pair<unsigned long, double> >* vmax_list);
   double searchVmaxByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset,
-                            const autoware_msgs::lane &lane) const;
+                           const autoware_msgs::lane& lane) const;
   void setVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vel,
-                            autoware_msgs::lane* lane);
+                          autoware_msgs::lane* lane);
 
   void limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vmin,
                             autoware_msgs::lane* lane);

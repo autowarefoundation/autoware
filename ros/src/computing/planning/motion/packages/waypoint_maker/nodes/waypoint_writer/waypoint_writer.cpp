@@ -48,6 +48,7 @@ private:
   ros::NodeHandle nh_, private_nh_;
   ros::Subscriber larray_sub_;
   std::string lane_csv_;
+
 public:
   WaypointWriter() : private_nh_("~")
   {
@@ -102,8 +103,7 @@ public:
     saveLaneArray(dst_multi_file_path, *larray);
   }
 
-  void saveLaneArray(const std::vector<std::string>& paths,
-                                         const autoware_msgs::LaneArray& lane_array)
+  void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array)
   {
     for (const auto& file_path : paths)
     {
@@ -115,7 +115,7 @@ public:
         ofs << std::fixed << std::setprecision(4) << el.pose.pose.position.x << "," << el.pose.pose.position.y << ","
             << el.pose.pose.position.z << "," << tf::getYaw(el.pose.pose.orientation) << ","
             << mps2kmph(el.twist.twist.linear.x) << "," << (int)el.change_flag << "," << (int)el.wpstate.steering_state
-            << "," << (int)el.wpstate.accel_state << "," << (int)el.wpstate.stopline_state/*stop_state*/ << ","
+            << "," << (int)el.wpstate.accel_state << "," << (int)el.wpstate.stopline_state /*stop_state*/ << ","
             << (int)el.wpstate.event_state << std::endl;
       }
     }
@@ -124,7 +124,7 @@ public:
 
 }  // waypoint_maker
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "waypoint_writer");
   waypoint_maker::WaypointWriter ww;
