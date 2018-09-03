@@ -60,7 +60,7 @@ namespace integrated_viewer
     ros::WallTimer timer_;
 
     // Variables for message timing
-    unsigned int window_size_ = 1000;
+    unsigned int window_size_ = 100;
 
     unsigned int message_count_ = 0;
     std::deque<double> times_;
@@ -68,9 +68,9 @@ namespace integrated_viewer
 
     unsigned int status_count_ = 0;
 
-    QPalette red_palette;
-    QPalette green_palette;
-    QPalette grey_palette;
+    // QPalette red_text_palette;
+    // QPalette green_text_palette;
+    // QPalette grey_text_palette;
 
   private:
     // The UI components

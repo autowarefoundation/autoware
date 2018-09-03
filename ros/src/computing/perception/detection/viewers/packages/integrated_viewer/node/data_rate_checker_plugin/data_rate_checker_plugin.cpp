@@ -145,7 +145,7 @@ namespace integrated_viewer {
       // Warn if message frequency is too low
       else if (frequency < (double)(ui_.min_frequency_spin_box_->value())) {
         ui_.status_icon_->setStyleSheet("QLabel {color: #ff0000;}");
-        ui_.status_text_->setText(QString("Message frequency too low"));
+        ui_.status_text_->setText(QString("Message rate is too low"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #ff0000;}");
         ui_.topic_frequency_lcd_->display(frequency);
         status_count_ = message_count_;
