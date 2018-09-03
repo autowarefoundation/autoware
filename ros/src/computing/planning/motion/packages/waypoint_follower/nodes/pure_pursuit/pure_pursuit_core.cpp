@@ -130,7 +130,7 @@ void PurePursuitNode::run()
   }
 }
 
-void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const double &kappa) const
+void PurePursuitNode::publishTwistStamped(const bool& can_get_curvature, const double& kappa) const
 {
   geometry_msgs::TwistStamped ts;
   ts.header.stamp = ros::Time::now();
@@ -139,7 +139,7 @@ void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const d
   pub1_.publish(ts);
 }
 
-void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const
+void PurePursuitNode::publishControlCommandStamped(const bool& can_get_curvature, const double& kappa) const
 {
   if (!publishes_for_steering_robot_)
     return;
@@ -194,7 +194,7 @@ double PurePursuitNode::computeAngularGravity(double velocity, double kappa) con
   return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
-void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config)
+void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr& config)
 {
   param_flag_ = config->param_flag;
   const_lookahead_distance_ = config->lookahead_distance;
@@ -204,8 +204,8 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   is_config_set_ = true;
 }
 
-void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
-                                                      const std::vector<autoware_msgs::waypoint> &waypoints) const
+void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point& point,
+                                                      const std::vector<autoware_msgs::waypoint>& waypoints) const
 {
   // Calculate the deviation of current position from the waypoint approximate line
 
@@ -224,20 +224,20 @@ void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point
   pub17_.publish(msg);
 }
 
-void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
+void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
   pp_.setCurrentPose(msg);
   is_pose_set_ = true;
 }
 
-void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
+void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   current_linear_velocity_ = msg->twist.linear.x;
   pp_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
 }
 
-void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
+void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr& msg)
 {
   command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
   direction_ = (command_linear_velocity_ > 0.0) ? 1 : (command_linear_velocity_ < 0.0) ? -1 : direction_;
@@ -271,7 +271,7 @@ void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane)
   }
 }
 
-double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa)
+double convertCurvatureToSteeringAngle(const double& wheel_base, const double& kappa)
 {
   return atan(wheel_base * kappa);
 }

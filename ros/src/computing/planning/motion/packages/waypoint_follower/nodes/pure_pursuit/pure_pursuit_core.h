@@ -100,19 +100,19 @@ private:
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
 
   // callbacks
-  void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
-  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
-  void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg);
+  void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr& config);
+  void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
+  void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg);
+  void callbackFromWayPoints(const autoware_msgs::laneConstPtr& msg);
 
   // initializer
   void initForROS();
 
   // functions
-  void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
-  void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
-  void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
-                                       const std::vector<autoware_msgs::waypoint> &waypoints) const;
+  void publishTwistStamped(const bool& can_get_curvature, const double& kappa) const;
+  void publishControlCommandStamped(const bool& can_get_curvature, const double& kappa) const;
+  void publishDeviationCurrentPosition(const geometry_msgs::Point& point,
+                                       const std::vector<autoware_msgs::waypoint>& waypoints) const;
   void connectVirtualLastWaypoints(autoware_msgs::lane* expanded_lane);
 
   double computeLookaheadDistance() const;
@@ -121,7 +121,7 @@ private:
   double computeAngularGravity(double velocity, double kappa) const;
 };
 
-double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);
+double convertCurvatureToSteeringAngle(const double& wheel_base, const double& kappa);
 
 inline double kmph2mps(double velocity_kmph)
 {
