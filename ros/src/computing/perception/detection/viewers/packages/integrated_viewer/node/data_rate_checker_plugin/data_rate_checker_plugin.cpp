@@ -155,7 +155,7 @@ namespace integrated_viewer {
       // Otherwise, we are good!
       else if (frequency > (double)(ui_.min_frequency_spin_box_->value())) {
         ui_.status_icon_->setStyleSheet("QLabel {color: #00ff00;}");
-        ui_.status_text_->setText(QString ("Messages rate is OK"));
+        ui_.status_text_->setText(QString ("Message rate is OK"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #00ff00;}");
         ui_.topic_frequency_lcd_->display(frequency);
         status_count_ = message_count_;
