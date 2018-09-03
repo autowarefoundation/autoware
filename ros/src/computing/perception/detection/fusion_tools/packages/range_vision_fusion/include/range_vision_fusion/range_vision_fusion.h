@@ -108,6 +108,7 @@ class RosRangeVisionFusionApp
 
     double                              car_width_, car_height_, car_depth_;
     double                              person_width_, person_height_, person_depth_;
+    double                              truck_width_, truck_depth_, truck_height_;
 
     size_t                              empty_frames_;
 

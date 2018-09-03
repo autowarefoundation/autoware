@@ -307,6 +307,16 @@ void RosRangeVisionFusionApp::CheckMinimumDimensions(autoware_msgs::DetectedObje
         if (in_out_object.dimensions.z < person_height_)
             in_out_object.dimensions.z = person_height_;
     }
+
+    if (in_out_object.label == "truck" || in_out_object.label == "bus")
+    {
+        if (in_out_object.dimensions.x < truck_depth_)
+            in_out_object.dimensions.x = truck_depth_;
+        if (in_out_object.dimensions.y < truck_width_)
+            in_out_object.dimensions.y = truck_width_;
+        if (in_out_object.dimensions.z < truck_height_)
+            in_out_object.dimensions.z = truck_height_;
+    }
 }
 
 autoware_msgs::DetectedObjectArray
@@ -322,6 +332,7 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
     fused_objects.header = in_range_detections->header;
 
     std::vector< std::vector<size_t> > vision_range_assignments (in_vision_detections->objects.size());
+    std::vector<bool> used_vision_detections(in_vision_detections->objects.size(), false);
     std::vector< long > vision_range_closest (in_vision_detections->objects.size());
 
     for (size_t i = 0; i < in_vision_detections->objects.size(); i++)
@@ -359,8 +370,8 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
                 range_in_cv.objects[j].id = vision_object.id;
                 CheckMinimumDimensions(range_in_cv.objects[j]);
                 if (vision_object.pose.orientation.x > 0
-                    || vision_object.pose.orientation.x > 0
-                    || vision_object.pose.orientation.x > 0)
+                    || vision_object.pose.orientation.y > 0
+                    || vision_object.pose.orientation.z > 0)
                 {
                     range_in_cv.objects[i].pose.orientation = vision_object.pose.orientation;
                 }
@@ -369,8 +380,9 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
                     closest_index = j;
                     closest_distance = current_distance;
                 }
-            }
-        }
+                used_vision_detections[i] = true;
+            }//end if overlap
+        }//end for range_in_cv
         vision_range_closest[i] = closest_index;
     }
 
@@ -382,6 +394,13 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
         {
             used_range_detections[i] = true;
             fused_objects.objects.push_back(range_in_cv.objects[vision_range_closest[i]]);
+        }
+    }
+    for(size_t i = 0; i < used_vision_detections.size(); i++)
+    {
+        if (!used_vision_detections[i])
+        {
+            fused_objects.objects.push_back(in_vision_detections->objects[i]);
         }
     }
 
@@ -407,10 +426,10 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
     }*/
 
     //add objects outside image
-    for(size_t i=0; i < range_out_cv.objects.size(); i++)
-    {
-        fused_objects.objects.push_back(range_out_cv.objects[i]);
-    }
+    //for(size_t i=0; i < range_out_cv.objects.size(); i++)
+    //{
+    //    fused_objects.objects.push_back(range_out_cv.objects[i]);
+    //}
 
     return fused_objects;
 }
@@ -423,17 +442,31 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     jsk_recognition_msgs::BoundingBoxArray fused_boxes;
     visualization_msgs::MarkerArray fused_objects_labels;
 
-    if (nullptr == in_vision_detections ||
-        nullptr == in_range_detections)
+    if (empty_frames_ > 5)
     {
-        ROS_INFO("[%s] Empty Detections, check that vision and range detectors are running and publishing.", __APP_NAME__);
-        if (empty_frames_ > 5)
-        {
-            publisher_fused_objects_.publish(fusion_objects);
-            publisher_fused_boxes_.publish(fused_boxes);
-            publisher_fused_text_.publish(fused_objects_labels);
-            empty_frames_++;
-        }
+        ROS_INFO("[%s] Empty Detections. Make sure the vision and range detectors are running.", __APP_NAME__);
+    }
+
+    if (nullptr == in_vision_detections
+        && nullptr != in_range_detections)
+    {
+        publisher_fused_objects_.publish(in_range_detections);
+        fused_boxes.header = in_range_detections->header;
+        fused_boxes.boxes.clear();
+        publisher_fused_boxes_.publish(fused_boxes);
+        publisher_fused_text_.publish(fused_objects_labels);
+        empty_frames_++;
+        return;
+    }
+    if (nullptr == in_range_detections
+        && nullptr != in_vision_detections)
+    {
+        publisher_fused_objects_.publish(in_vision_detections);
+        fused_boxes.header = in_vision_detections->header;
+        fused_boxes.boxes.clear();
+        publisher_fused_boxes_.publish(fused_boxes);
+        publisher_fused_text_.publish(fused_objects_labels);
+        empty_frames_++;
         return;
     }
 
@@ -471,7 +504,10 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
 
     for(const autoware_msgs::DetectedObject& object : in_objects.objects)
     {
-        if (object.label != "unknown")
+        if (object.label != "unknown"
+            && object.pose.position.x != 0
+            && object.pose.position.y != 0
+            && object.pose.position.z != 0)
         {
             visualization_msgs::Marker marker;
             marker.header = in_objects.header;
@@ -613,7 +649,7 @@ void
 RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 {
     //get params
-    std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions;
+    std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions, min_truck_dimensions;
     std::string detected_objects_range, fused_topic_str = "/detection/combined_objects", fused_boxes_str = "/detection/combined_objects_boxes";
     std::string fused_text_str = "detection/combined_objects_labels";
     std::string name_space_str = ros::this_node::getNamespace();
@@ -638,12 +674,16 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     in_private_handle.param<std::string>("min_person_dimensions", min_person_dimensions, "[1,2,1]");
     ROS_INFO("[%s] min_person_dimensions: %s", __APP_NAME__, min_person_dimensions.c_str());
 
+    in_private_handle.param<std::string>("min_truck_dimensions", min_truck_dimensions, "[2,2,4.5]");
+    ROS_INFO("[%s] min_truck_dimensions: %s", __APP_NAME__, min_truck_dimensions.c_str());
+
 
     in_private_handle.param<bool>("sync_topics", sync_topics, false);
     ROS_INFO("[%s] sync_topics: %d", __APP_NAME__, sync_topics);
 
     YAML::Node car_dimensions = YAML::Load(min_car_dimensions);
     YAML::Node person_dimensions = YAML::Load(min_person_dimensions);
+    YAML::Node truck_dimensions = YAML::Load(min_truck_dimensions);
 
     if (car_dimensions.size() == 3)
     {
@@ -656,6 +696,12 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
         person_width_ = person_dimensions[0].as<double>();
         person_height_ = person_dimensions[1].as<double>();
         person_depth_ = person_dimensions[2].as<double>();
+    }
+    if (truck_dimensions.size() == 3)
+    {
+        truck_width_ = truck_dimensions[0].as<double>();
+        truck_height_ = truck_dimensions[1].as<double>();
+        truck_depth_ = truck_dimensions[2].as<double>();
     }
 
     if (name_space_str != "/")

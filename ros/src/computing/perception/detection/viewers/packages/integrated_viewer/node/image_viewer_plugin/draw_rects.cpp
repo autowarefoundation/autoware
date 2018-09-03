@@ -83,6 +83,19 @@ namespace integrated_viewer
                 // Draw object information label
                 DrawLabel(detected_object, image);
 
+                if (detected_object.dimensions.x > 0
+                    && detected_object.dimensions.y > 0
+                    && detected_object.dimensions.z > 0)
+                {
+                    cv::Mat image_roi = image(cv::Rect(cv::Point(detected_object.x, detected_object.y),
+                                                       cv::Point(detected_object.x + detected_object.width,
+                                                                 detected_object.y + detected_object.height)));
+                    cv::Mat color_fill(image_roi.size(), CV_8UC3,
+                                       cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b));
+                    double alpha = 0.3;
+                    cv::addWeighted(color_fill, alpha, image_roi, 1.0 - alpha , 0.0, image_roi);
+                }
+
                 // Draw rectangle
                 cv::rectangle(image,
                               cv::Point(detected_object.x, detected_object.y),
