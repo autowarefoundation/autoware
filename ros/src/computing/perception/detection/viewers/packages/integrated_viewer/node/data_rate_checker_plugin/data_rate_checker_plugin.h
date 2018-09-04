@@ -68,9 +68,9 @@ namespace integrated_viewer
 
     unsigned int status_count_ = 0;
 
-    // QPalette red_text_palette;
-    // QPalette green_text_palette;
-    // QPalette grey_text_palette;
+    // Save and load overrides
+    virtual void save(rviz::Config config) const;
+    virtual void load(const rviz::Config& config);
 
   private:
     // The UI components

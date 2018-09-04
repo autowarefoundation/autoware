@@ -66,6 +66,9 @@ namespace integrated_viewer {
             topic_list << topic_name;
         }
 
+        // Sort alphabetically
+        topic_list.sort(Qt::CaseSensitive);
+
         // Remove all list items from combo box
         ui_.topic_combo_box_->clear();
 
@@ -81,7 +84,6 @@ namespace integrated_viewer {
             ui_.topic_combo_box_->setCurrentIndex(topic_index);
         }
     } // DataRateCheckerPlugin::UpdateTopicList
-
 
     // The behavior of combo box
     void DataRateCheckerPlugin::on_topic_combo_box__activated(int index) {
@@ -171,7 +173,6 @@ namespace integrated_viewer {
     } // DataRateCheckerPlugin::TimerCallback
 
     void DataRateCheckerPlugin::resizeEvent(QResizeEvent *) {
-        //ShowImageOnUi();
     } // DataRateCheckerPlugin::resizeEvent
 
     bool DataRateCheckerPlugin::eventFilter(QObject *object, QEvent *event) {
@@ -179,9 +180,40 @@ namespace integrated_viewer {
             // Combo box will update its contents if this filter is applied
             UpdateTopicList();
         }
-
         return QObject::eventFilter(object, event);
     } // DataRateCheckerPlugin::eventFilter
+
+    void DataRateCheckerPlugin::save(rviz::Config config) const {
+      rviz::Panel::save(config);
+      config.mapSetValue("Topic", ui_.topic_combo_box_->currentText());
+      config.mapSetValue("Min rate", ui_.min_frequency_spin_box_->value());
+    } // DataRateCheckerPlugin::save
+
+    void DataRateCheckerPlugin::load(const rviz::Config& config) {
+      rviz::Panel::load(config);
+      QString topic;
+      int min_frequency;
+      if(config.mapGetString ("Topic", &topic))
+      {
+        // Extract selected topic name from combo box
+        std::string selected_topic = topic.toStdString();
+        if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
+          // If selected topic is not blank or empty, start callback functions
+          ui_.topic_combo_box_->setCurrentText(topic);
+          topic_sub_ = node_handle_.subscribe(selected_topic,
+                                              1,
+                                              &DataRateCheckerPlugin::MessageCallback,
+                                              this);
+
+          timer_ = node_handle_.createWallTimer(ros::WallDuration(1.0),
+                                                &DataRateCheckerPlugin::TimerCallback,
+                                                this);
+        }
+      }
+      if(config.mapGetInt ("Min rate", &min_frequency)) {
+        ui_.min_frequency_spin_box_->setValue(min_frequency);
+      }
+    } // DataRateCheckerPlugin::load
 
 } // End namespace integrated_viewer
 
