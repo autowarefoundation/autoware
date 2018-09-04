@@ -103,14 +103,23 @@
        </item>
        <item row="3" column="0" colspan="2">
         <widget class="QLCDNumber" name="topic_frequency_lcd_">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>50</height>
+          </size>
+         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
-         <property name="segmentStyle">
-          <enum>QLCDNumber::Flat</enum>
+         <property name="smallDecimalPoint">
+          <bool>true</bool>
          </property>
          <property name="digitCount">
           <number>6</number>
+         </property>
+         <property name="segmentStyle">
+          <enum>QLCDNumber::Flat</enum>
          </property>
         </widget>
        </item>
