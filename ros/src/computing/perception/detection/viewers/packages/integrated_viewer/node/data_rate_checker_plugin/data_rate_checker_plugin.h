@@ -60,7 +60,7 @@ namespace integrated_viewer
     ros::WallTimer timer_;
 
     // Variables for message timing
-    unsigned int window_size_ = 100;
+    unsigned int window_size_ = 10;
 
     unsigned int message_count_ = 0;
     std::deque<double> times_;

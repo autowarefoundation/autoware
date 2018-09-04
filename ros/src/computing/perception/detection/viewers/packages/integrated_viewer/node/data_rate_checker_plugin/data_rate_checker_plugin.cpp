@@ -94,6 +94,8 @@ namespace integrated_viewer {
             ui_.status_text_->setText(QString("No topic selected"));
             ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #b3b3b3;}");
             ui_.topic_frequency_lcd_->display(0.0);
+            message_count_ = 0;
+            times_.clear();
             return;
         }
 
@@ -129,9 +131,6 @@ namespace integrated_viewer {
     } // DataRateCheckerPlugin::MessageCallback
 
     void DataRateCheckerPlugin::TimerCallback(const ros::WallTimerEvent &event) {
-      // Check average frame rates
-      double avg_delay = std::accumulate(times_.begin(), times_.end(), 0.0) / times_.size();
-      double frequency = 1.0 / avg_delay;
 
       // Warn if no new messages have arrived
       if (status_count_ == message_count_ || times_.size() < 2) {
@@ -139,11 +138,19 @@ namespace integrated_viewer {
         ui_.status_text_->setText(QString("No incoming messages"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #ff0000;}");
         ui_.topic_frequency_lcd_->display(0.0);
+
+        // Clear the statistics buffer
+        message_count_ = 0;
+        times_.clear();
         return;
       }
 
+      // Check average frame rates
+      double avg_delay = std::accumulate(times_.begin(), times_.end(), 0.0) / times_.size();
+      double frequency = 1.0 / avg_delay;
+
       // Warn if message frequency is too low
-      else if (frequency < (double)(ui_.min_frequency_spin_box_->value())) {
+      if (frequency < (double)(ui_.min_frequency_spin_box_->value())) {
         ui_.status_icon_->setStyleSheet("QLabel {color: #ff0000;}");
         ui_.status_text_->setText(QString("Message rate is too low"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #ff0000;}");
@@ -153,7 +160,7 @@ namespace integrated_viewer {
       }
 
       // Otherwise, we are good!
-      else if (frequency > (double)(ui_.min_frequency_spin_box_->value())) {
+      else {
         ui_.status_icon_->setStyleSheet("QLabel {color: #00ff00;}");
         ui_.status_text_->setText(QString ("Message rate is OK"));
         ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #00ff00;}");
