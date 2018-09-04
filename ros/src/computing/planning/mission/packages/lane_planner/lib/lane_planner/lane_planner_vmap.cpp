@@ -54,24 +54,6 @@ bool is_merging_point(const VectorMap& vmap, const vector_map::Point& point);
 bool is_branching_lane(const vector_map::Lane& lane);
 bool is_merging_lane(const vector_map::Lane& lane);
 
-vector_map::Point find_start_point(const VectorMap& vmap, const vector_map::Lane& lane);
-vector_map::Point find_end_point(const VectorMap& vmap, const vector_map::Lane& lane);
-vector_map::Point find_departure_point(const VectorMap& lane_vmap, int lno,
-				       const std::vector<vector_map::Point>& coarse_points,
-				       double search_radius);
-vector_map::Point find_arrival_point(const VectorMap& lane_vmap, int lno,
-				     const std::vector<vector_map::Point>& coarse_points,
-				     double search_radius);
-vector_map::Point find_nearest_point(const VectorMap& vmap, const vector_map::Point& point);
-std::vector<vector_map::Point> find_near_points(const VectorMap& vmap, const vector_map::Point& point,
-						double search_radius);
-
-vector_map::Lane find_lane(const VectorMap& vmap, int lno, const vector_map::Point& point);
-vector_map::Lane find_prev_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
-vector_map::Lane find_next_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane);
-vector_map::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const vector_map::Lane& lane,
-					  double coarse_angle, double search_radius);
-
 void write_waypoint(const vector_map::Point& point, double yaw, double velocity, const std::string& path,
 		    bool first)
 {
@@ -128,6 +110,8 @@ bool is_merging_lane(const vector_map::Lane& lane)
 {
 	return (lane.jct == 3 || lane.jct == 4 || lane.jct == 5);
 }
+
+} // namespace
 
 vector_map::Point find_start_point(const VectorMap& vmap, const vector_map::Lane& lane)
 {
@@ -399,8 +383,6 @@ vector_map::Lane find_next_branching_lane(const VectorMap& vmap, int lno, const 
 
 	return branching_lane;
 }
-
-} // namespace
 
 void write_waypoints(const std::vector<vector_map::Point>& points, double velocity, const std::string& path)
 {

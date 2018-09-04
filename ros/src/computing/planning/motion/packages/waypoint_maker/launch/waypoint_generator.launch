@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+	<arg name="waypoint_max" default="100"/>
+	<node pkg="waypoint_maker" type="waypoint_generator" name="waypoint_generator">
+		<param name="waypoint_max" value="$(arg waypoint_max)"/>
+	</node>
+</launch>
