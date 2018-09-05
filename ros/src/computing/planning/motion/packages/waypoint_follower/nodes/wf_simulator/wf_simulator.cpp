@@ -64,6 +64,7 @@ double g_angle_error;
 double g_linear_acceleration = 0;
 double g_steering_angle = 0;
 double g_wheel_base_m = 2.7;
+double last_pose_position_z = 0;
 
 constexpr int LOOP_RATE = 50; // 50Hz
 
@@ -201,8 +202,12 @@ void publishOdometry()
   {
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
-*/if(_waypoint_set && g_is_closest_waypoint_subscribed)
-    pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).get().z;
+  */
+
+  if(_waypoint_set && g_is_closest_waypoint_subscribed)
+    if(_current_waypoints.getWaypointPosition(g_closest_waypoint) != boost::none)
+      last_pose_position_z = _current_waypoints.getWaypointPosition(g_closest_waypoint).get().z;
+    pose.position.z = last_pose_position_z;
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
   current_time = ros::Time::now();
