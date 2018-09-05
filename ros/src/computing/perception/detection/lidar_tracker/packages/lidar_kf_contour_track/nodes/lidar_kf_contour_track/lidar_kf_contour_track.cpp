@@ -36,7 +36,7 @@
 #include <ros/ros.h>
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "kf_contour_track");
+  ros::init(argc, argv, "lidar_kf_contour_track");
   ContourTrackerNS::ContourTracker tracker;
   tracker.MainLoop();
   return 0;

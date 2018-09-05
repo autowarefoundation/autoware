@@ -1,0 +1,6 @@
+<!-- -->
+<launch>		
+	<node pkg="op_utilities" type="op_map_converter" name="op_map_converter" output="screen">						
+	</node>
+
+</launch>
