@@ -468,7 +468,7 @@ void displayDetectionRange(const int &crosswalk_id, const int &num, const EContr
 
   if (g_obstacle_waypoint > -1)
   {
-    stop_line.pose.position = g_path_dk.getWaypointPosition(g_obstacle_waypoint);
+    stop_line.pose.position = g_path_dk.getWaypointPosition(g_obstacle_waypoint).get();
     stop_line.pose.orientation = g_path_dk.getWaypointOrientation(g_obstacle_waypoint);
   }
   stop_line.pose.position.z += 1.0;
@@ -500,7 +500,7 @@ void displayDetectionRange(const int &crosswalk_id, const int &num, const EContr
       break;
 
     geometry_msgs::Point point;
-    point = g_path_dk.getWaypointPosition(num + i);
+    point = g_path_dk.getWaypointPosition(num + i).get();
 
     waypoint_marker_stop.points.push_back(point);
 
@@ -536,7 +536,7 @@ int findCrossWalk()
   // Find near cross walk
   for (int num = g_closest_waypoint; num < g_closest_waypoint + g_search_distance; num++)
   {
-    geometry_msgs::Point waypoint = g_path_dk.getWaypointPosition(num);
+    geometry_msgs::Point waypoint = g_path_dk.getWaypointPosition(num).get();
     waypoint.z = 0.0;  // ignore Z axis
     for (const auto &i : bdid)
     {
@@ -629,7 +629,7 @@ EControl vscanDetection()
     }
 
     // waypoint seen by vehicle
-    geometry_msgs::Point waypoint = calcRelativeCoordinate(g_path_dk.getWaypointPosition(i), g_localizer_pose.pose);
+    geometry_msgs::Point waypoint = calcRelativeCoordinate(g_path_dk.getWaypointPosition(i).get(), g_localizer_pose.pose);
     tf::Vector3 tf_waypoint = point2vector(waypoint);
     tf_waypoint.setZ(0);
 
@@ -675,7 +675,7 @@ EControl vscanDetection()
           if (i + waypoint_search < 0 || i + waypoint_search >= g_path_dk.getSize() || !waypoint_search)
             continue;
           geometry_msgs::Point temp_waypoint =
-              calcRelativeCoordinate(g_path_dk.getWaypointPosition(i + waypoint_search), g_localizer_pose.pose);
+              calcRelativeCoordinate(g_path_dk.getWaypointPosition(i + waypoint_search).get(), g_localizer_pose.pose);
           tf::Vector3 waypoint_vector = point2vector(temp_waypoint);
           waypoint_vector.setZ(0);
           // if there is a overlap, give priority to DETECTION range
