@@ -202,7 +202,7 @@ void publishOdometry()
     pose.position.z = _current_waypoints.getWaypointPosition(closest_waypoint).z;
   }
 */if(_waypoint_set && g_is_closest_waypoint_subscribed)
-    pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
+    pose.position.z = _current_waypoints.getWaypointPosition(g_closest_waypoint).get().z;
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
   current_time = ros::Time::now();
