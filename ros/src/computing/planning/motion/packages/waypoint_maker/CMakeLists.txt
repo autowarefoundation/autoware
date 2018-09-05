@@ -33,13 +33,29 @@ catkin_package(
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
+        include
         ${catkin_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
 )
 
-add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core.cpp nodes/waypoint_loader/velocity_replanner.cpp nodes/waypoint_loader/waypoint_loader_node.cpp)
+add_library(libwaypoint_replanner lib/waypoint_replanner_core.cpp)
+target_link_libraries(libwaypoint_replanner ${catkin_LIBRARIES})
+add_dependencies(libwaypoint_replanner
+        ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_replanner nodes/waypoint_replanner/waypoint_replanner.cpp)
+target_link_libraries(waypoint_replanner ${catkin_LIBRARIES} libwaypoint_replanner)
+add_dependencies(waypoint_replanner
+        ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_loader nodes/waypoint_loader/waypoint_loader_core.cpp nodes/waypoint_loader/waypoint_loader_node.cpp)
 target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader
+        ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_writer nodes/waypoint_writer/waypoint_writer.cpp)
+target_link_libraries(waypoint_writer ${catkin_LIBRARIES})
+add_dependencies(waypoint_writer
         ${catkin_EXPORTED_TARGETS})
 
 add_executable(waypoint_saver nodes/waypoint_saver/waypoint_saver.cpp)

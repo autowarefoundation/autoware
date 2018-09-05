@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+	<arg name="lane_csv" default="/tmp/driving_lane.csv"/>
+
+	<!-- rosrun waypoint_maker waypoint_writer _lane_csv:="path file" -->
+	<node pkg="waypoint_maker" type="waypoint_writer" name="waypoint_writer" output="screen">
+	<param name="lane_csv" value="$(arg lane_csv)" />
+	</node>
+
+</launch>
