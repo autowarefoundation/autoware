@@ -77,7 +77,7 @@ Autoware has the specific messages used in the planning process, namely autoware
 
 For a use case scenario, we show some system integration based on a selection of motion planning methods such as Lattice and A* Planner. It is noted that not all input and output connections are displayed in order to keep the diagram readable.
 
-**(check if this is correct- it seems we are putting things differently in Prediction/Detection modules)**
+**(check if this is correct- it seems we are putting things differently in Prediction/Detection modules and the generated texts are far too small- manually make the diagram?)**
 
 1. Lattice motion planning
 
