@@ -635,8 +635,11 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
   // entire pc)
   // in this way, the points farther in the pc will also be clustered
 
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
+  // 0 => 0-15m d=0.5
+  // 1 => 15-30 d=1
+  // 2 => 30-45 d=1.6
+  // 3 => 45-60 d=2.1
+  // 4 => >60   d=2.6
 
   std::vector<ClusterPtr> all_clusters;
 
@@ -644,25 +647,39 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 
-        cloud_ptr->points.push_back(current_point);
-
-        float origin_distance = sqrt(pow(current_point.x, 2) + pow(current_point.y, 2));
+    for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++)
+    {
+      pcl::PointXYZ current_point;
+      current_point.x = in_cloud_ptr->points[i].x;
+      current_point.y = in_cloud_ptr->points[i].y;
+      current_point.z = in_cloud_ptr->points[i].z;
 
       cloud_ptr->points.push_back(current_point);
     }
-
-    #ifdef GPU_CLUSTERING
-    std::vector<ClusterPtr> all_clusters;
-     if (_use_gpu) {
-             all_clusters = clusterAndColorGpu(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, 0.75);
-
-     } else {
-             all_clusters = clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, 0.75);
-     }
+#ifdef GPU_CLUSTERING
+    if (_use_gpu)
+    {
+      all_clusters = clusterAndColorGpu(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids,
+                                        _clustering_distance);
+    }
+    else
+    {
+      all_clusters =
+          clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
+    }
 #else
-        std::vector<ClusterPtr> all_clusters = clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, 0.75);
+    std::vector<ClusterPtr> all_clusters =
+        clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
 #endif
-
+  }
+  else
+  {
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloud_segments_array(5);
+    for (unsigned int i = 0; i < cloud_segments_array.size(); i++)
+    {
+      pcl::PointCloud<pcl::PointXYZ>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+      cloud_segments_array[i] = tmp_cloud;
+    }
 
     for (unsigned int i = 0; i < in_cloud_ptr->points.size(); i++)
     {
@@ -1186,9 +1203,9 @@ int main(int argc, char** argv)
   _transform_listener = &listener;
 
 #if (CV_MAJOR_VERSION == 3)
-    generateColors(_colors, 255);
+  generateColors(_colors, 255);
 #else
-    cv::generateColors(_colors, 255);
+  cv::generateColors(_colors, 255);
 #endif
 
   _pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster", 1);
