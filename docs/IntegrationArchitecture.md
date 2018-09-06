@@ -1,4 +1,4 @@
-## Autonomous Driving Software Stack
+## Autoware Autonomous Driving Stack
 
 ![autoware overview](./images/autoware_overview.png)
 
@@ -42,7 +42,7 @@ For simplicity, we organize the figure with the following a group of functionali
 
 
 
-## System Integration
+## Autoware System Integration
 Expanding from the autonomous driving concept, the below figure outlines a system integration showing how the Autoware packages are put together to enable self-driving capability.
 
 
