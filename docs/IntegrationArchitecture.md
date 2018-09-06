@@ -81,7 +81,7 @@ For a use case scenario, we show some system integration based on a selection of
 
 1. Lattice motion planning
 
-![Lattice](/home/punnu/Desktop/Autoware/docs/architecture/ComponentDiagram_Lattice.png)
+![Lattice](./architecture/ComponentDiagram_Lattice.png)
 
 
 
