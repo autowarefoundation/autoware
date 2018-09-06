@@ -1,6 +1,6 @@
 ## Autonomous Driving Software Stack
 
-![autoware overview](/home/punnu/Desktop/Autoware/docs/images/autoware_overview.png)
+![autoware overview](./images/autoware_overview.png)
 
 
 
@@ -19,7 +19,7 @@ Each of these categories may contain multiple modules such as localization, dete
 
 The software stack above shows a high-level autonomous driving concept that can be exhibited further in the following figure.
 
-![DrivingConcept](/home/punnu/Desktop/Autoware/docs/architecture/DrivingConcept.png)
+![DrivingConcept](./architecture/DrivingConcept.png)
 
 
 For simplicity, we organize the figure with the following a group of functionalities, namely Sensor, Localization, Detection and Prediction, Decision, Mission, Motion, Actuation, and Utility. 
@@ -47,7 +47,7 @@ Expanding from the autonomous driving concept, the below figure outlines a syste
 
 
 
-![SystemIntegration](/home/punnu/Desktop/Autoware/docs/architecture/Integration.png)
+![SystemIntegration](./architecture/Integration.png)
 
 The figure outlines a sequential flow of system events from a top-down and left-right order with main tasks. This is only used as a **demonstration purpose** at the conceptual level where some elements are **excluded from explanation**. The system development is not fixed or limited to this idea. 
 
@@ -57,7 +57,7 @@ The figure outlines a sequential flow of system events from a top-down and left-
 
 
 
-![PathPlan](/home/punnu/Desktop/Autoware/docs/architecture/pathplan.png)
+![PathPlan](./architecture/pathplan.png)
 
 
 

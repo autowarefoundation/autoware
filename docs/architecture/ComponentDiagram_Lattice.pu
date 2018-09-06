@@ -1,0 +1,272 @@
+@startuml
+
+title Autoware Component Dependencies (Future)
+
+() "sensor_msgs::Image\n/image_raw" as image_raw
+() "sensor_msgs::PointCloud2\n/points_raw" as points_raw
+() "sensor_msgs::PointCloud2\n/filtered_points" as filtered_points
+() "sensor_msgs::Imu\n/imu_raw" as imu_raw 
+() "nmea_msgs::Sentence\n/nmea_sentence" as nmea_sentence
+
+folder SENSING {
+    [camera]
+    'outputs
+    camera --> image_raw
+
+    [lidar]
+    'outputs
+    lidar --> points_raw
+
+    [filters]
+    'inputs
+    points_raw --> filters
+    'outputs
+    filters --> filtered_points
+
+    [imu]
+    'outputs
+    imu --> imu_raw
+
+    [gnss]
+    'outputs
+    gnss --> nmea_sentence
+}
+
+'gnss_localizer
+
+'lidar_localizer
+() "sensor_msgs::PointCloud2\n/points_map" as points_map
+() "sensor_msgs::PointCloud2\n/ndt_map" as ndt_map
+
+'map
+() "vector_map_msgs::xxx\n/vector_map_info" as vector_map_info
+
+
+'vel_pose_connect
+() "geometry_msgs::PoseStamped\n/current_pose" as current_pose
+() "geometry_msgs::TwistStamped\n/current_velocity" as current_velocity
+
+'vision_reprojection
+() "autoware_msgs::obj_pose\n/obj_pose" as obj_pose
+
+
+
+folder LOCALIZATION {
+    () "geometry_msgs::PoseStamped\n/gnss_pose" as gnss_pose
+    () "geometry_msgs::TwistStamped\n/estimate_twist" as estimate_twist
+    () "geometry_msgs::PoseStamped\n/ndt_pose" as ndt_pose
+
+    [gnss_localizer]
+    'inputs
+    nmea_sentence --> gnss_localizer
+    'outputs
+    gnss_localizer --> gnss_pose
+
+    [lidar_localizer]
+    'inputs
+    gnss_pose --> lidar_localizer
+    filtered_points --> lidar_localizer
+    points_map --> lidar_localizer
+    imu_raw --> lidar_localizer
+    'outputs
+    lidar_localizer --> estimate_twist
+    lidar_localizer --> ndt_pose
+    lidar_localizer --> ndt_map
+
+    [vel_pose_connect]
+    'inputs
+    estimate_twist --> vel_pose_connect
+    ndt_pose --> vel_pose_connect
+    'outputs
+    vel_pose_connect --> current_pose
+    vel_pose_connect --> current_velocity
+
+    '[dead_reckoner] @ Autoware v2.0
+}
+
+
+'vision_detector
+() "autoware_msgs::traffic_light\n/light_color" as light_color
+
+
+
+'mission_motion
+() "autoware_msgs::lane\n/base_waypoints" as base_waypoints
+() "autoware_msgs::lane\n/final_waypoints" as final_waypoints
+() "geometry_msgs::TwistStamped\n/twist_cmd" as twist_cmd
+() "autoware_msgs::ControlCommandStamped\n/ctrl_cmd" as ctrl_cmd
+() "table_socket_msgs::route_cmd\n/route_cmd" as route_cmd
+
+
+folder DETECTION_PREDICTION {
+    () "autoware_msgs::PointsImage\n/points_images" as points_obj
+	() "autoware_msgs::image_obj\n/image_obj" as image_obj
+    () "autoware_msgs::image_obj_ranged\n/image_obj_ranged" as image_obj_ranged
+	() "autoware_msgs::image_obj_tracked\n/image_obj_tracked" as image_obj_tracked
+    () "autoware_msgs::obj_label\n/obj_label" as obj_label
+	() "autoware_msgs::CloudCluster\n/cloud_clusters" as cloud_clusters
+    () "autoware_msgs::Signals\n/roi_signal" as roi_signal
+
+    [points2image]
+    'outputs
+    points2image --> points_obj
+
+    [vision_dpm_ttic_detect]
+    'inputs
+    image_raw --> vision_dpm_ttic_detect
+    'outputs
+    vision_dpm_ttic_detect --> image_obj
+
+    [range_fusion]
+    'inputs
+    image_obj --> range_fusion
+	points_obj --> range_fusion
+    'outputs
+    range_fusion --> image_obj_ranged
+
+    [vision_klt_track]
+    'inputs
+    image_raw --> vision_klt_track
+	image_obj_ranged --> vision_klt_track
+    'outputs
+    vision_klt_track --> image_obj_tracked
+
+    [obj_reproj]
+	'inputs
+    image_obj_tracked --> obj_reproj
+    'outputs
+    obj_reproj --> obj_label
+
+    [obj_fusion]
+    'inputs
+    obj_label --> obj_fusion
+	cloud_clusters --> obj_fusion
+    'outputs
+    obj_reproj --> obj_pose
+   
+    [lidar_euclidean_cluster_detect]
+    'inputs
+    points_raw --> lidar_euclidean_cluster_detect
+    'outputs
+    lidar_euclidean_cluster_detect --> cloud_clusters
+
+    [trafficlight_recognizer__region_tlr)]
+    'inputs
+    image_raw --> trafficlight_recognizer__region_tlr
+	roi_signal --> trafficlight_recognizer__region_tlr
+    'outputs
+    trafficlight_recognizer__region_tlr --> light_color
+
+	[trafficlight_recognizer__feat_proj]
+    'inputs
+    vector_map_info --> trafficlight_recognizer__feat_proj
+	current_pose --> trafficlight_recognizer__feat_proj
+    final_waypoints --> trafficlight_recognizer__feat_proj
+    'outputs
+    trafficlight_recognizer__feat_proj --> roi_signal
+
+}
+
+
+folder MISSION{
+    () "autoware_msgs::LaneArray\n/lane_waypoints_array" as lane_waypoints_array
+	() "autoware_msgs::LaneArray\n/traffic_waypoints_array" as traffic_waypoints_array
+	() "autoware_msgs::LaneArray\n/red_waypoints_array" as red_waypoints_array
+	() "autoware_msgs::LaneArray\n/green_waypoints_array" as green_waypoints_array
+    [lane_planner__navi]
+    'input
+    route_cmd --> lane_planner__navi
+    vector_map_info --> lane_planner__navi
+	'output
+    lane_planner__navi --> lane_waypoints_array
+   
+ 	[lane_planner__rule]
+    'input
+    lane_waypoints_array --> lane_planner__rule
+    vector_map_info --> lane_planner__rule
+	'output
+    lane_planner__rule --> red_waypoints_array
+    lane_planner__rule --> green_waypoints_array
+
+	[lane_planner__stop]
+    'input
+    light_color --> lane_planner__stop
+    red_waypoints_array --> lane_planner__stop
+    green_waypoints_array --> lane_planner__stop
+	'output
+    lane_planner__stop --> traffic_waypoints_array
+
+	[lane_planner__select]
+    'input
+    traffic_waypoints_array --> lane_planner__select
+    current_pose --> lane_planner__select
+    current_velocity --> lane_planner__select
+	'output
+    lane_planner__select --> base_waypoints
+}
+
+folder MOTION {
+    [lattice_planner__velocity]
+    'input
+    current_pose --> lattice_planner__velocity
+    base_waypoints --> lattice_planner__velocity
+    current_velocity --> lattice_planner__velocity
+    vector_map_info --> lattice_planner__velocity
+    obj_pose --> lattice_planner__velocity
+	'output
+    lattice_planner__velocity --> temporal_waypoints
+
+    [lattice_planner__traj]
+    'input
+    temporal_waypoints --> lattice_planner__traj
+	'output
+    lattice_planner__traj --> final_waypoints
+
+    [waypoint_follower__pure_pursuit]
+    'inputs
+    current_pose --> waypoint_follower__pure_pursuit
+    current_velocity --> waypoint_follower__pure_pursuit
+    final_waypoints --> waypoint_follower__pure_pursuit
+    'outputs
+    waypoint_follower__pure_pursuit --> twist_raw
+    waypoint_follower__pure_pursuit --> ctrl_cmd
+
+    [waypoint_follower__twist_filter]
+    'inputs
+    twist_raw --> waypoint_follower__twist_filter
+    'outputs
+    waypoint_follower__twist_filter --> twist_cmd
+
+    [waypoint_follower__twist_gate]
+    'inputs
+    twist_cmd --> waypoint_follower__twist_gate
+  	ctrl_cmd --> waypoint_follower__twist_gate
+    'outputs
+    waypoint_follower__twist_gate --> vehicle_cmd
+    waypoint_follower__twist_gate --> ctrl_mode
+    waypoint_follower__twist_gate --> emergency_stop
+
+}
+
+
+
+folder MAP{
+	[map_file__points_map_loader]
+	'inputs
+	traffic_waypoints_array --> map_file__points_map_loader
+	gnss_pose --> map_file__points_map_loader
+    current_pose --> map_file__points_map_loader
+    initial_pose --> map_file__points_map_loader
+	'outputs
+    map_file__points_map_loader --> points_map
+
+    [map_file__vector_map_loader]
+ 	'outputs
+    map_file__vector_map_loader --> vector_map_info
+
+}
+
+
+
+
+@enduml
