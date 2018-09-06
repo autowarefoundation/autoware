@@ -67,7 +67,7 @@ namespace integrated_viewer {
         }
 
         // Sort alphabetically
-        topic_list.sort(Qt::CaseSensitive);
+        topic_list.sort();
 
         // Remove all list items from combo box
         ui_.topic_combo_box_->clear();
@@ -82,6 +82,17 @@ namespace integrated_viewer {
 
         if (topic_index != -1) {
             ui_.topic_combo_box_->setCurrentIndex(topic_index);
+        }
+        else {
+          ui_.topic_combo_box_->setCurrentIndex(ui_.topic_combo_box_->findText(kBlankTopic));
+          topic_sub_.shutdown();
+          timer_.stop();
+          ui_.status_icon_->setStyleSheet("QLabel {color: #b3b3b3;}");
+          ui_.status_text_->setText(QString("No topic selected"));
+          ui_.topic_frequency_lcd_->setStyleSheet("QLCDNumber {color: #b3b3b3;}");
+          ui_.topic_frequency_lcd_->display(0.0);
+          message_count_ = 0;
+          times_.clear();
         }
     } // DataRateCheckerPlugin::UpdateTopicList
 
@@ -198,8 +209,16 @@ namespace integrated_viewer {
         // Extract selected topic name from combo box
         std::string selected_topic = topic.toStdString();
         if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
-          // If selected topic is not blank or empty, start callback functions
-          ui_.topic_combo_box_->setCurrentText(topic);
+          UpdateTopicList();
+          int topic_index = ui_.topic_combo_box_->findText(topic);
+          // If the load topic doesn't exist, load it anyway to wait for the topic to become active
+          if (topic_index == -1) {
+            QStringList dummy_topic_list;
+            dummy_topic_list << topic;
+            ui_.topic_combo_box_->addItems(dummy_topic_list);
+            topic_index = ui_.topic_combo_box_->findText(topic);
+          }
+          ui_.topic_combo_box_->setCurrentIndex(topic_index);
           topic_sub_ = node_handle_.subscribe(selected_topic,
                                               1,
                                               &DataRateCheckerPlugin::MessageCallback,
@@ -207,7 +226,7 @@ namespace integrated_viewer {
 
           timer_ = node_handle_.createWallTimer(ros::WallDuration(1.0),
                                                 &DataRateCheckerPlugin::TimerCallback,
-                                                this);
+                                               this);
         }
       }
       if(config.mapGetInt ("Min rate", &min_frequency)) {
