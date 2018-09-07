@@ -61,26 +61,12 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   geometry_msgs::TwistStamped tp(*msg);
 
-  double vel = tp.twist.linear.x;
+  const double vel = tp.twist.linear.x;
   const int omega_sgn = (tp.twist.angular.z < 0) ? -1 : 1;
   double omega = tp.twist.angular.z;
-  omega = (fabs(omega) < g_omega_limit) ? omega : omega_sgn * g_omega_limit;
-  if (fabs(vel) >= ERROR)
-  {
-    const double kappa = tp.twist.angular.z / vel;
-    vel = (fabs(kappa) >= ERROR) ? omega / kappa : vel;
-  }
-  if (fabs(omega) >= ERROR)
-  {
-    const int sgn = (vel < 0) ? -1 : 1;
-    const double max_v = sgn * fabs(g_lateral_accel_limit / omega);
-    const double acc = vel * omega;
-    ROS_INFO("lateral accel = %lf", acc);
-    if (fabs(acc) > g_lateral_accel_limit)
-    {
-      vel = max_v;
-    }
-  }
+  const double omega_acclimit = (fabs(vel) >= ERROR) ? fabs(g_lateral_accel_limit / vel) : 0.0;
+  const double omega_limit = (omega_acclimit < g_omega_limit) ? g_omega_limit : omega_acclimit;
+  omega = (fabs(omega) > omega_limit) ? omega_sgn * omega_limit : omega;
 
   static double lowpass_linear_x = 0;
   static double lowpass_angular_z = 0;
