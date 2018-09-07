@@ -29,7 +29,7 @@ Launch file available parameters:
 |`sync_topics`|*Bool*|Sync detection topics.|`false`|
 |`min_car_dimensions`|*Array*|Sets the minimum dimensions for a car bounding box(width, height, depth) in meters.|`[2,2,4]`|
 |`min_person_dimensions`|*Array*|Sets the minimum dimensions for a person bounding box (width, height, depth) in meters.|`[1,2,1]`|
-|`min_truck_dimensions`|*Array*|Sets the minimum dimensions for a truck/bus bounding box (width, height, depth) in meters.|`[1,2,1]`|
+|`min_truck_dimensions`|*Array*|Sets the minimum dimensions for a truck/bus bounding box (width, height, depth) in meters.|`[2,2,4.5]`|
 |`overlap_threshold`|*float*|A number between 0.1 and 1.0 representing the area of overlap between the detections.|`0.5`|
 
 ## Example of usage

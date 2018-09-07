@@ -404,33 +404,6 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
         }
     }
 
-    /*
-    for(size_t i = 0; i < vision_range_assignments.size(); i++)
-    {
-        autoware_msgs::DetectedObject merged_object = range_in_cv.objects[0];
-
-        for(const auto& range_detection_idx: vision_range_assignments[i])
-        {
-            if(merged_object.label == range_in_cv.objects[range_detection_idx].label)
-            {
-                used_range_detections[range_detection_idx] = true;
-
-                merged_object = MergeObjects(merged_object, range_in_cv.objects[range_detection_idx]);
-            }
-        }
-        if(!vision_range_assignments[i].empty())
-        {
-            CalculateObjectFeatures(merged_object, true);
-            fused_objects.objects.push_back(merged_object);
-        }
-    }*/
-
-    //add objects outside image
-    //for(size_t i=0; i < range_out_cv.objects.size(); i++)
-    //{
-    //    fused_objects.objects.push_back(range_out_cv.objects[i]);
-    //}
-
     return fused_objects;
 }
 
@@ -448,24 +421,25 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     }
 
     if (nullptr == in_vision_detections
-        && nullptr != in_range_detections)
+        && nullptr == in_range_detections)
+    {
+        empty_frames_++;
+        return;
+    }
+
+    if (nullptr == in_vision_detections
+        && nullptr != in_range_detections
+        && !in_range_detections->objects.empty())
     {
         publisher_fused_objects_.publish(in_range_detections);
-        fused_boxes.header = in_range_detections->header;
-        fused_boxes.boxes.clear();
-        publisher_fused_boxes_.publish(fused_boxes);
-        publisher_fused_text_.publish(fused_objects_labels);
         empty_frames_++;
         return;
     }
     if (nullptr == in_range_detections
-        && nullptr != in_vision_detections)
+        && nullptr != in_vision_detections
+        && !in_vision_detections->objects.empty())
     {
         publisher_fused_objects_.publish(in_vision_detections);
-        fused_boxes.header = in_vision_detections->header;
-        fused_boxes.boxes.clear();
-        publisher_fused_boxes_.publish(fused_boxes);
-        publisher_fused_text_.publish(fused_objects_labels);
         empty_frames_++;
         return;
     }

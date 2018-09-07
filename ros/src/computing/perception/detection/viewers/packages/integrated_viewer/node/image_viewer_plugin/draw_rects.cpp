@@ -78,7 +78,10 @@ namespace integrated_viewer
         // Draw rectangles for each object
         for (const auto &detected_object : detected_objects->objects)
         {
-            if (detected_object.width > 0 && detected_object.height > 0)
+            if (detected_object.x >= 0
+                && detected_object.y >= 0
+                && detected_object.width > 0
+                && detected_object.height > 0)
             {
                 // Draw object information label
                 DrawLabel(detected_object, image);
