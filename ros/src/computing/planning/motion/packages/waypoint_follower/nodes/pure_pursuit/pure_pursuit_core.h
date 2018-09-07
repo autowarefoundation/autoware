@@ -78,7 +78,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
+  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_, pub18_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -90,8 +90,8 @@ private:
   bool is_linear_interpolation_, publishes_for_steering_robot_;
   bool is_waypoint_set_, is_pose_set_, is_velocity_set_, is_config_set_;
   double current_linear_velocity_, command_linear_velocity_;
-  int direction_;
   double wheel_base_;
+  int expand_size_;
 
   int32_t param_flag_;               // 0 = waypoint, 1 = Dialog
   double const_lookahead_distance_;  // meter
@@ -113,7 +113,7 @@ private:
   void publishControlCommandStamped(const bool& can_get_curvature, const double& kappa) const;
   void publishDeviationCurrentPosition(const geometry_msgs::Point& point,
                                        const std::vector<autoware_msgs::waypoint>& waypoints) const;
-  void connectVirtualLastWaypoints(autoware_msgs::lane* expanded_lane);
+  void connectVirtualLastWaypoints(autoware_msgs::lane* expanded_lane, int direction);
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
