@@ -65,7 +65,7 @@ void TwistCmdCallback(const geometry_msgs::TwistStampedConstPtr& msg)
   const int omega_sgn = (tp.twist.angular.z < 0) ? -1 : 1;
   double omega = tp.twist.angular.z;
   const double omega_acclimit = (fabs(vel) >= ERROR) ? fabs(g_lateral_accel_limit / vel) : 0.0;
-  const double omega_limit = (omega_acclimit < g_omega_limit) ? g_omega_limit : omega_acclimit;
+  const double omega_limit = (omega_acclimit > g_omega_limit) ? g_omega_limit : omega_acclimit;
   omega = (fabs(omega) > omega_limit) ? omega_sgn * omega_limit : omega;
 
   static double lowpass_linear_x = 0;
