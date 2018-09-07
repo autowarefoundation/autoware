@@ -98,6 +98,7 @@ class RosRangeVisionFusionApp
     autoware_msgs::DetectedObjectArray::ConstPtr  vision_detections_, range_detections_;
 
     std::string                         image_frame_id_;
+    std::string                         boxes_frame_;
 
     bool                                processing_;
     bool                                camera_info_ok_;

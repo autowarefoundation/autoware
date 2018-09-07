@@ -377,9 +377,9 @@ void BeyondTrackerNode::Run()
     objects_publisher_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
 
     #if (CV_MAJOR_VERSION <= 2)
-        cv::generateColors(colors_, 40);
+        cv::generateColors(colors_, 20);
     #else
-        generateColors(colors_, 40);
+        generateColors(colors_, 20);
     #endif
 
     ground_angle_ = cv::Mat::zeros(1, 3, CV_64FC1);

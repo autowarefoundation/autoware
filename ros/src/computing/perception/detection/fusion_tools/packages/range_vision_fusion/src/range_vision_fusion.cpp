@@ -415,6 +415,10 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     jsk_recognition_msgs::BoundingBoxArray fused_boxes;
     visualization_msgs::MarkerArray fused_objects_labels;
 
+    fused_boxes.boxes.clear();
+    fusion_objects.objects.clear();
+    fused_objects_labels.markers.clear();
+
     if (empty_frames_ > 5)
     {
         ROS_INFO("[%s] Empty Detections. Make sure the vision and range detectors are running.", __APP_NAME__);
@@ -431,6 +435,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         && nullptr != in_range_detections
         && !in_range_detections->objects.empty())
     {
+        publisher_fused_boxes_.publish(fused_boxes);
         publisher_fused_objects_.publish(in_range_detections);
         empty_frames_++;
         return;
@@ -439,6 +444,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         && nullptr != in_vision_detections
         && !in_vision_detections->objects.empty())
     {
+        publisher_fused_boxes_.publish(fused_boxes);
         publisher_fused_objects_.publish(in_vision_detections);
         empty_frames_++;
         return;
@@ -464,6 +470,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     publisher_fused_objects_.publish(fusion_objects);
     publisher_fused_boxes_.publish(fused_boxes);
     publisher_fused_text_.publish(fused_objects_labels);
+    boxes_frame_ = fused_boxes.header.frame_id;
     empty_frames_ = 0;
 
     vision_detections_ = nullptr;
@@ -525,7 +532,10 @@ RosRangeVisionFusionApp::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray
         box.pose = object.pose;
         box.value = object.score;
 
-        final_boxes.boxes.push_back(box);
+        if (box.dimensions.x > 0 && box.dimensions.y > 0 && box.dimensions.z > 0)
+        {
+            final_boxes.boxes.push_back(box);
+        }
     }
     return final_boxes;
 }
