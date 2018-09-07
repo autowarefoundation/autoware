@@ -2,3 +2,6 @@
 	path = ros/src/msgs/platform_automation_msgs
 	url = https://github.com/astuff/platform_automation_msgs.git
 	branch = 51ceed71c28773887648993ceec803ca498698ae
+[submodule "ros/src/sensing/drivers/lidar/packages/robosense"]
+	path = ros/src/sensing/drivers/lidar/packages/robosense
+	url = https://github.com/CPFL/robosense
