@@ -39,8 +39,8 @@ namespace
 {
 // Publisher
 ros::Publisher g_twist_pub;
-double g_lateral_accel_limit = 5.0;
-double g_omega_limit = 0.1;
+double g_lateral_accel_limit = 3.0;
+double g_omega_limit = 0.4;
 double g_lowpass_gain_linear_x = 0.0;
 double g_lowpass_gain_angular_z = 0.0;
 constexpr double RADIUS_MAX = 9e10;
