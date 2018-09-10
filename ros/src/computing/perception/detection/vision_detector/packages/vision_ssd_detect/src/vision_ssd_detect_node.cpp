@@ -84,7 +84,6 @@ class RosSsdApp
             {
                 autoware_msgs::DetectedObject obj;
                 obj.header = out_message.header;
-                obj.id = i;
                 obj.label = in_objects[i].GetClassString();
                 obj.score = in_objects[i].score;
 

@@ -27,17 +27,21 @@ Launch file available parameters:
 |`detected_objects_vision`|*String*|Name of the `DetectedObjectArray` topic to subscribe containing the detections on 2D space.|`/detection/vision_objects`|
 |`camera_info_src`|*String*|Name of the CameraInfo topic that contains the intrinsic matrix for the Image.|`/camera_info`|
 |`sync_topics`|*Bool*|Sync detection topics.|`false`|
+|`min_car_dimensions`|*Array*|Sets the minimum dimensions for a car bounding box(width, height, depth) in meters.|`[2,2,4]`|
+|`min_person_dimensions`|*Array*|Sets the minimum dimensions for a person bounding box (width, height, depth) in meters.|`[1,2,1]`|
+|`min_truck_dimensions`|*Array*|Sets the minimum dimensions for a truck/bus bounding box (width, height, depth) in meters.|`[2,2,4.5]`|
 |`overlap_threshold`|*float*|A number between 0.1 and 1.0 representing the area of overlap between the detections.|`0.5`|
 
 ## Example of usage
 
 1. Launch a ground filter algorithm from the `Points Preprocessor` in the **Sensing** tab. (adjust the parameters to your vehicle setup).
 1. Launch Calibration Publisher with the intrinsic and extrinsic calibration between the camera and the range sensor.
-1. Launch a Vision Detector in the Computing tab (this should be publishing by default `/detectoion/vision_objects`).
-1. Launch a Lidar Detector in the Computing tab (this should be publishing by default `/detectoion/lidar_objects`).
+1. Launch a Vision Detector from the Computing tab (this should be publishing by default `/detectoion/vision_objects`).
+1. Launch a Lidar Detector from the Computing tab (this should be publishing by default `/detectoion/lidar_objects`).
 1. Launch this node.
 1. Launch `rviz`, and add the topics shown above in the Output section.
 
 ## Notes
 
-Detection on Image space should be performed on a **Rectified** Image, otherwise projection will be incorrect.
+* Detection on Image space should be performed on a **Rectified** Image, otherwise projection will be incorrect.
+* The names of the classes are defined as in the COCO dataset.

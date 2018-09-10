@@ -2,11 +2,18 @@
     <arg name="detected_objects_range" default="/detection/lidar_objects" />
     <arg name="detected_objects_vision" default="/detection/vision_objects" />
     <arg name="camera_info_src" default="/camera_info" />
+    <arg name="min_car_dimensions" default="[2,2,4]" />
+    <arg name="min_person_dimensions" default="[1,2,1]" />
+    <arg name="min_truck_dimensions" default="[2,2,4.5]" />
     <arg name="sync_topics" default="false" />
 
     <node name="range_vision_fusion_01" pkg="range_vision_fusion" type="range_vision_fusion" output="screen">
         <param name="detected_objects_range" value="$(arg detected_objects_range)" />
         <param name="detected_objects_vision" value="$(arg detected_objects_vision)" />
         <param name="camera_info_src" value="$(arg camera_info_src)" />
+        <param name="min_car_dimensions" value="$(arg min_car_dimensions)" />
+        <param name="min_person_dimensions" value="$(arg min_person_dimensions)" />
+        <param name="min_truck_dimensions" value="$(arg min_truck_dimensions)" />
+        <param name="sync_topics" value="$(arg sync_topics)" />
     </node>
 </launch>

@@ -156,6 +156,11 @@ subs :
     - name : vision_tracker
       desc : vision_tracker desc sample
       subs :
+      - name : vision_beyond_track
+        desc : Beyond Pixel based object tracker
+        cmd  : roslaunch vision_beyond_track vision_beyond_track.launch
+        param: vision_beyond_track_params
+
       - name : vision_klt_track
         desc : vision_klt_track desc sample
         cmd  : roslaunch vision_klt_track vision_klt_track.launch
@@ -169,6 +174,7 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
+
       - name : vision_kf_track
         desc : vision_kf_track desc sample
         cmd  : roslaunch vision_kf_track vision_kf_track.launch
@@ -200,6 +206,7 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
+
       - name : vision_dummy_track
         desc : vision_dummy_track desc sample
         cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
@@ -5205,6 +5212,34 @@ params :
       label : sync_topics
       kind  : checkbox
       v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : vision_beyond_track_params
+    vars  :
+    - name  : camera_info_src
+      desc  : CameraInfo source topic
+      label : camera_info_src
+      kind  : str
+      v     : /camera_info
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : objects_topic_src
+      desc  : Detected Objects Topic Source
+      label : objects_topic_src
+      kind  : str
+      v     : /detection/vision_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : camera_height
+      desc  : Camera height
+      label : camera_height
+      min     : 0.00
+      max     : 3.0
+      v       : 1.2
       cmd_param :
         dash      : ''
         delim     : ':='

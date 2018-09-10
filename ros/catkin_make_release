@@ -9,7 +9,7 @@ if [[ -d devel ]]; then
     rm -rf devel
 fi
 
-catkin_make clean
+catkin_make -DCMAKE_BUILD_TYPE=Release clean
 source devel/setup.bash
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
