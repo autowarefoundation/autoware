@@ -363,10 +363,11 @@ void NdtSlam::pointsRawAndFilterdCallback(const sensor_msgs::PointCloud2::ConstP
             }
         }
 
-        //std::cout << "map points size:" << localizer_ptr_->getMapPtr()->points.size() << std::endl;
+        std::cout << "map points size:" << localizer_ptr_->getMapPtr()->points.size() << std::endl;
         //TODO
         static int loop_count_donw_map = 0;
         if(++loop_count_donw_map >= 300) {
+            std::cout << "downsampleMap" << std::endl;
             loop_count_donw_map = 0;
             localizer_ptr_->downsampleMap();
         }

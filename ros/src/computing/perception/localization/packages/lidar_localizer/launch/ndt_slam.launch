@@ -51,6 +51,7 @@
 
     <param name="with_mapping" value="$(arg with_mapping)" />
     <param name="save_map_leaf_size" value="$(arg save_map_leaf_size)" />
+    <param name="min_scan_range" value="$(arg min_scan_range)" />
     <param name="max_scan_range" value="$(arg max_scan_range)" />
     <param name="min_add_scan_shift" value="$(arg min_add_scan_shift)" />
     <param name="separate_mapping" value="$(arg separate_mapping)" />

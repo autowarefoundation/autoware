@@ -36,8 +36,8 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include <pcl_registration/ndt.h> //TODO
-//#include <pcl/registration/ndt.h>
+//#include <pcl_registration/ndt.h> //TODO
+#include <pcl/registration/ndt.h>
 
 template <class PointSource, class PointTarget>
 class NdtSlamPCL

@@ -45,8 +45,6 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/common/transforms.h>
 
-#include <tf/tf.h>
-
 #include "lidar_localizer/util/data_structs.h"
 
 static Eigen::Matrix4f convertToEigenMatrix4f(const Pose& pose)
@@ -122,6 +120,10 @@ static void addPointCloud(const boost::shared_ptr< pcl::PointCloud<PointType> co
     boost::shared_ptr< pcl::PointCloud<PointType> > transformed_input_ptr(new pcl::PointCloud<PointType>);
     const auto eigen_pose = convertToEigenMatrix4f(pose);
     pcl::transformPointCloud(*input_ptr, *transformed_input_ptr, eigen_pose);
+    const auto need_points_size = output_ptr->points.size()+transformed_input_ptr->points.size();
+    if(output_ptr->points.capacity() < need_points_size) {
+        output_ptr->points.reserve(need_points_size*2);
+    }
     *output_ptr += *transformed_input_ptr;
 }
 
@@ -243,6 +245,7 @@ class LidarLocalizer
 
         enum class ThreadStatus{sleeping, running, finished};
         ThreadStatus thread_status_;
+        std::chrono::system_clock::time_point thread_begin_time_;
 };
 
 template <class PointSource, class PointTarget>
@@ -302,7 +305,7 @@ void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::share
     if(thread_status_ != ThreadStatus::sleeping) {
         return;
     }
-
+    thread_begin_time_ =  std::chrono::system_clock::now();
     thread_status_ = ThreadStatus::running;
 
     std::thread build_map_thread([this, map_ptr](){
@@ -317,8 +320,18 @@ void LidarLocalizer<PointSource, PointTarget>::buildMapThread(const boost::share
 template <class PointSource, class PointTarget>
 bool LidarLocalizer<PointSource, PointTarget>::swapMap()
 {
-    if(thread_status_ != ThreadStatus::finished) {
-        return false;
+    //if it takes a lot of time to generate map, wait for thread
+    auto thread_now_time =  std::chrono::system_clock::now();
+    auto thread_processing_time_msec = std::chrono::duration_cast<std::chrono::microseconds>(thread_now_time - thread_begin_time_).count() / 1000.0;
+    const double time_threshold_msec = 1000.0;
+    if(thread_status_ == ThreadStatus::running && thread_processing_time_msec > time_threshold_msec) {
+        std::cout << "waiting for finish thread" << std::endl;
+        while(thread_status_ != ThreadStatus::finished) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
+    else if(thread_status_ != ThreadStatus::finished) {
+         return false;
     }
 
     swapInstance();

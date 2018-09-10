@@ -1536,7 +1536,7 @@ params :
       - PCL ANH Implementation
       - PCL ANH GPU Implementation
       - PCL OpenMP  Implementation
-      v     : 1
+      v     : 0
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1561,6 +1561,9 @@ params :
       label     : Points Queue Size
       kind      : num
       v         : 1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : sensor_frame
       desc      : sensor_frame desc sample
       label     : Sensor Frame
@@ -1679,16 +1682,16 @@ params :
       desc  : Ignore points closer than this value (meters) (default 5.0)
       label : Min Scan Range
       min   : 0.0
-      max   : 300.0
+      max   : 30.0
       v     : 5.0
       cmd_param:
         dash     : ''
         delim    : ':='
     - name  : max_scan_range
-      desc  : Ignore points more distan than this value (meters) (default 200.0)
+      desc  : max_scan_range
       label : Max Scan Range
       min   : 0.0
-      max   : 300.0
+      max   : 200.0
       v     : 200.0
       cmd_param:
         dash     : ''
