@@ -76,34 +76,34 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
     }
   }
   // only transform pose(clusteArray.clusters.bouding_box.pose)
-  std::string filepath1 = "/home/kosuke/pre_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
-  std::ofstream file1(filepath1, std::ofstream::out | std::ofstream::app);
-  file1<< frame_count_ << " " << input.objects.size() << "\n";
-  for(size_t i = 0; i < input.objects.size(); i++)
-  {
-    file1<<input.objects[i].pose.position.x << " "
-         <<input.objects[i].pose.position.y << " "
-         <<input.objects[i].pose.position.z << " "
-         <<input.objects[i].pose.orientation.x << " "
-         <<input.objects[i].pose.orientation.y << " "
-         <<input.objects[i].pose.orientation.z << " "
-         <<input.objects[i].pose.orientation.w << "\n";
-  }
+  // std::string filepath1 = "/home/kosuke/pre_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+  // std::ofstream file1(filepath1, std::ofstream::out | std::ofstream::app);
+  // file1<< frame_count_ << " " << input.objects.size() << "\n";
+  // for(size_t i = 0; i < input.objects.size(); i++)
+  // {
+  //   file1<<input.objects[i].pose.position.x << " "
+  //        <<input.objects[i].pose.position.y << " "
+  //        <<input.objects[i].pose.position.z << " "
+  //        <<input.objects[i].pose.orientation.x << " "
+  //        <<input.objects[i].pose.orientation.y << " "
+  //        <<input.objects[i].pose.orientation.z << " "
+  //        <<input.objects[i].pose.orientation.w << "\n";
+  // }
   autoware_msgs::DetectedObjectArray transformed_input;
   transformPoseToGlobal(input, transformed_input);
-  std::string filepath2 = "/home/kosuke/post_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
-  std::ofstream file2(filepath2, std::ofstream::out | std::ofstream::app);
-  file2<< frame_count_ << " " << input.objects.size() << "\n";
-  for(size_t i = 0; i < transformed_input.objects.size(); i++)
-  {
-    file2<<transformed_input.objects[i].pose.position.x << " "
-        <<transformed_input.objects[i].pose.position.y << " "
-        <<transformed_input.objects[i].pose.position.z << " "
-        <<transformed_input.objects[i].pose.orientation.x << " "
-        <<transformed_input.objects[i].pose.orientation.y << " "
-        <<transformed_input.objects[i].pose.orientation.z << " "
-        <<transformed_input.objects[i].pose.orientation.w << "\n";
-  }
+  // std::string filepath2 = "/home/kosuke/post_tf_cluster" +std::to_string(debug_nth_take_) + ".txt";
+  // std::ofstream file2(filepath2, std::ofstream::out | std::ofstream::app);
+  // file2<< frame_count_ << " " << input.objects.size() << "\n";
+  // for(size_t i = 0; i < transformed_input.objects.size(); i++)
+  // {
+  //   file2<<transformed_input.objects[i].pose.position.x << " "
+  //       <<transformed_input.objects[i].pose.position.y << " "
+  //       <<transformed_input.objects[i].pose.position.z << " "
+  //       <<transformed_input.objects[i].pose.orientation.x << " "
+  //       <<transformed_input.objects[i].pose.orientation.y << " "
+  //       <<transformed_input.objects[i].pose.orientation.z << " "
+  //       <<transformed_input.objects[i].pose.orientation.w << "\n";
+  // }
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
@@ -912,28 +912,28 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   {
     initTracker(input, timestamp);
     makeOutput(input, jskbboxes_output, detected_objects_output);
-    std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
-    std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
-    file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<timestamp<< "\n";
-    for(size_t i = 0; i < targets_.size(); i++)
-    {
-      file2<<targets_[i].ukf_id_ << " "
-           <<targets_[i].x_ctrv_(0) << " "
-           <<targets_[i].x_ctrv_(1) << " "
-           <<targets_[i].x_ctrv_(2) << " "
-           <<targets_[i].x_ctrv_(3) << " "
-           <<targets_[i].x_ctrv_(4) << " "
-           <<targets_[i].p_ctrv_(0,0) << " "
-           <<targets_[i].p_ctrv_(1,1) << " "
-           <<targets_[i].p_ctrv_(2,2) << " "
-           <<targets_[i].p_ctrv_(3,3) << " "
-           <<targets_[i].p_ctrv_(4,4) << "\n";
-           // <<targets_[i].p_merge_(0,0) << " "
-           // <<targets_[i].p_merge_(1,1) << " "
-           // <<targets_[i].p_merge_(2,2) << " "
-           // <<targets_[i].p_merge_(3,3) << " "
-           // <<targets_[i].p_merge_(4,4) << "\n";
-    }
+    // std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
+    // std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
+    // file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<timestamp<< "\n";
+    // for(size_t i = 0; i < targets_.size(); i++)
+    // {
+    //   file2<<targets_[i].ukf_id_ << " "
+    //        <<targets_[i].x_ctrv_(0) << " "
+    //        <<targets_[i].x_ctrv_(1) << " "
+    //        <<targets_[i].x_ctrv_(2) << " "
+    //        <<targets_[i].x_ctrv_(3) << " "
+    //        <<targets_[i].x_ctrv_(4) << " "
+    //        <<targets_[i].p_ctrv_(0,0) << " "
+    //        <<targets_[i].p_ctrv_(1,1) << " "
+    //        <<targets_[i].p_ctrv_(2,2) << " "
+    //        <<targets_[i].p_ctrv_(3,3) << " "
+    //        <<targets_[i].p_ctrv_(4,4) << "\n";
+    //        // <<targets_[i].p_merge_(0,0) << " "
+    //        // <<targets_[i].p_merge_(1,1) << " "
+    //        // <<targets_[i].p_merge_(2,2) << " "
+    //        // <<targets_[i].p_merge_(3,3) << " "
+    //        // <<targets_[i].p_merge_(4,4) << "\n";
+    // }
     return;
   }
 
@@ -1013,26 +1013,26 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
   // end UKF process
 
-  std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
-  std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
-  file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<dt <<"\n";
-  for(size_t i = 0; i < targets_.size(); i++)
-  {
-    file2<<targets_[i].ukf_id_ << " "
-         <<targets_[i].ctrv_meas_(0)<<" "
-         <<targets_[i].ctrv_meas_(1)<<" "
-         <<targets_[i].debug_object_num_meas_ << " "
-         <<targets_[i].x_ctrv_(0) << " "
-         <<targets_[i].x_ctrv_(1) << " "
-         <<targets_[i].x_ctrv_(2) << " "
-         <<targets_[i].x_ctrv_(3) << " "
-         <<targets_[i].x_ctrv_(4) << " "
-         <<targets_[i].p_ctrv_(0,0) << " "
-         <<targets_[i].p_ctrv_(1,1) << " "
-         <<targets_[i].p_ctrv_(2,2) << " "
-         <<targets_[i].p_ctrv_(3,3) << " "
-         <<targets_[i].p_ctrv_(4,4) << "\n";
-  }
+  // std::string filepath = "/home/kosuke/tracker_out" +std::to_string(debug_nth_take_) + ".txt";
+  // std::ofstream file2(filepath, std::ofstream::out | std::ofstream::app);
+  // file2<< frame_count_ << " " << detected_objects_output.objects.size() <<" "<<dt <<"\n";
+  // for(size_t i = 0; i < targets_.size(); i++)
+  // {
+  //   file2<<targets_[i].ukf_id_ << " "
+  //        <<targets_[i].ctrv_meas_(0)<<" "
+  //        <<targets_[i].ctrv_meas_(1)<<" "
+  //        <<targets_[i].debug_object_num_meas_ << " "
+  //        <<targets_[i].x_ctrv_(0) << " "
+  //        <<targets_[i].x_ctrv_(1) << " "
+  //        <<targets_[i].x_ctrv_(2) << " "
+  //        <<targets_[i].x_ctrv_(3) << " "
+  //        <<targets_[i].x_ctrv_(4) << " "
+  //        <<targets_[i].p_ctrv_(0,0) << " "
+  //        <<targets_[i].p_ctrv_(1,1) << " "
+  //        <<targets_[i].p_ctrv_(2,2) << " "
+  //        <<targets_[i].p_ctrv_(3,3) << " "
+  //        <<targets_[i].p_ctrv_(4,4) << "\n";
+  // }
 
   //debug, green is for measurement points, red is for estimated points
   pubPoints(input);
