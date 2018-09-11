@@ -236,6 +236,21 @@ cmds:
       cmd  : roslaunch points_downsampler points_downsample.launch node_name:=voxel_grid_filter
       param: voxel_grid_filter
       gui  :
+        voxel_leaf_size_step:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 1'
+        min_voxel_leaf_size:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 1'
+        max_voxel_leaf_size:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 1'
+        min_points_size:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 1'
+        max_points_size:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 1'
         sync :
           func : self.button_synchronization.GetValue()
     - name : ring_filter
@@ -629,6 +644,41 @@ params :
       min   : 0
       max   : 200
       v     : 200
+    - name  : use_dynamic_leaf_size
+      desc  : use_dynamic_leaf_size
+      label : Use Dynamic Leaf Size
+      kind  : checkbox
+      v     : False
+    - name  : voxel_leaf_size_step
+      desc  : voxel_leaf_size_step
+      label : Voxel Leaf Size Step
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+    - name  : min_voxel_leaf_size
+      desc  : min_voxel_leaf_size
+      label : Min Voxel Leaf Size
+      min   : 0.0
+      max   : 10.0
+      v     : 0.2
+    - name  : max_voxel_leaf_size
+      desc  : max_voxel_leaf_size
+      label : Max Voxel Leaf Size
+      min   : 0.0
+      max   : 10.0
+      v     : 3.0
+    - name  : min_points_size
+      desc  : min_points_size
+      label : Min Points Size
+      min   : 0
+      max   : 10000
+      v     : 1500
+    - name  : max_points_size
+      desc  : max_points_size
+      label : Max Points Size
+      min   : 0
+      max   : 10000
+      v     : 2500
     - name      : sync
       kind      : hide
       v         : False

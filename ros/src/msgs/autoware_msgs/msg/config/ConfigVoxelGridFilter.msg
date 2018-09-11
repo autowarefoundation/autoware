@@ -1,2 +1,8 @@
 float32 voxel_leaf_size
 float32 measurement_range
+bool use_dynamic_leaf_size
+float32 voxel_leaf_size_step
+float32 min_voxel_leaf_size
+float32 max_voxel_leaf_size
+float32 min_points_size
+float32 max_points_size

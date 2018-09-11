@@ -4,7 +4,7 @@
   <arg name="points_topic" default="points_raw" />
   <arg name="output_log" default="false" />
 
-  <node pkg="points_downsampler" name="$(arg node_name)" type="$(arg node_name)">
+  <node pkg="points_downsampler" name="$(arg node_name)" type="$(arg node_name)" output="log">
     <param name="points_topic" value="$(arg points_topic)" />
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
     <param name="output_log" value="$(arg output_log)" />

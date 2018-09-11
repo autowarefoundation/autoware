@@ -49,6 +49,12 @@ ros::Publisher filtered_points_pub;
 
 // Leaf size of VoxelGrid filter.
 static double voxel_leaf_size = 2.0;
+static double voxel_leaf_size_step = 0.2;
+static double min_voxel_leaf_size = 0.2;
+static double max_voxel_leaf_size = 3.0;
+static int min_points_size = 1500;
+static int max_points_size = 2500;
+static bool use_dynamic_leaf_size = false;
 
 static ros::Publisher points_downsampler_info_pub;
 static points_downsampler::PointsDownsamplerInfo points_downsampler_info_msg;
@@ -64,8 +70,18 @@ static double measurement_range = MAX_MEASUREMENT_RANGE;
 
 static void config_callback(const autoware_msgs::ConfigVoxelGridFilter::ConstPtr& input)
 {
-  voxel_leaf_size = input->voxel_leaf_size;
+  use_dynamic_leaf_size = input->use_dynamic_leaf_size;
+
+  if(use_dynamic_leaf_size == false){
+      voxel_leaf_size = input->voxel_leaf_size;
+  }
+
   measurement_range = input->measurement_range;
+  voxel_leaf_size_step = input->voxel_leaf_size_step;
+  min_voxel_leaf_size = input->min_voxel_leaf_size;
+  max_voxel_leaf_size = input->max_voxel_leaf_size;
+  min_points_size = input->min_points_size;
+  max_points_size = input->max_points_size;
 }
 
 static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
@@ -85,20 +101,55 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   filter_start = std::chrono::system_clock::now();
 
   // if voxel_leaf_size < 0.1 voxel_grid_filter cannot down sample (It is specification in PCL)
-  if (voxel_leaf_size >= 0.1)
-  {
-    // Downsampling the velodyne scan using VoxelGrid filter
-    pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-    voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-    voxel_grid_filter.setInputCloud(scan_ptr);
-    voxel_grid_filter.filter(*filtered_scan_ptr);
-    pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
+  if(voxel_leaf_size < 0.1) {
+      voxel_leaf_size = 0.1;
   }
-  else
-  {
-    pcl::toROSMsg(*scan_ptr, filtered_msg);
+  if(min_voxel_leaf_size < 0.1) {
+      min_voxel_leaf_size = 0.1;
+  }
+  if(voxel_leaf_size < min_voxel_leaf_size) {
+      voxel_leaf_size = min_voxel_leaf_size;
+  }
+  if(voxel_leaf_size > max_voxel_leaf_size) {
+      voxel_leaf_size = max_voxel_leaf_size;
   }
 
+  pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+  voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+  voxel_grid_filter.setInputCloud(scan_ptr);
+  voxel_grid_filter.filter(*filtered_scan_ptr);
+
+  if(use_dynamic_leaf_size == true) {
+      if(filtered_scan_ptr->points.size() < min_points_size) {
+          for(;voxel_leaf_size > min_voxel_leaf_size; voxel_leaf_size -= voxel_leaf_size_step) {
+              pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+              voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+              voxel_grid_filter.setInputCloud(scan_ptr);
+              voxel_grid_filter.filter(*filtered_scan_ptr);
+              if(filtered_scan_ptr->points.size() > min_points_size){
+                  break;
+              }
+          }
+      }
+
+      else if(filtered_scan_ptr->points.size() > max_points_size) {
+          for(;voxel_leaf_size < max_voxel_leaf_size; voxel_leaf_size += voxel_leaf_size_step) {
+              pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+              voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+              voxel_grid_filter.setInputCloud(scan_ptr);
+              voxel_grid_filter.filter(*filtered_scan_ptr);
+              if(filtered_scan_ptr->points.size() < max_points_size){
+                  break;
+              }
+          }
+      }
+  }
+
+  std::cout << "voxel_leaf_size:" << voxel_leaf_size << std::endl;
+  std::cout << "points.size:" << filtered_scan_ptr->points.size() << std::endl;
+  std::cout << std::endl;
+
+  pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
   filter_end = std::chrono::system_clock::now();
 
   filtered_msg.header = input->header;
