@@ -1,0 +1,8 @@
+phases:
+- template: ci/build.yml
+  parameters:
+    name: Indigo
+    desktop: trusty
+    ros_distro: indigo
+    queue: Hosted Ubuntu 1604
+    autoware_target_platform: 'x86'

@@ -1,0 +1,8 @@
+phases:
+- template: ci/build.yml
+  parameters:
+    name: Kinetic_aarch64
+    desktop: xenial
+    ros_distro: kinetic
+    queue: Hosted Ubuntu 1604
+    autoware_target_platform: 'generic-aarch64'

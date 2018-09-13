@@ -1,0 +1,227 @@
+parameters:
+  name: ''
+  desktop: ''
+  ros_distro: ''
+  queue: ''
+  autoware_target_platform: ''
+
+# There's an issue with variables always cast as strings, intead of e.g. booleans
+# so we have to compare them with the 'true' and 'false' string
+# https://github.com/Microsoft/azure-pipelines-agent/issues/1727
+phases:
+- phase: ${{ parameters.name }}
+  variables:
+    ROS_CI_DESKTOP: ${{ parameters.desktop }}
+    ROS_DISTRO: ${{ parameters.ros_distro }}
+    AUTOWARE_TARGET_PLATFORM: ${{ parameters.autoware_target_platform }}
+  queue: ${{ parameters.queue }}
+  steps:
+  - script: |
+      set -x
+
+      sudo apt-get install -y --no-install-recommends p7zip-full wget
+
+      DRIVEWORKS_BASE_URL="http://developer.download.nvidia.com/driveworks/installers/driveinstall/5.0.5.0b/dlk063/DriveInstall_5050bL_SDK_b3/"
+
+      mkdir -p downloads
+
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.001"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.002"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.003"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.004"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.005"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.006"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.007"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.008"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.009"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/TensorRT-3.0.2.Ubuntu-16.04.3.aarch64.cuda-9.0.cudnn7.0.tar.gz"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/driveworks-v0.6.67-linux-amd64-ubuntu1604.deb"
+      wget -cNP downloads "${DRIVEWORKS_BASE_URL}/driveworks-cross-v0.6.67-drive-t186ref-ubuntu1604-5.0.5.0a.deb"
+
+      mkdir -p downloads/drive-t186ref
+
+      7z x -odownloads/drive-t186ref downloads/drive-t186ref-linux-5.0.5.0-10141304-sdk.7z.001 -aos
+
+      mkdir -p downloads/tensorrt
+      tar -C downloads/tensorrt -xf downloads/TensorRT-3.0.2.Ubuntu-16.04.3.aarch64.cuda-9.0.cudnn7.0.tar.gz
+
+      docker volume rm cuda driveworks tensorrt
+      docker volume create cuda
+      docker volume create driveworks
+      docker volume create tensorrt
+      docker run \
+        -i \
+        --rm \
+        -v ${PWD}/downloads:/data/downloads \
+        -v cuda:/usr/local/cuda-9.0 \
+        -v driveworks:/usr/local/driveworks-0.6 \
+        -v tensorrt:/downloads/tensorrt/TensorRT-3.0.2 \
+        ubuntu:xenial \
+        bash \
+        -c "\
+          apt-get install -y --no-install-recommends /data/downloads/drive-t186ref/cuda-host/cuda-repo-ubuntu1604-9-0-local_9.0.225-1_amd64.deb &&
+          apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub &&
+          apt-get update && apt-get install -y --no-install-recommends \
+            /data/downloads/driveworks-cross-v0.6.67-drive-t186ref-ubuntu1604-5.0.5.0a.deb \
+            /data/downloads/driveworks-v0.6.67-linux-amd64-ubuntu1604.deb &&
+          apt-get update && apt-get install -y --no-install-recommends \
+            symlinks
+          dpkg --add-architecture arm64
+          sed -i -e 's#^deb #deb [arch=amd64] #g' /etc/apt/sources.list
+          apt-get update && apt-get install -y --no-install-recommends \
+            cuda-cross-aarch64 &&
+          symlinks -cr /usr/local/cuda-9.0 /usr/local/driveworks-0.6 /data/downloads/tensorrt/TensorRT-3.0.2"
+    displayName: 'Install requirements for Driveworks'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'driveworks'), eq(variables.ROS_DISTRO, 'kinetic'))
+
+  - script: |
+      set -x
+
+      AUTOWARE_HOME=${BUILD_SOURCESDIRECTORY}
+      AUTOWARE_TARGET_ARCH=aarch64
+      AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+      AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+      AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake
+      AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
+
+      docker run \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
+        --rm \
+        -v ${AUTOWARE_HOME}:${AUTOWARE_HOME} \
+        -w ${AUTOWARE_HOME}/ros \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-$(ROS_DISTRO)-20180809 \
+        bash \
+          -c "source /opt/ros/$(ROS_DISTRO)/setup.bash &&
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+                --build ${AUTOWARE_BUILD_PATH} \
+                clean &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+                --build ${AUTOWARE_BUILD_PATH} \
+                -j4"
+    displayName: 'Build Autoware for aarch64'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'generic-aarch64'), eq(variables.ROS_DISTRO, 'kinetic'))
+
+
+  - script: |
+      set -x
+
+      docker volume ls
+
+      docker volume inspect cuda
+
+      docker volume inspect driveworks
+
+      docker volume inspect tensorrt
+
+      AUTOWARE_HOME=${BUILD_SOURCESDIRECTORY}
+      AUTOWARE_TARGET_ARCH=aarch64
+      AUTOWARE_TARGET_PLATFORM=${AUTOWARE_TARGET_PLATFORM}
+      AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
+      AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+      AUTOWARE_TOOLCHAIN_FILE_PATH=${AUTOWARE_HOME}/ros/cross_toolchain.cmake
+      AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
+      DRIVEWORKS_TOOLKIT_ROOT_DIR=driveworks
+      CUDA_TOOLKIT_ROOT_DIR=cuda
+      NVIDIA_TENSORRT_ROOT_DIR=tensorrt
+
+      docker run \
+        -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT} \
+        --rm \
+        -v ${AUTOWARE_HOME}:${AUTOWARE_HOME} \
+        -v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:/usr/local/driveworks:ro \
+        -v ${CUDA_TOOLKIT_ROOT_DIR}:/usr/local/cuda:ro \
+        -v ${NVIDIA_TENSORRT_ROOT_DIR}:/usr/local/tensorrt:ro \
+        -e DRIVEWORKS_TOOLKIT_ROOT_DIR=/usr/local/driveworks \
+        -e CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+        -e NVIDIA_TENSORRT_ROOT_DIR=/usr/local/tensorrt \
+        -w ${AUTOWARE_HOME}/ros \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-$(ROS_DISTRO)-20180809 \
+        bash \
+          -c "ls -l /usr/local/cuda /usr/local/driveworks /usr/local/tensorrt &&
+              echo "DRIVEWORKS_TOOLKIT_ROOT_DIR = \${DRIVEWORKS_TOOLKIT_ROOT_DIR} --" &&
+              echo "CUDA_TOOLKIT_ROOT_DIR = \${CUDA_TOOLKIT_ROOT_DIR} --" &&
+              echo "NVIDIA_TENSORRT_ROOT_DIR = \${NVIDIA_TENSORRT_ROOT_DIR} --" &&
+              source /opt/ros/$(ROS_DISTRO)/setup.bash &&
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+                --build ${AUTOWARE_BUILD_PATH} \
+                clean &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
+              catkin_make \
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
+                --build ${AUTOWARE_BUILD_PATH} \
+                -j4"
+    displayName: 'Build Autoware for Driveworks'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'driveworks'), eq(variables.ROS_DISTRO, 'kinetic'))
+
+  - script: |
+      set -x
+
+      AUTOWARE_HOME=${BUILD_SOURCESDIRECTORY}
+      docker run \
+        -d \
+        -i \
+        -v ${AUTOWARE_HOME}:${AUTOWARE_HOME} \
+        -w ${AUTOWARE_HOME} \
+        --name ubuntu_$(ROS_CI_DESKTOP) \
+        ubuntu:$(ROS_CI_DESKTOP)
+    displayName: 'Start container for x86'
+    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "echo \"deb http://packages.ros.org/ros/ubuntu $(ROS_CI_DESKTOP) main\" | tee /etc/apt/sources.list.d/ros-latest.list; \
+              apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116; \
+              apt-get update; \
+              apt-get install -y dpkg; \
+              apt-get install -y build-essential; \
+              apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
+              source /opt/ros/$(ROS_DISTRO)/setup.bash; \
+              rosdep init; \
+              rosdep update"
+    displayName: 'Install requirements for x86'
+    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "cd ros/src; \
+              wstool init; \
+              test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"; \
+              wstool up; \
+              cd ..; \
+              rosdep install -y --from-paths src --ignore-src --rosdistro $(ROS_DISTRO)"
+    displayName: 'Setup Autoware for x86'
+    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "source /opt/ros/$(ROS_DISTRO)/setup.bash &&
+              cd ros &&
+              catkin_make clean &&
+              source devel/setup.bash &&
+              catkin_make -j4"
+    displayName: 'Build Autoware for x86'
+    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
