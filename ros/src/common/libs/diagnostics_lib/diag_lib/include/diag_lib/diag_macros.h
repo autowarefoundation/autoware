@@ -1,0 +1,6 @@
+#ifndef DIAG_MACROS_H_INCLUDED
+#define DIAG_MACROS_H_INCLUDED
+
+#define GET_VARIABLE_NAME(Variable)
+
+#endif  //DIAG_MACROS_H_INCLUDED
