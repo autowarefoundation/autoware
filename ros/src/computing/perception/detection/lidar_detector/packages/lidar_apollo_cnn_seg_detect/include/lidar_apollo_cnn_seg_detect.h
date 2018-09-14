@@ -4,6 +4,8 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 
+#include "modules/perception/obstacle/lidar/segmentation/cnnseg/cnn_segmentation.h"
+
 class ApolloCNNSeg
 {
 public:
