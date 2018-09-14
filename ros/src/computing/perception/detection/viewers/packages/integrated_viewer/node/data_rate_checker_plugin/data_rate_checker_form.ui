@@ -51,19 +51,14 @@
        <item row="2" column="0">
         <widget class="QLabel" name="topic_frequency_label_">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="minimumSize">
-          <size>
-           <width>1</width>
-           <height>1</height>
-          </size>
-         </property>
          <property name="font">
           <font>
+           <family>Ubuntu</family>
            <pointsize>14</pointsize>
            <weight>75</weight>
            <bold>true</bold>
@@ -81,6 +76,7 @@
         <widget class="QLabel" name="status_icon_label_">
          <property name="font">
           <font>
+           <family>Ubuntu</family>
            <pointsize>14</pointsize>
            <weight>75</weight>
            <bold>true</bold>
@@ -159,6 +155,7 @@
         <widget class="QLabel" name="status_icon_">
          <property name="font">
           <font>
+           <family>Ubuntu</family>
            <pointsize>70</pointsize>
            <weight>75</weight>
            <bold>true</bold>

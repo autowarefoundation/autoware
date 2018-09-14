@@ -445,7 +445,7 @@ namespace integrated_viewer {
         }
       }
 
-      if(config.mapGetInt ("Point_size", &point_size)) {
+      if(config.mapGetInt ("Point size", &point_size)) {
         ui_.point_size_spin_box_->setValue(point_size);
       }
     } // ImageViewerPlugin::load
