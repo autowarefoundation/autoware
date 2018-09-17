@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Caffe)
+find_package(cnnseg_proto)
 
 catkin_package(
   INCLUDE_DIRS
@@ -33,18 +34,20 @@ catkin_package(
 
 include_directories(
   include
-  nodes
   ${catkin_INCLUDE_DIRS}
   ${CAFFE_INCLUDEDIR}
 )
 
 add_executable(lidar_apollo_cnn_seg_detect
   nodes/lidar_apollo_cnn_seg_detect_node.cpp
-  nodes/lidar_apollo_cnn_seg_detect.cpp
+  nodes/cnn_segmentation.cpp
+  nodes/cluster2d.cpp
+  nodes/feature_generator.cpp
 )
 target_link_libraries(lidar_apollo_cnn_seg_detect
   ${catkin_LIBRARIES}
   ${Caffe_LIBRARIES}
+  ${cnnseg_proto_LIBRARIES}
 )
 add_dependencies(lidar_apollo_cnn_seg_detect
   ${catkin_EXPORTED_TARGETS}
