@@ -9,14 +9,10 @@
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "lidar_apollo_cnn_seg_detect");
-  //
-  // ApolloCNNSeg node;
-  // node.run();
-  // generate input point cloud data
-
   std::cout << "111" << std::endl;
   CNNSegmentation node;
   node.run();
+  ros::spin();
 
   return 0;
 }

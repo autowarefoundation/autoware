@@ -26,16 +26,23 @@ struct CellStat {
 class CNNSegmentation
 {
 public:
-  CNNSegmentation() {}
+  CNNSegmentation();
   void run();
+  void test_run();
 private:
-
-
-  int a_;
 
   float range_;
   int width_;
   int height_;
+
+  // nodehandle
+  ros::NodeHandle nh_;
+
+  // publisher
+  ros::Publisher points_pub_;
+
+  // subscriber
+  ros::Subscriber points_sub_;
 
   std::shared_ptr<caffe::Net<float>> caffe_net_;
 
@@ -58,17 +65,18 @@ private:
   // bird-view raw feature generator
   std::shared_ptr<FeatureGenerator> feature_generator_;
 
-  // nodehandle
-  ros::NodeHandle nh_;
 
-  ros::Subscriber points_sub_;
-  pcl::PointCloud<pcl::PointXYZI> points_;
+  // pcl::PointCloud<pcl::PointXYZI> points_;
 
   // void pointsCallback(const sensor_msgs::PointCloud2& msg);
   bool init();
   bool segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr,
                                 const pcl::PointIndices& valid_idx,
                                 autoware_msgs::DetectedObjectArray* objects);
+
+  void pointsCallback(const sensor_msgs::PointCloud2& msg);
+  void pubColoredPoints(const autoware_msgs::DetectedObjectArray& objects);
+
   // void drawDetection(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr,
   //                    const pcl::PointIndices& valid_idx,
   //                    int rows, int cols, float range,

@@ -1,5 +1,13 @@
 #include "cnn_segmentation.h"
 
+#include <chrono>
+
+CNNSegmentation::CNNSegmentation(): nh_()
+{
+  // points_sub_ = nh_.subscribe("/points_raw", 1, &CNNSegmentation::pointsCallback, this);
+  // points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/detection/colored_cloud", 1);
+}
+
 bool CNNSegmentation::init() {
   // std::string config_file;
   std::string proto_file;
@@ -86,12 +94,9 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr
   feature_generator_->generate(pc_ptr);
 
 // network forward process
-#ifdef USE_CAFFE_GPU
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
-#endif
   caffe_net_->Forward();
-  // PERF_BLOCK_END("[CNNSeg] CNN forward");
-//
+
   // clutser points and construct segments/objects
   float objectness_thresh = 0.5;
   bool use_all_grids_for_clustering = true;
@@ -108,11 +113,12 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr
   return true;
 }
 
-void CNNSegmentation::run() {
+void CNNSegmentation::test_run() {
   std::string in_pcd_file = "/home/kosuke/apollo/modules/perception/data/cnnseg_test/uscar_12_1470770225_1470770492_1349.pcd";
   // apollo::PointCloudPtr in_pc;
   pcl::PointCloud<pcl::PointXYZI>::Ptr in_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::io::loadPCDFile(in_pcd_file, *in_pc_ptr);
+
 
   pcl::PointIndices valid_idx;
   auto& indices = valid_idx.indices;
@@ -121,112 +127,70 @@ void CNNSegmentation::run() {
 
   autoware_msgs::DetectedObjectArray objects;
   init();
-  for (int i = 0; i < 10; ++i) {
-    segment(in_pc_ptr, valid_idx, &objects);
-    // EXPECT_TRUE(
-    //     cnn_segmentor_->Segment(in_pc, valid_idx, options, &out_objects));
-    // EXPECT_EQ(out_objects.size(), 15);
-    std::cout << "size " << objects.objects.size() << std::endl;
-  }
-  // segment(in_pc_ptr, valid_idx, &objects);
+  segment(in_pc_ptr, valid_idx, &objects);
+
 
 }
 
+void CNNSegmentation::run()
+{
+  points_sub_ = nh_.subscribe("/points_raw", 1, &CNNSegmentation::pointsCallback, this);
+  points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/detection/colored_cloud", 1);
+  init();
+}
 
-// void CNNSegmentation::drawDetection(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr,
-//                    const pcl::PointIndices& valid_idx,
-//                    int rows, int cols, float range,
-//                    const autoware_msgs::DetectedObjectArray& objects,
-//                    const std::string &result_file) {
-//   // create a new image for visualization
-//   cv::Mat img(rows, cols, CV_8UC3, cv::Scalar(0.0));
-//
-//   // map points into bird-view grids
-//   float inv_res_x = 0.5 * static_cast<float>(cols) / range;
-//   float inv_res_y = 0.5 * static_cast<float>(rows) / range;
-//   int grids = rows * cols;
-//   std::vector<CellStat> view(grids);
-//
-//   const std::vector<int> *valid_indices_in_pc = &(valid_idx.indices);
-//   CHECK_LE(valid_indices_in_pc->size(), pc_ptr->size());
-//   unordered_set<int> unique_indices;
-//   for (size_t i = 0; i < valid_indices_in_pc->size(); ++i) {
-//     int point_id = valid_indices_in_pc->at(i);
-//     CHECK(unique_indices.find(point_id) == unique_indices.end());
-//     unique_indices.insert(point_id);
-//   }
-//
-//   for (size_t i = 0; i < pc_ptr->size(); ++i) {
-//     const auto &point = pc_ptr->points[i];
-//     // * the coordinates of x and y have been exchanged in feature generation
-//     // step,
-//     // so they should be swapped back here.
-//     int col = F2I(point.y, range, inv_res_x);  // col
-//     int row = F2I(point.x, range, inv_res_y);  // row
-//     if (IsValidRowCol(row, rows, col, cols)) {
-//       // get grid index and count point number for corresponding node
-//       int grid = RowCol2Grid(row, col, cols);
-//       view[grid].point_num++;
-//       if (unique_indices.find(i) != unique_indices.end()) {
-//         view[grid].valid_point_num++;
-//       }
-//     }
-//   }
-//
-//   // show grids with grey color
-//   for (int row = 0; row < rows; ++row) {
-//     for (int col = 0; col < cols; ++col) {
-//       int grid = RowCol2Grid(row, col, cols);
-//       if (view[grid].valid_point_num > 0) {
-//         img.at<cv::Vec3b>(row, col) = cv::Vec3b(127, 127, 127);
-//       } else if (view[grid].point_num > 0) {
-//         img.at<cv::Vec3b>(row, col) = cv::Vec3b(63, 63, 63);
-//       }
-//     }
-//   }
-//
-//   // show segment grids with tight bounding box
-//   const cv::Vec3b segm_color(0, 0, 255);  // red
-//
-//   for (size_t i = 0; i < objects.objects.size(); ++i) {
-//     const ObjectPtr &obj = objects.objects.objects[i];
-//     CHECK_GT(obj->cloud->size(), 0);
-//
-//     int x_min = INT_MAX;
-//     int y_min = INT_MAX;
-//     int x_max = INT_MIN;
-//     int y_max = INT_MIN;
-//     float score = obj->score;
-//     CHECK_GE(score, 0.0);
-//     CHECK_LE(score, 1.0);
-//     for (size_t j = 0; j < obj->cloud->size(); ++j) {
-//       const auto &point = obj->cloud->points[j];
-//       int col = F2I(point.y, range, inv_res_x);  // col
-//       int row = F2I(point.x, range, inv_res_y);  // row
-//       CHECK(IsValidRowCol(row, rows, col, cols));
-//       img.at<cv::Vec3b>(row, col) = segm_color * score;
-//       x_min = std::min(col, x_min);
-//       y_min = std::min(row, y_min);
-//       x_max = std::max(col, x_max);
-//       y_max = std::max(row, y_max);
-//     }
-//
-//     // fillConvexPoly(img, list.data(), list.size(), cv::Scalar(positive_prob *
-//     // segm_color));
-//     cv::Vec3b bbox_color = GetTypeColor(obj->type);
-//     rectangle(img, cv::Point(x_min, y_min), cv::Point(x_max, y_max),
-//               cv::Scalar(bbox_color));
-//   }
-//
-//   // write image intensity values into file
-//   FILE *f_res;
-//   f_res = fopen(result_file.c_str(), "w");
-//   fprintf(f_res, "%d %d\n", rows, cols);
-//   for (int row = 0; row < rows; ++row) {
-//     for (int col = 0; col < cols; ++col) {
-//       fprintf(f_res, "%u %u %u\n", img.at<cv::Vec3b>(row, col)[0],
-//               img.at<cv::Vec3b>(row, col)[1], img.at<cv::Vec3b>(row, col)[2]);
-//     }
-//   }
-//   fclose(f_res);
-// }
+void CNNSegmentation::pointsCallback(const sensor_msgs::PointCloud2& msg)
+{
+  std::chrono::system_clock::time_point  start, end;
+  start = std::chrono::system_clock::now();
+
+  pcl::PointCloud<pcl::PointXYZI>::Ptr in_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+  pcl::fromROSMsg(msg, *in_pc_ptr);
+  pcl::PointIndices valid_idx;
+  auto& indices = valid_idx.indices;
+  indices.resize(in_pc_ptr->size());
+  std::iota(indices.begin(), indices.end(), 0);
+
+  autoware_msgs::DetectedObjectArray objects;
+  segment(in_pc_ptr, valid_idx, &objects);
+  // std::cout <<"result size " << objects.objects.size() << std::endl;
+  pubColoredPoints(objects);
+
+  end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+  std::cout << "elpased time " << elapsed << std::endl;
+}
+
+void CNNSegmentation::pubColoredPoints(const autoware_msgs::DetectedObjectArray& objects_array)
+{
+  pcl::PointCloud<pcl::PointXYZRGB> colored_cloud;
+  for(size_t object_i = 0; object_i < objects_array.objects.size(); object_i ++)
+  {
+    // std::cout << "objct i" << object_i << std::endl;
+    pcl::PointCloud<pcl::PointXYZI> object_cloud;
+    pcl::fromROSMsg(objects_array.objects[object_i].pointcloud, object_cloud);
+    int red   =  (object_i*40) % 254;
+    int green =  (object_i*36) % 254;
+    int blue  =  (object_i*20) % 254;
+    // std::cout << "red "<< red <<std::endl;
+    // std::cout << "green "<< green <<std::endl;
+    // std::cout << "blue "<< blue <<std::endl;
+
+    for(size_t i = 0; i < object_cloud.size(); i++)
+    {
+      // std::cout << "point i" << i << "/ size: "<<object_cloud.size()  << std::endl;
+      pcl::PointXYZRGB colored_point;
+      colored_point.x = object_cloud[i].x;
+      colored_point.y = object_cloud[i].y;
+      colored_point.z = object_cloud[i].z;
+      colored_point.r = red;
+      colored_point.g = green;
+      colored_point.b = blue;
+      colored_cloud.push_back(colored_point);
+    }
+  }
+  sensor_msgs::PointCloud2 output_colored_cloud;
+  pcl::toROSMsg(colored_cloud, output_colored_cloud);
+  output_colored_cloud.header.frame_id = "velodyne";
+  points_pub_.publish(output_colored_cloud);
+}
