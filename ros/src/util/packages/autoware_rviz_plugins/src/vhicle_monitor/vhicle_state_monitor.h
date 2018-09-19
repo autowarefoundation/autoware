@@ -3,10 +3,14 @@
 
 //headers in autoware
 #include <autoware_msgs/VehicleStatus.h>
+#include "monitor_drawer.h"
 
 // headers in ROS
 #include <ros/package.h>
 #include <ros/ros.h>
+
+// headers for opencv
+#include <opencv2/core/core.hpp>
 
 // headers in Qt
 #include <QWidget>
