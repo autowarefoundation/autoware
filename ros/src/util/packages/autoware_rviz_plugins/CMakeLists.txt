@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   rviz
   std_msgs
+  autoware_msgs
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -54,6 +55,8 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
+  src/vhicle_monitor/vhicle_state_monitor.cpp
+  src/vhicle_monitor/overlay_utils.cpp
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
