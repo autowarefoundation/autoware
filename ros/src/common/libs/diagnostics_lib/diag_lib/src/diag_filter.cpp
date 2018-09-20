@@ -17,6 +17,20 @@ diag_filter::diag_filter()
     else
     {
         enable_ = false;
+        return;
+    }
+    YAML::Node config = YAML::LoadFile(error_code_config_path_.c_str());
+    try
+    {
+        for(YAML::const_iterator it=config.begin();it != config.end();++it)
+        {
+            YAML::Node single_node_data = config[it->first.as<std::string>()];
+            node_number_data_[it->first.as<std::string>()] = single_node_data["node_number"].as<int>();
+        }
+    }
+    catch(...)
+    {
+        ROS_ERROR_STREAM("Failed to parse error code yaml file.");
     }
 }
 
@@ -38,8 +52,7 @@ bool diag_filter::check_resource_(std::string target_resource_path)
 
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, std::string target_node)
 {
-    boost::optional<diag_msgs::diag_node_errors> ret;
-    return ret;
+    return filter(diag,node_number_data_[target_node]);
 }
 
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, int target_node_number)

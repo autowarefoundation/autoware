@@ -104,7 +104,10 @@ void watchdog::publish_diag_()
                     errors.errors.push_back(error);
                 }
             }
-            diag_msg.nodes.push_back(errors);
+            if(errors.errors.size() != 0)
+            {
+                diag_msg.nodes.push_back(errors);
+            }
         }
         diag_msg.header.stamp = ros::Time::now();
         diag_pub_.publish(diag_msg);
