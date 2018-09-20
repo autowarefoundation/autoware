@@ -6,12 +6,20 @@
     </description>
   </class>
 
-  <class name="autoware_rviz_plugins/VhicleStateMonitor" type="autoware_rviz_plugins::VhicleStateMonitor" base_class_type="rviz::Display">
+  <class name="autoware_rviz_plugins/VhicleStatusMonitor" type="autoware_rviz_plugins::VhicleStatusMonitor" base_class_type="rviz::Display">
     <description>
-      State Panel on rviz
+      Visualize Vhicle Status in rviz.
     </description>
+    <message_type>autoware_msgs/VhicleStatus</message_type>
   </class>
     
+  <class name="autoware_rviz_plugins/VhicleCmdMonitor" type="autoware_rviz_plugins::VhicleCmdMonitor" base_class_type="rviz::Display">
+    <description>
+      Visualize Vhicle Command in rviz.
+    </description>
+    <message_type>autoware_msgs/VhicleCmd</message_type>
+  </class>
+
   <class name="autoware_sim_object/OpFlag" type="autoware_sim_object::AutowareSimObjTool" base_class_type="rviz::Tool">
     <description>
       Tool for sim_obj flags on the ground plane in rviz.

@@ -3,7 +3,7 @@
 
 //headers in autoware
 #include <autoware_msgs/VehicleStatus.h>
-#include "monitor_drawer.h"
+#include "vhicle_monitor_drawer.h"
 
 // headers in ROS
 #include <ros/package.h>
@@ -25,11 +25,11 @@
 #include <rviz/uniform_string_stream.h>
 
 namespace autoware_rviz_plugins {
-    class VhicleStateMonitor : public rviz::MessageFilterDisplay<autoware_msgs::VehicleStatus>{
+    class VhicleStatusMonitor : public rviz::MessageFilterDisplay<autoware_msgs::VehicleStatus>{
     Q_OBJECT
     public:
-        VhicleStateMonitor();
-        virtual ~VhicleStateMonitor();
+        VhicleStatusMonitor();
+        virtual ~VhicleStatusMonitor();
     protected:
         virtual void onInitialize();
         virtual void reset();

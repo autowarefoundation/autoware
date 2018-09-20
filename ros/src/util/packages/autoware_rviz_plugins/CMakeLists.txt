@@ -55,8 +55,10 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
-  src/vhicle_monitor/vhicle_state_monitor.cpp
+  src/vhicle_monitor/vhicle_status_monitor.cpp
+  src/vhicle_monitor/vhicle_cmd_monitor.cpp
   src/vhicle_monitor/overlay_utils.cpp
+  src/vhicle_monitor/monitor_drawer.cpp
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
