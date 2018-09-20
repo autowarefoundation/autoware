@@ -3,8 +3,8 @@
   <node pkg="gmsl_camera" type="gmsl_camera_node" name="gmsl_camera_node" output="screen">
     <param name="image_width" value="640" /> <!--"1920"-->
     <param name="image_height" value="480" /><!--"1208"-->
-    <param name="image_rate" value="30" />
-    <param name="image_buffer" value="5" />
+    <param name="image_rate" value="100" />
+    <param name="image_buffer" value="200" />
     <param name="type_ab" value="ar0231-rccb" type="str" />
     <param name="type_cd" value="ar0231-rccb" type="str" />
     <param name="type_ef" value="ar0231-rccb" type="str" />
