@@ -6,14 +6,14 @@
     </description>
   </class>
 
-  <class name="autoware_rviz_plugins/VhicleStatusMonitor" type="autoware_rviz_plugins::VhicleStatusMonitor" base_class_type="rviz::Display">
+  <class name="autoware_rviz_plugins/VehicleStatusMonitor" type="autoware_rviz_plugins::VehicleStatusMonitor" base_class_type="rviz::Display">
     <description>
       Visualize Vhicle Status in rviz.
     </description>
     <message_type>autoware_msgs/VhicleStatus</message_type>
   </class>
     
-  <class name="autoware_rviz_plugins/VhicleCmdMonitor" type="autoware_rviz_plugins::VhicleCmdMonitor" base_class_type="rviz::Display">
+  <class name="autoware_rviz_plugins/VehicleCmdMonitor" type="autoware_rviz_plugins::VehicleCmdMonitor" base_class_type="rviz::Display">
     <description>
       Visualize Vhicle Command in rviz.
     </description>
