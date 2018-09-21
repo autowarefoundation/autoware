@@ -24,6 +24,9 @@
 #include <rviz/properties/status_property.h>
 #include <rviz/uniform_string_stream.h>
 
+//headers in boost
+#include <boost/shared_ptr.hpp>
+
 namespace autoware_rviz_plugins {
     class ControlCommandMonitor : public rviz::Display{
     Q_OBJECT
@@ -35,9 +38,15 @@ namespace autoware_rviz_plugins {
         virtual void reset();
     private:
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
-        rviz::RosTopicProperty* update_topic_property_;
+        boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
+        boost::shared_ptr<rviz::IntProperty> top_property_;
+        boost::shared_ptr<rviz::IntProperty> left_property_;
+        ros::Subscriber sub_;
+        ros::NodeHandle nh_;
     protected Q_SLOTS:
         void update_topic_();
+        void update_top_();
+        void update_left_();
     };
 }
 
