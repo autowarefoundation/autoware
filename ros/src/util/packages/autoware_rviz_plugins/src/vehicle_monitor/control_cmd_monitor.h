@@ -40,8 +40,10 @@ namespace autoware_rviz_plugins {
         virtual void onInitialize();
         virtual void reset();
         virtual void update(float wall_dt, float ros_dt);
+        virtual void onEnable();
+        virtual void onDisable();
     private:
-        OverlayObject::Ptr overlay_;
+        autoware_rviz_plugins::OverlayObject::Ptr overlay_;
         monitor_drawer monitor_drawer_;
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
         void draw_monitor_();

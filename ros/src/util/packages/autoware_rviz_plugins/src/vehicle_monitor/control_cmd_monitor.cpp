@@ -15,6 +15,10 @@ namespace autoware_rviz_plugins{
     }
 
     void ControlCommandMonitor::onInitialize(){
+        update_top_();
+        update_left_();
+        update_alpha_();
+        update_topic_();
         return;
     }
 
@@ -52,7 +56,15 @@ namespace autoware_rviz_plugins{
         overlay_->updateTextureSize(width_,height_);
         ScopedPixelBuffer buffer = overlay_->getBuffer();
         QImage Hud = buffer.getQImage(*overlay_);
+        /*
+        for (unsigned int i = 0; i < overlay_->getTextureWidth(); i++) {
+            for (unsigned int j = 0; j < overlay_->getTextureHeight(); j++) {
+                Hud.setPixel(i, j, QColor("blue").rgba());
+            }
+        }
+        */
         Hud = monitor_drawer_.draw();
+        //ROS_ERROR_STREAM(overlay_->isVisible());
         return;
     }
 
@@ -89,6 +101,22 @@ namespace autoware_rviz_plugins{
     void  ControlCommandMonitor::update_alpha_(){
         boost::mutex::scoped_lock lock(mutex_);
         alpha_ = alpha_property_->getFloat();
+        return;
+    }
+
+    void ControlCommandMonitor::onEnable(){
+        if (overlay_) {
+            overlay_->show();
+        }
+        //subscribe();
+        return;
+    }
+
+    void ControlCommandMonitor::onDisable(){
+        if (overlay_) {
+            overlay_->hide();
+        }
+        //unsubscribe();
         return;
     }
 }
