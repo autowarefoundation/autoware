@@ -4,6 +4,7 @@
 //headers in autoware
 #include <autoware_msgs/ControlCommandStamped.h>
 #include "monitor_drawer.h"
+#include "overlay_utils.h"
 
 // headers in ROS
 #include <ros/package.h>
@@ -40,6 +41,8 @@ namespace autoware_rviz_plugins {
         virtual void reset();
         virtual void update(float wall_dt, float ros_dt);
     private:
+        OverlayObject::Ptr overlay_;
+        monitor_drawer monitor_drawer_;
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
         void draw_monitor_();
         boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
@@ -52,8 +55,7 @@ namespace autoware_rviz_plugins {
         boost::mutex mutex_;
         int monitor_top_,monitor_left_;
         float alpha_;
-        double warn_threshold_;
-        double error_threshold_;
+        double width_,height_;
     protected Q_SLOTS:
         void update_topic_();
         void update_top_();

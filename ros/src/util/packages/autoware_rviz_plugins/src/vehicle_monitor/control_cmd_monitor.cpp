@@ -2,8 +2,8 @@
 
 namespace autoware_rviz_plugins{
     ControlCommandMonitor::ControlCommandMonitor() : rviz::Display(){
-        warn_threshold_ = 3.0;
-        error_threshold_ = 5.0;
+        width_ = 640;
+        height_ = 640;
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
         alpha_property_ = boost::make_shared<rviz::FloatProperty>("Alpha", 0, "Top position of the monitor.",this, SLOT(update_alpha_()));
@@ -29,27 +29,30 @@ namespace autoware_rviz_plugins{
 
     void ControlCommandMonitor::draw_monitor_(){
         boost::mutex::scoped_lock lock(mutex_);
-        ros::Time now = ros::Time::now();
         if(!last_command_data_)
         {
-            //QString message = QString("Message does not recieved.");
-            //this->setStatus(rviz::StatusProperty::Level::Warn, "TopicStatus", message);
             return;
-        }
-        if(now-ros::Duration(error_threshold_) < last_command_data_->header.stamp)
-        {
-            QString message = QString("Message is stale");
-            this->setStatus(rviz::StatusProperty::Level::Error, "TopicStatus", message);
-            return;
-        }
-        if(now-ros::Duration(warn_threshold_) < last_command_data_->header.stamp)
-        {
-            QString message = QString("Message is stale");
-            this->setStatus(rviz::StatusProperty::Level::Warn, "TopicStatus", message);
         }
         /*
         Functions to draw monitor
         */
+        if(!overlay_)
+        {
+            static int count = 0;
+            rviz::UniformStringStream ss;
+            ss << "ControlCommandMonitorObject" << count++;
+            overlay_.reset(new OverlayObject(ss.str()));
+            overlay_->show();
+        }
+        if(overlay_)
+        {
+            overlay_->setDimensions(width_,height_);
+            overlay_->setPosition(monitor_left_,monitor_top_);
+        }
+        overlay_->updateTextureSize(width_,height_);
+        ScopedPixelBuffer buffer = overlay_->getBuffer();
+        QImage Hud = buffer.getQImage(*overlay_);
+        Hud = monitor_drawer_.draw();
         return;
     }
 

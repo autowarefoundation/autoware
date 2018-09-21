@@ -58,7 +58,7 @@
 #include <QColor>
 #include <QImage>
 
-namespace ros_ship_visualization {
+namespace autoware_rviz_plugins {
 class OverlayObject;
 
 class ScopedPixelBuffer {
@@ -98,7 +98,7 @@ class OverlayObject {
   virtual bool isVisible();
   virtual unsigned int getTextureWidth();
   virtual unsigned int getTextureHeight();
-
+  
  protected:
   const std::string name_;
   Ogre::Overlay* overlay_;
