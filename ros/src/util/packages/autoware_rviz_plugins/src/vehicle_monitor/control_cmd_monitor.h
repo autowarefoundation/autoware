@@ -35,6 +35,8 @@ namespace autoware_rviz_plugins {
         virtual void reset();
     private:
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
+        rviz::RosTopicProperty* update_topic_property_;
+        void update_topic_();
     };
 }
 

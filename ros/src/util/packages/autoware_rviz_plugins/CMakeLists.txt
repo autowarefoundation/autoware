@@ -30,9 +30,9 @@ endif()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES state_rviz_plugins
-#  CATKIN_DEPENDS rviz std_msgs
+  INCLUDE_DIRS src/vehicle_monitor
+  CATKIN_DEPENDS rviz std_msgs
+  LIBRARIES rviz_topic_display autoware_rviz_plugins
   DEPENDS rviz
 )
 
@@ -60,10 +60,16 @@ set(SOURCE_FILES
   src/vehicle_monitor/control_cmd_monitor.cpp
   src/vehicle_monitor/overlay_utils.cpp
   src/vehicle_monitor/monitor_drawer.cpp
+  src/vehicle_monitor/topic_display.cpp
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+add_dependencies(autoware_rviz_plugins ${catkin_EXPORTED_TARGETS})
+
+add_library(rviz_topic_display src/vehicle_monitor/topic_display.cpp)
+target_link_libraries(rviz_topic_display ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+add_dependencies(rviz_topic_display ${catkin_EXPORTED_TARGETS})
 
 ## Install rules
 

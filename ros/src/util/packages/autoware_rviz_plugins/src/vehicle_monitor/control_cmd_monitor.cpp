@@ -2,7 +2,7 @@
 
 namespace autoware_rviz_plugins{
     ControlCommandMonitor::ControlCommandMonitor() : rviz::Display(){
-
+        update_topic_property_ = new rviz::RosTopicProperty("Topic", "",ros::message_traits::datatype<autoware_msgs::ControlCommandStamped>(),"autoware_msgs::ControlCommandStamped topic to subscribe to.",this, SLOT(updateTopic()));
     }
 
     ControlCommandMonitor::~ControlCommandMonitor(){
