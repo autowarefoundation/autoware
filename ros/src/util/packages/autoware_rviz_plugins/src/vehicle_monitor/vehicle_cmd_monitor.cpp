@@ -1,7 +1,7 @@
 #include "vehicle_cmd_monitor.h"
 
 namespace autoware_rviz_plugins{
-    VehicleCmdMonitor::VehicleCmdMonitor(){
+    VehicleCmdMonitor::VehicleCmdMonitor() : rviz::Display(){
 
     }
 
@@ -9,12 +9,16 @@ namespace autoware_rviz_plugins{
 
     }
 
-    void VehicleCmdMonitor::onInitialize() { MFDClass::onInitialize(); }
+    void VehicleCmdMonitor::onInitialize(){
+        return;
+    }
 
-    void VehicleCmdMonitor::reset() { MFDClass::reset(); }
+    void VehicleCmdMonitor::reset(){
+        return;
+    }
 
     void VehicleCmdMonitor::processMessage(const autoware_msgs::VehicleCmd::ConstPtr& msg){
-
+        return;
     }
 }
 

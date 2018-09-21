@@ -1,7 +1,7 @@
 #include "vehicle_status_monitor.h"
 
 namespace autoware_rviz_plugins{
-    VehicleStatusMonitor::VehicleStatusMonitor(){
+    VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
 
     }
 
@@ -9,12 +9,16 @@ namespace autoware_rviz_plugins{
 
     }
 
-    void VehicleStatusMonitor::onInitialize() { MFDClass::onInitialize(); }
+    void VehicleStatusMonitor::onInitialize(){
+        return;
+    }
 
-    void VehicleStatusMonitor::reset() { MFDClass::reset(); }
+    void VehicleStatusMonitor::reset(){
+        return;
+    }
 
     void VehicleStatusMonitor::processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg){
-
+        return;
     }
 }
 

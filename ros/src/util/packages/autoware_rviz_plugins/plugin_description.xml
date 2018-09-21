@@ -17,14 +17,14 @@
     <description>
       Visualize Vhicle Command in rviz.
     </description>
-    <message_type>autoware_msgs/VhicleCmd</message_type>
+    <message_type>autoware_msgs/VehicleCmd</message_type>
   </class>
 
-  <class name="autoware_rviz_plugins/ControlCmdMonitor" type="autoware_rviz_plugins::VehicleCmdMonitor" base_class_type="rviz::Display">
+  <class name="autoware_rviz_plugins/ControlCommandMonitor" type="autoware_rviz_plugins::ControlCommandMonitor" base_class_type="rviz::Display">
     <description>
       Visualize Control Command in rviz.
     </description>
-    <message_type>autoware_msgs/ControlCommandStamped</message_type>
+    <message_type>std_msgs/Float32</message_type>
   </class>
 
   <class name="autoware_sim_object/OpFlag" type="autoware_sim_object::AutowareSimObjTool" base_class_type="rviz::Tool">

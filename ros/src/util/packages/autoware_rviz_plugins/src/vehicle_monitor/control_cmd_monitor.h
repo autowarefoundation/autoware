@@ -3,7 +3,7 @@
 
 //headers in autoware
 #include <autoware_msgs/ControlCommandStamped.h>
-#include "vehicle_monitor_drawer.h"
+#include "monitor_drawer.h"
 
 // headers in ROS
 #include <ros/package.h>
@@ -25,7 +25,7 @@
 #include <rviz/uniform_string_stream.h>
 
 namespace autoware_rviz_plugins {
-    class ControlCommandMonitor : public rviz::MessageFilterDisplay<autoware_msgs::ControlCommandStamped>{
+    class ControlCommandMonitor : public rviz::Display{
     Q_OBJECT
     public:
         ControlCommandMonitor();

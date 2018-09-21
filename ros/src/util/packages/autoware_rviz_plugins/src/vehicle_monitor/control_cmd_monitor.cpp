@@ -1,7 +1,7 @@
 #include "control_cmd_monitor.h"
 
 namespace autoware_rviz_plugins{
-    ControlCommandMonitor::ControlCommandMonitor(){
+    ControlCommandMonitor::ControlCommandMonitor() : rviz::Display(){
 
     }
 
@@ -9,12 +9,16 @@ namespace autoware_rviz_plugins{
 
     }
 
-    void ControlCommandMonitor::onInitialize() { MFDClass::onInitialize(); }
+    void ControlCommandMonitor::onInitialize(){
+        return;
+    }
 
-    void ControlCommandMonitor::reset() { MFDClass::reset(); }
+    void ControlCommandMonitor::reset(){
+        return;
+    }
 
     void ControlCommandMonitor::processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg){
-
+        return;
     }
 }
 
