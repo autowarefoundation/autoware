@@ -5,6 +5,7 @@ namespace autoware_rviz_plugins{
         topic_property_ = boost::make_shared<rviz::RosTopicProperty>("Topic", "",ros::message_traits::datatype<autoware_msgs::ControlCommandStamped>(),"autoware_msgs::ControlCommandStamped topic to subscribe to.",this, SLOT(update_topic_()));
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
+        alpha_property_ = boost::make_shared<rviz::FloatProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_alpha_()));
     }
 
     ControlCommandMonitor::~ControlCommandMonitor(){
@@ -34,11 +35,21 @@ namespace autoware_rviz_plugins{
     }
 
     void  ControlCommandMonitor::update_top_(){
-
+        boost::mutex::scoped_lock lock(mutex_);
+        monitor_top_ = top_property_->getInt();
+        return;
     }
 
     void  ControlCommandMonitor::update_left_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        monitor_left_ = left_property_->getInt();
+        return;
+    }
 
+    void  ControlCommandMonitor::update_alpha_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        alpha_ = alpha_property_->getFloat();
+        return;
     }
 }
 

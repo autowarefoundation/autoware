@@ -26,6 +26,7 @@
 
 //headers in boost
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
 namespace autoware_rviz_plugins {
     class ControlCommandMonitor : public rviz::Display{
@@ -41,12 +42,17 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;
+        boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         ros::Subscriber sub_;
         ros::NodeHandle nh_;
+        boost::mutex mutex_;
+        int monitor_top_,monitor_left_;
+        float alpha_;
     protected Q_SLOTS:
         void update_topic_();
         void update_top_();
         void update_left_();
+        void update_alpha_();
     };
 }
 
