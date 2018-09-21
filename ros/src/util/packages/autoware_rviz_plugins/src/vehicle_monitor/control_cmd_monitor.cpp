@@ -64,7 +64,6 @@ namespace autoware_rviz_plugins{
         }
         */
         Hud = monitor_drawer_.draw();
-        //ROS_ERROR_STREAM(overlay_->isVisible());
         return;
     }
 

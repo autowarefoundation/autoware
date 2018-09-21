@@ -4,10 +4,17 @@
 //headers in Qt
 #include <QImage>
 #include <QString>
+#include <QColor>
 
 //headers in ROS
 #include <ros/package.h>
 #include <ros/ros.h>
+
+
+//headers for opencv
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #define RAD 0
 #define DEG 1

@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
 )
 
+find_package(OpenCV REQUIRED)
+
 if(rviz_QT_VERSION VERSION_LESS "5")
   message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
   find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
@@ -45,6 +47,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
@@ -63,7 +66,7 @@ set(SOURCE_FILES
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(autoware_rviz_plugins ${catkin_EXPORTED_TARGETS})
 
 ## Install rules
