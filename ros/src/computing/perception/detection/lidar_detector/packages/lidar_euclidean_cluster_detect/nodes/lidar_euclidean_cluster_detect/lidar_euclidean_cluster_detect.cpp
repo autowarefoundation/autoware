@@ -667,7 +667,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
           clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
     }
 #else
-    std::vector<ClusterPtr> all_clusters =
+    all_clusters =
         clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
 #endif
   }
