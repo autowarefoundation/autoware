@@ -20,6 +20,10 @@ namespace autoware_rviz_plugins{
     void ControlCommandMonitor::processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg){
         return;
     }
+
+    void ControlCommandMonitor::update_topic_(){
+        return;
+    }
 }
 
 #include <pluginlib/class_list_macros.h>

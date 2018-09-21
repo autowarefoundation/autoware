@@ -36,6 +36,7 @@ namespace autoware_rviz_plugins {
     private:
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
         rviz::RosTopicProperty* update_topic_property_;
+    protected Q_SLOTS:
         void update_topic_();
     };
 }
