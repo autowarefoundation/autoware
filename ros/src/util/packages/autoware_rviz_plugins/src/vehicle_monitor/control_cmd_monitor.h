@@ -38,9 +38,10 @@ namespace autoware_rviz_plugins {
     protected:
         virtual void onInitialize();
         virtual void reset();
+        virtual void update(float wall_dt, float ros_dt);
     private:
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
-        void draw_monitor();
+        void draw_monitor_();
         boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;

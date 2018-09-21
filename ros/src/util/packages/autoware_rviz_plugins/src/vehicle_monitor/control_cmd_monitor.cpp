@@ -22,11 +22,34 @@ namespace autoware_rviz_plugins{
         return;
     }
 
-    void ControlCommandMonitor::draw_monitor(){
+    void ControlCommandMonitor::update(float wall_dt, float ros_dt){
+        draw_monitor_();
+        return;
+    }
+
+    void ControlCommandMonitor::draw_monitor_(){
         boost::mutex::scoped_lock lock(mutex_);
+        ros::Time now = ros::Time::now();
         if(!last_command_data_)
+        {
+            //QString message = QString("Message does not recieved.");
+            //this->setStatus(rviz::StatusProperty::Level::Warn, "TopicStatus", message);
             return;
-        
+        }
+        if(now-ros::Duration(error_threshold_) < last_command_data_->header.stamp)
+        {
+            QString message = QString("Message is stale");
+            this->setStatus(rviz::StatusProperty::Level::Error, "TopicStatus", message);
+            return;
+        }
+        if(now-ros::Duration(warn_threshold_) < last_command_data_->header.stamp)
+        {
+            QString message = QString("Message is stale");
+            this->setStatus(rviz::StatusProperty::Level::Warn, "TopicStatus", message);
+        }
+        /*
+        Functions to draw monitor
+        */
         return;
     }
 
