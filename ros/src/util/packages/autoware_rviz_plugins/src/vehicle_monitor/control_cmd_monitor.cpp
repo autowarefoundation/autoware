@@ -127,6 +127,18 @@ namespace autoware_rviz_plugins{
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
         painter.drawText(QPointF(100,180),QString("MANUAL"));
         painter.drawText(QPointF(170,180),QString("AUTO"));
+        // draw brake pedal function
+        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        painter.drawText(QPointF(60,310),QString("Brake Pedal"));
+        painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        QPointF brake_pedal_points[4] = {QPointF(80,290),QPointF(80.0,190.0),QPointF(120.0,190.0),QPointF(120.0,290.0)};
+        painter.drawConvexPolygon(brake_pedal_points, 4);
+        // draw drive pedal function
+        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        painter.drawText(QPointF(180,310),QString("Drive Pedal"));
+        painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        QPointF drive_pedal_points[4] = {QPointF(200.0,290.0),QPointF(200.0,190.0),QPointF(240.0,190.0),QPointF(240.0,290.0)};
+        painter.drawConvexPolygon(drive_pedal_points, 4);
         return;
     }
 
