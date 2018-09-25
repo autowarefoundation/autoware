@@ -105,10 +105,10 @@ void createAvoidWaypoints(const nav_msgs::Path& astar_path, const waypoint_plann
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "obstacle_avoid");
+  ros::init(argc, argv, "astar_avoid");
   ros::NodeHandle n;
 
-  astar_planner::AstarSearch astar;
+  AstarPlanner astar;
   waypoint_planner::SearchInfo search_info;
 
   // ROS subscribers
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 
     // Initialize vector for A* search, this runs only once
     if (search_info.getMapSet() && !astar.getNodeInitialized())
-      astar.initializeNode(search_info.getMap());
+      astar.initialize(search_info.getMap());
 
     // Waiting for the call for avoidance ...
     if (!search_info.getMapSet() || !search_info.getStartSet() || !search_info.getGoalSet())
@@ -201,8 +201,7 @@ int main(int argc, char** argv)
     // Run astar search
     ros::WallTime timer_begin = ros::WallTime::now();
 
-    bool result = astar.makePlan(search_info.getStartPose().pose, search_info.getGoalPose().pose, search_info.getMap(),
-                                 search_info.getUpperBoundDistance());
+    bool result = astar.findPath(search_info.getStartPose().pose, search_info.getGoalPose().pose, search_info.getUpperBoundDistance());
 
     ros::WallTime timer_end = ros::WallTime::now();
     double time_ms = (timer_end - timer_begin).toSec() * 1000;

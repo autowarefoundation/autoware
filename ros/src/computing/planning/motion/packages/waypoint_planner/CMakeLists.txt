@@ -31,6 +31,19 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+add_executable(astar_avoid
+  nodes/astar_avoid/astar_avoid.cpp
+  nodes/astar_avoid/search_info_ros.cpp
+)
+
+target_link_libraries(astar_avoid
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(astar_avoid
+  ${catkin_EXPORTED_TARGETS}
+)
+
 add_executable(velocity_set
   nodes/velocity_set/velocity_set.cpp
   nodes/velocity_set/velocity_set_path.cpp
@@ -43,18 +56,5 @@ target_link_libraries(velocity_set
 )
 
 add_dependencies(velocity_set
-  ${catkin_EXPORTED_TARGETS}
-)
-
-add_executable(obstacle_avoid
-  nodes/obstacle_avoid/obstacle_avoid.cpp
-  nodes/obstacle_avoid/search_info_ros.cpp
-)
-
-target_link_libraries(obstacle_avoid
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(obstacle_avoid
   ${catkin_EXPORTED_TARGETS}
 )

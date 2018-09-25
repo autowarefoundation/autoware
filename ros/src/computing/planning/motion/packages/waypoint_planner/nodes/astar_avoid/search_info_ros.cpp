@@ -71,7 +71,7 @@ double SearchInfo::calcPathLength(const autoware_msgs::lane &lane, const int sta
     geometry_msgs::Pose p1 = lane.waypoints[i].pose.pose;
     geometry_msgs::Pose p2 = lane.waypoints[i + 1].pose.pose;
 
-    dist_sum += astar_planner::calcDistance(p1.position.x, p1.position.y, p2.position.x, p2.position.y);
+    dist_sum += calcDistance(p1.position.x, p1.position.y, p2.position.x, p2.position.y);
   }
 
   // return the path lengh
@@ -99,7 +99,7 @@ void SearchInfo::mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
 
   // Set transform between map frame and the origin of OccupancyGrid
   tf::Transform map2ogm;
-  geometry_msgs::Pose ogm_in_map = astar_planner::transformPose(map_.info.origin, map2ogm_frame);
+  geometry_msgs::Pose ogm_in_map = transformPose(map_.info.origin, map2ogm_frame);
   tf::poseMsgToTF(ogm_in_map, map2ogm);
   ogm2map_ = map2ogm.inverse();
 
@@ -142,9 +142,9 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 
   // Set goal pose
   geometry_msgs::Pose pose_msg = msg->pose;
-  goal_pose_global_.pose = astar_planner::transformPose(pose_msg, map2world);
+  goal_pose_global_.pose = transformPose(pose_msg, map2world);
   goal_pose_global_.header = msg->header;
-  goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
+  goal_pose_local_.pose = transformPose(goal_pose_global_.pose, ogm2map_);
   goal_pose_local_.header = goal_pose_global_.header;
 
   goal_set_ = true;
@@ -163,9 +163,9 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
   }
 
   // Set start pose
-  start_pose_global_.pose = astar_planner::transformPose(current_pose_.pose, map2start_frame);
+  start_pose_global_.pose = transformPose(current_pose_.pose, map2start_frame);
   start_pose_global_.header = current_pose_.header;
-  start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
+  start_pose_local_.pose = transformPose(start_pose_global_.pose, ogm2map_);
   start_pose_local_.header = start_pose_global_.header;
 
   start_set_ = true;
@@ -262,7 +262,7 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 
   // Set start pose
   start_pose_global_ = current_waypoints_.waypoints[start_waypoint_index_].pose;
-  start_pose_local_.pose = astar_planner::transformPose(start_pose_global_.pose, ogm2map_);
+  start_pose_local_.pose = transformPose(start_pose_global_.pose, ogm2map_);
   start_set_ = true;
 
   // Set transit pose
@@ -275,12 +275,12 @@ void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
   tf::Pose obstacle_pose_tf;
   tf::poseMsgToTF(current_waypoints_.waypoints[obstacle_waypoint_index_].pose.pose, obstacle_pose_tf);
 
-  transit_pose_global_.pose = astar_planner::transformPose(relative_transit_pose, obstacle_pose_tf);
-  transit_pose_local_.pose = astar_planner::transformPose(transit_pose_global_.pose, ogm2map_);
+  transit_pose_global_.pose = transformPose(relative_transit_pose, obstacle_pose_tf);
+  transit_pose_local_.pose = transformPose(transit_pose_global_.pose, ogm2map_);
 
   // Set goal pose
   goal_pose_global_ = current_waypoints_.waypoints[goal_waypoint_index_].pose;
-  goal_pose_local_.pose = astar_planner::transformPose(goal_pose_global_.pose, ogm2map_);
+  goal_pose_local_.pose = transformPose(goal_pose_global_.pose, ogm2map_);
 
   goal_set_ = true;
 }
