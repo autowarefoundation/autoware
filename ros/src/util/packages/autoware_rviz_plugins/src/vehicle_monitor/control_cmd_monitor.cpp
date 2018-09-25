@@ -114,19 +114,25 @@ namespace autoware_rviz_plugins{
         // draw topic name
         painter.drawText(QPointF(100,20),QString(("topic :" + topic_name_).c_str()));
         // draw gear shift position
-        painter.drawText(QPointF(10,160),QString("Gear : "));
+        QPointF gear_center = QPointF(82.5,0);
+        painter.translate(gear_center);
+        painter.drawText(QPointF(10,150),QString("Gear : "));
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
-        painter.drawText(QPointF(60,160),QString("P"));
-        painter.drawText(QPointF(75,160),QString("R"));
-        painter.drawText(QPointF(90,160),QString("N"));
-        painter.drawText(QPointF(105,160),QString("B"));
-        painter.drawText(QPointF(120,160),QString("D"));
+        painter.drawText(QPointF(60,150),QString("P"));
+        painter.drawText(QPointF(75,150),QString("R"));
+        painter.drawText(QPointF(90,150),QString("N"));
+        painter.drawText(QPointF(105,150),QString("B"));
+        painter.drawText(QPointF(120,150),QString("D"));
+        painter.translate(-gear_center);
         // draw mode function
+        QPointF mode_center = QPointF(40,0);
+        painter.translate(mode_center);
         painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
-        painter.drawText(QPointF(10,180),QString("Drivemode : "));
+        painter.drawText(QPointF(10,170),QString("Drivemode : "));
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
-        painter.drawText(QPointF(100,180),QString("MANUAL"));
-        painter.drawText(QPointF(170,180),QString("AUTO"));
+        painter.drawText(QPointF(100,170),QString("MANUAL"));
+        painter.drawText(QPointF(170,170),QString("AUTO"));
+        painter.translate(-mode_center);
         // draw brake pedal function
         painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         painter.drawText(QPointF(60,310),QString("Brake Pedal"));
@@ -139,6 +145,19 @@ namespace autoware_rviz_plugins{
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
         QPointF drive_pedal_points[4] = {QPointF(200.0,290.0),QPointF(200.0,190.0),QPointF(240.0,190.0),QPointF(240.0,290.0)};
         painter.drawConvexPolygon(drive_pedal_points, 4);
+        // draw left lamp
+        painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        QPointF lamp_left_points[4] = {QPointF(0.0,250.0),QPointF(30.0,250.0),QPointF(30.0,220.0),QPointF(0.0,220.0)};
+        painter.drawConvexPolygon(lamp_left_points, 4);
+        // draw left hazard lamp
+        QPointF hazard_left_points[4] = {QPointF(0.0,280.0),QPointF(30.0,280.0),QPointF(30.0,250.0),QPointF(0.0,250.0)};
+        painter.drawConvexPolygon(hazard_left_points, 4);
+        // draw right lamp
+        QPointF lamp_right_points[4] = {QPointF(290.0,250.0),QPointF(320.0,250.0),QPointF(320.0,220.0),QPointF(290.0,220.0)};
+        painter.drawConvexPolygon(lamp_right_points, 4);
+        // draw right hazard lamp
+        QPointF hazard_right_points[4] = {QPointF(290.0,280.0),QPointF(320.0,280.0),QPointF(320.0,250.0),QPointF(290.0,250.0)};
+        painter.drawConvexPolygon(hazard_right_points, 4);
         return;
     }
 
