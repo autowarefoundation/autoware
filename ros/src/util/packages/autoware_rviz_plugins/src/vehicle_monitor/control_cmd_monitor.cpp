@@ -121,6 +121,12 @@ namespace autoware_rviz_plugins{
         painter.drawText(QPointF(90,160),QString("N"));
         painter.drawText(QPointF(105,160),QString("B"));
         painter.drawText(QPointF(120,160),QString("D"));
+        // draw mode function
+        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        painter.drawText(QPointF(10,180),QString("Drivemode : "));
+        painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        painter.drawText(QPointF(100,180),QString("MANUAL"));
+        painter.drawText(QPointF(170,180),QString("AUTO"));
         return;
     }
 
