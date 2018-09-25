@@ -3,7 +3,6 @@
 
 //headers in autoware
 #include <autoware_msgs/VehicleCmd.h>
-#include "monitor_drawer.h"
 
 // headers in ROS
 #include <ros/package.h>

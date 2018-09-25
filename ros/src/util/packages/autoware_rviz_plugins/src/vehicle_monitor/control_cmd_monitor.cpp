@@ -56,14 +56,18 @@ namespace autoware_rviz_plugins{
         overlay_->updateTextureSize(width_,height_);
         ScopedPixelBuffer buffer = overlay_->getBuffer();
         QImage Hud = buffer.getQImage(*overlay_);
-        /*
         for (unsigned int i = 0; i < overlay_->getTextureWidth(); i++) {
             for (unsigned int j = 0; j < overlay_->getTextureHeight(); j++) {
-                Hud.setPixel(i, j, QColor("blue").rgba());
+                Hud.setPixel(i, j, QColor(0,0,0,(int)(255*alpha_)).rgba());
             }
-        }
-        */
-        Hud = monitor_drawer_.draw();
+        } 
+        QPainter painter(&Hud);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(QPen(QColor("red").rgba()));
+        QRectF handle_rect(40.0, 40.0, 80.0, 80.0);
+        painter.drawEllipse(handle_rect);
+        //painter.setRenderHint(QPainter::Antialiasing, true);
+        //painter.setPen(QPen(QColor("red").rgba(), 20 || 1, Qt::SolidLine));
         return;
     }
 

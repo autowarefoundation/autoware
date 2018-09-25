@@ -3,18 +3,17 @@
 
 //headers in autoware
 #include <autoware_msgs/ControlCommandStamped.h>
-#include "monitor_drawer.h"
 #include "overlay_utils.h"
 
 // headers in ROS
 #include <ros/package.h>
 #include <ros/ros.h>
 
-// headers for opencv
-#include <opencv2/core/core.hpp>
-
 // headers in Qt
 #include <QWidget>
+#include <QPainter>
+#include <QImage>
+#include <QRectF>
 
 // headers in rviz
 #include <rviz/message_filter_display.h>
@@ -44,7 +43,6 @@ namespace autoware_rviz_plugins {
         virtual void onDisable();
     private:
         autoware_rviz_plugins::OverlayObject::Ptr overlay_;
-        monitor_drawer monitor_drawer_;
         void processMessage(const autoware_msgs::ControlCommandStamped::ConstPtr& msg);
         void draw_monitor_();
         boost::shared_ptr<rviz::RosTopicProperty> topic_property_;

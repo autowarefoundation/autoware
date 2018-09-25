@@ -139,6 +139,7 @@ bool OverlayObject::updateTextureSize(unsigned int width, unsigned int height) {
 
     panel_material_->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
   }
+  return true;
 }
 
 ScopedPixelBuffer OverlayObject::getBuffer() {

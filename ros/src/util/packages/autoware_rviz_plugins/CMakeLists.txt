@@ -8,8 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
 )
 
-find_package(OpenCV REQUIRED)
-
 if(rviz_QT_VERSION VERSION_LESS "5")
   message(STATUS "Using Qt4 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
   find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
@@ -62,11 +60,10 @@ set(SOURCE_FILES
   src/vehicle_monitor/vehicle_cmd_monitor.cpp
   src/vehicle_monitor/control_cmd_monitor.cpp
   src/vehicle_monitor/overlay_utils.cpp
-  src/vehicle_monitor/monitor_drawer.cpp
   )
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
-target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
 add_dependencies(autoware_rviz_plugins ${catkin_EXPORTED_TARGETS})
 
 ## Install rules
