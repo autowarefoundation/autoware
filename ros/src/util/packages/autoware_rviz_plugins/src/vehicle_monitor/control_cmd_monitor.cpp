@@ -6,7 +6,10 @@ namespace autoware_rviz_plugins{
         height_ = 320;
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
-        alpha_property_ = boost::make_shared<rviz::FloatProperty>("Alpha", 0, "Top position of the monitor.",this, SLOT(update_alpha_()));
+        alpha_property_ = boost::make_shared<rviz::FloatProperty>("Alpha", 0, "alpha of the monitor.",this, SLOT(update_alpha_()));
+        speed_unit_property_  = boost::make_shared<rviz::EnumProperty>("Speed Unit", "km/h" , "Unit of the speed",this, SLOT(update_speed_unit_()));
+        speed_unit_property_->addOption("km/h", KM_PER_HOUR);
+        speed_unit_property_->addOption("m/s", M_PER_SEC);
         topic_property_ = boost::make_shared<rviz::RosTopicProperty>("Topic", "",ros::message_traits::datatype<autoware_msgs::ControlCommandStamped>(),"autoware_msgs::ControlCommandStamped topic to subscribe to.",this, SLOT(update_topic_()));
     }
 
@@ -18,6 +21,7 @@ namespace autoware_rviz_plugins{
         update_top_();
         update_left_();
         update_alpha_();
+        update_speed_unit_();
         update_topic_();
         return;
     }
@@ -28,6 +32,12 @@ namespace autoware_rviz_plugins{
 
     void ControlCommandMonitor::update(float wall_dt, float ros_dt){
         draw_monitor_();
+        return;
+    }
+
+    void ControlCommandMonitor::update_speed_unit_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        speed_unit_ = speed_unit_property_->getOptionInt();
         return;
     }
 
@@ -76,8 +86,17 @@ namespace autoware_rviz_plugins{
         painter.rotate(-1*last_command_data_.get().cmd.steering_angle*180/M_PI);
         QPointF points[4] = {QPointF(-20.0,-5.0),QPointF(20.0,-5.0),QPointF(10.0,15.0),QPointF(-10.0,15.0)};
         painter.drawConvexPolygon(points, 4);
+        painter.rotate(last_command_data_.get().cmd.steering_angle*180/M_PI);
         painter.translate(-handle_center);
         // draw speed meter
+        if(speed_unit_==KM_PER_HOUR)
+        {
+            painter.drawText(QPointF(140,80),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity*3.6) + " km/h").c_str()));
+        }
+        if(speed_unit_==M_PER_SEC)
+        {
+            painter.drawText(QPointF(140,80),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity) + " m/s").c_str()));
+        }        
         return;
     }
 
