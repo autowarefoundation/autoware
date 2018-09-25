@@ -145,16 +145,21 @@ namespace autoware_rviz_plugins{
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
         QPointF drive_pedal_points[4] = {QPointF(200.0,290.0),QPointF(200.0,190.0),QPointF(240.0,190.0),QPointF(240.0,290.0)};
         painter.drawConvexPolygon(drive_pedal_points, 4);
-        // draw left lamp
+        // draw lamps
         painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        // draw left lamp
         QPointF lamp_left_points[4] = {QPointF(0.0,250.0),QPointF(30.0,250.0),QPointF(30.0,220.0),QPointF(0.0,220.0)};
         painter.drawConvexPolygon(lamp_left_points, 4);
+        QPointF lamp_left_circle_points[3] = {QPointF(5.0,235.0),QPointF(20.0,245.0),QPointF(20.0,225.0)};
+        painter.drawConvexPolygon(lamp_left_circle_points, 3);
         // draw left hazard lamp
         QPointF hazard_left_points[4] = {QPointF(0.0,280.0),QPointF(30.0,280.0),QPointF(30.0,250.0),QPointF(0.0,250.0)};
         painter.drawConvexPolygon(hazard_left_points, 4);
         // draw right lamp
         QPointF lamp_right_points[4] = {QPointF(290.0,250.0),QPointF(320.0,250.0),QPointF(320.0,220.0),QPointF(290.0,220.0)};
         painter.drawConvexPolygon(lamp_right_points, 4);
+        QPointF lamp_right_circle_points[3] = {QPointF(315.0,235.0),QPointF(300.0,245.0),QPointF(300.0,225.0)};
+        painter.drawConvexPolygon(lamp_right_circle_points, 3);
         // draw right hazard lamp
         QPointF hazard_right_points[4] = {QPointF(290.0,280.0),QPointF(320.0,280.0),QPointF(320.0,250.0),QPointF(290.0,250.0)};
         painter.drawConvexPolygon(hazard_right_points, 4);
