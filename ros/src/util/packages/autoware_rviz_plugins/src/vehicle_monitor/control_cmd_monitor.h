@@ -13,7 +13,7 @@
 #include <QWidget>
 #include <QPainter>
 #include <QImage>
-#include <QRectF>
+#include <QRect>
 
 // headers in rviz
 #include <rviz/message_filter_display.h>
@@ -28,6 +28,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/optional.hpp>
+
+//headers in STL
+#include <math.h>
 
 namespace autoware_rviz_plugins {
     class ControlCommandMonitor : public rviz::Display{

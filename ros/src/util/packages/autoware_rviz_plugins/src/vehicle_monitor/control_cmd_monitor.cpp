@@ -2,8 +2,8 @@
 
 namespace autoware_rviz_plugins{
     ControlCommandMonitor::ControlCommandMonitor() : rviz::Display(){
-        width_ = 640;
-        height_ = 640;
+        width_ = 320;
+        height_ = 320;
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
         alpha_property_ = boost::make_shared<rviz::FloatProperty>("Alpha", 0, "Top position of the monitor.",this, SLOT(update_alpha_()));
@@ -62,12 +62,22 @@ namespace autoware_rviz_plugins{
             }
         } 
         QPainter painter(&Hud);
+        // draw handle circle
         painter.setRenderHint(QPainter::Antialiasing, true);
-        painter.setPen(QPen(QColor("red").rgba()));
-        QRectF handle_rect(40.0, 40.0, 80.0, 80.0);
+        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        painter.rotate(0);
+        QRect handle_rect(40.0, 40.0, 80.0, 80.0);
         painter.drawEllipse(handle_rect);
-        //painter.setRenderHint(QPainter::Antialiasing, true);
-        //painter.setPen(QPen(QColor("red").rgba(), 20 || 1, Qt::SolidLine));
+        // draw handle center
+        QPointF handle_center = QPointF(80,80);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        painter.translate(handle_center);
+        painter.rotate(-1*last_command_data_.get().cmd.steering_angle*180/M_PI);
+        QPointF points[4] = {QPointF(-20.0,-5.0),QPointF(20.0,-5.0),QPointF(10.0,15.0),QPointF(-10.0,15.0)};
+        painter.drawConvexPolygon(points, 4);
+        painter.translate(-handle_center);
+        // draw speed meter
         return;
     }
 
