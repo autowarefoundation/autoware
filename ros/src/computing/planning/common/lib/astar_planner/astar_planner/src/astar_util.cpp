@@ -3,8 +3,6 @@
 
 #include "astar_util.h"
 
-namespace astar_planner
-{
 WaveFrontNode::WaveFrontNode()
 {
 }
@@ -21,5 +19,3 @@ SimpleNode::SimpleNode(int x, int y, int theta, double gc, double hc)
   : index_x(x), index_y(y), index_theta(theta), cost(gc + hc)
 {
 }
-
-}  // namespace astar_planner

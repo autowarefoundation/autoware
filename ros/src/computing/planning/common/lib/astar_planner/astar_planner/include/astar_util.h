@@ -6,8 +6,6 @@
 
 #include <tf/transform_listener.h>
 
-namespace astar_planner
-{
 enum class STATUS : uint8_t
 {
   NONE,
@@ -72,15 +70,15 @@ inline double calcDistance(double x1, double y1, double x2, double y2)
 
 inline double modifyTheta(double theta)
 {
-  if (theta < 0)
-    return theta + 2 * M_PI;
-  if (theta >= 2 * M_PI)
-    return theta - 2 * M_PI;
+  if (theta < 0.0)
+    return theta + 2.0 * M_PI;
+  if (theta >= 2.0 * M_PI)
+    return theta - 2.0 * M_PI;
 
   return theta;
 }
 
-inline geometry_msgs::Pose transformPose(geometry_msgs::Pose &pose, tf::Transform &tf)
+inline geometry_msgs::Pose transformPose(const geometry_msgs::Pose &pose, const tf::Transform &tf)
 {
   // Convert ROS pose to TF pose
   tf::Pose tf_pose;
@@ -122,7 +120,7 @@ inline double calcDiffOfRadian(double a, double b)
   if (diff < M_PI)
     return diff;
   else
-    return 2 * M_PI - diff;
+    return 2.0 * M_PI - diff;
 }
 
 inline geometry_msgs::Pose xytToPoseMsg(double x, double y, double theta)
@@ -134,7 +132,5 @@ inline geometry_msgs::Pose xytToPoseMsg(double x, double y, double theta)
 
   return p;
 }
-
-}  // namespace astar_planner
 
 #endif
