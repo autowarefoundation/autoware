@@ -35,6 +35,9 @@
 #define KM_PER_HOUR 0
 #define M_PER_SEC 1
 
+#define RAD 0
+#define DEG 1
+
 namespace autoware_rviz_plugins {
     class ControlCommandMonitor : public rviz::Display{
     Q_OBJECT
@@ -55,7 +58,8 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
-        boost::shared_ptr<rviz::EnumProperty> speed_unit_property_ ;
+        boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
+        boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
         boost::optional<autoware_msgs::ControlCommandStamped> last_command_data_;
         ros::Subscriber sub_;
         ros::NodeHandle nh_;
@@ -63,13 +67,15 @@ namespace autoware_rviz_plugins {
         int monitor_top_,monitor_left_;
         float alpha_;
         double width_,height_;
-        int speed_unit_;
+        int speed_unit_,angle_unit_;
+        std::string topic_name_;
     protected Q_SLOTS:
         void update_topic_();
         void update_top_();
         void update_left_();
         void update_alpha_();
         void update_speed_unit_();
+        void update_angle_unit_();
     };
 }
 

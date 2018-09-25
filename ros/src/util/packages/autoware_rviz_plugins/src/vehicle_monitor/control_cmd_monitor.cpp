@@ -10,6 +10,9 @@ namespace autoware_rviz_plugins{
         speed_unit_property_  = boost::make_shared<rviz::EnumProperty>("Speed Unit", "km/h" , "Unit of the speed",this, SLOT(update_speed_unit_()));
         speed_unit_property_->addOption("km/h", KM_PER_HOUR);
         speed_unit_property_->addOption("m/s", M_PER_SEC);
+        angle_unit_property_ = boost::make_shared<rviz::EnumProperty>("Angle Unit", "rad" , "Unit of the angle",this, SLOT(update_angle_unit_()));
+        angle_unit_property_->addOption("rad", RAD);
+        angle_unit_property_->addOption("deg", DEG);
         topic_property_ = boost::make_shared<rviz::RosTopicProperty>("Topic", "",ros::message_traits::datatype<autoware_msgs::ControlCommandStamped>(),"autoware_msgs::ControlCommandStamped topic to subscribe to.",this, SLOT(update_topic_()));
     }
 
@@ -38,6 +41,12 @@ namespace autoware_rviz_plugins{
     void ControlCommandMonitor::update_speed_unit_(){
         boost::mutex::scoped_lock lock(mutex_);
         speed_unit_ = speed_unit_property_->getOptionInt();
+        return;
+    }
+
+    void ControlCommandMonitor::update_angle_unit_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        angle_unit_ = angle_unit_property_->getOptionInt();
         return;
     }
 
@@ -76,10 +85,10 @@ namespace autoware_rviz_plugins{
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         painter.rotate(0);
-        QRect handle_rect(40.0, 40.0, 80.0, 80.0);
+        QRect handle_rect(20.0, 40.0, 80.0, 80.0);
         painter.drawEllipse(handle_rect);
         // draw handle center
-        QPointF handle_center = QPointF(80,80);
+        QPointF handle_center = QPointF(60,80);
         painter.setRenderHint(QPainter::Antialiasing, true);
         painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         painter.translate(handle_center);
@@ -89,14 +98,29 @@ namespace autoware_rviz_plugins{
         painter.rotate(last_command_data_.get().cmd.steering_angle*180/M_PI);
         painter.translate(-handle_center);
         // draw speed meter
-        if(speed_unit_==KM_PER_HOUR)
-        {
-            painter.drawText(QPointF(140,80),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity*3.6) + " km/h").c_str()));
+        if(speed_unit_==KM_PER_HOUR){
+            painter.drawText(QPointF(120,75),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity*3.6) + " km/h").c_str()));
         }
-        if(speed_unit_==M_PER_SEC)
-        {
-            painter.drawText(QPointF(140,80),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity) + " m/s").c_str()));
-        }        
+        if(speed_unit_==M_PER_SEC){
+            painter.drawText(QPointF(120,75),QString(("Speed : " + std::to_string(last_command_data_.get().cmd.linear_velocity) + " m/s").c_str()));
+        }
+        // draw steering angle
+        if(angle_unit_==RAD){
+            painter.drawText(QPointF(120,95),QString(("Steering : " + std::to_string(last_command_data_.get().cmd.steering_angle) + " radian").c_str()));
+        }
+        if(angle_unit_==DEG){
+            painter.drawText(QPointF(120,95),QString(("Steering : " + std::to_string(last_command_data_.get().cmd.steering_angle*180/M_PI) + " degree").c_str()));
+        }
+        // draw topic name
+        painter.drawText(QPointF(100,20),QString(("topic :" + topic_name_).c_str()));
+        // draw gear shift position
+        painter.drawText(QPointF(10,160),QString("Gear : "));
+        painter.setPen(QPen(QColor(150,150,150,(int)(255*alpha_)).rgba()));
+        painter.drawText(QPointF(60,160),QString("P"));
+        painter.drawText(QPointF(75,160),QString("R"));
+        painter.drawText(QPointF(90,160),QString("N"));
+        painter.drawText(QPointF(105,160),QString("B"));
+        painter.drawText(QPointF(120,160),QString("D"));
         return;
     }
 
@@ -110,10 +134,10 @@ namespace autoware_rviz_plugins{
         boost::mutex::scoped_lock lock(mutex_);
         sub_.shutdown();
         last_command_data_ = boost::none;
-        std::string topic_name = topic_property_->getTopicStd();
-        if (topic_name.length() > 0 && topic_name != "/")
+        topic_name_ = topic_property_->getTopicStd();
+        if (topic_name_.length() > 0 && topic_name_ != "/")
         {
-            sub_ = nh_.subscribe(topic_name, 1, &ControlCommandMonitor::processMessage, this);
+            sub_ = nh_.subscribe(topic_name_, 1, &ControlCommandMonitor::processMessage, this);
         }
         return;
     }
