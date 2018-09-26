@@ -78,7 +78,7 @@ script:
         --rm
         -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
         -w ${AUTOWARE_HOME}/ros
-        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-1.0.0
+        autoware/build:${AUTOWARE_TARGET_ARCH}-kinetic-1.0.0
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make
@@ -86,18 +86,13 @@ script:
                 -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
                 -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
                 --build ${AUTOWARE_BUILD_PATH}
-                clean &&
-              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
-              catkin_make
-                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
-                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                --build ${AUTOWARE_BUILD_PATH}
-                -j3";
+                &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash";
     else
-      catkin_make clean;
+      catkin_make -j8 -l6;
       source devel/setup.bash;
-      catkin_make -j3;
+      travis_wait 30 catkin_make -j8 -l6 run_tests;
+      catkin_test_results;
     fi
 
 #sudo: required
