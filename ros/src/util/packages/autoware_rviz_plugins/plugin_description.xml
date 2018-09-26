@@ -20,13 +20,6 @@
     <message_type>autoware_msgs/VehicleCmd</message_type>
   </class>
 
-  <class name="autoware_rviz_plugins/ControlCommandMonitor" type="autoware_rviz_plugins::ControlCommandMonitor" base_class_type="rviz::Display">
-    <description>
-      Visualize Control Command in rviz.
-    </description>
-    <message_type>std_msgs/Float32</message_type>
-  </class>
-
   <class name="autoware_sim_object/OpFlag" type="autoware_sim_object::AutowareSimObjTool" base_class_type="rviz::Tool">
     <description>
       Tool for sim_obj flags on the ground plane in rviz.

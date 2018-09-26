@@ -58,7 +58,6 @@ set(SOURCE_FILES
   src/sim_object/autoware_flag_tool.cpp
   src/vehicle_monitor/vehicle_status_monitor.cpp
   src/vehicle_monitor/vehicle_cmd_monitor.cpp
-  src/vehicle_monitor/control_cmd_monitor.cpp
   src/vehicle_monitor/overlay_utils.cpp
   )
 
