@@ -3,7 +3,6 @@
 namespace autoware_rviz_plugins{
     VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
         width_ = 320;
-        height_ = 320;
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
         alpha_property_ = boost::make_shared<rviz::FloatProperty>("Alpha", 0, "alpha of the monitor.",this, SLOT(update_alpha_()));
@@ -47,6 +46,12 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::update_angle_unit_(){
         boost::mutex::scoped_lock lock(mutex_);
         angle_unit_ = angle_unit_property_->getOptionInt();
+        return;
+    }
+
+    void VehicleStatusMonitor::update_width_()
+    {
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 

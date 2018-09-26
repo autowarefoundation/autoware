@@ -57,6 +57,7 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;
+        boost::shared_ptr<rviz::IntProperty> width_property_;
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
@@ -66,7 +67,7 @@ namespace autoware_rviz_plugins {
         boost::mutex mutex_;
         int monitor_top_,monitor_left_;
         float alpha_;
-        double width_,height_;
+        int width_,height_;
         int speed_unit_,angle_unit_;
         std::string topic_name_;
     protected Q_SLOTS:
@@ -76,6 +77,7 @@ namespace autoware_rviz_plugins {
         void update_alpha_();
         void update_speed_unit_();
         void update_angle_unit_();
+        void update_width_();
     };
 }
 #endif //VHICLE_STATE_MONITOR_H_INCLUDED
