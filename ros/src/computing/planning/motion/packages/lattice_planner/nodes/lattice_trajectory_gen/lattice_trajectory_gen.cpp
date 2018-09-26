@@ -223,7 +223,7 @@ static void displayNextWaypoint(int i)
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position = g_current_waypoints.getWaypointPosition(i).get();
+  marker.pose.position = g_current_waypoints.getWaypointPosition(i);
   marker.pose.orientation = g_current_waypoints.getWaypointOrientation(i);
   marker.scale.x = 1.0;
   marker.scale.y = 1.0;
@@ -252,20 +252,20 @@ static union State computeWaypointGoal(int next_waypoint)
     //l_goal.sx = _path_pp.transformWaypoint(next_waypoint).getX();
     //l_goal.sy = _path_pp.transformWaypoint(next_waypoint).getY();
 
-    l_goal.sx = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint).get(),g_current_pose.pose).x;
-    l_goal.sy = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint).get(),g_current_pose.pose).y;
+    l_goal.sx = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint),g_current_pose.pose).x;
+    l_goal.sy = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint),g_current_pose.pose).y;
 
     // Get the next next waypoint position
     //double waypoint_lookahead_1_x = _path_pp.transformWaypoint(next_waypoint+1).getX();
    // double waypoint_lookahead_1_y = _path_pp.transformWaypoint(next_waypoint+1).getY();
-    double waypoint_lookahead_1_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1).get(),g_current_pose.pose).x;
-    double waypoint_lookahead_1_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1).get(),g_current_pose.pose).y;
+    double waypoint_lookahead_1_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1),g_current_pose.pose).x;
+    double waypoint_lookahead_1_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+1),g_current_pose.pose).y;
 
     // Get the next next next waypoint
    // double waypoint_lookahead_2_x = _path_pp.transformWaypoint(next_waypoint+2).getX();
     //double waypoint_lookahead_2_y = _path_pp.transformWaypoint(next_waypoint+2).getY();
-    double waypoint_lookahead_2_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2).get(),g_current_pose.pose).x;
-    double waypoint_lookahead_2_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2).get(),g_current_pose.pose).y;
+    double waypoint_lookahead_2_x = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2),g_current_pose.pose).x;
+    double waypoint_lookahead_2_y = calcRelativeCoordinate(g_current_waypoints.getWaypointPosition(next_waypoint+2),g_current_pose.pose).y;
 
     // Compute dX and dY relative to lookahead
     double dX_1 =  waypoint_lookahead_1_x - l_goal.sx;

@@ -36,9 +36,6 @@
 #include <sstream>
 #include <fstream>
 
-// Boost header
-#include <boost/optional.hpp>
-
 // ROS header
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -60,7 +57,7 @@ public:
     return current_waypoints_.waypoints.empty();
   };
   double getInterval() const;
-  boost::optional<geometry_msgs::Point> getWaypointPosition(int waypoint) const;
+  geometry_msgs::Point getWaypointPosition(int waypoint) const;
   geometry_msgs::Quaternion getWaypointOrientation(int waypoint) const;
   geometry_msgs::Pose getWaypointPose(int waypoint) const;
   double getWaypointVelocityMPS(int waypoint) const;

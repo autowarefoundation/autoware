@@ -52,11 +52,9 @@ double WayPoints::getInterval() const
   return tf::tfDistance(v1, v2);
 }
 
-boost::optional<geometry_msgs::Point> WayPoints::getWaypointPosition(int waypoint) const
+geometry_msgs::Point WayPoints::getWaypointPosition(int waypoint) const
 {
-  boost::optional<geometry_msgs::Point> p;
-  if (waypoint > getSize() - 1 || waypoint < 0)
-    return boost::none;
+  geometry_msgs::Point p;
   p = current_waypoints_.waypoints[waypoint].pose.pose.position;
   return p;
 }
@@ -184,7 +182,7 @@ int getClosestWaypoint(const autoware_msgs::lane &current_path, geometry_msgs::P
   std::vector<int> waypoint_candidates;
   for (int i = 1; i < wp.getSize(); i++)
   {
-    if (getPlaneDistance(wp.getWaypointPosition(i).get(), current_pose.position) > search_distance)
+    if (getPlaneDistance(wp.getWaypointPosition(i), current_pose.position) > search_distance)
       continue;
 
     if (!wp.isFront(i, current_pose))
@@ -205,7 +203,7 @@ int getClosestWaypoint(const autoware_msgs::lane &current_path, geometry_msgs::P
     for (auto el : waypoint_candidates)
     {
       // ROS_INFO("closest_candidates : %d",el);
-      double d = getPlaneDistance(wp.getWaypointPosition(el).get(), current_pose.position);
+      double d = getPlaneDistance(wp.getWaypointPosition(el), current_pose.position);
       if (d < distance_min)
       {
         waypoint_min = el;
@@ -228,7 +226,7 @@ int getClosestWaypoint(const autoware_msgs::lane &current_path, geometry_msgs::P
       // if (!wp.isValid(i, current_pose))
       //  continue;
 
-      double d = getPlaneDistance(wp.getWaypointPosition(i).get(), current_pose.position);
+      double d = getPlaneDistance(wp.getWaypointPosition(i), current_pose.position);
       if (d < distance_min)
       {
         waypoint_min = i;

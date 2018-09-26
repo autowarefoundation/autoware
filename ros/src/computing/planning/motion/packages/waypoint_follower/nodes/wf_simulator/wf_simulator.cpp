@@ -205,8 +205,8 @@ void publishOdometry()
   */
 
   if(_waypoint_set && g_is_closest_waypoint_subscribed)
-    if(_current_waypoints.getWaypointPosition(g_closest_waypoint))
-      last_pose_position_z = _current_waypoints.getWaypointPosition(g_closest_waypoint).get().z;
+    if(g_closest_waypoint == -1)
+      last_pose_position_z = _current_waypoints.getWaypointPosition(g_closest_waypoint).z;
     pose.position.z = last_pose_position_z;
   double vx = _current_velocity.linear.x;
   double vth = _current_velocity.angular.z;
