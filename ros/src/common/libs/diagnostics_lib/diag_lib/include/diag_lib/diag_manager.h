@@ -40,6 +40,8 @@ public:
     template<typename T>
     void DIAG_ASSERT_VALUE_RANGE(T min, T max, T value, int num)
     {
+        if(enable_diag_ == false)
+            return;
         std::vector<int> required_error_code = {INVALID_INITIAL_VALUE, INVALID_VALUE};
         if(check_error_code(num, required_error_code))
         {
@@ -61,6 +63,8 @@ public:
     template<typename T>
     void DIAG_ASSERT_VALUE_MIN(T min, T value, int num)
     {
+        if(enable_diag_ == false)
+            return;
         std::vector<int> required_error_code = {INVALID_INITIAL_VALUE, INVALID_VALUE};
         if(check_error_code(num, required_error_code))
         {
@@ -76,6 +80,8 @@ public:
     template<typename T>
     void DIAG_ASSERT_VALUE_MAX(T max, T value, int num)
     {
+        if(enable_diag_ == false)
+            return;
         std::vector<int> required_error_code = {INVALID_INITIAL_VALUE, INVALID_VALUE};
         if(check_error_code(num, required_error_code))
         {
@@ -91,6 +97,8 @@ public:
     template<class T>
     void DIAG_ASSERT_EXCEPTION(T exception,int num)
     {
+        if(enable_diag_ == false)
+            return;
         std::vector<int> required_error_code = {EXCEPTION};
         if(check_error_code(num, required_error_code))
         {
@@ -113,7 +121,8 @@ private:
     bool check_error_code(int requested_error_code, std::vector<int> right_categories);
     void publish_diag_(diag_info info);
     // check resource for diag_manager
-    void diag_resource(std::string target_resource_path);
+    bool diag_resource(std::string target_resource_path);
+    volatile bool enable_diag_;
     std::vector<diag_info> diag_info_;
     std::vector<std::string> diag_log_;
     ros::Publisher diag_pub_;

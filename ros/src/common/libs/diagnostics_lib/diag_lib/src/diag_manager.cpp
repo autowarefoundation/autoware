@@ -2,8 +2,12 @@
 
 diag_manager::diag_manager()
 {
+    enable_diag_ = false;
     nh_.param<std::string>("/error_code_config_path", error_code_config_path_, std::string(""));
-    diag_resource(error_code_config_path_);
+    if(!diag_resource(error_code_config_path_))
+    {
+        return;
+    }
     YAML::Node config = YAML::LoadFile(error_code_config_path_.c_str());
     error_code_config_ = config[ros::this_node::getName()];
     try
@@ -44,6 +48,7 @@ diag_manager::diag_manager()
     }
     diag_pub_ = nh_.advertise<diag_msgs::diag_error>(ros::this_node::getName() + "/diag", 10);
     boost::thread rate_check_thread(boost::bind(&diag_manager::check_rate_, this));;
+    enable_diag_ = true;
 }
 
 diag_manager::~diag_manager()
@@ -84,6 +89,8 @@ void diag_manager::check_rate_()
 
 void diag_manager::DIAG_LOW_RELIABILITY(int num)
 {
+    if(enable_diag_ == false)
+        return;    
     std::vector<int> required_error_code = {LOW_RELIABILITY};
     if(check_error_code(num, required_error_code))
     {
@@ -96,6 +103,8 @@ void diag_manager::DIAG_LOW_RELIABILITY(int num)
 
 void diag_manager::DIAG_RATE_CHECK(int num)
 {
+    if(enable_diag_ == false)
+        return;
     std::vector<int> required_error_code = {LOW_SUBSCRIBE_RATE, LOW_PUBLISH_RATE, LOW_OPERATION_CYCLE};
     if(check_error_code(num, required_error_code))
     {
@@ -180,6 +189,8 @@ void diag_manager::ADD_DIAG_LOG_WARN(std::string log_text)
 
 void diag_manager::DIAG_RESOURCE(std::string target_resource_path, int num)
 {
+    if(enable_diag_ == false)
+        return;
     std::vector<int> required_error_code = {RESOURCE_NOT_FOUND};
     if(check_error_code(num, required_error_code))
     {
@@ -209,7 +220,7 @@ void diag_manager::DIAG_RESOURCE(std::string target_resource_path, int num)
     }
 }
 
-void diag_manager::diag_resource(std::string target_resource_path)
+bool diag_manager::diag_resource(std::string target_resource_path)
 {
     namespace fs = boost::filesystem;
     fs::path path(target_resource_path);
@@ -217,13 +228,11 @@ void diag_manager::diag_resource(std::string target_resource_path)
     const bool result = fs::exists(path, error);
     if (!result || error)
     {
-        //ROS_ERROR_STREAM("required resource " << path << " does not found.");
         ADD_DIAG_LOG_ERROR("required resource " + target_resource_path + " does not found.");
-        ROS_ERROR_STREAM("shutdonw " << ros::this_node::getName());
-        WRITE_LOG();
-        std::exit(-1);
+        ADD_DIAG_LOG_ERROR("disable diag module in " + ros::this_node::getName());
+        return false;
     }
-    return;
+    return true;
 }
 
 bool diag_manager::check_error_code(int requested_error_number, std::vector<int> right_categories)
