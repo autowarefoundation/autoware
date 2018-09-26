@@ -93,7 +93,7 @@ script:
                 -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
                 -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
                 --build ${AUTOWARE_BUILD_PATH}
-                -j";
+                -j3";
     else
       catkin_make clean;
       source devel/setup.bash;
