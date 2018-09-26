@@ -14,7 +14,7 @@ fake_publisher::~fake_publisher()
 
 void fake_publisher::run()
 {
-    ros::Rate rate(10);
+    ros::Rate rate(5);
     std_msgs::Float64 msg;
     msg.data = -50;
     while(ros::ok())

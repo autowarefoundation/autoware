@@ -17,9 +17,11 @@
 #include <map>
 #include <thread>
 #include<fstream>
+#include <mutex>
 
 //headers in diag_msgs
 #include <diag_msgs/diag_error.h>
+#include <diag_msgs/diag_module_status.h>
 
 //headers in boost
 #include <boost/filesystem.hpp>
@@ -118,17 +120,25 @@ private:
     void ADD_DIAG_LOG_WARN(std::string log_text);
     void ADD_DIAG_LOG_ERROR(std::string log_text);
     void check_rate_();
+    void check_rate_loop_();
     bool check_error_code(int requested_error_code, std::vector<int> right_categories);
     void publish_diag_(diag_info info);
+    void update_diag_manager_status_();
+    void load_error_codes_();
     // check resource for diag_manager
     bool diag_resource(std::string target_resource_path);
     volatile bool enable_diag_;
+    volatile bool is_running_;
     std::vector<diag_info> diag_info_;
     std::vector<std::string> diag_log_;
     ros::Publisher diag_pub_;
+    ros::Publisher diag_status_pub_;
     ros::NodeHandle nh_;
     ros::Time timer_;
+    //mutex
+    std::mutex _mutex;
     //config
+    std::string old_error_code_config_path_;
     std::string error_code_config_path_;
     YAML::Node error_code_config_;
     //rate checker
