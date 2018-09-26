@@ -14,6 +14,7 @@ add_message_files(
   diag_error.msg
   diag_node_errors.msg
   diag.msg
+  diag_module_status.msg
   )
 
 generate_messages(

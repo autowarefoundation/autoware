@@ -30,13 +30,13 @@
   - num: 2
     name: low subscribe rate
     category: 4
-    description: topic /nft_matching/data subscribe rate was low (Warn)
+    description: topic /ndt_matching/data subscribe rate was low (Warn)
     threshold: 10.0
     level: warn
   - num: 3
     name: low subscribe rate
     category: 4
-    description: topic /nft_matching/data subscribe rate was low (Error)
+    description: topic /ndt_matching/data subscribe rate was low (Error)
     threshold: 5.0
     level: error
   - num: 4

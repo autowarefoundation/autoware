@@ -2,14 +2,63 @@
 
 diag_manager::diag_manager()
 {
+    is_running_ = false;
+    old_error_code_config_path_ = "";
+    diag_pub_ = nh_.advertise<diag_msgs::diag_error>(ros::this_node::getName() + "/diag", 10);
+    diag_status_pub_ = nh_.advertise<diag_msgs::diag_module_status>(ros::this_node::getName() + "/diag/status", 10);
+    load_error_codes_();
+    is_running_ = true;
+    boost::thread manager_update_thread(boost::bind(&diag_manager::update_diag_manager_status_, this));
+    boost::thread rate_checker_thread(boost::bind(&diag_manager::check_rate_loop_, this));
+}
+
+diag_manager::~diag_manager()
+{
+
+}
+
+void diag_manager::update_diag_manager_status_()
+{
+    ros::Rate rate(1);
+    while(ros::ok())
+    {
+        load_error_codes_();
+        diag_msgs::diag_module_status msg;
+        if(enable_diag_)
+        {
+            msg.status = msg.ENABLE;
+        }
+        else
+        {
+            msg.status = msg.DISABLE;
+        }
+        diag_status_pub_.publish(msg);
+        rate.sleep();
+    }
+    return;
+}
+
+void diag_manager::load_error_codes_()
+{
+    std::lock_guard<std::mutex> lock(_mutex);
     enable_diag_ = false;
     nh_.param<std::string>("/error_code_config_path", error_code_config_path_, std::string(""));
+    if(old_error_code_config_path_ == error_code_config_path_)
+    {
+        if(error_code_config_path_ != "")
+        {
+            enable_diag_ = true;
+        }
+        return;
+    }
     if(!diag_resource(error_code_config_path_))
     {
         return;
     }
     YAML::Node config = YAML::LoadFile(error_code_config_path_.c_str());
     error_code_config_ = config[ros::this_node::getName()];
+    diag_info_.clear();
+    checkers_.clear();
     try
     {
         for(const YAML::Node &error : error_code_config_["errors"])
@@ -46,42 +95,45 @@ diag_manager::diag_manager()
         ROS_WARN_STREAM("diag config file format was wrong in " + ros::this_node::getName() + ". Please check " << error_code_config_path_);
 #endif
     }
-    diag_pub_ = nh_.advertise<diag_msgs::diag_error>(ros::this_node::getName() + "/diag", 10);
-    boost::thread rate_check_thread(boost::bind(&diag_manager::check_rate_, this));;
+    old_error_code_config_path_ = error_code_config_path_;
     enable_diag_ = true;
-}
-
-diag_manager::~diag_manager()
-{
-
 }
 
 void diag_manager::check_rate_()
 {
-    ros::Rate rate(RATE_CHECK_FREQUENCY);
-    while(ros::ok())
+    std::lock_guard<std::mutex> lock(_mutex);
+    if(!enable_diag_)
+        return;
+    for (auto const& checker : checkers_)
     {
-        for (auto const& checker : checkers_)
+        boost::optional<double> rate = checker.second->get_rate();
+        boost::optional<diag_info> info = query_diag_info(checker.first);
+        if(rate && info && info.get().threshold)
         {
-            boost::optional<double> rate = checker.second->get_rate();
-            boost::optional<diag_info> info = query_diag_info(checker.first);
-            if(rate && info && info.get().threshold)
+            if(*rate <info.get().threshold.get())
             {
-                if(*rate <info.get().threshold.get())
+                if(info.get().level.get() == LEVEL_WARN)
                 {
-                    if(info.get().level.get() == LEVEL_WARN)
-                    {
-                        ADD_DIAG_LOG_WARN(info.get().description);
-                        publish_diag_(query_diag_info(info.get().num).get());
-                    }
-                    if(info.get().level.get() == LEVEL_ERROR)
-                    {
-                        ADD_DIAG_LOG_ERROR(info.get().description);
-                        publish_diag_(query_diag_info(info.get().num).get());
-                    }
+                    ADD_DIAG_LOG_WARN(info.get().description);
+                    publish_diag_(query_diag_info(info.get().num).get());
+                }
+                if(info.get().level.get() == LEVEL_ERROR)
+                {
+                    ADD_DIAG_LOG_ERROR(info.get().description);
+                    publish_diag_(query_diag_info(info.get().num).get());
                 }
             }
         }
+    }
+    return;
+}
+
+void diag_manager::check_rate_loop_()
+{
+    ros::Rate rate(RATE_CHECK_FREQUENCY);
+    while(ros::ok())
+    {
+        check_rate_();
         rate.sleep();
     }
     return;
