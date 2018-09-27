@@ -4,10 +4,12 @@
 //headers in autoware
 #include <autoware_msgs/VehicleStatus.h>
 #include "overlay_utils.h"
+#include "vehicle_status_config.h"
 
 // headers in ROS
 #include <ros/package.h>
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 
 // headers in Qt
 #include <QWidget>
@@ -32,6 +34,8 @@
 //headers in STL
 #include <math.h>
 
+#define DEFAULT_MONITOR_WIDTH 320
+
 #define KM_PER_HOUR 0
 #define M_PER_SEC 1
 
@@ -54,30 +58,37 @@ namespace autoware_rviz_plugins {
         autoware_rviz_plugins::OverlayObject::Ptr overlay_;
         void processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg);
         void draw_monitor_();
-        boost::shared_ptr<rviz::RosTopicProperty> topic_property_;
+        boost::shared_ptr<rviz::RosTopicProperty> status_topic_property_;
+        boost::shared_ptr<rviz::RosTopicProperty> ctrl_mode_topic_property_;
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;
         boost::shared_ptr<rviz::IntProperty> width_property_;
+        boost::shared_ptr<rviz::IntProperty> font_size_property_;
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
         boost::optional<autoware_msgs::VehicleStatus> last_command_data_;
-        ros::Subscriber sub_;
+        ros::Subscriber status_sub_;
+        ros::Subscriber ctrl_mode_sub_;
         ros::NodeHandle nh_;
         boost::mutex mutex_;
         int monitor_top_,monitor_left_;
         float alpha_;
         int width_,height_;
         int speed_unit_,angle_unit_;
+        int font_size_;
         std::string topic_name_;
+        std::string ctrl_mode_topic_name_;
     protected Q_SLOTS:
-        void update_topic_();
+        void update_ctrl_mode_topic_();
+        void update_status_topic_();
         void update_top_();
         void update_left_();
         void update_alpha_();
         void update_speed_unit_();
         void update_angle_unit_();
         void update_width_();
+        void update_font_size_();
     };
 }
 #endif //VHICLE_STATE_MONITOR_H_INCLUDED
