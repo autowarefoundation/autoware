@@ -83,7 +83,8 @@ script:
       catkin_make clean;
       source devel/setup.bash;
       catkin_make -j4;
-      travis_wait 30 catkin_make -j4 run_tests_velodyne_driver && catkin_test_results;
+      travis_wait catkin_make run_tests;
+      catkin_test_results;
     fi
 
 #sudo: required
