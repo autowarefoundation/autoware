@@ -2,6 +2,7 @@
 
 namespace autoware_rviz_plugins{
     VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
+        control_mode_ = "";
         width_property_ = boost::make_shared<rviz::IntProperty>("Monitor width", DEFAULT_MONITOR_WIDTH, "Width of the monitor.",this, SLOT(update_width_()));
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
@@ -14,7 +15,7 @@ namespace autoware_rviz_plugins{
         angle_unit_property_->addOption("rad", RAD);
         angle_unit_property_->addOption("deg", DEG);
         status_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("VehicleStatus Topic", "",ros::message_traits::datatype<autoware_msgs::VehicleStatus>(),"autoware_msgs::VehicleStatus topic to subscribe to.",this, SLOT(update_status_topic_()));
-        ctrl_mode_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("CtrlCmd Topic", "",ros::message_traits::datatype<std_msgs::String>(),"std_msgs::String topic to subscribe to.",this, SLOT(update_ctrl_mode_topic__()));
+        ctrl_mode_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("CtrlCmd Topic", "",ros::message_traits::datatype<std_msgs::String>(),"std_msgs::String topic to subscribe to.",this, SLOT(update_ctrl_mode_topic_()));
     }
 
     VehicleStatusMonitor::~VehicleStatusMonitor(){
@@ -70,7 +71,7 @@ namespace autoware_rviz_plugins{
 
     void VehicleStatusMonitor::draw_monitor_(){
         boost::mutex::scoped_lock lock(mutex_);
-        if(!last_command_data_)
+        if(!last_status_data_)
         {
             return;
         }
@@ -98,8 +99,8 @@ namespace autoware_rviz_plugins{
                 Hud.setPixel(i, j, QColor(0,0,0,(int)(255*alpha_)).rgba());
             }
         }
-        double width_ratio = (double)width_ / (double)DEFAULT_MONITOR_WIDTH;
-        double height_ratio = (double)height_ / (double)DEFAULT_MONITOR_WIDTH;
+        width_ratio_ = (double)width_ / (double)DEFAULT_MONITOR_WIDTH;
+        height_ratio_ = (double)height_ / (double)DEFAULT_MONITOR_WIDTH;
         /*
         Setup QPainter
         */
@@ -109,46 +110,125 @@ namespace autoware_rviz_plugins{
         QFont font;
         font.setPixelSize(font_size_);
         painter.setFont(font);
-        /*
-        draw gear shift
-        */
-        QPointF gear_display_position = QPointF(30.0 * width_ratio, 20.0 * height_ratio);
-        painter.translate(gear_display_position);
-        if(last_command_data_.get().gearshift == GEAR_DRIVE)
-            painter.drawText(QPointF(0,0),QString("DRIVE"));
-        else if(last_command_data_.get().gearshift == GEAR_REAR)
-            painter.drawText(QPointF(0,0),QString("REAR"));
-        else if(last_command_data_.get().gearshift == GEAR_BREAK)
-            painter.drawText(QPointF(0,0),QString("BREAK"));
-        else if(last_command_data_.get().gearshift == GEAR_NEUTRAL)
-            painter.drawText(QPointF(0,0),QString("NEUTRAL"));
-        else if(last_command_data_.get().gearshift == GEAR_PARKING)
-            painter.drawText(QPointF(0,0),QString("PARKING"));
+        //draw gear shift position
+        draw_gear_shift_(painter, Hud, 0.15, 0.075);
+        draw_left_lamp_(painter, Hud, 0.05, 0.05);
+        draw_right_lamp_(painter, Hud, 0.95, 0.05);
+        draw_operation_status_(painter, Hud, 0.51, 0.075);
+        draw_steering_(painter, Hud, 0.25, 0.3);
+        draw_steering_angle_(painter, Hud, 0.45, 0.33);
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y){
+        double angle;
+        if(angle_unit_ == RAD){
+            angle = last_status_data_->angle/180*M_PI;
+        }
+        else if(angle_unit_ == DEG){
+            angle = last_status_data_->angle;
+        }
+        std::string steer_str = std::to_string(angle);
+        int dot_index = -1;
+        std::string steer_display_str = "";
+        int steer_str_size = steer_str.size();
+        for(int i=0; i<steer_str_size; i++){
+            if('.' == steer_str[i]){
+                dot_index = i;
+            }
+            if(dot_index!=-1 && i == 3+dot_index){
+                break;
+            }
+            steer_display_str.push_back(steer_str[i]);
+        }
+        if(angle_unit_ == RAD){
+            steer_display_str = steer_display_str + " rad";
+        }
+        else if(angle_unit_ == DEG){
+            steer_display_str = steer_display_str + " deg";
+        }
+        QPointF position(width_*x,height_*y);
+        painter.drawText(position,QString(steer_display_str.c_str()));
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_steering_(QPainter& painter, QImage& Hud, double x, double y){
+        QPointF steering_center = QPointF(width_*x,height_*y);
+        double r = 45.0;
+        painter.translate(steering_center);
+        QRect circle_rect(-r*width_ratio_, -r*height_ratio_, 2*r*width_ratio_, 2*r*height_ratio_);
+        painter.rotate(-1*last_status_data_->angle);
+        QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
+            QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
+        painter.drawConvexPolygon(points, 4);
+        painter.rotate(last_status_data_->angle);
+        painter.drawEllipse(circle_rect);
+        painter.translate(-steering_center);
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_operation_status_(QPainter& painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        if(control_mode_ == "")
+        {
+            painter.drawText(position,QString("UNKNOWN"));
+        }
         else
-            painter.drawText(QPointF(0,0),QString("UNDEFINED"));
-        painter.translate(gear_display_position);
-        /*
-        draw left lamp
-        */
-        /*
-        QPointF left_lamp_display_position = QPointF(15 * width_ / DEFAULT_MONITOR_WIDTH, 20 * height_ / DEFAULT_MONITOR_WIDTH);
-        painter.translate(left_lamp_display_position);
-        QPointF lamp_left_points[3] = {QPointF(0.0,0.0),QPointF(0.0,0.0),QPointF(0.0,0.0)};
-        painter.translate(-left_lamp_display_position);
-        */
+        {
+            transform (control_mode_.begin (), control_mode_.end (), control_mode_.begin (), toupper);
+            painter.drawText(position,QString(control_mode_.c_str()));
+        }
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y)
+    {
+        QPointF position(width_*x,height_*y);
+        if(last_status_data_.get().gearshift == GEAR_DRIVE)
+            painter.drawText(position,QString("DRIVE"));
+        else if(last_status_data_.get().gearshift == GEAR_REAR)
+            painter.drawText(position,QString("REAR"));
+        else if(last_status_data_.get().gearshift == GEAR_BREAK)
+            painter.drawText(position,QString("BREAK"));
+        else if(last_status_data_.get().gearshift == GEAR_NEUTRAL)
+            painter.drawText(position,QString("NEUTRAL"));
+        else if(last_status_data_.get().gearshift == GEAR_PARKING)
+            painter.drawText(position,QString("PARKING"));
+        else
+            painter.drawText(position,QString("UNDEFINED"));
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        QPointF points[3] = {position+QPointF(-10.0*width_ratio_,10.0*height_ratio_),position+QPointF(-10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0,0.0)};
+        painter.drawConvexPolygon(points, 3);
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        QPointF points[3] = {position+QPointF(10.0*width_ratio_,10.0*height_ratio_),position+QPointF(10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0.0,0.0)};
+        painter.drawConvexPolygon(points, 3);
+        return;
+    }
+
+    void VehicleStatusMonitor::processControlMessage(const std_msgs::String::ConstPtr& msg){
+        boost::mutex::scoped_lock lock(mutex_);
+        control_mode_ = msg->data;
         return;
     }
 
     void VehicleStatusMonitor::processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg){
         boost::mutex::scoped_lock lock(mutex_);
-        last_command_data_ = *msg;
+        last_status_data_ = *msg;
         return;
     }
 
     void VehicleStatusMonitor::update_ctrl_mode_topic_(){
         boost::mutex::scoped_lock lock(mutex_);
         ctrl_mode_sub_.shutdown();
-        last_command_data_ = boost::none;
+        last_status_data_ = boost::none;
         ctrl_mode_topic_name_ = status_topic_property_->getTopicStd();
         if (ctrl_mode_topic_name_.length() > 0 && ctrl_mode_topic_name_ != "/")
         {
@@ -160,7 +240,7 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::update_status_topic_(){
         boost::mutex::scoped_lock lock(mutex_);
         status_sub_.shutdown();
-        last_command_data_ = boost::none;
+        last_status_data_ = boost::none;
         topic_name_ = status_topic_property_->getTopicStd();
         if (topic_name_.length() > 0 && topic_name_ != "/")
         {

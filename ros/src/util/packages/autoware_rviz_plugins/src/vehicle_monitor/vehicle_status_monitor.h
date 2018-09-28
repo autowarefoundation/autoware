@@ -33,6 +33,7 @@
 
 //headers in STL
 #include <math.h>
+#include <algorithm>
 
 #define DEFAULT_MONITOR_WIDTH 320
 
@@ -57,6 +58,7 @@ namespace autoware_rviz_plugins {
     private:
         autoware_rviz_plugins::OverlayObject::Ptr overlay_;
         void processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg);
+        void processControlMessage(const std_msgs::String::ConstPtr& msg);
         void draw_monitor_();
         boost::shared_ptr<rviz::RosTopicProperty> status_topic_property_;
         boost::shared_ptr<rviz::RosTopicProperty> ctrl_mode_topic_property_;
@@ -67,7 +69,7 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
-        boost::optional<autoware_msgs::VehicleStatus> last_command_data_;
+        boost::optional<autoware_msgs::VehicleStatus> last_status_data_;
         ros::Subscriber status_sub_;
         ros::Subscriber ctrl_mode_sub_;
         ros::NodeHandle nh_;
@@ -77,8 +79,17 @@ namespace autoware_rviz_plugins {
         int width_,height_;
         int speed_unit_,angle_unit_;
         int font_size_;
+        double height_ratio_,width_ratio_;
         std::string topic_name_;
         std::string ctrl_mode_topic_name_;
+        std::string control_mode_;
+        //functions for draw
+        void draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_operation_status_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_steering_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();
