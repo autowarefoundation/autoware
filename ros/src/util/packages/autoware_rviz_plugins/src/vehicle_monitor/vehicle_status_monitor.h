@@ -43,6 +43,12 @@
 #define RAD 0
 #define DEG 1
 
+#define MIN_BRAKE_VALUE 0
+#define MAX_BRAKE_VALUE 4095
+
+#define MIN_ACCEL_VALUE 0
+#define MAX_ACCEL_VALUE 1
+
 namespace autoware_rviz_plugins {
     class VehicleStatusMonitor : public rviz::Display{
     Q_OBJECT
@@ -92,6 +98,8 @@ namespace autoware_rviz_plugins {
         void draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_speed_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_drive_mode_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_brake_bar_(QPainter& painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();
