@@ -3,9 +3,9 @@ set -o pipefail
 $@ & # send the long living command to background!
 
 minutes=0
-limit=30
+limit=180
 while kill -0 $! >/dev/null 2>&1; do
-  echo "---------------- $minutes minutes passed ---------------------"
+  echo "---------------- $(minutes/6) minutes passed ---------------------"
 
   if [ $minutes == $limit ]; then
     break;
@@ -13,6 +13,6 @@ while kill -0 $! >/dev/null 2>&1; do
 
   minutes=$((minutes+1))
 
-  sleep 60
+  sleep 10
 done
 
