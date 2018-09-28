@@ -133,6 +133,39 @@ namespace autoware_rviz_plugins{
         draw_steering_(painter, Hud, 0.18, 0.3);
         draw_steering_angle_(painter, Hud, 0.38, 0.33);
         draw_steering_mode_(painter, Hud, 0.68, 0.33);
+        draw_speed_(painter, Hud, 0.35, 0.55);
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_speed_(QPainter& painter, QImage& Hud, double x, double y){
+        double speed;
+        if(speed_unit_ == KM_PER_HOUR){
+            speed = last_status_data_->speed;
+        }
+        else if(speed_unit_ == M_PER_SEC){
+            speed = last_status_data_->speed/3.6;
+        }
+        std::string speed_str = std::to_string(speed);
+        int dot_index = -1;
+        std::string speed_display_str = "";
+        int speed_str_size = speed_str.size();
+        for(int i=0; i<speed_str_size; i++){
+            if('.' == speed_str[i]){
+                dot_index = i;
+            }
+            if(dot_index!=-1 && i == 3+dot_index){
+                break;
+            }
+            speed_display_str.push_back(speed_str[i]);
+        }
+        if(speed_unit_ == KM_PER_HOUR){
+            speed_display_str = speed_display_str + " km/h";
+        }
+        else if(speed_unit_ == M_PER_SEC){
+            speed_display_str = speed_display_str + " m/s";
+        }
+        QPointF position(width_*x,height_*y);
+        painter.drawText(position,QString(speed_display_str.c_str()));
         return;
     }
 

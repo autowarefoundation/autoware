@@ -91,6 +91,7 @@ namespace autoware_rviz_plugins {
         void draw_steering_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_speed_(QPainter& painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();
