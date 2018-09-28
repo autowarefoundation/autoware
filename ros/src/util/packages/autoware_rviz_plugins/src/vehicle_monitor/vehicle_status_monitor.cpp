@@ -135,7 +135,25 @@ namespace autoware_rviz_plugins{
         draw_steering_mode_(painter, Hud, 0.68, 0.33);
         draw_speed_(painter, Hud, 0.35, 0.58);
         draw_drive_mode_(painter, Hud, 0.68, 0.80);
-        draw_brake_bar_(painter, Hud, 0.18, 0.62);
+        draw_brake_bar_(painter, Hud, 0.22, 0.62);
+        draw_accel_bar_(painter, Hud, 0.50, 0.62);
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_accel_bar_(QPainter& painter, QImage& Hud, double x, double y){
+        double bar_width = 0.15;
+        double bar_height = 0.28;
+        QPointF position(width_*x,height_*y);
+        QPointF frame_points[4] = {position+QPointF(bar_width/2.0*width_,0),position+QPointF(-bar_width/2.0*width_,0),
+            position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
+        painter.drawConvexPolygon(frame_points, 4);
+        painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        double accel_ratio = (last_status_data_->drivepedal-(double)MIN_ACCEL_VALUE)/(double)MAX_ACCEL_VALUE;
+        QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),
+            position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
+        painter.drawConvexPolygon(bar_points, 4);
+        painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        painter.drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("ACCEL"));
         return;
     }
 
@@ -143,10 +161,14 @@ namespace autoware_rviz_plugins{
         double bar_width = 0.15;
         double bar_height = 0.28;
         QPointF position(width_*x,height_*y);
-        QPointF frame_points[4] = {position+QPointF(bar_width/2*width_,0),position+QPointF(-bar_width/2*width_,0),
+        QPointF frame_points[4] = {position+QPointF(bar_width/2.0*width_,0),position+QPointF(-bar_width/2.0*width_,0),
             position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
         painter.drawConvexPolygon(frame_points, 4);
         painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        double brake_ratio = (last_status_data_->brakepedal-(double)MIN_BRAKE_VALUE)/(double)MAX_BRAKE_VALUE;
+        QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),
+            position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
+        painter.drawConvexPolygon(bar_points, 4);
         painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
         painter.drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("BRAKE"));
         return;
@@ -253,9 +275,10 @@ namespace autoware_rviz_plugins{
         painter.rotate(-1*last_status_data_->angle);
         QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
             QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
-        painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        QPainter steer_painter(&Hud);
+        //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
         painter.drawConvexPolygon(points, 4);
-        painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
         painter.rotate(last_status_data_->angle);
         painter.drawEllipse(circle_rect);
         painter.translate(-steering_center);
@@ -298,11 +321,11 @@ namespace autoware_rviz_plugins{
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(-10.0*width_ratio_,10.0*height_ratio_),position+QPointF(-10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0,0.0)};
         if(status == true){
-            //painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
-            painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
             painter.drawConvexPolygon(points, 3);
-            painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-            //painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+            //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         }
         else{
             painter.drawConvexPolygon(points, 3);
@@ -314,11 +337,11 @@ namespace autoware_rviz_plugins{
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(10.0*width_ratio_,10.0*height_ratio_),position+QPointF(10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0.0,0.0)};
         if(status == true){
-            //painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
-            painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
             painter.drawConvexPolygon(points, 3);
-            painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-            //painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+            //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         }
         else{
             painter.drawConvexPolygon(points, 3);

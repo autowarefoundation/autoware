@@ -100,6 +100,8 @@ namespace autoware_rviz_plugins {
         void draw_speed_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_drive_mode_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_brake_bar_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_filled_brake_bar_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_accel_bar_(QPainter& painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();
