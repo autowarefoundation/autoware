@@ -135,12 +135,20 @@ namespace autoware_rviz_plugins{
         draw_steering_mode_(painter, Hud, 0.68, 0.33);
         draw_speed_(painter, Hud, 0.35, 0.58);
         draw_drive_mode_(painter, Hud, 0.68, 0.80);
+        draw_brake_bar_(painter, Hud, 0.18, 0.62);
         return;
     }
 
     void VehicleStatusMonitor::draw_brake_bar_(QPainter& painter, QImage& Hud, double x, double y){
+        double bar_width = 0.15;
+        double bar_height = 0.28;
+        QPointF position(width_*x,height_*y);
+        QPointF frame_points[4] = {position+QPointF(bar_width/2*width_,0),position+QPointF(-bar_width/2*width_,0),
+            position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
+        painter.drawConvexPolygon(frame_points, 4);
         painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        painter.setBrush(QBrush(QColor(0,0,0, 0), Qt::SolidPattern));
+        painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        painter.drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("BRAKE"));
         return;
     }
 
