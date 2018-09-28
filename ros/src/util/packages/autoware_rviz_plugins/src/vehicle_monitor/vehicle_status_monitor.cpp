@@ -27,6 +27,7 @@ namespace autoware_rviz_plugins{
         update_top_();
         update_left_();
         update_alpha_();
+        update_angle_unit_();
         update_speed_unit_();
         update_width_();
         update_font_size_();
@@ -112,11 +113,26 @@ namespace autoware_rviz_plugins{
         painter.setFont(font);
         //draw gear shift position
         draw_gear_shift_(painter, Hud, 0.15, 0.075);
-        draw_left_lamp_(painter, Hud, 0.05, 0.05);
-        draw_right_lamp_(painter, Hud, 0.95, 0.05);
+        bool right_lamp_status = false;
+        bool left_lamp_status = false;
+        if(last_status_data_->lamp == last_status_data_->LAMP_HAZARD){
+            right_lamp_status = true;
+            left_lamp_status = true;
+        }
+        else if(last_status_data_->lamp == last_status_data_->LAMP_LEFT){
+            right_lamp_status = false;
+            left_lamp_status = true;
+        }
+        else if(last_status_data_->lamp == last_status_data_->LAMP_RIGHT){
+            right_lamp_status = true;
+            left_lamp_status = false;
+        }
+        draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
+        draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
         draw_operation_status_(painter, Hud, 0.51, 0.075);
-        draw_steering_(painter, Hud, 0.25, 0.3);
-        draw_steering_angle_(painter, Hud, 0.45, 0.33);
+        draw_steering_(painter, Hud, 0.18, 0.3);
+        draw_steering_angle_(painter, Hud, 0.38, 0.33);
+        draw_steering_mode_(painter, Hud, 0.68, 0.33);
         return;
     }
 
@@ -149,6 +165,20 @@ namespace autoware_rviz_plugins{
         }
         QPointF position(width_*x,height_*y);
         painter.drawText(position,QString(steer_display_str.c_str()));
+        return;
+    }
+
+    void VehicleStatusMonitor::draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        if(last_status_data_->steeringmode == last_status_data_->MODE_MANUAL){
+            painter.drawText(position,QString("MANUAL"));
+        }
+        else if(last_status_data_->steeringmode == last_status_data_->MODE_AUTO){
+            painter.drawText(position,QString("AUTO"));
+        }
+        else{
+            painter.drawText(position,QString("UNDEFINED"));
+        }
         return;
     }
 
@@ -199,17 +229,31 @@ namespace autoware_rviz_plugins{
         return;
     }
 
-    void VehicleStatusMonitor::draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status){
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(-10.0*width_ratio_,10.0*height_ratio_),position+QPointF(-10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0,0.0)};
-        painter.drawConvexPolygon(points, 3);
+        if(status == true){
+            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            painter.drawConvexPolygon(points, 3);
+            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        }
+        else{
+            painter.drawConvexPolygon(points, 3);
+        }
         return;
     }
 
-    void VehicleStatusMonitor::draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status){
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(10.0*width_ratio_,10.0*height_ratio_),position+QPointF(10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0.0,0.0)};
-        painter.drawConvexPolygon(points, 3);
+        if(status == true){
+            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            painter.drawConvexPolygon(points, 3);
+            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        }
+        else{
+            painter.drawConvexPolygon(points, 3);
+        }
         return;
     }
 

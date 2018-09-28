@@ -85,11 +85,12 @@ namespace autoware_rviz_plugins {
         std::string control_mode_;
         //functions for draw
         void draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status);
+        void draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status);
         void draw_operation_status_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_steering_(QPainter& painter, QImage& Hud, double x, double y);
         void draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();
