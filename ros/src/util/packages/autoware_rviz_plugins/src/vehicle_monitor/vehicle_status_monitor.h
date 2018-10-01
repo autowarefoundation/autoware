@@ -83,18 +83,18 @@ namespace autoware_rviz_plugins {
         std::string ctrl_mode_topic_name_;
         std::string control_mode_;
         //functions for draw
-        void draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status);
-        void draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status);
-        void draw_operation_status_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_steering_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_speed_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_drive_mode_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_brake_bar_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_filled_brake_bar_(QPainter& painter, QImage& Hud, double x, double y);
-        void draw_accel_bar_(QPainter& painter, QImage& Hud, double x, double y);
+        void draw_gear_shift_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_left_lamp_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y, bool status);
+        void draw_right_lamp_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y, bool status);
+        void draw_operation_status_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_steering_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_steering_angle_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_steering_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_speed_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_drive_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_brake_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_filled_brake_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
+        void draw_accel_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
         void update_status_topic_();

@@ -4,10 +4,10 @@ namespace autoware_rviz_plugins{
     VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
         gear_status_.load_params();
         control_mode_ = "";
-        max_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Max accel value", 0, "Maximum accel value.",this, SLOT(update_max_accel_value_()));
-        min_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Min accel value", 0, "Minimum accel value.",this, SLOT(update_min_accel_value_()));
-        max_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Max brake value", 0, "Maximum brake value.",this, SLOT(update_max_brake_value_()));
-        min_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Min brake value", 0, "Minimum brake value.",this, SLOT(update_min_brake_value_()));
+        max_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Max accel value", 4095, "Maximum accel value.",this, SLOT(update_max_accel_value_()));
+        min_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Min accel value",    0, "Minimum accel value.",this, SLOT(update_min_accel_value_()));
+        max_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Max brake value", 4095, "Maximum brake value.",this, SLOT(update_max_brake_value_()));
+        min_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Min brake value",    0, "Minimum brake value.",this, SLOT(update_min_brake_value_()));
         width_property_ = boost::make_shared<rviz::IntProperty>("Monitor width", DEFAULT_MONITOR_WIDTH, "Width of the monitor.",this, SLOT(update_width_()));
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
@@ -36,6 +36,10 @@ namespace autoware_rviz_plugins{
         update_speed_unit_();
         update_width_();
         update_font_size_();
+        update_max_accel_value_();
+        update_min_accel_value_();
+        update_max_brake_value_();
+        update_min_brake_value_();
         update_status_topic_();
         return;
     }
@@ -133,12 +137,12 @@ namespace autoware_rviz_plugins{
         /*
         Setup QPainter
         */
-        QPainter painter(&Hud);
-        painter.setRenderHint(QPainter::Antialiasing, true);
-        painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        boost::shared_ptr<QPainter> painter = boost::make_shared<QPainter>(&Hud);
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         QFont font;
         font.setPixelSize(font_size_);
-        painter.setFont(font);
+        painter->setFont(font);
         //draw gear shift position
         draw_gear_shift_(painter, Hud, 0.15, 0.075);
         bool right_lamp_status = false;
@@ -168,41 +172,41 @@ namespace autoware_rviz_plugins{
         return;
     }
 
-    void VehicleStatusMonitor::draw_accel_bar_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_accel_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         double bar_width = 0.15;
         double bar_height = 0.28;
         QPointF position(width_*x,height_*y);
         QPointF frame_points[4] = {position+QPointF(bar_width/2.0*width_,0),position+QPointF(-bar_width/2.0*width_,0),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
-        painter.drawConvexPolygon(frame_points, 4);
-        painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double accel_ratio = (last_status_data_->drivepedal-min_accel_value_)/(max_accel_value_-min_accel_value_);
+        painter->drawConvexPolygon(frame_points, 4);
+        painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        double accel_ratio = (last_status_data_->drivepedal-(double)min_accel_value_)/((double)max_accel_value_-(double)min_accel_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
-        painter.drawConvexPolygon(bar_points, 4);
-        painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-        painter.drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("ACCEL"));
+        painter->drawConvexPolygon(bar_points, 4);
+        painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        painter->drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("ACCEL"));
         return;
     }
 
-    void VehicleStatusMonitor::draw_brake_bar_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_brake_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         double bar_width = 0.15;
         double bar_height = 0.28;
         QPointF position(width_*x,height_*y);
         QPointF frame_points[4] = {position+QPointF(bar_width/2.0*width_,0),position+QPointF(-bar_width/2.0*width_,0),
             position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
-        painter.drawConvexPolygon(frame_points, 4);
-        painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double brake_ratio = last_status_data_->brakepedal-min_accel_value_/(max_accel_value_-min_accel_value_);
+        painter->drawConvexPolygon(frame_points, 4);
+        painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        double brake_ratio = last_status_data_->brakepedal-(double)min_brake_value_/((double)max_brake_value_-(double)min_brake_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
-        painter.drawConvexPolygon(bar_points, 4);
-        painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-        painter.drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("BRAKE"));
+        painter->drawConvexPolygon(bar_points, 4);
+        painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        painter->drawText(position+QPointF(-30*width_ratio_,bar_height*height_+20*height_ratio_),QString("BRAKE"));
         return;
     }
 
-    void VehicleStatusMonitor::draw_speed_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_speed_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         double speed;
         if(speed_unit_ == KM_PER_HOUR){
             speed = last_status_data_->speed;
@@ -230,26 +234,26 @@ namespace autoware_rviz_plugins{
             speed_display_str = speed_display_str + " m/s";
         }
         QPointF position(width_*x,height_*y);
-        painter.drawText(position,QString(speed_display_str.c_str()));
+        painter->drawText(position,QString(speed_display_str.c_str()));
         return;
     }
 
-    void VehicleStatusMonitor::draw_drive_mode_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_drive_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF position(width_*x,height_*y);
         if(last_status_data_->drivemode == last_status_data_->MODE_MANUAL){
-            painter.drawText(position,QString("MANUAL"));
+            painter->drawText(position,QString("MANUAL"));
         }
         else if(last_status_data_->drivemode == last_status_data_->MODE_AUTO){
-            painter.drawText(position,QString("AUTO"));
+            painter->drawText(position,QString("AUTO"));
         }
         else{
-            painter.drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("UNDEFINED"));
         }
         return;
 
     }
 
-    void VehicleStatusMonitor::draw_steering_angle_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_steering_angle_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         double angle;
         if(angle_unit_ == RAD){
             angle = last_status_data_->angle/180*M_PI;
@@ -277,102 +281,102 @@ namespace autoware_rviz_plugins{
             steer_display_str = steer_display_str + " deg";
         }
         QPointF position(width_*x,height_*y);
-        painter.drawText(position,QString(steer_display_str.c_str()));
+        painter->drawText(position,QString(steer_display_str.c_str()));
         return;
     }
 
-    void VehicleStatusMonitor::draw_steering_mode_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_steering_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF position(width_*x,height_*y);
         if(last_status_data_->steeringmode == last_status_data_->MODE_MANUAL){
-            painter.drawText(position,QString("MANUAL"));
+            painter->drawText(position,QString("MANUAL"));
         }
         else if(last_status_data_->steeringmode == last_status_data_->MODE_AUTO){
-            painter.drawText(position,QString("AUTO"));
+            painter->drawText(position,QString("AUTO"));
         }
         else{
-            painter.drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("UNDEFINED"));
         }
         return;
     }
 
-    void VehicleStatusMonitor::draw_steering_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_steering_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF steering_center = QPointF(width_*x,height_*y);
         double r = 45.0;
-        painter.translate(steering_center);
+        painter->translate(steering_center);
         QRect circle_rect(-r*width_ratio_, -r*height_ratio_, 2*r*width_ratio_, 2*r*height_ratio_);
-        painter.rotate(-1*last_status_data_->angle);
+        painter->rotate(-1*last_status_data_->angle);
         QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
             QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
         QPainter steer_painter(&Hud);
-        //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        painter.drawConvexPolygon(points, 4);
-        //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-        painter.rotate(last_status_data_->angle);
-        painter.drawEllipse(circle_rect);
-        painter.translate(-steering_center);
+        //painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+        painter->drawConvexPolygon(points, 4);
+        //painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+        painter->rotate(last_status_data_->angle);
+        painter->drawEllipse(circle_rect);
+        painter->translate(-steering_center);
         return;
     }
 
-    void VehicleStatusMonitor::draw_operation_status_(QPainter& painter, QImage& Hud, double x, double y){
+    void VehicleStatusMonitor::draw_operation_status_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF position(width_*x,height_*y);
         if(control_mode_ == "")
         {
-            painter.drawText(position,QString("UNKNOWN"));
+            painter->drawText(position,QString("UNKNOWN"));
         }
         else
         {
             transform (control_mode_.begin (), control_mode_.end (), control_mode_.begin (), toupper);
-            painter.drawText(position,QString(control_mode_.c_str()));
+            painter->drawText(position,QString(control_mode_.c_str()));
         }
         return;
     }
 
-    void VehicleStatusMonitor::draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y)
+    void VehicleStatusMonitor::draw_gear_shift_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y)
     {
         QPointF position(width_*x,height_*y);
         if(last_status_data_.get().gearshift == gear_status_.get_drive_value())
-            painter.drawText(position,QString("DRIVE"));
+            painter->drawText(position,QString("DRIVE"));
         else if(last_status_data_.get().gearshift == gear_status_.get_rear_value())
-            painter.drawText(position,QString("REAR"));
+            painter->drawText(position,QString("REAR"));
         else if(last_status_data_.get().gearshift == gear_status_.get_brake_value())
-            painter.drawText(position,QString("BREAK"));
+            painter->drawText(position,QString("BREAK"));
         else if(last_status_data_.get().gearshift == gear_status_.get_neutral_value())
-            painter.drawText(position,QString("NEUTRAL"));
+            painter->drawText(position,QString("NEUTRAL"));
         else if(last_status_data_.get().gearshift == gear_status_.get_parking_value())
-            painter.drawText(position,QString("PARKING"));
+            painter->drawText(position,QString("PARKING"));
         else
-            painter.drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("UNDEFINED"));
         return;
     }
 
-    void VehicleStatusMonitor::draw_right_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status){
+    void VehicleStatusMonitor::draw_right_lamp_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y, bool status){
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(-10.0*width_ratio_,10.0*height_ratio_),position+QPointF(-10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0,0.0)};
         if(status == true){
-            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
-            //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-            painter.drawConvexPolygon(points, 3);
-            //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+            painter->setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            //painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+            painter->drawConvexPolygon(points, 3);
+            //painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         }
         else{
-            painter.drawConvexPolygon(points, 3);
+            painter->drawConvexPolygon(points, 3);
         }
         return;
     }
 
-    void VehicleStatusMonitor::draw_left_lamp_(QPainter& painter, QImage& Hud, double x, double y, bool status){
+    void VehicleStatusMonitor::draw_left_lamp_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y, bool status){
         QPointF position(width_*x,height_*y);
         QPointF points[3] = {position+QPointF(10.0*width_ratio_,10.0*height_ratio_),position+QPointF(10.0*width_ratio_,-10.0*height_ratio_),position+QPointF(0.0,0.0)};
         if(status == true){
-            painter.setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
-            //painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-            painter.drawConvexPolygon(points, 3);
-            //painter.setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
-            painter.setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+            painter->setPen(QPen(QColor(255,0,0,(int)(255*alpha_)).rgba()));
+            //painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
+            painter->drawConvexPolygon(points, 3);
+            //painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
+            painter->setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
         }
         else{
-            painter.drawConvexPolygon(points, 3);
+            painter->drawConvexPolygon(points, 3);
         }
         return;
     }
