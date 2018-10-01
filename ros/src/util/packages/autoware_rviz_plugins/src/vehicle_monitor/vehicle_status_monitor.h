@@ -50,6 +50,7 @@ namespace autoware_rviz_plugins {
         virtual void onDisable();
     private:
         autoware_rviz_plugins::OverlayObject::Ptr overlay_;
+        gear_status gear_status_;
         void processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg);
         void processControlMessage(const std_msgs::String::ConstPtr& msg);
         void draw_monitor_();

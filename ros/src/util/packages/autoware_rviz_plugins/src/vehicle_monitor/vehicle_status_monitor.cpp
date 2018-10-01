@@ -2,6 +2,7 @@
 
 namespace autoware_rviz_plugins{
     VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
+        gear_status_.load_params();
         control_mode_ = "";
         max_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Max accel value", 0, "Maximum accel value.",this, SLOT(update_max_accel_value_()));
         min_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Min accel value", 0, "Minimum accel value.",this, SLOT(update_min_accel_value_()));
@@ -329,15 +330,15 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::draw_gear_shift_(QPainter& painter, QImage& Hud, double x, double y)
     {
         QPointF position(width_*x,height_*y);
-        if(last_status_data_.get().gearshift == GEAR_DRIVE)
+        if(last_status_data_.get().gearshift == gear_status_.get_drive_value())
             painter.drawText(position,QString("DRIVE"));
-        else if(last_status_data_.get().gearshift == GEAR_REAR)
+        else if(last_status_data_.get().gearshift == gear_status_.get_rear_value())
             painter.drawText(position,QString("REAR"));
-        else if(last_status_data_.get().gearshift == GEAR_BREAK)
+        else if(last_status_data_.get().gearshift == gear_status_.get_brake_value())
             painter.drawText(position,QString("BREAK"));
-        else if(last_status_data_.get().gearshift == GEAR_NEUTRAL)
+        else if(last_status_data_.get().gearshift == gear_status_.get_neutral_value())
             painter.drawText(position,QString("NEUTRAL"));
-        else if(last_status_data_.get().gearshift == GEAR_PARKING)
+        else if(last_status_data_.get().gearshift == gear_status_.get_parking_value())
             painter.drawText(position,QString("PARKING"));
         else
             painter.drawText(position,QString("UNDEFINED"));
