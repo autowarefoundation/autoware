@@ -5,6 +5,7 @@
 #include <autoware_msgs/VehicleStatus.h>
 #include "overlay_utils.h"
 #include "vehicle_status_config.h"
+#include "monitor_config.h"
 
 // headers in ROS
 #include <ros/package.h>
@@ -35,14 +36,6 @@
 #include <math.h>
 #include <algorithm>
 
-#define DEFAULT_MONITOR_WIDTH 320
-
-#define KM_PER_HOUR 0
-#define M_PER_SEC 1
-
-#define RAD 0
-#define DEG 1
-
 namespace autoware_rviz_plugins {
     class VehicleStatusMonitor : public rviz::Display{
     Q_OBJECT
@@ -66,6 +59,10 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::IntProperty> left_property_;
         boost::shared_ptr<rviz::IntProperty> width_property_;
         boost::shared_ptr<rviz::IntProperty> font_size_property_;
+        boost::shared_ptr<rviz::IntProperty> max_accel_value_property_;
+        boost::shared_ptr<rviz::IntProperty> min_accel_value_property_;
+        boost::shared_ptr<rviz::IntProperty> max_brake_value_property_;
+        boost::shared_ptr<rviz::IntProperty> min_brake_value_property_;
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
@@ -80,6 +77,7 @@ namespace autoware_rviz_plugins {
         int speed_unit_,angle_unit_;
         int font_size_;
         double height_ratio_,width_ratio_;
+        int max_accel_value_,min_accel_value_,max_brake_value_,min_brake_value_;
         std::string topic_name_;
         std::string ctrl_mode_topic_name_;
         std::string control_mode_;
@@ -106,6 +104,10 @@ namespace autoware_rviz_plugins {
         void update_angle_unit_();
         void update_width_();
         void update_font_size_();
+        void update_max_accel_value_();
+        void update_min_accel_value_();
+        void update_max_brake_value_();
+        void update_min_brake_value_();
     };
 }
 #endif //VHICLE_STATE_MONITOR_H_INCLUDED

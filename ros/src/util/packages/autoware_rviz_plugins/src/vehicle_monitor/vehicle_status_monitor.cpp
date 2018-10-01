@@ -3,6 +3,10 @@
 namespace autoware_rviz_plugins{
     VehicleStatusMonitor::VehicleStatusMonitor() : rviz::Display(){
         control_mode_ = "";
+        max_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Max accel value", 0, "Maximum accel value.",this, SLOT(update_max_accel_value_()));
+        min_accel_value_property_ = boost::make_shared<rviz::IntProperty>("Min accel value", 0, "Minimum accel value.",this, SLOT(update_min_accel_value_()));
+        max_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Max brake value", 0, "Maximum brake value.",this, SLOT(update_max_brake_value_()));
+        min_brake_value_property_ = boost::make_shared<rviz::IntProperty>("Min brake value", 0, "Minimum brake value.",this, SLOT(update_min_brake_value_()));
         width_property_ = boost::make_shared<rviz::IntProperty>("Monitor width", DEFAULT_MONITOR_WIDTH, "Width of the monitor.",this, SLOT(update_width_()));
         left_property_ = boost::make_shared<rviz::IntProperty>("Left position", 0, "Left position of the monitor.",this, SLOT(update_left_()));
         top_property_ = boost::make_shared<rviz::IntProperty>("Top position", 0, "Top position of the monitor.",this, SLOT(update_top_()));
@@ -62,11 +66,34 @@ namespace autoware_rviz_plugins{
         return;
     }
 
-    void VehicleStatusMonitor::update_width_()
-    {
+    void VehicleStatusMonitor::update_width_(){
         boost::mutex::scoped_lock lock(mutex_);
         width_ = width_property_->getInt();
         height_ = width_;
+        return;
+    }
+
+    void VehicleStatusMonitor::update_max_accel_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        max_accel_value_ =  max_accel_value_property_->getInt();
+        return;
+    }
+
+    void VehicleStatusMonitor::update_min_accel_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        min_accel_value_ =  min_accel_value_property_->getInt();
+        return;
+    }
+
+    void VehicleStatusMonitor::update_max_brake_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        max_brake_value_ =  max_brake_value_property_->getInt();
+        return;
+    }
+
+    void VehicleStatusMonitor::update_min_brake_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        min_brake_value_ =  min_brake_value_property_->getInt();
         return;
     }
 
@@ -148,7 +175,7 @@ namespace autoware_rviz_plugins{
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter.drawConvexPolygon(frame_points, 4);
         painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double accel_ratio = (last_status_data_->drivepedal-(double)MIN_ACCEL_VALUE)/(double)MAX_ACCEL_VALUE;
+        double accel_ratio = (last_status_data_->drivepedal-min_accel_value_)/(max_accel_value_-min_accel_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter.drawConvexPolygon(bar_points, 4);
@@ -165,7 +192,7 @@ namespace autoware_rviz_plugins{
             position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
         painter.drawConvexPolygon(frame_points, 4);
         painter.setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double brake_ratio = (last_status_data_->brakepedal-(double)MIN_BRAKE_VALUE)/(double)MAX_BRAKE_VALUE;
+        double brake_ratio = last_status_data_->brakepedal-min_accel_value_/(max_accel_value_-min_accel_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter.drawConvexPolygon(bar_points, 4);
