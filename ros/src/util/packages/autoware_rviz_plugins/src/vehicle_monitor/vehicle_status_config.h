@@ -4,3 +4,9 @@
 #define GEAR_BREAK 3
 #define GEAR_NEUTRAL 4
 #define GEAR_PARKING 5
+
+#define MIN_BRAKE_VALUE 0
+#define MAX_BRAKE_VALUE 4095
+
+#define MIN_ACCEL_VALUE 0
+#define MAX_ACCEL_VALUE 4095

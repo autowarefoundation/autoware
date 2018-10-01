@@ -4,6 +4,7 @@
 //headers in autoware
 #include <autoware_msgs/VehicleCmd.h>
 #include "overlay_utils.h"
+#include "monitor_config.h"
 
 // headers in ROS
 #include <ros/package.h>

@@ -43,12 +43,6 @@
 #define RAD 0
 #define DEG 1
 
-#define MIN_BRAKE_VALUE 0
-#define MAX_BRAKE_VALUE 4095
-
-#define MIN_ACCEL_VALUE 0
-#define MAX_ACCEL_VALUE 4095
-
 namespace autoware_rviz_plugins {
     class VehicleStatusMonitor : public rviz::Display{
     Q_OBJECT
