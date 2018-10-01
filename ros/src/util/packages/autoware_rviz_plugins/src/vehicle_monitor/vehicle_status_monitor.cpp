@@ -197,7 +197,7 @@ namespace autoware_rviz_plugins{
             position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
         painter->drawConvexPolygon(frame_points, 4);
         painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double brake_ratio = last_status_data_->brakepedal-(double)min_brake_value_/((double)max_brake_value_-(double)min_brake_value_);
+        double brake_ratio = (last_status_data_->brakepedal-(double)min_brake_value_)/((double)max_brake_value_-(double)min_brake_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter->drawConvexPolygon(bar_points, 4);
