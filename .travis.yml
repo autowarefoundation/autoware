@@ -33,6 +33,7 @@ env:
 # Install system dependencies, and Autoware pre requisites (non-ros)
 before_install:
   - if [ "${CROSS_COMPILE}" != "1" ]; then
+      sudo apt-get install -y expect;
       sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
       travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
       travis_retry sudo apt-get update;
@@ -91,7 +92,7 @@ script:
     else
       catkin_make -j4;
       source devel/setup.bash;
-      travis_wait 30 catkin_make -j4 run_tests;
+      catkin_make run_tests;
       catkin_test_results;
     fi
 
