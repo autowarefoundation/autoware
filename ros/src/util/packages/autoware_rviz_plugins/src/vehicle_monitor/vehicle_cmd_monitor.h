@@ -48,7 +48,7 @@ namespace autoware_rviz_plugins {
         void processMessage(const autoware_msgs::VehicleCmd::ConstPtr& msg);
         void processControlMessage(const std_msgs::String::ConstPtr& msg);
         void draw_monitor_();
-        boost::shared_ptr<rviz::RosTopicProperty> status_topic_property_;
+        boost::shared_ptr<rviz::RosTopicProperty> cmd_topic_property_;
         boost::shared_ptr<rviz::RosTopicProperty> ctrl_mode_topic_property_;
         boost::shared_ptr<rviz::IntProperty> top_property_;
         boost::shared_ptr<rviz::IntProperty> left_property_;
@@ -63,7 +63,7 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> visualize_source_property_;
         boost::optional<autoware_msgs::VehicleCmd> last_cmd_data_;
-        ros::Subscriber status_sub_;
+        ros::Subscriber cmd_sub_;
         ros::Subscriber ctrl_mode_sub_;
         ros::NodeHandle nh_;
         boost::mutex mutex_;
@@ -92,7 +92,7 @@ namespace autoware_rviz_plugins {
         void draw_accel_bar_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
     protected Q_SLOTS:
         void update_ctrl_mode_topic_();
-        void update_status_topic_();
+        void update_cmd_topic_();
         void update_top_();
         void update_left_();
         void update_alpha_();

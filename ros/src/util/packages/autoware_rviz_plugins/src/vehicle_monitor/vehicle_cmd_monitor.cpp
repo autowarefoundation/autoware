@@ -19,7 +19,7 @@ namespace autoware_rviz_plugins{
         angle_unit_property_ = boost::make_shared<rviz::EnumProperty>("Angle unit", "rad" , "Unit of the angle",this, SLOT(update_angle_unit_()));
         angle_unit_property_->addOption("rad", RAD);
         angle_unit_property_->addOption("deg", DEG);
-        status_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("VehicleCmd Topic", "",ros::message_traits::datatype<autoware_msgs::VehicleCmd>(),"autoware_msgs::VehicleCmd topic to subscribe to.",this, SLOT(update_status_topic_()));
+        cmd_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("VehicleCmd Topic", "",ros::message_traits::datatype<autoware_msgs::VehicleCmd>(),"autoware_msgs::VehicleCmd topic to subscribe to.",this, SLOT(update_status_topic_()));
         ctrl_mode_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("CtrlCmd Topic", "",ros::message_traits::datatype<std_msgs::String>(),"std_msgs::String topic to subscribe to.",this, SLOT(update_ctrl_mode_topic_()));
     }
 
@@ -40,7 +40,8 @@ namespace autoware_rviz_plugins{
         update_min_accel_value_();
         update_max_brake_value_();
         update_min_brake_value_();
-        update_status_topic_();
+        update_cmd_topic_();
+        update_ctrl_mode_topic_();
         return;
     }
 
@@ -67,21 +68,37 @@ namespace autoware_rviz_plugins{
 
     void VehicleCmdMonitor::processMessage(const autoware_msgs::VehicleCmd::ConstPtr& msg){
         boost::mutex::scoped_lock lock(mutex_);
+        last_cmd_data_ = *msg;
         return;
     }
 
     void VehicleCmdMonitor::processControlMessage(const std_msgs::String::ConstPtr& msg){
         boost::mutex::scoped_lock lock(mutex_);
+        control_mode_ = msg->data;
         return;
     }
 
     void VehicleCmdMonitor::update_ctrl_mode_topic_(){
         boost::mutex::scoped_lock lock(mutex_);
+        ctrl_mode_sub_.shutdown();
+        last_cmd_data_ = boost::none;
+        ctrl_mode_topic_name_ = cmd_topic_property_->getTopicStd();
+        if (ctrl_mode_topic_name_.length() > 0 && ctrl_mode_topic_name_ != "/")
+        {
+            ctrl_mode_sub_ = nh_.subscribe(ctrl_mode_topic_name_, 1, &VehicleCmdMonitor::processMessage, this);
+        }
         return;
     }
 
-    void VehicleCmdMonitor::update_status_topic_(){
+    void VehicleCmdMonitor::update_cmd_topic_(){
         boost::mutex::scoped_lock lock(mutex_);
+        cmd_sub_.shutdown();
+        last_cmd_data_ = boost::none;
+        topic_name_ = cmd_topic_property_->getTopicStd();
+        if (topic_name_.length() > 0 && topic_name_ != "/")
+        {
+            cmd_sub_ = nh_.subscribe(topic_name_, 1, &VehicleCmdMonitor::processMessage, this);
+        }
         return;
     }
 

@@ -41,6 +41,7 @@ namespace autoware_rviz_plugins{
         update_max_brake_value_();
         update_min_brake_value_();
         update_status_topic_();
+        update_ctrl_mode_topic_();
         return;
     }
 
