@@ -79,16 +79,32 @@ script:
         --rm
         -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
         -w ${AUTOWARE_HOME}/ros
+<<<<<<< HEAD
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+=======
         autoware/crossbuild:${AUTOWARE_TARGET_ARCH}-kinetic-1.0.0
+>>>>>>> 6cb058058fb2d4d6d2a4802a1a0ce52abbe1b87c
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make
                 -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
                 -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
                 -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+<<<<<<< HEAD
+                --build ${AUTOWARE_BUILD_PATH}
+                clean &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
+              catkin_make
+                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                --build ${AUTOWARE_BUILD_PATH}
+                -j4";
+=======
                 --build ${AUTOWARE_BUILD_PATH} -j4
                 &&
               source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash";
+>>>>>>> 6cb058058fb2d4d6d2a4802a1a0ce52abbe1b87c
     else
       catkin_make clean;
       source devel/setup.bash;

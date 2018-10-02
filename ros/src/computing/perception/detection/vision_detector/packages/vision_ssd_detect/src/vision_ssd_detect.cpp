@@ -44,7 +44,7 @@ SsdDetector::SsdDetector(const std::string& in_network_definition_file,
 		caffe::Caffe::set_mode(caffe::Caffe::CPU);
 
 	/* Load the network. */
-	net_.reset(new caffe::Net<float>(in_network_definition_file, caffe::TEST));
+	net_.reset(new caffe::Net<float>(in_network_definition_file, caffe::Phase::TEST));
 	net_->CopyTrainedLayersFrom(in_pre_trained_model_file);
 
 	CHECK_EQ(net_->num_inputs(), 1)<< "Network should have exactly one input.";

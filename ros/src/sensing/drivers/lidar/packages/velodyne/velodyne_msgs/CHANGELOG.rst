@@ -1,7 +1,11 @@
 Change history
 ==============
 
-1.4.0 (2018-09-19)
+
+1.8.0 (2018-08-31)
+------------------
+
+1.7.0 (2018-05-18)
 ------------------
 * Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
   All package.xml files are now compatible with version 2 of the

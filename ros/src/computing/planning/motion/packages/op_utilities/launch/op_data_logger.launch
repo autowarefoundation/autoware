@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+	<arg name="mapSource" 				default="0" /> <!-- Vector Map Folder=0, kml=1 -->
+	<arg name="mapFileName" 			default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/ToyotaCity2/map/vector_map/" />
+		
+		
+	<node pkg="op_utilities" type="op_data_logger" name="op_data_logger" output="screen">
+		
+		<param name="mapSource" 				value="$(arg mapSource)" />
+		<param name="mapFileName" 				value="$(arg mapFileName)" />			
+	</node>
+
+</launch>

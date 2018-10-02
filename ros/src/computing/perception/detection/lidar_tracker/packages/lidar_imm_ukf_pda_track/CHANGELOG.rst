@@ -2,18 +2,19 @@
 Changelog for package lidar_imm_ukf_pda_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Contributors: Esteve Fernandez
+
 1.7.0 (2018-05-16)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
-* Contributors: Kosuke Murakami
-
-Forthcoming
------------
 * Add  code in cmakelists
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

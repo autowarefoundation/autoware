@@ -1,32 +1,43 @@
 Change history
 ==============
 
-1.4.0 (2018-09-19)
+1.8.0 (2018-08-31)
 ------------------
-* Merge pull request `#178 <https://github.com/ros-drivers/velodyne/issues/178>`_ from sts-thm/bugfix_issue\_`#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
-  Bugfix issue `#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
-* Removed debug outputs
-* Changes fixing deadlock for specific cut_angle values.
-* Merge pull request `#135 <https://github.com/ros-drivers/velodyne/issues/135>`_ from cfneuhaus/bugfix
-  Bugfix: when no device ip is set, we still want to filter by udp port.
-* Merge pull request `#170 <https://github.com/ros-drivers/velodyne/issues/170>`_ from ros-drivers/maint/move_header_files
-  Moving header files to traditional location inside include folders.
-* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
-* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
-  All package.xml files are now compatible with version 2 of the
-  package.xml specification in REP 140. Removed some unnecessary
-  execute permissions on a few files. Fixed a missing test_depend.
-* Merge pull request `#151 <https://github.com/ros-drivers/velodyne/issues/151>`_ from Axel13fr/feature/No_Communication_Diag_Update
-* Fix packet rate for the Velodyne 32C
-* Conventions: adding name for unused method parameter.
-* Added a periodic update of the diagnostics so that when no data is received at all from the Velodyne, a diagnostic information will be published. The previous implementation would publish diagnostics only on packet reception.
-* Merge pull request `#139 <https://github.com/ros-drivers/velodyne/issues/139>`_ from ASDeveloper00/vlp32
-  Adding support for VLP-32C.
-* Merge pull request `#138 <https://github.com/ros-drivers/velodyne/issues/138>`_ from volkandre/cut_at_specified_angle_feature
-* cut_angle parameter is now in rad according to REP 103
-* Fixed timestamp related bug found by @cfneuhaus, which was described here: https://github.com/ros-drivers/velodyne/pull/126#discussion_r154137793
-* bugfix: when no device ip is set, we still want to filter by udp port.
-* Contributors: Andre Volk, CNR, Denis Dillenberger, Frank Neuhaus, Jack O'Quin, Joshua Whitley, Sammy Pfeiffer, Tobias Athmer, axd, kennouni
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/CPFL/Autoware/pull/1166>`_)
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 776a358..1a70413
+  1a70413 Merge branch 'master' into Autoware
+  7976d12 support vlp32c now
+  273520e Added hdl32c, fixed naming
+  e21b522 Merge pull request `#146 <https://github.com/CPFL/Autoware/pull/146>`_ from stsundermann/patch-2
+  0e5a200 Merge pull request `#150 <https://github.com/CPFL/Autoware/pull/150>`_ from ros-drivers/mikaelarguedas-patch-1
+  db6b5ee update to use non deprecated pluginlib macro
+  560fe12 Use std::abs instead of fabsf
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: 1a704135c529c5d2995cd2c1972ca4f59d5ae1ad
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 1a70413..52c0a0d
+  52c0a0d README format
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: 52c0a0d63594ee71a156755954d240d24966829e
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 52c0a0d..a1d6f18
+  a1d6f18 Update and rename README.rst to README.md
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: a1d6f186d3340f3ce5059e234ed7e3dcb828d09d
+* Removed flawed subtree
+* Contributors: AMC, Abraham Monrroy, Kosuke Murakami
+
+1.6.3 (2018-03-06)
+------------------
+
+1.6.2 (2018-02-27)
+------------------
+* Update CHANGELOG
+* Contributors: Yusuke FUJII
 
 1.3.0 (2017-11-10)
 ------------------

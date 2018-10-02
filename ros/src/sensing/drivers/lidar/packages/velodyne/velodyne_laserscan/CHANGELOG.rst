@@ -2,22 +2,35 @@
 Changelog for package velodyne_laserscan
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.4.0 (2018-09-19)
+1.8.0 (2018-08-31)
 ------------------
-* Merge pull request `#170 <https://github.com/ros-drivers/velodyne/issues/170>`_ from ros-drivers/maint/move_header_files
-* Moving header files to traditional location inside include folders.
-* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
-* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
-  All package.xml files are now compatible with version 2 of the
-  package.xml specification in REP 140. Removed some unnecessary
-  execute permissions on a few files. Fixed a missing test_depend.
-* Merge pull request `#146 <https://github.com/ros-drivers/velodyne/issues/146>`_ from stsundermann/patch-2
-  Use std::abs instead of fabsf
-* Merge pull request `#150 <https://github.com/ros-drivers/velodyne/issues/150>`_ from ros-drivers/mikaelarguedas-patch-1
-* update to use non deprecated pluginlib macro
-* Use std::abs instead of fabsf
-  cfg\_.resolution is double but fabsf takes a float which may cause truncation of value.
-* Contributors: Andre Volk, CNR, Joshua Whitley, Mikael Arguedas, Stephan Sundermann
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Modify package xml version other than 1.6.3
+* [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/CPFL/Autoware/pull/1166>`_)
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 776a358..1a70413
+  1a70413 Merge branch 'master' into Autoware
+  7976d12 support vlp32c now
+  273520e Added hdl32c, fixed naming
+  e21b522 Merge pull request `#146 <https://github.com/CPFL/Autoware/pull/146>`_ from stsundermann/patch-2
+  0e5a200 Merge pull request `#150 <https://github.com/CPFL/Autoware/pull/150>`_ from ros-drivers/mikaelarguedas-patch-1
+  db6b5ee update to use non deprecated pluginlib macro
+  560fe12 Use std::abs instead of fabsf
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: 1a704135c529c5d2995cd2c1972ca4f59d5ae1ad
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 1a70413..52c0a0d
+  52c0a0d README format
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: 52c0a0d63594ee71a156755954d240d24966829e
+  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 52c0a0d..a1d6f18
+  a1d6f18 Update and rename README.rst to README.md
+  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
+  git-subtree-split: a1d6f186d3340f3ce5059e234ed7e3dcb828d09d
+* Contributors: Abraham Monrroy, Kosuke Murakami
 
 1.3.0 (2017-11-10)
 ------------------
