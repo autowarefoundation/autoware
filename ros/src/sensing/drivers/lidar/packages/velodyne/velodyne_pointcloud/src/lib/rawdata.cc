@@ -143,15 +143,14 @@ namespace velodyne_rawdata
    *  @param pkt raw packet to unpack
    *  @param pc shared pointer to point cloud (points are appended)
    */
-  void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt,
-                       VPointCloud &pc, int packets_num)
+  void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data)
   {
     ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp);
-    
+
     /** special parsing for the VLP16 **/
     if (calibration_.num_lasers == 16)
     {
-      unpack_vlp16(pkt, pc);
+      unpack_vlp16(pkt, data);
       return;
     }
     
@@ -190,13 +189,7 @@ namespace velodyne_rawdata
              ||(config_.min_angle > config_.max_angle 
              && (raw->blocks[i].rotation <= config_.max_angle 
              || raw->blocks[i].rotation >= config_.min_angle))){
-
-          float distance;
-          if (packets_num==(int) ceil(1507.0 / 10))
-            distance = tmp.uint * DISTANCE_RESOLUTION * 2;
-          else
-            distance = tmp.uint * DISTANCE_RESOLUTION;
-
+          float distance = tmp.uint * DISTANCE_RESOLUTION;
           distance += corrections.dist_correction;
   
           float cos_vert_angle = corrections.cos_vert_correction;
@@ -295,18 +288,7 @@ namespace velodyne_rawdata
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
   
           if (pointInRange(distance)) {
-  
-            // convert polar coordinates to Euclidean XYZ
-            VPoint point;
-            point.ring = corrections.laser_ring;
-            point.x = x_coord;
-            point.y = y_coord;
-            point.z = z_coord;
-            point.intensity = intensity;
-  
-            // append this point to the cloud
-            pc.points.push_back(point);
-            ++pc.width;
+            data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity);
           }
         }
       }
@@ -318,11 +300,11 @@ namespace velodyne_rawdata
    *  @param pkt raw packet to unpack
    *  @param pc shared pointer to point cloud (points are appended)
    */
-  void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
-                             VPointCloud &pc)
+  void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data)
   {
     float azimuth;
     float azimuth_diff;
+    int raw_azimuth_diff;
     float last_azimuth_diff=0;
     float azimuth_corrected_f;
     int azimuth_corrected;
@@ -346,7 +328,22 @@ namespace velodyne_rawdata
       // Calculate difference between current and next block's azimuth angle.
       azimuth = (float)(raw->blocks[block].rotation);
       if (block < (BLOCKS_PER_PACKET-1)){
-        azimuth_diff = (float)((36000 + raw->blocks[block+1].rotation - raw->blocks[block].rotation)%36000);
+	raw_azimuth_diff = raw->blocks[block+1].rotation - raw->blocks[block].rotation;
+        azimuth_diff = (float)((36000 + raw_azimuth_diff)%36000);
+	// some packets contain an angle overflow where azimuth_diff < 0 
+	if(raw_azimuth_diff < 0)//raw->blocks[block+1].rotation - raw->blocks[block].rotation < 0)
+	  {
+	    ROS_WARN_STREAM_THROTTLE(60, "Packet containing angle overflow, first angle: " << raw->blocks[block].rotation << " second angle: " << raw->blocks[block+1].rotation);
+	    // if last_azimuth_diff was not zero, we can assume that the velodyne's speed did not change very much and use the same difference
+	    if(last_azimuth_diff > 0){
+	      azimuth_diff = last_azimuth_diff;
+	    }
+	    // otherwise we are not able to use this data
+	    // TODO: we might just not use the second 16 firings
+	    else{
+	      continue;
+	    }
+	  }
         last_azimuth_diff = azimuth_diff;
       }else{
         azimuth_diff = last_azimuth_diff;
@@ -473,18 +470,8 @@ namespace velodyne_rawdata
             intensity = (intensity < min_intensity) ? min_intensity : intensity;
             intensity = (intensity > max_intensity) ? max_intensity : intensity;
     
-            if (pointInRange(distance)) {
-    
-              // append this point to the cloud
-              VPoint point;
-              point.ring = corrections.laser_ring;
-              point.x = x_coord;
-              point.y = y_coord;
-              point.z = z_coord;
-              point.intensity = intensity;
-
-              pc.points.push_back(point);
-              ++pc.width;
+            if (pointInRange(distance)) {    
+              data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity);
             }
           }
         }

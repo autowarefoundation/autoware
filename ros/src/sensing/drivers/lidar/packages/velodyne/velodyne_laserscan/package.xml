@@ -1,5 +1,5 @@
+<?xml version="1.0"?>
 <package format="2">
-
   <name>velodyne_laserscan</name>
   <version>1.8.0</version>
   <description>
@@ -27,5 +27,4 @@
   <export>
     <nodelet plugin="${prefix}/nodelets.xml" />
   </export>
-
 </package>
