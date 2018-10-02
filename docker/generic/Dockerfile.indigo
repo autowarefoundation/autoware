@@ -91,11 +91,6 @@ RUN groupadd -f pgrimaging && \
 # Change user
 USER autoware
 
-# YOLO_V2
-RUN cd && git clone https://github.com/pjreddie/darknet.git
-RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
-RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
-
 # Install Autoware
 RUN git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
 RUN /bin/bash -c 'source /opt/ros/indigo/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
