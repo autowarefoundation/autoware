@@ -59,7 +59,7 @@ You may test Autoware at [Autoware Online](http://autoware.online/). No need to 
 You may annotate and train your ROSBAG data using your web browser through [Automan](https://www.automan.ai). The trained models can be used for deep neural network algorithms in Autoware, such as SSD and Yolo.
 
 ### ROSBAG STORE
-
+ 
 You may download a number of test and simulation data sets from Tier IV's [ROSBAG STORE](https://rosbag.tier4.jp). Note that free accounts would not allow you to access image data due to privacy matters. 
 
 ### Map Tools

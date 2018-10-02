@@ -20,8 +20,8 @@ matrix:
       os: linux
       sudo: required
       env: ROS_DISTRO=indigo
-notifications:
-    slack: star4:911NA0lU8gDHitCKLto9LzPJ
+#notifications:
+#    slack: star4:911NA0lU8gDHitCKLto9LzPJ
 env:
   global:
     - ROS_CI_DESKTOP="`lsb_release -cs`"
@@ -33,6 +33,7 @@ env:
 # Install system dependencies, and Autoware pre requisites (non-ros)
 before_install:
   - if [ "${CROSS_COMPILE}" != "1" ]; then
+      sudo apt-get install -y expect;
       sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list";
       travis_retry sudo apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116;
       travis_retry sudo apt-get update;
@@ -78,13 +79,18 @@ script:
         --rm
         -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
         -w ${AUTOWARE_HOME}/ros
+<<<<<<< HEAD
         autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+=======
+        autoware/crossbuild:${AUTOWARE_TARGET_ARCH}-kinetic-1.0.0
+>>>>>>> 6cb058058fb2d4d6d2a4802a1a0ce52abbe1b87c
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make
                 -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
                 -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
                 -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+<<<<<<< HEAD
                 --build ${AUTOWARE_BUILD_PATH}
                 clean &&
               source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
@@ -94,10 +100,17 @@ script:
                 -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
                 --build ${AUTOWARE_BUILD_PATH}
                 -j4";
+=======
+                --build ${AUTOWARE_BUILD_PATH} -j4
+                &&
+              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash";
+>>>>>>> 6cb058058fb2d4d6d2a4802a1a0ce52abbe1b87c
     else
       catkin_make clean;
       source devel/setup.bash;
       catkin_make -j4;
+      catkin_make run_tests;
+      catkin_test_results;
     fi
 
 #sudo: required

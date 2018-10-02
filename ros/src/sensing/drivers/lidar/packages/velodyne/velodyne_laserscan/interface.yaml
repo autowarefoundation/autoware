@@ -1,3 +1,0 @@
-- name: /velodyne_laserscan_node
-  publish: [/scan]
-  subscribe: [/velodyne_points]
