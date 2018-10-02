@@ -45,6 +45,77 @@ namespace autoware_rviz_plugins{
         return;
     }
 
+    void VehicleCmdMonitor::draw_monitor_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        if(!last_cmd_data_)
+        {
+            return;
+        }
+        /*
+        Functions to draw monitor
+        */
+        if(!overlay_)
+        {
+            static int count = 0;
+            rviz::UniformStringStream ss;
+            ss << "VehicleStatusMonitorObject" << count++;
+            overlay_.reset(new OverlayObject(ss.str()));
+            overlay_->show();
+        }
+        if(overlay_)
+        {
+            overlay_->setDimensions(width_,height_);
+            overlay_->setPosition(monitor_left_,monitor_top_);
+        }
+        overlay_->updateTextureSize(width_,height_);
+        ScopedPixelBuffer buffer = overlay_->getBuffer();
+        QImage Hud = buffer.getQImage(*overlay_);
+        for (unsigned int i = 0; i < overlay_->getTextureWidth(); i++) {
+            for (unsigned int j = 0; j < overlay_->getTextureHeight(); j++) {
+                Hud.setPixel(i, j, QColor(0,0,0,(int)(255*alpha_)).rgba());
+            }
+        }
+        width_ratio_ = (double)width_ / (double)DEFAULT_MONITOR_WIDTH;
+        height_ratio_ = (double)height_ / (double)DEFAULT_MONITOR_WIDTH;
+        /*
+        Setup QPainter
+        */
+        boost::shared_ptr<QPainter> painter = boost::make_shared<QPainter>(&Hud);
+        painter->setRenderHint(QPainter::Antialiasing, true);
+        painter->setPen(QPen(QColor(0,255,255,(int)(255*alpha_)).rgba()));
+        QFont font;
+        font.setPixelSize(font_size_);
+        painter->setFont(font);
+        draw_gear_shift_(painter, Hud, 0.15, 0.075);
+        bool right_lamp_status = false;
+        bool left_lamp_status = false;
+        /*
+        if(last_status_data_->lamp == last_status_data_->LAMP_HAZARD){
+            right_lamp_status = true;
+            left_lamp_status = true;
+        }
+        else if(last_status_data_->lamp == last_status_data_->LAMP_LEFT){
+            right_lamp_status = false;
+            left_lamp_status = true;
+        }
+        else if(last_status_data_->lamp == last_status_data_->LAMP_RIGHT){
+            right_lamp_status = true;
+            left_lamp_status = false;
+        }
+        */
+        draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
+        draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
+        draw_operation_status_(painter, Hud, 0.51, 0.075);
+        draw_steering_angle_(painter, Hud, 0.36, 0.33);
+        draw_steering_mode_(painter, Hud, 0.68, 0.33);
+        draw_speed_(painter, Hud, 0.33, 0.58);
+        draw_drive_mode_(painter, Hud, 0.68, 0.80);
+        draw_brake_bar_(painter, Hud, 0.22, 0.62);
+        draw_accel_bar_(painter, Hud, 0.50, 0.62);
+        draw_steering_(painter, Hud, 0.18, 0.3);
+        return;
+    }
+
     void VehicleCmdMonitor::reset(){
         return;
     }
@@ -54,15 +125,17 @@ namespace autoware_rviz_plugins{
         return;
     }
 
-    void VehicleCmdMonitor::draw_monitor_(){
-        return;
-    }
-
     void VehicleCmdMonitor::onEnable(){
+        if (overlay_) {
+            overlay_->show();
+        }
         return;
     }
 
     void VehicleCmdMonitor::onDisable(){
+        if (overlay_) {
+            overlay_->hide();
+        }
         return;
     }
 
@@ -104,56 +177,68 @@ namespace autoware_rviz_plugins{
 
     void VehicleCmdMonitor::update_top_(){
         boost::mutex::scoped_lock lock(mutex_);
+        monitor_top_ = top_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_left_(){
         boost::mutex::scoped_lock lock(mutex_);
+        monitor_left_ = left_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_alpha_(){
         boost::mutex::scoped_lock lock(mutex_);
+        alpha_ = alpha_property_->getFloat();
         return;
     }
 
     void VehicleCmdMonitor::update_speed_unit_(){
         boost::mutex::scoped_lock lock(mutex_);
+        speed_unit_ = speed_unit_property_->getOptionInt();
         return;
     }
 
     void VehicleCmdMonitor::update_angle_unit_(){
         boost::mutex::scoped_lock lock(mutex_);
+        angle_unit_ = angle_unit_property_->getOptionInt();
         return;
     }
 
     void VehicleCmdMonitor::update_width_(){
         boost::mutex::scoped_lock lock(mutex_);
+        width_ = width_property_->getInt();
+        height_ = width_;
         return;
     }
 
     void VehicleCmdMonitor::update_font_size_(){
         boost::mutex::scoped_lock lock(mutex_);
+        font_size_ = font_size_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_max_accel_value_(){
         boost::mutex::scoped_lock lock(mutex_);
+        max_accel_value_ =  max_accel_value_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_min_accel_value_(){
         boost::mutex::scoped_lock lock(mutex_);
+        min_accel_value_ =  min_accel_value_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_max_brake_value_(){
         boost::mutex::scoped_lock lock(mutex_);
+        max_brake_value_ =  max_brake_value_property_->getInt();
         return;
     }
 
     void VehicleCmdMonitor::update_min_brake_value_(){
         boost::mutex::scoped_lock lock(mutex_);
+        min_brake_value_ =  min_brake_value_property_->getInt();
         return;
     }
 
