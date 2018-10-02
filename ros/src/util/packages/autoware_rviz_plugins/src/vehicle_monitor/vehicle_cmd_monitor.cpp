@@ -66,58 +66,82 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleCmdMonitor::processMessage(const autoware_msgs::VehicleCmd::ConstPtr& msg){
+        boost::mutex::scoped_lock lock(mutex_);
+        return;
+    }
+
+    void VehicleCmdMonitor::processControlMessage(const std_msgs::String::ConstPtr& msg){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_ctrl_mode_topic_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_status_topic_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_top_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_left_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_alpha_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_speed_unit_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_angle_unit_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_width_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_font_size_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_max_accel_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_min_accel_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_max_brake_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 
     void VehicleCmdMonitor::update_min_brake_value_(){
+        boost::mutex::scoped_lock lock(mutex_);
+        return;
+    }
+
+    void VehicleCmdMonitor::update_visualize_source_(){
+        boost::mutex::scoped_lock lock(mutex_);
         return;
     }
 

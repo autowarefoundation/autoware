@@ -11,6 +11,9 @@
 #define RAD 0
 #define DEG 1
 
+#define USE_CTRL_CMD 0
+#define USE_ACCEL_STEER_BRAKE_CMD 1
+
 class gear_status
 {
     public:

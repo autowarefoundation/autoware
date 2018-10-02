@@ -61,6 +61,7 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
+        boost::shared_ptr<rviz::EnumProperty> visualize_source_property_;
         boost::optional<autoware_msgs::VehicleCmd> last_cmd_data_;
         ros::Subscriber status_sub_;
         ros::Subscriber ctrl_mode_sub_;
@@ -103,6 +104,7 @@ namespace autoware_rviz_plugins {
         void update_min_accel_value_();
         void update_max_brake_value_();
         void update_min_brake_value_();
+        void update_visualize_source_();
     };
 }
 
