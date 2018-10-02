@@ -307,10 +307,7 @@ namespace autoware_rviz_plugins{
         painter->rotate(-1*last_status_data_->angle);
         QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
             QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
-        QPainter steer_painter(&Hud);
-        //painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
         painter->drawConvexPolygon(points, 4);
-        //painter->setBrush(QBrush(QColor(0,0,0,10), Qt::SolidPattern));
         painter->rotate(last_status_data_->angle);
         painter->drawEllipse(circle_rect);
         painter->translate(-steering_center);

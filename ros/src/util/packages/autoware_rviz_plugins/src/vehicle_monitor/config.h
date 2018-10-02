@@ -1,4 +1,15 @@
+#ifndef VEHICLE_STATUS_CONFIG_H_INCLUDED
+#define VEHICLE_STATUS_CONFIG_H_INCLUDED
+
 #include <ros/ros.h>
+
+#define DEFAULT_MONITOR_WIDTH 320
+
+#define KM_PER_HOUR 0
+#define M_PER_SEC 1
+
+#define RAD 0
+#define DEG 1
 
 class gear_status
 {
@@ -25,3 +36,5 @@ class gear_status
         int neutral_;
         int parking_;
 };
+
+#endif //VEHICLE_STATUS_CONFIG_H_INCLUDED

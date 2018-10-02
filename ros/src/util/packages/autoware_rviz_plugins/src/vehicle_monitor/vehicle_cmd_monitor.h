@@ -4,7 +4,8 @@
 //headers in autoware
 #include <autoware_msgs/VehicleCmd.h>
 #include "overlay_utils.h"
-#include "monitor_config.h"
+#include "config.h"
+#include "vehicle_cmd_monitor.h"
 
 // headers in ROS
 #include <ros/package.h>
@@ -40,6 +41,7 @@ namespace autoware_rviz_plugins {
         virtual void onDisable();
     private:
         autoware_rviz_plugins::OverlayObject::Ptr overlay_;
+        gear_status gear_status_;
         void processMessage(const autoware_msgs::VehicleCmd::ConstPtr& msg);
         void processControlMessage(const std_msgs::String::ConstPtr& msg);
         void draw_monitor_();
