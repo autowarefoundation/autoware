@@ -162,13 +162,13 @@ namespace autoware_rviz_plugins{
         draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
         draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
         draw_operation_status_(painter, Hud, 0.51, 0.075);
-        draw_steering_(painter, Hud, 0.18, 0.3);
         draw_steering_angle_(painter, Hud, 0.36, 0.33);
         draw_steering_mode_(painter, Hud, 0.68, 0.33);
         draw_speed_(painter, Hud, 0.33, 0.58);
         draw_drive_mode_(painter, Hud, 0.68, 0.80);
         draw_brake_bar_(painter, Hud, 0.22, 0.62);
         draw_accel_bar_(painter, Hud, 0.50, 0.62);
+        draw_steering_(painter, Hud, 0.18, 0.3);
         return;
     }
 
