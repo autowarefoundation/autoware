@@ -51,10 +51,14 @@ namespace autoware_rviz_plugins {
         boost::shared_ptr<rviz::IntProperty> left_property_;
         boost::shared_ptr<rviz::IntProperty> width_property_;
         boost::shared_ptr<rviz::IntProperty> font_size_property_;
+        boost::shared_ptr<rviz::IntProperty> max_accel_value_property_;
+        boost::shared_ptr<rviz::IntProperty> min_accel_value_property_;
+        boost::shared_ptr<rviz::IntProperty> max_brake_value_property_;
+        boost::shared_ptr<rviz::IntProperty> min_brake_value_property_;
         boost::shared_ptr<rviz::FloatProperty> alpha_property_;
         boost::shared_ptr<rviz::EnumProperty> speed_unit_property_;
         boost::shared_ptr<rviz::EnumProperty> angle_unit_property_;
-        boost::optional<autoware_msgs::VehicleCmd> last_status_data_;
+        boost::optional<autoware_msgs::VehicleCmd> last_cmd_data_;
         ros::Subscriber status_sub_;
         ros::Subscriber ctrl_mode_sub_;
         ros::NodeHandle nh_;
@@ -91,6 +95,10 @@ namespace autoware_rviz_plugins {
         void update_angle_unit_();
         void update_width_();
         void update_font_size_();
+        void update_max_accel_value_();
+        void update_min_accel_value_();
+        void update_max_brake_value_();
+        void update_min_brake_value_();
     };
 }
 
