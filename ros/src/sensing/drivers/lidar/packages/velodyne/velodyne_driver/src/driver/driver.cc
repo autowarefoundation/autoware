@@ -19,7 +19,7 @@
 #include <tf/transform_listener.h>
 #include <velodyne_msgs/VelodyneScan.h>
 
-#include "driver.h"
+#include "velodyne_driver/driver.h"
 
 namespace velodyne_driver
 {
@@ -41,11 +41,6 @@ VelodyneDriver::VelodyneDriver(ros::NodeHandle node,
       (config_.model == "64E_S2.1"))    // generates 1333312 points per second
     {                                   // 1 packet holds 384 points
       packet_rate = 3472.17;            // 1333312 / 384
-      model_full_name = std::string("HDL-") + config_.model;
-    }
-  else if (config_.model == "64E_S3")
-    {
-      packet_rate = 5800.0; // experimental
       model_full_name = std::string("HDL-") + config_.model;
     }
   else if (config_.model == "64E")
@@ -134,6 +129,7 @@ VelodyneDriver::VelodyneDriver(ros::NodeHandle node,
                                                              &diag_max_freq_,
                                                              0.1, 10),
                                         TimeStampStatusParam()));
+  diag_timer_ = private_nh.createTimer(ros::Duration(0.2), &VelodyneDriver::diagTimerCallback,this);
 
   // open Velodyne input device or file
   if (dump_file != "")                  // have PCAP file?
@@ -181,13 +177,14 @@ bool VelodyneDriver::poll(void)
       std::size_t azimuth_data_pos = 100*0+2;
       int azimuth = *( (u_int16_t*) (&tmp_packet.data[azimuth_data_pos]));
 
-      // Handle overflow 35999->0
-      if(azimuth<last_azimuth)
-        last_azimuth-=36000;
-      // Check if currently passing cut angle
-      if(   last_azimuth != -1
-         && last_azimuth < config_.cut_angle
-         && azimuth >= config_.cut_angle )
+      //if first packet in scan, there is no "valid" last_azimuth
+      if (last_azimuth == -1) {
+      	 last_azimuth = azimuth;
+      	 continue;
+      }
+      if((last_azimuth < config_.cut_angle && config_.cut_angle <= azimuth)
+      	 || ( config_.cut_angle <= azimuth && azimuth < last_azimuth)
+      	 || (azimuth < last_azimuth && last_azimuth < config_.cut_angle))
       {
         last_azimuth = azimuth;
         break; // Cut angle passed, one full revolution collected
@@ -231,6 +228,13 @@ void VelodyneDriver::callback(velodyne_driver::VelodyneNodeConfig &config,
 {
   ROS_INFO("Reconfigure Request");
   config_.time_offset = config.time_offset;
+}
+
+void VelodyneDriver::diagTimerCallback(const ros::TimerEvent &event)
+{
+  (void)event;
+  // Call necessary to provide an error when no velodyne packets are received
+  diagnostics_.update();
 }
 
 } // namespace velodyne_driver

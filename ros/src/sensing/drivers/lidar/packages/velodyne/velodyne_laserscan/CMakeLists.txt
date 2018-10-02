@@ -12,9 +12,12 @@ generate_dynamic_reconfigure_options(
   cfg/VelodyneLaserScan.cfg
 )
 
-catkin_package()
+catkin_package(CATKIN_DEPENDS
+  sensor_msgs
+)
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 

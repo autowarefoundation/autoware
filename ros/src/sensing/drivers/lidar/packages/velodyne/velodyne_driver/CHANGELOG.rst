@@ -1,39 +1,32 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package velodyne_driver
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Change history
+==============
 
-1.7.0 (2018-05-18)
+1.4.0 (2018-09-19)
 ------------------
-* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [feature] vlc32c driver, velodyne drivers updated (`#1166 <https://github.com/kfunaoka/Autoware/issues/1166>`_)
-  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 776a358..1a70413
-  1a70413 Merge branch 'master' into Autoware
-  7976d12 support vlp32c now
-  273520e Added hdl32c, fixed naming
-  e21b522 Merge pull request `#146 <https://github.com/kfunaoka/Autoware/issues/146>`_ from stsundermann/patch-2
-  0e5a200 Merge pull request `#150 <https://github.com/kfunaoka/Autoware/issues/150>`_ from ros-drivers/mikaelarguedas-patch-1
-  db6b5ee update to use non deprecated pluginlib macro
-  560fe12 Use std::abs instead of fabsf
-  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
-  git-subtree-split: 1a704135c529c5d2995cd2c1972ca4f59d5ae1ad
-  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 1a70413..52c0a0d
-  52c0a0d README format
-  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
-  git-subtree-split: 52c0a0d63594ee71a156755954d240d24966829e
-  * Squashed 'ros/src/sensing/drivers/lidar/packages/velodyne/' changes from 52c0a0d..a1d6f18
-  a1d6f18 Update and rename README.rst to README.md
-  git-subtree-dir: ros/src/sensing/drivers/lidar/packages/velodyne
-  git-subtree-split: a1d6f186d3340f3ce5059e234ed7e3dcb828d09d
-* Removed flawed subtree
-* Contributors: AMC, Abraham Monrroy, Kosuke Murakami
-
-1.6.3 (2018-03-06)
-------------------
-
-1.6.2 (2018-02-27)
-------------------
-* Update CHANGELOG
-* Contributors: Yusuke FUJII
+* Merge pull request `#178 <https://github.com/ros-drivers/velodyne/issues/178>`_ from sts-thm/bugfix_issue\_`#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+  Bugfix issue `#174 <https://github.com/ros-drivers/velodyne/issues/174>`_
+* Removed debug outputs
+* Changes fixing deadlock for specific cut_angle values.
+* Merge pull request `#135 <https://github.com/ros-drivers/velodyne/issues/135>`_ from cfneuhaus/bugfix
+  Bugfix: when no device ip is set, we still want to filter by udp port.
+* Merge pull request `#170 <https://github.com/ros-drivers/velodyne/issues/170>`_ from ros-drivers/maint/move_header_files
+  Moving header files to traditional location inside include folders.
+* Merge pull request `#160 <https://github.com/ros-drivers/velodyne/issues/160>`_ from ros-drivers/maint/updating_package_xml_to_v2
+* Updated all package.xmls to ver 2. Cleaned up catkin_lint errors.
+  All package.xml files are now compatible with version 2 of the
+  package.xml specification in REP 140. Removed some unnecessary
+  execute permissions on a few files. Fixed a missing test_depend.
+* Merge pull request `#151 <https://github.com/ros-drivers/velodyne/issues/151>`_ from Axel13fr/feature/No_Communication_Diag_Update
+* Fix packet rate for the Velodyne 32C
+* Conventions: adding name for unused method parameter.
+* Added a periodic update of the diagnostics so that when no data is received at all from the Velodyne, a diagnostic information will be published. The previous implementation would publish diagnostics only on packet reception.
+* Merge pull request `#139 <https://github.com/ros-drivers/velodyne/issues/139>`_ from ASDeveloper00/vlp32
+  Adding support for VLP-32C.
+* Merge pull request `#138 <https://github.com/ros-drivers/velodyne/issues/138>`_ from volkandre/cut_at_specified_angle_feature
+* cut_angle parameter is now in rad according to REP 103
+* Fixed timestamp related bug found by @cfneuhaus, which was described here: https://github.com/ros-drivers/velodyne/pull/126#discussion_r154137793
+* bugfix: when no device ip is set, we still want to filter by udp port.
+* Contributors: Andre Volk, CNR, Denis Dillenberger, Frank Neuhaus, Jack O'Quin, Joshua Whitley, Sammy Pfeiffer, Tobias Athmer, axd, kennouni
 
 1.3.0 (2017-11-10)
 ------------------
@@ -81,3 +74,95 @@ Changelog for package velodyne_driver
 * cleanup debug line
 * parameter and code added for working with multiple velodynes
 * Contributors: Andreas Wachaja, Brice Rebsamen, Daniel Jartoux, Denis Dillenberger, Gabor Meszaros, Ilya, Jack O'Quin, Joshua Whitley, Kevin Hallenbeck, Matteo Murtas, Micho Radovnikovich, Priyanka Dey, William Woodall, jack.oquin, junior, phussey
+
+1.2.0 (2014-08-06)
+------------------
+* Fixed bug in diagnostic rate for driver (`#16
+  <https://github.com/ros-drivers/velodyne/issues/16>`_)
+* Contributors: Brice Rebsamen, Jack O'Quin
+
+1.1.2 (2013-11-05)
+-------------------
+
+ * Move unit test data to download.ros.org (`#18`_).
+ * Install missing vdump script (`#17`_).
+
+1.1.1 (2013-07-30)
+------------------
+
+ * Add support for HDL-64E S2 and S2.1 models, which were not working before (`#11`_), thanks to Gabor Meszaros (`#12`_).
+ * Add additional parameters to launch files (`#14`_).
+
+1.1.0 (2013-07-16)
+------------------
+
+ * Fix build problems due to PCL 1.7 API incompatibilities (`#8`_),
+   thanks to William Woodall.  This version also works with Groovy, as
+   long as the correct ``pcl_conversions`` is installed.
+ * Fix errors with Mac OSX compiler (`#8`_).
+ * Install ``pluginlib`` XML files (`#9`_).
+ * Install some launch and parameter files.
+ * Enable unit tests when ``CATKIN_ENABLE_TESTING`` is set (`#10`_).
+
+1.0.1 (2013-06-15)
+------------------
+
+ * Declare explicit ``pluginlib`` dependency (`#4`_).
+
+1.0.0 (2013-06-14)
+------------------
+
+ * Convert to catkin (`#1`_).
+ * Release to Hydro.
+
+0.9.2 (2013-07-08)
+------------------
+
+ * Fix Groovy build problem (`#7`_).
+
+0.9.1 (2012-06-05)
+------------------
+
+ * Driver socket read path improvements.
+ * Add unit tests with 32E data.
+ * Released to Electric, Fuerte and Groovy.
+
+0.9.0 (2012-04-03)
+------------------
+
+ * Completely revised API, anticipating a 1.0.0 release.
+ * HDL-32E device support.
+ * New velodyne_driver and velodyne_pointcloud packages.
+ * Old velodyne_common and velodyne_pcl packages no longer included.
+ * Released to Electric, Fuerte and Groovy.
+
+0.2.6 (2011-02-23)
+------------------
+
+ * Label all timing-dependent tests "realtime" so they do not run by
+   default on the build farm machines.
+
+0.2.5 (2010-11-19)
+------------------
+
+ * Initial implementation of new 0.3 interfaces.
+ * Support for ROS 1.3 `std_msgs::Header` changes.
+
+0.2.0 (2010-08-17)
+------------------
+
+ * Initial release to ROS C-turtle.
+
+.. _`#1`: https://github.com/ros-drivers/velodyne/issues/1
+.. _`#4`: https://github.com/ros-drivers/velodyne/issues/4
+.. _`#7`: https://github.com/ros-drivers/velodyne/issues/7
+.. _`#8`: https://github.com/ros-drivers/velodyne/pull/8
+.. _`#9`: https://github.com/ros-drivers/velodyne/issues/9
+.. _`#10`: https://github.com/ros-drivers/velodyne/issues/10
+.. _`#11`: https://github.com/ros-drivers/velodyne/issues/11
+.. _`#12`: https://github.com/ros-drivers/velodyne/pull/12
+.. _`#13`: https://github.com/ros-drivers/velodyne/issues/13
+.. _`#14`: https://github.com/ros-drivers/velodyne/pull/14
+.. _`#17`: https://github.com/ros-drivers/velodyne/issues/17
+.. _`#18`: https://github.com/ros-drivers/velodyne/issues/18
+.. _`#20`: https://github.com/ros-drivers/velodyne/issues/20

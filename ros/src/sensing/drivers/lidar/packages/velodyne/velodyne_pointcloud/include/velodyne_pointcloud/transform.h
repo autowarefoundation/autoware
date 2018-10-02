@@ -24,7 +24,7 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <velodyne_pointcloud/rawdata.h>
-#include <velodyne_pointcloud/point_types.h>
+#include <velodyne_pointcloud/pointcloudXYZIR.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <velodyne_pointcloud/TransformNodeConfig.h>
@@ -32,15 +32,11 @@
 // include template implementations to transform a custom point cloud
 #include <pcl_ros/impl/transforms.hpp>
 
-/** types of point and cloud to work with */
-typedef velodyne_rawdata::VPoint VPoint;
-typedef velodyne_rawdata::VPointCloud VPointCloud;
-
 // instantiate template for transforming a VPointCloud
 template bool
-  pcl_ros::transformPointCloud<VPoint>(const std::string &,
-                                       const VPointCloud &,
-                                       VPointCloud &,
+  pcl_ros::transformPointCloud<velodyne_rawdata::VPoint>(const std::string &,
+                                       const velodyne_rawdata::VPointCloud &,
+                                       velodyne_rawdata::VPointCloud &,
                                        const tf::TransformListener &);
 
 namespace velodyne_pointcloud
@@ -78,8 +74,8 @@ namespace velodyne_pointcloud
     // Point cloud buffers for collecting points within a packet.  The
     // inPc_ and tfPc_ are class members only to avoid reallocation on
     // every message.
-    VPointCloud inPc_;              ///< input packet point cloud
-    VPointCloud tfPc_;              ///< transformed packet point cloud
+    PointcloudXYZIR inPc_;              ///< input packet point cloud
+    velodyne_rawdata::VPointCloud tfPc_;              ///< transformed packet point cloud
   };
 
 } // namespace velodyne_pointcloud
