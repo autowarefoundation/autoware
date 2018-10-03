@@ -74,6 +74,7 @@ namespace autoware_rviz_plugins {
         int font_size_;
         double height_ratio_,width_ratio_;
         int max_accel_value_,min_accel_value_,max_brake_value_,min_brake_value_;
+        int visualize_source_;
         std::string topic_name_;
         std::string ctrl_mode_topic_name_;
         std::string control_mode_;

@@ -19,6 +19,9 @@ namespace autoware_rviz_plugins{
         angle_unit_property_ = boost::make_shared<rviz::EnumProperty>("Angle unit", "rad" , "Unit of the angle",this, SLOT(update_angle_unit_()));
         angle_unit_property_->addOption("rad", RAD);
         angle_unit_property_->addOption("deg", DEG);
+        visualize_source_property_ = boost::make_shared<rviz::EnumProperty>("Visualize Source", "Use Ctrl Cmd" , "Visualize source",this, SLOT(update_visualize_source_()));
+        visualize_source_property_->addOption("Use Ctrl Cmd", USE_CTRL_CMD);
+        visualize_source_property_->addOption("Use Accel/Steer/Brake Cmd", USE_ACCEL_STEER_BRAKE_CMD);
         cmd_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("VehicleCmd Topic", "",ros::message_traits::datatype<autoware_msgs::VehicleCmd>(),"autoware_msgs::VehicleCmd topic to subscribe to.",this, SLOT(update_status_topic_()));
         ctrl_mode_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("CtrlCmd Topic", "",ros::message_traits::datatype<std_msgs::String>(),"std_msgs::String topic to subscribe to.",this, SLOT(update_ctrl_mode_topic_()));
     }
@@ -40,6 +43,7 @@ namespace autoware_rviz_plugins{
         update_min_accel_value_();
         update_max_brake_value_();
         update_min_brake_value_();
+        update_visualize_source_();
         update_cmd_topic_();
         update_ctrl_mode_topic_();
         return;
@@ -252,6 +256,7 @@ namespace autoware_rviz_plugins{
 
     void VehicleCmdMonitor::update_visualize_source_(){
         boost::mutex::scoped_lock lock(mutex_);
+        visualize_source_ = visualize_source_property_->getOptionInt();
         return;
     }
 
@@ -263,7 +268,14 @@ namespace autoware_rviz_plugins{
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter->drawConvexPolygon(frame_points, 4);
         painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double accel_ratio = (last_cmd_data_->accel_cmd.accel-(double)min_accel_value_)/((double)max_accel_value_-(double)min_accel_value_);
+        double accel_value = 0;
+        if(visualize_source_ == USE_ACCEL_STEER_BRAKE_CMD){
+            accel_value = (double)last_cmd_data_->accel_cmd.accel;
+        }
+        else if(visualize_source_ == USE_CTRL_CMD){
+            accel_value = 0;
+        }
+        double accel_ratio = (accel_value-(double)min_accel_value_)/((double)max_accel_value_-(double)min_accel_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-accel_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter->drawConvexPolygon(bar_points, 4);
@@ -280,7 +292,14 @@ namespace autoware_rviz_plugins{
             position+QPointF(-bar_width/2*width_,bar_height*height_),position+QPointF(bar_width/2*width_,bar_height*height_)};
         painter->drawConvexPolygon(frame_points, 4);
         painter->setBrush(QBrush(QColor(0,255,255,(int)(255*alpha_)), Qt::SolidPattern));
-        double brake_ratio = (last_cmd_data_->brake_cmd.brake-(double)min_brake_value_)/((double)max_brake_value_-(double)min_brake_value_);
+        double brake_value = 0;
+        if(visualize_source_ == USE_ACCEL_STEER_BRAKE_CMD){
+            brake_value = last_cmd_data_->brake_cmd.brake;
+        }
+        else if(visualize_source_ == USE_CTRL_CMD){
+            brake_value = 0;
+        }
+        double brake_ratio = (brake_value-(double)min_brake_value_)/((double)max_brake_value_-(double)min_brake_value_);
         QPointF bar_points[4] = {position+QPointF(bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),position+QPointF(-bar_width/2.0*width_,bar_height*height_*(1.0-brake_ratio)),
             position+QPointF(-bar_width/2.0*width_,bar_height*height_),position+QPointF(bar_width/2.0*width_,bar_height*height_)};
         painter->drawConvexPolygon(bar_points, 4);
@@ -322,6 +341,8 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleCmdMonitor::draw_drive_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        painter->drawText(position,QString("UNDEFINED"));
         /*
         QPointF position(width_*x,height_*y);
         if(last_cmd_data_->drivemode == last_cmd_data_->MODE_MANUAL){
@@ -339,12 +360,22 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleCmdMonitor::draw_steering_angle_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
-        double angle;
-        if(angle_unit_ == RAD){
-            angle = last_cmd_data_->steer_cmd.steer/180*M_PI;
+        double angle = 0;
+        if(visualize_source_ == USE_CTRL_CMD){
+            if(angle_unit_ == RAD){
+                angle = last_cmd_data_->ctrl_cmd.steering_angle;
+            }
+            else if(angle_unit_ == DEG){
+                angle = last_cmd_data_->ctrl_cmd.steering_angle/M_PI*180;
+            }
         }
-        else if(angle_unit_ == DEG){
-            angle = last_cmd_data_->steer_cmd.steer;
+        else if(visualize_source_ == USE_ACCEL_STEER_BRAKE_CMD){
+            if(angle_unit_ == RAD){
+                angle = last_cmd_data_->steer_cmd.steer;
+            }
+            else if(angle_unit_ == DEG){
+                angle = last_cmd_data_->steer_cmd.steer/M_PI*180;
+            }
         }
         std::string steer_str = std::to_string(angle);
         int dot_index = -1;
@@ -371,6 +402,8 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleCmdMonitor::draw_steering_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
+        QPointF position(width_*x,height_*y);
+        painter->drawText(position,QString("UNDEFINED"));
         /*
         QPointF position(width_*x,height_*y);
         if(last_cmd_data_->steeringmode == last_cmd_data_->MODE_MANUAL){
@@ -391,11 +424,28 @@ namespace autoware_rviz_plugins{
         double r = 45.0;
         painter->translate(steering_center);
         QRect circle_rect(-r*width_ratio_, -r*height_ratio_, 2*r*width_ratio_, 2*r*height_ratio_);
-        painter->rotate(-1*last_cmd_data_->steer_cmd.steer);
+        double angle = 0;
+        if(visualize_source_ == USE_CTRL_CMD){
+            if(angle_unit_ == RAD){
+                angle = last_cmd_data_->ctrl_cmd.steering_angle;
+            }
+            else if(angle_unit_ == DEG){
+                angle = last_cmd_data_->ctrl_cmd.steering_angle/M_PI*180;
+            }
+        }
+        else if(visualize_source_ == USE_ACCEL_STEER_BRAKE_CMD){
+            if(angle_unit_ == RAD){
+                angle = last_cmd_data_->steer_cmd.steer;
+            }
+            else if(angle_unit_ == DEG){
+                angle = last_cmd_data_->steer_cmd.steer/M_PI*180;
+            }
+        }
+        painter->rotate(-1*angle);
         QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
             QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
         painter->drawConvexPolygon(points, 4);
-        painter->rotate(last_cmd_data_->steer_cmd.steer);
+        painter->rotate(angle);
         painter->drawEllipse(circle_rect);
         painter->translate(-steering_center);
         return;
