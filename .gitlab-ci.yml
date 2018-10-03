@@ -38,4 +38,6 @@ catkin_make:
   script:
     #- catkin_make clean
     #- source $PWD/devel/setup.bash
-    - catkin_make -j4
+    - catkin_make -j2
+    - catkin_make run_tests
+    - catkin_test_results
