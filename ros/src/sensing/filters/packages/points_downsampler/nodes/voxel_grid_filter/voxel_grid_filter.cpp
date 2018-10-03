@@ -107,11 +107,14 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   if(min_voxel_leaf_size < 0.1) {
       min_voxel_leaf_size = 0.1;
   }
-  if(voxel_leaf_size < min_voxel_leaf_size) {
-      voxel_leaf_size = min_voxel_leaf_size;
-  }
-  if(voxel_leaf_size > max_voxel_leaf_size) {
-      voxel_leaf_size = max_voxel_leaf_size;
+
+  if(use_dynamic_leaf_size == true) {
+      if(voxel_leaf_size < min_voxel_leaf_size) {
+          voxel_leaf_size = min_voxel_leaf_size;
+      }
+      if(voxel_leaf_size > max_voxel_leaf_size) {
+          voxel_leaf_size = max_voxel_leaf_size;
+      }
   }
 
   pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;

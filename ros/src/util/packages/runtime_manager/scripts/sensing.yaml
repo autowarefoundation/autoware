@@ -236,6 +236,9 @@ cmds:
       cmd  : roslaunch points_downsampler points_downsample.launch node_name:=voxel_grid_filter
       param: voxel_grid_filter
       gui  :
+        voxel_leaf_size:
+          depend : use_dynamic_leaf_size
+          depend_bool : 'lambda v : v == 0'
         voxel_leaf_size_step:
           depend : use_dynamic_leaf_size
           depend_bool : 'lambda v : v == 1'
