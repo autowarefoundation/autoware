@@ -171,7 +171,7 @@ namespace autoware_rviz_plugins{
         draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
         draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
         draw_steering_angle_(painter, Hud, 0.19, 0.55);
-        draw_steering_mode_(painter, Hud, 0.06, 0.20);
+        draw_steering_mode_(painter, Hud, 0.058, 0.20);
         draw_drive_mode_(painter, Hud, 0.53, 0.20);
         draw_speed_(painter, Hud, 0.58, 0.40);
         draw_brake_bar_(painter, Hud, 0.28, 0.63);
@@ -216,6 +216,9 @@ namespace autoware_rviz_plugins{
 
     void VehicleStatusMonitor::draw_speed_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         double speed;
+        QFont font;
+        font.setPixelSize((int)((double)font_size_*2.0));
+        painter->setFont(font);
         if(speed_unit_ == KM_PER_HOUR){
             speed = last_status_data_->speed;
         }
@@ -235,14 +238,19 @@ namespace autoware_rviz_plugins{
             }
             speed_display_str.push_back(speed_str[i]);
         }
-        if(speed_unit_ == KM_PER_HOUR){
-            speed_display_str = speed_display_str + " km/h";
-        }
-        else if(speed_unit_ == M_PER_SEC){
-            speed_display_str = speed_display_str + " m/s";
-        }
         QPointF position(width_*x,height_*y);
         painter->drawText(position,QString(speed_display_str.c_str()));
+        font.setPixelSize(font_size_);
+        painter->setFont(font);
+        QString unit_display_str;
+        if(speed_unit_ == KM_PER_HOUR){
+            unit_display_str = QString("km/h");
+        }
+        else if(speed_unit_ == M_PER_SEC){
+            unit_display_str = QString("m/s");
+        }
+        QPointF position_unit(width_*(x+0.08),height_*(y+0.05));
+        painter->drawText(position_unit,unit_display_str);
         return;
     }
 
