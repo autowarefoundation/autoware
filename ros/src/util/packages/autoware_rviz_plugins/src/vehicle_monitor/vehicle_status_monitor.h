@@ -81,6 +81,7 @@ namespace autoware_rviz_plugins {
         std::string topic_name_;
         std::string ctrl_mode_topic_name_;
         std::string control_mode_;
+        volatile bool draw_required_;
         //functions for draw
         void draw_gear_shift_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y);
         void draw_left_lamp_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y, bool status);

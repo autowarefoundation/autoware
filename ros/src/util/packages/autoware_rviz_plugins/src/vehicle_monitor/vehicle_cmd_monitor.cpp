@@ -129,6 +129,14 @@ namespace autoware_rviz_plugins{
         if (overlay_) {
             overlay_->show();
         }
+        if (ctrl_mode_topic_name_.length() > 0 && ctrl_mode_topic_name_ != "/")
+        {
+            ctrl_mode_sub_ = nh_.subscribe(ctrl_mode_topic_name_, 1, &VehicleCmdMonitor::processMessage, this);
+        }
+        if (topic_name_.length() > 0 && topic_name_ != "/")
+        {
+            cmd_sub_ = nh_.subscribe(topic_name_, 1, &VehicleCmdMonitor::processMessage, this);
+        }
         return;
     }
 
@@ -136,6 +144,8 @@ namespace autoware_rviz_plugins{
         if (overlay_) {
             overlay_->hide();
         }
+        cmd_sub_.shutdown();
+        ctrl_mode_sub_.shutdown();
         return;
     }
 

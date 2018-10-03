@@ -24,11 +24,12 @@ namespace autoware_rviz_plugins{
     }
 
     VehicleStatusMonitor::~VehicleStatusMonitor(){
-
+        //onDisable();
     }
 
     void VehicleStatusMonitor::onInitialize(){
-        overlay_ = boost::make_shared<OverlayObject>("VehicleStatusMonitor");
+        //overlay_ = boost::make_shared<OverlayObject>("VehicleStatusMonitor");
+        //onEnable();
         update_top_();
         update_left_();
         update_alpha_();
@@ -50,7 +51,13 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleStatusMonitor::update(float wall_dt, float ros_dt){
-        draw_monitor_();
+        if (!isEnabled()){
+            return;
+        }
+        if(draw_required_){
+            draw_monitor_();
+            draw_required_ = false;
+        }
         return;
     }
 
@@ -388,6 +395,7 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::processMessage(const autoware_msgs::VehicleStatus::ConstPtr& msg){
         boost::mutex::scoped_lock lock(mutex_);
         last_status_data_ = *msg;
+        draw_required_ = true;
         return;
     }
 
@@ -437,6 +445,15 @@ namespace autoware_rviz_plugins{
         if (overlay_) {
             overlay_->show();
         }
+        if (ctrl_mode_topic_name_.length() > 0 && ctrl_mode_topic_name_ != "/")
+        {
+            ctrl_mode_sub_ = nh_.subscribe(ctrl_mode_topic_name_, 1, &VehicleStatusMonitor::processMessage, this);
+        }
+        if (topic_name_.length() > 0 && topic_name_ != "/")
+        {
+            status_sub_ = nh_.subscribe(topic_name_, 1, &VehicleStatusMonitor::processMessage, this);
+        }
+        draw_required_ = true;
         return;
     }
 
@@ -444,6 +461,8 @@ namespace autoware_rviz_plugins{
         if (overlay_) {
             overlay_->hide();
         }
+        ctrl_mode_sub_.shutdown();
+        status_sub_.shutdown();
         return;
     }
 }
