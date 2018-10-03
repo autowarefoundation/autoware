@@ -1,1 +1,36 @@
-#Placeholder
+stages:
+  - build
+  - test
+  
+variables:
+  ROS_CI_DESKTOP: "`lsb_release -sc`"
+  CI_SOURCE_PATH: $(pwd)
+  ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
+  CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
+  PYTHONPATH: ${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
+  ROS_DISTRO: kinetic
+
+image: ubuntu:xenial
+
+before_script:
+  - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main\" > /etc/apt/sources.list.d/ros-latest.list"
+  - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+  - apt-get update
+  - apt-get install -y dpkg
+  - apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin
+  - source /opt/ros/${ROS_DISTRO}/setup.bash
+  - rosdep_init
+  - rosdep update
+  - cd ros/src
+  - wstool init
+  - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
+  - wstool up
+  - cd ..
+  - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO}
+
+catkin_make:
+  stage: build
+  script:
+    catkin_make clean
+    source devel/setup.bash
+    catkin_make -j4
