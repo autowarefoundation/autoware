@@ -29,6 +29,9 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+add_executable(lgsvl_simulator_launcher src/lgsvl_simulator_launcher_node.cpp src/lgsvl_simulator_launcher.cpp)
+target_link_libraries(lgsvl_simulator_launcher ${catkin_LIBRARIES})
+
 ###########
 ## Build ##
 ###########
