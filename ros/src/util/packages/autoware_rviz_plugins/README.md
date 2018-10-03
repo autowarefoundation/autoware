@@ -23,3 +23,6 @@ It means that hazard lamp is lighting.
 VehicleStatusMonitor plugins shows Vehicle Cmd (type:autoware_msgs/VehicleCommand) topic and Control Mode (std_msgs/String) topic.  
 Vehicle Status topic usually published by  twist_gate node in waypoint_folloer package.  
 Control Mode topic usually published by twist_gate node in waypoint_folloer package.  
+
+## panel
+panel is same as VehicleStatusMonitor.
