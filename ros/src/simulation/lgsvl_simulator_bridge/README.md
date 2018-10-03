@@ -15,6 +15,9 @@ source setup_sim.bash
 roslaunch lgsvl_simulator_bridge lgsvl_simulator.launch
 ```
 
+Please choose "SanFrancisco" map and "XE_Rigged-autoware" robot for Autoware.  
+[Reference](https://github.com/lgsvl/simulator/issues/5)
+
 ```
 roslaunch lgsvl_simulator_bridge autoware_sample.launch
 ```
