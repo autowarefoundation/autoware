@@ -82,7 +82,7 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::update_width_(){
         boost::mutex::scoped_lock lock(mutex_);
         width_ = width_property_->getInt();
-        height_ = width_;
+        height_ = (int)((double)width_*1.2);
         return;
     }
 
@@ -152,7 +152,8 @@ namespace autoware_rviz_plugins{
         font.setPixelSize(font_size_);
         painter->setFont(font);
         //draw gear shift position
-        draw_gear_shift_(painter, Hud, 0.15, 0.075);
+        draw_gear_shift_(painter, Hud, 0.15, 0.07);
+        draw_operation_status_(painter, Hud, 0.51, 0.07);
         bool right_lamp_status = false;
         bool left_lamp_status = false;
         if(last_status_data_->lamp == last_status_data_->LAMP_HAZARD){
@@ -169,14 +170,13 @@ namespace autoware_rviz_plugins{
         }
         draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
         draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
-        draw_operation_status_(painter, Hud, 0.51, 0.075);
-        draw_steering_angle_(painter, Hud, 0.36, 0.33);
-        draw_steering_mode_(painter, Hud, 0.68, 0.33);
-        draw_speed_(painter, Hud, 0.33, 0.58);
-        draw_drive_mode_(painter, Hud, 0.68, 0.80);
-        draw_brake_bar_(painter, Hud, 0.22, 0.62);
-        draw_accel_bar_(painter, Hud, 0.50, 0.62);
-        draw_steering_(painter, Hud, 0.18, 0.3);
+        draw_steering_angle_(painter, Hud, 0.19, 0.55);
+        draw_steering_mode_(painter, Hud, 0.06, 0.20);
+        draw_drive_mode_(painter, Hud, 0.53, 0.20);
+        draw_speed_(painter, Hud, 0.58, 0.40);
+        draw_brake_bar_(painter, Hud, 0.28, 0.63);
+        draw_accel_bar_(painter, Hud, 0.68, 0.63);
+        draw_steering_(painter, Hud, 0.26, 0.37);
         return;
     }
 
@@ -249,13 +249,13 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::draw_drive_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF position(width_*x,height_*y);
         if(last_status_data_->drivemode == last_status_data_->MODE_MANUAL){
-            painter->drawText(position,QString("MANUAL"));
+            painter->drawText(position,QString("DRIVE:MANUAL"));
         }
         else if(last_status_data_->drivemode == last_status_data_->MODE_AUTO){
-            painter->drawText(position,QString("AUTO"));
+            painter->drawText(position,QString("DRIVE:AUTO"));
         }
         else{
-            painter->drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("DRIVE:---"));
         }
         return;
 
@@ -296,13 +296,13 @@ namespace autoware_rviz_plugins{
     void VehicleStatusMonitor::draw_steering_mode_(boost::shared_ptr<QPainter> painter, QImage& Hud, double x, double y){
         QPointF position(width_*x,height_*y);
         if(last_status_data_->steeringmode == last_status_data_->MODE_MANUAL){
-            painter->drawText(position,QString("MANUAL"));
+            painter->drawText(position,QString("STEER:MANUAL"));
         }
         else if(last_status_data_->steeringmode == last_status_data_->MODE_AUTO){
-            painter->drawText(position,QString("AUTO"));
+            painter->drawText(position,QString("STEER:AUTO"));
         }
         else{
-            painter->drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("STEER:---"));
         }
         return;
     }
@@ -311,7 +311,7 @@ namespace autoware_rviz_plugins{
         QPointF steering_center = QPointF(width_*x,height_*y);
         double r = 45.0;
         painter->translate(steering_center);
-        QRect circle_rect(-r*width_ratio_, -r*height_ratio_, 2*r*width_ratio_, 2*r*height_ratio_);
+        QRect circle_rect(-r*width_ratio_, -r*width_ratio_, 2*r*width_ratio_, 2*r*width_ratio_);
         painter->rotate(-1*last_status_data_->angle);
         QPointF points[4] = {QPointF(-20.0*width_ratio_,-5.0*height_ratio_),QPointF(20.0*width_ratio_,-5.0*height_ratio_),
             QPointF(10.0*width_ratio_,15.0*height_ratio_),QPointF(-10.0*width_ratio_,15.0*height_ratio_)};
@@ -340,17 +340,17 @@ namespace autoware_rviz_plugins{
     {
         QPointF position(width_*x,height_*y);
         if(last_status_data_.get().gearshift == gear_status_.get_drive_value())
-            painter->drawText(position,QString("DRIVE"));
+            painter->drawText(position,QString("SHIFT:D"));
         else if(last_status_data_.get().gearshift == gear_status_.get_rear_value())
-            painter->drawText(position,QString("REAR"));
+            painter->drawText(position,QString("SHIFT:R"));
         else if(last_status_data_.get().gearshift == gear_status_.get_brake_value())
-            painter->drawText(position,QString("BREAK"));
+            painter->drawText(position,QString("SHIFT:B"));
         else if(last_status_data_.get().gearshift == gear_status_.get_neutral_value())
-            painter->drawText(position,QString("NEUTRAL"));
+            painter->drawText(position,QString("SHIFT:N"));
         else if(last_status_data_.get().gearshift == gear_status_.get_parking_value())
-            painter->drawText(position,QString("PARKING"));
+            painter->drawText(position,QString("SHIFT:P"));
         else
-            painter->drawText(position,QString("UNDEFINED"));
+            painter->drawText(position,QString("---"));
         return;
     }
 
