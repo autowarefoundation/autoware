@@ -4,7 +4,7 @@
 	<arg name="output_match_topic" default="/match_points" />
 	<arg name="output_unmatch_topic" default="/unmatch_points" />
 
-	<arg name="distance_threshold" default="1.0" />
+	<arg name="distance_threshold" default="0.2" />
 	<arg name="min_clipping_heigth" default="-2.0" />
 	<arg name="max_clipping_heigth" default="0.5" />
 
