@@ -9,6 +9,7 @@ variables:
   CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
   PYTHONPATH: ${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
   ROS_DISTRO: kinetic
+  GIT_SUBMODULE_STRATEGY: recursive
 
 image: ubuntu:xenial
 
