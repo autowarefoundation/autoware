@@ -3,6 +3,7 @@
 
 //headers in ROS
 #include <ros/package.h>
+#include <ros/ros.h>
 
 //headers in STL
 #include <stdlib.h>

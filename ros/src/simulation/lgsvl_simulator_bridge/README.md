@@ -6,5 +6,5 @@ This package provides lgvsl simulator and Autoware.
 ## Quick Start 
 ```
 roscd lgsvl_simulator_bridge
-source setup.bash
+source setup_sim.bash
 ```
