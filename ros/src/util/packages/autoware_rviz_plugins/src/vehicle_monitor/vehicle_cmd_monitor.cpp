@@ -28,7 +28,7 @@ namespace autoware_rviz_plugins{
     }
 
     void VehicleCmdMonitor::onInitialize(){
-        overlay_ = boost::make_shared<OverlayObject>("VehicleCmdMonitor");
+        //overlay_ = boost::make_shared<OverlayObject>("VehicleCmdMonitor");
         update_top_();
         update_left_();
         update_alpha_();
@@ -89,20 +89,18 @@ namespace autoware_rviz_plugins{
         draw_gear_shift_(painter, Hud, 0.15, 0.075);
         bool right_lamp_status = false;
         bool left_lamp_status = false;
-        /*
-        if(last_status_data_->lamp == last_status_data_->LAMP_HAZARD){
+        if(last_cmd_data_->lamp_cmd.l == 1 && last_cmd_data_->lamp_cmd.r == 1){
             right_lamp_status = true;
             left_lamp_status = true;
         }
-        else if(last_status_data_->lamp == last_status_data_->LAMP_LEFT){
+        else if(last_cmd_data_->lamp_cmd.l == 1 && last_cmd_data_->lamp_cmd.r == 0){
             right_lamp_status = false;
             left_lamp_status = true;
         }
-        else if(last_status_data_->lamp == last_status_data_->LAMP_RIGHT){
+        else if(last_cmd_data_->lamp_cmd.l == 0 && last_cmd_data_->lamp_cmd.r == 1){
             right_lamp_status = true;
             left_lamp_status = false;
         }
-        */
         draw_left_lamp_(painter, Hud, 0.05, 0.05, right_lamp_status);
         draw_right_lamp_(painter, Hud, 0.95, 0.05, left_lamp_status);
         draw_operation_status_(painter, Hud, 0.51, 0.075);
