@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosbridge_server
   roscpp
   rospy
+  roslib
   sensor_msgs
 )
 
