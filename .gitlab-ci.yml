@@ -4,7 +4,7 @@ stages:
   
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
-  CI_SOURCE_PATH: $(pwd)
+  CI_SOURCE_PATH: $CI_PROJECT_DIR
   ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
   CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
   PYTHONPATH: ${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
@@ -24,8 +24,6 @@ before_script:
   - source /opt/ros/${ROS_DISTRO}/setup.bash
   - rosdep init
   - rosdep update
-  - rosdep fix-permissions
-  - rosdep update
   - cd ros/src
   - wstool init
   - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
@@ -36,6 +34,8 @@ before_script:
 catkin_make:
   stage: build
   script:
-    catkin_make clean
-    source devel/setup.bash
-    catkin_make -j4
+    - catkin_make clean
+    - echo $PWD
+    - ls $PWD
+    - source $PWD/devel/setup.bash
+    - catkin_make -j4
