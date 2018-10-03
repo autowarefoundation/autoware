@@ -10,12 +10,14 @@ variables:
   PYTHONPATH: ${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
   ROS_DISTRO: kinetic
   GIT_SUBMODULE_STRATEGY: recursive
+  CI_DEBUG_TRACE: "true"
 
 image: ubuntu:xenial
 
 before_script:
   - apt-get update
   - apt-get install -y lsb-release
+  - apt-get install -y gcc g++
   - sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
   - apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
   - apt-get update
@@ -34,8 +36,6 @@ before_script:
 catkin_make:
   stage: build
   script:
-    - catkin_make clean
-    - echo $PWD
-    - ls $PWD
-    - source $PWD/devel/setup.bash
+    #- catkin_make clean
+    #- source $PWD/devel/setup.bash
     - catkin_make -j4
