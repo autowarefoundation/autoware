@@ -43,3 +43,21 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
+
+#############
+## Install ##
+#############
+foreach(programs lgsvl_simulator_launcher)
+  install(TARGETS ${programs}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+endforeach(nodes)
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
+foreach(dir launch rviz)
+  install(DIRECTORY ${dir}/
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+endforeach(dir)
