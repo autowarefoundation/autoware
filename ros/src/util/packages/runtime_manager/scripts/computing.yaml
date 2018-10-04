@@ -19,6 +19,15 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
+      - name : nmea2tfpose_RTK
+        desc : nmea2tfpose_RTK desc sample
+        cmd  : roslaunch gnss_localizer nmea2tfpose_RTK.launch
+        param: gnss
+        gui  :
+          stat_topic : [ gnss ]
+      - name : gnss_matching
+        desc : gnss_matching desc sample
+        cmd  : roslaunch gnss_localizer gnss_matching.launch
     - name : lidar_localizer
       desc : lidar_localizer desc sample
       subs :

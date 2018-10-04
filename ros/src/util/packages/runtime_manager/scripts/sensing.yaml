@@ -89,6 +89,10 @@ subs :
         probe:
         run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
+      - name : novatel_oem7
+        desc : novatel_oem7 desc sample
+        probe:
+        run  : rosrun novatel_oem7 novatel_oem7
 
   - name : IMU
     desc : IMU desc sample

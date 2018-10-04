@@ -101,6 +101,10 @@ add_message_files(
 
             ## Remote Control
             RemoteCmd.msg
+
+            ##RTK
+            gnss_standard_deviation.msg
+            gnss_surface_speed.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

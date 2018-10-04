@@ -1,0 +1,5 @@
+<!-- -->
+<launch>
+  <node pkg="gnss_localizer" type="gnss_matching" name="gnss_matching" output="log" />
+
+</launch>

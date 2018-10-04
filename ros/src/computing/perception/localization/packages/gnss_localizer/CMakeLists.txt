@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
         nmea_msgs
         gnss
         tf
+        autoware_msgs
+        pcl_ros
         )
 
 catkin_package()
@@ -32,6 +34,35 @@ add_executable(nmea2tfpose
 target_include_directories(nmea2tfpose PRIVATE nodes/nmea2tfpose ${catkin_INCLUDE_DIRS})
 target_link_libraries(nmea2tfpose ${catkin_LIBRARIES})
 add_dependencies(nmea2tfpose ${catkin_EXPORTED_TARGETS})
+
+add_executable(nmea2tfpose_RTK
+        nodes/nmea2tfpose/nmea2tfpose_core_RTK.cpp
+        nodes/nmea2tfpose/nmea2tfpose_node.cpp
+        nodes/nmea2tfpose/geo_array.cpp
+        )
+target_include_directories(nmea2tfpose_RTK PRIVATE nodes/nmea2tfpose ${catkin_INCLUDE_DIRS})
+target_link_libraries(nmea2tfpose_RTK ${catkin_LIBRARIES})
+add_dependencies(nmea2tfpose_RTK ${catkin_EXPORTED_TARGETS})
+
+add_executable(RTK_localizer
+        nodes/RTK_localizer/gnss_matching.cpp
+        nodes/RTK_localizer/gnss_matching_history.cpp
+        )
+target_link_libraries(RTK_localizer ${catkin_LIBRARIES})
+add_dependencies(RTK_localizer ${catkin_EXPORTED_TARGETS})
+
+add_executable(gnss_matching nodes/gnss_matching/gnss_matching.cpp nodes/gnss_matching/gnss_matching_history.cpp)
+target_link_libraries(gnss_matching ${catkin_LIBRARIES})
+add_dependencies(gnss_matching ${catkin_EXPORTED_TARGETS})
+
+if (CUDA_FOUND)
+    target_include_directories(gnss_matching PRIVATE ${CUDA_INCLUDE_DIRS})
+endif ()
+
+
+if (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
+    set_target_properties(gnss_matching PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
+endif (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 
 install(TARGETS nmea2tfpose fix2tfpose
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
