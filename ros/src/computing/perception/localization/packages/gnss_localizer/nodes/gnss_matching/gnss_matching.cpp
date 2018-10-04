@@ -238,7 +238,7 @@ public:
         Eigen::AngleAxisf rot_z_gbtol(_tf_gyaw, Eigen::Vector3f::UnitZ());
         tf_gbtol = (tl_gbtol * rot_z_gbtol * rot_y_gbtol * rot_x_gbtol).matrix();
 
-        localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 10);
+        localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose_gnss", 10);
         estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist_gnss", 10);
         gnss_pose_vehicle_pub = nh.advertise<geometry_msgs::PoseStamped>("/gnss_pose_matching", 10);
 

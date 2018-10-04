@@ -79,7 +79,7 @@ private:
   ros::NodeHandle private_nh_;
 
   // publisher
-  ros::Publisher pub1_,pub2_;
+  ros::Publisher pub1_;
   ros::Publisher pub_hdt;
   ros::Publisher pub_std;
   ros::Publisher pub_surface_speed;

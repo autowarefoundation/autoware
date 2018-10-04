@@ -78,7 +78,6 @@ void Nmea2TFPoseNode::initForROS()
 
   // setup publisher
   pub1_ = nh_.advertise<geometry_msgs::PoseStamped>("gnss_pose", 10);
-  pub2_ = nh_.advertise<geometry_msgs::PoseStamped>("gnss_pose_2", 10);
   pub_hdt = nh_.advertise<std_msgs::Float64>("gnss_hdt", 10);
   pub_std = nh_.advertise<autoware_msgs::gnss_standard_deviation>("gnss_standard_deviation", 10);
   pub_surface_speed = nh_.advertise<autoware_msgs::gnss_surface_speed>("gnss_surface_speed", 10);
@@ -103,15 +102,6 @@ void Nmea2TFPoseNode::publishPoseStamped()
   std_msgs::Float64 hdt;
   hdt.data = gphdt_value;
   pub_hdt.publish(hdt);
-
-  geometry_msgs::PoseStamped pose2;
-  pose2.header.frame_id = MAP_FRAME_;
-  pose2.header.stamp = current_time_;
-  pose2.pose.position.x = geo2_.y();
-  pose2.pose.position.y = geo2_.x();
-  pose2.pose.position.z = geo2_.z();
-  pose2.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(roll_, pitch_, yaw_);
-  pub2_.publish(pose2);
 
   autoware_msgs::gnss_standard_deviation gsd;
   gsd.header.frame_id = MAP_FRAME_;
