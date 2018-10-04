@@ -63,8 +63,8 @@ private:
 	pcl::KdTreeFLANN<pcl::PointXYZI> tree_;
 
     double distance_threshold_;
-    double min_clipping_heigth_;
-    double max_clipping_heigth_;
+    double min_clipping_height_;
+    double max_clipping_height_;
 
     std::string map_frame_;
 
@@ -81,14 +81,14 @@ CompareMapFilter::CompareMapFilter()
     , nh_private_("~")
     , tf_listener_(new tf::TransformListener)
     , distance_threshold_(0.2)
-    , min_clipping_heigth_(-2.0)
-    , max_clipping_heigth_(0.5)
+    , min_clipping_height_(-2.0)
+    , max_clipping_height_(0.5)
     , map_frame_("/map")
 {
 
 	nh_private_.param("distance_threshold", distance_threshold_,  distance_threshold_);
-    nh_private_.param("min_clipping_heigth", min_clipping_heigth_,  min_clipping_heigth_);
-    nh_private_.param("max_clipping_heigth", max_clipping_heigth_,  max_clipping_heigth_);
+    nh_private_.param("min_clipping_height", min_clipping_height_,  min_clipping_height_);
+    nh_private_.param("max_clipping_height", max_clipping_height_,  max_clipping_height_);
 
     config_sub_ = nh_.subscribe("/config/compare_map_filter", 10, &CompareMapFilter::configCallback, this);
     sensor_points_sub_ = nh_.subscribe("/points_raw", 1, &CompareMapFilter::sensorPointsCallback, this);
@@ -100,8 +100,8 @@ CompareMapFilter::CompareMapFilter()
 void CompareMapFilter::configCallback(const autoware_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr)
 {
     distance_threshold_ = config_msg_ptr->distance_threshold;
-    min_clipping_heigth_ = config_msg_ptr->min_clipping_heigth;
-    max_clipping_heigth_ = config_msg_ptr->max_clipping_heigth;
+    min_clipping_height_ = config_msg_ptr->min_clipping_height;
+    max_clipping_height_ = config_msg_ptr->max_clipping_height;
 }
 
 void CompareMapFilter::pointsMapCallback(const sensor_msgs::PointCloud2::ConstPtr& map_cloud_msg_ptr)
@@ -125,7 +125,7 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
 	pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_clipping_height_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
 	sensorTF_clipping_height_cloud_ptr->header = sensorTF_cloud_ptr->header;
 	for(size_t i = 0; i < sensorTF_cloud_ptr->points.size(); ++i){
-		if(sensorTF_cloud_ptr->points[i].z > min_clipping_heigth_ && sensorTF_cloud_ptr->points[i].z < max_clipping_heigth_){
+		if(sensorTF_cloud_ptr->points[i].z > min_clipping_height_ && sensorTF_cloud_ptr->points[i].z < max_clipping_height_){
 			sensorTF_clipping_height_cloud_ptr->points.push_back(sensorTF_cloud_ptr->points[i]);
 		}
 	}
@@ -199,16 +199,6 @@ void CompareMapFilter::searchMatchingCloud(const pcl::PointCloud<pcl::PointXYZI>
 		else{
 			unmatch_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
 		}
-
-		// tree_.radiusSearch(in_cloud_ptr->points[i], distance_threshold_, nn_indices, nn_dists);
-		// if(nn_indices.empty() == false){
-		// 	match_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
-		// }
-		// else{
-		// 	unmatch_cloud_ptr->points.push_back(in_cloud_ptr->points[i]);
-		// }
-
-
 	}
 }
 

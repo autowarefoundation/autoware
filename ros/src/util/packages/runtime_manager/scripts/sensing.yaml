@@ -1202,18 +1202,18 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : min_clipping_heigth
-      desc  : min_clipping_heigth
-      label : min_clipping_heigth
+    - name  : min_clipping_height
+      desc  : min_clipping_height
+      label : min_clipping_height
       min   : -100
       max   : 100
       v     : -2.0
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name  : max_clipping_heigth
-      desc  : max_clipping_heigth
-      label : max_clipping_heigth
+    - name  : max_clipping_height
+      desc  : max_clipping_height
+      label : max_clipping_height
       min   : -100
       max   : 100
       v     : 0.5
