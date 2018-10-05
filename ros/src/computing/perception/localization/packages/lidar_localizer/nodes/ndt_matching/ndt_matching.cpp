@@ -1338,6 +1338,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     predict_pose_pub.publish(predict_pose_msg);
     ndt_pose_pub.publish(ndt_pose_msg);
+    diag_manager_ptr->DIAG_RATE_CHECK(5);
+    diag_manager_ptr->DIAG_RATE_CHECK(6);
     // current_pose is published by vel_pose_mux
     //    current_pose_pub.publish(current_pose_msg);
     localizer_pose_pub.publish(localizer_pose_msg);
@@ -1354,7 +1356,8 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     {
       br.sendTransform(tf::StampedTransform(transform, current_scan_time, "/map", "/base_link"));
     }
-
+    diag_manager_ptr->DIAG_RATE_CHECK(3);
+    diag_manager_ptr->DIAG_RATE_CHECK(4);
     matching_end = std::chrono::system_clock::now();
     exe_time = std::chrono::duration_cast<std::chrono::microseconds>(matching_end - matching_start).count() / 1000.0;
     time_ndt_matching.data = exe_time;
