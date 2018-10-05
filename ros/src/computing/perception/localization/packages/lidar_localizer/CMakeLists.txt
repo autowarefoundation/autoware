@@ -46,6 +46,7 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         ndt_tku
         ndt_cpu
+        diag_lib
         ${PCL_OPENMP_PACKAGES}
         )
 

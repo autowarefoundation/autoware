@@ -81,6 +81,9 @@
 
 #include <autoware_msgs/ndt_stat.h>
 
+//headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 #define PREDICT_POSE_THRESHOLD 0.5
 
 #define Wa 0.4
@@ -235,6 +238,9 @@ static std::string filename;
 
 static sensor_msgs::Imu imu;
 static nav_msgs::Odometry odom;
+
+//diag_manager
+diag_manager* diag_manager_ptr;
 
 // static tf::TransformListener local_transform_listener;
 static tf::StampedTransform local_transform;
@@ -1468,28 +1474,13 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
-void* thread_func(void* args)
-{
-  ros::NodeHandle nh_map;
-  ros::CallbackQueue map_callback_queue;
-  nh_map.setCallbackQueue(&map_callback_queue);
-
-  ros::Subscriber map_sub = nh_map.subscribe("points_map", 10, map_callback);
-  ros::Rate ros_rate(10);
-  while (nh_map.ok())
-  {
-    map_callback_queue.callAvailable(ros::WallDuration());
-    ros_rate.sleep();
-  }
-
-  return nullptr;
-}
+void* thread_func(void* args);
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ndt_matching");
   pthread_mutex_init(&mutex, NULL);
-
+  diag_manager_ptr = new diag_manager();
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
 
@@ -1632,4 +1623,21 @@ int main(int argc, char** argv)
   ros::spin();
 
   return 0;
+}
+
+void* thread_func(void* args)
+{
+  ros::NodeHandle nh_map;
+  ros::CallbackQueue map_callback_queue;
+  nh_map.setCallbackQueue(&map_callback_queue);
+
+  ros::Subscriber map_sub = nh_map.subscribe("points_map", 10, map_callback);
+  ros::Rate ros_rate(10);
+  while (nh_map.ok())
+  {
+    map_callback_queue.callAvailable(ros::WallDuration());
+    ros_rate.sleep();
+  }
+
+  return nullptr;
 }

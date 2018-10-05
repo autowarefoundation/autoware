@@ -1,0 +1,50 @@
+/watchdog_node:
+  node_number: 0
+  errors:
+  - num: 0
+    name: required file does not exist
+    category: 7    
+    description: required file does not exist
+/ndt_matching:
+  node_number: 1
+  errors:
+  - num: 1
+    name: node is ded 
+    category: 3    
+    description: /ndt_matching node is dead
+  - num: 2
+    name: low publish rate
+    category: 4
+    description: topic pointcloud subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 3
+    name: low publish rate
+    category: 4
+    description: topic pointcloud subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 4
+    name: low subscribe rate
+    category: 4
+    description: topic publish rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 5
+    name: low subscribe rate
+    category: 4
+    description: topic publish subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 6
+    name: low operation rate
+    category: 4
+    description: operation rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 7
+    name: low operation rate
+    category: 4
+    description: operation rate was low (Error)
+    threshold: 5.0
+    level: error
