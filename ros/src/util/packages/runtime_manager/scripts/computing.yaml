@@ -4595,6 +4595,14 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name     : names_file
+      desc     : Names file. Label map
+      label    : 'names file (names)'
+      kind     : path
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/coco.names
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name      : gpu_device_id
       desc      : gpu_device_id desc sample
       label     : gpu_device_id
@@ -4658,6 +4666,11 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name     : names_file
+      desc     : Names file. Label map
+      label    : 'names file (names)'
+      kind     : path
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/coco.names
     - name      : gpu_device_id
       desc      : gpu_device_id desc sample
       label     : gpu_device_id
