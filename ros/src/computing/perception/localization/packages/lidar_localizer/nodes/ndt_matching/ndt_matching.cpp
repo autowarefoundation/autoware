@@ -906,6 +906,8 @@ static void imu_callback(const sensor_msgs::Imu::Ptr& input)
 
 static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 {
+  diag_manager_ptr->DIAG_RATE_CHECK(1);
+  diag_manager_ptr->DIAG_RATE_CHECK(2);
   if (map_loaded == 1 && init_pos_set == 1)
   {
     matching_start = std::chrono::system_clock::now();

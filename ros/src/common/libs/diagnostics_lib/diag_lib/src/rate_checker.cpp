@@ -43,14 +43,7 @@ boost::optional<double> rate_checker::get_rate()
     }
     update_();
     mtx_.lock();
-    if(data_.size()!=0)
-    {
-        rate = data_.size()/buffer_length_;
-    }
-    else
-    {
-        rate = boost::none;
-    }
+    rate = data_.size()/buffer_length_;
     mtx_.unlock();
     return rate;
 }
