@@ -18,8 +18,8 @@ class rate_checker
         ~rate_checker();
         void check();
         boost::optional<double> get_rate();
-        boost::optional<ros::Time> last_update_time_;
     private:
+        boost::optional<ros::Time> last_update_time_;
         ros::Time start_time_;
         void update_();
         std::vector<ros::Time> data_;
