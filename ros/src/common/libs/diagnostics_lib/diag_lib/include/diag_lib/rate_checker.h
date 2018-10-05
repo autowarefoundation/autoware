@@ -18,6 +18,7 @@ class rate_checker
         ~rate_checker();
         void check();
         boost::optional<double> get_rate();
+        boost::optional<ros::Time> last_update_time_;
     private:
         ros::Time start_time_;
         void update_();
