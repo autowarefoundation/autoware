@@ -1627,6 +1627,7 @@ int main(int argc, char** argv)
 
   ros::spin();
 
+  diag_manager_ptr->WRITE_LOG();
   return 0;
 }
 
