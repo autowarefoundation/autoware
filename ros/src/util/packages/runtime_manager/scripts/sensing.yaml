@@ -322,6 +322,16 @@ buttons:
         flags : [ nl ]
       publish_camera_info :
         flags : [ nl ]
+      target_frame :
+        flags : [ nl ]
+      camera_frame :
+        flags : [ nl ]
+      image_topic_src :
+        flags : [ nl ]
+      camera_info_topic :
+        flags : [ nl ]
+      projection_matrix_topic :
+        flags : [ nl ]
 
   points_image :
     desc  : points_image desc sample
