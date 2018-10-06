@@ -272,7 +272,7 @@ class OpenCVCalibrationNode(CalibrationNode):
 
     @classmethod
     def putText(cls, img, text, org, color = (0,0,0)):
-        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS, lineType = cv2.CV_AA)
+        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS, lineType = cv2.LINE_AA)
 
     @classmethod
     def getTextSize(cls, text):
