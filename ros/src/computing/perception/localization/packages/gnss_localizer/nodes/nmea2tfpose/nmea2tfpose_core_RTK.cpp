@@ -120,22 +120,12 @@ void Nmea2TFPoseNode::publishPoseStamped()
 
 void Nmea2TFPoseNode::publishTF()
 {
-  {
-      tf::Transform transform;
-      transform.setOrigin(tf::Vector3(geo_.y(), geo_.x(), geo_.z()));
-      tf::Quaternion quaternion;
-      quaternion.setRPY(roll_, pitch_, yaw_);
-      transform.setRotation(quaternion);
-      br_.sendTransform(tf::StampedTransform(transform, current_time_, MAP_FRAME_, GPS_FRAME_));
-  }
-    {
-        tf::Transform transform;
-        transform.setOrigin(tf::Vector3(geo2_.y(), geo2_.x(), geo2_.z()));
-        tf::Quaternion quaternion;
-        quaternion.setRPY(roll_, pitch_, yaw_);
-        transform.setRotation(quaternion);
-        br_.sendTransform(tf::StampedTransform(transform, current_time_, MAP_FRAME_, "gps2"));
-    }
+  tf::Transform transform;
+  transform.setOrigin(tf::Vector3(geo_.y(), geo_.x(), geo_.z()));
+  tf::Quaternion quaternion;
+  quaternion.setRPY(roll_, pitch_, yaw_);
+  transform.setRotation(quaternion);
+  br_.sendTransform(tf::StampedTransform(transform, current_time_, MAP_FRAME_, GPS_FRAME_));
 }
 
 void Nmea2TFPoseNode::createOrientation()
@@ -186,8 +176,6 @@ void Nmea2TFPoseNode::convert(std::vector<std::string> nmea, ros::Time current_s
       const double ant_distance = 1.28;
       double lat2 = (ant_distance*cos(fai))/earth_R+lat;
       double lon2 = (ant_distance*sin(fai))/earth_R+lon;
-      //std::cout<<"lat : "<<std::setprecision(16)<<lat<<std::endl;
-      //std::cout<<"lon : "<<std::setprecision(16)<<lat2<<std::endl;
       geo2_.set_llh_nmea_degrees(lat2, lon2, h);
       ROS_INFO("GGA is subscribed.");
     }
@@ -237,7 +225,7 @@ void Nmea2TFPoseNode::callbackFromNmeaSentence(const nmea_msgs::Sentence::ConstP
     double dt = sqrt(pow(geo_.x() - last_geo_[0].x(), 2) + pow(geo_.y() - last_geo_[0].y(), 2));
     double threshold = 0.10;
     //if (dt >= threshold)
-    {//std::printf("x:%Lf y:%Lf\n",geo_.x(),geo_.y());
+    {   //std::printf("x:%Lf y:%Lf\n",geo_.x(),geo_.y());
         //std::printf("xl:%Lf yl:%Lf\n",last_geo_.x(),last_geo_.y());
         //std::printf("xs:%Lf ys:%Lf yaw:%Lf\n",geo_.x() - last_geo_.x(),geo_.y() - last_geo_.y(),atan2((double)geo_.x() - (double)last_geo_.x(), (double)geo_.y() - (double)last_geo_.y()));
         //std::cout<<"x:"<<geo_.x()<<" y:"<<geo_.y()<<std::endl;

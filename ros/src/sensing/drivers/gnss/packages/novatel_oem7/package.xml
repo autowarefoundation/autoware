@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>nmea_serial</name>
+  <name>novatel_oem7</name>
   <version>0.0.0</version>
-  <description>The nmea_serial package</description>
+  <description>The novatel_oem7 package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

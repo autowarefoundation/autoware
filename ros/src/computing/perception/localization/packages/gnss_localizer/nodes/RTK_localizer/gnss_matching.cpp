@@ -32,7 +32,7 @@ private:
     ros::NodeHandle private_nh;
     gnss_matching::Gnss_Matching_History gmh;
 
-    Eigen::Matrix4f tf_gbtol;
+    Eigen::Matrix4f tf_btog, tf_btov;
 
     ros::Publisher localizer_pose_pub;
     ros::Publisher estimate_twist_pub;
@@ -57,7 +57,7 @@ private:
         ros::Time current_gnss_time = pose_msg->header.stamp;
 
         {
-            std::cout<<std::setprecision(16)<<"yaw : "<<pose_msg->pose.orientation.z<<std::endl;
+            std::cout<<std::setprecision(16)<<"orientation_z : "<<pose_msg->pose.orientation.z<<std::endl;
             tf::Quaternion gnss_q(pose_msg->pose.orientation.x, pose_msg->pose.orientation.y,
                                   pose_msg->pose.orientation.z, pose_msg->pose.orientation.w);
             tf::Matrix3x3 gnss_m(gnss_q);
@@ -68,8 +68,6 @@ private:
             }
             t_gnss(0,3)=pose_msg->pose.position.x; t_gnss(1,3)=pose_msg->pose.position.y; t_gnss(2,3)=pose_msg->pose.position.z;
 
-            publish_localizer(t_gnss,current_gnss_time);
-
             /*pose current_gnss_pose;
             current_gnss_pose.x = pose_msg->pose.position.x;
             current_gnss_pose.y = pose_msg->pose.position.y;
@@ -77,7 +75,9 @@ private:
             gnss_m.getRPY(current_gnss_pose.roll, current_gnss_pose.pitch, current_gnss_pose.yaw);*/
 
             Eigen::Matrix4f t2_gnss(Eigen::Matrix4f::Identity());  // localizer
-            t2_gnss = t_gnss * tf_gbtol.inverse();
+            t2_gnss = t_gnss * tf_btog.inverse();
+            Eigen::Matrix4f t_velodyne = t2_gnss * tf_btov;
+            publish_localizer(t_velodyne,current_gnss_time);
 
             // Update gnss_pose2
             tf::Matrix3x3 mat_b_gnss;  // base_link
@@ -111,7 +111,7 @@ private:
             transform.setOrigin(tf::Vector3(gnss_pose.x, gnss_pose.y, gnss_pose.z));
             current_q.setRPY(gnss_pose.roll, gnss_pose.pitch, gnss_pose.yaw);
             transform.setRotation(current_q);
-            gnss_tb.sendTransform(tf::StampedTransform(transform, current_gnss_time, "/map", "/base_link"));
+            gnss_tb.sendTransform(tf::StampedTransform(transform, current_gnss_time, "/map", "/gnss_base_link"));
 
             if(gmh.get_data_size() > 0)
             {
@@ -150,7 +150,7 @@ private:
         geometry_msgs::TwistStamped estimate_twist_msg;
         // Set values for /estimate_twist
         estimate_twist_msg.header.stamp = current_time;
-        estimate_twist_msg.header.frame_id = "/base_link";
+        estimate_twist_msg.header.frame_id = "/gnss_base_link";
         //estimate_twist_msg.twist.linear.x = speed_msg->surface_speed;
         estimate_twist_msg.twist.linear.x = gnss_speed/3.6;//velocity;
         estimate_twist_msg.twist.linear.y = 0.0;
@@ -201,7 +201,14 @@ public:
         const unsigned int max_his_size=10;
         gmh.set_max_history_size(max_his_size);
 
+        std::string _localizer;
         double _tf_gx, _tf_gy, _tf_gz, _tf_groll, _tf_gpitch, _tf_gyaw;
+        if (nh.getParam("localizer", _localizer) == false)
+        {
+          std::cout << "localizer is not set." << std::endl;
+          return;
+        }
+
         if (nh.getParam("gx", _tf_gx) == false)
         {
           std::cout << "gx is not set." << std::endl;
@@ -232,15 +239,52 @@ public:
           std::cout << "az is not set." << std::endl;
           return;
         }
-        Eigen::Translation3f tl_gbtol(_tf_gx, _tf_gy, _tf_gz);                 // tl: translation
-        Eigen::AngleAxisf rot_x_gbtol(_tf_groll, Eigen::Vector3f::UnitX());  // rot: rotation
-        Eigen::AngleAxisf rot_y_gbtol(_tf_gpitch, Eigen::Vector3f::UnitY());
-        Eigen::AngleAxisf rot_z_gbtol(_tf_gyaw, Eigen::Vector3f::UnitZ());
-        tf_gbtol = (tl_gbtol * rot_z_gbtol * rot_y_gbtol * rot_x_gbtol).matrix();
+        Eigen::Translation3f tl_btog(_tf_gx, _tf_gy, _tf_gz);                 // tl: translation
+        Eigen::AngleAxisf rot_x_btog(_tf_groll, Eigen::Vector3f::UnitX());  // rot: rotation
+        Eigen::AngleAxisf rot_y_btog(_tf_gpitch, Eigen::Vector3f::UnitY());
+        Eigen::AngleAxisf rot_z_btog(_tf_gyaw, Eigen::Vector3f::UnitZ());
+        tf_btog = (tl_btog * rot_z_btog * rot_y_btog * rot_x_btog).matrix();
 
-        localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/localizer_pose", 10);
-        estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/estimate_twist_gnss", 10);
-        gnss_pose_vehicle_pub = nh.advertise<geometry_msgs::PoseStamped>("/gnss_pose_matching", 10);
+        double _tf_vx, _tf_vy, _tf_vz, _tf_vroll, _tf_vpitch, _tf_vyaw;
+        if (nh.getParam("tf_x", _tf_vx) == false)
+        {
+          std::cout << "tf_x is not set." << std::endl;
+          return;
+        }
+        if (nh.getParam("tf_y", _tf_vy) == false)
+        {
+          std::cout << "tf_y is not set." << std::endl;
+          return;
+        }
+        if (nh.getParam("tf_z", _tf_vz) == false)
+        {
+          std::cout << "tf_z is not set." << std::endl;
+          return;
+        }
+        if (nh.getParam("tf_roll", _tf_vroll) == false)
+        {
+          std::cout << "tf_roll is not set." << std::endl;
+          return;
+        }
+        if (nh.getParam("tf_pitch", _tf_vpitch) == false)
+        {
+          std::cout << "tf_pitch is not set." << std::endl;
+          return;
+        }
+        if (nh.getParam("tf_yaw", _tf_vyaw) == false)
+        {
+          std::cout << "tf_yaw is not set." << std::endl;
+          return;
+        }
+        Eigen::Translation3f tl_btov(_tf_vx, _tf_vy, _tf_vz);                 // tl: translation
+        Eigen::AngleAxisf rot_x_btov(_tf_vroll, Eigen::Vector3f::UnitX());  // rot: rotation
+        Eigen::AngleAxisf rot_y_btov(_tf_vpitch, Eigen::Vector3f::UnitY());
+        Eigen::AngleAxisf rot_z_btov(_tf_vyaw, Eigen::Vector3f::UnitZ());
+        tf_btov = (tl_btov * rot_z_btov * rot_y_btov * rot_x_btov).matrix();
+
+        localizer_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gnss_localizer_pose", 10);
+        estimate_twist_pub = nh.advertise<geometry_msgs::TwistStamped>("/gnss_estimate_twist", 10);
+        gnss_pose_vehicle_pub = nh.advertise<geometry_msgs::PoseStamped>("/RTK_gnss_pose", 10);
 
         message_filters::Subscriber<geometry_msgs::PoseStamped> sub_gnss_pose(nh, "gnss_pose", 10);
         message_filters::Subscriber<autoware_msgs::gnss_surface_speed> sub_surface_speed(nh, "gnss_surface_speed", 10);
