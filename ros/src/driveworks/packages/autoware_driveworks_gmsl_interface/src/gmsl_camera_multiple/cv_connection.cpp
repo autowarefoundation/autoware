@@ -30,6 +30,11 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+/*
+  This program requires ROS
+  Author: Punnu Phairatt 
+  Initial Date: 10/05/18
+*/
 
 
 #include "cv_connection.hpp"
@@ -39,9 +44,14 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-OpenCVConnector::OpenCVConnector(std::string topic_name, int buffer) : it(nh), counter(0)	
+OpenCVConnector::OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer): 
+it(nh), counter(0), camera_id(camera_frame_id), info_manager(ros::NodeHandle(topic_name),"gmsl")	
 {
-   pub = it.advertise(topic_name, buffer);
+	 std::string topic_raw = topic_name + std::string("/image_raw");
+	 std::string topic_jpg = topic_name + std::string("/image_raw/compressed");
+   pub = it.advertise(topic_raw, buffer);
+   pub_jpg = nh.advertise<sensor_msgs::CompressedImage>(topic_jpg, buffer);
+   pub_caminfo = nh.advertise<sensor_msgs::CameraInfo>(topic_name + std::string("/camera_info"), 1);
 }
 
 
@@ -54,7 +64,16 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
 {
   cv::Mat mat_img(cv::Size(width_in, height_in), CV_8UC4, buffer);		// create a cv::Mat from rgbaImage
   cv::Mat dst;
-  cv::resize(mat_img, dst, cv::Size(width_pub, height_pub));          // resize to the publishing size
+  
+  // if we need to resize
+  if((width_in != width_pub) || (height_in != height_pub))
+  {
+		cv::resize(mat_img, dst, cv::Size(width_pub, height_pub));          // resize to the publishing size
+	}
+	else
+	{
+		dst = mat_img;
+	}
   
   cv::Mat converted;																						      // new cv::Mat();
   cv::cvtColor(dst,converted,cv::COLOR_RGBA2RGB);   				          // COLOR_BGRA2BGR
@@ -64,9 +83,25 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
   std_msgs::Header header; 																			      // empty header
   header.seq = counter; 																				      // user defined counter
   header.stamp = ros::Time::now(); 															      // time
+  header.frame_id = camera_id;                                        // camera id
   img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, converted);
   img_bridge.toImageMsg(img_msg); 															      // from cv_bridge to sensor_msgs::Image
   pub.publish(img_msg); 																				      // pub image
 }
 
+void OpenCVConnector::WriteToJpeg(uint8_t* data, uint32_t compressed_size)
+{
+	// publishing original size only
+	sensor_msgs::CompressedImage img_msg_compressed; 
+	img_msg_compressed.data.resize(compressed_size);
+	memcpy(&img_msg_compressed.data[0], data, compressed_size);
+	std_msgs::Header header; 																						// empty header
+	header.seq = counter; 																				      // user defined counter
+  header.stamp = ros::Time::now(); 															      // time
+  header.frame_id = camera_id;                                        // camera id 
+	img_msg_compressed.header = header;
+	img_msg_compressed.format = "jpeg";
+	pub_jpg.publish(img_msg_compressed);
+}
 
+/* TODO: Publish camera info */

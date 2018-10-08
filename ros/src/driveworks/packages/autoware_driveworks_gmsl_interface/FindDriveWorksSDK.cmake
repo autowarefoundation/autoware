@@ -1,8 +1,11 @@
 #
-# Try to find DriveWorks sdk
+# Try to find DriveWorks library
 #
-
-
+# Look for cmake path
+find_path(DW_CMAKE_PATH 
+ 	NAMES Toolchain-V4L.cmake
+	HINTS /usr/local/driveworks/samples/cmake
+)
 # Look for include path
 find_path(DW_INCLUDE_PATH 
 	NAMES dw/Driveworks.h
@@ -24,14 +27,17 @@ find_path(DW_LIBRARY_PATH
 
 
 
-# set include dir
-IF(DW_INCLUDE_PATH)
-	message(STATUS "FOUND CMAKE INCLUDE")
+# set cmake and include dir
+IF(DW_CMAKE_PATH AND DW_INCLUDE_PATH)
+        message(STATUS "FOUND CMAKE INCLUDE")
+	LIST(APPEND CMAKE_MODULE_PATH ${DW_CMAKE_PATH})
 	set(Driveworks_INCLUDE_DIR ${DW_INCLUDE_PATH})
-    message(${DW_INCLUDE_PATH})
-ELSE(DW_INCLUDE_PATH)
+        set(CMAKE_TOOLCHAIN_FILE ${DW_CMAKE_PATH}/Toolchain-V4L.cmake)
+      	message(${DW_INCLUDE_PATH})
+ 	message(${DW_CMAKE_PATH})
+ELSE(DW_CMAKE_PATH AND DW_INCLUDE_PATH)
 	message(STATUS "ERROR: Check if Driveworks sdk is installed")
-ENDIF(DW_INCLUDE_PATH)
+ENDIF(DW_CMAKE_PATH AND DW_INCLUDE_PATH)
 
 # set nvmedia_xxx.h include dir
 IF(DW_MEDIA_PATH)
@@ -45,9 +51,9 @@ ENDIF(DW_MEDIA_PATH)
 
 # set driveworks lib
 IF(DW_LIBRARY_PATH)
-    message(STATUS "FOUND LIB")
-	set(Driveworks_LIBRARIES ${DW_LIBRARY_PATH})
-    message(${DW_LIBRARY_PATH})
+        message(STATUS "FOUND LIB")
+	set(Driveworks_LIBRARY ${DW_LIBRARY_PATH})
+        message(${DW_LIBRARY_PATH})
 ELSE(DW_LIBRARY_PATH)
 	message(STATUS "ERROR: Check if Driveworks lib is installed")
 ENDIF(DW_LIBRARY_PATH)

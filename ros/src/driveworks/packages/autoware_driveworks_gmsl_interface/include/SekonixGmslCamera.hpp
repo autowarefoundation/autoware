@@ -26,7 +26,11 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
+/*
+  This program requires ROS and Nvidia SDK installed
+  Author: Punnu Phairatt 
+  Initial Date: 10/05/18
+*/
 
 #ifndef _SEKONIX_GMSL_CAMERA_H_
 #define _SEKONIX_GMSL_CAMERA_H_
@@ -61,8 +65,7 @@
 #include <ros/ros.h>
 
 
-// OPENCV-ROS Bridge 
-#include "cv_connection.hpp"
+
 
 // Camera driver api 
 #include "DriveWorksApi.hpp"
@@ -98,28 +101,15 @@ public:
 	void shutdown();
 
 private:
-  /*
-   * A polling thread to grab and publish ROS image message via OpenCV
-   */
-  void feedImages(uint32_t port);
-  
-  /*
-   * Check if all threads if still polling the image frames
-   */
-  void checkThreadActive();
-
-private:
   ros::NodeHandle node;                                           // Global ns
   ros::NodeHandle pnode;                                          // Private ns
   DriveWorksApi *gmsl_cam;                                        // GMSL camera instance
-  std::vector<std::thread> camThreads;                            // Camera polling threads
-  std::vector<bool> camThreadsActive;                             // State of camera threads
   int pub_width;                                                  // Image publishing width 
   int pub_height;                                                 // Image publishing height
-  int pub_rate;                                                   // Image publishing hz rate
   int pub_buffer;                                                 // Image buffer for publishing
-  uint32_t numPort;                                               // PX2 camera port    
-  bool Shutdown;                                                  // All threads running condition
+  uint32_t numPort;                                               // PX2 camera port   
+  bool pub_compressed;                                            // Publishing compressed images 
+  int pub_compressed_quality;                                     // jpeg quality
 
 };//SekonixGmslCamera class
   	
