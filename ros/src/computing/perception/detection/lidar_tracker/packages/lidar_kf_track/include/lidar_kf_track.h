@@ -59,9 +59,12 @@ public:
 
   float CalculateDistance(const cv::Rect_<float> &in_rect) { return 0.0f; }
 
+  void Prediction() {
+    prediction_point_ = kf_.GetPrediction();
+  }
+
   void Update(const autoware_msgs::CloudCluster &in_cluster,
               bool in_data_correct, size_t in_max_trace_length) {
-    kf_.GetPrediction();
     prediction_point_ =
         kf_.Update(cv::Point2f(in_cluster.centroid_point.point.x,
                                in_cluster.centroid_point.point.y),
@@ -79,6 +82,8 @@ public:
   }
 
   autoware_msgs::CloudCluster GetCluster() { return cluster; }
+
+  cv::Point2f GetPredictedPosition() { return prediction_point_; }
 };
 
 // --------------------------------------------------------------------------
