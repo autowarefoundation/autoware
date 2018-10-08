@@ -70,28 +70,28 @@ void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 		//std::cout << "Trying to match " << num_tracks << " tracks with " << num_detections << std::endl;
 
 		//calculate distances between objects
-		for (size_t i = 0; i < num_detections; i++)
+		for (size_t i = 0; i < num_tracks; i++)
 		{
 
 			float current_distance_threshold = distance_threshold_;
 
-			//detection polygon
-			boost_polygon hull_detection_polygon;
-			CreatePolygonFromPoints(in_cloud_cluster_array.clusters[i].convex_hull.polygon, hull_detection_polygon);
-			detections_areas[i] = boost::geometry::area(hull_detection_polygon);
+			//track polygon
+			boost_polygon hull_track_polygon;
+			CreatePolygonFromPoints(tracks_[i].GetCluster().convex_hull.polygon, hull_track_polygon);
+			tracks_[i].Prediction();
 
-			for (size_t j = 0; j < num_tracks; j++)
+			for (size_t j = 0; j < num_detections; j++)
 			{
 				//float current_distance = tracks_[j].CalculateDistance(cv::Point2f(in_cloud_cluster_array.clusters[i].centroid_point.point.x, in_cloud_cluster_array.clusters[i].centroid_point.point.y));
 				float current_distance = sqrt(
-												pow(tracks_[j].GetCluster().centroid_point.point.x - in_cloud_cluster_array.clusters[i].centroid_point.point.x, 2) +
-												pow(tracks_[j].GetCluster().centroid_point.point.y - in_cloud_cluster_array.clusters[i].centroid_point.point.y, 2)
+												pow(tracks_[i].GetPredictedPosition().x - in_cloud_cluster_array.clusters[j].centroid_point.point.x, 2) +
+												pow(tracks_[i].GetPredictedPosition().y - in_cloud_cluster_array.clusters[j].centroid_point.point.y, 2)
 										);
 
-				//tracker polygon
-				boost_polygon hull_track_polygon;
-				CreatePolygonFromPoints(tracks_[j].GetCluster().convex_hull.polygon, hull_track_polygon);
-
+				//detection polygon
+				boost_polygon hull_detection_polygon;
+				CreatePolygonFromPoints(in_cloud_cluster_array.clusters[j].convex_hull.polygon, hull_detection_polygon);
+				detections_areas[j] = boost::geometry::area(hull_detection_polygon);
 				//if(current_distance < current_distance_threshold)
 				if (!boost::geometry::disjoint(hull_detection_polygon, hull_track_polygon)
 					||  (current_distance < current_distance_threshold)
