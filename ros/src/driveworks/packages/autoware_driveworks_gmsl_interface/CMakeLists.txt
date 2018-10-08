@@ -1,14 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gmsl_camera)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error -Wno-deprecated-declarations -std=c++11")
 
-##############################
-## BUILD only on PX2 device ##
-##############################
-# Change to TRUE if you are buiding this package on PX2
-set(PX2_BUILD FALSE)
-
-if(PX2_BUILD)
 ##################
 ## ROS packages ##
 ##################
@@ -16,7 +9,7 @@ if(PX2_BUILD)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-	autoware_build_flags
+	#autoware_build_flags
 	roscpp
 	sensor_msgs
 	std_msgs
@@ -31,9 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Set build configurations ##
 ##############################
 include(FindDriveWorksSDK.cmake)
-link_directories(${Driveworks_LIBRARIES})
-
-# manually turn off a target build (directly build on PX2)
+link_directories(${Driveworks_LIBRARY})
 set(VIBRANTE FALSE)
 add_definitions(-DVIBRANTE)
 
@@ -44,6 +35,9 @@ find_package(CUDA)
 # Need CUDA to run this package
 if(CUDA_FOUND)
 find_package(Threads REQUIRED)
+find_package(TensorRT REQUIRED)
+find_package(CuDNN REQUIRED)
+find_package(GLEW REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED)
 ###################################
@@ -69,18 +63,26 @@ include_directories(include
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${NVMEDIA_DIRS}
 	${BOOST_INCLUDE_DIR}
+	${GLEW_INCLUDE_DIR}
 )
 
 ####################
 ## Driveworks SDK ##
 ####################
 list(APPEND Driveworks_LIBRARIES 
-	nvmedia 
 	${CUDA_LIBRARIES} 
-    ${CMAKE_THREAD_LIBS_INIT}
+	${CUDA_cublas_LIBRARY}
 )
 
+list(APPEND Driveworks_LIBRARIES 
+	${vibrante_LIBRARIES} 
+	${vibrante_Xlibs_LIBRARIES} 
+ 	nvmedia 
+	${EGL_LIBRARIES} 
+	${CMAKE_THREAD_LIBS_INIT})
+
 set(LIBRARIES ${Driveworks_LIBRARIES})
+
 
 
 ####################
@@ -102,6 +104,7 @@ target_link_libraries(${NODE_NAME} PRIVATE
 	driveworks
 	${CUDA_LIBRARY}
 	${LIBRARIES}
+	${GLEW_LIBRARY}
 	${BOOST_LIBRARY}
 	${OpenCV_LIBS}
    
@@ -122,6 +125,7 @@ target_link_libraries(${NODELET_NAME}
     driveworks
     ${CUDA_LIBRARY}
     ${LIBRARIES}
+    ${GLEW_LIBRARY}
     ${BOOST_LIBRARY}
     ${OpenCV_LIBS}  
 )
@@ -143,11 +147,5 @@ install(FILES
 
 else()
 	message("gmsl_camera driver will not be built. CUDA was not found.")
-endif() #CUDA_FOUND
-
-
-endif() #PX2 BUILD
-
-
-
+endif()
 

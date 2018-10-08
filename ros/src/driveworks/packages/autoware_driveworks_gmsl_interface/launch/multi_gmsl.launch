@@ -1,17 +1,18 @@
 <launch>
   <!-- gmsl multiple cameras run -->
   <node pkg="gmsl_camera" type="gmsl_camera_node" name="gmsl_camera_node" output="screen">
-    <param name="image_width" value="640" /> <!--"1920"-->
-    <param name="image_height" value="480" /><!--"1208"-->
-    <param name="image_rate" value="100" />
-    <param name="image_buffer" value="200" />
-    <param name="type_ab" value="ar0231-rccb" type="str" />
-    <param name="type_cd" value="ar0231-rccb" type="str" />
-    <param name="type_ef" value="ar0231-rccb" type="str" />
-    <param name="selector_mask" value="11111111" type="str" />
-    <param name="cross_csi_sync" value="0" type="str" />
+    <param name="image_width" value="1920" />     <!-- image raw resize only -->
+    <param name="image_height" value="1208" />    <!-- image raw resize only -->
+    <param name="image_buffer" value="10" />
+    <param name="image_compressed" value="true" type="bool" />  <!-- publish compressed original size -->
+    <param name="type_ab" value="ar0231-rccb-ss3322" type="str" />
+    <param name="type_cd" value="ar0231-rccb-ss3322" type="str" />
+    <param name="type_ef" value="ar0231-rccb-ss3322" type="str" />
+    <param name="selector_mask" value="111100110011" type="str" /> <!-- |A3210|B3210|C3210| e.g 011101110011 -->
+    <param name="cross_csi_sync" value="1" type="str" />
     <param name="fifo_size" value="3" type="str" />
     <param name="slave" value="0" type="str" />
   </node>
 
 </launch>
+

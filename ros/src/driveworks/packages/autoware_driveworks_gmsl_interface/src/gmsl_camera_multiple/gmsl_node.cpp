@@ -27,6 +27,12 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+  This program requires ROS and Nvidia SDK installed
+  Author: Punnu Phairatt 
+  Initial Date: 10/05/18
+*/
+
 
 // ROS
 #include <ros/ros.h>
