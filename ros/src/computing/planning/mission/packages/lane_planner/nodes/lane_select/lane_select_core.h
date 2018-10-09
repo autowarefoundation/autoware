@@ -51,6 +51,9 @@
 #include "hermite_curve.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
+// headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace lane_planner
 {
 enum class ChangeFlag : int32_t
@@ -77,6 +80,7 @@ public:
   void run();
 
 private:
+  diag_manager diag_manager_;
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;

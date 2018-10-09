@@ -36,9 +36,17 @@
 
 #include <lane_planner/lane_planner_vmap.hpp>
 
+// headers in STL
+#include <memory>
+
+// headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace {
 
 bool config_manual_detection = true;
+
+std::shared_ptr<diag_manager> diag_manager_ptr;
 
 ros::Publisher traffic_pub;
 
@@ -107,7 +115,7 @@ void config_parameter(const autoware_msgs::ConfigLaneStop& msg)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "lane_stop");
-
+	diag_manager_ptr = std::make_shared<diag_manager>();
 	ros::NodeHandle n;
 
 	int sub_light_queue_size;

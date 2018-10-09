@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         vector_map
         gnss
         autoware_msgs
+        diag_lib
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -24,6 +25,7 @@ catkin_package(
         vector_map
         gnss
         autoware_msgs
+        diag_lib
 )
 
 include_directories(

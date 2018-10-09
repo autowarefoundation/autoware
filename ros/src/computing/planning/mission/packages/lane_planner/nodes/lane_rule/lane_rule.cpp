@@ -42,7 +42,15 @@
 
 #include <lane_planner/lane_planner_vmap.hpp>
 
+//headers in diag_manager
+#include <diag_lib/diag_manager.h>
+
+//headers in STL
+#include <memory>
+
 namespace {
+
+std::shared_ptr<diag_manager> diag_manager_ptr;
 
 double config_acceleration = 1; // m/s^2
 double config_stopline_search_radius = 1; // meter
@@ -560,7 +568,9 @@ void config_parameter(const autoware_msgs::ConfigLaneRule& msg)
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "lane_rule");
-
+	
+	diag_manager_ptr = std::make_shared<diag_manager>();
+	
 	ros::NodeHandle n;
 
 	int sub_vmap_queue_size;

@@ -60,3 +60,50 @@
     description: topic /vehicle/odom subscribe rate rate was low (Error)
     threshold: 5.0
     level: error
+/lane_rule:
+  node_number: 2
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_rule node is dead
+/lane_stop:
+  node_number: 3
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_stop node is dead
+/lane_select:
+  node_number: 2
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /lane_select node is dead
+  - num: 1
+    name: low publish rate
+    category: 5
+    description: topic /base_waypoints publish rate was low (Warn)
+    threshold: 30.0
+    level: warn
+  - num: 2
+    name: low publish rate
+    category: 5
+    description: topic /base_waypoints publish rate rate was low (Error)
+    threshold: 10.0
+    level: error
+/obstacle_avoid:
+  node_number: 3
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /obstacle_avoid node is dead
+/velocity_set:
+  node_number: 4
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /velocity_set node is dead

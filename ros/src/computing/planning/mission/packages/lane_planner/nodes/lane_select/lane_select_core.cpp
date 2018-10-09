@@ -607,6 +607,8 @@ void LaneSelectNode::publishVisualizer()
 
 void LaneSelectNode::publishLane(const autoware_msgs::lane &lane)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   // publish global lane
   pub1_.publish(lane);
 }
