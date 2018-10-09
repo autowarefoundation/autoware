@@ -72,8 +72,9 @@ static void config_callback(const autoware_msgs::ConfigVoxelGridFilter::ConstPtr
 {
   use_dynamic_leaf_size = input->use_dynamic_leaf_size;
 
-  if(use_dynamic_leaf_size == false){
-      voxel_leaf_size = input->voxel_leaf_size;
+  if (use_dynamic_leaf_size == false)
+  {
+    voxel_leaf_size = input->voxel_leaf_size;
   }
 
   measurement_range = input->measurement_range;
@@ -89,7 +90,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   pcl::PointCloud<pcl::PointXYZI> scan;
   pcl::fromROSMsg(*input, scan);
 
-  if(measurement_range != MAX_MEASUREMENT_RANGE){
+  if (measurement_range != MAX_MEASUREMENT_RANGE)
+  {
     scan = removePointsByRange(scan, 0, measurement_range);
   }
 
@@ -101,20 +103,25 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   filter_start = std::chrono::system_clock::now();
 
   // if voxel_leaf_size < 0.1 voxel_grid_filter cannot down sample (It is specification in PCL)
-  if(voxel_leaf_size < 0.1) {
-      voxel_leaf_size = 0.1;
+  if (voxel_leaf_size < 0.1)
+  {
+    voxel_leaf_size = 0.1;
   }
-  if(min_voxel_leaf_size < 0.1) {
-      min_voxel_leaf_size = 0.1;
+  if (min_voxel_leaf_size < 0.1)
+  {
+    min_voxel_leaf_size = 0.1;
   }
 
-  if(use_dynamic_leaf_size == true) {
-      if(voxel_leaf_size < min_voxel_leaf_size) {
-          voxel_leaf_size = min_voxel_leaf_size;
-      }
-      if(voxel_leaf_size > max_voxel_leaf_size) {
-          voxel_leaf_size = max_voxel_leaf_size;
-      }
+  if (use_dynamic_leaf_size == true)
+  {
+    if (voxel_leaf_size < min_voxel_leaf_size)
+    {
+      voxel_leaf_size = min_voxel_leaf_size;
+    }
+    if (voxel_leaf_size > max_voxel_leaf_size)
+    {
+      voxel_leaf_size = max_voxel_leaf_size;
+    }
   }
 
   pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
@@ -122,30 +129,37 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   voxel_grid_filter.setInputCloud(scan_ptr);
   voxel_grid_filter.filter(*filtered_scan_ptr);
 
-  if(use_dynamic_leaf_size == true) {
-      if(filtered_scan_ptr->points.size() < min_points_size) {
-          for(;voxel_leaf_size > min_voxel_leaf_size; voxel_leaf_size -= voxel_leaf_size_step) {
-              pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-              voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-              voxel_grid_filter.setInputCloud(scan_ptr);
-              voxel_grid_filter.filter(*filtered_scan_ptr);
-              if(filtered_scan_ptr->points.size() > min_points_size){
-                  break;
-              }
-          }
+  if (use_dynamic_leaf_size == true)
+  {
+    if (filtered_scan_ptr->points.size() < min_points_size)
+    {
+      for (; voxel_leaf_size > min_voxel_leaf_size; voxel_leaf_size -= voxel_leaf_size_step)
+      {
+        pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+        voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+        voxel_grid_filter.setInputCloud(scan_ptr);
+        voxel_grid_filter.filter(*filtered_scan_ptr);
+        if (filtered_scan_ptr->points.size() > min_points_size)
+        {
+          break;
+        }
       }
+    }
 
-      else if(filtered_scan_ptr->points.size() > max_points_size) {
-          for(;voxel_leaf_size < max_voxel_leaf_size; voxel_leaf_size += voxel_leaf_size_step) {
-              pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
-              voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
-              voxel_grid_filter.setInputCloud(scan_ptr);
-              voxel_grid_filter.filter(*filtered_scan_ptr);
-              if(filtered_scan_ptr->points.size() < max_points_size){
-                  break;
-              }
-          }
+    else if (filtered_scan_ptr->points.size() > max_points_size)
+    {
+      for (; voxel_leaf_size < max_voxel_leaf_size; voxel_leaf_size += voxel_leaf_size_step)
+      {
+        pcl::VoxelGrid<pcl::PointXYZI> voxel_grid_filter;
+        voxel_grid_filter.setLeafSize(voxel_leaf_size, voxel_leaf_size, voxel_leaf_size);
+        voxel_grid_filter.setInputCloud(scan_ptr);
+        voxel_grid_filter.filter(*filtered_scan_ptr);
+        if (filtered_scan_ptr->points.size() < max_points_size)
+        {
+          break;
+        }
       }
+    }
   }
 
   std::cout << "voxel_leaf_size:" << voxel_leaf_size << std::endl;
@@ -172,26 +186,24 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
   points_downsampler_info_msg.original_ring_size = 0;
   points_downsampler_info_msg.filtered_ring_size = 0;
-  points_downsampler_info_msg.exe_time = std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
+  points_downsampler_info_msg.exe_time =
+      std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
   points_downsampler_info_pub.publish(points_downsampler_info_msg);
 
-  if(_output_log == true){
-	  if(!ofs){
-		  std::cerr << "Could not open " << filename << "." << std::endl;
-		  exit(1);
-	  }
-	  ofs << points_downsampler_info_msg.header.seq << ","
-		  << points_downsampler_info_msg.header.stamp << ","
-		  << points_downsampler_info_msg.header.frame_id << ","
-		  << points_downsampler_info_msg.filter_name << ","
-		  << points_downsampler_info_msg.original_points_size << ","
-		  << points_downsampler_info_msg.filtered_points_size << ","
-		  << points_downsampler_info_msg.original_ring_size << ","
-		  << points_downsampler_info_msg.filtered_ring_size << ","
-		  << points_downsampler_info_msg.exe_time << ","
-		  << std::endl;
+  if (_output_log == true)
+  {
+    if (!ofs)
+    {
+      std::cerr << "Could not open " << filename << "." << std::endl;
+      exit(1);
+    }
+    ofs << points_downsampler_info_msg.header.seq << "," << points_downsampler_info_msg.header.stamp << ","
+        << points_downsampler_info_msg.header.frame_id << "," << points_downsampler_info_msg.filter_name << ","
+        << points_downsampler_info_msg.original_points_size << "," << points_downsampler_info_msg.filtered_points_size
+        << "," << points_downsampler_info_msg.original_ring_size << ","
+        << points_downsampler_info_msg.filtered_ring_size << "," << points_downsampler_info_msg.exe_time << ","
+        << std::endl;
   }
-
 }
 
 int main(int argc, char** argv)
@@ -203,18 +215,20 @@ int main(int argc, char** argv)
 
   private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
-  if(_output_log == true){
-	  char buffer[80];
-	  std::time_t now = std::time(NULL);
-	  std::tm *pnow = std::localtime(&now);
-	  std::strftime(buffer,80,"%Y%m%d_%H%M%S",pnow);
-	  filename = "voxel_grid_filter_" + std::string(buffer) + ".csv";
-	  ofs.open(filename.c_str(), std::ios::app);
+  if (_output_log == true)
+  {
+    char buffer[80];
+    std::time_t now = std::time(NULL);
+    std::tm* pnow = std::localtime(&now);
+    std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+    filename = "voxel_grid_filter_" + std::string(buffer) + ".csv";
+    ofs.open(filename.c_str(), std::ios::app);
   }
 
   // Publishers
   filtered_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/filtered_points", 10);
-  points_downsampler_info_pub = nh.advertise<points_downsampler::PointsDownsamplerInfo>("/points_downsampler_info", 1000);
+  points_downsampler_info_pub =
+      nh.advertise<points_downsampler::PointsDownsamplerInfo>("/points_downsampler_info", 1000);
 
   // Subscribers
   ros::Subscriber config_sub = nh.subscribe("config/voxel_grid_filter", 10, config_callback);
