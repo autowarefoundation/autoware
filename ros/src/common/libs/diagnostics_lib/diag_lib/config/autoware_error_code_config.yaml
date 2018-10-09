@@ -26,25 +26,37 @@
     level: error
   - num: 3
     name: low operation cycle
-    category: 4
+    category: 6
     description: node /ndt_matching operation cycle was low (Warn)
     threshold: 10.0
     level: warn
   - num: 4
-    name: low subscribe rate
-    category: 4
+    name: low operation cycle
+    category: 6
     description: node /ndt_matching operation cycle rate was low (Error)
     threshold: 5.0
     level: error
   - num: 5
     name: low publish rate
-    category: 4
+    category: 5
     description: topic /ndt_pose publish rate was low (Warn)
     threshold: 10.0
     level: warn
   - num: 6
     name: low publish rate
-    category: 4
+    category: 5
     description: topic /ndt_pose publish rate rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 7
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle/odom subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 8
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle/odom subscribe rate rate was low (Error)
     threshold: 5.0
     level: error

@@ -823,7 +823,8 @@ static double calcDiffForRadian(const double lhs_rad, const double rhs_rad)
 static void odom_callback(const nav_msgs::Odometry::ConstPtr& input)
 {
   // std::cout << __func__ << std::endl;
-
+  diag_manager_ptr->DIAG_RATE_CHECK(7);
+  diag_manager_ptr->DIAG_RATE_CHECK(8);
   odom = *input;
   odom_calc(input->header.stamp);
 }
