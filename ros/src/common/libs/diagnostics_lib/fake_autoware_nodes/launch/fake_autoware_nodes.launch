@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <param name="error_code_config_path" value="$(find diag_lib)/config/error_code_sample_config.yaml"/>
+
+    <node pkg="fake_autoware_nodes" type="fake_publisher_node" name="ndt_matching" output="screen">
+    </node>
+
+    <node pkg="fake_autoware_nodes" type="fake_subscriber_node" name="pure_pursuit" output="screen">
+        <remap from="/pure_pursuit/data" to="/ndt_matching/data"/>
+    </node>
+</launch>

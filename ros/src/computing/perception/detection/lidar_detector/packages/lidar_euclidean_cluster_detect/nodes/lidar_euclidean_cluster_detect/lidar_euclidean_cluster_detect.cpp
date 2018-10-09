@@ -253,7 +253,6 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray& in_clusters)
     autoware_msgs::DetectedObject detected_object;
     detected_object.header = in_clusters.header;
     detected_object.label = "unknown";
-    detected_object.id = i;
     detected_object.score = 1.;
     detected_object.space_frame = in_clusters.header.frame_id;
     detected_object.pose = in_clusters.clusters[i].bounding_box.pose;
@@ -1301,29 +1300,32 @@ int main(int argc, char** argv)
   private_nh.param("clustering_ranges", str_ranges, std::string("[15,30,45,60]"));
   ROS_INFO("clustering_ranges: %s", str_ranges.c_str());
 
-  YAML::Node distances = YAML::Load(str_distances);
-  YAML::Node ranges = YAML::Load(str_ranges);
-  size_t distances_size = distances.size();
-  size_t ranges_size = ranges.size();
-  if (distances_size == 0 || ranges_size == 0)
+  if (_use_multiple_thres)
   {
-    ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
+    YAML::Node distances = YAML::Load(str_distances);
+    YAML::Node ranges = YAML::Load(str_ranges);
+    size_t distances_size = distances.size();
+    size_t ranges_size = ranges.size();
+    if (distances_size == 0 || ranges_size == 0)
+    {
+      ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
     The size of clustering distance and clustering_ranges shoule not be 0");
-    ros::shutdown();
-  }
-  if ((distances_size - ranges_size) != 1)
-  {
-    ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
+      ros::shutdown();
+    }
+    if ((distances_size - ranges_size) != 1)
+    {
+      ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
     Expecting that (distances_size - ranges_size) == 1 ");
-    ros::shutdown();
-  }
-  for (size_t i_distance = 0; i_distance < distances_size; i_distance++)
-  {
-    _clustering_distances.push_back(distances[i_distance].as<double>());
-  }
-  for (size_t i_range = 0; i_range < ranges_size; i_range++)
-  {
-    _clustering_ranges.push_back(ranges[i_range].as<double>());
+      ros::shutdown();
+    }
+    for (size_t i_distance = 0; i_distance < distances_size; i_distance++)
+    {
+      _clustering_distances.push_back(distances[i_distance].as<double>());
+    }
+    for (size_t i_range = 0; i_range < ranges_size; i_range++)
+    {
+      _clustering_ranges.push_back(ranges[i_range].as<double>());
+    }
   }
 
   _velodyne_transform_available = false;

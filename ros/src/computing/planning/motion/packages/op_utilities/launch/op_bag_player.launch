@@ -1,0 +1,37 @@
+<!-- -->
+<launch>
+	<arg name="width" 						default="400" />
+	<arg name="height" 						default="300" />
+	<arg name="info_ratio" 					default="0" />	
+	
+	<arg name="rosbag_file" 				default="/media/hatem/8ac0c5d5-8793-4b98-8728-55f8d67ec0f4/data/Moriyama_assure/rosbag/BusLane-assure-ready.bag" />
+	
+	<arg name="pose_topic_bag" 					default="/ndt_pose" />
+	<arg name="lidar_topic_bag" 				default="/points_raw" />
+	<arg name="image_topic_bag" 				default="/image_raw" />
+	
+	<arg name="pose_topic_pub" 					default="/ndt_pose" />
+	<arg name="lidar_topic_pub" 				default="/points_raw" />
+	<arg name="image_topic_pub" 				default="/image_raw" />
+	
+	<arg name="testing_mode" 				default="1" /> <!-- Simulation Mode: 0, Rosbag playback mode: 1, actual sensing mode: 2 --> 
+	
+	<node pkg="op_utilities" type="op_bag_player" name="op_bag_player" output="screen">
+		<param name="width" 						value="$(arg width)" />
+		<param name="height" 						value="$(arg height)" />		
+		<param name="info_ratio" 					value="$(arg info_ratio)" />		
+		
+		<param name="rosbag_file" 					value="$(arg rosbag_file)" />
+		
+		<param name="pose_topic_bag" 					value="$(arg pose_topic_bag)" />
+		<param name="lidar_topic_bag" 					value="$(arg lidar_topic_bag)" />
+		<param name="image_topic_bag" 					value="$(arg image_topic_bag)" />
+		
+		<param name="pose_topic_pub" 					value="$(arg pose_topic_pub)" />
+		<param name="lidar_topic_pub" 					value="$(arg lidar_topic_pub)" />
+		<param name="image_topic_pub" 					value="$(arg image_topic_pub)" />
+		
+		<param name="testing_mode" 					value="$(arg testing_mode)" />
+	</node>
+
+</launch>

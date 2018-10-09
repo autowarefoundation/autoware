@@ -2,10 +2,39 @@
 Changelog for package points_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2018-08-31)
+------------------
+* Fix Indigo build issues
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Update OpenPlanner libraries (op_planner, op_utitity, op_ros_helpers)
+  Update ring ground filter with latest implementation
+  Update lidar_kf_contour_track with latest implementation
+  Add op_utilities nodes (op_bag_player, op_data_logger, op_pose2tf)
+  Modify autoware_msgs for OpenPlanner use (CloudCluster, DetectedObject, lane, waypoint)
+  Update UI computing.yaml for the new nodes and modifies parameters
+  Update UI sensing.yaml for updated ring_ground_filter params
+* Replaced yaml-cpp library flag
+* Fix finding yaml-cpp by pkg_check_modules
+* Add -lyaml-cpp
+* Remove yaml-cpp find package
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Fix cmake and remove msg from runtime manager
+* Fix assertion condition
+* fix review comments
+  - fix CMakeFiles.txt and package.xml related yaml-cpp
+  - use input_topics_size\_
+  - add brackets
+* apply clang-format
+* Modify runtime_manager
+* apply clang-format
+* Modify points_concat_filter to support up to 8 lidars
+* Contributors: Akihito Ohsato, Esteve Fernandez, Kenji Funaoka, Yusuke FUJII, hatem-darweesh
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -103,7 +132,7 @@ Changelog for package points_preprocessor
   * * Fixes to README
   * Enable industrial_ci
   * re enable native travis tests
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -136,7 +165,7 @@ Changelog for package points_preprocessor
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* Editorial changes to README files. See `#1124 <https://github.com/kfunaoka/Autoware/issues/1124>`_. (`#1125 <https://github.com/kfunaoka/Autoware/issues/1125>`_)
+* Editorial changes to README files. See `#1124 <https://github.com/CPFL/Autoware/pull/1124>`_. (`#1125 <https://github.com/CPFL/Autoware/pull/1125>`_)
 * Contributors: Abraham Monrroy, David, Kosuke Murakami
 
 1.6.3 (2018-03-06)
