@@ -4,7 +4,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-ImmUkfPda::ImmUkfPda()
+ImmUkfPda::ImmUkfPda():
+target_id_(0), // assign unique ukf_id_ to each tracking targets
+init_(false)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
@@ -17,11 +19,6 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
-
-  init_ = false;
-
-  // assign unique ukf_id_ to each tracking targets
-  target_id_ = 0;
 }
 
 void ImmUkfPda::run()
@@ -47,7 +44,6 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
-  // relayJskbbox(input, jskbboxes_output);
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
