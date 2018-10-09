@@ -38,9 +38,12 @@
 
 #include "autoware_msgs/ConfigVelocitySet.h"
 
+#include <diag_lib/diag_manager.h>
+
 class VelocitySetInfo
 {
  private:
+  diag_manager diag_manager_;
   // parameters
   double stop_range_;               // if obstacle is in this range, stop
   double deceleration_range_;       // if obstacle is in this range, decelerate

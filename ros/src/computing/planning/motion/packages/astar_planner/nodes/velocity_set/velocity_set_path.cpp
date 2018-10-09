@@ -239,5 +239,7 @@ void VelocitySetPath::waypointsCallback(const autoware_msgs::laneConstPtr& msg)
 
 void VelocitySetPath::currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr& msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   current_vel_ = msg->twist.linear.x;
 }

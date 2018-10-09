@@ -37,16 +37,11 @@
 #include "velocity_set_info.h"
 #include "velocity_set_path.h"
 
-#include <diag_lib/diag_manager.h>
-#include <memory>
-
 namespace
 {
 constexpr int LOOP_RATE = 10;
 constexpr double DECELERATION_SEARCH_DISTANCE = 30;
 constexpr double STOP_SEARCH_DISTANCE = 60;
-
-std::shared_ptr<diag_manager> diag_manager_ptr;
 
 void obstacleColorByKind(const EControl kind, std_msgs::ColorRGBA &color, const double alpha=0.5)
 {
@@ -542,8 +537,6 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "velocity_set");
-
-  diag_manager_ptr = std::make_shared<diag_manager>();
 
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");

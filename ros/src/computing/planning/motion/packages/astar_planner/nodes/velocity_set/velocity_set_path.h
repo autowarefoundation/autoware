@@ -33,9 +33,13 @@
 
 #include <autoware_msgs/lane.h>
 #include "waypoint_follower/libwaypoint_follower.h"
+
+#include <diag_lib/diag_manager.h>
+
 class VelocitySetPath
 {
  private:
+  diag_manager diag_manager_;
   autoware_msgs::lane prev_waypoints_;
   autoware_msgs::lane new_waypoints_;
   autoware_msgs::lane temporal_waypoints_;

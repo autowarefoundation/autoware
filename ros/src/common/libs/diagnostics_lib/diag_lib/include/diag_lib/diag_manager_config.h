@@ -4,7 +4,7 @@
 /*
 define values for rate checker
 */
-#define RATE_CHECKER_BUFFER_LENGTH 1
+#define RATE_CHECKER_BUFFER_LENGTH 3.0
 #define RATE_CHECK_FREQUENCY 1.0
 
 /*
