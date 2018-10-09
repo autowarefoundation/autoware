@@ -111,25 +111,25 @@
     name: low subscribe rate
     category: 4
     description: topic /current_velocity subscribe rate was low (Warn)
-    threshold: 10.0
+    threshold: 5.0
     level: warn
   - num: 2
     name: low subscribe rate
     category: 4
     description: topic /current_velocity subscribe rate was low (Error)
-    threshold: 5.0
+    threshold: 1.0
     level: error
   - num: 3
     name: low subscribe rate
     category: 4
     description: topic /current_pose subscribe rate was low (Warn)
-    threshold: 10.0
+    threshold: 5.0
     level: warn
   - num: 4
     name: low subscribe rate
     category: 4
     description: topic /current_pose subscribe rate was low (Error)
-    threshold: 5.0
+    threshold: 1.0
     level: error
 /can_odometry:
   node_number: 5
