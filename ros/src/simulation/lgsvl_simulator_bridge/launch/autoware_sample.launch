@@ -4,7 +4,7 @@
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find lgsvl_simulator_bridge)/rviz/lgsvl_simulator.rviz" respawn="false" />
 
-    <node pkg="tf" type="static_transform_publisher" name="base_link_to_localizer" args="1.0 0 2.0 1.57 0 0 base_link velodyne 10"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_localizer" args="1.0 0 2.0 -1.57 0 0 base_link velodyne 10"/>
 
     <include file="$(find model_publisher)/launch/estima_white.launch">
         <arg name="offset_yaw" default="90"/>
