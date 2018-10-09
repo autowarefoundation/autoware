@@ -107,3 +107,41 @@
     name: node is ded 
     category: 3    
     description: /velocity_set node is dead
+/can_odometry:
+  node_number: 5
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /can_odometry node is dead
+  - num: 1
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle_status subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /vehicle_status subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 3
+    name: low publish rate
+    category: 5
+    description: topic /vehicle/odom publish rate was low (Warn)
+    threshold: 30.0
+    level: warn
+  - num: 4
+    name: low publish rate
+    category: 5
+    description: topic /vehicle/odom publish rate was low (Error)
+    threshold: 10.0
+    level: error
+/can_status_translator:
+  node_number: 5
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /can_status_translator node is dead

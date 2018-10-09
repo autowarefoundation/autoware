@@ -42,6 +42,9 @@
 #include "autoware_msgs/CanInfo.h"
 #include "autoware_msgs/VehicleStatus.h"
 
+//headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace autoware_connector
 {
 inline double kmph2mps(double velocity_kmph)
@@ -138,6 +141,7 @@ public:
   void run();
 
 private:
+  diag_manager diag_manager_;
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;

@@ -117,13 +117,16 @@ void CanOdometryNode::publishOdometry(const autoware_msgs::VehicleStatusConstPtr
   odom.child_frame_id = "base_link";
   odom.twist.twist.linear.x = vx;
   odom.twist.twist.angular.z = vth;
-
+  diag_manager_.DIAG_RATE_CHECK(3);
+  diag_manager_.DIAG_RATE_CHECK(4);
   // publish the message
   pub1_.publish(odom);
 }
 
 void CanOdometryNode::callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   publishOdometry(msg);
 }
 

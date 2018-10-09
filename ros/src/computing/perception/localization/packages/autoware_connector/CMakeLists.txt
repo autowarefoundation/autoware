@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_connector)
 
+add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
@@ -8,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         nav_msgs
         std_msgs
+        diag_lib
         )
 
 
