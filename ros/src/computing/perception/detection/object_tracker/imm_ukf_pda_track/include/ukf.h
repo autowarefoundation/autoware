@@ -47,7 +47,7 @@ public:
   geometry_msgs::PoseStamped map_fp_pose;
 };
 
-class IMM_RAUKF
+class UKF
 {
 public:
   int ukf_id_;
@@ -245,16 +245,10 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
-  int debug_object_num_meas_ ;
-
   /**
    * Constructor
    */
-  IMM_RAUKF();
-
-  // const double raukf_lambda_zero_;
-  // const double raukf_delta_zero_ ;
-  // const int a_;
+  UKF();
 
   void updateYawWithHighProb();
 

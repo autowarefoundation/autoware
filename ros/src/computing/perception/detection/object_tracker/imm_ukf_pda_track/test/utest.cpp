@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "imm_raukf.h"
+#include "ukf.h"
 
 TEST(ImmRaukf, initializeProperly)
 {
@@ -10,7 +10,7 @@ TEST(ImmRaukf, initializeProperly)
   int target_id    = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   EXPECT_DOUBLE_EQ( 0.7, ukf.x_merge_(0));
   EXPECT_DOUBLE_EQ(10.9, ukf.z_pred_cv_(1));
@@ -18,7 +18,7 @@ TEST(ImmRaukf, initializeProperly)
 
 TEST(ImmRaukf, initializeCovarianceQProperly)
 {
-  IMM_RAUKF ukf;
+  UKF ukf;
   double dt  = 0.1;
   double yaw = 0;
   ukf.initCovarQs(dt, yaw);
@@ -33,7 +33,7 @@ TEST(ImmRaukf, checkPredictionForSUKF)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionSUKF(dt);
@@ -50,7 +50,7 @@ TEST(ImmRaukf, checkUpdateForSUKF)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   // frame 1-----
   double dt  = 0.103288;
@@ -75,7 +75,7 @@ TEST(ImmRaukf, checkPredictionForIMMUKFPDA)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionIMMUKF(dt);
@@ -93,7 +93,7 @@ TEST(ImmRaukf, checkUpdateForIMMUKFPDA)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionIMMUKF(dt);
@@ -117,7 +117,7 @@ TEST(ImmRaukf, checkFaultDetectionForRAFilter)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionIMMUKF(dt);
@@ -140,7 +140,7 @@ TEST(ImmRaukf, checkPassFaultDetectionForRAFilter)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionIMMUKF(dt);
@@ -163,7 +163,7 @@ TEST(ImmRaukf, checkRAFilter)
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
-  IMM_RAUKF ukf;
+  UKF ukf;
   ukf.initialize(init_meas, timestamp, target_id);
   double dt  = 0.103288;
   ukf.predictionIMMUKF(dt);
