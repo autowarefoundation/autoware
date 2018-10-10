@@ -106,7 +106,7 @@
   <arg name="tracking_frame" default="/world" />
 
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
-  <node pkg="lidar_imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda" output="screen">
+  <node pkg="imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda" output="screen">
     <param name="gating_thres" value="$(arg gating_thres)" />
     <param name="gate_probability" value="$(arg gate_probability)" />
     <param name="detection_probability" value="$(arg detection_probability)" />
@@ -125,7 +125,7 @@
     <remap from="detected_objects" to="$(arg tracker_output_detected_topic)" />
   </node>
 
-  <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
+  <node pkg="imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
 
     <remap from="detected_objects" to="$(arg tracker_output_detected_topic)" />
