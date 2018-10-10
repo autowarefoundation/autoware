@@ -117,6 +117,7 @@ void VelocitySetInfo::detectionCallback(const std_msgs::Int32 &msg)
 
 void VelocitySetInfo::controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  //ROS_ERROR_STREAM(ros::Time::now());
   diag_manager_.DIAG_RATE_CHECK(3);
   diag_manager_.DIAG_RATE_CHECK(4);
   control_pose_ = *msg;
