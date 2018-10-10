@@ -48,6 +48,9 @@
 #include "autoware_msgs/steer_cmd.h"
 #include "autoware_msgs/ControlCommandStamped.h"
 
+//headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 class TwistGate
 {
   using remote_msgs_t = autoware_msgs::RemoteCmd;
@@ -57,6 +60,7 @@ class TwistGate
     TwistGate(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
     ~TwistGate();
   private:
+    diag_manager diag_manager_;
     void watchdog_timer();
     void remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg);
     void auto_cmd_twist_cmd_callback(const geometry_msgs::TwistStamped::ConstPtr& input_msg);
@@ -312,6 +316,8 @@ void TwistGate::lamp_cmd_callback(const autoware_msgs::lamp_cmd::ConstPtr& input
 
 void TwistGate::ctrl_cmd_callback(const autoware_msgs::ControlCommandStamped::ConstPtr& input_msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   if(command_mode_ == CommandMode::AUTO)
   {
     twist_gate_msg_.header.frame_id = input_msg->header.frame_id;
