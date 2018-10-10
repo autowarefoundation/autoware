@@ -37,7 +37,6 @@ add_executable(imm_ukf_pda
   nodes/imm_ukf_pda/imm_ukf_pda_main.cpp
   nodes/imm_ukf_pda/imm_ukf_pda.cpp
   nodes/imm_ukf_pda/ukf.cpp
-  # nodes/imm_ukf_pda/model_base_prediction.cpp
   )
 target_link_libraries(imm_ukf_pda
   ${catkin_LIBRARIES}
@@ -79,7 +78,6 @@ if (CATKIN_ENABLE_TESTING)
                    test/utest.cpp
                    nodes/imm_ukf_pda/imm_ukf_pda.cpp
                    nodes/imm_ukf_pda/ukf.cpp
-                   # nodes/imm_ukf_pda/model_base_prediction.cpp
                  )
   target_link_libraries(utest ${catkin_LIBRARIES})
 endif()

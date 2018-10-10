@@ -96,6 +96,8 @@ private:
   //for debug
   int debug_nth_take_;
 
+  double raukf_chi_thres_;
+
   std::string input_topic_;
   std::string output_topic_;
 

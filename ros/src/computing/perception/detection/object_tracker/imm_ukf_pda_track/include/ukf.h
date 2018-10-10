@@ -273,7 +273,7 @@ public:
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
 
-  void robustAdaptiveFilter(const bool use_sukf);
+  void robustAdaptiveFilter(const bool use_sukf, const double chi_thres_);
 
   void faultDetection(const int model_ind, bool& is_fault);
 

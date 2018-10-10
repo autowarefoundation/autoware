@@ -173,15 +173,12 @@ UKF::UKF()
   nis_ctrv_  = 0;
   nis_rm_    = 0;
 
+  //reference from "A Robust Adaptive Unscented Kalman Filter for Nonlinear Estimation with Uncertain Noise Covariance, 2018"
   raukf_lambda_zero_ = 0.2;
   raukf_delta_zero_  = 0.2;
 
   raukf_q_param_ = 7;
   raukf_r_param_ = 7;
-
-  // todo: choose param now 95% with 2 df
-  raukf_chi_thres_param_ = 9.2104;
-  // raukf_chi_thres_param_ = 10.5965;
 
   new_x_sig_cv_   = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
   new_x_sig_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
@@ -634,58 +631,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     lambda_rm   = (1 - gate_probability * detection_probability);
   }
 
-  // std::cout << ukf_id_ <<" innovation det " << s_cv_.determinant() << " " << s_ctrv_.determinant() << " " << s_rm_.determinant() << std::endl;
-  // std::cout << ukf_id_ <<" lambda " << lambda_cv << " " << lambda_ctrv << " " << lambda_rm << std::endl;
   lambda_vec.push_back(lambda_cv);
   lambda_vec.push_back(lambda_ctrv);
   lambda_vec.push_back(lambda_rm);
-
-  // std::cout <<" ukf id " << ukf_id_ << std::endl;
-  // std::cout << "sigma p cv " << std::endl << sigma_p_cv<< std::endl;
-  // std::cout << "sigma p ctrv " << std::endl << sigma_p_ctrv<< std::endl;
-  // std::cout << "sigma p rm " << std::endl << sigma_p_rm<< std::endl;
-  if(p_cv_(0,0) < 0 || p_cv_(1,1) < 0 ||p_cv_(2,2) < 0 ||p_cv_(3,3) < 0 ||p_cv_(4,4) < 0 ||
-     p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 ||
-     p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0)
-     {
-       // std::cout << "---------------------------NEGATIVE covariance ukf id " << ukf_id_ << std::endl <<" mode prob "<< mode_prob_cv_ << " " << mode_prob_ctrv_ << " " << mode_prob_rm_ << std::endl;
-       // std::cout << "lifetime " << lifetime_ << std::endl;
-       // std::cout << " innovation det " << s_cv_.determinant() << " " << s_ctrv_.determinant() << " " << s_rm_.determinant() << std::endl;
-       // std::cout << " lambda " << lambda_cv << " " << lambda_ctrv << " " << lambda_rm << std::endl;
-       exit(EXIT_FAILURE);
-     }
-
-  if(p_cv_(0,0) < 0 || p_cv_(1,1) < 0 ||p_cv_(2,2) < 0 ||p_cv_(3,3) < 0 ||p_cv_(4,4) < 0 )
-  {
-    ROS_ERROR("ukf id: %d Poorly made covariance p_cv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
-    // std::cout << " beta cv zero  " << beta_cv_zero << std::endl;
-    // std::cout << " x cv " << std::endl << x_cv_ << std::endl;
-    // std::cout << " p cv" << std::endl << p_cv_ << std::endl;
-    // std::cout << " second factor " << std::endl << (p_pre_cv   - k_cv_   * s_cv_   * k_cv_.transpose()) << std::endl;
-    // std::cout << "third factor " << std::endl << k_cv_   * sigma_p_cv   * k_cv_.transpose() << std::endl;
-    // std::cout << "sigma p cv " << std::endl << sigma_p_cv<< std::endl;
-  }
-  if(p_ctrv_(0,0) < 0 || p_ctrv_(1,1) < 0 ||p_ctrv_(2,2) < 0 ||p_ctrv_(3,3) < 0 ||p_ctrv_(4,4) < 0 )
-  {
-    ROS_ERROR("ukf id: %d Poorly made covariance p_ctrv_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
-    // std::cout << " beta ctrv zero  " << beta_ctrv_zero << std::endl;
-    // std::cout << " x ctrv" << std::endl << x_ctrv_ << std::endl;
-    // std::cout << " p ctrv" << std::endl << p_ctrv_ << std::endl;
-    // std::cout << " second factor " << std::endl << (p_pre_ctrv   - k_ctrv_   * s_ctrv_   * k_ctrv_.transpose()) << std::endl;
-    // std::cout << "third factor " << std::endl << k_ctrv_   * sigma_p_ctrv   * k_ctrv_.transpose() << std::endl;
-    // std::cout << "sigma p ctrv " << std::endl << sigma_p_ctrv<< std::endl;
-
-  }
-  if(p_rm_(0,0) < 0 || p_rm_(1,1) < 0 ||p_rm_(2,2) < 0 ||p_rm_(3,3) < 0 ||p_rm_(4,4) < 0 )
-  {
-    // std::cout << " beta rm zero  " << beta_cv_zero << std::endl;
-    // std::cout << " x rm" << std::endl << x_rm_ << std::endl;
-    // std::cout << " p rm" << std::endl << p_rm_ << std::endl;
-    // std::cout << " second factor " << std::endl << (p_pre_rm   - k_rm_   * s_rm_   * k_rm_.transpose()) << std::endl;
-    // std::cout << "third factor " << std::endl << k_rm_   * sigma_p_rm   * k_rm_.transpose() << std::endl;
-    // std::cout << "sigma p rm " << std::endl << sigma_p_rm<< std::endl;
-    ROS_ERROR("ukf id: %d Poorly made covariance p_rm_, contains negative value diagonal component, num_meas %f", ukf_id_, num_meas);
-  }
 }
 
 void UKF::faultDetection(const int model_ind, bool& is_fault)
@@ -716,16 +664,8 @@ void UKF::faultDetection(const int model_ind, bool& is_fault)
     r      = r_rm_;
   }
 
-  //to do: z_cov + r or z_cov
-  // double nis = (z_meas - z_pred).transpose()*(z_cov + r).inverse()*(z_meas - z_pred);
   double nis = (z_meas - z_pred).transpose()*(z_cov).inverse()*(z_meas - z_pred);
 
-  // std::cout << "nis z meas " << std::endl << z_meas << std::endl;
-  // std::cout << "nis z pred " << std::endl << z_pred << std::endl;
-  // std::cout << "nis z cov  " << std::endl << z_cov << std::endl;
-  // std::cout << "nis for dault detection " << nis << std::endl;
-
-  // todo: choose param now 95% with 2 df
   if(nis > raukf_chi_thres_param_)
   {
     is_fault = true;
@@ -828,8 +768,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     p      = p_rm_;
   }
 
-  //1, make sigma poitns from estiated x
-  // todo:refacotr, make function for preventing redundunt codes
+  // make sigma poitns from estiated x
   Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
   // create square root matrix
   Eigen::MatrixXd L = p.llt().matrixL();
@@ -883,10 +822,10 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
     S = S + weights_c_(i) * z_diff * z_diff.transpose();
   }
-  //2, calculate delta
+  // calculate delta
   double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
   double delta = std::max(raukf_delta_zero_, calculated_delta);
-  //3, correct R
+  // correct R
   Eigen::MatrixXd corrected_r = (1 - delta)*r + delta*(epsilon*epsilon.transpose() + S);
 
   if(model_ind == MotionModel::CV)
@@ -959,19 +898,6 @@ void UKF::estimationUpdate(const int model_ind)
     z_sig = new_z_sig_rm_;
   }
 
-  // std::cout << "lifetime " << lifetime_ << std::endl;
-  // if(model_ind == MotionModel::CV)
-  // {
-  //   std::cout << "p k|k-1 " << std::endl << p_cv_ << std::endl;
-  // }
-  // else if(model_ind == MotionModel::CTRV)
-  // {
-  //   std::cout << "p k|k-1 " << std::endl << p_ctrv_ << std::endl;
-  // }
-  // else
-  // {
-  //   std::cout << "p k|k-1 " << std::endl << p_rm_ << std::endl;
-  // }
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   p.fill(0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
@@ -984,7 +910,7 @@ void UKF::estimationUpdate(const int model_ind)
            x_diff(3) += 2. * M_PI;
     p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
-  // std::cout << "p x,x k|k-1 " << std::endl << p << std::endl;
+
   p = p + q;
 
   Eigen::MatrixXd cross_covariance(n_x_, 2);
@@ -1003,34 +929,16 @@ void UKF::estimationUpdate(const int model_ind)
   }
 
   Eigen::MatrixXd innovation_covariance = s + r;
-  // Eigen::MatrixXd innovation_covariance = s;
 
   Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
 
-  // std::cout <<"x_sig "<< std::endl <<x_sig << std::endl;
-  // std::cout <<"z sig "<< std::endl <<z_sig << std::endl;
-  //
-  // std::cout <<"before x "<< std::endl <<x << std::endl;
-  // std::cout <<"z "<< std::endl <<z<< std::endl;
-  // std::cout <<"z pred "<< std::endl <<z_pred << std::endl;
-  // std::cout <<"kalman gain "<< std::endl <<kalman_gain << std::endl;
-  // std::cout <<"cross covariance " << std::endl << cross_covariance << std::endl;
   x = x + kalman_gain*(z - z_pred);
-  // std::cout <<"corrected r "<< std::endl <<r << std::endl;
-  // std::cout <<"corrected q "<< std::endl <<q << std::endl;
-  // std::cout <<"before p "<< std::endl <<p << std::endl;
-  // std::cout <<"innovation cov "<< std::endl <<innovation_covariance << std::endl;
   p = p - kalman_gain*innovation_covariance*kalman_gain.transpose();
 
-  // std::cout <<"x "<< std::endl <<x << std::endl;
-  // std::cout <<"p "<< std::endl <<p << std::endl;
   if(model_ind == MotionModel::CV)
   {
-    // std::cout << "aaa"<< std::endl;
     x_cv_.col(0) = x;
-    // std::cout << "aaa"<< std::endl;
     p_cv_        = p;
-    // std::cout << "aaa"<< std::endl;
   }
   else if(model_ind == MotionModel::CTRV)
   {
@@ -1044,8 +952,10 @@ void UKF::estimationUpdate(const int model_ind)
   }
 }
 
-void UKF::robustAdaptiveFilter(const bool use_sukf)
+void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres_)
 {
+  raukf_chi_thres_param_ = chi_thres_;
+  
   // if no measurement, no correction/estimation is made
   if(!is_meas_)
   {
@@ -1191,11 +1101,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
   double py_p = p_y + v * sin(yaw) * delta_t;
 
   double v_p = v;
-  // not sure which one, works better in curve by using yaw
   double yaw_p = yaw;
-
-  //todo: might be different
-  // double yawd_p = yawd;
   double yawd_p = 0;
 
   state[0] = px_p;
@@ -1210,7 +1116,6 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
 {
   double px_p = p_x;
   double py_p = p_y;
-  // double v_p = v*0.9; // aim to converge velocity for static objects
   double v_p = 0.0;
 
   double yaw_p = yaw;

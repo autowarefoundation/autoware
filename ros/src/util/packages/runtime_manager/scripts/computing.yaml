@@ -1086,25 +1086,6 @@ params :
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
-<<<<<<< HEAD
-      v       : /detected_objects_range
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : tracker_output_jskbb_topic
-      desc    : tracker_output_jskbb_topic desc sample
-      label   : 'output jskbb topic'
-      kind    : str
-      v       : /bounding_boxes_tracked
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : tracker_output_detected_topic
-      desc    : tracker_output_detected_topic desc sample
-      label   : 'output topic'
-      kind    : str
-      v       : /detected_objects
-=======
       v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
@@ -1114,7 +1095,6 @@ params :
       label   : 'output topic'
       kind    : str
       v       : /detection/lidar_tracker/objects
->>>>>>> c6fa279b1b80f7e3855b1601c04285d6e59fe45c
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1188,30 +1168,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-<<<<<<< HEAD
-    - name     : use_sukf
-      desc     : standard Unscented kalman filter
-      label    : use sukf
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name     : use_robust_adaptive_filter
-      desc     : robust adaptive filter
-      label    : use robust adaptive filter
-      kind     : checkbox
-      v        : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-=======
     - name    : prevent_explosion_thres
       desc    : threshold for preventing ukf from explosion
       label   : 'prevent explosion thres'
       min       : 0
       max       : 10000
       v       : 1000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : raukf_chi_thres
+      desc    : chi distribution threshold for fault detection
+      label   : 'raukf chi thres'
+      min       : 0
+      max       : 50
+      v       : 9.2104
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1223,6 +1194,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name     : use_robust_adaptive_filter
+      desc     : robust adaptive filter
+      label    : use robust adaptive filter
+      kind     : checkbox
+      v        : True
+      cmd_param:
+        dash     : ''
+        delim    : ':='
     - name      : is_debug
       desc      : debug mode on/off
       label     : is_debug
@@ -1232,7 +1211,6 @@ params :
         dash      : ''
         delim     : ':='
 
->>>>>>> c6fa279b1b80f7e3855b1601c04285d6e59fe45c
 
   - name  : lidar_kf_contour_track_param
     vars  :

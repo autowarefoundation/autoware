@@ -48,6 +48,7 @@ init_(false)
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
+  private_nh_.param<double>("raukf_chi_thres", raukf_chi_thres_, 9.2104);  // chi distribution 95% with 2 df
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
@@ -101,7 +102,6 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
   try
   {
     tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-    // get sensor -> world frame
     tf_listener_.lookupTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), local2global_);
   }
   catch (tf::TransformException ex)
@@ -314,7 +314,6 @@ void ImmUkfPda::updateBB(UKF& target)
     return;
   }
 
-  // restricting yaw movement
   double diff_yaw = yaw - target.best_yaw_;
 
   // diffYaw is within the threshold, apply the diffYaw chamge
@@ -439,8 +438,6 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::Detecte
   target.x_merge_(2) = target.x_cv_(2) = target.x_ctrv_(2) = target.x_rm_(2) = target_v;
   target.x_merge_(3) = target.x_cv_(3) = target.x_ctrv_(3) = target.x_rm_(3) = target_yaw;
 
-  // target.initCovarQs(dt, target_yaw);
-
   target.tracking_num_++;
   return;
 }
@@ -526,11 +523,10 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     is_second_init = false;
   }
 
-  // measurement gating, get measVec, bboxVec, matchingVec through reference
+  // measurement gating
   measurementValidation(input, target, is_second_init, max_det_z, max_det_s, object_vec, matching_vec);
 
-  // bounding box association if target is stable :plus, right angle correction if its needed
-  // input: track number, bbox measurements, &target
+  // bounding box association if target is stable
   associateBB(object_vec, target);
 
   // second detection for a target: update v and yaw
@@ -834,7 +830,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
     if(use_robust_adaptive_filter_)
     {
-      targets_[i].robustAdaptiveFilter(use_sukf_);
+      targets_[i].robustAdaptiveFilter(use_sukf_, raukf_chi_thres_);
     }
   }
   // end UKF process

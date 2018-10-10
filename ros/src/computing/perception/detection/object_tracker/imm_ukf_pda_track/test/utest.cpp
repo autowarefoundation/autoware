@@ -127,6 +127,7 @@ TEST(ImmRaukf, checkFaultDetectionForRAFilter)
   dd.pose.position.y =  -2.81236;
   object_vec.push_back(dd);
   ukf.updateSUKF(object_vec);
+  ukf.raukf_chi_thres_param_ = 9.2041;
   bool is_fault;
   ukf.faultDetection(MotionModel::CTRV, is_fault);
   EXPECT_TRUE(is_fault);
@@ -150,6 +151,7 @@ TEST(ImmRaukf, checkPassFaultDetectionForRAFilter)
   dd.pose.position.y =  -3.21236;
   object_vec.push_back(dd);
   ukf.updateSUKF(object_vec);
+  ukf.raukf_chi_thres_param_ = 9.2041;
   bool is_fault;
   ukf.faultDetection(MotionModel::CTRV, is_fault);
   EXPECT_TRUE(!is_fault);
@@ -173,6 +175,7 @@ TEST(ImmRaukf, checkRAFilter)
   dd.pose.position.y =  -2.81236;
   object_vec.push_back(dd);
   ukf.updateSUKF(object_vec);
+  ukf.raukf_chi_thres_param_ = 9.2041;
 
   ukf.adaptiveAdjustmentQ(MotionModel::CTRV);
   ukf.adaptiveAdjustmentR(MotionModel::CTRV);
