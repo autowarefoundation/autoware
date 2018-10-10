@@ -1,5 +1,5 @@
 <!-- -->
 <launch>
-  <node pkg="gnss_localizer" type="gnss_matching" name="gnss_matching" output="log" />
+  <node pkg="gnss_localizer" type="RTK_localizer" name="RTK_localizer" output="log" />
 
 </launch>

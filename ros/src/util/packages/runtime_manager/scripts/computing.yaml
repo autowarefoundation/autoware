@@ -106,6 +106,16 @@ subs :
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
              prop  : 1
+           topic_localizer_stamped:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+             prop  : 1
+           tf_base_link:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+             prop  : 1
 
   - name : Detection
     desc : Detection desc sample
@@ -1589,7 +1599,23 @@ params :
       desc      : topic_twist_stamped desc sample
       label     : /current_velocity (geometry_msgs/TwistStamped)
       kind      : str
-      v         : /estimate_twist
+      v         : /ndt_estimate_twist
+      cmd_param :
+         dash    : ''
+         delim   : ':='
+    - name      : topic_localizer_stamped
+      desc      : topic_localizer_stamped desc sample
+      label     : /localizer_pose (geometry_msgs/TwistStamped)
+      kind      : str
+      v         : /ndt_localizer_pose
+      cmd_param :
+         dash    : ''
+         delim   : ':='
+    - name      : tf_base_link
+      desc      : tf_base_link desc sample
+      label     : /base_link (geometry_msgs/TwistStamped)
+      kind      : str
+      v         : /ndt_base_link
       cmd_param :
          dash    : ''
          delim   : ':='

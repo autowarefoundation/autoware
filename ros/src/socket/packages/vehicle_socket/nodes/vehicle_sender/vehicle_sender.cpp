@@ -110,9 +110,9 @@ static void *sendCommand(void *arg)
   oss << command_data.gearValue << ",";
   oss << command_data.accellValue << ",";
   oss << command_data.brakeValue << ",";
-  oss << command_data.steerValue << ",";
-  oss << command_data.linear_velocity << ",";
-  oss << command_data.steering_angle;
+  oss << command_data.steerValue;// << ",";
+  //oss << command_data.linear_velocity << ",";
+  //oss << command_data.steering_angle;
 
   std::string cmd(oss.str());
   ssize_t n = write(client_sock, cmd.c_str(), cmd.size());

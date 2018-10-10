@@ -51,14 +51,6 @@ add_executable(RTK_localizer
 target_link_libraries(RTK_localizer ${catkin_LIBRARIES})
 add_dependencies(RTK_localizer ${catkin_EXPORTED_TARGETS})
 
-add_executable(gnss_matching nodes/gnss_matching/gnss_matching.cpp nodes/gnss_matching/gnss_matching_history.cpp)
-target_link_libraries(gnss_matching ${catkin_LIBRARIES})
-add_dependencies(gnss_matching ${catkin_EXPORTED_TARGETS})
-
-if (CUDA_FOUND)
-    target_include_directories(gnss_matching PRIVATE ${CUDA_INCLUDE_DIRS})
-endif ()
-
 
 if (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
     set_target_properties(gnss_matching PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")

@@ -4,7 +4,8 @@
   <!-- send table.xml to param server -->
   <arg name="topic_pose_stamped" default="" />
   <arg name="topic_twist_stamped" default="" />
-  <arg name="topic_localizer_stamped" default="/localizer_pose_ndt" />
+  <arg name="topic_localizer_stamped" default="" />
+  <arg name="tf_base_link" default="" />
   <arg name="sim_mode" default="false" />
 
   <group unless="$(arg sim_mode)">
