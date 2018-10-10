@@ -572,7 +572,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
                            jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
-  // output.header = input.header;
   jskbboxes_output.header = input.header;
   detected_objects_output.header = input.header;
   for (size_t i = 0; i < targets_.size(); i++)
@@ -610,7 +609,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
-    // Store tyaw in velocity.linear.y since nowhere to store estimated_yaw
     detected_objects_output.objects.push_back(dd);
   }
 }
@@ -686,18 +684,12 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     id.scale.z = 0.5;
 
     double tv = targets_[i].x_merge_(2);
-    // not to visualize '-0.0'
-    if (abs(tv) < 0.1)
-    {
-      tv = 0.0;
-    }
     std::string s_velocity = std::to_string(tv * 3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
     std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) +
                        " m/s " + "(" + std::to_string(targets_[i].x_merge_(0)) + ", " +
                        std::to_string(targets_[i].x_merge_(1)) + ")";
-    // id.text = std::to_string(input.objects[i].id);
     id.text = text;
     texts_markers.markers.push_back(id);
   }
@@ -723,7 +715,6 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     id.color.g = 1.0f;
     id.color.a = 1.0;
 
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = input.objects[i].pose.position.x;
     id.pose.position.y = input.objects[i].pose.position.y;
     id.pose.position.z = 1.5;
@@ -740,9 +731,6 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
   points_markers.markers.push_back(target_points);
   points_markers.markers.push_back(meas_points);
 
-
-  // pub_points_.publish(target_points);
-  // pub_points_.publish(meas_points);
   pub_points_array_.publish(points_markers);
   pub_texts_array_.publish(texts_markers);
 }

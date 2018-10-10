@@ -74,7 +74,6 @@ UKF::UKF()
   std_cv_yawdd_ = 2;
   std_rm_yawdd_ = 3;
 
-  //------------------
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
   // Laser measurement noise standard deviation position2 in m
@@ -102,14 +101,7 @@ UKF::UKF()
   weights_c_ = Eigen::VectorXd(2 * n_x_ + 1);
   weights_s_ = Eigen::VectorXd(2 * n_x_ + 1);
 
-  count_ = 0;
-  count_empty_ = 0;
-
-  ini_u_.push_back(0.33);
-  ini_u_.push_back(0.33);
-  ini_u_.push_back(0.33);
-
-  // different from paper, might be wrong
+  // transition probability
   p1_.push_back(0.9);
   p1_.push_back(0.05);
   p1_.push_back(0.05);
@@ -150,11 +142,10 @@ UKF::UKF()
   k_ctrv_ = Eigen::MatrixXd(5, 2);
   k_rm_ = Eigen::MatrixXd(5, 2);
 
-  // gamma_g_ = 9.21;
   pd_ = 0.9;
   pg_ = 0.99;
 
-  // track parameter
+  // tracking parameter
   lifetime_ = 0;
   is_static_ = false;
 
@@ -167,7 +158,7 @@ UKF::UKF()
   bb_yaw_ = 0;
   bb_area_ = 0;
 
-  // for env classification
+  // for static classification
   init_meas_ = Eigen::VectorXd(2);
 
   x_merge_yaw_ = 0;
@@ -211,9 +202,9 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   ukf_id_ = target_id;
 
   // first measurement
-  x_merge_ << 1, 1, 0, 0, 0.1;
+  x_merge_ << 0, 0, 0, 0, 0.1;
 
-  // init covariance matrix
+  // init covariance matrix by hardcoding since no clue about initial state covrariance
   p_merge_ << 0.5, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 1;
 
   // set weights
@@ -223,7 +214,6 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   double beta = 2;
   double k = 0;
   lambda_ = alpha * alpha * (n_x_ + k) - n_x_;
-  // double weight_0 = lambda_ / (lambda_ + n_x_);
   double weight_s_0 = lambda_ / (lambda_ + n_x_);
   double weight_c_0 = lambda_ / (lambda_ + n_x_) + (1 - alpha * alpha + beta);
   weights_s_(0) = weight_s_0;
@@ -265,8 +255,6 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   // init tracking num
   tracking_num_ = 1;
 
-  // prevent transform pose error, if the condition meets, target_.jskBB_ would be updated
-  jsk_bb_.pose.orientation.x = 1.0;
 }
 
 void UKF::updateModeProb(const std::vector<double>& lambda_vec)
@@ -978,21 +966,18 @@ void UKF::updateLidar(const int model_ind)
   if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
-    // P = p_cv_;
     r = r_cv_;
     x_sig_pred = x_sig_pred_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
     x = x_ctrv_.col(0);
-    // P = p_ctrv_;
     r = r_ctrv_;
     x_sig_pred = x_sig_pred_ctrv_;
   }
   else
   {
     x = x_rm_.col(0);
-    // P = p_rm_;
     r = r_rm_;
     x_sig_pred = x_sig_pred_rm_;
   }
@@ -1067,7 +1052,6 @@ void UKF::updateLidar(const int model_ind)
   if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
-    // p_cv_ = P;
     x_sig_pred_cv_ = x_sig_pred;
     z_pred_cv_ = z_pred;
     s_cv_ = S;

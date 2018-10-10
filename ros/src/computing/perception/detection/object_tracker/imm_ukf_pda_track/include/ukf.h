@@ -52,23 +52,6 @@ enum TrackingState : int
   Lost = 10,   // About to lose target
 };
 
-class LanePoint
-{
-public:
-  int lnid;
-  int flid;
-  int fpid;
-  double lw;
-  double rw;
-  double lw_ly;
-  double lw_bx;
-  double rw_ly;
-  double rw_bx;
-  double direction;
-  double curvature;
-  geometry_msgs::PoseStamped map_fp_pose;
-};
-
 class UKF
 {
 public:
@@ -165,8 +148,6 @@ public:
   double mode_prob_cv_;
   double mode_prob_ctrv_;
   double mode_prob_rm_;
-
-  std::vector<double> ini_u_;
 
   std::vector<double> p1_;
 
