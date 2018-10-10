@@ -45,6 +45,9 @@
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
+// headers in diag_lib
+#include <diag_lib/diag_manager.h>
+
 namespace waypoint_follower
 {
 enum class Mode : int32_t
@@ -73,6 +76,9 @@ private:
   // handle
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
+
+  // diag 
+  diag_manager diag_manager_;
 
   // class
   PurePursuit pp_;
@@ -109,7 +115,7 @@ private:
 
   // functions
   void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
-  void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
+  void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa);
   void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
                                        const std::vector<autoware_msgs::waypoint> &waypoints) const;
 

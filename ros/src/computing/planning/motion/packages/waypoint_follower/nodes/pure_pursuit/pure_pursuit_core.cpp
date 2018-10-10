@@ -138,7 +138,7 @@ void PurePursuitNode::publishTwistStamped(const bool &can_get_curvature, const d
   pub1_.publish(ts);
 }
 
-void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const
+void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature, const double &kappa)
 {
   if (!publishes_for_steering_robot_)
     return;
@@ -149,6 +149,9 @@ void PurePursuitNode::publishControlCommandStamped(const bool &can_get_curvature
   ccs.cmd.linear_acceleration = can_get_curvature ? computeCommandAccel() : 0;
   ccs.cmd.steering_angle = can_get_curvature ? convertCurvatureToSteeringAngle(wheel_base_, kappa) : 0;
 
+  diag_manager_.DIAG_RATE_CHECK(7);
+  diag_manager_.DIAG_RATE_CHECK(8);
+  
   pub2_.publish(ccs);
 }
 
@@ -224,12 +227,16 @@ void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point
 
 void PurePursuitNode::callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(3);
+  diag_manager_.DIAG_RATE_CHECK(4);
   pp_.setCurrentPose(msg);
   is_pose_set_ = true;
 }
 
 void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   current_linear_velocity_ = msg->twist.linear.x;
   pp_.setCurrentVelocity(current_linear_velocity_);
   is_velocity_set_ = true;
@@ -237,6 +244,8 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
 
 void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(5);
+  diag_manager_.DIAG_RATE_CHECK(6);
   if (!msg->waypoints.empty())
     command_linear_velocity_ = msg->waypoints.at(0).twist.twist.linear.x;
   else

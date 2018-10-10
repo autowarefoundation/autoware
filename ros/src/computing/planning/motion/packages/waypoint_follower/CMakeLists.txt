@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         sensor_msgs
         tablet_socket_msgs
+        diag_lib
         )
 
 ################################################
@@ -33,6 +34,7 @@ catkin_package(
         pcl_conversions
         sensor_msgs
         tablet_socket_msgs
+        diag_lib
 )
 
 ###########
