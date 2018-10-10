@@ -292,14 +292,6 @@ subs :
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
 
-      - name : imm_ukf_pda_track
-        desc : imm_ukf_pda_track desc sample
-        cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
-        param: imm_ukf_pda_track_param
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch range_fusion range_fusion.launch
@@ -352,6 +344,18 @@ subs :
             flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
+
+
+    - name : object_tracker
+      desc : object_tracker desc sample
+      subs :
+        - name : imm_ukf_pda_track
+          desc : imm_ukf_pda_track desc sample
+          cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
+          param: imm_ukf_pda_track_param
+          gui  :
+            sync :
+              func : self.button_synchronization.GetValue()
 
 
     - name : trafficlight_recognizer
