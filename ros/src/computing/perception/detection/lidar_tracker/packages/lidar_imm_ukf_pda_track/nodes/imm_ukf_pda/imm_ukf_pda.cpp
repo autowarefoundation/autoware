@@ -59,9 +59,9 @@ void ImmUkfPda::run()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
 
   // for debug
-  pub_points_ = node_handle_.advertise<visualization_msgs::Marker>("/detection/lidar_tracker/points_markers", 1);
-  pub_texts_array_ =
-      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/texts_markers", 1);
+  pub_points_array_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
+  pub_texts_array_  =
+      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &ImmUkfPda::callback, this);
 }
@@ -631,7 +631,7 @@ void ImmUkfPda::removeUnnecessaryTarget()
 
 void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input)
 {
-  visualization_msgs::MarkerArray texts_markers;
+  visualization_msgs::MarkerArray texts_markers, points_markers;
   visualization_msgs::Marker target_points, meas_points;
   target_points.header.frame_id = meas_points.header.frame_id = "/world";
   target_points.header.stamp = meas_points.header.stamp = input.header.stamp;
@@ -656,7 +656,7 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
   meas_points.color.g = 1.0f;
   meas_points.color.a = 1.0;
 
-  // targets text
+  // making rosmarker fot target
   for (size_t i = 0; i < targets_.size(); i++)
   {
     geometry_msgs::Point p;
@@ -702,9 +702,15 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     texts_markers.markers.push_back(id);
   }
 
-  // meas text
+  // making rosmarker fot measurement
   for (size_t i = 0; i < input.objects.size(); i++)
   {
+    geometry_msgs::Point p;
+    p.x = input.objects[i].pose.position.x;
+    p.y = input.objects[i].pose.position.y;
+    p.z = 1.0;
+    meas_points.points.push_back(p);
+
     visualization_msgs::Marker id;
     id.header.frame_id = "/world";
     id.header.stamp = input.header.stamp;
@@ -731,18 +737,13 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     id.text = text;
     texts_markers.markers.push_back(id);
   }
+  points_markers.markers.push_back(target_points);
+  points_markers.markers.push_back(meas_points);
 
-  for (size_t i = 0; i < input.objects.size(); i++)
-  {
-    geometry_msgs::Point p;
-    p.x = input.objects[i].pose.position.x;
-    p.y = input.objects[i].pose.position.y;
-    p.z = 1.0;
 
-    meas_points.points.push_back(p);
-  }
-  pub_points_.publish(target_points);
-  pub_points_.publish(meas_points);
+  // pub_points_.publish(target_points);
+  // pub_points_.publish(meas_points);
+  pub_points_array_.publish(points_markers);
   pub_texts_array_.publish(texts_markers);
 }
 

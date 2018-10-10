@@ -37,6 +37,6 @@
   <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
     <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
 
-    <remap from="detected_objects" to="$(arg tracker_output_detected_topic)" />
+    <remap from="/detection/lidar_detector/objects" to="$(arg tracker_output_detected_topic)" />
   </node>
 </launch>

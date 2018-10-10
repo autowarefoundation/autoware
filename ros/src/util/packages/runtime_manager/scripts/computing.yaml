@@ -1082,7 +1082,7 @@ params :
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
-      v       : /cloud_clusters
+      v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1090,7 +1090,7 @@ params :
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /detection/tracked_objects
+      v       : /detection/lidar_tracker/objects
       cmd_param :
         dash        : ''
         delim       : ':='

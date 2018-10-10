@@ -34,14 +34,16 @@
 #include <tf/transform_datatypes.h>
 #include <cmath>
 
-VisualizeDetectedObjects::VisualizeDetectedObjects() : vis_id_height_(1.5), vis_arrow_height_(0.5)
+VisualizeDetectedObjects::VisualizeDetectedObjects() :
+vis_arrow_height_(0.5),
+vis_id_height_(1.5)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
 
-  sub_object_array_ = node_handle_.subscribe("/detected_objects", 1, &VisualizeDetectedObjects::callBack, this);
-  pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detected_objects/velocity_arrow", 10);
-  pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detected_objects/target_id", 10);
+  sub_object_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
+  pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/arrow_markers", 10);
+  pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/id_markes", 10);
 }
 
 void VisualizeDetectedObjects::callBack(const autoware_msgs::DetectedObjectArray& input)
@@ -150,7 +152,6 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     arrow.color.g = 1.0f;
     arrow.color.a = 1.0;
     arrow.id = input.objects[i].id;
-    // arrow.id = i;
 
     // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     arrow.pose.position.x = input.objects[i].pose.position.x;

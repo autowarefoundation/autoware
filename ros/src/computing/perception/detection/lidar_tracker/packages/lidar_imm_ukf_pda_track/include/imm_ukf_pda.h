@@ -103,7 +103,7 @@ private:
   ros::Publisher pub_jskbbox_array_;
   ros::Publisher pub_adas_direction_array_;
   ros::Publisher pub_adas_prediction_array_;
-  ros::Publisher pub_points_;
+  ros::Publisher pub_points_array_;
   ros::Publisher pub_texts_array_;
 
   vector_map::VectorMap vmap_;
