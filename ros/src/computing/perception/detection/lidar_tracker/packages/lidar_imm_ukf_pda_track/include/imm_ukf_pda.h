@@ -32,18 +32,17 @@ private:
   std::vector<UKF> targets_;
 
   // probabilistic data association params
-  double gating_thres_;           // 9.22
-  double gate_probability_;       // 0.99;
-  double detection_probability_;  // 0.9;
+  double gating_thres_;
+  double gate_probability_;
+  double detection_probability_;
 
   // bbox association param
-  double distance_thres_;  // 0.25;
-  int life_time_thres_;    // 8;
+  double distance_thres_;
+  int life_time_thres_;
+
   // bbox update params
-  double bb_yaw_change_thres_;  // 0.2;
-
+  double bb_yaw_change_thres_;
   double static_velocity_thres_;
-
   double init_yaw_;
 
   // Tracking state paramas
@@ -53,7 +52,11 @@ private:
   // switch sukf and ImmUkfPda
   bool use_sukf_;
 
+  // whether if publish debug ros markers
   bool is_debug_;
+
+  // prevent explode param for ukf
+  double prevent_explosion_thres_;
 
   std::string input_topic_;
   std::string output_topic_;
@@ -76,7 +79,6 @@ private:
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
-  // std::ofstream csv_file_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
@@ -107,7 +109,7 @@ private:
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
   void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
-                                    const double det_explode_param, std::vector<bool>& matching_vec,
+                                    std::vector<bool>& matching_vec,
                                     std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
                                     bool& is_skip_target);
   void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,

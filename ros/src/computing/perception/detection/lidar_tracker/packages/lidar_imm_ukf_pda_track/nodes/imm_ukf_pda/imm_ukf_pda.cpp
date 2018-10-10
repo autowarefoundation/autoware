@@ -17,6 +17,7 @@ init_(false)
   private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
+  private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
 }
@@ -428,7 +429,7 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
 }
 
 void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
-                                             const double det_explode_param, std::vector<bool>& matching_vec,
+                                             std::vector<bool>& matching_vec,
                                              std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
                                              bool& is_skip_target)
 {
@@ -451,7 +452,7 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   }
 
   // prevent ukf not to explode
-  if (std::isnan(det_s) || det_s > det_explode_param)
+  if (std::isnan(det_s) || det_s > prevent_explosion_thres_)
   {
     target.tracking_num_ = TrackingState::Die;
     is_skip_target = true;
@@ -721,9 +722,6 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 {
   double timestamp = input.header.stamp.toSec();
 
-  const double det_explode_param = 100;
-  const double cov_explode_param = 1000;
-
   if (!init_)
   {
     initTracker(input, timestamp);
@@ -733,8 +731,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
   double dt = (timestamp - timestamp_);
   timestamp_ = timestamp;
-  // // used for making new target with no data association
-  std::vector<bool> matching_vec(input.objects.size(), false);  // make 0 vector
+  // making new target with no data association
+  std::vector<bool> matching_vec(input.objects.size(), false);
 
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
@@ -743,13 +741,13 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     targets_[i].is_vis_bb_ = false;
     targets_[i].is_static_ = false;
 
-    // todo: modify here. This skips irregular measurement and nan
     if (targets_[i].tracking_num_ == TrackingState::Die)
     {
       continue;
     }
     // prevent ukf not to explode
-    if (targets_[i].p_merge_.determinant() > det_explode_param || targets_[i].p_merge_(4, 4) > cov_explode_param)
+    if (targets_[i].p_merge_.determinant() > prevent_explosion_thres_ ||
+        targets_[i].p_merge_(4, 4) > prevent_explosion_thres_)
     {
       targets_[i].tracking_num_ = TrackingState::Die;
       continue;
@@ -757,27 +755,27 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
     if (use_sukf_)
     {
-      // sukf prediction step
+      // standard ukf prediction step
       targets_[i].predictionSUKF(dt);
       // data association
       bool is_skip_target;
       std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, object_vec, targets_[i], is_skip_target);
+      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
       if (is_skip_target)
       {
         continue;
       }
-      // sukf update step
+      // standard ukf update step
       targets_[i].updateSUKF(object_vec);
     }
-    else  // imm ukf pda filter
+    else  // immukfpda filter
     {
       // immukf prediction step
       targets_[i].predictionIMMUKF(dt);
       // data association
       bool is_skip_target;
       std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, det_explode_param, matching_vec, object_vec, targets_[i], is_skip_target);
+      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
       if (is_skip_target)
       {
         continue;
@@ -803,5 +801,6 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // making output for visualization
   makeOutput(input, jskbboxes_output, detected_objects_output);
 
+  // remove unnecessary ukf object
   removeUnnecessaryTarget();
 }
