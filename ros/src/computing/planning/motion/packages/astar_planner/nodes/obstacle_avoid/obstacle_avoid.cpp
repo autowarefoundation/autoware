@@ -33,9 +33,6 @@
 
 #include <autoware_msgs/LaneArray.h>
 
-#include <diag_lib/diag_manager.h>
-#include <memory>
-
 namespace
 {
 
@@ -112,7 +109,6 @@ void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner:
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "obstacle_avoid");
-  diag_manager_ptr = std::make_shared<diag_manager>();
 
   ros::NodeHandle n;
 

@@ -108,14 +108,18 @@ void SearchInfo::mapCallback(const nav_msgs::OccupancyGridConstPtr &msg)
 
 void SearchInfo::currentPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(3);
+  diag_manager_.DIAG_RATE_CHECK(4);
   current_pose_ = *msg;
-
   return;
 }
 
 void SearchInfo::currentVelocityCallback(const geometry_msgs::TwistStampedConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(1);
+  diag_manager_.DIAG_RATE_CHECK(2);
   current_velocity_mps_ = msg->twist.linear.x;
+  return;
 }
 
 void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
@@ -174,6 +178,8 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 // get waypoints
 void SearchInfo::waypointsCallback(const autoware_msgs::laneConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(7);
+  diag_manager_.DIAG_RATE_CHECK(8);
   subscribed_waypoints_ = *msg;
 
   if (!path_set_)
@@ -190,6 +196,8 @@ void SearchInfo::closestWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 
 void SearchInfo::obstacleWaypointCallback(const std_msgs::Int32ConstPtr &msg)
 {
+  diag_manager_.DIAG_RATE_CHECK(5);
+  diag_manager_.DIAG_RATE_CHECK(6);
   // not always avoid AND current state is not avoidance
   if (!avoidance_ && state_ != "OBSTACLE_AVOIDANCE")
   {

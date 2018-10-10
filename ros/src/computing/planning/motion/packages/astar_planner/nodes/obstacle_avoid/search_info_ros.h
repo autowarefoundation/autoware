@@ -41,6 +41,8 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 
+#include <diag_lib/diag_manager.h>
+
 namespace astar_planner
 {
 class SearchInfo
@@ -152,6 +154,7 @@ public:
   void reset();
 
 private:
+  diag_manager diag_manager_;
   double calcPathLength(const autoware_msgs::lane &lane, const int start_waypoint_index,
                         const int goal_waypoint_index) const;
 
