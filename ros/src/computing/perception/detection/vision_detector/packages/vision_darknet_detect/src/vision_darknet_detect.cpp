@@ -183,7 +183,17 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
             obj.color.a = 1.0f;
 
             obj.score = in_objects[i].score;
-            obj.label = in_objects[i].GetClassString();
+            if (use_coco_names_)
+            {
+                obj.label = in_objects[i].GetClassString();
+            }
+            else
+            {
+                if (in_objects[i].class_type < custom_names_.size())
+                    obj.label = custom_names_[in_objects[i].class_type];
+                else
+                    obj.label = "unknown label";
+            }
 
             out_message.objects.push_back(obj);
 
@@ -279,6 +289,18 @@ void Yolo3DetectorNode::config_cb(const autoware_msgs::ConfigSsd::ConstPtr& para
     score_threshold_ = param->score_threshold;
 }
 
+std::vector<std::string> Yolo3DetectorNode::read_custom_names_file(const std::string& in_names_path)
+{
+    std::ifstream file(in_names_path);
+    std::string str;
+    std::vector<std::string> names;
+    while (std::getline(file, str))
+    {
+        names.push_back(str);
+        std::cout << str <<  std::endl;
+    }
+    return names;
+}
 
 void Yolo3DetectorNode::Run()
 {
@@ -298,7 +320,7 @@ void Yolo3DetectorNode::Run()
     }
 
     std::string network_definition_file;
-    std::string pretrained_model_file;
+    std::string pretrained_model_file, names_file;
     if (private_node_handle.getParam("network_definition_file", network_definition_file))
     {
         ROS_INFO("Network Definition File (Config): %s", network_definition_file.c_str());
@@ -316,6 +338,18 @@ void Yolo3DetectorNode::Run()
     {
         ROS_INFO("No Pretrained Model File was received. Finishing execution.");
         return;
+    }
+
+    if (private_node_handle.getParam("names_file", names_file))
+    {
+        ROS_INFO("Names File: %s", names_file.c_str());
+        use_coco_names_ = false;
+        custom_names_ = read_custom_names_file(names_file);
+    }
+    else
+    {
+        ROS_INFO("No Names file was received. Using default COCO names.");
+        use_coco_names_ = true;
     }
 
     private_node_handle.param<float>("score_threshold", score_threshold_, 0.5);

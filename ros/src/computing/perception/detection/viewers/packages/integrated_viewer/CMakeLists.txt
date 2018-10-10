@@ -27,6 +27,7 @@ if (rviz_QT_VERSION VERSION_LESS "5")
     qt4_wrap_ui(UI_HEADERS
             node/traffic_light_plugin/form.ui
             node/image_viewer_plugin/image_viewer_form.ui
+            node/data_rate_checker_plugin/data_rate_checker_form.ui
             )
 
     # Here we specify which header files need to be run through "moc",
@@ -34,6 +35,7 @@ if (rviz_QT_VERSION VERSION_LESS "5")
     qt4_wrap_cpp(MOC_FILES
             node/traffic_light_plugin/traffic_light_plugin.h
             node/image_viewer_plugin/image_viewer_plugin.h
+            node/data_rate_checker_plugin/data_rate_checker_plugin.h
             )
 else ()
     find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets Quick)
@@ -42,6 +44,7 @@ else ()
     qt5_wrap_ui(UI_HEADERS
             node/traffic_light_plugin/form.ui
             node/image_viewer_plugin/image_viewer_form.ui
+            node/data_rate_checker_plugin/data_rate_checker_form.ui
             )
 
     # Here we specify which header files need to be run through "moc",
@@ -49,6 +52,7 @@ else ()
     qt5_wrap_cpp(MOC_FILES
             node/traffic_light_plugin/traffic_light_plugin.h
             node/image_viewer_plugin/image_viewer_plugin.h
+            node/data_rate_checker_plugin/data_rate_checker_plugin.h
             )
 endif ()
 
@@ -76,6 +80,7 @@ set(SOURCE_FILES
         node/image_viewer_plugin/draw_rects.cpp
         node/image_viewer_plugin/draw_points.cpp
         node/image_viewer_plugin/draw_lane.cpp
+        node/data_rate_checker_plugin/data_rate_checker_plugin.cpp
         ${MOC_FILES}
         ${UI_HEADERS})
 

@@ -34,6 +34,8 @@ Launch file available parameters:
 |`pretrained_model_file`|*String*|Path to pretrained model. Default `yolov3.weights`.|
 |`camera_id`|*String*|Camera workspace. Default `/`.|
 |`image_src`|*String*|Image source topic. Default `/image_raw`.|
+|`names_file`|*String*|Path to pretrained model. Default `coco.names`.|
+
 
 ### Subscribed topics
 

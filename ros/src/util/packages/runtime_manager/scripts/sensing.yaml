@@ -213,6 +213,14 @@ subs :
         run  : roslaunch sick_ldmrs_driver sick_ldmrs.launch
         param: sick_ldmrs
 
+      - name : Robosense RS32
+        desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
+        run  : roslaunch rslidar_pointcloud cloud_nodelet_32.launch
+
+      - name : Robosense RS16
+        desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
+        run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
+
   - name : Other Sensors
     desc : Other Sensors desc sample
     subs :

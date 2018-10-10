@@ -99,30 +99,35 @@ namespace darknet {
 }  // namespace darknet
 
 class Yolo3DetectorNode {
-    ros::Subscriber subscriber_image_raw_;
-    ros::Subscriber subscriber_yolo_config_;
-    ros::Publisher publisher_objects_;
-    ros::NodeHandle node_handle_;
+    ros::Subscriber                 subscriber_image_raw_;
+    ros::Subscriber                 subscriber_yolo_config_;
+    ros::Publisher                  publisher_objects_;
+    ros::NodeHandle                 node_handle_;
 
-    darknet::Yolo3Detector yolo_detector_;
+    darknet::Yolo3Detector          yolo_detector_;
 
     image darknet_image_ = {};
 
-    float score_threshold_;
-    float nms_threshold_;
-    double image_ratio_;//resdize ratio used to fit input image to network input size
-    uint32_t image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
-    uint32_t image_left_right_border_;
-    std::vector<cv::Scalar> colors_;
+    float                           score_threshold_;
+    float                           nms_threshold_;
+    double                          image_ratio_;//resize ratio used to fit input image to network input size
+    uint32_t                        image_top_bottom_border_;//black strips added to the input image to maintain aspect ratio while resizing it to fit the network input size
+    uint32_t                        image_left_right_border_;
+    std::vector<cv::Scalar>         colors_;
+
+    std::vector<std::string>        custom_names_;
+    bool                            use_coco_names_;
 
 
-    void convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::DetectedObjectArray& out_message);
-    void rgbgr_image(image& im);
-    image convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg);
-    void image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
-    void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param);
+    void                            convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects,
+                                      autoware_msgs::DetectedObjectArray& out_message);
+    void                            rgbgr_image(image& im);
+    image                           convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg);
+    void                            image_callback(const sensor_msgs::ImageConstPtr& in_image_message);
+    void                            config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param);
+    std::vector<std::string>        read_custom_names_file(const std::string& in_path);
 public:
-    void Run();
+    void    Run();
 };
 
 #endif  // DARKNET_YOLO3_H
