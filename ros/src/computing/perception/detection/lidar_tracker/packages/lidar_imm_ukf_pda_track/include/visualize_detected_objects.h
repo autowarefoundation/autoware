@@ -50,6 +50,8 @@ class VisualizeDetectedObjects
 private:
   const double vis_arrow_height_;
   const double vis_id_height_;
+  double ignore_velocity_thres_;
+  double visualize_arrow_velocity_thres_;
   std::string input_topic_;
   std::string pointcloud_frame_;
 

@@ -40,6 +40,9 @@ vis_id_height_(1.5)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
+  private_nh_.param<double>("ignore_velocity_thres", ignore_velocity_thres_, 0.1);
+  private_nh_.param<double>("visualize_arrow_velocity_thres", visualize_arrow_velocity_thres_, 0.25);
+
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/arrow_markers", 10);
@@ -113,18 +116,16 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
 
     id.scale.z = 1.0;
 
-    // not to visualize '-0.0'
-    if (abs(velocity) < 0.1)
+    if (abs(velocity) < ignore_velocity_thres_)
     {
       velocity = 0.0;
     }
+
+    // convert unit m/s to km/h
     std::string s_velocity = std::to_string(velocity * 3.6);
     std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
     std::string text = "<" + std::to_string(input.objects[i].id) + "> " + modified_sv + " km/h";
 
-    // std::string text = "<" + std::to_string(input.objects[i].id) + ">" + " "
-    //              + std::to_string(velocity) + " m/s";
-    // id.text = std::to_string(input.objects[i].id);
     id.text = text;
 
     marker_ids.markers.push_back(id);
@@ -138,7 +139,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     {
       continue;
     }
-    if (abs(velocity) < 0.25)
+    if (abs(velocity) < visualize_arrow_velocity_thres_)
     {
       continue;
     }
@@ -164,7 +165,6 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     arrow.pose.orientation.w = q_tf.getW();
 
     // Set the scale of the arrow -- 1x1x1 here means 1m on a side
-    // arrow.scale.x = velocity;
     arrow.scale.x = 3;
     arrow.scale.y = 0.1;
     arrow.scale.z = 0.1;
