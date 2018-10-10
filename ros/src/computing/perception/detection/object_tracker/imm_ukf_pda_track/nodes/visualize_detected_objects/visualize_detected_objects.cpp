@@ -34,17 +34,15 @@
 #include <tf/transform_datatypes.h>
 #include <cmath>
 
-VisualizeDetectedObjects::VisualizeDetectedObjects() :
-vis_arrow_height_(0.5),
-vis_id_height_(1.5)
+VisualizeDetectedObjects::VisualizeDetectedObjects() : vis_arrow_height_(0.5), vis_id_height_(1.5)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
   private_nh_.param<double>("ignore_velocity_thres", ignore_velocity_thres_, 0.1);
   private_nh_.param<double>("visualize_arrow_velocity_thres", visualize_arrow_velocity_thres_, 0.25);
 
-
-  sub_object_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
+  sub_object_array_ =
+      node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/arrow_markers", 10);
   pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/id_markes", 10);
 }

@@ -157,45 +157,45 @@ UKF::UKF()
   x_merge_yaw_ = 0;
 
   // for raukf
-  cv_meas_   = Eigen::VectorXd(2);
+  cv_meas_ = Eigen::VectorXd(2);
   ctrv_meas_ = Eigen::VectorXd(2);
-  rm_meas_   = Eigen::VectorXd(2);
+  rm_meas_ = Eigen::VectorXd(2);
 
-  r_cv_      = Eigen::MatrixXd(2, 2);
-  r_ctrv_    = Eigen::MatrixXd(2, 2);
-  r_rm_      = Eigen::MatrixXd(2, 2);
+  r_cv_ = Eigen::MatrixXd(2, 2);
+  r_ctrv_ = Eigen::MatrixXd(2, 2);
+  r_rm_ = Eigen::MatrixXd(2, 2);
 
-  q_cv_      = Eigen::MatrixXd(5, 5);
-  q_ctrv_    = Eigen::MatrixXd(5, 5);
-  q_rm_      = Eigen::MatrixXd(5, 5);
+  q_cv_ = Eigen::MatrixXd(5, 5);
+  q_ctrv_ = Eigen::MatrixXd(5, 5);
+  q_rm_ = Eigen::MatrixXd(5, 5);
 
-  nis_cv_    = 0;
-  nis_ctrv_  = 0;
-  nis_rm_    = 0;
+  nis_cv_ = 0;
+  nis_ctrv_ = 0;
+  nis_rm_ = 0;
 
-  //reference from "A Robust Adaptive Unscented Kalman Filter for Nonlinear Estimation with Uncertain Noise Covariance, 2018"
+  // reference from "A Robust Adaptive Unscented Kalman Filter for Nonlinear Estimation with Uncertain Noise Covariance,
+  // 2018"
   raukf_lambda_zero_ = 0.2;
-  raukf_delta_zero_  = 0.2;
+  raukf_delta_zero_ = 0.2;
 
   raukf_q_param_ = 7;
   raukf_r_param_ = 7;
 
-  new_x_sig_cv_   = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
   new_x_sig_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  new_x_sig_rm_   = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
 
-  new_z_sig_cv_   = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
   new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
-  new_z_sig_rm_   = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
 
-  new_z_pred_cv_  = Eigen::VectorXd(2);
-  new_z_pred_ctrv_= Eigen::VectorXd(2);
-  new_z_pred_rm_  = Eigen::VectorXd(2);
+  new_z_pred_cv_ = Eigen::VectorXd(2);
+  new_z_pred_ctrv_ = Eigen::VectorXd(2);
+  new_z_pred_rm_ = Eigen::VectorXd(2);
 
-  new_s_cv_   = Eigen::MatrixXd(2, 2);
+  new_s_cv_ = Eigen::MatrixXd(2, 2);
   new_s_ctrv_ = Eigen::MatrixXd(2, 2);
-  new_s_rm_   = Eigen::MatrixXd(2, 2);
-
+  new_s_rm_ = Eigen::MatrixXd(2, 2);
 }
 
 void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -255,7 +255,6 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
 
   // init tracking num
   tracking_num_ = 1;
-
 }
 
 void UKF::updateModeProb(const std::vector<double>& lambda_vec)
@@ -513,25 +512,25 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
 
   // for noise estimation
   is_meas_ = false;
-  if(num_meas != 0)
+  if (num_meas != 0)
   {
     is_meas_ = true;
-    std::vector<double>::iterator max_cv_iter   = std::max_element(e_cv_vec.begin(), e_cv_vec.end());
+    std::vector<double>::iterator max_cv_iter = std::max_element(e_cv_vec.begin(), e_cv_vec.end());
     std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
-    std::vector<double>::iterator max_rm_iter   = std::max_element(e_rm_vec.begin(), e_rm_vec.end());
-    int max_cv_ind   = std::distance(e_cv_vec.begin()  , max_cv_iter);
+    std::vector<double>::iterator max_rm_iter = std::max_element(e_rm_vec.begin(), e_rm_vec.end());
+    int max_cv_ind = std::distance(e_cv_vec.begin(), max_cv_iter);
     int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
-    int max_rm_ind   = std::distance(e_rm_vec.begin()  , max_rm_iter);
-    cv_meas_   = meas_vec[max_cv_ind];
+    int max_rm_ind = std::distance(e_rm_vec.begin(), max_rm_iter);
+    cv_meas_ = meas_vec[max_cv_ind];
     ctrv_meas_ = meas_vec[max_ctrv_ind];
-    rm_meas_   = meas_vec[max_rm_ind];
+    rm_meas_ = meas_vec[max_rm_ind];
   }
 
   for (size_t i = 0; i < num_meas; i++)
   {
-    double temp_cv   = e_cv_vec[i]   / (b + e_cv_sum);
+    double temp_cv = e_cv_vec[i] / (b + e_cv_sum);
     double temp_ctrv = e_ctrv_vec[i] / (b + e_ctrv_sum);
-    double temp_rm   = e_rm_vec[i]   / (b + e_rm_sum);
+    double temp_rm = e_rm_vec[i] / (b + e_rm_sum);
 
     beta_cv.push_back(temp_cv);
     beta_ctrv.push_back(temp_ctrv);
@@ -614,21 +613,21 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   double lambda_cv, lambda_ctrv, lambda_rm;
   if (num_meas != 0)
   {
-    lambda_cv   = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-                  detection_probability * pow(Vk, 1 - num_meas) * e_cv_sum /
-                     (num_meas * sqrt(2 * M_PI * s_cv_.determinant()));
+    lambda_cv =
+        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
+        detection_probability * pow(Vk, 1 - num_meas) * e_cv_sum / (num_meas * sqrt(2 * M_PI * s_cv_.determinant()));
     lambda_ctrv = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
                   detection_probability * pow(Vk, 1 - num_meas) * e_ctrv_sum /
-                     (num_meas * sqrt(2 * M_PI * s_ctrv_.determinant()));
-    lambda_rm   = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-                  detection_probability * pow(Vk, 1 - num_meas) * e_rm_sum /
-                     (num_meas * sqrt(2 * M_PI * s_rm_.determinant()));
+                      (num_meas * sqrt(2 * M_PI * s_ctrv_.determinant()));
+    lambda_rm =
+        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
+        detection_probability * pow(Vk, 1 - num_meas) * e_rm_sum / (num_meas * sqrt(2 * M_PI * s_rm_.determinant()));
   }
   else
   {
-    lambda_cv   = (1 - gate_probability * detection_probability);
+    lambda_cv = (1 - gate_probability * detection_probability);
     lambda_ctrv = (1 - gate_probability * detection_probability);
-    lambda_rm   = (1 - gate_probability * detection_probability);
+    lambda_rm = (1 - gate_probability * detection_probability);
   }
 
   lambda_vec.push_back(lambda_cv);
@@ -642,48 +641,47 @@ void UKF::faultDetection(const int model_ind, bool& is_fault)
   Eigen::VectorXd z_pred;
   Eigen::MatrixXd z_cov;
   Eigen::MatrixXd r;
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
     z_meas = cv_meas_;
     z_pred = z_pred_cv_;
-    z_cov  = s_cv_;
-    r      = r_cv_;
+    z_cov = s_cv_;
+    r = r_cv_;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
     z_meas = ctrv_meas_;
     z_pred = z_pred_ctrv_;
-    z_cov  = s_ctrv_;
-    r      = r_ctrv_;
+    z_cov = s_ctrv_;
+    r = r_ctrv_;
   }
   else
   {
     z_meas = rm_meas_;
     z_pred = z_pred_rm_;
-    z_cov  = s_rm_;
-    r      = r_rm_;
+    z_cov = s_rm_;
+    r = r_rm_;
   }
 
-  double nis = (z_meas - z_pred).transpose()*(z_cov).inverse()*(z_meas - z_pred);
+  double nis = (z_meas - z_pred).transpose() * (z_cov).inverse() * (z_meas - z_pred);
 
-  if(nis > raukf_chi_thres_param_)
+  if (nis > raukf_chi_thres_param_)
   {
     is_fault = true;
   }
 
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
-    nis_cv_   = nis;
+    nis_cv_ = nis;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
     nis_ctrv_ = nis;
   }
   else
   {
-    nis_rm_   = nis;
+    nis_rm_ = nis;
   }
-
 }
 
 void UKF::adaptiveAdjustmentQ(const int model_ind)
@@ -692,37 +690,37 @@ void UKF::adaptiveAdjustmentQ(const int model_ind)
   Eigen::VectorXd mu;
   Eigen::MatrixXd q;
   Eigen::MatrixXd k;
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
-    mu     = cv_meas_ - z_pred_cv_;
-    q      = q_cv_;
-    k      = k_cv_;
-    nis    = nis_cv_;
+    mu = cv_meas_ - z_pred_cv_;
+    q = q_cv_;
+    k = k_cv_;
+    nis = nis_cv_;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
-    mu     = ctrv_meas_ - z_pred_ctrv_;
-    q      = q_ctrv_;
-    k      = k_ctrv_;
-    nis    = nis_ctrv_;
+    mu = ctrv_meas_ - z_pred_ctrv_;
+    q = q_ctrv_;
+    k = k_ctrv_;
+    nis = nis_ctrv_;
   }
   else
   {
-    mu     = rm_meas_ - z_pred_rm_;
-    q      = q_rm_;
-    k      = k_rm_;
-    nis    = nis_rm_;
+    mu = rm_meas_ - z_pred_rm_;
+    q = q_rm_;
+    k = k_rm_;
+    nis = nis_rm_;
   }
 
   double calculated_lambda = (nis - raukf_q_param_ * raukf_chi_thres_param_) / nis;
   double lambda = std::max(raukf_lambda_zero_, calculated_lambda);
-  Eigen::MatrixXd corrected_q = (1 - lambda)*q + lambda*(k * mu * mu.transpose() * k.transpose());
+  Eigen::MatrixXd corrected_q = (1 - lambda) * q + lambda * (k * mu * mu.transpose() * k.transpose());
 
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
     q_cv_ = corrected_q;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
     q_ctrv_ = corrected_q;
   }
@@ -740,32 +738,32 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
   Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
     estimated_z << x_cv_(0), x_cv_(1);
-    epsilon= cv_meas_ - estimated_z;
-    r      = r_cv_;
-    nis    = nis_cv_;
-    x      = x_cv_.col(0);
-    p      = p_cv_;
+    epsilon = cv_meas_ - estimated_z;
+    r = r_cv_;
+    nis = nis_cv_;
+    x = x_cv_.col(0);
+    p = p_cv_;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
     estimated_z << x_ctrv_(0), x_ctrv_(1);
-    epsilon= ctrv_meas_ - estimated_z;
-    r      = r_ctrv_;
-    nis    = nis_ctrv_;
-    x      = x_ctrv_.col(0);
-    p      = p_ctrv_;
+    epsilon = ctrv_meas_ - estimated_z;
+    r = r_ctrv_;
+    nis = nis_ctrv_;
+    x = x_ctrv_.col(0);
+    p = p_ctrv_;
   }
   else
   {
     estimated_z << x_rm_(0), x_rm_(1);
-    epsilon= rm_meas_ - estimated_z;
-    r      = r_rm_;
-    nis    = nis_rm_;
-    x      = x_rm_.col(0);
-    p      = p_rm_;
+    epsilon = rm_meas_ - estimated_z;
+    r = r_rm_;
+    nis = nis_rm_;
+    x = x_rm_.col(0);
+    p = p_rm_;
   }
 
   // make sigma poitns from estiated x
@@ -780,15 +778,15 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + n_x_) * L.col(i);
 
     while (sigma_point1(3) > M_PI)
-           sigma_point1(3) -= 2. * M_PI;
+      sigma_point1(3) -= 2. * M_PI;
     while (sigma_point1(3) < -M_PI)
-           sigma_point1(3) += 2. * M_PI;
+      sigma_point1(3) += 2. * M_PI;
     while (sigma_point2(3) > M_PI)
-           sigma_point2(3) -= 2. * M_PI;
+      sigma_point2(3) -= 2. * M_PI;
     while (sigma_point2(3) < -M_PI)
-           sigma_point2(3) += 2. * M_PI;
+      sigma_point2(3) += 2. * M_PI;
 
-    x_sig.col(i + 1)        = sigma_point1;
+    x_sig.col(i + 1) = sigma_point1;
     x_sig.col(i + 1 + n_x_) = sigma_point2;
   }
   // set measurement dimension, lidar can measure p_x and p_y
@@ -826,31 +824,31 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
   double delta = std::max(raukf_delta_zero_, calculated_delta);
   // correct R
-  Eigen::MatrixXd corrected_r = (1 - delta)*r + delta*(epsilon*epsilon.transpose() + S);
+  Eigen::MatrixXd corrected_r = (1 - delta) * r + delta * (epsilon * epsilon.transpose() + S);
 
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
-    r_cv_         = corrected_r;
+    r_cv_ = corrected_r;
     new_x_sig_cv_ = x_sig;
     new_z_sig_cv_ = z_sig;
-    new_z_pred_cv_= z_pred;
-    new_s_cv_     = S;
+    new_z_pred_cv_ = z_pred;
+    new_s_cv_ = S;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
-    r_ctrv_         = corrected_r;
+    r_ctrv_ = corrected_r;
     new_x_sig_ctrv_ = x_sig;
     new_z_sig_ctrv_ = z_sig;
-    new_z_pred_ctrv_= z_pred;
-    new_s_ctrv_     = S;
+    new_z_pred_ctrv_ = z_pred;
+    new_s_ctrv_ = S;
   }
   else
   {
-    r_rm_         = corrected_r;
+    r_rm_ = corrected_r;
     new_x_sig_rm_ = x_sig;
     new_z_sig_rm_ = z_sig;
-    new_z_pred_rm_= z_pred;
-    new_s_rm_     = S;
+    new_z_pred_rm_ = z_pred;
+    new_s_rm_ = S;
   }
 }
 
@@ -863,37 +861,37 @@ void UKF::estimationUpdate(const int model_ind)
   Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
   Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
   Eigen::MatrixXd x_sig(n_x_, 2 * n_x_ + 1);
-  Eigen::MatrixXd z_sig(2   , 2 * n_x_ + 1);
-  if(model_ind == MotionModel::CV)
+  Eigen::MatrixXd z_sig(2, 2 * n_x_ + 1);
+  if (model_ind == MotionModel::CV)
   {
-    x     = x_cv_.col(0);
-    z     = cv_meas_;
-    z_pred= new_z_pred_cv_;
-    r     = r_cv_;
-    q     = q_cv_;
-    s     = new_s_cv_;
+    x = x_cv_.col(0);
+    z = cv_meas_;
+    z_pred = new_z_pred_cv_;
+    r = r_cv_;
+    q = q_cv_;
+    s = new_s_cv_;
     x_sig = new_x_sig_cv_;
     z_sig = new_z_sig_cv_;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
-    x     = x_ctrv_.col(0);
-    z     = ctrv_meas_;
-    z_pred= new_z_pred_ctrv_;
-    r     = r_ctrv_;
-    q     = q_ctrv_;
-    s     = new_s_ctrv_;
+    x = x_ctrv_.col(0);
+    z = ctrv_meas_;
+    z_pred = new_z_pred_ctrv_;
+    r = r_ctrv_;
+    q = q_ctrv_;
+    s = new_s_ctrv_;
     x_sig = new_x_sig_ctrv_;
     z_sig = new_z_sig_ctrv_;
   }
   else
   {
-    x     = x_rm_.col(0);
-    z     = rm_meas_;
-    z_pred= new_z_pred_rm_;
-    r     = r_rm_;
-    q     = q_rm_;
-    s     = new_s_rm_;
+    x = x_rm_.col(0);
+    z = rm_meas_;
+    z_pred = new_z_pred_rm_;
+    r = r_rm_;
+    q = q_rm_;
+    s = new_s_rm_;
     x_sig = new_x_sig_rm_;
     z_sig = new_z_sig_rm_;
   }
@@ -905,9 +903,9 @@ void UKF::estimationUpdate(const int model_ind)
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
     // angle normalization
     while (x_diff(3) > M_PI)
-           x_diff(3) -= 2. * M_PI;
+      x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)
-           x_diff(3) += 2. * M_PI;
+      x_diff(3) += 2. * M_PI;
     p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
 
@@ -922,9 +920,9 @@ void UKF::estimationUpdate(const int model_ind)
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
 
     while (x_diff(3) > M_PI)
-           x_diff(3) -= 2. * M_PI;
+      x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)
-           x_diff(3) += 2. * M_PI;
+      x_diff(3) += 2. * M_PI;
     cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
@@ -932,41 +930,41 @@ void UKF::estimationUpdate(const int model_ind)
 
   Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
 
-  x = x + kalman_gain*(z - z_pred);
-  p = p - kalman_gain*innovation_covariance*kalman_gain.transpose();
+  x = x + kalman_gain * (z - z_pred);
+  p = p - kalman_gain * innovation_covariance * kalman_gain.transpose();
 
-  if(model_ind == MotionModel::CV)
+  if (model_ind == MotionModel::CV)
   {
     x_cv_.col(0) = x;
-    p_cv_        = p;
+    p_cv_ = p;
   }
-  else if(model_ind == MotionModel::CTRV)
+  else if (model_ind == MotionModel::CTRV)
   {
     x_ctrv_.col(0) = x;
-    p_ctrv_        = p;
+    p_ctrv_ = p;
   }
   else
   {
     x_rm_.col(0) = x;
-    p_rm_        = p;
+    p_rm_ = p;
   }
 }
 
 void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres_)
 {
   raukf_chi_thres_param_ = chi_thres_;
-  
+
   // if no measurement, no correction/estimation is made
-  if(!is_meas_)
+  if (!is_meas_)
   {
     return;
   }
 
-  if(use_sukf)
+  if (use_sukf)
   {
     bool is_fault = false;
     faultDetection(MotionModel::CTRV, is_fault);
-    if(!is_fault)
+    if (!is_fault)
     {
       return;
     }
@@ -981,7 +979,7 @@ void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres_)
     {
       bool is_fault = false;
       faultDetection(model_ind, is_fault);
-      if(!is_fault)
+      if (!is_fault)
       {
         continue;
       }
@@ -1010,7 +1008,7 @@ void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::Detect
   }
   // for noise estimation
   is_meas_ = false;
-  if(num_meas != 0)
+  if (num_meas != 0)
   {
     is_meas_ = true;
     std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
@@ -1130,43 +1128,44 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
 
 void UKF::initCovarQs(const double dt, const double yaw)
 {
-  if(tracking_num_ != TrackingState::Init)
+  if (tracking_num_ != TrackingState::Init)
   {
     return;
   }
-  double dt_2 = dt*dt;
-  double dt_3 = dt_2*dt;
-  double dt_4 = dt_3*dt;
+  double dt_2 = dt * dt;
+  double dt_3 = dt_2 * dt;
+  double dt_4 = dt_3 * dt;
   double cos_yaw = std::cos(yaw);
   double sin_yaw = std::sin(yaw);
   double cos_2_yaw = std::cos(yaw) * std::cos(yaw);
   double sin_2_yaw = std::sin(yaw) * std::sin(yaw);
   double cos_sin = cos_yaw * sin_yaw;
 
-  double cv_var_a       = std_a_cv_ * std_a_cv_;
-  double cv_var_yawdd   = std_cv_yawdd_ * std_cv_yawdd_;
+  double cv_var_a = std_a_cv_ * std_a_cv_;
+  double cv_var_yawdd = std_cv_yawdd_ * std_cv_yawdd_;
 
-  double ctrv_var_a     = std_a_ctrv_ * std_a_ctrv_;
+  double ctrv_var_a = std_a_ctrv_ * std_a_ctrv_;
   double ctrv_var_yawdd = std_ctrv_yawdd_ * std_ctrv_yawdd_;
 
-  double rm_var_a       = std_a_rm_ * std_a_rm_;
-  double rm_var_yawdd   = std_rm_yawdd_ * std_rm_yawdd_;
+  double rm_var_a = std_a_rm_ * std_a_rm_;
+  double rm_var_yawdd = std_rm_yawdd_ * std_rm_yawdd_;
 
-  q_cv_    << 0.5*0.5*dt_4*cos_2_yaw*cv_var_a,   0.5*0.5*dt_4*cos_sin*cv_var_a, 0.5*dt_3*cos_yaw*cv_var_a,                         0,                     0,
-              0.5*0.5*dt_4*cos_sin*cv_var_a  , 0.5*0.5*dt_4*sin_2_yaw*cv_var_a, 0.5*dt_3*sin_yaw*cv_var_a,                         0,                     0,
-              0.5*dt_3*cos_yaw*cv_var_a      ,       0.5*dt_3*sin_yaw*cv_var_a,             dt_2*cv_var_a,                         0,                     0,
-                                            0,                               0,                         0, 0.5*0.5*dt_4*cv_var_yawdd, 0.5*dt_3*cv_var_yawdd,
-                                            0,                               0,                         0,     0.5*dt_3*cv_var_yawdd,     dt_2*cv_var_yawdd;
-  q_ctrv_  << 0.5*0.5*dt_4*cos_2_yaw*ctrv_var_a,   0.5*0.5*dt_4*cos_sin*ctrv_var_a, 0.5*dt_3*cos_yaw*ctrv_var_a,                           0,                       0,
-              0.5*0.5*dt_4*cos_sin*ctrv_var_a  , 0.5*0.5*dt_4*sin_2_yaw*ctrv_var_a, 0.5*dt_3*sin_yaw*ctrv_var_a,                           0,                       0,
-              0.5*dt_3*cos_yaw*ctrv_var_a      ,       0.5*dt_3*sin_yaw*ctrv_var_a,             dt_2*ctrv_var_a,                           0,                       0,
-                                              0,                                 0,                           0, 0.5*0.5*dt_4*ctrv_var_yawdd, 0.5*dt_3*ctrv_var_yawdd,
-                                              0,                                 0,                           0,     0.5*dt_3*ctrv_var_yawdd,     dt_2*ctrv_var_yawdd;
-  q_rm_    << 0.5*0.5*dt_4*cos_2_yaw*rm_var_a,   0.5*0.5*dt_4*cos_sin*rm_var_a, 0.5*dt_3*cos_yaw*rm_var_a,                         0,                     0,
-              0.5*0.5*dt_4*cos_sin*rm_var_a  , 0.5*0.5*dt_4*sin_2_yaw*rm_var_a, 0.5*dt_3*sin_yaw*rm_var_a,                         0,                     0,
-              0.5*dt_3*cos_yaw*rm_var_a      ,       0.5*dt_3*sin_yaw*rm_var_a,             dt_2*rm_var_a,                         0,                     0,
-                                            0,                               0,                         0, 0.5*0.5*dt_4*rm_var_yawdd, 0.5*dt_3*rm_var_yawdd,
-                                            0,                               0,                         0,     0.5*dt_3*rm_var_yawdd,     dt_2*rm_var_yawdd;
+  q_cv_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * cv_var_a, 0.5 * 0.5 * dt_4 * cos_sin * cv_var_a,
+      0.5 * dt_3 * cos_yaw * cv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * cv_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * cv_var_a, 0.5 * dt_3 * sin_yaw * cv_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * cv_var_a,
+      0.5 * dt_3 * sin_yaw * cv_var_a, dt_2 * cv_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * cv_var_yawdd,
+      0.5 * dt_3 * cv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * cv_var_yawdd, dt_2 * cv_var_yawdd;
+  q_ctrv_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * ctrv_var_a, 0.5 * 0.5 * dt_4 * cos_sin * ctrv_var_a,
+      0.5 * dt_3 * cos_yaw * ctrv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * ctrv_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, 0, 0,
+      0.5 * dt_3 * cos_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, dt_2 * ctrv_var_a, 0, 0, 0, 0, 0,
+      0.5 * 0.5 * dt_4 * ctrv_var_yawdd, 0.5 * dt_3 * ctrv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * ctrv_var_yawdd,
+      dt_2 * ctrv_var_yawdd;
+  q_rm_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * rm_var_a, 0.5 * 0.5 * dt_4 * cos_sin * rm_var_a,
+      0.5 * dt_3 * cos_yaw * rm_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * rm_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * rm_var_a, 0.5 * dt_3 * sin_yaw * rm_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * rm_var_a,
+      0.5 * dt_3 * sin_yaw * rm_var_a, dt_2 * rm_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * rm_var_yawdd,
+      0.5 * dt_3 * rm_var_yawdd, 0, 0, 0, 0.5 * dt_3 * rm_var_yawdd, dt_2 * rm_var_yawdd;
 }
 
 void UKF::prediction(const double delta_t, const int model_ind)

@@ -79,10 +79,10 @@ private:
   int stable_num_;
   int lost_num_;
 
-  //switch sukf and ImmUkfPda
+  // switch sukf and ImmUkfPda
   bool use_sukf_;
 
-  //switch robust adaptive filter
+  // switch robust adaptive filter
   bool use_robust_adaptive_filter_;
 
   // dumping tesult text for benchmark
@@ -93,7 +93,7 @@ private:
   double prevent_explosion_thres_;
   bool is_debug_;
 
-  //for debug
+  // for debug
   int debug_nth_take_;
 
   double raukf_chi_thres_;
@@ -118,7 +118,6 @@ private:
 
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
-
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
@@ -163,7 +162,6 @@ private:
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
-
 
   void pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input);
 

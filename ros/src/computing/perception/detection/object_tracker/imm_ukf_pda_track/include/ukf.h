@@ -24,11 +24,10 @@ enum TrackingState : int
 
 enum MotionModel : int
 {
-  CV   = 0,      // constant velocity
-  CTRV = 1,    // constant turn rate and velocity
-  RM   = 2,      // random motion
+  CV = 0,    // constant velocity
+  CTRV = 1,  // constant turn rate and velocity
+  RM = 2,    // random motion
 };
-
 
 class LanePoint
 {
@@ -95,7 +94,6 @@ public:
   double std_a_cv_;
   double std_a_ctrv_;
   double std_a_rm_;
-
 
   // CTRV
   double std_ctrv_yawdd_;
@@ -202,7 +200,7 @@ public:
   int tracking_num_;
 
   // robust adaptive unscented kalman filter
-  //todo: make covariance Q and R for each motion models
+  // todo: make covariance Q and R for each motion models
   bool is_meas_;
   // Eigen::MatrixXd covar_q_;
   Eigen::VectorXd cv_meas_;
@@ -222,7 +220,7 @@ public:
   double nis_rm_;
 
   double raukf_lambda_zero_;
-  double raukf_delta_zero_ ;
+  double raukf_delta_zero_;
 
   double raukf_q_param_;
   double raukf_r_param_;
@@ -286,14 +284,14 @@ public:
   // this is for debug, try SUKF
   void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
-  void updateIMMUKF(const double detection_probability, const double gate_probability,
-     const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
+                    const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
             const double delta_t, std::vector<double>& state);
 
-  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-          const double delta_t, std::vector<double>& state);
+  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
+          std::vector<double>& state);
 
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double delta_t, std::vector<double>& state);
@@ -303,7 +301,6 @@ public:
   void prediction(const double delta_t, const int model_ind);
 
   void updateLidar(const int model_ind);
-
 };
 
 #endif /* UKF_H */
