@@ -292,10 +292,10 @@ subs :
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
 
-      - name : lidar_imm_ukf_pda_track
-        desc : lidar_imm_ukf_pda_track desc sample
-        cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
-        param: lidar_imm_ukf_pda_track_param
+      - name : imm_ukf_pda_track
+        desc : imm_ukf_pda_track desc sample
+        cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
+        param: imm_ukf_pda_track_param
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
@@ -1076,7 +1076,7 @@ params :
       max   : 10
       v     : 9
 
-  - name  : lidar_imm_ukf_pda_track_param
+  - name  : imm_ukf_pda_track_param
     vars  :
     - name    : tracker_input_topic
       desc    : input_topic desc sample
@@ -1086,7 +1086,7 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_topic
+    - name    : tracker_output_detected_topic
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
