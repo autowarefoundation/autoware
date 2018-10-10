@@ -28,9 +28,9 @@
     <param name="use_sukf"              value="$(arg use_sukf)" />
     <param name="is_debug"              value="$(arg is_debug)" />
 
-    <remap from="/detection/lidar_objects"         to="$(arg tracker_input_topic)" />
-    <remap from="/detection/tracked_objects/jskbb" to="$(arg tracker_output_jskbb_topic)" />
-    <remap from="/detection/tracked_objects"       to="$(arg tracker_output_detected_topic)" />
+    <remap from="/detection/lidar_detector/objects"         to="$(arg tracker_input_topic)" />
+    <remap from="/detection/lidar_tracker/bounding_boxes" to="$(arg tracker_output_jskbb_topic)" />
+    <remap from="/detection/lidar_tracker/objects"       to="$(arg tracker_output_detected_topic)" />
   </node>
 
   <node pkg="lidar_imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">

@@ -62,6 +62,7 @@ private:
   std::string tracking_frame_;
 
   tf::TransformListener tf_listener_;
+  tf::StampedTransform local2global_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_detected_array_;
