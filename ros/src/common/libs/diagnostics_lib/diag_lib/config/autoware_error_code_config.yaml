@@ -218,7 +218,7 @@
     category: 3    
     description: /can_status_translator node is dead
 /pure_pursuit:
-  node_number: 0
+  node_number: 7
   errors:
   - num: 0
     name:  node is ded
@@ -273,7 +273,7 @@
     threshold: 2.0
     level: error
 /twist_gate:
-  node_number: 7
+  node_number: 8
   errors:
   - num: 0
     name: node is ded 
@@ -289,5 +289,24 @@
     name: low subscribe rate
     category: 4
     description: topic /ctrl_cmd subscribe rate was low (Error)
+    threshold: 1.0
+    level: error
+/decision_maker:
+  node_number: 9
+  errors:
+  - num: 0
+    name: node is ded 
+    category: 3    
+    description: /decision_maker node is dead
+  - num: 1
+    name: low publish rate
+    category: 5
+    description: topic /decision_maker/state publish rate was low (Warn)
+    threshold: 5.0
+    level: warn
+  - num: 2
+    name: low publich rate
+    category: 5
+    description: topic /decision_maker/state publish rate was low (Error)
     threshold: 1.0
     level: error
