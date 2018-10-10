@@ -10,7 +10,7 @@ AstarNavi::AstarNavi() : nh_(), private_nh_("~")
 
   lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
   debug_pose_pub_ = nh_.advertise<geometry_msgs::PoseArray>("astar_debug_poses", 1, true);
-  costmap_sub_ = nh_.subscribe("/grid_map_filter_visualization/distance_transform", 1, &AstarNavi::costmapCallback, this);
+  costmap_sub_ = nh_.subscribe("/costmap", 1, &AstarNavi::costmapCallback, this);
   current_pose_sub_ = nh_.subscribe("/current_pose", 1, &AstarNavi::currentPoseCallback, this);
   goal_pose_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &AstarNavi::goalPoseCallback, this);
 
@@ -97,7 +97,7 @@ void AstarNavi::run()
     ros::WallTime start = ros::WallTime::now();
 
     // Execute astar search
-    bool result = astar.findPath(current_pose_.pose, goal_pose_.pose, -1);
+    bool result = astar.makePlan(current_pose_.pose, goal_pose_.pose);
 
     ros::WallTime end = ros::WallTime::now();
 
@@ -123,16 +123,16 @@ void AstarNavi::run()
 void AstarNavi::publishPathAsWaypoints(const ros::Publisher& pub, const nav_msgs::Path& path, const double waypoint_velocity)
 {
   autoware_msgs::lane lane;
-
   lane.header = path.header;
-  lane.header.frame_id = "velodyne";
+  lane.header.frame_id = "map";
   lane.increment = 0;
   for (const auto& pose : path.poses)
   {
     autoware_msgs::waypoint wp;
     wp.pose = pose;
+    wp.pose.pose = transformPose(wp.pose.pose, getTransform(pose.header.frame_id, lane.header.frame_id));
+    wp.pose.header = lane.header;
     wp.twist.twist.linear.x = waypoint_velocity / 3.6;
-
     lane.waypoints.push_back(wp);
   }
 

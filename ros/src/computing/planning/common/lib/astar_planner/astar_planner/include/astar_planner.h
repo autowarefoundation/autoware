@@ -26,7 +26,7 @@ public:
   ~AstarPlanner();
 
   void initialize(const nav_msgs::OccupancyGrid &costmap);
-  bool findPath(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose, const double upper_bound_distance = -1);
+  bool makePlan(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose);
   void reset();
   void broadcastPathTF();
   bool getNodeInitialized() const
@@ -100,11 +100,6 @@ private:
 
   tf::TransformListener tf_listener_;
   tf::TransformBroadcaster tf_broadcaster_;
-
-  tf::Transform map2ogm_;
-
-  // for prunning
-  double upper_bound_distance_;
 
   // Searched path
   nav_msgs::Path path_;

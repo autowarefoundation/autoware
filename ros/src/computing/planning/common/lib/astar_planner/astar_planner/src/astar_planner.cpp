@@ -28,7 +28,6 @@ AstarPlanner::AstarPlanner()
   private_nh_.param<bool>("publish_marker", publish_marker_, false);
 
   node_initialized_ = false;
-  upper_bound_distance_ = -1;
 
   createStateUpdateTable();
 }
@@ -216,24 +215,17 @@ void AstarPlanner::initialize(const nav_msgs::OccupancyGrid &costmap)
         continue;
       }
 
-      if (use_potential_heuristic_)
-      {
-        // the cost more than threshold is regarded almost same as an obstacle
-        // because of its very high cost
-        if (cost > obstacle_threshold_)
-        {
-          nodes_[i][j][0].status = STATUS::OBS;
-        }
-        else
-        {
-          nodes_[i][j][0].hc = cost * potential_weight_;
-        }
-      }
-
       // obstacle or unknown area
-      if (cost == 100 || cost < 0)
+      if (cost < 0 || obstacle_threshold_ <= cost)
       {
         nodes_[i][j][0].status = STATUS::OBS;
+      }
+
+      // the cost more than threshold is regarded almost same as an obstacle
+      // because of its very high cost
+      if (use_potential_heuristic_)
+      {
+        nodes_[i][j][0].hc = cost * potential_weight_;
       }
     }
   }
@@ -241,13 +233,10 @@ void AstarPlanner::initialize(const nav_msgs::OccupancyGrid &costmap)
   node_initialized_ = true;
 }
 
-bool AstarPlanner::findPath(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose, double upper_bound_distance)
+bool AstarPlanner::makePlan(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose)
 {
   start_pose_local_.pose = start_pose;
   goal_pose_local_.pose = goal_pose;
-  upper_bound_distance_ = upper_bound_distance;
-
-  ROS_INFO("Prunning with upper bound %lf", upper_bound_distance_);
 
   if (!setStartNode())
   {
@@ -292,10 +281,11 @@ bool AstarPlanner::setStartNode()
 
   // set euclidean distance heuristic cost
   if (!use_wavefront_heuristic_ && !use_potential_heuristic_)
+  {
     start_node.hc = calcDistance(start_pose_local_.pose.position.x, start_pose_local_.pose.position.y,
       goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) * distance_heuristic_weight_;
-
-  if (use_potential_heuristic_)
+  }
+  else if (use_potential_heuristic_)
   {
     start_node.gc += start_node.hc;
     start_node.hc += calcDistance(start_pose_local_.pose.position.x, start_pose_local_.pose.position.y,
@@ -320,7 +310,9 @@ bool AstarPlanner::setGoalNode()
 
   // Check if goal is valid
   if (isOutOfRange(index_x, index_y) || detectCollision(goal_sn))
+  {
     return false;
+  }
 
   // Calculate wavefront heuristic cost
   if (use_wavefront_heuristic_)
@@ -374,8 +366,9 @@ bool AstarPlanner::isOutOfRange(int index_x, int index_y)
 {
   if (index_x < 0 || index_x >= static_cast<int>(costmap_.info.width) || index_y < 0 ||
       index_y >= static_cast<int>(costmap_.info.height))
+  {
     return true;
-
+  }
   return false;
 }
 
@@ -405,11 +398,11 @@ bool AstarPlanner::search()
     current_an->status = STATUS::CLOSED;
 
     // Display search process
-    geometry_msgs::Pose p;
-    p.position.x = current_an->x;
-    p.position.y = current_an->y;
-    tf::quaternionTFToMsg(tf::createQuaternionFromYaw(current_an->theta), p.orientation);
-    debug_pose_array_.poses.push_back(p);
+    // geometry_msgs::Pose p;
+    // p.position.x = current_an->x;
+    // p.position.y = current_an->y;
+    // tf::quaternionTFToMsg(tf::createQuaternionFromYaw(current_an->theta), p.orientation);
+    // debug_pose_array_.poses.push_back(p);
 
     // Goal check
     if (isGoal(current_an->x, current_an->y, current_an->theta))
@@ -445,13 +438,7 @@ bool AstarPlanner::search()
       next_sn.index_theta = (next_sn.index_theta + theta_size_) % theta_size_;
 
       // Check if the index is valid
-      if (isOutOfRange(next_sn.index_x, next_sn.index_y) || isObs(next_sn.index_x, next_sn.index_y))
-      {
-        continue;
-      }
-
-      // prunning with upper bound
-      if (upper_bound_distance_ > 0 && move_distance > upper_bound_distance_)
+      if (isOutOfRange(next_sn.index_x, next_sn.index_y) || detectCollision(next_sn))
       {
         continue;
       }
@@ -533,7 +520,7 @@ void AstarPlanner::setPath(const SimpleNode &goal)
 {
   std_msgs::Header header;
   header.stamp = ros::Time::now();
-  header.frame_id = map_frame_;
+  header.frame_id = "velodyne";
   path_.header = header;
 
   // From the goal node to the start node
@@ -547,8 +534,11 @@ void AstarPlanner::setPath(const SimpleNode &goal)
     tf_pose.setOrigin(origin);
     tf_pose.setRotation(tf::createQuaternionFromYaw(node->theta));
 
-    // Transform path to global frame
-    tf_pose = map2ogm_ * tf_pose;
+    geometry_msgs::Pose p;
+    p.position.x = node->x;
+    p.position.y = node->y;
+    tf::quaternionTFToMsg(tf::createQuaternionFromYaw(node->theta), p.orientation);
+    debug_pose_array_.poses.push_back(p);
 
     // Set path as ros message
     geometry_msgs::PoseStamped ros_pose;
@@ -586,7 +576,9 @@ bool AstarPlanner::isGoal(double x, double y, double theta)
   {
     // Check the orientation of goal
     if (calcDiffOfRadian(goal_yaw_, theta) < goal_angle)
+    {
       return true;
+    }
   }
 
   return false;
@@ -595,7 +587,9 @@ bool AstarPlanner::isGoal(double x, double y, double theta)
 bool AstarPlanner::isObs(int index_x, int index_y)
 {
   if (nodes_[index_y][index_x][0].status == STATUS::OBS)
+  {
     return true;
+  }
 
   return false;
 }
@@ -629,9 +623,13 @@ bool AstarPlanner::detectCollision(const SimpleNode &sn)
       int index_y = (x * sin_theta + y * cos_theta + base_y) / resolution;
 
       if (isOutOfRange(index_x, index_y))
+      {
         return true;
-      if (nodes_[index_y][index_x][0].status == STATUS::OBS)
+      }
+      else if (nodes_[index_y][index_x][0].status == STATUS::OBS)
+      {
         return true;
+      }
     }
   }
 
@@ -683,15 +681,21 @@ bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode &sn)
       // out of range OR already visited OR obstacle node
       if (isOutOfRange(next.index_x, next.index_y) || nodes_[next.index_y][next.index_x][0].hc > 0 ||
           nodes_[next.index_y][next.index_x][0].status == STATUS::OBS)
+      {
         continue;
+      }
 
       // Take the size of robot into account
       if (detectCollisionWaveFront(next))
+      {
         continue;
+      }
 
       // Check if we can reach from start to goal
       if (next.index_x == start_index_x && next.index_y == start_index_y)
+      {
         reachable = true;
+      }
 
       // Set wavefront heuristic cost
       next.hc = ref.hc + u.hc;
@@ -721,10 +725,14 @@ bool AstarPlanner::detectCollisionWaveFront(const WaveFrontNode &ref)
       int index_y = (robot_y + y) / costmap_.info.resolution;
 
       if (isOutOfRange(index_x, index_y))
+      {
         return true;
+      }
 
       if (nodes_[index_y][index_x][0].status == STATUS::OBS)
+      {
         return true;
+      }
     }
   }
 

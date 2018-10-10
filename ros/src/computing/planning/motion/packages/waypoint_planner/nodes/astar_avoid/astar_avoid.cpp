@@ -201,7 +201,7 @@ int main(int argc, char** argv)
     // Run astar search
     ros::WallTime timer_begin = ros::WallTime::now();
 
-    bool result = astar.findPath(search_info.getStartPose().pose, search_info.getGoalPose().pose, search_info.getUpperBoundDistance());
+    bool result = astar.makePlan(search_info.getStartPose().pose, search_info.getGoalPose().pose);
 
     ros::WallTime timer_end = ros::WallTime::now();
     double time_ms = (timer_end - timer_begin).toSec() * 1000;

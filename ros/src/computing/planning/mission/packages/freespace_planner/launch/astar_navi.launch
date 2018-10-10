@@ -1,27 +1,28 @@
 <launch>
 
+  <arg name="costmap_topic" default="/grid_map_filter_visualization/dist_wayarea" />
+
   <arg name="use_2dnav_goal" default="true" />
   <arg name="path_frame" default="map" />
   <arg name="theta_size" default="40" />
   <arg name="time_limit" default="1000" />
   <arg name="minimum_turning_radius" default="4.0" />
-  <arg name="obstacle_threshold" default="1" />
+  <arg name="obstacle_threshold" default="100" />
   <arg name="goal_radius" default="0.1" /> <!-- meter-->
   <arg name="goal_angle" default="6.0" /> <!-- degree-->
-  <arg name="robot_length" default="4.5" />
-  <arg name="robot_width" default="2.7" />
+  <arg name="robot_length" default="4.8" />
+  <arg name="robot_width" default="1.8" />
   <arg name="base2back" default="0.8" />
   <arg name="curve_weight" default="1.04" />
   <arg name="reverse_weight" default="2.50" />
   <arg name="use_back" default="false" />
   <arg name="use_wavefront_heuristic" default="false" />
   <arg name="use_potential_heuristic" default="true" />
+  <arg name="potential_weight" default="10.0" />
   <arg name="waypoint_velocity_kmph" default="5.0" />
-  <arg name="lateral_goal_range" default="2.0" />
-  <arg name="longitudinal_goal_range" default="2.0" />
+  <arg name="lateral_goal_range" default="1.0" />
+  <arg name="longitudinal_goal_range" default="0.5" />
   <arg name="goal_angle_range" default="10.0" />
-
-  <arg name="map_topic" default="/grid_map_filter_visualization/dist_wayarea" />
 
 	<node pkg="freespace_planner" type="astar_navi" name="astar_navi" output="screen">
     <param name="use_2dnav_goal" value="$(arg use_2dnav_goal)" />
@@ -39,12 +40,13 @@
     <param name="curve_weight" value="$(arg curve_weight)" />
     <param name="reverse_weight" value="$(arg reverse_weight)" />
     <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
-    <param name="use_potential_heuristic" value="$(arg use_wavefront_heuristic)" />
+    <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
+    <param name="potential_weight" value="$(arg potential_weight)" />
     <param name="waypoint_velocity_kmph" value="$(arg waypoint_velocity_kmph)" />
     <param name="lateral_goal_range" value="$(arg lateral_goal_range)" />
     <param name="longitudinal_goal_range" value="$(arg longitudinal_goal_range)" />
     <param name="goal_angle_range" value="$(arg goal_angle_range)" />
-    <param name="map_topic" value="$(arg map_topic)" />
+    <remap from="/costmap" to="$(arg costmap_topic)" />
 	</node>
 
 	<!-- Visualization node-->
