@@ -257,15 +257,9 @@ class CalibrationNode:
 class OpenCVCalibrationNode(CalibrationNode):
     """ Calibration node with an OpenCV Gui """
     (cv2_version_major, _, _) = cv2.__version__.split(".")
-    if cv2_version_major == '2':
-        print "Version CV2"
-        TEXT_AA = cv2.CV_AA
-    elif cv2_version_major == '3':
-        print "Version CV3"
-        TEXT_AA = cv2.LINE_AA
-    else:
-        print "There's something wrong with your CV2 version, might cause trouble."
-        TEXT_AA = cv2.CV_AA
+    if cv2_version_major == '2': TEXT_AA = cv2.CV_AA
+    elif cv2_version_major == '3': TEXT_AA = cv2.LINE_AA
+    else: TEXT_AA = 8
     FONT_FACE = cv2.FONT_HERSHEY_SIMPLEX
     FONT_SCALE = 0.4
     FONT_THICKNESS = 1
