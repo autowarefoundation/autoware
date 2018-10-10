@@ -23,6 +23,7 @@ class rate_checker
         void update_();
         std::vector<ros::Time> data_;
         const double buffer_length_;
+        volatile bool is_recieved_;
         std::mutex mtx_;
 };
 #endif  //RATE_CHECKER_H_INCLUDED

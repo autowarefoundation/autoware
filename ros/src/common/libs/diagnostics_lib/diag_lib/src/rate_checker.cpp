@@ -2,6 +2,7 @@
 
 rate_checker::rate_checker(double buffer_length) : buffer_length_(buffer_length)
 {
+    is_recieved_ = false;
     start_time_ = ros::Time::now();
 }
 
@@ -13,6 +14,7 @@ rate_checker::~rate_checker()
 void rate_checker::check()
 {
     update_();
+    is_recieved_ = true;
     mtx_.lock();
     data_.push_back(ros::Time::now());
     mtx_.unlock();
@@ -38,6 +40,10 @@ boost::optional<double> rate_checker::get_rate()
 {
     boost::optional<double> rate;
     if(ros::Time::now() - start_time_ < ros::Duration(buffer_length_))
+    {
+        return boost::none;
+    }
+    if(is_recieved_ == false)
     {
         return boost::none;
     }
