@@ -34,9 +34,10 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include "imm_ukf_pda.h"
 
-ImmUkfPda::ImmUkfPda():
-target_id_(0), // assign unique ukf_id_ to each tracking targets
-init_(false)
+ImmUkfPda::ImmUkfPda()
+  : target_id_(0)
+  ,  // assign unique ukf_id_ to each tracking targets
+  init_(false)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
@@ -59,8 +60,9 @@ void ImmUkfPda::run()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
 
   // for debug
-  pub_points_array_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
-  pub_texts_array_  =
+  pub_points_array_ =
+      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
+  pub_texts_array_ =
       node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &ImmUkfPda::callback, this);
@@ -117,13 +119,11 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     pose_in.header = input.header;
     pose_in.pose = input.objects[i].pose;
     tf::Transform input_object_pose;
-    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x,
-                                            input.objects[i].pose.position.y,
+    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
                                             input.objects[i].pose.position.z));
-    input_object_pose.setRotation(tf::Quaternion(input.objects[i].pose.orientation.x,
-                                             input.objects[i].pose.orientation.y,
-                                             input.objects[i].pose.orientation.z,
-                                             input.objects[i].pose.orientation.w));
+    input_object_pose.setRotation(
+        tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
+                       input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
 
     autoware_msgs::DetectedObject dd;
@@ -150,10 +150,9 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     output_object_pose.setOrigin(tf::Vector3(detected_objects_output.objects[i].pose.position.x,
                                              detected_objects_output.objects[i].pose.position.y,
                                              detected_objects_output.objects[i].pose.position.z));
-    output_object_pose.setRotation(tf::Quaternion(detected_objects_output.objects[i].pose.orientation.x,
-                                                  detected_objects_output.objects[i].pose.orientation.y,
-                                                  detected_objects_output.objects[i].pose.orientation.z,
-                                                  detected_objects_output.objects[i].pose.orientation.w));
+    output_object_pose.setRotation(tf::Quaternion(
+        detected_objects_output.objects[i].pose.orientation.x, detected_objects_output.objects[i].pose.orientation.y,
+        detected_objects_output.objects[i].pose.orientation.z, detected_objects_output.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_.inverse() * output_object_pose, detected_pose_out.pose);
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
@@ -170,12 +169,11 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 
     tf::Transform output_bbox_pose;
     output_bbox_pose.setOrigin(tf::Vector3(jskbboxes_output.boxes[i].pose.position.x,
-                                             jskbboxes_output.boxes[i].pose.position.y,
-                                             jskbboxes_output.boxes[i].pose.position.z));
-    output_bbox_pose.setRotation(tf::Quaternion(jskbboxes_output.boxes[i].pose.orientation.x,
-                                                  jskbboxes_output.boxes[i].pose.orientation.y,
-                                                  jskbboxes_output.boxes[i].pose.orientation.z,
-                                                  jskbboxes_output.boxes[i].pose.orientation.w));
+                                           jskbboxes_output.boxes[i].pose.position.y,
+                                           jskbboxes_output.boxes[i].pose.position.z));
+    output_bbox_pose.setRotation(
+        tf::Quaternion(jskbboxes_output.boxes[i].pose.orientation.x, jskbboxes_output.boxes[i].pose.orientation.y,
+                       jskbboxes_output.boxes[i].pose.orientation.z, jskbboxes_output.boxes[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_.inverse() * output_bbox_pose, jsk_pose_out.pose);
 
     jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;

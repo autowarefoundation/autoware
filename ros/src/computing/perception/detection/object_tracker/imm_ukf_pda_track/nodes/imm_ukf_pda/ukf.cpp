@@ -254,7 +254,6 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
 
   // init tracking num
   tracking_num_ = 1;
-
 }
 
 void UKF::updateModeProb(const std::vector<double>& lambda_vec)

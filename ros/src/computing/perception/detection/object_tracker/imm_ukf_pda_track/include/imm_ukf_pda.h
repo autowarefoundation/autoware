@@ -109,7 +109,6 @@ private:
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
-
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
   void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
