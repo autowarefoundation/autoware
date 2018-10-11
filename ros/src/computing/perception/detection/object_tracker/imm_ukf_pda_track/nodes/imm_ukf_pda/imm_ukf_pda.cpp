@@ -5,8 +5,7 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice,
- * this
+ *  * Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
  *  * Redistributions in binary form must reproduce the above copyright notice,
@@ -19,29 +18,25 @@
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
  *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "imm_ukf_pda.h"
 #include <chrono>
-#include <pcl_conversions/pcl_conversions.h>
-#include <ros/package.h>
 #include <stdio.h>
+#include <ros/package.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include "imm_ukf_pda.h"
 
-ImmUkfPda::ImmUkfPda()
-  : target_id_(0)
-  ,  // assign unique ukf_id_ to each tracking targets
-  init_(false)
+ImmUkfPda::ImmUkfPda():
+target_id_(0), // assign unique ukf_id_ to each tracking targets
+init_(false)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
@@ -64,9 +59,8 @@ void ImmUkfPda::run()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
 
   // for debug
-  pub_points_array_ =
-      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
-  pub_texts_array_ =
+  pub_points_array_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
+  pub_texts_array_  =
       node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &ImmUkfPda::callback, this);
@@ -123,11 +117,13 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     pose_in.header = input.header;
     pose_in.pose = input.objects[i].pose;
     tf::Transform input_object_pose;
-    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
+    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x,
+                                            input.objects[i].pose.position.y,
                                             input.objects[i].pose.position.z));
-    input_object_pose.setRotation(
-        tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
-                       input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
+    input_object_pose.setRotation(tf::Quaternion(input.objects[i].pose.orientation.x,
+                                             input.objects[i].pose.orientation.y,
+                                             input.objects[i].pose.orientation.z,
+                                             input.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
 
     autoware_msgs::DetectedObject dd;
@@ -154,9 +150,10 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
     output_object_pose.setOrigin(tf::Vector3(detected_objects_output.objects[i].pose.position.x,
                                              detected_objects_output.objects[i].pose.position.y,
                                              detected_objects_output.objects[i].pose.position.z));
-    output_object_pose.setRotation(tf::Quaternion(
-        detected_objects_output.objects[i].pose.orientation.x, detected_objects_output.objects[i].pose.orientation.y,
-        detected_objects_output.objects[i].pose.orientation.z, detected_objects_output.objects[i].pose.orientation.w));
+    output_object_pose.setRotation(tf::Quaternion(detected_objects_output.objects[i].pose.orientation.x,
+                                                  detected_objects_output.objects[i].pose.orientation.y,
+                                                  detected_objects_output.objects[i].pose.orientation.z,
+                                                  detected_objects_output.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_.inverse() * output_object_pose, detected_pose_out.pose);
 
     detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
@@ -173,11 +170,12 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 
     tf::Transform output_bbox_pose;
     output_bbox_pose.setOrigin(tf::Vector3(jskbboxes_output.boxes[i].pose.position.x,
-                                           jskbboxes_output.boxes[i].pose.position.y,
-                                           jskbboxes_output.boxes[i].pose.position.z));
-    output_bbox_pose.setRotation(
-        tf::Quaternion(jskbboxes_output.boxes[i].pose.orientation.x, jskbboxes_output.boxes[i].pose.orientation.y,
-                       jskbboxes_output.boxes[i].pose.orientation.z, jskbboxes_output.boxes[i].pose.orientation.w));
+                                             jskbboxes_output.boxes[i].pose.position.y,
+                                             jskbboxes_output.boxes[i].pose.position.z));
+    output_bbox_pose.setRotation(tf::Quaternion(jskbboxes_output.boxes[i].pose.orientation.x,
+                                                  jskbboxes_output.boxes[i].pose.orientation.y,
+                                                  jskbboxes_output.boxes[i].pose.orientation.z,
+                                                  jskbboxes_output.boxes[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_.inverse() * output_bbox_pose, jsk_pose_out.pose);
 
     jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;
@@ -192,10 +190,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
                                       std::vector<autoware_msgs::DetectedObject>& object_vec,
                                       std::vector<bool>& matching_vec)
 {
-  // alert: different from original imm-pda filter, here picking up most likely
-  // measurement
-  // if making it allows to have more than one measurement, you will see non
-  // semipositive definite covariance
+  // alert: different from original imm-pda filter, here picking up most likely measurement
+  // if making it allows to have more than one measurement, you will see non semipositive definite covariance
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
   autoware_msgs::DetectedObject smallest_meas_object;
@@ -338,8 +334,7 @@ void ImmUkfPda::updateBB(UKF& target)
   // start updating bbox params
   double delta_area = area - best_area;
 
-  // when the delta area is under 0, keep best area and relocate(slide) it for
-  // current cp
+  // when the delta area is under 0, keep best area and relocate(slide) it for current cp
   if (delta_area < 0)
   {
     // updateVisBoxArea(target, dtCP);
@@ -507,8 +502,7 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   // measurement gating, get measVec, bboxVec, matchingVec through reference
   measurementValidation(input, target, is_second_init, max_det_z, max_det_s, object_vec, matching_vec);
 
-  // bounding box association if target is stable :plus, right angle correction
-  // if its needed
+  // bounding box association if target is stable :plus, right angle correction if its needed
   // input: track number, bbox measurements, &target
   associateBB(object_vec, target);
 
@@ -682,8 +676,7 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
     id.color.g = 1.0f;
     id.color.a = 1.0;
 
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the
-    // frame/time specified in the header
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = targets_[i].x_merge_(0);
     id.pose.position.y = targets_[i].x_merge_(1);
     id.pose.position.z = 2.5;

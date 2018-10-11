@@ -5,8 +5,7 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
- *  * Redistributions of source code must retain the above copyright notice,
- * this
+ *  * Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
  *
  *  * Redistributions in binary form must reproduce the above copyright notice,
@@ -19,34 +18,33 @@
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
  *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
- * USE
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "visualize_detected_objects.h"
 
-#include <cmath>
-#include <tf/transform_datatypes.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <tf/transform_datatypes.h>
+#include <cmath>
 
-VisualizeDetectedObjects::VisualizeDetectedObjects() : vis_arrow_height_(0.5), vis_id_height_(1.5)
+VisualizeDetectedObjects::VisualizeDetectedObjects() :
+vis_arrow_height_(0.5),
+vis_id_height_(1.5)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
   private_nh_.param<double>("ignore_velocity_thres", ignore_velocity_thres_, 0.1);
   private_nh_.param<double>("visualize_arrow_velocity_thres", visualize_arrow_velocity_thres_, 0.25);
 
-  sub_object_array_ =
-      node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
+
+  sub_object_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/arrow_markers", 10);
   pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/id_markes", 10);
 }
@@ -101,8 +99,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     id.color.a = 1.0;
     id.id = input.objects[i].id;
 
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the
-    // frame/time specified in the header
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     id.pose.position.x = input.objects[i].pose.position.x;
     id.pose.position.y = input.objects[i].pose.position.y;
     id.pose.position.z = vis_id_height_;
@@ -157,8 +154,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
     arrow.color.a = 1.0;
     arrow.id = input.objects[i].id;
 
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the
-    // frame/time specified in the header
+    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
     arrow.pose.position.x = input.objects[i].pose.position.x;
     arrow.pose.position.y = input.objects[i].pose.position.y;
     arrow.pose.position.z = vis_arrow_height_;
