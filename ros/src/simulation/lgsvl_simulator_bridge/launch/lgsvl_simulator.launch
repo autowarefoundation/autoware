@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="lgsvl_simulator_bridge" type="lgsvl_simulator_launcher" name="lgsvl_simulator_launcher_node">
+    <node pkg="lgsvl_simulator_bridge" type="launch_sim.bash" name="lgsvl_simulator_launcher">
     </node>
 
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>

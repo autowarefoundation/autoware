@@ -7,7 +7,7 @@ This package provides lgvsl simulator and Autoware.
 ### initial setup (just first time)
 ```
 roscd lgsvl_simulator_bridge
-source setup_sim.bash
+source quick_setup_sim.bash
 ```
 
 ### launch simulator and bridge
@@ -23,3 +23,9 @@ roslaunch lgsvl_simulator_bridge autoware_sample.launch
 ```
 
 ![lgsvl_simulator_bridge](media/lgsvl_simulator_bridge.png) 
+
+## launch with simulator you have built
+1. set $LGSVL_SIM_DIR_PATH
+```
+export LGSVL_SIM_DIR_PATH=<lgsvl_sim_binary_directory_path>
+```

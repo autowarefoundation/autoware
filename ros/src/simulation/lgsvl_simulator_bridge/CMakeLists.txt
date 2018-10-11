@@ -30,9 +30,6 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-add_executable(lgsvl_simulator_launcher src/lgsvl_simulator_launcher_node.cpp src/lgsvl_simulator_launcher.cpp)
-target_link_libraries(lgsvl_simulator_launcher ${catkin_LIBRARIES})
-
 ###########
 ## Build ##
 ###########
@@ -47,7 +44,7 @@ include_directories(
 #############
 ## Install ##
 #############
-foreach(programs lgsvl_simulator_launcher)
+foreach(programs)
   install(TARGETS ${programs}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
@@ -61,3 +58,5 @@ foreach(dir launch rviz)
   install(DIRECTORY ${dir}/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach(dir)
+
+install(PROGRAMS scripts/launch_sim.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
