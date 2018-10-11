@@ -59,7 +59,10 @@ set(SOURCE_FILES
   src/vehicle_monitor/vehicle_status_monitor.cpp
   src/vehicle_monitor/vehicle_cmd_monitor.cpp
   src/vehicle_monitor/overlay_utils.cpp
-  )
+  src/vehicle_monitor/display.cpp
+  src/vehicle_monitor/velocity_graph.cpp
+  src/vehicle_monitor/velocity_text.cpp
+)
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
