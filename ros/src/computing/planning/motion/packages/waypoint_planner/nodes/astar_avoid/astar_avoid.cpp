@@ -187,7 +187,7 @@ int main(int argc, char** argv)
     }
 
     // Initialize vector for A* search, this runs only once
-    if (search_info.getMapSet() && !astar.getNodeInitialized())
+    if (search_info.getMapSet())
       astar.initialize(search_info.getMap());
 
     // Waiting for the call for avoidance ...

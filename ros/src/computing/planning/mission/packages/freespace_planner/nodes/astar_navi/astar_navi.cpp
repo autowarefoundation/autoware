@@ -9,7 +9,6 @@ AstarNavi::AstarNavi() : nh_(), private_nh_("~")
   private_nh_.param<double>("update_rate", update_rate_, 1.0);
 
   lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
-  debug_pose_pub_ = nh_.advertise<geometry_msgs::PoseArray>("astar_debug_poses", 1, true);
   costmap_sub_ = nh_.subscribe("/costmap", 1, &AstarNavi::costmapCallback, this);
   current_pose_sub_ = nh_.subscribe("/current_pose", 1, &AstarNavi::currentPoseCallback, this);
   goal_pose_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &AstarNavi::goalPoseCallback, this);
@@ -38,13 +37,12 @@ void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped &msg)
     return;
   }
 
-  current_pose_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, msg.header.frame_id));
-  current_pose_.header.frame_id = costmap_.header.frame_id;
-  current_pose_.header.stamp = msg.header.stamp;
+  current_pose_global_ = msg;
+  current_pose_local_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
+  current_pose_local_.header.frame_id = costmap_.header.frame_id;
+  current_pose_local_.header.stamp = current_pose_global_.header.stamp;
 
   current_pose_initialized_ = true;
-
-  // ROS_INFO_STREAM("Subscribed current pose and transform from " << msg.header.frame_id << " to " <<  current_pose_.header.frame_id << "\n" << current_pose_.pose);
 }
 
 void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped &msg)
@@ -54,13 +52,14 @@ void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped &msg)
     return;
   }
 
-  goal_pose_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, msg.header.frame_id));
-  goal_pose_.header.frame_id = costmap_.header.frame_id;
-  goal_pose_.header.stamp = msg.header.stamp;
+  goal_pose_global_ = msg;
+  goal_pose_local_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
+  goal_pose_local_.header.frame_id = costmap_.header.frame_id;
+  goal_pose_local_.header.stamp = goal_pose_global_.header.stamp;
 
   goal_pose_initialized_ = true;
 
-  ROS_INFO_STREAM("Subscribed goal pose and transform from " << msg.header.frame_id << " to " <<  goal_pose_.header.frame_id << "\n" << goal_pose_.pose);
+  ROS_INFO_STREAM("Subscribed goal pose and transform from " << msg.header.frame_id << " to " <<  goal_pose_local_.header.frame_id << "\n" << goal_pose_local_.pose);
 }
 
 tf::Transform AstarNavi::getTransform(const std::string &from, const std::string &to)
@@ -81,6 +80,10 @@ void AstarNavi::run()
 {
   ros::Rate rate(update_rate_);
 
+  nav_msgs::Path empty_path;
+  empty_path.header.stamp = ros::Time::now();
+  empty_path.header.frame_id = costmap_.header.frame_id;
+
   while (ros::ok())
   {
     ros::spinOnce();
@@ -91,28 +94,28 @@ void AstarNavi::run()
       continue;
     }
 
-    // Initialize vector for A* search, this runs only once
+    // initialize vector for A* search, this runs only once
     astar.initialize(costmap_);
 
+    // update local goal pose
+    goalPoseCallback(goal_pose_global_);
+
+    // execute astar search
     ros::WallTime start = ros::WallTime::now();
-
-    // Execute astar search
-    bool result = astar.makePlan(current_pose_.pose, goal_pose_.pose);
-
+    bool result = astar.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
     ros::WallTime end = ros::WallTime::now();
 
     ROS_INFO("Astar planning: %f [s]", (end - start).toSec());
 
-    astar.publishPoseArray(debug_pose_pub_, "velodyne");
-
     if (result)
     {
       ROS_INFO("Found GOAL!");
-      publishPathAsWaypoints(lane_pub_, astar.getPath(), waypoint_velocity_);
+      publishWaypoints(astar.getPath(), waypoint_velocity_);
     }
     else
     {
-      ROS_INFO("can't find goal...");
+      ROS_INFO("Can't find goal...");
+      publishStopWaypoints();
     }
 
     astar.reset();
@@ -120,25 +123,34 @@ void AstarNavi::run()
   }
 }
 
-void AstarNavi::publishPathAsWaypoints(const ros::Publisher& pub, const nav_msgs::Path& path, const double waypoint_velocity)
+void AstarNavi::publishWaypoints(const nav_msgs::Path& path, const double& velocity)
 {
   autoware_msgs::lane lane;
-  lane.header = path.header;
   lane.header.frame_id = "map";
+  lane.header.stamp = path.header.stamp;
   lane.increment = 0;
+
   for (const auto& pose : path.poses)
   {
     autoware_msgs::waypoint wp;
-    wp.pose = pose;
-    wp.pose.pose = transformPose(wp.pose.pose, getTransform(pose.header.frame_id, lane.header.frame_id));
     wp.pose.header = lane.header;
-    wp.twist.twist.linear.x = waypoint_velocity / 3.6;
+    wp.pose.pose = transformPose(pose.pose, getTransform(lane.header.frame_id, pose.header.frame_id));
+    wp.twist.twist.linear.x = velocity / 3.6;
     lane.waypoints.push_back(wp);
   }
 
   autoware_msgs::LaneArray lane_array;
   lane_array.lanes.push_back(lane);
-  pub.publish(lane_array);
+  lane_pub_.publish(lane_array);
+}
 
-  return;
+void AstarNavi::publishStopWaypoints()
+{
+  nav_msgs::Path path;
+  geometry_msgs::PoseStamped pose;  // stop path
+  pose.header.stamp = ros::Time::now();
+  pose.header.frame_id = current_pose_global_.header.frame_id;
+  pose.pose = current_pose_global_.pose;
+  path.poses.push_back(pose);
+  publishWaypoints(path, 0.0);
 }

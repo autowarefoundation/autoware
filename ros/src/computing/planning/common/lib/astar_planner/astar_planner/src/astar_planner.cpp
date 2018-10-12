@@ -6,28 +6,31 @@
 AstarPlanner::AstarPlanner()
 {
   ros::NodeHandle private_nh_("~");
-  private_nh_.param<bool>("use_2dnav_goal", use_2dnav_goal_, true);
-  private_nh_.param<std::string>("map_frame", map_frame_, "map");
-  private_nh_.param<int>("theta_size", theta_size_, 48);
-  private_nh_.param<double>("minimum_turning_radius", minimum_turning_radius_, 5.1);
-  private_nh_.param<int>("obstacle_threshold", obstacle_threshold_, 80);
+
+  // base configs
   private_nh_.param<bool>("use_back", use_back_, true);
+  private_nh_.param<bool>("use_potential_heuristic", use_potential_heuristic_, true);
+  private_nh_.param<bool>("use_wavefront_heuristic", use_wavefront_heuristic_, false);
+  private_nh_.param<double>("time_limit", time_limit_, 5000.0);
+
+  // robot configs
   private_nh_.param<double>("robot_length", robot_length_, 4.5);
   private_nh_.param<double>("robot_width", robot_width_, 1.75);
-  private_nh_.param<double>("base2back", base2back_, 0.8);
-  private_nh_.param<double>("curve_weight", curve_weight_, 1.05);
+  private_nh_.param<double>("robot_base2back", robot_base2back_, 1.0);
+  private_nh_.param<double>("minimum_turning_radius", minimum_turning_radius_, 6.0);
+
+  // search configs
+  private_nh_.param<int>("theta_size", theta_size_, 48);
+  private_nh_.param<double>("goal_angle_range", goal_angle_range_, 6.0);
+  private_nh_.param<double>("curve_weight", curve_weight_, 1.2);
   private_nh_.param<double>("reverse_weight", reverse_weight_, 2.00);
-  private_nh_.param<double>("distance_heuristic_weight", distance_heuristic_weight_, 1.00);
-  private_nh_.param<double>("potential_weight", potential_weight_, 10.0);
-  private_nh_.param<bool>("use_wavefront_heuristic", use_wavefront_heuristic_, false);
-  private_nh_.param<bool>("use_potential_heuristic", use_potential_heuristic_, true);
-  private_nh_.param<double>("time_limit", time_limit_, 10.0);
   private_nh_.param<double>("lateral_goal_range", lateral_goal_range_, 0.5);
   private_nh_.param<double>("longitudinal_goal_range", longitudinal_goal_range_, 2.0);
-  private_nh_.param<double>("goal_angle_range", goal_angle_range_, 24.0);
-  private_nh_.param<bool>("publish_marker", publish_marker_, false);
 
-  node_initialized_ = false;
+  // costmap configs
+  private_nh_.param<int>("obstacle_threshold", obstacle_threshold_, 100);
+  private_nh_.param<double>("potential_weight", potential_weight_, 10.0);
+  private_nh_.param<double>("distance_heuristic_weight", distance_heuristic_weight_, 1.0);
 
   createStateUpdateTable();
 }
@@ -41,14 +44,6 @@ void AstarPlanner::createStateUpdateTable()
 {
   // Vehicle moving for each angle
   state_update_table_.resize(theta_size_);
-
-  // the number of steering actions
-  // int max_action_num = 9;
-  // for (int i = 0; i < theta_size_; i++)
-  // {
-  //   state_update_table_[i].reserve(max_action_num);
-  // }
-
   double dtheta = 2.0 * M_PI / theta_size_;
 
   // Minimum moving distance with one state update
@@ -99,83 +94,38 @@ void AstarPlanner::createStateUpdateTable()
     nu.back        = false;
     state_update_table_[i].emplace_back(nu);
 
-    // // forward right medium
-    // nu.shift_x =
-    //     right_circle_center_x * 2 + minimum_turning_radius_ * 2 * std::cos(M_PI_2 + theta - dtheta);
-    // nu.shift_y =
-    //     right_circle_center_y * 2 + minimum_turning_radius_ * 2 * std::sin(M_PI_2 + theta - dtheta);
-    // nu.rotation = dtheta * -1.0;
-    // nu.index_theta = -1;
-    // nu.step = step * 2;
-    // nu.curve = true;
-    // nu.back = false;
-    // state_update_table_[i].emplace_back(nu);
-    //
-    // // forward left medium
-    // nu.shift_x = left_circle_center_x * 2 +
-    //              minimum_turning_radius_ * 2 * std::cos(-1.0 * M_PI_2 + theta + dtheta);
-    // nu.shift_y = left_circle_center_y * 2 +
-    //              minimum_turning_radius_ * 2 * std::sin(-1.0 * M_PI_2 + theta + dtheta);
-    // nu.rotation = dtheta;
-    // nu.index_theta = 1;
-    // nu.step = step * 2;
-    // nu.curve = true;
-    // nu.back = false;
-    // state_update_table_[i].emplace_back(nu);
+    if (use_back_)
+    {
+      // backward
+      nu.shift_x     = step * std::cos(theta) * -1.0;
+      nu.shift_y     = step * std::sin(theta) * -1.0;
+      nu.rotation    = 0;
+      nu.index_theta = 0;
+      nu.step        = step;
+      nu.curve       = false;
+      nu.back        = true;
+      state_update_table_[i].emplace_back(nu);
 
-    // // forward right max
-    // nu.shift_x     = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta - dtheta
-    // * 2);
-    // nu.shift_y     = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta - dtheta
-    // * 2);
-    // nu.rotation    = dtheta * 2 * -1.0;
-    // nu.index_theta = -2;
-    // nu.step        = step * 2;
-    // nu.curve       = true;
-    // nu.back        = false;
-    // state_update_table_[i].emplace_back(nu);
-    //
-    // // forward left max
-    // nu.shift_x     = left_circle_center_x + minimum_turning_radius_ * std::cos(-1.0 * M_PI_2 + theta +
-    // dtheta * 2);
-    // nu.shift_y     = left_circle_center_y + minimum_turning_radius_ * std::sin(-1.0 * M_PI_2 + theta +
-    // dtheta * 2);
-    // nu.rotation    = dtheta * 2;
-    // nu.index_theta = 2;
-    // nu.step        = step * 2;
-    // nu.curve       = true;
-    // nu.back        = false;
-    // state_update_table_[i].emplace_back(nu);
+      // backward right
+      nu.shift_x     = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta + dtheta);
+      nu.shift_y     = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta + dtheta);
+      nu.rotation    = dtheta;
+      nu.index_theta = 1;
+      nu.step        = step;
+      nu.curve       = true;
+      nu.back        = true;
+      state_update_table_[i].emplace_back(nu);
 
-    // backward
-    // nu.shift_x     = step * std::cos(theta) * -1.0;
-    // nu.shift_y     = step * std::sin(theta) * -1.0;
-    // nu.rotation    = 0;
-    // nu.index_theta = 0;
-    // nu.step        = step;
-    // nu.curve       = false;
-    // nu.back        = true;
-    // state_update_table_[i].emplace_back(nu);
-    //
-    // // backward right
-    // nu.shift_x     = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta + dtheta);
-    // nu.shift_y     = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta + dtheta);
-    // nu.rotation    = dtheta;
-    // nu.index_theta = 1;
-    // nu.step        = step;
-    // nu.curve       = true;
-    // nu.back        = true;
-    // state_update_table_[i].emplace_back(nu);
-    //
-    // // backward left
-    // nu.shift_x     = left_circle_center_x + minimum_turning_radius_ * std::cos(-1.0 * M_PI_2 + theta - dtheta);
-    // nu.shift_y     = left_circle_center_y + minimum_turning_radius_ * std::sin(-1.0 * M_PI_2 + theta - dtheta);
-    // nu.rotation    = dtheta * -1.0;
-    // nu.index_theta = -1;
-    // nu.step        = step;
-    // nu.curve       = true;
-    // nu.back        = true;
-    // state_update_table_[i].emplace_back(nu);
+      // backward left
+      nu.shift_x     = left_circle_center_x + minimum_turning_radius_ * std::cos(-1.0 * M_PI_2 + theta - dtheta);
+      nu.shift_y     = left_circle_center_y + minimum_turning_radius_ * std::sin(-1.0 * M_PI_2 + theta - dtheta);
+      nu.rotation    = dtheta * -1.0;
+      nu.index_theta = -1;
+      nu.step        = step;
+      nu.curve       = true;
+      nu.back        = true;
+      state_update_table_[i].emplace_back(nu);
+    }
   }
 }
 
@@ -229,8 +179,6 @@ void AstarPlanner::initialize(const nav_msgs::OccupancyGrid &costmap)
       }
     }
   }
-
-  node_initialized_ = true;
 }
 
 bool AstarPlanner::makePlan(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose)
@@ -250,9 +198,7 @@ bool AstarPlanner::makePlan(const geometry_msgs::Pose &start_pose, const geometr
     return false;
   }
 
-  bool result = search();
-
-  return result;
+  return search();
 }
 
 bool AstarPlanner::setStartNode()
@@ -325,7 +271,7 @@ bool AstarPlanner::setGoalNode()
 
     if (!wavefront_result)
     {
-      ROS_WARN("reachable is false...");
+      ROS_WARN("Reachable is false...");
       return false;
     }
   }
@@ -396,13 +342,6 @@ bool AstarPlanner::search()
     // Expand nodes from this node
     AstarNode *current_an = &nodes_[top_sn.index_y][top_sn.index_x][top_sn.index_theta];
     current_an->status = STATUS::CLOSED;
-
-    // Display search process
-    // geometry_msgs::Pose p;
-    // p.position.x = current_an->x;
-    // p.position.y = current_an->y;
-    // tf::quaternionTFToMsg(tf::createQuaternionFromYaw(current_an->theta), p.orientation);
-    // debug_pose_array_.poses.push_back(p);
 
     // Goal check
     if (isGoal(current_an->x, current_an->y, current_an->theta))
@@ -506,21 +445,11 @@ bool AstarPlanner::search()
   return false;
 }
 
-void AstarPlanner::publishPoseArray(const ros::Publisher &pub, const std::string &frame)
-{
-  debug_pose_array_.header.frame_id = frame;
-  // debug_pose_array_.poses.clear();
-  debug_pose_array_.poses.push_back(start_pose_local_.pose);
-  debug_pose_array_.poses.push_back(goal_pose_local_.pose);
-  pub.publish(debug_pose_array_);
-  debug_pose_array_.poses.clear();
-}
-
 void AstarPlanner::setPath(const SimpleNode &goal)
 {
   std_msgs::Header header;
   header.stamp = ros::Time::now();
-  header.frame_id = "velodyne";
+  header.frame_id = costmap_.header.frame_id;
   path_.header = header;
 
   // From the goal node to the start node
@@ -533,12 +462,6 @@ void AstarPlanner::setPath(const SimpleNode &goal)
     tf::Pose tf_pose;
     tf_pose.setOrigin(origin);
     tf_pose.setRotation(tf::createQuaternionFromYaw(node->theta));
-
-    geometry_msgs::Pose p;
-    p.position.x = node->x;
-    p.position.y = node->y;
-    tf::quaternionTFToMsg(tf::createQuaternionFromYaw(node->theta), p.orientation);
-    debug_pose_array_.poses.push_back(p);
 
     // Set path as ros message
     geometry_msgs::PoseStamped ros_pose;
@@ -597,8 +520,8 @@ bool AstarPlanner::isObs(int index_x, int index_y)
 bool AstarPlanner::detectCollision(const SimpleNode &sn)
 {
   // Define the robot as rectangle
-  static double left = -1.0 * base2back_;
-  static double right = robot_length_ - base2back_;
+  static double left = -1.0 * robot_base2back_;
+  static double right = robot_length_ - robot_base2back_;
   static double top = robot_width_ / 2.0;
   static double bottom = -1.0 * robot_width_ / 2.0;
   static double resolution = costmap_.info.resolution;
@@ -765,25 +688,5 @@ void AstarPlanner::reset()
 
   ros::WallTime end = ros::WallTime::now();
 
-  ROS_INFO("reset time: %lf [ms]", (end - begin).toSec() * 1000);
-}
-
-void AstarPlanner::broadcastPathTF()
-{
-  tf::Transform transform;
-
-  // Broadcast from start pose to goal pose
-  for (int i = path_.poses.size() - 1; i >= 0; i--)
-  {
-    tf::Quaternion quat;
-    tf::quaternionMsgToTF(path_.poses[i].pose.orientation, quat);
-    transform.setOrigin(
-        tf::Vector3(path_.poses[i].pose.position.x, path_.poses[i].pose.position.y, path_.poses[i].pose.position.z));
-    transform.setRotation(quat);
-
-    tf_broadcaster_.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/map", "/astar_path"));
-
-    // sleep 0.1 [sec]
-    usleep(100000);
-  }
+  ROS_INFO("Reset time: %lf [ms]", (end - begin).toSec() * 1000);
 }

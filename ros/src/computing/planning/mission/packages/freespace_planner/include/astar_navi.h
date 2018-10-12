@@ -34,7 +34,6 @@ private:
   // ros
   ros::NodeHandle nh_, private_nh_;
   ros::Publisher lane_pub_;
-  ros::Publisher debug_pose_pub_;
   ros::Subscriber costmap_sub_;
   ros::Subscriber current_pose_sub_;
   ros::Subscriber goal_pose_sub_;
@@ -49,9 +48,10 @@ private:
 
   // variables
   nav_msgs::OccupancyGrid costmap_;
-  geometry_msgs::PoseStamped current_pose_;
-  geometry_msgs::PoseStamped goal_pose_;
+  geometry_msgs::PoseStamped current_pose_local_, current_pose_global_;
+  geometry_msgs::PoseStamped goal_pose_local_, goal_pose_global_;
   tf::Transform local2costmap_; // local frame (e.g. velodyne) -> costmap origin
+
   bool costmap_initialized_;
   bool current_pose_initialized_;
   bool goal_pose_initialized_;
@@ -63,7 +63,8 @@ private:
 
   // fucntions
   tf::Transform getTransform(const std::string &from, const std::string &to);
-  void publishPathAsWaypoints(const ros::Publisher& pub, const nav_msgs::Path& path, const double waypoint_velocity);
+  void publishWaypoints(const nav_msgs::Path& path, const double& velocity);
+  void publishStopWaypoints();
 };
 
 #endif
