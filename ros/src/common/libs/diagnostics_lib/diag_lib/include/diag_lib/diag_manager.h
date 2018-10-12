@@ -16,7 +16,8 @@
 #include <vector>
 #include <map>
 #include <thread>
-#include<fstream>
+#include <fstream>
+#include <mutex>
 
 //headers in diag_msgs
 #include <diag_msgs/diag_error.h>
@@ -124,7 +125,11 @@ private:
     void check_rate_();
     bool check_error_code(int requested_error_code, std::vector<int> right_categories);
     void publish_diag_(diag_info info);
+    //parameters for diagnostics bridge
+    std::mutex diag_mutex_;
+    void produce_diagnostics_(diagnostic_updater::DiagnosticStatusWrapper &stat);
     boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_ptr_;
+    int diag_info_search_index_;
     // check resource for diag_manager
     bool diag_resource(std::string target_resource_path);
     volatile bool enable_diag_;
