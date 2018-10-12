@@ -3,7 +3,6 @@
 
 NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
 {
-  private_nh_.param<double>("publish_rate", publish_rate_, 10.0);
   private_nh_.param<double>("interval_sec", interval_sec_, 0.1);
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
@@ -84,7 +83,7 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(
   }
   else
   {
-    // This is because randome motion's velocity is 0
+    // This is because random motion's velocity is 0
     predicted_object = object;
   }
 

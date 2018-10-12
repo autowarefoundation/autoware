@@ -535,6 +535,17 @@ subs :
       cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
       param: road_occupancy_processor
 
+  - name : Prediction
+    desc : Prediction desc sample
+    subs :
+    - name : Motion Predictor
+      desc : motion_predictor desc sample
+      subs :
+      - name : naive_motion_predict
+        desc : naive_motion_predict desc sample
+        cmd  : roslaunch naive_motion_predict naive_motion_predict.launch
+        param: naive_motion_predict_param
+
 - subs :
   - name : Mission Planning
     desc : Mission Planning desc sample
@@ -1094,7 +1105,7 @@ params :
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /detection/lidar_tracker/objects
+      v       : /detection/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -5300,6 +5311,44 @@ params :
       min     : 0.00
       max     : 3.0
       v       : 1.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : naive_motion_predict_param
+    vars  :
+    - name  : input_topic
+      desc  : input topic
+      label : input_topic
+      kind  : str
+      v     : /detection/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : interval_sec
+      desc  : internal second
+      label : internal_sec
+      min     : 0.00
+      max     : 1.00
+      v       : 0.1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : num_prediction
+      desc  : number of prediction
+      label : num_prediction
+      min     : 0
+      max     : 50
+      v       : 20
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : sensor_height
+      desc  : Height for visualizing predicted track
+      label : sensor_height
+      min     : 0.0
+      max     : 5.0
+      v       : 2.0
       cmd_param :
         dash      : ''
         delim     : ':='

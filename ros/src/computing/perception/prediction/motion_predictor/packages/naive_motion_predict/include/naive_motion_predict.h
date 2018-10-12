@@ -55,9 +55,6 @@ private:
   // ros Subscriber
   ros::Subscriber detected_objects_sub_;
 
-  // param publish
-  double publish_rate_;
-
   // prediction param
   double interval_sec_;
   int num_prediction_;
