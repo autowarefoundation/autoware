@@ -1,8 +1,5 @@
 #include "display.h"
-#include "velocity_graph.h"
-#include "velocity_text.h"
-
-#include <QVBoxLayout>
+#include "widget.h"
 
 namespace autoware_rviz_plugins {
 
@@ -46,26 +43,10 @@ VehicleMonitor::~VehicleMonitor()
 
 void VehicleMonitor::onInitialize()
 {
-	using namespace vehicle_monitor;
-
-	widget_ = new QWidget;
-
-	auto velocity_graph  = new VelocityGraph();
-	auto velocity_cmd    = new VelocityText();
-	auto velocity_status = new VelocityText();
-	auto steering_cmd    = new VelocityText();
-	auto steering_status = new VelocityText();
-
-	QVBoxLayout* layout = new QVBoxLayout;
-	layout->addWidget( velocity_graph  , 5 );
-	layout->addWidget( velocity_cmd    , 1 );
-	layout->addWidget( velocity_status , 1 );
-	layout->addWidget( steering_cmd    , 1 );
-	layout->addWidget( steering_status , 1 );
-	widget_->setLayout( layout );
-
+	widget_ = new VehicleMonitorWidget();
 	setAssociatedWidget( widget_ );
-	connect(this, &VehicleMonitor::outputVelocity, velocity_cmd, &VelocityText::setVelocityKph);
+
+	//connect(this, &VehicleMonitor::outputVelocity, velocity_cmd, &VelocityText::setVelocityKph);
 
 	/*
 	overlay_ = boost::make_shared<OverlayObject>("VehicleMonitor");

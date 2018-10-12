@@ -1,52 +1,37 @@
-#ifndef VEHICLE_MONITOR_WIDGET_H_INCLUDED
-#define VEHICLE_MONITOR_WIDGET_H_INCLUDED
+#ifndef VEHICLE_MONITOR_VELOCITY_GRAPH_H_INCLUDED
+#define VEHICLE_MONITOR_VELOCITY_GRAPH_H_INCLUDED
 
 #include <QWidget>
-#include <QLabel>
 
-namespace autoware_rviz_plugins
+namespace autoware_rviz_plugins {
+
+class VehicleMonitorWidget : public QWidget
 {
+	Q_OBJECT
 
-	class VehicleVelocityWidget : public QWidget
-	{
-		Q_OBJECT
+	public:
 
-		public:
-
-			VehicleVelocityWidget( QWidget* parent = 0 );
-
-			/*
-			virtual void load( const rviz::Config& config );
-			virtual void save( rviz::Config config ) const;
-			*/
+		VehicleMonitorWidget( QWidget* parent = 0 );
 
 
-		public Q_SLOTS:
 
-			void setVelocity( double kph );
+	public Q_SLOTS:
 
-		private:
+		void setValue( double value );
 
-			QLabel* cmd_title;
-			QLabel* cmd_kph;
-			QLabel* cmd_mps;
-			QLabel* status_title;
-			QLabel* status_kph;
-			QLabel* status_mps;
+	protected:
 
-			/*
-			DriveWidget* velocity_graph_;
-			DriveWidget* steering_graph_;
-			DriveWidget* pedal_shift_graph_;
+		void paintEvent( QPaintEvent*event ) override;
 
-			QString output_topic_;
-			ros::Publisher velocity_publisher_;
-			ros::NodeHandle nh_;
-			float linear_velocity_;
-			float angular_velocity_;
-			*/
-	};
+		void drawControlMode    ( QPainter& painter );
+		void drawVelocityGraph  ( QPainter& painter );
+		void drawVelocityCommand( QPainter& painter );
+		void drawSteeringGraph  ( QPainter& painter );
+		void drawSteeringCommand( QPainter& painter );
+		void drawPedal          ( QPainter& painter );
+		void drawShift          ( QPainter& painter );
+};
 
 }
 
-#endif // VEHICLE_MONITOR_WIDGET_H_INCLUDED
+#endif // VEHICLE_MONITOR_VELOCITY_TEXT_H_INCLUDED
