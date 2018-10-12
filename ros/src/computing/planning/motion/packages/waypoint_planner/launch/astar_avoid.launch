@@ -1,0 +1,58 @@
+<launch>
+
+  <arg name="safety_waypoints_size" default="100" />
+  <arg name="update_rate" default="10" />
+
+  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
+  <arg name="avoidance" default="true" />
+  <arg name="search_waypoints_size" default="30" />
+  <arg name="search_waypoints_delta" default="2" />
+  <arg name="avoid_waypoints_velocity" default="10.0" />
+
+  <arg name="use_back" default="false" />
+  <arg name="use_potential_heuristic" default="true" />
+  <arg name="use_wavefront_heuristic" default="false" />
+  <arg name="time_limit" default="1000.0" />
+  <arg name="robot_length" default="4.5" />
+  <arg name="robot_width" default="1.75" />
+  <arg name="robot_base2back" default="1.0" />
+  <arg name="minimum_turning_radius" default="6.0" />
+  <arg name="theta_size" default="48" />
+  <arg name="goal_angle_range" default="6.0" />
+  <arg name="curve_weight" default="1.2" />
+  <arg name="reverse_weight" default="2.00" />
+  <arg name="lateral_goal_range" default="0.5" />
+  <arg name="longitudinal_goal_range" default="2.0" />
+  <arg name="obstacle_threshold" default="100" />
+  <arg name="potential_weight" default="10.0" />
+  <arg name="distance_heuristic_weight" default="1.0" />
+
+  <node pkg="waypoint_planner" type="astar_avoid" name="astar_avoid" output="screen">
+    <remap from="costmap" to="$(arg costmap_topic)" />
+    <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
+    <param name="avoidance" value="$(arg avoidance)" />
+    <param name="update_rate" value="$(arg update_rate)" />
+    <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
+    <param name="search_waypoints_delta" value="$(arg search_waypoints_delta)" />
+    <param name="avoid_waypoints_velocity" value="$(arg avoid_waypoints_velocity)" />
+
+    <param name="use_back" value="$(arg use_back)" />
+    <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
+    <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />
+    <param name="time_limit" value="$(arg time_limit)" />
+    <param name="robot_length" value="$(arg robot_length)" />
+    <param name="robot_width" value="$(arg robot_width)" />
+    <param name="robot_base2back" value="$(arg robot_base2back)" />
+    <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
+    <param name="theta_size" value="$(arg theta_size)" />
+    <param name="goal_angle_range" value="$(arg goal_angle_range)" />
+    <param name="curve_weight" value="$(arg curve_weight)" />
+    <param name="reverse_weight" value="$(arg reverse_weight)" />
+    <param name="lateral_goal_range" value="$(arg lateral_goal_range)" />
+    <param name="longitudinal_goal_range" value="$(arg longitudinal_goal_range)" />
+    <param name="obstacle_threshold" value="$(arg obstacle_threshold)" />
+    <param name="potential_weight" value="$(arg potential_weight)" />
+    <param name="distance_heuristic_weight" value="$(arg distance_heuristic_weight)" />
+  </node>
+
+</launch>

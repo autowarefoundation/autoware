@@ -33,7 +33,7 @@ include_directories(
 
 add_executable(astar_avoid
   nodes/astar_avoid/astar_avoid.cpp
-  nodes/astar_avoid/search_info_ros.cpp
+  nodes/astar_avoid/astar_avoid_node.cpp
 )
 
 target_link_libraries(astar_avoid
