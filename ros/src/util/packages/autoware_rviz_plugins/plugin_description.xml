@@ -12,7 +12,6 @@
     <message_type>autoware_msgs/VehicleStatus</message_type>
   </class>
 
-
   <class name="autoware_rviz_plugins/VehicleStatusMonitor" type="autoware_rviz_plugins::VehicleStatusMonitor" base_class_type="rviz::Display">
     <description>
       Visualize Vhicle Status in rviz.
