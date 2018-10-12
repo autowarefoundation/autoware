@@ -86,7 +86,7 @@ void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArr
 
     visualization_msgs::Marker id;
 
-    id.lifetime = ros::Duration(0.2);
+    id.lifetime = ros::Duration(0.1);
     id.header.frame_id = pointcloud_frame_;
     id.header.stamp = input.header.stamp;
     id.ns = "id";

@@ -33,10 +33,13 @@
 
 #include <ros/ros.h>
 
+#include <tf/transform_datatypes.h>
+
 #include <visualization_msgs/MarkerArray.h>
 
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
+
 
 class NaiveMotionPredict
 {
@@ -55,7 +58,33 @@ private:
   // param publish
   double publish_rate_;
 
+  // prediction param
+  double interval_sec_;
+  int num_prediction_;
+  double sensor_height_;
+
   void objectsCallback(const autoware_msgs::DetectedObjectArray& input);
+
+  void initializeRosmarker(const std_msgs::Header& header,
+                           const geometry_msgs::Point& position,
+                           const int object_id,
+                           visualization_msgs::Marker& predicted_line);
+
+  void makePrediction(
+      const autoware_msgs::DetectedObject& object,
+      std::vector<autoware_msgs::DetectedObject>& predicted_objects,
+      visualization_msgs::Marker& predicted_line);
+
+  autoware_msgs::DetectedObject generatePredictedObject(
+      const autoware_msgs::DetectedObject& object);
+
+  autoware_msgs::DetectedObject moveConstantVelocity(
+      const autoware_msgs::DetectedObject& object);
+
+  autoware_msgs::DetectedObject moveConstantTurnRateVelocity(
+      const autoware_msgs::DetectedObject& object);
+
+  double generateYawFromQuaternion(const geometry_msgs::Quaternion& quaternion);
 
 
 public:

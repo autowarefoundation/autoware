@@ -1,5 +1,5 @@
 <!-- Launch file for naive_motion_predict -->
 <launch>
-	<node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict" />
+  <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict" />
 
 </launch>

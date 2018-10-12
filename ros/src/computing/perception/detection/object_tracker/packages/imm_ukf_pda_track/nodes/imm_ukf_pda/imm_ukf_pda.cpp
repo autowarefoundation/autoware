@@ -576,6 +576,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
+    dd.acceleration.linear.y = targets_[i].x_merge_(4); //component is yaw rate, but store it in acceleration.linear.y
 
     updateLabel(targets_[i], dd);
     updateBehaviorState(targets_[i], dd);
