@@ -74,7 +74,7 @@ void AstarPlanner::createStateUpdateTable()
     nu.back = false;
     state_update_table_[i].emplace_back(nu);
 
-    // forward right max
+    // forward right
     nu.shift_x = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta - dtheta);
     nu.shift_y = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta - dtheta);
     nu.rotation = -dtheta;
@@ -84,7 +84,7 @@ void AstarPlanner::createStateUpdateTable()
     nu.back = false;
     state_update_table_[i].emplace_back(nu);
 
-    // forward left max
+    // forward left
     nu.shift_x = left_circle_center_x + minimum_turning_radius_ * std::cos(-M_PI_2 + theta + dtheta);
     nu.shift_y = left_circle_center_y + minimum_turning_radius_ * std::sin(-M_PI_2 + theta + dtheta);
     nu.rotation = dtheta;

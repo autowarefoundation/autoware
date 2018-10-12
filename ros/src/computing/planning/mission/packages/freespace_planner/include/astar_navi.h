@@ -10,6 +10,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <autoware_msgs/LaneArray.h>
 
 #include "astar_planner.h"
@@ -31,7 +32,7 @@ private:
   tf::TransformListener tf_listener_;
 
   // params
-  double waypoint_velocity_;  // [kmph]
+  double waypoints_velocity_;  // [kmph]
   double update_rate_;        // [Hz]
 
   // classes

@@ -5,8 +5,8 @@
 
 AstarNavi::AstarNavi() : nh_(), private_nh_("~")
 {
-  private_nh_.param<double>("waypoint_velocity", waypoint_velocity_, 5.0);
-  private_nh_.param<double>("update_rate", update_rate_, 1.0);
+  private_nh_.param<double>("waypoints_velocity", waypoints_velocity_, 5.0);
+  private_nh_.param<double>("update_rate", update_rate_, 0.5);
 
   lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarNavi::costmapCallback, this);
@@ -39,7 +39,7 @@ void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
 
   current_pose_global_ = msg;
   current_pose_local_.pose =
-      transformPose(msg.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
+      transformPose(current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
   current_pose_local_.header.frame_id = costmap_.header.frame_id;
   current_pose_local_.header.stamp = current_pose_global_.header.stamp;
 
@@ -55,7 +55,7 @@ void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped& msg)
 
   goal_pose_global_ = msg;
   goal_pose_local_.pose =
-      transformPose(msg.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
+      transformPose(goal_pose_global_.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
   goal_pose_local_.header.frame_id = costmap_.header.frame_id;
   goal_pose_local_.header.stamp = goal_pose_global_.header.stamp;
 
@@ -114,7 +114,7 @@ void AstarNavi::run()
     if (result)
     {
       ROS_INFO("Found GOAL!");
-      publishWaypoints(astar.getPath(), waypoint_velocity_);
+      publishWaypoints(astar.getPath(), waypoints_velocity_);
     }
     else
     {

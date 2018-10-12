@@ -1,7 +1,8 @@
 <launch>
 
-  <arg name="costmap_topic" default="/grid_map_filter_visualization/dist_wayarea" />
-  <arg name="update_rate" default="0.2" />
+  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
+  <arg name="waypoints_velocity" default="5.0" />
+  <arg name="update_rate" default="0.5" />
 
   <arg name="use_back" default="true" />
   <arg name="use_potential_heuristic" default="true" />
@@ -22,7 +23,8 @@
   <arg name="distance_heuristic_weight" default="1.0" />
 
 	<node pkg="freespace_planner" type="astar_navi" name="astar_navi" output="screen">
-    <remap from="/costmap" to="$(arg costmap_topic)" />
+    <remap from="costmap" to="$(arg costmap_topic)" />
+    <param name="waypoints_velocity" value="$(arg waypoints_velocity)" />
     <param name="update_rate" value="$(arg update_rate)" />
     <param name="use_back" value="$(arg use_back)" />
     <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
