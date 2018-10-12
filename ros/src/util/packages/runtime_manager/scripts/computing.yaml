@@ -579,16 +579,16 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
         param: op_trajectory_generator
 
-    - name : waypoint_planner
-      desc : waypoint_planner desc sample
+    - name : astar_planner
+      desc : astar_planner desc sample
       subs :
-      - name : obstacle_avoid
-        desc : obstacle_avoid desc sample
-        cmd  : roslaunch waypoint_planner obstacle_avoid.launch
-        param: obstacle_avoid
+      - name : astar_avoid
+        desc : astar_avoid desc sample
+        cmd  : roslaunch astar_planner astar_avoid.launch
+        param: astar_avoid
       - name : velocity_set
         desc : velocity_set desc sample
-        cmd  : roslaunch waypoint_planner velocity_set.launch
+        cmd  : roslaunch astar_planner velocity_set.launch
         param: velocity_set
         gui  :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
@@ -1588,34 +1588,41 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : obstacle_avoid
+  - name  : astar_avoid
     vars  :
     - name  : avoidance
-      desc  : if not checked, decide if we avoid by reading the current state
+      desc  : Enable avoidance mode
       label : Avoidance
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : avoid_distance
-      desc      : Avoid distance from the obstacle
-      label     : Avoid Distance (m)
-      min       : 0.0
-      max       : 50.0
-      v         : 13.0
+        dash  : ''
+        delim : ':='
+    - name  : use_back
+      desc  : Use reverse motion for planning
+      label : Use Reverse Motion
+      kind  : checkbox
+      v     : False
+      cmd_param:
+        dash  : ''
+        delim : ':='
+    - name  : waypoints_velocity
+      desc  : Velocity of planned waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 10.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : avoid_velocity_limit_mps
-      desc      : if the current velocity exceeds this value, we do not avoid
-      label     : Avoid Velocity Limit (m/s)
-      min       : 0.0
-      max       : 20.0
-      v         : 4.0
-      cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for planning
+      label : Costmap Topic
+      kind  : str
+      v     : grid_map_filter_visualization/dist_wayarea
+      cmd_param:
+        dash  : ''
+        delim : ':='
 
   - name  : velocity_set
     topic : /config/velocity_set
@@ -2483,17 +2490,31 @@ params :
       kind  : checkbox
       v     : False
       cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name      : waypoint_velocity_kmph
-      desc      : Velocity of planned waypoints
-      label     : Waypoint Velocity
-      min       : 0.0
-      max       : 40.0
-      v         : 5.0
+        dash  : ''
+        delim : ':='
+    - name  : waypoints_velocity
+      desc  : Velocity of planned waypoints
+      label : Waypoint Velocity [km/h]
+      min   : 0.0
+      max   : 40.0
+      v     : 5.0
       cmd_param :
-        dash      : ''
-        delim     : ':='
+        dash  : ''
+        delim : ':='
+    - name  : update_rate
+      desc  : Replanning rate
+      label : Update Rate [Hz]
+      min   : 0.0
+      max   : 10.0
+      v     : 0.5
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : costmap_topic
+      desc  : Costmap topic for planning
+      label : Costmap Topic
+      kind  : str
+      v     : grid_map_filter_visualization/dist_wayarea
 
   - name  : way_planner
     vars  :
