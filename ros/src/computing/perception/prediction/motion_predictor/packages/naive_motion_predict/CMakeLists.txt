@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(naive_motion_predict)
 
+include(FindPkgConfig)
+
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
@@ -10,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_recognition_msgs
   jsk_rviz_plugins
   )
+# find_package(lib_ukf REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -33,11 +36,13 @@ add_executable(naive_motion_predict
 nodes/naive_motion_predict/naive_motion_predict_node.cpp
 nodes/naive_motion_predict/naive_motion_predict.cpp)
 
-target_link_libraries(naive_motion_predict PRIVATE
+target_link_libraries(naive_motion_predict
   ${catkin_LIBRARIES}
   )
 
-add_dependencies(naive_motion_predict ${catkin_EXPORTED_TARGETS})
+add_dependencies(naive_motion_predict
+  ${catkin_EXPORTED_TARGETS}
+)
 
 install(TARGETS
         naive_motion_predict
