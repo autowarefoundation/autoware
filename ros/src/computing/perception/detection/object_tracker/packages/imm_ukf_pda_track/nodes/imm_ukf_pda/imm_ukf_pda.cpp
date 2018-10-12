@@ -375,6 +375,22 @@ void ImmUkfPda::updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd
   }
 }
 
+void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& dd)
+{
+  if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  {
+    dd.behavior_state = MotionModel::CV;
+  }
+  else if(target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  {
+    dd.behavior_state = MotionModel::CTRV;
+  }
+  else
+  {
+    dd.behavior_state = MotionModel::RM;
+  }
+}
+
 void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb)
 {
   int tracking_num = target.tracking_num_;
@@ -580,7 +596,7 @@ void ImmUkfPda::staticClassification()
       }
       avg_vel = double(sum_vel / life_time_thres_);
 
-      if ((avg_vel < static_velocity_thres_) && (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
+      if ((avg_vel < static_velocity_thres_) && (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ &&
                                                  targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
       {
         targets_[i].is_static_ = true;
@@ -632,6 +648,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose_reliable = targets_[i].is_vis_bb_;
 
     updateLabel(targets_[i], dd);
+    updateBehaviorState(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
   }
 }

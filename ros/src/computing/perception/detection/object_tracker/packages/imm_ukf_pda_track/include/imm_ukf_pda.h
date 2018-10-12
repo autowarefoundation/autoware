@@ -142,6 +142,7 @@ private:
 
   void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
   void updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd);
+  void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& dd);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
   void secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt);

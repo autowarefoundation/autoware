@@ -61,8 +61,6 @@ private:
 public:
   NaiveMotionPredict();
   ~NaiveMotionPredict();
-
-  void run();
 };
 
 #endif  // NAIVE_MOTION_PREDICT_H

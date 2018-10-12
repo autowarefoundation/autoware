@@ -19,19 +19,7 @@ NaiveMotionPredict::~NaiveMotionPredict()
 {
 }
 
-// void NaiveMotionPredict::run()
-// {
-//   ros::Rate rate(publish_rate_);
-//
-//   while (ros::ok())
-//   {
-//     ros::spinOnce();
-//     // updateFakes();
-//     // publishFakes();
-//     rate.sleep();
-//   }
-// }
-
 void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArray& input)
 {
+  
 }

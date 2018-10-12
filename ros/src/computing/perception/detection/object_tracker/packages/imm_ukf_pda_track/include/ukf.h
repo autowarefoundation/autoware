@@ -48,38 +48,39 @@ public:
 
 class UKF
 {
-public:
-  int ukf_id_;
+private:
 
   ///* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
-  //    ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  // predicted sigma points matrix
+  Eigen::MatrixXd x_sig_pred_cv_;
+public:
+  int ukf_id_;
+
+  //  state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
 
-  ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_cv_;
 
-  ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_ctrv_;
 
-  ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
+  // state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_rm_;
 
-  //    ///* state covariance matrix
+  // state covariance matrix
   Eigen::MatrixXd p_merge_;
 
-  ///* state covariance matrix
+  // state covariance matrix
   Eigen::MatrixXd p_cv_;
 
-  ///* state covariance matrix
+  // state covariance matrix
   Eigen::MatrixXd p_ctrv_;
 
-  ///* state covariance matrix
+  // state covariance matrix
   Eigen::MatrixXd p_rm_;
-
-  ///* predicted sigma points matrix
-  Eigen::MatrixXd x_sig_pred_cv_;
 
   ///* predicted sigma points matrix
   Eigen::MatrixXd x_sig_pred_ctrv_;
@@ -281,7 +282,6 @@ public:
 
   void estimationUpdate(const int model_ind);
 
-  // this is for debug, try SUKF
   void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
