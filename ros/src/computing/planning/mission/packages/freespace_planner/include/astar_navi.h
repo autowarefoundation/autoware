@@ -24,7 +24,8 @@
 #include "autoware_msgs/LaneArray.h"
 #include "astar_planner.h"
 
-class AstarNavi {
+class AstarNavi
+{
 public:
   AstarNavi();
   ~AstarNavi();
@@ -41,7 +42,7 @@ private:
 
   // params
   double waypoint_velocity_;  // [kmph]
-  double update_rate_;  // [Hz]
+  double update_rate_;        // [Hz]
 
   // classes
   AstarPlanner astar;
@@ -50,19 +51,19 @@ private:
   nav_msgs::OccupancyGrid costmap_;
   geometry_msgs::PoseStamped current_pose_local_, current_pose_global_;
   geometry_msgs::PoseStamped goal_pose_local_, goal_pose_global_;
-  tf::Transform local2costmap_; // local frame (e.g. velodyne) -> costmap origin
+  tf::Transform local2costmap_;  // local frame (e.g. velodyne) -> costmap origin
 
   bool costmap_initialized_;
   bool current_pose_initialized_;
   bool goal_pose_initialized_;
 
   // functions, callback
-  void costmapCallback(const nav_msgs::OccupancyGrid &msg);
-  void currentPoseCallback(const geometry_msgs::PoseStamped &msg);
-  void goalPoseCallback(const geometry_msgs::PoseStamped &msg);
+  void costmapCallback(const nav_msgs::OccupancyGrid& msg);
+  void currentPoseCallback(const geometry_msgs::PoseStamped& msg);
+  void goalPoseCallback(const geometry_msgs::PoseStamped& msg);
 
   // fucntions
-  tf::Transform getTransform(const std::string &from, const std::string &to);
+  tf::Transform getTransform(const std::string& from, const std::string& to);
   void publishWaypoints(const nav_msgs::Path& path, const double& velocity);
   void publishStopWaypoints();
 };

@@ -56,7 +56,7 @@ void AstarPlanner::createStateUpdateTable()
 
     // Calculate right and left circle
     // Robot moves along these circles
-    double right_circle_center_x = minimum_turning_radius_ *  std::sin(theta);
+    double right_circle_center_x = minimum_turning_radius_ * std::sin(theta);
     double right_circle_center_y = minimum_turning_radius_ * -std::cos(theta);
     double left_circle_center_x = -right_circle_center_x;
     double left_circle_center_y = -right_circle_center_y;
@@ -65,71 +65,71 @@ void AstarPlanner::createStateUpdateTable()
     NodeUpdate nu;
 
     // forward
-    nu.shift_x     = step * std::cos(theta);
-    nu.shift_y     = step * std::sin(theta);
-    nu.rotation    = 0.0;
+    nu.shift_x = step * std::cos(theta);
+    nu.shift_y = step * std::sin(theta);
+    nu.rotation = 0.0;
     nu.index_theta = 0;
-    nu.step        = step;
-    nu.curve       = false;
-    nu.back        = false;
+    nu.step = step;
+    nu.curve = false;
+    nu.back = false;
     state_update_table_[i].emplace_back(nu);
 
     // forward right max
-    nu.shift_x     = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta - dtheta);
-    nu.shift_y     = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta - dtheta);
-    nu.rotation    = -dtheta;
+    nu.shift_x = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta - dtheta);
+    nu.shift_y = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta - dtheta);
+    nu.rotation = -dtheta;
     nu.index_theta = -1;
-    nu.step        = step;
-    nu.curve       = true;
-    nu.back        = false;
+    nu.step = step;
+    nu.curve = true;
+    nu.back = false;
     state_update_table_[i].emplace_back(nu);
 
     // forward left max
-    nu.shift_x     = left_circle_center_x + minimum_turning_radius_ * std::cos(-M_PI_2 + theta + dtheta);
-    nu.shift_y     = left_circle_center_y + minimum_turning_radius_ * std::sin(-M_PI_2 + theta + dtheta);
-    nu.rotation    = dtheta;
+    nu.shift_x = left_circle_center_x + minimum_turning_radius_ * std::cos(-M_PI_2 + theta + dtheta);
+    nu.shift_y = left_circle_center_y + minimum_turning_radius_ * std::sin(-M_PI_2 + theta + dtheta);
+    nu.rotation = dtheta;
     nu.index_theta = 1;
-    nu.step        = step;
-    nu.curve       = true;
-    nu.back        = false;
+    nu.step = step;
+    nu.curve = true;
+    nu.back = false;
     state_update_table_[i].emplace_back(nu);
 
     if (use_back_)
     {
       // backward
-      nu.shift_x     = step * std::cos(theta) * -1.0;
-      nu.shift_y     = step * std::sin(theta) * -1.0;
-      nu.rotation    = 0;
+      nu.shift_x = step * std::cos(theta) * -1.0;
+      nu.shift_y = step * std::sin(theta) * -1.0;
+      nu.rotation = 0;
       nu.index_theta = 0;
-      nu.step        = step;
-      nu.curve       = false;
-      nu.back        = true;
+      nu.step = step;
+      nu.curve = false;
+      nu.back = true;
       state_update_table_[i].emplace_back(nu);
 
       // backward right
-      nu.shift_x     = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta + dtheta);
-      nu.shift_y     = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta + dtheta);
-      nu.rotation    = dtheta;
+      nu.shift_x = right_circle_center_x + minimum_turning_radius_ * std::cos(M_PI_2 + theta + dtheta);
+      nu.shift_y = right_circle_center_y + minimum_turning_radius_ * std::sin(M_PI_2 + theta + dtheta);
+      nu.rotation = dtheta;
       nu.index_theta = 1;
-      nu.step        = step;
-      nu.curve       = true;
-      nu.back        = true;
+      nu.step = step;
+      nu.curve = true;
+      nu.back = true;
       state_update_table_[i].emplace_back(nu);
 
       // backward left
-      nu.shift_x     = left_circle_center_x + minimum_turning_radius_ * std::cos(-1.0 * M_PI_2 + theta - dtheta);
-      nu.shift_y     = left_circle_center_y + minimum_turning_radius_ * std::sin(-1.0 * M_PI_2 + theta - dtheta);
-      nu.rotation    = dtheta * -1.0;
+      nu.shift_x = left_circle_center_x + minimum_turning_radius_ * std::cos(-1.0 * M_PI_2 + theta - dtheta);
+      nu.shift_y = left_circle_center_y + minimum_turning_radius_ * std::sin(-1.0 * M_PI_2 + theta - dtheta);
+      nu.rotation = dtheta * -1.0;
       nu.index_theta = -1;
-      nu.step        = step;
-      nu.curve       = true;
-      nu.back        = true;
+      nu.step = step;
+      nu.curve = true;
+      nu.back = true;
       state_update_table_[i].emplace_back(nu);
     }
   }
 }
 
-void AstarPlanner::initialize(const nav_msgs::OccupancyGrid &costmap)
+void AstarPlanner::initialize(const nav_msgs::OccupancyGrid& costmap)
 {
   costmap_ = costmap;
 
@@ -181,7 +181,7 @@ void AstarPlanner::initialize(const nav_msgs::OccupancyGrid &costmap)
   }
 }
 
-bool AstarPlanner::makePlan(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose)
+bool AstarPlanner::makePlan(const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& goal_pose)
 {
   start_pose_local_.pose = start_pose;
   goal_pose_local_.pose = goal_pose;
@@ -215,7 +215,7 @@ bool AstarPlanner::setStartNode()
   }
 
   // Set start node
-  AstarNode &start_node = nodes_[index_y][index_x][index_theta];
+  AstarNode& start_node = nodes_[index_y][index_x][index_theta];
   start_node.x = start_pose_local_.pose.position.x;
   start_node.y = start_pose_local_.pose.position.y;
   start_node.theta = 2.0 * M_PI / theta_size_ * index_theta;
@@ -229,13 +229,15 @@ bool AstarPlanner::setStartNode()
   if (!use_wavefront_heuristic_ && !use_potential_heuristic_)
   {
     start_node.hc = calcDistance(start_pose_local_.pose.position.x, start_pose_local_.pose.position.y,
-      goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) * distance_heuristic_weight_;
+                                 goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) *
+                    distance_heuristic_weight_;
   }
   else if (use_potential_heuristic_)
   {
     start_node.gc += start_node.hc;
     start_node.hc += calcDistance(start_pose_local_.pose.position.x, start_pose_local_.pose.position.y,
-      goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) + distance_heuristic_weight_;
+                                  goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) +
+                     distance_heuristic_weight_;
   }
 
   // Push start node to openlist
@@ -279,7 +281,7 @@ bool AstarPlanner::setGoalNode()
   return true;
 }
 
-void AstarPlanner::poseToIndex(const geometry_msgs::Pose &pose, int *index_x, int *index_y, int *index_theta)
+void AstarPlanner::poseToIndex(const geometry_msgs::Pose& pose, int* index_x, int* index_y, int* index_theta)
 {
   tf::Transform orig_tf;
   tf::poseMsgToTF(costmap_.info.origin, orig_tf);
@@ -300,7 +302,7 @@ void AstarPlanner::poseToIndex(const geometry_msgs::Pose &pose, int *index_x, in
   *index_theta %= theta_size_;
 }
 
-void AstarPlanner::pointToIndex(const geometry_msgs::Point &point, int *index_x, int *index_y)
+void AstarPlanner::pointToIndex(const geometry_msgs::Point& point, int* index_x, int* index_y)
 {
   geometry_msgs::Pose pose;
   pose.position = point;
@@ -340,7 +342,7 @@ bool AstarPlanner::search()
     openlist_.pop();
 
     // Expand nodes from this node
-    AstarNode *current_an = &nodes_[top_sn.index_y][top_sn.index_x][top_sn.index_theta];
+    AstarNode* current_an = &nodes_[top_sn.index_y][top_sn.index_x][top_sn.index_theta];
     current_an->status = STATUS::CLOSED;
 
     // Goal check
@@ -352,7 +354,7 @@ bool AstarPlanner::search()
     }
 
     // Expand nodes
-    for (const auto &state : state_update_table_[top_sn.index_theta])
+    for (const auto& state : state_update_table_[top_sn.index_theta])
     {
       // Next state
       double next_x = current_an->x + state.shift_x;
@@ -382,7 +384,7 @@ bool AstarPlanner::search()
         continue;
       }
 
-      AstarNode *next_an = &nodes_[next_sn.index_y][next_sn.index_x][next_sn.index_theta];
+      AstarNode* next_an = &nodes_[next_sn.index_y][next_sn.index_x][next_sn.index_theta];
       double next_gc = current_an->gc + move_cost;
       double next_hc = nodes_[next_sn.index_y][next_sn.index_x][0].hc;  // wavefront or distance transform heuristic
 
@@ -390,15 +392,15 @@ bool AstarPlanner::search()
       if (use_potential_heuristic_)
       {
         next_gc += nodes_[next_sn.index_y][next_sn.index_x][0].hc;
-        next_hc += calcDistance(next_x, next_y, goal_pose_local_.pose.position.x,
-          goal_pose_local_.pose.position.y) * distance_heuristic_weight_;
+        next_hc += calcDistance(next_x, next_y, goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) *
+                   distance_heuristic_weight_;
       }
 
       // increase the cost with euclidean distance
       if (!use_wavefront_heuristic_ && !use_potential_heuristic_)
       {
-        next_hc = calcDistance(next_x, next_y, goal_pose_local_.pose.position.x,
-          goal_pose_local_.pose.position.y) * distance_heuristic_weight_;
+        next_hc = calcDistance(next_x, next_y, goal_pose_local_.pose.position.x, goal_pose_local_.pose.position.y) *
+                  distance_heuristic_weight_;
       }
 
       // NONE
@@ -445,7 +447,7 @@ bool AstarPlanner::search()
   return false;
 }
 
-void AstarPlanner::setPath(const SimpleNode &goal)
+void AstarPlanner::setPath(const SimpleNode& goal)
 {
   std_msgs::Header header;
   header.stamp = ros::Time::now();
@@ -453,7 +455,7 @@ void AstarPlanner::setPath(const SimpleNode &goal)
   path_.header = header;
 
   // From the goal node to the start node
-  AstarNode *node = &nodes_[goal.index_y][goal.index_x][goal.index_theta];
+  AstarNode* node = &nodes_[goal.index_y][goal.index_x][goal.index_theta];
 
   while (node != NULL)
   {
@@ -517,7 +519,7 @@ bool AstarPlanner::isObs(int index_x, int index_y)
   return false;
 }
 
-bool AstarPlanner::detectCollision(const SimpleNode &sn)
+bool AstarPlanner::detectCollision(const SimpleNode& sn)
 {
   // Define the robot as rectangle
   static double left = -1.0 * robot_base2back_;
@@ -559,7 +561,7 @@ bool AstarPlanner::detectCollision(const SimpleNode &sn)
   return false;
 }
 
-bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode &sn)
+bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode& sn)
 {
   // Set start point for wavefront search
   // This is goal for Astar search
@@ -572,8 +574,10 @@ bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode &sn)
   // Nodes are expanded for each neighborhood cells (moore neighborhood)
   double resolution = costmap_.info.resolution;
   static std::vector<WaveFrontNode> updates = {
-    getWaveFrontNode(0, 1, resolution), getWaveFrontNode(-1, 0, resolution),
-    getWaveFrontNode(1, 0, resolution), getWaveFrontNode(0, -1, resolution),
+    getWaveFrontNode(0, 1, resolution),
+    getWaveFrontNode(-1, 0, resolution),
+    getWaveFrontNode(1, 0, resolution),
+    getWaveFrontNode(0, -1, resolution),
     getWaveFrontNode(-1, 1, std::hypot(resolution, resolution)),
     getWaveFrontNode(1, 1, std::hypot(resolution, resolution)),
     getWaveFrontNode(-1, -1, std::hypot(resolution, resolution)),
@@ -596,7 +600,7 @@ bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode &sn)
     qu.pop();
 
     WaveFrontNode next;
-    for (const auto &u : updates)
+    for (const auto& u : updates)
     {
       next.index_x = ref.index_x + u.index_x;
       next.index_y = ref.index_y + u.index_y;
@@ -633,7 +637,7 @@ bool AstarPlanner::calcWaveFrontHeuristic(const SimpleNode &sn)
 }
 
 // Simple collidion detection for wavefront search
-bool AstarPlanner::detectCollisionWaveFront(const WaveFrontNode &ref)
+bool AstarPlanner::detectCollisionWaveFront(const WaveFrontNode& ref)
 {
   // Define the robot as square
   static double half = robot_width_ / 2;

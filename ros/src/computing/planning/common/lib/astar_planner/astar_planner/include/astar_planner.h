@@ -24,8 +24,8 @@ class AstarPlanner
 public:
   AstarPlanner();
   ~AstarPlanner();
-  void initialize(const nav_msgs::OccupancyGrid &costmap);
-  bool makePlan(const geometry_msgs::Pose &start_pose, const geometry_msgs::Pose &goal_pose);
+  void initialize(const nav_msgs::OccupancyGrid& costmap);
+  bool makePlan(const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& goal_pose);
   void reset();
 
   nav_msgs::Path getPath() const
@@ -36,26 +36,26 @@ public:
 private:
   void createStateUpdateTable();
   bool search();
-  void poseToIndex(const geometry_msgs::Pose &pose, int *index_x, int *index_y, int *index_theta);
-  void pointToIndex(const geometry_msgs::Point &point, int *index_x, int *index_y);
+  void poseToIndex(const geometry_msgs::Pose& pose, int* index_x, int* index_y, int* index_theta);
+  void pointToIndex(const geometry_msgs::Point& point, int* index_x, int* index_y);
   bool isOutOfRange(int index_x, int index_y);
-  void setPath(const SimpleNode &goal);
+  void setPath(const SimpleNode& goal);
   bool setStartNode();
   bool setGoalNode();
   bool isGoal(double x, double y, double theta);
   bool isObs(int index_x, int index_y);
-  bool detectCollision(const SimpleNode &sn);
-  bool calcWaveFrontHeuristic(const SimpleNode &sn);
-  bool detectCollisionWaveFront(const WaveFrontNode &sn);
+  bool detectCollision(const SimpleNode& sn);
+  bool calcWaveFrontHeuristic(const SimpleNode& sn);
+  bool detectCollisionWaveFront(const WaveFrontNode& sn);
 
   // ros param
   ros::NodeHandle n_;
 
   // base configs
-  bool use_back_; // use backward driving
+  bool use_back_;  // use backward driving
   bool use_potential_heuristic_;
   bool use_wavefront_heuristic_;
-  double time_limit_; // msec
+  double time_limit_;  // msec
 
   // robot configs
   double robot_length_;

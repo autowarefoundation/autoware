@@ -22,7 +22,7 @@ struct AstarNode
   double hc = 0;                 // heuristic cost
   double move_distance = 0;      // actual move distance
   bool back;                     // true if the current direction of the vehicle is back
-  AstarNode *parent = NULL;      // parent node
+  AstarNode* parent = NULL;      // parent node
 };
 
 struct WaveFrontNode
@@ -54,7 +54,7 @@ struct SimpleNode
   int index_theta;
   double cost;
 
-  bool operator>(const SimpleNode &right) const
+  bool operator>(const SimpleNode& right) const
   {
     return cost > right.cost;
   }
@@ -78,7 +78,7 @@ inline double modifyTheta(double theta)
   return theta;
 }
 
-inline geometry_msgs::Pose transformPose(const geometry_msgs::Pose &pose, const tf::Transform &tf)
+inline geometry_msgs::Pose transformPose(const geometry_msgs::Pose& pose, const tf::Transform& tf)
 {
   // Convert ROS pose to TF pose
   tf::Pose tf_pose;

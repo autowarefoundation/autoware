@@ -22,7 +22,7 @@ AstarNavi::~AstarNavi()
 {
 }
 
-void AstarNavi::costmapCallback(const nav_msgs::OccupancyGrid &msg)
+void AstarNavi::costmapCallback(const nav_msgs::OccupancyGrid& msg)
 {
   costmap_ = msg;
   tf::poseMsgToTF(costmap_.info.origin, local2costmap_);
@@ -30,7 +30,7 @@ void AstarNavi::costmapCallback(const nav_msgs::OccupancyGrid &msg)
   costmap_initialized_ = true;
 }
 
-void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped &msg)
+void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
 {
   if (!costmap_initialized_)
   {
@@ -38,14 +38,15 @@ void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped &msg)
   }
 
   current_pose_global_ = msg;
-  current_pose_local_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
+  current_pose_local_.pose =
+      transformPose(msg.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
   current_pose_local_.header.frame_id = costmap_.header.frame_id;
   current_pose_local_.header.stamp = current_pose_global_.header.stamp;
 
   current_pose_initialized_ = true;
 }
 
-void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped &msg)
+void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped& msg)
 {
   if (!costmap_initialized_)
   {
@@ -53,16 +54,19 @@ void AstarNavi::goalPoseCallback(const geometry_msgs::PoseStamped &msg)
   }
 
   goal_pose_global_ = msg;
-  goal_pose_local_.pose = transformPose(msg.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
+  goal_pose_local_.pose =
+      transformPose(msg.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
   goal_pose_local_.header.frame_id = costmap_.header.frame_id;
   goal_pose_local_.header.stamp = goal_pose_global_.header.stamp;
 
   goal_pose_initialized_ = true;
 
-  ROS_INFO_STREAM("Subscribed goal pose and transform from " << msg.header.frame_id << " to " <<  goal_pose_local_.header.frame_id << "\n" << goal_pose_local_.pose);
+  ROS_INFO_STREAM("Subscribed goal pose and transform from " << msg.header.frame_id << " to "
+                                                             << goal_pose_local_.header.frame_id << "\n"
+                                                             << goal_pose_local_.pose);
 }
 
-tf::Transform AstarNavi::getTransform(const std::string &from, const std::string &to)
+tf::Transform AstarNavi::getTransform(const std::string& from, const std::string& to)
 {
   tf::StampedTransform stf;
   try
