@@ -48,7 +48,8 @@ void AstarAvoid::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
 
   if (costmap_initialized_)
   {
-    current_pose_local_.pose = transformPose(current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
+    current_pose_local_.pose = transformPose(
+        current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
     current_pose_local_.header.frame_id = costmap_.header.frame_id;
     current_pose_local_.header.stamp = current_pose_global_.header.stamp;
   }
@@ -68,7 +69,7 @@ void AstarAvoid::closestWaypointCallback(const std_msgs::Int32& msg)
   closest_waypoint_initialized_ = true;
 }
 
-void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32 &msg)
+void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
 {
   obstacle_waypoint_index_ = msg.data;
   obstacle_waypoint_initialized_ = true;
@@ -86,7 +87,8 @@ void AstarAvoid::run()
   {
     ros::spinOnce();
 
-    if (!current_pose_initialized_ || !closest_waypoint_initialized_ || !base_waypoints_initialized_ || closest_waypoint_index_ < 0)
+    if (!current_pose_initialized_ || !closest_waypoint_initialized_ || !base_waypoints_initialized_ ||
+        closest_waypoint_index_ < 0)
     {
       rate.sleep();
       continue;
@@ -102,7 +104,8 @@ void AstarAvoid::run()
       if (!avoiding && costmap_initialized_ && !(obstacle_waypoint_index_ < 0))
       {
         // update goal pose incrementally and execute A* search
-        for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_); i+=search_waypoints_delta_)
+        for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_);
+             i += search_waypoints_delta_)
         {
           // update goal index
           goal_waypoint_index_ = closest_waypoint_index_ + obstacle_waypoint_index_ + i;
@@ -114,7 +117,8 @@ void AstarAvoid::run()
           // update goal pose
           goal_pose_global_ = base_waypoints_.waypoints[goal_waypoint_index_].pose;
           goal_pose_local_.header = costmap_.header;
-          goal_pose_local_.pose = transformPose(goal_pose_global_.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
+          goal_pose_local_.pose = transformPose(
+              goal_pose_global_.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
 
           // initialize costmap for A* search
           astar.initialize(costmap_);
@@ -195,7 +199,8 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::lane& waypoints)
   }
 }
 
-void AstarAvoid::createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::lane& avoid_waypoints, int& end_of_avoid_index)
+void AstarAvoid::createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::lane& avoid_waypoints,
+                                      int& end_of_avoid_index)
 {
   // reset
   avoid_waypoints.waypoints.clear();
