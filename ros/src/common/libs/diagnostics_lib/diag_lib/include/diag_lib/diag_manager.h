@@ -21,6 +21,10 @@
 //headers in diag_msgs
 #include <diag_msgs/diag_error.h>
 
+//headers in dagnostics
+#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/publisher.h>
+
 //headers in boost
 #include <boost/filesystem.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -120,6 +124,7 @@ private:
     void check_rate_();
     bool check_error_code(int requested_error_code, std::vector<int> right_categories);
     void publish_diag_(diag_info info);
+    boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_ptr_;
     // check resource for diag_manager
     bool diag_resource(std::string target_resource_path);
     volatile bool enable_diag_;

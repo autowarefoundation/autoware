@@ -9,6 +9,17 @@
 
 diag_filter::diag_filter()
 {
+    load_config_();
+}
+
+diag_filter::~diag_filter()
+{
+
+}
+
+void diag_filter::load_config_()
+{
+    std::lock_guard<std::mutex> lock(mtx_);
     nh_.param<std::string>("/error_code_config_path", error_code_config_path_, std::string(""));
     if(check_resource_(error_code_config_path_))
     {
@@ -34,13 +45,10 @@ diag_filter::diag_filter()
     }
 }
 
-diag_filter::~diag_filter()
-{
-
-}
-
 std::vector<std::string> diag_filter::get_node_lists()
 {
+    load_config_();
+    std::lock_guard<std::mutex> lock(mtx_);
     std::vector<std::string> ret;
     for( auto itr = node_number_data_.begin(); itr != node_number_data_.end() ; ++itr ) 
     {
@@ -51,6 +59,8 @@ std::vector<std::string> diag_filter::get_node_lists()
 
 bool diag_filter::check_resource_(std::string target_resource_path)
 {
+    load_config_();
+    std::lock_guard<std::mutex> lock(mtx_);
     namespace fs = boost::filesystem;
     fs::path path(target_resource_path);
     boost::system::error_code error;
@@ -62,11 +72,15 @@ bool diag_filter::check_resource_(std::string target_resource_path)
 
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, std::string target_node)
 {
+    load_config_();
+    std::lock_guard<std::mutex> lock(mtx_);
     return filter(diag,node_number_data_[target_node]);
 }
 
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, int target_node_number)
 {
+    load_config_();
+    std::lock_guard<std::mutex> lock(mtx_);
     for(int i=0; i<diag.nodes.size() ; i++)
     {
         if(diag.nodes[i].node_number == target_node_number)

@@ -4,6 +4,8 @@ diag_manager::diag_manager()
 {
     enable_diag_ = false;
     nh_.param<std::string>("/error_code_config_path", error_code_config_path_, std::string(""));
+    diagnostic_updater_ptr_ = boost::make_shared<diagnostic_updater::Updater>();
+    diagnostic_updater_ptr_->setHardwareID(ros::this_node::getName());
     if(!diag_resource(error_code_config_path_))
     {
         return;
@@ -82,6 +84,7 @@ void diag_manager::check_rate_()
                 }
             }
         }
+        diagnostic_updater_ptr_->update();
         rate.sleep();
     }
     return;

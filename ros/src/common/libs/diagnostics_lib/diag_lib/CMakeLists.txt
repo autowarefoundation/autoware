@@ -46,11 +46,6 @@ add_library(diag_filter SHARED ${diag_filter_src})
 target_link_libraries(diag_filter ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
 add_dependencies(diag_filter ${catkin_EXPORTED_TARGETS})
 
-set(diagnostics_bridge_node_src src/diagnostics_bridge_node.cpp src/diagnostics_bridge.cpp)
-add_library(diagnostics_bridge_node SHARED ${diagnostics_bridge_node_src})
-target_link_libraries(diagnostics_bridge_node ${catkin_LIBRARIES} ${YAML_CPP_LIBRARIES})
-add_dependencies(diagnostics_bridge_node ${catkin_EXPORTED_TARGETS})
-
 # CPP Execution programs
 set(CPP_EXEC_NAMES watchdog_node)
 foreach(cpp_exec_names ${CPP_EXEC_NAMES})
