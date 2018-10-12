@@ -13,7 +13,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <autoware_msgs/LaneArray.h>
 
-#include "astar_planner.h"
+#include "astar_search.h"
 
 class AstarNavi
 {
@@ -36,7 +36,7 @@ private:
   double update_rate_;        // [Hz]
 
   // classes
-  AstarPlanner astar;
+  AstarSearch astar;
 
   // variables
   nav_msgs::OccupancyGrid costmap_;

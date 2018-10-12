@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   visualization_msgs
   autoware_msgs
-  astar_planner
+  astar_search
 )
 
 catkin_package(
@@ -22,7 +22,7 @@ catkin_package(
   geometry_msgs
   visualization_msgs
   autoware_msgs
-  astar_planner
+  astar_search
 )
 
 include_directories(
