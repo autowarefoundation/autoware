@@ -134,11 +134,6 @@ private:
                                autoware_msgs::DetectedObject& object, double& min_dist);
   void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
   void associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
-  double getBBoxYaw(const UKF target);
-  double getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb);
-  double getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox& jsk_bb);
-  void updateBB(UKF& target);
-  void mergeOverSegmentation(const std::vector<UKF> targets);
 
   void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
   void updateLabel(const UKF& target, autoware_msgs::DetectedObject& dd);
