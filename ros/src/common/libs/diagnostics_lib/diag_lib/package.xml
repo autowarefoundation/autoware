@@ -11,13 +11,19 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
+
   <build_depend>diag_msgs</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>yaml-cpp</build_depend>
+  <build_depend>diagnostics</build_depend>
+
   <build_export_depend>diag_msgs</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>diagnostics</build_export_depend>
+
   <exec_depend>diag_msgs</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>diagnostics</exec_depend>
 
   <export>
   </export>
