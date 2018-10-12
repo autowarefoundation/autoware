@@ -9,19 +9,9 @@
 
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
-#include <tf_conversions/tf_eigen.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <autoware_msgs/DetectedObject.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_msgs/LaneArray.h>
 
-#include <pcl/point_types.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/point_cloud.h>
-#include <pcl_ros/transforms.h>
-
-#include "autoware_msgs/LaneArray.h"
 #include "astar_planner.h"
 
 class AstarNavi

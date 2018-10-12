@@ -9,9 +9,9 @@ AstarNavi::AstarNavi() : nh_(), private_nh_("~")
   private_nh_.param<double>("update_rate", update_rate_, 1.0);
 
   lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
-  costmap_sub_ = nh_.subscribe("/costmap", 1, &AstarNavi::costmapCallback, this);
-  current_pose_sub_ = nh_.subscribe("/current_pose", 1, &AstarNavi::currentPoseCallback, this);
-  goal_pose_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &AstarNavi::goalPoseCallback, this);
+  costmap_sub_ = nh_.subscribe("costmap", 1, &AstarNavi::costmapCallback, this);
+  current_pose_sub_ = nh_.subscribe("current_pose", 1, &AstarNavi::currentPoseCallback, this);
+  goal_pose_sub_ = nh_.subscribe("move_base_simple/goal", 1, &AstarNavi::goalPoseCallback, this);
 
   costmap_initialized_ = false;
   current_pose_initialized_ = false;
