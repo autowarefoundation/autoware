@@ -2,6 +2,7 @@
 
 diagnostics_bridge::diagnostics_bridge()
 {
+    std::vector<std::string> all_target_nodes = diag_filter_.get_node_lists();
     diag_sub_ = nh_.subscribe("/watchdog_node/diag/all", 10, &diagnostics_bridge::diag_callback_, this);
 }
 

@@ -14,6 +14,7 @@
 
 //headers in STL
 #include <map>
+#include <vector>
 
 class diag_filter
 {
@@ -22,6 +23,7 @@ public:
     ~diag_filter();
     boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, std::string target_node);
     boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, int target_node_number);
+    std::vector<std::string> get_node_lists();
 private:
     std::map<std::string,int> node_number_data_;
     ros::NodeHandle nh_;

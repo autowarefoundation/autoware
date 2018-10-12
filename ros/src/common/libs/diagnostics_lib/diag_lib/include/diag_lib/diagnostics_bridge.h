@@ -3,6 +3,7 @@
 
 //headers in diag_lib
 #include <diag_msgs/diag.h>
+#include <diag_lib/diag_filter.h>
 
 //headers in ROS
 #include <ros/ros.h>
@@ -22,5 +23,6 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber diag_sub_;
     std::map<std::string,diagnostic_updater::Updater> updaters_;
+    diag_filter diag_filter_;
 };
 #endif  //DIAGNOSTIC_BRIDGE_H_INCLUDED

@@ -39,6 +39,16 @@ diag_filter::~diag_filter()
 
 }
 
+std::vector<std::string> diag_filter::get_node_lists()
+{
+    std::vector<std::string> ret;
+    for( auto itr = node_number_data_.begin(); itr != node_number_data_.end() ; ++itr ) 
+    {
+        ret.push_back(itr->first);
+    }
+    return ret;
+}
+
 bool diag_filter::check_resource_(std::string target_resource_path)
 {
     namespace fs = boost::filesystem;
