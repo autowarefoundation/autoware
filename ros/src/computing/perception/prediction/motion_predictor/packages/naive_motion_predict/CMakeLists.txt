@@ -9,10 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   autoware_msgs
   tf
-  jsk_recognition_msgs
-  jsk_rviz_plugins
+  imm_ukf_pda_track
   )
-# find_package(lib_ukf REQUIRED)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
@@ -22,8 +20,7 @@ catkin_package(
   sensor_msgs
   autoware_msgs
   tf
-  jsk_recognition_msgs
-  jsk_rviz_plugins
+  imm_ukf_pda_track
   )
 
 include_directories(

@@ -170,12 +170,6 @@ private:
 
   void estimationUpdate(const int model_ind);
 
-  void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-            const double delta_t, std::vector<double>& state);
-
-  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
-          std::vector<double>& state);
-
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                     const double delta_t, std::vector<double>& state);
 
@@ -257,6 +251,12 @@ public:
 
   void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
                     const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
+            const double delta_t, std::vector<double>& state);
+
+  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
+          std::vector<double>& state);
 };
 
 #endif /* UKF_H */

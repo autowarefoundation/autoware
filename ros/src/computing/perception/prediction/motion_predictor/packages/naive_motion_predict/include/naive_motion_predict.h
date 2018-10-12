@@ -40,6 +40,8 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
+#include "ukf.h"
+
 
 class NaiveMotionPredict
 {
@@ -59,6 +61,8 @@ private:
   double interval_sec_;
   int num_prediction_;
   double sensor_height_;
+
+  UKF ukf_;
 
   void objectsCallback(const autoware_msgs::DetectedObjectArray& input);
 

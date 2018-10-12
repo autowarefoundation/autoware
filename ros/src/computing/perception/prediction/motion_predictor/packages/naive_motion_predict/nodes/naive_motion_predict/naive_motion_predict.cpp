@@ -1,4 +1,3 @@
-// #include "include/ukf.h"
 #include "naive_motion_predict.h"
 
 NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
@@ -10,11 +9,7 @@ NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
-
-
-  // TODO:remap topic in launch file later
-  // detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
-  detected_objects_sub_ = nh_.subscribe("/detection/object_tracker/objects", 1, &NaiveMotionPredict::objectsCallback, this);
+  detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
 }
 
 NaiveMotionPredict::~NaiveMotionPredict()
@@ -73,11 +68,11 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(
 {
   autoware_msgs::DetectedObject predicted_object;
   //TODO: rewrite/refacotr by using lib_ukf
-  if(object.behavior_state == 0)
+  if(object.behavior_state == MotionModel::CV)
   {
     predicted_object = moveConstantVelocity(object);
   }
-  else if(object.behavior_state == 1)
+  else if(object.behavior_state == MotionModel::CTRV)
   {
     predicted_object = moveConstantTurnRateVelocity(object);
   }
@@ -99,9 +94,13 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(
   double py   = object.pose.position.y;
   double velocity = object.velocity.linear.x;
   double yaw = generateYawFromQuaternion(object.pose.orientation);
+  double yawd = object.acceleration.linear.y;
 
-  double prediction_px = px + velocity * cos(yaw) * interval_sec_;
-  double prediction_py = py + velocity * sin(yaw) * interval_sec_;
+  std::vector<double> state(5 ,0);
+  ukf_.cv(px, py, velocity, yaw, yawd, interval_sec_, state);
+
+  double prediction_px = state[0];
+  double prediction_py = state[1];
 
   predicted_object.pose.position.x = prediction_px;
   predicted_object.pose.position.y = prediction_py;
@@ -120,22 +119,12 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantTurnRateVelocity(
   double yaw = generateYawFromQuaternion(object.pose.orientation);
   double yawd = object.acceleration.linear.y;
 
-  double prediction_px = 0;
-  double prediction_py = 0;
+  std::vector<double> state(5,0);
+  ukf_.ctrv(px, py, velocity, yaw, yawd, interval_sec_, state);
 
-  // avoid division by zero
-  if (fabs(yawd) > 0.001)
-  {
-    prediction_px = px + velocity / yawd * (sin(yaw + yawd * interval_sec_) - sin(yaw));
-    prediction_py = py + velocity / yawd * (cos(yaw) - cos(yaw + yawd * interval_sec_));
-  }
-  else
-  {
-    prediction_px = px + velocity * interval_sec_ * cos(yaw);
-    prediction_py = py + velocity * interval_sec_ * sin(yaw);
-  }
-
-  double prediction_yaw = yaw + yawd * interval_sec_;
+  double prediction_px  = state[0];
+  double prediction_py  = state[1];
+  double prediction_yaw = state[3];
 
   predicted_object.pose.position.x = prediction_px;
   predicted_object.pose.position.y = prediction_py;
@@ -168,12 +157,12 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
 
   for(auto object: input.objects)
   {
-    std::vector<autoware_msgs::DetectedObject> predicted_objects;
+    std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;
-    makePrediction(object, predicted_objects, predicted_line);
+    makePrediction(object, predicted_objects_vec, predicted_line);
 
     //concate to output object array
-    output.objects.insert(output.objects.end(), predicted_objects.begin(), predicted_objects.end());
+    output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
 
     // visualize only stably tracked objects
     if(!object.pose_reliable)
@@ -182,5 +171,6 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
     }
     predicted_lines.markers.push_back(predicted_line);
   }
+  predicted_objects_pub_.publish(output);
   predicted_paths_pub_.publish(predicted_lines);
 }
