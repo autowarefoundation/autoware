@@ -148,7 +148,7 @@ control_check :
 params :
   - name  : accel
     topic : /accel_cmd
-    msg   : accel_cmd
+    msg   : AccelCmd
     vars  :
     - name  : accel
       label : Accel
