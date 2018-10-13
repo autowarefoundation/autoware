@@ -151,6 +151,23 @@ target_link_libraries(cloud_transformer
         ${Qt5Core_LIBRARIES}
         )
 add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
+
+#Compare Map Filter
+add_executable(compare_map_filter
+        nodes/compare_map_filter/compare_map_filter.cpp
+        )
+
+target_include_directories(compare_map_filter PRIVATE
+        ${PCL_INCLUDE_DIRS}
+        )
+
+target_link_libraries(compare_map_filter
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+        )
+add_dependencies(compare_map_filter ${catkin_EXPORTED_TARGETS})
+
 ### Unit Tests ###
 #if (CATKIN_ENABLE_TESTING)
 #    find_package(rostest REQUIRED)
@@ -168,7 +185,7 @@ add_dependencies(cloud_transformer ${catkin_EXPORTED_TARGETS})
 #endif ()
 
 
-install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter
+install(TARGETS cloud_transformer points_concat_filter ray_ground_filter ring_ground_filter space_filter compare_map_filter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

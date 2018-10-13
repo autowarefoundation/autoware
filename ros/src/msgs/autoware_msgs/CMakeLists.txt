@@ -61,6 +61,7 @@ add_message_files(
             config/ConfigCarDpm.msg
             config/ConfigCarFusion.msg
             config/ConfigCarKf.msg
+            config/ConfigCompareMapFilter.msg
             config/ConfigDecisionMaker.msg
             config/ConfigDistanceFilter.msg
             config/ConfigRingGroundFilter.msg

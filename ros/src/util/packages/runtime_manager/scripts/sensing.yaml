@@ -289,6 +289,16 @@ cmds:
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
 
+    - name : compare_map_filter
+      desc : compare_map_filter
+      cmd  : roslaunch points_preprocessor compare_map_filter.launch
+      param: compare_map_filter
+      gui  :
+        input_map_topic :
+          flags : [ nl ]
+        output_unmatch_topic :
+          flags : [ nl ]
+
   - name : Fusion
     desc : Sensor fusion tools
     subs :
@@ -1146,6 +1156,71 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : compare_map_filter
+    topic : /config/compare_map_filter
+    msg   : ConfigCompareMapFilter
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, i.e. /points_raw
+      label : input_point_topic
+      kind  : str
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : input_map_topic
+      desc  : Input Map PointCloud Topic name, i.e. /points_map
+      label : input_map_topic
+      kind  : str
+      v     : /points_map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_match_topic
+      desc  : Output PointCloud Topic name
+      label : output_match_topic
+      kind  : str
+      v     : /match_points
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_unmatch_topic
+      desc  : Output PointCloud Topic name
+      label : output_unmatch_topic
+      kind  : str
+      v     : /unmatch_points
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : distance_threshold
+      desc  : distance_threshold
+      label : distance_threshold
+      min   : 0.01
+      max   : 100
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_clipping_height
+      desc  : min_clipping_height
+      label : min_clipping_height
+      min   : -100
+      max   : 100
+      v     : -2.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : max_clipping_height
+      desc  : max_clipping_height
+      label : max_clipping_height
+      min   : -100
+      max   : 100
+      v     : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
 
   - name  : hokuyo_urg
     vars  :
