@@ -79,20 +79,20 @@ UKF::UKF()
   time_ = 0.0;
 
   // state dimension
-  n_x_ = 5;
+  num_state_ = 5;
 
   // predicted sigma points matrix
-  x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // create vector for weights
-  weights_c_ = Eigen::VectorXd(2 * n_x_ + 1);
-  weights_s_ = Eigen::VectorXd(2 * n_x_ + 1);
+  weights_c_ = Eigen::VectorXd(2 * num_state_ + 1);
+  weights_s_ = Eigen::VectorXd(2 * num_state_ + 1);
 
   // transition probability
   p1_.push_back(0.9);
@@ -177,13 +177,13 @@ UKF::UKF()
   raukf_q_param_ = 7;
   raukf_r_param_ = 7;
 
-  new_x_sig_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  new_x_sig_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  new_x_sig_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  new_x_sig_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  new_x_sig_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
-  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
-  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
-  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
 
   new_z_pred_cv_ = Eigen::VectorXd(2);
   new_z_pred_ctrv_ = Eigen::VectorXd(2);
@@ -210,14 +210,14 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   double alpha = 0.0025;
   double beta = 2;
   double k = 0;
-  lambda_ = alpha * alpha * (n_x_ + k) - n_x_;
-  double weight_s_0 = lambda_ / (lambda_ + n_x_);
-  double weight_c_0 = lambda_ / (lambda_ + n_x_) + (1 - alpha * alpha + beta);
+  lambda_ = alpha * alpha * (num_state_ + k) - num_state_;
+  double weight_s_0 = lambda_ / (lambda_ + num_state_);
+  double weight_c_0 = lambda_ / (lambda_ + num_state_) + (1 - alpha * alpha + beta);
   weights_s_(0) = weight_s_0;
   weights_c_(0) = weight_c_0;
-  for (int i = 1; i < 2 * n_x_ + 1; i++)
+  for (int i = 1; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 weights
-    double weight = 0.5 / (n_x_ + lambda_);
+    double weight = 0.5 / (num_state_ + lambda_);
     weights_s_(i) = weight;
     weights_c_(i) = weight;
   }
@@ -763,15 +763,15 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   }
 
   // make sigma poitns from estiated x
-  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
   // create square root matrix
   Eigen::MatrixXd L = p.llt().matrixL();
   // create augmented sigma points
   x_sig.col(0) = x;
-  for (int i = 0; i < n_x_; i++)
+  for (int i = 0; i < num_state_; i++)
   {
-    Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + n_x_) * L.col(i);
-    Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + n_x_) * L.col(i);
+    Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + num_state_) * L.col(i);
+    Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + num_state_) * L.col(i);
 
     while (sigma_point1(3) > M_PI)
       sigma_point1(3) -= 2. * M_PI;
@@ -783,14 +783,14 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
       sigma_point2(3) += 2. * M_PI;
 
     x_sig.col(i + 1) = sigma_point1;
-    x_sig.col(i + 1 + n_x_) = sigma_point2;
+    x_sig.col(i + 1 + num_state_) = sigma_point2;
   }
   // set measurement dimension, lidar can measure p_x and p_y
   int n_z = 2;
   // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * num_state_ + 1);
   // transform sigma points into measurement space
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // extract values for better readibility
     double p_x = x_sig(0, i);
@@ -803,7 +803,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   // mean predicted measurement
   Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
   z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
@@ -811,7 +811,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   // measurement covariance matrix S
   Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
   S.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
     S = S + weights_c_(i) * z_diff * z_diff.transpose();
@@ -856,8 +856,8 @@ void UKF::estimationUpdate(const int model_ind)
   Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
   Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
   Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
-  Eigen::MatrixXd x_sig(n_x_, 2 * n_x_ + 1);
-  Eigen::MatrixXd z_sig(2, 2 * n_x_ + 1);
+  Eigen::MatrixXd x_sig(num_state_, 2 * num_state_ + 1);
+  Eigen::MatrixXd z_sig(2, 2 * num_state_ + 1);
   if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
@@ -894,7 +894,7 @@ void UKF::estimationUpdate(const int model_ind)
 
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   p.fill(0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
     // angle normalization
@@ -907,9 +907,9 @@ void UKF::estimationUpdate(const int model_ind)
 
   p = p + q;
 
-  Eigen::MatrixXd cross_covariance(n_x_, 2);
+  Eigen::MatrixXd cross_covariance(num_state_, 2);
   cross_covariance.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
     // state difference
@@ -1199,17 +1199,17 @@ void UKF::prediction(const double delta_t, const int model_ind)
   *  Create Sigma Points
   ****************************************************************************/
 
-  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // create square root matrix
   Eigen::MatrixXd L = p.llt().matrixL();
 
   // create augmented sigma points
   x_sig.col(0) = x;
-  for (int i = 0; i < n_x_; i++)
+  for (int i = 0; i < num_state_; i++)
   {
-    Eigen::VectorXd pred1 = x + sqrt(lambda_ + n_x_) * L.col(i);
-    Eigen::VectorXd pred2 = x - sqrt(lambda_ + n_x_) * L.col(i);
+    Eigen::VectorXd pred1 = x + sqrt(lambda_ + num_state_) * L.col(i);
+    Eigen::VectorXd pred2 = x - sqrt(lambda_ + num_state_) * L.col(i);
 
     while (pred1(3) > M_PI)
       pred1(3) -= 2. * M_PI;
@@ -1222,14 +1222,14 @@ void UKF::prediction(const double delta_t, const int model_ind)
       pred2(3) += 2. * M_PI;
 
     x_sig.col(i + 1) = pred1;
-    x_sig.col(i + 1 + n_x_) = pred2;
+    x_sig.col(i + 1 + num_state_) = pred2;
   }
 
   /*****************************************************************************
   *  Predict Sigma Points
   ****************************************************************************/
   // predict sigma points
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     // extract values for better readability
     double p_x = x_sig(0, i);
@@ -1259,7 +1259,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
   ****************************************************************************/
   // predicted state mean
   x.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // iterate over sigma points
     x = x + weights_s_(i) * x_sig_pred.col(i);
   }
@@ -1270,7 +1270,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
     x(3) += 2. * M_PI;
   // predicted state covariance matrix
   p.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // iterate over sigma points
     // state difference
     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
@@ -1339,10 +1339,10 @@ void UKF::updateLidar(const int model_ind)
   int n_z = 2;
 
   // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * num_state_ + 1);
 
   // transform sigma points into measurement space
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // extract values for better readibility
     double p_x = x_sig_pred(0, i);
@@ -1356,7 +1356,7 @@ void UKF::updateLidar(const int model_ind)
   // mean predicted measurement
   Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
   z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
@@ -1364,7 +1364,7 @@ void UKF::updateLidar(const int model_ind)
   // measurement covariance matrix S
   Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
   S.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
@@ -1375,14 +1375,14 @@ void UKF::updateLidar(const int model_ind)
   S = S + r;
 
   // create matrix for cross correlation Tc
-  Eigen::MatrixXd Tc = Eigen::MatrixXd(n_x_, n_z);
+  Eigen::MatrixXd Tc = Eigen::MatrixXd(num_state_, n_z);
 
   /*****************************************************************************
   *  UKF Update for Lidar
   ****************************************************************************/
   // calculate cross correlation matrix
   Tc.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;

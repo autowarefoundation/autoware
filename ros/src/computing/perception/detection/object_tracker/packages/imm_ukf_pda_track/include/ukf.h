@@ -66,9 +66,6 @@ private:
   Eigen::VectorXd weights_c_;
   Eigen::VectorXd weights_s_;
 
-  // State dimension
-  int n_x_;
-
   // Sigma point spreading parameter
   double lambda_;
 
@@ -181,6 +178,9 @@ private:
 
 public:
   int ukf_id_;
+
+  // State dimension
+  int num_state_;
 
   //  state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
