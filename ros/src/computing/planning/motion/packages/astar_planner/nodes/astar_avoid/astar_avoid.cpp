@@ -8,17 +8,20 @@ AstarAvoid::AstarAvoid() : nh_(), private_nh_("~")
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
 
-  private_nh_.param<bool>("avoidance", avoidance_, true);
+  private_nh_.param<bool>("use_avoidance_state", use_avoidance_state_, true);
+  private_nh_.param<bool>("avoidance", avoidance_, false);
   private_nh_.param<int>("search_waypoints_size", search_waypoints_size_, 30);
   private_nh_.param<int>("search_waypoints_delta", search_waypoints_delta_, 2);
   private_nh_.param<double>("avoid_waypoints_velocity", avoid_waypoints_velocity_, 10.0);
 
   safety_waypoints_pub_ = nh_.advertise<autoware_msgs::lane>("safety_waypoints", 1, true);
+  state_cmd_pub_ = nh_.advertise<std_msgs::String>("state_cmd", 1);
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
   current_pose_sub_ = nh_.subscribe("current_pose", 1, &AstarAvoid::currentPoseCallback, this);
   base_waypoints_sub_ = nh_.subscribe("base_waypoints", 1, &AstarAvoid::baseWaypointsCallback, this);
   closest_waypoint_sub_ = nh_.subscribe("closest_waypoint", 1, &AstarAvoid::closestWaypointCallback, this);
   obstacle_waypoint_sub_ = nh_.subscribe("obstacle_waypoint", 1, &AstarAvoid::obstacleWaypointCallback, this);
+  state_sub_ = nh_.subscribe("decision_maker/state", 1, &AstarAvoid::stateCallback, this);
 
   closest_waypoint_index_ = -1;
   obstacle_waypoint_index_ = -1;
@@ -29,6 +32,8 @@ AstarAvoid::AstarAvoid() : nh_(), private_nh_("~")
   base_waypoints_initialized_ = false;
   closest_waypoint_initialized_ = false;
   obstacle_waypoint_initialized_ = false;
+
+  avoiding_ = false;
 }
 
 AstarAvoid::~AstarAvoid()
@@ -75,11 +80,54 @@ void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
   obstacle_waypoint_initialized_ = true;
 }
 
+void AstarAvoid::stateCallback(const std_msgs::String& msg)
+{
+  if (!use_avoidance_state_)
+  {
+    return; // do nothing
+  }
+
+  if (msg.data.find("Go") != std::string::npos)
+  {
+    avoidance_ = false; // not execute astar search
+    stop_by_state_ = false;  // go on path
+  }
+  else if (msg.data.find("TryAvoidance") != std::string::npos)
+  {
+    avoidance_ = true; // execute aster search
+    stop_by_state_ = true;  // stop on path
+
+    if (found_avoid_path_)
+    {
+      // state transition occur by this event
+      state_cmd_pub_.publish(createStringMsg("found_path"));
+    }
+  }
+  else if (msg.data.find("CheckAvoidance") != std::string::npos)
+  {
+    // TODO: decision making for avoidance execution
+    stop_by_state_ = true;  // stop on path
+  }
+  else if (msg.data.find("Avoidance") != std::string::npos)
+  {
+    stop_by_state_ = false;  // go on avoiding path
+
+    if (!avoiding_)
+    {
+      state_cmd_pub_.publish(createStringMsg("completed_avoidance"));
+    }
+  }
+  else if (msg.data.find("ReturnToLane") != std::string::npos)
+  {
+    // NOTE: A* search can produce both avoid and return paths once time.
+    state_cmd_pub_.publish(createStringMsg("completed_return"));
+  }
+}
+
 void AstarAvoid::run()
 {
   ros::Rate rate(update_rate_);
 
-  bool avoiding = false;
   int end_of_avoid_index = -1;
   autoware_msgs::lane avoid_waypoints;
 
@@ -98,10 +146,11 @@ void AstarAvoid::run()
     {
       // publish base waypoints
       publishWaypoints(base_waypoints_);
+      avoiding_ = false;
     }
     else  // avoidance mode
     {
-      if (!avoiding && costmap_initialized_ && !(obstacle_waypoint_index_ < 0))
+      if (!avoiding_ && costmap_initialized_ && !(obstacle_waypoint_index_ < 0))
       {
         // update goal pose incrementally and execute A* search
         for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_);
@@ -125,41 +174,48 @@ void AstarAvoid::run()
 
           // execute astar search
           ros::WallTime start = ros::WallTime::now();
-          bool result = astar.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
+          found_avoid_path_ = astar.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
           ros::WallTime end = ros::WallTime::now();
 
           ROS_INFO("Astar planning: %f [s]", (end - start).toSec());
 
-          if (result)
+          if (found_avoid_path_)
           {
             ROS_INFO("Found GOAL at index = %d", goal_waypoint_index_);
             createAvoidWaypoints(astar.getPath(), avoid_waypoints, end_of_avoid_index);
-            avoiding = true;
+            avoiding_ = true;
             break;
           }
           else
           {
             ROS_INFO("Can't find goal...");
-            avoiding = false;
+            avoiding_ = false;
           }
           astar.reset();
         }
       }
 
       // update avoiding
-      if (avoiding && avoid_waypoints.waypoints.size() > 0)
+      if (avoiding_ && avoid_waypoints.waypoints.size() > 0)
       {
         // check reaching goal
-        avoiding = (getClosestWaypoint(avoid_waypoints, current_pose_global_.pose) < end_of_avoid_index);
+        avoiding_ = (getClosestWaypoint(avoid_waypoints, current_pose_global_.pose) < end_of_avoid_index);
       }
 
       // publish "safety" waypoints
-      autoware_msgs::lane safety_waypoints = avoiding ? avoid_waypoints : base_waypoints_;
+      autoware_msgs::lane safety_waypoints = avoiding_ ? avoid_waypoints : base_waypoints_;
       publishWaypoints(safety_waypoints);
     }
 
     rate.sleep();
   }
+}
+
+std_msgs::String AstarAvoid::createStringMsg(const std::string& str)
+{
+  std_msgs::String msg;
+  msg.data = str;
+  return msg;
 }
 
 tf::Transform AstarAvoid::getTransform(const std::string& from, const std::string& to)
@@ -190,7 +246,10 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::lane& waypoints)
     {
       break;
     }
-    safety_waypoints.waypoints.push_back(waypoints.waypoints[index]);
+    autoware_msgs::waypoint wp = waypoints.waypoints[index];
+    // if state is not "Avoidance", vehicle stops until changing state
+    wp.twist.twist.linear.x = (use_avoidance_state_ && stop_by_state_) ? 0.0 : wp.twist.twist.linear.x;
+    safety_waypoints.waypoints.push_back(wp);
   }
 
   if (safety_waypoints.waypoints.size())

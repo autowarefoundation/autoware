@@ -1592,9 +1592,17 @@ params :
     vars  :
     - name  : avoidance
       desc  : Enable avoidance mode
-      label : Avoidance
+      label : Auto Avoidance
       kind  : checkbox
       v     : False
+      cmd_param:
+        dash  : ''
+        delim : ':='
+    - name  : use_avoidance_state
+      desc  : Launch avoidance by TryAvoidance state
+      label : Avoidance by Decison
+      kind  : checkbox
+      v     : True
       cmd_param:
         dash  : ''
         delim : ':='

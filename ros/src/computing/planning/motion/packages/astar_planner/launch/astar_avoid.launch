@@ -4,7 +4,8 @@
   <arg name="update_rate" default="10" />
 
   <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
-  <arg name="avoidance" default="true" />
+  <arg name="use_avoidance_state" default="true" />
+  <arg name="avoidance" default="false" />
   <arg name="search_waypoints_size" default="30" />
   <arg name="search_waypoints_delta" default="2" />
   <arg name="avoid_waypoints_velocity" default="10.0" />
@@ -30,6 +31,7 @@
   <node pkg="astar_planner" type="astar_avoid" name="astar_avoid" output="screen">
     <remap from="costmap" to="$(arg costmap_topic)" />
     <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
+    <param name="use_avoidance_state" value="$(arg use_avoidance_state)" />
     <param name="avoidance" value="$(arg avoidance)" />
     <param name="update_rate" value="$(arg update_rate)" />
     <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
