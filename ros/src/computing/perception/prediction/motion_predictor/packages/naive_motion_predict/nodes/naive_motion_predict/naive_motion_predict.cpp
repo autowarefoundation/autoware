@@ -36,7 +36,6 @@ NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
 
-
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
   detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
@@ -46,17 +45,14 @@ NaiveMotionPredict::~NaiveMotionPredict()
 {
 }
 
-void NaiveMotionPredict::initializeRosmarker(
-  const std_msgs::Header& header,
-  const geometry_msgs::Point& position,
-  const int object_id,
-  visualization_msgs::Marker& predicted_line)
+void NaiveMotionPredict::initializeRosmarker(const std_msgs::Header& header, const geometry_msgs::Point& position,
+                                             const int object_id, visualization_msgs::Marker& predicted_line)
 {
   predicted_line.lifetime = ros::Duration(0.2);
   predicted_line.header.frame_id = header.frame_id;
-  predicted_line.header.stamp  = header.stamp;
-  predicted_line.ns  = "predicted_line";
-  predicted_line.action  = visualization_msgs::Marker::ADD;
+  predicted_line.header.stamp = header.stamp;
+  predicted_line.ns = "predicted_line";
+  predicted_line.action = visualization_msgs::Marker::ADD;
   predicted_line.pose.orientation.w = 1.0;
   predicted_line.id = object_id;
   predicted_line.type = visualization_msgs::Marker::LINE_STRIP;
@@ -73,14 +69,13 @@ void NaiveMotionPredict::initializeRosmarker(
   predicted_line.points.push_back(p);
 }
 
-void NaiveMotionPredict::makePrediction(
-    const autoware_msgs::DetectedObject& object,
-    std::vector<autoware_msgs::DetectedObject>& predicted_objects,
-    visualization_msgs::Marker& predicted_line)
+void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& object,
+                                        std::vector<autoware_msgs::DetectedObject>& predicted_objects,
+                                        visualization_msgs::Marker& predicted_line)
 {
   autoware_msgs::DetectedObject target_object = object;
-  initializeRosmarker(object.header, object.pose.position, object.id,  predicted_line);
-  for(int i = 0; i < num_prediction_; i++)
+  initializeRosmarker(object.header, object.pose.position, object.id, predicted_line);
+  for (int i = 0; i < num_prediction_; i++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
     target_object = predicted_object;
@@ -93,22 +88,20 @@ void NaiveMotionPredict::makePrediction(
   }
 }
 
-
 /*
 This package is a template package for more sopisticated prediction packages.
 Feel free to change/modify generatePredictedObject function
 and send pull request to Autoware
 */
 
-autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(
-    const autoware_msgs::DetectedObject& object)
+autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(const autoware_msgs::DetectedObject& object)
 {
   autoware_msgs::DetectedObject predicted_object;
-  if(object.behavior_state == MotionModel::CV)
+  if (object.behavior_state == MotionModel::CV)
   {
     predicted_object = moveConstantVelocity(object);
   }
-  else if(object.behavior_state == MotionModel::CTRV)
+  else if (object.behavior_state == MotionModel::CTRV)
   {
     predicted_object = moveConstantTurnRateVelocity(object);
   }
@@ -121,18 +114,17 @@ autoware_msgs::DetectedObject NaiveMotionPredict::generatePredictedObject(
   return predicted_object;
 }
 
-autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(
-    const autoware_msgs::DetectedObject& object)
+autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(const autoware_msgs::DetectedObject& object)
 {
   autoware_msgs::DetectedObject predicted_object;
   predicted_object = object;
-  double px   = object.pose.position.x;
-  double py   = object.pose.position.y;
+  double px = object.pose.position.x;
+  double py = object.pose.position.y;
   double velocity = object.velocity.linear.x;
   double yaw = generateYawFromQuaternion(object.pose.orientation);
   double yawd = object.acceleration.linear.y;
 
-  std::vector<double> state(ukf_.num_state_ ,0);
+  std::vector<double> state(ukf_.num_state_, 0);
   ukf_.cv(px, py, velocity, yaw, yawd, interval_sec_, state);
 
   double prediction_px = state[0];
@@ -144,22 +136,22 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantVelocity(
   return predicted_object;
 }
 
-autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantTurnRateVelocity(
-    const autoware_msgs::DetectedObject& object)
+autoware_msgs::DetectedObject
+NaiveMotionPredict::moveConstantTurnRateVelocity(const autoware_msgs::DetectedObject& object)
 {
   autoware_msgs::DetectedObject predicted_object;
   predicted_object = object;
-  double px   = object.pose.position.x;
-  double py   = object.pose.position.y;
+  double px = object.pose.position.x;
+  double py = object.pose.position.y;
   double velocity = object.velocity.linear.x;
   double yaw = generateYawFromQuaternion(object.pose.orientation);
   double yawd = object.acceleration.linear.y;
 
-  std::vector<double> state(ukf_.num_state_,0);
+  std::vector<double> state(ukf_.num_state_, 0);
   ukf_.ctrv(px, py, velocity, yaw, yawd, interval_sec_, state);
 
-  double prediction_px  = state[0];
-  double prediction_py  = state[1];
+  double prediction_px = state[0];
+  double prediction_py = state[1];
   double prediction_yaw = state[3];
 
   predicted_object.pose.position.x = prediction_px;
@@ -174,11 +166,7 @@ autoware_msgs::DetectedObject NaiveMotionPredict::moveConstantTurnRateVelocity(
 
 double NaiveMotionPredict::generateYawFromQuaternion(const geometry_msgs::Quaternion& quaternion)
 {
-  tf::Quaternion q(
-    quaternion.x,
-    quaternion.y,
-    quaternion.z,
-    quaternion.w);
+  tf::Quaternion q(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
@@ -191,17 +179,17 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
   visualization_msgs::MarkerArray predicted_lines;
   output.header = input.header;
 
-  for(auto object: input.objects)
+  for (auto object : input.objects)
   {
     std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;
     makePrediction(object, predicted_objects_vec, predicted_line);
 
-    //concate to output object array
+    // concate to output object array
     output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
 
     // visualize only stably tracked objects
-    if(!object.pose_reliable)
+    if (!object.pose_reliable)
     {
       continue;
     }
