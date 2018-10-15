@@ -91,8 +91,8 @@ CompareMapFilter::CompareMapFilter()
   config_sub_ = nh_.subscribe("/config/compare_map_filter", 10, &CompareMapFilter::configCallback, this);
   sensor_points_sub_ = nh_.subscribe("/points_raw", 1, &CompareMapFilter::sensorPointsCallback, this);
   map_sub_ = nh_.subscribe("/points_map", 10, &CompareMapFilter::pointsMapCallback, this);
-  match_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/match_points", 10);
-  unmatch_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/unmatch_points", 10);
+  match_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_ground", 10);
+  unmatch_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_no_ground", 10);
 }
 
 void CompareMapFilter::configCallback(const autoware_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr)
