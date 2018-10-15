@@ -5,8 +5,9 @@ namespace autoware_rviz_plugins {
 
 VehicleMonitor::VehicleMonitor() : rviz::Display()
 {
-	property_topic_cmd_    = new rviz::RosTopicProperty("VehicleCmd Topic",    "", ros::message_traits::datatype<autoware_msgs::VehicleCmd>(),   "autoware_msgs::VehicleCmd topic to subscribe to.",    this, SLOT(update_topic_cmd_()));
-	property_topic_status_ = new rviz::RosTopicProperty("VehicleStatus Topic", "", ros::message_traits::datatype<autoware_msgs::VehicleStatus>(),"autoware_msgs::VehicleStatus topic to subscribe to.", this, SLOT(update_topic_status_()));
+    property_topic_cmd_    = new rviz::RosTopicProperty("VehicleCmd Topic",    "", ros::message_traits::datatype<autoware_msgs::VehicleCmd>(),    "autoware_msgs::VehicleCmd topic to subscribe to.",    this, SLOT(update_topic_cmd_())    );
+    property_topic_status_ = new rviz::RosTopicProperty("VehicleStatus Topic", "", ros::message_traits::datatype<autoware_msgs::VehicleStatus>(), "autoware_msgs::VehicleStatus topic to subscribe to.", this, SLOT(update_topic_status_()) );
+    property_topic_mode_   = new rviz::RosTopicProperty("CtrlMode Topic",      "", ros::message_traits::datatype<std_msgs::String>(),             "std_msgs::String topic to subscribe to.",             this, SLOT(update_topic_mode_())   );
 
 	/*
 	gear_status_.load_params();
@@ -31,13 +32,6 @@ VehicleMonitor::VehicleMonitor() : rviz::Display()
 	visualize_source_property_->addOption("Use Accel/Steer/Brake Cmd", USE_ACCEL_STEER_BRAKE_CMD);
 	ctrl_mode_topic_property_ = boost::make_shared<rviz::RosTopicProperty>("CtrlCmd Topic", "",ros::message_traits::datatype<std_msgs::String>(),"std_msgs::String topic to subscribe to.",this, SLOT(update_ctrl_mode_topic_()));
 	*/
-
-	XmlRpc::XmlRpcValue gear;
-	ros::param::get("/vehicle_info/gear/", gear);
-	for(const auto& iter : gear)
-	{
-		ROS_INFO("%s", iter.first.c_str());
-	}
 }
 
 VehicleMonitor::~VehicleMonitor()
@@ -53,7 +47,7 @@ void VehicleMonitor::onInitialize()
 	widget_ = new VehicleMonitorWidget();
 	setAssociatedWidget( widget_ );
 
-	//connect(this, &VehicleMonitor::outputSpeed, velocity_cmd, &VelocityText::setVelocityKph);
+    //connect(this, &VehicleMonitor::outputSpeed, velocity_cmd, &VelocityText::setVelocityKph);
 
 	/*
 	overlay_ = boost::make_shared<OverlayObject>("VehicleMonitor");
@@ -72,6 +66,15 @@ void VehicleMonitor::onInitialize()
 	update_cmd_topic_();
 	update_ctrl_mode_topic_();
 	*/
+
+    VehicleMonitorWidget::GearList gear_list;
+    XmlRpc::XmlRpcValue params;
+    ros::param::get("/vehicle_info/gear/", params);
+    for(auto& param : params)
+    {
+        gear_list.push_back( {param.first, param.second} );
+    }
+    widget_->configureTransmission(gear_list);
 }
 
 /*
@@ -156,96 +159,72 @@ void VehicleMonitor::update(float wall_dt, float ros_dt)
 
 void VehicleMonitor::onEnable()
 {
-	// overlay_->show();
-
-	// Vehicle Command
-	{
-		std::string topic_name = property_topic_cmd_->getTopicStd();
-		if ((topic_name.length() > 0) && (topic_name != "/"))
-		{
-			sub_cmd_ = ros::NodeHandle().subscribe(topic_name, 1, &VehicleMonitor::updateCmd, this);
-		}
-	}
-
-	// Vehicle Status
-	{
-		std::string topic_name = property_topic_status_->getTopicStd();
-		if ((topic_name.length() > 0) && (topic_name != "/"))
-		{
-			sub_cmd_ = ros::NodeHandle().subscribe(topic_name, 1, &VehicleMonitor::updateStatus, this);
-		}
-	}
+    subscribeTopic(property_topic_cmd_->getTopicStd(), sub_cmd_, &VehicleMonitor::processCmd);
+    subscribeTopic(property_topic_status_->getTopicStd(), sub_status_, &VehicleMonitor::processStatus);
+    subscribeTopic(property_topic_mode_->getTopicStd(), sub_status_, &VehicleMonitor::processMode);
 }
 
 void VehicleMonitor::onDisable()
 {
-	//overlay_->hide();
 	sub_cmd_.shutdown();
+    sub_status_.shutdown();
+    sub_mode_.shutdown();
 }
 
-void VehicleMonitor::updateCmd(const autoware_msgs::VehicleCmd::ConstPtr& msg)
+void VehicleMonitor::processCmd(const autoware_msgs::VehicleCmd::ConstPtr& msg)
 {
-	//velocity_widget_->setVelocity(static_cast<double>(msg->ctrl_cmd.linear_velocity));
-
-	widget_->setSpeedCmd( static_cast<double>(msg->ctrl_cmd.linear_velocity) );
-	widget_->setAngleCmd( static_cast<double>(msg->ctrl_cmd.steering_angle ) );
+    widget_->setSpeedCmd( msg->ctrl_cmd.linear_velocity );
+    widget_->setAngleCmd( msg->ctrl_cmd.steering_angle * 180 / M_PI );
 }
 
-void VehicleMonitor::updateStatus(const autoware_msgs::VehicleStatus::ConstPtr& msg)
+void VehicleMonitor::processStatus(const autoware_msgs::VehicleStatus::ConstPtr& msg)
 {
-	//velocity_widget_->setVelocity(static_cast<double>(msg->ctrl_cmd.linear_velocity));
-
-	widget_->setSpeedStatus( static_cast<double>(msg->speed) );
-	widget_->setAngleStatus( static_cast<double>(msg->angle * M_PI / 180) );
+    widget_->setSpeedStatus( msg->speed      );
+    widget_->setAngleStatus( msg->angle      );
+    widget_->setShiftStatus( msg->gearshift  );
+    widget_->setBrakeStatus( msg->brakepedal );
+    widget_->setAccelStatus( msg->drivepedal );
 }
 
-/*
-void VehicleMonitor::processControlMessage(const std_msgs::String::ConstPtr& msg)
+void VehicleMonitor::processMode(const std_msgs::String::ConstPtr& msg)
 {
-	boost::mutex::scoped_lock lock(mutex_);
-	control_mode_ = msg->data;
-	return;
+    if(msg->data == "remote")
+    {
+        widget_->setCtrlMode( VehicleMonitorWidget::CtrlMode::REMOTE );
+    }
+    else if(msg->data == "auto")
+    {
+        widget_->setCtrlMode( VehicleMonitorWidget::CtrlMode::AUTO );
+    }
+    else
+    {
+        widget_->setCtrlMode( VehicleMonitorWidget::CtrlMode::UNKNOWN );
+    }
 }
 
-void VehicleMonitor::update_ctrl_mode_topic_()
+template<class T>
+void VehicleMonitor::subscribeTopic(std::string topic, ros::Subscriber& sub, T callback)
 {
-	boost::mutex::scoped_lock lock(mutex_);
-	ctrl_mode_sub_.shutdown();
-	last_cmd_data_ = boost::none;
-	ctrl_mode_topic_name_ = cmd_topic_property_->getTopicStd();
-	if (ctrl_mode_topic_name_.length() > 0 && ctrl_mode_topic_name_ != "/")
-	{
-		ctrl_mode_sub_ = nh_.subscribe(ctrl_mode_topic_name_, 1, &VehicleMonitor::processMessage, this);
-	}
-	return;
+    sub.shutdown();
+    if((topic.length() > 0) && (topic != "/"))
+    {
+        sub = ros::NodeHandle().subscribe(topic, 1, callback, this);
+    }
 }
-*/
 
 void VehicleMonitor::update_topic_cmd_()
 {
-	/*
-	boost::mutex::scoped_lock lock(mutex_);
-	sub_cmd_.shutdown();
-	last_cmd_data_ = boost::none;
-	topic_name_ = cmd_topic_property_->getTopicStd();
-	if (topic_name_.length() > 0 && topic_name_ != "/")
-	{
-		sub_cmd_ = nh_.subscribe(topic_name_, 1, &VehicleMonitor::processMessage, this);
-	}
-	*/
-	return;
+    subscribeTopic(property_topic_cmd_->getTopicStd(), sub_cmd_, &VehicleMonitor::processCmd);
 }
 
 void VehicleMonitor::update_topic_status_()
 {
-	// Vehicle Status (Copy)
-	{
-		std::string topic_name = property_topic_status_->getTopicStd();
-		if ((topic_name.length() > 0) && (topic_name != "/"))
-		{
-			sub_cmd_ = ros::NodeHandle().subscribe(topic_name, 1, &VehicleMonitor::updateStatus, this);
-		}
-	}
+    subscribeTopic(property_topic_status_->getTopicStd(), sub_status_, &VehicleMonitor::processStatus);
+}
+
+void VehicleMonitor::update_topic_mode_()
+{
+    subscribeTopic(property_topic_mode_->getTopicStd(), sub_status_, &VehicleMonitor::processMode);
 }
 
 
@@ -591,6 +570,7 @@ void VehicleMonitor::draw_left_lamp_(boost::shared_ptr<QPainter> painter, QImage
 }
 */
 }
+
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(autoware_rviz_plugins::VehicleMonitor, rviz::Display)

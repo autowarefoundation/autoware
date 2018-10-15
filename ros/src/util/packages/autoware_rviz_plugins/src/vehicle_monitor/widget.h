@@ -13,16 +13,37 @@ class VehicleMonitorWidget : public QWidget
 
 		VehicleMonitorWidget( QWidget* parent = 0 );
 
+        enum CtrlMode
+        {
+            REMOTE, AUTO, UNKNOWN
+        };
+
+        struct Gear
+        {
+            std::string name;
+            int value;
+        };
+        using GearList = std::vector<Gear>;
+
 	public Q_SLOTS:
 
-		void setSpeedCmd( double mps );
-		void setAngleCmd( double rad );
-		void setSpeedStatus( double mps );
-		void setAngleStatus( double rad );
+        void setCtrlMode( CtrlMode ctrl_mode );
+		void setSpeedCmd( double kph );
+        void setAngleCmd( double deg );
+        void setSpeedStatus( double kph );
+        void setAngleStatus( double deg );
+        void setShiftStatus( double value );
+        void setBrakeStatus( double value );
+        void setAccelStatus( double value );
+
+        void configureSpeedLimit( int limit );
+        void configureBrakeLimit( int limit );
+        void configureAccelLimit( int limit );
+        void configureTransmission( const GearList& gear_list );
 
 	protected:
 
-		void paintEvent( QPaintEvent*event ) override;
+        void paintEvent( QPaintEvent* event ) override;
 
 		void drawControlMode  ( QPainter& painter );
 		void drawSpeedGraph   ( QPainter& painter );
@@ -31,20 +52,25 @@ class VehicleMonitorWidget : public QWidget
 		void drawPedal        ( QPainter& painter );
 		void drawShift        ( QPainter& painter );
 
+        QString toString(double value, int precision);
+
 	private:
 
-		QString speed_cmd_kph;
-		QString speed_cmd_mps;
-		QString angle_cmd_deg;
-		QString angle_cmd_rad;
+        CtrlMode twist_gate_ctrl_mode;
+        double cmd_speed_kph;
+        double cmd_angle_deg;
+        double status_speed_kph;
+        double status_angle_deg;
+        int status_shift;
+        int status_accel;
+        int status_brake;
+        //int status_speed_mode;
+        //int status_angle_mode;
 
-		double  speed_status_val;
-		QString speed_status_kph;
-		QString speed_status_mps;
-
-		double  angle_status_val;
-		QString angle_status_deg;
-		QString angle_status_rad;
+        int config_speed_limit;
+        int config_brake_limit;
+        int config_accel_limit;
+        GearList config_gear_list;
 };
 
 }

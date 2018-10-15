@@ -8,8 +8,8 @@
 // headers in ROS
 #include <ros/package.h>
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <XmlRpcValue.h>
-//#include <std_msgs/String.h>
 
 // headers in Qt
 //#include <QWidget>
@@ -33,7 +33,6 @@ namespace autoware_rviz_plugins
 {
 	class VehicleMonitorWidget;
 
-
 	class VehicleMonitor : public rviz::Display
 	{
 		Q_OBJECT
@@ -53,8 +52,9 @@ namespace autoware_rviz_plugins
 
 		protected Q_SLOTS:
 
-			void update_topic_cmd_();
-			void update_topic_status_();
+            void update_topic_cmd_();
+            void update_topic_status_();
+            void update_topic_mode_();
 			/*
 			void update_ctrl_mode_topic_();
 			void update_top_();
@@ -73,16 +73,22 @@ namespace autoware_rviz_plugins
 
 		private:
 
-			ros::Subscriber sub_cmd_;
+            template<class T>
+            void subscribeTopic(std::string topic, ros::Subscriber& sub, T callback);
 
-			VehicleMonitorWidget* widget_;
+            VehicleMonitorWidget* widget_;
+
+            ros::Subscriber sub_cmd_;
+            ros::Subscriber sub_status_;
+            ros::Subscriber sub_mode_;
 
 			rviz::RosTopicProperty* property_topic_cmd_;
 			rviz::RosTopicProperty* property_topic_status_;
+            rviz::RosTopicProperty* property_topic_mode_;
 
-
-			void updateCmd(const autoware_msgs::VehicleCmd::ConstPtr& msg);
-			void updateStatus(const autoware_msgs::VehicleStatus::ConstPtr& msg);
+            void processCmd(const autoware_msgs::VehicleCmd::ConstPtr& msg);
+            void processStatus(const autoware_msgs::VehicleStatus::ConstPtr& msg);
+            void processMode(const std_msgs::String::ConstPtr& msg);
 
 			/*
 			autoware_rviz_plugins::OverlayObject::Ptr overlay_;
