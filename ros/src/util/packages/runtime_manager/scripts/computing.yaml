@@ -3276,7 +3276,8 @@ params :
     - name : pose_topic
       desc : position topic name in rosbag file
       label: Pose Topic
-      kind : str
+      kind      : topic
+      topic_type: geometry_msgs/PoseStamped
       v    : '/ndt_pose'
       cmd_param:
         dash     : ''
@@ -4290,7 +4291,8 @@ params :
     - name      : points_topic
       desc      : Subscribing topic for generating a cost map (PointCloud2 message)
       label     : Points Topic
-      kind      : str
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
       v         : /points_lanes
       cmd_param :
         dash      : ''
