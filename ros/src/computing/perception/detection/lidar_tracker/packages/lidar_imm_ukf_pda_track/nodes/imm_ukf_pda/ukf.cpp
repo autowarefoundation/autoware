@@ -660,7 +660,6 @@ void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_ve
 {
   if (object_vec.size() == 0)
   {
-    std::cout << "no update for this frame since there are no associated mesurements" << std::endl;
     return;
   }
 
