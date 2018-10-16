@@ -4735,10 +4735,10 @@ params :
         delim       : ':='
 
     - name    : points_node
-      desc    : points_node desc sample
+      desc    : Input PointCloud topic, use a ground filtering method from Sensing (ring, ray, comparemap)
       label   : 'input_points_node'
       kind    : str
-      v       : points_raw
+      v       : points_no_ground
       cmd_param :
         dash        : ''
         delim       : ':='
