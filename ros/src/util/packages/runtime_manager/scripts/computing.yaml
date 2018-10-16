@@ -4696,7 +4696,7 @@ params :
       desc    : remove_ground desc sample
       label   : 'remove ground'
       kind    : checkbox
-      v       : True
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -4704,7 +4704,7 @@ params :
       desc    : pose_estimation desc sample
       label   : 'pose_estimation'
       kind    : checkbox
-      v       : True
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -4755,7 +4755,7 @@ params :
     - name    : cluster_size_min
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
-      min       : 0
+      min       : 1
       max       : 100000
       v       : 20
       cmd_param :
@@ -4765,7 +4765,7 @@ params :
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
       min       : 0
-      max       : 100000
+      max       : 200000
       v       : 100000
       cmd_param :
         dash        : ''

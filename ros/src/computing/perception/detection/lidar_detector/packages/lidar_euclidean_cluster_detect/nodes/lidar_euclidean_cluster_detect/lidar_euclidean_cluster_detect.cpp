@@ -1309,7 +1309,7 @@ int main(int argc, char** argv)
     if (distances_size == 0 || ranges_size == 0)
     {
       ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
-    The size of clustering dista_use_multiple_thrnce and clustering_ranges shoule not be 0");
+    The size of clustering distance and clustering_ranges should not be 0");
       ros::shutdown();
     }
     if ((distances_size - ranges_size) != 1)
