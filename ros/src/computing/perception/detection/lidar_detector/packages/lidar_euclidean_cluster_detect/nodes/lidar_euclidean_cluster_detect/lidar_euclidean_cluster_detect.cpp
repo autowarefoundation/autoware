@@ -667,7 +667,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
           clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
     }
 #else
-    std::vector<ClusterPtr> all_clusters =
+    all_clusters =
         clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
 #endif
   }
@@ -711,10 +711,10 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
       }
     }
 
+    std::vector<ClusterPtr> local_clusters;
     for (unsigned int i = 0; i < cloud_segments_array.size(); i++)
     {
 #ifdef GPU_CLUSTERING
-      std::vector<ClusterPtr> local_clusters;
       if (_use_gpu)
       {
         local_clusters = clusterAndColorGpu(cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array,
@@ -726,7 +726,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                                          in_out_centroids, _clustering_distances[i]);
       }
 #else
-      std::vector<ClusterPtr> local_clusters = clusterAndColor(
+      local_clusters = clusterAndColor(
           cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distances[i]);
 #endif
       all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
@@ -1309,7 +1309,7 @@ int main(int argc, char** argv)
     if (distances_size == 0 || ranges_size == 0)
     {
       ROS_ERROR("Invalid size of clustering_ranges or/and clustering_distance. \
-    The size of clustering distance and clustering_ranges shoule not be 0");
+    The size of clustering dista_use_multiple_thrnce and clustering_ranges shoule not be 0");
       ros::shutdown();
     }
     if ((distances_size - ranges_size) != 1)
