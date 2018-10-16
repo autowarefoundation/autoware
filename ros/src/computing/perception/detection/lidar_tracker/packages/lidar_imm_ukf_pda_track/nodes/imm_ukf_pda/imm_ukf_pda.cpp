@@ -763,7 +763,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       continue;
     }
     // prevent ukf not to explode
-    if (targets_[i].p_merge_.determinant() > prevent_explosion_thres_ ||
+    if (targets_[i].p #ifndef_merge_.determinant() > prevent_explosion_thres_ ||
         targets_[i].p_merge_(4, 4) > prevent_explosion_thres_)
     {
       targets_[i].tracking_num_ = TrackingState::Die;
