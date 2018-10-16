@@ -264,7 +264,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
   current_cluster->is_dense = true;
 
   // Get EigenValues, eigenvectors
-  if (current_cluster->points.size() > 0)
+  if (current_cluster->points.size() > 3)
   {
     pcl::PCA<pcl::PointXYZ> current_cluster_pca;
     pcl::PointCloud<pcl::PointXYZ>::Ptr current_cluster_mono(new pcl::PointCloud<pcl::PointXYZ>);
