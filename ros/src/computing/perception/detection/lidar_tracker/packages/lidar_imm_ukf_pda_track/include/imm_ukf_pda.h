@@ -48,8 +48,6 @@
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
-#include "vector_map/vector_map.h"
-
 #include "ukf.h"
 
 class ImmUkfPda
@@ -106,8 +104,6 @@ private:
   ros::Publisher pub_points_array_;
   ros::Publisher pub_texts_array_;
 
-  vector_map::VectorMap vmap_;
-  std::vector<vector_map_msgs::Lane> lanes_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
