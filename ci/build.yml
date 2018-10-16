@@ -184,9 +184,6 @@ phases:
               apt-get install -y dpkg; \
               apt-get install -y build-essential; \
               apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
-              apt-get install -y python3-pip; \
-              python3 -m pip install -U colcon-common-extensions; \
-              python3 -m pip install -U setuptools; \
               source /opt/ros/$(ROS_DISTRO)/setup.bash; \
               rosdep init; \
               rosdep update"
@@ -231,8 +228,8 @@ phases:
               source /opt/ros/$(ROS_DISTRO)/setup.bash; \
               rosdep init; \
               rosdep update"
-    displayName: 'Install requirements for x86 (Kinetic and greater)'
-    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
+    displayName: 'Install requirements for x86 (Indigo)'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86'), eq(variables.ROS_DISTRO, 'indigo'))
 
   - script: |
       set -x
@@ -260,5 +257,21 @@ phases:
               colcon build --merge-install &&
               colcon test --merge-install --abort-on-error &&
               colcon test-result --verbose"
-    displayName: 'Build Autoware for x86'
-    condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
+    displayName: 'Build Autoware for x86 (Kinetic and greater)'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86'), ne(variables.ROS_DISTRO, 'indigo'))
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "source /opt/ros/$(ROS_DISTRO)/setup.bash &&
+              cd ros &&
+              catkin_make clean &&
+              source devel/setup.bash &&
+              catkin_make -j2 &&
+              catkin_make run_tests &&
+              catkin_test_results"
+    displayName: 'Build Autoware for x86 (Indigo)'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86'), eq(variables.ROS_DISTRO, 'indigo'))
