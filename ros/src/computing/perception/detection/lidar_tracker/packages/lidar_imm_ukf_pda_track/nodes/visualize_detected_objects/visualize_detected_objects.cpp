@@ -42,7 +42,7 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : vis_arrow_height_(0.5), v
   private_nh_.param<double>("visualize_arrow_velocity_thres", visualize_arrow_velocity_thres_, 0.25);
 
   sub_object_array_ =
-      node_handle_.subscribe("/detection/lidar_detector/objects", 1, &VisualizeDetectedObjects::callBack, this);
+      node_handle_.subscribe("/detection/lidar_objects", 1, &VisualizeDetectedObjects::callBack, this);
   pub_arrow_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/arrow_markers", 10);
   pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/id_markes", 10);
 }

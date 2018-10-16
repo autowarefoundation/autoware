@@ -57,7 +57,7 @@ void ImmUkfPda::run()
 {
   pub_jskbbox_array_ =
       node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_tracker/bounding_boxes", 1);
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects", 1);
 
   // for debug
   pub_points_array_ =
