@@ -183,13 +183,55 @@ phases:
               apt-get update; \
               apt-get install -y dpkg; \
               apt-get install -y build-essential; \
+              apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
+              apt-get install -y python3-pip; \
+              python3 -m pip install -U colcon-common-extensions; \
+              python3 -m pip install -U setuptools; \
+              source /opt/ros/$(ROS_DISTRO)/setup.bash; \
+              rosdep init; \
+              rosdep update"
+    displayName: 'Install requirements for x86 (Indigo)'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86'), eq(variables.ROS_DISTRO, 'indigo'))
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "echo \"deb http://packages.ros.org/ros/ubuntu $(ROS_CI_DESKTOP) main\" | tee /etc/apt/sources.list.d/ros-latest.list; \
+              apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116; \
+              apt-get update; \
+              apt-get install -y dpkg; \
+              apt-get install -y build-essential; \
+              apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
+              apt-get install -y python3-pip; \
+              apt-get install -y python3-colcon-common-extensions; \
+              python3 -m pip install -U setuptools; \
+              source /opt/ros/$(ROS_DISTRO)/setup.bash; \
+              rosdep init; \
+              rosdep update"
+    displayName: 'Install requirements for x86 (Kinetic and greater)'
+    condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86'), ne(variables.ROS_DISTRO, 'indigo'))
+
+  - script: |
+      set -x
+
+      docker exec \
+        ubuntu_$(ROS_CI_DESKTOP) \
+        bash \
+          -c "echo \"deb http://packages.ros.org/ros/ubuntu $(ROS_CI_DESKTOP) main\" | tee /etc/apt/sources.list.d/ros-latest.list; \
+              apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116; \
+              apt-get update; \
+              apt-get install -y dpkg; \
+              apt-get install -y build-essential; \
               apt-get install -y python3-pip python3-colcon-common-extensions; \
               apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
               python3 -m pip install -U setuptools; \
               source /opt/ros/$(ROS_DISTRO)/setup.bash; \
               rosdep init; \
               rosdep update"
-    displayName: 'Install requirements for x86'
+    displayName: 'Install requirements for x86 (Kinetic and greater)'
     condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
 
   - script: |
