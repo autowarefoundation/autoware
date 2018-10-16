@@ -1473,7 +1473,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -1571,7 +1572,8 @@ params :
     - name      : topic_pose_stamped
       desc      : topic_pose_stamped desc sample
       label     : /current_pose (geometry_msgs/PoseStamped)
-      kind      : str
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
       v         : /ndt_pose
       cmd_param :
         dash    : ''
@@ -2094,7 +2096,8 @@ params :
 
     - name : points_topic
       desc : points_topic
-      kind : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v    : /points_lanes
       cmd_param:
               dash : ''
@@ -3273,7 +3276,8 @@ params :
     - name : pose_topic
       desc : position topic name in rosbag file
       label: Pose Topic
-      kind : str
+      kind      : topic
+      topic_type: geometry_msgs/PoseStamped
       v    : '/ndt_pose'
       cmd_param:
         dash     : ''
@@ -3881,7 +3885,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -3959,7 +3964,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -4098,8 +4104,10 @@ params :
     - name      : image_src
       desc      : Image Topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
+      flags : [ nl ]
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -4283,7 +4291,8 @@ params :
     - name      : points_topic
       desc      : Subscribing topic for generating a cost map (PointCloud2 message)
       label     : Points Topic
-      kind      : str
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
       v         : /points_lanes
       cmd_param :
         dash      : ''
@@ -4428,23 +4437,26 @@ params :
     - name      : points_ground_src
       desc      : PointCloud topic containing only the ground
       label     : points_ground_src
-      kind      : str
-      v         : points_ground
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_ground
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : points_no_ground_src
       desc      : PointCloud source topic containing only the obstacle points
       label     : points_no_ground_src
-      kind      : str
-      v         : points_no_ground
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_no_ground
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : wayarea_topic_src
       desc      : Name of the topic containing the grid_map_msgs:GridMap containing the road areas.
       label     : wayarea_topic_src
-      kind      : str
+      kind  : topic
+      topic_type : grid_map_msgs/GridMap
       v         : grid_map_wayarea
       cmd_param :
         dash      : ''
@@ -4574,7 +4586,8 @@ params :
     - name      : image_src
       desc      : Image topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
       cmd_param :
         dash      : ''
@@ -4645,7 +4658,8 @@ params :
     - name      : image_src
       desc      : Image topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
       cmd_param :
         dash      : ''
@@ -4730,6 +4744,7 @@ params :
       label   : 'downsample_cloud'
       kind    : checkbox
       v       : False
+      flags : [ nl ]
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -4737,8 +4752,9 @@ params :
     - name    : points_node
       desc    : Input PointCloud topic, use a ground filtering method from Sensing (ring, ray, comparemap)
       label   : 'input_points_node'
-      kind    : str
-      v       : points_no_ground
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v       : /points_no_ground
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -4816,7 +4832,8 @@ params :
     - name    : wayarea_gridmap_topic
       desc    : Topic name of the wayarea grid_map, this is published by wayarea2grid node in Computing/Semantics. default. grid_map_wayarea
       label   : 'wayarea_gridmap_topic'
-      kind    : str
+      kind  : topic
+      topic_type : grid_map_msgs/GridMap
       v       : grid_map_wayarea
       cmd_param :
         dash        : ''
@@ -4935,7 +4952,8 @@ params :
     - name    : input_topic
       desc    : input_topic desc sample
       label   : 'input_topic'
-      kind    : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v       : /detection/lidar_objects
       cmd_param :
         dash        : ''
@@ -4998,7 +5016,8 @@ params :
     - name    : real_objects_topic
       desc    : input objects
       label   : 'input objects'
-      kind    : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v       : /detected_objects
       cmd_param :
         dash  : ''
@@ -5006,7 +5025,8 @@ params :
     - name    : real_points_topic
       desc    : input points
       label   : 'input points'
-      kind    : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v       : /points_raw
       cmd_param :
         dash  : ''
@@ -5171,7 +5191,8 @@ params :
     - name  : points_src
       desc  : Point cloud source topic
       label : points_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash      : ''
@@ -5179,7 +5200,8 @@ params :
     - name  : image_src
       desc  : Image source topic
       label : image_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v     : /image_raw
       cmd_param :
         dash      : ''
@@ -5187,7 +5209,8 @@ params :
     - name  : camera_info_src
       desc  : CameraInfo source topic
       label : camera_info_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
       v     : /camera_info
       cmd_param :
         dash      : ''
@@ -5197,9 +5220,10 @@ params :
   - name  : range_vision_fusion_params
     vars  :
     - name  : detected_objects_range
-      desc  : Point cloud source topic
+      desc  : Point cloud detected objects
       label : detected_objects_range
-      kind  : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v     : /detection/lidar_objects
       cmd_param :
         dash      : ''
@@ -5207,7 +5231,8 @@ params :
     - name  : detected_objects_vision
       desc  : Image source topic
       label : detected_objects_vision
-      kind  : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v     : /detection/vision_objects
       cmd_param :
         dash      : ''
@@ -5215,7 +5240,8 @@ params :
     - name  : camera_info_src
       desc  : CameraInfo source topic
       label : camera_info_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
       v     : /camera_info
       cmd_param :
         dash      : ''
@@ -5234,7 +5260,8 @@ params :
     - name  : camera_info_src
       desc  : CameraInfo source topic
       label : camera_info_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
       v     : /camera_info
       cmd_param :
         dash      : ''
@@ -5242,7 +5269,8 @@ params :
     - name  : objects_topic_src
       desc  : Detected Objects Topic Source
       label : objects_topic_src
-      kind  : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v     : /detection/vision_objects
       cmd_param :
         dash      : ''

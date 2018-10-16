@@ -2358,6 +2358,14 @@ class VarPanel(wx.Panel):
 		if self.kind == 'hide':
 			self.Hide()
 			return
+		if self.kind == 'topic':
+			topic_type = self.var.get('topic_type')
+			topics = self._get_topics_by_type(topic_type)
+			self.obj = wx.ComboBox(self, id=wx.ID_ANY, value=v, choices=topics, style=wx.CB_DROPDOWN)
+			self.lb = wx.StaticText(self, wx.ID_ANY, label)
+			flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+			sizer_wrap((self.lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
+			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2410,6 +2418,14 @@ class VarPanel(wx.Panel):
 
 		self.SetSizer(szr)
 
+	def _get_topics_by_type(self, message_type):
+		#get list of current available topics:
+		ros_topics = rospy.get_published_topics()
+		matched_topics = list(filter(lambda x: x[1]==message_type,ros_topics))
+		topic_names = [x[0] for x in matched_topics]
+		topic_names.sort()
+		return topic_names
+
 	def setup_tooltip(self):
 		if get_tooltips(self.var):
 			set_tooltips(self.obj, self.var)
@@ -2428,7 +2444,7 @@ class VarPanel(wx.Panel):
 	def get_v(self):
 		if self.kind in [ 'radio_box', 'menu' ]:
 			return self.choices_sel_get()
-		if self.kind in [ 'checkbox', 'toggle_button' ]:
+		if self.kind in [ 'checkbox', 'toggle_button', 'topic' ]:
 			return self.obj.GetValue()
 		if self.kind == 'checkboxes':
 			return self.obj.get()
