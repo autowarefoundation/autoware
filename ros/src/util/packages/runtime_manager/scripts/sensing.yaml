@@ -1181,7 +1181,7 @@ params :
       desc  : Output PointCloud Topic name
       label : output_match_topic
       kind  : str
-      v     : /match_points
+      v     : /points_ground
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1189,7 +1189,7 @@ params :
       desc  : Output PointCloud Topic name
       label : output_unmatch_topic
       kind  : str
-      v     : /unmatch_points
+      v     : /points_no_ground
       cmd_param :
         dash        : ''
         delim       : ':='
