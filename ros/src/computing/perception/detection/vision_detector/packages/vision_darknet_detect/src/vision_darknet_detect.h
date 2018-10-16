@@ -38,6 +38,7 @@
 
 #define __APP_NAME__ "vision_darknet_detect"
 
+#include <fstream>
 #include <cstdint>
 #include <cstdlib>
 #include <string>
