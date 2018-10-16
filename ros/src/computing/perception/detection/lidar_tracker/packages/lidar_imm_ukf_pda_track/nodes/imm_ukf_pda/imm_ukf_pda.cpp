@@ -57,7 +57,7 @@ void ImmUkfPda::run()
 {
   pub_jskbbox_array_ =
       node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_tracker/bounding_boxes", 1);
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
 
   // for debug
   pub_points_array_ =
@@ -65,7 +65,7 @@ void ImmUkfPda::run()
   pub_texts_array_ =
       node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
 
-  sub_detected_array_ = node_handle_.subscribe("/detection/lidar_detector/objects", 1, &ImmUkfPda::callback, this);
+  sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
