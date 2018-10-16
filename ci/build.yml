@@ -183,7 +183,7 @@ phases:
               apt-get update; \
               apt-get install -y dpkg; \
               apt-get install -y build-essential; \
-              apt-get install -y python3-colcon-common-extensions; \
+              apt-get install -y python3-pip python3-colcon-common-extensions; \
               apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
               python3 -m pip install -U setuptools; \
               source /opt/ros/$(ROS_DISTRO)/setup.bash; \
