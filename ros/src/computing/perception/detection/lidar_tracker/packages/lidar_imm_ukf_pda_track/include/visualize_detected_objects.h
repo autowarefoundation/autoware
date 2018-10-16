@@ -28,8 +28,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OBJECT_TRACKING_VisualizeDetecedObjects_H
-#define OBJECT_TRACKING_VisualizeDetecedObjects_H
+#ifndef OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
+#define OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
 
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
@@ -68,4 +68,4 @@ public:
   VisualizeDetectedObjects();
 };
 
-#endif  // OBJECT_TRACKING_VisualizeCloudCluster_H
+#endif  // OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
