@@ -54,6 +54,12 @@ enum TrackingState : int
 
 class UKF
 {
+/*
+cv: Constant Velocity
+ctrv: Constatnt Turn Rate and Velocity
+rm: Random Motion
+*/
+
 public:
   int ukf_id_;
 
@@ -199,7 +205,6 @@ public:
 
   int tracking_num_;
 
-  // Eigen::MatrixXd covar_q_;
   Eigen::VectorXd cv_meas_;
   Eigen::VectorXd ctrv_meas_;
   Eigen::VectorXd rm_meas_;
