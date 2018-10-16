@@ -149,19 +149,12 @@ phases:
               echo "CUDA_TOOLKIT_ROOT_DIR = \${CUDA_TOOLKIT_ROOT_DIR} --" &&
               echo "NVIDIA_TENSORRT_ROOT_DIR = \${NVIDIA_TENSORRT_ROOT_DIR} --" &&
               source /opt/ros/$(ROS_DISTRO)/setup.bash &&
-              catkin_make \
+              colcon build \
+                --merge-install \
+                --cmake-args \
                 -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
                 -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
-                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-                --build ${AUTOWARE_BUILD_PATH} \
-                clean &&
-              source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
-              catkin_make \
-                -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
-                -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
-                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-                --build ${AUTOWARE_BUILD_PATH} \
-                -j4"
+                -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}"
     displayName: 'Build Autoware for Driveworks'
     condition: and(eq(variables.AUTOWARE_TARGET_PLATFORM, 'driveworks'), eq(variables.ROS_DISTRO, 'kinetic'))
 
@@ -190,6 +183,7 @@ phases:
               apt-get update; \
               apt-get install -y dpkg; \
               apt-get install -y build-essential; \
+              apt-get install -y python3-colcon-common-extensions; \
               apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$(ROS_DISTRO)-catkin; \
               source /opt/ros/$(ROS_DISTRO)/setup.bash; \
               rosdep init; \
@@ -220,10 +214,8 @@ phases:
         bash \
           -c "source /opt/ros/$(ROS_DISTRO)/setup.bash &&
               cd ros &&
-              catkin_make clean &&
-              source devel/setup.bash &&
-              catkin_make -j2 &&
-              catkin_make run_tests &&
-              catkin_test_results"
+              colcon build --merge-install &&
+              colcon test --merge-install --abort-on-error &&
+              colcon test-result --verbose"
     displayName: 'Build Autoware for x86'
     condition: eq(variables.AUTOWARE_TARGET_PLATFORM, 'x86')
