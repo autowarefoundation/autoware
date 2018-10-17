@@ -190,7 +190,7 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
   visualization_msgs::MarkerArray predicted_lines;
   output.header = input.header;
 
-  for (auto object : input.objects)
+  for (const auto &object : input.objects)
   {
     std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;

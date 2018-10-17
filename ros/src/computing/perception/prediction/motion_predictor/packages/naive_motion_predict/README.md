@@ -14,7 +14,7 @@ Computing Tab -> Prediction/ Motion Predictor -> `naive_motion_predict`
 ### Requirements
 * `ray_ground_filter` node.
 * `eucledian_cluster` node.
-* `/tf` topic. Below video is from Suginami data which contais /tf topic: (`autoware-20180205150908.bag`). You can download it from ROSBAG STORE for free. Otherwise, you need to do localization with a map to produce /tf topic from `velodyne` to `world`.
+* `/tf` topic.  `velodyne` to `world`.
 * `imm_ukf_pda_tracker` node.
 
 ### Parameters
