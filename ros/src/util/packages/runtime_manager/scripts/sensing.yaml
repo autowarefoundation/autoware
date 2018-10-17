@@ -632,7 +632,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -664,7 +665,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -702,7 +704,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -734,7 +737,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -766,7 +770,8 @@ params :
     - name  : point_topic
       desc  : Input PointCloud Topic name, ground filtering will be performed.
       label : 'input_point_topic'
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1051,7 +1056,8 @@ params :
     - name  : input_point_topic
       desc  : Input PointCloud Topic name, ground filtering will be performed.
       label : 'input_point_topic'
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1170,7 +1176,8 @@ params :
     - name  : input_point_topic
       desc  : Input PointCloud Topic name, i.e. /points_raw
       label : input_point_topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1199,7 +1206,8 @@ params :
     - name  : input_point_topic
       desc  : Input PointCloud Topic name, i.e. /points_raw
       label : input_point_topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1359,7 +1367,8 @@ params :
     - name  : points_parent_src
       desc  : PointCloud Topic of the parent
       label : points_parent_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : lidar0/points_raw
       cmd_param :
         dash        : ''
@@ -1367,7 +1376,8 @@ params :
     - name  : points_child_src
       desc  : Serial Port of the LiDAR
       label : points_child_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : lidar1/points_raw
       cmd_param :
         dash        : ''
