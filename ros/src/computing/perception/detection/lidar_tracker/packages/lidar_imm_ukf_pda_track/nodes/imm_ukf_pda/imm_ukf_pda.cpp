@@ -50,6 +50,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
+  private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
 }
 
@@ -799,6 +800,11 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       }
       // immukf update step
       targets_[i].updateIMMUKF(detection_probability_, gate_probability_, gating_thres_, object_vec);
+
+      if (use_robust_adaptive_filter_)
+      {
+        targets_[i].robustAdaptiveFilter(use_sukf_, raukf_chi_thres_);
+      }
     }
   }
   // end UKF process

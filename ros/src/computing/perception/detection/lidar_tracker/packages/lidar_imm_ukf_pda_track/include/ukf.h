@@ -237,6 +237,17 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
+  // robust adaptive unscented kalman filter
+  bool is_meas_;
+
+  double raukf_lambda_zero_;
+  double raukf_delta_zero_;
+
+  double raukf_q_param_;
+  double raukf_r_param_;
+
+  double raukf_chi_thres_param_;
+
   /**
    * Constructor
    */
@@ -284,6 +295,16 @@ public:
   void prediction(const double delta_t, const int model_ind);
 
   void updateLidar(const int model_ind);
+
+  void robustAdaptiveFilter(const bool use_sukf, const double chi_thres_);
+
+  void faultDetection(const int model_ind, bool& is_fault);
+
+  void adaptiveAdjustmentQ(const int model_ind);
+
+  void adaptiveAdjustmentR(const int model_ind);
+
+  void estimationUpdate(const int model_ind);
 };
 
 #endif /* UKF_H */

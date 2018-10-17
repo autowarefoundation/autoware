@@ -509,8 +509,11 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   std::vector<double> beta_ctrv;
   std::vector<double> beta_rm;
 
+  // for noise estimation
+  is_meas_ = false;
   if (num_meas != 0)
   {
+    is_meas_ = true;
     std::vector<double>::iterator max_cv_iter = std::max_element(e_cv_vec.begin(), e_cv_vec.end());
     std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
     std::vector<double>::iterator max_rm_iter = std::max_element(e_rm_vec.begin(), e_rm_vec.end());
@@ -647,9 +650,12 @@ void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::Detect
     double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_ctrv_.inverse() * diff_ctrv);
     e_ctrv_vec.push_back(e_ctrv);
   }
+
   // for noise estimation
+  is_meas_ = false;
   if (num_meas != 0)
   {
+    is_meas_ = true;
     std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
     int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
     ctrv_meas_ = meas_vec[max_ctrv_ind];
@@ -1070,5 +1076,360 @@ void UKF::updateLidar(const int model_ind)
     z_pred_rm_ = z_pred;
     s_rm_ = S;
     k_rm_ = K;
+  }
+}
+
+void UKF::faultDetection(const int model_ind, bool& is_fault)
+{
+  Eigen::VectorXd z_meas;
+  Eigen::VectorXd z_pred;
+  Eigen::MatrixXd z_cov;
+  Eigen::MatrixXd r;
+  if (model_ind == MotionModel::CV)
+  {
+    z_meas = cv_meas_;
+    z_pred = z_pred_cv_;
+    z_cov = s_cv_;
+    r = r_cv_;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    z_meas = ctrv_meas_;
+    z_pred = z_pred_ctrv_;
+    z_cov = s_ctrv_;
+    r = r_ctrv_;
+  }
+  else
+  {
+    z_meas = rm_meas_;
+    z_pred = z_pred_rm_;
+    z_cov = s_rm_;
+    r = r_rm_;
+  }
+
+  double nis = (z_meas - z_pred).transpose() * (z_cov).inverse() * (z_meas - z_pred);
+
+  if (nis > raukf_chi_thres_param_)
+  {
+    is_fault = true;
+  }
+
+  if (model_ind == MotionModel::CV)
+  {
+    nis_cv_ = nis;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    nis_ctrv_ = nis;
+  }
+  else
+  {
+    nis_rm_ = nis;
+  }
+}
+
+void UKF::adaptiveAdjustmentQ(const int model_ind)
+{
+  double nis = 0;
+  Eigen::VectorXd mu;
+  Eigen::MatrixXd q;
+  Eigen::MatrixXd k;
+  if (model_ind == MotionModel::CV)
+  {
+    mu = cv_meas_ - z_pred_cv_;
+    q = q_cv_;
+    k = k_cv_;
+    nis = nis_cv_;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    mu = ctrv_meas_ - z_pred_ctrv_;
+    q = q_ctrv_;
+    k = k_ctrv_;
+    nis = nis_ctrv_;
+  }
+  else
+  {
+    mu = rm_meas_ - z_pred_rm_;
+    q = q_rm_;
+    k = k_rm_;
+    nis = nis_rm_;
+  }
+
+  double calculated_lambda = (nis - raukf_q_param_ * raukf_chi_thres_param_) / nis;
+  double lambda = std::max(raukf_lambda_zero_, calculated_lambda);
+  Eigen::MatrixXd corrected_q = (1 - lambda) * q + lambda * (k * mu * mu.transpose() * k.transpose());
+
+  if (model_ind == MotionModel::CV)
+  {
+    q_cv_ = corrected_q;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    q_ctrv_ = corrected_q;
+  }
+  else
+  {
+    q_rm_ = corrected_q;
+  }
+}
+
+void UKF::adaptiveAdjustmentR(const int model_ind)
+{
+  double nis = 0;
+  Eigen::VectorXd epsilon(cv_meas_.rows());
+  Eigen::VectorXd estimated_z(cv_meas_.rows());
+  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
+  Eigen::VectorXd x(x_cv_.rows());
+  Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+  if (model_ind == MotionModel::CV)
+  {
+    estimated_z << x_cv_(0), x_cv_(1);
+    epsilon = cv_meas_ - estimated_z;
+    r = r_cv_;
+    nis = nis_cv_;
+    x = x_cv_.col(0);
+    p = p_cv_;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    estimated_z << x_ctrv_(0), x_ctrv_(1);
+    epsilon = ctrv_meas_ - estimated_z;
+    r = r_ctrv_;
+    nis = nis_ctrv_;
+    x = x_ctrv_.col(0);
+    p = p_ctrv_;
+  }
+  else
+  {
+    estimated_z << x_rm_(0), x_rm_(1);
+    epsilon = rm_meas_ - estimated_z;
+    r = r_rm_;
+    nis = nis_rm_;
+    x = x_rm_.col(0);
+    p = p_rm_;
+  }
+
+  // make sigma poitns from estiated x
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  // create square root matrix
+  Eigen::MatrixXd L = p.llt().matrixL();
+  // create augmented sigma points
+  x_sig.col(0) = x;
+  for (int i = 0; i < n_x_; i++)
+  {
+    Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + n_x_) * L.col(i);
+    Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + n_x_) * L.col(i);
+
+    while (sigma_point1(3) > M_PI)
+      sigma_point1(3) -= 2. * M_PI;
+    while (sigma_point1(3) < -M_PI)
+      sigma_point1(3) += 2. * M_PI;
+    while (sigma_point2(3) > M_PI)
+      sigma_point2(3) -= 2. * M_PI;
+    while (sigma_point2(3) < -M_PI)
+      sigma_point2(3) += 2. * M_PI;
+
+    x_sig.col(i + 1) = sigma_point1;
+    x_sig.col(i + 1 + n_x_) = sigma_point2;
+  }
+  // set measurement dimension, lidar can measure p_x and p_y
+  int n_z = 2;
+  // create matrix for sigma points in measurement space
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
+  // transform sigma points into measurement space
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {  // 2n+1 simga points
+    // extract values for better readibility
+    double p_x = x_sig(0, i);
+    double p_y = x_sig(1, i);
+    // measurement model
+    z_sig(0, i) = p_x;
+    z_sig(1, i) = p_y;
+  }
+
+  // mean predicted measurement
+  Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
+  z_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    z_pred = z_pred + weights_s_(i) * z_sig.col(i);
+  }
+
+  // measurement covariance matrix S
+  Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
+  S.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    S = S + weights_c_(i) * z_diff * z_diff.transpose();
+  }
+  // calculate delta
+  double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
+  double delta = std::max(raukf_delta_zero_, calculated_delta);
+  // correct R
+  Eigen::MatrixXd corrected_r = (1 - delta) * r + delta * (epsilon * epsilon.transpose() + S);
+
+  if (model_ind == MotionModel::CV)
+  {
+    r_cv_ = corrected_r;
+    new_x_sig_cv_ = x_sig;
+    new_z_sig_cv_ = z_sig;
+    new_z_pred_cv_ = z_pred;
+    new_s_cv_ = S;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    r_ctrv_ = corrected_r;
+    new_x_sig_ctrv_ = x_sig;
+    new_z_sig_ctrv_ = z_sig;
+    new_z_pred_ctrv_ = z_pred;
+    new_s_ctrv_ = S;
+  }
+  else
+  {
+    r_rm_ = corrected_r;
+    new_x_sig_rm_ = x_sig;
+    new_z_sig_rm_ = z_sig;
+    new_z_pred_rm_ = z_pred;
+    new_s_rm_ = S;
+  }
+}
+
+void UKF::estimationUpdate(const int model_ind)
+{
+  Eigen::VectorXd x(x_cv_.rows());
+  Eigen::VectorXd z(cv_meas_.rows());
+  Eigen::VectorXd z_pred(cv_meas_.rows());
+  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
+  Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
+  Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
+  Eigen::MatrixXd x_sig(n_x_, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig(2, 2 * n_x_ + 1);
+  if (model_ind == MotionModel::CV)
+  {
+    x = x_cv_.col(0);
+    z = cv_meas_;
+    z_pred = new_z_pred_cv_;
+    r = r_cv_;
+    q = q_cv_;
+    s = new_s_cv_;
+    x_sig = new_x_sig_cv_;
+    z_sig = new_z_sig_cv_;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    x = x_ctrv_.col(0);
+    z = ctrv_meas_;
+    z_pred = new_z_pred_ctrv_;
+    r = r_ctrv_;
+    q = q_ctrv_;
+    s = new_s_ctrv_;
+    x_sig = new_x_sig_ctrv_;
+    z_sig = new_z_sig_ctrv_;
+  }
+  else
+  {
+    x = x_rm_.col(0);
+    z = rm_meas_;
+    z_pred = new_z_pred_rm_;
+    r = r_rm_;
+    q = q_rm_;
+    s = new_s_rm_;
+    x_sig = new_x_sig_rm_;
+    z_sig = new_z_sig_rm_;
+  }
+
+  Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+  p.fill(0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd x_diff = x_sig.col(i) - x;
+    // angle normalization
+    while (x_diff(3) > M_PI)
+      x_diff(3) -= 2. * M_PI;
+    while (x_diff(3) < -M_PI)
+      x_diff(3) += 2. * M_PI;
+    p = p + weights_c_(i) * x_diff * x_diff.transpose();
+  }
+
+  p = p + q;
+
+  Eigen::MatrixXd cross_covariance(n_x_, 2);
+  cross_covariance.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    // state difference
+    Eigen::VectorXd x_diff = x_sig.col(i) - x;
+
+    while (x_diff(3) > M_PI)
+      x_diff(3) -= 2. * M_PI;
+    while (x_diff(3) < -M_PI)
+      x_diff(3) += 2. * M_PI;
+    cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
+  }
+
+  Eigen::MatrixXd innovation_covariance = s + r;
+
+  Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
+
+  x = x + kalman_gain * (z - z_pred);
+  p = p - kalman_gain * innovation_covariance * kalman_gain.transpose();
+
+  if (model_ind == MotionModel::CV)
+  {
+    x_cv_.col(0) = x;
+    p_cv_ = p;
+  }
+  else if (model_ind == MotionModel::CTRV)
+  {
+    x_ctrv_.col(0) = x;
+    p_ctrv_ = p;
+  }
+  else
+  {
+    x_rm_.col(0) = x;
+    p_rm_ = p;
+  }
+}
+
+void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres_)
+{
+  raukf_chi_thres_param_ = chi_thres_;
+
+  // if no measurement, no correction/estimation is made
+  if (!is_meas_)
+  {
+    return;
+  }
+
+  if (use_sukf)
+  {
+    bool is_fault = false;
+    faultDetection(MotionModel::CTRV, is_fault);
+    if (!is_fault)
+    {
+      return;
+    }
+    adaptiveAdjustmentQ(MotionModel::CTRV);
+    adaptiveAdjustmentR(MotionModel::CTRV);
+    estimationUpdate(MotionModel::CTRV);
+  }
+  else
+  {
+    // applying ra filter except for random motion model
+    for (int model_ind = 0; model_ind < 2; model_ind++)
+    {
+      bool is_fault = false;
+      faultDetection(model_ind, is_fault);
+      if (!is_fault)
+      {
+        continue;
+      }
+      adaptiveAdjustmentQ(model_ind);
+      adaptiveAdjustmentR(model_ind);
+      estimationUpdate(model_ind);
+    }
   }
 }

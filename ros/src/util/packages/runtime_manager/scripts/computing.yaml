@@ -1086,7 +1086,7 @@ params :
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
-      v       : /detection/lidar_detector/objects
+      v       : /detection/lidar_objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1182,6 +1182,14 @@ params :
       label     : use_sukf
       kind      : checkbox
       v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : use_robust_adaptive_filter
+      desc      : Use use_robust_adaptive_filter
+      label     : use_robust_adaptive_filter
+      kind      : checkbox
+      v         : True
       cmd_param :
         dash      : ''
         delim     : ':='
