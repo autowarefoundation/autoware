@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lidar_imm_ukf_pda_track)
+project(imm_ukf_pda_track)
 
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
   )
 
 
@@ -22,6 +23,10 @@ catkin_package(
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
+
+  INCLUDE_DIRS include
+  LIBRARIES lib_ukf
   )
 
 include_directories(
@@ -36,6 +41,7 @@ add_executable(imm_ukf_pda
   nodes/imm_ukf_pda/imm_ukf_pda.cpp
   nodes/imm_ukf_pda/ukf.cpp
   )
+
 target_link_libraries(imm_ukf_pda
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -43,6 +49,17 @@ target_link_libraries(imm_ukf_pda
 add_dependencies(imm_ukf_pda
   ${catkin_EXPORTED_TARGETS}
   )
+
+add_library(lib_ukf SHARED
+  nodes/imm_ukf_pda/ukf.cpp
+)
+
+target_link_libraries(lib_ukf
+${catkin_LIBRARIES})
+
+add_dependencies(lib_ukf
+  ${catkin_EXPORTED_TARGETS}
+)
 
 #visualize_detected_objects
 add_executable(visualize_detected_objects
@@ -70,3 +87,19 @@ install(TARGETS
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
+
+install(TARGETS
+        lib_ukf
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        )
+
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(utest
+                   test/utest.cpp
+                   nodes/imm_ukf_pda/imm_ukf_pda.cpp
+                   nodes/imm_ukf_pda/ukf.cpp
+                 )
+  target_link_libraries(utest ${catkin_LIBRARIES})
+endif()
