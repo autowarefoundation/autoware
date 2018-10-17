@@ -2372,7 +2372,7 @@ class VarPanel(wx.Panel):
 
 		style = wx.TE_PROCESS_ENTER + wx_flag_get( self.var.get('str_flags', []) )
 
-		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style)
+		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style, size=(130,-1))
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind in ('num', None):

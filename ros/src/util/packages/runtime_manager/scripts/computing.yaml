@@ -226,6 +226,10 @@ subs :
         cmd  : roslaunch lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.launch
         param: lidar_euclidean_cluster_detect_param
         gui  :
+          dialog_width  : 650
+          dialog_height : 500
+          downsample_cloud :
+            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
       - name : lidar_naive_l_shape_detect
@@ -4716,7 +4720,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : publish_filtered
       desc    : publish_filtered desc sample
       label   : 'publish filtered'
@@ -4733,7 +4736,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : points_node
       desc    : Input PointCloud topic, use a ground filtering method from Sensing (ring, ray, comparemap)
       label   : 'input_points_node'
@@ -4742,7 +4744,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
