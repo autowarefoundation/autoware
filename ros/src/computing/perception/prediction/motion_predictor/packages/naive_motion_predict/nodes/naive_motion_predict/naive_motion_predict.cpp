@@ -38,7 +38,7 @@ NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
 
   predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
-  detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
+  detected_objects_sub_ = nh_.subscribe("/detection/lidar_tracker/objects", 1, &NaiveMotionPredict::objectsCallback, this);
 }
 
 NaiveMotionPredict::~NaiveMotionPredict()
