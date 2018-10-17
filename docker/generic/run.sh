@@ -1,26 +1,51 @@
-#!/bin/sh
+#!/bin/bash
 
+usage() { echo "Usage $0 <distribution:indigo|kinetic> [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
+
+# Defaults
 XSOCK=/tmp/.X11-unix
 XAUTH=/home/$USER/.Xauthority
 SHARED_DIR=/home/autoware/shared_dir
 HOST_DIR=/home/$USER/shared_dir
+DOCKER_HUB_REPO="autoware/autoware"
+TAG=""
 
-if [ "$1" = "kinetic" ] || [ "$1" = "indigo" ]
+DISTRIBUTION_OR_TAG=$1; shift
+
+if [[ $DISTRIBUTION_OR_TAG = *"kinetic"* ]] || [[ $DISTRIBUTION_OR_TAG = *"indigo"* ]]
 then
-    echo "Use $1"
+    echo "Use $DISTRIBUTION_OR_TAG"
 else
-    echo "Select distribution, kinetic|indigo"
+    usage
     exit
 fi
 
-if [ "$2" = "" ]
-then
-    # Create Shared Folder
-    mkdir -p $HOST_DIR
-else
-    HOST_DIR=$2
-fi
-echo "Shared directory: ${HOST_DIR}"
+TAG=$(./autoware_tags $DISTRIBUTION_OR_TAG)
+
+while getopts ":t:r:s:" opt; do
+  case $opt in
+    t)
+      TAG=$OPTARG
+      echo "Using $TAG tag"
+      ;;
+    r )
+      DOCKER_HUB_REPO=$OPTARG
+      echo "Using $DOCKER_HUB_REPO repo"
+      ;;
+    s)
+      HOST_DIR=$OPTARG
+      echo "Shared directory: ${HOST_DIR}"
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
 
 nvidia-docker run \
     -it --rm \
@@ -32,4 +57,4 @@ nvidia-docker run \
     -u autoware \
     --privileged -v /dev/bus/usb:/dev/bus/usb \
     --net=host \
-    autoware-$1
+    $DOCKER_HUB_REPO:$TAG

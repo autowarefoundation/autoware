@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$1" = "indigo" ] || [ "$1" = "kinetic" ]; then
+
+  tags=`wget -q https://registry.hub.docker.com/v1/repositories/autoware/autoware/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}'`
+
+  if [ -n "$1" ]
+  then
+      tags=` echo "${tags}" | grep "$1" | grep -v "$1-"`
+  fi
+
+  LATEST_TAG=$(echo "${tags}" | tail -1)
+
+  echo $LATEST_TAG
+
+else
+
+  echo $1
+
+fi;
+
