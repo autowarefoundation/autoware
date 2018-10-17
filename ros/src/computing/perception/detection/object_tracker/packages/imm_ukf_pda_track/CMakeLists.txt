@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lidar_imm_ukf_pda_track)
+project(imm_ukf_pda_track)
 
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
   )
 
 
@@ -22,6 +23,7 @@ catkin_package(
   geometry_msgs
   tf
   jsk_recognition_msgs
+  vector_map
   )
 
 include_directories(

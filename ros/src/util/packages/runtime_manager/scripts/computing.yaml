@@ -292,14 +292,6 @@ subs :
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
 
-      - name : lidar_imm_ukf_pda_track
-        desc : lidar_imm_ukf_pda_track desc sample
-        cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
-        param: lidar_imm_ukf_pda_track_param
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
-
       - name : range_fusion
         desc : range_fusion desc sample
         cmd  : roslaunch range_fusion range_fusion.launch
@@ -352,6 +344,18 @@ subs :
             flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
+
+
+    - name : object_tracker
+      desc : object_tracker desc sample
+      subs :
+        - name : imm_ukf_pda_track
+          desc : imm_ukf_pda_track desc sample
+          cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
+          param: imm_ukf_pda_track_param
+          gui  :
+            sync :
+              func : self.button_synchronization.GetValue()
 
 
     - name : trafficlight_recognizer
@@ -613,14 +617,14 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
         param: op_trajectory_evaluator
       - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner 
+        desc : Decision making by selecting best behavior for local planner
         cmd  : roslaunch op_local_planner op_behavior_selector.launch
 
     - name : OpenPlanner - Utilities
       desc : Testing UI, Loggers , ..
       subs :
       - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file 
+        desc : Publish transformation from ndt_pose read from rosbag file
         cmd  : roslaunch op_utilities op_pose2tf.launch
         param: op_pose2tf
       - name : op_bag_player
@@ -639,7 +643,7 @@ subs :
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
       - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner 
+        desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
 
@@ -1076,21 +1080,21 @@ params :
       max   : 10
       v     : 9
 
-  - name  : lidar_imm_ukf_pda_track_param
+  - name  : imm_ukf_pda_track_param
     vars  :
     - name    : tracker_input_topic
       desc    : input_topic desc sample
       label   : 'input topic'
       kind    : str
-      v       : /cloud_clusters
+      v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_topic
+    - name    : tracker_output_detected_topic
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /detection/tracked_objects
+      v       : /detection/lidar_tracker/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1164,6 +1168,32 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : prevent_explosion_thres
+      desc    : threshold for preventing ukf from explosion
+      label   : 'prevent explosion thres'
+      min       : 0
+      max       : 10000
+      v       : 1000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_sukf
+      desc      : Use SUKF
+      label     : use_sukf
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : is_debug
+      desc      : debug mode on/off
+      label     : is_debug
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
 
   - name  : lidar_kf_contour_track_param
     vars  :
@@ -1211,7 +1241,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLogging
-      desc : Enable Writ csv of internal tracking state 
+      desc : Enable Writ csv of internal tracking state
       label: Enable CSV Logs
       kind : checkbox
       v    : False
@@ -3067,7 +3097,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : maxAcceleration
-      desc : Maximum acceleration allowed 
+      desc : Maximum acceleration allowed
       label: Acceleration
       min  : 0.01
       max  : 25.0
@@ -3210,7 +3240,7 @@ params :
   - name  : op_motion_predictor
     vars  :
     - name : enableCurbObstacles
-      desc : Enable using curb from map as obstacles 
+      desc : Enable using curb from map as obstacles
       label: Detect curbs from map
       kind : checkbox
       v    : False
@@ -3263,7 +3293,7 @@ params :
   - name  : op_trajectory_evaluator
     vars  :
     - name : enablePrediction
-      desc : treat all obstacles as dynamic or as static 
+      desc : treat all obstacles as dynamic or as static
       label: Enable Prediction
       kind : checkbox
       v    : False
@@ -3385,7 +3415,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : logFolder
-      desc : Folder for simulation data logging 
+      desc : Folder for simulation data logging
       label: Log Folder
       kind : path
       cmd_param:
