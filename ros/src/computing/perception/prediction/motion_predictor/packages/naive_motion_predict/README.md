@@ -43,3 +43,7 @@ Launch file available parameters for `naive_motion_predict`
 ------|----|---------
 |`/prediction/objects`|`autoware_msgs::DetectedObjectArray`|Added predicted objects to input data..|
 |`/prediction/motion_predictor/path_markers`|`visualization_msgs::MarkerArray`|Visualzing predicted path in ros marker array|
+
+### Video
+
+[![Autoware: How to launch naive motion predict](https://img.youtube.com/vi/T6ediU0CHP0/0.jpg)](https://www.youtube.com/watch?v=T6ediU0CHP0&feature=youtu.be)
