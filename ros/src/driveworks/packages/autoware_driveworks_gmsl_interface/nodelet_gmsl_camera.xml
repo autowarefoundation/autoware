@@ -3,7 +3,7 @@
          type="gmsl_camera::CameraNodelet"
          base_class_type="nodelet::Nodelet">
     <description>
-         A node that controls and publish one or more gmsl cameras on PX2 DriveWorks	
+         A node that controls and publish one or more gmsl cameras on PX2 DriveWorks
     </description>
   </class>
 </library>

@@ -1,8 +1,8 @@
 /*
- * This code has been modified from 
+ * This code has been modified from
  * 1. https://github.com/vehicularkech/gmsl-camera-ros-driver
  * 2. https://github.com/cshort101/gmsl_driver
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -12,11 +12,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -31,8 +31,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*
-  This program requires ROS 
-  Author: Punnu Phairatt 
+  This program requires ROS
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -76,7 +76,7 @@ public:
 	camera_info_manager::CameraInfoManager info_manager;
 	ros::Publisher pub_caminfo;
 	std::string calib_folder;
-  
+
 
 };
 

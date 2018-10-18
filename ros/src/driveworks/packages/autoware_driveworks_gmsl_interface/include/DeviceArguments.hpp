@@ -8,11 +8,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -28,7 +28,7 @@
 */
 /*
   Modified from Nvidia SDK - Camera gmsl
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -46,24 +46,24 @@ namespace DriveWorks
 
 typedef std::pair<std::string, std::string> option_t;
 
-class DeviceArguments 
+class DeviceArguments
 {
 public:
   /* Constructor */
   DeviceArguments(const std::vector<option_t>& options);
   /* Destructor */
   ~DeviceArguments();
-	/* Print arguments on screen */   
-  void printArguments();	 
-  /* Get arguments */ 
+	/* Print arguments on screen */
+  void printArguments();
+  /* Get arguments */
   const std::string& get(const char *name) const;
   /* Set argument */
-  bool set(const char* name, std::string new_value); 
-	  
-	  
+  bool set(const char* name, std::string new_value);
+
+
 private:
   std::map<std::string, std::string> arguments;
-  const std::string empty_string = {}; 	
+  const std::string empty_string = {};
 };
 
 };//namespace

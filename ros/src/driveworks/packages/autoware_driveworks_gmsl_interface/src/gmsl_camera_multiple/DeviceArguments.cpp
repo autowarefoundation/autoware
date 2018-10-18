@@ -8,11 +8,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -28,7 +28,7 @@
 */
 /*
   Modified from Nvidia SDK - Camera gmsl
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -67,11 +67,11 @@ void DeviceArguments::printArguments()
 const std::string& DeviceArguments::get(const char *name) const
 {
   auto it = arguments.find(name);
-  if (it == arguments.end()) 
+  if (it == arguments.end())
   {
     printf("Get error: Missing device argument '%s' requested\n", name);
     return empty_string;
-  } 
+  }
   else
   {
     return it->second;
@@ -79,10 +79,10 @@ const std::string& DeviceArguments::get(const char *name) const
 }
 
 
-bool DeviceArguments::set(const char* name, std::string new_value) 
+bool DeviceArguments::set(const char* name, std::string new_value)
 {
   auto it = arguments.find(name);
-  if (it == arguments.end()) 
+  if (it == arguments.end())
   {
     printf("Set error: Missing argument '%s' requested\n", name);
     return false;

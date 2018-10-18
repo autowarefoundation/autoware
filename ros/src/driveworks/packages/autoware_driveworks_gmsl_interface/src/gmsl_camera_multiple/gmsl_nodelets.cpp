@@ -8,11 +8,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -29,7 +29,7 @@
 
 /*
   This program requires ROS and Nvidia SDK installed
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -63,10 +63,10 @@ namespace gmsl_camera
   class CameraNodelet: public nodelet::Nodelet
 	{
 		public:
-			CameraNodelet():running(false) 
+			CameraNodelet():running(false)
 			{
 			}
-			
+
 			~CameraNodelet()
 			{
 				// signal gmsl camera to stop before nodelet exit
@@ -75,7 +75,7 @@ namespace gmsl_camera
 				if(camera && running)
 				{
 				  try
-				  {	
+				  {
 					  NODELET_INFO("shutting down camera thread");
 					  running = false;
 						camera->shutdown();
@@ -86,10 +86,10 @@ namespace gmsl_camera
 				  {
 						NODELET_ERROR("%s", e.what());
 					}
-				
+
 				}
 			}
-			
+
 			void onInit()
 			{
 				// global and private node handler
@@ -99,13 +99,13 @@ namespace gmsl_camera
 				camera = new DriveWorks::SekonixGmslCamera(node, pnode, CameraArguments);
 				running = true;
 			}
-			
+
 	  private:
 	    DriveWorks::SekonixGmslCamera *camera;
 	    volatile bool running;
-			
+
 	};
-	
+
 	//PLUGINLIB_DECLARE_CLASS(gmsl_camera, CameraNodelet, gmsl_camera::CameraNodelet, nodelet::Nodelet);
 	PLUGINLIB_EXPORT_CLASS(gmsl_camera::CameraNodelet, nodelet::Nodelet);
 };

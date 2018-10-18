@@ -1,8 +1,8 @@
 /*
- * This code has been modified from 
+ * This code has been modified from
  * 1. https://github.com/vehicularkech/gmsl-camera-ros-driver
  * 2. https://github.com/cshort101/gmsl_driver
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -12,11 +12,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -32,7 +32,7 @@
 */
 /*
   This program requires ROS
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -44,8 +44,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-OpenCVConnector::OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer): 
-it(nh), counter(0), camera_id(camera_frame_id), info_manager(ros::NodeHandle(topic_name),"gmsl")	
+OpenCVConnector::OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer):
+it(nh), counter(0), camera_id(camera_frame_id), info_manager(ros::NodeHandle(topic_name),"gmsl")
 {
 	 std::string topic_raw = topic_name + std::string("/image_raw");
 	 std::string topic_jpg = topic_name + std::string("/image_raw/compressed");
@@ -60,11 +60,11 @@ OpenCVConnector::~OpenCVConnector()
 }
 
 
-void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int height_in, int width_pub, int height_pub) 
+void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int height_in, int width_pub, int height_pub)
 {
   cv::Mat mat_img(cv::Size(width_in, height_in), CV_8UC4, buffer);		// create a cv::Mat from rgbaImage
   cv::Mat dst;
-  
+
   // if we need to resize
   if((width_in != width_pub) || (height_in != height_pub))
   {
@@ -74,7 +74,7 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
 	{
 		dst = mat_img;
 	}
-  
+
   cv::Mat converted;																						      // new cv::Mat();
   cv::cvtColor(dst,converted,cv::COLOR_RGBA2RGB);   				          // COLOR_BGRA2BGR
   cv_bridge::CvImage img_bridge;
@@ -92,13 +92,13 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
 void OpenCVConnector::WriteToJpeg(uint8_t* data, uint32_t compressed_size)
 {
 	// publishing original size only
-	sensor_msgs::CompressedImage img_msg_compressed; 
+	sensor_msgs::CompressedImage img_msg_compressed;
 	img_msg_compressed.data.resize(compressed_size);
 	memcpy(&img_msg_compressed.data[0], data, compressed_size);
 	std_msgs::Header header; 																						// empty header
 	header.seq = counter; 																				      // user defined counter
   header.stamp = ros::Time::now(); 															      // time
-  header.frame_id = camera_id;                                        // camera id 
+  header.frame_id = camera_id;                                        // camera id
 	img_msg_compressed.header = header;
 	img_msg_compressed.format = "jpeg";
 	pub_jpg.publish(img_msg_compressed);
