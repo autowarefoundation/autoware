@@ -74,7 +74,14 @@ boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag
 {
     load_config_();
     std::lock_guard<std::mutex> lock(mtx_);
-    return filter(diag,node_number_data_[target_node]);
+    for( auto itr = node_number_data_.begin(); itr != node_number_data_.end() ; ++itr ) 
+    {
+        if(itr->first == target_node)
+        {
+            return filter(diag,node_number_data_[target_node]);
+        }
+    }
+    return boost::none;
 }
 
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, int target_node_number)

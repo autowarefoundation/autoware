@@ -144,3 +144,63 @@ The log remains in such format.
 [2018-09-13T03:25:30.541348] : in /ndt_matching: The input value hogehoge is out of range.
 [2018-09-13T03:25:30.641382] : in /ndt_matching: The input value hogehoge is out of range.
 ```
+
+## diag_filter
+diag_filter class provides filter functions for diag_msgs
+
+```
+boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, std::string target_node);
+```
+
+Get diag infomation of target node.  
+If the target node is not exist in the erro code config.  
+This function return boost::none.
+
+```
+boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, int target_node_number);
+```
+You cand also get diag infomation from node number, which was defined in error_code config file.
+
+```
+std::vector<std::string> get_node_lists();
+```
+get list of target node lists.  
+
+# diag_msgs
+diagnostic messages for Autoware.
+
+diag_error.msg
+```
+#the message which describes a single error
+
+#name of the error
+string name
+#error number in the target node
+int32 num
+#error category
+int32 category
+#desctiption of the error
+string description
+```
+
+diag_node_errors.msg
+```
+#the message which describes errors in a single node
+
+#header for timestamp
+Header header
+#number of the target node
+int32 node_number
+#list of error messages in the target node
+diag_error[] errors
+```
+
+diag.msg
+```
+#message for all diagnostics in the systems
+
+#header for timestamp
+Header header
+#list of errors in the target nodes
+diag_node_errors[] nodes
+```

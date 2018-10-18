@@ -126,7 +126,7 @@ private:
     bool check_error_code(int requested_error_code, std::vector<int> right_categories);
     void publish_diag_(diag_info info);
     //parameters for diagnostics bridge
-    std::mutex diag_mutex_;
+    //std::mutex diag_mutex_;
     void produce_diagnostics_(diagnostic_updater::DiagnosticStatusWrapper &stat);
     boost::shared_ptr<diagnostic_updater::Updater> diagnostic_updater_ptr_;
     int diag_info_search_index_;
