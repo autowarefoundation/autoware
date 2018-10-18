@@ -41,7 +41,7 @@
 // User defined includes
 #include "autoware_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/ControlCommandStamped.h"
-#include "autoware_msgs/lane.h"
+#include "autoware_msgs/Lane.h"
 #include "pure_pursuit.h"
 #include "pure_pursuit_viz.h"
 
@@ -102,7 +102,7 @@ private:
   void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg);
+  void callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg);
 
   // initializer
   void initForROS();
@@ -111,7 +111,7 @@ private:
   void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
-                                       const std::vector<autoware_msgs::waypoint> &waypoints) const;
+                                       const std::vector<autoware_msgs::Waypoint> &waypoints) const;
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;

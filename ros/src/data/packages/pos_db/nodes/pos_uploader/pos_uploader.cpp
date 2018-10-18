@@ -48,7 +48,7 @@
 
 
 #include <pos_db.h>
-#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/ObjLabel.h"
 
 #define MYNAME		"pos_uploader"
 #define OWN_TOPIC_NAME	"current_pose"
@@ -58,8 +58,8 @@
 using namespace std;
 
 //store subscribed value
-static std::vector <autoware_msgs::obj_label> car_positions_array;
-static std::vector <autoware_msgs::obj_label> person_positions_array;
+static std::vector <autoware_msgs::ObjLabel> car_positions_array;
+static std::vector <autoware_msgs::ObjLabel> person_positions_array;
 //flag for comfirming whether updating position or not
 static size_t car_num = 0;
 static size_t person_num = 0;
@@ -156,7 +156,7 @@ static std::string point_to_insert_statement(const geometry_msgs::Point& point, 
   return oss.str();
 }
 
-static std::string makeSendDataDetectedObj(const autoware_msgs::obj_label& cp_array, const char *name)
+static std::string makeSendDataDetectedObj(const autoware_msgs::ObjLabel& cp_array, const char *name)
 {
   std::string timestamp;
   if(use_current_time  || cp_array.header.stamp.sec == 0) {
@@ -259,7 +259,7 @@ static void car_locate_cb(const jsk_recognition_msgs::BoundingBoxArray& obj_pose
 {
 	if (obj_pose_msg.boxes.size() > 0) {
 		geometry_msgs::Point tmpPoint;
-		autoware_msgs::obj_label tmpLabel;
+		autoware_msgs::ObjLabel tmpLabel;
 
 		pthread_mutex_lock(&pose_lock_);
 
@@ -282,7 +282,7 @@ static void person_locate_cb(const jsk_recognition_msgs::BoundingBoxArray &obj_p
 {
 	if (obj_pose_msg.boxes.size() > 0) {
 		geometry_msgs::Point tmpPoint;
-		autoware_msgs::obj_label tmpLabel;
+		autoware_msgs::ObjLabel tmpLabel;
 
 		pthread_mutex_lock(&pose_lock_);
 

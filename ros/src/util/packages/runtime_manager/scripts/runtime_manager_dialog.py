@@ -89,16 +89,15 @@ from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
-from autoware_msgs.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
-from autoware_msgs.msg import accel_cmd
-from autoware_msgs.msg import steer_cmd
-from autoware_msgs.msg import brake_cmd
-from autoware_msgs.msg import indicator_cmd
-from autoware_msgs.msg import lamp_cmd
-from autoware_msgs.msg import traffic_light
-from autoware_msgs.msg import adjust_xy
+from autoware_msgs.msg import AccelCmd
+from autoware_msgs.msg import SteerCmd
+from autoware_msgs.msg import BrakeCmd
+from autoware_msgs.msg import IndicatorCmd
+from autoware_msgs.msg import LampCmd
+from autoware_msgs.msg import TrafficLight
+from autoware_msgs.msg import AdjustXY
 from types import MethodType
 
 SCHED_OTHER = 0
@@ -755,15 +754,15 @@ class MyFrame(rtmgr.MyFrame):
 			pub.publish(gear_cmd(gear=v))
 
 	def OnLamp(self, event):
-		pub = rospy.Publisher('lamp_cmd', lamp_cmd, queue_size=10)
-		msg = lamp_cmd()
+		pub = rospy.Publisher('lamp_cmd', LampCmd, queue_size=10)
+		msg = LampCmd()
 		msg.l = self.button_statchk_lamp_l.GetValue()
 		msg.r = self.button_statchk_lamp_r.GetValue()
 		pub.publish(msg)
 
 	def OnIndi(self, event):
-		pub = rospy.Publisher('indicator_cmd', indicator_cmd, queue_size=10)
-		msg = indicator_cmd()
+		pub = rospy.Publisher('indicator_cmd', IndicatorCmd, queue_size=10)
+		msg = IndicatorCmd()
 		msg.l = self.button_statchk_indi_l.GetValue()
 		msg.r = self.button_statchk_indi_r.GetValue()
 		pub.publish(msg)

@@ -55,7 +55,7 @@
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <autoware_msgs/CanInfo.h>
 #include <autoware_msgs/DetectedObjectArray.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/Signals.h>
 #include <autoware_msgs/ControlCommand.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -104,7 +104,7 @@ protected: //Planning Related variables
   	PlannerHNS::PlanningParams m_PlanningParams;
   	PlannerHNS::CAR_BASIC_INFO m_CarInfo;
 
-  	autoware_msgs::lane m_CurrentTrajectoryToSend;
+  	autoware_msgs::Lane m_CurrentTrajectoryToSend;
   	bool bNewLightStatus;
 	bool bNewLightSignal;
 	PlannerHNS::TrafficLightState  m_CurrLightStatus;
@@ -149,8 +149,8 @@ protected: //Planning Related variables
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetLocalTrajectoryCost(const autoware_msgs::laneConstPtr& msg);
-	void callbackGetTrafficLightStatus(const autoware_msgs::traffic_light & msg);
+	void callbackGetLocalTrajectoryCost(const autoware_msgs::LaneConstPtr& msg);
+	void callbackGetTrafficLightStatus(const autoware_msgs::TrafficLight & msg);
 	void callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg);
 
 	void callbackGetTwistCMD(const geometry_msgs::TwistStampedConstPtr& msg);
