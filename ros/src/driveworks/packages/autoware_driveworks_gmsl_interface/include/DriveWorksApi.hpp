@@ -1,6 +1,6 @@
 /*
  * This code has been modified from Nvidia SDK
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -10,11 +10,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -31,7 +31,7 @@
 /*
   This program requires Nvidia SDK installed
   Modified from Nvidia SDK - Camera gmsl and others (see Readme)
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -76,7 +76,7 @@
 #include "nvmedia_image.h"
 #include "nvmedia_ijpe.h"
 
-// OPENCV-ROS Bridge 
+// OPENCV-ROS Bridge
 #include "cv_connection.hpp"
 
 #include "DeviceArguments.hpp"
@@ -115,41 +115,41 @@ class DriveWorksApi
 {
 public:
   DriveWorksApi(DeviceArguments arguments, ImageConfig g_imageConfig);
-  ~DriveWorksApi(); 
- 
-  void stopCameras(); 
+  ~DriveWorksApi();
+
+  void stopCameras();
   bool isCamReady();
   bool isShutdownCompleted();
   uint32_t getNumPort();
   std::vector<uint32_t> getCameraPort();
- 
+
 private:
   void startCameras();
-  //Driveworks sdk interface 
+  //Driveworks sdk interface
   void initSdk(dwContextHandle_t *context);
   void initSAL(dwSALHandle_t *sal, dwContextHandle_t context);
   void initSensors(std::vector<Camera> *cameras,
                    uint32_t *numCameras,
                    dwSALHandle_t sal,
                    DeviceArguments &arguments);
-                   
+
   void initFramesStart();
   void initFrameImage(Camera* cameraSensor);
   void startCameraPipline();
   void threadCameraPipeline(Camera* cameraSensor, uint32_t port, dwContextHandle_t sdk);
 
-  
+
   dwStatus captureCamera(dwImageNvMedia *frameNVMrgba,
                          dwSensorHandle_t cameraSensor, uint32_t port,
                          uint32_t sibling, dwImageFormatConverterHandle_t yuv2rgba,
                          uint8_t* jpeg_image, NvMediaIJPE *jpegEncoder);
-                         
+
   void releaseCameras(Camera* cameraSensor);
   void releaseSDK();
 
-  
+
 private:
-  //Variables 
+  //Variables
   bool gTakeScreenshot = true;
   bool gImageCompressed = true;
   int gScreenshotCount = 0;
@@ -161,28 +161,28 @@ private:
   uint32_t g_numCameras;
   uint32_t g_numPort;
   std::vector<uint32_t> g_numCameraPort;
-  const uint32_t max_jpeg_bytes = 3 * 1290 * 1208;  
+  const uint32_t max_jpeg_bytes = 3 * 1290 * 1208;
 	uint32_t JPEG_quality = 70;
   std::string g_calibFolder = "";
-	
-	
-  //DriveWorks sdk 
+
+
+  //DriveWorks sdk
   DeviceArguments g_arguments;
   ImageConfig g_imageConfig;
   std::vector<Camera> cameras;
   bool eof;
   dwContextHandle_t sdk = DW_NULL_HANDLE;
   dwSALHandle_t sal     = DW_NULL_HANDLE;
-  std::vector<std::vector<dwImageNvMedia*>> g_frameRGBAPtr; 
-  std::vector<std::vector<uint8_t*>>	g_frameJPGPtr; 
+  std::vector<std::vector<dwImageNvMedia*>> g_frameRGBAPtr;
+  std::vector<std::vector<uint8_t*>>	g_frameJPGPtr;
 	std::vector<std::vector<uint32_t>>  g_compressedSize;
-	
-  
-};
-  	
+
+
 };
 
-	
+};
+
+
 
 
 #endif

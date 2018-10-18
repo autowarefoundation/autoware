@@ -8,11 +8,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
- * 
+ *
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -29,7 +29,7 @@
 
 /*
   This program requires ROS and Nvidia SDK installed
-  Author: Punnu Phairatt 
+  Author: Punnu Phairatt
   Initial Date: 10/05/18
 */
 
@@ -43,7 +43,7 @@
 typedef std::chrono::high_resolution_clock Clock;
 
 // Running state
-static bool volatile running = true; 
+static bool volatile running = true;
 // Signal handler to safely exit camera session
 void signalHandler(int sig)
 {
@@ -67,18 +67,18 @@ std::vector<DriveWorks::option_t> options =
 
 
 // -------------------------------------------------------------------------------
-//     MAIN     
+//     MAIN
 // -------------------------------------------------------------------------------
 int main(int argc, const char **argv)
 {
-	
+
   // Create and init device arguments
-  DriveWorks::DeviceArguments CameraArguments(options);   
- 
+  DriveWorks::DeviceArguments CameraArguments(options);
+
   // Init ros node
   ros::init(argc, (char**)argv, "gmsl_cameras");
   ros::NodeHandle comm_nh;
-  ros::NodeHandle param_nh("~");  
+  ros::NodeHandle param_nh("~");
   ros::Rate loop_rate(10);
   // Detect exit signals
   signal(SIGHUP, signalHandler);  // controlling terminal closed, Ctrl-D
@@ -87,18 +87,18 @@ int main(int argc, const char **argv)
   signal(SIGABRT, signalHandler); // abort() called.
   signal(SIGTERM, signalHandler); // kill command
   signal(SIGSTOP, signalHandler); // kill command
-  
+
   // Gmsl camera instance run
   DriveWorks::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, CameraArguments);
 
-  // other main thread: waiting for a signal to stop&shutdown 
+  // other main thread: waiting for a signal to stop&shutdown
   while(running & ros::ok())
   {
 	 ros::spinOnce();
 	 loop_rate.sleep();
   }
-  
-  // Gmsl camera signal termination- call camera cleanup 
+
+  // Gmsl camera signal termination- call camera cleanup
   std::cout << "Shutting down cameras .." << std::endl;
   gmsl_multiple_cam.shutdown();
 

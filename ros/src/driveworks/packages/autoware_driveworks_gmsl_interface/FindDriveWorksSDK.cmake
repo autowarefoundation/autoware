@@ -2,26 +2,26 @@
 # Try to find DriveWorks library
 #
 # Look for cmake path
-find_path(DW_CMAKE_PATH 
+find_path(DW_CMAKE_PATH
  	NAMES Toolchain-V4L.cmake
 	HINTS /usr/local/driveworks/samples/cmake
 )
 # Look for include path
-find_path(DW_INCLUDE_PATH 
+find_path(DW_INCLUDE_PATH
 	NAMES dw/Driveworks.h
 	HINTS /usr/local/driveworks/include
 )
 
 # Look for target build system sdk
-find_path(DW_MEDIA_PATH 
+find_path(DW_MEDIA_PATH
 	NAMES nvmedia_image.h
 	HINTS $ENV{HOME}/drive-t186ref-linux/include
 	      /usr/local/drive-t186ref-linux/include
 )
 
 # Look for lib
-find_path(DW_LIBRARY_PATH 
-	NAMES libdriveworks.so 
+find_path(DW_LIBRARY_PATH
+	NAMES libdriveworks.so
 	HINTS /usr/local/driveworks/lib
 )
 
