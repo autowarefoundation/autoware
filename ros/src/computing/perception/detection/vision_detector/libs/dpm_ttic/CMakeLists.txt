@@ -18,6 +18,7 @@ set(CMAKE_C_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result ${CMAKE_CXX_FLAGS}")
 
 if(CUDA_FOUND)
+    INCLUDE(FindCUDA)
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
