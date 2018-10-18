@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   rviz
   std_msgs
+  autoware_msgs
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -29,9 +30,9 @@ endif()
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES state_rviz_plugins
-#  CATKIN_DEPENDS rviz std_msgs
+  INCLUDE_DIRS src/vehicle_monitor
+  CATKIN_DEPENDS rviz std_msgs
+  LIBRARIES rviz_topic_display autoware_rviz_plugins
   DEPENDS rviz
 )
 
@@ -44,6 +45,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
@@ -54,10 +56,16 @@ set(CMAKE_AUTOMOC ON)
 set(SOURCE_FILES
   src/state_panel/state_panel.cpp
   src/sim_object/autoware_flag_tool.cpp
-  )
+  src/vehicle_monitor/vehicle_status_monitor.cpp
+  src/vehicle_monitor/vehicle_cmd_monitor.cpp
+  src/vehicle_monitor/overlay_utils.cpp
+  src/vehicle_monitor/display.cpp
+  src/vehicle_monitor/widget.cpp
+)
 
 add_library(autoware_rviz_plugins ${SOURCE_FILES} ${UIC_FILES})
 target_link_libraries(autoware_rviz_plugins ${QT_LIBRARIES} ${catkin_LIBRARIES} ${rviz_DEFAULT_PLUGIN_LIBRARIES})
+add_dependencies(autoware_rviz_plugins ${catkin_EXPORTED_TARGETS})
 
 ## Install rules
 
