@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 
 	camera_info_pub = n.advertise<sensor_msgs::CameraInfo>(camera_info_name, 10, true);
 
-	projection_matrix_pub = n.advertise<autoware_msgs::ProjectionMatrix>(projection_matrix_name, 10, true);
+	projection_matrix_pub = n.advertise<autoware_msgs::ProjectionMatrix>(projection_matrix_topic, 10, true);
 
 	ros::spin();
 
