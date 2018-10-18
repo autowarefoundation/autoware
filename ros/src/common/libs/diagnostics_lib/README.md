@@ -149,7 +149,7 @@ The log remains in such format.
 diag_filter class provides filter functions for diag_msgs
 
 ### How to use
-create diag_filter instance in your node.
+create diag_filter instance in your node and call member functions below.
 
 ```
 boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, std::string target_node);
