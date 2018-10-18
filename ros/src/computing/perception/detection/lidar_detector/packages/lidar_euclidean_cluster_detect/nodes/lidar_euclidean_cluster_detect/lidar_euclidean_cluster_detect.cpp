@@ -48,7 +48,7 @@
 #include <std_msgs/MultiArrayLayout.h>
 #include <std_msgs/MultiArrayDimension.h>
 
-#include "autoware_msgs/centroids.h"
+#include "autoware_msgs/Centroids.h"
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 #include "autoware_msgs/DetectedObject.h"
@@ -317,12 +317,12 @@ void publishCloudClusters(const ros::Publisher* in_publisher, const autoware_msg
   }
 }
 
-void publishCentroids(const ros::Publisher* in_publisher, const autoware_msgs::centroids& in_centroids,
+void publishCentroids(const ros::Publisher* in_publisher, const autoware_msgs::Centroids& in_centroids,
                       const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
   if (in_target_frame != in_header.frame_id)
   {
-    autoware_msgs::centroids centroids_transformed;
+    autoware_msgs::Centroids centroids_transformed;
     centroids_transformed.header = in_header;
     centroids_transformed.header.frame_id = in_target_frame;
     for (auto i = centroids_transformed.points.begin(); i != centroids_transformed.points.end(); i++)
@@ -420,7 +420,7 @@ void keepLanePoints(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
 std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                                            pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
                                            jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-                                           autoware_msgs::centroids& in_out_centroids,
+                                           autoware_msgs::Centroids& in_out_centroids,
                                            double in_max_cluster_distance = 0.5)
 {
   std::vector<ClusterPtr> clusters;
@@ -480,7 +480,7 @@ std::vector<ClusterPtr> clusterAndColorGpu(const pcl::PointCloud<pcl::PointXYZ>:
 std::vector<ClusterPtr> clusterAndColor(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                                         pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
                                         jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-                                        autoware_msgs::centroids& in_out_centroids,
+                                        autoware_msgs::Centroids& in_out_centroids,
                                         double in_max_cluster_distance = 0.5)
 {
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
@@ -626,7 +626,7 @@ void checkAllForMerge(std::vector<ClusterPtr>& in_clusters, std::vector<ClusterP
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
                        jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-                       autoware_msgs::centroids& in_out_centroids, autoware_msgs::CloudClusterArray& in_out_clusters,
+                       autoware_msgs::Centroids& in_out_centroids, autoware_msgs::CloudClusterArray& in_out_clusters,
                        jsk_recognition_msgs::PolygonArray& in_out_polygon_array,
                        jsk_rviz_plugins::PictogramArray& in_out_pictogram_array)
 {
@@ -1031,7 +1031,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
     pcl::PointCloud<pcl::PointXYZ>::Ptr clipped_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-    autoware_msgs::centroids centroids;
+    autoware_msgs::Centroids centroids;
     autoware_msgs::CloudClusterArray cloud_clusters;
     jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
     jsk_recognition_msgs::PolygonArray polygon_array;
@@ -1209,7 +1209,7 @@ int main(int argc, char** argv)
 
   _pub_cluster_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_cluster", 1);
   _pub_ground_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_ground", 1);
-  _centroid_pub = h.advertise<autoware_msgs::centroids>("/cluster_centroids", 1);
+  _centroid_pub = h.advertise<autoware_msgs::Centroids>("/cluster_centroids", 1);
   _marker_pub = h.advertise<visualization_msgs::Marker>("centroid_marker", 1);
 
   _pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes", 1);

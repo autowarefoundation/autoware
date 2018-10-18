@@ -1050,15 +1050,15 @@ class Final(InsideDesign):
     		pub.publish(gear_cmd(gear=v))
 
     def OnLamp(self, event):
-    	pub = rospy.Publisher('lamp_cmd', lamp_cmd, queue_size=10)
-    	msg = lamp_cmd()
+    	pub = rospy.Publisher('lamp_cmd', LampCmd, queue_size=10)
+    	msg = LampCmd()
     	msg.l = self.button_statchk_lamp_l.GetValue()
     	msg.r = self.button_statchk_lamp_r.GetValue()
     	pub.publish(msg)
 
     def OnIndi(self, event):
-    	pub = rospy.Publisher('indicator_cmd', indicator_cmd, queue_size=10)
-    	msg = indicator_cmd()
+    	pub = rospy.Publisher('indicator_cmd', IndicatorCmd, queue_size=10)
+    	msg = IndicatorCmd()
     	msg.l = self.button_statchk_indi_l.GetValue()
     	msg.r = self.button_statchk_indi_r.GetValue()
     	pub.publish(msg)
