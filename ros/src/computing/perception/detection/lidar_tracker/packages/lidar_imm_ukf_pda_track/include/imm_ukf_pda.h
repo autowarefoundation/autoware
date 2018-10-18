@@ -126,6 +126,7 @@ private:
   void mergeOverSegmentation(const std::vector<UKF> targets);
 
   void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
+  void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
   void secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt);

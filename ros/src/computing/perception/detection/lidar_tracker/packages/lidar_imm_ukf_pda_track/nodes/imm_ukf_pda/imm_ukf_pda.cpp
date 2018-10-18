@@ -362,6 +362,22 @@ void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::Bounding
   }
 }
 
+void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
+{
+  if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  {
+    object.behavior_state = MotionModel::CV;
+  }
+  else if(target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  {
+    object.behavior_state = MotionModel::CTRV;
+  }
+  else
+  {
+    object.behavior_state = MotionModel::RM;
+  }
+}
+
 void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
@@ -607,6 +623,9 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
+    //store yaw rate for motion into dd.accerelation.linear.y
+    dd.acceleration.linear.y = targets_[i].x_merge_(4);
+    updateBehaviorState(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
   }
 }
