@@ -874,7 +874,8 @@ params :
     - name      : image_topic_src
       desc      : Adds the Camera info to this image topic. Default /image_raw
       label     : image topic source
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : '/image_raw'
       cmd_param :
         dash      : ''
