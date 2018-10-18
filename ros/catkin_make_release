@@ -9,9 +9,8 @@ if [[ -d devel ]]; then
     rm -rf devel
 fi
 
-catkin_make -DCMAKE_BUILD_TYPE=Release clean -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs
+catkin_make clean
 source devel/setup.bash
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
-catkin_make -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -DCMAKE_BUILD_TYPE=Release $@
-
+catkin_make -DCMAKE_BUILD_TYPE=Release $@
