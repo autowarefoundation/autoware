@@ -332,6 +332,16 @@ buttons:
         flags : [ nl ]
       publish_camera_info :
         flags : [ nl ]
+      target_frame :
+        flags : [ nl ]
+      camera_frame :
+        flags : [ nl ]
+      image_topic_src :
+        flags : [ nl ]
+      camera_info_topic :
+        flags : [ nl ]
+      projection_matrix_topic :
+        flags : [ nl ]
 
   points_image :
     desc  : points_image desc sample
@@ -807,20 +817,28 @@ params :
         only_enable  : True
         tail         : True
     - name      : target_frame
-      desc      : Registers TF to this coordinate frame (default velodyne)
+      desc      : Registers TF to this LiDAR coordinate frame (default velodyne)
       label     : target_frame
       kind      : str
       v         : 'velodyne'
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : camera_frame
+      desc      : Sets camera frame in the header to this value  (default camera)
+      label     : camera_frame
+      kind      : str
+      v         : 'camera'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : file
-      desc      : file desc sample
+      desc      : Path to Autoware calibration file
       kind      : path
       v         : ''
       cmd_param :
-        delim     : 'file:='
-        must      : True
+        dash        : ''
+        delim       : ':='
     - name      : register_lidar2camera_tf
       desc      : register_lidar2camera_tf desc sample
       label     : register TF between lidar and camera
@@ -830,7 +848,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_extrinsic_mat
-      desc      : publish_extrinsic_mat desc sample
+      desc      : Publish autoware_msgs/projection_matrix message?
       label     : publish extrinsic matrix
       kind      : checkbox
       v         : True
@@ -838,21 +856,39 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_camera_info
-      desc      : publish_camera_info desc sample
+      desc      : Publish sensor_msgs/CameraInfo message?
       label     : publish camera_info
       kind      : checkbox
-      v         : False
+      v         : True
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : solo_camera
-      kind      : hide
-      v         : True
+    - name      : camera_info_topic
+      desc      : Name of the topic where to publish the Camera Intrinsics. Default /camera_info
+      label     : camera_info_topic name
+      kind      : str
+      v         : '/camera_info'
       cmd_param :
-        dash         : ''
-        delim        : ':='
-        only_disable : True
-        tail         : True
+        dash      : ''
+        delim     : ':='
+    - name      : image_topic_src
+      desc      : Adds the Camera info to this image topic. Default /image_raw
+      label     : image topic source
+      kind  : topic
+      topic_type : sensor_msgs/Image
+      v         : '/image_raw'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : projection_matrix_topic
+      desc      : Name of the topic where to publish the Camera Extrinsics. Default /projection_matrix
+      label     : projection_matrix_topic
+      kind      : str
+      v         : '/projection_matrix'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
 
 #  - name  : camera_extrinsicMat_Publisher
 #    vars  :
