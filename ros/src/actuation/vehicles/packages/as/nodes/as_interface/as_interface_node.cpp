@@ -28,57 +28,17 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef PACMOD_INTERFACE_H
-#define PACMOD_INTERFACE_H
-
-// ROS includes
+// ROS Includes
 #include <ros/ros.h>
-#include <std_msgs/Bool.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <module_comm_msgs/SteerMode.h>
-#include <module_comm_msgs/SpeedMode.h>
-#include <dbw_mkz_msgs/SteeringReport.h>
 
-namespace pacmod
+#include "as_interface.h"
+
+int main(int argc, char** argv)
 {
-class PacmodInterface
-{
-public:
-  PacmodInterface();
-  ~PacmodInterface();
+  ros::init(argc, argv, "as_interface");
+  pacmod::PacmodInterface pacmod_interface;
 
-  void run();
+  pacmod_interface.run();
 
-private:
-  // handle
-  ros::NodeHandle nh_;
-  ros::NodeHandle private_nh_;
-
-  // publisher
-  ros::Publisher steer_mode_pub_;
-  ros::Publisher speed_mode_pub_;
-  ros::Publisher current_twist_pub_;
-
-  // subscriber
-  ros::Subscriber twist_cmd_sub_;
-  ros::Subscriber control_mode_sub_;
-  ros::Subscriber speed_sub_;
-
-  // ros param
-  double acceleration_limit_;
-  double deceleration_limit_;
-  double max_curvature_rate_;
-
-  // variables
-  bool control_mode_;
-
-  // callbacks
-  void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromControlMode(const std_msgs::BoolConstPtr &msg);
-  void callbackFromSteeringReport(const dbw_mkz_msgs::SteeringReportConstPtr &msg);
-
-  // initializer
-  void initForROS();
-};
-}  // pacmod
-#endif  // PACMOD_INTERFACE_H
+  return 0;
+}

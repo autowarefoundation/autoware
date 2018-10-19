@@ -1,0 +1,20 @@
+<!-- -->
+<launch>
+
+	<arg name="acceleration_limit" default="3.0"/>
+	<arg name="deceleration_limit" default="6.0"/>
+	<arg name="max_curvature_rate" default="0.75"/>
+	<arg name="use_curvature_cmd" default="false"/>
+	<arg name="use_timer_publisher" default="true"/>
+	<arg name="publish_frequency" default="10.0"/>
+
+	<node pkg="as" type="as_interface" name="as_interface" output="screen">
+		<param name="acceleration_limit" value="$(arg acceleration_limit)" />
+		<param name="deceleration_limit" value="$(arg deceleration_limit)" />
+		<param name="max_curvature_rate" value="$(arg max_curvature_rate)" />
+		<param name="use_curvature_cmd" value="$(arg use_curvature_cmd)" />
+		<param name="use_timer_publisher" value="$(arg use_timer_publisher)" />
+		<param name="publish_frequency" value="$(arg publish_frequency)" />
+	</node>
+
+</launch>
