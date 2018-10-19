@@ -191,7 +191,7 @@ void Cluster2D::classify(const caffe::Blob<float>& classify_pt_blob)
 }
 
 void Cluster2D::getObjects(const float confidence_thresh, const float height_thresh,
-                  const int min_pts_num, autoware_msgs::DetectedObjectArray* objects)
+                  const int min_pts_num, autoware_msgs::DetectedObjectArray* objects, const std::string& frame_id)
 {
   CHECK(valid_indices_in_pc_ != nullptr);
 
@@ -233,6 +233,7 @@ void Cluster2D::getObjects(const float confidence_thresh, const float height_thr
     // out_obj->score_type = SCORE_CNN;
     // out_obj->type = GetObjectType(obs->meta_type);
     // out_obj->type_probs = GetObjectTypeProbs(obs->meta_type_probs);
+    out_obj.header.frame_id = frame_id;
     objects->objects.push_back(out_obj);
   }
 }

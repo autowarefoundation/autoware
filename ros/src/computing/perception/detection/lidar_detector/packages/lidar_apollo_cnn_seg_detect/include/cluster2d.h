@@ -64,7 +64,7 @@ public:
                const caffe::Blob<float>& height_pt_blob);
   void classify(const caffe::Blob<float>& classify_pt_blob);
   void getObjects(const float confidence_thresh, const float height_thresh,
-                    const int min_pts_num, autoware_msgs::DetectedObjectArray* objects);
+                    const int min_pts_num, autoware_msgs::DetectedObjectArray* objects, const std::string& frame_id );
 
 private:
   int rows_;
