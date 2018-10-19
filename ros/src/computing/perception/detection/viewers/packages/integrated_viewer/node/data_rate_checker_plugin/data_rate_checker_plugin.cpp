@@ -226,7 +226,7 @@ namespace integrated_viewer {
 
           timer_ = node_handle_.createWallTimer(ros::WallDuration(1.0),
                                                 &DataRateCheckerPlugin::TimerCallback,
-                                               this);
+                                                this);
         }
       }
       if(config.mapGetInt ("Min rate", &min_frequency)) {

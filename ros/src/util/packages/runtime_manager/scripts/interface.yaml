@@ -31,7 +31,7 @@ checkboxs :
 params :
   - name  : accel
     topic : /accel_cmd
-    msg   : accel_cmd
+    msg   : AccelCmd
     vars  :
     - name  : accel
       label : Accel
@@ -40,7 +40,7 @@ params :
       v     : 0
   - name  : brake
     topic : /brake_cmd
-    msg   : brake_cmd
+    msg   : BrakeCmd
     vars  :
     - name  : brake
       label : Brake
@@ -49,7 +49,7 @@ params :
       v     : 0
   - name  : steer
     topic : /steer_cmd
-    msg   : steer_cmd
+    msg   : SteerCmd
     vars  :
     - name  : steer
       label : Steer

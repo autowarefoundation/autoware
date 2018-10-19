@@ -37,7 +37,13 @@ Launch file available parameters for `imm_ukf_pda_tracker`
 |`gate probability`|*Double*|The probability that the gate contains the true measurement. Default `0.99`.|
 |`detection probability`|*Double*|The probability that a target is detected. Default `0.9`.|
 |`distance thres`|*Double*|The distance threshold for associating bounding box over frames. Default `100`.|
-|`static distance thres`|*Double*|The distance threshold for classifying static/dynamic. Default `3.0`.|
+|`static velocity thres`|*Double*|The velocity threshold for classifying static/dynamic. Default `0.5`.|
+|`velocity_explosion thres`|*Double*|The threshold for stopping kalman filter update. Default `1000`.|
+|`use_sukf`|*bool*|Use standard kalman filter. Default `false`.|
+|`is_debug`|*bool*|Turning on debu mode. Publishing rosmarkers for debug. Default `false`.|
+
+
+
 
 
 
@@ -55,7 +61,7 @@ Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/cloud_cluster`|`autoware_msgs::CloudClusterArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
+|`/detection/lidar_objects`|`autoware_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
 |`/tf`|`tf`|Tracking objects in `world` coordinate.|
 
 Node: visualize_detected_objects
@@ -80,11 +86,6 @@ Node: visualize_detected_objects
 |`/detected_objects/velocity_arrow`|`visualization_msgs::Marker`|Visualize velocity and yaw of the targets.|
 |`/detected_objects/target_id`|`visualization_msgs::Marker`|Visualize targets' id.|
 
-### Node Graph
-
-![node graph](./image/tracking_graph.png "node graph")
-
-※ It is recommended to run eucledian cluster with vectormap if is possible. However, you can use the tracker without vectormap.
 
 ### Video
 

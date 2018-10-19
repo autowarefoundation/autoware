@@ -24,13 +24,13 @@ This file will contain the intrinsic calibration to rectify the image.
 
 ### Parameters available
 
-Parameter| Type| Description|
-----------|-----|--------
-|`SQUARE_SIZE`|*double* |Defines the size of the checkerboard square in meters.|
-|`MxN`|*string* |Defines the layout size of the checkerboard (inner size).|
-|`image`|*string* |Topic name of the camera image source topic in `raw` format (color or b&w).|
-|`min_samples`|*integer* |Defines the minimum number of samples required to allow calibration.|
-
+Flag| Parameter| Type| Description|
+-----|----------|-----|--------
+--square|`SQUARE_SIZE`|*double* |Defines the size of the checkerboard square in meters.|
+--size|`MxN`|*string* |Defines the layout size of the checkerboard (inner size).|
+image:=|`image`|*string* |Topic name of the camera image source topic in `raw` format (color or b&w).|
+--min_samples|`min_samples`|*integer* |Defines the minimum number of samples required to allow calibration.|
+--detection|`engine`|*string*|Chessboard detection engine, default `cv2` or `matlab` |
 For extra details please visit: http://www.ros.org/wiki/camera_calibration
 
 #### Matlab checkerboard detection engine (beta)
