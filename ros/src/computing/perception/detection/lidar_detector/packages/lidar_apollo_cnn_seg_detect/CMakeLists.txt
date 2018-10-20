@@ -14,7 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         )
 
-FIND_PACKAGE(CUDA)
+find_package(CUDA)
+find_package(OpenCV REQUIRED)
 
 catkin_package(
         INCLUDE_DIRS
@@ -27,6 +28,7 @@ catkin_package(
         sensor_msgs
         geometry_msgs
         autoware_msgs
+        jsk_recognition_msgs
 )
 
 IF (CUDA_FOUND)
@@ -37,13 +39,14 @@ IF (CUDA_FOUND)
     endif ()
 ENDIF ()
 ###CAFFE
-set(CAFFE_PATH "$ENV{HOME}/ssd_caffe/distribute")
+set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
 
 if (EXISTS "${CAFFE_PATH}")
 
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
+            ${OpenCV_INCLUDE_DIRS}
             ${CAFFE_PATH}/include
     )
 
@@ -55,6 +58,7 @@ if (EXISTS "${CAFFE_PATH}")
             )
     target_link_libraries(lidar_apollo_cnn_seg_detect
             ${catkin_LIBRARIES}
+            ${OpenCV_LIBRARIES}
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}

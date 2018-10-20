@@ -1,6 +1,7 @@
 #include "cnn_segmentation.h"
 
 #include <chrono>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
 
 CNNSegmentation::CNNSegmentation() : nh_()
 {
@@ -35,6 +36,9 @@ bool CNNSegmentation::init()
 
     private_node_handle.param<double>("range", range_, 60.);
     ROS_INFO("[%s] Pretrained Model File: %.2f", __APP_NAME__, range_);
+
+    private_node_handle.param<double>("score_threshold", score_threshold_, 0.6);
+    ROS_INFO("[%s] score_threshold: %.2f", __APP_NAME__, score_threshold_);
 
     private_node_handle.param<int>("width", width_, 512);
     ROS_INFO("[%s] Pretrained Model File: %d", __APP_NAME__, width_);
@@ -127,11 +131,11 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
                         use_all_grids_for_clustering);
     cluster2d_->filter(*confidence_pt_blob_, *height_pt_blob_);
     cluster2d_->classify(*class_pt_blob_);
-    float confidence_thresh = 0.75;
+    float confidence_thresh = score_threshold_;
     float height_thresh = 0.5;
     int min_pts_num = 3;
     cluster2d_->getObjects(confidence_thresh, height_thresh, min_pts_num,
-                           objects, frame_id_);
+                           objects, message_header_);
     return true;
 }
 
@@ -159,6 +163,9 @@ void CNNSegmentation::run()
 {
     points_sub_ = nh_.subscribe("/points_raw", 1, &CNNSegmentation::pointsCallback, this);
     points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/detection/lidar_detector/points_cluster", 1);
+    markers_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/objects_markers", 1);
+    objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
+    boxes_pub_ = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_detector/objects_boxes", 1);
     init();
 }
 
@@ -173,16 +180,81 @@ void CNNSegmentation::pointsCallback(const sensor_msgs::PointCloud2 &msg)
     auto &indices = valid_idx.indices;
     indices.resize(in_pc_ptr->size());
     std::iota(indices.begin(), indices.end(), 0);
-    frame_id_  = msg.header.frame_id;
+    message_header_  = msg.header;
 
     autoware_msgs::DetectedObjectArray objects;
+    objects.header = message_header_;
     segment(in_pc_ptr, valid_idx, &objects);
-    // std::cout <<"result size " << objects.objects.size() << std::endl;
+
     pubColoredPoints(objects);
+
+    visualization_msgs::MarkerArray detection_markers = ObjectsToMarkers(objects);
+    jsk_recognition_msgs::BoundingBoxArray objects_boxes = ObjectsToBoxes(objects);
+
+    markers_pub_.publish(detection_markers);
+    objects_pub_.publish(objects);
+    boxes_pub_.publish(objects_boxes);
 
     end = std::chrono::system_clock::now();
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "elpased time " << elapsed << std::endl;
+}
+
+jsk_recognition_msgs::BoundingBoxArray
+CNNSegmentation::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
+{
+    jsk_recognition_msgs::BoundingBoxArray final_boxes;
+
+    final_boxes.header = message_header_;
+
+    int i = 0;
+    for(const autoware_msgs::DetectedObject& object : in_objects.objects)
+    {
+        jsk_recognition_msgs::BoundingBox box;
+        box.header = message_header_;
+        box.pose = object.pose;
+        box.dimensions = object.dimensions;
+
+        final_boxes.boxes.push_back(box);
+    }
+    return final_boxes;
+}
+
+visualization_msgs::MarkerArray
+CNNSegmentation::ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects)
+{
+    visualization_msgs::MarkerArray final_markers;
+
+    int i = 0;
+    for(const autoware_msgs::DetectedObject& object : in_objects.objects)
+    {
+        /*if (object.dimensions.x != 0
+            && object.dimensions.y != 0
+            && object.dimensions.z != 0)*/
+        {
+            visualization_msgs::Marker marker;
+            marker.header = in_objects.header;
+            marker.ns = __APP_NAME__;
+            marker.id = i++;
+            marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+            marker.scale.z = 1.0;
+            marker.text = object.label;
+            if (object.id != 0)
+                marker.text += " " + std::to_string(object.id);
+            marker.pose.position = object.pose.position;
+            marker.pose.position.z += 2.5;
+            marker.color.r = 1.0;
+            marker.color.g = 1.0;
+            marker.color.b = 1.0;
+            marker.color.a = 1.0;
+            marker.scale.x = 1.5;
+            marker.scale.y = 1.5;
+            marker.scale.z = 1.5;
+
+            marker.lifetime = ros::Duration(0.2);
+            final_markers.markers.push_back(marker);
+        }
+    }
+    return final_markers;
 }
 
 void CNNSegmentation::pubColoredPoints(const autoware_msgs::DetectedObjectArray &objects_array)
@@ -215,6 +287,6 @@ void CNNSegmentation::pubColoredPoints(const autoware_msgs::DetectedObjectArray 
     }
     sensor_msgs::PointCloud2 output_colored_cloud;
     pcl::toROSMsg(colored_cloud, output_colored_cloud);
-    output_colored_cloud.header.frame_id = frame_id_;
+    output_colored_cloud.header = message_header_;
     points_pub_.publish(output_colored_cloud);
 }

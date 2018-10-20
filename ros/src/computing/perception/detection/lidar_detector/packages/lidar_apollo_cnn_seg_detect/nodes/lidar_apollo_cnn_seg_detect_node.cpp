@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "apollo_lidar_cnn");
+  ros::init(argc, argv, "lidar_apollo_cnn_seg_detect");
   std::cout << "111" << std::endl;
   CNNSegmentation node;
   node.run();

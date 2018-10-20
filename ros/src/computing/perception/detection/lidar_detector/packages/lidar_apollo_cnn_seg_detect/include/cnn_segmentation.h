@@ -9,15 +9,18 @@
 #include <pcl/point_types.h>
 #include <pcl_ros/point_cloud.h>
 
-#include <autoware_msgs/DetectedObject.h>
 #include <autoware_msgs/DetectedObjectArray.h>
+#include <visualization_msgs/MarkerArray.h>
+#include <jsk_recognition_msgs/BoundingBoxArray.h>
+
+#include <std_msgs/Header.h>
 
 #include "cluster2d.h"
 #include "feature_generator.h"
 // #include "pcl_types.h"
 // #include "modules/perception/obstacle/lidar/segmentation/cnnseg/cnn_segmentation.h"
 
-#define __APP_NAME__ "apollo_lidar_cnn"
+#define __APP_NAME__ "lidar_apollo_cnn_seg_detect"
 
 struct CellStat
 {
@@ -40,16 +43,19 @@ public:
 
 private:
 
-    double range_;
+    double range_, score_threshold_;
     int width_;
     int height_;
-    std::string frame_id_;
+    std_msgs::Header message_header_;
 
     // nodehandle
     ros::NodeHandle nh_;
 
     // publisher
     ros::Publisher points_pub_;
+    ros::Publisher markers_pub_;
+    ros::Publisher objects_pub_;
+    ros::Publisher boxes_pub_;
 
     // subscriber
     ros::Subscriber points_sub_;
@@ -88,6 +94,12 @@ private:
     void pointsCallback(const sensor_msgs::PointCloud2 &msg);
 
     void pubColoredPoints(const autoware_msgs::DetectedObjectArray &objects);
+
+    visualization_msgs::MarkerArray
+    ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    jsk_recognition_msgs::BoundingBoxArray
+    ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 
     // void drawDetection(const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr,
     //                    const pcl::PointIndices& valid_idx,
