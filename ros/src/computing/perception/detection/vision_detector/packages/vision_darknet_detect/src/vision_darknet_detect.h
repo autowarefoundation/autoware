@@ -49,7 +49,7 @@
 
 #include <cv_bridge/cv_bridge.h>
 
-#include <autoware_msgs/ConfigSsd.h>
+#include <autoware_config_msgs/ConfigSsd.h>
 #include <autoware_msgs/DetectedObject.h>
 #include <autoware_msgs/DetectedObjectArray.h>
 
