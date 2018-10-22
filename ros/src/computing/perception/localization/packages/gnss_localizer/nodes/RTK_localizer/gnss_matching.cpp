@@ -150,7 +150,7 @@ private:
         geometry_msgs::TwistStamped estimate_twist_msg;
         // Set values for /estimate_twist
         estimate_twist_msg.header.stamp = current_time;
-        estimate_twist_msg.header.frame_id = "/gnss_base_link";
+        estimate_twist_msg.header.frame_id = "/base_link";
         //estimate_twist_msg.twist.linear.x = speed_msg->surface_speed;
         estimate_twist_msg.twist.linear.x = gnss_speed/3.6;//velocity;
         estimate_twist_msg.twist.linear.y = 0.0;

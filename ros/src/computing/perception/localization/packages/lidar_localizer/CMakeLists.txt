@@ -69,18 +69,24 @@ add_executable(ndt_matching nodes/ndt_matching/ndt_matching.cpp)
 target_link_libraries(ndt_matching ${catkin_LIBRARIES})
 add_dependencies(ndt_matching ${catkin_EXPORTED_TARGETS})
 
+add_executable(ndt_matching_gnss_subscribe nodes/ndt_matching/ndt_matching_gnss_subscribe.cpp)
+target_link_libraries(ndt_matching_gnss_subscribe ${catkin_LIBRARIES})
+add_dependencies(ndt_matching_gnss_subscribe ${catkin_EXPORTED_TARGETS})
+
 add_executable(ndt_mapping nodes/ndt_mapping/ndt_mapping.cpp)
 target_link_libraries(ndt_mapping ${catkin_LIBRARIES})
 add_dependencies(ndt_mapping ${catkin_EXPORTED_TARGETS})
 
 if (CUDA_FOUND)
     target_include_directories(ndt_matching PRIVATE ${CUDA_INCLUDE_DIRS})
+    target_include_directories(ndt_matching_gnss_subscribe PRIVATE ${CUDA_INCLUDE_DIRS})
     target_include_directories(ndt_mapping PRIVATE ${CUDA_INCLUDE_DIRS})
 endif ()
 
 
 if (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
     set_target_properties(ndt_matching PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
+    set_target_properties(ndt_matching_gnss_subscribe PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
     set_target_properties(ndt_mapping PROPERTIES COMPILE_DEFINITIONS "USE_PCL_OPENMP")
 endif (NOT (PCL_VERSION VERSION_LESS "1.7.2"))
 

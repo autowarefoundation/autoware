@@ -13,7 +13,7 @@
   <arg name="use_local_transform" default="false" />
   <arg name="sync" default="false" />
 
-  <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" output="log">
+  <node pkg="lidar_localizer" type="ndt_matching_gnss_subscribe" name="ndt_matching_gnss_subscribe" output="log">
     <param name="method_type" value="$(arg method_type)" />
     <param name="use_gnss" value="$(arg use_gnss)" />
     <param name="use_odom" value="$(arg use_odom)" />

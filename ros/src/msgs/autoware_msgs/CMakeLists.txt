@@ -105,6 +105,9 @@ add_message_files(
             ##RTK
             gnss_standard_deviation.msg
             gnss_surface_speed.msg
+
+            ##normalizer
+            ndt_pose_and_RTK_pose.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

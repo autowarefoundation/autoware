@@ -1,0 +1,6 @@
+Header header
+geometry_msgs/PoseStamped ndt_pose
+geometry_msgs/PoseStamped ndt_localizer_pose
+geometry_msgs/PoseStamped RTK_pose
+geometry_msgs/PoseStamped RTK_localizer_pose
+geometry_msgs/TwistStamped ndt_twist

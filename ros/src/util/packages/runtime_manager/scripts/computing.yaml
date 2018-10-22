@@ -77,6 +77,29 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : ndt_matching_gnss_subscribe
+        desc : ndt_matching_gnss_subscribe desc sample
+        cmd  : roslaunch lidar_localizer ndt_matching_gnss_subscribe.launch
+        param: ndt
+        gui  :
+          dialog_height : 550
+          stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
+          x  :
+            user_category : ''
+          yaw:
+            flags : [ nl ]
+          max:
+            user_category : ''
+          layer:
+            flags : [ nl ]
+          method_type:
+            flags : [ nl ]
+          use_odom:
+            flags : [ nl ]
+          imu_topic:
+            flags : [ nl ]
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
         desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
         cmd  : roslaunch lidar_localizer ndt_matching_monitor.launch
@@ -768,6 +791,15 @@ subs :
        - name : waypoint_saver
          desc : waypoint_saver desc sample
          cmd  : roslaunch waypoint_maker waypoint_saver.launch
+         param: waypoint_saver
+         gui  :
+           save_filename :
+             prop  : 1
+           save_velocity :
+             flags : [ nl ]
+       - name : waypoint_saver_RTKplus
+         desc : waypoint_saver_RTKplus desc sample
+         cmd  : roslaunch waypoint_maker waypoint_saver_RTKplus.launch
          param: waypoint_saver
          gui  :
            save_filename :

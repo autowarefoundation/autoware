@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  Copyright (c) 2015, Nagoya University
  *  All rights reserved.
  *
@@ -67,6 +67,11 @@
 
 #include <ndt_cpu/NormalDistributionsTransform.h>
 #include <pcl/registration/ndt.h>
+
+#include <message_filters/subscriber.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <autoware_msgs/ndt_pose_and_RTK_pose.h>
+
 #ifdef CUDA_FOUND
 #include <ndt_gpu/NormalDistributionsTransform.h>
 #endif
@@ -242,6 +247,34 @@ static tf::StampedTransform local_transform;
 static unsigned int points_map_num = 0;
 
 pthread_mutex_t mutex;
+
+typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::PoseStamped, geometry_msgs::PoseStamped> NdtRtkSync;
+static geometry_msgs::PoseStamped RTK_pose_msg, RTK_localizer_pose_msg;
+static ros::Publisher ndt_pose_and_RTK_pose_pub;
+
+static void RTK_gnss_callback(const geometry_msgs::PoseStampedConstPtr& rtk_base_link_pose, const geometry_msgs::PoseStampedConstPtr& rtk_localizer_pose){
+  RTK_pose_msg.header.seq = rtk_base_link_pose->header.seq;
+  RTK_pose_msg.header.stamp = rtk_base_link_pose->header.stamp;
+  RTK_pose_msg.header.frame_id = rtk_base_link_pose->header.frame_id;
+  RTK_pose_msg.pose.position.x = rtk_base_link_pose->pose.position.x;
+  RTK_pose_msg.pose.position.y = rtk_base_link_pose->pose.position.y;
+  RTK_pose_msg.pose.position.z = rtk_base_link_pose->pose.position.z;
+  RTK_pose_msg.pose.orientation.x = rtk_base_link_pose->pose.orientation.x;
+  RTK_pose_msg.pose.orientation.y = rtk_base_link_pose->pose.orientation.y;
+  RTK_pose_msg.pose.orientation.z = rtk_base_link_pose->pose.orientation.z;
+  RTK_pose_msg.pose.orientation.w = rtk_base_link_pose->pose.orientation.w;
+
+  RTK_localizer_pose_msg.header.seq = rtk_localizer_pose->header.seq;
+  RTK_localizer_pose_msg.header.stamp = rtk_localizer_pose->header.stamp;
+  RTK_localizer_pose_msg.header.frame_id = rtk_localizer_pose->header.frame_id;
+  RTK_localizer_pose_msg.pose.position.x = rtk_localizer_pose->pose.position.x;
+  RTK_localizer_pose_msg.pose.position.y = rtk_localizer_pose->pose.position.y;
+  RTK_localizer_pose_msg.pose.position.z = rtk_localizer_pose->pose.position.z;
+  RTK_localizer_pose_msg.pose.orientation.x = rtk_localizer_pose->pose.orientation.x;
+  RTK_localizer_pose_msg.pose.orientation.y = rtk_localizer_pose->pose.orientation.y;
+  RTK_localizer_pose_msg.pose.orientation.z = rtk_localizer_pose->pose.orientation.z;
+  RTK_localizer_pose_msg.pose.orientation.w = rtk_localizer_pose->pose.orientation.w;
+}
 
 static void param_callback(const autoware_msgs::ConfigNdt::ConstPtr& input)
 {
@@ -516,7 +549,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   }
 }
 
-static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+/*static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
   tf::Quaternion gnss_q(input->pose.orientation.x, input->pose.orientation.y, input->pose.orientation.z,
                         input->pose.orientation.w);
@@ -578,7 +611,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
   previous_gnss_pose.pitch = current_gnss_pose.pitch;
   previous_gnss_pose.yaw = current_gnss_pose.yaw;
   previous_gnss_time = current_gnss_time;
-}
+}*/
 
 static void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
@@ -1364,6 +1397,55 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     estimate_twist_pub.publish(estimate_twist_msg);
 
+    autoware_msgs::ndt_pose_and_RTK_pose ndtpose_and_rtkpose;
+    ndtpose_and_rtkpose.header.frame_id = "/map";
+    ndtpose_and_rtkpose.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.ndt_pose.header.frame_id = "/map";
+    ndtpose_and_rtkpose.ndt_pose.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.ndt_pose.pose.position.x = ndt_pose_msg.pose.position.x;
+    ndtpose_and_rtkpose.ndt_pose.pose.position.y = ndt_pose_msg.pose.position.y;
+    ndtpose_and_rtkpose.ndt_pose.pose.position.z = ndt_pose_msg.pose.position.z;
+    ndtpose_and_rtkpose.ndt_pose.pose.orientation.x = ndt_pose_msg.pose.orientation.x;
+    ndtpose_and_rtkpose.ndt_pose.pose.orientation.y = ndt_pose_msg.pose.orientation.y;
+    ndtpose_and_rtkpose.ndt_pose.pose.orientation.z = ndt_pose_msg.pose.orientation.z;
+    ndtpose_and_rtkpose.ndt_pose.pose.orientation.w = ndt_pose_msg.pose.orientation.w;
+    ndtpose_and_rtkpose.ndt_localizer_pose.header.frame_id = "/map";
+    ndtpose_and_rtkpose.ndt_localizer_pose.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.position.x = localizer_pose_msg.pose.position.x;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.position.y = localizer_pose_msg.pose.position.y;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.position.z = localizer_pose_msg.pose.position.z;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.orientation.x = localizer_pose_msg.pose.orientation.x;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.orientation.y = localizer_pose_msg.pose.orientation.y;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.orientation.z = localizer_pose_msg.pose.orientation.z;
+    ndtpose_and_rtkpose.ndt_localizer_pose.pose.orientation.w = localizer_pose_msg.pose.orientation.w;
+    ndtpose_and_rtkpose.ndt_twist.header.frame_id = "/map";
+    ndtpose_and_rtkpose.ndt_twist.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.ndt_twist.twist.linear.x = estimate_twist_msg.twist.linear.x;
+    ndtpose_and_rtkpose.ndt_twist.twist.linear.y = estimate_twist_msg.twist.linear.y;
+    ndtpose_and_rtkpose.ndt_twist.twist.linear.z = estimate_twist_msg.twist.linear.z;
+    ndtpose_and_rtkpose.ndt_twist.twist.angular.x = estimate_twist_msg.twist.angular.x;
+    ndtpose_and_rtkpose.ndt_twist.twist.angular.y = estimate_twist_msg.twist.angular.y;
+    ndtpose_and_rtkpose.ndt_twist.twist.angular.z = estimate_twist_msg.twist.angular.z;
+    ndtpose_and_rtkpose.RTK_pose.header.frame_id = "/map";
+    ndtpose_and_rtkpose.RTK_pose.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.RTK_pose.pose.position.x = RTK_pose_msg.pose.position.x;
+    ndtpose_and_rtkpose.RTK_pose.pose.position.y = RTK_pose_msg.pose.position.y;
+    ndtpose_and_rtkpose.RTK_pose.pose.position.z = RTK_pose_msg.pose.position.z;
+    ndtpose_and_rtkpose.RTK_pose.pose.orientation.x = RTK_pose_msg.pose.orientation.x;
+    ndtpose_and_rtkpose.RTK_pose.pose.orientation.y = RTK_pose_msg.pose.orientation.y;
+    ndtpose_and_rtkpose.RTK_pose.pose.orientation.z = RTK_pose_msg.pose.orientation.z;
+    ndtpose_and_rtkpose.RTK_pose.pose.orientation.w = RTK_pose_msg.pose.orientation.w;
+    ndtpose_and_rtkpose.RTK_localizer_pose.header.frame_id = "/map";
+    ndtpose_and_rtkpose.RTK_localizer_pose.header.stamp = current_scan_time;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.position.x = RTK_localizer_pose_msg.pose.position.x;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.position.y = RTK_localizer_pose_msg.pose.position.y;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.position.z = RTK_localizer_pose_msg.pose.position.z;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.orientation.x = RTK_localizer_pose_msg.pose.orientation.x;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.orientation.y = RTK_localizer_pose_msg.pose.orientation.y;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.orientation.z = RTK_localizer_pose_msg.pose.orientation.z;
+    ndtpose_and_rtkpose.RTK_localizer_pose.pose.orientation.w = RTK_localizer_pose_msg.pose.orientation.w;
+    ndt_pose_and_RTK_pose_pub.publish(ndtpose_and_rtkpose);
+
     geometry_msgs::Vector3Stamped estimate_vel_msg;
     estimate_vel_msg.header.stamp = current_scan_time;
     estimate_vel_msg.vector.x = current_velocity;
@@ -1616,15 +1698,22 @@ int main(int argc, char** argv)
   time_ndt_matching_pub = nh.advertise<std_msgs::Float32>("/time_ndt_matching", 10);
   ndt_stat_pub = nh.advertise<autoware_msgs::ndt_stat>("/ndt_stat", 10);
   ndt_reliability_pub = nh.advertise<std_msgs::Float32>("/ndt_reliability", 10);
+  ndt_pose_and_RTK_pose_pub = nh.advertise<autoware_msgs::ndt_pose_and_RTK_pose>("/ndt_pose_and_RTK_pose", 10);
 
   // Subscribers
   ros::Subscriber param_sub = nh.subscribe("config/ndt", 10, param_callback);
-  ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
+  //ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, gnss_callback);
   //  ros::Subscriber map_sub = nh.subscribe("points_map", 1, map_callback);
   ros::Subscriber initialpose_sub = nh.subscribe("initialpose", 10, initialpose_callback);
   ros::Subscriber points_sub = nh.subscribe("filtered_points", _queue_size, points_callback);
   ros::Subscriber odom_sub = nh.subscribe("/vehicle/odom", _queue_size * 10, odom_callback);
   ros::Subscriber imu_sub = nh.subscribe(_imu_topic.c_str(), _queue_size * 10, imu_callback);
+
+  message_filters::Subscriber<geometry_msgs::PoseStamped> rtk_sub(nh, "/RTK_gnss_pose", 10);
+  message_filters::Subscriber<geometry_msgs::PoseStamped> rtk_localizer_sub(nh, "/gnss_localizer_pose", 10);
+  message_filters::Synchronizer<NdtRtkSync> sync(NdtRtkSync(10), rtk_sub, rtk_localizer_sub);
+  sync.registerCallback(boost::bind(&RTK_gnss_callback, _1, _2));
+  //ros::Subscriber rtk_sub = nh.subscribe("/RTK_gnss_pose", _queue_size * 10, RTK_gnss_callback);
 
   pthread_t thread;
   pthread_create(&thread, NULL, thread_func, NULL);
