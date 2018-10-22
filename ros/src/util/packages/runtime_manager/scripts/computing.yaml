@@ -2204,7 +2204,7 @@ params :
 
   - name  : car_kf
     topic : /config/car_kf
-    msg   : ConfigCarKf
+    msg   : ConfigCarKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample
@@ -2291,7 +2291,7 @@ params :
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
-    msg   : ConfigPedestrianKf
+    msg   : ConfigPedestrianKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample

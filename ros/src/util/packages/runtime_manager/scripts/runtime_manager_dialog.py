@@ -75,8 +75,8 @@ from autoware_config_msgs.msg import ConfigWaypointFollower
 from autoware_config_msgs.msg import ConfigTwistFilter
 from autoware_config_msgs.msg import ConfigVelocitySet
 from autoware_config_msgs.msg import ConfigLatticeVelocitySet
-from autoware_config_msgs.msg import ConfigCarKf
-from autoware_config_msgs.msg import ConfigPedestrianKf
+from autoware_config_msgs.msg import ConfigCarKF
+from autoware_config_msgs.msg import ConfigPedestrianKF
 from autoware_config_msgs.msg import ConfigLaneRule
 from autoware_config_msgs.msg import ConfigLaneSelect
 from autoware_config_msgs.msg import ConfigLaneStop

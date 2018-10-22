@@ -656,7 +656,7 @@ Changelog for package runtime_manager
 * Runtime Manager, add booted_cmd to param.yaml and select dialog at boot
 * Runtime Manager, add proc_wait_thread() for async kill proc
 * Runtime Manager, add quit_select() and reload_computing_yaml()
-* Kf Added
+* KF Added
   Euclidean Cluster improved
 * Fixes
 * Added VectorMap Server support

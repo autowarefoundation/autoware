@@ -15,7 +15,7 @@ add_message_files(
   ConfigApproximateNDTMapping.msg
   ConfigCarDPM.msg
   ConfigCarFusion.msg
-  ConfigCarKf.msg
+  ConfigCarKF.msg
   ConfigCompareMapFilter.msg
   ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
@@ -29,7 +29,7 @@ add_message_files(
   ConfigNDT.msg
   ConfigPedestrianDPM.msg
   ConfigPedestrianFusion.msg
-  ConfigPedestrianKf.msg
+  ConfigPedestrianKF.msg
   ConfigPlannerSelector.msg
   ConfigPoints2Polygon.msg
   ConfigRandomFilter.msg
