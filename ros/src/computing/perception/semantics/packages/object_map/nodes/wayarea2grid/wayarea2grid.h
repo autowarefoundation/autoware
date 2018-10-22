@@ -92,9 +92,9 @@ namespace object_map
 		std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
 		/*!
-		 * Initializes Ros Publisher, Subscribers and sets the configuration parameters
+		 * Initializes ROS Publisher, Subscribers and sets the configuration parameters
 		 */
-		void InitializeRosIo();
+		void InitializeROSIo();
 
 
 	};

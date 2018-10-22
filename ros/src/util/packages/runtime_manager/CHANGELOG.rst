@@ -931,7 +931,7 @@ Changelog for package runtime_manager
 * created ConfigTwistFilter message
   Conflicts:
   ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Ros-parameterize all defined value in points2vscan
+* ROS-parameterize all defined value in points2vscan
   Now we can specify parameters value from launch file
 * Fix package name which has velodyne launch files
 * Runtime Manager Map tab, fix pcd load OK msg at filed

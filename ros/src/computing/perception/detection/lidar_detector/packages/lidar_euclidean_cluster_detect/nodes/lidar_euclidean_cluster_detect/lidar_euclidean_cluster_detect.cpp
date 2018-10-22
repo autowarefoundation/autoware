@@ -843,7 +843,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
       in_out_pictogram_array.pictograms.push_back(pictogram_cluster);
 
       autoware_msgs::CloudCluster cloud_cluster;
-      final_clusters[i]->ToRosMessage(_velodyne_header, cloud_cluster);
+      final_clusters[i]->ToROSMessage(_velodyne_header, cloud_cluster);
       in_out_clusters.clusters.push_back(cloud_cluster);
     }
   }

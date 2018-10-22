@@ -59,12 +59,12 @@ public :
 	}
 };
 
-class RegionTlrMxNetRosNode
+class RegionTlrMxNetROSNode
 {
 public:
-	RegionTlrMxNetRosNode();
+	RegionTlrMxNetROSNode();
 
-	~RegionTlrMxNetRosNode();
+	~RegionTlrMxNetROSNode();
 
 	void RunRecognition();
 
@@ -88,7 +88,7 @@ private:
 	};
 
 
-	void GetRosParam();
+	void GetROSParam();
 
 	void StartSubscribersAndPublishers();
 

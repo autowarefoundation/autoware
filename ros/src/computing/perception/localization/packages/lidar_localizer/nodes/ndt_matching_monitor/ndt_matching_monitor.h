@@ -67,7 +67,7 @@
 
 #include <autoware_msgs/NDTStat.h>
 
-#define __APP_NAME__ "RosNDTMatchingMonitor"
+#define __APP_NAME__ "ROSNDTMatchingMonitor"
 
 #define NDT_THRESHOLD_ITERATION_WARN 10
 #define NDT_THRESHOLD_ITERATION_STOP 32
@@ -75,7 +75,7 @@
 #define NDT_MIN_STABLE_SAMPLES 30
 #define NDT_TIME_TO_FATAL_PREDICTIONS 2.
 
-class RosNDTMatchingMonitor
+class ROSNDTMatchingMonitor
 {
 	enum ndt_status{
 		NDT_NOT_INITIALIZED,
@@ -153,7 +153,7 @@ class RosNDTMatchingMonitor
 	void initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input);
 public:
 	void Run();
-	RosNDTMatchingMonitor();
+	ROSNDTMatchingMonitor();
 };
 
 #endif //PROJECT_NDT_MATCHING_MONITOR_H

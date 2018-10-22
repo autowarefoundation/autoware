@@ -3377,7 +3377,7 @@ params :
     vars  :
     - name : rosbag_file
       desc : path to localization ready rosbag file
-      label: Rosbag Path
+      label: ROSbag Path
       kind : path
       cmd_param:
         dash     : ''

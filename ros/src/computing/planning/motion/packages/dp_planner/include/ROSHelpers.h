@@ -1,5 +1,5 @@
 /*
- * RosHelpers.h
+ * ROSHelpers.h
  *
  *  Created on: Jun 30, 2016
  *      Author: ai-driver
@@ -168,11 +168,11 @@ public:
 	}
 };
 
-class RosHelpers
+class ROSHelpers
 {
 public:
-	RosHelpers();
-	virtual ~RosHelpers();
+	ROSHelpers();
+	virtual ~ROSHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
 				autoware_msgs::Lane & trajectory);

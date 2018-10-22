@@ -12,7 +12,7 @@
 static bool show_superimpose_result = false;
 static const std::string window_name = "superimpose result";
 
-RegionTlrMxNetRosNode::RegionTlrMxNetRosNode() :
+RegionTlrMxNetROSNode::RegionTlrMxNetROSNode() :
 		image_topic_name_("/image_raw"),
 		network_definition_file_name_(""),
 		pretrained_model_file_name_(""),
@@ -30,15 +30,15 @@ RegionTlrMxNetRosNode::RegionTlrMxNetRosNode() :
 }
 
 
-RegionTlrMxNetRosNode::~RegionTlrMxNetRosNode()
+RegionTlrMxNetROSNode::~RegionTlrMxNetROSNode()
 {
 }
 
 
-void RegionTlrMxNetRosNode::RunRecognition()
+void RegionTlrMxNetROSNode::RunRecognition()
 {
 	// Get execution parameters from ROS parameter server
-	GetRosParam();
+	GetROSParam();
 
 	BufferFile json_data(network_definition_file_name_);
 	BufferFile param_data(pretrained_model_file_name_);
@@ -62,7 +62,7 @@ void RegionTlrMxNetRosNode::RunRecognition()
 }
 
 
-void RegionTlrMxNetRosNode::ImageRawCallback(const sensor_msgs::Image &image)
+void RegionTlrMxNetROSNode::ImageRawCallback(const sensor_msgs::Image &image)
 {
 	cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
 	frame_ = cv_image->image.clone();
@@ -71,7 +71,7 @@ void RegionTlrMxNetRosNode::ImageRawCallback(const sensor_msgs::Image &image)
 
 }
 
-void RegionTlrMxNetRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos)
+void RegionTlrMxNetROSNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos)
 {
 	static ros::Time previous_timestamp;
 	// If frame has not been prepared, abort this callback
@@ -114,7 +114,7 @@ void RegionTlrMxNetRosNode::RoiSignalCallback(const autoware_msgs::Signals::Cons
 	previous_timestamp = frame_header_.stamp;
 }
 
-void RegionTlrMxNetRosNode::GetRosParam()
+void RegionTlrMxNetROSNode::GetROSParam()
 {
 	ros::NodeHandle private_node_handle("~");
 
@@ -146,25 +146,25 @@ void RegionTlrMxNetRosNode::GetRosParam()
 		ROS_FATAL("No Pretrained Model File was specified. Terminate program... ");
 		exit(EXIT_FAILURE);
 	}
-} // RegionTlrMxNetRosNode::ProcessRosParam()
+} // RegionTlrMxNetROSNode::ProcessROSParam()
 
 
-void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
+void RegionTlrMxNetROSNode::StartSubscribersAndPublishers()
 {
 	ros::NodeHandle node_handle;
 
 	// Register subscribers
 	image_subscriber = node_handle.subscribe(image_topic_name_,
 	                                         1,
-	                                         &RegionTlrMxNetRosNode::ImageRawCallback,
+	                                         &RegionTlrMxNetROSNode::ImageRawCallback,
 	                                         this);
 	roi_signal_subscriber = node_handle.subscribe("/roi_signal",
 	                                              1,
-	                                              &RegionTlrMxNetRosNode::RoiSignalCallback,
+	                                              &RegionTlrMxNetROSNode::RoiSignalCallback,
 	                                              this);
 	superimpose_sub = node_handle.subscribe("/config/superimpose",
                                           1,
-                                          &RegionTlrMxNetRosNode::SuperimposeCb,
+                                          &RegionTlrMxNetROSNode::SuperimposeCb,
                                           this);
 
 	// Register publishers
@@ -173,7 +173,7 @@ void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
 	marker_publisher = node_handle.advertise<visualization_msgs::MarkerArray>("tlr_result", 1, kAdvertiseInLatch_);
 	superimpose_image_publisher = node_handle.advertise<sensor_msgs::Image>("tlr_superimpose_image", 1);
 
-} // RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
+} // RegionTlrMxNetROSNode::StartSubscribersAndPublishers()
 
 /*!
  * DetermineState works as a latch to reduce the chance of sudden changes in the state of the traffic light, caused by
@@ -182,7 +182,7 @@ void RegionTlrMxNetRosNode::StartSubscribersAndPublishers()
  * @param current_state the current state of the traffic light as reported by the classifier.
  * @param in_out_signal_context the object containing the data of the current Traffic Light instance.
  */
-void RegionTlrMxNetRosNode::DetermineState(LightState in_current_state,
+void RegionTlrMxNetROSNode::DetermineState(LightState in_current_state,
                                            Context& in_out_signal_context)
 {
 	//if reported state by classifier is different than the previously stored
@@ -207,10 +207,10 @@ void RegionTlrMxNetRosNode::DetermineState(LightState in_current_state,
 		in_out_signal_context.lightState = in_current_state;
 	}
 
-} // LightState RegionTlrMxNetRosNode::DetermineState()
+} // LightState RegionTlrMxNetROSNode::DetermineState()
 
 
-void RegionTlrMxNetRosNode::PublishTrafficLight(std::vector<Context> contexts)
+void RegionTlrMxNetROSNode::PublishTrafficLight(std::vector<Context> contexts)
 {
 	autoware_msgs::TrafficLight topic;
 	static int32_t previous_state = kTrafficLightUnknown;
@@ -247,10 +247,10 @@ void RegionTlrMxNetRosNode::PublishTrafficLight(std::vector<Context> contexts)
 		signal_state_publisher.publish(topic);
 		previous_state = topic.traffic_light;
 	}
-} // void RegionTlrMxNetRosNode::PublishTrafficLight()
+} // void RegionTlrMxNetROSNode::PublishTrafficLight()
 
 
-void RegionTlrMxNetRosNode::PublishString(std::vector<Context> contexts)
+void RegionTlrMxNetROSNode::PublishString(std::vector<Context> contexts)
 {
 	std_msgs::String topic;
 	static std::string previous_state = kStringUnknown;
@@ -287,10 +287,10 @@ void RegionTlrMxNetRosNode::PublishString(std::vector<Context> contexts)
 		signal_state_string_publisher.publish(topic);
 		previous_state = topic.data;
 	}
-} // void RegionTlrMxNetRosNode::PublishString()
+} // void RegionTlrMxNetROSNode::PublishString()
 
 
-void RegionTlrMxNetRosNode::PublishMarkerArray(std::vector<Context> contexts)
+void RegionTlrMxNetROSNode::PublishMarkerArray(std::vector<Context> contexts)
 {
 	// Define color constants
 	std_msgs::ColorRGBA color_black;
@@ -419,10 +419,10 @@ void RegionTlrMxNetRosNode::PublishMarkerArray(std::vector<Context> contexts)
 		marker_publisher.publish(signal_set);
 	}
 
-} // void RegionTlrMxNetRosNode::PublishMarkerArray()
+} // void RegionTlrMxNetROSNode::PublishMarkerArray()
 
 
-void RegionTlrMxNetRosNode::PublishImage(std::vector<Context> contexts)
+void RegionTlrMxNetROSNode::PublishImage(std::vector<Context> contexts)
 {
 	// Copy the frame image for output
 	cv::Mat result_image = frame_.clone();
@@ -484,9 +484,9 @@ void RegionTlrMxNetRosNode::PublishImage(std::vector<Context> contexts)
 	converter.image = result_image;
 	superimpose_image_publisher.publish(converter.toImageMsg());
 
-} // void RegionTlrMxNetRosNode::PublishImage()
+} // void RegionTlrMxNetROSNode::PublishImage()
 
-void RegionTlrMxNetRosNode::SuperimposeCb(const std_msgs::Bool::ConstPtr &config_msg)
+void RegionTlrMxNetROSNode::SuperimposeCb(const std_msgs::Bool::ConstPtr &config_msg)
 {
 	show_superimpose_result = config_msg->data;
 
@@ -505,15 +505,15 @@ void RegionTlrMxNetRosNode::SuperimposeCb(const std_msgs::Bool::ConstPtr &config
 		}
 	}
 
-} // void RegionTlrMxNetRosNode::SuperimposeCb()
+} // void RegionTlrMxNetROSNode::SuperimposeCb()
 
 int main(int argc, char *argv[])
 {
 	// Initialize ros node
 	ros::init(argc, argv, "region_tlr_mxnet");
 
-	// Create RegionTlrRosNode class object and do initialization
-	RegionTlrMxNetRosNode region_tlr_mxnet_ros_node;
+	// Create RegionTlrROSNode class object and do initialization
+	RegionTlrMxNetROSNode region_tlr_mxnet_ros_node;
 
 	// Start recognition process
 	region_tlr_mxnet_ros_node.RunRecognition();

@@ -49,7 +49,7 @@
 
 #include "vision_ssd_detect.h"
 
-class RosSSDApp
+class ROSSSDApp
 {
 	ros::Subscriber subscriber_image_raw_;
 	ros::Subscriber subscriber_ssd_config_;
@@ -210,24 +210,24 @@ public:
         publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSSDApp::image_callback, this);
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &ROSSSDApp::image_callback, this);
 
 		std::string config_topic("/config");
 		config_topic += "/ssd";
-		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSSDApp::config_cb, this);
+		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &ROSSSDApp::config_cb, this);
 
 		ros::spin();
 		ROS_INFO("END SSD");
 
 	}
 
-	~RosSSDApp()
+	~ROSSSDApp()
 	{
 		if (NULL != ssd_detector_)
 			delete ssd_detector_;
 	}
 
-	RosSSDApp()
+	ROSSSDApp()
 	{
 		ssd_detector_ 	= NULL;
 		score_threshold_= 0.5;
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "ssd_unc");
 
-	RosSSDApp app;
+	ROSSSDApp app;
 
 	app.Run();
 

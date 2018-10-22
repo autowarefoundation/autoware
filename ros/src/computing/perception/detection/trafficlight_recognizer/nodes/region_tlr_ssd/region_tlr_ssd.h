@@ -13,10 +13,10 @@
 #include "autoware_msgs/Signals.h"
 #include "traffic_light_recognizer.h"
 
-class RegionTlrSSDRosNode {
+class RegionTlrSSDROSNode {
  public:
-  RegionTlrSSDRosNode();
-  ~RegionTlrSSDRosNode();
+  RegionTlrSSDROSNode();
+  ~RegionTlrSSDROSNode();
 
   void RunRecognition();
   void ImageRawCallback(const sensor_msgs::Image &image);
@@ -38,7 +38,7 @@ class RegionTlrSSDRosNode {
   };
 
 
-  void GetRosParam();
+  void GetROSParam();
   void StartSubscribersAndPublishers();
   LightState DetermineState(LightState previous_state, LightState current_state, int* state_judge_count);
   void PublishTrafficLight(std::vector<Context> contexts);

@@ -156,7 +156,7 @@ private:
 
   void removeUnnecessaryTarget();
 
-  void pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input);
+  void pubDebugROSMarker(const autoware_msgs::DetectedObjectArray& input);
 
   void dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects);
 

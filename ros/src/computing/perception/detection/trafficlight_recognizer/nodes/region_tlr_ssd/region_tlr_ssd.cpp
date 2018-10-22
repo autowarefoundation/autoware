@@ -10,9 +10,9 @@
 #include "Context.h"
 
 // ========================================
-// Constructor of RegionTlrSSDRosNode class
+// Constructor of RegionTlrSSDROSNode class
 // ========================================
-RegionTlrSSDRosNode::RegionTlrSSDRosNode():
+RegionTlrSSDROSNode::RegionTlrSSDROSNode():
   image_topic_name_("/image_raw"),
   network_definition_file_name_(""),
   pretrained_model_file_name_(""),
@@ -26,22 +26,22 @@ RegionTlrSSDRosNode::RegionTlrSSDRosNode():
   kStringGreen("green signal"),
   kStringUnknown("") {
 
-} // RegionTlrSSDRosNode::RegionTlrSSDRosNode()
+} // RegionTlrSSDROSNode::RegionTlrSSDROSNode()
 
 
 // ========================================
-// Destructor of RegionTlrSSDRosNode class
+// Destructor of RegionTlrSSDROSNode class
 // ========================================
-RegionTlrSSDRosNode::~RegionTlrSSDRosNode() {
-} // RegionTlrSSDRosNode::~RegionTlrSSDRosNode()
+RegionTlrSSDROSNode::~RegionTlrSSDROSNode() {
+} // RegionTlrSSDROSNode::~RegionTlrSSDROSNode()
 
 
 // =========================
 // Start recognition process
 // =========================
-void RegionTlrSSDRosNode::RunRecognition() {
+void RegionTlrSSDROSNode::RunRecognition() {
   // Get execution parameters from ROS parameter server
-  GetRosParam();
+  GetROSParam();
 
   // Initialize recognizer
   recognizer.Init(network_definition_file_name_,
@@ -52,13 +52,13 @@ void RegionTlrSSDRosNode::RunRecognition() {
   // Start subscribing and publishing
   StartSubscribersAndPublishers();
   ros::spin();
-} // RegionTlrSSDRosNode::RunRecognition()
+} // RegionTlrSSDROSNode::RunRecognition()
 
 
 // ==================================
 // Callback function to acquire image
 // ==================================
-void RegionTlrSSDRosNode::ImageRawCallback(const sensor_msgs::Image &image) {
+void RegionTlrSSDROSNode::ImageRawCallback(const sensor_msgs::Image &image) {
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
   frame_ = cv_image->image.clone();
 
@@ -70,7 +70,7 @@ void RegionTlrSSDRosNode::ImageRawCallback(const sensor_msgs::Image &image) {
 // ==========================================
 // Callback function to acquire extracted_pos
 // ==========================================
-void RegionTlrSSDRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
+void RegionTlrSSDROSNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
   static ros::Time previous_timestamp;
   // If frame has not been prepared, abort this callback
   if (frame_.empty() ||
@@ -120,7 +120,7 @@ void RegionTlrSSDRosNode::RoiSignalCallback(const autoware_msgs::Signals::ConstP
 // =======================================
 // Get parameter from ROS parameter server
 // =======================================
-void RegionTlrSSDRosNode::GetRosParam() {
+void RegionTlrSSDROSNode::GetROSParam() {
   ros::NodeHandle private_node_handle("~");
 
   private_node_handle.param<std::string>("image_raw_topic", image_topic_name_, "/image_raw");
@@ -140,23 +140,23 @@ void RegionTlrSSDRosNode::GetRosParam() {
     ROS_FATAL("No Pretrained Model File was specified. Terminate program... ");
     exit(EXIT_FAILURE);
   }
-} // RegionTlrSSDRosNode::ProcessRosParam()
+} // RegionTlrSSDROSNode::ProcessROSParam()
 
 
 // ============================================================
 // Register subscriber and publisher of this node in ROS Master
 // ============================================================
-void RegionTlrSSDRosNode::StartSubscribersAndPublishers() {
+void RegionTlrSSDROSNode::StartSubscribersAndPublishers() {
   ros::NodeHandle node_handle;
   
   // Register subscribers
   image_subscriber      = node_handle.subscribe(image_topic_name_,
                                                 1,
-                                                &RegionTlrSSDRosNode::ImageRawCallback,
+                                                &RegionTlrSSDROSNode::ImageRawCallback,
                                                 this);
   roi_signal_subscriber = node_handle.subscribe("/roi_signal",
                                                 1,
-                                                &RegionTlrSSDRosNode::RoiSignalCallback,
+                                                &RegionTlrSSDROSNode::RoiSignalCallback,
                                                 this);
 
   // Register publishers
@@ -165,13 +165,13 @@ void RegionTlrSSDRosNode::StartSubscribersAndPublishers() {
   marker_publisher              = node_handle.advertise<visualization_msgs::MarkerArray>("tlr_result", 1, kAdvertiseInLatch_);
   superimpose_image_publisher   = node_handle.advertise<sensor_msgs::Image>("tlr_superimpose_image", 1);
 
-} // RegionTlrSSDRosNode::StartSubscribersAndPublishers()
+} // RegionTlrSSDROSNode::StartSubscribersAndPublishers()
 
 
 // ===============================================================================
 // Determine the final recognition result by comparing previous recognition result
 // ===============================================================================
-LightState RegionTlrSSDRosNode::DetermineState(LightState previous_state,
+LightState RegionTlrSSDROSNode::DetermineState(LightState previous_state,
                                                LightState current_state,
                                                int* state_judge_count) {
   // Get a candidate which considering state transition of traffic light
@@ -188,13 +188,13 @@ LightState RegionTlrSSDRosNode::DetermineState(LightState previous_state,
     return previous_state;
   }
 
-} // LightState RegionTlrSSDRosNode::DetermineState()
+} // LightState RegionTlrSSDROSNode::DetermineState()
 
 
 // =================================================================
 // Publish recognition result as autoware_msgs::TrafficLight type
 // =================================================================
-void RegionTlrSSDRosNode::PublishTrafficLight(std::vector<Context> contexts) {
+void RegionTlrSSDROSNode::PublishTrafficLight(std::vector<Context> contexts) {
   autoware_msgs::TrafficLight topic;
   static int32_t previous_state = kTrafficLightUnknown;
   topic.traffic_light = kTrafficLightUnknown;
@@ -226,13 +226,13 @@ void RegionTlrSSDRosNode::PublishTrafficLight(std::vector<Context> contexts) {
     signal_state_publisher.publish(topic);
     previous_state = topic.traffic_light;
   }
-} // void RegionTlrSSDRosNode::PublishTrafficLight()
+} // void RegionTlrSSDROSNode::PublishTrafficLight()
 
 
 // =================================================================
 // Publish recognition result as std_msgs::String
 // =================================================================
-void RegionTlrSSDRosNode::PublishString(std::vector<Context> contexts) {
+void RegionTlrSSDROSNode::PublishString(std::vector<Context> contexts) {
   std_msgs::String topic;
   static std::string previous_state = kStringUnknown;
   topic.data = kStringUnknown;
@@ -264,13 +264,13 @@ void RegionTlrSSDRosNode::PublishString(std::vector<Context> contexts) {
     signal_state_string_publisher.publish(topic);
     previous_state = topic.data;
   }
-} // void RegionTlrSSDRosNode::PublishString()
+} // void RegionTlrSSDROSNode::PublishString()
 
 
 // =================================================================
 // Publish recognition result as visualization_msgs::MarkerArray
 // =================================================================
-void RegionTlrSSDRosNode::PublishMarkerArray(std::vector<Context> contexts) {
+void RegionTlrSSDROSNode::PublishMarkerArray(std::vector<Context> contexts) {
   // Define color constants
   std_msgs::ColorRGBA color_black;
   color_black.r = 0.0f;
@@ -396,13 +396,13 @@ void RegionTlrSSDRosNode::PublishMarkerArray(std::vector<Context> contexts) {
     marker_publisher.publish(signal_set);
   }
 
-} // void RegionTlrSSDRosNode::PublishMarkerArray()
+} // void RegionTlrSSDROSNode::PublishMarkerArray()
 
 
 // ================================================================
 // Publish superimpose and recognition result as sensor_msgs::Image
 // ================================================================
-void RegionTlrSSDRosNode::PublishImage(std::vector<Context> contexts) {
+void RegionTlrSSDROSNode::PublishImage(std::vector<Context> contexts) {
   // Copy the frame image for output
   cv::Mat result_image = frame_.clone();
 
@@ -461,7 +461,7 @@ void RegionTlrSSDRosNode::PublishImage(std::vector<Context> contexts) {
   converter.image = result_image;
   superimpose_image_publisher.publish(converter.toImageMsg());
 
-} // void RegionTlrSSDRosNode::PublishImage()
+} // void RegionTlrSSDROSNode::PublishImage()
 
 // ========================
 // Entry point of this node
@@ -470,8 +470,8 @@ int main (int argc, char *argv[]) {
   // Initialize ros node
   ros::init(argc, argv, "region_tlr_ssd");
 
-  // Create RegionTlrRosNode class object and do initialization
-  RegionTlrSSDRosNode region_tlr_ssd_ros_node;
+  // Create RegionTlrROSNode class object and do initialization
+  RegionTlrSSDROSNode region_tlr_ssd_ros_node;
 
   // Start recognition process
   region_tlr_ssd_ros_node.RunRecognition();

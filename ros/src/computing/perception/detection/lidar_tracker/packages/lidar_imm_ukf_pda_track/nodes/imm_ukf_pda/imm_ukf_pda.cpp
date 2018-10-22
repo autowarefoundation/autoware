@@ -659,7 +659,7 @@ void ImmUkfPda::removeUnnecessaryTarget()
   targets_ = temp_targets;
 }
 
-void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input)
+void ImmUkfPda::pubDebugROSMarker(const autoware_msgs::DetectedObjectArray& input)
 {
   visualization_msgs::MarkerArray texts_markers, points_markers;
   visualization_msgs::Marker target_points, meas_points;
@@ -873,7 +873,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // debug, green is for measurement points, red is for estimated points
   if (is_debug_)
   {
-    pubDebugRosMarker(input);
+    pubDebugROSMarker(input);
   }
 
   // making new ukf target for no data association clusters

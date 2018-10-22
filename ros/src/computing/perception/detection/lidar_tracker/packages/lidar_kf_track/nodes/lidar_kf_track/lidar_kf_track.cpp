@@ -130,7 +130,7 @@ void KFLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 				}
 				merged_cluster->SetCloud(summed_cloud_ptr, indices, in_cloud_cluster_array.clusters[track_assignments[i]].header, i,255, 255, 255, "", pose_estimation_);
 
-				merged_cluster->ToRosMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
+				merged_cluster->ToROSMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
 
 				tracks_[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],//*summed_cloud_cluster,
 								true,

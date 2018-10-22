@@ -106,7 +106,7 @@ class MyFrame(wx.Frame):
     self.lbox_.Add(wx.StaticText(self.lpanel_, -1, "  "), flag=wx.ALL, border=2)
     self.labels_ = []
     self.cgpanels_ = []
-    self.pids_ = self.getRosNodes()
+    self.pids_ = self.getROSNodes()
 
     # redraw new format
     if self.view_ == 0:
@@ -313,12 +313,12 @@ class MyFrame(wx.Frame):
       return self.itmcolors_[cpuno % len(self.itmcolors_)]
 
   # Function(MyFrame): Get ROSnode pid
-  def getRosNodes(self):
+  def getROSNodes(self):
     nodes = []
     try:
       nodenames = rosnode.get_node_names(None)
     except Exception as inst:
-      print "ERROR:[getRosNodes-01] ", inst
+      print "ERROR:[getROSNodes-01] ", inst
       return nodes
 
     for nodename in nodenames:

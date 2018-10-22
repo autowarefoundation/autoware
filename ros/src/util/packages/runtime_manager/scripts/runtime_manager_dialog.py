@@ -128,7 +128,7 @@ class MyFrame(rtmgr.MyFrame):
 		# ros
 		#
 		rospy.init_node('runime_manager', anonymous=True)
-		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
+		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.ROSCb)
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
@@ -223,7 +223,7 @@ class MyFrame(rtmgr.MyFrame):
 		#	self.OnProbe(None)
 		#	self.timer.Start(self.probe_interval)
 
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
+		self.dlg_rosbag_record = MyDialogROSbagRecord(self, cmd_dic=self.sensing_cmd)
 		buttons_color_hdr_setup(self.dlg_rosbag_record)
 
 		sense_cmds_dic = dic.get('cmds', {})
@@ -697,7 +697,7 @@ class MyFrame(rtmgr.MyFrame):
 		msg = '{} booted commands menu ?'.format(s)
 		return (enable, msg)
 
-	def RosCb(self, data):
+	def ROSCb(self, data):
 		print('recv topic msg : ' + data.data)
 
 		r = rospy.Rate(10)
@@ -1178,7 +1178,7 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.OnChecked_obj(event.GetEventObject())
 
-	def OnRosbagRecord(self, event):
+	def OnROSbagRecord(self, event):
 		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
@@ -1799,7 +1799,7 @@ class MyFrame(rtmgr.MyFrame):
 		if proc:
 			self.update_proc_cpu(obj)
 
-	def OnRosbagPlay(self, event):
+	def OnROSbagPlay(self, event):
 		obj = event.GetEventObject()
 
 		play = self.button_play_rosbag_play
@@ -2908,10 +2908,10 @@ class MyApp(wx.App):
 		frame_1.Show()
 		return 1
 
-class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
+class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 	def __init__(self, *args, **kwds):
 		self.cmd_dic = kwds.pop('cmd_dic')
-		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
+		rtmgr.MyDialogROSbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
 		self.refresh()
 		self.parent = self.GetParent()
