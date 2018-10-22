@@ -47,6 +47,7 @@ private:
     int width_;
     int height_;
     std_msgs::Header message_header_;
+    std::string topic_src_;
 
     // nodehandle
     ros::NodeHandle nh_;

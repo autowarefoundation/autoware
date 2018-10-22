@@ -34,6 +34,10 @@ bool CNNSegmentation::init()
         return false;
     }
 
+
+    private_node_handle.param<std::string>("points_src", topic_src_, "points_raw");
+    ROS_INFO("points_src: %s", topic_src_.c_str());
+
     private_node_handle.param<double>("range", range_, 60.);
     ROS_INFO("[%s] Pretrained Model File: %.2f", __APP_NAME__, range_);
 
@@ -41,10 +45,10 @@ bool CNNSegmentation::init()
     ROS_INFO("[%s] score_threshold: %.2f", __APP_NAME__, score_threshold_);
 
     private_node_handle.param<int>("width", width_, 512);
-    ROS_INFO("[%s] Pretrained Model File: %d", __APP_NAME__, width_);
+    ROS_INFO("[%s] width: %d", __APP_NAME__, width_);
 
     private_node_handle.param<int>("height", height_, 512);
-    ROS_INFO("[%s] Pretrained Model File: %d", __APP_NAME__, width_);
+    ROS_INFO("[%s] height: %d", __APP_NAME__, height_);
 
 /// Instantiate Caffe net
 #ifndef USE_CAFFE_GPU
@@ -161,12 +165,13 @@ void CNNSegmentation::test_run()
 
 void CNNSegmentation::run()
 {
-    points_sub_ = nh_.subscribe("/points_raw", 1, &CNNSegmentation::pointsCallback, this);
+    init();
+
+    points_sub_ = nh_.subscribe(topic_src_, 1, &CNNSegmentation::pointsCallback, this);
     points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/detection/lidar_detector/points_cluster", 1);
     markers_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_detector/objects_markers", 1);
     objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
     boxes_pub_ = nh_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_detector/objects_boxes", 1);
-    init();
 }
 
 void CNNSegmentation::pointsCallback(const sensor_msgs::PointCloud2 &msg)
