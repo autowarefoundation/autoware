@@ -13,10 +13,10 @@
 #include "autoware_msgs/Signals.h"
 #include "traffic_light_recognizer.h"
 
-class RegionTlrSsdRosNode {
+class RegionTlrSSDRosNode {
  public:
-  RegionTlrSsdRosNode();
-  ~RegionTlrSsdRosNode();
+  RegionTlrSSDRosNode();
+  ~RegionTlrSSDRosNode();
 
   void RunRecognition();
   void ImageRawCallback(const sensor_msgs::Image &image);

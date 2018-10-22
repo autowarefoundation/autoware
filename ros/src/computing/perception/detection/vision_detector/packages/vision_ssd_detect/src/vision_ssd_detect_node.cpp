@@ -32,7 +32,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include "autoware_config_msgs/ConfigSsd.h"
+#include "autoware_config_msgs/ConfigSSD.h"
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
@@ -49,7 +49,7 @@
 
 #include "vision_ssd_detect.h"
 
-class RosSsdApp
+class RosSSDApp
 {
 	ros::Subscriber subscriber_image_raw_;
 	ros::Subscriber subscriber_ssd_config_;
@@ -60,7 +60,7 @@ class RosSsdApp
     std::vector<cv::Scalar> colors_;
 
 	//Caffe based Object Detection ConvNet
-	SsdDetector* ssd_detector_;
+	SSDDetector* ssd_detector_;
 
 	//The minimum score required to filter the detected objects by the ConvNet
 	float score_threshold_;
@@ -130,7 +130,7 @@ class RosSsdApp
 	}
 
 
-	void config_cb(const autoware_config_msgs::ConfigSsd::ConstPtr& param)
+	void config_cb(const autoware_config_msgs::ConfigSSD::ConstPtr& param)
 	{
 		score_threshold_ 	= param->score_threshold;
 	}
@@ -192,7 +192,7 @@ public:
 		}
 
 		//SSD STUFF
-		ssd_detector_ = new SsdDetector(network_definition_file, pretrained_model_file, pixel_mean_, use_gpu_, gpu_device_id_);
+		ssd_detector_ = new SSDDetector(network_definition_file, pretrained_model_file, pixel_mean_, use_gpu_, gpu_device_id_);
 
 		if (NULL == ssd_detector_)
 		{
@@ -210,24 +210,24 @@ public:
         publisher_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSsdApp::image_callback, this);
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosSSDApp::image_callback, this);
 
 		std::string config_topic("/config");
 		config_topic += "/ssd";
-		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSsdApp::config_cb, this);
+		subscriber_ssd_config_ = node_handle_.subscribe(config_topic, 1, &RosSSDApp::config_cb, this);
 
 		ros::spin();
-		ROS_INFO("END Ssd");
+		ROS_INFO("END SSD");
 
 	}
 
-	~RosSsdApp()
+	~RosSSDApp()
 	{
 		if (NULL != ssd_detector_)
 			delete ssd_detector_;
 	}
 
-	RosSsdApp()
+	RosSSDApp()
 	{
 		ssd_detector_ 	= NULL;
 		score_threshold_= 0.5;
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "ssd_unc");
 
-	RosSsdApp app;
+	RosSSDApp app;
 
 	app.Run();
 

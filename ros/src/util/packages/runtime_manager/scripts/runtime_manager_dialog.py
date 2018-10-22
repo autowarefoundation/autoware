@@ -56,7 +56,7 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from autoware_config_msgs.msg import ConfigSsd
+from autoware_config_msgs.msg import ConfigSSD
 from autoware_config_msgs.msg import ConfigCarDpm
 from autoware_config_msgs.msg import ConfigPedestrianDpm
 from autoware_config_msgs.msg import ConfigNdt

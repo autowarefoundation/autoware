@@ -4181,7 +4181,7 @@ params :
 
   - name  : ssd
     topic : /config/ssd
-    msg   : ConfigSsd
+    msg   : ConfigSSD
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
