@@ -117,7 +117,7 @@ Changelog for package runtime_manager
   * * Added Publication of non fused objects
   * Fixed topic names
 * widen app dialog for approximate_ndt_mapping
-* add max_scan_range to ConfigNdtMapping/ConfigApproximateNdtMapping
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
 * Modify Map loading for OpenPlanner, now it reads from Autoware vector map messages, old behavior still works but from launch file only.
   Delete way_planner, dp_planner from UI, but they still accessible from roslaunch.
 * Fix Vector Map parser problem, tested with three different maps

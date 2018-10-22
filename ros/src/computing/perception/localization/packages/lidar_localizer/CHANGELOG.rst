@@ -16,7 +16,7 @@ Changelog for package lidar_localizer
 1.8.0 (2018-08-31)
 ------------------
 * modified to output log
-* add max_scan_range to ConfigNdtMapping/ConfigApproximateNdtMapping
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
 * [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * [bugfix] Static tf broadcaster in ndt_mapping

@@ -12,7 +12,7 @@ add_message_files(
   FILES
 
   ## Runtime Manager ##
-  ConfigApproximateNdtMapping.msg
+  ConfigApproximateNDTMapping.msg
   ConfigCarDpm.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
@@ -24,9 +24,9 @@ add_message_files(
   ConfigLaneSelect.msg
   ConfigLaneStop.msg
   ConfigLatticeVelocitySet.msg
-  ConfigNdtMapping.msg
-  ConfigNdtMappingOutput.msg
-  ConfigNdt.msg
+  ConfigNDTMapping.msg
+  ConfigNDTMappingOutput.msg
+  ConfigNDT.msg
   ConfigPedestrianDpm.msg
   ConfigPedestrianFusion.msg
   ConfigPedestrianKf.msg

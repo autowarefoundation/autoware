@@ -3198,7 +3198,7 @@
             </object>
         </object>
     </object>
-    <object class="MyDialogNdtMapping" name="dialog_5" base="EditDialog">
+    <object class="MyDialogNDTMapping" name="dialog_5" base="EditDialog">
         <size>352, 341</size>
         <title>ndt_mapping</title>
         <style>wxCAPTION</style>

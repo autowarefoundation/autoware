@@ -59,10 +59,10 @@ from decimal import Decimal
 from autoware_config_msgs.msg import ConfigSSD
 from autoware_config_msgs.msg import ConfigCarDpm
 from autoware_config_msgs.msg import ConfigPedestrianDpm
-from autoware_config_msgs.msg import ConfigNdt
-from autoware_config_msgs.msg import ConfigNdtMapping
-from autoware_config_msgs.msg import ConfigApproximateNdtMapping
-from autoware_config_msgs.msg import ConfigNdtMappingOutput
+from autoware_config_msgs.msg import ConfigNDT
+from autoware_config_msgs.msg import ConfigNDTMapping
+from autoware_config_msgs.msg import ConfigApproximateNDTMapping
+from autoware_config_msgs.msg import ConfigNDTMappingOutput
 from autoware_config_msgs.msg import ConfigICP
 from autoware_config_msgs.msg import ConfigVoxelGridFilter
 from autoware_config_msgs.msg import ConfigRingFilter
@@ -2683,13 +2683,13 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
+class MyDialogNDTMapping(rtmgr.MyDialogNDTMapping):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
 		self.pdic_bak = self.pdic.copy()
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
+		rtmgr.MyDialogNDTMapping.__init__(self, *args, **kwds)
 		set_size_gdic(self)
 
 		parent = self.panel_v
@@ -2698,7 +2698,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
-		self.klass_msg = ConfigNdtMappingOutput
+		self.klass_msg = ConfigNDTMappingOutput
 		self.pub = rospy.Publisher('/config/ndt_mapping_output', self.klass_msg, queue_size=10)
 
 	def update_filename(self):
