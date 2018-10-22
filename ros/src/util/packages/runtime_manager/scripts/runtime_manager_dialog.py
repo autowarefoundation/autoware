@@ -57,8 +57,8 @@ import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
 from autoware_config_msgs.msg import ConfigSSD
-from autoware_config_msgs.msg import ConfigCarDpm
-from autoware_config_msgs.msg import ConfigPedestrianDpm
+from autoware_config_msgs.msg import ConfigCarDPM
+from autoware_config_msgs.msg import ConfigPedestrianDPM
 from autoware_config_msgs.msg import ConfigNDT
 from autoware_config_msgs.msg import ConfigNDTMapping
 from autoware_config_msgs.msg import ConfigApproximateNDTMapping
@@ -2563,13 +2563,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnClose(self, event):
 		self.OnCancel(event)
 
-class MyDialogDpm(rtmgr.MyDialogDpm):
+class MyDialogDPM(rtmgr.MyDialogDPM):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.pdic_bak = pdic.copy()
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
-		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		rtmgr.MyDialogDPM.__init__(self, *args, **kwds)
 		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)

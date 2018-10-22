@@ -13,7 +13,7 @@ add_message_files(
 
   ## Runtime Manager ##
   ConfigApproximateNDTMapping.msg
-  ConfigCarDpm.msg
+  ConfigCarDPM.msg
   ConfigCarFusion.msg
   ConfigCarKf.msg
   ConfigCompareMapFilter.msg
@@ -27,7 +27,7 @@ add_message_files(
   ConfigNDTMapping.msg
   ConfigNDTMappingOutput.msg
   ConfigNDT.msg
-  ConfigPedestrianDpm.msg
+  ConfigPedestrianDPM.msg
   ConfigPedestrianFusion.msg
   ConfigPedestrianKf.msg
   ConfigPlannerSelector.msg

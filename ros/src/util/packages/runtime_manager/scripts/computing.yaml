@@ -115,7 +115,7 @@ subs :
           flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
+          open_dialog            : MyDialogDPM
           use_gpu :
             flags  : [ nl ]
           car :
@@ -1081,7 +1081,7 @@ params :
 
   - name  : car_dpm
     topic : /config/car_dpm
-    msg   : ConfigCarDpm
+    msg   : ConfigCarDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -1116,7 +1116,7 @@ params :
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
-    msg   : ConfigPedestrianDpm
+    msg   : ConfigPedestrianDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample

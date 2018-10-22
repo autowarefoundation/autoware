@@ -3329,7 +3329,7 @@
             </object>
         </object>
     </object>
-    <object class="MyDialogDpm" name="dialog_6" base="EditDialog">
+    <object class="MyDialogDPM" name="dialog_6" base="EditDialog">
         <size>470, 350</size>
         <title>dialog_6</title>
         <style>wxDEFAULT_DIALOG_STYLE</style>

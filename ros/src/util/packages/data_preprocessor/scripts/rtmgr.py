@@ -848,9 +848,9 @@ class MyDialogNDTMapping(wx.Dialog):
 
 # end of class MyDialogNDTMapping
 
-class MyDialogDpm(wx.Dialog):
+class MyDialogDPM(wx.Dialog):
 	def __init__(self, *args, **kwds):
-		# begin wxGlade: MyDialogDpm.__init__
+		# begin wxGlade: MyDialogDPM.__init__
 		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
 		wx.Dialog.__init__(self, *args, **kwds)
 		self.panel_v = wx.ScrolledWindow(self, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
@@ -867,14 +867,14 @@ class MyDialogDpm(wx.Dialog):
 		# end wxGlade
 
 	def __set_properties(self):
-		# begin wxGlade: MyDialogDpm.__set_properties
+		# begin wxGlade: MyDialogDPM.__set_properties
 		self.SetTitle(_("dialog_6"))
 		self.SetSize((470, 350))
 		self.panel_v.SetScrollRate(10, 10)
 		# end wxGlade
 
 	def __do_layout(self):
-		# begin wxGlade: MyDialogDpm.__do_layout
+		# begin wxGlade: MyDialogDPM.__do_layout
 		sizer_30 = wx.BoxSizer(wx.VERTICAL)
 		sizer_31 = wx.BoxSizer(wx.HORIZONTAL)
 		sizer_28 = wx.BoxSizer(wx.VERTICAL)
@@ -890,15 +890,15 @@ class MyDialogDpm(wx.Dialog):
 		self.Layout()
 		# end wxGlade
 
-	def OnOk(self, event):  # wxGlade: MyDialogDpm.<event_handler>
+	def OnOk(self, event):  # wxGlade: MyDialogDPM.<event_handler>
 		print "Event handler 'OnOk' not implemented!"
 		event.Skip()
 
-	def OnLink(self, event):  # wxGlade: MyDialogDpm.<event_handler>
+	def OnLink(self, event):  # wxGlade: MyDialogDPM.<event_handler>
 		print "Event handler 'OnLink' not implemented!"
 		event.Skip()
 
-# end of class MyDialogDpm
+# end of class MyDialogDPM
 
 class MyDialogCarPedestrian(wx.Dialog):
 	def __init__(self, *args, **kwds):

@@ -2817,13 +2817,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnClose(self, event):
 		self.OnCancel(event)
 
-class MyDialogDpm(rtmgr.MyDialogDpm):
+class MyDialogDPM(rtmgr.MyDialogDPM):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.pdic_bak = pdic.copy()
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
-		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		rtmgr.MyDialogDPM.__init__(self, *args, **kwds)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 
