@@ -59,12 +59,12 @@ public :
 	}
 };
 
-class RegionTlrMxNetROSNode
+class RegionTLRMxNetROSNode
 {
 public:
-	RegionTlrMxNetROSNode();
+	RegionTLRMxNetROSNode();
 
-	~RegionTlrMxNetROSNode();
+	~RegionTLRMxNetROSNode();
 
 	void RunRecognition();
 
