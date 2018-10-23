@@ -71,7 +71,7 @@ void RegionTLRMxNetROSNode::ImageRawCallback(const sensor_msgs::Image &image)
 
 }
 
-void RegionTLRMxNetROSNode::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos)
+void RegionTLRMxNetROSNode::ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos)
 {
 	static ros::Time previous_timestamp;
 	// If frame has not been prepared, abort this callback
@@ -160,7 +160,7 @@ void RegionTLRMxNetROSNode::StartSubscribersAndPublishers()
 	                                         this);
 	roi_signal_subscriber = node_handle.subscribe("/roi_signal",
 	                                              1,
-	                                              &RegionTLRMxNetROSNode::RoiSignalCallback,
+	                                              &RegionTLRMxNetROSNode::ROISignalCallback,
 	                                              this);
 	superimpose_sub = node_handle.subscribe("/config/superimpose",
                                           1,
