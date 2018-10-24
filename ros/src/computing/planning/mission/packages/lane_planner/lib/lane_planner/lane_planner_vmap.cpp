@@ -506,9 +506,9 @@ vector_map::Point create_vector_map_point(const geometry_msgs::Point& gp)
 	return vp;
 }
 
-autoware_msgs::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& vd)
+autoware_msgs::DTLane create_waypoint_follower_dtlane(const vector_map::DTLane& vd)
 {
-	autoware_msgs::dtlane wd;
+	autoware_msgs::DTLane wd;
 	wd.dist = vd.dist;
 	wd.dir = vd.dir;
 	wd.apara = vd.apara;
@@ -521,7 +521,7 @@ autoware_msgs::dtlane create_waypoint_follower_dtlane(const vector_map::DTLane& 
 	return wd;
 }
 
-vector_map::DTLane create_vector_map_dtlane(const autoware_msgs::dtlane& wd)
+vector_map::DTLane create_vector_map_dtlane(const autoware_msgs::DTLane& wd)
 {
 	vector_map::DTLane vd;
 	vd.dist = wd.dist;
@@ -572,10 +572,10 @@ VectorMap create_lane_vmap(const VectorMap& vmap, int lno)
 	return lane_vmap;
 }
 
-VectorMap create_coarse_vmap_from_lane(const autoware_msgs::lane& lane)
+VectorMap create_coarse_vmap_from_lane(const autoware_msgs::Lane& lane)
 {
 	VectorMap coarse_vmap;
-	for (const autoware_msgs::waypoint& w : lane.waypoints)
+	for (const autoware_msgs::Waypoint& w : lane.waypoints)
 		coarse_vmap.points.push_back(create_vector_map_point(w.pose.pose.position));
 
 	return coarse_vmap;

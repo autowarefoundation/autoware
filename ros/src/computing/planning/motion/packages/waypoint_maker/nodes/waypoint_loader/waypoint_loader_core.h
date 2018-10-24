@@ -95,24 +95,24 @@ private:
 
   // initializer
   void initPubSub();
-  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
 
   // functions
-  void configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void configCallback(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
   void outputCommandCallback(const std_msgs::Bool::ConstPtr& output_cmd);
-  void createLaneWaypoint(const std::string& file_path, autoware_msgs::lane* lane);
+  void createLaneWaypoint(const std::string& file_path, autoware_msgs::Lane* lane);
   void createLaneArray(const std::vector<std::string>& paths, autoware_msgs::LaneArray* lane_array);
   void saveLaneArray(const std::vector<std::string>& paths, const autoware_msgs::LaneArray& lane_array);
 
   FileFormat checkFileFormat(const char* filename);
   bool verifyFileConsistency(const char* filename);
-  void loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
-  void parseWaypointForVer1(const std::string& line, autoware_msgs::waypoint* wp);
-  void loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
-  void parseWaypointForVer2(const std::string& line, autoware_msgs::waypoint* wp);
-  void loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::waypoint>* wps);
+  void loadWaypointsForVer1(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
+  void parseWaypointForVer1(const std::string& line, autoware_msgs::Waypoint* wp);
+  void loadWaypointsForVer2(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
+  void parseWaypointForVer2(const std::string& line, autoware_msgs::Waypoint* wp);
+  void loadWaypointsForVer3(const char* filename, std::vector<autoware_msgs::Waypoint>* wps);
   void parseWaypointForVer3(const std::string& line, const std::vector<std::string>& contents,
-                            autoware_msgs::waypoint* wp);
+                            autoware_msgs::Waypoint* wp);
 };
 
 const std::string addFileSuffix(std::string file_path, std::string suffix);

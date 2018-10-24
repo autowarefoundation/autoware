@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         waypoint_follower
         vector_map
         astar_planner
-        autoware_msgs
+        autoware_can_msgs
         )
 
 find_package(Armadillo REQUIRED)
@@ -41,7 +41,7 @@ catkin_package(
         waypoint_follower
         vector_map
         astar_planner
-        autoware_msgs
+        autoware_can_msgs
 )
 
 SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")

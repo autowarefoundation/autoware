@@ -66,8 +66,8 @@
 #include <pcl/registration/ndt.h>
 #endif
 
-#include <autoware_msgs/ConfigApproximateNdtMapping.h>
-#include <autoware_msgs/ConfigNdtMappingOutput.h>
+#include <autoware_config_msgs/ConfigApproximateNdtMapping.h>
+#include <autoware_config_msgs/ConfigNdtMappingOutput.h>
 
 struct pose
 {
@@ -157,7 +157,7 @@ static nav_msgs::Odometry odom;
 static std::ofstream ofs;
 static std::string filename;
 
-static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::ConstPtr& input)
+static void param_callback(const autoware_config_msgs::ConfigApproximateNdtMapping::ConstPtr& input)
 {
   ndt_res = input->resolution;
   step_size = input->step_size;
@@ -181,7 +181,7 @@ static void param_callback(const autoware_msgs::ConfigApproximateNdtMapping::Con
   std::cout << "max_submap_size: " << max_submap_size << std::endl;
 }
 
-static void output_callback(const autoware_msgs::ConfigNdtMappingOutput::ConstPtr& input)
+static void output_callback(const autoware_config_msgs::ConfigNdtMappingOutput::ConstPtr& input)
 {
   double filter_res = input->filter_res;
   std::string filename = input->filename;

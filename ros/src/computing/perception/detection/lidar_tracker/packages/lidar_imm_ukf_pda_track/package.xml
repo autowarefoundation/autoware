@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-    <name>lidar_imm_ukf_pda_track</name>
+    <name>imm_ukf_pda_track</name>
     <version>1.8.0</version>
-    <description>lidar_imm_ukf_pda_track package</description>
+    <description>imm_ukf_pda_track package</description>
 
     <maintainer email="cirpue49@yahoo.co.jp">Kosuke Murakami</maintainer>
     <license>BSD</license>

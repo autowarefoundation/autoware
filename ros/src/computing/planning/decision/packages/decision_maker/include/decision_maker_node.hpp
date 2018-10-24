@@ -4,12 +4,12 @@
 #include <mutex>
 #include <unordered_map>
 
-#include <autoware_msgs/ConfigDecisionMaker.h>
+#include <autoware_config_msgs/ConfigDecisionMaker.h>
 #include <autoware_msgs/CloudClusterArray.h>
 #include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/waypoint.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Waypoint.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
@@ -88,7 +88,7 @@ private:
   jsk_rviz_plugins::OverlayText state_text_msg;
 
   // ROS Messages(Autoware)
-  autoware_msgs::lane current_finalwaypoints_;
+  autoware_msgs::Lane current_finalwaypoints_;
   vector_map_msgs::AreaArray vMap_Areas;
   vector_map_msgs::PointArray vMap_Points;
   vector_map_msgs::LineArray vMap_Lines;
@@ -115,7 +115,7 @@ private:
   std::string TextOffset;
   std::vector<CrossRoadArea> intersects;
   double displacement_from_path_;
-  autoware_msgs::waypoint CurrentStoplineTarget_;
+  autoware_msgs::Waypoint CurrentStoplineTarget_;
 
   bool foundOtherVehicleForIntersectionStop_; // In fact this should be defined as state.
   class DetectionArea
@@ -176,11 +176,11 @@ private:
 
   // judge method
   // in near future, these methods will be deprecate to decision_maker library
-  bool isCrossRoadByVectorMapServer(const autoware_msgs::lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
+  bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane &lane_msg, const geometry_msgs::PoseStamped &pose_msg);
   bool isLocalizationConvergence(double _x, double _y, double _z, double _roll, double _pitch, double _yaw);
   bool handleStateCmd(const uint64_t _state_num);
   // double calcIntersectWayAngle(const CrossRoadArea& area);
-  double calcIntersectWayAngle(const autoware_msgs::lane &laneinArea);
+  double calcIntersectWayAngle(const autoware_msgs::Lane &laneinArea);
 
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea> &_intersects, autoware_msgs::LaneArray &lane_array);
 
@@ -223,15 +223,15 @@ private:
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
   void callbackFromCurrentPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromClosestWaypoint(const std_msgs::Int32 &msg);
-  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::traffic_light const> &event);
+  void callbackFromLightColor(const ros::MessageEvent<autoware_msgs::TrafficLight const> &event);
   void callbackFromLaneChangeFlag(const std_msgs::Int32 &msg);
   void callbackFromPointsRaw(const sensor_msgs::PointCloud2::ConstPtr &msg);
-  void callbackFromFinalWaypoint(const autoware_msgs::lane &msg);
+  void callbackFromFinalWaypoint(const autoware_msgs::Lane &msg);
   void callbackFromLaneWaypoint(const autoware_msgs::LaneArray &msg);
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped &msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped &msg);
   void callbackFromStateCmd(const std_msgs::Int32 &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigDecisionMaker &msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker &msg);
   void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg);
 
   void callbackFromVectorMapArea(const vector_map_msgs::AreaArray &msg);
