@@ -272,6 +272,7 @@ cmds:
       cmd  : roslaunch points_preprocessor ring_ground_filter.launch node_name:=ring_ground_filter
       param: ring_ground_filter
       gui  :
+        dialog_height : 450
         sync :
           func : self.button_synchronization.GetValue()
 
@@ -280,7 +281,7 @@ cmds:
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
       gui  :
-        dialog_height : 400
+        dialog_height : 450
 
     - name : points_concat_filter
       desc : points_concat_filter filter performs merging multiple lidar inputs
@@ -309,7 +310,12 @@ cmds:
       cmd  : roslaunch points_preprocessor compare_map_filter.launch
       param: compare_map_filter
       gui  :
+        dialog_height : 400
         input_map_topic :
+          flags : [ nl ]
+        input_point_topic :
+          flags : [ nl ]
+        output_match_topic :
           flags : [ nl ]
         output_unmatch_topic :
           flags : [ nl ]
@@ -322,7 +328,7 @@ cmds:
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
       gui  :
-        dialog_height : 400
+        dialog_height : 450
 
 buttons:
   calibration_toolkit :
