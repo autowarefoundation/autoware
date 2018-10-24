@@ -1694,7 +1694,7 @@ params :
       desc      : topic_twist_stamped desc sample
       label     : /current_velocity (geometry_msgs/TwistStamped)
       kind      : str
-      v         : /estimate_twist
+      v         : /ndt_estimate_twist
       cmd_param :
          dash    : ''
          delim   : ':='
@@ -1706,11 +1706,11 @@ params :
       cmd_param :
          dash    : ''
          delim   : ':='
-    - name      : tf_base_link
-      desc      : tf_base_link desc sample
-      label     : /base_link (geometry_msgs/TwistStamped)
+    - name      : topic_tf_stamped
+      desc      : topic_tf_stamped desc sample
+      label     : /base_link (tf2_msgs/TFMessage)
       kind      : str
-      v         : /ndt_base_link
+      v         : /tf_ndt
       cmd_param :
          dash    : ''
          delim   : ':='
