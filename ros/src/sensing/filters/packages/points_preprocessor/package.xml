@@ -21,7 +21,10 @@
     <build_depend>roscpp</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
-    <build_depend>tf</build_depend>
+    <build_depend>tf2</build_depend>
+    <build_depend>tf2_ros</build_depend>
+    <build_depend>tf2_sensor_msgs</build_depend>
+    <build_depend>tf2_geometry_msgs</build_depend>
     <build_depend>velodyne_pointcloud</build_depend>
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>rostest</build_depend>
@@ -36,7 +39,10 @@
     <run_depend>roscpp</run_depend>
     <run_depend>sensor_msgs</run_depend>
     <run_depend>std_msgs</run_depend>
-    <run_depend>tf</run_depend>
+    <run_depend>tf2</run_depend>
+    <run_depend>tf2_ros</run_depend>
+    <run_depend>tf2_sensor_msgs</run_depend>
+    <run_depend>tf2_geometry_msgs</run_depend>
     <run_depend>velodyne_pointcloud</run_depend>
     <run_depend>libqt5-core</run_depend>
     <run_depend>yaml-cpp</run_depend>
