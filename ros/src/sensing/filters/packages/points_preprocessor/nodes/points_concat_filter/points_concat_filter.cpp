@@ -34,11 +34,12 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
-#include <pcl_ros/transforms.h>
 #include <ros/ros.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <tf/tf.h>
-#include <tf/transform_listener.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <velodyne_pointcloud/point_types.h>
 #include <yaml-cpp/yaml.h>
 
@@ -61,7 +62,8 @@ private:
   message_filters::Synchronizer<SyncPolicyT> *cloud_synchronizer_;
   ros::Subscriber config_subscriber_;
   ros::Publisher cloud_publisher_;
-  tf::TransformListener tf_listener_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 
   size_t input_topics_size_;
   std::string input_topics_;
@@ -73,7 +75,7 @@ private:
                            const PointCloudMsgT::ConstPtr &msg7, const PointCloudMsgT::ConstPtr &msg8);
 };
 
-PointsConcatFilter::PointsConcatFilter() : node_handle_(), private_node_handle_("~"), tf_listener_()
+PointsConcatFilter::PointsConcatFilter() : node_handle_(), private_node_handle_("~"), tf_listener_(tf_buffer_)
 {
   private_node_handle_.param("input_topics", input_topics_, std::string("[/points_alpha, /points_beta]"));
   private_node_handle_.param("output_frame_id", output_frame_id_, std::string("velodyne"));
@@ -118,22 +120,24 @@ void PointsConcatFilter::pointcloud_callback(const PointCloudMsgT::ConstPtr &msg
   PointCloudT::Ptr cloud_concatenated(new PointCloudT);
 
   // transform points
-  try
+  for (size_t i = 0; i < input_topics_size_; ++i)
   {
-    for (size_t i = 0; i < input_topics_size_; ++i)
+    // Note: If you use kinetic, you can directly receive messages as
+    // PointCloutT.
+    cloud_sources[i] = PointCloudT().makeShared();
+    //pcl::fromROSMsg(*msgs[i], *cloud_sources[i]);
+    geometry_msgs::TransformStamped transform_stamped;
+    try
     {
-      // Note: If you use kinetic, you can directly receive messages as
-      // PointCloutT.
-      cloud_sources[i] = PointCloudT().makeShared();
-      pcl::fromROSMsg(*msgs[i], *cloud_sources[i]);
-      tf_listener_.waitForTransform(output_frame_id_, msgs[i]->header.frame_id, ros::Time(0), ros::Duration(1.0));
-      pcl_ros::transformPointCloud(output_frame_id_, *cloud_sources[i], *cloud_sources[i], tf_listener_);
+      transform_stamped = tf_buffer_.lookupTransform(output_frame_id_, msgs[i]->header.frame_id,ros::Time(0), ros::Duration(1.0));
     }
-  }
-  catch (tf::TransformException &ex)
-  {
-    ROS_ERROR("%s", ex.what());
-    return;
+      catch (tf2::TransformException &ex) {
+      ROS_WARN("%s",ex.what());
+      return;
+    }
+    sensor_msgs::PointCloud2 transformed_cloud;
+    tf2::doTransform(*msgs[i], transformed_cloud, transform_stamped);
+    pcl::fromROSMsg(transformed_cloud, *cloud_sources[i]);
   }
 
   // merge points

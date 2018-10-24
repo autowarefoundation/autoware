@@ -12,6 +12,9 @@ find_package(catkin REQUIRED COMPONENTS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        tf2
+        tf2_ros
+        tf2_sensor_msgs
         )
 
 catkin_package(CATKIN_DEPENDS
@@ -24,6 +27,9 @@ catkin_package(CATKIN_DEPENDS
         velodyne_pointcloud
         autoware_config_msgs
         tf
+        tf2
+        tf2_ros
+        tf2_sensor_msgs
         )
 
 find_package(Qt5Core REQUIRED)
