@@ -47,6 +47,11 @@ target_link_libraries(waypoint_saver ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver
         ${catkin_EXPORTED_TARGETS})
 
+add_executable(waypoint_saver_RTKplus nodes/waypoint_saver/waypoint_saver_RTKplus.cpp)
+target_link_libraries(waypoint_saver_RTKplus ${catkin_LIBRARIES})
+add_dependencies(waypoint_saver_RTKplus
+        ${catkin_EXPORTED_TARGETS})
+
 add_executable(waypoint_clicker nodes/waypoint_clicker/waypoint_clicker.cpp)
 target_link_libraries(waypoint_clicker ${catkin_LIBRARIES})
 
@@ -60,9 +65,13 @@ target_link_libraries(waypoint_velocity_visualizer ${catkin_LIBRARIES} ${Boost_L
 add_dependencies(waypoint_velocity_visualizer
         ${catkin_EXPORTED_TARGETS})
 
+add_executable(map_normalizer nodes/map_normalizer/map_normalizer.cpp)
+target_link_libraries(map_normalizer ${catkin_LIBRARIES})
+
 install(TARGETS
         waypoint_loader
         waypoint_saver
+        waypoint_saver_RTKplus
         waypoint_clicker
         waypoint_marker_publisher
         waypoint_velocity_visualizer

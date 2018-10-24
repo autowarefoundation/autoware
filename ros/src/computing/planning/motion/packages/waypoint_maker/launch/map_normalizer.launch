@@ -1,0 +1,21 @@
+<!-- -->
+<launch>
+    <arg name="load_map_name" default="" />
+    <arg name="load_csv_name" default="" />
+    <arg name="save_map_name" default="/tmp/normalize_map.pcd" />
+    <arg name="save_csv_name" default="/tmp/normalize_path.csv" />
+
+    <arg name="limit_deviation_lat" default="0.5" />
+    <arg name="limit_deviation_lon" default="0.5" />
+    <arg name="limit_deviation_alt" default="0.5" />
+
+    <node pkg="waypoint_maker" type="map_normalizer" name="map_normalizer" output="log">
+        <param name="load_map_name" value="$(arg load_map_name)" />
+        <param name="load_csv_name" value="$(arg load_csv_name)" />
+        <param name="save_map_name" value="$(arg save_map_name)" />
+        <param name="save_csv_name" value="$(arg save_csv_name)" />
+        <param name="limit_deviation_lat" value="$(arg limit_deviation_lat)" />
+        <param name="limit_deviation_lon" value="$(arg limit_deviation_lon)" />
+        <param name="limit_deviation_alt" value="$(arg limit_deviation_alt)" />
+    </node>
+</launch>

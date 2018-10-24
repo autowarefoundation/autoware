@@ -89,7 +89,11 @@ subs :
         probe:
         run  : roslaunch nmea_navsat nmea_navsat.launch
         param: serial
-
+      - name : novatel_oem7
+        desc : novatel_oem7 desc sample
+        probe:
+        run  : roslaunch novatel_oem7 novatel_oem7.launch
+        param: novatel
   - name : IMU
     desc : IMU desc sample
     subs :
@@ -1480,3 +1484,24 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name : novatel
+    vars :
+    - name      : port
+      desc      : port desc sample
+      label     : 'Device name:'
+      kind      : path
+      v         : /dev/ttyUSB0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : baud
+      desc      : baud desc sample
+      label     : 'Baud:'
+      kind      : menu
+      choices   : [ '1200', '2400', '4800', '9600', '19200', '38400', '57600', '115200', '230400' ]
+      choices_type : str
+      v         : '115200'
+      cmd_param :
+        dash      : ''
+        delim     : ':='

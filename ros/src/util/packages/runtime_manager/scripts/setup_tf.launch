@@ -1,9 +1,9 @@
 <launch>
 
-  <arg name="x" default="0.0"/>
-  <arg name="y" default="0.0"/>
-  <arg name="z" default="0.0"/>
-  <arg name="yaw" default="0.0"/>
+  <arg name="x" default="1.08"/>
+  <arg name="y" default="0.011"/>
+  <arg name="z" default="1.81"/>
+  <arg name="yaw" default="-0.025"/>
   <arg name="pitch" default="0.0"/>
   <arg name="roll" default="0.0"/>
   <arg name="frame_id" default="base_link"/>
@@ -12,4 +12,10 @@
 
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_localizer" args="$(arg x) $(arg y) $(arg z) $(arg yaw) $(arg pitch) $(arg roll) $(arg frame_id) $(arg child_frame_id) $(arg period_in_ms)"/>
 
+  <param name="/gx" value="0.58"/>
+  <param name="/gy" value="0.0"/>
+  <param name="/gz" value="1.63"/>
+  <param name="/ax" value="0.0"/>
+  <param name="/ay" value="0.0"/>
+  <param name="/az" value="0.0"/>
 </launch>

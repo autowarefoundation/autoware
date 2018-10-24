@@ -19,6 +19,15 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
+      - name : nmea2tfpose_RTK
+        desc : nmea2tfpose_RTK desc sample
+        cmd  : roslaunch gnss_localizer nmea2tfpose_RTK.launch
+        param: gnss
+        gui  :
+          stat_topic : [ gnss ]
+      - name : gnss(RTK)_localizer
+        desc : gnss(RTK)_localizer desc sample
+        cmd  : roslaunch gnss_localizer gnss_matching.launch
     - name : lidar_localizer
       desc : lidar_localizer desc sample
       subs :
@@ -68,6 +77,29 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : ndt_matching_gnss_subscribe
+        desc : ndt_matching_gnss_subscribe desc sample
+        cmd  : roslaunch lidar_localizer ndt_matching_gnss_subscribe.launch
+        param: ndt
+        gui  :
+          dialog_height : 550
+          stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
+          x  :
+            user_category : ''
+          yaw:
+            flags : [ nl ]
+          max:
+            user_category : ''
+          layer:
+            flags : [ nl ]
+          method_type:
+            flags : [ nl ]
+          use_odom:
+            flags : [ nl ]
+          imu_topic:
+            flags : [ nl ]
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
         desc : Monitors NDT localizer. Halts or resets localization if algorithm fails. Works better with GNSS.
         cmd  : roslaunch lidar_localizer ndt_matching_monitor.launch
@@ -93,6 +125,16 @@ subs :
              flags : [ nl ]
              prop  : 1
            topic_twist_stamped:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+             prop  : 1
+           topic_localizer_stamped:
+             depend : sim_mode
+             depend_bool : 'lambda v : v == 0'
+             flags : [ nl ]
+             prop  : 1
+           tf_base_link:
              depend : sim_mode
              depend_bool : 'lambda v : v == 0'
              flags : [ nl ]
@@ -773,6 +815,15 @@ subs :
              prop  : 1
            save_velocity :
              flags : [ nl ]
+       - name : waypoint_saver_RTKplus
+         desc : waypoint_saver_RTKplus desc sample
+         cmd  : roslaunch waypoint_maker waypoint_saver_RTKplus.launch
+         param: waypoint_saver
+         gui  :
+           save_filename :
+             prop  : 1
+           save_velocity :
+             flags : [ nl ]
        - name : waypoint_clicker
          desc : waypoint_clicker desc sample
          cmd  : rosrun waypoint_maker waypoint_clicker
@@ -781,6 +832,23 @@ subs :
          desc : waypoint_velocity_visualizer desc sample
          cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
          param: waypoint_velocity_visualizer
+       - name : map_normalizer
+         desc : map_normalizer desc sample
+         cmd  : roslaunch waypoint_maker map_normalizer.launch
+         param: map_normalizer
+         gui  :
+           load_map_name :
+             prop  : 1
+           load_csv_name :
+             prop  : 2
+           save_map_name :
+             prop  : 3
+           save_csv_name :
+             prop  : 4
+           limit_deviation_lat:
+             depend : param_flag
+             depend_bool : 'lambda v : v == 0'
+
     - name : waypoint_follower
       desc : waypoint_follower desc sample
       subs :
@@ -1627,6 +1695,22 @@ params :
       label     : /current_velocity (geometry_msgs/TwistStamped)
       kind      : str
       v         : /estimate_twist
+      cmd_param :
+         dash    : ''
+         delim   : ':='
+    - name      : topic_localizer_stamped
+      desc      : topic_localizer_stamped desc sample
+      label     : /localizer_pose (geometry_msgs/TwistStamped)
+      kind      : str
+      v         : /ndt_localizer_pose
+      cmd_param :
+         dash    : ''
+         delim   : ':='
+    - name      : tf_base_link
+      desc      : tf_base_link desc sample
+      label     : /base_link (geometry_msgs/TwistStamped)
+      kind      : str
+      v         : /ndt_base_link
       cmd_param :
          dash    : ''
          delim   : ':='
@@ -5366,3 +5450,73 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name  : map_normalizer
+    vars  :
+    - name      : load_map_filename
+      desc      : load_map_filename desc sample
+      label     : Load_Map_FileName
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        var_name    : load_map_name
+        dash        : ''
+        delim       : ':='
+    - name      : load_csv_filename
+      desc      : load_csv_filename desc sample
+      label     : Load_Csv_FileName
+      kind      : path
+      path_type : multi
+      v         : ''
+      cmd_param :
+        var_name    : load_csv_name
+        dash        : ''
+        delim       : ':='
+    - name      : save_map_filename
+      desc      : save_map_filename desc sample
+      label     : Save_Map_FileName
+      kind      : path
+      path_type : save
+      v         : '/tmp/normalize_map.pcd'
+      cmd_param :
+        var_name    : save_map_name
+        dash        : ''
+        delim       : ':='
+    - name      : save_csv_filename
+      desc      : save_csv_filename desc sample
+      label     : Save_Csv_FileName
+      kind      : path
+      path_type : save
+      v         : '/tmp/normalize_path.csv'
+      cmd_param :
+        var_name    : save_csv_name
+        dash        : ''
+        delim       : ':='
+    - name : limit_deviation_lat
+      desc : limit_deviation_lat each two waypoints
+      label: Limit Deviation Lat
+      min  : 0.0
+      max  : 5.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : limit_deviation_lon
+      desc : limit_deviation_lon each two waypoints
+      label: Limit Deviation Lon
+      min  : 0.0
+      max  : 5.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name : limit_deviation_alt
+      desc : limit_deviation_alt each two waypoints
+      label: Limit Deviation Alt
+      min  : 0.0
+      max  : 5.0
+      v    : 0.01
+      cmd_param:
+        dash     : ''
+        delim    : ':='
