@@ -238,7 +238,7 @@ subs :
         param: lidar_euclidean_cluster_detect_param
         gui  :
           dialog_width  : 600
-          dialog_height : 650
+          dialog_height : 600
           downsample_cloud :
             flags : [nl ]
           clustering_distances:
