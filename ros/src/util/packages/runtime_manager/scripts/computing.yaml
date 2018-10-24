@@ -166,6 +166,8 @@ subs :
         cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
+          dialog_width  : 600
+          dialog_height : 350
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
@@ -251,6 +253,10 @@ subs :
         cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
         param: lidar_fake_perception_param
         gui  :
+          dialog_width  : 600
+          dialog_height : 400
+          real_points_topic :
+            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -295,6 +301,11 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
+        gui  :
+          dialog_width  : 650
+          dialog_height : 450
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : lidar_imm_ukf_pda_track
         desc : lidar_imm_ukf_pda_track desc sample
@@ -534,6 +545,11 @@ subs :
       desc : Generates the occupancy grid indicating the status of the road
       cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
       param: road_occupancy_processor
+      gui  :
+        wayarea_topic_src :
+          flags : [nl ]
+        sync :
+          func : self.button_synchronization.GetValue()
 
 - subs :
   - name : Mission Planning
@@ -604,6 +620,9 @@ subs :
         desc : load common local planning parameters
         cmd  : roslaunch op_local_planner op_common_params.launch
         param: op_common_params
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
       - name : op_trajectory_generator
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
@@ -617,14 +636,14 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
         param: op_trajectory_evaluator
       - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner 
+        desc : Decision making by selecting best behavior for local planner
         cmd  : roslaunch op_local_planner op_behavior_selector.launch
 
     - name : OpenPlanner - Utilities
       desc : Testing UI, Loggers , ..
       subs :
       - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file 
+        desc : Publish transformation from ndt_pose read from rosbag file
         cmd  : roslaunch op_utilities op_pose2tf.launch
         param: op_pose2tf
       - name : op_bag_player
@@ -643,11 +662,12 @@ subs :
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
       - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner 
+        desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
-
-
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
@@ -672,6 +692,8 @@ subs :
         cmd  : roslaunch lattice_planner lattice_velocity_set.launch
         param: lattice_velocity_set
         gui  :
+          dialog_width  : 600
+          dialog_height : 350
           use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
@@ -775,6 +797,8 @@ subs :
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
          param: waypoint_follower
          gui  :
+           dialog_width  : 600
+           dialog_height : 350
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
@@ -1215,19 +1239,10 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLogging
-      desc : Enable Writ csv of internal tracking state 
+      desc : Enable Writ csv of internal tracking state
       label: Enable CSV Logs
       kind : checkbox
       v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : splitter_topic
-      desc : splitter topic
-      label: Advanced Params -----------------------------------------------------------------
-      min  : 1
-      max  : 1
-      v    : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -3071,7 +3086,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : maxAcceleration
-      desc : Maximum acceleration allowed 
+      desc : Maximum acceleration allowed
       label: Acceleration
       min  : 0.01
       max  : 25.0
@@ -3214,7 +3229,7 @@ params :
   - name  : op_motion_predictor
     vars  :
     - name : enableCurbObstacles
-      desc : Enable using curb from map as obstacles 
+      desc : Enable using curb from map as obstacles
       label: Detect curbs from map
       kind : checkbox
       v    : False
@@ -3267,7 +3282,7 @@ params :
   - name  : op_trajectory_evaluator
     vars  :
     - name : enablePrediction
-      desc : treat all obstacles as dynamic or as static 
+      desc : treat all obstacles as dynamic or as static
       label: Enable Prediction
       kind : checkbox
       v    : False
@@ -3389,7 +3404,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : logFolder
-      desc : Folder for simulation data logging 
+      desc : Folder for simulation data logging
       label: Log Folder
       kind : path
       cmd_param:
