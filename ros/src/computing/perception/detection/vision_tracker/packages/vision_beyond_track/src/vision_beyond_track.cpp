@@ -287,6 +287,7 @@ void BeyondTrackerNode::detection_to_objects(const std::vector<beyondtrack::Dete
 
             obj.score = 0.0;
             obj.label = in_objects[i].class_type_;
+            obj.valid = true;
 
             obj.id = in_objects[i].object_id_;
             obj.image_frame = out_message.header.frame_id;

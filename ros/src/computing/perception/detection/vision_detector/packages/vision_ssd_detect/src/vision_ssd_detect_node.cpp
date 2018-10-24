@@ -92,6 +92,8 @@ class RosSsdApp
                 obj.color.b = colors_[in_objects[i].class_type].val[2];
                 obj.color.a = 1.0f;
 
+                obj.valid = true;
+
                 obj.image_frame = out_message.header.frame_id;
                 obj.x = in_objects[i].x;
                 obj.y = in_objects[i].y;
