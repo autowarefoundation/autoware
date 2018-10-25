@@ -43,7 +43,6 @@ build_kinetic:
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
     - git checkout v1.12
-    - cd lcov
     - sudo make install 
     - cd ..
     - sudo rm -r lcov
