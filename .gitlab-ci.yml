@@ -42,7 +42,7 @@ build_kinetic:
   # Install lcov from source as binary installation errors when appending files
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
-    - git checkout v1.12
+    - git checkout v1.13
     - make install 
     - cd ..
     - rm -r lcov
