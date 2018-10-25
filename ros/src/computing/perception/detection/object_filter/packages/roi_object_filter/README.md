@@ -14,7 +14,7 @@ The ROI object filter node uses information from the ADAS map to remove the dete
 1. Object Detection results to filter (`autoware_msgs/DetectedObjectArray`). Published by an object detector.
 
 ### Output Topics
-1. Objects with the `valid` field modified according to the ROI, including those in the list of exceptions (`autoware_msgs/DetectedObjectArray`) on the `/detection/object_filter/retained_objects` topic.
+1. Objects with the `valid` field modified according to the ROI, including those in the list of exceptions (`autoware_msgs/DetectedObjectArray`) on the `/detection/object_filter/objects` topic.
 
 ## Parameters
 
