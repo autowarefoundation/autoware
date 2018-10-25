@@ -28,8 +28,8 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 700
-          dialog_height : 600
+          dialog_width  : 750
+          dialog_height : 650
           incremental_voxel_update:
             depend : method_type
             depend_bool : 'lambda v : v == 1'
@@ -43,8 +43,8 @@ subs :
         param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 700
-          dialog_height : 470
+          dialog_width  : 750
+          dialog_height : 500
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch lidar_localizer ndt_matching.launch
@@ -75,6 +75,8 @@ subs :
       - name : icp_matching
         cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+        gui  :
+          dialog_height : 400
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -146,11 +148,15 @@ subs :
         desc : Darknet Yolo3 Image based detector
         cmd  : roslaunch vision_darknet_detect vision_yolo3_detect.launch
         param: darknet_yolo3
+        gui  :
+          dialog_height : 350
 
       - name : vision_darknet_yolo2
         desc : Darknet Yolo2 Image based detector
         cmd  : roslaunch vision_darknet_detect vision_yolo2_detect.launch
         param: darknet_yolo2
+        gui  :
+          dialog_height : 350
 
 
     - name : vision_tracker
@@ -160,12 +166,17 @@ subs :
         desc : Beyond Pixel based object tracker
         cmd  : roslaunch vision_beyond_track vision_beyond_track.launch
         param: vision_beyond_track_params
+        gui  :
+          camera_info_src :
+            flags  : [ nl ]
 
       - name : vision_klt_track
         desc : vision_klt_track desc sample
         cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
+          dialog_width  : 600
+          dialog_height : 350
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
@@ -226,6 +237,12 @@ subs :
         cmd  : roslaunch lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.launch
         param: lidar_euclidean_cluster_detect_param
         gui  :
+          dialog_width  : 600
+          dialog_height : 600
+          downsample_cloud :
+            flags : [nl ]
+          clustering_distances:
+            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
       - name : lidar_naive_l_shape_detect
@@ -247,6 +264,10 @@ subs :
         cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
         param: lidar_fake_perception_param
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          real_points_topic :
+            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -257,10 +278,22 @@ subs :
         desc : Creates a colored point cloud with the help of the intrinsic and extrinsic parameters
         cmd  : roslaunch pixel_cloud_fusion pixel_cloud_fusion.launch
         param: pixel_cloud_fusion_params
+        gui  :
+          points_src:
+            flags: [nl]
+          image_src:
+            flags: [nl]
       - name : range_vision_fusion
         desc : Combines the 2D and 3D detection results
         cmd  : roslaunch range_vision_fusion range_vision_fusion.launch
         param: range_vision_fusion_params
+        gui  :
+          detected_objects_range:
+            flags: [nl]
+          detected_objects_vision:
+            flags: [nl]
+          camera_info_src:
+            flags: [nl]
 
     - name : lidar_tracker
       desc : lidar_tracker desc sample
@@ -291,6 +324,11 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
+        gui  :
+          dialog_width  : 650
+          dialog_height : 450
+          sync :
+            func : self.button_synchronization.GetValue()
 
       - name : range_fusion
         desc : range_fusion desc sample
@@ -534,6 +572,11 @@ subs :
       desc : Generates the occupancy grid indicating the status of the road
       cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
       param: road_occupancy_processor
+      gui  :
+        wayarea_topic_src :
+          flags : [nl ]
+        sync :
+          func : self.button_synchronization.GetValue()
 
   - name : Prediction
     desc : Prediction desc sample
@@ -618,6 +661,9 @@ subs :
         desc : load common local planning parameters
         cmd  : roslaunch op_local_planner op_common_params.launch
         param: op_common_params
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
       - name : op_trajectory_generator
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
@@ -660,8 +706,9 @@ subs :
         desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
-
-
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
@@ -677,7 +724,7 @@ subs :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
           dialog_width  : 800
-          dialog_height : 400
+          dialog_height : 450
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -686,6 +733,8 @@ subs :
         cmd  : roslaunch lattice_planner lattice_velocity_set.launch
         param: lattice_velocity_set
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
           use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
@@ -695,6 +744,8 @@ subs :
         cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
           velocity:
             depend : param_flag
             depend_bool : 'lambda v : v == 1'
@@ -720,6 +771,8 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
+           dialog_width  : 700
+           dialog_height : 550
            multi_lane_csv :
              prop  : 1
            replanning_mode :
@@ -789,6 +842,8 @@ subs :
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
          param: waypoint_follower
          gui  :
+           dialog_width  : 600
+           dialog_height : 450
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
@@ -830,7 +885,7 @@ subs :
       param: decision_maker
       gui  :
           dialog_width  : 400
-          dialog_height : 600
+          dialog_height : 620
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -1099,7 +1154,8 @@ params :
     - name    : tracker_input_topic
       desc    : input_topic desc sample
       label   : 'input topic'
-      kind    : str
+      kind    : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
@@ -1259,15 +1315,6 @@ params :
       label: Enable CSV Logs
       kind : checkbox
       v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : splitter_topic
-      desc : splitter topic
-      label: Advanced Params -----------------------------------------------------------------
-      min  : 1
-      max  : 1
-      v    : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4750,34 +4797,25 @@ params :
 
   - name  : lidar_euclidean_cluster_detect_param
     vars  :
-    - name    : remove_ground
-      desc    : remove_ground desc sample
-      label   : 'remove ground'
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
       kind    : checkbox
       v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_frame
+      desc    : output_frame desc sample
+      label   : 'output_frame'
+      kind    : str
+      v       : velodyne
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : pose_estimation
       desc    : pose_estimation desc sample
       label   : 'pose_estimation'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : use_diffnormals
-      desc    : use_diffnormals desc sample
-      label   : 'use_diffnormals'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-    - name    : publish_filtered
-      desc    : publish_filtered desc sample
-      label   : 'publish filtered'
       kind    : checkbox
       v       : False
       cmd_param :
@@ -4792,7 +4830,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : points_node
       desc    : Input PointCloud topic, use a ground filtering method from Sensing (ring, ray, comparemap)
       label   : 'input_points_node'
@@ -4802,7 +4839,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
@@ -4934,14 +4970,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : output_frame
-      desc    : output_frame desc sample
-      label   : 'output_frame'
-      kind    : str
-      v       : velodyne
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : cluster_merge_threshold
       desc    : cluster_merge_threshold desc sample
       label   : 'cluster_merge_threshold'
@@ -4958,14 +4986,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-    - name    : use_gpu
-      desc    : use_gpu desc sample
-      label   : 'use_gpu'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : use_multiple_thres
       desc    : use_multiple_thres desc sample
       label   : 'use_multiple_thres'
@@ -4987,6 +5007,30 @@ params :
       label   : 'clustering_distances (no space)'
       kind    : str
       v       : '[0.5,1.1,1.6,2.1,2.6]'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : remove_ground
+      desc    : remove_ground desc sample
+      label   : 'remove ground'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : publish_filtered
+      desc    : publish_filtered desc sample
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
       cmd_param :
         dash        : ''
         delim       : ':='

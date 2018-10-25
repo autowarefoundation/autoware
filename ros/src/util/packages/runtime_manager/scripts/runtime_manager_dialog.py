@@ -2360,7 +2360,7 @@ class VarPanel(wx.Panel):
 		if self.kind == 'topic':
 			topic_type = self.var.get('topic_type')
 			topics = self._get_topics_by_type(topic_type)
-			self.obj = wx.ComboBox(self, id=wx.ID_ANY, value=v, choices=topics, style=wx.CB_DROPDOWN)
+			self.obj = wx.ComboBox(self, id=wx.ID_ANY, value=v, choices=topics, style=wx.CB_DROPDOWN, size=(130,-1))
 			self.lb = wx.StaticText(self, wx.ID_ANY, label)
 			flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
 			sizer_wrap((self.lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
@@ -2379,7 +2379,7 @@ class VarPanel(wx.Panel):
 
 		style = wx.TE_PROCESS_ENTER + wx_flag_get( self.var.get('str_flags', []) )
 
-		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style)
+		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style, size=(130,-1))
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind in ('num', None):

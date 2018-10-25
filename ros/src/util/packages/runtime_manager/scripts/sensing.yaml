@@ -68,6 +68,7 @@ subs :
         run  : do_shell_exec "$(rospack find runtime_manager)/scripts/avt_vimba.sh"
         param: avt_params
         gui  :
+          dialog_height : 350
           flags: [ SIGTERM, kill_children ]
 
   - name : GNSS
@@ -194,6 +195,9 @@ subs :
         desc : urg_node supports SCIP 2.2 or earlier compliant laser range-finders.
         run  : roslaunch hokuyo top_urg.launch
         param: hokuyo_urg
+        gui :
+          frame_id :
+            flags : [nl ]
 
       - name : Hokuyo 3D-URG
         desc : Hokuyo 3D-URG desc sample
@@ -268,6 +272,7 @@ cmds:
       cmd  : roslaunch points_preprocessor ring_ground_filter.launch node_name:=ring_ground_filter
       param: ring_ground_filter
       gui  :
+        dialog_height : 450
         sync :
           func : self.button_synchronization.GetValue()
 
@@ -275,26 +280,42 @@ cmds:
       desc : ray_ground_filter performs ground filtering using a radial-concentric based approach
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
+      gui  :
+        dialog_height : 450
 
     - name : points_concat_filter
       desc : points_concat_filter filter performs merging multiple lidar inputs
       cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
       param: points_concat_filter
       gui  :
-          dialog_width  : 600
-          dialog_height : 100
+        dialog_width : 300
+        input_topics :
+          flags : [nl ]
+        output_topic :
+          flags : [nl ]
 
     - name : cloud_transformer
       desc : Transforms cloud points' coordinates to the specified target frame
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
+      gui  :
+        dialog_width : 300
+        input_point_topic :
+          flags : [nl ]
+        target_frame :
+          flags : [nl ]
 
     - name : compare_map_filter
       desc : compare_map_filter
       cmd  : roslaunch points_preprocessor compare_map_filter.launch
       param: compare_map_filter
       gui  :
+        dialog_height : 400
         input_map_topic :
+          flags : [ nl ]
+        input_point_topic :
+          flags : [ nl ]
+        output_match_topic :
           flags : [ nl ]
         output_unmatch_topic :
           flags : [ nl ]
@@ -306,6 +327,8 @@ cmds:
       desc : Performs extrinsic calibration between two point clouds
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
+      gui  :
+        dialog_height : 450
 
 buttons:
   calibration_toolkit :
