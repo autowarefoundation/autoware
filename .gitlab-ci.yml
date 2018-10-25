@@ -43,9 +43,9 @@ build_kinetic:
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
     - git checkout v1.12
-    - sudo make install 
+    - make install 
     - cd ..
-    - sudo rm -r lcov
+    - rm -r lcov
     - catkin_make clean
     #- catkin_make -j2
     - catkin_make -j2 --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
