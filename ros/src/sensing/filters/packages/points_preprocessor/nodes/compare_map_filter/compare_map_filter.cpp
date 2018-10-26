@@ -30,19 +30,21 @@
 
 #include <ros/ros.h>
 
+#include <tf/tf.h>
+
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/transforms.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
 #include <autoware_config_msgs/ConfigCompareMapFilter.h>
 
 #include <tf2/transform_datatypes.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 class CompareMapFilter
 {
@@ -61,6 +63,7 @@ private:
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;
+  //tf::TransformListener* tf_listener_;
 
   pcl::KdTreeFLANN<pcl::PointXYZI> tree_;
 
@@ -76,12 +79,6 @@ private:
   void searchMatchingCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr match_cloud_ptr,
                            pcl::PointCloud<pcl::PointXYZI>::Ptr unmatch_cloud_ptr);
-  void transformAsMatrix(const geometry_msgs::TransformStamped &tf,
-                        Eigen::Matrix4f &out_mat);
-  void transformXYZICloud(
-      const pcl::PointCloud<pcl::PointXYZI> &in_cloud,
-      pcl::PointCloud<pcl::PointXYZI> &out_cloud,
-      const geometry_msgs::TransformStamped &in_tf_stamped_transform);
 };
 
 CompareMapFilter::CompareMapFilter()
@@ -104,95 +101,6 @@ CompareMapFilter::CompareMapFilter()
   unmatch_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_no_ground", 10);
 }
 
-void CompareMapFilter::transformAsMatrix(const geometry_msgs::TransformStamped &tf,
-                        Eigen::Matrix4f &out_mat) {
-  double mv[12];
-  tf2::Stamped<tf2::Transform> bt;
-  tf2::fromMsg(tf, bt);
-  bt.getBasis().getOpenGLSubMatrix(mv);
-  tf2::Vector3 origin = bt.getOrigin();
-  out_mat(0, 0) = mv[0];
-  out_mat(0, 1) = mv[4];
-  out_mat(0, 2) = mv[8];
-  out_mat(1, 0) = mv[1];
-  out_mat(1, 1) = mv[5];
-  out_mat(1, 2) = mv[9];
-  out_mat(2, 0) = mv[2];
-  out_mat(2, 1) = mv[6];
-  out_mat(2, 2) = mv[10];
-
-  out_mat(3, 0) = out_mat(3, 1) = out_mat(3, 2) = 0;
-  out_mat(3, 3) = 1;
-  out_mat(0, 3) = origin.x();
-  out_mat(1, 3) = origin.y();
-  out_mat(2, 3) = origin.z();
-}
-
-  void CompareMapFilter::transformXYZICloud(
-      const pcl::PointCloud<pcl::PointXYZI> &in_cloud,
-      pcl::PointCloud<pcl::PointXYZI> &out_cloud,
-      const geometry_msgs::TransformStamped &in_tf_stamped_transform) {
-    Eigen::Matrix4f transform;
-    transformAsMatrix(in_tf_stamped_transform, transform);
-
-    if (&in_cloud != &out_cloud) {
-      out_cloud.header.frame_id = in_tf_stamped_transform.header.frame_id;
-      out_cloud.header.stamp = in_cloud.header.stamp;
-      out_cloud.is_dense = in_cloud.is_dense;
-      out_cloud.width = in_cloud.width;
-      out_cloud.height = in_cloud.height;
-      out_cloud.points.reserve(out_cloud.points.size());
-      out_cloud.points.assign(in_cloud.points.begin(), in_cloud.points.end());
-      out_cloud.sensor_orientation_ = in_cloud.sensor_orientation_;
-      out_cloud.sensor_origin_ = in_cloud.sensor_origin_;
-    }
-    if (in_cloud.is_dense) {
-      for (size_t i = 0; i < out_cloud.points.size(); ++i) {
-        // out_cloud.points[i].getVector3fMap () = transform *
-        // in_cloud.points[i].getVector3fMap ();
-        Eigen::Matrix<float, 3, 1> pt(in_cloud[i].x, in_cloud[i].y,
-                                      in_cloud[i].z);
-        out_cloud[i].x = static_cast<float>(transform(0, 0) * pt.coeffRef(0) +
-                                            transform(0, 1) * pt.coeffRef(1) +
-                                            transform(0, 2) * pt.coeffRef(2) +
-                                            transform(0, 3));
-        out_cloud[i].y = static_cast<float>(transform(1, 0) * pt.coeffRef(0) +
-                                            transform(1, 1) * pt.coeffRef(1) +
-                                            transform(1, 2) * pt.coeffRef(2) +
-                                            transform(1, 3));
-        out_cloud[i].z = static_cast<float>(transform(2, 0) * pt.coeffRef(0) +
-                                            transform(2, 1) * pt.coeffRef(1) +
-                                            transform(2, 2) * pt.coeffRef(2) +
-                                            transform(2, 3));
-      }
-    } else {
-      // Dataset might contain NaNs and Infs, so check for them first,
-      for (size_t i = 0; i < out_cloud.points.size(); ++i) {
-        if (!pcl_isfinite(in_cloud.points[i].x) ||
-            !pcl_isfinite(in_cloud.points[i].y) ||
-            !pcl_isfinite(in_cloud.points[i].z)) {
-          continue;
-        }
-        // out_cloud.points[i].getVector3fMap () = transform *
-        // in_cloud.points[i].getVector3fMap ();
-        Eigen::Matrix<float, 3, 1> pt(in_cloud[i].x, in_cloud[i].y,
-                                      in_cloud[i].z);
-        out_cloud[i].x = static_cast<float>(transform(0, 0) * pt.coeffRef(0) +
-                                            transform(0, 1) * pt.coeffRef(1) +
-                                            transform(0, 2) * pt.coeffRef(2) +
-                                            transform(0, 3));
-        out_cloud[i].y = static_cast<float>(transform(1, 0) * pt.coeffRef(0) +
-                                            transform(1, 1) * pt.coeffRef(1) +
-                                            transform(1, 2) * pt.coeffRef(2) +
-                                            transform(1, 3));
-        out_cloud[i].z = static_cast<float>(transform(2, 0) * pt.coeffRef(0) +
-                                            transform(2, 1) * pt.coeffRef(1) +
-                                            transform(2, 2) * pt.coeffRef(2) +
-                                            transform(2, 3));
-      }
-    }
-  }
-
 void CompareMapFilter::configCallback(const autoware_config_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr)
 {
   distance_threshold_ = config_msg_ptr->distance_threshold;
@@ -205,7 +113,7 @@ void CompareMapFilter::pointsMapCallback(const sensor_msgs::PointCloud2::ConstPt
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*map_cloud_msg_ptr, *map_cloud_ptr);
   tree_.setInputCloud(map_cloud_ptr);
-  ROS_INFO_STREAM("map recieved");
+
   map_frame_ = map_cloud_msg_ptr->header.frame_id;
 }
 
@@ -229,46 +137,51 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   }
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
+  sensor_msgs::PointCloud2 sensorTF_clipping_height_cloud_msg,mapTF_cloud_msg;
+
   geometry_msgs::TransformStamped transform_stamped;
   try {
-    transform_stamped = tf_buffer_.lookupTransform(
-        sensor_frame, map_frame_, sensor_time,
-        ros::Duration(3.0));
+    transform_stamped =
+        tf_buffer_.lookupTransform(map_frame_, sensor_frame,
+                                    sensor_time, ros::Duration(1.0));
   } catch (tf2::TransformException &ex) {
     ROS_WARN("%s", ex.what());
     return;
   }
+  pcl::toROSMsg(*sensorTF_clipping_height_cloud_ptr, sensorTF_clipping_height_cloud_msg);
+  tf2::doTransform(sensorTF_clipping_height_cloud_msg, mapTF_cloud_msg, transform_stamped);
+  pcl::fromROSMsg(mapTF_cloud_msg, *mapTF_cloud_ptr);
 
-  transformXYZICloud(*sensorTF_clipping_height_cloud_ptr, *mapTF_cloud_ptr, transform_stamped);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_unmatch_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_unmatch_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   searchMatchingCloud(mapTF_cloud_ptr, mapTF_match_cloud_ptr, mapTF_unmatch_cloud_ptr);
+
+  sensor_msgs::PointCloud2 mapTF_match_cloud_msg;
+  pcl::toROSMsg(*mapTF_match_cloud_ptr, mapTF_match_cloud_msg);
+  mapTF_match_cloud_msg.header.stamp = sensor_time;
+  mapTF_match_cloud_msg.header.frame_id = map_frame_;
+  mapTF_match_cloud_msg.fields = sensorTF_cloud_msg_ptr->fields;
+
   sensor_msgs::PointCloud2 sensorTF_match_cloud_msg;
-  try
-  {
-    transformXYZICloud(*mapTF_match_cloud_ptr, *sensorTF_match_cloud_ptr, transform_stamped);
-  }
-  catch (tf2::TransformException &ex)
-  {
-    ROS_ERROR("Transform error: %s", ex.what());
+  try {
+    transform_stamped =
+        tf_buffer_.lookupTransform(sensor_frame, map_frame_,
+                                    ros::Time(0), ros::Duration(1.0));
+  } catch (tf2::TransformException &ex) {
+    ROS_WARN("%s", ex.what());
     return;
   }
-  pcl::toROSMsg(*sensorTF_match_cloud_ptr, sensorTF_match_cloud_msg);
+  tf2::doTransform(mapTF_match_cloud_msg, sensorTF_match_cloud_msg, transform_stamped);
   match_points_pub_.publish(sensorTF_match_cloud_msg);
-  sensor_msgs::PointCloud2 sensorTF_unmatch_cloud_msg;
-  try
-  {
-    transformXYZICloud(*mapTF_unmatch_cloud_ptr, *sensorTF_unmatch_cloud_ptr, transform_stamped);
-  }
-  catch (tf2::TransformException &ex)
-  {
-    ROS_ERROR("Transform error: %s", ex.what());
-    return;
-  }
+
   sensor_msgs::PointCloud2 mapTF_unmatch_cloud_msg;
-  pcl::toROSMsg(*sensorTF_unmatch_cloud_ptr, sensorTF_unmatch_cloud_msg);
+  pcl::toROSMsg(*mapTF_unmatch_cloud_ptr, mapTF_unmatch_cloud_msg);
+  mapTF_unmatch_cloud_msg.header.stamp = sensor_time;
+  mapTF_unmatch_cloud_msg.header.frame_id = map_frame_;
+  mapTF_unmatch_cloud_msg.fields = sensorTF_cloud_msg_ptr->fields;
+
+  sensor_msgs::PointCloud2 sensorTF_unmatch_cloud_msg;
+  tf2::doTransform(mapTF_unmatch_cloud_msg, sensorTF_unmatch_cloud_msg, transform_stamped);
   unmatch_points_pub_.publish(sensorTF_unmatch_cloud_msg);
 }
 

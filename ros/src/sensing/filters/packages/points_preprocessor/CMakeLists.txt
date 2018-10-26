@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         velodyne_pointcloud
         autoware_config_msgs
+        tf
         tf2
         tf2_ros
         tf2_sensor_msgs
@@ -26,6 +27,7 @@ catkin_package(CATKIN_DEPENDS
         cv_bridge
         velodyne_pointcloud
         autoware_config_msgs
+        tf
         tf2
         tf2_ros
         tf2_sensor_msgs
