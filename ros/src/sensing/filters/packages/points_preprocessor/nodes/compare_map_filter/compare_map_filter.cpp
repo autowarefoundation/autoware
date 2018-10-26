@@ -30,17 +30,20 @@
 
 #include <ros/ros.h>
 
-#include <tf/tf.h>
-
 #include <sensor_msgs/point_cloud_conversion.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <pcl_conversions/pcl_conversions.h>
-#include <pcl_ros/transforms.h>
 #include <pcl/search/kdtree.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
 #include <autoware_config_msgs/ConfigCompareMapFilter.h>
+
+#include <velodyne_pointcloud/point_types.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+#include <tf2_ros/transform_listener.h>
 
 class CompareMapFilter
 {
@@ -57,7 +60,8 @@ private:
   ros::Publisher match_points_pub_;
   ros::Publisher unmatch_points_pub_;
 
-  tf::TransformListener* tf_listener_;
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
 
   pcl::KdTreeFLANN<pcl::PointXYZI> tree_;
 
@@ -78,7 +82,7 @@ private:
 CompareMapFilter::CompareMapFilter()
   : nh_()
   , nh_private_("~")
-  , tf_listener_(new tf::TransformListener)
+  , tf_listener_(tf_buffer_)
   , distance_threshold_(0.2)
   , min_clipping_height_(-2.0)
   , max_clipping_height_(0.5)
@@ -131,15 +135,13 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   }
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
-  try
-  {
-    tf_listener_->waitForTransform(map_frame_, sensor_frame, sensor_time, ros::Duration(3.0));
-    pcl_ros::transformPointCloud(map_frame_, sensor_time, *sensorTF_clipping_height_cloud_ptr, sensor_frame,
-                                 *mapTF_cloud_ptr, *tf_listener_);
-  }
-  catch (tf::TransformException& ex)
-  {
-    ROS_ERROR("Transform error: %s", ex.what());
+  geometry_msgs::TransformStamped transform_stamped;
+  try {
+    transform_stamped = tf_buffer_.lookupTransform(
+        sensor_frame, map_frame_, sensor_time,
+        ros::Duration(3.0));
+  } catch (tf2::TransformException &ex) {
+    ROS_WARN("%s", ex.what());
     return;
   }
 
@@ -156,9 +158,9 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   sensor_msgs::PointCloud2 sensorTF_match_cloud_msg;
   try
   {
-    pcl_ros::transformPointCloud(sensor_frame, mapTF_match_cloud_msg, sensorTF_match_cloud_msg, *tf_listener_);
+    tf2::doTransform(mapTF_match_cloud_msg, sensorTF_match_cloud_msg, transform_stamped);
   }
-  catch (tf::TransformException& ex)
+  catch (tf2::TransformException &ex)
   {
     ROS_ERROR("Transform error: %s", ex.what());
     return;
@@ -174,9 +176,9 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   sensor_msgs::PointCloud2 sensorTF_unmatch_cloud_msg;
   try
   {
-    pcl_ros::transformPointCloud(sensor_frame, mapTF_unmatch_cloud_msg, sensorTF_unmatch_cloud_msg, *tf_listener_);
+    tf2::doTransform(mapTF_unmatch_cloud_msg, sensorTF_unmatch_cloud_msg, transform_stamped);
   }
-  catch (tf::TransformException& ex)
+  catch (tf2::TransformException &ex)
   {
     ROS_ERROR("Transform error: %s", ex.what());
     return;
