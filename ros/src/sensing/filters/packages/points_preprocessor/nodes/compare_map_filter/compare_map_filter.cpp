@@ -205,7 +205,7 @@ void CompareMapFilter::pointsMapCallback(const sensor_msgs::PointCloud2::ConstPt
   pcl::PointCloud<pcl::PointXYZI>::Ptr map_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::fromROSMsg(*map_cloud_msg_ptr, *map_cloud_ptr);
   tree_.setInputCloud(map_cloud_ptr);
-
+  ROS_INFO_STREAM("map recieved");
   map_frame_ = map_cloud_msg_ptr->header.frame_id;
 }
 
@@ -238,7 +238,7 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
     ROS_WARN("%s", ex.what());
     return;
   }
-
+  transformXYZICloud(*sensorTF_clipping_height_cloud_ptr, *mapTF_cloud_ptr, transform_stamped);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_unmatch_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -256,18 +256,10 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   }
   pcl::toROSMsg(*sensorTF_match_cloud_ptr, sensorTF_match_cloud_msg);
   match_points_pub_.publish(sensorTF_match_cloud_msg);
-  
-  /*
-  pcl::toROSMsg(*mapTF_unmatch_cloud_ptr, mapTF_unmatch_cloud_msg);
-  mapTF_unmatch_cloud_msg.header.stamp = sensor_time;
-  mapTF_unmatch_cloud_msg.header.frame_id = map_frame_;
-  mapTF_unmatch_cloud_msg.fields = sensorTF_cloud_msg_ptr->fields;
-  */
   sensor_msgs::PointCloud2 sensorTF_unmatch_cloud_msg;
   try
   {
     transformXYZICloud(*mapTF_unmatch_cloud_ptr, *sensorTF_unmatch_cloud_ptr, transform_stamped);
-    //tf2::doTransform(mapTF_unmatch_cloud_msg, sensorTF_unmatch_cloud_msg, transform_stamped);
   }
   catch (tf2::TransformException &ex)
   {
