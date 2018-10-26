@@ -240,7 +240,6 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   }
 
   transformXYZICloud(*sensorTF_clipping_height_cloud_ptr, *mapTF_cloud_ptr, transform_stamped);
-  ROS_WARN_STREAM(mapTF_cloud_ptr->header);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_unmatch_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -277,6 +276,8 @@ void CompareMapFilter::searchMatchingCloud(const pcl::PointCloud<pcl::PointXYZI>
                                            pcl::PointCloud<pcl::PointXYZI>::Ptr match_cloud_ptr,
                                            pcl::PointCloud<pcl::PointXYZI>::Ptr unmatch_cloud_ptr)
 {
+  unmatch_cloud_ptr->header = in_cloud_ptr->header;
+  match_cloud_ptr->header = in_cloud_ptr->header;
   match_cloud_ptr->points.clear();
   unmatch_cloud_ptr->points.clear();
 
