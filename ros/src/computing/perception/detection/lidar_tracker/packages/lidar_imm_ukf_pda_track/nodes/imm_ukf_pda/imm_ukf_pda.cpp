@@ -37,7 +37,8 @@
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
-  init_(false)
+  init_(false),
+  frame_count_(0)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
@@ -51,6 +52,52 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
+  private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
+
+  // std::string kitti_data_dir;
+  // private_nh_.getParam("kitti_data_dir", kitti_data_dir);
+
+  if(is_benchmark_)
+  {
+    //TODO use rosparam insteasd of harcoded path
+    std::string kitti_data_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync/";
+
+    //TODO: make function fot get current time file path and think about when to use that funciton
+    // benchmarked time
+    time_t t = time(nullptr);
+    const tm* lt = localtime(&t);
+
+    std::stringstream yyyy_mmdd_hhmmss;
+    yyyy_mmdd_hhmmss<<"20";
+    yyyy_mmdd_hhmmss<<lt->tm_year-100;
+    yyyy_mmdd_hhmmss<<"_";
+    yyyy_mmdd_hhmmss<<lt->tm_mon+1;
+    yyyy_mmdd_hhmmss<<lt->tm_mday;
+    yyyy_mmdd_hhmmss<<"_";
+    yyyy_mmdd_hhmmss<<lt->tm_hour;
+    if(lt->tm_min < 10)
+    {
+      yyyy_mmdd_hhmmss<<"0";
+      yyyy_mmdd_hhmmss<<lt->tm_min;
+    }
+    else
+    {
+      yyyy_mmdd_hhmmss<<lt->tm_min;
+    }
+    if(lt->tm_sec < 10)
+    {
+      yyyy_mmdd_hhmmss<<"0";
+      yyyy_mmdd_hhmmss<<lt->tm_sec;
+    }
+    else
+    {
+      yyyy_mmdd_hhmmss<<lt->tm_sec;
+    }
+
+    result_file_path_ = kitti_data_dir +yyyy_mmdd_hhmmss.str() + ".txt";
+    result_file_path_ = kitti_data_dir + "benchmark_results.txt";
+    remove(result_file_path_.c_str());
+  }
 }
 
 void ImmUkfPda::run()
@@ -80,6 +127,11 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
+
+  if(is_benchmark_)
+  {
+    dumpResultText(detected_objects_output);
+  }
 }
 
 void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
@@ -750,6 +802,33 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 
   pub_points_array_.publish(points_markers);
   pub_texts_array_.publish(texts_markers);
+}
+
+void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects)
+{
+  std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
+  for(size_t i = 0; i < detected_objects.objects.size(); i++)
+  {
+    tf::Quaternion q(detected_objects.objects[i].pose.orientation.x, detected_objects.objects[i].pose.orientation.y,
+                     detected_objects.objects[i].pose.orientation.z, detected_objects.objects[i].pose.orientation.w);
+    double roll, pitch, yaw;
+    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    outputfile << std::to_string(frame_count_)                               <<" "
+               << std::to_string(detected_objects.objects[i].id)             <<" "
+               << "Unknown"                                                  <<" "
+               << "-1"                                                       <<" "
+               << "-1"                                                       <<" "
+               << "-10"                                                      <<" "
+               << "-1 -1 -1 -1"                                              <<" "
+               << std::to_string(detected_objects.objects[i].dimensions.x)   <<" "
+               << std::to_string(detected_objects.objects[i].dimensions.y)   <<" "
+               << "-1"                                                       <<" "
+               << std::to_string(detected_objects.objects[i].pose.position.x)<<" "
+               << std::to_string(detected_objects.objects[i].pose.position.y)<<" "
+               << "-1"                                                       <<" "
+               << std::to_string(yaw)                                        <<"\n";
+  }
+  frame_count_ ++;
 }
 
 void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
