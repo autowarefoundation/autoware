@@ -39,6 +39,11 @@
 #include <tf/transform_listener.h>
 #include <pcl_ros/transforms.h>
 
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_sensor_msgs/tf2_sensor_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 class CloudTransformerNode
 {
 private:
@@ -46,14 +51,14 @@ private:
 	ros::NodeHandle     node_handle_;
 	ros::Subscriber     points_node_sub_;
 	ros::Publisher      transformed_points_pub_;
+	tf2_ros::Buffer tf_buffer_;
+	tf2_ros::TransformListener tf_listener_;
 
 	std::string         input_point_topic_;
 	std::string         target_frame_;
 	std::string         output_point_topic_;
 
-	tf::TransformListener *tf_listener_ptr_;
-
-	bool                transform_ok_;
+	bool transform_ok_;
 
 	void publish_cloud(const ros::Publisher& in_publisher,
 	                   const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::ConstPtr &in_cloud_msg)
@@ -61,12 +66,29 @@ private:
 		in_publisher.publish(in_cloud_msg);
 	}
 
+	void transformAsMatrix (const geometry_msgs::TransformStamped& tf, Eigen::Matrix4f &out_mat)
+	{
+		double mv[12];
+		tf2::Stamped<tf2::Transform> bt;
+		tf2::fromMsg(tf,bt);
+		bt.getBasis ().getOpenGLSubMatrix (mv);
+		tf2::Vector3 origin = bt.getOrigin ();
+		out_mat (0, 0) = mv[0]; out_mat (0, 1) = mv[4]; out_mat (0, 2) = mv[8];
+		out_mat (1, 0) = mv[1]; out_mat (1, 1) = mv[5]; out_mat (1, 2) = mv[9];
+		out_mat (2, 0) = mv[2]; out_mat (2, 1) = mv[6]; out_mat (2, 2) = mv[10];
+
+		out_mat (3, 0) = out_mat (3, 1) = out_mat (3, 2) = 0; out_mat (3, 3) = 1;
+		out_mat (0, 3) = origin.x ();
+		out_mat (1, 3) = origin.y ();
+		out_mat (2, 3) = origin.z ();
+	}
+
 	void transformXYZIRCloud(const pcl::PointCloud<velodyne_pointcloud::PointXYZIR>& in_cloud,
 	                         pcl::PointCloud<velodyne_pointcloud::PointXYZIR>& out_cloud,
-	                         const tf::StampedTransform& in_tf_stamped_transform)
+	                         const geometry_msgs::TransformStamped& in_tf_stamped_transform)
 	{
 		Eigen::Matrix4f transform;
-		pcl_ros::transformAsMatrix(in_tf_stamped_transform, transform);
+		transformAsMatrix(in_tf_stamped_transform, transform);
 
 		if (&in_cloud != &out_cloud)
 		{
@@ -131,23 +153,24 @@ private:
 		pcl::PointCloud<velodyne_pointcloud::PointXYZIR>::Ptr transformed_cloud_ptr (new pcl::PointCloud<velodyne_pointcloud::PointXYZIR>);
 
 		bool do_transform = false;
-		tf::StampedTransform transform;
-		if (target_frame_ != in_sensor_cloud->header.frame_id)
+		geometry_msgs::TransformStamped transform_stamped;
+		if(target_frame_ != in_sensor_cloud->header.frame_id)
 		{
 			try {
-				tf_listener_ptr_->lookupTransform(target_frame_, in_sensor_cloud->header.frame_id, ros::Time(0),
-				                                  transform);
+				transform_stamped =
+					tf_buffer_.lookupTransform(target_frame_, in_sensor_cloud->header.frame_id,
+												ros::Time(0), ros::Duration(1.0));
 				do_transform = true;
-			}
-			catch (tf::TransformException ex) {
-				ROS_ERROR("cloud_transformer: %s NOT Transforming.", ex.what());
+			} catch (tf2::TransformException &ex) {
+				ROS_WARN("%s", ex.what());
 				do_transform = false;
 				transform_ok_ = false;
+				return;
 			}
 		}
 		if (do_transform)
 		{
-			transformXYZIRCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform);
+			transformXYZIRCloud(*in_sensor_cloud, *transformed_cloud_ptr, transform_stamped);
 			transformed_cloud_ptr->header.frame_id = target_frame_;
 			if (!transform_ok_)
 				{ROS_INFO("cloud_transformer: Correctly Transformed"); transform_ok_=true;}
@@ -159,9 +182,9 @@ private:
 	}
 
 public:
-	CloudTransformerNode(tf::TransformListener* in_tf_listener_ptr):node_handle_("~"), transform_ok_(false)
+	CloudTransformerNode():node_handle_("~"),tf_listener_(tf_buffer_)
 	{
-		tf_listener_ptr_ = in_tf_listener_ptr;
+		transform_ok_ = false;
 	}
 	void Run()
 	{
@@ -191,11 +214,8 @@ public:
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "cloud_transformer");
-	tf::TransformListener tf_listener;
-	CloudTransformerNode app(&tf_listener);
-
+	CloudTransformerNode app;
 	app.Run();
-
 	return 0;
 
 }
