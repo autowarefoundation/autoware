@@ -487,26 +487,39 @@ ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray &in_objects)
         while (tyaw < -M_PI)
             tyaw += 2. * M_PI;
 
-        // RPY to convert: 0, 0, targets_[i].x_merge_(3)
         tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
+
         autoware_msgs::DetectedObject dd;
         dd.header = in_objects.header;
         dd.id = targets_[i].ukf_id_;
-        dd.velocity.linear.x = tv;
         dd.pose = targets_[i].object_pose_;
+        dd.dimensions = targets_[i].object_dimensions_;
+        dd.pose_reliable = targets_[i].is_reliable_;
+        dd.label = targets_[i].object_label_;
+        if (targets_[i].is_reliable_)
+        {
+            std::string s_velocity = std::to_string(tv * 3.6);
+            std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
+
+            std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) +
+                               " m/s " + "(" + std::to_string(targets_[i].x_merge_(0)) + ", " +
+                               std::to_string(targets_[i].x_merge_(1)) + ")";
+            dd.label += text;
+            output_objects.objects.push_back(dd);
+        }
+
+        dd.velocity.linear.x = tv;
         dd.pose.position.x = tx;
         dd.pose.position.y = ty;
         dd.pose.orientation.x = q[0];
         dd.pose.orientation.y = q[1];
         dd.pose.orientation.z = q[2];
         dd.pose.orientation.w = q[3];
-        dd.dimensions = targets_[i].object_dimensions_;
-        dd.pose_reliable = targets_[i].is_reliable_;
-        dd.label = targets_[i].object_label_;
+
         //store yaw rate for motion into dd.accerelation.linear.y
         dd.acceleration.linear.y = targets_[i].x_merge_(4);
+
         updateBehaviorState(targets_[i], dd);
-        output_objects.objects.push_back(dd);
     }
 
     return output_objects;

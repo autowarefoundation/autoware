@@ -10,7 +10,6 @@
     <arg name="tracker_input_topic" default="/detection/lidar_detector/objects"/>
     <arg name="tracker_output_detected_topic" default="/detection/lidar_tracker/objects"/>
     <arg name="use_sukf" default="use_sukf"/>
-    <arg name="is_debug" default="is_debug"/>
 
     <arg name="tracking_frame" default="/world"/>
 
@@ -23,10 +22,8 @@
         <param name="life_time_thres" value="$(arg life_time_thres)"/>
         <param name="static_velocity_thres" value="$(arg static_velocity_thres)"/>
         <param name="prevent_explosion_thres" value="$(arg prevent_explosion_thres)"/>
-        <param name="pointcloud_frame" value="$(arg pointcloud_frame)"/>
         <param name="tracking_frame" value="$(arg tracking_frame)"/>
         <param name="use_sukf" value="$(arg use_sukf)"/>
-        <param name="is_debug" value="$(arg is_debug)"/>
         <param name="input_topic" value="$(arg tracker_input_topic)"/>
 
         <remap from="/detection/lidar_tracker/objects" to="$(arg tracker_output_detected_topic)"/>

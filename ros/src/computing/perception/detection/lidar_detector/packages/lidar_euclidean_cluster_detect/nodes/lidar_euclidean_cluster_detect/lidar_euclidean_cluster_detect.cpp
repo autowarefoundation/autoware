@@ -212,29 +212,6 @@ bool checkPointInGrid(const grid_map::GridMap &in_grid_map, const cv::Mat &in_gr
     return false;
 }
 
-void transformBoundingBox(const jsk_recognition_msgs::BoundingBox &in_boundingbox,
-                          jsk_recognition_msgs::BoundingBox &out_boundingbox, const std::string &in_target_frame,
-                          const std_msgs::Header &in_header)
-{
-    geometry_msgs::PoseStamped pose_in, pose_out;
-    pose_in.header = in_header;
-    pose_in.pose = in_boundingbox.pose;
-    try
-    {
-        _transform_listener->transformPose(in_target_frame, ros::Time(), pose_in, in_header.frame_id, pose_out);
-    }
-    catch (tf::TransformException &ex)
-    {
-        ROS_ERROR("transformBoundingBox: %s", ex.what());
-    }
-    out_boundingbox.pose = pose_out.pose;
-    out_boundingbox.header = in_header;
-    out_boundingbox.header.frame_id = in_target_frame;
-    out_boundingbox.dimensions = in_boundingbox.dimensions;
-    out_boundingbox.value = in_boundingbox.value;
-    out_boundingbox.label = in_boundingbox.label;
-}
-
 void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
 {
     autoware_msgs::DetectedObjectArray detected_objects;
@@ -290,8 +267,6 @@ void publishCloudClusters(const ros::Publisher *in_publisher, const autoware_msg
                 cluster_transformed.dimensions = i->dimensions;
                 cluster_transformed.eigen_values = i->eigen_values;
                 cluster_transformed.eigen_vectors = i->eigen_vectors;
-
-                transformBoundingBox(i->bounding_box, cluster_transformed.bounding_box, in_target_frame, in_header);
 
                 clusters_transformed.clusters.push_back(cluster_transformed);
             }
@@ -620,7 +595,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
         }
 #else
         all_clusters =
-            clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distance);
+            clusterAndColor(cloud_ptr, out_cloud_ptr, in_out_centroids, _clustering_distance);
 #endif
     } else
     {
@@ -673,7 +648,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
             }
 #else
             local_clusters = clusterAndColor(
-                cloud_segments_array[i], out_cloud_ptr, in_out_boundingbox_array, in_out_centroids, _clustering_distances[i]);
+                cloud_segments_array[i], out_cloud_ptr, in_out_centroids, _clustering_distances[i]);
 #endif
             all_clusters.insert(all_clusters.end(), local_clusters.begin(), local_clusters.end());
         }
@@ -740,18 +715,13 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
     for (unsigned int i = 0; i < final_clusters.size(); i++)
     {
         *out_cloud_ptr = *out_cloud_ptr + *(final_clusters[i]->GetCloud());
-        // pcl::PointXYZ min_point = final_clusters[i]->GetMinPoint();
-        // pcl::PointXYZ max_point = final_clusters[i]->GetMaxPoint();
         pcl::PointXYZ center_point = final_clusters[i]->GetCentroid();
         geometry_msgs::Point centroid;
         centroid.x = center_point.x;
         centroid.y = center_point.y;
         centroid.z = center_point.z;
 
-        if (final_clusters[i]->IsValid()
-            //&& bounding_box.dimensions.x >0 && bounding_box.dimensions.y >0 && bounding_box.dimensions.z > 0
-            //&&	bounding_box.dimensions.x < _max_boundingbox_side && bounding_box.dimensions.y < _max_boundingbox_side
-                )
+        if (final_clusters[i]->IsValid())
         {
 
             in_out_centroids.points.push_back(centroid);

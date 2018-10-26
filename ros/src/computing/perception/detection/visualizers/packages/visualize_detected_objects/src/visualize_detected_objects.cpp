@@ -286,12 +286,6 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
         label_marker.id = marker_id++;
         label_marker.text = object.label + " "; //Object Class if available
 
-        if (object.id > 0) //Add object id if available
-        {
-            std::string text = " <" + std::to_string(object.id) + "> ";
-            label_marker.text += text;
-        }
-
         label_marker.pose.position.x = object.pose.position.x;
         label_marker.pose.position.y = object.pose.position.y;
         label_marker.pose.position.z = label_height_;
