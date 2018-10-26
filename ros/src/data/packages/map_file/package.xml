@@ -16,6 +16,9 @@
   <build_depend>autoware_msgs</build_depend>
   <build_depend>curl</build_depend>
   <build_depend>libpcl-all-dev</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
@@ -26,6 +29,9 @@
   <run_depend>autoware_msgs</run_depend>
   <run_depend>curl</run_depend>
   <run_depend>libpcl-all-dev</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>tf2_ros</run_depend>
+  <run_depend>tf2_geometry_msgs</run_depend>
   <export>
   </export>
 </package>
