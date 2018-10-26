@@ -27,6 +27,7 @@ public:
   }
 };
 double find_distance(point *_a, point *_b);
+double find_distance(point &_a, point &_b);
 double find_angle(point *_a, point *_b);
 
 inline double mps2kmph(double _mpsval)
