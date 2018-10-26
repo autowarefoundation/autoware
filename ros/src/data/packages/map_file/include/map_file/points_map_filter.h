@@ -19,6 +19,7 @@
 
 //headers in STL
 #include <mutex>
+#include <regex>
 
 class points_map_filter
 {
@@ -42,8 +43,6 @@ private:
     boost::optional<geometry_msgs::PoseStamped> last_load_pose_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr map_cloud_;
     volatile bool map_recieved_;
-    tf2_ros::Buffer tf_buffer_;
-    tf2_ros::TransformListener tf_listener_;
 };
 
 #endif  //POINTS_MAP_FILTER_H_INCLUDED

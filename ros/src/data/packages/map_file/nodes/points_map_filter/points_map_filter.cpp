@@ -1,6 +1,6 @@
 #include <map_file/points_map_filter.h>
 
-points_map_filter::points_map_filter(ros::NodeHandle nh,ros::NodeHandle pnh) : tf_listener_(tf_buffer_)
+points_map_filter::points_map_filter(ros::NodeHandle nh,ros::NodeHandle pnh)
 {
     map_cloud_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>());
     nh_ = nh;
@@ -36,37 +36,55 @@ void points_map_filter::run()
 void points_map_filter::map_callback_(const sensor_msgs::PointCloud2::ConstPtr msg)
 {
     std::lock_guard<std::mutex> lock(mtx_);
-    init();
+    ROS_INFO_STREAM("loading map started.");
     pcl::fromROSMsg(*msg, *map_cloud_);
     map_recieved_ = true;
     map_pub_.publish(*msg);
+    ROS_INFO_STREAM("loading map finished");
     return;
 }
 
 void points_map_filter::current_pose_callback_(const geometry_msgs::PoseStamped::ConstPtr msg)
 {
     std::lock_guard<std::mutex> lock(mtx_);
-    geometry_msgs::TransformStamped transform_stamped_;
-    try
-    {
-        transform_stamped_ = tf_buffer_.lookupTransform(map_frame_, msg->header.frame_id, ros::Time(0));
-    }
-    catch (tf2::TransformException &ex) {
-        ROS_WARN("%s",ex.what());
-        return;
-    }
-    geometry_msgs::PoseStamped transformed_current_pose;
-    tf2::doTransform(*msg, transformed_current_pose, transform_stamped_);
+    ROS_INFO_STREAM("pose received");
     if(!last_load_pose_ && map_recieved_)
     {
-        last_load_pose_ = transformed_current_pose;
+        last_load_pose_ = *msg;
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
         pass_.setInputCloud(map_cloud_);
-
+        pass_.setFilterFieldName("x");
+        pass_.setFilterLimits(last_load_pose_.get().pose.position.x-(load_grid_size_/2), last_load_pose_.get().pose.position.x+(load_grid_size_/2));
+        pass_.filter(*cloud_filtered);
+        pass_.setInputCloud(cloud_filtered);
+        pass_.setFilterFieldName("y");
+        pass_.setFilterLimits(last_load_pose_.get().pose.position.y-(load_grid_size_/2), last_load_pose_.get().pose.position.y+(load_grid_size_/2));
+        pass_.filter(*cloud_filtered);
+        sensor_msgs::PointCloud2 msg;
+        pcl::toROSMsg(*cloud_filtered, msg);
+        ROS_INFO_STREAM("update map");
+        map_pub_.publish(msg);
     }
     else if(last_load_pose_ && map_recieved_)
     {
-
+        double dist = std::sqrt(std::pow(last_load_pose_.get().pose.position.x-msg->pose.position.x,2)+std::pow(last_load_pose_.get().pose.position.y-msg->pose.position.y,2));
+        if(dist > load_trigger_distance_)
+        {
+            last_load_pose_ = *msg;
+            pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
+            pass_.setInputCloud(map_cloud_);
+            pass_.setFilterFieldName("x");
+            pass_.setFilterLimits(last_load_pose_.get().pose.position.x-(load_grid_size_/2), last_load_pose_.get().pose.position.x+(load_grid_size_/2));
+            pass_.filter(*cloud_filtered);
+            pass_.setInputCloud(cloud_filtered);
+            pass_.setFilterFieldName("y");
+            pass_.setFilterLimits(last_load_pose_.get().pose.position.y-(load_grid_size_/2), last_load_pose_.get().pose.position.y+(load_grid_size_/2));
+            pass_.filter(*cloud_filtered);
+            sensor_msgs::PointCloud2 msg;
+            pcl::toROSMsg(*cloud_filtered, msg);
+            map_pub_.publish(msg);
+            ROS_INFO_STREAM("update map");
+        }
     }
     return;
 }
