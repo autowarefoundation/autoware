@@ -32,15 +32,12 @@ Launch file available parameters for `lidar_naive_l_shape_detect`
 
 
 ### Subscribed topics
-Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
 |`/detection/lidar_objects`|`autoware_msgs::DetectedObjectArray`|Segmented pointcloud from a clustering algorithm like eucledian cluster.|
 
 ### Published topics
-
-Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
