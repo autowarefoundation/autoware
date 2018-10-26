@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
         cmake_modules
         cv_bridge
         geometry_msgs
-        libvectormap
+        vectormap_lib
         roscpp
         sensor_msgs
         std_msgs
@@ -65,7 +65,7 @@ catkin_package(
         cmake_modules
         cv_bridge
         geometry_msgs
-        libvectormap
+        vectormap_lib
         roscpp
         sensor_msgs
         std_msgs

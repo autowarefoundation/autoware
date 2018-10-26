@@ -9,7 +9,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include "Rate.h"
-#include "libvectormap/vector_map.h"
+#include "vectormap_lib/vector_map_lib.h"
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -18,7 +18,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <signal.h>
 #include <cstdio>
-#include "libvectormap/Math.h"
+#include "vectormap_lib/Math.h"
 #include <Eigen/Eigen>
 #include <autoware_msgs/Signals.h>
 #include <autoware_msgs/AdjustXY.h>

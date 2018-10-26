@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-    <name>libvectormap</name>
+    <name>vectormap_lib</name>
     <version>1.8.0</version>
     <description>Common Library to Read Vector Map</description>
     <maintainer email="sujiwo@ertl.jp">sujiwo</maintainer>

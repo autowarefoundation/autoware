@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "libvectormap/vector_map.h"
+#include "vectormap_lib/vector_map_lib.h"
 #include <vector>
 #include <map>
 

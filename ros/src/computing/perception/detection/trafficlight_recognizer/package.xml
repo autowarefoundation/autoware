@@ -17,7 +17,7 @@
     <build_depend>qtbase5-dev</build_depend>
     <build_depend>cv_bridge</build_depend>
     <build_depend>eigen</build_depend>
-    <build_depend>libvectormap</build_depend>
+    <build_depend>vectormap_lib</build_depend>
     <build_depend>roscpp</build_depend>
     <build_depend>sensor_msgs</build_depend>
     <build_depend>tf</build_depend>
@@ -37,7 +37,7 @@
     <run_depend>libqt5-widgets</run_depend>
     <run_depend>cv_bridge</run_depend>
     <run_depend>eigen</run_depend>
-    <run_depend>libvectormap</run_depend>
+    <run_depend>vectormap_lib</run_depend>
     <run_depend>roscpp</run_depend>
     <run_depend>sensor_msgs</run_depend>
     <run_depend>tf</run_depend>

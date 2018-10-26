@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(libvectormap)
+project(vectormap_lib)
 
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
@@ -28,7 +28,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
         INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
-        LIBRARIES libvectormap
+        LIBRARIES vectormap_lib
         CATKIN_DEPENDS vector_map
 )
 
@@ -39,16 +39,16 @@ include_directories(
 )
 
 
-add_library(libvectormap STATIC
-        src/vector_map.cpp
+add_library(vectormap_lib STATIC
+        src/vector_map_lib.cpp
         )
 
-target_link_libraries(libvectormap
+target_link_libraries(vectormap_lib
         ${catkin_LIBRARIES}
         ${EIGEN3_LIBRARIES}
         )
 
-install(TARGETS libvectormap
+install(TARGETS vectormap_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
