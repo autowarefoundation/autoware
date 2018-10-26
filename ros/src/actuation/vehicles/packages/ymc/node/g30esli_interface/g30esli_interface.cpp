@@ -33,6 +33,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <autoware_msgs/VehicleCmd.h>
 
 #include "g30esli_interface_util.h"
 #include "can_utils/cansend.h"
@@ -42,11 +43,11 @@
 namespace
 {
 // ros param
-double g_wheel_base;
 int g_mode;
-std::string g_device;
 int g_loop_rate;
 int g_stop_time_sec;
+double g_wheel_base;
+std::string g_device;
 
 // ros publisher
 ros::Publisher g_current_twist_pub;
@@ -60,10 +61,11 @@ bool g_terminate_thread = false;
 // cansend tool
 mycansend::CanSender g_cansender;
 
-void twist_cmd_callback(const geometry_msgs::TwistStampedConstPtr &msg)
+void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr &msg)
 {
-  double target_velocity = msg->twist.linear.x * 3.6; // [m/s] -> [km/h]
-  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist.angular.z, msg->twist.linear.x, g_wheel_base);
+  // TODO: use steer angle, shift, turn signal
+  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6; // [m/s] -> [km/h]
+  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z, msg->twist_cmd.twist.linear.x, g_wheel_base);
 
   // factor
   target_velocity           *= 10.0;
@@ -87,14 +89,13 @@ void changeMode()
     if (ymc::kbhit())
     {
       char c = getchar();
-
-      /*
-      if (c == ' ')
+      if (c == ' ') {
         g_mode = 3;
-      */
-
-      if (c == 's')
+      }
+      else if (c == 's')
+      {
         g_mode = 8;
+      }
     }
     usleep(20000); // sleep 20msec
   }
@@ -126,12 +127,12 @@ void readCanData(FILE* fp)
       if(_current_vel_mps != RET_NO_PUBLISH )
       {
 	      geometry_msgs::TwistStamped ts;
+        ts.header.frame_id = "base_link";
+        ts.header.stamp = ros::Time::now();
 	      ts.twist.linear.x = _current_vel_mps;
 	      g_current_twist_pub.publish(ts);
-      } 
-      
+      }
     }
-
   }
 }
 
@@ -154,7 +155,7 @@ int main(int argc, char *argv[])
   g_cansender.init(g_device);
 
   // subscriber
-  ros::Subscriber twist_cmd_sub = n.subscribe<geometry_msgs::TwistStamped>("twist_cmd", 1, twist_cmd_callback);
+  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
   ros::Subscriber current_vel_sub = n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
 
   // publisher
@@ -228,6 +229,6 @@ int main(int argc, char *argv[])
   t2.join();
 
   pclose(fp);
-  
+
   return 0;
 }
