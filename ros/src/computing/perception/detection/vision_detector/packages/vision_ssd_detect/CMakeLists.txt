@@ -15,7 +15,6 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         std_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
         )
 
 FIND_PACKAGE(CUDA)
@@ -29,7 +28,6 @@ catkin_package(
         std_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
 )
 
 ###########

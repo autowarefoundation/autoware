@@ -412,12 +412,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
                                                        const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
 {
     autoware_msgs::DetectedObjectArray fusion_objects;
-    jsk_recognition_msgs::BoundingBoxArray fused_boxes;
-    visualization_msgs::MarkerArray fused_objects_labels;
-
-    fused_boxes.boxes.clear();
     fusion_objects.objects.clear();
-    fused_objects_labels.markers.clear();
 
     if (empty_frames_ > 5)
     {
@@ -435,7 +430,6 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         && nullptr != in_range_detections
         && !in_range_detections->objects.empty())
     {
-        publisher_fused_boxes_.publish(fused_boxes);
         publisher_fused_objects_.publish(in_range_detections);
         empty_frames_++;
         return;
@@ -444,7 +438,6 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
         && nullptr != in_vision_detections
         && !in_vision_detections->objects.empty())
     {
-        publisher_fused_boxes_.publish(fused_boxes);
         publisher_fused_objects_.publish(in_vision_detections);
         empty_frames_++;
         return;
@@ -464,13 +457,8 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     }
 
     fusion_objects = FuseRangeVisionDetections(in_vision_detections, in_range_detections);
-    fused_boxes = ObjectsToBoxes(fusion_objects);
-    fused_objects_labels = ObjectsToMarkers(fusion_objects);
 
     publisher_fused_objects_.publish(fusion_objects);
-    publisher_fused_boxes_.publish(fused_boxes);
-    publisher_fused_text_.publish(fused_objects_labels);
-    boxes_frame_ = fused_boxes.header.frame_id;
     empty_frames_ = 0;
 
     vision_detections_ = nullptr;
@@ -478,72 +466,9 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
 
 }
 
-visualization_msgs::MarkerArray
-RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects)
-{
-    visualization_msgs::MarkerArray final_markers;
-
-    for(const autoware_msgs::DetectedObject& object : in_objects.objects)
-    {
-        if (object.label != "unknown"
-            && object.pose.position.x != 0
-            && object.pose.position.y != 0
-            && object.pose.position.z != 0)
-        {
-            visualization_msgs::Marker marker;
-            marker.header = in_objects.header;
-            marker.ns = "range_vision_fusion";
-            marker.id = object.id;
-            marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-            marker.scale.z = 1.0;
-            marker.text = object.label;
-            if (object.id != 0)
-                marker.text += " " + std::to_string(object.id);
-            marker.pose.position = object.pose.position;
-            marker.pose.position.z += 1.5;
-            marker.color.r = 1.0;
-            marker.color.g = 1.0;
-            marker.color.b = 1.0;
-            marker.color.a = 1.0;
-            marker.scale.x = 1.5;
-            marker.scale.y = 1.5;
-            marker.scale.z = 1.5;
-
-            marker.lifetime = ros::Duration(0.1);
-            final_markers.markers.push_back(marker);
-        }
-    }
-    return final_markers;
-}
-
-jsk_recognition_msgs::BoundingBoxArray
-RosRangeVisionFusionApp::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
-{
-    jsk_recognition_msgs::BoundingBoxArray final_boxes;
-    final_boxes.header = in_objects.header;
-
-    for(const autoware_msgs::DetectedObject& object : in_objects.objects)
-    {
-        jsk_recognition_msgs::BoundingBox box;
-
-        box.header = in_objects.header;
-        box.label = object.id;
-        box.dimensions = object.dimensions;
-        box.pose = object.pose;
-        box.value = object.score;
-
-        if (box.dimensions.x > 0 && box.dimensions.y > 0 && box.dimensions.z > 0)
-        {
-            final_boxes.boxes.push_back(box);
-        }
-    }
-    return final_boxes;
-}
-
 void
 RosRangeVisionFusionApp::VisionDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
-
     if (!processing_ && !in_vision_detections->objects.empty())
     {
         processing_ = true;
@@ -634,16 +559,15 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 {
     //get params
     std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions, min_truck_dimensions;
-    std::string detected_objects_range, fused_topic_str = "/detection/combined_objects", fused_boxes_str = "/detection/combined_objects_boxes";
-    std::string fused_text_str = "detection/combined_objects_labels";
+    std::string detected_objects_range, fused_topic_str = "/detection/fusion_tools/objects";
     std::string name_space_str = ros::this_node::getNamespace();
     bool sync_topics = false;
 
     ROS_INFO("[%s] This node requires: Registered TF(Lidar-Camera), CameraInfo, Vision and Range Detections being published.", __APP_NAME__);
-    in_private_handle.param<std::string>("detected_objects_range", detected_objects_range, "/detection/lidar_objects");
+    in_private_handle.param<std::string>("detected_objects_range", detected_objects_range, "/detection/lidar_detector/objects");
     ROS_INFO("[%s] detected_objects_range: %s", __APP_NAME__, detected_objects_range.c_str());
 
-    in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detection/vision_objects");
+    in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision, "/detection/image_detector/objects");
     ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
 
     in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
@@ -729,11 +653,8 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     }
 
     publisher_fused_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(fused_topic_str, 1);
-    publisher_fused_boxes_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>(fused_boxes_str, 1);
-    publisher_fused_text_ = node_handle_.advertise<visualization_msgs::MarkerArray>(fused_text_str, 1);
 
     ROS_INFO("[%s] Publishing fused objects in %s", __APP_NAME__, fused_topic_str.c_str());
-    ROS_INFO("[%s] Publishing fused boxes in %s", __APP_NAME__, fused_boxes_str.c_str());
 
 }
 

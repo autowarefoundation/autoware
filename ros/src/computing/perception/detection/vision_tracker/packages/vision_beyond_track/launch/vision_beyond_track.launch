@@ -1,6 +1,6 @@
 <launch>
     <arg name="camera_info_src" default="/camera_info"/>
-    <arg name="objects_topic_src" default="/detection/vision_objects"/>
+    <arg name="objects_topic_src" default="/detection/image_detector/objects"/>
     <arg name="camera_height" default="1.2"/>
 
     <node pkg="vision_beyond_track" name="vision_beyond_track_01" type="vision_beyond_track" output="screen">

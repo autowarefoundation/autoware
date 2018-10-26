@@ -1,10 +1,6 @@
 #ifndef SSD_DETECTOR_H_
 #define SSD_DETECTOR_H_
 
-#include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <algorithm>
 #include <iomanip>
 #include <iosfwd>
@@ -12,6 +8,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <caffe/caffe.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "rect_class_score.h"
 

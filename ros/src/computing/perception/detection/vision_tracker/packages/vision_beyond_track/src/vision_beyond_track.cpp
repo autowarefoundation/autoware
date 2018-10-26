@@ -360,7 +360,7 @@ void BeyondTrackerNode::Run()
 
     private_node_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
     private_node_handle.param<std::string>("objects_topic_src", objects_topic_src,
-                                           "/detection/vision_objects");
+                                           "/detection/image_detector/objects");
 
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, camera_info_src.c_str());
     intrinsics_subscriber_ = private_node_handle.subscribe(
@@ -374,7 +374,7 @@ void BeyondTrackerNode::Run()
     private_node_handle.param<double>("camera_height", camera_height_, 1.2);
     ROS_INFO("[%s] camera height: %f", __APP_NAME__, camera_height_);
 
-    objects_publisher_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
+    objects_publisher_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/image_tracker/objects", 1);
 
     #if (CV_MAJOR_VERSION <= 2)
         cv::generateColors(colors_, 20);

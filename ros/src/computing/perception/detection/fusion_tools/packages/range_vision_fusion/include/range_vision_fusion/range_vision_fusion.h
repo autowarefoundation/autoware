@@ -74,8 +74,6 @@ class RosRangeVisionFusionApp
 {
     ros::NodeHandle                     node_handle_;
     ros::Publisher                      publisher_fused_objects_;
-    ros::Publisher                      publisher_fused_boxes_;
-    ros::Publisher                      publisher_fused_text_;
 
     ros::Subscriber                     intrinsics_subscriber_;
     ros::Subscriber                     detections_vision_subscriber_;
@@ -125,8 +123,6 @@ class RosRangeVisionFusionApp
 
     void CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object);
 
-    jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
-
     void VisionDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_image_msg);
 
     void RangeDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_cloud_msg);
@@ -157,8 +153,6 @@ class RosRangeVisionFusionApp
 
     void CalculateObjectFeatures(autoware_msgs::DetectedObject &in_out_object,
                                  bool in_estimate_pose);
-
-    visualization_msgs::MarkerArray ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects);
 
     double GetDistanceToObject(const autoware_msgs::DetectedObject &in_object);
 

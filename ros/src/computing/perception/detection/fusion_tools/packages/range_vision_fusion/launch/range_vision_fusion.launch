@@ -1,6 +1,6 @@
 <launch>
-    <arg name="detected_objects_range" default="/detection/lidar_objects" />
-    <arg name="detected_objects_vision" default="/detection/vision_objects" />
+    <arg name="detected_objects_range" default="/detection/lidar_detector/objects" />
+    <arg name="detected_objects_vision" default="/detection/image_detector/objects" />
     <arg name="camera_info_src" default="/camera_info" />
     <arg name="min_car_dimensions" default="[2,2,4]" />
     <arg name="min_person_dimensions" default="[1,2,1]" />
@@ -16,4 +16,7 @@
         <param name="min_truck_dimensions" value="$(arg min_truck_dimensions)" />
         <param name="sync_topics" value="$(arg sync_topics)" />
     </node>
+
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="range_vision_visualization_01"
+          output="screen" ns="/detection/fusion_tools" />
 </launch>

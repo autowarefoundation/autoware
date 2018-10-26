@@ -1168,14 +1168,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : pointcloud_frame
-      desc    : pointcloud_frame_ desc sample
-      label   : 'pointcloud frame'
-      kind    : str
-      v       : velodyne
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : tracking_frame
       desc    : trakcing_frame_ desc sample
       label   : 'tracking frame'
@@ -1250,14 +1242,6 @@ params :
     - name      : use_sukf
       desc      : Use SUKF
       label     : use_sukf
-      kind      : checkbox
-      v         : False
-      cmd_param :
-        dash      : ''
-        delim     : ':='
-    - name      : is_debug
-      desc      : debug mode on/off
-      label     : is_debug
       kind      : checkbox
       v         : False
       cmd_param :

@@ -28,44 +28,66 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
-#define OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
+#ifndef _VISUALIZEDETECTEDOBJECTS_H
+#define _VISUALIZEDETECTEDOBJECTS_H
+
+#include <vector>
+#include <string>
+#include <cmath>
 
 #include <ros/ros.h>
+#include <tf/transform_datatypes.h>
+
 #include <std_msgs/Header.h>
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 
-#include <pcl/io/io.h>
+#include <jsk_recognition_msgs/PolygonArray.h>
 
-#include <vector>
-#include <string>
+#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/Marker.h>
 
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
+#define __APP_NAME__ "visualize_detected_objects"
+
 class VisualizeDetectedObjects
 {
 private:
-  const double vis_arrow_height_;
-  const double vis_id_height_;
-  double ignore_velocity_thres_;
-  double visualize_arrow_velocity_thres_;
-  std::string input_topic_;
-  std::string pointcloud_frame_;
+    const double arrow_height_;
+    const double label_height_;
+    const double object_max_linear_size_ = 50.;
+    double object_speed_threshold_;
+    double arrow_speed_threshold_;
+    double marker_display_duration_;
 
-  ros::NodeHandle node_handle_;
-  ros::Subscriber sub_object_array_;
+    std::string input_topic_, ros_namespace_;
 
-  ros::Publisher pub_arrow_;
-  ros::Publisher pub_id_;
+    ros::NodeHandle node_handle_;
+    ros::Subscriber subscriber_detected_objects_;
 
-  void visMarkers(const autoware_msgs::DetectedObjectArray& input);
-  void callBack(const autoware_msgs::DetectedObjectArray& input);
+    ros::Publisher publisher_arrow_markers_;
+    ros::Publisher publisher_label_markers_;
+    ros::Publisher publisher_bounding_boxes_;
+    ros::Publisher publisher_polygon_hulls_;
+    ros::Publisher publisher_centroid_markers_;
+
+    visualization_msgs::MarkerArray ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    visualization_msgs::MarkerArray ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    jsk_recognition_msgs::PolygonArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
+
+    void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
 
 public:
-  VisualizeDetectedObjects();
+    VisualizeDetectedObjects();
 };
 
-#endif  // OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
+#endif  // _VISUALIZEDETECTEDOBJECTS_H
