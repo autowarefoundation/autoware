@@ -39,7 +39,6 @@
 
 #include <autoware_config_msgs/ConfigCompareMapFilter.h>
 
-#include <velodyne_pointcloud/point_types.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
@@ -137,7 +136,8 @@ void CompareMapFilter::transformAsMatrix(const geometry_msgs::TransformStamped &
     transformAsMatrix(in_tf_stamped_transform, transform);
 
     if (&in_cloud != &out_cloud) {
-      out_cloud.header = in_cloud.header;
+      out_cloud.header.frame_id = in_tf_stamped_transform.header.frame_id;
+      out_cloud.header.stamp = in_cloud.header.stamp;
       out_cloud.is_dense = in_cloud.is_dense;
       out_cloud.width = in_cloud.width;
       out_cloud.height = in_cloud.height;
@@ -238,7 +238,9 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
     ROS_WARN("%s", ex.what());
     return;
   }
+
   transformXYZICloud(*sensorTF_clipping_height_cloud_ptr, *mapTF_cloud_ptr, transform_stamped);
+  ROS_WARN_STREAM(mapTF_cloud_ptr->header);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr sensorTF_match_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::PointCloud<pcl::PointXYZI>::Ptr mapTF_unmatch_cloud_ptr(new pcl::PointCloud<pcl::PointXYZI>);
@@ -267,6 +269,7 @@ void CompareMapFilter::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
     return;
   }
   sensor_msgs::PointCloud2 mapTF_unmatch_cloud_msg;
+  pcl::toROSMsg(*sensorTF_unmatch_cloud_ptr, sensorTF_unmatch_cloud_msg);
   unmatch_points_pub_.publish(sensorTF_unmatch_cloud_msg);
 }
 
