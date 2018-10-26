@@ -54,7 +54,7 @@ build_kinetic:
     - catkin_test_results
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
-    - lcov -r lcov.total 'tests/*' 'test/*' 'build/*' 'devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
+    - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
     - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage
     - tar -czvf coverage.tar.gz coverage
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
