@@ -12,6 +12,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/filters/passthrough.h>
 
 //headers in boost
 #include <boost/optional.hpp>
@@ -27,8 +28,10 @@ public:
     void init();
     void run();
 private:
+    pcl::PassThrough<pcl::PointXYZ> pass_;
     ros::Subscriber map_sub_;
     ros::Subscriber pose_sub_;
+    ros::Publisher map_pub_;
     std::mutex mtx_;
     ros::NodeHandle nh_,pnh_;
     void map_callback_(const sensor_msgs::PointCloud2::ConstPtr msg);
@@ -37,8 +40,8 @@ private:
     double load_trigger_distance_;
     std::string map_frame_;
     boost::optional<geometry_msgs::PoseStamped> last_load_pose_;
-    boost::optional<pcl::PointCloud<pcl::PointXYZI> > map_cloud_;
-    volatile bool is_initialized_;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr map_cloud_;
+    volatile bool map_recieved_;
     tf2_ros::Buffer tf_buffer_;
     tf2_ros::TransformListener tf_listener_;
 };
