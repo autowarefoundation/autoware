@@ -41,6 +41,10 @@ add_executable(g30esli_interface
   node/g30esli_interface/g30esli_interface.cpp
 )
 
+add_dependencies(g30esli_interface
+  ${catkin_EXPORTED_TARGETS}
+)
+
 target_link_libraries(g30esli_interface
   ${catkin_LIBRARIES}
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/libymc_can_${LIB_VERSION}${LIB_ARCH}.a
