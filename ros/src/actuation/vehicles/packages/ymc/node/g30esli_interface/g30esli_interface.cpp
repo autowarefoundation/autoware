@@ -61,21 +61,22 @@ bool g_terminate_thread = false;
 // cansend tool
 mycansend::CanSender g_cansender;
 
-void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr &msg)
+void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
   // TODO: use steer angle, shift, turn signal
-  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6; // [m/s] -> [km/h]
-  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z, msg->twist_cmd.twist.linear.x, g_wheel_base);
+  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
+  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z,
+                                                                           msg->twist_cmd.twist.linear.x, g_wheel_base);
 
   // factor
-  target_velocity           *= 10.0;
+  target_velocity *= 10.0;
   target_steering_angle_deg *= 10.0;
 
-  g_target_velocity_ui16    = target_velocity;
-  g_steering_angle_deg_i16  = target_steering_angle_deg * -1.0;
+  g_target_velocity_ui16 = target_velocity;
+  g_steering_angle_deg_i16 = target_steering_angle_deg * -1.0;
 }
 
-void current_vel_callback(const geometry_msgs::TwistStampedConstPtr &msg)
+void current_vel_callback(const geometry_msgs::TwistStampedConstPtr& msg)
 {
   g_current_vel_kmph = msg->twist.linear.x * 3.6;
 }
@@ -89,7 +90,8 @@ void changeMode()
     if (ymc::kbhit())
     {
       char c = getchar();
-      if (c == ' ') {
+      if (c == ' ')
+      {
         g_mode = 3;
       }
       else if (c == 's')
@@ -97,7 +99,7 @@ void changeMode()
         g_mode = 8;
       }
     }
-    usleep(20000); // sleep 20msec
+    usleep(20000);  // sleep 20msec
   }
 }
 
@@ -124,21 +126,21 @@ void readCanData(FILE* fp)
 
       int id = std::stoi(parsed_data.at(1), nullptr, 10);
       double _current_vel_mps = ymc::translateCanData(id, data, &g_mode);
-      if(_current_vel_mps != RET_NO_PUBLISH )
+      if (_current_vel_mps != RET_NO_PUBLISH)
       {
-	      geometry_msgs::TwistStamped ts;
+        geometry_msgs::TwistStamped ts;
         ts.header.frame_id = "base_link";
         ts.header.stamp = ros::Time::now();
-	      ts.twist.linear.x = _current_vel_mps;
-	      g_current_twist_pub.publish(ts);
+        ts.twist.linear.x = _current_vel_mps;
+        g_current_twist_pub.publish(ts);
       }
     }
   }
 }
 
-} // namespace
+}  // namespace
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   // ROS initialization
   ros::init(argc, argv, "g30esli_interface");
@@ -156,13 +158,14 @@ int main(int argc, char *argv[])
 
   // subscriber
   ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
-  ros::Subscriber current_vel_sub = n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
+  ros::Subscriber current_vel_sub =
+      n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
 
   // publisher
   g_current_twist_pub = n.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
 
   // read can data from candump
-  FILE *fp = popen("candump can0", "r");
+  FILE* fp = popen("candump can0", "r");
 
   // create threads
   std::thread t1(changeMode);
@@ -173,11 +176,11 @@ int main(int argc, char *argv[])
   while (ros::ok())
   {
     // data
-    unsigned char mode              = static_cast<unsigned char>(g_mode);
-    unsigned char shift             = 0;
-    uint16_t target_velocity_ui16   = g_target_velocity_ui16;
-    int16_t steering_angle_deg_i16  = g_steering_angle_deg_i16;
-    static unsigned char brake      = 1;
+    unsigned char mode = static_cast<unsigned char>(g_mode);
+    unsigned char shift = 0;
+    uint16_t target_velocity_ui16 = g_target_velocity_ui16;
+    int16_t steering_angle_deg_i16 = g_steering_angle_deg_i16;
+    static unsigned char brake = 1;
     static unsigned char heart_beat = 0;
 
     // change to STOP MODE...
