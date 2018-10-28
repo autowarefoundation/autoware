@@ -9,6 +9,8 @@ try:
 except:
     from collections import OrderedDict # only included from python 2.7 on
 from tqdm import tqdm
+from shutil import copyfile
+import datetime
 
 class tData:
     """
@@ -257,12 +259,12 @@ class trackingEvaluation(object):
             self.n_gt_trajectories=n_trajectories
         return True
 
-    def createEvalDir(self):
+    def createEvalDir(self, benchmark_dir):
         """
             Creates directory to store evaluation results and data for visualization.
         """
 
-        self.eval_dir = "./results/"
+        self.eval_dir = benchmark_dir
         if not os.path.exists(self.eval_dir):
             print ("create directory:", self.eval_dir)
             os.makedirs(self.eval_dir)
@@ -709,14 +711,14 @@ class trackingEvaluation(object):
         # mail.msg(summary)
 
         # write summary to file summary_cls.txt
-        filename = os.path.join("./results", "summary.txt" )
+        filename = os.path.join(self.eval_dir, "summary.txt" )
         dump = open(filename, "w+")
         # print>>dump, summary
         print(summary, end="", file=dump)
         dump.close()
 
 
-def evaluate(velo_data_num, result_file_path, gt_file_path):
+def evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir):
     """
         Entry point for evaluation, will load the data and start evaluation for
         CAR and PEDESTRIAN if available.
@@ -747,7 +749,7 @@ def evaluate(velo_data_num, result_file_path, gt_file_path):
     print("Start Evaluation...")
     # create needed directories, evaluate and save stats
     try:
-        e.createEvalDir()
+        e.createEvalDir(benchmark_dir)
     except:
         print("Caught exception while creating results.")
     if e.compute3rdPartyMetrics():
@@ -760,29 +762,13 @@ def evaluate(velo_data_num, result_file_path, gt_file_path):
     print("Thank you for participating in our benchmark!")
     return True
 
-# def convertRawDataGTtoTrackingGT():
-#
+# def makeBench():
 
-import datetime
+
 #########################################################################
 # entry point of evaluation script
 if __name__ == "__main__":
-    # evaluate results and send notification email to user
-    # base_dir = '/home/kosuke/hdd/kitti'
-    # date     = '2011_09_26'
-    # drive    = '0005'
-    # partial_tracklet_path = '{}/{}_drive_{}_sync/tracklet_labels.xml'.format(date, date, drive)
-    # partial_velo_path     = '{}/{}_drive_{}_sync/velodyne_points/data'.format(date, date, drive)
-    # tracklet_path    = os.path.join(base_dir, partial_tracklet_path)
-    # velo_dir         = os.path.join(base_dir, partial_velo_path)
-    # gt_file_path     = './results/gt_frame.txt'
-    # result_file_path = './results/result.txt'
-    # velo_data_num    = len(os.listdir(velo_dir))
-    # dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
-    # success = evaluate(velo_data_num, result_file_path, gt_file_path)
 
-
-    # print (datetime.datetime.now())
     if datetime.datetime.now().minute < 10:
         minute_str = str(0) + str(datetime.datetime.now().minute)
     else:
@@ -791,9 +777,32 @@ if __name__ == "__main__":
         second_str = str(0) + str(datetime.datetime.now().second)
     else:
         second_str = str(datetime.datetime.now().second)
-    file_name = str(datetime.datetime.now().year) + "_" + \
-                str(datetime.datetime.now().month) + \
-                str(datetime.datetime.now().day) + "_" + \
-                str(datetime.datetime.now().hour) + \
-                minute_str + second_str
-    print (file_name)
+    time_file_name = str(datetime.datetime.now().year) + "_" + \
+                    str(datetime.datetime.now().month) + \
+                    str(datetime.datetime.now().day) + "_" + \
+                    str(datetime.datetime.now().hour) + \
+                    minute_str + second_str
+    benchmark_dir_name = "benchmark_" + time_file_name
+    print (benchmark_dir_name)
+
+    # TODO:python argument
+    base_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync"
+    # copy benchmark_results.txt to `benchmark_dir_name`/benchmark_results.txt
+    benchmark_dir = os.path.join(base_dir, benchmark_dir_name)
+    os.makedirs(benchmark_dir)
+    result_file_name = "benchmark_results.txt"
+    result_file_path = os.path.join(base_dir, result_file_name)
+    result_file_in_benchmark_dir = os.path.join(benchmark_dir, result_file_name)
+    copyfile(result_file_path, result_file_in_benchmark_dir)
+
+    print (result_file_path)
+    print (result_file_in_benchmark_dir)
+
+    tracklet_file_name = "tracklet_labels.xml"
+    partial_velo_path = "velodyne_points/data"
+    tracklet_path    = os.path.join(base_dir, tracklet_file_name)
+    gt_file_path     = os.path.join(base_dir, "gt_frame.txt")
+    velo_dir         = os.path.join(base_dir, partial_velo_path)
+    velo_data_num    = len(os.listdir(velo_dir))
+    dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
+    success = evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir)
