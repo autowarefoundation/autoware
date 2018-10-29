@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys,os,copy,math
 from munkres import Munkres
@@ -22,7 +22,7 @@ class ObjectData:
 
     def __init__(self,frame=-1,obj_type="unset",truncation=-1,occlusion=-1,\
                  obs_angle=-10,x1=-1,y1=-1,x2=-1,y2=-1,w=-1,h=-1,l=-1,\
-                 X=-1000,Y=-1000,Z=-1000,yaw=-10,score=-1000,track_id=-1):
+                 cx=-1000,cy=-1000,cz=-1000,yaw=-10,score=-1000,track_id=-1):
         """
             Constructor, initializes the object given the parameters.
         """
@@ -41,9 +41,9 @@ class ObjectData:
         self.w          = w
         self.h          = h
         self.l          = l
-        self.X          = X
-        self.Y          = Y
-        self.Z          = Z
+        self.cx          = cx
+        self.cy          = cy
+        self.cz          = cz
         self.yaw        = yaw
         self.score      = score
         self.ignored    = False
@@ -93,8 +93,6 @@ class TrackingEvaluation(object):
         self.n_trs             = [] # number of tracker detections minus ignored tracker detections PER SEQUENCE
         self.n_itr             = 0 # number of ignored tracker detections
         self.n_itrs            = [] # number of ignored tracker detections PER SEQUENCE
-        # self.n_igttr           = 0 # number of ignored ground truth detections where the corresponding associated tracker detection is also ignored
-        # self.n_tr_trajectories = 0
         self.n_tr_seq          = []
         self.MOTA              = 0
         self.MOTP              = 0
@@ -127,10 +125,6 @@ class TrackingEvaluation(object):
         self.max_truncation    = max_truncation # maximum truncation of an object for evaluation
         self.max_occlusion     = max_occlusion # maximum occlusion of an object for evaluation
         self.min_height        = min_height # minimum height of an object for evaluation
-        self.n_sample_points   = 500
-
-        # this should be enough to hold all groundtruth trajectories
-        # is expanded if necessary and reduced in any case
 
     def load_tracked_data(self, result_file_path):
         """
@@ -171,26 +165,17 @@ class TrackingEvaluation(object):
         """
         # construct objectDetections object to hold detection data
         object_data  = ObjectData()
-        data    = []
-        eval_3d = True
-        eval_2d = False
-
         n_trajectories     = 0
-
-        i              = 0
-        f              = open(file_path, "r")
-
+        file           = open(file_path, "r")
         f_data         = [[] for x in range(self.n_frames)] # current set has only 1059 entries, sufficient length is checked anyway
         ids            = []
-        n_in_seq       = 0
         id_frame_cache = []
 
-        for line in f:
+        for line in file:
             # KITTI tracking benchmark data format:
-            # (frame,tracklet_id,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,X,Y,Z,ry)
+            # (frame,tracklet_id,objectType,truncation,occlusion,alpha,x1,y1,x2,y2,h,w,l,cx,cy,cz,yaw)
             line   = line.strip()
             fields = line.split(" ")
-            # print(fields[0])
 
             # get fields from table
             object_data.frame        = int(float(fields[0]))     # frame
@@ -206,9 +191,9 @@ class TrackingEvaluation(object):
             object_data.h            = float(fields[10])         # height [m]
             object_data.w            = float(fields[11])         # width  [m]
             object_data.l            = float(fields[12])         # length [m]
-            object_data.X            = float(fields[13])         # X [m]
-            object_data.Y            = float(fields[14])         # Y [m]
-            object_data.Z            = float(fields[15])         # Z [m]
+            object_data.cx           = float(fields[13])         # cx [m]
+            object_data.cy           = float(fields[14])         # cy [m]
+            object_data.cz           = float(fields[15])         # cz [m]
             object_data.yaw          = float(fields[16])         # yaw angle [rad]
 
             # do not consider objects marked as invalid
@@ -236,7 +221,7 @@ class TrackingEvaluation(object):
             if object_data.track_id not in ids and object_data.obj_type!="DontCare":
                 ids.append(object_data.track_id)
                 n_trajectories +=1
-        f.close()
+        file.close()
 
 
         if not loading_groundtruth:
@@ -293,21 +278,7 @@ class TrackingEvaluation(object):
         seq_trajectories      = defaultdict(list)
         seq_ignored           = defaultdict(list)
 
-        # statistics over the current sequence, check the corresponding
-        # variable comments in __init__ to get their meaning
-        seqtp            = 0
-        seqitp           = 0
-        seqfn            = 0
-        seqifn           = 0
-        seqfp            = 0
-        seqigt           = 0
-        seqitr           = 0
-
         last_frame_ids = [[],[]]
-
-        n_gts = 0
-        n_trs = 0
-
 
         for i_frame in tqdm(range(len(seq_gt))):
             frame_gts      = seq_gt[i_frame]
@@ -317,9 +288,6 @@ class TrackingEvaluation(object):
             # counting total number of ground truth and tracker objects
             self.n_gt += len(frame_gts)
             self.n_tr += len(frame_results)
-
-            n_gts += len(frame_gts)
-            n_trs += len(frame_results)
 
             # use hungarian method to associate, using boxoverlap 0..1 as cost
             # build cost matrix
@@ -336,15 +304,12 @@ class TrackingEvaluation(object):
                 cost_row         = []
                 # loop over tracked objects in one frame
                 for result in frame_results:
-                    # overlap == 1 is cost ==0
+                    # overlap == 1 means cost == 0
                     # Rect(cx, cy, l, w, angle)
-                    # todo might be wrong: euclidean cluster messed up calculating w, l
-                    # Better implementation if switching w and l based on box's quartenion
-                    # and self.min_overlap might be too big
-                    r1   = Rect(gt.X, gt.Y, gt.l, gt.w, gt.yaw)
-                    r2   = Rect(result.X, result.Y, result.l, result.w, result.yaw)
+                    r1   = Rect(gt.cx, gt.cy, gt.l, gt.w, gt.yaw)
+                    r2   = Rect(result.cx, result.cy, result.l, result.w, result.yaw)
                     iou  = r1.intersection_over_union(r2)
-                    cost = 1- iou
+                    cost = 1 - iou
                     # gating for boxoverlap
                     if cost<=self.min_overlap:
                         cost_row.append(cost)
@@ -373,7 +338,7 @@ class TrackingEvaluation(object):
                                # be subtracted from tmpc for MODP computation
 
             # mapping for tracker ids and ground truth ids
-            for row,col in association_matrix:
+            for row, col in association_matrix:
                 # apply gating on boxoverlap
                 c = cost_matrix[row][col]
                 if c < max_cost:
@@ -390,6 +355,7 @@ class TrackingEvaluation(object):
                     self.tp += 1
                     tmptp   += 1
                 else:
+                    # wrong data association
                     frame_gts[row].tracker = -1
                     self.fn               += 1
                     tmpfn                 += 1
@@ -458,15 +424,6 @@ class TrackingEvaluation(object):
             tmpfp   += len(frame_results) - tmptp - nignoredtracker - nignoredtp
             self.fp += len(frame_results) - tmptp - nignoredtracker - nignoredtp
 
-            # update sequence data
-            seqtp  += tmptp
-            seqitp += nignoredtp
-            seqfp  += tmpfp
-            seqfn  += tmpfn
-            seqifn += nignoredfn
-            seqigt += nignoredfn + nignoredtp
-            seqitr += nignoredtracker
-
             # sanity checks
             # - the number of true positives minues ignored true positives
             #   should be greater or equal to 0
@@ -526,21 +483,13 @@ class TrackingEvaluation(object):
             # save current index
             last_frame_ids = frame_ids
 
-            # todo modify here motp
-            # compute MOTP_t
-            MODP_t = 1
-            if tmptp!=0:
-                MODP_t = tmpc/float(tmptp)
-            self.MODP_t.append(MODP_t)
-
         # compute MT/PT/ML, fragments, idswitches for all groundtruth trajectories
         n_ignored_tr_total = 0
-        # for seq_idx, (seq_trajectories,seq_ignored) in enumerate(zip(self.gt_trajectories, self.ign_trajectories)):
 
         if len(seq_trajectories)==0:
             print("Error: There is no trajectories data")
             return
-        tmpMT, tmpML, tmpPT, tmpId_switches, tmpFragments = [0]*5
+        tmpMT, tmpML, tmpPT, tmpId_switches = [0]*4
         n_ignored_tr = 0
         for g, ign_g in zip(seq_trajectories.values(), seq_ignored.values()):
             # all frames of this gt trajectory are ignored
@@ -567,14 +516,12 @@ class TrackingEvaluation(object):
                     tmpId_switches   += 1
                     self.id_switches += 1
                 if f < len(g)-1 and g[f-1] != g[f] and last_id != -1 and g[f] != -1 and g[f+1] != -1:
-                    tmpFragments   += 1
                     self.fragments += 1
                 if g[f] != -1:
                     tracked += 1
                     last_id = g[f]
             # handle last frame; tracked state is handled in for loop (g[f]!=-1)
             if len(g)>1 and g[f-1] != g[f] and last_id != -1  and g[f] != -1 and not ign_g[f]:
-                tmpFragments   += 1
                 self.fragments += 1
 
             # compute MT/PT/ML
@@ -598,44 +545,13 @@ class TrackingEvaluation(object):
             self.PT /= float(self.n_gt_trajectories-n_ignored_tr_total)
             self.ML /= float(self.n_gt_trajectories-n_ignored_tr_total)
 
-        # precision/recall etc.
+        # precision/recall
         if (self.fp+self.tp)==0 or (self.tp+self.fn)==0:
             self.recall = 0.
             self.precision = 0.
         else:
             self.recall = self.tp/float(self.tp+self.fn)
             self.precision = self.tp/float(self.fp+self.tp)
-        if (self.recall+self.precision)==0:
-            self.F1 = 0.
-        else:
-            self.F1 = 2.*(self.precision*self.recall)/(self.precision+self.recall)
-        if self.n_frames==0:
-            self.FAR = "n/a"
-        else:
-            self.FAR = self.fp/float(self.n_frames)
-
-        # compute CLEARMOT
-        if self.n_gt==0:
-            self.MOTA = -float("inf")
-            self.MODA = -float("inf")
-        else:
-            self.MOTA  = 1 - (self.fn + self.fp + self.id_switches)/float(self.n_gt)
-            self.MODA  = 1 - (self.fn + self.fp) / float(self.n_gt)
-        if self.tp==0:
-            self.MOTP  = float("inf")
-        else:
-            self.MOTP  = self.total_cost / float(self.tp)
-        if self.n_gt!=0:
-            if self.id_switches==0:
-                self.MOTAL = 1 - (self.fn + self.fp + self.id_switches)/float(self.n_gt)
-            else:
-                self.MOTAL = 1 - (self.fn + self.fp + math.log10(self.id_switches))/float(self.n_gt)
-        else:
-            self.MOTAL = -float("inf")
-        if self.n_frames==0:
-            self.MODP = "n/a"
-        else:
-            self.MODP = sum(self.MODP_t)/float(self.n_frames)
         return True
 
     def _print_entry(self, key, val,width=(70,10)):
@@ -663,16 +579,16 @@ class TrackingEvaluation(object):
         summary = ""
 
         summary += "tracking evaluation summary".center(80,"=") + "\n"
-        summary += self._print_entry("Multiple Object Tracking Accuracy (MOTA)", self.MOTA) + "\n"
-        summary += self._print_entry("Multiple Object Tracking Precision (MOTP)", self.MOTP) + "\n"
-        summary += self._print_entry("Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL) + "\n"
-        summary += self._print_entry("Multiple Object Detection Accuracy (MODA)", self.MODA) + "\n"
-        summary += self._print_entry("Multiple Object Detection Precision (MODP)", self.MODP) + "\n"
-        summary += "\n"
+        # summary += self._print_entry("Multiple Object Tracking Accuracy (MOTA)", self.MOTA) + "\n"
+        # summary += self._print_entry("Multiple Object Tracking Precision (MOTP)", self.MOTP) + "\n"
+        # summary += self._print_entry("Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL) + "\n"
+        # summary += self._print_entry("Multiple Object Detection Accuracy (MODA)", self.MODA) + "\n"
+        # summary += self._print_entry("Multiple Object Detection Precision (MODP)", self.MODP) + "\n"
+        # summary += "\n"
         summary += self._print_entry("Recall", self.recall) + "\n"
-        summary += self._print_entry("Precision", self.precision) + "\n"
-        summary += self._print_entry("F1", self.F1) + "\n"
-        summary += self._print_entry("False Alarm Rate", self.FAR) + "\n"
+        # summary += self._print_entry("Precision", self.precision) + "\n"
+        # summary += self._print_entry("F1", self.F1) + "\n"
+        # summary += self._print_entry("False Alarm Rate", self.FAR) + "\n"
         summary += "\n"
         summary += self._print_entry("Mostly Tracked", self.MT) + "\n"
         summary += self._print_entry("Partly Tracked", self.PT) + "\n"
