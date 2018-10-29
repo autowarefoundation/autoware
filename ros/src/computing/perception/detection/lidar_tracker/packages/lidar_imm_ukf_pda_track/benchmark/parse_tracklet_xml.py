@@ -9,20 +9,20 @@ import os
 STATE_UNSET = 0
 STATE_INTERP = 1
 STATE_LABELED = 2
-stateFromText = {'0':STATE_UNSET, '1':STATE_INTERP, '2':STATE_LABELED}
+STATEFROMTEXT = {'0':STATE_UNSET, '1':STATE_INTERP, '2':STATE_LABELED}
 
 OCC_UNSET = 255  # -1 as uint8
 OCC_VISIBLE = 0
 OCC_PARTLY = 1
 OCC_FULLY = 2
-occFromText = {'-1':OCC_UNSET, '0':OCC_VISIBLE, '1':OCC_PARTLY, '2':OCC_FULLY}
+OCCFROMTEXT = {'-1':OCC_UNSET, '0':OCC_VISIBLE, '1':OCC_PARTLY, '2':OCC_FULLY}
 
 TRUNC_UNSET = 255  # -1 as uint8, but in xml files the value '99' is used!
 TRUNC_IN_IMAGE = 0
 TRUNC_TRUNCATED = 1
 TRUNC_OUT_IMAGE = 2
 TRUNC_BEHIND_IMAGE = 3
-truncFromText = {'99':TRUNC_UNSET, '0':TRUNC_IN_IMAGE, '1':TRUNC_TRUNCATED, '2':TRUNC_OUT_IMAGE, '3': TRUNC_BEHIND_IMAGE}
+TRUNCFROMTEXT = {'99':TRUNC_UNSET, '0':TRUNC_IN_IMAGE, '1':TRUNC_TRUNCATED, '2':TRUNC_OUT_IMAGE, '3': TRUNC_BEHIND_IMAGE}
 
 
 class Tracklet(object):
@@ -31,32 +31,32 @@ class Tracklet(object):
 
     Tracklets are created in function parseXML and can most conveniently used as follows:
 
-    for trackletObj in parseXML(trackletFile):
-    for translation, rotation, state, occlusion, truncation, amtOcclusion, amtBorders, absoluteFrameNumber in trackletObj:
+    for trackletObj in parseXML(tracklet_file):
+    for translation, rotation, state, occlusion, truncation, amt_occlusion, amt_borders, absolute_frame_number in trackletObj:
       ... your code here ...
     #end: for all frames
     #end: for all tracklets
 
-    absoluteFrameNumber is in range [firstFrame, firstFrame+nFrames[
-    amtOcclusion and amtBorders could be None
+    absolute_frame_number is in range [first_frame, first_frame+n_frames[
+    amt_occlusion and amt_borders could be None
 
-    You can of course also directly access the fields objType (string), size (len-3 ndarray), firstFrame/nFrames (int),
-    trans/rots (nFrames x 3 float ndarrays), states/truncs (len-nFrames uint8 ndarrays), occs (nFrames x 2 uint8 ndarray),
-    and for some tracklets amtOccs (nFrames x 2 float ndarray) and amtBorders (nFrames x 3 float ndarray). The last two
+    You can of course also directly access the fields objType (string), size (len-3 ndarray), first_frame/n_frames (int),
+    trans/rots (n_frames x 3 float ndarrays), states/truncs (len-n_frames uint8 ndarrays), occs (n_frames x 2 uint8 ndarray),
+    and for some tracklets amt_occs (n_frames x 2 float ndarray) and amt_borders (n_frames x 3 float ndarray). The last two
     can be None if the xml file did not include these fields in poses
     """
 
-    objectType = None
+    object_type = None
     size = None  # len-3 float array: (height, width, length)
-    firstFrame = None
+    first_frame = None
     trans = None   # n x 3 float array (x,y,z)
     rots = None    # n x 3 float array (x,y,z)
     states = None  # len-n uint8 array of states
     occs = None    # n x 2 uint8 array  (occlusion, occlusion_kf)
     truncs = None  # len-n uint8 array of truncation
-    amtOccs = None    # None or (n x 2) float array  (amt_occlusion, amt_occlusion_kf)
-    amtBorders = None    # None (n x 3) float array  (amt_border_l / _r / _kf)
-    nFrames = None
+    amt_occs = None    # None or (n x 2) float array  (amt_occlusion, amt_occlusion_kf)
+    amt_borders = None    # None (n x 3) float array  (amt_border_l / _r / _kf)
+    n_frames = None
 
     def __init__(self):
         """
@@ -73,170 +73,167 @@ class Tracklet(object):
         or in
         text = str(trackletObj)
         """
-        return '[Tracklet over {0} frames for {1}]'.format(self.nFrames, self.objectType)
+        return '[Tracklet over {0} frames for {1}]'.format(self.n_frames, self.object_type)
 
     def __iter__(self):
         """
         Returns an iterator that yields tuple of all the available data for each frame
 
         called whenever code iterates over a tracklet object, e.g. in
-        for translation, rotation, state, occlusion, truncation, amtOcclusion, amtBorders, absoluteFrameNumber in trackletObj:
+        for translation, rotation, state, occlusion, truncation, amt_occlusion, amt_borders, absolute_frame_number in trackletObj:
           ...do something ...
         or
         trackDataIter = iter(trackletObj)
         """
-        if self.amtOccs is None:
+        if self.amt_occs is None:
             return zip(self.trans, self.rots, self.states, self.occs, self.truncs,
-                itertools.repeat(None), itertools.repeat(None), range(self.firstFrame, self.firstFrame+self.nFrames))
+                itertools.repeat(None), itertools.repeat(None), range(self.first_frame, self.first_frame+self.n_frames))
         else:
             return zip(self.trans, self.rots, self.states, self.occs, self.truncs,
-                self.amtOccs, self.amtBorders, range(self.firstFrame, self.firstFrame+self.nFrames))
+                self.amt_occs, self.amt_borders, range(self.first_frame, self.first_frame+self.n_frames))
 #end: class Tracklet
 
 
-def parseXML(trackletFile):
+def parse_xml(tracklet_file):
     """
     Parses tracklet xml file and convert results to list of Tracklet objects
 
-    :param trackletFile: name of a tracklet xml file
+    :param tracklet_file: name of a tracklet xml file
     :returns: list of Tracklet objects read from xml file
     """
 
     # convert tracklet XML data to a tree structure
-    eTree = ElementTree()
-    print('Parsing tracklet file', trackletFile)
-    with open(trackletFile) as f:
-        eTree.parse(f)
+    e_tree = ElementTree()
+    print('Parsing tracklet file', tracklet_file)
+    with open(tracklet_file) as f:
+        e_tree.parse(f)
 
     # now convert output to list of Tracklet objects
-    trackletsElem = eTree.find('tracklets')
+    tracklets_elem = e_tree.find('tracklets')
     tracklets = []
-    trackletIdx = 0
-    nTracklets = None
-    for trackletElem in trackletsElem:
-        #print 'track:', trackletElem.tag
-        if trackletElem.tag == 'count':
-            nTracklets = int(trackletElem.text)
-            print('File contains', nTracklets, 'tracklets')
-        elif trackletElem.tag == 'item_version':
+    tracklet_idx = 0
+    n_tracklets = None
+    for tracklet_elem in tracklets_elem:
+        if tracklet_elem.tag == 'count':
+            n_tracklets = int(tracklet_elem.text)
+            print('File contains', n_tracklets, 'tracklets')
+        elif tracklet_elem.tag == 'item_version':
             pass
-        elif trackletElem.tag == 'item':
-            #print 'tracklet {0} of {1}'.format(trackletIdx, nTracklets)
-            # a tracklet
-            newTrack = Tracklet()
-            isFinished = False
-            hasAmt = False
-            frameIdx = None
-            for info in trackletElem:
-                if isFinished:
+        elif tracklet_elem.tag == 'item':
+            new_track = Tracklet()
+            is_finished = False
+            has_amt = False
+            frame_idx = None
+            for info in tracklet_elem:
+                if is_finished:
                     raise ValueError('more info on element after finished!')
                 if info.tag == 'objectType':
-                    newTrack.objectType = info.text
+                    new_track.object_type = info.text
                 elif info.tag == 'h':
-                    newTrack.size[0] = float(info.text)
+                    new_track.size[0] = float(info.text)
                 elif info.tag == 'w':
-                    newTrack.size[1] = float(info.text)
+                    new_track.size[1] = float(info.text)
                 elif info.tag == 'l':
-                    newTrack.size[2] = float(info.text)
+                    new_track.size[2] = float(info.text)
                 elif info.tag == 'first_frame':
-                    newTrack.firstFrame = int(info.text)
+                    new_track.first_frame = int(info.text)
                 elif info.tag == 'poses':
                     # this info is the possibly long list of poses
                     for pose in info:
                         if pose.tag == 'count':     # this should come before the others
-                            if newTrack.nFrames is not None:
+                            if new_track.n_frames is not None:
                                 raise ValueError('there are several pose lists for a single track!')
-                            elif frameIdx is not None:
+                            elif frame_idx is not None:
                                 raise ValueError('?!')
-                            newTrack.nFrames = int(pose.text)
-                            newTrack.trans = np.nan * np.ones((newTrack.nFrames, 3), dtype=float)
-                            newTrack.rots = np.nan * np.ones((newTrack.nFrames, 3), dtype=float)
-                            newTrack.states = np.nan * np.ones(newTrack.nFrames, dtype='uint8')
-                            newTrack.occs = np.nan * np.ones((newTrack.nFrames, 2), dtype='uint8')
-                            newTrack.truncs = np.nan * np.ones(newTrack.nFrames, dtype='uint8')
-                            newTrack.amtOccs = np.nan * np.ones((newTrack.nFrames, 2), dtype=float)
-                            newTrack.amtBorders = np.nan * np.ones((newTrack.nFrames, 3), dtype=float)
-                            frameIdx = 0
+                            new_track.n_frames = int(pose.text)
+                            new_track.trans = np.nan * np.ones((new_track.n_frames, 3), dtype=float)
+                            new_track.rots = np.nan * np.ones((new_track.n_frames, 3), dtype=float)
+                            new_track.states = np.nan * np.ones(new_track.n_frames, dtype='uint8')
+                            new_track.occs = np.nan * np.ones((new_track.n_frames, 2), dtype='uint8')
+                            new_track.truncs = np.nan * np.ones(new_track.n_frames, dtype='uint8')
+                            new_track.amt_occs = np.nan * np.ones((new_track.n_frames, 2), dtype=float)
+                            new_track.amt_borders = np.nan * np.ones((new_track.n_frames, 3), dtype=float)
+                            frame_idx = 0
                         elif pose.tag == 'item_version':
                             pass
                         elif pose.tag == 'item':
-                            if frameIdx is None:
+                            if frame_idx is None:
                                 raise ValueError('pose item came before number of poses!')
-                            for poseInfo in pose:
-                                if poseInfo.tag == 'tx':
-                                    newTrack.trans[frameIdx, 0] = float(poseInfo.text)
-                                elif poseInfo.tag == 'ty':
-                                    newTrack.trans[frameIdx, 1] = float(poseInfo.text)
-                                elif poseInfo.tag == 'tz':
-                                    newTrack.trans[frameIdx, 2] = float(poseInfo.text)
-                                elif poseInfo.tag == 'rx':
-                                    newTrack.rots[frameIdx, 0] = float(poseInfo.text)
-                                elif poseInfo.tag == 'ry':
-                                    newTrack.rots[frameIdx, 1] = float(poseInfo.text)
-                                elif poseInfo.tag == 'rz':
-                                    newTrack.rots[frameIdx, 2] = float(poseInfo.text)
-                                elif poseInfo.tag == 'state':
-                                    newTrack.states[frameIdx] = stateFromText[poseInfo.text]
-                                elif poseInfo.tag == 'occlusion':
-                                    newTrack.occs[frameIdx, 0] = occFromText[poseInfo.text]
-                                elif poseInfo.tag == 'occlusion_kf':
-                                    newTrack.occs[frameIdx, 1] = occFromText[poseInfo.text]
-                                elif poseInfo.tag == 'truncation':
-                                    newTrack.truncs[frameIdx] = truncFromText[poseInfo.text]
-                                elif poseInfo.tag == 'amt_occlusion':
-                                    newTrack.amtOccs[frameIdx,0] = float(poseInfo.text)
-                                    hasAmt = True
-                                elif poseInfo.tag == 'amt_occlusion_kf':
-                                    newTrack.amtOccs[frameIdx,1] = float(poseInfo.text)
-                                    hasAmt = True
-                                elif poseInfo.tag == 'amt_border_l':
-                                    newTrack.amtBorders[frameIdx,0] = float(poseInfo.text)
-                                    hasAmt = True
-                                elif poseInfo.tag == 'amt_border_r':
-                                    newTrack.amtBorders[frameIdx,1] = float(poseInfo.text)
-                                    hasAmt = True
-                                elif poseInfo.tag == 'amt_border_kf':
-                                    newTrack.amtBorders[frameIdx,2] = float(poseInfo.text)
-                                    hasAmt = True
+                            for pose_info in pose:
+                                if pose_info.tag == 'tx':
+                                    new_track.trans[frame_idx, 0] = float(pose_info.text)
+                                elif pose_info.tag == 'ty':
+                                    new_track.trans[frame_idx, 1] = float(pose_info.text)
+                                elif pose_info.tag == 'tz':
+                                    new_track.trans[frame_idx, 2] = float(pose_info.text)
+                                elif pose_info.tag == 'rx':
+                                    new_track.rots[frame_idx, 0] = float(pose_info.text)
+                                elif pose_info.tag == 'ry':
+                                    new_track.rots[frame_idx, 1] = float(pose_info.text)
+                                elif pose_info.tag == 'rz':
+                                    new_track.rots[frame_idx, 2] = float(pose_info.text)
+                                elif pose_info.tag == 'state':
+                                    new_track.states[frame_idx] = STATEFROMTEXT[pose_info.text]
+                                elif pose_info.tag == 'occlusion':
+                                    new_track.occs[frame_idx, 0] = OCCFROMTEXT[pose_info.text]
+                                elif pose_info.tag == 'occlusion_kf':
+                                    new_track.occs[frame_idx, 1] = OCCFROMTEXT[pose_info.text]
+                                elif pose_info.tag == 'truncation':
+                                    new_track.truncs[frame_idx] = TRUNCFROMTEXT[pose_info.text]
+                                elif pose_info.tag == 'amt_occlusion':
+                                    new_track.amt_occs[frame_idx,0] = float(pose_info.text)
+                                    has_amt = True
+                                elif pose_info.tag == 'amt_occlusion_kf':
+                                    new_track.amt_occs[frame_idx,1] = float(pose_info.text)
+                                    has_amt = True
+                                elif pose_info.tag == 'amt_border_l':
+                                    new_track.amt_borders[frame_idx,0] = float(pose_info.text)
+                                    has_amt = True
+                                elif pose_info.tag == 'amt_border_r':
+                                    new_track.amt_borders[frame_idx,1] = float(pose_info.text)
+                                    has_amt = True
+                                elif pose_info.tag == 'amt_border_kf':
+                                    new_track.amt_borders[frame_idx,2] = float(pose_info.text)
+                                    has_amt = True
                                 else:
-                                    raise ValueError('unexpected tag in poses item: {0}!'.format(poseInfo.tag))
-                            frameIdx += 1
+                                    raise ValueError('unexpected tag in poses item: {0}!'.format(pose_info.tag))
+                            frame_idx += 1
                         else:
                             raise ValueError('unexpected pose info: {0}!'.format(pose.tag))
                 elif info.tag == 'finished':
-                    isFinished = True
+                    is_finished = True
                 else:
                     raise ValueError('unexpected tag in tracklets: {0}!'.format(info.tag))
             #end: for all fields in current tracklet
 
             # some final consistency checks on new tracklet
-            if not isFinished:
-                warn('tracklet {0} was not finished!'.format(trackletIdx))
-            if newTrack.nFrames is None:
-                warn('tracklet {0} contains no information!'.format(trackletIdx))
-            elif frameIdx != newTrack.nFrames:
-                warn('tracklet {0} is supposed to have {1} frames, but perser found {1}!'.format(trackletIdx, newTrack.nFrames, frameIdx))
-            if np.abs(newTrack.rots[:,:2]).sum() > 1e-16:
+            if not is_finished:
+                warn('tracklet {0} was not finished!'.format(tracklet_idx))
+            if new_track.n_frames is None:
+                warn('tracklet {0} contains no information!'.format(tracklet_idx))
+            elif frame_idx != new_track.n_frames:
+                warn('tracklet {0} is supposed to have {1} frames, but perser found {1}!'.format(tracklet_idx, new_track.n_frames, frame_idx))
+            if np.abs(new_track.rots[:,:2]).sum() > 1e-16:
                 warn('track contains rotation other than yaw!')
 
-            # if amtOccs / amtBorders are not set, set them to None
-            if not hasAmt:
-                newTrack.amtOccs = None
-                newTrack.amtBorders = None
+            # if amt_occs / amt_borders are not set, set them to None
+            if not has_amt:
+                new_track.amt_occs = None
+                new_track.amt_borders = None
 
             # add new tracklet to list
-            tracklets.append(newTrack)
-            trackletIdx += 1
+            tracklets.append(new_track)
+            tracklet_idx += 1
 
         else:
             raise ValueError('unexpected tracklet info')
     #end: for tracklet list items
 
-    print('Loaded', trackletIdx, 'tracklets.')
+    print('Loaded', tracklet_idx, 'tracklets.')
 
     # final consistency check
-    if trackletIdx != nTracklets:
-        warn('according to xml information the file has {0} tracklets, but parser found {1}!'.format(nTracklets, trackletIdx))
+    if tracklet_idx != n_tracklets:
+        warn('according to xml information the file has {0} tracklets, but parser found {1}!'.format(n_tracklets, tracklet_idx))
 
     return tracklets
 #end: function parseXML
@@ -256,7 +253,7 @@ def dump_frames_text_from_tracklets(n_frames, xml_path, gt_file_path):
     contains coordinates of bounding box vertices for each object in the frame, and the second array contains objects
     types as strings.
     """
-    tracklets = parseXML(xml_path)
+    tracklets = parse_xml(xml_path)
 
     frame_num          = {} #1
     frame_track_id     = {} #1
@@ -281,19 +278,19 @@ def dump_frames_text_from_tracklets(n_frames, xml_path, gt_file_path):
         # this part is inspired by kitti object development kit matlab code: computeBox3D
         h, w, l = tracklet.size
         # loop over all data in tracklet
-        for translation, rotation, state, occlusion, truncation, amtOcclusion, amtBorders, absoluteFrameNumber in tracklet:
+        for translation, rotation, state, occlusion, truncation, amt_occlusion, amt_borders, absolute_frame_number in tracklet:
             yaw = rotation[2]  # other rotations are supposedly 0
             assert np.abs(rotation[:2]).sum() == 0, 'object rotations other than yaw given!'
 
             # concate data
-            frame_num[absoluteFrameNumber]          = frame_num[absoluteFrameNumber]          + [absoluteFrameNumber]
-            frame_track_id[absoluteFrameNumber]     = frame_track_id[absoluteFrameNumber]     + [i]
-            frame_obj_type[absoluteFrameNumber]     = frame_obj_type[absoluteFrameNumber]     + [tracklet.objectType]
-            frame_truncated[absoluteFrameNumber]    = frame_truncated[absoluteFrameNumber]    + [truncation]
-            frame_occluded[absoluteFrameNumber]     = frame_occluded[absoluteFrameNumber]     + [occlusion[0]]
-            frame_dimensions[absoluteFrameNumber]   = frame_dimensions[absoluteFrameNumber]   + [np.array([l, w, h])]
-            frame_location[absoluteFrameNumber]     = frame_location[absoluteFrameNumber]     + [np.array(translation)]
-            frame_rotation_yaw[absoluteFrameNumber] = frame_rotation_yaw[absoluteFrameNumber] + [yaw]
+            frame_num[absolute_frame_number]          = frame_num[absolute_frame_number]          + [absolute_frame_number]
+            frame_track_id[absolute_frame_number]     = frame_track_id[absolute_frame_number]     + [i]
+            frame_obj_type[absolute_frame_number]     = frame_obj_type[absolute_frame_number]     + [tracklet.object_type]
+            frame_truncated[absolute_frame_number]    = frame_truncated[absolute_frame_number]    + [truncation]
+            frame_occluded[absolute_frame_number]     = frame_occluded[absolute_frame_number]     + [occlusion[0]]
+            frame_dimensions[absolute_frame_number]   = frame_dimensions[absolute_frame_number]   + [np.array([l, w, h])]
+            frame_location[absolute_frame_number]     = frame_location[absolute_frame_number]     + [np.array(translation)]
+            frame_rotation_yaw[absolute_frame_number] = frame_rotation_yaw[absolute_frame_number] + [yaw]
 
     gt_text_file = os.path.join(gt_file_path)
     file = open(gt_text_file, 'w')
