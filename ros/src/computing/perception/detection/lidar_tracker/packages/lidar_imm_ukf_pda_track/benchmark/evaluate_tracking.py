@@ -60,15 +60,11 @@ class ObjectData:
 
 
 class TrackingEvaluation(object):
-    """ tracking statistics (CLEAR MOT, id-switches, fragments, ML/PT/MT, precision/recall)
-             MOTA	- Multi-object tracking accuracy in [0,100]
-             MOTP	- Multi-object tracking precision in [0,100] (3D) / [td,100] (2D)
-             MOTAL	- Multi-object tracking accuracy in [0,100] with log10(id-switches)
-
+    """ tracking statistics (CLEAR MOT, id-switches, fragments, mostly_lost/partialy_tracked/mostly_tracked, precision/recall)
              id-switches - number of id switches
              fragments   - number of fragmentations
 
-             MT, PT, ML	- number of mostly tracked, partially tracked and mostly lost trajectories
+             mostly_tracked, partialy_tracked, mostly_lost	- number of mostly tracked, partially tracked and mostly lost trajectories
 
              recall	        - recall = percentage of detected targets
              precision	    - precision = percentage of correctly detected targets
@@ -85,26 +81,11 @@ class TrackingEvaluation(object):
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
         self.n_igt             = 0 # number of ignored ground truth detections
-        self.n_gts             = [] # number of ground truth detections minus ignored false negatives and true positives PER SEQUENCE
-        self.n_igts            = [] # number of ground ignored truth detections PER SEQUENCE
         self.n_gt_trajectories = 0
-        self.n_gt_seq          = []
         self.n_tr              = 0 # number of tracker detections minus ignored tracker detections
-        self.n_trs             = [] # number of tracker detections minus ignored tracker detections PER SEQUENCE
         self.n_itr             = 0 # number of ignored tracker detections
-        self.n_itrs            = [] # number of ignored tracker detections PER SEQUENCE
-        self.n_tr_seq          = []
-        self.MOTA              = 0
-        self.MOTP              = 0
-        self.MOTAL             = 0
-        self.MODA              = 0
-        self.MODP              = 0
-        self.MODP_t            = []
         self.recall            = 0
         self.precision         = 0
-        self.F1                = 0
-        self.FAR               = 0
-        self.total_cost        = 0
         self.itp               = 0 # number of ignored true positives
         self.tp                = 0 # number of true positives including ignored true positives!
         self.fn                = 0 # number of false negatives WITHOUT ignored false negatives
@@ -113,13 +94,12 @@ class TrackingEvaluation(object):
                                    # a bit tricky, the number of ignored false negatives and ignored true positives
                                    # is subtracted, but if both tracker detection and ground truth detection
                                    # are ignored this number is added again to avoid double counting
-        self.fps               = [] # above PER SEQUENCE
         self.mme               = 0
         self.fragments         = 0
         self.id_switches       = 0
-        self.MT                = 0
-        self.PT                = 0
-        self.ML                = 0
+        self.mostly_tracked                = 0
+        self.partialy_tracked                = 0
+        self.mostly_lost                = 0
 
         self.min_overlap       = min_overlap # minimum bounding box overlap for 3rd party metrics
         self.max_truncation    = max_truncation # maximum truncation of an object for evaluation
@@ -264,7 +244,7 @@ class TrackingEvaluation(object):
                 - Stiefelhagen 2008: Evaluating Multiple Object Tracking Performance: The CLEAR MOT Metrics
                   MOTA, MOTAL, MOTP
                 - Nevatia 2008: Global Data Association for Multi-Object Tracking Using Network Flows
-                  MT/PT/ML
+                  mostly_tracked/partialy_tracked/mostly_lost
         """
         # construct Munkres object for Hungarian Method association
         hm = Munkres()
@@ -327,15 +307,10 @@ class TrackingEvaluation(object):
             # associate
             association_matrix = hm.compute(cost_matrix)
 
-            # tmp variables for sanity checks and MODP computation
+            # tmp variables for sanity checks
             tmptp = 0
             tmpfp = 0
             tmpfn = 0
-            tmpc  = 0 # this will sum up the overlaps for all true positives
-            tmpcs = [0]*len(frame_gts) # this will save the overlaps for all true positives
-                               # the reason is that some true positives might be ignored
-                               # later such that the corrsponding overlaps can
-                               # be subtracted from tmpc for MODP computation
 
             # mapping for tracker ids and ground truth ids
             for row, col in association_matrix:
@@ -346,9 +321,6 @@ class TrackingEvaluation(object):
                     frame_ids[1][row]                             = frame_results[col].track_id
                     frame_results[col].valid                      = True
                     frame_gts[row].distance                       = c
-                    self.total_cost                              += 1-c
-                    tmpc                                         += 1-c
-                    tmpcs[row]                                    = 1-c
                     seq_trajectories[frame_gts[row].track_id][-1] = frame_results[col].track_id
 
                     # true positives are only valid associations
@@ -372,9 +344,6 @@ class TrackingEvaluation(object):
             # check for ignored FN/TP (truncation or neighboring object class)
             nignoredfn  = 0 # the number of ignored false negatives
             nignoredtp = 0 # the number of ignored true positives
-            # nignoredpairs = 0 # the number of ignored pairs, i.e. a true positive
-                              # which is ignored but where the associated tracker
-                              # detection has already been ignored
 
             gi = 0
             for gt in frame_gts:
@@ -390,9 +359,6 @@ class TrackingEvaluation(object):
                         gt.ignored = True
                         nignoredtp += 1
 
-                        # for computing MODP, the overlaps from ignored detections
-                        # are subtracted
-                        tmpc -= tmpcs[gi]
                 gi += 1
 
             # the below might be confusion, check the comments in __init__
@@ -420,7 +386,6 @@ class TrackingEvaluation(object):
             self.ifn += nignoredfn
 
             # false positives = tracker bboxes - associated tracker bboxes
-            # mismatches (mme_t)
             tmpfp   += len(frame_results) - tmptp - nignoredtracker - nignoredtp
             self.fp += len(frame_results) - tmptp - nignoredtracker - nignoredtp
 
@@ -474,22 +439,19 @@ class TrackingEvaluation(object):
                     if tid != lid and lid != -1 and tid != -1:
                         if frame_gts[i].truncation<self.max_truncation:
                             frame_gts[i].id_switch = 1
-                            # ids +=1
                     if tid != lid and lid != -1:
                         if frame_gts[i].truncation<self.max_truncation:
                             frame_gts[i].fragmentation = 1
-                            # fr +=1
 
             # save current index
             last_frame_ids = frame_ids
 
-        # compute MT/PT/ML, fragments, idswitches for all groundtruth trajectories
+        # compute mostly_tracked/partialy_tracked/mostly_lost, fragments, idswitches for all groundtruth trajectories
         n_ignored_tr_total = 0
 
         if len(seq_trajectories)==0:
             print("Error: There is no trajectories data")
             return
-        tmpMT, tmpML, tmpPT, tmpId_switches = [0]*4
         n_ignored_tr = 0
         for g, ign_g in zip(seq_trajectories.values(), seq_ignored.values()):
             # all frames of this gt trajectory are ignored
@@ -499,8 +461,7 @@ class TrackingEvaluation(object):
                 continue
             # all frames of this gt trajectory are not assigned to any detections
             if all([this==-1 for this in g]):
-                tmpML+=1
-                self.ML+=1
+                self.mostly_lost+=1
                 continue
             # compute tracked frames in trajectory
             last_id = g[0]
@@ -513,7 +474,6 @@ class TrackingEvaluation(object):
                     continue
                 lgt+=1
                 if last_id != g[f] and last_id != -1 and g[f] != -1 and g[f-1] != -1:
-                    tmpId_switches   += 1
                     self.id_switches += 1
                 if f < len(g)-1 and g[f-1] != g[f] and last_id != -1 and g[f] != -1 and g[f+1] != -1:
                     self.fragments += 1
@@ -524,26 +484,23 @@ class TrackingEvaluation(object):
             if len(g)>1 and g[f-1] != g[f] and last_id != -1  and g[f] != -1 and not ign_g[f]:
                 self.fragments += 1
 
-            # compute MT/PT/ML
+            # compute mostly_tracked/partialy_tracked/mostly_lost
             tracking_ratio = tracked / float(len(g) - sum(ign_g))
             if tracking_ratio > 0.8:
-                tmpMT   += 1
-                self.MT += 1
+                self.mostly_tracked += 1
             elif tracking_ratio < 0.2:
-                tmpML   += 1
-                self.ML += 1
+                self.mostly_lost += 1
             else: # 0.2 <= tracking_ratio <= 0.8
-                tmpPT   += 1
-                self.PT += 1
+                self.partialy_tracked += 1
 
         if (self.n_gt_trajectories-n_ignored_tr_total)==0:
-            self.MT = 0.
-            self.PT = 0.
-            self.ML = 0.
+            self.mostly_tracked = 0.
+            self.partialy_tracked = 0.
+            self.mostly_lost = 0.
         else:
-            self.MT /= float(self.n_gt_trajectories-n_ignored_tr_total)
-            self.PT /= float(self.n_gt_trajectories-n_ignored_tr_total)
-            self.ML /= float(self.n_gt_trajectories-n_ignored_tr_total)
+            self.mostly_tracked /= float(self.n_gt_trajectories-n_ignored_tr_total)
+            self.partialy_tracked /= float(self.n_gt_trajectories-n_ignored_tr_total)
+            self.mostly_lost /= float(self.n_gt_trajectories-n_ignored_tr_total)
 
         # precision/recall
         if (self.fp+self.tp)==0 or (self.tp+self.fn)==0:
@@ -579,20 +536,11 @@ class TrackingEvaluation(object):
         summary = ""
 
         summary += "tracking evaluation summary".center(80,"=") + "\n"
-        # summary += self._print_entry("Multiple Object Tracking Accuracy (MOTA)", self.MOTA) + "\n"
-        # summary += self._print_entry("Multiple Object Tracking Precision (MOTP)", self.MOTP) + "\n"
-        # summary += self._print_entry("Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL) + "\n"
-        # summary += self._print_entry("Multiple Object Detection Accuracy (MODA)", self.MODA) + "\n"
-        # summary += self._print_entry("Multiple Object Detection Precision (MODP)", self.MODP) + "\n"
-        # summary += "\n"
         summary += self._print_entry("Recall", self.recall) + "\n"
-        # summary += self._print_entry("Precision", self.precision) + "\n"
-        # summary += self._print_entry("F1", self.F1) + "\n"
-        # summary += self._print_entry("False Alarm Rate", self.FAR) + "\n"
         summary += "\n"
-        summary += self._print_entry("Mostly Tracked", self.MT) + "\n"
-        summary += self._print_entry("Partly Tracked", self.PT) + "\n"
-        summary += self._print_entry("Mostly Lost", self.ML) + "\n"
+        summary += self._print_entry("Mostly Tracked", self.mostly_tracked) + "\n"
+        summary += self._print_entry("Partly Tracked", self.partialy_tracked) + "\n"
+        summary += self._print_entry("Mostly Lost", self.mostly_lost) + "\n"
         summary += "\n"
         summary += self._print_entry("True Positives", self.tp) + "\n"
         summary += self._print_entry("Ignored True Positives", self.itp) + "\n"
