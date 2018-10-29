@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import sys,os,copy,math
+import sys
+import os
+import math
+import copy
 from munkres import Munkres
 from collections import defaultdict
 from time import gmtime, strftime
@@ -97,9 +100,9 @@ class TrackingEvaluation(object):
         self.mme               = 0
         self.fragments         = 0
         self.id_switches       = 0
-        self.mostly_tracked                = 0
-        self.partialy_tracked                = 0
-        self.mostly_lost                = 0
+        self.mostly_tracked    = 0
+        self.partialy_tracked  = 0
+        self.mostly_lost       = 0
 
         self.min_overlap       = min_overlap # minimum bounding box overlap for 3rd party metrics
         self.max_truncation    = max_truncation # maximum truncation of an object for evaluation
@@ -647,13 +650,20 @@ def evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir):
     print("Thank you for participating in our benchmark!")
     return True
 
-#########################################################################
-# entry point of evaluation script
-if __name__ == "__main__":
-    # TODO:python argument
-    base_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync"
+def main(argv):
+    if len(argv) == 0:
+        print("You have set a path to the kitti data directory")
+        print("Usage: python3 evaluate_tracking.py /home/hoge/2011_09_26/2011_09_26_drive_0005_sync")
+        return
+
+    base_dir = argv[0]
+    if os.path.exists(base_dir) == 0:
+        print ("Error: you need to set valid path")
+        return
+
     benchmark_dir_name = get_benchmark_dir_name()
     benchmark_dir = os.path.join(base_dir, benchmark_dir_name)
+    print (benchmark_dir)
 
     result_file_name = "benchmark_results.txt"
     result_file_path = os.path.join(base_dir, result_file_name)
@@ -669,3 +679,6 @@ if __name__ == "__main__":
 
     dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
     success = evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
