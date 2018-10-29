@@ -1,7 +1,7 @@
 import shapely.geometry
 import shapely.affinity
 
-class RotatedRect:
+class Rect:
     def __init__(self, cx, cy, l, w, angle):
         self.cx = cx
         self.cy = cy

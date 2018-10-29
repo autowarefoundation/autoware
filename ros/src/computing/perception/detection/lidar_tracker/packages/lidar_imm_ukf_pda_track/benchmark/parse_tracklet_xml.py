@@ -1,32 +1,4 @@
 #!/usr/bin/env python
-"""
-parse XML files containing tracklet info for kitti data base (raw data section)
-(http://cvlibs.net/datasets/kitti/raw_data.php)
-
-No guarantees that this code is correct, usage is at your own risk!
-
-created by Christian Herdtweck, Max Planck Institute for Biological Cybernetics
-  (christian.herdtweck@tuebingen.mpg.de)
-updated by Alex Staravoitau
-
-requires numpy!
-
-example usage:
-  import parseTrackletXML as xmlParser
-  kittiDir = '/path/to/kitti/data'
-  drive = '2011_09_26_drive_0001'
-  xmlParser.example(kittiDir, drive)
-or simply on command line:
-  python parseTrackletXML.py
-"""
-
-# Version History:
-# 20/3/17 Alex Staravoitau: updated for Python 3, cleaned up docstring comments, fixed tabulation;
-# 4/7/12 Christian Herdtweck: seems to work with a few random test xml tracklet files;
-#   converts file contents to ElementTree and then to list of Tracklet objects;
-#   Tracklet objects have str and iter functions
-# 5/7/12 ch: added constants for state, occlusion, truncation and added consistency checks
-# 30/1/14 ch: create example function from example code
 
 from sys import argv as cmdLineArgs
 from xml.etree.ElementTree import ElementTree
@@ -156,7 +128,6 @@ def parseXML(trackletFile):
             hasAmt = False
             frameIdx = None
             for info in trackletElem:
-                #print 'trackInfo:', info.tag
                 if isFinished:
                     raise ValueError('more info on element after finished!')
                 if info.tag == 'objectType':
@@ -172,7 +143,6 @@ def parseXML(trackletFile):
                 elif info.tag == 'poses':
                     # this info is the possibly long list of poses
                     for pose in info:
-                        #print 'trackInfoPose:', pose.tag
                         if pose.tag == 'count':     # this should come before the others
                             if newTrack.nFrames is not None:
                                 raise ValueError('there are several pose lists for a single track!')
@@ -190,11 +160,9 @@ def parseXML(trackletFile):
                         elif pose.tag == 'item_version':
                             pass
                         elif pose.tag == 'item':
-                            # pose in one frame
                             if frameIdx is None:
                                 raise ValueError('pose item came before number of poses!')
                             for poseInfo in pose:
-                                #print 'trackInfoPoseInfo:', poseInfo.tag
                                 if poseInfo.tag == 'tx':
                                     newTrack.trans[frameIdx, 0] = float(poseInfo.text)
                                 elif poseInfo.tag == 'ty':
@@ -295,8 +263,6 @@ def dump_frames_text_from_tracklets(n_frames, xml_path, gt_file_path):
     frame_obj_type     = {} #1
     frame_truncated    = {} #1
     frame_occluded     = {} #1
-    # frame_alpha = {} // #1
-    # frame_bbox = {} #4
     frame_dimensions   = {} #3
     frame_location     = {} #3
     frame_rotation_yaw = {} #1
@@ -316,9 +282,6 @@ def dump_frames_text_from_tracklets(n_frames, xml_path, gt_file_path):
         h, w, l = tracklet.size
         # loop over all data in tracklet
         for translation, rotation, state, occlusion, truncation, amtOcclusion, amtBorders, absoluteFrameNumber in tracklet:
-            # determine if object is in the image; otherwise continue
-            # if truncation not in (TRUNC_IN_IMAGE, TRUNC_TRUNCATED):
-            #     continue
             yaw = rotation[2]  # other rotations are supposedly 0
             assert np.abs(rotation[:2]).sum() == 0, 'object rotations other than yaw given!'
 

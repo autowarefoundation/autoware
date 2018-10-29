@@ -1,7 +1,5 @@
 import sys,os,copy,math
 from munkres import Munkres
-from rotated_rect import RotatedRect
-from parse_tracklet_xml import dump_frames_text_from_tracklets
 from collections import defaultdict
 from time import gmtime, strftime
 try:
@@ -11,6 +9,9 @@ except:
 from tqdm import tqdm
 from shutil import copyfile
 import datetime
+
+from rect import Rect
+from parse_tracklet_xml import dump_frames_text_from_tracklets
 
 class tData:
     """
@@ -56,7 +57,7 @@ class tData:
         return '\n'.join("%s: %s" % item for item in attrs.items())
 
 
-class trackingEvaluation(object):
+class TrackingEvaluation(object):
     """ tracking statistics (CLEAR MOT, id-switches, fragments, ML/PT/MT, precision/recall)
              MOTA	- Multi-object tracking accuracy in [0,100]
              MOTP	- Multi-object tracking precision in [0,100] (3D) / [td,100] (2D)
@@ -129,14 +130,14 @@ class trackingEvaluation(object):
         # this should be enough to hold all groundtruth trajectories
         # is expanded if necessary and reduced in any case
 
-    def loadTrackedData(self, result_file_path):
+    def load_tracked_data(self, result_file_path):
         """
             Helper function to load tracker data.
         """
 
         try:
             if(os.path.exists(result_file_path)):
-                if not self._loadData(result_file_path, loading_groundtruth=False):
+                if not self._load_data(result_file_path, loading_groundtruth=False):
                     return False
             else:
                 print("Error: There is no result data file")
@@ -145,14 +146,14 @@ class trackingEvaluation(object):
             return False
         return True
 
-    def loadGroundtruth(self, gt_file_path):
+    def load_ground_truth(self, gt_file_path):
         """
             Helper function to load ground truth.
         """
 
         try:
             if(os.path.exists(gt_file_path)):
-                self._loadData(gt_file_path, loading_groundtruth=True)
+                self._load_data(gt_file_path, loading_groundtruth=True)
             else:
                 print("Error: There is no groundtruth file")
                 raise
@@ -160,10 +161,10 @@ class trackingEvaluation(object):
             return False
         return True
 
-    def _loadData(self, file_path, min_score=-1000, loading_groundtruth=False):
+    def _load_data(self, file_path, min_score=-1000, loading_groundtruth=False):
         """
             Generic loader for ground truth and tracking data.
-            Use loadGroundtruth() or loadTracker() to load this data.
+            Use load_ground_truth() or load_tracked_data() to load this data.
             Loads detections in KITTI format from textfiles.
         """
         # construct objectDetections object to hold detection data
@@ -259,7 +260,7 @@ class trackingEvaluation(object):
             self.n_gt_trajectories=n_trajectories
         return True
 
-    def createEvalDir(self, benchmark_dir):
+    def create_eval_dir(self, benchmark_dir):
         """
             Creates directory to store evaluation results and data for visualization.
         """
@@ -270,7 +271,7 @@ class trackingEvaluation(object):
             os.makedirs(self.eval_dir)
             print ("done")
 
-    def compute3rdPartyMetrics(self):
+    def compute_3rd_party_metrics(self):
         """
             Computes the metrics defined in
                 - Stiefelhagen 2008: Evaluating Multiple Object Tracking Performance: The CLEAR MOT Metrics
@@ -324,7 +325,6 @@ class trackingEvaluation(object):
             frame_ids = [[],[]]
             # loop over ground truth objects in one frame
             for gt in frame_gts:
-                # print("location ", gt.X, gt.Y)
                 # save current ids
                 frame_ids[0].append(gt.track_id)
                 frame_ids[1].append(-1)
@@ -333,17 +333,15 @@ class trackingEvaluation(object):
                 gt.fragmentation = 0
                 cost_row         = []
                 # loop over tracked objects in one frame
-                # print("gt", gt.X, gt.Y, gt.l, gt.w, gt.yaw)
                 for result in frame_results:
                     # overlap == 1 is cost ==0
-                    # RotatedRect(cx, cy, l, w, angle)
+                    # Rect(cx, cy, l, w, angle)
                     # todo might be wrong: euclidean cluster messed up calculating w, l
                     # Better implementation if switching w and l based on box's quartenion
                     # and self.min_overlap might be too big
-                    r1   = RotatedRect(gt.X, gt.Y, gt.l, gt.w, gt.yaw)
-                    r2   = RotatedRect(result.X, result.Y, result.l, result.w, result.yaw)
+                    r1   = Rect(gt.X, gt.Y, gt.l, gt.w, gt.yaw)
+                    r2   = Rect(result.X, result.Y, result.l, result.w, result.yaw)
                     iou  = r1.intersection_over_union(r2)
-                    # print("iou ",iou)
                     cost = 1- iou
                     # gating for boxoverlap
                     if cost<=self.min_overlap:
@@ -638,7 +636,7 @@ class trackingEvaluation(object):
             self.MODP = sum(self.MODP_t)/float(self.n_frames)
         return True
 
-    def printEntry(self, key, val,width=(70,10)):
+    def _print_entry(self, key, val,width=(70,10)):
         """
             Pretty print an entry in a table fashion.
         """
@@ -654,7 +652,7 @@ class trackingEvaluation(object):
             s_out += ("%s"%val).rjust(width[1])
         return s_out
 
-    def createSummary(self):
+    def create_summary(self):
         """
             Generate and mail a summary of the results.
             If mailpy.py is present, the summary is instead printed.
@@ -663,52 +661,51 @@ class trackingEvaluation(object):
         summary = ""
 
         summary += "tracking evaluation summary".center(80,"=") + "\n"
-        summary += self.printEntry("Multiple Object Tracking Accuracy (MOTA)", self.MOTA) + "\n"
-        summary += self.printEntry("Multiple Object Tracking Precision (MOTP)", self.MOTP) + "\n"
-        summary += self.printEntry("Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL) + "\n"
-        summary += self.printEntry("Multiple Object Detection Accuracy (MODA)", self.MODA) + "\n"
-        summary += self.printEntry("Multiple Object Detection Precision (MODP)", self.MODP) + "\n"
+        summary += self._print_entry("Multiple Object Tracking Accuracy (MOTA)", self.MOTA) + "\n"
+        summary += self._print_entry("Multiple Object Tracking Precision (MOTP)", self.MOTP) + "\n"
+        summary += self._print_entry("Multiple Object Tracking Accuracy (MOTAL)", self.MOTAL) + "\n"
+        summary += self._print_entry("Multiple Object Detection Accuracy (MODA)", self.MODA) + "\n"
+        summary += self._print_entry("Multiple Object Detection Precision (MODP)", self.MODP) + "\n"
         summary += "\n"
-        summary += self.printEntry("Recall", self.recall) + "\n"
-        summary += self.printEntry("Precision", self.precision) + "\n"
-        summary += self.printEntry("F1", self.F1) + "\n"
-        summary += self.printEntry("False Alarm Rate", self.FAR) + "\n"
+        summary += self._print_entry("Recall", self.recall) + "\n"
+        summary += self._print_entry("Precision", self.precision) + "\n"
+        summary += self._print_entry("F1", self.F1) + "\n"
+        summary += self._print_entry("False Alarm Rate", self.FAR) + "\n"
         summary += "\n"
-        summary += self.printEntry("Mostly Tracked", self.MT) + "\n"
-        summary += self.printEntry("Partly Tracked", self.PT) + "\n"
-        summary += self.printEntry("Mostly Lost", self.ML) + "\n"
+        summary += self._print_entry("Mostly Tracked", self.MT) + "\n"
+        summary += self._print_entry("Partly Tracked", self.PT) + "\n"
+        summary += self._print_entry("Mostly Lost", self.ML) + "\n"
         summary += "\n"
-        summary += self.printEntry("True Positives", self.tp) + "\n"
-        summary += self.printEntry("Ignored True Positives", self.itp) + "\n"
-        summary += self.printEntry("False Positives", self.fp) + "\n"
-        summary += self.printEntry("False Negatives", self.fn) + "\n"
-        summary += self.printEntry("Ignored False Negatives", self.ifn) + "\n"
-        summary += self.printEntry("Missed Targets", self.fn) + "\n"
-        summary += self.printEntry("ID-switches", self.id_switches) + "\n"
-        summary += self.printEntry("Fragmentations", self.fragments) + "\n"
+        summary += self._print_entry("True Positives", self.tp) + "\n"
+        summary += self._print_entry("Ignored True Positives", self.itp) + "\n"
+        summary += self._print_entry("False Positives", self.fp) + "\n"
+        summary += self._print_entry("False Negatives", self.fn) + "\n"
+        summary += self._print_entry("Ignored False Negatives", self.ifn) + "\n"
+        summary += self._print_entry("Missed Targets", self.fn) + "\n"
+        summary += self._print_entry("ID-switches", self.id_switches) + "\n"
+        summary += self._print_entry("Fragmentations", self.fragments) + "\n"
         summary += "\n"
-        summary += self.printEntry("Ground Truth Objects (Total)", self.n_gt + self.n_igt) + "\n"
-        summary += self.printEntry("Ignored Ground Truth Objects", self.n_igt) + "\n"
-        summary += self.printEntry("Ground Truth Trajectories", self.n_gt_trajectories) + "\n"
+        summary += self._print_entry("Ground Truth Objects (Total)", self.n_gt + self.n_igt) + "\n"
+        summary += self._print_entry("Ignored Ground Truth Objects", self.n_igt) + "\n"
+        summary += self._print_entry("Ground Truth Trajectories", self.n_gt_trajectories) + "\n"
         summary += "\n"
-        summary += self.printEntry("Tracker Objects (Total)", self.n_tr) + "\n"
-        summary += self.printEntry("Ignored Tracker Objects", self.n_itr) + "\n"
-        summary += self.printEntry("Tracker Trajectories", self.n_tr_trajectories) + "\n"
+        summary += self._print_entry("Tracker Objects (Total)", self.n_tr) + "\n"
+        summary += self._print_entry("Ignored Tracker Objects", self.n_itr) + "\n"
+        summary += self._print_entry("Tracker Trajectories", self.n_tr_trajectories) + "\n"
         summary += "="*80
 
         return summary
 
-    def saveToStats(self):
+    def save_to_stats(self):
         """
             Save the statistics in a whitespace separate file.
         """
 
         # create pretty summary
-        summary = self.createSummary()
+        summary = self.create_summary()
 
-        # mail or print the summary.
+        # print the summary.
         print(summary)
-        # mail.msg(summary)
 
         # write summary to file summary_cls.txt
         filename = os.path.join(self.eval_dir, "summary.txt" )
@@ -717,58 +714,7 @@ class trackingEvaluation(object):
         print(summary, end="", file=dump)
         dump.close()
 
-
-def evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir):
-    """
-        Entry point for evaluation, will load the data and start evaluation for
-        CAR and PEDESTRIAN if available.
-    """
-
-    # start evaluation and instanciated eval object
-    e = trackingEvaluation(velo_data_num)
-    # load tracker data and check provided classes
-    try:
-        if not e.loadTrackedData(result_file_path):
-            "failed to load tracked data"
-            return
-        print("Loading Results - Success")
-        print("Size of result data ", len(e.result_data))
-    except:
-        print("Caught exception while loading result data.")
-        return
-    # load groundtruth data for this class
-    if not e.loadGroundtruth(gt_file_path):
-        raise ValueError("Ground truth not found.")
-    print("Loading Groundtruth - Success")
-    print("Size of ground truth data ", len(e.groundtruth))
-    # sanity checks
-    if len(e.groundtruth) is not len(e.result_data):
-        print("The uploaded data does not provide results for every sequence.")
-        return False
-    print("Loaded %d Sequences." % len(e.groundtruth))
-    print("Start Evaluation...")
-    # create needed directories, evaluate and save stats
-    try:
-        e.createEvalDir(benchmark_dir)
-    except:
-        print("Caught exception while creating results.")
-    if e.compute3rdPartyMetrics():
-        print("Finished evaluation")
-        e.saveToStats()
-    else:
-        print("There seem to be no true positives or false positives at all in the submitted data.")
-
-    # finish
-    print("Thank you for participating in our benchmark!")
-    return True
-
-# def makeBench():
-
-
-#########################################################################
-# entry point of evaluation script
-if __name__ == "__main__":
-
+def get_benchmark_dir_name():
     if datetime.datetime.now().minute < 10:
         minute_str = str(0) + str(datetime.datetime.now().minute)
     else:
@@ -783,20 +729,70 @@ if __name__ == "__main__":
                     str(datetime.datetime.now().hour) + \
                     minute_str + second_str
     benchmark_dir_name = "benchmark_" + time_file_name
-    print (benchmark_dir_name)
+    return benchmark_dir_name
 
-    # TODO:python argument
-    base_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync"
-    # copy benchmark_results.txt to `benchmark_dir_name`/benchmark_results.txt
+def copy_result_to_current_time_dir(base_dir, benchmark_dir_name, result_file_path):
     benchmark_dir = os.path.join(base_dir, benchmark_dir_name)
     os.makedirs(benchmark_dir)
     result_file_name = "benchmark_results.txt"
-    result_file_path = os.path.join(base_dir, result_file_name)
     result_file_in_benchmark_dir = os.path.join(benchmark_dir, result_file_name)
     copyfile(result_file_path, result_file_in_benchmark_dir)
 
-    print (result_file_path)
-    print (result_file_in_benchmark_dir)
+def evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir):
+    """
+        Entry point for evaluation, will load the data and start evaluation
+    """
+
+    # start evaluation and instanciated eval object
+    e = TrackingEvaluation(velo_data_num)
+    # load tracker data and check provided classes
+    try:
+        if not e.load_tracked_data(result_file_path):
+            "failed to load tracked data"
+            return
+        print("Loading Results - Success")
+        print("Size of result data ", len(e.result_data))
+    except:
+        print("Caught exception while loading result data.")
+        return
+    # load groundtruth data for this class
+    if not e.load_ground_truth(gt_file_path):
+        raise ValueError("Ground truth not found.")
+    print("Loading Groundtruth - Success")
+    print("Size of ground truth data ", len(e.groundtruth))
+    # sanity checks
+    if len(e.groundtruth) is not len(e.result_data):
+        print("The uploaded data does not provide results for every sequence.")
+        return False
+    print("Loaded %d Sequences." % len(e.groundtruth))
+    print("Start Evaluation...")
+    # create needed directories, evaluate and save stats
+    try:
+        e.create_eval_dir(benchmark_dir)
+    except:
+        print("Caught exception while creating results.")
+    if e.compute_3rd_party_metrics():
+        print("Finished evaluation")
+        e.save_to_stats()
+    else:
+        print("There seem to be no true positives or false positives at all in the submitted data.")
+
+    # finish
+    print("Thank you for participating in our benchmark!")
+    return True
+
+#########################################################################
+# entry point of evaluation script
+if __name__ == "__main__":
+    # TODO:python argument
+    base_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync"
+    benchmark_dir_name = get_benchmark_dir_name()
+    benchmark_dir = os.path.join(base_dir, benchmark_dir_name)
+
+    result_file_name = "benchmark_results.txt"
+    result_file_path = os.path.join(base_dir, result_file_name)
+    # copy benchmark_results.txt to `benchmark_dir_name`/benchmark_results.txt
+    copy_result_to_current_time_dir(base_dir, benchmark_dir_name, result_file_path)
 
     tracklet_file_name = "tracklet_labels.xml"
     partial_velo_path = "velodyne_points/data"
@@ -804,5 +800,6 @@ if __name__ == "__main__":
     gt_file_path     = os.path.join(base_dir, "gt_frame.txt")
     velo_dir         = os.path.join(base_dir, partial_velo_path)
     velo_data_num    = len(os.listdir(velo_dir))
+
     dump_frames_text_from_tracklets(velo_data_num, tracklet_path, gt_file_path)
     success = evaluate(velo_data_num, result_file_path, gt_file_path, benchmark_dir)
