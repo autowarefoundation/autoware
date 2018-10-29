@@ -67,7 +67,7 @@ TrajectoryEval::TrajectoryEval()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryEval::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryEval::callbackGetGlobalPlannerPath, this);
 	sub_LocalPlannerPaths = nh.subscribe("/local_trajectories", 1, &TrajectoryEval::callbackGetLocalPlannerPath, this);
@@ -146,7 +146,7 @@ void TrajectoryEval::callbackGetVehicleStatus(const geometry_msgs::TwistStampedC
 	bVehicleStatus = true;
 }
 
-void TrajectoryEval::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void TrajectoryEval::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_CurrentPos.v = m_VehicleStatus.speed;

@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_planner
   op_simu
   op_ros_helpers
-  autoware_msgs
+  autoware_can_msgs
 )
 
 
@@ -30,7 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES op_global_planner
-  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utility op_planner op_simu op_ros_helpers
+  CATKIN_DEPENDS geometry_msgs vector_map_msgs roscpp rospy std_msgs waypoint_follower op_utility op_planner op_simu op_ros_helpers autoware_can_msgs
 )
 
 ###########

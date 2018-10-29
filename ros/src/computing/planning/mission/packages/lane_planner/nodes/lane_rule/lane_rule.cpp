@@ -37,7 +37,7 @@
 #include <ros/console.h>
 
 #include <vector_map/vector_map.h>
-#include "autoware_msgs/ConfigLaneRule.h"
+#include "autoware_config_msgs/ConfigLaneRule.h"
 #include "autoware_msgs/LaneArray.h"
 
 #include <lane_planner/lane_planner_vmap.hpp>
@@ -541,7 +541,7 @@ void cache_dtlane(const vector_map::DTLaneArray& msg)
 	update_values();
 }
 
-void config_parameter(const autoware_msgs::ConfigLaneRule& msg)
+void config_parameter(const autoware_config_msgs::ConfigLaneRule& msg)
 {
 	config_acceleration = msg.acceleration;
 	config_stopline_search_radius = msg.stopline_search_radius;

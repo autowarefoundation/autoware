@@ -15,7 +15,7 @@
     <build_depend>pcl_conversions</build_depend>
     <build_depend>velodyne_pointcloud</build_depend>
     <build_depend>message_generation</build_depend>
-    <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_config_msgs</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>pcl_ros</run_depend>
@@ -23,7 +23,7 @@
     <run_depend>pcl_conversions</run_depend>
     <run_depend>velodyne_pointcloud</run_depend>
     <run_depend>message_generation</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_config_msgs</run_depend>
 
     <export>
     </export>

@@ -61,14 +61,14 @@ void WaypointLoaderNode::initPubSub()
       nh_.subscribe("/config/waypoint_loader_output", 1, &WaypointLoaderNode::outputCommandCallback, this);
 }
 
-void WaypointLoaderNode::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void WaypointLoaderNode::initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   // parameter settings
   replanning_mode_ = conf->replanning_mode;
   multi_lane_csv_ = conf->multi_lane_csv;
 }
 
-void WaypointLoaderNode::configCallback(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void WaypointLoaderNode::configCallback(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   initParameter(conf);
   replanner_.initParameter(conf);

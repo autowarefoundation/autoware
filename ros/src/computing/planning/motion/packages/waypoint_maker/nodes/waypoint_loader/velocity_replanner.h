@@ -33,7 +33,7 @@
 
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
-#include <autoware_msgs/ConfigWaypointLoader.h>
+#include <autoware_config_msgs/ConfigWaypointLoader.h>
 #include <fstream>
 #include <unordered_map>
 #include <algorithm>
@@ -58,7 +58,7 @@ private:
 public:
   VelocityReplanner();
   ~VelocityReplanner();
-  void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
+  void initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf);
   void replanLaneWaypointVel(autoware_msgs::Lane* lane);
 
 protected:

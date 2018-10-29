@@ -1,8 +1,8 @@
 #include <ros/ros.h>
-#include "autoware_msgs/CANPacket.h"
+#include "autoware_can_msgs/CANPacket.h"
 
 
-void chatterCallback(const autoware_msgs::CANPacket::ConstPtr& msg)
+void chatterCallback(const autoware_can_msgs::CANPacket::ConstPtr& msg)
 {
   unsigned short w;
   static int enc_sum;
@@ -81,7 +81,7 @@ void chatterCallback(const autoware_msgs::CANPacket::ConstPtr& msg)
 
 
 int main (int argc, char *argv[]){
-  autoware_msgs::CANPacket candat;
+  autoware_can_msgs::CANPacket candat;
 
   ros::init(argc, argv, "can_converter");
   ros::NodeHandle n;

@@ -71,7 +71,7 @@ MotionPrediction::MotionPrediction()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &MotionPrediction::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &MotionPrediction::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &MotionPrediction::callbackGetCANInfo, this);
 
 	UtilityHNS::UtilityH::GetTickCount(m_VisualizationTimer);
 	PlannerHNS::RosHelpers::InitPredMarkers(100, m_PredictedTrajectoriesDummy);
@@ -195,7 +195,7 @@ void MotionPrediction::callbackGetVehicleStatus(const geometry_msgs::TwistStampe
 	bVehicleStatus = true;
 }
 
-void MotionPrediction::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void MotionPrediction::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_VehicleStatus.steer = msg->angle * m_CarInfo.max_steer_angle / m_CarInfo.max_steer_value;
