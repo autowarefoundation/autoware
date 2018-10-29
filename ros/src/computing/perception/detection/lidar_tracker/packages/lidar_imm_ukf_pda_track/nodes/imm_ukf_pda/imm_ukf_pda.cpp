@@ -501,9 +501,11 @@ ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray &in_objects)
             std::string s_velocity = std::to_string(tv * 3.6);
             std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
-            std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) +
-                               " m/s " + "(" + std::to_string(targets_[i].x_merge_(0)) + ", " +
-                               std::to_string(targets_[i].x_merge_(1)) + ")";
+            std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " +
+                                std::to_string(targets_[i].x_merge_(2)) + " m/s "
+                               //+ "(" + std::to_string(targets_[i].x_merge_(0)) + ", "
+                               // + std::to_string(targets_[i].x_merge_(1)) + ")"
+                                ;
             dd.label += text;
             output_objects.objects.push_back(dd);
         }
