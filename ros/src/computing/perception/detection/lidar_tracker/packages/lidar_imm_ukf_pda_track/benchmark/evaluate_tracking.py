@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys,os,copy,math
 from munkres import Munkres
 from collections import defaultdict
@@ -13,9 +15,9 @@ import datetime
 from rect import Rect
 from parse_tracklet_xml import dump_frames_text_from_tracklets
 
-class tData:
+class ObjectData:
     """
-        Utility class to load data.
+        Utility class to load object data.
     """
 
     def __init__(self,frame=-1,obj_type="unset",truncation=-1,occlusion=-1,\
@@ -168,7 +170,7 @@ class TrackingEvaluation(object):
             Loads detections in KITTI format from textfiles.
         """
         # construct objectDetections object to hold detection data
-        t_data  = tData()
+        object_data  = ObjectData()
         data    = []
         eval_3d = True
         eval_2d = False
@@ -191,48 +193,48 @@ class TrackingEvaluation(object):
             # print(fields[0])
 
             # get fields from table
-            t_data.frame        = int(float(fields[0]))     # frame
-            t_data.track_id     = int(float(fields[1]))     # id
-            t_data.obj_type     = fields[2].lower()         # object type [car, pedestrian, cyclist, ...]
-            t_data.truncation   = int(float(fields[3]))     # truncation [-1,0,1,2]
-            t_data.occlusion    = int(float(fields[4]))     # occlusion  [-1,0,1,2]
-            t_data.obs_angle    = float(fields[5])          # observation angle [rad]
-            t_data.x1           = float(fields[6])          # left   [px]
-            t_data.y1           = float(fields[7])          # top    [px]
-            t_data.x2           = float(fields[8])          # right  [px]
-            t_data.y2           = float(fields[9])          # bottom [px]
-            t_data.h            = float(fields[10])         # height [m]
-            t_data.w            = float(fields[11])         # width  [m]
-            t_data.l            = float(fields[12])         # length [m]
-            t_data.X            = float(fields[13])         # X [m]
-            t_data.Y            = float(fields[14])         # Y [m]
-            t_data.Z            = float(fields[15])         # Z [m]
-            t_data.yaw          = float(fields[16])         # yaw angle [rad]
+            object_data.frame        = int(float(fields[0]))     # frame
+            object_data.track_id     = int(float(fields[1]))     # id
+            object_data.obj_type     = fields[2].lower()         # object type [car, pedestrian, cyclist, ...]
+            object_data.truncation   = int(float(fields[3]))     # truncation [-1,0,1,2]
+            object_data.occlusion    = int(float(fields[4]))     # occlusion  [-1,0,1,2]
+            object_data.obs_angle    = float(fields[5])          # observation angle [rad]
+            object_data.x1           = float(fields[6])          # left   [px]
+            object_data.y1           = float(fields[7])          # top    [px]
+            object_data.x2           = float(fields[8])          # right  [px]
+            object_data.y2           = float(fields[9])          # bottom [px]
+            object_data.h            = float(fields[10])         # height [m]
+            object_data.w            = float(fields[11])         # width  [m]
+            object_data.l            = float(fields[12])         # length [m]
+            object_data.X            = float(fields[13])         # X [m]
+            object_data.Y            = float(fields[14])         # Y [m]
+            object_data.Z            = float(fields[15])         # Z [m]
+            object_data.yaw          = float(fields[16])         # yaw angle [rad]
 
             # do not consider objects marked as invalid
             # do not consider objects marked as invalid
-            if t_data.track_id is -1 and t_data.obj_type != "DontCare":
+            if object_data.track_id is -1 and object_data.obj_type != "DontCare":
                 continue
-            idx = t_data.frame
+            idx = object_data.frame
 
-            if t_data.frame >= self.n_frames:
+            if object_data.frame >= self.n_frames:
                 continue
 
             try:
-                id_frame = (t_data.frame,t_data.track_id)
+                id_frame = (object_data.frame,object_data.track_id)
                 if id_frame in id_frame_cache and not loading_groundtruth:
-                    print("track ids are not unique for frame %d" % (t_data.frame))
-                    print("track id %d occured at least twice for this frame" % t_data.track_id)
+                    print("track ids are not unique for frame %d" % (object_data.frame))
+                    print("track id %d occured at least twice for this frame" % object_data.track_id)
                     print("Exiting...")
                     #continue # this allows to evaluate non-unique result files
                     return False
                 id_frame_cache.append(id_frame)
-                f_data[t_data.frame].append(copy.copy(t_data))
+                f_data[object_data.frame].append(copy.copy(object_data))
             except:
                 raise
 
-            if t_data.track_id not in ids and t_data.obj_type!="DontCare":
-                ids.append(t_data.track_id)
+            if object_data.track_id not in ids and object_data.obj_type!="DontCare":
+                ids.append(object_data.track_id)
                 n_trajectories +=1
         f.close()
 
