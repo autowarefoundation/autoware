@@ -88,6 +88,7 @@ private:
   // whether if benchmarking tracking result
   bool is_benchmark_;
   int frame_count_;
+  std::string kitti_data_dir_;
 
   // for benchmark
   std::string result_file_path_;

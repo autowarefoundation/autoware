@@ -101,6 +101,7 @@
   <arg name="use_sukf" default="use_sukf" />
   <arg name="is_debug" default="is_debug" />
   <arg name="is_benchmark" default="true" />
+  <arg name="kitti_data_dir" default="/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync/" />
 
   <arg name="pointcloud_frame" default="/velodyne" />
   <arg name="tracking_frame" default="/world" />
@@ -119,6 +120,7 @@
     <param name="use_sukf"                value="$(arg use_sukf)" />
     <param name="is_debug"                value="$(arg is_debug)" />
     <param name="is_benchmark"            value="$(arg is_benchmark)" />
+    <param name="kitti_data_dir"          value="$(arg kitti_data_dir)" />
 
     <remap from="/detection/lidar_objects"         to="$(arg tracker_input_topic)" />
     <remap from="/detection/lidar_tracker/bounding_boxes" to="$(arg tracker_output_jskbb_topic)" />

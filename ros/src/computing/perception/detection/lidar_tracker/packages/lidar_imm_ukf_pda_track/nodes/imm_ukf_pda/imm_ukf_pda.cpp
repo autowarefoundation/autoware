@@ -53,48 +53,10 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
-
-  // std::string kitti_data_dir;
-  // private_nh_.getParam("kitti_data_dir", kitti_data_dir);
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
 
   if(is_benchmark_)
   {
-    //TODO use rosparam insteasd of harcoded path
-    std::string kitti_data_dir = "/home/kosuke/hdd/kitti/2011_09_26/2011_09_26_drive_0005_sync/";
-
-    //TODO: make function fot get current time file path and think about when to use that funciton
-    // benchmarked time
-    time_t t = time(nullptr);
-    const tm* lt = localtime(&t);
-
-    std::stringstream yyyy_mmdd_hhmmss;
-    yyyy_mmdd_hhmmss<<"20";
-    yyyy_mmdd_hhmmss<<lt->tm_year-100;
-    yyyy_mmdd_hhmmss<<"_";
-    yyyy_mmdd_hhmmss<<lt->tm_mon+1;
-    yyyy_mmdd_hhmmss<<lt->tm_mday;
-    yyyy_mmdd_hhmmss<<"_";
-    yyyy_mmdd_hhmmss<<lt->tm_hour;
-    if(lt->tm_min < 10)
-    {
-      yyyy_mmdd_hhmmss<<"0";
-      yyyy_mmdd_hhmmss<<lt->tm_min;
-    }
-    else
-    {
-      yyyy_mmdd_hhmmss<<lt->tm_min;
-    }
-    if(lt->tm_sec < 10)
-    {
-      yyyy_mmdd_hhmmss<<"0";
-      yyyy_mmdd_hhmmss<<lt->tm_sec;
-    }
-    else
-    {
-      yyyy_mmdd_hhmmss<<lt->tm_sec;
-    }
-
-    result_file_path_ = kitti_data_dir +yyyy_mmdd_hhmmss.str() + ".txt";
     result_file_path_ = kitti_data_dir + "benchmark_results.txt";
     remove(result_file_path_.c_str());
   }
