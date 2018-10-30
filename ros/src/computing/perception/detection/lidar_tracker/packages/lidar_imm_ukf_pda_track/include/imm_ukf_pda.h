@@ -33,8 +33,6 @@
 
 #include <ros/ros.h>
 
-#include <pwd.h>
-
 #include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
