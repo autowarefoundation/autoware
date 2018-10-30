@@ -52,9 +52,10 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
+
+  // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
   private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
-
   if(is_benchmark_)
   {
     result_file_path_ = kitti_data_dir + "benchmark_results.txt";
