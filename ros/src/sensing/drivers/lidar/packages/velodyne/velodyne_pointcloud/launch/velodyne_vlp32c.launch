@@ -40,7 +40,7 @@
     <arg name="manager" value="$(arg manager)" />
     <arg name="max_range" value="$(arg max_range)"/>
     <arg name="min_range" value="$(arg min_range)"/>
-    <remap from="velodyne_points" to="$(arg topic_name)"/>
+    <arg name="topic_name" value="$(arg topic_name)"/>
   </include>
 
   <!-- start laserscan nodelet -->
