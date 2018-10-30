@@ -58,7 +58,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
   if(is_benchmark_)
   {
-    result_file_path_ = kitti_data_dir + "benchmark_results.txt";
+    result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
     remove(result_file_path_.c_str());
   }
 }
