@@ -55,105 +55,105 @@
 class ImmUkfPda
 {
 private:
-    int target_id_;
-    bool init_;
-    double timestamp_;
+  int target_id_;
+  bool init_;
+  double timestamp_;
 
-    std::vector<UKF> targets_;
+  std::vector<UKF> targets_;
 
-    // probabilistic data association params
-    double gating_thres_;
-    double gate_probability_;
-    double detection_probability_;
+  // probabilistic data association params
+  double gating_thres_;
+  double gate_probability_;
+  double detection_probability_;
 
-    // bbox association param
-    double distance_thres_;
-    int life_time_thres_;
+  // bbox association param
+  double distance_thres_;
+  int life_time_thres_;
 
-    // bbox update params
-    double bb_yaw_change_thres_;
-    double static_velocity_thres_;
-    double init_yaw_;
+  // bbox update params
+  double bb_yaw_change_thres_;
+  double static_velocity_thres_;
+  double init_yaw_;
 
-    // Tracking state paramas
-    int stable_num_;
-    int lost_num_;
+  // Tracking state paramas
+  int stable_num_;
+  int lost_num_;
 
-    // switch sukf and ImmUkfPda
-    bool use_sukf_;
+  // switch sukf and ImmUkfPda
+  bool use_sukf_;
 
-    // prevent explode param for ukf
-    double prevent_explosion_thres_;
+  // prevent explode param for ukf
+  double prevent_explosion_thres_;
 
-    std::string input_topic_;
-    std::string output_topic_;
+  std::string input_topic_;
+  std::string output_topic_;
 
-    std::string tracking_frame_;
+  std::string tracking_frame_;
 
-    tf::TransformListener tf_listener_;
-    tf::StampedTransform local2global_;
+  tf::TransformListener tf_listener_;
+  tf::StampedTransform local2global_;
 
-    ros::NodeHandle node_handle_;
-    ros::Subscriber sub_detected_array_;
-    ros::Publisher pub_object_array_;
+  ros::NodeHandle node_handle_;
+  ros::Subscriber sub_detected_array_;
+  ros::Publisher pub_object_array_;
 
-    void DetectionsCallback(const autoware_msgs::DetectedObjectArray &input);
+  void DetectionsCallback(const autoware_msgs::DetectedObjectArray &input);
 
-    void setPredictionObject();
+  void setPredictionObject();
 
-    autoware_msgs::DetectedObjectArray
-    transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_objects,
-                          const std::string &in_target_frame);
+  autoware_msgs::DetectedObjectArray
+  transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_objects,
+                        const std::string &in_target_frame);
 
-    autoware_msgs::DetectedObjectArray
-    transformPoseToLocal(const autoware_msgs::DetectedObjectArray &in_objects,
-                         const std::string &in_target_frame);
+  autoware_msgs::DetectedObjectArray
+  transformPoseToLocal(const autoware_msgs::DetectedObjectArray &in_objects,
+                       const std::string &in_target_frame);
 
-    void measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF &target, const bool second_init,
-                               const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
-                               std::vector<autoware_msgs::DetectedObject> &object_vec, std::vector<bool> &matching_vec);
+  void measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF &target, const bool second_init,
+                             const Eigen::VectorXd &max_det_z, const Eigen::MatrixXd &max_det_s,
+                             std::vector<autoware_msgs::DetectedObject> &object_vec, std::vector<bool> &matching_vec);
 
-    void getNearestEuclidCluster(const UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec,
-                                 autoware_msgs::DetectedObject &object, double &min_dist);
+  void getNearestEuclidCluster(const UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec,
+                               autoware_msgs::DetectedObject &object, double &min_dist);
 
-    void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double> &rightAngle_bbox);
+  void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double> &rightAngle_bbox);
 
-    void associateBB(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target);
+  void associateBB(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target);
 
-    double getBBoxYaw(const UKF target);
+  double getBBoxYaw(const UKF target);
 
-    void mergeOverSegmentation(const std::vector<UKF> targets);
+  void mergeOverSegmentation(const std::vector<UKF> targets);
 
-    void updateBehaviorState(const UKF &target, autoware_msgs::DetectedObject &object);
+  void updateBehaviorState(const UKF &target, autoware_msgs::DetectedObject &object);
 
-    void initTracker(const autoware_msgs::DetectedObjectArray &input, double timestamp);
+  void initTracker(const autoware_msgs::DetectedObjectArray &input, double timestamp);
 
-    void secondInit(UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec, double dt);
+  void secondInit(UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec, double dt);
 
-    void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target);
+  void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target);
 
-    void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray &input, const double dt,
-                                      std::vector<bool> &matching_vec,
-                                      std::vector<autoware_msgs::DetectedObject> &lambda_vec, UKF &target,
-                                      bool &is_skip_target);
+  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray &input, const double dt,
+                                    std::vector<bool> &matching_vec,
+                                    std::vector<autoware_msgs::DetectedObject> &lambda_vec, UKF &target,
+                                    bool &is_skip_target);
 
-    void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray &input,
-                        const std::vector<bool> &matching_vec);
+  void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray &input,
+                      const std::vector<bool> &matching_vec);
 
-    void staticClassification();
+  void staticClassification();
 
-    autoware_msgs::DetectedObjectArray
-    makeOutput(const autoware_msgs::DetectedObjectArray &input_objects);
+  autoware_msgs::DetectedObjectArray
+  makeOutput(const autoware_msgs::DetectedObjectArray &input_objects);
 
-    void removeUnnecessaryTarget();
+  void removeUnnecessaryTarget();
 
-    autoware_msgs::DetectedObjectArray
-    tracker(const autoware_msgs::DetectedObjectArray &input);
+  autoware_msgs::DetectedObjectArray
+  tracker(const autoware_msgs::DetectedObjectArray &input);
 
 public:
-    ImmUkfPda();
+  ImmUkfPda();
 
-    void Run();
+  void Run();
 };
 
 #endif /* OBJECT_TRACKING_IMM_UKF_JPDAF_H */
