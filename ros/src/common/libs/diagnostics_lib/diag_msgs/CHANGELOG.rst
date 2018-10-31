@@ -2,6 +2,18 @@
 Changelog for package state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add disable mode for diag_manager
+* add diag_lib
+  add csv writer
+  remove unused comment
+  fix maintainer names
+  fix email address
+  fix dependency
+  fix buildtool_depend, remove unused lines from find_package
+* Contributors: Masaya Kataoka
+
 1.6.3 (2018-03-06)
 ------------------
 

@@ -2,6 +2,17 @@
 Changelog for package image_processor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/kfunaoka/Autoware/issues/1565>`_)
+  * * Added option to publish to specific camera frame on camera publisher
+  * fixes to the node
+  * Added New line to UI on each param.
+  * * Updates to launch files using calibration publisher
+  * Updated naming after develop merge
+  * Updated suscription type to topic for calibration publisher
+* Contributors: Abraham Monrroy Cano
+
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)

@@ -2,6 +2,9 @@
 Changelog for package autoware_bag_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.8.0 (2018-08-31)
 ------------------
 * Update README.md

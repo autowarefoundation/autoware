@@ -2,6 +2,13 @@
 Changelog for package lidar_imm_ukf_pda_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [Feature] Prediction package template (naive_motion_predictor) (`#1616 <https://github.com/kfunaoka/Autoware/issues/1616>`_)
+* [Feature] DetectedObject type immukfpda (`#1582 <https://github.com/kfunaoka/Autoware/issues/1582>`_)
+* [Feature]naive l shape fitting and a little modification on immukfpda launch file(`#1457 <https://github.com/kfunaoka/Autoware/issues/1457>`_)
+* Contributors: Kosuke Murakami
+
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)

@@ -2,6 +2,9 @@
 Changelog for package lidar_fake_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.8.0 (2018-08-31)
 ------------------
 * Fix spacing in cmake

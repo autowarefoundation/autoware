@@ -2,6 +2,23 @@
 Changelog for package points_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Moved configuration messages to autoware_config_msgs
+* renamed topics to match, sensing workflow (`#1600 <https://github.com/kfunaoka/Autoware/issues/1600>`_)
+  [fix] renamed topics to match, sensing workflow on CompareMapFilter
+* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+  * add compare map filter
+  * add README
+  * add copyright
+  * change default parameter
+  * fix typo
+  * clang-format
+  * Revert "clang-format"
+  This reverts commit 95869328f35f6ed1e918c26901ad36ab9737e466.
+  * retry clang-format
+* Contributors: Abraham Monrroy, Esteve Fernandez, YamatoAndo
+
 1.8.0 (2018-08-31)
 ------------------
 * Fix Indigo build issues

@@ -4,5 +4,16 @@ Changelog for package fake_autoware_nodes
 
 Forthcoming
 -----------
+* add filter to the fake_autoware_node
+* dd diag_filter to the fake_subscriber
+* add diag_lib
+  add csv writer
+  remove unused comment
+  fix maintainer names
+  fix email address
+  fix dependency
+  fix buildtool_depend, remove unused lines from find_package
+* Contributors: Masaya Kataoka
+
 * add diag_lib
 * Contributors: Masaya Kataoka

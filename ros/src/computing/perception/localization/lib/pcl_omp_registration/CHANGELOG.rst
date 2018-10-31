@@ -2,6 +2,9 @@
 Changelog for package registration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.8.0 (2018-08-31)
 ------------------
 

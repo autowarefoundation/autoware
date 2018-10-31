@@ -2,6 +2,9 @@
 Changelog for package op_simu
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.8.0 (2018-08-31)
 ------------------
 * Fix Indigo build issues

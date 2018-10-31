@@ -2,6 +2,17 @@
 Changelog for package lidar_localizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Moved configuration messages to autoware_config_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* fix transformation from localizer to base_link in ndt_mapping
+* Contributors: Esteve Fernandez, kitsukawa
+
 1.8.0 (2018-08-31)
 ------------------
 * modified to output log

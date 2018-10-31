@@ -2,6 +2,9 @@
 Changelog for package libdpm_ttic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.8.0 (2018-08-31)
 ------------------
 * [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/CPFL/Autoware/pull/1447>`_)
