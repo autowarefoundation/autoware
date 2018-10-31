@@ -66,7 +66,7 @@ void VelocitySetInfo::clearPoints()
   points_.clear();
 }
 
-void VelocitySetInfo::configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &config)
+void VelocitySetInfo::configCallback(const autoware_config_msgs::ConfigVelocitySetConstPtr &config)
 {
   stop_distance_obstacle_ = config->stop_distance_obstacle;
   stop_distance_stopline_ = config->stop_distance_stopline;

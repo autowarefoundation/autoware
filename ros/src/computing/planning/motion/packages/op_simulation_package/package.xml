@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package>
+  <name>op_simulation_package</name>
+  <version>1.8.0</version>
+  <description>OpenPlanner Simulator package</description>
+  <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
+  <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>map_file</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>op_utility</build_depend>
+  <build_depend>op_planner</build_depend>
+  <build_depend>op_simu</build_depend>
+  <build_depend>op_ros_helpers</build_depend>
+  <build_depend>waypoint_follower</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
+  <run_depend>map_file</run_depend>
+   <run_depend>pcl_conversions</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>op_utility</run_depend>
+  <run_depend>op_planner</run_depend>
+  <run_depend>op_simu</run_depend>
+  <run_depend>op_ros_helpers</run_depend>  
+  <run_depend>waypoint_follower</run_depend>
+
+  <export>
+  </export>
+</package>

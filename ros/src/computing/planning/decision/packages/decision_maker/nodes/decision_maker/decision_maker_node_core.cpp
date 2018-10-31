@@ -12,7 +12,7 @@
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
-#include <autoware_msgs/lane.h>
+#include <autoware_msgs/Lane.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <random>
 #include <visualization_msgs/MarkerArray.h>

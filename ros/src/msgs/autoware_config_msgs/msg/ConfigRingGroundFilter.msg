@@ -1,0 +1,4 @@
+string sensor_model
+float32 sensor_height
+float32 max_slope
+float32 vertical_thres

@@ -2,10 +2,24 @@
 Changelog for package calibration_camera_lidar
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/CPFL/Autoware/pull/1375>`_)
+* [feature] Pixel cloud fusion (`#1297 <https://github.com/CPFL/Autoware/pull/1297>`_)
+  * Initial Release of Pixel Cloud Fusion
+  (includes a fix to the Calibration Publisher only publishing one time)
+  * Fix README formatting for pixel_cloud_fusion
+  * Enable frame from TF, considering fix `#1296 <https://github.com/CPFL/Autoware/pull/1296>`_ merged for multi camera
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* [Fix] Reduce the calculation load of points2image (`#1286 <https://github.com/CPFL/Autoware/pull/1286>`_)
+* Contributors: Abraham Monrroy, Esteve Fernandez, Kenji Funaoka, Yuma Nihei
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -103,7 +117,7 @@ Changelog for package calibration_camera_lidar
   * * Fixes to README
   * Enable industrial_ci
   * re enable native travis tests
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -136,7 +150,7 @@ Changelog for package calibration_camera_lidar
   * Fixed qt5 system dependencies for rosdep
   * NDT TKU Fix catkin not pacakged
   * Fixes from industrial_ci
-* [update] Hokuyo 2D driver update (`#1091 <https://github.com/kfunaoka/Autoware/issues/1091>`_)
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/CPFL/Autoware/pull/1091>`_)
   * Replaced outdated Hokuyo node with new urg_node
   * Added description to RTM
   * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes

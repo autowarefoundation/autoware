@@ -1,6 +1,6 @@
 #include "TrafficLight.h"
 #include "ros/ros.h"
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/TrafficLight.h>
 #include <chrono>
 #include <thread>
 
@@ -16,16 +16,16 @@ private:
   void reset_light_msg();
   void watchdog_timer();
   void camera_light_color_callback(
-      const autoware_msgs::traffic_light::ConstPtr &input_msg);
+      const autoware_msgs::TrafficLight::ConstPtr &input_msg);
   void ams_light_color_callback(
-      const autoware_msgs::traffic_light::ConstPtr &input_msg);
+      const autoware_msgs::TrafficLight::ConstPtr &input_msg);
 
   std::string light_color_topic_name_;
   std::string camera_light_color_topic_name_;
   std::string ams_light_color_topic_name_;
-  autoware_msgs::traffic_light camera_msg_;
-  autoware_msgs::traffic_light ams_msg_;
-  autoware_msgs::traffic_light state_msg_;
+  autoware_msgs::TrafficLight camera_msg_;
+  autoware_msgs::TrafficLight ams_msg_;
+  autoware_msgs::TrafficLight state_msg_;
   ros::NodeHandle nh_;
   ros::NodeHandle private_nh_;
   ros::Publisher traffic_light_pub_;
@@ -46,7 +46,7 @@ TLSwitch::TLSwitch(const ros::NodeHandle &nh, const ros::NodeHandle &private_nh)
                                  "/camera_light_color");
   private_nh_.param<std::string>(
       "ams_light_color_topic", ams_light_color_topic_name_, "/ams_light_color");
-  traffic_light_pub_ = nh_.advertise<autoware_msgs::traffic_light>(
+  traffic_light_pub_ = nh_.advertise<autoware_msgs::TrafficLight>(
       light_color_topic_name_, 1, ADVERTISE_LATCH);
   camera_sub_ = nh_.subscribe(camera_light_color_topic_name_, 1,
                               &TLSwitch::camera_light_color_callback, this);
@@ -84,13 +84,13 @@ void TLSwitch::watchdog_timer() {
 }
 
 void TLSwitch::camera_light_color_callback(
-    const autoware_msgs::traffic_light::ConstPtr &msg) {
+    const autoware_msgs::TrafficLight::ConstPtr &msg) {
   camera_msg_.traffic_light = msg->traffic_light;
   switch_color();
 }
 
 void TLSwitch::ams_light_color_callback(
-    const autoware_msgs::traffic_light::ConstPtr &msg) {
+    const autoware_msgs::TrafficLight::ConstPtr &msg) {
   ams_msg_time_ = ros::Time::now();
   is_ams_timeout_ = false;
   ams_msg_.traffic_light = msg->traffic_light;

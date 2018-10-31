@@ -1,9 +1,9 @@
-/*
- * CarState.h
- *
- *  Created on: Dec 14, 2016
- *      Author: hatem
- */
+
+/// \file LocalPlannerH.h
+/// \brief OpenPlanner's local planing functions combines in one process, used in simulation vehicle and OpenPlanner old implementation like dp_planner node.
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
+
 
 #ifndef LOCALPLANNERH_H_
 #define LOCALPLANNERH_H_
@@ -12,7 +12,6 @@
 #include "PlannerCommonDef.h"
 #include "RoadNetwork.h"
 #include "TrajectoryCosts.h"
-#include "TrajectoryPrediction.h"
 
 #define AVOIDANCE_SPEED_FACTOR 0.75
 namespace PlannerHNS
@@ -61,7 +60,6 @@ public:
 	StopSignWaitState* 			m_pStopSignWaitState;
 
 	TrajectoryCosts m_TrajectoryCostsCalculatotor;
-	TrajectoryPrediction m_TrajectoryPredictionForMovingObstacles;
 
 	//for debugging
 

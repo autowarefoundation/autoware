@@ -34,13 +34,15 @@ Launch file available parameters:
 |`pretrained_model_file`|*String*|Path to pretrained model. Default `yolov3.weights`.|
 |`camera_id`|*String*|Camera workspace. Default `/`.|
 |`image_src`|*String*|Image source topic. Default `/image_raw`.|
+|`names_file`|*String*|Path to pretrained model. Default `coco.names`.|
+
 
 ### Subscribed topics
 
 |Topic|Type|Objective|
 ------|----|---------
 |`/image_raw`|`sensor_msgs/Image`|Source image stream to perform detection.|
-|`/config/Yolo3`|`autoware_msgs/ConfigSsd`|Configuration adjustment for threshold.|
+|`/config/Yolo3`|`autoware_config_msgs/ConfigSsd`|Configuration adjustment for threshold.|
 
 ### Published topics
 

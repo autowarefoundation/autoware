@@ -1,0 +1,15 @@
+<!-- Launch file for naive_motion_predict -->
+<launch>
+  <arg name="interval_sec" default="0.1" />
+  <arg name="num_prediction" default="10" />
+  <arg name="sensor_height" default="2.0" />
+  <arg name="input_topic" default="/detection/lidar_tracker/objects" />
+
+  <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict" />
+    <param name="interval_sec"   value="$(arg interval_sec)" />
+    <param name="num_prediction" value="$(arg num_prediction)" />
+    <param name="sensor_height"  value="$(arg sensor_height)" />
+
+    <remap from="/detection/lidar_tracker/objects" to="$(arg input_topic)" />
+
+</launch>

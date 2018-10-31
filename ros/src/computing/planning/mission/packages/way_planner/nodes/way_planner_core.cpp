@@ -133,7 +133,7 @@ if(m_params.bEnableHMI)
 	else if(bVelSource == 1)
 		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&way_planner_core::callbackGetVehicleStatus, 	this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCanInfo, 	this);
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&way_planner_core::callbackGetCANInfo, 	this);
 
 	//sub_current_velocity 	= nh.subscribe("/current_velocity",			100,	&way_planner_core::callbackGetVehicleStatus, 	this);
 	sub_nodes_list 			= nh.subscribe("/GlobalNodesList", 			1, 		&way_planner_core::callbackGetNodesList, 		this);
@@ -225,7 +225,7 @@ void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampe
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
-void way_planner_core::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void way_planner_core::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * 0.45 / 660;
@@ -364,10 +364,13 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 	std::vector<UtilityHNS::AisanVectorFileReader::AisanVector> vector_data;
 	std::vector<UtilityHNS::AisanCurbFileReader::AisanCurb> curb_data;
 	std::vector<UtilityHNS::AisanRoadEdgeFileReader::AisanRoadEdge> roadedge_data;
+	std::vector<UtilityHNS::AisanWayareaFileReader::AisanWayarea> way_area;
+	std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk> crossing;
+	std::vector<UtilityHNS::AisanNodesFileReader::AisanNode> nodes_data;
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data, conn_data, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
 }
 
 bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths)

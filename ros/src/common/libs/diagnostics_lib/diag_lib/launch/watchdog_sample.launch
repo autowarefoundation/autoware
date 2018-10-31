@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <param name="error_code_config_path" value="$(find diag_lib)/config/error_code_sample_config.yaml"/>
+
+    <node pkg="diag_lib" type="watchdog_node" name="watchdog_node" output="screen">
+        <param name="publish_rate" value="30"/>
+    </node>
+</launch>
