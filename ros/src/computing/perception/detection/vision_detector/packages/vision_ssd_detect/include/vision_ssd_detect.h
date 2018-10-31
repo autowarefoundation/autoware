@@ -18,34 +18,37 @@
 
 namespace Ssd
 {
-	enum SsdDetectorClasses
-	{
-		BACKGROUND,
-		PLANE, BICYCLE, BIRD, BOAT,
-		BOTTLE, BUS, CAR, CAT, CHAIR,
-		COW, TABLE, DOG, HORSE,
-		MOTORBIKE, PERSON, PLANT,
-		SHEEP, SOFA, TRAIN, TV, NUM_CLASSES
-	};
+  enum SsdDetectorClasses
+  {
+    BACKGROUND,
+    PLANE, BICYCLE, BIRD, BOAT,
+    BOTTLE, BUS, CAR, CAT, CHAIR,
+    COW, TABLE, DOG, HORSE,
+    MOTORBIKE, PERSON, PLANT,
+    SHEEP, SOFA, TRAIN, TV, NUM_CLASSES
+  };
 }
 
 class SsdDetector
 {
 public:
-	SsdDetector(const std::string& in_network_definition_file, const std::string& in_pre_trained_model_file, const cv::Scalar& in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
+  SsdDetector(const std::string &in_network_definition_file, const std::string &in_pre_trained_model_file,
+              const cv::Scalar &in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
 
-	std::vector <  RectClassScore<float>  > Detect(const cv::Mat& img);
-
-private:
-	void SetMean(const cv::Scalar& in_mean_value);
-	void WrapInputLayer(std::vector<cv::Mat>* input_channels);
-	void Preprocess(const cv::Mat& img, std::vector<cv::Mat>* input_channels);
+  std::vector<RectClassScore<float> > Detect(const cv::Mat &img);
 
 private:
-	boost::shared_ptr<caffe::Net<float> > net_;
-	cv::Size input_geometry_;
-	int num_channels_;
-	cv::Scalar mean_;
+  void SetMean(const cv::Scalar &in_mean_value);
+
+  void WrapInputLayer(std::vector<cv::Mat> *input_channels);
+
+  void Preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
+
+private:
+  boost::shared_ptr <caffe::Net<float>> net_;
+  cv::Size input_geometry_;
+  int num_channels_;
+  cv::Scalar mean_;
 };
 
 #endif //SSD_DETECTOR_H

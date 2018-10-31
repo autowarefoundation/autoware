@@ -56,38 +56,38 @@
 class VisualizeDetectedObjects
 {
 private:
-    const double arrow_height_;
-    const double label_height_;
-    const double object_max_linear_size_ = 50.;
-    double object_speed_threshold_;
-    double arrow_speed_threshold_;
-    double marker_display_duration_;
+  const double arrow_height_;
+  const double label_height_;
+  const double object_max_linear_size_ = 50.;
+  double object_speed_threshold_;
+  double arrow_speed_threshold_;
+  double marker_display_duration_;
 
-    std::string input_topic_, ros_namespace_;
+  std::string input_topic_, ros_namespace_;
 
-    ros::NodeHandle node_handle_;
-    ros::Subscriber subscriber_detected_objects_;
+  ros::NodeHandle node_handle_;
+  ros::Subscriber subscriber_detected_objects_;
 
-    ros::Publisher publisher_arrow_markers_;
-    ros::Publisher publisher_label_markers_;
-    ros::Publisher publisher_bounding_boxes_;
-    ros::Publisher publisher_polygon_hulls_;
-    ros::Publisher publisher_centroid_markers_;
+  ros::Publisher publisher_arrow_markers_;
+  ros::Publisher publisher_label_markers_;
+  ros::Publisher publisher_bounding_boxes_;
+  ros::Publisher publisher_polygon_hulls_;
+  ros::Publisher publisher_centroid_markers_;
 
-    visualization_msgs::MarkerArray ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects);
 
-    visualization_msgs::MarkerArray ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects);
 
-    jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
+  jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 
-    jsk_recognition_msgs::PolygonArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
+  jsk_recognition_msgs::PolygonArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
 
-    visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
 
-    void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
+  void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
 
 public:
-    VisualizeDetectedObjects();
+  VisualizeDetectedObjects();
 };
 
 #endif  // _VISUALIZEDETECTEDOBJECTS_H
