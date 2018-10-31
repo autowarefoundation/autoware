@@ -58,8 +58,8 @@ private:
   int obstacle_waypoint_index_;
   int goal_waypoint_index_;
   nav_msgs::OccupancyGrid costmap_;
-  autoware_msgs::lane base_waypoints_;
-  autoware_msgs::lane safety_waypoints_;
+  autoware_msgs::Lane base_waypoints_;
+  autoware_msgs::Lane safety_waypoints_;
   geometry_msgs::PoseStamped current_pose_local_, current_pose_global_;
   geometry_msgs::PoseStamped goal_pose_local_, goal_pose_global_;
   tf::Transform local2costmap_;  // local frame (e.g. velodyne) -> costmap origin
@@ -73,7 +73,7 @@ private:
   // functions, callback
   void costmapCallback(const nav_msgs::OccupancyGrid& msg);
   void currentPoseCallback(const geometry_msgs::PoseStamped& msg);
-  void baseWaypointsCallback(const autoware_msgs::lane& msg);
+  void baseWaypointsCallback(const autoware_msgs::Lane& msg);
   void closestWaypointCallback(const std_msgs::Int32& msg);
   void obstacleWaypointCallback(const std_msgs::Int32& msg);
   void stateCallback(const std_msgs::String& msg);
@@ -81,8 +81,8 @@ private:
   // functions
   std_msgs::String createStringMsg(const std::string& str);
   tf::Transform getTransform(const std::string& from, const std::string& to);
-  void publishWaypoints(const autoware_msgs::lane& base_waypoints);
-  void createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::lane& avoid_waypoints, int& end_of_avoid_index);
+  void publishWaypoints(const autoware_msgs::Lane& base_waypoints);
+  void createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
 };
 
 #endif

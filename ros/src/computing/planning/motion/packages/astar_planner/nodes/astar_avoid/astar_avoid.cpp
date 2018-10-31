@@ -14,7 +14,7 @@ AstarAvoid::AstarAvoid() : nh_(), private_nh_("~")
   private_nh_.param<int>("search_waypoints_delta", search_waypoints_delta_, 2);
   private_nh_.param<double>("avoid_waypoints_velocity", avoid_waypoints_velocity_, 10.0);
 
-  safety_waypoints_pub_ = nh_.advertise<autoware_msgs::lane>("safety_waypoints", 1, true);
+  safety_waypoints_pub_ = nh_.advertise<autoware_msgs::Lane>("safety_waypoints", 1, true);
   state_cmd_pub_ = nh_.advertise<std_msgs::String>("state_cmd", 1);
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarAvoid::costmapCallback, this);
   current_pose_sub_ = nh_.subscribe("current_pose", 1, &AstarAvoid::currentPoseCallback, this);
@@ -62,7 +62,7 @@ void AstarAvoid::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
   current_pose_initialized_ = true;
 }
 
-void AstarAvoid::baseWaypointsCallback(const autoware_msgs::lane& msg)
+void AstarAvoid::baseWaypointsCallback(const autoware_msgs::Lane& msg)
 {
   base_waypoints_ = msg;
   base_waypoints_initialized_ = true;
@@ -129,7 +129,7 @@ void AstarAvoid::run()
   ros::Rate rate(update_rate_);
 
   int end_of_avoid_index = -1;
-  autoware_msgs::lane avoid_waypoints;
+  autoware_msgs::Lane avoid_waypoints;
 
   while (ros::ok())
   {
@@ -203,7 +203,7 @@ void AstarAvoid::run()
       }
 
       // publish "safety" waypoints
-      autoware_msgs::lane safety_waypoints = avoiding_ ? avoid_waypoints : base_waypoints_;
+      autoware_msgs::Lane safety_waypoints = avoiding_ ? avoid_waypoints : base_waypoints_;
       publishWaypoints(safety_waypoints);
     }
 
@@ -232,9 +232,9 @@ tf::Transform AstarAvoid::getTransform(const std::string& from, const std::strin
   return stf;
 }
 
-void AstarAvoid::publishWaypoints(const autoware_msgs::lane& waypoints)
+void AstarAvoid::publishWaypoints(const autoware_msgs::Lane& waypoints)
 {
-  autoware_msgs::lane safety_waypoints;
+  autoware_msgs::Lane safety_waypoints;
   safety_waypoints.header = waypoints.header;
   safety_waypoints.increment = waypoints.increment;
 
@@ -246,7 +246,7 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::lane& waypoints)
     {
       break;
     }
-    autoware_msgs::waypoint wp = waypoints.waypoints[index];
+    autoware_msgs::Waypoint wp = waypoints.waypoints[index];
     // if state is not "Avoidance", vehicle stops until changing state
     wp.twist.twist.linear.x = (use_avoidance_state_ && stop_by_state_) ? 0.0 : wp.twist.twist.linear.x;
     safety_waypoints.waypoints.push_back(wp);
@@ -258,7 +258,7 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::lane& waypoints)
   }
 }
 
-void AstarAvoid::createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::lane& avoid_waypoints,
+void AstarAvoid::createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs::Lane& avoid_waypoints,
                                       int& end_of_avoid_index)
 {
   // reset
@@ -275,7 +275,7 @@ void AstarAvoid::createAvoidWaypoints(const nav_msgs::Path& path, autoware_msgs:
   // set waypoints for avoiding
   for (const auto& pose : path.poses)
   {
-    autoware_msgs::waypoint wp;
+    autoware_msgs::Waypoint wp;
     wp.pose.header = avoid_waypoints.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(avoid_waypoints.header.frame_id, pose.header.frame_id));
     wp.twist.twist.linear.x = avoid_waypoints_velocity_ / 3.6;

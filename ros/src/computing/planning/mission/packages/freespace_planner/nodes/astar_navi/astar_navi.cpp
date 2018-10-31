@@ -129,14 +129,14 @@ void AstarNavi::run()
 
 void AstarNavi::publishWaypoints(const nav_msgs::Path& path, const double& velocity)
 {
-  autoware_msgs::lane lane;
+  autoware_msgs::Lane lane;
   lane.header.frame_id = "map";
   lane.header.stamp = path.header.stamp;
   lane.increment = 0;
 
   for (const auto& pose : path.poses)
   {
-    autoware_msgs::waypoint wp;
+    autoware_msgs::Waypoint wp;
     wp.pose.header = lane.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(lane.header.frame_id, pose.header.frame_id));
     wp.twist.twist.linear.x = velocity / 3.6;
