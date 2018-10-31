@@ -26,8 +26,8 @@ Launch file available parameters:
 ------|----|---------|
 |`ROS_NAMESPACE/objects_labels`|visualization_msgs::MarkerArray|A Label indicating the class and info of the object|
 |`ROS_NAMESPACE/objects_arrows`|visualization_msgs::MarkerArray|An arrow indicating the direction|
-|`ROS_NAMESPACE/objects_hulls`|visualization_msgs::MarkerArray|Convex Hull, the containing polygon|
-|`ROS_NAMESPACE/objects_boxes`|visualization_msgs::MarkerArray|Bounding box containing the object|
+|`ROS_NAMESPACE/objects_hulls`|jsk_recognition_msgs::PolygonArray|Convex Hull, the containing polygon|
+|`ROS_NAMESPACE/objects_boxes`|jsk_recognition_msgs::BoundingBoxArray|Bounding box containing the object|
 |`ROS_NAMESPACE/objects_centroids`|visualization_msgs::MarkerArray|Sphere representing the centroid of the object in space|
 
 ## Notes
