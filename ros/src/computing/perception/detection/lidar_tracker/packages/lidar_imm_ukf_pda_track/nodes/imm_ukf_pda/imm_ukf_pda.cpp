@@ -51,6 +51,13 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
+
+  // rosparam for vectormap assisted tracking
+  private_nh_.param<bool>("use_vectormap", use_vectormap_, true);
+  if(use_vectormap_)
+  {
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::DTLANE | vector_map::Category::LANE, 10);
+  }
 }
 
 void ImmUkfPda::run()
@@ -222,9 +229,15 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (second_init_done)
   {
+    // if(use_vectormap_)
+    // {
+    //   smallest_meas_object = getUpdatedSmallestNisMeas(smallest_meas_object, smallest_nis);
+    // }
     object_vec.push_back(smallest_meas_object);
   }
 }
+
+// autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(const )
 
 void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                         autoware_msgs::DetectedObject& object, double& min_dist)

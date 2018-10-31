@@ -45,6 +45,8 @@
 
 #include <visualization_msgs/MarkerArray.h>
 
+#include <vector_map/vector_map.h>
+
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
@@ -85,6 +87,11 @@ private:
 
   // prevent explode param for ukf
   double prevent_explosion_thres_;
+
+  // for vectormap assisted tarcking
+  bool use_vectormap_;
+  vector_map::VectorMap vmap_;
+
 
   std::string input_topic_;
   std::string output_topic_;
