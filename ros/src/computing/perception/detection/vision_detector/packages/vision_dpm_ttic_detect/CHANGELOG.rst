@@ -2,8 +2,8 @@
 Changelog for package vision_dpm_ttic_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Moved configuration messages to autoware_config_msgs
 * [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
   * Switch message files to pascal case

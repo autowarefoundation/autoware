@@ -2,8 +2,8 @@
 Changelog for package autoware_connector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Moved CAN mesages to autoware_can_msgs
 * Contributors: Esteve Fernandez
 

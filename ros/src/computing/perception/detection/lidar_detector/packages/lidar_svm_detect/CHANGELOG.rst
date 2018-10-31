@@ -7,8 +7,8 @@ Changelog for package lidar_svm_detect
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
 * Contributors: Kosuke Murakami
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 
 1.8.0 (2018-08-31)
 ------------------

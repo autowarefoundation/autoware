@@ -2,8 +2,8 @@
 Changelog for package points2polygon
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Moved configuration messages to autoware_config_msgs
 * Contributors: Esteve Fernandez
 

@@ -2,8 +2,8 @@
 Changelog for package vision_ssd_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Moved configuration messages to autoware_config_msgs
 * [fix] Updated ssd readme (`#1613 <https://github.com/kfunaoka/Autoware/issues/1613>`_)
 * Feature/beyond pixel tracker (`#1473 <https://github.com/kfunaoka/Autoware/issues/1473>`_)

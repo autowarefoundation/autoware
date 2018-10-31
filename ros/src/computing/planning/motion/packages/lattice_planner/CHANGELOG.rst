@@ -2,8 +2,8 @@
 Changelog for package lattice_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Moved CAN mesages to autoware_can_msgs
 * Moved configuration messages to autoware_config_msgs
 * [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)

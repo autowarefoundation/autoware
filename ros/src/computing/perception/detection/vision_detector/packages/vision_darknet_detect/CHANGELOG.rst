@@ -2,8 +2,8 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Fix compile error (vision_darknet_detect.h:52:37: fatal error: autoware_msgs/ConfigSsd.h: No such file or directory)
 * Moved configuration messages to autoware_config_msgs
 * include fstream header (`#1608 <https://github.com/kfunaoka/Autoware/issues/1608>`_)

@@ -2,8 +2,8 @@
 Changelog for package log_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Upgrade requests version (CVE-2018-18074)
 * Contributors: Akihito Ohsato
 

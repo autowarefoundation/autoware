@@ -2,8 +2,8 @@
 Changelog for package state
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * add disable mode for diag_manager
 * add diag_lib
   add csv writer

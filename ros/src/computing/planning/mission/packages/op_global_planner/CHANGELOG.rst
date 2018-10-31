@@ -2,8 +2,8 @@
 Changelog for package op_global_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.0 (2018-10-31)
+------------------
 * Fix missing dependencies
 * Moved CAN mesages to autoware_can_msgs
 * [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
