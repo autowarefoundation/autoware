@@ -36,6 +36,7 @@ namespace lane_planner
 // Constructor
 LaneSelectNode::LaneSelectNode()
   : private_nh_("~")
+  , lane_array_id_(-1)
   , current_lane_idx_(-1)
   , right_lane_idx_(-1)
   , left_lane_idx_(-1)
@@ -67,7 +68,7 @@ void LaneSelectNode::initForROS()
   sub3_ = nh_.subscribe("current_velocity", 1, &LaneSelectNode::callbackFromTwistStamped, this);
   sub4_ = nh_.subscribe("state", 1, &LaneSelectNode::callbackFromState, this);
   sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
-  sub6_ = nh_.subscribe("/decisionmaker/states", 1, &LaneSelectNode::callbackFromStates, this);
+  sub6_ = nh_.subscribe("/decision_maker/state", 1, &LaneSelectNode::callbackFromDecisionMakerState, this);
 
   bool enablePlannerDynamicSwitch;
   private_nh_.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
@@ -85,7 +86,8 @@ void LaneSelectNode::initForROS()
   }
 
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
-  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id",1);
+  pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id", 1);
+  pub5_ = nh_.advertise<autoware_msgs::VehicleLocation>("vehicle_location", 1);
 
   vis_pub1_ = nh_.advertise<visualization_msgs::MarkerArray>("lane_select_marker", 1);
 
@@ -113,6 +115,7 @@ void LaneSelectNode::initForLaneSelect()
   if (!getClosestWaypointNumberForEachLanes())
   {
     publishClosestWaypoint(-1);
+    publishVehicleLocation(-1, lane_array_id_);
     resetLaneIdx();
     return;
   }
@@ -125,6 +128,7 @@ void LaneSelectNode::initForLaneSelect()
   publishLane(std::get<0>(tuple_vec_.at(current_lane_idx_)));
   publishClosestWaypoint(std::get<1>(tuple_vec_.at(current_lane_idx_)));
   publishChangeFlag(std::get<2>(tuple_vec_.at(current_lane_idx_)));
+  publishVehicleLocation(std::get<1>(tuple_vec_.at(current_lane_idx_)), lane_array_id_);
   publishVisualizer();
 
   resetSubscriptionFlag();
@@ -155,6 +159,7 @@ void LaneSelectNode::processing()
   if (!getClosestWaypointNumberForEachLanes())
   {
     publishClosestWaypoint(-1);
+    publishVehicleLocation(-1, lane_array_id_);
     resetLaneIdx();
     return;
   }
@@ -163,6 +168,7 @@ void LaneSelectNode::processing()
   if (std::get<1>(tuple_vec_.at(current_lane_idx_)) == -1)
   {
     publishClosestWaypoint(-1);
+    publishVehicleLocation(-1, lane_array_id_);
     resetLaneIdx();
     return;
   }
@@ -187,6 +193,7 @@ void LaneSelectNode::processing()
       publishLaneID(std::get<0>(lane_for_change_));
       publishClosestWaypoint(std::get<1>(lane_for_change_));
       publishChangeFlag(std::get<2>(lane_for_change_));
+      publishVehicleLocation(std::get<1>(lane_for_change_), lane_array_id_);
     }
     catch (std::out_of_range)
     {
@@ -201,6 +208,7 @@ void LaneSelectNode::processing()
     publishLane(std::get<0>(tuple_vec_.at(current_lane_idx_)));
     publishClosestWaypoint(std::get<1>(tuple_vec_.at(current_lane_idx_)));
     publishChangeFlag(std::get<2>(tuple_vec_.at(current_lane_idx_)));
+    publishVehicleLocation(std::get<1>(tuple_vec_.at(current_lane_idx_)), lane_array_id_);
   }
   publishVisualizer();
   resetSubscriptionFlag();
@@ -633,6 +641,15 @@ void LaneSelectNode::publishChangeFlag(const ChangeFlag flag)
   pub3_.publish(change_flag);
 }
 
+void LaneSelectNode::publishVehicleLocation(const int32_t clst_wp, const int32_t larray_id)
+{
+  autoware_msgs::VehicleLocation vehicle_location;
+  vehicle_location.header.stamp = ros::Time::now();
+  vehicle_location.waypoint_index = clst_wp;
+  vehicle_location.lane_array_id = larray_id;
+  pub5_.publish(vehicle_location);
+}
+
 void LaneSelectNode::callbackFromLaneArray(const autoware_msgs::LaneArrayConstPtr &msg)
 {
   tuple_vec_.clear();
@@ -644,6 +661,7 @@ void LaneSelectNode::callbackFromLaneArray(const autoware_msgs::LaneArrayConstPt
     tuple_vec_.push_back(t);
   }
 
+  lane_array_id_ = msg->id;
   current_lane_idx_ = -1;
   right_lane_idx_ = -1;
   left_lane_idx_ = -1;
@@ -687,18 +705,18 @@ void LaneSelectNode::callbackFromState(const std_msgs::StringConstPtr &msg)
   else
     processing();
 }
-void LaneSelectNode::callbackFromStates(const autoware_msgs::StateConstPtr &msg)
+void LaneSelectNode::callbackFromDecisionMakerState(const std_msgs::StringConstPtr &msg)
 {
   is_current_state_subscribed_ = true;
 
-  if (msg->behavior_state.find("LaneChange") != std::string::npos)
+  if (msg->data.find("ChangeTo") != std::string::npos)
   {
     current_state_ = std::string("LANE_CHANGE");
     ;
   }
   else
   {
-    current_state_ = msg->main_state;
+    current_state_ = msg->data;
   }
 
   if (current_lane_idx_ == -1)

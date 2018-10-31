@@ -395,7 +395,6 @@ private:
   Handle<Fence, FenceArray> fence_;
   Handle<RailCrossing, RailCrossingArray> rail_crossing_;
 
-  bool hasSubscribed(category_t category) const;
   void registerSubscriber(ros::NodeHandle& nh, category_t category);
 
 public:
@@ -470,6 +469,8 @@ public:
   std::vector<Wall> findByFilter(const Filter<Wall>& filter) const;
   std::vector<Fence> findByFilter(const Filter<Fence>& filter) const;
   std::vector<RailCrossing> findByFilter(const Filter<RailCrossing>& filter) const;
+
+  bool hasSubscribed(category_t category) const;
 
   void registerCallback(const Callback<PointArray>& cb);
   void registerCallback(const Callback<VectorArray>& cb);

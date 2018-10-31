@@ -1,0 +1,65 @@
+---
+autoware_states:
+  -
+    StateName: Start
+    Transition:
+      -
+        Key: started
+        Target: Init
+    Parent: ~
+  -
+    StateName: Init
+    Transition:
+      -
+        Key: init_start
+        Target: SensorInit
+    Parent: ~
+  -
+    StateName: SensorInit
+    Transition:
+      -
+        Key: sensor_is_ready
+        Target: MapInit
+    Parent: Init
+  -
+    StateName: MapInit
+    Transition:
+      -
+        Key: map_is_ready
+        Target: LocalizationInit
+    Parent: Init
+  -
+    StateName: LocalizationInit
+    Transition:
+      -
+        Key: localization_is_ready
+        Target: PlanningInit
+    Parent: Init
+  -
+    StateName: PlanningInit
+    Transition:
+      -
+        Key: planning_is_ready
+        Target: VehicleInit
+    Parent: Init
+  -
+    StateName: VehicleInit
+    Transition:
+      -
+        Key: vehicle_is_ready
+        Target: VehicleReady
+    Parent: Init
+  -
+    StateName: VehicleReady
+    Transition:
+      -
+        Key: emergency
+        Target: Emergency
+    Parent: ~
+  -
+    StateName: Emergency
+    Transition:
+      -
+        Key: restart
+        Target: Init
+    Parent: ~

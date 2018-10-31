@@ -1,7 +1,13 @@
 <!-- -->
 <launch>
+  <arg name="state_mission_file_name" default="autoware_state_mission.yaml" />
+  <arg name="state_drive_file_name" default="autoware_state_drive.yaml" />
+  <arg name="state_vehicle_file_name" default="autoware_state_vehicle.yaml" />
 
-	<node pkg="decision_maker" type="decision_maker_node" name="decision_maker_node" output="screen">
+  <node pkg="decision_maker" type="decision_maker_node" name="decision_maker" output="screen">
+    <param name ="state_mission_file_name" value="$(find decision_maker)/$(arg state_mission_file_name)"/>
+    <param name ="state_drive_file_name" value="$(find decision_maker)/$(arg state_drive_file_name)"/>
+    <param name ="state_vehicle_file_name" value="$(find decision_maker)/$(arg state_vehicle_file_name)"/>
 	</node>
-	
+
 </launch>
