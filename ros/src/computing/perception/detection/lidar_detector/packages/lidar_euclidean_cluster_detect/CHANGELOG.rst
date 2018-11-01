@@ -2,11 +2,6 @@
 Changelog for package lidar_euclidean_cluster_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
-------------------
-* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
-* Contributors: Kosuke Murakami
-
 1.9.0 (2018-10-31)
 ------------------
 * [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
@@ -83,10 +78,8 @@ Changelog for package lidar_euclidean_cluster_detect
   * CMake fixes for vision packages
 * Contributors: Abraham Monrroy, Esteve Fernandez, Kosuke Murakami
 
-* Add  code in cmakelists
-* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Remove history of sub-branches
-* Add automatically-generated CHANGELOG.rst
+1.7.0 (2018-05-16)
+------------------
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
