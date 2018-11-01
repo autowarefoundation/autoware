@@ -43,7 +43,7 @@ void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::Cons
     gnss_text_ = " - GNSS available";
 }
 
-void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::ndt_stat::ConstPtr& input)
+void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::NDTStat::ConstPtr& input)
 {
     iteration_count_ = input->iteration;
 

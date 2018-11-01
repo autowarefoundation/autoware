@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find fake_autoware_nodes)/launch/fake_autoware_nodes.launch"/>
+    <include file="$(find diag_lib)/launch/watchdog_sample.launch"/>
+</launch>

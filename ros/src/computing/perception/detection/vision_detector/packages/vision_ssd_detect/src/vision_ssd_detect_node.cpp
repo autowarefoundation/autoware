@@ -32,7 +32,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include "autoware_msgs/ConfigSsd.h"
+#include "autoware_config_msgs/ConfigSsd.h"
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
@@ -84,7 +84,6 @@ class RosSsdApp
             {
                 autoware_msgs::DetectedObject obj;
                 obj.header = out_message.header;
-                obj.id = i;
                 obj.label = in_objects[i].GetClassString();
                 obj.score = in_objects[i].score;
 
@@ -131,7 +130,7 @@ class RosSsdApp
 	}
 
 
-	void config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
+	void config_cb(const autoware_config_msgs::ConfigSsd::ConstPtr& param)
 	{
 		score_threshold_ 	= param->score_threshold;
 	}

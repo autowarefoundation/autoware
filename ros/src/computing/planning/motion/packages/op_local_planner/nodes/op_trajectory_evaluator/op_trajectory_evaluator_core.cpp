@@ -55,7 +55,7 @@ TrajectoryEval::TrajectoryEval()
 	pub_CollisionPointsRviz = nh.advertise<visualization_msgs::MarkerArray>("dynamic_collision_points_rviz", 1);
 	pub_LocalWeightedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_eval_rviz", 1);
 	pub_LocalWeightedTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_weighted_trajectories", 1);
-	pub_TrajectoryCost = nh.advertise<autoware_msgs::lane>("local_trajectory_cost", 1);
+	pub_TrajectoryCost = nh.advertise<autoware_msgs::Lane>("local_trajectory_cost", 1);
 	pub_SafetyBorderRviz = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 
 	sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryEval::callbackGetCurrentPose, this);
@@ -67,7 +67,7 @@ TrajectoryEval::TrajectoryEval()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryEval::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryEval::callbackGetGlobalPlannerPath, this);
 	sub_LocalPlannerPaths = nh.subscribe("/local_trajectories", 1, &TrajectoryEval::callbackGetLocalPlannerPath, this);
@@ -146,7 +146,7 @@ void TrajectoryEval::callbackGetVehicleStatus(const geometry_msgs::TwistStampedC
 	bVehicleStatus = true;
 }
 
-void TrajectoryEval::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void TrajectoryEval::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_CurrentPos.v = m_VehicleStatus.speed;
@@ -286,7 +286,7 @@ void TrajectoryEval::MainLoop()
 				else
 					tc = m_TrajectoryCostsCalculator.DoOneStepStatic(m_GeneratedRollOuts, m_GlobalPathSections.at(0), m_CurrentPos,	m_PlanningParams,	m_CarInfo,m_VehicleStatus, m_PredictedObjects);
 
-				autoware_msgs::lane l;
+				autoware_msgs::Lane l;
 				l.closest_object_distance = tc.closest_obj_distance;
 				l.closest_object_velocity = tc.closest_obj_velocity;
 				l.cost = tc.cost;
@@ -300,7 +300,7 @@ void TrajectoryEval::MainLoop()
 				autoware_msgs::LaneArray local_lanes;
 				for(unsigned int i=0; i < m_GeneratedRollOuts.size(); i++)
 				{
-					autoware_msgs::lane lane;
+					autoware_msgs::Lane lane;
 					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_GeneratedRollOuts.at(i), lane);
 					lane.closest_object_distance = m_TrajectoryCostsCalculator.m_TrajectoryCosts.at(i).closest_obj_distance;
 					lane.closest_object_velocity = m_TrajectoryCostsCalculator.m_TrajectoryCosts.at(i).closest_obj_velocity;

@@ -79,7 +79,6 @@ from std_msgs.msg import String
 from std_srvs.srv import Empty
 from os import path
 
-
 class DisplayThread(threading.Thread):
     """
     Thread that displays the current images
@@ -257,6 +256,10 @@ class CalibrationNode:
 
 class OpenCVCalibrationNode(CalibrationNode):
     """ Calibration node with an OpenCV Gui """
+    (cv2_version_major, _, _) = cv2.__version__.split(".")
+    if cv2_version_major == '2': TEXT_AA = cv2.CV_AA
+    elif cv2_version_major == '3': TEXT_AA = cv2.LINE_AA
+    else: TEXT_AA = 8
     FONT_FACE = cv2.FONT_HERSHEY_SIMPLEX
     FONT_SCALE = 0.4
     FONT_THICKNESS = 1
@@ -272,7 +275,8 @@ class OpenCVCalibrationNode(CalibrationNode):
 
     @classmethod
     def putText(cls, img, text, org, color = (0,0,0)):
-        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS, lineType = cv2.CV_AA)
+        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS,
+                    lineType = cls.TEXT_AA)
 
     @classmethod
     def getTextSize(cls, text):

@@ -18,22 +18,20 @@ then
     AUTOWARE_HOME=/home/autoware/Autoware
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
-        if [[ ! -d "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_DRIVE_SDK_ROOT_DIR}" ]] || [[ ! -d "${NVIDIA_TENSORRT_ROOT_DIR}" ]]
+        if [[ -z "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${NVIDIA_TENSORRT_ROOT_DIR}" ]]
         then
-            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_DRIVE_SDK_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR"
+            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR"
             exit 1
         fi
         AUTOWARE_HOME=/home/nvidia/Autoware
         AUTOWARE_TOOLCHAIN_FILE=cross_toolchain_driveworks.cmake
         AUTOWARE_DOCKER_EXTRA_ARGS=$(cat <<-END
--v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:${DRIVEWORKS_TOOLKIT_ROOT_DIR}:ro
--v ${CUDA_TOOLKIT_ROOT_DIR}:${CUDA_TOOLKIT_ROOT_DIR}:ro
--v ${NVIDIA_DRIVE_SDK_ROOT_DIR}:${NVIDIA_DRIVE_SDK_ROOT_DIR}:ro
--v ${NVIDIA_TENSORRT_ROOT_DIR}:${NVIDIA_TENSORRT_ROOT_DIR}:ro
--e DRIVEWORKS_TOOLKIT_ROOT_DIR=${DRIVEWORKS_TOOLKIT_ROOT_DIR}
--e CUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
--e NVIDIA_DRIVE_SDK_ROOT_DIR=${NVIDIA_DRIVE_SDK_ROOT_DIR}
--e NVIDIA_TENSORRT_ROOT_DIR=${NVIDIA_TENSORRT_ROOT_DIR}
+-v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:/usr/local/driveworks:ro
+-v ${CUDA_TOOLKIT_ROOT_DIR}:/usr/local/cuda:ro
+-v ${NVIDIA_TENSORRT_ROOT_DIR}:/usr/local/tensorrt:ro
+-e DRIVEWORKS_TOOLKIT_ROOT_DIR=/usr/local/driveworks
+-e CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
+-e NVIDIA_TENSORRT_ROOT_DIR=/usr/local/tensorrt
 END
 )
         AUTOWARE_CUDA_ARCH=sm_61

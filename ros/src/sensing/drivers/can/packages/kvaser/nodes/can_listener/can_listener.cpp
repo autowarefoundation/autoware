@@ -62,7 +62,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <ros/ros.h>
-#include "autoware_msgs/CANPacket.h"
+#include "autoware_can_msgs/CANPacket.h"
 
 int i = 0;
 unsigned char willExit = 0;
@@ -94,12 +94,12 @@ int main (int argc, char *argv[])
   int channel = 0;
   int bitrate = BAUD_500K;
   int j;
-	autoware_msgs::CANPacket candat;
+	autoware_can_msgs::CANPacket candat;
 
   ros::init(argc, argv, "can_listener");
   ros::NodeHandle n;
  
-  ros::Publisher can_pub = n.advertise<autoware_msgs::CANPacket>("can_raw", 10);
+  ros::Publisher can_pub = n.advertise<autoware_can_msgs::CANPacket>("can_raw", 10);
 
   errno = 0;
   if (argc != 2 || (channel = atoi(argv[1]), errno) != 0) {

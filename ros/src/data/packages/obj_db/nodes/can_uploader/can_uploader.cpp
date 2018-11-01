@@ -48,7 +48,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -113,7 +113,7 @@ static void* intervalCall(void *unused)
   return nullptr;
 }
 
-static void can_infoCallback(const autoware_msgs::CanInfo& can)
+static void can_infoCallback(const autoware_can_msgs::CANInfo& can)
 {
   ostringstream oss;
 

@@ -2,10 +2,8 @@
 Changelog for package lidar_svm_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
+1.9.0 (2018-10-31)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
-* Contributors: Kosuke Murakami
 
 1.8.0 (2018-08-31)
 ------------------
@@ -13,10 +11,8 @@ Changelog for package lidar_svm_detect
 * [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
 * Contributors: Esteve Fernandez
 
-* Add  code in cmakelists
-* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Remove history of sub-branches
-* Add automatically-generated CHANGELOG.rst
+1.7.0 (2018-05-16)
+------------------
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file

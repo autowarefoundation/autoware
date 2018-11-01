@@ -265,7 +265,7 @@ static void showRects(IplImage *image, int object_num, const std::vector<int>& c
 }
 #endif
 
-void setDetectedObjects(const autoware_msgs::image_obj& detected_objects)
+void setDetectedObjects(const autoware_msgs::ImageObj& detected_objects)
 {
 	objectsStored = false;
 	obj_type = detected_objects.type;
@@ -446,13 +446,13 @@ std::vector<float> getMaxHeights()
 	return filtered_max_heights;
 }
 
-std::vector<autoware_msgs::image_rect_ranged> getObjectsRectRanged()
+std::vector<autoware_msgs::ImageRectRanged> getObjectsRectRanged()
 {
-	std::vector<autoware_msgs::image_rect_ranged> fused_objects;
+	std::vector<autoware_msgs::ImageRectRanged> fused_objects;
 	for (int i=0; i<filtered_objects_num; i++)
 	{
 		int base = i * 4;
-		autoware_msgs::image_rect_ranged obj_ranged;
+		autoware_msgs::ImageRectRanged obj_ranged;
 		obj_ranged.rect.x      = filtered_corner_points.at(base);
 		obj_ranged.rect.y      = filtered_corner_points.at(base + 1);
 		obj_ranged.rect.width  = filtered_corner_points.at(base + 2);

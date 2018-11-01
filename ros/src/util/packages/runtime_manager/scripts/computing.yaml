@@ -28,8 +28,8 @@ subs :
         param: ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 700
-          dialog_height : 600
+          dialog_width  : 750
+          dialog_height : 650
           incremental_voxel_update:
             depend : method_type
             depend_bool : 'lambda v : v == 1'
@@ -43,15 +43,15 @@ subs :
         param: approximate_ndt_mapping
         gui  :
           dialog : MyDialogNdtMapping
-          dialog_width  : 700
-          dialog_height : 470
+          dialog_width  : 750
+          dialog_height : 500
       - name : ndt_matching
         desc : ndt_matching desc sample
         cmd  : roslaunch lidar_localizer ndt_matching.launch
         param: ndt
         gui  :
           dialog_height : 550
-          stat_topic : [ /ndt_stat.ndt_stat.exe_time ]
+          stat_topic : [ /NDTStat.ndt_stat.exe_time ]
           x  :
             user_category : ''
           yaw:
@@ -75,6 +75,8 @@ subs :
       - name : icp_matching
         cmd  : roslaunch lidar_localizer icp_matching.launch
         param: icp
+        gui  :
+          dialog_height : 400
 
     - name : autoware_connector
       desc : autoware_connector desc sample
@@ -146,21 +148,35 @@ subs :
         desc : Darknet Yolo3 Image based detector
         cmd  : roslaunch vision_darknet_detect vision_yolo3_detect.launch
         param: darknet_yolo3
+        gui  :
+          dialog_height : 350
 
       - name : vision_darknet_yolo2
         desc : Darknet Yolo2 Image based detector
         cmd  : roslaunch vision_darknet_detect vision_yolo2_detect.launch
         param: darknet_yolo2
+        gui  :
+          dialog_height : 350
 
 
     - name : vision_tracker
       desc : vision_tracker desc sample
       subs :
+      - name : vision_beyond_track
+        desc : Beyond Pixel based object tracker
+        cmd  : roslaunch vision_beyond_track vision_beyond_track.launch
+        param: vision_beyond_track_params
+        gui  :
+          camera_info_src :
+            flags  : [ nl ]
+
       - name : vision_klt_track
         desc : vision_klt_track desc sample
         cmd  : roslaunch vision_klt_track vision_klt_track.launch
         param: car_kf
         gui  :
+          dialog_width  : 600
+          dialog_height : 350
           flags : [ need_camera_info ]
           sel_cam_dialog_only : [ camera_id ]
           sel_cam_dialog_allow: [ camera_id ]
@@ -169,6 +185,7 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
+
       - name : vision_kf_track
         desc : vision_kf_track desc sample
         cmd  : roslaunch vision_kf_track vision_kf_track.launch
@@ -200,6 +217,7 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
+
       - name : vision_dummy_track
         desc : vision_dummy_track desc sample
         cmd  : roslaunch vision_dummy_track vision_dummy_track.launch
@@ -219,6 +237,19 @@ subs :
         cmd  : roslaunch lidar_euclidean_cluster_detect lidar_euclidean_cluster_detect.launch
         param: lidar_euclidean_cluster_detect_param
         gui  :
+          dialog_width  : 600
+          dialog_height : 600
+          downsample_cloud :
+            flags : [nl ]
+          clustering_distances:
+            flags : [nl ]
+          sync :
+            func : self.button_synchronization.GetValue()
+      - name : lidar_naive_l_shape_detect
+        desc : lidar_naive_l_shape_detect desc sample
+        cmd  : roslaunch lidar_naive_l_shape_detect lidar_naive_l_shape_detect.launch
+        param: lidar_naive_l_shape_detect_param
+        gui  :
           sync :
             func : self.button_synchronization.GetValue()
       - name : lidar_svm_detect
@@ -233,6 +264,10 @@ subs :
         cmd  : roslaunch lidar_fake_perception lidar_fake_perception.launch
         param: lidar_fake_perception_param
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          real_points_topic :
+            flags : [nl ]
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -243,10 +278,22 @@ subs :
         desc : Creates a colored point cloud with the help of the intrinsic and extrinsic parameters
         cmd  : roslaunch pixel_cloud_fusion pixel_cloud_fusion.launch
         param: pixel_cloud_fusion_params
+        gui  :
+          points_src:
+            flags: [nl]
+          image_src:
+            flags: [nl]
       - name : range_vision_fusion
         desc : Combines the 2D and 3D detection results
         cmd  : roslaunch range_vision_fusion range_vision_fusion.launch
         param: range_vision_fusion_params
+        gui  :
+          detected_objects_range:
+            flags: [nl]
+          detected_objects_vision:
+            flags: [nl]
+          camera_info_src:
+            flags: [nl]
 
     - name : lidar_tracker
       desc : lidar_tracker desc sample
@@ -277,12 +324,9 @@ subs :
         desc : part of open planner perception package
         cmd  : roslaunch lidar_kf_contour_track lidar_kf_contour_track.launch
         param: lidar_kf_contour_track_param
-
-      - name : lidar_imm_ukf_pda_track
-        desc : lidar_imm_ukf_pda_track desc sample
-        cmd  : roslaunch lidar_imm_ukf_pda_track lidar_imm_ukf_pda_track.launch
-        param: lidar_imm_ukf_pda_track_param
         gui  :
+          dialog_width  : 650
+          dialog_height : 450
           sync :
             func : self.button_synchronization.GetValue()
 
@@ -338,6 +382,18 @@ subs :
             flags  : [ left ]
           sync :
             func : self.button_synchronization.GetValue()
+
+
+    - name : object_tracker
+      desc : object_tracker desc sample
+      subs :
+        - name : imm_ukf_pda_track
+          desc : imm_ukf_pda_track desc sample
+          cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
+          param: imm_ukf_pda_track_param
+          gui  :
+            sync :
+              func : self.button_synchronization.GetValue()
 
 
     - name : trafficlight_recognizer
@@ -516,6 +572,25 @@ subs :
       desc : Generates the occupancy grid indicating the status of the road
       cmd  : roslaunch road_occupancy_processor road_occupancy_processor.launch
       param: road_occupancy_processor
+      gui  :
+        wayarea_topic_src :
+          flags : [nl ]
+        sync :
+          func : self.button_synchronization.GetValue()
+
+  - name : Prediction
+    desc : Prediction desc sample
+    subs :
+    - name: motion_predictor
+      desc: motion_predictor desc samples
+      subs:
+      - name : naive_motion_predict
+        desc : naive_motion_predict desc sample
+        cmd  : roslaunch naive_motion_predict naive_motion_predict.launch
+        param: naive_motion_predict_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
 
 - subs :
   - name : Mission Planning
@@ -586,6 +661,9 @@ subs :
         desc : load common local planning parameters
         cmd  : roslaunch op_local_planner op_common_params.launch
         param: op_common_params
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
       - name : op_trajectory_generator
         desc : generating candidate rollout trajectory from global path
         cmd  : roslaunch op_local_planner op_trajectory_generator.launch
@@ -599,14 +677,14 @@ subs :
         cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
         param: op_trajectory_evaluator
       - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner 
+        desc : Decision making by selecting best behavior for local planner
         cmd  : roslaunch op_local_planner op_behavior_selector.launch
 
     - name : OpenPlanner - Utilities
       desc : Testing UI, Loggers , ..
       subs :
       - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file 
+        desc : Publish transformation from ndt_pose read from rosbag file
         cmd  : roslaunch op_utilities op_pose2tf.launch
         param: op_pose2tf
       - name : op_bag_player
@@ -625,11 +703,12 @@ subs :
         cmd  : roslaunch op_simulation_package op_signs_simulator.launch
         param: op_signs_simulator
       - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner 
+        desc : Simulate a car using OpenPlanner
         cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
         param: op_car_simulator
-
-
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
     - name : astar_planner
       desc : astar_planner desc sample
       subs :
@@ -645,7 +724,7 @@ subs :
           use_crosswalk_detection : { border : 4, flags : [ all ] }
           enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
           dialog_width  : 800
-          dialog_height : 400
+          dialog_height : 450
     - name : lattice_planner
       desc : lattice_planner desc sample
       subs :
@@ -654,6 +733,8 @@ subs :
         cmd  : roslaunch lattice_planner lattice_velocity_set.launch
         param: lattice_velocity_set
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
           use_crosswalk_detection : { border : 4, flags : [ all ] }
       - name : path_select
         desc : path_select desc sample
@@ -663,6 +744,8 @@ subs :
         cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
         param: lane_follower_trajgen
         gui  :
+          dialog_width  : 600
+          dialog_height : 450
           velocity:
             depend : param_flag
             depend_bool : 'lambda v : v == 1'
@@ -688,6 +771,8 @@ subs :
          cmd  : roslaunch waypoint_maker waypoint_loader.launch
          param: waypoint_loader
          gui  :
+           dialog_width  : 700
+           dialog_height : 550
            multi_lane_csv :
              prop  : 1
            replanning_mode :
@@ -757,6 +842,8 @@ subs :
          cmd  : roslaunch waypoint_follower pure_pursuit.launch
          param: waypoint_follower
          gui  :
+           dialog_width  : 600
+           dialog_height : 450
            velocity:
              depend : param_flag
              depend_bool : 'lambda v : v == 1'
@@ -798,7 +885,7 @@ subs :
       param: decision_maker
       gui  :
           dialog_width  : 400
-          dialog_height : 600
+          dialog_height : 620
 
     - name : planner_selector
       desc : planner_selector desc sample
@@ -1062,21 +1149,22 @@ params :
       max   : 10
       v     : 9
 
-  - name  : lidar_imm_ukf_pda_track_param
+  - name  : imm_ukf_pda_track_param
     vars  :
     - name    : tracker_input_topic
       desc    : input_topic desc sample
       label   : 'input topic'
-      kind    : str
-      v       : /cloud_clusters
+      kind    : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_detector/objects
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_topic
+    - name    : tracker_output_detected_topic
       desc    : output_topic desc sample
       label   : 'output topic'
       kind    : str
-      v       : /tracking_cluster_array
+      v       : /detection/lidar_tracker/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1150,6 +1238,33 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : prevent_explosion_thres
+      desc    : threshold for preventing ukf from explosion
+      label   : 'prevent explosion thres'
+      min       : 0
+      max       : 10000
+      v       : 1000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name      : use_sukf
+      desc      : Use SUKF
+      label     : use_sukf
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : is_debug
+      desc      : debug mode on/off
+      label     : is_debug
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+
   - name  : lidar_kf_contour_track_param
     vars  :
     - name : tracking_type
@@ -1196,19 +1311,10 @@ params :
         dash     : ''
         delim    : ':='
     - name : enableLogging
-      desc : Enable Writ csv of internal tracking state 
+      desc : Enable Writ csv of internal tracking state
       label: Enable CSV Logs
       kind : checkbox
       v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : splitter_topic
-      desc : splitter topic
-      label: Advanced Params -----------------------------------------------------------------
-      min  : 1
-      max  : 1
-      v    : 1
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -1458,7 +1564,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -1556,7 +1663,8 @@ params :
     - name      : topic_pose_stamped
       desc      : topic_pose_stamped desc sample
       label     : /current_pose (geometry_msgs/PoseStamped)
-      kind      : str
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
       v         : /ndt_pose
       cmd_param :
         dash    : ''
@@ -2079,7 +2187,8 @@ params :
 
     - name : points_topic
       desc : points_topic
-      kind : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v    : /points_lanes
       cmd_param:
               dash : ''
@@ -2297,7 +2406,7 @@ params :
 
   - name : feat_proj
     topic: /config/adjust_xy
-    msg  : adjust_xy
+    msg  : AdjustXY
     vars :
     - name : x
       desc : x desc sample
@@ -2480,7 +2589,7 @@ params :
 
   - name  : lane_stop
     topic : /light_color_managed
-    msg   : traffic_light
+    msg   : TrafficLight
     no_save_vars : [ lane_stop ]
     vars  :
     - name  : traffic_light
@@ -3049,7 +3158,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : maxAcceleration
-      desc : Maximum acceleration allowed 
+      desc : Maximum acceleration allowed
       label: Acceleration
       min  : 0.01
       max  : 25.0
@@ -3192,7 +3301,7 @@ params :
   - name  : op_motion_predictor
     vars  :
     - name : enableCurbObstacles
-      desc : Enable using curb from map as obstacles 
+      desc : Enable using curb from map as obstacles
       label: Detect curbs from map
       kind : checkbox
       v    : False
@@ -3245,7 +3354,7 @@ params :
   - name  : op_trajectory_evaluator
     vars  :
     - name : enablePrediction
-      desc : treat all obstacles as dynamic or as static 
+      desc : treat all obstacles as dynamic or as static
       label: Enable Prediction
       kind : checkbox
       v    : False
@@ -3258,7 +3367,8 @@ params :
     - name : pose_topic
       desc : position topic name in rosbag file
       label: Pose Topic
-      kind : str
+      kind      : topic
+      topic_type: geometry_msgs/PoseStamped
       v    : '/ndt_pose'
       cmd_param:
         dash     : ''
@@ -3366,7 +3476,7 @@ params :
         dash     : ''
         delim    : ':='
     - name : logFolder
-      desc : Folder for simulation data logging 
+      desc : Folder for simulation data logging
       label: Log Folder
       kind : path
       cmd_param:
@@ -3866,7 +3976,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -3944,7 +4055,8 @@ params :
       desc      : IMU raw data source topic
       label     : imu_topic
       v         : /imu_raw
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Imu
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -4083,8 +4195,10 @@ params :
     - name      : image_src
       desc      : Image Topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
+      flags : [ nl ]
       cmd_param :
         dash      : ''
         delim     : ':='
@@ -4268,7 +4382,8 @@ params :
     - name      : points_topic
       desc      : Subscribing topic for generating a cost map (PointCloud2 message)
       label     : Points Topic
-      kind      : str
+      kind      : topic
+      topic_type: sensor_msgs/PointCloud2
       v         : /points_lanes
       cmd_param :
         dash      : ''
@@ -4413,23 +4528,26 @@ params :
     - name      : points_ground_src
       desc      : PointCloud topic containing only the ground
       label     : points_ground_src
-      kind      : str
-      v         : points_ground
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_ground
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : points_no_ground_src
       desc      : PointCloud source topic containing only the obstacle points
       label     : points_no_ground_src
-      kind      : str
-      v         : points_no_ground
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v         : /points_no_ground
       cmd_param :
         dash      : ''
         delim     : ':='
     - name      : wayarea_topic_src
       desc      : Name of the topic containing the grid_map_msgs:GridMap containing the road areas.
       label     : wayarea_topic_src
-      kind      : str
+      kind  : topic
+      topic_type : grid_map_msgs/GridMap
       v         : grid_map_wayarea
       cmd_param :
         dash      : ''
@@ -4559,7 +4677,8 @@ params :
     - name      : image_src
       desc      : Image topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
       cmd_param :
         dash      : ''
@@ -4577,6 +4696,14 @@ params :
       label    : 'pre_trained_model (weights)'
       kind     : path
       v        : $(rospack find vision_darknet_detect)/darknet/data/yolov3.weights
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name     : names_file
+      desc     : Names file. Label map
+      label    : 'names file (names)'
+      kind     : path
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/coco.names
       cmd_param:
         dash     : ''
         delim    : ':='
@@ -4622,7 +4749,8 @@ params :
     - name      : image_src
       desc      : Image topic to be fed to the network for detection
       label     : image_src
-      kind      : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v         : /image_raw
       cmd_param :
         dash      : ''
@@ -4643,6 +4771,11 @@ params :
       cmd_param:
         dash     : ''
         delim    : ':='
+    - name     : names_file
+      desc     : Names file. Label map
+      label    : 'names file (names)'
+      kind     : path
+      v        : $(rospack find vision_darknet_detect)/darknet/cfg/coco.names
     - name      : gpu_device_id
       desc      : gpu_device_id desc sample
       label     : gpu_device_id
@@ -4664,34 +4797,25 @@ params :
 
   - name  : lidar_euclidean_cluster_detect_param
     vars  :
-    - name    : remove_ground
-      desc    : remove_ground desc sample
-      label   : 'remove ground'
+    - name    : use_gpu
+      desc    : use_gpu desc sample
+      label   : 'use_gpu'
       kind    : checkbox
-      v       : True
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_frame
+      desc    : output_frame desc sample
+      label   : 'output_frame'
+      kind    : str
+      v       : velodyne
       cmd_param :
         dash        : ''
         delim       : ':='
     - name    : pose_estimation
       desc    : pose_estimation desc sample
       label   : 'pose_estimation'
-      kind    : checkbox
-      v       : True
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : use_diffnormals
-      desc    : use_diffnormals desc sample
-      label   : 'use_diffnormals'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-
-    - name    : publish_filtered
-      desc    : publish_filtered desc sample
-      label   : 'publish filtered'
       kind    : checkbox
       v       : False
       cmd_param :
@@ -4702,19 +4826,19 @@ params :
       label   : 'downsample_cloud'
       kind    : checkbox
       v       : False
+      flags : [ nl ]
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : points_node
-      desc    : points_node desc sample
+      desc    : Input PointCloud topic, use a ground filtering method from Sensing (ring, ray, comparemap)
       label   : 'input_points_node'
-      kind    : str
-      v       : points_raw
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v       : /points_no_ground
       cmd_param :
         dash        : ''
         delim       : ':='
-
     - name    : leaf_size
       desc    : leaf_size desc sample
       label   : 'leaf size'
@@ -4727,7 +4851,7 @@ params :
     - name    : cluster_size_min
       desc    : cluster_size_min desc sample
       label   : 'cluster size minimum'
-      min       : 0
+      min       : 1
       max       : 100000
       v       : 20
       cmd_param :
@@ -4737,7 +4861,7 @@ params :
       desc    : cluster_size_max desc sample
       label   : 'cluster size maximum'
       min       : 0
-      max       : 100000
+      max       : 200000
       v       : 100000
       cmd_param :
         dash        : ''
@@ -4788,7 +4912,8 @@ params :
     - name    : wayarea_gridmap_topic
       desc    : Topic name of the wayarea grid_map, this is published by wayarea2grid node in Computing/Semantics. default. grid_map_wayarea
       label   : 'wayarea_gridmap_topic'
-      kind    : str
+      kind  : topic
+      topic_type : grid_map_msgs/GridMap
       v       : grid_map_wayarea
       cmd_param :
         dash        : ''
@@ -4845,14 +4970,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : output_frame
-      desc    : output_frame desc sample
-      label   : 'output_frame'
-      kind    : str
-      v       : velodyne
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : cluster_merge_threshold
       desc    : cluster_merge_threshold desc sample
       label   : 'cluster_merge_threshold'
@@ -4869,14 +4986,6 @@ params :
         dash        : ''
         delim       : ':='
         only_enable : True
-    - name    : use_gpu
-      desc    : use_gpu desc sample
-      label   : 'use_gpu'
-      kind    : checkbox
-      v       : False
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : use_multiple_thres
       desc    : use_multiple_thres desc sample
       label   : 'use_multiple_thres'
@@ -4901,6 +5010,86 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : remove_ground
+      desc    : remove_ground desc sample
+      label   : 'remove ground'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : use_diffnormals
+      desc    : use_diffnormals desc sample
+      label   : 'use_diffnormals'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : publish_filtered
+      desc    : publish_filtered desc sample
+      label   : 'publish filtered'
+      kind    : checkbox
+      v       : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : lidar_naive_l_shape_detect_param
+    vars  :
+    - name    : input_topic
+      desc    : input_topic desc sample
+      label   : 'input_topic'
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output_topic
+      desc    : output_topic desc sample
+      label   : 'output_topic'
+      kind    : str
+      v       : /detection/lidar_objects/l_shaped
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : random_ponts
+      desc    : random_ponts desc sample
+      label   : 'random_points'
+      min       : 0
+      max       : 500
+      v       : 80
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : slope_dist_thres
+      desc    : slope_dist_thres desc sample
+      label   : 'slope_distance_threshold'
+      min       : 0
+      max       : 10
+      v       : 2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : num_points_thres
+      desc    : num_points_thres desc sample
+      label   : 'num_points_thres'
+      min       : 0
+      max       : 100
+      v       : 10
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : sensor_height
+      desc    : sensor_height desc sample
+      label   : 'sensor_height'
+      min       : 0
+      max       : 5
+      v       : 2.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : lidar_fake_perception_param
     vars  :
@@ -4915,7 +5104,8 @@ params :
     - name    : real_objects_topic
       desc    : input objects
       label   : 'input objects'
-      kind    : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v       : /detected_objects
       cmd_param :
         dash  : ''
@@ -4923,7 +5113,8 @@ params :
     - name    : real_points_topic
       desc    : input points
       label   : 'input points'
-      kind    : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v       : /points_raw
       cmd_param :
         dash  : ''
@@ -5088,7 +5279,8 @@ params :
     - name  : points_src
       desc  : Point cloud source topic
       label : points_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash      : ''
@@ -5096,7 +5288,8 @@ params :
     - name  : image_src
       desc  : Image source topic
       label : image_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/Image
       v     : /image_raw
       cmd_param :
         dash      : ''
@@ -5104,7 +5297,8 @@ params :
     - name  : camera_info_src
       desc  : CameraInfo source topic
       label : camera_info_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
       v     : /camera_info
       cmd_param :
         dash      : ''
@@ -5114,9 +5308,10 @@ params :
   - name  : range_vision_fusion_params
     vars  :
     - name  : detected_objects_range
-      desc  : Point cloud source topic
+      desc  : Point cloud detected objects
       label : detected_objects_range
-      kind  : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v     : /detection/lidar_objects
       cmd_param :
         dash      : ''
@@ -5124,7 +5319,8 @@ params :
     - name  : detected_objects_vision
       desc  : Image source topic
       label : detected_objects_vision
-      kind  : str
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
       v     : /detection/vision_objects
       cmd_param :
         dash      : ''
@@ -5132,7 +5328,8 @@ params :
     - name  : camera_info_src
       desc  : CameraInfo source topic
       label : camera_info_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
       v     : /camera_info
       cmd_param :
         dash      : ''
@@ -5142,6 +5339,74 @@ params :
       label : sync_topics
       kind  : checkbox
       v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
+  - name  : vision_beyond_track_params
+    vars  :
+    - name  : camera_info_src
+      desc  : CameraInfo source topic
+      label : camera_info_src
+      kind  : topic
+      topic_type : sensor_msgs/CameraInfo
+      v     : /camera_info
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : objects_topic_src
+      desc  : Detected Objects Topic Source
+      label : objects_topic_src
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /detection/vision_objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : camera_height
+      desc  : Camera height
+      label : camera_height
+      min     : 0.00
+      max     : 3.0
+      v       : 1.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+  - name  : naive_motion_predict_param
+    vars  :
+    - name  : input_topic
+      desc  : input tppic
+      label : input_topic
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v     : /detection/lidar_tracker/objects
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : interval_sec
+      desc  : interval_sec desc sample
+      label : interval_sec
+      min     : 0.00
+      max     : 5.0
+      v       : 0.1
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : num_prediction
+      desc  : num_prediction desc sample
+      label : num_prediction
+      min     : 0
+      max     : 200
+      v       : 20
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : sensor_height
+      desc  : sensor_height desc sample
+      label : sensor_height
+      min     : 0.0
+      max     : 5.0
+      v       : 2.0
       cmd_param :
         dash      : ''
         delim     : ':='

@@ -33,7 +33,7 @@
 
 #include <iostream>
 
-#include "autoware_msgs/ConfigTwistFilter.h"
+#include "autoware_config_msgs/ConfigTwistFilter.h"
 
 namespace {
 
@@ -45,7 +45,7 @@ double g_lowpass_gain_angular_z = 0.0;
 constexpr double RADIUS_MAX = 9e10;
 constexpr double ERROR = 1e-8;
 
-void configCallback(const autoware_msgs::ConfigTwistFilterConstPtr &config)
+void configCallback(const autoware_config_msgs::ConfigTwistFilterConstPtr &config)
 {
   g_lateral_accel_limit = config->lateral_accel_limit;
   ROS_INFO("g_lateral_accel_limit = %lf",g_lateral_accel_limit);

@@ -1,8 +1,8 @@
 #ifndef __PLANNER_SELECTOR_HPP__
 #define __PLANNER_SELECTOR_HPP__
 
-#include <autoware_msgs/ConfigPlannerSelector.h>
-#include <autoware_msgs/lane.h>
+#include <autoware_config_msgs/ConfigPlannerSelector.h>
+#include <autoware_msgs/Lane.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 
@@ -22,12 +22,12 @@ class PlannerSelector
 private:
   ros::NodeHandle nh_;
 
-  std::unordered_map<std::string, autoware_msgs::lane> waypoints_;
+  std::unordered_map<std::string, autoware_msgs::Lane> waypoints_;
   std::unordered_map<std::string, ros::Publisher> Pubs;
   std::unordered_map<std::string, ros::Subscriber> Subs;
 
-  autoware_msgs::lane final_waypoints_dp_;
-  autoware_msgs::lane final_waypoints_astar_;
+  autoware_msgs::Lane final_waypoints_dp_;
+  autoware_msgs::Lane final_waypoints_astar_;
 
   std::unordered_map<std::string, int> closest_waypoints_;
   int closest_waypoint_astar_;
@@ -60,9 +60,9 @@ public:
   void initROS();
 
   void callbackFromClosest(const ros::MessageEvent<std_msgs::Int32> &event);
-  void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event);
+  void callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::Lane const> &event);
   void callbackFromLattice(const std_msgs::Int32 &msg);
-  void callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg);
+  void callbackFromConfig(const autoware_config_msgs::ConfigPlannerSelector &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStamped &msg);
 };
 }
