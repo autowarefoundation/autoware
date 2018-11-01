@@ -94,5 +94,6 @@ Node: visualize_detected_objects
 
 
 ### Benchmark
+Please notice that benchmark scripts are in another repository.
 You can tune parameters by using benchmark based on KITTI dataset.
 The repository is [here](https://github.com/cirpue49/kitti_tracking_benchmark).
