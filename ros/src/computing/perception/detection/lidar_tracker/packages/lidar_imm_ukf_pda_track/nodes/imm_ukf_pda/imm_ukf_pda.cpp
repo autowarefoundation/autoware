@@ -28,12 +28,12 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "imm_ukf_pda.h"
 
 ImmUkfPda::ImmUkfPda()
-  : target_id_(0),  // assign unique ukf_id_ to each tracking targets
-    init_(false)
+  : target_id_(0)
+  ,  // assign unique ukf_id_ to each tracking targets
+  init_(false)
 {
   ros::NodeHandle private_nh_("~");
 
@@ -63,16 +63,14 @@ void ImmUkfPda::Run()
 {
   std::string output_topic = "/detection/lidar_tracker/objects";
 
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(output_topic,
-                                                                                 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(output_topic, 1);
   ROS_INFO("[%s] output_topic: %s", __APP_NAME__, output_topic.c_str());
 
-  sub_detected_array_ = node_handle_.subscribe(input_topic_, 1, &ImmUkfPda::DetectionsCallback,
-                                               this);
+  sub_detected_array_ = node_handle_.subscribe(input_topic_, 1, &ImmUkfPda::DetectionsCallback, this);
   ROS_INFO("[%s] source_topic: %s", __APP_NAME__, input_topic_.c_str());
 }
 
-void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray &in_objects)
+void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray& in_objects)
 {
   autoware_msgs::DetectedObjectArray transformed_input, transformed_output;
   autoware_msgs::DetectedObjectArray tracked_objects;
@@ -86,9 +84,8 @@ void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray &in_
   pub_object_array_.publish(transformed_output);
 }
 
-autoware_msgs::DetectedObjectArray
-ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_objects,
-                                 const std::string &in_target_frame)
+autoware_msgs::DetectedObjectArray ImmUkfPda::transformPoseToGlobal(
+    const autoware_msgs::DetectedObjectArray& in_objects, const std::string& in_target_frame)
 {
   try
   {
@@ -96,7 +93,7 @@ ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_ob
     // get sensor -> world frame
     tf_listener_.lookupTransform(in_target_frame, in_objects.header.frame_id, ros::Time(0), local2global_);
   }
-  catch (tf::TransformException &ex)
+  catch (tf::TransformException& ex)
   {
     ROS_ERROR("%s", ex.what());
     ros::Duration(1.0).sleep();
@@ -117,10 +114,8 @@ ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_ob
                                             in_objects.objects[i].pose.position.y,
                                             in_objects.objects[i].pose.position.z));
     input_object_pose.setRotation(
-      tf::Quaternion(in_objects.objects[i].pose.orientation.x,
-                     in_objects.objects[i].pose.orientation.y,
-                     in_objects.objects[i].pose.orientation.z,
-                     in_objects.objects[i].pose.orientation.w));
+        tf::Quaternion(in_objects.objects[i].pose.orientation.x, in_objects.objects[i].pose.orientation.y,
+                       in_objects.objects[i].pose.orientation.z, in_objects.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
 
     autoware_msgs::DetectedObject dd;
@@ -134,9 +129,8 @@ ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray &in_ob
   return transformed_objects;
 }
 
-autoware_msgs::DetectedObjectArray
-ImmUkfPda::transformPoseToLocal(const autoware_msgs::DetectedObjectArray &in_objects,
-                                const std::string &in_target_frame)
+autoware_msgs::DetectedObjectArray ImmUkfPda::transformPoseToLocal(const autoware_msgs::DetectedObjectArray& in_objects,
+                                                                   const std::string& in_target_frame)
 {
   autoware_msgs::DetectedObjectArray transformed_objects;
   transformed_objects.header = in_objects.header;
@@ -150,11 +144,9 @@ ImmUkfPda::transformPoseToLocal(const autoware_msgs::DetectedObjectArray &in_obj
     output_object_pose.setOrigin(tf::Vector3(in_objects.objects[i].pose.position.x,
                                              in_objects.objects[i].pose.position.y,
                                              in_objects.objects[i].pose.position.z));
-    output_object_pose.setRotation(tf::Quaternion(
-      in_objects.objects[i].pose.orientation.x,
-      in_objects.objects[i].pose.orientation.y,
-      in_objects.objects[i].pose.orientation.z,
-      in_objects.objects[i].pose.orientation.w));
+    output_object_pose.setRotation(
+        tf::Quaternion(in_objects.objects[i].pose.orientation.x, in_objects.objects[i].pose.orientation.y,
+                       in_objects.objects[i].pose.orientation.z, in_objects.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_.inverse() * output_object_pose, detected_pose_out.pose);
 
     autoware_msgs::DetectedObject dd;
@@ -166,13 +158,13 @@ ImmUkfPda::transformPoseToLocal(const autoware_msgs::DetectedObjectArray &in_obj
     transformed_objects.objects.push_back(dd);
   }
   return transformed_objects;
-}//transformPoseToLocal
+}  // transformPoseToLocal
 
-void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &input, UKF &target,
-                                      const bool second_init, const Eigen::VectorXd &max_det_z,
-                                      const Eigen::MatrixXd &max_det_s,
-                                      std::vector<autoware_msgs::DetectedObject> &object_vec,
-                                      std::vector<bool> &matching_vec)
+void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target,
+                                      const bool second_init, const Eigen::VectorXd& max_det_z,
+                                      const Eigen::MatrixXd& max_det_s,
+                                      std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                      std::vector<bool>& matching_vec)
 {
   // alert: different from original imm-pda filter, here picking up most likely measurement
   // if making it allows to have more than one measurement, you will see non semipositive definite covariance
@@ -210,10 +202,10 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray &
   {
     object_vec.push_back(smallest_meas_object);
   }
-}//measurementValidation
+}  // measurementValidation
 
-void ImmUkfPda::getNearestEuclidCluster(const UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec,
-                                        autoware_msgs::DetectedObject &object, double &min_dist)
+void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                        autoware_msgs::DetectedObject& object, double& min_dist)
 {
   int min_ind = 0;
   double px = target.x_merge_(0);
@@ -233,9 +225,9 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF &target, const std::vector<aut
   }
 
   object = object_vec[min_ind];
-}//getNearestEuclidCluster
+}  // getNearestEuclidCluster
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target)
+void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
 {
   // skip if no validated measurement
   if (object_vec.empty())
@@ -249,35 +241,38 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject> &ob
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
     if (min_dist < distance_thres_)
     {
-      target.is_reliable_ = true;//this should be changed for setters
-      target.object_pose_ = nearest_object.pose; //this should be changed for setters
-      target.object_dimensions_ = nearest_object.dimensions;//this should be changed for setters
+      target.is_reliable_ = true;                             // this should be changed for setters
+      target.object_pose_ = nearest_object.pose;              // this should be changed for setters
+      target.object_dimensions_ = nearest_object.dimensions;  // this should be changed for setters
     }
-  } else
+  }
+  else
   {
     autoware_msgs::DetectedObject nearest_object;
     double min_dist = std::numeric_limits<double>::max();
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-    target.object_pose_ = nearest_object.pose;//this should be changed for setters
-    target.object_dimensions_ = nearest_object.dimensions;//this should be changed for setters
+    target.object_pose_ = nearest_object.pose;              // this should be changed for setters
+    target.object_dimensions_ = nearest_object.dimensions;  // this should be changed for setters
   }
-}//associateBB
+}  // associateBB
 
-void ImmUkfPda::updateBehaviorState(const UKF &target, autoware_msgs::DetectedObject &object)
+void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
 {
   if (target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CV;
-  } else if (target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  }
+  else if (target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CTRV;
-  } else
+  }
+  else
   {
     object.behavior_state = MotionModel::RM;
   }
-}//updateBehaviorState
+}  // updateBehaviorState
 
-void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray &in_objects, double timestamp)
+void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& in_objects, double timestamp)
 {
   for (size_t i = 0; i < in_objects.objects.size(); i++)
   {
@@ -293,9 +288,9 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray &in_objects
   }
   timestamp_ = timestamp;
   init_ = true;
-}//initTracker
+}  // initTracker
 
-void ImmUkfPda::secondInit(UKF &target, const std::vector<autoware_msgs::DetectedObject> &object_vec, double dt)
+void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
 {
   if (object_vec.size() == 0)
   {
@@ -327,44 +322,50 @@ void ImmUkfPda::secondInit(UKF &target, const std::vector<autoware_msgs::Detecte
   // target.initCovarQs(dt, target_yaw);
 
   target.tracking_num_++;
-}//secondInit
+}  // secondInit
 
-void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target)
+void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
 {
   if (object_vec.size() > 0)
   {
     if (target.tracking_num_ < TrackingState::Stable)
     {
       target.tracking_num_++;
-    } else if (target.tracking_num_ == TrackingState::Stable)
-    {
-      target.tracking_num_ = TrackingState::Stable;
-    } else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
-    {
-      target.tracking_num_ = TrackingState::Stable;
-    } else if (target.tracking_num_ == TrackingState::Lost)
-    {
-      target.tracking_num_ = TrackingState::Die;
     }
-  } else
-  {
-    if (target.tracking_num_ < TrackingState::Stable)
+    else if (target.tracking_num_ == TrackingState::Stable)
     {
-      target.tracking_num_ = TrackingState::Die;
-    } else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
+      target.tracking_num_ = TrackingState::Stable;
+    }
+    else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
     {
-      target.tracking_num_++;
-    } else if (target.tracking_num_ == TrackingState::Lost)
+      target.tracking_num_ = TrackingState::Stable;
+    }
+    else if (target.tracking_num_ == TrackingState::Lost)
     {
       target.tracking_num_ = TrackingState::Die;
     }
   }
-}//updateTrackingNum
+  else
+  {
+    if (target.tracking_num_ < TrackingState::Stable)
+    {
+      target.tracking_num_ = TrackingState::Die;
+    }
+    else if (target.tracking_num_ >= TrackingState::Stable && target.tracking_num_ < TrackingState::Lost)
+    {
+      target.tracking_num_++;
+    }
+    else if (target.tracking_num_ == TrackingState::Lost)
+    {
+      target.tracking_num_ = TrackingState::Die;
+    }
+  }
+}  // updateTrackingNum
 
-void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray &in_objects, const double dt,
-                                             std::vector<bool> &matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject> &object_vec, UKF &target,
-                                             bool &is_skip_target)
+void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& in_objects, const double dt,
+                                             std::vector<bool>& matching_vec,
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
+                                             bool& is_skip_target)
 {
   double det_s = 0;
   Eigen::VectorXd max_det_z;
@@ -376,7 +377,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     max_det_z = target.z_pred_ctrv_;
     max_det_s = target.s_ctrv_;
     det_s = max_det_s.determinant();
-  } else
+  }
+  else
   {
     // find maxDetS associated with predZ
     target.findMaxZandS(max_det_z, max_det_s);
@@ -395,7 +397,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   if (target.tracking_num_ == TrackingState::Init)
   {
     is_second_init = true;
-  } else
+  }
+  else
   {
     is_second_init = false;
   }
@@ -423,10 +426,10 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     is_skip_target = true;
     return;
   }
-}//probabilisticDataAssociation
+}  // probabilisticDataAssociation
 
-void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray &in_objects,
-                               const std::vector<bool> &matching_vec)
+void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& in_objects,
+                               const std::vector<bool>& matching_vec)
 {
   for (size_t i = 0; i < in_objects.objects.size(); i++)
   {
@@ -443,7 +446,7 @@ void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::Dete
       target_id_++;
     }
   }
-}//makeNewTargets
+}  // makeNewTargets
 
 void ImmUkfPda::staticClassification()
 {
@@ -467,10 +470,9 @@ void ImmUkfPda::staticClassification()
       }
     }
   }
-}//staticClassification
+}  // staticClassification
 
-autoware_msgs::DetectedObjectArray
-ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray &in_objects)
+autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& in_objects)
 {
   autoware_msgs::DetectedObjectArray output_objects;
 
@@ -501,11 +503,11 @@ ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray &in_objects)
       std::string s_velocity = std::to_string(tv * 3.6);
       std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
-      std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " +
-                         std::to_string(targets_[i].x_merge_(2)) + " m/s "
-      //+ "(" + std::to_string(targets_[i].x_merge_(0)) + ", "
-      // + std::to_string(targets_[i].x_merge_(1)) + ")"
-      ;
+      std::string text =
+          "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) + " m/s "
+          //+ "(" + std::to_string(targets_[i].x_merge_(0)) + ", "
+          // + std::to_string(targets_[i].x_merge_(1)) + ")"
+          ;
       dd.label += text;
       output_objects.objects.push_back(dd);
     }
@@ -518,14 +520,14 @@ ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray &in_objects)
     dd.pose.orientation.z = q[2];
     dd.pose.orientation.w = q[3];
 
-    //store yaw rate for motion into dd.accerelation.linear.y
+    // store yaw rate for motion into dd.accerelation.linear.y
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
 
     updateBehaviorState(targets_[i], dd);
   }
 
   return output_objects;
-}//makeOutput
+}  // makeOutput
 
 void ImmUkfPda::removeUnnecessaryTarget()
 {
@@ -539,10 +541,9 @@ void ImmUkfPda::removeUnnecessaryTarget()
   }
   std::vector<UKF>().swap(targets_);
   targets_ = temp_targets;
-}//removeUnnecessaryTarget
+}  // removeUnnecessaryTarget
 
-autoware_msgs::DetectedObjectArray
-ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray &in_objects)
+autoware_msgs::DetectedObjectArray ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& in_objects)
 {
   double timestamp = in_objects.header.stamp.toSec();
 
@@ -593,7 +594,8 @@ ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray &in_objects)
       }
       // standard ukf update step
       targets_[i].updateSUKF(object_vec);
-    } else  // immukfpda filter
+    }
+    else  // immukfpda filter
     {
       // immukf prediction step
       targets_[i].predictionIMMUKF(dt);
@@ -624,4 +626,4 @@ ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray &in_objects)
   removeUnnecessaryTarget();
 
   return detected_objects_output;
-}//tracker
+}  // tracker

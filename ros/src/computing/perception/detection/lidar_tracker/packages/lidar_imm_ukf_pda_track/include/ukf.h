@@ -244,12 +244,9 @@ public:
 
   void updateYawWithHighProb();
 
-  void initialize(const Eigen::VectorXd &z,
-                  const double timestamp,
-                  const int target_id,
-                  const std::string &in_label);
+  void initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id, const std::string& in_label);
 
-  void updateModeProb(const std::vector<double> &lambda_vec);
+  void updateModeProb(const std::vector<double>& lambda_vec);
 
   void mergeEstimationAndCovariance();
 
@@ -261,28 +258,26 @@ public:
 
   void predictionIMMUKF(const double dt);
 
-  void findMaxZandS(Eigen::VectorXd &max_det_z, Eigen::MatrixXd &max_det_s);
+  void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject> &object_vec);
+  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
-                        const std::vector<autoware_msgs::DetectedObject> &object_vec,
-                        std::vector<double> &lambda_vec);
+                        const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
 
-  void updateSUKF(const std::vector<autoware_msgs::DetectedObject> &object_vec);
+  void updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
-                    const std::vector<autoware_msgs::DetectedObject> &object_vec);
+                    const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void ctrv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-            const double delta_t, std::vector<double> &state);
+            const double delta_t, std::vector<double>& state);
 
-  void
-  cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
-     std::vector<double> &state);
+  void cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd, const double delta_t,
+          std::vector<double>& state);
 
   void randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
-                    const double delta_t, std::vector<double> &state);
+                    const double delta_t, std::vector<double>& state);
 
   void initCovarQs(const double dt, const double yaw);
 
