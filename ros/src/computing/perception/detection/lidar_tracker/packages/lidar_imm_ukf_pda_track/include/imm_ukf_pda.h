@@ -82,6 +82,14 @@ private:
   // switch sukf and ImmUkfPda
   bool use_sukf_;
 
+  // whether if benchmarking tracking result
+  bool is_benchmark_;
+  int frame_count_;
+  std::string kitti_data_dir_;
+
+  // for benchmark
+  std::string result_file_path_;
+
   // prevent explode param for ukf
   double prevent_explosion_thres_;
 
@@ -130,21 +138,23 @@ private:
 
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
-  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
-                                    std::vector<bool>& matching_vec,
-                                    std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
+  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& in_objects, const double dt,
+                                    std::vector<bool>& in_matching_vec,
+                                    std::vector<autoware_msgs::DetectedObject>& out_lambda_vec, UKF& target,
                                     bool& is_skip_target);
 
-  void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
-                      const std::vector<bool>& matching_vec);
+  void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& in_objects,
+                      const std::vector<bool>& in_matching_vec);
 
   void staticClassification();
 
-  autoware_msgs::DetectedObjectArray makeOutput(const autoware_msgs::DetectedObjectArray& input_objects);
+  autoware_msgs::DetectedObjectArray makeOutput(const autoware_msgs::DetectedObjectArray& in_objects);
 
   void removeUnnecessaryTarget();
 
-  autoware_msgs::DetectedObjectArray tracker(const autoware_msgs::DetectedObjectArray& input);
+  autoware_msgs::DetectedObjectArray tracker(const autoware_msgs::DetectedObjectArray& in_objects);
+
+  void dumpResultText(const autoware_msgs::DetectedObjectArray& in_detected_objects);
 
 public:
   ImmUkfPda();

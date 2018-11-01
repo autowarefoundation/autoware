@@ -1,7 +1,7 @@
 <package format="2">
 
   <name>velodyne_laserscan</name>
-  <version>1.8.0</version>
+  <version>1.9.0</version>
   <description>
     Extract a single ring of a Velodyne PointCloud2 and publish it as a LaserScan message
   </description>

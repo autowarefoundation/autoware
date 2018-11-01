@@ -33,7 +33,8 @@
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
-  init_(false)
+  init_(false),
+  frame_count_(0)
 {
   ros::NodeHandle private_nh_("~");
 
@@ -57,6 +58,15 @@ ImmUkfPda::ImmUkfPda()
   ROS_INFO("[%s] prevent_explosion_thres: %f", __APP_NAME__, prevent_explosion_thres_);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   ROS_INFO("[%s] use_sukf: %d", __APP_NAME__, use_sukf_);
+
+  // rosparam for benchmark
+  private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
+  if(is_benchmark_)
+  {
+    result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
+    std::remove(result_file_path_.c_str());
+  }
 }
 
 void ImmUkfPda::Run()
@@ -81,7 +91,10 @@ void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray& in_
 
   transformed_output = transformPoseToLocal(tracked_objects, in_objects.header.frame_id);
 
-  pub_object_array_.publish(transformed_output);
+  if(is_benchmark_)
+  {
+    dumpResultText(transformed_output);
+  }
 }
 
 autoware_msgs::DetectedObjectArray ImmUkfPda::transformPoseToGlobal(
@@ -543,9 +556,43 @@ void ImmUkfPda::removeUnnecessaryTarget()
   targets_ = temp_targets;
 }  // removeUnnecessaryTarget
 
+void ImmUkfPda::dumpResultText(const autoware_msgs::DetectedObjectArray& in_detected_objects)
+{
+  std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
+  for(size_t i = 0; i < in_detected_objects.objects.size(); i++)
+  {
+    double yaw = tf::getYaw(in_detected_objects.objects[i].pose.orientation);
+
+    // KITTI tracking benchmark data format:
+    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
+    // x1, y1, x2, y2 are for 2D bounding box.
+    // h, w, l, are for height, width, length respectively
+    // cx, cy, cz are for object centroid
+
+    // Tracking benchmark is based on frame_number, tracked_id,
+    // bounding box dimentions and object pose(centroid and orientation) from bird-eye view
+    outputfile << std::to_string(frame_count_)                               <<" "
+               << std::to_string(in_detected_objects.objects[i].id)             <<" "
+               << "Unknown"                                                  <<" "
+               << "-1"                                                       <<" "
+               << "-1"                                                       <<" "
+               << "-1"                                                      <<" "
+               << "-1 -1 -1 -1"                                              <<" "
+               << std::to_string(in_detected_objects.objects[i].dimensions.x)   <<" "
+               << std::to_string(in_detected_objects.objects[i].dimensions.y)   <<" "
+               << "-1"                                                       <<" "
+               << std::to_string(in_detected_objects.objects[i].pose.position.x)<<" "
+               << std::to_string(in_detected_objects.objects[i].pose.position.y)<<" "
+               << "-1"                                                       <<" "
+               << std::to_string(yaw)                                        <<"\n";
+  }
+  frame_count_ ++;
+}
+
 autoware_msgs::DetectedObjectArray ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& in_objects)
 {
   double timestamp = in_objects.header.stamp.toSec();
+
 
   autoware_msgs::DetectedObjectArray detected_objects_output;
 
