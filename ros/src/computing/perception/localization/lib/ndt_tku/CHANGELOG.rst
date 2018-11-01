@@ -2,6 +2,9 @@
 Changelog for package ndt_tku
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+
 1.8.0 (2018-08-31)
 ------------------
 * [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)

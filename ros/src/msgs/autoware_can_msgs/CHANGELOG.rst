@@ -2,6 +2,11 @@
 Changelog for package autoware_can_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* Contributors: Esteve Fernandez
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst

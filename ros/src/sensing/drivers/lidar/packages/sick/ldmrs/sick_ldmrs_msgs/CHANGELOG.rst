@@ -2,6 +2,9 @@
 Changelog for package sick_ldmrs_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+
 1.8.0 (2018-08-31)
 ------------------
 * Support Sick LD-MRS Lidar (`#1287 <https://github.com/CPFL/Autoware/pull/1287>`_)
