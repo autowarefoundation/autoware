@@ -59,7 +59,7 @@ ImmUkfPda::ImmUkfPda()
   if(is_benchmark_)
   {
     result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
-    remove(result_file_path_.c_str());
+    std::remove(result_file_path_.c_str());
   }
 }
 
@@ -772,11 +772,8 @@ void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_obje
   std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
   for(size_t i = 0; i < detected_objects.objects.size(); i++)
   {
-    tf::Quaternion q(detected_objects.objects[i].pose.orientation.x, detected_objects.objects[i].pose.orientation.y,
-                     detected_objects.objects[i].pose.orientation.z, detected_objects.objects[i].pose.orientation.w);
-    double roll, pitch, yaw;
-    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-    
+    double yaw = tf::getYaw(detected_objects.objects[i].pose.orientation);
+
     // KITTI tracking benchmark data format:
     // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
     // x1, y1, x2, y2 are for 2D bounding box.
