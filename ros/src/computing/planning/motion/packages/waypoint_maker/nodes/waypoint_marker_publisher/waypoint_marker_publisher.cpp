@@ -40,8 +40,8 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 
 namespace
 {
@@ -204,7 +204,7 @@ void createGlobalLaneArrayChangeFlagMarker(const autoware_msgs::LaneArray& lane_
 }
 
 void createLocalWaypointVelocityMarker(std_msgs::ColorRGBA color, int closest_waypoint,
-                                       const autoware_msgs::lane& lane_waypoint)
+                                       const autoware_msgs::Lane& lane_waypoint)
 {
   // display by markers the velocity of each waypoint.
   visualization_msgs::Marker velocity;
@@ -296,7 +296,7 @@ void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane
                                        tmp_marker_array.markers.end());
 }
 
-void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::lane& lane_waypoint)
+void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::Lane& lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -318,7 +318,7 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::lane&
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void createLocalPointMarker(const autoware_msgs::lane& lane_waypoint)
+void createLocalPointMarker(const autoware_msgs::Lane& lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -343,7 +343,7 @@ void createLocalPointMarker(const autoware_msgs::lane& lane_waypoint)
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
 }
 
-void lightCallback(const autoware_msgs::traffic_lightConstPtr& msg)
+void lightCallback(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   std_msgs::ColorRGBA global_color;
   global_color.a = g_global_alpha;
@@ -379,19 +379,19 @@ void lightCallback(const autoware_msgs::traffic_lightConstPtr& msg)
   }
 }
 
-void receiveAutoDetection(const autoware_msgs::traffic_lightConstPtr& msg)
+void receiveAutoDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (!g_config_manual_detection)
     lightCallback(msg);
 }
 
-void receiveManualDetection(const autoware_msgs::traffic_lightConstPtr& msg)
+void receiveManualDetection(const autoware_msgs::TrafficLightConstPtr& msg)
 {
   if (g_config_manual_detection)
     lightCallback(msg);
 }
 
-void configParameter(const autoware_msgs::ConfigLaneStopConstPtr& msg)
+void configParameter(const autoware_config_msgs::ConfigLaneStopConstPtr& msg)
 {
   g_config_manual_detection = msg->manual_detection;
 }
@@ -406,7 +406,7 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
   publishMarkerArray(g_global_marker_array, g_global_mark_pub);
 }
 
-void finalCallback(const autoware_msgs::laneConstPtr& msg)
+void finalCallback(const autoware_msgs::LaneConstPtr& msg)
 {
   g_local_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)

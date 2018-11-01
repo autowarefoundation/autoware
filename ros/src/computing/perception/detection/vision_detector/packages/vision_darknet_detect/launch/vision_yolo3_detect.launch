@@ -5,6 +5,7 @@
 
     <arg name="network_definition_file" default="$(find vision_darknet_detect)/darknet/cfg/yolov3.cfg"/>
     <arg name="pretrained_model_file" default="$(find vision_darknet_detect)/darknet/data/yolov3.weights"/>
+    <arg name="names_file" default="$(find vision_darknet_detect)/darknet/cfg/coco.names"/>
 
     <arg name="camera_id" default="/"/>
     <arg name="image_src" default="/image_raw"/>
@@ -16,6 +17,7 @@
         <param name="nms_threshold" type="double" value="$(arg nms_threshold)"/>
         <param name="gpu_device_id" type="int" value="$(arg gpu_device_id)"/>
         <param name="image_raw_node" type="str" value="$(arg camera_id)$(arg image_src)"/>
+        <param name="names_file" type="str" value="$(arg names_file)"/>
     </node>
 
 </launch>

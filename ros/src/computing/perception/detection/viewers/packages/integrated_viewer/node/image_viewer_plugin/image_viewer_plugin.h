@@ -6,9 +6,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <rviz/panel.h>
-#include "autoware_msgs/image_obj.h"
-#include "autoware_msgs/image_obj_ranged.h"
-#include "autoware_msgs/image_obj_tracked.h"
+#include "autoware_msgs/ImageObj.h"
+#include "autoware_msgs/ImageObjRanged.h"
+#include "autoware_msgs/ImageObjTracked.h"
 #include "autoware_msgs/PointsImage.h"
 
 #include <string>
@@ -39,14 +39,14 @@ namespace integrated_viewer
 
     // override resize event
     virtual void resizeEvent(QResizeEvent *);
-    
+
   protected:
     // The function to update topic list that can be selected from the UI
     void UpdateTopicList(void);
 
     // The event filter to catch clicking on combo box
     bool eventFilter(QObject* object, QEvent* event);
-    
+
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
     void DetectedObjCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &msg);
@@ -73,6 +73,10 @@ namespace integrated_viewer
     ros::Subscriber rect_sub_;
     ros::Subscriber point_sub_;
     ros::Subscriber lane_sub_;
+
+    // Save and load overrides
+    virtual void save(rviz::Config config) const;
+    virtual void load(const rviz::Config& config);
 
   private:
     // The UI components

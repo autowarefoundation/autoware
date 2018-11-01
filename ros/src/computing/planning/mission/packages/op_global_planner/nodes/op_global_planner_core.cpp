@@ -90,7 +90,7 @@ GlobalPlanner::GlobalPlanner()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &GlobalPlanner::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &GlobalPlanner::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &GlobalPlanner::callbackGetCANInfo, this);
 
 	if(m_params.bEnableDynamicMapUpdate)
 	  sub_road_status_occupancy = nh.subscribe<>("/occupancy_road_status", 1, &GlobalPlanner::callbackGetRoadStatusOccupancyGrid, this);
@@ -218,7 +218,7 @@ void GlobalPlanner::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
-void GlobalPlanner::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void GlobalPlanner::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_CurrentPose.v = m_VehicleState.speed;
@@ -281,7 +281,7 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
-		autoware_msgs::lane lane;
+		autoware_msgs::Lane lane;
 		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(generatedTotalPaths.at(i), lane);
 		lane_array.lanes.push_back(lane);
 	}
