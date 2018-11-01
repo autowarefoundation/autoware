@@ -776,12 +776,21 @@ void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_obje
                      detected_objects.objects[i].pose.orientation.z, detected_objects.objects[i].pose.orientation.w);
     double roll, pitch, yaw;
     tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    
+    // KITTI tracking benchmark data format:
+    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
+    // x1, y1, x2, y2 are for 2D bounding box.
+    // h, w, l, are for height, width, length respectively
+    // cx, cy, cz are for object centroid
+
+    // Tracking benchmark is based on frame_number, tracked_id,
+    // bounding box dimentions and object pose(centroid and orientation) from bird-eye view
     outputfile << std::to_string(frame_count_)                               <<" "
                << std::to_string(detected_objects.objects[i].id)             <<" "
                << "Unknown"                                                  <<" "
                << "-1"                                                       <<" "
                << "-1"                                                       <<" "
-               << "-10"                                                      <<" "
+               << "-1"                                                      <<" "
                << "-1 -1 -1 -1"                                              <<" "
                << std::to_string(detected_objects.objects[i].dimensions.x)   <<" "
                << std::to_string(detected_objects.objects[i].dimensions.y)   <<" "
