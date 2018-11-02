@@ -53,20 +53,20 @@ SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle pa
   param_nh.param("image_buffer", pub_buffer, int(5));
   param_nh.param("image_compressed", pub_compressed, true);
   param_nh.param("image_compressed_quality", pub_compressed_quality, int(70));
-  
-  // from DriveWorksApi.hpp
-  ImageConfig imageConfig = {
-		(uint32_t)pub_width,         				//publish image width
-		(uint32_t)pub_height,        				//publish image height
-		(uint32_t)pub_buffer,        				//publish buffer
-						  pub_compressed,        		//publish raw or compressed image
-		(uint32_t)pub_compressed_quality,   //image compressed quality
-  };
-  
+
   // read ros param for camera info publish
   std::string calib_folder = "";
   param_nh.param<std::string>("calib_folder", calib_folder,"");
-  
+
+  // from DriveWorksApi.hpp
+  ImageConfig imageConfig = {
+    (uint32_t)pub_width,         				//publish image width
+    (uint32_t)pub_height,        				//publish image height
+    (uint32_t)pub_buffer,        				//publish buffer
+              pub_compressed,        		//publish raw or compressed image
+    (uint32_t)pub_compressed_quality,   //image compressed quality
+              calib_folder,             //camera calibration folder
+  };
   
   // read ros param here for camera configurations
   std::string type_ab_value = "";                                                                        

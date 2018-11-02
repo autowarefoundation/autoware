@@ -1,7 +1,8 @@
 /*
- * This code has been modified from 
+ * This code has been modified from
  * 1. https://github.com/vehicularkech/gmsl-camera-ros-driver
  * 2. https://github.com/cshort101/gmsl_driver
+ * 3. https://github.com/DavidTorresOcana/ros_gmsl_driver
  * 
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
@@ -56,7 +57,7 @@ class OpenCVConnector {
 
 public:
 	/* Constructor */
-  OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer);
+  OpenCVConnector(std::string topic_name, std::string camera_frame_id, std::string cam_info_file, int buffer);
   /* Destructor */
   ~OpenCVConnector();
   /* Copy data to Opencv format and Publish ROS image message type */
@@ -73,7 +74,7 @@ public:
   unsigned int counter;
   /* Ros camera info manager */
   sensor_msgs::CameraInfo camera_info;
-	camera_info_manager::CameraInfoManager info_manager;
+  camera_info_manager::CameraInfoManager camera_info_manager;
 	ros::Publisher pub_caminfo;
 	std::string calib_folder;
   

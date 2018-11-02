@@ -1,10 +1,12 @@
 <launch>
   <!-- gmsl multiple cameras run -->
+  <arg name="cam_calib_folder" default="$(find gmsl_camera)/calib/" />
   <node pkg="gmsl_camera" type="gmsl_camera_node" name="gmsl_camera_node" output="screen">
     <param name="image_width" value="1920" />     <!-- image raw resize only -->
     <param name="image_height" value="1208" />    <!-- image raw resize only -->
     <param name="image_buffer" value="10" />
     <param name="image_compressed" value="true" type="bool" />  <!-- publish compressed original size -->
+    <param name="calib_folder" value="$(arg cam_calib_folder)/" />
     <param name="type_ab" value="ar0231-rccb-ss3322" type="str" />
     <param name="type_cd" value="ar0231-rccb-ss3322" type="str" />
     <param name="type_ef" value="ar0231-rccb-ss3322" type="str" />

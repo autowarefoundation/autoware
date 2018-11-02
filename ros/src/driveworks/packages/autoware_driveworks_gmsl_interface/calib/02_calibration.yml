@@ -1,10 +1,10 @@
-image_width: 640
-image_height: 480
-camera_name: camera_info_02
+image_width: 1920
+image_height: 1208
+camera_name: gmsl_camera_0_2
 camera_matrix:
   rows: 3
   cols: 3
-  data: [318.659,    0.000000,   319.945,    0.000000,  378.043,     241.039, 0.000000, 0.000000, 1.000000]
+  data: [967.97, 0.000000, 964.89, 0.000000, 968.38, 655.25, 0.000000, 0.000000, 1.000000]
   #[fx   0   cx    0     fy    cy   0   0   1]
 distortion_model: fish_eye
 distortion_coefficients:
@@ -19,7 +19,7 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [318.659, 0.000000, 319.945, 0.000000, 0.000000, 378.043, 241.039, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+  data: [1042.45, 0.000000, 960.0, 0.000000, 0.000000, 1042.89, 604.0, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
   #[fx  0   cx   Tx=0  0   fy   cy    Ty=0  0  0  1  0]
 
 

@@ -53,6 +53,7 @@ g_arguments(arguments), g_imageConfig(imageConfig)
   g_imageHeight = imageConfig.pub_height;
   gImageCompressed = imageConfig.pub_compressed;
   JPEG_quality = imageConfig.pub_compressed_quality;
+  g_calibFolder = imageConfig.pub_caminfo_folder;
   
   // init sdk, and start cameras
   this->startCameras();
@@ -359,8 +360,9 @@ void DriveWorksApi::threadCameraPipeline(Camera* cameraSensor, uint32_t port, dw
   {
 	 // Topic mapping e.g. gmsl_image_raw_<nvidia cam port A=0, B=1, C=2>_<sibling id 0,1,2,3> : port_0/camera_1/(image_raw,image_raw/compressed)
 		const std::string topic = std::string("port_") + std::to_string(port) + std::string("/camera_") + std::to_string(cameraIdx);
-		const std::string camera_frame_id = std::string("camera_") + std::to_string(port) + std::string("_") + std::to_string(cameraIdx);
-		std::unique_ptr<OpenCVConnector> cvPtr(new OpenCVConnector(topic, camera_frame_id, 10));
+    const std::string camera_frame_id = std::string("gmsl_camera_") + std::to_string(port) + std::string("_") + std::to_string(cameraIdx);
+    const std::string cam_info_file = std::string("file://") + std::string(g_calibFolder) + std::to_string(port) + std::to_string(cameraIdx) + std::string("_calibration.yml");
+    std::unique_ptr<OpenCVConnector> cvPtr(new OpenCVConnector(topic, camera_frame_id, cam_info_file, 10));
 		cv_connectors.push_back(std::move(cvPtr));
 	}
 	
