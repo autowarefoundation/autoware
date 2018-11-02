@@ -31,6 +31,8 @@
 #ifndef OBJECT_TRACKING_BOX_FITTING_H
 #define OBJECT_TRACKING_BOX_FITTING_H
 
+#include <random>
+
 #include <ros/ros.h>
 
 #include <opencv2/opencv.hpp>
