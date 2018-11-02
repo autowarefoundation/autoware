@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage $0 [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
 
 # Defaults
 XSOCK=/tmp/.X11-unix
@@ -10,8 +10,12 @@ HOST_DIR=/home/$USER/shared_dir
 DOCKER_HUB_REPO="autoware/autoware"
 TAG="latest-kinetic"
 
-while getopts ":t:r:s:" opt; do
+while getopts ":ht:r:s:" opt; do
   case $opt in
+    h)
+      usage
+      exit
+      ;;
     t)
       TAG=$OPTARG
       ;;
