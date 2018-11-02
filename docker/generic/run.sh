@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage $0 <distribution:indigo|kinetic> [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
+usage() { echo "Usage $0 [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
 
 # Defaults
 XSOCK=/tmp/.X11-unix
@@ -8,19 +8,7 @@ XAUTH=/home/$USER/.Xauthority
 SHARED_DIR=/home/autoware/shared_dir
 HOST_DIR=/home/$USER/shared_dir
 DOCKER_HUB_REPO="autoware/autoware"
-TAG=""
-
-DISTRIBUTION_OR_TAG=$1; shift
-
-if [[ $DISTRIBUTION_OR_TAG = *"kinetic"* ]] || [[ $DISTRIBUTION_OR_TAG = *"indigo"* ]]
-then
-    echo "Use $DISTRIBUTION_OR_TAG"
-else
-    usage
-    exit
-fi
-
-TAG=$(./autoware_tags $DISTRIBUTION_OR_TAG)
+TAG="latest-kinetic"
 
 while getopts ":t:r:s:" opt; do
   case $opt in
