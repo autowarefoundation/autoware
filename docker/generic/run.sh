@@ -14,15 +14,12 @@ while getopts ":t:r:s:" opt; do
   case $opt in
     t)
       TAG=$OPTARG
-      echo "Using $TAG tag"
       ;;
     r )
       DOCKER_HUB_REPO=$OPTARG
-      echo "Using $DOCKER_HUB_REPO repo"
       ;;
     s)
       HOST_DIR=$OPTARG
-      echo "Shared directory: ${HOST_DIR}"
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -34,6 +31,9 @@ while getopts ":t:r:s:" opt; do
       ;;
   esac
 done
+
+echo "Using $DOCKER_HUB_REPO:$TAG"
+echo "Shared directory: ${HOST_DIR}"
 
 nvidia-docker run \
     -it --rm \
