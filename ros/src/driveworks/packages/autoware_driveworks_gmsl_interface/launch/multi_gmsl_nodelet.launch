@@ -1,13 +1,8 @@
 <launch>
   <!-- gmsl multiple cameras nodelet -->
   <node pkg="nodelet" type="nodelet" name="camera_nodelet_mrg" args="manager" output="screen"/>
-<<<<<<< HEAD
  
   <node pkg="nodelet" type="nodelet" name="camera_nodelet" 
-=======
-
-  <node pkg="nodelet" type="nodelet" name="camera_nodelet"
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
         args="load gmsl_camera/CameraNodelet camera_nodelet_mrg" output="screen">
     <param name="image_width" value="1920" />     <!-- image raw resize only -->
     <param name="image_height" value="1208" />    <!-- image raw resize only -->
@@ -19,13 +14,8 @@
     <param name="selector_mask" value="111100110011" type="str" /> <!-- |A3210|B3210|C3210| e.g 011101110011 -->
     <param name="cross_csi_sync" value="1" type="str" />
     <param name="fifo_size" value="3" type="str" />
-<<<<<<< HEAD
     <param name="slave" value="0" type="str" />           
   </node>  
-=======
-    <param name="slave" value="0" type="str" />
-  </node>
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 
 </launch>
 

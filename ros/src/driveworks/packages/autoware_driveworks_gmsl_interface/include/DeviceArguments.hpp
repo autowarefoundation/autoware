@@ -8,19 +8,11 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
-<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
-=======
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -36,11 +28,7 @@
 */
 /*
   Modified from Nvidia SDK - Camera gmsl
-<<<<<<< HEAD
   Author: Punnu Phairatt 
-=======
-  Author: Punnu Phairatt
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -58,18 +46,13 @@ namespace DriveWorks
 
 typedef std::pair<std::string, std::string> option_t;
 
-<<<<<<< HEAD
 class DeviceArguments 
-=======
-class DeviceArguments
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 {
 public:
   /* Constructor */
   DeviceArguments(const std::vector<option_t>& options);
   /* Destructor */
   ~DeviceArguments();
-<<<<<<< HEAD
 	/* Print arguments on screen */   
   void printArguments();	 
   /* Get arguments */ 
@@ -81,19 +64,6 @@ public:
 private:
   std::map<std::string, std::string> arguments;
   const std::string empty_string = {}; 	
-=======
-	/* Print arguments on screen */
-  void printArguments();
-  /* Get arguments */
-  const std::string& get(const char *name) const;
-  /* Set argument */
-  bool set(const char* name, std::string new_value);
-
-
-private:
-  std::map<std::string, std::string> arguments;
-  const std::string empty_string = {};
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 };
 
 };//namespace

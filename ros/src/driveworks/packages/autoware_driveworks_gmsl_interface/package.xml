@@ -30,18 +30,10 @@
   <run_depend>image_transport</run_depend>
   <run_depend>camera_info_manager</run_depend>
   <run_depend>nodelet</run_depend>
-<<<<<<< HEAD
   
   <export>
     <nodelet plugin="${prefix}/nodelet_gmsl_camera.xml" />
   </export>
   
-=======
-
-  <export>
-    <nodelet plugin="${prefix}/nodelet_gmsl_camera.xml" />
-  </export>
-
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 
 </package>

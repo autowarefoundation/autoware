@@ -56,11 +56,7 @@ catkin_package(
 #########################
 ##  Include directory  ##
 #########################
-<<<<<<< HEAD
 include_directories(include 
-=======
-include_directories(include
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	${catkin_INCLUDE_DIRS}
 	${Driveworks_INCLUDE_DIR}
 	${CUDA_INCLUDE_DIRS}
@@ -73,7 +69,6 @@ include_directories(include
 ####################
 ## Driveworks SDK ##
 ####################
-<<<<<<< HEAD
 list(APPEND Driveworks_LIBRARIES 
 	${CUDA_LIBRARIES} 
 	${CUDA_cublas_LIBRARY}
@@ -84,18 +79,6 @@ list(APPEND Driveworks_LIBRARIES
 	${vibrante_Xlibs_LIBRARIES} 
  	nvmedia 
 	${EGL_LIBRARIES} 
-=======
-list(APPEND Driveworks_LIBRARIES
-	${CUDA_LIBRARIES}
-	${CUDA_cublas_LIBRARY}
-)
-
-list(APPEND Driveworks_LIBRARIES
-	${vibrante_LIBRARIES}
-	${vibrante_Xlibs_LIBRARIES}
- 	nvmedia
-	${EGL_LIBRARIES}
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	${CMAKE_THREAD_LIBS_INIT})
 
 set(LIBRARIES ${Driveworks_LIBRARIES})
@@ -106,17 +89,10 @@ set(LIBRARIES ${Driveworks_LIBRARIES})
 ##  EXECUTABLE    ##
 ####################
 set(NODE_NAME ${PROJECT_NAME}_node)
-<<<<<<< HEAD
 cuda_add_executable(${NODE_NAME} 
 	src/gmsl_camera_multiple/gmsl_node.cpp 
 	src/gmsl_camera_multiple/cv_connection.cpp
 	src/gmsl_camera_multiple/SekonixGmslCamera.cpp 
-=======
-cuda_add_executable(${NODE_NAME}
-	src/gmsl_camera_multiple/gmsl_node.cpp
-	src/gmsl_camera_multiple/cv_connection.cpp
-	src/gmsl_camera_multiple/SekonixGmslCamera.cpp
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	src/gmsl_camera_multiple/DriveWorksApi.cpp
 	src/gmsl_camera_multiple/DeviceArguments.cpp
 )
@@ -124,28 +100,19 @@ cuda_add_executable(${NODE_NAME}
 
 add_dependencies(${NODE_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${NODE_NAME} PRIVATE
-<<<<<<< HEAD
 	${catkin_LIBRARIES} 
-=======
-	${catkin_LIBRARIES}
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	driveworks
 	${CUDA_LIBRARY}
 	${LIBRARIES}
 	${GLEW_LIBRARY}
 	${BOOST_LIBRARY}
 	${OpenCV_LIBS}
-<<<<<<< HEAD
    
-=======
-
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 )
 
 
 # nodelet
 set(NODELET_NAME nodelet_${PROJECT_NAME})
-<<<<<<< HEAD
 add_library(${NODELET_NAME} 
 	src/gmsl_camera_multiple/gmsl_nodelets.cpp 
 	src/gmsl_camera_multiple/cv_connection.cpp
@@ -155,27 +122,12 @@ add_library(${NODELET_NAME}
 )
 target_link_libraries(${NODELET_NAME} 
     ${catkin_LIBRARIES} 
-=======
-add_library(${NODELET_NAME}
-	src/gmsl_camera_multiple/gmsl_nodelets.cpp
-	src/gmsl_camera_multiple/cv_connection.cpp
-	src/gmsl_camera_multiple/SekonixGmslCamera.cpp
-	src/gmsl_camera_multiple/DriveWorksApi.cpp
-	src/gmsl_camera_multiple/DeviceArguments.cpp
-)
-target_link_libraries(${NODELET_NAME}
-    ${catkin_LIBRARIES}
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
     driveworks
     ${CUDA_LIBRARY}
     ${LIBRARIES}
     ${GLEW_LIBRARY}
     ${BOOST_LIBRARY}
-<<<<<<< HEAD
     ${OpenCV_LIBS}  
-=======
-    ${OpenCV_LIBS}
->>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 )
 
 
