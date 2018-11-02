@@ -80,7 +80,7 @@ void ImmUkfPda::Run()
   ROS_INFO("[%s] source_topic: %s", __APP_NAME__, input_topic_.c_str());
 }
 
-void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray& in_objects)
+void ImmUkfPda::detectionsCallback(const autoware_msgs::DetectedObjectArray& in_objects)
 {
   autoware_msgs::DetectedObjectArray transformed_input, transformed_output;
   autoware_msgs::DetectedObjectArray tracked_objects;
@@ -90,6 +90,8 @@ void ImmUkfPda::DetectionsCallback(const autoware_msgs::DetectedObjectArray& in_
   tracked_objects = tracker(transformed_input);
 
   transformed_output = transformPoseToLocal(tracked_objects, in_objects.header.frame_id);
+
+  pub_object_array_.publish(transformed_output);
 
   if(is_benchmark_)
   {
@@ -510,6 +512,7 @@ autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::De
     dd.pose = targets_[i].object_pose_;
     dd.dimensions = targets_[i].object_dimensions_;
     dd.pose_reliable = targets_[i].is_reliable_;
+    dd.velocity_reliable = targets_[i].is_reliable_;
     dd.label = targets_[i].object_label_;
     dd.velocity.linear.x = tv;
     // store yaw rate for motion into dd.accerelation.linear.y
@@ -520,14 +523,10 @@ autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::De
       std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
       std::string text =
-          "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) + " m/s "
-          //+ "(" + std::to_string(targets_[i].x_merge_(0)) + ", "
-          // + std::to_string(targets_[i].x_merge_(1)) + ")"
-          ;
+          "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) + " km/h ";
       dd.label += text;
       output_objects.objects.push_back(dd);
     }
-
 
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;

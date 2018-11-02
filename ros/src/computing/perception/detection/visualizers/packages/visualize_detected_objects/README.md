@@ -4,8 +4,6 @@ This node interprets the output of each of the perception nodes and creates the 
 
 ## Parameters
 
-object_speed_threshold
-
 Launch file available parameters:
 
 |Parameter| Type| Description|

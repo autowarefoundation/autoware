@@ -270,17 +270,10 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
     label_marker.scale.y = 1.5;
     label_marker.scale.z = 1.5;
 
-    //if (object.color.a == 0)
-    {
-      label_marker.color.r = 1.f;
-      label_marker.color.g = 1.f;
-      label_marker.color.b = 1.f;
-      label_marker.color.a = 1.f;
-    }
-    /*else
-    {
-        label_marker.color = object.color;
-    }*/
+    label_marker.color.r = 1.f;
+    label_marker.color.g = 1.f;
+    label_marker.color.b = 1.f;
+    label_marker.color.a = 1.f;
 
     label_marker.id = marker_id++;
     label_marker.text = object.label + " "; //Object Class if available
@@ -291,21 +284,6 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
     label_marker.scale.z = 1.0;
 
-    if (object.velocity_reliable) //Object speed if available
-    {
-      double velocity = object.velocity.linear.x;
-
-      if (fabs(velocity) < object_speed_threshold_)
-      {
-        velocity = 0.0;
-      }
-      // convert unit m/s to km/h
-      std::string s_velocity = std::to_string(velocity * 3.6);
-      std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
-      std::string text = modified_sv + " km/h ";
-
-      label_marker.text += text;
-    }
     label_markers.markers.push_back(label_marker);
   }  // end in_objects.objects loop
 
