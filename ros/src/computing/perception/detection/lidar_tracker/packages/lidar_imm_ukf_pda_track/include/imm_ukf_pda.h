@@ -105,7 +105,7 @@ private:
   ros::Subscriber sub_detected_array_;
   ros::Publisher pub_object_array_;
 
-  void DetectionsCallback(const autoware_msgs::DetectedObjectArray& input);
+  void detectionsCallback(const autoware_msgs::DetectedObjectArray& input);
 
   void setPredictionObject();
 
