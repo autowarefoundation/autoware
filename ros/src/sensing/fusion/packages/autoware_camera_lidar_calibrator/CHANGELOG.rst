@@ -2,6 +2,21 @@
 Changelog for package autoware_camera_lidar_calibrator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/kfunaoka/Autoware/issues/1565>`_)
+  * * Added option to publish to specific camera frame on camera publisher
+  * fixes to the node
+  * Added New line to UI on each param.
+  * * Updates to launch files using calibration publisher
+  * Updated naming after develop merge
+  * Updated suscription type to topic for calibration publisher
+* [fix]Removed python yaml dependency that was causing issues. Tested on kinetic/opencv3.3 (`#1622 <https://github.com/kfunaoka/Autoware/issues/1622>`_)
+* Fix/intrinsic calibration gui aa (`#1581 <https://github.com/kfunaoka/Autoware/issues/1581>`_)
+  * Fixed calibration UI text anti-aliasing in CV3
+  * tested on cv2 and cv3 (indigo and kinetic)
+* Contributors: Abraham Monrroy Cano, Jacob Lambert
+
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)

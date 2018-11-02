@@ -5,7 +5,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
   std_msgs
-  autoware_msgs
+  autoware_config_msgs
   fusion
   )
 FIND_PACKAGE(CUDA)
@@ -15,7 +15,7 @@ catkin_package(
   CATKIN_DEPENDS 
   roscpp
   std_msgs
-  autoware_msgs
+  autoware_config_msgs
   fusion
   )
 

@@ -30,8 +30,8 @@
 
 #include <ros/console.h>
 
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 #include "autoware_msgs/LaneArray.h"
 
 #include <lane_planner/lane_planner_vmap.hpp>
@@ -47,7 +47,7 @@ autoware_msgs::LaneArray current_green_lane;
 
 const autoware_msgs::LaneArray *previous_lane = &current_red_lane;
 
-void select_current_lane(const autoware_msgs::traffic_light& msg)
+void select_current_lane(const autoware_msgs::TrafficLight& msg)
 {
 	const autoware_msgs::LaneArray *current;
 	switch (msg.traffic_light) {
@@ -75,13 +75,13 @@ void select_current_lane(const autoware_msgs::traffic_light& msg)
 	previous_lane = current;
 }
 
-void receive_auto_detection(const autoware_msgs::traffic_light& msg)
+void receive_auto_detection(const autoware_msgs::TrafficLight& msg)
 {
 	if (!config_manual_detection)
 		select_current_lane(msg);
 }
 
-void receive_manual_detection(const autoware_msgs::traffic_light& msg)
+void receive_manual_detection(const autoware_msgs::TrafficLight& msg)
 {
 	if (config_manual_detection)
 		select_current_lane(msg);
@@ -97,7 +97,7 @@ void cache_green_lane(const autoware_msgs::LaneArray& msg)
 	current_green_lane = msg;
 }
 
-void config_parameter(const autoware_msgs::ConfigLaneStop& msg)
+void config_parameter(const autoware_config_msgs::ConfigLaneStop& msg)
 {
 	config_manual_detection = msg.manual_detection;
 }

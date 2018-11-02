@@ -284,7 +284,7 @@ void Yolo3DetectorNode::image_callback(const sensor_msgs::ImageConstPtr& in_imag
     free(darknet_image_.data);
 }
 
-void Yolo3DetectorNode::config_cb(const autoware_msgs::ConfigSsd::ConstPtr& param)
+void Yolo3DetectorNode::config_cb(const autoware_config_msgs::ConfigSsd::ConstPtr& param)
 {
     score_threshold_ = param->score_threshold;
 }

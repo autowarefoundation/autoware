@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>hexacam</name>
-  <version>1.8.0</version>
+  <version>1.9.0</version>
   <description>The hexacam package</description>
 
   <maintainer email="takawata@axe-inc.co.jp">takawata</maintainer>

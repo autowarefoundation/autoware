@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>op_local_planner</name>
-  <version>1.8.0</version>
+  <version>1.9.0</version>
   <description>OpenPlanner local planner package</description>
   <maintainer email="yusuke.fujii@tier4.jp">Yusuke FUJII</maintainer>
   <author     email="hatem.darweesh@g.sp.m.is.nagoya-u.ac.jp">Hatem Darweesh</author>
@@ -13,6 +13,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>autoware_msgs</build_depend>
+  <build_depend>autoware_can_msgs</build_depend>
   <build_depend>map_file</build_depend>
   <build_depend>pcl_conversions</build_depend>
   <build_depend>pcl_ros</build_depend>
@@ -28,6 +29,7 @@
   <run_depend>roscpp</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>autoware_msgs</run_depend>
+  <run_depend>autoware_can_msgs</run_depend>
   <run_depend>map_file</run_depend>
    <run_depend>pcl_conversions</run_depend>
   <run_depend>pcl_ros</run_depend>

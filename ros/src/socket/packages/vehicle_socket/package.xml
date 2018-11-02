@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vehicle_socket</name>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
     <description>The vehicle_socket package</description>
     <maintainer email="h_ohta@ertl.jp">h_ohta</maintainer>
     <license>BSD</license>
@@ -9,11 +9,13 @@
     <buildtool_depend>autoware_build_flags</buildtool_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>roscpp</build_depend>
+    <build_depend>autoware_can_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>tablet_socket_msgs</build_depend>
 
     <run_depend>std_msgs</run_depend>
     <run_depend>roscpp</run_depend>
+    <run_depend>autoware_can_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>tablet_socket_msgs</run_depend>
 

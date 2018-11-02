@@ -37,7 +37,8 @@
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
-  init_(false)
+  init_(false),
+  frame_count_(0)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
@@ -52,6 +53,15 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
+
+  // rosparam for benchmark
+  private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
+  if(is_benchmark_)
+  {
+    result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
+    std::remove(result_file_path_.c_str());
+  }
 }
 
 void ImmUkfPda::run()
@@ -81,6 +91,11 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   transformPoseToLocal(jskbboxes_output, detected_objects_output);
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
+
+  if(is_benchmark_)
+  {
+    dumpResultText(detected_objects_output);
+  }
 }
 
 void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
@@ -363,6 +378,22 @@ void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::Bounding
   }
 }
 
+void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
+{
+  if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  {
+    object.behavior_state = MotionModel::CV;
+  }
+  else if(target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  {
+    object.behavior_state = MotionModel::CTRV;
+  }
+  else
+  {
+    object.behavior_state = MotionModel::RM;
+  }
+}
+
 void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
@@ -608,6 +639,9 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
+    //store yaw rate for motion into dd.accerelation.linear.y
+    dd.acceleration.linear.y = targets_[i].x_merge_(4);
+    updateBehaviorState(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
   }
 }
@@ -732,6 +766,39 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 
   pub_points_array_.publish(points_markers);
   pub_texts_array_.publish(texts_markers);
+}
+
+void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects)
+{
+  std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
+  for(size_t i = 0; i < detected_objects.objects.size(); i++)
+  {
+    double yaw = tf::getYaw(detected_objects.objects[i].pose.orientation);
+
+    // KITTI tracking benchmark data format:
+    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
+    // x1, y1, x2, y2 are for 2D bounding box.
+    // h, w, l, are for height, width, length respectively
+    // cx, cy, cz are for object centroid
+
+    // Tracking benchmark is based on frame_number, tracked_id,
+    // bounding box dimentions and object pose(centroid and orientation) from bird-eye view
+    outputfile << std::to_string(frame_count_)                               <<" "
+               << std::to_string(detected_objects.objects[i].id)             <<" "
+               << "Unknown"                                                  <<" "
+               << "-1"                                                       <<" "
+               << "-1"                                                       <<" "
+               << "-1"                                                      <<" "
+               << "-1 -1 -1 -1"                                              <<" "
+               << std::to_string(detected_objects.objects[i].dimensions.x)   <<" "
+               << std::to_string(detected_objects.objects[i].dimensions.y)   <<" "
+               << "-1"                                                       <<" "
+               << std::to_string(detected_objects.objects[i].pose.position.x)<<" "
+               << std::to_string(detected_objects.objects[i].pose.position.y)<<" "
+               << "-1"                                                       <<" "
+               << std::to_string(yaw)                                        <<"\n";
+  }
+  frame_count_ ++;
 }
 
 void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,

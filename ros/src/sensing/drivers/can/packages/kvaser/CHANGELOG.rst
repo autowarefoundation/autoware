@@ -2,6 +2,11 @@
 Changelog for package kvaser
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* Contributors: Esteve Fernandez
+
 1.8.0 (2018-08-31)
 ------------------
 * [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)

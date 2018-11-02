@@ -2,6 +2,11 @@
 Changelog for package autoware_driveworks_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* Use stubs for the CUDA libraries. Ignore undefined symbols errors in autoware_driveworks_interface. Support Docker volumes for CUDA, Driveworks and TensorRT.
+* Contributors: Esteve Fernandez
+
 1.8.0 (2018-08-31)
 ------------------
 * [Feature] Cross compile for NVIDIA DriveWorks (`#1447 <https://github.com/CPFL/Autoware/pull/1447>`_)

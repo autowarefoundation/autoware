@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lattice_planner</name>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
     <description>The lattice_planner package</description>
 
     <maintainer email="mokelly@seas.upenn.edu">mokelly</maintainer>
@@ -21,7 +21,7 @@
     <build_depend>waypoint_follower</build_depend>
     <build_depend>vector_map</build_depend>
     <build_depend>astar_planner</build_depend>
-    <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_can_msgs</build_depend>
     <build_depend>armadillo</build_depend>
 
     <run_depend>roscpp</run_depend>
@@ -34,7 +34,7 @@
     <run_depend>waypoint_follower</run_depend>
     <run_depend>vector_map</run_depend>
     <run_depend>astar_planner</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_can_msgs</run_depend>
     <run_depend>armadillo</run_depend>
 
 </package>

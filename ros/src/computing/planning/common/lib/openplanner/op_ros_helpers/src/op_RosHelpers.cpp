@@ -438,12 +438,12 @@ void RosHelpers::ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::Way
 }
 
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-		autoware_msgs::lane& trajectory)
+		autoware_msgs::Lane& trajectory)
 {
 	trajectory.waypoints.clear();
 	for(unsigned int i=iStart; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
@@ -1300,13 +1300,13 @@ PlannerHNS::AutowareBehaviorState RosHelpers::ConvertBehaviorStateFromPlannerHTo
 
 }
 
-void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::lane& trajectory , const unsigned int& iStart)
+void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::Lane& trajectory , const unsigned int& iStart)
 {
 	trajectory.waypoints.clear();
 
 	for(unsigned int i = iStart; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
@@ -1334,13 +1334,13 @@ void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS
 	}
 }
 
-void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::lane& trajectory)
+void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::Lane& trajectory)
 {
 	trajectory.waypoints.clear();
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).x;
 		wp.pose.pose.position.y = path.at(i).y;
 		wp.pose.pose.position.z = path.at(i).z;
@@ -1350,7 +1350,7 @@ void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS
 	}
 }
 
-void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::lane& trajectory, std::vector<PlannerHNS::WayPoint>& path)
+void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::Lane& trajectory, std::vector<PlannerHNS::WayPoint>& path)
 {
 	path.clear();
 
@@ -1655,7 +1655,7 @@ void RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(co
 	obj.candidate_trajectories.lanes.clear();
 	for(unsigned int j = 0 ; j < det_obj.predTrajectories.size(); j++)
 	{
-		autoware_msgs::lane pred_traj;
+		autoware_msgs::Lane pred_traj;
 		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(det_obj.predTrajectories.at(j), pred_traj);
 		if(det_obj.predTrajectories.at(j).size() > 0)
 		{

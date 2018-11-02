@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         gnss
         visualization_msgs
-        autoware_msgs
+        autoware_can_msgs
         )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -18,7 +18,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         gnss
         visualization_msgs
-        autoware_msgs
+        autoware_can_msgs
 )
 
 ###########

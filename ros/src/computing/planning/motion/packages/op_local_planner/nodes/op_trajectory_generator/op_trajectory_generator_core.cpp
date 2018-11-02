@@ -64,7 +64,7 @@ TrajectoryGen::TrajectoryGen()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryGen::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryGen::callbackGetGlobalPlannerPath, this);
 }
@@ -158,7 +158,7 @@ void TrajectoryGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	bVehicleStatus = true;
 }
 
-void TrajectoryGen::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void TrajectoryGen::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_VehicleStatus.steer = msg->angle * m_CarInfo.max_steer_angle / m_CarInfo.max_steer_value;
@@ -256,7 +256,7 @@ void TrajectoryGen::MainLoop()
 			{
 				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
 				{
-					autoware_msgs::lane lane;
+					autoware_msgs::Lane lane;
 					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
 					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
 					lane.closest_object_distance = 0;

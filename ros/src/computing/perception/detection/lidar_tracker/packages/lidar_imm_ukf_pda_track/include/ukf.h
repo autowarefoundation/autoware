@@ -52,6 +52,13 @@ enum TrackingState : int
   Lost = 10,   // About to lose target
 };
 
+enum MotionModel : int
+{
+  CV = 0,    // constant velocity
+  CTRV = 1,  // constant turn rate and velocity
+  RM = 2,    // random motion
+};
+
 class UKF
 {
   /*

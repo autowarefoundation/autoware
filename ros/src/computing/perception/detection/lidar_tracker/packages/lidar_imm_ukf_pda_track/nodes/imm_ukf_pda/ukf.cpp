@@ -30,13 +30,6 @@
 
 #include "ukf.h"
 
-enum MotionModel : int
-{
-  CV = 0,    // constant velocity
-  CTRV = 1,  // constant turn rate and velocity
-  RM = 2,    // random motion
-};
-
 /**
 * Initializes Unscented Kalman filter
 */

@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
-        autoware_msgs
+        autoware_config_msgs
         tf
         )
 
@@ -22,7 +22,7 @@ catkin_package(CATKIN_DEPENDS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
-        autoware_msgs
+        autoware_config_msgs
         tf
         )
 

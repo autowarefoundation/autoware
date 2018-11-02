@@ -7,12 +7,12 @@ namespace
 
 void publishPathAsWaypoints(const ros::Publisher& pub, const nav_msgs::Path& path, const double waypoint_velocity_kmph)
 {
-  autoware_msgs::lane lane;
+  autoware_msgs::Lane lane;
 
   lane.header = path.header;
   lane.increment = 0;
   for (const auto& pose : path.poses) {
-    autoware_msgs::waypoint wp;
+    autoware_msgs::Waypoint wp;
     wp.pose = pose;
     wp.twist.twist.linear.x = waypoint_velocity_kmph / 3.6;
 
