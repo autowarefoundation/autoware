@@ -295,6 +295,7 @@ void BeyondTrackerNode::detection_to_objects(const std::vector<beyondtrack::Dete
     // set bounding box direction
     tf::Quaternion quat = tf::createQuaternionFromRPY(0.0, 0.0, in_objects[i].yaw_);
     tf::quaternionTFToMsg(quat, obj.pose.orientation);
+    obj.valid = true;
 
     out_message.objects.push_back(obj);
   }

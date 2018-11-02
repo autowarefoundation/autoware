@@ -192,8 +192,9 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
                 if (in_objects[i].class_type < custom_names_.size())
                     obj.label = custom_names_[in_objects[i].class_type];
                 else
-                    obj.label = "unknown label";
+                    obj.label = "unknown";
             }
+            obj.valid = true;
 
             out_message.objects.push_back(obj);
 

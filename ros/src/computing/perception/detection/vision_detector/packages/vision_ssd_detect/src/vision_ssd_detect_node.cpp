@@ -76,12 +76,9 @@ class RosSsdApp
   //vector of indices of the classes to search for
   std::vector<unsigned int> detect_classes_;
 
-  void convert_rect_to_detected_object(std::vector<RectClassScore < float>
-
-  >& in_objects,
-  autoware_msgs::DetectedObjectArray &out_message,
-    cv::Mat
-  & in_image)
+  void convert_rect_to_detected_object(std::vector< RectClassScore<float> >& in_objects,
+                                       autoware_msgs::DetectedObjectArray &out_message,
+                                       cv::Mat& in_image)
   {
     for (unsigned int i = 0; i < in_objects.size(); ++i)
     {
@@ -102,6 +99,7 @@ class RosSsdApp
         obj.y = in_objects[i].y;
         obj.width = in_objects[i].w;
         obj.height = in_objects[i].h;
+        obj.valid = true;
 
         //obj.roi_image = in_image(cv::Rect(obj.x, obj.y, obj.width, obj.height));
 

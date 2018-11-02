@@ -232,6 +232,7 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
     detected_object.color.g = 1.;
     detected_object.color.b = 0.;
     detected_object.color.a = 1.;
+    detected_object.valid = true;
 
     detected_objects.objects.push_back(detected_object);
   }

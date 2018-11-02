@@ -520,17 +520,17 @@ autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::De
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
+    dd.valid = targets_[i].is_reliable_;
 
-    if (targets_[i].is_reliable_)
-    {
-      std::string s_velocity = std::to_string(tv * 3.6);
-      std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
+    std::string s_velocity = std::to_string(tv * 3.6);
+    std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
 
-      std::string text =
-          "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) + " km/h ";
-      dd.label += text;
-      output_objects.objects.push_back(dd);
-    }
+    std::string text =
+        "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) + " km/h ";
+    dd.label += text;
+
+    output_objects.objects.push_back(dd);
+
     dd.pose.orientation.x = q[0];
     dd.pose.orientation.y = q[1];
     dd.pose.orientation.z = q[2];

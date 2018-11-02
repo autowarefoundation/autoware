@@ -112,7 +112,8 @@ VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObject
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    if (object.pose.position.x != 0 &&
+    if (object.valid &&
+        object.pose.position.x != 0 &&
         object.pose.position.y != 0)
     {
       visualization_msgs::Marker centroid_marker;
@@ -132,7 +133,8 @@ VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObject
       {
         centroid_marker.color.a = 1.f;
         centroid_marker.color.g = 1.f;
-      } else
+      }
+      else
       {
         centroid_marker.color = object.color;
       }
@@ -153,7 +155,8 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
 
   for (auto const &object: in_objects.objects)
   {
-    if (object.pose.position.x != 0 &&
+    if (object.valid &&
+        object.pose.position.x != 0 &&
         object.pose.position.y != 0 &&
         object.dimensions.x > 0 &&
         object.dimensions.y > 0 &&
@@ -163,7 +166,9 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
       jsk_recognition_msgs::BoundingBox box;
       box.header = in_objects.header;
       box.dimensions = object.dimensions;
-      box.pose = object.pose;
+      box.pose.position = object.pose.position;
+      if (object.pose_reliable)
+        box.pose.orientation = object.pose.orientation;
       object_boxes.boxes.push_back(box);
     }
   }
@@ -179,7 +184,8 @@ VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArra
 
   for (auto const &object: in_objects.objects)
   {
-    polygon_hulls.polygons.push_back(object.convex_hull);
+    if (object.valid)
+      polygon_hulls.polygons.push_back(object.convex_hull);
   }
   return polygon_hulls;
 }
@@ -191,62 +197,66 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    double velocity = object.velocity.linear.x;
-
-    if (abs(velocity) < arrow_speed_threshold_)
+    if (object.valid)
     {
-      continue;
+      double velocity = object.velocity.linear.x;
+
+      if (abs(velocity) < arrow_speed_threshold_)
+      {
+        continue;
+      }
+
+      visualization_msgs::Marker arrow_marker;
+      arrow_marker.lifetime = ros::Duration(marker_display_duration_);
+
+      tf::Quaternion q(object.pose.orientation.x,
+                       object.pose.orientation.y,
+                       object.pose.orientation.z,
+                       object.pose.orientation.w);
+      double roll, pitch, yaw;
+
+      tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+
+      tf::Matrix3x3 obs_mat;
+      tf::Quaternion q_tf;
+
+      obs_mat.setEulerYPR(yaw, 0, 0);  // yaw, pitch, roll
+      obs_mat.getRotation(q_tf);
+
+      arrow_marker.header = in_objects.header;
+      arrow_marker.ns = ros_namespace_ + "/arrow_markers";
+      arrow_marker.action = visualization_msgs::Marker::ADD;
+      arrow_marker.type = visualization_msgs::Marker::ARROW;
+
+      // green
+      if (object.color.a == 0)
+      {
+        arrow_marker.color.g = 1.f;
+        arrow_marker.color.a = 1.f;
+      }
+      else
+      {
+        arrow_marker.color = object.color;
+      }
+      arrow_marker.id = marker_id++;
+
+      // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+      arrow_marker.pose.position.x = object.pose.position.x;
+      arrow_marker.pose.position.y = object.pose.position.y;
+      arrow_marker.pose.position.z = arrow_height_;
+
+      arrow_marker.pose.orientation.x = q_tf.getX();
+      arrow_marker.pose.orientation.y = q_tf.getY();
+      arrow_marker.pose.orientation.z = q_tf.getZ();
+      arrow_marker.pose.orientation.w = q_tf.getW();
+
+      // Set the scale of the arrow -- 1x1x1 here means 1m on a side
+      arrow_marker.scale.x = 3;
+      arrow_marker.scale.y = 0.1;
+      arrow_marker.scale.z = 0.1;
+
+      arrow_markers.markers.push_back(arrow_marker);
     }
-
-    visualization_msgs::Marker arrow_marker;
-    arrow_marker.lifetime = ros::Duration(marker_display_duration_);
-
-    tf::Quaternion q(object.pose.orientation.x,
-                     object.pose.orientation.y,
-                     object.pose.orientation.z,
-                     object.pose.orientation.w);
-    double roll, pitch, yaw;
-
-    tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-
-    tf::Matrix3x3 obs_mat;
-    tf::Quaternion q_tf;
-
-    obs_mat.setEulerYPR(yaw, 0, 0);  // yaw, pitch, roll
-    obs_mat.getRotation(q_tf);
-
-    arrow_marker.header = in_objects.header;
-    arrow_marker.ns = ros_namespace_ + "/arrow_markers";
-    arrow_marker.action = visualization_msgs::Marker::ADD;
-    arrow_marker.type = visualization_msgs::Marker::ARROW;
-
-    // green
-    if (object.color.a == 0)
-    {
-      arrow_marker.color.g = 1.f;
-      arrow_marker.color.a = 1.f;
-    } else
-    {
-      arrow_marker.color = object.color;
-    }
-    arrow_marker.id = marker_id++;
-
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    arrow_marker.pose.position.x = object.pose.position.x;
-    arrow_marker.pose.position.y = object.pose.position.y;
-    arrow_marker.pose.position.z = arrow_height_;
-
-    arrow_marker.pose.orientation.x = q_tf.getX();
-    arrow_marker.pose.orientation.y = q_tf.getY();
-    arrow_marker.pose.orientation.z = q_tf.getZ();
-    arrow_marker.pose.orientation.w = q_tf.getW();
-
-    // Set the scale of the arrow -- 1x1x1 here means 1m on a side
-    arrow_marker.scale.x = 3;
-    arrow_marker.scale.y = 0.1;
-    arrow_marker.scale.z = 0.1;
-
-    arrow_markers.markers.push_back(arrow_marker);
   }
   return arrow_markers;
 }//ObjectsToArrows
@@ -259,32 +269,35 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    visualization_msgs::Marker label_marker;
+    if (object.valid)
+    {
+      visualization_msgs::Marker label_marker;
 
-    label_marker.lifetime = ros::Duration(marker_display_duration_);
-    label_marker.header = in_objects.header;
-    label_marker.ns = ros_namespace_ + "/label_markers";
-    label_marker.action = visualization_msgs::Marker::ADD;
-    label_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    label_marker.scale.x = 1.5;
-    label_marker.scale.y = 1.5;
-    label_marker.scale.z = 1.5;
+      label_marker.lifetime = ros::Duration(marker_display_duration_);
+      label_marker.header = in_objects.header;
+      label_marker.ns = ros_namespace_ + "/label_markers";
+      label_marker.action = visualization_msgs::Marker::ADD;
+      label_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+      label_marker.scale.x = 1.5;
+      label_marker.scale.y = 1.5;
+      label_marker.scale.z = 1.5;
 
-    label_marker.color.r = 1.f;
-    label_marker.color.g = 1.f;
-    label_marker.color.b = 1.f;
-    label_marker.color.a = 1.f;
+      label_marker.color.r = 1.f;
+      label_marker.color.g = 1.f;
+      label_marker.color.b = 1.f;
+      label_marker.color.a = 1.f;
 
-    label_marker.id = marker_id++;
-    label_marker.text = object.label + " "; //Object Class if available
+      label_marker.id = marker_id++;
+      label_marker.text = object.label + " "; //Object Class if available
 
-    label_marker.pose.position.x = object.pose.position.x;
-    label_marker.pose.position.y = object.pose.position.y;
-    label_marker.pose.position.z = label_height_;
+      label_marker.pose.position.x = object.pose.position.x;
+      label_marker.pose.position.y = object.pose.position.y;
+      label_marker.pose.position.z = label_height_;
 
-    label_marker.scale.z = 1.0;
+      label_marker.scale.z = 1.0;
 
-    label_markers.markers.push_back(label_marker);
+      label_markers.markers.push_back(label_marker);
+    }
   }  // end in_objects.objects loop
 
   return label_markers;

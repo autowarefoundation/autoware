@@ -146,7 +146,8 @@ RosRangeVisionFusionApp::TransformRangeToVision(const autoware_msgs::DetectedObj
     if (IsObjectInImage(in_range_detections->objects[i]))
     {
       out_in_cv_range_detections.objects.push_back(in_range_detections->objects[i]);
-    } else
+    }
+    else
     {
       out_out_cv_range_detections.objects.push_back(in_range_detections->objects[i]);
     }
@@ -422,6 +423,10 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(
       fused_objects.objects.push_back(in_vision_detections->objects[i]);
     }
   }
+  for (auto &object : fused_objects.objects)
+  {
+    object.valid = true;
+  }
 
   return fused_objects;
 }
@@ -666,7 +671,8 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
                                                                 1,
                                                                 &RosRangeVisionFusionApp::RangeDetectionsCallback,
                                                                 this);
-  } else
+  }
+  else
   {
     vision_filter_subscriber_ = new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(node_handle_,
                                                                                                     detected_objects_vision,
