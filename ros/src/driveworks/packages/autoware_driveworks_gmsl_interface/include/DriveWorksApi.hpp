@@ -91,7 +91,7 @@ struct Camera {
   uint32_t numSiblings;
   uint32_t width;
   uint32_t height;
-  dwImageStreamerHandle_t streamer; // different streamers to support different resolutions
+  dwImageStreamerHandle_t streamer;         // different streamers to support different resolutions
   dwImageFormatConverterHandle_t yuv2rgba;
   std::queue<dwImageNvMedia *> rgbaPool;
   std::vector<dwImageNvMedia> frameRGBA;
@@ -101,11 +101,12 @@ struct Camera {
 
 
 struct ImageConfig {
-	uint32_t pub_width;         //publish image width
-	uint32_t pub_height;        //publish image height
-	uint32_t pub_buffer;        //publish buffer
-	bool pub_compressed;        //publish raw or compressed image
-	uint32_t pub_compressed_quality;       //image compressed quality
+  uint32_t pub_width;                     //publish image width
+  uint32_t pub_height;                    //publish image height
+  uint32_t pub_buffer;                    //publish buffer
+  bool pub_compressed;                    //publish raw or compressed image
+  uint32_t pub_compressed_quality;        //image compressed quality
+  std::string pub_caminfo_folder;         //camera calibration folder
 };
 
 
@@ -162,6 +163,7 @@ private:
   std::vector<uint32_t> g_numCameraPort;
   const uint32_t max_jpeg_bytes = 3 * 1290 * 1208;  
 	uint32_t JPEG_quality = 70;
+  std::string g_calibFolder = "";
 	
 	
   //DriveWorks sdk 

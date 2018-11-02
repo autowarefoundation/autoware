@@ -2,7 +2,8 @@
  * This code has been modified from 
  * 1. https://github.com/vehicularkech/gmsl-camera-ros-driver
  * 2. https://github.com/cshort101/gmsl_driver
- * 
+ * 3. https://github.com/DavidTorresOcana/ros_gmsl_driver
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -44,14 +45,27 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 
-OpenCVConnector::OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer): 
-it(nh), counter(0), camera_id(camera_frame_id), info_manager(ros::NodeHandle(topic_name),"gmsl")	
+OpenCVConnector::OpenCVConnector(std::string topic_name, std::string camera_frame_id, std::string cam_info_file, int buffer):
+it(nh), counter(0), camera_id(camera_frame_id),camera_info_manager(ros::NodeHandle(topic_name), camera_frame_id)
 {
-	 std::string topic_raw = topic_name + std::string("/image_raw");
-	 std::string topic_jpg = topic_name + std::string("/image_raw/compressed");
-   pub = it.advertise(topic_raw, buffer);
-   pub_jpg = nh.advertise<sensor_msgs::CompressedImage>(topic_jpg, buffer);
-   pub_caminfo = nh.advertise<sensor_msgs::CameraInfo>(topic_name + std::string("/camera_info"), 1);
+  //init image pub topic
+  std::string topic_raw = topic_name + std::string("/image_raw");
+  std::string topic_jpg = topic_name + std::string("/image_raw/compressed");
+  pub = it.advertise(topic_raw, buffer);
+  pub_jpg = nh.advertise<sensor_msgs::CompressedImage>(topic_jpg, buffer);
+  //init pub camera info topic
+  pub_caminfo = nh.advertise<sensor_msgs::CameraInfo>(camera_frame_id + std::string("/camera_info"), 1);
+
+  //init camera info
+  if(camera_info_manager.validateURL(cam_info_file))
+  {
+    camera_info_manager.loadCameraInfo(cam_info_file);
+    camera_info = camera_info_manager.getCameraInfo();
+  }
+  else
+  {
+    ROS_ERROR("ERROR READING CALIBRATION FILE: %s", cam_info_file.c_str());
+  }
 }
 
 
@@ -87,6 +101,10 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
   img_bridge = cv_bridge::CvImage(header, sensor_msgs::image_encodings::RGB8, converted);
   img_bridge.toImageMsg(img_msg); 															      // from cv_bridge to sensor_msgs::Image
   pub.publish(img_msg); 																				      // pub image
+
+  //publish camera info
+  camera_info.header = header;
+  pub_caminfo.publish(camera_info);
 }
 
 void OpenCVConnector::WriteToJpeg(uint8_t* data, uint32_t compressed_size)
@@ -102,6 +120,10 @@ void OpenCVConnector::WriteToJpeg(uint8_t* data, uint32_t compressed_size)
 	img_msg_compressed.header = header;
 	img_msg_compressed.format = "jpeg";
 	pub_jpg.publish(img_msg_compressed);
+
+  //publish camera info
+  camera_info.header = header;
+  pub_caminfo.publish(camera_info);
 }
 
 /* TODO: Publish camera info */
