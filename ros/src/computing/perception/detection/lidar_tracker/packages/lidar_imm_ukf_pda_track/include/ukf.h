@@ -303,7 +303,7 @@ public:
 
   void updateLidar(const int model_ind);
 
-  void robustAdaptiveFilter(const bool use_sukf, const double chi_thres_);
+  void robustAdaptiveFilter(const bool use_sukf, const double chi_thres);
 
   void faultDetection(const int model_ind, bool& is_fault);
 

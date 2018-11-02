@@ -1247,6 +1247,15 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : raukf_chi_thres
+      desc    : chi threshold for calling robust adaptive filter
+      label   : 'raukf chi thres'
+      min       : 0.0
+      max       : 50.0
+      v       : 11.59
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : use_sukf
       desc      : Use SUKF
       label     : use_sukf

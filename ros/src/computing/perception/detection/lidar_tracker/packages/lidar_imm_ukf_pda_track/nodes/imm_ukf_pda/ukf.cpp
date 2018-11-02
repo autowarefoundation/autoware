@@ -1387,9 +1387,9 @@ void UKF::estimationUpdate(const int model_ind)
   }
 }
 
-void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres_)
+void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres)
 {
-  raukf_chi_thres_param_ = chi_thres_;
+  raukf_chi_thres_param_ = chi_thres;
 
   // if no measurement, no correction/estimation is made
   if (!is_meas_)

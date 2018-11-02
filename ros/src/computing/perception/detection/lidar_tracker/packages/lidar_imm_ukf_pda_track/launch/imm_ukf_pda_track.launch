@@ -7,6 +7,7 @@
   <arg name="life_time_thres" default="8" />
   <arg name="static_velocity_thres" default="3.0" />
   <arg name="prevent_explosion_thres" default="1000" />
+  <arg name="raukf_chi_thres" default="11.59" />
   <arg name="tracker_input_topic" default="/detection/lidar_objects" />
   <arg name="tracker_output_jskbb_topic" default="/detection/lidar_tracker/bounding_boxes" />
   <arg name="tracker_output_detected_topic" default="/detection/lidar_tracker/objects" />
@@ -26,6 +27,7 @@
     <param name="life_time_thres"            value="$(arg life_time_thres)" />
     <param name="static_velocity_thres"      value="$(arg static_velocity_thres)" />
     <param name="prevent_explosion_thres"    value="$(arg prevent_explosion_thres)" />
+    <param name="raukf_chi_thres"            value="$(arg raukf_chi_thres)" />
     <param name="pointcloud_frame"           value="$(arg pointcloud_frame)" />
     <param name="tracking_frame"             value="$(arg tracking_frame)" />
     <param name="use_sukf"                   value="$(arg use_sukf)" />

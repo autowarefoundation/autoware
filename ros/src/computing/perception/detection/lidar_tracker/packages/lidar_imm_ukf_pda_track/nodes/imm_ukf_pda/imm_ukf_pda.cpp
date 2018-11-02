@@ -50,6 +50,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
+  private_nh_.param<double>("raukf_chi_thres", raukf_chi_thres_, 10.59);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
