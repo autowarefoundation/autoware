@@ -107,7 +107,6 @@ target_link_libraries(${NODE_NAME} PRIVATE
 	${GLEW_LIBRARY}
 	${BOOST_LIBRARY}
 	${OpenCV_LIBS}
-
 )
 
 

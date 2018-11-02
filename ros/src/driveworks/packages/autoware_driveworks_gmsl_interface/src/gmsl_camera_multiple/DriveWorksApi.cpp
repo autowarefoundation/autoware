@@ -54,7 +54,6 @@ g_arguments(arguments), g_imageConfig(imageConfig)
   gImageCompressed = imageConfig.pub_compressed;
   JPEG_quality = imageConfig.pub_compressed_quality;
   g_calibFolder = imageConfig.pub_caminfo_folder;
-
   // init sdk, and start cameras
   this->startCameras();
 }
@@ -439,7 +438,6 @@ void DriveWorksApi::threadCameraPipeline(Camera* cameraSensor, uint32_t port, dw
 						}
 
 						NvMediaImageUnlock(frameNVMrgba->img);
-
 					}
 					else
 					{
@@ -501,7 +499,6 @@ dwStatus DriveWorksApi::captureCamera(dwImageNvMedia *frameNVMrgba,
 			std::cerr <<"main: Error getting encoded bits\n"<<  std::endl;
 		}
 	}
-
   result = dwSensorCamera_returnFrame(&frameHandle);
   if( result != DW_SUCCESS )
   {

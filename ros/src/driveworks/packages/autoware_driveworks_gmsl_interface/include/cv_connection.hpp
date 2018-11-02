@@ -78,7 +78,6 @@ public:
 	ros::Publisher pub_caminfo;
 	std::string calib_folder;
 
-
 };
 
 

@@ -132,12 +132,10 @@ private:
                    uint32_t *numCameras,
                    dwSALHandle_t sal,
                    DeviceArguments &arguments);
-
   void initFramesStart();
   void initFrameImage(Camera* cameraSensor);
   void startCameraPipline();
   void threadCameraPipeline(Camera* cameraSensor, uint32_t port, dwContextHandle_t sdk);
-
 
   dwStatus captureCamera(dwImageNvMedia *frameNVMrgba,
                          dwSensorHandle_t cameraSensor, uint32_t port,

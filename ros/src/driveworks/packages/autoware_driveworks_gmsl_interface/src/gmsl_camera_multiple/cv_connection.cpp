@@ -88,7 +88,6 @@ void OpenCVConnector::WriteToOpenCV(unsigned char* buffer, int width_in, int hei
 	{
 		dst = mat_img;
 	}
-
   cv::Mat converted;																						      // new cv::Mat();
   cv::cvtColor(dst,converted,cv::COLOR_RGBA2RGB);   				          // COLOR_BGRA2BGR
   cv_bridge::CvImage img_bridge;
