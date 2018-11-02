@@ -520,10 +520,7 @@ autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::De
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
-    dd.pose.orientation.x = q[0];
-    dd.pose.orientation.y = q[1];
-    dd.pose.orientation.z = q[2];
-    dd.pose.orientation.w = q[3];
+
     if (targets_[i].is_reliable_)
     {
       std::string s_velocity = std::to_string(tv * 3.6);
@@ -534,6 +531,10 @@ autoware_msgs::DetectedObjectArray ImmUkfPda::makeOutput(const autoware_msgs::De
       dd.label += text;
       output_objects.objects.push_back(dd);
     }
+    dd.pose.orientation.x = q[0];
+    dd.pose.orientation.y = q[1];
+    dd.pose.orientation.z = q[2];
+    dd.pose.orientation.w = q[3];
 
     updateBehaviorState(targets_[i], dd);
   }
