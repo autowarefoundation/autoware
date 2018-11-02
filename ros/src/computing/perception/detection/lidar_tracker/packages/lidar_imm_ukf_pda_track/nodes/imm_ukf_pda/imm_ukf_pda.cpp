@@ -76,7 +76,7 @@ void ImmUkfPda::Run()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(output_topic, 1);
   ROS_INFO("[%s] output_topic: %s", __APP_NAME__, output_topic.c_str());
 
-  sub_detected_array_ = node_handle_.subscribe(input_topic_, 1, &ImmUkfPda::DetectionsCallback, this);
+  sub_detected_array_ = node_handle_.subscribe(input_topic_, 1, &ImmUkfPda::detectionsCallback, this);
   ROS_INFO("[%s] source_topic: %s", __APP_NAME__, input_topic_.c_str());
 }
 
