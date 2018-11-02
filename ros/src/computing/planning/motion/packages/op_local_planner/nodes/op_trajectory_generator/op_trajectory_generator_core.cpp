@@ -256,7 +256,7 @@ void TrajectoryGen::MainLoop()
 			{
 				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
 				{
-					autoware_msgs::lane lane;
+					autoware_msgs::Lane lane;
 					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
 					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
 					lane.closest_object_distance = 0;

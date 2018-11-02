@@ -8,11 +8,19 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
+=======
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -28,7 +36,11 @@
 */
 /*
   This program requires ROS and Nvidia SDK installed
+<<<<<<< HEAD
   Author: Punnu Phairatt 
+=======
+  Author: Punnu Phairatt
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -67,7 +79,11 @@
 
 
 
+<<<<<<< HEAD
 // Camera driver api 
+=======
+// Camera driver api
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 #include "DriveWorksApi.hpp"
 
 
@@ -75,11 +91,16 @@
 namespace DriveWorks
 {
 
+<<<<<<< HEAD
 // This class is running multiple threads to acquire images from gmsl cameras connected on PX2 
+=======
+// This class is running multiple threads to acquire images from gmsl cameras connected on PX2
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 // Each acquired image is published under "gmsl_image_raw_[GROUP_ID]_[CAM_ID]"
 class SekonixGmslCamera
 {
 public:
+<<<<<<< HEAD
   /* Constructor 
    * @param argument - connected camera configuration
    * This will start a camera initialisation and setting up memory pools based on given argument   
@@ -98,12 +119,33 @@ public:
    * Stop the polling threads to grab an image from the camera and publish it
    * Send a request to cleanup the camera connections all at once
    */	
+=======
+  /* Constructor
+   * @param argument - connected camera configuration
+   * This will start a camera initialisation and setting up memory pools based on given argument
+   */
+  SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle param_nh, DeviceArguments CameraArguments);
+
+  /* Destructor */
+  ~SekonixGmslCamera();
+
+  /*
+   * Start the polling threads to grab an image from the camera and publish it
+   */
+	void startup();
+
+	/*
+   * Stop the polling threads to grab an image from the camera and publish it
+   * Send a request to cleanup the camera connections all at once
+   */
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	void shutdown();
 
 private:
   ros::NodeHandle node;                                           // Global ns
   ros::NodeHandle pnode;                                          // Private ns
   DriveWorksApi *gmsl_cam;                                        // GMSL camera instance
+<<<<<<< HEAD
   int pub_width;                                                  // Image publishing width 
   int pub_height;                                                 // Image publishing height
   int pub_buffer;                                                 // Image buffer for publishing
@@ -116,6 +158,20 @@ private:
 };//DriveWorks ns
 
 	
+=======
+  int pub_width;                                                  // Image publishing width
+  int pub_height;                                                 // Image publishing height
+  int pub_buffer;                                                 // Image buffer for publishing
+  uint32_t numPort;                                               // PX2 camera port
+  bool pub_compressed;                                            // Publishing compressed images
+  int pub_compressed_quality;                                     // jpeg quality
+
+};//SekonixGmslCamera class
+
+};//DriveWorks ns
+
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 
 
 #endif

@@ -63,6 +63,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#include <yaml-cpp/yaml.h>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
@@ -96,6 +98,7 @@ class RosRangeVisionFusionApp
     autoware_msgs::DetectedObjectArray::ConstPtr  vision_detections_, range_detections_;
 
     std::string                         image_frame_id_;
+    std::string                         boxes_frame_;
 
     bool                                processing_;
     bool                                camera_info_ok_;
@@ -103,6 +106,10 @@ class RosRangeVisionFusionApp
 
     float                               fx_, fy_, cx_, cy_;
     double                              overlap_threshold_;
+
+    double                              car_width_, car_height_, car_depth_;
+    double                              person_width_, person_height_, person_depth_;
+    double                              truck_width_, truck_depth_, truck_height_;
 
     size_t                              empty_frames_;
 
@@ -115,6 +122,8 @@ class RosRangeVisionFusionApp
 
     message_filters::Synchronizer<SyncPolicyT>
                                         *detections_synchronizer_;
+
+    void CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object);
 
     jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 

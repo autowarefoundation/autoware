@@ -8,11 +8,19 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
+=======
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -29,7 +37,11 @@
 
 /*
   This program requires ROS and Nvidia SDK installed
+<<<<<<< HEAD
   Author: Punnu Phairatt 
+=======
+  Author: Punnu Phairatt
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -63,10 +75,17 @@ namespace gmsl_camera
   class CameraNodelet: public nodelet::Nodelet
 	{
 		public:
+<<<<<<< HEAD
 			CameraNodelet():running(false) 
 			{
 			}
 			
+=======
+			CameraNodelet():running(false)
+			{
+			}
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 			~CameraNodelet()
 			{
 				// signal gmsl camera to stop before nodelet exit
@@ -75,7 +94,11 @@ namespace gmsl_camera
 				if(camera && running)
 				{
 				  try
+<<<<<<< HEAD
 				  {	
+=======
+				  {
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 					  NODELET_INFO("shutting down camera thread");
 					  running = false;
 						camera->shutdown();
@@ -86,10 +109,17 @@ namespace gmsl_camera
 				  {
 						NODELET_ERROR("%s", e.what());
 					}
+<<<<<<< HEAD
 				
 				}
 			}
 			
+=======
+
+				}
+			}
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 			void onInit()
 			{
 				// global and private node handler
@@ -99,6 +129,7 @@ namespace gmsl_camera
 				camera = new DriveWorks::SekonixGmslCamera(node, pnode, CameraArguments);
 				running = true;
 			}
+<<<<<<< HEAD
 			
 	  private:
 	    DriveWorks::SekonixGmslCamera *camera;
@@ -106,6 +137,15 @@ namespace gmsl_camera
 			
 	};
 	
+=======
+
+	  private:
+	    DriveWorks::SekonixGmslCamera *camera;
+	    volatile bool running;
+
+	};
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 	//PLUGINLIB_DECLARE_CLASS(gmsl_camera, CameraNodelet, gmsl_camera::CameraNodelet, nodelet::Nodelet);
 	PLUGINLIB_EXPORT_CLASS(gmsl_camera::CameraNodelet, nodelet::Nodelet);
 };

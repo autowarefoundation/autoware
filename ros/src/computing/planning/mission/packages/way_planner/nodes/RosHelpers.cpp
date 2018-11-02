@@ -44,11 +44,11 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
 		autoware_msgs::LaneArray& laneArray)
 {
-	autoware_msgs::lane l;
+	autoware_msgs::Lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).x;
 		wp.pose.pose.position.y = path.at(i).y;
 		wp.pose.pose.position.z = path.at(i).z;
@@ -65,11 +65,11 @@ void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
 		autoware_msgs::LaneArray& laneArray)
 {
-	autoware_msgs::lane l;
+	autoware_msgs::Lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;

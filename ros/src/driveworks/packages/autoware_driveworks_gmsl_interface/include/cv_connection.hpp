@@ -2,8 +2,12 @@
  * This code has been modified from
  * 1. https://github.com/vehicularkech/gmsl-camera-ros-driver
  * 2. https://github.com/cshort101/gmsl_driver
+<<<<<<< HEAD
  * 3. https://github.com/DavidTorresOcana/ros_gmsl_driver
  * 
+=======
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -13,11 +17,19 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
+=======
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -32,8 +44,13 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /*
+<<<<<<< HEAD
   This program requires ROS 
   Author: Punnu Phairatt 
+=======
+  This program requires ROS
+  Author: Punnu Phairatt
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -57,7 +74,11 @@ class OpenCVConnector {
 
 public:
 	/* Constructor */
+<<<<<<< HEAD
   OpenCVConnector(std::string topic_name, std::string camera_frame_id, std::string cam_info_file, int buffer);
+=======
+  OpenCVConnector(std::string topic_name, std::string camera_frame_id, int buffer);
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   /* Destructor */
   ~OpenCVConnector();
   /* Copy data to Opencv format and Publish ROS image message type */
@@ -74,10 +95,17 @@ public:
   unsigned int counter;
   /* Ros camera info manager */
   sensor_msgs::CameraInfo camera_info;
+<<<<<<< HEAD
   camera_info_manager::CameraInfoManager camera_info_manager;
 	ros::Publisher pub_caminfo;
 	std::string calib_folder;
   
+=======
+	camera_info_manager::CameraInfoManager info_manager;
+	ros::Publisher pub_caminfo;
+	std::string calib_folder;
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 
 };
 

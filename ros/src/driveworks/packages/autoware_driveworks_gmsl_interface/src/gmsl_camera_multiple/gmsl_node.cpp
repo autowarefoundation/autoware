@@ -8,11 +8,19 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
+=======
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -29,7 +37,11 @@
 
 /*
   This program requires ROS and Nvidia SDK installed
+<<<<<<< HEAD
   Author: Punnu Phairatt 
+=======
+  Author: Punnu Phairatt
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -43,7 +55,11 @@
 typedef std::chrono::high_resolution_clock Clock;
 
 // Running state
+<<<<<<< HEAD
 static bool volatile running = true; 
+=======
+static bool volatile running = true;
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 // Signal handler to safely exit camera session
 void signalHandler(int sig)
 {
@@ -67,6 +83,7 @@ std::vector<DriveWorks::option_t> options =
 
 
 // -------------------------------------------------------------------------------
+<<<<<<< HEAD
 //     MAIN     
 // -------------------------------------------------------------------------------
 int main(int argc, const char **argv)
@@ -79,6 +96,20 @@ int main(int argc, const char **argv)
   ros::init(argc, (char**)argv, "gmsl_cameras");
   ros::NodeHandle comm_nh;
   ros::NodeHandle param_nh("~");  
+=======
+//     MAIN
+// -------------------------------------------------------------------------------
+int main(int argc, const char **argv)
+{
+
+  // Create and init device arguments
+  DriveWorks::DeviceArguments CameraArguments(options);
+
+  // Init ros node
+  ros::init(argc, (char**)argv, "gmsl_cameras");
+  ros::NodeHandle comm_nh;
+  ros::NodeHandle param_nh("~");
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   ros::Rate loop_rate(10);
   // Detect exit signals
   signal(SIGHUP, signalHandler);  // controlling terminal closed, Ctrl-D
@@ -87,18 +118,31 @@ int main(int argc, const char **argv)
   signal(SIGABRT, signalHandler); // abort() called.
   signal(SIGTERM, signalHandler); // kill command
   signal(SIGSTOP, signalHandler); // kill command
+<<<<<<< HEAD
   
   // Gmsl camera instance run
   DriveWorks::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, CameraArguments);
 
   // other main thread: waiting for a signal to stop&shutdown 
+=======
+
+  // Gmsl camera instance run
+  DriveWorks::SekonixGmslCamera gmsl_multiple_cam(comm_nh, param_nh, CameraArguments);
+
+  // other main thread: waiting for a signal to stop&shutdown
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   while(running & ros::ok())
   {
 	 ros::spinOnce();
 	 loop_rate.sleep();
   }
+<<<<<<< HEAD
   
   // Gmsl camera signal termination- call camera cleanup 
+=======
+
+  // Gmsl camera signal termination- call camera cleanup
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   std::cout << "Shutting down cameras .." << std::endl;
   gmsl_multiple_cam.shutdown();
 

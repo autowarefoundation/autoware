@@ -38,7 +38,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <boost/circular_buffer.hpp>
-#include "autoware_msgs/lane.h"
+#include "autoware_msgs/Lane.h"
 
 namespace waypoint_maker
 {
@@ -59,31 +59,31 @@ public:
   VelocityReplanner();
   ~VelocityReplanner();
   void initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf);
-  void replanLaneWaypointVel(autoware_msgs::lane* lane);
+  void replanLaneWaypointVel(autoware_msgs::Lane* lane);
 
 protected:
-  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::lane* lane);
-  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::lane* lane);
+  void resampleLaneWaypoint(const double resample_interval, autoware_msgs::Lane* lane);
+  void resampleOnStraight(const boost::circular_buffer<geometry_msgs::Point>& curve_point, autoware_msgs::Lane* lane);
   void resampleOnCurve(const geometry_msgs::Point& target_point, const std::vector<double>& param,
-                       autoware_msgs::lane* lane);
+                       autoware_msgs::Lane* lane);
 
-  const boost::circular_buffer<geometry_msgs::Point> getCrvPointsOnResample(const autoware_msgs::lane& lane,
-                                                                            const autoware_msgs::lane& original_lane,
+  const boost::circular_buffer<geometry_msgs::Point> getCrvPointsOnResample(const autoware_msgs::Lane& lane,
+                                                                            const autoware_msgs::Lane& original_lane,
                                                                             unsigned long original_index) const;
-  const boost::circular_buffer<geometry_msgs::Point> getCrvPoints(const autoware_msgs::lane& lane,
+  const boost::circular_buffer<geometry_msgs::Point> getCrvPoints(const autoware_msgs::Lane& lane,
                                                                   unsigned long index) const;
 
-  void createRadiusList(const autoware_msgs::lane& lane, std::vector<double>* curve_radius);
+  void createRadiusList(const autoware_msgs::Lane& lane, std::vector<double>* curve_radius);
   const double calcVelParam() const;
   void createCurveList(const std::vector<double>& curve_radius,
                        std::unordered_map<unsigned long, std::pair<unsigned long, double> >* curve_list);
 
   void limitVelocityByRange(unsigned long start_idx, unsigned long end_idx, unsigned int offset, double vmin,
-                            autoware_msgs::lane* lane);
-  void limitAccelDecel(const unsigned long idx, autoware_msgs::lane* lane);
+                            autoware_msgs::Lane* lane);
+  void limitAccelDecel(const unsigned long idx, autoware_msgs::Lane* lane);
 
   const std::vector<double> calcCurveParam(boost::circular_buffer<geometry_msgs::Point> point) const;
-  const double calcPathLength(const autoware_msgs::lane& lane) const;
+  const double calcPathLength(const autoware_msgs::Lane& lane) const;
 };
 }
 #endif

@@ -8,11 +8,19 @@
  *  * Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
+<<<<<<< HEAD
  * 
  *  * Neither the name of Autoware nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  * 
+=======
+ *
+ *  * Neither the name of Autoware nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  *  All rights reserved.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -29,7 +37,11 @@
 
 /*
   This program requires ROS and Nvidia SDK installed
+<<<<<<< HEAD
   Author: Punnu Phairatt 
+=======
+  Author: Punnu Phairatt
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   Initial Date: 10/05/18
 */
 
@@ -39,10 +51,17 @@
 
 namespace DriveWorks
 {
+<<<<<<< HEAD
 	
 /* Constructor 
 *   @param argument - connected camera configuration
 *   This will start a camera initialisation and setting up memory pools based on given argument   
+=======
+
+/* Constructor
+*   @param argument - connected camera configuration
+*   This will start a camera initialisation and setting up memory pools based on given argument
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 */
 SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle param_nh, DeviceArguments CameraArguments)
 : node(comm_nh), pnode(param_nh)
@@ -54,10 +73,23 @@ SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle pa
   param_nh.param("image_compressed", pub_compressed, true);
   param_nh.param("image_compressed_quality", pub_compressed_quality, int(70));
 
+<<<<<<< HEAD
+=======
+  // from DriveWorksApi.hpp
+  ImageConfig imageConfig = {
+		(uint32_t)pub_width,         				//publish image width
+		(uint32_t)pub_height,        				//publish image height
+		(uint32_t)pub_buffer,        				//publish buffer
+						  pub_compressed,        		//publish raw or compressed image
+		(uint32_t)pub_compressed_quality,   //image compressed quality
+  };
+
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   // read ros param for camera info publish
   std::string calib_folder = "";
   param_nh.param<std::string>("calib_folder", calib_folder,"");
 
+<<<<<<< HEAD
   // from DriveWorksApi.hpp
   ImageConfig imageConfig = {
     (uint32_t)pub_width,         				//publish image width
@@ -83,6 +115,24 @@ SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle pa
   param_nh.param<std::string>("selector_mask", selector_mask_value,"0001");                              
   param_nh.param<std::string>("cross_csi_sync", cross_csi_sync_value,"0");                               
   param_nh.param<std::string>("fifo_size", fifo_size_value,"3");                                         
+=======
+
+  // read ros param here for camera configurations
+  std::string type_ab_value = "";
+  std::string type_cd_value = "";
+  std::string type_ef_value = "";
+  std::string selector_mask_value = "";
+  std::string cross_csi_sync_value = "";
+  std::string fifo_size_value = "";
+  std::string slave_value = "";
+  // reading new configuration
+  param_nh.param<std::string>("type_ab", type_ab_value,"ar0231-rccb");
+  param_nh.param<std::string>("type_cd", type_cd_value,"ar0231-rccb");
+  param_nh.param<std::string>("type_ef", type_ef_value,"ar0231-rccb");
+  param_nh.param<std::string>("selector_mask", selector_mask_value,"0001");
+  param_nh.param<std::string>("cross_csi_sync", cross_csi_sync_value,"0");
+  param_nh.param<std::string>("fifo_size", fifo_size_value,"3");
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   param_nh.param<std::string>("slave", slave_value,"0");
 
 
@@ -93,16 +143,27 @@ SekonixGmslCamera::SekonixGmslCamera(ros::NodeHandle comm_nh, ros::NodeHandle pa
   CameraArguments.set("selector_mask", selector_mask_value);
   CameraArguments.set("cross_csi_sync", cross_csi_sync_value);
   CameraArguments.set("fifo_size", fifo_size_value);
+<<<<<<< HEAD
   CameraArguments.set("slave", slave_value); 
  	
   // create gmsl camera instance with the arguments 
+=======
+  CameraArguments.set("slave", slave_value);
+
+  // create gmsl camera instance with the arguments
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
   gmsl_cam = new DriveWorksApi(CameraArguments, imageConfig);
   // start camera frame grabber threads
   this->startup();
 }
 
+<<<<<<< HEAD
 /* 
  * Destructor 
+=======
+/*
+ * Destructor
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
  */
 SekonixGmslCamera::~SekonixGmslCamera()
 {
@@ -110,8 +171,13 @@ SekonixGmslCamera::~SekonixGmslCamera()
 }
 
 /*
+<<<<<<< HEAD
  * Start the polling threads to grab an image from the camera and publish it 
  */	
+=======
+ * Start the polling threads to grab an image from the camera and publish it
+ */
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 void SekonixGmslCamera::startup()
 {
   // After gmsl cameras init - start image publishing thread(s)
@@ -127,7 +193,11 @@ void SekonixGmslCamera::startup()
 /*
  * Stop the polling threads to grab an image from the camera and publish it
  * Send a request to cleanup the camera connections all at once
+<<<<<<< HEAD
  */	
+=======
+ */
+>>>>>>> 78274e28ff4ac39185e5dfcad5d5ce2ba8d12b66
 
 void SekonixGmslCamera::shutdown()
 {

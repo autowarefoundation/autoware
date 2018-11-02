@@ -3,7 +3,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
-#include "autoware_msgs/obj_label.h"
+#include "autoware_msgs/ObjLabel.h"
 #include "autoware_msgs/CloudCluster.h"
 #include "autoware_msgs/CloudClusterArray.h"
 #include <math.h>
@@ -65,7 +65,7 @@ static double euclid_distance(const geometry_msgs::Point pos1, const geometry_ms
 } /* static double distance() */
 
 /* fusion reprojected position and pointcloud centroids */
-void fusion_cb(const autoware_msgs::obj_label::ConstPtr &obj_label_msg,
+void fusion_cb(const autoware_msgs::ObjLabel::ConstPtr &obj_label_msg,
                const autoware_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr)
 {
   tf::StampedTransform tform;
@@ -351,9 +351,9 @@ int main(int argc, char *argv[])
   private_n.param("vmap_threshold", vmap_threshold, 5.0);
   vmap_threshold *= vmap_threshold;  // squared
 
-  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::obj_label, autoware_msgs::CloudClusterArray>
+  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::ObjLabel, autoware_msgs::CloudClusterArray>
       SyncPolicy;
-  message_filters::Subscriber<autoware_msgs::obj_label> obj_label_sub(n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
+  message_filters::Subscriber<autoware_msgs::ObjLabel> obj_label_sub(n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
   message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(n, "/cloud_clusters",
                                                                                       SUBSCRIBE_QUEUE_SIZE);
   message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub,

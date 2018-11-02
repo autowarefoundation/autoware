@@ -53,9 +53,9 @@
 #include "cal_obj_loc.h"
 #include "calcoordinates.h"
 #include "structure.h"
-#include <autoware_msgs/image_obj_tracked.h>
-#include <autoware_msgs/obj_label.h>
-#include <autoware_msgs/projection_matrix.h>
+#include <autoware_msgs/ImageObjTracked.h>
+#include <autoware_msgs/ObjLabel.h>
+#include <autoware_msgs/ProjectionMatrix.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mutex>
@@ -117,7 +117,7 @@ static tf::StampedTransform transformCam2Map;
 std::string camera_id_str;
 
 static visualization_msgs::MarkerArray
-convert_marker_array(const autoware_msgs::obj_label &src) {
+convert_marker_array(const autoware_msgs::ObjLabel &src) {
   visualization_msgs::MarkerArray ret;
   int index = 0;
   std_msgs::ColorRGBA color_red;
@@ -188,7 +188,7 @@ convert_marker_array(const autoware_msgs::obj_label &src) {
 }
 
 static jsk_recognition_msgs::BoundingBoxArray
-convertJskBoundingBoxArray(const autoware_msgs::obj_label &src) {
+convertJskBoundingBoxArray(const autoware_msgs::ObjLabel &src) {
   jsk_recognition_msgs::BoundingBoxArray ret;
   ret.header.frame_id = "map";
 
@@ -208,7 +208,7 @@ convertJskBoundingBoxArray(const autoware_msgs::obj_label &src) {
   return ret;
 }
 
-static void projection_callback(const autoware_msgs::projection_matrix &msg) {
+static void projection_callback(const autoware_msgs::ProjectionMatrix &msg) {
   for (int row = 0; row < 4; row++) {
     for (int col = 0; col < 4; col++) {
       cameraMatrix[row][col] = msg.projection_matrix[row * 4 + col];
@@ -239,7 +239,7 @@ void GetRPY(const geometry_msgs::Pose &pose, double &roll, double &pitch,
 
 void makeSendDataDetectedObj(vector<OBJPOS> car_position_vector,
                              vector<OBJPOS>::iterator cp_iterator,
-                             autoware_msgs::obj_label &send_data) {
+                             autoware_msgs::ObjLabel &send_data) {
   geometry_msgs::Point tmpPoint;
 
   for (uint i = 0; i < car_position_vector.size(); i++, cp_iterator++) {
@@ -283,7 +283,7 @@ void locatePublisher(void) {
   // get values from sample_corner_point , convert latitude and longitude,
   // and send database server.
 
-  autoware_msgs::obj_label obj_label_msg;
+  autoware_msgs::ObjLabel obj_label_msg;
   visualization_msgs::MarkerArray obj_label_marker_msgs;
 
   vector<OBJPOS>::iterator cp_iterator;
@@ -316,7 +316,7 @@ void locatePublisher(void) {
 }
 
 static void
-obj_pos_xyzCallback(const autoware_msgs::image_obj_tracked &fused_objects) {
+obj_pos_xyzCallback(const autoware_msgs::ImageObjTracked &fused_objects) {
   if (!ready_)
     return;
   image_obj_tracked_time = fused_objects.header.stamp;
@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
   ros::Subscriber obj_pos_xyz =
       n.subscribe("image_obj_tracked", 1, obj_pos_xyzCallback);
 
-  pub = n.advertise<autoware_msgs::obj_label>("obj_label", 1);
+  pub = n.advertise<autoware_msgs::ObjLabel>("obj_label", 1);
   marker_pub =
       n.advertise<visualization_msgs::MarkerArray>("obj_label_marker", 1);
 

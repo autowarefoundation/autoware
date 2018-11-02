@@ -1,0 +1,49 @@
+/watchdog_node:
+  node_number: 0
+  errors:
+  - num: 0
+    name: required file does not exist
+    category: 7    
+    description: required file does not exist
+/pure_pursuit:
+  node_number: 0
+  errors:
+  - num: 0
+    name:  out of range
+    category: 8    
+    description: The input value hogehoge is out of range.
+  - num: 1
+    name:  node is ded
+    category: 3    
+    description: /pure_pursuit node is dead
+/ndt_matching:
+  node_number: 1
+  errors:
+  - num: 0
+    name: out of range    
+    category: 8    
+    description: The input value hogehoge is out of range.
+  - num: 1
+    name: exception    
+    category: 2    
+    description: exception was catched
+  - num: 2
+    name: low subscribe rate
+    category: 4
+    description: topic /nft_matching/data subscribe rate was low (Warn)
+    threshold: 10.0
+    level: warn
+  - num: 3
+    name: low subscribe rate
+    category: 4
+    description: topic /nft_matching/data subscribe rate was low (Error)
+    threshold: 5.0
+    level: error
+  - num: 4
+    name: low reliability
+    category: 12
+    description: low reliability
+  - num: 5
+    name:  node is ded
+    category: 3    
+    description: /ndt_matching node is dead
