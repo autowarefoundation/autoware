@@ -1243,17 +1243,17 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
-  Eigen::MatrixXd S = Eigen::MatrixXd(num_state_lidar_, num_state_lidar_);
-  S.fill(0.0);
+  Eigen::MatrixXd s = Eigen::MatrixXd(num_state_lidar_, num_state_lidar_);
+  s.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-    S = S + weights_c_(i) * z_diff * z_diff.transpose();
+    s = s + weights_c_(i) * z_diff * z_diff.transpose();
   }
   double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
   double delta = std::max(raukf_delta_zero_, calculated_delta);
 
-  Eigen::MatrixXd corrected_r = (1 - delta) * r + delta * (epsilon * epsilon.transpose() + S);
+  Eigen::MatrixXd corrected_r = (1 - delta) * r + delta * (epsilon * epsilon.transpose() + s);
 
   if (model_ind == MotionModel::CV)
   {
@@ -1261,7 +1261,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     new_x_sig_cv_ = x_sig;
     new_z_sig_cv_ = z_sig;
     new_z_pred_cv_ = z_pred;
-    new_s_cv_ = S;
+    new_s_cv_ = s;
   }
   else if (model_ind == MotionModel::CTRV)
   {
@@ -1269,7 +1269,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     new_x_sig_ctrv_ = x_sig;
     new_z_sig_ctrv_ = z_sig;
     new_z_pred_ctrv_ = z_pred;
-    new_s_ctrv_ = S;
+    new_s_ctrv_ = s;
   }
   else
   {
@@ -1277,7 +1277,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     new_x_sig_rm_ = x_sig;
     new_z_sig_rm_ = z_sig;
     new_z_pred_rm_ = z_pred;
-    new_s_rm_ = S;
+    new_s_rm_ = s;
   }
 }
 
@@ -1290,7 +1290,7 @@ void UKF::estimationUpdate(const int model_ind)
   Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
   Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
   Eigen::MatrixXd x_sig(n_x_, 2 * n_x_ + 1);
-  Eigen::MatrixXd z_sig(2, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig(num_state_lidar_, 2 * n_x_ + 1);
   if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
@@ -1339,7 +1339,7 @@ void UKF::estimationUpdate(const int model_ind)
 
   p = p + q;
 
-  Eigen::MatrixXd cross_covariance(n_x_, 2);
+  Eigen::MatrixXd cross_covariance(n_x_, num_state_lidar_);
   cross_covariance.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
