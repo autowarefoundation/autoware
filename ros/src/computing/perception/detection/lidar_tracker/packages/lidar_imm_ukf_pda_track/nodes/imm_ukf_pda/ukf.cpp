@@ -753,7 +753,7 @@ void UKF::randomMotion(const double p_x, const double p_y, const double v, const
   double py_p = p_y;
   double v_p = 0.0;
   double yaw_p = yaw;
-  double yawd_p = yawd;
+  double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -1383,6 +1383,19 @@ void UKF::estimationUpdate(const int model_ind)
   }
 }
 
+void UKF::applyingRobustAdaptiveFilter(const int model_ind)
+{
+  bool is_fault = false;
+  faultDetection(model_ind, is_fault);
+  if (!is_fault)
+  {
+    return;
+  }
+  adaptiveAdjustmentQ(model_ind);
+  adaptiveAdjustmentR(model_ind);
+  estimationUpdate(model_ind);
+}
+
 void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r)
 {
   raukf_chi_thres_param_ = chi_thres;
@@ -1397,30 +1410,11 @@ void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, cons
 
   if (use_sukf)
   {
-    bool is_fault = false;
-    faultDetection(MotionModel::CTRV, is_fault);
-    if (!is_fault)
-    {
-      return;
-    }
-    adaptiveAdjustmentQ(MotionModel::CTRV);
-    adaptiveAdjustmentR(MotionModel::CTRV);
-    estimationUpdate(MotionModel::CTRV);
+    applyingRobustAdaptiveFilter(MotionModel::CTRV);
   }
   else
   {
-    // applying ra filter except for random motion model
-    for (int model_ind = 0; model_ind < 2; model_ind++)
-    {
-      bool is_fault = false;
-      faultDetection(model_ind, is_fault);
-      if (!is_fault)
-      {
-        continue;
-      }
-      adaptiveAdjustmentQ(model_ind);
-      adaptiveAdjustmentR(model_ind);
-      estimationUpdate(model_ind);
-    }
+    applyingRobustAdaptiveFilter(MotionModel::CV);
+    applyingRobustAdaptiveFilter(MotionModel::CTRV);
   }
 }

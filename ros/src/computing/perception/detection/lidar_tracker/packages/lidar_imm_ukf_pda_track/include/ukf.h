@@ -305,6 +305,8 @@ public:
 
   void robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r);
 
+  void applyingRobustAdaptiveFilter(const int model_ind);
+
   void faultDetection(const int model_ind, bool& is_fault);
 
   void adaptiveAdjustmentQ(const int model_ind);
