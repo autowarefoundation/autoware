@@ -83,7 +83,7 @@ private:
   // switch robust adaptive filter
   bool use_robust_adaptive_filter_;
 
-  // raukf tuning parameter
+  // Tuning parameter for Robust Adaptive UKF
   double raukf_chi_thres_;
   double raukf_q_thres_;
   double raukf_r_thres_;

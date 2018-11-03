@@ -244,15 +244,12 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
-  // robust adaptive unscented kalman filter
+  // varibales for robust adaptive unscented kalman filter
   bool is_meas_;
-
   double raukf_lambda_zero_;
   double raukf_delta_zero_;
-
   double raukf_q_param_;
   double raukf_r_param_;
-
   double raukf_chi_thres_param_;
 
   /**
@@ -303,16 +300,32 @@ public:
 
   void updateLidar(const int model_ind);
 
+  /// \brief Call Robust Adaptive UKF if use_robust_adaptive_filter_ = true
+  /// \param[in] use_sukf: only using standard ukf, not using imm-ukf
+  /// \param[in] chi_thres: trigger robust adaptive filter if measurement exceeds this threshold
+  /// \param[in] raukf_q: correction threshold for updating covariance Q
+  /// \param[in] raukf_r: correction threshold for updating covariance R
   void robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r);
 
+  /// \brief applying series of robust adaptive filter fuctions
+  /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void applyingRobustAdaptiveFilter(const int model_ind);
 
+  /// \brief check if measurement is fault or not
+  /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[out] true if detected fault, otherwiese return false
   bool faultDetection(const int model_ind);
 
+  /// \brief update covariance Q
+  /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void adaptiveAdjustmentQ(const int model_ind);
 
+  /// \brief update covariance R
+  /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void adaptiveAdjustmentR(const int model_ind);
 
+  /// \brief update state vector and state covariance based on corrected Q and R
+  /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void estimationUpdate(const int model_ind);
 };
 
