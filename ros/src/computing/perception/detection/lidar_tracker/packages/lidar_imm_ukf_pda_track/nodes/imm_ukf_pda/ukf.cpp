@@ -80,6 +80,8 @@ UKF::UKF()
 
   // state dimension
   n_x_ = 5;
+  // state dimension in lidar measurement, is 2 because of using x and y
+  num_state_lidar_ = 2;
 
   // predicted sigma points matrix
   x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
@@ -1205,11 +1207,8 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     p = p_rm_;
   }
 
-  // make sigma poitns from estiated x
   Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  // create square root matrix
   Eigen::MatrixXd L = p.llt().matrixL();
-  // create augmented sigma points
   x_sig.col(0) = x;
   for (int i = 0; i < n_x_; i++)
   {
@@ -1228,41 +1227,32 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     x_sig.col(i + 1) = sigma_point1;
     x_sig.col(i + 1 + n_x_) = sigma_point2;
   }
-  // set measurement dimension, lidar can measure p_x and p_y
-  int n_z = 2;
-  // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
-  // transform sigma points into measurement space
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_state_lidar_, 2 * n_x_ + 1);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
-  {  // 2n+1 simga points
-    // extract values for better readibility
+  {
     double p_x = x_sig(0, i);
     double p_y = x_sig(1, i);
-    // measurement model
     z_sig(0, i) = p_x;
     z_sig(1, i) = p_y;
   }
 
-  // mean predicted measurement
-  Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
+  Eigen::VectorXd z_pred = Eigen::VectorXd(num_state_lidar_);
   z_pred.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
-  // measurement covariance matrix S
-  Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
+  Eigen::MatrixXd S = Eigen::MatrixXd(num_state_lidar_, num_state_lidar_);
   S.fill(0.0);
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
     S = S + weights_c_(i) * z_diff * z_diff.transpose();
   }
-  // calculate delta
   double calculated_delta = (nis - raukf_r_param_ * raukf_chi_thres_param_) / nis;
   double delta = std::max(raukf_delta_zero_, calculated_delta);
-  // correct R
+
   Eigen::MatrixXd corrected_r = (1 - delta) * r + delta * (epsilon * epsilon.transpose() + S);
 
   if (model_ind == MotionModel::CV)
@@ -1340,7 +1330,6 @@ void UKF::estimationUpdate(const int model_ind)
   for (int i = 0; i < 2 * n_x_ + 1; i++)
   {
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
-    // angle normalization
     while (x_diff(3) > M_PI)
       x_diff(3) -= 2. * M_PI;
     while (x_diff(3) < -M_PI)

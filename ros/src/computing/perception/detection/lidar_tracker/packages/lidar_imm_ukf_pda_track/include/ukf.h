@@ -133,6 +133,8 @@ public:
 
   //* State dimension
   int n_x_;
+  // number of state in lidar
+  int num_state_lidar_;
 
   //* Sigma point spreading parameter
   double lambda_;
