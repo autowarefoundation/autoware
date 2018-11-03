@@ -307,7 +307,7 @@ public:
 
   void applyingRobustAdaptiveFilter(const int model_ind);
 
-  void faultDetection(const int model_ind, bool& is_fault);
+  bool faultDetection(const int model_ind);
 
   void adaptiveAdjustmentQ(const int model_ind);
 

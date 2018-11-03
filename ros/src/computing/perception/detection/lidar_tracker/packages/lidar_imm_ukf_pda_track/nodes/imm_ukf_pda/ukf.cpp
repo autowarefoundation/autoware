@@ -1068,7 +1068,7 @@ void UKF::updateLidar(const int model_ind)
   }
 }
 
-void UKF::faultDetection(const int model_ind, bool& is_fault)
+bool UKF::faultDetection(const int model_ind)
 {
   Eigen::VectorXd z_meas;
   Eigen::VectorXd z_pred;
@@ -1098,11 +1098,6 @@ void UKF::faultDetection(const int model_ind, bool& is_fault)
 
   double nis = (z_meas - z_pred).transpose() * (z_cov).inverse() * (z_meas - z_pred);
 
-  if (nis > raukf_chi_thres_param_)
-  {
-    is_fault = true;
-  }
-
   if (model_ind == MotionModel::CV)
   {
     nis_cv_ = nis;
@@ -1115,6 +1110,17 @@ void UKF::faultDetection(const int model_ind, bool& is_fault)
   {
     nis_rm_ = nis;
   }
+
+  bool is_fault;
+  if (nis > raukf_chi_thres_param_)
+  {
+    is_fault = true;
+  }
+  else
+  {
+    is_fault = false;
+  }
+  return is_fault;
 }
 
 void UKF::adaptiveAdjustmentQ(const int model_ind)
@@ -1385,8 +1391,7 @@ void UKF::estimationUpdate(const int model_ind)
 
 void UKF::applyingRobustAdaptiveFilter(const int model_ind)
 {
-  bool is_fault = false;
-  faultDetection(model_ind, is_fault);
+  bool is_fault = faultDetection(model_ind);
   if (!is_fault)
   {
     return;

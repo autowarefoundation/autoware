@@ -70,3 +70,12 @@ install(TARGETS
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
+
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(utest
+                   test/utest.cpp
+                   nodes/imm_ukf_pda/imm_ukf_pda.cpp
+                   nodes/imm_ukf_pda/ukf.cpp
+                   )
+  target_link_libraries(utest ${catkin_LIBRARIES})
+endif()
