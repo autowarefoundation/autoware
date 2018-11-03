@@ -731,16 +731,12 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
 void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
              const double delta_t, std::vector<double>& state)
 {
-  // predicted state values
+  // Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x + v * cos(yaw) * delta_t;
   double py_p = p_y + v * sin(yaw) * delta_t;
-
   double v_p = v;
-  // not sure which one, works better in curve by using yaw
   double yaw_p = yaw;
-
-  double yawd_p = yawd;
-  // double yawd_p = 0;
+  double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -752,11 +748,10 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
 void UKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                        const double delta_t, std::vector<double>& state)
 {
+  // Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x;
   double py_p = p_y;
-  double v_p = v * 0.9;  // aim to converge velocity for static objects
-  // double v_p = 0.0;
-
+  double v_p = 0.0;
   double yaw_p = yaw;
   double yawd_p = yawd;
 
