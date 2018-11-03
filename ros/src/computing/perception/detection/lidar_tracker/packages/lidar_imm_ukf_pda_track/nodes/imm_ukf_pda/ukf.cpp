@@ -1208,12 +1208,12 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
   }
 
   Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  Eigen::MatrixXd L = p.llt().matrixL();
+  Eigen::MatrixXd square_root_matrix_l = p.llt().matrixL();
   x_sig.col(0) = x;
   for (int i = 0; i < n_x_; i++)
   {
-    Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + n_x_) * L.col(i);
-    Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + n_x_) * L.col(i);
+    Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + n_x_) * square_root_matrix_l.col(i);
+    Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + n_x_) * square_root_matrix_l.col(i);
 
     while (sigma_point1(3) > M_PI)
       sigma_point1(3) -= 2. * M_PI;
