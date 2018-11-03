@@ -307,24 +307,24 @@ public:
   /// \param[in] raukf_r: correction threshold for updating covariance R
   void robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r);
 
-  /// \brief applying series of robust adaptive filter fuctions
+  /// \brief Applying series of robust adaptive filter fuctions
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void applyingRobustAdaptiveFilter(const int model_ind);
 
-  /// \brief check if measurement is fault or not
+  /// \brief Check if measurement is fault or not
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
-  /// \param[out] true if detected fault, otherwiese return false
+  /// \param[out] true if detecting fault, otherwiese return false
   bool faultDetection(const int model_ind);
 
-  /// \brief update covariance Q
+  /// \brief Update covariance Q
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void adaptiveAdjustmentQ(const int model_ind);
 
-  /// \brief update covariance R
+  /// \brief Update covariance R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void adaptiveAdjustmentR(const int model_ind);
 
-  /// \brief update state vector and state covariance based on corrected Q and R
+  /// \brief Update state vector and state covariance based on corrected Q and R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   void estimationUpdate(const int model_ind);
 };
