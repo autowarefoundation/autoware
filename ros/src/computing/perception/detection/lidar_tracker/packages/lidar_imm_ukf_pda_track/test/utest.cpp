@@ -6,7 +6,7 @@ TEST(UKF, initializeProperly)
 {
   double px = 0.7;
   double py = 10.9;
-  double timestamp = 111111;
+  double timestamp = 1;
   int target_id = 1;
   Eigen::VectorXd init_meas = Eigen::VectorXd(2);
   init_meas << px, py;
