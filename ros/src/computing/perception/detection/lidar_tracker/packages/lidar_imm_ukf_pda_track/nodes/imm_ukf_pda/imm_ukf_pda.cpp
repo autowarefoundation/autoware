@@ -51,6 +51,8 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<double>("raukf_chi_thres", raukf_chi_thres_, 10.59);
+  private_nh_.param<double>("raukf_q_thres", raukf_q_thres_, 0.2);
+  private_nh_.param<double>("raukf_r_thres", raukf_r_thres_, 0.2);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("use_robust_adaptive_filter", use_robust_adaptive_filter_, true);
   private_nh_.param<bool>("is_debug", is_debug_, false);
@@ -871,7 +873,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
       if (use_robust_adaptive_filter_)
       {
-        targets_[i].robustAdaptiveFilter(use_sukf_, raukf_chi_thres_);
+        targets_[i].robustAdaptiveFilter(use_sukf_, raukf_chi_thres_, raukf_q_thres_, raukf_r_thres_);
       }
     }
   }

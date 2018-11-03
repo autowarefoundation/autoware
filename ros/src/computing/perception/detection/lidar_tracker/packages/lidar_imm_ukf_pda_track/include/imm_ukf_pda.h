@@ -79,12 +79,14 @@ private:
 
   // switch sukf and ImmUkfPda
   bool use_sukf_;
-  
+
   // switch robust adaptive filter
   bool use_robust_adaptive_filter_;
-  
+
   // raukf tuning parameter
   double raukf_chi_thres_;
+  double raukf_q_thres_;
+  double raukf_r_thres_;
 
   // whether if publish debug ros markers
   bool is_debug_;

@@ -1256,6 +1256,24 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : raukf_q_thres
+      desc    : Correction update threshold for Q
+      label   : 'raukf Q thres'
+      min       : 0.0
+      max       : 1.0
+      v       : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : raukf_r
+      desc    : Correction update threshold for R
+      label   : 'raukf R thres'
+      min       : 0.0
+      max       : 1.0
+      v       : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : use_sukf
       desc      : Use SUKF
       label     : use_sukf

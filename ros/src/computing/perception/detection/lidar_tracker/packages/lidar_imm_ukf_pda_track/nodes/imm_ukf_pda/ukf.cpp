@@ -740,6 +740,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
   double yaw_p = yaw;
 
   double yawd_p = yawd;
+  // double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -1387,9 +1388,11 @@ void UKF::estimationUpdate(const int model_ind)
   }
 }
 
-void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres)
+void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r)
 {
   raukf_chi_thres_param_ = chi_thres;
+  raukf_q_param_ = raukf_q;
+  raukf_r_param_ = raukf_r;
 
   // if no measurement, no correction/estimation is made
   if (!is_meas_)
