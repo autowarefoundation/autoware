@@ -7,7 +7,7 @@
   <arg name="life_time_thres" default="8" />
   <arg name="static_velocity_thres" default="3.0" />
   <arg name="prevent_explosion_thres" default="1000" />
-  <arg name="raukf_chi_thres" default="11.59" />
+  <arg name="raukf_chi_thres" default="10.59" />
   <arg name="raukf_q_thres" default="0.2" />
   <arg name="raukf_r_thres" default="0.2" />
   <arg name="tracker_input_topic" default="/detection/lidar_objects" />
