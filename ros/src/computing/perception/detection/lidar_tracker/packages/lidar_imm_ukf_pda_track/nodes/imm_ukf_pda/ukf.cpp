@@ -1098,6 +1098,7 @@ bool UKF::faultDetection(const int model_ind)
     r = r_rm_;
   }
 
+  // calculating normalized innovation squared
   double nis = (z_meas - z_pred).transpose() * (z_cov).inverse() * (z_meas - z_pred);
 
   if (model_ind == MotionModel::CV)
@@ -1337,6 +1338,7 @@ void UKF::estimationUpdate(const int model_ind)
     p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
 
+  // update state covariance P with corrected covariance Q
   p = p + q;
 
   Eigen::MatrixXd cross_covariance(n_x_, num_state_lidar_);
@@ -1354,6 +1356,7 @@ void UKF::estimationUpdate(const int model_ind)
     cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
+  // update innovation covariance (S) with corrected covariance R
   Eigen::MatrixXd innovation_covariance = s + r;
 
   Eigen::MatrixXd kalman_gain = cross_covariance * innovation_covariance.inverse();
