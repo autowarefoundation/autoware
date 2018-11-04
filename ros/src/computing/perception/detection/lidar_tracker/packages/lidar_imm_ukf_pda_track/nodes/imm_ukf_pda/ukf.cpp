@@ -733,7 +733,7 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
 void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
              const double delta_t, std::vector<double>& state)
 {
-  // Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
+  // Reference: Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x + v * cos(yaw) * delta_t;
   double py_p = p_y + v * sin(yaw) * delta_t;
   double v_p = v;
@@ -750,7 +750,7 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
 void UKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                        const double delta_t, std::vector<double>& state)
 {
-  // Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
+  // Reference: Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x;
   double py_p = p_y;
   double v_p = 0.0;
