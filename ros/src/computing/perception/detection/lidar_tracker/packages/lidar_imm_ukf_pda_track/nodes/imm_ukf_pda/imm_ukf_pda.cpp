@@ -243,15 +243,34 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (second_init_done)
   {
-    // if(use_vectormap_)
-    // {
-    //   smallest_meas_object = getUpdatedSmallestNisMeas(smallest_meas_object, smallest_nis);
-    // }
-    object_vec.push_back(smallest_meas_object);
+    if(use_vectormap_)
+    {
+      autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
+                                                              smallest_meas_object, smallest_nis);
+      object_vec.push_back(smallest_nis_meas);
+    }
+    else
+    {
+      object_vec.push_back(smallest_meas_object);
+    }
   }
 }
 
-// autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(const )
+autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
+    const autoware_msgs::DetectedObject& in_object,
+    const double smallest_nis)
+{
+  geometry_msgs::Point lane_pose = getNearestLanePose(in_object);
+  return in_object;
+
+}
+
+geometry_msgs::Point ImmUkfPda::getNearestLanePose(const autoware_msgs::DetectedObject& in_object)
+{
+  geometry_msgs::Point lane_pose;
+  return lane_pose;
+}
+
 
 void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                         autoware_msgs::DetectedObject& object, double& min_dist)

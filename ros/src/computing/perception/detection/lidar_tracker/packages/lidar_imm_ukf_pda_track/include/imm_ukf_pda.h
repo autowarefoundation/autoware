@@ -171,6 +171,13 @@ private:
                jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
+  autoware_msgs::DetectedObject getUpdatedSmallestNisMeas(
+    const autoware_msgs::DetectedObject& object,
+    const double smallest_nis);
+
+  geometry_msgs::Point getNearestLanePose(const autoware_msgs::DetectedObject& in_object);
+
+
 public:
   ImmUkfPda();
   void run();
