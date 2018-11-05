@@ -110,6 +110,7 @@ private:
 
   tf::TransformListener tf_listener_;
   tf::StampedTransform local2global_;
+  tf::StampedTransform lane_frame2tracking_frame_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_detected_array_;
@@ -124,6 +125,7 @@ private:
   void setPredictionObject();
   void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
                     jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output);
+  bool updateNecessaryTransform();
   void transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
                              autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,

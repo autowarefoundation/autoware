@@ -57,6 +57,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
   if(use_vectormap_)
   {
+    // TODO:check if subscribe successfully in every callback
     vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE, 10);
     lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
     std::cout << "finished initializing" << lanes_.size()<< std::endl;
@@ -92,6 +93,9 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
   autoware_msgs::DetectedObjectArray detected_objects_output;
 
+  bool success = updateNecessaryTransform();
+  if(!success)
+    return;
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
@@ -119,21 +123,38 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
   }
 }
 
-void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
-                                      autoware_msgs::DetectedObjectArray& transformed_input)
+bool ImmUkfPda::updateNecessaryTransform()
 {
+  bool success = true;
   try
   {
     tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-    // get sensor -> world frame
     tf_listener_.lookupTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), local2global_);
   }
   catch (tf::TransformException ex)
   {
     ROS_ERROR("%s", ex.what());
-    ros::Duration(1.0).sleep();
+    success = false;
   }
+  if(use_vectormap_)
+  {
+    //TODO: not using hardcoded param
+    try
+    {
+      tf_listener_.waitForTransform("map", tracking_frame_, ros::Time(0), ros::Duration(1.0));
+      tf_listener_.lookupTransform(tracking_frame_, "map", ros::Time(0), lane_frame2tracking_frame_);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+    }
+  }
+  return success;
+}
 
+void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
+                                      autoware_msgs::DetectedObjectArray& transformed_input)
+{
   transformed_input.header = input.header;
   for (auto const &object: input.objects)
   {
@@ -249,18 +270,7 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
 
 geometry_msgs::Point ImmUkfPda::getNearestLanePose(const autoware_msgs::DetectedObject& in_object)
 {
-  // std::cout <<lanes_.size()<< std::endl;
-  // try
-  // {
-  //   tf_listener_.waitForTransform("map", tracking_frame_, ros::Time(0), ros::Duration(1.0));
-  //   tf_listener_.lookupTransform(tracking_frame_, "map", ros::Time(0), lane_frame2tracking_frame_);
-  // }
-  // catch (tf::TransformException ex)
-  // {
-  //   ROS_ERROR("%s", ex.what());
-  //   ros::Duration(1.0).sleep();
-  // }
-
+  // geometry_msgs::Pose out_pose = getTransformedPose(in_object.pose, lane)
   // get
 
   // geometry_msgs::PoseStamped pose_in, pose_out;
