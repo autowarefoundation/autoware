@@ -57,6 +57,7 @@ uint16_t g_target_velocity_ui16;
 int16_t g_steering_angle_deg_i16;
 double g_current_vel_kmph = 0.0;
 bool g_terminate_thread = false;
+double g_steering_offset_deg = 0.0;
 
 // cansend tool
 mycansend::CanSender g_cansender;
@@ -67,6 +68,7 @@ void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
   double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
   double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z,
                                                                            msg->twist_cmd.twist.linear.x, g_wheel_base);
+  target_steering_angle_deg += g_steering_offset_deg;
 
   // factor
   target_velocity *= 10.0;
@@ -152,6 +154,7 @@ int main(int argc, char* argv[])
   private_nh.param<std::string>("device", g_device, "can0");
   private_nh.param<int>("loop_rate", g_loop_rate, 100);
   private_nh.param<int>("stop_time_sec", g_stop_time_sec, 1);
+  private_nh.param<double>("steering_offset_deg", g_steering_offset_deg, 0.0);
 
   // init cansend tool
   g_cansender.init(g_device);
