@@ -1,7 +1,7 @@
 <launch>
   <!-- gmsl multiple cameras run -->
   <arg name="cam_calib_folder" default="$(find gmsl_camera)/calib/" />
-  <node pkg="gmsl_camera" type="gmsl_camera_node" name="gmsl_camera_node" output="screen">
+  <node pkg="autoware_driveworks_gmsl_interface" type="autoware_driveworks_gmsl_interface_node" name="autoware_driveworks_gmsl_interface_node" output="screen">
     <param name="image_width" value="1920" />     <!-- image raw resize only -->
     <param name="image_height" value="1208" />    <!-- image raw resize only -->
     <param name="image_buffer" value="10" />

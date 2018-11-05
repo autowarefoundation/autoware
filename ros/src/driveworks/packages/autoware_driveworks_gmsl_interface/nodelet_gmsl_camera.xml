@@ -1,4 +1,4 @@
-<library path="lib/libnodelet_gmsl_camera">
+<library path="lib/libnodelet_autoware_driveworks_gmsl_interface">
   <class name="gmsl_camera/CameraNodelet"
          type="gmsl_camera::CameraNodelet"
          base_class_type="nodelet::Nodelet">
