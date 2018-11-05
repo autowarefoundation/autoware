@@ -8,7 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
         geometry_msgs
         tf
+        jsk_recognition_msgs
         )
+
+
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
         CATKIN_DEPENDS
@@ -17,6 +21,7 @@ catkin_package(
         autoware_msgs
         geometry_msgs
         tf
+        jsk_recognition_msgs
 )
 
 include_directories(

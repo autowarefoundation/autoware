@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "imm_ukf_pda_tracker");
   ImmUkfPda app;
-  app.Run();
+  app.run();
   ros::spin();
   return 0;
 }

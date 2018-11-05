@@ -33,7 +33,9 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 #include <cmath>
+#include <iomanip>
 
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>

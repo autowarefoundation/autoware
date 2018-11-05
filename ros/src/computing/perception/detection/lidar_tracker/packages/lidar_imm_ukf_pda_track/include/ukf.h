@@ -40,7 +40,8 @@
 #include <pcl/point_cloud.h>
 
 #include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Vector3.h>
+#include <jsk_recognition_msgs/BoundingBox.h>
+
 #include "autoware_msgs/DetectedObject.h"
 
 enum TrackingState : int
@@ -185,14 +186,20 @@ public:
   int lifetime_;
   bool is_static_;
 
-  // object params
-  bool is_reliable_;
+  // bounding box params
+  bool is_vis_bb_;
 
-  geometry_msgs::Vector3 object_dimensions_;
-  geometry_msgs::Pose object_pose_;
-  std::string object_label_;
+  jsk_recognition_msgs::BoundingBox jsk_bb_;
+  jsk_recognition_msgs::BoundingBox best_jsk_bb_;
+
+  bool is_best_jsk_bb_empty_;
 
   double best_yaw_;
+  double bb_yaw_;
+  double bb_area_;
+  std::vector<double> bb_yaw_history_;
+  std::vector<double> bb_vel_history_;
+  std::vector<double> bb_area_history_;
 
   // for env classification
   Eigen::VectorXd init_meas_;
@@ -244,7 +251,7 @@ public:
 
   void updateYawWithHighProb();
 
-  void initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id, const std::string& in_label);
+  void initialize(const Eigen::VectorXd& z, const double timestamp, const int target_ind);
 
   void updateModeProb(const std::vector<double>& lambda_vec);
 

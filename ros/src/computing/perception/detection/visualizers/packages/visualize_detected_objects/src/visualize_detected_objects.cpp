@@ -197,67 +197,65 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid)
+    if (object.valid && object.pose_reliable)
     {
       double velocity = object.velocity.linear.x;
 
-      if (abs(velocity) < arrow_speed_threshold_)
+      if (abs(velocity) >= arrow_speed_threshold_)
       {
-        continue;
-      }
+        visualization_msgs::Marker arrow_marker;
+        arrow_marker.lifetime = ros::Duration(marker_display_duration_);
 
-      visualization_msgs::Marker arrow_marker;
-      arrow_marker.lifetime = ros::Duration(marker_display_duration_);
+        tf::Quaternion q(object.pose.orientation.x,
+                         object.pose.orientation.y,
+                         object.pose.orientation.z,
+                         object.pose.orientation.w);
+        double roll, pitch, yaw;
 
-      tf::Quaternion q(object.pose.orientation.x,
-                       object.pose.orientation.y,
-                       object.pose.orientation.z,
-                       object.pose.orientation.w);
-      double roll, pitch, yaw;
+        tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
-      tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+        tf::Matrix3x3 obs_mat;
+        tf::Quaternion q_tf;
 
-      tf::Matrix3x3 obs_mat;
-      tf::Quaternion q_tf;
+        obs_mat.setEulerYPR(yaw, 0, 0);  // yaw, pitch, roll
+        obs_mat.getRotation(q_tf);
 
-      obs_mat.setEulerYPR(yaw, 0, 0);  // yaw, pitch, roll
-      obs_mat.getRotation(q_tf);
+        arrow_marker.header = in_objects.header;
+        arrow_marker.ns = ros_namespace_ + "/arrow_markers";
+        arrow_marker.action = visualization_msgs::Marker::ADD;
+        arrow_marker.type = visualization_msgs::Marker::ARROW;
 
-      arrow_marker.header = in_objects.header;
-      arrow_marker.ns = ros_namespace_ + "/arrow_markers";
-      arrow_marker.action = visualization_msgs::Marker::ADD;
-      arrow_marker.type = visualization_msgs::Marker::ARROW;
+        // green
+        if (object.color.a == 0)
+        {
+          arrow_marker.color.g = 1.f;
+          arrow_marker.color.a = 1.f;
+        }
+        else
+        {
+          arrow_marker.color = object.color;
+        }
+        arrow_marker.id = marker_id++;
 
-      // green
-      if (object.color.a == 0)
-      {
-        arrow_marker.color.g = 1.f;
-        arrow_marker.color.a = 1.f;
-      }
-      else
-      {
-        arrow_marker.color = object.color;
-      }
-      arrow_marker.id = marker_id++;
+        // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
+        arrow_marker.pose.position.x = object.pose.position.x;
+        arrow_marker.pose.position.y = object.pose.position.y;
+        arrow_marker.pose.position.z = arrow_height_;
 
-      // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-      arrow_marker.pose.position.x = object.pose.position.x;
-      arrow_marker.pose.position.y = object.pose.position.y;
-      arrow_marker.pose.position.z = arrow_height_;
+        arrow_marker.pose.orientation.x = q_tf.getX();
+        arrow_marker.pose.orientation.y = q_tf.getY();
+        arrow_marker.pose.orientation.z = q_tf.getZ();
+        arrow_marker.pose.orientation.w = q_tf.getW();
 
-      arrow_marker.pose.orientation.x = q_tf.getX();
-      arrow_marker.pose.orientation.y = q_tf.getY();
-      arrow_marker.pose.orientation.z = q_tf.getZ();
-      arrow_marker.pose.orientation.w = q_tf.getW();
+        // Set the scale of the arrow -- 1x1x1 here means 1m on a side
+        arrow_marker.scale.x = 3;
+        arrow_marker.scale.y = 0.1;
+        arrow_marker.scale.z = 0.1;
 
-      // Set the scale of the arrow -- 1x1x1 here means 1m on a side
-      arrow_marker.scale.x = 3;
-      arrow_marker.scale.y = 0.1;
-      arrow_marker.scale.z = 0.1;
-
-      arrow_markers.markers.push_back(arrow_marker);
-    }
-  }
+        arrow_markers.markers.push_back(arrow_marker);
+      }//velocity threshold
+    }//valid object
+  }//end for
   return arrow_markers;
 }//ObjectsToArrows
 
@@ -289,6 +287,41 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
       label_marker.id = marker_id++;
       label_marker.text = object.label + " "; //Object Class if available
+
+      if (object.pose_reliable)
+      {
+        double velocity = object.velocity.linear.x;
+        double roll, pitch, yaw;
+
+        if (abs(velocity) < object_speed_threshold_)
+        {
+          velocity = 0.0;
+        }
+
+        tf::Quaternion q(object.pose.orientation.x, object.pose.orientation.y,
+                         object.pose.orientation.z, object.pose.orientation.w);
+
+        tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+
+        // in the case motion model fit opposite direction
+        if (velocity < -0.1)
+        {
+          velocity *= -1;
+          yaw += M_PI;
+          // normalize angle
+          while (yaw > M_PI)
+            yaw -= 2. * M_PI;
+          while (yaw < -M_PI)
+            yaw += 2. * M_PI;
+        }
+
+        // convert m/s to km/h
+        std::stringstream modified_sv;
+        modified_sv << std::fixed << std::setprecision(1) << (velocity * 3.6);
+        std::string text = "<" + std::to_string(object.id) + "> " + modified_sv.str() + " km/h";
+
+        label_marker.text += text;
+      }
 
       label_marker.pose.position.x = object.pose.position.x;
       label_marker.pose.position.y = object.pose.position.y;
