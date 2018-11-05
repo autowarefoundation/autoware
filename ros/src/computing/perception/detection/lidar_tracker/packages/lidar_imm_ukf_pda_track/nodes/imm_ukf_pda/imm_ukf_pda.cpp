@@ -142,7 +142,7 @@ bool ImmUkfPda::updateNecessaryTransform()
     try
     {
       tf_listener_.waitForTransform("map", tracking_frame_, ros::Time(0), ros::Duration(1.0));
-      tf_listener_.lookupTransform(tracking_frame_, "map", ros::Time(0), lane_frame2tracking_frame_);
+      tf_listener_.lookupTransform("map", tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
     }
     catch (tf::TransformException ex)
     {
@@ -174,8 +174,8 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
 {
   detected_objects_output.header.frame_id = pointcloud_frame_;
   tf::Transform inv_local2global = local2global_.inverse();
-  tf::StampedTransform global2local(inv_local2global, detected_objects_output.header.stamp,
-                                    tracking_frame_, pointcloud_frame_);
+  tf::StampedTransform global2local;
+  global2local.setData(inv_local2global);
   for (auto &object: detected_objects_output.objects)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, global2local);
@@ -249,8 +249,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
     {
       autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
                                                               smallest_meas_object, smallest_nis);
-      // object_vec.push_back(smallest_nis_meas);
-      object_vec.push_back(smallest_meas_object);
+      object_vec.push_back(smallest_nis_meas);
+      // object_vec.push_back(smallest_nis_object);
     }
     else
     {
@@ -263,37 +263,53 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
     const autoware_msgs::DetectedObject& in_object,
     const double smallest_nis)
 {
-  geometry_msgs::Point lane_pose = getNearestLanePose(in_object);
-  return in_object;
+
+  geometry_msgs::Pose lane_pose = getNearestLanePose(in_object);
+  double yaw = tf::getYaw(lane_pose.orientation);
+  autoware_msgs::DetectedObject out_object;
+  out_object = in_object;
+  out_object.angle = yaw;
+  //compare two measurement and nis
+  return out_object;
 
 }
 
-geometry_msgs::Point ImmUkfPda::getNearestLanePose(const autoware_msgs::DetectedObject& in_object)
+//TODO: make this function compact by only transforming yaw, only using rotation matrix
+geometry_msgs::Pose ImmUkfPda::getNearestLanePose(const autoware_msgs::DetectedObject& in_object)
 {
-  // geometry_msgs::Pose out_pose = getTransformedPose(in_object.pose, lane)
-  // get
+  geometry_msgs::Pose object_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
 
-  // geometry_msgs::PoseStamped pose_in, pose_out;
-  //
-  // pose_in.header = input.header;
-  // pose_in.pose = input.objects[i].pose;
-  // tf::Transform input_object_pose;
-  // input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
-  //                                         input.objects[i].pose.position.z));
-  // input_object_pose.setRotation(
-  //     tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
-  //                    input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
-  // tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
-  for(auto&& lane: lanes_)
+  geometry_msgs::Pose nearest_lane_pose_in_lane_tf;
+  double min_dist = std::numeric_limits<double>::max();;
+  double min_yaw = 0;
+  for(auto const &lane: lanes_)
   {
-    std::cout << 111 << std::endl;
-    std::cout << lane.lnid << std::endl;
     vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
     vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
-    std::cout << point.bx << " " << point.ly << std::endl;
+    double distance = std::sqrt(std::pow(point.bx - object_pose.position.x, 2) +
+                                std::pow(point.ly - object_pose.position.y, 2));
+    if(distance < min_dist)
+    {
+      min_dist = distance;
+
+      vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
+      vector_map_msgs::Point front_point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(front_node.pid));
+      min_yaw = std::atan2((front_point.ly - point.ly), (front_point.bx - point.bx));
+
+      nearest_lane_pose_in_lane_tf.position.x = point.bx;
+      nearest_lane_pose_in_lane_tf.position.y = point.ly;
+      nearest_lane_pose_in_lane_tf.position.z = point.h;
+    }
   }
-  geometry_msgs::Point lane_pose;
-  return lane_pose;
+  nearest_lane_pose_in_lane_tf.orientation = tf::createQuaternionMsgFromYaw(min_yaw);
+
+
+  tf::Transform inv_tracking2lane = tracking_frame2lane_frame_.inverse();
+  tf::StampedTransform lane2tracking;
+  lane2tracking.setData(inv_tracking2lane);
+  geometry_msgs::Pose nearest_lane_pose_in_tracking_tf = getTransformedPose(nearest_lane_pose_in_lane_tf,
+                                                                            lane2tracking);
+  return nearest_lane_pose_in_tracking_tf;
 }
 
 

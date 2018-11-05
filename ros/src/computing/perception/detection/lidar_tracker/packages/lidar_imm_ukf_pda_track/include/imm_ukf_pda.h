@@ -110,7 +110,7 @@ private:
 
   tf::TransformListener tf_listener_;
   tf::StampedTransform local2global_;
-  tf::StampedTransform lane_frame2tracking_frame_;
+  tf::StampedTransform tracking_frame2lane_frame_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber sub_detected_array_;
@@ -180,7 +180,7 @@ private:
     const autoware_msgs::DetectedObject& object,
     const double smallest_nis);
 
-  geometry_msgs::Point getNearestLanePose(const autoware_msgs::DetectedObject& in_object);
+  geometry_msgs::Pose getNearestLanePose(const autoware_msgs::DetectedObject& in_object);
 
 
 public:
