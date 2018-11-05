@@ -77,6 +77,31 @@ subs :
             flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
+      - name : localizer_switch
+        desc : localizer_switch desc sample
+        cmd  : roslaunch lidar_localizer localizer_switch.launch
+        param: localizer_switch
+        gui  :
+#          dialog_width  : 900
+#          dialog_height : 600
+          localizer_pose_topic1:
+            flags : [ nl ]
+          ndt_status_topic1:
+            depend : alignment_mechanism1
+            depend_bool : 'lambda v : v == 0'
+          gnss_deviation_topic1:
+            depend : alignment_mechanism1
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
+          localizer_pose_topic2:
+            flags : [ nl ]
+          ndt_status_topic2:
+            depend : alignment_mechanism2
+            depend_bool : 'lambda v : v == 0'
+          gnss_deviation_topic2:
+            depend : alignment_mechanism2
+            depend_bool : 'lambda v : v == 1'
+            flags : [ nl ]
       - name : ndt_matching_gnss_subscribe
         desc : ndt_matching_gnss_subscribe desc sample
         cmd  : roslaunch lidar_localizer ndt_matching_gnss_subscribe.launch
@@ -5450,6 +5475,118 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+
+  - name  : localizer_switch
+    vars  :
+    - name      : base_link_pose_topic1
+      label     : base_link_pose_topic1
+      v         : /ndt_pose
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : estimate_twist_topic1
+      label     : estimate_twist_topic1
+      v         : /ndt_estimate_twist
+      kind  : topic
+      topic_type : geometry_msgs/TwistStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : localizer_pose_topic1
+      label     : localizer_pose_topic1
+      v         : /ndt_localizer_pose
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : alignment_mechanism1
+      label : alignment_mechanism1
+      kind  : radio_box
+      choices:
+      - NDT
+      - GNSS(RTK)
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : ndt_status_topic1
+      label     : ndt_status_topic1
+      v         : /ndt_stat
+      kind  : topic
+      topic_type : autoware_msgs/ndt_stat
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gnss_deviation_topic1
+      label     : gnss_deviation_topic1
+      v         : /gnss_standard_deviation
+      kind  : topic
+      topic_type : autoware_msgs/gnss_standard_deviation
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : base_link_pose_topic2
+      label     : base_link_pose_topic2
+      v         : /RTK_gnss_pose
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : estimate_twist_topic2
+      label     : estimate_twist_topic2
+      v         : /gnss_estimate_twist
+      kind  : topic
+      topic_type : geometry_msgs/TwistStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : localizer_pose_topic2
+      label     : localizer_pose_topic2
+      v         : /gnss_localizer_pose
+      kind  : topic
+      topic_type : geometry_msgs/PoseStamped
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : alignment_mechanism2
+      label : alignment_mechanism2
+      kind  : radio_box
+      choices:
+      - NDT
+      - GNSS(RTK)
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name      : ndt_status_topic2
+      label     : ndt_status_topic2
+      v         : /ndt_stat
+      kind  : topic
+      topic_type : autoware_msgs/ndt_stat
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : gnss_deviation_topic2
+      label     : gnss_deviation_topic2
+      v         : /gnss_standard_deviation
+      kind  : topic
+      topic_type : autoware_msgs/gnss_standard_deviation
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name    : trigger_topic_number
+      label   : 'trigger_topic_number: '
+      kind    : menu
+      choices : [ '1', '2']
+      choices_type : str
+      v       : '1'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : map_normalizer
     vars  :

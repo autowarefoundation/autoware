@@ -43,6 +43,9 @@ add_message_files(
   ConfigVoxelGridFilter.msg
   ConfigWaypointFollower.msg
   ConfigWaypointLoader.msg
+
+  ##sai add
+  ConfigLocalizerSwitchTopics.msg
 )
 
 ## Generate added messages and services with any dependencies listed here

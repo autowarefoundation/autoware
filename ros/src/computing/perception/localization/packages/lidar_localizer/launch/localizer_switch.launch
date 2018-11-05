@@ -1,0 +1,34 @@
+<!-- -->
+<launch>
+    <arg name="base_link_pose_topic1" default="/ndt_pose" />
+    <arg name="estimate_twist_topic1" default="/ndt_estimate_twist" />
+    <arg name="localizer_pose_topic1" default="/ndt_localizer_pose" />
+    <arg name="base_link_tf_topic1" default="/tf_ndt" />
+    <arg name="alignment_mechanism1" default="0" />
+    <arg name="ndt_status_topic1" default="/ndt_stat" />
+    <arg name="gnss_deviation_topic1" default="/gnss_standard_deviation" />
+    <arg name="base_link_pose_topic2" default="/RTK_gnss_pose" />
+    <arg name="estimate_twist_topic2" default="/gnss_estimate_twist" />
+    <arg name="localizer_pose_topic2" default="/gnss_localizer_pose" />
+    <arg name="base_link_tf_topic2" default="/tf_gnss" />
+    <arg name="alignment_mechanism2" default="1" />
+    <arg name="ndt_status_topic2" default="/ndt_stat" />
+    <arg name="gnss_deviation_topic2" default="/gnss_standard_deviation" />
+
+    <node pkg="lidar_localizer" type="localizer_switch" name="localizer_switch" output="screen">
+        <param name="base_link_pose1" value="$(arg base_link_pose_topic1)" />
+        <param name="estimate_twist1" value="$(arg estimate_twist_topic1)" />
+        <param name="localizer_pose1" value="$(arg localizer_pose_topic1)" />
+        <param name="base_link_tf1" value="$(arg base_link_tf_topic1)" />
+        <param name="alignment_mechanism1" value="$(arg alignment_mechanism1)" />
+        <param name="ndt_status1" value="$(arg ndt_status_topic1)" />
+        <param name="gnss_deviation1" value="$(arg gnss_deviation_topic1)" />
+        <param name="base_link_pose2" value="$(arg base_link_pose_topic2)" />
+        <param name="estimate_twist2" value="$(arg estimate_twist_topic2)" />
+        <param name="localizer_pose2" value="$(arg localizer_pose_topic2)" />
+        <param name="base_link_tf2" value="$(arg base_link_tf_topic2)" />
+        <param name="alignment_mechanism2" value="$(arg alignment_mechanism2)" />
+        <param name="ndt_status2" value="$(arg ndt_status_topic2)" />
+        <param name="gnss_deviation2" value="$(arg gnss_deviation_topic2)" />
+    </node>
+</launch>

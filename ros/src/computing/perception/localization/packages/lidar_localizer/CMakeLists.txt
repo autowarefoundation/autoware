@@ -141,6 +141,10 @@ add_executable(icp_matching nodes/icp_matching/icp_matching.cpp)
 target_link_libraries(icp_matching ${catkin_LIBRARIES})
 add_dependencies(icp_matching ${catkin_EXPORTED_TARGETS})
 
+add_executable(localizer_switch nodes/localizer_switch/localizer_switch.cpp)
+target_link_libraries(localizer_switch ${catkin_LIBRARIES})
+add_dependencies(localizer_switch ${catkin_EXPORTED_TARGETS})
+
 install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_monitor
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
