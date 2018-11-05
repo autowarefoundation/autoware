@@ -54,10 +54,12 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("is_debug", is_debug_, false);
 
   // rosparam for vectormap assisted tracking
-  private_nh_.param<bool>("use_vectormap", use_vectormap_, true);
+  private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
   if(use_vectormap_)
   {
-    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::DTLANE | vector_map::Category::LANE, 10);
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE, 10);
+    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
+    std::cout << "finished initializing" << lanes_.size()<< std::endl;
   }
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
@@ -133,24 +135,14 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
   }
 
   transformed_input.header = input.header;
-  for (size_t i = 0; i < input.objects.size(); i++)
+  for (auto const object: input.objects)
   {
-    geometry_msgs::PoseStamped pose_in, pose_out;
-
-    pose_in.header = input.header;
-    pose_in.pose = input.objects[i].pose;
-    tf::Transform input_object_pose;
-    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
-                                            input.objects[i].pose.position.z));
-    input_object_pose.setRotation(
-        tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
-                       input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
-    tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
+    geometry_msgs::Pose out_pose = getTransformedPose(object.pose, local2global_);
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
-    dd = input.objects[i];
-    dd.pose = pose_out.pose;
+    dd = object;
+    dd.pose = out_pose;
 
     transformed_input.objects.push_back(dd);
   }
@@ -203,6 +195,19 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   jskbboxes_output.header.frame_id = pointcloud_frame_;
 }
 
+geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::StampedTransform& tf_stamp)
+{
+  tf::Transform transform;
+  geometry_msgs::PoseStamped out_pose;
+  transform.setOrigin(tf::Vector3(in_pose.position.x, in_pose.position.y, in_pose.position.z));
+  transform.setRotation(
+      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y,
+                     in_pose.orientation.z, in_pose.orientation.w));
+  geometry_msgs::PoseStamped pose_out;
+  tf::poseTFToMsg(tf_stamp * transform, out_pose.pose);
+  return out_pose.pose;
+}
+
 void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target,
                                       const bool second_init, const Eigen::VectorXd& max_det_z,
                                       const Eigen::MatrixXd& max_det_s,
@@ -243,11 +248,12 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (second_init_done)
   {
-    if(use_vectormap_)
+    if(use_vectormap_ )
     {
       autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
                                                               smallest_meas_object, smallest_nis);
-      object_vec.push_back(smallest_nis_meas);
+      // object_vec.push_back(smallest_nis_meas);
+      object_vec.push_back(smallest_meas_object);
     }
     else
     {
@@ -267,6 +273,39 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
 
 geometry_msgs::Point ImmUkfPda::getNearestLanePose(const autoware_msgs::DetectedObject& in_object)
 {
+  // std::cout <<lanes_.size()<< std::endl;
+  // try
+  // {
+  //   tf_listener_.waitForTransform("map", tracking_frame_, ros::Time(0), ros::Duration(1.0));
+  //   tf_listener_.lookupTransform(tracking_frame_, "map", ros::Time(0), lane_frame2tracking_frame_);
+  // }
+  // catch (tf::TransformException ex)
+  // {
+  //   ROS_ERROR("%s", ex.what());
+  //   ros::Duration(1.0).sleep();
+  // }
+
+  // get
+
+  // geometry_msgs::PoseStamped pose_in, pose_out;
+  //
+  // pose_in.header = input.header;
+  // pose_in.pose = input.objects[i].pose;
+  // tf::Transform input_object_pose;
+  // input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
+  //                                         input.objects[i].pose.position.z));
+  // input_object_pose.setRotation(
+  //     tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
+  //                    input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
+  // tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
+  for(auto&& lane: lanes_)
+  {
+    std::cout << 111 << std::endl;
+    std::cout << lane.lnid << std::endl;
+    vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
+    vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
+    std::cout << point.bx << " " << point.ly << std::endl;
+  }
   geometry_msgs::Point lane_pose;
   return lane_pose;
 }
