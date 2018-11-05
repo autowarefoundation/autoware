@@ -58,8 +58,8 @@ void PacmodInterface::initForROS()
   speed_sub_        = nh_.subscribe("/vehicle/steering_report", 10, &PacmodInterface::callbackFromSteeringReport, this);
 
   // setup publisher
-  steer_mode_pub_    = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
-  speed_mode_pub_    = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 10);
+  steer_mode_pub_    = nh_.advertise<automotive_platform_msgs::SteerMode>("/as/arbitrated_steering_commands", 10);
+  speed_mode_pub_    = nh_.advertise<automotive_platform_msgs::SpeedMode>("/as/arbitrated_speed_commands", 10);
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
 }
 
@@ -81,14 +81,14 @@ void PacmodInterface::callbackFromTwistCmd(const geometry_msgs::TwistStampedCons
     mode = 0;
   }
 
-  module_comm_msgs::SpeedMode speed_mode;
+  automotive_platform_msgs::SpeedMode speed_mode;
   speed_mode.header = msg->header;
   speed_mode.mode = mode;
   speed_mode.speed = msg->twist.linear.x;
   speed_mode.acceleration_limit = 3.0;
   speed_mode.deceleration_limit = 3.0;
 
-  module_comm_msgs::SteerMode steer_mode;
+  automotive_platform_msgs::SteerMode steer_mode;
   steer_mode.header = msg->header;
   steer_mode.mode = mode;
   double curvature = msg->twist.angular.z / msg->twist.linear.x;
