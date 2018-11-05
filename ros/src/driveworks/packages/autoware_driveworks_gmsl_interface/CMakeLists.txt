@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gmsl_camera)
+project(autoware_driveworks_gmsl_interface)
 
 find_package(CUDA)
 
