@@ -2,6 +2,9 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.0 (2018-10-31)
 ------------------
 * [Fix] Resize RTM UI dialog windows to prevent scrolling (`#1642 <https://github.com/kfunaoka/Autoware/issues/1642>`_)

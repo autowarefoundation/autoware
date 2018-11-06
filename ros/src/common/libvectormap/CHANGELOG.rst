@@ -2,6 +2,9 @@
 Changelog for package libvectormap
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.0 (2018-10-31)
 ------------------
 

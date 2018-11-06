@@ -2,6 +2,9 @@
 Changelog for package autoware_pointgrey_drivers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.0 (2018-10-31)
 ------------------
 

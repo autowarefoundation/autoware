@@ -2,6 +2,11 @@
 Changelog for package log_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix CVE-2018-1000656 (`#1680 <https://github.com/kfunaoka/Autoware/issues/1680>`_)
+* Contributors: Kenji Funaoka
+
 1.9.0 (2018-10-31)
 ------------------
 * Upgrade requests version (CVE-2018-18074)

@@ -2,6 +2,9 @@
 Changelog for package autoware_driveworks_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.9.0 (2018-10-31)
 ------------------
 * Use stubs for the CUDA libraries. Ignore undefined symbols errors in autoware_driveworks_interface. Support Docker volumes for CUDA, Driveworks and TensorRT.
