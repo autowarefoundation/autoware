@@ -179,7 +179,8 @@ private:
 
   autoware_msgs::DetectedObject getUpdatedSmallestNisMeas(
     const autoware_msgs::DetectedObject& object,
-    const double smallest_nis);
+    const double smallest_nis,
+    UKF& target);
 
   double getNearestLaneDirection(const autoware_msgs::DetectedObject& in_object);
 

@@ -188,6 +188,14 @@ UKF::UKF()
   new_s_cv_ = Eigen::MatrixXd(2, 2);
   new_s_ctrv_ = Eigen::MatrixXd(2, 2);
   new_s_rm_ = Eigen::MatrixXd(2, 2);
+
+  //for lane direction combined filter
+  // num_lidar_direction_state_ = 3;
+  lidar_lane_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  lidar_lane_r_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  lidar_lane_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  std_lane_direction_ = 0.15;
+
 }
 
 void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -244,6 +252,19 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   r_cv_ << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
   r_ctrv_ << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
   r_rm_ << std_laspx_ * std_laspx_, 0, 0, std_laspy_ * std_laspy_;
+
+  // initialize lidar-lane R covariance
+  // clang-format off
+  lidar_lane_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                            0, std_laspy_ * std_laspy_,                                       0,
+                                            0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_lane_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                              0, std_laspy_ * std_laspy_,                                       0,
+                                              0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_lane_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                            0, std_laspy_ * std_laspy_,                                       0,
+                                            0,                       0, std_lane_direction_*std_lane_direction_;
+  // clang-format on
 
   // init tracking num
   tracking_num_ = 1;
@@ -1064,4 +1085,86 @@ void UKF::updateLidar(const int model_ind)
     s_rm_ = S;
     k_rm_ = K;
   }
+}
+
+// bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind)
+// {
+//   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
+//   if(motion_ind == MotionModel::CV)
+//   {
+//     x_sig_pred = x_sig_pred_cv_;
+//   }
+//   else if(motion_ind == MotionModel::CTRV)
+//   {
+//     x_sig_pred = x_sig_pred_ctrv_;
+//   }
+//   else
+//   {
+//     x_sig_pred = x_sig_pred_rm_;
+//   }
+//
+//   Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_lidar_direction_state_ + 1);
+//
+//   for (int i = 0; i < 2 * n_x_ + 1; i++)
+//   {
+//     double p_x = x_sig_pred(0, i);
+//     double p_y = x_sig_pred(1, i);
+//     double p_yaw = x_sig_pred(2, i);
+//
+//     z_sig(0, i) = p_x;
+//     z_sig(1, i) = p_y;
+//     z_sig(2, i) = p_yaw;
+//   }
+//
+//   Eigen::VectorXd z_pred = Eigen::VectorXd(num_lidar_direction_state_);
+//   z_pred.fill(0.0);
+//   for (int i = 0; i < 2 * n_x_ + 1; i++)
+//   {
+//     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
+//   }
+//
+//   Eigen::MatrixXd s = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+//   s.fill(0.0);
+//   for (int i = 0; i < 2 * n_x_ + 1; i++)
+//   {
+//     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+//     s = s + weights_c_(i) * z_diff * z_diff.transpose();
+//   }
+//
+//   // add measurement noise covariance matrix
+//   s = s + r;
+//
+//   // create matrix for cross correlation Tc
+//   Eigen::MatrixXd Tc = Eigen::MatrixXd(n_x_, n_z);
+//
+//   /*****************************************************************************
+//   *  UKF Update for Lidar
+//   ****************************************************************************/
+//   // calculate cross correlation matrix
+//   Tc.fill(0.0);
+//   for (int i = 0; i < 2 * n_x_ + 1; i++)
+//   {  // 2n+1 simga points
+//     // residual
+//     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+//     // state difference
+//     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
+//
+//     while (x_diff(3) > M_PI)
+//       x_diff(3) -= 2. * M_PI;
+//     while (x_diff(3) < -M_PI)
+//       x_diff(3) += 2. * M_PI;
+//
+//     Tc = Tc + weights_c_(i) * x_diff * z_diff.transpose();
+//   }
+//
+//   Eigen::MatrixXd K = Tc * S.inverse();
+//
+// }
+
+void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object)
+{
+    // is_direction_cv_meas_ = isLaneDirectionAvailable(in_object, MotionModel::CV);
+    // is_direction_ctrv_meas_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV);
+    // is_direction_rm_meas_ = isLaneDirectionAvailable(in_object, MotionModel::RM);
+
 }

@@ -244,6 +244,16 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
+  // for lane direction combined filter
+  bool is_direction_cv_meas_;
+  bool is_direction_ctrv_meas_;
+  bool is_direction_rm_meas_;
+  int num_lidar_direction_state_;
+  double std_lane_direction_;
+  Eigen::MatrixXd lidar_lane_r_cv_;
+  Eigen::MatrixXd lidar_lane_r_ctrv_;
+  Eigen::MatrixXd lidar_lane_r_rm_;
+
   /**
    * Constructor
    */
@@ -291,6 +301,8 @@ public:
   void prediction(const double delta_t, const int model_ind);
 
   void updateLidar(const int model_ind);
+
+  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object);
 };
 
 #endif /* UKF_H */

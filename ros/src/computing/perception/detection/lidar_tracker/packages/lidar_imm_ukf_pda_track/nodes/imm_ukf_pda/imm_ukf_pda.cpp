@@ -249,7 +249,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
     if(use_vectormap_ )
     {
       autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
-                                                              smallest_meas_object, smallest_nis);
+                                                              smallest_meas_object, smallest_nis, target);
       // object_vec.push_back(smallest_nis_meas);
       object_vec.push_back(smallest_meas_object);
     }
@@ -262,50 +262,38 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
 
 autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
     const autoware_msgs::DetectedObject& in_object,
-    const double smallest_nis)
+    const double smallest_nis,
+    UKF& target)
 {
 
   double yaw = getNearestLaneDirection(in_object);
-  // double yaw = tf::getYaw(lane_pose.orientation);
   autoware_msgs::DetectedObject out_object;
-  // out_object = in_object;
+  out_object = in_object;
   out_object.angle = yaw;
+  target.checkLaneDirectionAvailability(out_object);
   //compare two measurement and nis
   return out_object;
-
 }
 
-//TODO: make this function compact by only transforming yaw, only using rotation matrix
 double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& in_object)
 {
   // std::cout << in_object.pose.position.x << " " << in_object.pose.position.y << std::endl;
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
-
   // std::cout << lane_frame_pose.position.x << " " << lane_frame_pose.position.y << std::endl;
-
-  // geometry_msgs::Pose nearest_lane_pose_in_lane_tf;
   double min_dist = std::numeric_limits<double>::max();;
   double min_yaw = 0;
-  // double min_back_pid = 0;
   for(auto const &lane: lanes_)
   {
     vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
     vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
-    // double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.x, 2) +
-    //                             std::pow(point.ly - lane_frame_pose.position.y, 2));
     double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.y, 2) +
                                 std::pow(point.ly - lane_frame_pose.position.x, 2));
     if(distance < min_dist)
     {
       min_dist = distance;
-      // min_back_pid = point.pid;
       vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
       vector_map_msgs::Point front_point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(front_node.pid));
       min_yaw = std::atan2((front_point.bx - point.bx), (front_point.ly - point.ly));
-
-      // nearest_lane_pose_in_lane_tf.position.x = point.bx;
-      // nearest_lane_pose_in_lane_tf.position.y = point.ly;
-      // nearest_lane_pose_in_lane_tf.position.z = point.h;
     }
   }
 
