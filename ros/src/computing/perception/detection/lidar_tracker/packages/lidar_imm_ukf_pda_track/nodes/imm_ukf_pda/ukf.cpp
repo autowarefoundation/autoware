@@ -140,10 +140,7 @@ UKF::UKF()
   is_static_ = false;
 
   // bounding box params
-  is_vis_bb_ = false;
-  // best_yaw_ = 100;
-  // bb_yaw_ = 0;
-  // bb_area_ = 0;
+  is_pose_reliable_ = false;
 
   // for static classification
   init_meas_ = Eigen::VectorXd(2);

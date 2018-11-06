@@ -40,7 +40,6 @@
 #include <pcl/point_cloud.h>
 
 #include <geometry_msgs/PoseStamped.h>
-// #include <jsk_recognition_msgs/BoundingBox.h>
 
 #include "autoware_msgs/DetectedObject.h"
 
@@ -136,9 +135,6 @@ public:
   //* Sigma point spreading parameter
   double lambda_;
 
-  // int count_;
-  // int count_empty_;
-
   double mode_match_prob_cv2cv_;
   double mode_match_prob_ctrv2cv_;
   double mode_match_prob_rm2cv_;
@@ -186,7 +182,7 @@ public:
   bool is_static_;
 
   // bounding box params
-  bool is_vis_bb_;
+  bool is_pose_reliable_;
 
   geometry_msgs::Pose bb_pose_;
   geometry_msgs::Vector3 bb_dimensions_;
