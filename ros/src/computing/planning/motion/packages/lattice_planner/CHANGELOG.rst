@@ -9,7 +9,7 @@ Forthcoming
 ------------------
 * Moved CAN mesages to autoware_can_msgs
 * Moved configuration messages to autoware_config_msgs
-* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
   * Switch message files to pascal case
   * Switch message names to pascal case in Runtime Manager
   * Switch message names to pascal case in *.yaml

@@ -9,15 +9,15 @@ Forthcoming
 ------------------
 * Fix missing dependencies
 * Moved CAN mesages to autoware_can_msgs
-* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
   * Switch message files to pascal case
   * Switch message names to pascal case in Runtime Manager
   * Switch message names to pascal case in *.yaml
   * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
-* Feature/beyond pixel tracker (`#1473 <https://github.com/kfunaoka/Autoware/issues/1473>`_)
+* Feature/beyond pixel tracker (`#1473 <https://github.com/CPFL/Autoware/issues/1473>`_)
   * Add beyond_pixel node
-  * Update prototype of beyond pixel (`#1430 <https://github.com/kfunaoka/Autoware/issues/1430>`_)
-  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/kfunaoka/Autoware/issues/1430>`_)
+  * Update prototype of beyond pixel (`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
   * * Adaptations to the original code
   * Added README
   * Added Runtime Manager entry
@@ -29,7 +29,7 @@ Forthcoming
   * * Added Minimum dimensions
   * Register angle from the vision tracker if available
   * Keep message publishing rate continuous
-  * Revert platform_automation_msgs (`#1498 <https://github.com/kfunaoka/Autoware/issues/1498>`_)
+  * Revert platform_automation_msgs (`#1498 <https://github.com/CPFL/Autoware/issues/1498>`_)
   * Code cleanup
   * Fixed a crash when the dimensions are outside of the image
   * Fix annoying catkin_make causing to run twice the Cmake generation

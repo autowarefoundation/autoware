@@ -9,12 +9,12 @@ Forthcoming
 ------------------
 * Moved CAN mesages to autoware_can_msgs
 * Moved configuration messages to autoware_config_msgs
-* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
   * Switch message files to pascal case
   * Switch message names to pascal case in Runtime Manager
   * Switch message names to pascal case in *.yaml
   * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
-* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+* Feature/compare map filter (`#1559 <https://github.com/CPFL/Autoware/issues/1559>`_)
   * add compare map filter
   * add README
   * add copyright

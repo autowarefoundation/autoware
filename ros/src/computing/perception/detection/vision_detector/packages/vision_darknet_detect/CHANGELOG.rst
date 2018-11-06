@@ -9,12 +9,12 @@ Forthcoming
 ------------------
 * Fix compile error (vision_darknet_detect.h:52:37: fatal error: autoware_msgs/ConfigSsd.h: No such file or directory)
 * Moved configuration messages to autoware_config_msgs
-* include fstream header (`#1608 <https://github.com/kfunaoka/Autoware/issues/1608>`_)
-* Added support for custom class "names files" in darknet format. (`#1535 <https://github.com/kfunaoka/Autoware/issues/1535>`_)
+* include fstream header (`#1608 <https://github.com/CPFL/Autoware/issues/1608>`_)
+* Added support for custom class "names files" in darknet format. (`#1535 <https://github.com/CPFL/Autoware/issues/1535>`_)
   * Added support for custom class "names files" in darknet format.
   * Fixed launch file, not including source topic arg
-  * Fix the default path of coco.names (`#1550 <https://github.com/kfunaoka/Autoware/issues/1550>`_)
-* fixes two typos in yolo class name/id file (`#1484 <https://github.com/kfunaoka/Autoware/issues/1484>`_)
+  * Fix the default path of coco.names (`#1550 <https://github.com/CPFL/Autoware/issues/1550>`_)
+* fixes two typos in yolo class name/id file (`#1484 <https://github.com/CPFL/Autoware/issues/1484>`_)
 * Contributors: Abraham Monrroy, Esteve Fernandez, Jacob Lambert, Kenji Funaoka
 
 1.8.0 (2018-08-31)

@@ -7,9 +7,9 @@ Forthcoming
 
 1.9.0 (2018-10-31)
 ------------------
-* [Feature] Prediction package template (naive_motion_predictor) (`#1616 <https://github.com/kfunaoka/Autoware/issues/1616>`_)
-* [Feature] DetectedObject type immukfpda (`#1582 <https://github.com/kfunaoka/Autoware/issues/1582>`_)
-* [Feature]naive l shape fitting and a little modification on immukfpda launch file(`#1457 <https://github.com/kfunaoka/Autoware/issues/1457>`_)
+* [Feature] Prediction package template (naive_motion_predictor) (`#1616 <https://github.com/CPFL/Autoware/issues/1616>`_)
+* [Feature] DetectedObject type immukfpda (`#1582 <https://github.com/CPFL/Autoware/issues/1582>`_)
+* [Feature]naive l shape fitting and a little modification on immukfpda launch file(`#1457 <https://github.com/CPFL/Autoware/issues/1457>`_)
 * Contributors: Kosuke Murakami
 
 1.8.0 (2018-08-31)
