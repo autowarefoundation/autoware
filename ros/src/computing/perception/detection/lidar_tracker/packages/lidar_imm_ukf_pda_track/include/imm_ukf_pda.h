@@ -128,14 +128,14 @@ private:
   void staticClassification();
 
   void makeOutput(const autoware_msgs::DetectedObjectArray& input,
-                autoware_msgs::DetectedObjectArray& detected_objects_output);
+                  autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
 
   void dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects);
 
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
-              autoware_msgs::DetectedObjectArray& detected_objects_output);
+               autoware_msgs::DetectedObjectArray& detected_objects_output);
 
 public:
   ImmUkfPda();
