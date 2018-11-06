@@ -256,7 +256,7 @@ class CalibrationNode:
 
 class OpenCVCalibrationNode(CalibrationNode):
     """ Calibration node with an OpenCV Gui """
-    (cv2_version_major, _, _) = cv2.__version__.split(".")
+    cv2_version_major = cv2.__version__.split(".")[0]
     if cv2_version_major == '2': TEXT_AA = cv2.CV_AA
     elif cv2_version_major == '3': TEXT_AA = cv2.LINE_AA
     else: TEXT_AA = 8
