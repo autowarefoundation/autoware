@@ -282,6 +282,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
       target.is_vis_bb_ = true;
       target.jsk_bb_.pose = nearest_object.pose;
       target.jsk_bb_.dimensions = nearest_object.dimensions;
+      target.label_ = nearest_object.label;
     }
   }
   else
@@ -640,6 +641,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
     dd.valid = true;
+    dd.label = targets_[i].label_;
     //store yaw rate for motion into dd.accerelation.linear.y
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
     updateBehaviorState(targets_[i], dd);
