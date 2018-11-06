@@ -1,8 +1,8 @@
 <launch>
 
-  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
+  <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
   <arg name="waypoints_velocity" default="5.0" />
-  <arg name="update_rate" default="0.5" />
+  <arg name="update_rate" default="1" />
 
   <arg name="use_back" default="true" />
   <arg name="use_potential_heuristic" default="true" />

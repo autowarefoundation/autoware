@@ -3,7 +3,7 @@
   <arg name="safety_waypoints_size" default="100" />
   <arg name="update_rate" default="10" />
 
-  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
+  <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
   <arg name="use_avoidance_state" default="true" />
   <arg name="avoidance" default="false" />
   <arg name="search_waypoints_size" default="30" />

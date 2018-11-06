@@ -6,7 +6,7 @@
 AstarNavi::AstarNavi() : nh_(), private_nh_("~")
 {
   private_nh_.param<double>("waypoints_velocity", waypoints_velocity_, 5.0);
-  private_nh_.param<double>("update_rate", update_rate_, 0.5);
+  private_nh_.param<double>("update_rate", update_rate_, 1.0);
 
   lane_pub_ = nh_.advertise<autoware_msgs::LaneArray>("lane_waypoints_array", 1, true);
   costmap_sub_ = nh_.subscribe("costmap", 1, &AstarNavi::costmapCallback, this);

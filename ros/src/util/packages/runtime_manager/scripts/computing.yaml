@@ -623,7 +623,7 @@ subs :
       - name : astar_navi
         desc : astar_navi desc sample
         cmd  : roslaunch freespace_planner astar_navi.launch
-        param: astar_navi
+        param: astar_navi_param
 #    - name : way_planner (OpenPlanner - old ver)
 #      desc : Global planner for OpenPlanner
 #      subs :
@@ -1792,7 +1792,7 @@ params :
       desc  : Costmap topic for planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/dist_wayarea
+      v     : grid_map_filter_visualization/distance_transform
       cmd_param:
         dash  : ''
         delim : ':='
@@ -2656,7 +2656,7 @@ params :
         dash     : ''
         delim    : ':='
 
-  - name  : astar_navi
+  - name  : astar_navi_param
     vars  :
     - name  : use_back
       desc  : Use reverse motion for planning
@@ -2688,7 +2688,10 @@ params :
       desc  : Costmap topic for planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/dist_wayarea
+      v     : grid_map_filter_visualization/distance_transform
+      cmd_param :
+        dash  : ''
+        delim : ':='
 
   - name  : way_planner
     vars  :
