@@ -183,28 +183,26 @@ void AstarSearch::initialize(const nav_msgs::OccupancyGrid& costmap)
 
 bool AstarSearch::makePlan(const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& goal_pose)
 {
-  start_pose_local_.pose = start_pose;
-  goal_pose_local_.pose = goal_pose;
-
-  if (!setStartNode())
+  if (!setStartNode(start_pose))
   {
-    ROS_WARN("Invalid start pose!");
+    ROS_WARN_STREAM("Invalid start pose, \n" << start_pose);
     return false;
   }
 
-  if (!setGoalNode())
+  if (!setGoalNode(goal_pose))
   {
-    ROS_WARN("Invalid goal pose!");
+    ROS_WARN_STREAM("Invalid goal pose, \n" << goal_pose);
     return false;
   }
 
   return search();
 }
 
-bool AstarSearch::setStartNode()
+bool AstarSearch::setStartNode(const geometry_msgs::Pose& start_pose)
 {
   // Get index of start pose
   int index_x, index_y, index_theta;
+  start_pose_local_.pose = start_pose;
   poseToIndex(start_pose_local_.pose, &index_x, &index_y, &index_theta);
   SimpleNode start_sn(index_x, index_y, index_theta, 0, 0);
 
@@ -247,8 +245,9 @@ bool AstarSearch::setStartNode()
   return true;
 }
 
-bool AstarSearch::setGoalNode()
+bool AstarSearch::setGoalNode(const geometry_msgs::Pose& goal_pose)
 {
+  goal_pose_local_.pose = goal_pose;
   goal_yaw_ = modifyTheta(tf::getYaw(goal_pose_local_.pose.orientation));
 
   // Get index of goal pose

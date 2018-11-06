@@ -39,8 +39,8 @@ private:
   void pointToIndex(const geometry_msgs::Point& point, int* index_x, int* index_y);
   bool isOutOfRange(int index_x, int index_y);
   void setPath(const SimpleNode& goal);
-  bool setStartNode();
-  bool setGoalNode();
+  bool setStartNode(const geometry_msgs::Pose& start_pose);
+  bool setGoalNode(const geometry_msgs::Pose& goal_pose);
   bool isGoal(double x, double y, double theta);
   bool isObs(int index_x, int index_y);
   bool detectCollision(const SimpleNode& sn);

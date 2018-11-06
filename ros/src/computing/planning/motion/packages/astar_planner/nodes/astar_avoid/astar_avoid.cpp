@@ -51,15 +51,18 @@ void AstarAvoid::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
 {
   current_pose_global_ = msg;
 
-  if (costmap_initialized_)
+  if (!avoidance_)
+  {
+    current_pose_initialized_ = true;
+  }
+  else if (avoidance_ && costmap_initialized_)
   {
     current_pose_local_.pose = transformPose(
         current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
     current_pose_local_.header.frame_id = costmap_.header.frame_id;
     current_pose_local_.header.stamp = current_pose_global_.header.stamp;
+    current_pose_initialized_ = true;
   }
-
-  current_pose_initialized_ = true;
 }
 
 void AstarAvoid::baseWaypointsCallback(const autoware_msgs::Lane& msg)
