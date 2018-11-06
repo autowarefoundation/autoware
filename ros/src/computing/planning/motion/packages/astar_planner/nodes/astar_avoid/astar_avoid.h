@@ -41,7 +41,6 @@ private:
   int safety_waypoints_size_;
   double update_rate_;
 
-  bool use_avoidance_state_;  // for decision
   bool avoidance_;
   int search_waypoints_size_;
   int search_waypoints_delta_;
@@ -52,7 +51,6 @@ private:
 
   // variables
   bool avoiding_;
-  bool stop_by_state_;  // for decision
   bool found_avoid_path_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
@@ -76,7 +74,6 @@ private:
   void baseWaypointsCallback(const autoware_msgs::Lane& msg);
   void closestWaypointCallback(const std_msgs::Int32& msg);
   void obstacleWaypointCallback(const std_msgs::Int32& msg);
-  void stateCallback(const std_msgs::String& msg);
 
   // functions
   std_msgs::String createStringMsg(const std::string& str);

@@ -715,7 +715,7 @@ subs :
       - name : astar_avoid
         desc : astar_avoid desc sample
         cmd  : roslaunch astar_planner astar_avoid.launch
-        param: astar_avoid
+        param: astar_avoid_param
       - name : velocity_set
         desc : velocity_set desc sample
         cmd  : roslaunch astar_planner velocity_set.launch
@@ -1753,21 +1753,13 @@ params :
         dash        : ''
         delim       : ':='
 
-  - name  : astar_avoid
+  - name  : astar_avoid_param
     vars  :
     - name  : avoidance
       desc  : Enable avoidance mode
-      label : Auto Avoidance
+      label : Avoidance
       kind  : checkbox
       v     : False
-      cmd_param:
-        dash  : ''
-        delim : ':='
-    - name  : use_avoidance_state
-      desc  : Launch avoidance by TryAvoidance state
-      label : Avoidance by Decison
-      kind  : checkbox
-      v     : True
       cmd_param:
         dash  : ''
         delim : ':='

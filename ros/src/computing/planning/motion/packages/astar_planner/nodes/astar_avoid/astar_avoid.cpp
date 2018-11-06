@@ -8,7 +8,6 @@ AstarAvoid::AstarAvoid() : nh_(), private_nh_("~")
   private_nh_.param<int>("safety_waypoints_size", safety_waypoints_size_, 100);
   private_nh_.param<double>("update_rate", update_rate_, 10.0);
 
-  private_nh_.param<bool>("use_avoidance_state", use_avoidance_state_, true);
   private_nh_.param<bool>("avoidance", avoidance_, false);
   private_nh_.param<int>("search_waypoints_size", search_waypoints_size_, 30);
   private_nh_.param<int>("search_waypoints_delta", search_waypoints_delta_, 2);
@@ -21,7 +20,6 @@ AstarAvoid::AstarAvoid() : nh_(), private_nh_("~")
   base_waypoints_sub_ = nh_.subscribe("base_waypoints", 1, &AstarAvoid::baseWaypointsCallback, this);
   closest_waypoint_sub_ = nh_.subscribe("closest_waypoint", 1, &AstarAvoid::closestWaypointCallback, this);
   obstacle_waypoint_sub_ = nh_.subscribe("obstacle_waypoint", 1, &AstarAvoid::obstacleWaypointCallback, this);
-  state_sub_ = nh_.subscribe("decision_maker/state", 1, &AstarAvoid::stateCallback, this);
 
   closest_waypoint_index_ = -1;
   obstacle_waypoint_index_ = -1;
@@ -81,50 +79,6 @@ void AstarAvoid::obstacleWaypointCallback(const std_msgs::Int32& msg)
 {
   obstacle_waypoint_index_ = msg.data;
   obstacle_waypoint_initialized_ = true;
-}
-
-void AstarAvoid::stateCallback(const std_msgs::String& msg)
-{
-  if (!use_avoidance_state_)
-  {
-    return; // do nothing
-  }
-
-  if (msg.data.find("Go") != std::string::npos)
-  {
-    avoidance_ = false; // not execute astar search
-    stop_by_state_ = false;  // go on path
-  }
-  else if (msg.data.find("TryAvoidance") != std::string::npos)
-  {
-    avoidance_ = true; // execute aster search
-    stop_by_state_ = true;  // stop on path
-
-    if (found_avoid_path_)
-    {
-      // state transition occur by this event
-      state_cmd_pub_.publish(createStringMsg("found_path"));
-    }
-  }
-  else if (msg.data.find("CheckAvoidance") != std::string::npos)
-  {
-    // TODO: decision making for avoidance execution
-    stop_by_state_ = true;  // stop on path
-  }
-  else if (msg.data.find("Avoidance") != std::string::npos)
-  {
-    stop_by_state_ = false;  // go on avoiding path
-
-    if (!avoiding_)
-    {
-      state_cmd_pub_.publish(createStringMsg("completed_avoidance"));
-    }
-  }
-  else if (msg.data.find("ReturnToLane") != std::string::npos)
-  {
-    // NOTE: A* search can produce both avoid and return paths once time.
-    state_cmd_pub_.publish(createStringMsg("completed_return"));
-  }
 }
 
 void AstarAvoid::run()
@@ -214,13 +168,6 @@ void AstarAvoid::run()
   }
 }
 
-std_msgs::String AstarAvoid::createStringMsg(const std::string& str)
-{
-  std_msgs::String msg;
-  msg.data = str;
-  return msg;
-}
-
 tf::Transform AstarAvoid::getTransform(const std::string& from, const std::string& to)
 {
   tf::StampedTransform stf;
@@ -250,8 +197,6 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::Lane& waypoints)
       break;
     }
     autoware_msgs::Waypoint wp = waypoints.waypoints[index];
-    // if state is not "Avoidance", vehicle stops until changing state
-    wp.twist.twist.linear.x = (use_avoidance_state_ && stop_by_state_) ? 0.0 : wp.twist.twist.linear.x;
     safety_waypoints.waypoints.push_back(wp);
   }
 
