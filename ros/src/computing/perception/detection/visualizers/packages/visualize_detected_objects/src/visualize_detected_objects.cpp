@@ -214,6 +214,17 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
 
         tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
+        // in the case motion model fit opposite direction
+        if (velocity < -0.1)
+        {
+          yaw += M_PI;
+          // normalize angle
+          while (yaw > M_PI)
+            yaw -= 2. * M_PI;
+          while (yaw < -M_PI)
+            yaw += 2. * M_PI;
+        }
+
         tf::Matrix3x3 obs_mat;
         tf::Quaternion q_tf;
 
@@ -264,7 +275,6 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 {
   visualization_msgs::MarkerArray label_markers;
 
-  int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
     if (object.valid)
@@ -285,13 +295,19 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
       label_marker.color.b = 1.f;
       label_marker.color.a = 1.f;
 
-      label_marker.id = marker_id++;
-      label_marker.text = object.label + " "; //Object Class if available
+      label_marker.id = object.id;
+
+      std::string label_text;
+      if(!object.label.empty())
+        label_text = object.label + " "; //Object Class if available
 
       if (object.pose_reliable)
       {
         double velocity = object.velocity.linear.x;
-        double roll, pitch, yaw;
+        if (velocity < -0.1)
+        {
+          velocity *= -1;
+        }
 
         if (abs(velocity) < object_speed_threshold_)
         {
@@ -301,27 +317,20 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
         tf::Quaternion q(object.pose.orientation.x, object.pose.orientation.y,
                          object.pose.orientation.z, object.pose.orientation.w);
 
+        double roll, pitch, yaw;
         tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
 
-        // in the case motion model fit opposite direction
-        if (velocity < -0.1)
-        {
-          velocity *= -1;
-          yaw += M_PI;
-          // normalize angle
-          while (yaw > M_PI)
-            yaw -= 2. * M_PI;
-          while (yaw < -M_PI)
-            yaw += 2. * M_PI;
-        }
-
         // convert m/s to km/h
-        std::stringstream modified_sv;
-        modified_sv << std::fixed << std::setprecision(1) << (velocity * 3.6);
-        std::string text = "<" + std::to_string(object.id) + "> " + modified_sv.str() + " km/h";
-
-        label_marker.text += text;
+        std::stringstream kmh_velocity_stream;
+        kmh_velocity_stream << std::fixed << std::setprecision(1) << (velocity * 3.6);
+        std::string text = "<" + std::to_string(object.id) + "> " + kmh_velocity_stream.str() + " km/h";
+        if(!object.label.empty())
+          label_marker.text = label_text + text;
+        else
+          label_marker.text = text;
       }
+      else
+        continue;
 
       label_marker.pose.position.x = object.pose.position.x;
       label_marker.pose.position.y = object.pose.position.y;

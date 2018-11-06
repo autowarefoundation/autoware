@@ -126,7 +126,8 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
     ros::Duration(1.0).sleep();
   }
 
-  transformed_input.header = input.header;
+  input_header_ = input.header;
+  transformed_input.header = input_header_;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     geometry_msgs::PoseStamped pose_in, pose_out;
@@ -602,7 +603,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
   jskbboxes_output.header = input.header;
-  detected_objects_output.header = input.header;
+  detected_objects_output.header = input_header_;
   for (size_t i = 0; i < targets_.size(); i++)
   {
     double tx = targets_[i].x_merge_(0);
@@ -638,6 +639,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
+    dd.valid = true;
     //store yaw rate for motion into dd.accerelation.linear.y
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
     updateBehaviorState(targets_[i], dd);

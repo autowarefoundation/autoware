@@ -112,6 +112,8 @@ private:
   ros::Publisher pub_points_array_;
   ros::Publisher pub_texts_array_;
 
+  std_msgs::Header input_header_;
+
   void callback(const autoware_msgs::DetectedObjectArray& input);
   void setPredictionObject();
   void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
