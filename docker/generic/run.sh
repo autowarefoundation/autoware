@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage $0 <distribution:indigo|kinetic> [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-t <tag>] [-r <repo>] [-s <Shared directory>]" 1>&2; exit 1; }
 
 # Defaults
 XSOCK=/tmp/.X11-unix
@@ -8,33 +8,22 @@ XAUTH=/home/$USER/.Xauthority
 SHARED_DIR=/home/autoware/shared_dir
 HOST_DIR=/home/$USER/shared_dir
 DOCKER_HUB_REPO="autoware/autoware"
-TAG=""
+TAG="latest-kinetic"
 
-DISTRIBUTION_OR_TAG=$1; shift
-
-if [[ $DISTRIBUTION_OR_TAG = *"kinetic"* ]] || [[ $DISTRIBUTION_OR_TAG = *"indigo"* ]]
-then
-    echo "Use $DISTRIBUTION_OR_TAG"
-else
-    usage
-    exit
-fi
-
-TAG=$(./autoware_tags $DISTRIBUTION_OR_TAG)
-
-while getopts ":t:r:s:" opt; do
+while getopts ":ht:r:s:" opt; do
   case $opt in
+    h)
+      usage
+      exit
+      ;;
     t)
       TAG=$OPTARG
-      echo "Using $TAG tag"
       ;;
     r )
       DOCKER_HUB_REPO=$OPTARG
-      echo "Using $DOCKER_HUB_REPO repo"
       ;;
     s)
       HOST_DIR=$OPTARG
-      echo "Shared directory: ${HOST_DIR}"
       ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
@@ -46,6 +35,9 @@ while getopts ":t:r:s:" opt; do
       ;;
   esac
 done
+
+echo "Using $DOCKER_HUB_REPO:$TAG"
+echo "Shared directory: ${HOST_DIR}"
 
 nvidia-docker run \
     -it --rm \
