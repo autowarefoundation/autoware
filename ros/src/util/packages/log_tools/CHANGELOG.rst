@@ -2,8 +2,8 @@
 Changelog for package log_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.1 (2018-11-06)
+------------------
 * Fix CVE-2018-1000656 (`#1680 <https://github.com/CPFL/Autoware/issues/1680>`_)
 * Contributors: Kenji Funaoka
 

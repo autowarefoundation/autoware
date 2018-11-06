@@ -2,8 +2,8 @@
 Changelog for package lidar_naive_l_shape_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.9.1 (2018-11-06)
+------------------
 * [hotfix] include <random> in lidar_naive_l_shape_detect (`#1681 <https://github.com/CPFL/Autoware/issues/1681>`_)
 * Contributors: Kosuke Murakami
 
