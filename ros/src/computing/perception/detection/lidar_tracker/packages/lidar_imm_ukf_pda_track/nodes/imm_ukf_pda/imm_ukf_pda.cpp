@@ -54,7 +54,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("is_debug", is_debug_, false);
 
   // rosparam for vectormap assisted tracking
-  private_nh_.param<bool>("use_vectormap", use_vectormap_, true);
+  private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
   if(use_vectormap_)
   {
     // TODO:check if subscribe successfully in every callback
@@ -728,6 +728,11 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
 
 void ImmUkfPda::removeUnnecessaryTarget()
 {
+
+  // auto remove_it = remove_if(targets_.begin(), targets_.end(), [&](UKF ukf)
+  // {return (ukf.tracking_num_ != TrackingState::Die);});
+  // targets_.erase(remove_it, targets_.end());
+
   std::vector<UKF> temp_targets;
   for (size_t i = 0; i < targets_.size(); i++)
   {
