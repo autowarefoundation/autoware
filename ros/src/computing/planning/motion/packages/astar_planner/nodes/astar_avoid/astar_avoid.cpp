@@ -182,7 +182,8 @@ void AstarAvoid::run()
     }
 
     // select waypoints
-    switch (state_) {
+    switch (state_)
+    {
       case AstarAvoid::STATE::RELAYING:
         current_waypoints = base_waypoints_;
         break;
@@ -211,7 +212,8 @@ bool AstarAvoid::checkInitialized()
   bool initialized = false;
 
   // check for relay mode
-  initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ && (closest_waypoint_index_ >= 0));
+  initialized = (current_pose_initialized_ && closest_waypoint_initialized_ && base_waypoints_initialized_ &&
+                 (closest_waypoint_index_ >= 0));
 
   // check for avoidance mode, additionally
   if (enable_avoidance_)
@@ -222,14 +224,17 @@ bool AstarAvoid::checkInitialized()
   return initialized;
 }
 
-void AstarAvoid::startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index)
+void AstarAvoid::startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints,
+                                 int& end_of_avoid_index)
 {
   // start A* planning thread
-  astar_thread_ = std::thread(&AstarAvoid::planWorker, this, std::ref(current_waypoints), std::ref(avoid_waypoints), std::ref(end_of_avoid_index), std::ref(state_));
+  astar_thread_ = std::thread(&AstarAvoid::planWorker, this, std::ref(current_waypoints), std::ref(avoid_waypoints),
+                              std::ref(end_of_avoid_index), std::ref(state_));
   astar_thread_.detach();
 }
 
-void AstarAvoid::planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, State& state)
+void AstarAvoid::planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints,
+                            int& end_of_avoid_index, State& state)
 {
   if (planAvoidWaypoints(current_waypoints, avoid_waypoints, end_of_avoid_index))
   {
@@ -246,13 +251,13 @@ void AstarAvoid::planWorker(const autoware_msgs::Lane& current_waypoints, autowa
   }
 }
 
-bool AstarAvoid::planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index)
+bool AstarAvoid::planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints,
+                                    int& end_of_avoid_index)
 {
   bool found_path = false;
 
   // update goal pose incrementally and execute A* search
-  for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_);
-       i += search_waypoints_delta_)
+  for (int i = search_waypoints_delta_; i < static_cast<int>(search_waypoints_size_); i += search_waypoints_delta_)
   {
     // update goal index
     goal_waypoint_index_ = closest_waypoint_index_ + obstacle_waypoint_index_ + i;
@@ -264,8 +269,8 @@ bool AstarAvoid::planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints
     // update goal pose
     goal_pose_global_ = current_waypoints.waypoints[goal_waypoint_index_].pose;
     goal_pose_local_.header = costmap_.header;
-    goal_pose_local_.pose = transformPose(
-        goal_pose_global_.pose, getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
+    goal_pose_local_.pose = transformPose(goal_pose_global_.pose,
+                                          getTransform(costmap_.header.frame_id, goal_pose_global_.header.frame_id));
 
     // initialize costmap for A* search
     astar_.initialize(costmap_);
@@ -297,7 +302,8 @@ bool AstarAvoid::planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints
   return false;
 }
 
-void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index)
+void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const autoware_msgs::Lane& current_waypoints,
+                                     autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index)
 {
   // reset
   avoid_waypoints.waypoints.clear();
