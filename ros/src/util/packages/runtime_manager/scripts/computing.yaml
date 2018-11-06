@@ -1755,9 +1755,9 @@ params :
 
   - name  : astar_avoid_param
     vars  :
-    - name  : avoidance
+    - name  : enable_avoidance
       desc  : Enable avoidance mode
-      label : Avoidance
+      label : Enable Avoidance
       kind  : checkbox
       v     : False
       cmd_param:
