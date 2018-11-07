@@ -232,7 +232,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
     if (min_dist < distance_thres_)
     {
-      target.is_pose_reliable_ = true;
+      target.is_vis_bb_ = true;
       target.bb_pose_ = nearest_object.pose;
       target.bb_dimensions_ = nearest_object.dimensions;
       target.label_ = nearest_object.label;
@@ -496,7 +496,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.z = q[2];
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].bb_dimensions_;
-    dd.pose_reliable = targets_[i].is_pose_reliable_;
+    dd.pose_reliable = targets_[i].is_vis_bb_;
     dd.valid = true;
     dd.label = targets_[i].label_;
     // store yaw rate for motion into dd.accerelation.linear.y
@@ -577,8 +577,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // reset is_pose_reliable_ to false
-    targets_[i].is_pose_reliable_ = false;
+    // reset is_vis_bb_ to false
+    targets_[i].is_vis_bb_ = false;
     targets_[i].is_static_ = false;
 
     if (targets_[i].tracking_num_ == TrackingState::Die)
