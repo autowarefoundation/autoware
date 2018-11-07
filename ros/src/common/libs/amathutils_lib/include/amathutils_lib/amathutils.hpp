@@ -49,8 +49,6 @@ inline double getTimefromAcceleration(const double &_v0, const double &_v, const
   return (_v - _v0) / _a;
 }
 
-geometry_msgs::Point getCrossPoint(const geometry_msgs::Point &_l1_p1, const geometry_msgs::Point &_l1_p2,
-                                   const geometry_msgs::Point &_l2_p1, const geometry_msgs::Point &_l2_p2);
 geometry_msgs::Point getNearPtOnLine(const geometry_msgs::Point &_p, const geometry_msgs::Point &_a,
                                      const geometry_msgs::Point &_b);
 double find_distance(const geometry_msgs::Point &_from, const geometry_msgs::Point &_to);
