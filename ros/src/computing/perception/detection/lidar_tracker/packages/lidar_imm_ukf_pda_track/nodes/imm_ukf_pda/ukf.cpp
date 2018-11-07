@@ -33,7 +33,7 @@
 /**
 * Initializes Unscented Kalman filter
 */
-UKF::UKF():num_lidar_state_(2), num_lidar_direction_state_(3)
+UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3)
 {
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);
@@ -79,20 +79,20 @@ UKF::UKF():num_lidar_state_(2), num_lidar_direction_state_(3)
   time_ = 0.0;
 
   // state dimension
-  n_x_ = 5;
+  // num_state_ = 5;
 
   // predicted sigma points matrix
-  x_sig_pred_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // predicted sigma points matrix
-  x_sig_pred_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  x_sig_pred_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // create vector for weights
-  weights_c_ = Eigen::VectorXd(2 * n_x_ + 1);
-  weights_s_ = Eigen::VectorXd(2 * n_x_ + 1);
+  weights_c_ = Eigen::VectorXd(2 * num_state_ + 1);
+  weights_s_ = Eigen::VectorXd(2 * num_state_ + 1);
 
   // transition probability
   p1_.push_back(0.9);
@@ -173,13 +173,13 @@ UKF::UKF():num_lidar_state_(2), num_lidar_direction_state_(3)
   nis_ctrv_ = 0;
   nis_rm_ = 0;
 
-  new_x_sig_cv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  new_x_sig_ctrv_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
-  new_x_sig_rm_ = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  new_x_sig_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  new_x_sig_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  new_x_sig_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
-  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
-  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
-  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * n_x_ + 1);
+  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
 
   new_z_pred_cv_ = Eigen::VectorXd(2);
   new_z_pred_ctrv_ = Eigen::VectorXd(2);
@@ -196,6 +196,20 @@ UKF::UKF():num_lidar_state_(2), num_lidar_direction_state_(3)
   lidar_direction_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
   std_lane_direction_ = 0.15;
 
+  k_lidar_direction_cv_  = Eigen::MatrixXd (num_state_, num_lidar_direction_state_)  ;
+  k_lidar_direction_ctrv_ = Eigen::MatrixXd(num_state_, num_lidar_direction_state_) ;
+  k_lidar_direction_rm_  = Eigen::MatrixXd (num_state_, num_lidar_direction_state_) ;
+
+}
+
+double UKF::normalizeAngle(const double angle)
+{
+  double normalized_angle = angle;
+  while (normalized_angle > M_PI)
+    normalized_angle -= 2. * M_PI;
+  while (normalized_angle < -M_PI)
+    normalized_angle += 2. * M_PI;
+  return normalized_angle;
 }
 
 void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int target_id)
@@ -214,14 +228,14 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   double alpha = 0.0025;
   double beta = 2;
   double k = 0;
-  lambda_ = alpha * alpha * (n_x_ + k) - n_x_;
-  double weight_s_0 = lambda_ / (lambda_ + n_x_);
-  double weight_c_0 = lambda_ / (lambda_ + n_x_) + (1 - alpha * alpha + beta);
+  lambda_ = alpha * alpha * (num_state_ + k) - num_state_;
+  double weight_s_0 = lambda_ / (lambda_ + num_state_);
+  double weight_c_0 = lambda_ / (lambda_ + num_state_) + (1 - alpha * alpha + beta);
   weights_s_(0) = weight_s_0;
   weights_c_(0) = weight_c_0;
-  for (int i = 1; i < 2 * n_x_ + 1; i++)
+  for (int i = 1; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 weights
-    double weight = 0.5 / (n_x_ + lambda_);
+    double weight = 0.5 / (num_state_ + lambda_);
     weights_s_(i) = weight;
     weights_c_(i) = weight;
   }
@@ -431,6 +445,8 @@ void UKF::predictionIMMUKF(const double dt)
   updateLidar(MotionModel::CV);
   updateLidar(MotionModel::CTRV);
   updateLidar(MotionModel::RM);
+
+  // predictionLidarMeasurement(Motion, const int num_meas_state)
 }
 
 void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
@@ -858,17 +874,17 @@ void UKF::prediction(const double delta_t, const int model_ind)
   *  Create Sigma Points
   ****************************************************************************/
 
-  Eigen::MatrixXd x_sig = Eigen::MatrixXd(n_x_, 2 * n_x_ + 1);
+  Eigen::MatrixXd x_sig = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
   // create square root matrix
   Eigen::MatrixXd L = p.llt().matrixL();
 
   // create augmented sigma points
   x_sig.col(0) = x;
-  for (int i = 0; i < n_x_; i++)
+  for (int i = 0; i < num_state_; i++)
   {
-    Eigen::VectorXd pred1 = x + sqrt(lambda_ + n_x_) * L.col(i);
-    Eigen::VectorXd pred2 = x - sqrt(lambda_ + n_x_) * L.col(i);
+    Eigen::VectorXd pred1 = x + sqrt(lambda_ + num_state_) * L.col(i);
+    Eigen::VectorXd pred2 = x - sqrt(lambda_ + num_state_) * L.col(i);
 
     while (pred1(3) > M_PI)
       pred1(3) -= 2. * M_PI;
@@ -881,14 +897,14 @@ void UKF::prediction(const double delta_t, const int model_ind)
       pred2(3) += 2. * M_PI;
 
     x_sig.col(i + 1) = pred1;
-    x_sig.col(i + 1 + n_x_) = pred2;
+    x_sig.col(i + 1 + num_state_) = pred2;
   }
 
   /*****************************************************************************
   *  Predict Sigma Points
   ****************************************************************************/
   // predict sigma points
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     // extract values for better readability
     double p_x = x_sig(0, i);
@@ -918,7 +934,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
   ****************************************************************************/
   // predicted state mean
   x.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // iterate over sigma points
     x = x + weights_s_(i) * x_sig_pred.col(i);
   }
@@ -929,7 +945,7 @@ void UKF::prediction(const double delta_t, const int model_ind)
     x(3) += 2. * M_PI;
   // predicted state covariance matrix
   p.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // iterate over sigma points
     // state difference
     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
@@ -998,10 +1014,10 @@ void UKF::updateLidar(const int model_ind)
   int n_z = 2;
 
   // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * num_state_ + 1);
 
   // transform sigma points into measurement space
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // extract values for better readibility
     double p_x = x_sig_pred(0, i);
@@ -1015,7 +1031,7 @@ void UKF::updateLidar(const int model_ind)
   // mean predicted measurement
   Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
   z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
@@ -1023,7 +1039,7 @@ void UKF::updateLidar(const int model_ind)
   // measurement covariance matrix S
   Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
   S.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
@@ -1034,14 +1050,14 @@ void UKF::updateLidar(const int model_ind)
   S = S + r;
 
   // create matrix for cross correlation Tc
-  Eigen::MatrixXd Tc = Eigen::MatrixXd(n_x_, n_z);
+  Eigen::MatrixXd Tc = Eigen::MatrixXd(num_state_, n_z);
 
   /*****************************************************************************
   *  UKF Update for Lidar
   ****************************************************************************/
   // calculate cross correlation matrix
   Tc.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {  // 2n+1 simga points
     // residual
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
@@ -1087,13 +1103,109 @@ void UKF::updateLidar(const int model_ind)
   }
 }
 
-void UKF::predictionMeasurement(const int motion_ind, const int num_meas_state)
+void UKF::updateLidarMeasurement(const int motion_ind, const int num_meas_state)
 {
+  Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  Eigen::MatrixXd covariance_r;
+  Eigen::VectorXd z_pred(num_meas_state);
+  Eigen::MatrixXd s_pred(num_meas_state, num_meas_state);
   if (num_meas_state == num_lidar_direction_state_)
   {
-    covariance_r = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+    if(motion_ind == MotionModel::CV)
+    {
+      x = x_cv_.col(0);
+      x_sig_pred = x_sig_pred_cv_;
+      z_pred = z_pred_lidar_direction_cv_;
+      s_pred = s_lidar_direction_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      x = x_ctrv_.col(0);
+      x_sig_pred = x_sig_pred_ctrv_;
+      z_pred = z_pred_lidar_direction_ctrv_;
+      s_pred = s_lidar_direction_ctrv_;
+    }
+    else
+    {
+      x = x_rm_.col(0);
+      x_sig_pred = x_sig_pred_rm_;
+      z_pred = z_pred_lidar_direction_rm_;
+      s_pred = s_lidar_direction_rm_;
+    }
+  }
+  else
+  {
+    if(motion_ind == MotionModel::CV)
+    {
+      x = x_cv_.col(0);
+      x_sig_pred = x_sig_pred_cv_;
+      z_pred = z_pred_cv_;
+      s_pred = s_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      x = x_ctrv_.col(0);
+      x_sig_pred = x_sig_pred_ctrv_;
+      z_pred = z_pred_ctrv_;
+      s_pred = s_ctrv_;
+    }
+    else
+    {
+      x = x_rm_.col(0);
+      x_sig_pred = x_sig_pred_rm_;
+      z_pred = z_pred_rm_;
+      s_pred = s_rm_;
+    }
+  }
+
+  Eigen::MatrixXd cross_covariance = Eigen::MatrixXd(num_state_, num_meas_state);
+  cross_covariance.fill(0.0);
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
+  {
+    Eigen::VectorXd z_sig_point(num_meas_state);
+    if(num_meas_state == num_lidar_direction_state_)
+      z_sig_point << x_sig_pred(0, i), x_sig_pred(1, i), x_sig_pred(3, i);
+    else
+      z_sig_point << x_sig_pred(0, i), x_sig_pred(1, i);
+    Eigen::VectorXd z_diff = z_sig_point - z_pred;
+    Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
+
+    x_diff(3) = normalizeAngle(x_diff(3));
+
+    if(num_meas_state == num_lidar_direction_state_)
+      z_diff(2) = normalizeAngle(z_diff(2));
+
+    cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
+  }
+
+  Eigen::MatrixXd kalamn_gain = cross_covariance * s_pred.inverse();
+
+  if (num_meas_state == num_lidar_direction_state_)
+  {
+    if(motion_ind == MotionModel::CV)
+      k_lidar_direction_cv_ = kalamn_gain;
+    else if(motion_ind == MotionModel::CTRV)
+      k_lidar_direction_ctrv_ = kalamn_gain;
+    else
+      k_lidar_direction_rm_ = kalamn_gain;
+  }
+  else
+  {
+    if(motion_ind == MotionModel::CV)
+      k_cv_ = kalamn_gain;
+    else if(motion_ind == MotionModel::CTRV)
+      k_ctrv_ = kalamn_gain;
+    else
+      k_rm_ = kalamn_gain;
+  }
+}
+
+void UKF::predictionLidarMeasurement(const int motion_ind, const int num_meas_state)
+{
+  Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
+  Eigen::MatrixXd covariance_r(num_meas_state, num_meas_state);
+  if (num_meas_state == num_lidar_direction_state_)
+  {
     if(motion_ind == MotionModel::CV)
     {
       x_sig_pred = x_sig_pred_cv_;
@@ -1112,7 +1224,6 @@ void UKF::predictionMeasurement(const int motion_ind, const int num_meas_state)
   }
   else
   {
-    covariance_r = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
     if(motion_ind == MotionModel::CV)
     {
       x_sig_pred = x_sig_pred_cv_;
@@ -1130,9 +1241,9 @@ void UKF::predictionMeasurement(const int motion_ind, const int num_meas_state)
     }
   }
 
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_meas_state, 2 * n_x_ + 1);
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_meas_state, 2 * num_state_ + 1);
 
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     double p_x = x_sig_pred(0, i);
     double p_y = x_sig_pred(1, i);
@@ -1149,16 +1260,21 @@ void UKF::predictionMeasurement(const int motion_ind, const int num_meas_state)
 
   Eigen::VectorXd z_pred = Eigen::VectorXd(num_meas_state);
   z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
+  if(num_meas_state == num_lidar_direction_state_)
+    z_pred(2) = normalizeAngle(z_pred(2));
+
   Eigen::MatrixXd s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
   s_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    if(num_meas_state == num_lidar_direction_state_)
+      z_diff(2) = normalizeAngle(z_diff(2));
     s_pred = s_pred + weights_c_(i) * z_diff * z_diff.transpose();
   }
 
@@ -1253,7 +1369,7 @@ double UKF::calculateNIS(const autoware_msgs::DetectedObject& in_object, const i
 
 bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind)
 {
-  predictionMeasurement(motion_ind, num_lidar_direction_state_);
+  predictionLidarMeasurement(motion_ind, num_lidar_direction_state_);
 
   double lidar_nis = calculateNIS(in_object, motion_ind, num_lidar_state_);
   double lidar_direction_nis = calculateNIS(in_object, motion_ind, num_lidar_direction_state_);

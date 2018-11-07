@@ -70,8 +70,12 @@ class UKF
 public:
   int ukf_id_;
 
+  int num_state_;
+
   int num_lidar_state_;
 
+  int num_lidar_direction_state_;
+  
   //* initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -133,8 +137,6 @@ public:
   Eigen::VectorXd weights_c_;
   Eigen::VectorXd weights_s_;
 
-  //* State dimension
-  int n_x_;
 
   //* Sigma point spreading parameter
   double lambda_;
@@ -250,7 +252,6 @@ public:
   bool is_direction_cv_available_;
   bool is_direction_ctrv_available_;
   bool is_direction_rm_avaialable_;
-  int num_lidar_direction_state_;
   double std_lane_direction_;
   Eigen::MatrixXd lidar_direction_r_cv_;
   Eigen::MatrixXd lidar_direction_r_ctrv_;
@@ -263,6 +264,10 @@ public:
   Eigen::MatrixXd s_lidar_direction_cv_;
   Eigen::MatrixXd s_lidar_direction_ctrv_;
   Eigen::MatrixXd s_lidar_direction_rm_;
+
+  Eigen::MatrixXd k_lidar_direction_cv_;
+  Eigen::MatrixXd k_lidar_direction_ctrv_;
+  Eigen::MatrixXd k_lidar_direction_rm_;
 
   /**
    * Constructor
@@ -314,11 +319,15 @@ public:
 
   void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object);
 
-  void predictionMeasurement(const int motion_ind, const int num_meas_state);
+  void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
 
   double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const int num_meas);
 
   bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind);
+
+  void updateLidarMeasurement(const int motion_ind, const int num_meas_state);
+
+  double normalizeAngle(const double angle);
 };
 
 #endif /* UKF_H */

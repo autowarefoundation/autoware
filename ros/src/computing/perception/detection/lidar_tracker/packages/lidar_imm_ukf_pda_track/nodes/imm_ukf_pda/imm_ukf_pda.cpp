@@ -54,7 +54,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("is_debug", is_debug_, false);
 
   // rosparam for vectormap assisted tracking
-  private_nh_.param<bool>("use_vectormap", use_vectormap_, true);
+  private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
   if(use_vectormap_)
   {
     // TODO:check if subscribe successfully in every callback
