@@ -57,7 +57,7 @@ private:
   int search_waypoints_delta_;
   double avoid_waypoints_velocity_;
   double avoid_start_velocity_;
-  double avoid_replan_interval_;
+  double replan_interval_;
 
   // classes
   AstarSearch astar_;

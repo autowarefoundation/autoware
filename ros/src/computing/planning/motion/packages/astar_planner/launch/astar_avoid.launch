@@ -5,11 +5,11 @@
 
   <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
   <arg name="enable_avoidance" default="false" />
-  <arg name="search_waypoints_size" default="30" />
+  <arg name="search_waypoints_size" default="50" />
   <arg name="search_waypoints_delta" default="2" />
   <arg name="avoid_waypoints_velocity" default="10.0" />
-  <arg name="avoid_start_velocity" default="1.0" />
-  <arg name="avoid_replan_interval" default="5.0" />
+  <arg name="avoid_start_velocity" default="3.0" />
+  <arg name="replan_interval" default="2.0" />
 
   <arg name="use_back" default="false" />
   <arg name="use_potential_heuristic" default="true" />
@@ -30,14 +30,16 @@
   <arg name="distance_heuristic_weight" default="1.0" />
 
   <node pkg="astar_planner" type="astar_avoid" name="astar_avoid" output="screen">
-    <remap from="costmap" to="$(arg costmap_topic)" />
     <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
-    <param name="enable_avoidance" value="$(arg enable_avoidance)" />
     <param name="update_rate" value="$(arg update_rate)" />
+
+    <remap from="costmap" to="$(arg costmap_topic)" />
+    <param name="enable_avoidance" value="$(arg enable_avoidance)" />
     <param name="search_waypoints_size" value="$(arg search_waypoints_size)" />
     <param name="search_waypoints_delta" value="$(arg search_waypoints_delta)" />
     <param name="avoid_waypoints_velocity" value="$(arg avoid_waypoints_velocity)" />
     <param name="avoid_start_velocity" value="$(arg avoid_start_velocity)" />
+    <param name="replan_interval" value="$(arg replan_interval)" />
 
     <param name="use_back" value="$(arg use_back)" />
     <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
