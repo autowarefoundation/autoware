@@ -38,7 +38,7 @@
     <param name="robot_base2back" value="$(arg robot_base2back)" />
     <param name="minimum_turning_radius" value="$(arg minimum_turning_radius)" />
     <param name="theta_size" value="$(arg theta_size)" />
-    <param name="goal_angle_range" value="$(arg goal_angle_range)" />
+    <param name="angle_goal_range" value="$(arg angle_goal_range)" />
     <param name="curve_weight" value="$(arg curve_weight)" />
     <param name="reverse_weight" value="$(arg reverse_weight)" />
     <param name="lateral_goal_range" value="$(arg lateral_goal_range)" />
