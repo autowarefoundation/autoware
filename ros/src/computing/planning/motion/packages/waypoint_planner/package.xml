@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>astar_planner</name>
+  <name>waypoint_planner</name>
   <version>1.8.0</version>
-  <description>The astar_planner package</description>
+  <description>The waypoint_planner package</description>
 
   <maintainer email="aohsato@gmail.com">Akihito OHSATO</maintainer>
 

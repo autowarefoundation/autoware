@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         gnss
         waypoint_follower
         vector_map
-        astar_planner
+        waypoint_planner
         autoware_can_msgs
         )
 
@@ -40,7 +40,7 @@ catkin_package(
         gnss
         waypoint_follower
         vector_map
-        astar_planner
+        waypoint_planner
         autoware_can_msgs
 )
 

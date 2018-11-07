@@ -32,7 +32,7 @@
   <arg name="potential_weight" default="10.0" />
   <arg name="distance_heuristic_weight" default="1.0" />
 
-  <node pkg="astar_planner" type="astar_avoid" name="astar_avoid" output="screen">
+  <node pkg="waypoint_planner" type="astar_avoid" name="astar_avoid" output="screen">
     <param name="safety_waypoints_size" value="$(arg safety_waypoints_size)" />
     <param name="update_rate" value="$(arg update_rate)" />
 

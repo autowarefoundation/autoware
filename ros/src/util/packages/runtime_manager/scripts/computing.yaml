@@ -654,114 +654,6 @@ subs :
 #        desc : Feedforward PID waypoint follower
 #        cmd  : roslaunch ff_waypoint_follower ffwaypointfollower_car.launch
 #        param: ff_waypoint_follower
-    - name : OpenPlanner - Local planning
-      desc : Local Planner for OpenPlanner
-      subs :
-      - name : op_common_params
-        desc : load common local planning parameters
-        cmd  : roslaunch op_local_planner op_common_params.launch
-        param: op_common_params
-        gui  :
-          dialog_width  : 600
-          dialog_height : 550
-      - name : op_trajectory_generator
-        desc : generating candidate rollout trajectory from global path
-        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
-        param: op_trajectory_generator
-      - name : op_motion_predictor
-        desc : predict behavior and trajectories for moving vehicles
-        cmd  : roslaunch op_local_planner op_motion_predictor.launch
-        param: op_motion_predictor
-      - name : op_trajectory_evaluator
-        desc : evaluate candidate rollout trajectory against the tracked obstacles
-        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
-        param: op_trajectory_evaluator
-      - name : op_behavior_selector
-        desc : Decision making by selecting best behavior for local planner
-        cmd  : roslaunch op_local_planner op_behavior_selector.launch
-
-    - name : OpenPlanner - Utilities
-      desc : Testing UI, Loggers , ..
-      subs :
-      - name : op_pose2tf
-        desc : Publish transformation from ndt_pose read from rosbag file
-        cmd  : roslaunch op_utilities op_pose2tf.launch
-        param: op_pose2tf
-      - name : op_bag_player
-        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
-        cmd  : roslaunch op_utilities op_bag_player.launch
-        param: op_bag_player
-    - name : OpenPlanner - Simulator
-      desc : Car, Signs, Detection Simulation for OpenPlanner Test
-      subs :
-      - name : op_perception_simulator
-        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
-        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
-        param: op_perception_simulator
-      - name : op_signs_simulator
-        desc : Simulate traffic Signs status for intersections included in the map
-        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
-        param: op_signs_simulator
-      - name : op_car_simulator
-        desc : Simulate a car using OpenPlanner
-        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
-        param: op_car_simulator
-        gui  :
-          dialog_width  : 600
-          dialog_height : 550
-    - name : astar_planner
-      desc : astar_planner desc sample
-      subs :
-      - name : astar_avoid
-        desc : astar_avoid desc sample
-        cmd  : roslaunch astar_planner astar_avoid.launch
-        param: astar_avoid_param
-      - name : velocity_set
-        desc : velocity_set desc sample
-        cmd  : roslaunch astar_planner velocity_set.launch
-        param: velocity_set
-        gui  :
-          use_crosswalk_detection : { border : 4, flags : [ all ] }
-          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
-          dialog_width  : 800
-          dialog_height : 450
-    - name : lattice_planner
-      desc : lattice_planner desc sample
-      subs :
-      - name : lattice_velocity_set
-        desc : lattice_velocity_set desc sample
-        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
-        param: lattice_velocity_set
-        gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          use_crosswalk_detection : { border : 4, flags : [ all ] }
-      - name : path_select
-        desc : path_select desc sample
-        cmd  : rosrun lattice_planner path_select
-      - name : lattice_trajectory_gen
-        desc : lattice_trajectory_gen desc sample
-        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
-        param: lane_follower_trajgen
-        gui  :
-          dialog_width  : 600
-          dialog_height : 450
-          velocity:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 1'
-          lookahead_threshold:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 1'
-          minimum_lookahead_threshold:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 0'
-          threshold_ratio:
-            depend : param_flag
-            depend_bool : 'lambda v : v == 0'
-          stat_topic : [ lf ]
-      - name : lattice_twist_convert
-        desc : lattice_twist_convert desc sample
-        cmd  : rosrun lattice_planner lattice_twist_convert
 
     - name : waypoint_maker
       desc : waypoint_maker desc sample
@@ -834,6 +726,24 @@ subs :
          desc : waypoint_velocity_visualizer desc sample
          cmd  : roslaunch waypoint_maker waypoint_velocity_visualizer.launch
          param: waypoint_velocity_visualizer
+
+    - name : waypoint_planner
+      desc : waypoint_planner desc sample
+      subs :
+      - name : astar_avoid
+        desc : astar_avoid desc sample
+        cmd  : roslaunch waypoint_planner astar_avoid.launch
+        param: astar_avoid_param
+      - name : velocity_set
+        desc : velocity_set desc sample
+        cmd  : roslaunch waypoint_planner velocity_set.launch
+        param: velocity_set
+        gui  :
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+          enable_multiple_crosswalk_detection : { border : 4, flags : [ all ] }
+          dialog_width  : 800
+          dialog_height : 450
+
     - name : waypoint_follower
       desc : waypoint_follower desc sample
       subs :
@@ -872,6 +782,99 @@ subs :
              flags : [ nl ]
            position_error :
              flags : [ nl ]
+
+    - name : OpenPlanner - Local planning
+      desc : Local Planner for OpenPlanner
+      subs :
+      - name : op_common_params
+        desc : load common local planning parameters
+        cmd  : roslaunch op_local_planner op_common_params.launch
+        param: op_common_params
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
+      - name : op_trajectory_generator
+        desc : generating candidate rollout trajectory from global path
+        cmd  : roslaunch op_local_planner op_trajectory_generator.launch
+        param: op_trajectory_generator
+      - name : op_motion_predictor
+        desc : predict behavior and trajectories for moving vehicles
+        cmd  : roslaunch op_local_planner op_motion_predictor.launch
+        param: op_motion_predictor
+      - name : op_trajectory_evaluator
+        desc : evaluate candidate rollout trajectory against the tracked obstacles
+        cmd  : roslaunch op_local_planner op_trajectory_evaluator.launch
+        param: op_trajectory_evaluator
+      - name : op_behavior_selector
+        desc : Decision making by selecting best behavior for local planner
+        cmd  : roslaunch op_local_planner op_behavior_selector.launch
+
+    - name : OpenPlanner - Utilities
+      desc : Testing UI, Loggers , ..
+      subs :
+      - name : op_pose2tf
+        desc : Publish transformation from ndt_pose read from rosbag file
+        cmd  : roslaunch op_utilities op_pose2tf.launch
+        param: op_pose2tf
+      - name : op_bag_player
+        desc : Send step by step simulation signal, read ready for localization rosbags and navigate them frame by frame
+        cmd  : roslaunch op_utilities op_bag_player.launch
+        param: op_bag_player
+    - name : OpenPlanner - Simulator
+      desc : Car, Signs, Detection Simulation for OpenPlanner Test
+      subs :
+      - name : op_perception_simulator
+        desc : Simulate euclidean cluster for LIDAR based object detection of simulated cars
+        cmd  : roslaunch op_simulation_package op_perception_simulator.launch
+        param: op_perception_simulator
+      - name : op_signs_simulator
+        desc : Simulate traffic Signs status for intersections included in the map
+        cmd  : roslaunch op_simulation_package op_signs_simulator.launch
+        param: op_signs_simulator
+      - name : op_car_simulator
+        desc : Simulate a car using OpenPlanner
+        cmd  : roslaunch op_simulation_package op_car_simulator_1.launch
+        param: op_car_simulator
+        gui  :
+          dialog_width  : 600
+          dialog_height : 550
+    - name : lattice_planner
+      desc : lattice_planner desc sample
+      subs :
+      - name : lattice_velocity_set
+        desc : lattice_velocity_set desc sample
+        cmd  : roslaunch lattice_planner lattice_velocity_set.launch
+        param: lattice_velocity_set
+        gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          use_crosswalk_detection : { border : 4, flags : [ all ] }
+      - name : path_select
+        desc : path_select desc sample
+        cmd  : rosrun lattice_planner path_select
+      - name : lattice_trajectory_gen
+        desc : lattice_trajectory_gen desc sample
+        cmd  : roslaunch lattice_planner lattice_trajectory_gen.launch
+        param: lane_follower_trajgen
+        gui  :
+          dialog_width  : 600
+          dialog_height : 450
+          velocity:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          lookahead_threshold:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 1'
+          minimum_lookahead_threshold:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
+          threshold_ratio:
+            depend : param_flag
+            depend_bool : 'lambda v : v == 0'
+          stat_topic : [ lf ]
+      - name : lattice_twist_convert
+        desc : lattice_twist_convert desc sample
+        cmd  : rosrun lattice_planner lattice_twist_convert
 
   - name : Decision
     desc : decision groups

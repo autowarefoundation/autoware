@@ -1,5 +1,5 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package astar_planner
+Changelog for package waypoint_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.8.0 (2018-08-31)
@@ -83,7 +83,7 @@ Changelog for package astar_planner
 ------------------
 * fix build issues due to autoware_msgs
 * Apply clang-formt
-* Add obstacle avoid feature in astar_planner
+* Add obstacle avoid feature in waypoint_planner
 * convert to autoware_msgs
 * Contributors: TomohitoAndo, YamatoAndo, Yusuke FUJII
 

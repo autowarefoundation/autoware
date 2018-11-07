@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(astar_planner)
+project(waypoint_planner)
 
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
