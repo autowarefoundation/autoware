@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>ymc</name>
-  <version>1.8.0</version>
+  <version>1.9.0</version>
   <description>The ymc package</description>
   <maintainer email="antm678@ertl.jp">T.Ando</maintainer>
   <license>BSD</license>
@@ -11,10 +11,12 @@
   <build_depend>roscpp</build_depend>
   <build_depend>rosconsole</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>rosconsole</run_depend>
   <run_depend>geometry_msgs</run_depend>
+  <run_depend>autoware_msgs</run_depend>
 
   <export>
   </export>

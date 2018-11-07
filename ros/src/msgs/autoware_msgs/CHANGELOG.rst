@@ -2,6 +2,27 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* Moved configuration messages to autoware_config_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+  * add compare map filter
+  * add README
+  * add copyright
+  * change default parameter
+  * fix typo
+  * clang-format
+  * Revert "clang-format"
+  This reverts commit 95869328f35f6ed1e918c26901ad36ab9737e466.
+  * retry clang-format
+* Contributors: Esteve Fernandez, YamatoAndo
+
 1.8.0 (2018-08-31)
 ------------------
 * Support old behavior of insert static object for obstacle avoidance testing

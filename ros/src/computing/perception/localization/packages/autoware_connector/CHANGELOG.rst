@@ -2,6 +2,11 @@
 Changelog for package autoware_connector
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* Contributors: Esteve Fernandez
+
 1.8.0 (2018-08-31)
 ------------------
 * change source from caninfo to vehicle status ,for can_velocity

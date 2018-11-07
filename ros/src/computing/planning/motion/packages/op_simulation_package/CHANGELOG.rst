@@ -2,6 +2,15 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
 1.8.0 (2018-08-31)
 ------------------
 * Support old behavior of insert static object for obstacle avoidance testing

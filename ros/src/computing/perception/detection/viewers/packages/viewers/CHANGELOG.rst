@@ -2,6 +2,15 @@
 Changelog for package viewers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
 1.8.0 (2018-08-31)
 ------------------
 * Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)

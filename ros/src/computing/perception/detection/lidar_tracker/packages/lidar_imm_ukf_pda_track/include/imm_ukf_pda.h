@@ -83,6 +83,14 @@ private:
   // whether if publish debug ros markers
   bool is_debug_;
 
+  // whether if benchmarking tracking result
+  bool is_benchmark_;
+  int frame_count_;
+  std::string kitti_data_dir_;
+
+  // for benchmark
+  std::string result_file_path_;
+
   // prevent explode param for ukf
   double prevent_explosion_thres_;
 
@@ -149,6 +157,8 @@ private:
   void removeUnnecessaryTarget();
 
   void pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input);
+
+  void dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects);
 
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
                jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,

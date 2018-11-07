@@ -2,6 +2,77 @@
 Changelog for package runtime_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.0 (2018-10-31)
+------------------
+* [Fix] Resize RTM UI dialog windows to prevent scrolling (`#1642 <https://github.com/kfunaoka/Autoware/issues/1642>`_)
+  * Fixes to RTM dialog sizes
+  * Resizing of dialog boxes in the Computing tab.
+  * Resizing of dialog boxes in the Sensing tab.
+  * Extra fixes to UI
+  * Increased Width of ComboBox
+* Moved configuration messages to autoware_config_msgs
+* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/kfunaoka/Autoware/issues/1565>`_)
+  * * Added option to publish to specific camera frame on camera publisher
+  * fixes to the node
+  * Added New line to UI on each param.
+  * * Updates to launch files using calibration publisher
+  * Updated naming after develop merge
+  * Updated suscription type to topic for calibration publisher
+* [Feature] Prediction package template (naive_motion_predictor) (`#1616 <https://github.com/kfunaoka/Autoware/issues/1616>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* [Feature] DetectedObject type immukfpda (`#1582 <https://github.com/kfunaoka/Autoware/issues/1582>`_)
+* [feature] Selectable topics in RTM (`#1596 <https://github.com/kfunaoka/Autoware/issues/1596>`_)
+  * * Added functions to support selectable topics
+  * Modified Sensing and computing tabs
+  * Added missing topics in RTM computing section
+* renamed topics to match, sensing workflow (`#1600 <https://github.com/kfunaoka/Autoware/issues/1600>`_)
+  [fix] renamed topics to match, sensing workflow on CompareMapFilter
+* Changed default input value
+* * Fixed typo
+  * Changed default values
+* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+  * add compare map filter
+  * add README
+  * add copyright
+  * change default parameter
+  * fix typo
+  * clang-format
+  * Revert "clang-format"
+  This reverts commit 95869328f35f6ed1e918c26901ad36ab9737e466.
+  * retry clang-format
+* Added support for custom class "names files" in darknet format. (`#1535 <https://github.com/kfunaoka/Autoware/issues/1535>`_)
+  * Added support for custom class "names files" in darknet format.
+  * Fixed launch file, not including source topic arg
+  * Fix the default path of coco.names (`#1550 <https://github.com/kfunaoka/Autoware/issues/1550>`_)
+* Feature/beyond pixel tracker (`#1473 <https://github.com/kfunaoka/Autoware/issues/1473>`_)
+  * Add beyond_pixel node
+  * Update prototype of beyond pixel (`#1430 <https://github.com/kfunaoka/Autoware/issues/1430>`_)
+  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/kfunaoka/Autoware/issues/1430>`_)
+  * * Adaptations to the original code
+  * Added README
+  * Added Runtime Manager entry
+  * Added Video link
+  * Added install commands for cmake
+  * * Add ID only to tracked objects
+  * Display valid IDs on the 3D labels
+  * Display only objects with image coords
+  * * Added Minimum dimensions
+  * Register angle from the vision tracker if available
+  * Keep message publishing rate continuous
+  * Revert platform_automation_msgs (`#1498 <https://github.com/kfunaoka/Autoware/issues/1498>`_)
+  * Code cleanup
+  * Fixed a crash when the dimensions are outside of the image
+  * Fix annoying catkin_make causing to run twice the Cmake generation
+* Feature/robosense lidar driver (`#1500 <https://github.com/kfunaoka/Autoware/issues/1500>`_)
+  * Add RoboSense Lidar Driver as a submodule
+  * Added robosense lidar support
+* [Feature]naive l shape fitting and a little modification on immukfpda launch file(`#1457 <https://github.com/kfunaoka/Autoware/issues/1457>`_)
+* Contributors: Abraham Monrroy, Abraham Monrroy Cano, David, Esteve Fernandez, Kosuke Murakami, YamatoAndo, amc-nu
+
 1.8.0 (2018-08-31)
 ------------------
 * Support old behavior of insert static object for obstacle avoidance testing
