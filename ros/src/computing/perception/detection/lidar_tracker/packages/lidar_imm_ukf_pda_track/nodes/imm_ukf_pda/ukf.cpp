@@ -72,6 +72,9 @@ UKF::UKF()
   // Laser measurement noise standard deviation position2 in m
   std_laspy_ = 0.15;
 
+  // initially set to false, set to true in first call of ProcessMeasurement
+  is_initialized_ = false;
+
   // time when the state is true, in us
   time_ = 0.0;
 
@@ -140,10 +143,13 @@ UKF::UKF()
   is_static_ = false;
 
   // bounding box params
+  is_best_jsk_bb_empty_ = false;
   is_vis_bb_ = false;
-  // best_yaw_ = 100;
-  // bb_yaw_ = 0;
-  // bb_area_ = 0;
+  jsk_bb_.dimensions.x = 1.0;
+  jsk_bb_.dimensions.y = 1.0;
+  best_yaw_ = 100;
+  bb_yaw_ = 0;
+  bb_area_ = 0;
 
   // for static classification
   init_meas_ = Eigen::VectorXd(2);
