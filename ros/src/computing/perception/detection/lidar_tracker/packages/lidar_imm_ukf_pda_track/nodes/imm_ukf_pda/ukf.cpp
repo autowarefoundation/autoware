@@ -33,7 +33,7 @@
 /**
 * Initializes Unscented Kalman filter
 */
-UKF::UKF()
+UKF::UKF():num_lidar_state_(2), num_lidar_direction_state_(3)
 {
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);
@@ -191,10 +191,10 @@ UKF::UKF()
 
   //for lane direction combined filter
   // num_lidar_direction_state_ = 3;
-  // lidar_lane_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  // lidar_lane_r_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  // lidar_lane_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  // std_lane_direction_ = 0.15;
+  lidar_direction_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  lidar_direction_r_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  lidar_direction_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  std_lane_direction_ = 0.15;
 
 }
 
@@ -255,15 +255,15 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
 
   // initialize lidar-lane R covariance
   // clang-format off
-  // lidar_lane_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-  //                                           0, std_laspy_ * std_laspy_,                                       0,
-  //                                           0,                       0, std_lane_direction_*std_lane_direction_;
-  // lidar_lane_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-  //                                             0, std_laspy_ * std_laspy_,                                       0,
-  //                                             0,                       0, std_lane_direction_*std_lane_direction_;
-  // lidar_lane_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
-  //                                           0, std_laspy_ * std_laspy_,                                       0,
-  //                                           0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_direction_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                            0, std_laspy_ * std_laspy_,                                       0,
+                                            0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_direction_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                              0, std_laspy_ * std_laspy_,                                       0,
+                                              0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_direction_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
+                                            0, std_laspy_ * std_laspy_,                                       0,
+                                            0,                       0, std_lane_direction_*std_lane_direction_;
   // clang-format on
 
   // init tracking num
@@ -1087,84 +1087,185 @@ void UKF::updateLidar(const int model_ind)
   }
 }
 
-// bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind)
-// {
-//   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-//   if(motion_ind == MotionModel::CV)
-//   {
-//     x_sig_pred = x_sig_pred_cv_;
-//   }
-//   else if(motion_ind == MotionModel::CTRV)
-//   {
-//     x_sig_pred = x_sig_pred_ctrv_;
-//   }
-//   else
-//   {
-//     x_sig_pred = x_sig_pred_rm_;
-//   }
-//
-//   Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_lidar_direction_state_ + 1);
-//
-//   for (int i = 0; i < 2 * n_x_ + 1; i++)
-//   {
-//     double p_x = x_sig_pred(0, i);
-//     double p_y = x_sig_pred(1, i);
-//     double p_yaw = x_sig_pred(2, i);
-//
-//     z_sig(0, i) = p_x;
-//     z_sig(1, i) = p_y;
-//     z_sig(2, i) = p_yaw;
-//   }
-//
-//   Eigen::VectorXd z_pred = Eigen::VectorXd(num_lidar_direction_state_);
-//   z_pred.fill(0.0);
-//   for (int i = 0; i < 2 * n_x_ + 1; i++)
-//   {
-//     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
-//   }
-//
-//   Eigen::MatrixXd s = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-//   s.fill(0.0);
-//   for (int i = 0; i < 2 * n_x_ + 1; i++)
-//   {
-//     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-//     s = s + weights_c_(i) * z_diff * z_diff.transpose();
-//   }
-//
-//   // add measurement noise covariance matrix
-//   s = s + r;
-//
-//   // create matrix for cross correlation Tc
-//   Eigen::MatrixXd Tc = Eigen::MatrixXd(n_x_, n_z);
-//
-//   /*****************************************************************************
-//   *  UKF Update for Lidar
-//   ****************************************************************************/
-//   // calculate cross correlation matrix
-//   Tc.fill(0.0);
-//   for (int i = 0; i < 2 * n_x_ + 1; i++)
-//   {  // 2n+1 simga points
-//     // residual
-//     Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-//     // state difference
-//     Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
-//
-//     while (x_diff(3) > M_PI)
-//       x_diff(3) -= 2. * M_PI;
-//     while (x_diff(3) < -M_PI)
-//       x_diff(3) += 2. * M_PI;
-//
-//     Tc = Tc + weights_c_(i) * x_diff * z_diff.transpose();
-//   }
-//
-//   Eigen::MatrixXd K = Tc * S.inverse();
-//
-// }
+void UKF::predictionMeasurement(const int motion_ind, const int num_meas_state)
+{
+  Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
+  Eigen::MatrixXd covariance_r;
+  if (num_meas_state == num_lidar_direction_state_)
+  {
+    covariance_r = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+    if(motion_ind == MotionModel::CV)
+    {
+      x_sig_pred = x_sig_pred_cv_;
+      covariance_r = lidar_direction_r_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      x_sig_pred = x_sig_pred_ctrv_;
+      covariance_r = lidar_direction_r_ctrv_;
+    }
+    else
+    {
+      x_sig_pred = x_sig_pred_rm_;
+      covariance_r = lidar_direction_r_rm_;
+    }
+  }
+  else
+  {
+    covariance_r = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
+    if(motion_ind == MotionModel::CV)
+    {
+      x_sig_pred = x_sig_pred_cv_;
+      covariance_r = r_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      x_sig_pred = x_sig_pred_ctrv_;
+      covariance_r = r_ctrv_;
+    }
+    else
+    {
+      x_sig_pred = x_sig_pred_rm_;
+      covariance_r = r_rm_;
+    }
+  }
+
+  Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_meas_state, 2 * n_x_ + 1);
+
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    double p_x = x_sig_pred(0, i);
+    double p_y = x_sig_pred(1, i);
+
+    z_sig(0, i) = p_x;
+    z_sig(1, i) = p_y;
+
+    if(num_meas_state == num_lidar_direction_state_)
+    {
+      double p_yaw = x_sig_pred(3, i);
+      z_sig(2, i) = p_yaw;
+    }
+  }
+
+  Eigen::VectorXd z_pred = Eigen::VectorXd(num_meas_state);
+  z_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    z_pred = z_pred + weights_s_(i) * z_sig.col(i);
+  }
+
+  Eigen::MatrixXd s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+  s_pred.fill(0.0);
+  for (int i = 0; i < 2 * n_x_ + 1; i++)
+  {
+    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
+    s_pred = s_pred + weights_c_(i) * z_diff * z_diff.transpose();
+  }
+
+  // add measurement noise covariance matrix
+  s_pred += covariance_r;
+
+  if (num_meas_state == num_lidar_direction_state_)
+  {
+    if(motion_ind == MotionModel::CV)
+    {
+      z_pred_lidar_direction_cv_ = z_pred;
+      s_lidar_direction_cv_ = s_pred;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      z_pred_lidar_direction_ctrv_ = z_pred;
+      s_lidar_direction_ctrv_ = s_pred;
+    }
+    else
+    {
+      z_pred_lidar_direction_rm_ = z_pred;
+      s_lidar_direction_rm_ = s_pred;
+    }
+  }
+  else
+  {
+    if(motion_ind == MotionModel::CV)
+    {
+      z_pred_cv_ = z_pred;
+      s_cv_ = s_pred;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      z_pred_ctrv_ = z_pred;
+      s_ctrv_ = s_pred;
+    }
+    else
+    {
+      z_pred_ctrv_ = z_pred;
+      s_ctrv_ = s_pred;
+    }
+  }
+}
+
+double UKF::calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const int num_meas_state)
+{
+  Eigen::VectorXd z_pred = Eigen::VectorXd(num_meas_state);
+  Eigen::MatrixXd s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+  Eigen::VectorXd meas = Eigen::VectorXd(num_meas_state);
+  if (num_meas_state == num_lidar_state_)
+  {
+    meas << in_object.pose.position.x, in_object.pose.position.y;
+    if(motion_ind == MotionModel::CV)
+    {
+      z_pred = z_pred_cv_;
+      s_pred = s_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      z_pred = z_pred_ctrv_;
+      s_pred = s_ctrv_;
+    }
+    else
+    {
+      z_pred = z_pred_rm_;
+      s_pred = s_rm_;
+    }
+  }
+  else
+  {
+    meas << in_object.pose.position.x, in_object.pose.position.y, in_object.angle;
+    if(motion_ind == MotionModel::CV)
+    {
+      z_pred = z_pred_lidar_direction_cv_;
+      s_pred = s_lidar_direction_cv_;
+    }
+    else if(motion_ind == MotionModel::CTRV)
+    {
+      z_pred = z_pred_lidar_direction_ctrv_;
+      s_pred = s_lidar_direction_ctrv_;
+    }
+    else
+    {
+      z_pred = z_pred_lidar_direction_rm_;
+      s_pred = s_lidar_direction_rm_;
+    }
+  }
+  Eigen::VectorXd diff = meas - z_pred;
+  double nis = diff.transpose() * s_pred.inverse() * diff;
+  return nis;
+}
+
+bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind)
+{
+  predictionMeasurement(motion_ind, num_lidar_direction_state_);
+
+  double lidar_nis = calculateNIS(in_object, motion_ind, num_lidar_state_);
+  double lidar_direction_nis = calculateNIS(in_object, motion_ind, num_lidar_direction_state_);
+
+  bool is_direction_available = false;
+  if(lidar_direction_nis < lidar_nis)
+    is_direction_available = true;
+  return is_direction_available;
+}
 
 void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object)
 {
-    // is_direction_cv_meas_ = isLaneDirectionAvailable(in_object, MotionModel::CV);
-    // is_direction_ctrv_meas_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV);
-    // is_direction_rm_meas_ = isLaneDirectionAvailable(in_object, MotionModel::RM);
-
+    is_direction_cv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CV);
+    is_direction_ctrv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV);
 }
