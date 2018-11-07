@@ -481,10 +481,14 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose = targets_[i].object_pose_;
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
-    dd.pose.orientation.x = q[0];
-    dd.pose.orientation.y = q[1];
-    dd.pose.orientation.z = q[2];
-    dd.pose.orientation.w = q[3];
+    if (!std::isnan(q[0]))
+      dd.pose.orientation.x = q[0];
+    if (!std::isnan(q[1]))
+      dd.pose.orientation.y = q[1];
+    if (!std::isnan(q[2]))
+      dd.pose.orientation.z = q[2];
+    if (!std::isnan(q[3]))
+      dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].object_dimensions_;
     dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;

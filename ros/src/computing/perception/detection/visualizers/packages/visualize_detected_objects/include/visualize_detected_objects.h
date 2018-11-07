@@ -88,6 +88,8 @@ private:
 
   void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
 
+  bool IsObjectValid(const autoware_msgs::DetectedObject &in_object);
+
 public:
   VisualizeDetectedObjects();
 };
