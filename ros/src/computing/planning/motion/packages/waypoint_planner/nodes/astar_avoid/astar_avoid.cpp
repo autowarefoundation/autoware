@@ -165,9 +165,8 @@ void AstarAvoid::run()
     }
     else if (state_ == AstarAvoid::STATE::AVOIDING)
     {
-      bool reached_goal = (getClosestWaypoint(current_waypoints, current_pose_global_.pose) > end_of_avoid_index);
-
-      if (reached_goal)
+      bool reached = (getClosestWaypoint(current_waypoints, current_pose_global_.pose) > end_of_avoid_index);
+      if (reached)
       {
         ROS_INFO("AVOIDING -> RELAYING, Reached goal");
         state_ = AstarAvoid::STATE::RELAYING;
@@ -324,7 +323,8 @@ void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const autoware_
     autoware_msgs::Waypoint wp;
     wp.pose.header = avoid_waypoints.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(avoid_waypoints.header.frame_id, pose.header.frame_id));
-    wp.twist.twist.linear.x = avoid_waypoints_velocity_ / 3.6;
+    wp.pose.pose.position.z = current_pose_global_.pose.position.z; // height = const
+    wp.twist.twist.linear.x = avoid_waypoints_velocity_ / 3.6;  // velocity = const
     avoid_waypoints.waypoints.push_back(wp);
   }
 

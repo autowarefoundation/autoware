@@ -139,6 +139,7 @@ void AstarNavi::publishWaypoints(const nav_msgs::Path& path, const double& veloc
     autoware_msgs::Waypoint wp;
     wp.pose.header = lane.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(lane.header.frame_id, pose.header.frame_id));
+    wp.pose.pose.position.z = current_pose_global_.pose.position.z; // height = const
     wp.twist.twist.linear.x = velocity / 3.6;
     lane.waypoints.push_back(wp);
   }
