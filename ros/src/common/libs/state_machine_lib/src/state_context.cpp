@@ -79,14 +79,14 @@ void StateContext::nextState(const std::string& transition_key)
   const std::string dot_output_name = "/tmp/a.dot";
   std::shared_ptr<State> state = root_state_;
   std::string _target_state_name;
-  std::vector<std::string> key_list_;
+  std::vector<std::string> key_list;
 
   while (state)
   {
     if (state->getTransitionMap().count(transition_key) != 0)
     {
       const uint64_t transition_state_id = state->getTransitionMap().at(transition_key);
-      _target_state_name = state_map_[transition_state_id]->getStateName();
+      _target_state_name = state_map_.at(transition_state_id)->getStateName();
 
       if (isCurrentState(_target_state_name))
       {
@@ -105,7 +105,7 @@ void StateContext::nextState(const std::string& transition_key)
           {
             if (in_state->getChild())
             {
-              key_list_.push_back(in_state->getChild()->getEnteredKey());
+              key_list.push_back(in_state->getChild()->getEnteredKey());
               in_state->getChild()->onExit();
             }
             in_state->setChild(state_map_[transition_state_id]);
@@ -313,6 +313,7 @@ std::shared_ptr<State> StateContext::getStatePtr(const YAML::Node& node)
 {
   return getStatePtr(node["StateName"].as<std::string>());
 }
+
 std::shared_ptr<State> StateContext::getStatePtr(const std::string& _state_name)
 {
   if (_state_name == "~")
