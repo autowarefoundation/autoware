@@ -728,11 +728,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
 
 void ImmUkfPda::removeUnnecessaryTarget()
 {
-
-  // auto remove_it = remove_if(targets_.begin(), targets_.end(), [&](UKF ukf)
-  // {return (ukf.tracking_num_ != TrackingState::Die);});
-  // targets_.erase(remove_it, targets_.end());
-
   std::vector<UKF> temp_targets;
   for (size_t i = 0; i < targets_.size(); i++)
   {

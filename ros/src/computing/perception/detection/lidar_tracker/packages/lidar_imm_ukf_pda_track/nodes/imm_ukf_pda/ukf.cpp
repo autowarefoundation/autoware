@@ -191,10 +191,10 @@ UKF::UKF()
 
   //for lane direction combined filter
   // num_lidar_direction_state_ = 3;
-  lidar_lane_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  lidar_lane_r_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  lidar_lane_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
-  std_lane_direction_ = 0.15;
+  // lidar_lane_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  // lidar_lane_r_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  // lidar_lane_r_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  // std_lane_direction_ = 0.15;
 
 }
 
@@ -255,15 +255,15 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
 
   // initialize lidar-lane R covariance
   // clang-format off
-  lidar_lane_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
-  lidar_lane_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                              0, std_laspy_ * std_laspy_,                                       0,
-                                              0,                       0, std_lane_direction_*std_lane_direction_;
-  lidar_lane_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
+  // lidar_lane_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+  //                                           0, std_laspy_ * std_laspy_,                                       0,
+  //                                           0,                       0, std_lane_direction_*std_lane_direction_;
+  // lidar_lane_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
+  //                                             0, std_laspy_ * std_laspy_,                                       0,
+  //                                             0,                       0, std_lane_direction_*std_lane_direction_;
+  // lidar_lane_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
+  //                                           0, std_laspy_ * std_laspy_,                                       0,
+  //                                           0,                       0, std_lane_direction_*std_lane_direction_;
   // clang-format on
 
   // init tracking num
