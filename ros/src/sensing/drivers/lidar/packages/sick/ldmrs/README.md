@@ -54,7 +54,7 @@ try any of the other scanners and run into trouble, please open an issue.
 Installation
 ------------
 
-In the following instructions, replace `<rosdistro>` with the name of your ROS distro (e.g., `indigo`).
+In the following instructions, replace `<rosdistro>` with the name of your ROS distro (e.g., `kinetic`).
 
 ### From binaries
 
