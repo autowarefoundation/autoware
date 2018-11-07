@@ -39,9 +39,6 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <jsk_recognition_msgs/BoundingBox.h>
-
 #include "autoware_msgs/DetectedObject.h"
 
 enum TrackingState : int
@@ -69,9 +66,6 @@ class UKF
 
 public:
   int ukf_id_;
-
-  //* initially set to false, set to true in first call of ProcessMeasurement
-  bool is_initialized_;
 
   //* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
@@ -137,9 +131,6 @@ public:
   //* Sigma point spreading parameter
   double lambda_;
 
-  int count_;
-  int count_empty_;
-
   double mode_match_prob_cv2cv_;
   double mode_match_prob_ctrv2cv_;
   double mode_match_prob_rm2cv_;
@@ -186,27 +177,17 @@ public:
   int lifetime_;
   bool is_static_;
 
-  // bounding box params
-  bool is_vis_bb_;
+  // object msg information
+  bool is_pose_reliable_;
 
-  jsk_recognition_msgs::BoundingBox jsk_bb_;
-  jsk_recognition_msgs::BoundingBox best_jsk_bb_;
-
-  bool is_best_jsk_bb_empty_;
-
-  double best_yaw_;
-  double bb_yaw_;
-  double bb_area_;
-  std::vector<double> bb_yaw_history_;
-  std::vector<double> bb_vel_history_;
-  std::vector<double> bb_area_history_;
+  std::string object_label_;
+  geometry_msgs::Pose object_pose_;
+  geometry_msgs::Vector3 object_dimensions_;
+  geometry_msgs::PolygonStamped object_polygon_;
 
   // for env classification
   Eigen::VectorXd init_meas_;
   std::vector<double> vel_history_;
-
-  std::vector<Eigen::VectorXd> local2local_;
-  std::vector<double> local2localYawVec_;
 
   double x_merge_yaw_;
 

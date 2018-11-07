@@ -6,9 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         pcl_ros
         autoware_msgs
-        geometry_msgs
         tf
-        jsk_recognition_msgs
         )
 
 
@@ -19,9 +17,7 @@ catkin_package(
         roscpp
         pcl_ros
         autoware_msgs
-        geometry_msgs
         tf
-        jsk_recognition_msgs
 )
 
 include_directories(

@@ -72,9 +72,6 @@ UKF::UKF()
   // Laser measurement noise standard deviation position2 in m
   std_laspy_ = 0.15;
 
-  // initially set to false, set to true in first call of ProcessMeasurement
-  is_initialized_ = false;
-
   // time when the state is true, in us
   time_ = 0.0;
 
@@ -143,13 +140,9 @@ UKF::UKF()
   is_static_ = false;
 
   // bounding box params
-  is_best_jsk_bb_empty_ = false;
-  is_vis_bb_ = false;
-  jsk_bb_.dimensions.x = 1.0;
-  jsk_bb_.dimensions.y = 1.0;
-  best_yaw_ = 100;
-  bb_yaw_ = 0;
-  bb_area_ = 0;
+  is_pose_reliable_ = false;
+  object_dimensions_.x = 1.0;
+  object_dimensions_.y = 1.0;
 
   // for static classification
   init_meas_ = Eigen::VectorXd(2);
@@ -550,7 +543,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   {
     sigma_p_cv += (beta_cv[i] * diff_cv_vec[i] * diff_cv_vec[i].transpose() - sigma_x_cv * sigma_x_cv.transpose());
     sigma_p_ctrv +=
-      (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
+        (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
     sigma_p_rm += (beta_rm[i] * diff_rm_vec[i] * diff_rm_vec[i].transpose() - sigma_x_rm * sigma_x_rm.transpose());
   }
 
@@ -603,14 +596,14 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   if (num_meas != 0)
   {
     lambda_cv =
-      (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-      detection_probability * pow(Vk, 1 - num_meas) * e_cv_sum / (num_meas * sqrt(2 * M_PI * s_cv_.determinant()));
+        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
+        detection_probability * pow(Vk, 1 - num_meas) * e_cv_sum / (num_meas * sqrt(2 * M_PI * s_cv_.determinant()));
     lambda_ctrv = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
                   detection_probability * pow(Vk, 1 - num_meas) * e_ctrv_sum /
-                  (num_meas * sqrt(2 * M_PI * s_ctrv_.determinant()));
+                      (num_meas * sqrt(2 * M_PI * s_ctrv_.determinant()));
     lambda_rm =
-      (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-      detection_probability * pow(Vk, 1 - num_meas) * e_rm_sum / (num_meas * sqrt(2 * M_PI * s_rm_.determinant()));
+        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
+        detection_probability * pow(Vk, 1 - num_meas) * e_rm_sum / (num_meas * sqrt(2 * M_PI * s_rm_.determinant()));
   }
   else
   {
@@ -785,21 +778,21 @@ void UKF::initCovarQs(const double dt, const double yaw)
   double rm_var_yawdd = std_rm_yawdd_ * std_rm_yawdd_;
 
   q_cv_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * cv_var_a, 0.5 * 0.5 * dt_4 * cos_sin * cv_var_a,
-    0.5 * dt_3 * cos_yaw * cv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * cv_var_a,
-    0.5 * 0.5 * dt_4 * sin_2_yaw * cv_var_a, 0.5 * dt_3 * sin_yaw * cv_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * cv_var_a,
-    0.5 * dt_3 * sin_yaw * cv_var_a, dt_2 * cv_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * cv_var_yawdd,
-    0.5 * dt_3 * cv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * cv_var_yawdd, dt_2 * cv_var_yawdd;
+      0.5 * dt_3 * cos_yaw * cv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * cv_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * cv_var_a, 0.5 * dt_3 * sin_yaw * cv_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * cv_var_a,
+      0.5 * dt_3 * sin_yaw * cv_var_a, dt_2 * cv_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * cv_var_yawdd,
+      0.5 * dt_3 * cv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * cv_var_yawdd, dt_2 * cv_var_yawdd;
   q_ctrv_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * ctrv_var_a, 0.5 * 0.5 * dt_4 * cos_sin * ctrv_var_a,
-    0.5 * dt_3 * cos_yaw * ctrv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * ctrv_var_a,
-    0.5 * 0.5 * dt_4 * sin_2_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, 0, 0,
-    0.5 * dt_3 * cos_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, dt_2 * ctrv_var_a, 0, 0, 0, 0, 0,
-    0.5 * 0.5 * dt_4 * ctrv_var_yawdd, 0.5 * dt_3 * ctrv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * ctrv_var_yawdd,
-    dt_2 * ctrv_var_yawdd;
+      0.5 * dt_3 * cos_yaw * ctrv_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * ctrv_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, 0, 0,
+      0.5 * dt_3 * cos_yaw * ctrv_var_a, 0.5 * dt_3 * sin_yaw * ctrv_var_a, dt_2 * ctrv_var_a, 0, 0, 0, 0, 0,
+      0.5 * 0.5 * dt_4 * ctrv_var_yawdd, 0.5 * dt_3 * ctrv_var_yawdd, 0, 0, 0, 0.5 * dt_3 * ctrv_var_yawdd,
+      dt_2 * ctrv_var_yawdd;
   q_rm_ << 0.5 * 0.5 * dt_4 * cos_2_yaw * rm_var_a, 0.5 * 0.5 * dt_4 * cos_sin * rm_var_a,
-    0.5 * dt_3 * cos_yaw * rm_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * rm_var_a,
-    0.5 * 0.5 * dt_4 * sin_2_yaw * rm_var_a, 0.5 * dt_3 * sin_yaw * rm_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * rm_var_a,
-    0.5 * dt_3 * sin_yaw * rm_var_a, dt_2 * rm_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * rm_var_yawdd,
-    0.5 * dt_3 * rm_var_yawdd, 0, 0, 0, 0.5 * dt_3 * rm_var_yawdd, dt_2 * rm_var_yawdd;
+      0.5 * dt_3 * cos_yaw * rm_var_a, 0, 0, 0.5 * 0.5 * dt_4 * cos_sin * rm_var_a,
+      0.5 * 0.5 * dt_4 * sin_2_yaw * rm_var_a, 0.5 * dt_3 * sin_yaw * rm_var_a, 0, 0, 0.5 * dt_3 * cos_yaw * rm_var_a,
+      0.5 * dt_3 * sin_yaw * rm_var_a, dt_2 * rm_var_a, 0, 0, 0, 0, 0, 0.5 * 0.5 * dt_4 * rm_var_yawdd,
+      0.5 * dt_3 * rm_var_yawdd, 0, 0, 0, 0.5 * dt_3 * rm_var_yawdd, dt_2 * rm_var_yawdd;
 }
 
 void UKF::prediction(const double delta_t, const int model_ind)

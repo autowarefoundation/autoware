@@ -297,9 +297,8 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
       label_marker.id = object.id;
 
-      std::string label_text;
-      if(!object.label.empty())
-        label_text = object.label + " "; //Object Class if available
+      if(object.label != "unknown")
+        label_marker.text = object.label + " "; //Object Class if available
 
       if (object.pose_reliable)
       {
@@ -324,10 +323,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
         std::stringstream kmh_velocity_stream;
         kmh_velocity_stream << std::fixed << std::setprecision(1) << (velocity * 3.6);
         std::string text = "<" + std::to_string(object.id) + "> " + kmh_velocity_stream.str() + " km/h";
-        if(!object.label.empty())
-          label_marker.text = label_text + text;
-        else
-          label_marker.text = text;
+        label_marker.text += text;
       }
       else
         continue;
