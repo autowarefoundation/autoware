@@ -33,7 +33,7 @@
 /**
 * Initializes Unscented Kalman filter
 */
-UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3)
+UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3) , num_motion_model_(3)
 {
   // initial state vector
   x_merge_ = Eigen::MatrixXd(5, 1);
@@ -446,7 +446,9 @@ void UKF::predictionIMMUKF(const double dt)
   updateLidar(MotionModel::CTRV);
   updateLidar(MotionModel::RM);
 
-  // predictionLidarMeasurement(Motion, const int num_meas_state)
+  // predictionLidarMeasurement(MotionModel::CV, num_lidar_state_);
+  // predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
+  // predictionLidarMeasurement(MotionModel::RM, num_lidar_state_);
 }
 
 void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
@@ -490,175 +492,132 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   // calculating association probability
   double num_meas = object_vec.size();
   double b = 2 * num_meas * (1 - detection_probability * gate_probability) / (gating_thres * detection_probability);
-  double e_cv_sum = 0;
-  double e_ctrv_sum = 0;
-  double e_rm_sum = 0;
-
-  std::vector<double> e_cv_vec;
-  std::vector<double> e_ctrv_vec;
-  std::vector<double> e_rm_vec;
-
-  std::vector<Eigen::VectorXd> diff_cv_vec;
-  std::vector<Eigen::VectorXd> diff_ctrv_vec;
-  std::vector<Eigen::VectorXd> diff_rm_vec;
-
-  std::vector<Eigen::VectorXd> meas_vec;
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    Eigen::VectorXd meas = Eigen::VectorXd(2);
-    meas(0) = object_vec[i].pose.position.x;
-    meas(1) = object_vec[i].pose.position.y;
-    meas_vec.push_back(meas);
-
-    Eigen::VectorXd diff_cv = meas - z_pred_cv_;
-    Eigen::VectorXd diff_ctrv = meas - z_pred_ctrv_;
-    Eigen::VectorXd diff_rm = meas - z_pred_rm_;
-
-    diff_cv_vec.push_back(diff_cv);
-    diff_ctrv_vec.push_back(diff_ctrv);
-    diff_rm_vec.push_back(diff_rm);
-
-    double e_cv = exp(-0.5 * diff_cv.transpose() * s_cv_.inverse() * diff_cv);
-    double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_ctrv_.inverse() * diff_ctrv);
-    double e_rm = exp(-0.5 * diff_rm.transpose() * s_rm_.inverse() * diff_rm);
-
-    e_cv_vec.push_back(e_cv);
-    e_ctrv_vec.push_back(e_ctrv);
-    e_rm_vec.push_back(e_rm);
-
-    e_cv_sum += e_cv;
-    e_ctrv_sum += e_ctrv;
-    e_rm_sum += e_rm;
-  }
-  double beta_cv_zero = b / (b + e_cv_sum);
-  double beta_ctrv_zero = b / (b + e_ctrv_sum);
-  double beta_rm_zero = b / (b + e_rm_sum);
-
-  std::vector<double> beta_cv;
-  std::vector<double> beta_ctrv;
-  std::vector<double> beta_rm;
-
-  if (num_meas != 0)
-  {
-    std::vector<double>::iterator max_cv_iter = std::max_element(e_cv_vec.begin(), e_cv_vec.end());
-    std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
-    std::vector<double>::iterator max_rm_iter = std::max_element(e_rm_vec.begin(), e_rm_vec.end());
-    int max_cv_ind = std::distance(e_cv_vec.begin(), max_cv_iter);
-    int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
-    int max_rm_ind = std::distance(e_rm_vec.begin(), max_rm_iter);
-    cv_meas_ = meas_vec[max_cv_ind];
-    ctrv_meas_ = meas_vec[max_ctrv_ind];
-    rm_meas_ = meas_vec[max_rm_ind];
-  }
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    double temp_cv = e_cv_vec[i] / (b + e_cv_sum);
-    double temp_ctrv = e_ctrv_vec[i] / (b + e_ctrv_sum);
-    double temp_rm = e_rm_vec[i] / (b + e_rm_sum);
-
-    beta_cv.push_back(temp_cv);
-    beta_ctrv.push_back(temp_ctrv);
-    beta_rm.push_back(temp_rm);
-  }
-  Eigen::VectorXd sigma_x_cv;
-  Eigen::VectorXd sigma_x_ctrv;
-  Eigen::VectorXd sigma_x_rm;
-  sigma_x_cv.setZero(2);
-  sigma_x_ctrv.setZero(2);
-  sigma_x_rm.setZero(2);
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    sigma_x_cv += beta_cv[i] * diff_cv_vec[i];
-    sigma_x_ctrv += beta_ctrv[i] * diff_ctrv_vec[i];
-    sigma_x_rm += beta_rm[i] * diff_rm_vec[i];
-  }
-
-  Eigen::MatrixXd sigma_p_cv;
-  Eigen::MatrixXd sigma_p_ctrv;
-  Eigen::MatrixXd sigma_p_rm;
-  sigma_p_cv.setZero(2, 2);
-  sigma_p_ctrv.setZero(2, 2);
-  sigma_p_rm.setZero(2, 2);
-
-  for (size_t i = 0; i < num_meas; i++)
-  {
-    sigma_p_cv += (beta_cv[i] * diff_cv_vec[i] * diff_cv_vec[i].transpose() - sigma_x_cv * sigma_x_cv.transpose());
-    sigma_p_ctrv +=
-        (beta_ctrv[i] * diff_ctrv_vec[i] * diff_ctrv_vec[i].transpose() - sigma_x_ctrv * sigma_x_ctrv.transpose());
-    sigma_p_rm += (beta_rm[i] * diff_rm_vec[i] * diff_rm_vec[i].transpose() - sigma_x_rm * sigma_x_rm.transpose());
-  }
-
-  // update x and P
-  x_cv_ = x_cv_ + k_cv_ * sigma_x_cv;
-  x_ctrv_ = x_ctrv_ + k_ctrv_ * sigma_x_ctrv;
-  x_rm_ = x_rm_ + k_rm_ * sigma_x_rm;
-
-  while (x_cv_(3) > M_PI)
-    x_cv_(3) -= 2. * M_PI;
-  while (x_cv_(3) < -M_PI)
-    x_cv_(3) += 2. * M_PI;
-  while (x_ctrv_(3) > M_PI)
-    x_ctrv_(3) -= 2. * M_PI;
-  while (x_ctrv_(3) < -M_PI)
-    x_ctrv_(3) += 2. * M_PI;
-  while (x_rm_(3) > M_PI)
-    x_rm_(3) -= 2. * M_PI;
-  while (x_rm_(3) < -M_PI)
-    x_rm_(3) += 2. * M_PI;
-
-  Eigen::MatrixXd p_pre_cv = p_cv_;
-  Eigen::MatrixXd p_pre_ctrv = p_ctrv_;
-  Eigen::MatrixXd p_pre_rm = p_rm_;
-
-  if (num_meas != 0)
-  {
-    p_cv_ = beta_cv_zero * p_pre_cv + (1 - beta_cv_zero) * (p_pre_cv - k_cv_ * s_cv_ * k_cv_.transpose()) +
-            k_cv_ * sigma_p_cv * k_cv_.transpose();
-    p_ctrv_ = beta_ctrv_zero * p_pre_ctrv +
-              (1 - beta_ctrv_zero) * (p_pre_ctrv - k_ctrv_ * s_ctrv_ * k_ctrv_.transpose()) +
-              k_ctrv_ * sigma_p_ctrv * k_ctrv_.transpose();
-    p_rm_ = beta_rm_zero * p_pre_rm + (1 - beta_rm_zero) * (p_pre_rm - k_rm_ * s_rm_ * k_rm_.transpose()) +
-            k_rm_ * sigma_p_rm * k_rm_.transpose();
-  }
-  else
-  {
-    p_cv_ = p_pre_cv - k_cv_ * s_cv_ * k_cv_.transpose();
-    p_ctrv_ = p_pre_ctrv - k_ctrv_ * s_ctrv_ * k_ctrv_.transpose();
-    p_rm_ = p_pre_rm - k_rm_ * s_rm_ * k_rm_.transpose();
-  }
 
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
-
   findMaxZandS(max_det_z, max_det_s);
   double Vk = M_PI * sqrt(gating_thres * max_det_s.determinant());
 
-  double lambda_cv, lambda_ctrv, lambda_rm;
-  if (num_meas != 0)
+  for (int motion_ind = 0; motion_ind < num_motion_model_; motion_ind++)
   {
-    lambda_cv =
-        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-        detection_probability * pow(Vk, 1 - num_meas) * e_cv_sum / (num_meas * sqrt(2 * M_PI * s_cv_.determinant()));
-    lambda_ctrv = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-                  detection_probability * pow(Vk, 1 - num_meas) * e_ctrv_sum /
-                      (num_meas * sqrt(2 * M_PI * s_ctrv_.determinant()));
-    lambda_rm =
-        (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-        detection_probability * pow(Vk, 1 - num_meas) * e_rm_sum / (num_meas * sqrt(2 * M_PI * s_rm_.determinant()));
-  }
-  else
-  {
-    lambda_cv = (1 - gate_probability * detection_probability);
-    lambda_ctrv = (1 - gate_probability * detection_probability);
-    lambda_rm = (1 - gate_probability * detection_probability);
-  }
+    Eigen::VectorXd z_pred(2);
+    Eigen::MatrixXd s(2, 2);
+    Eigen::MatrixXd x(5, 1);
+    Eigen::MatrixXd k(5, 2);
+    Eigen::MatrixXd p(5, 5);
+    Eigen::VectorXd max_meas(2);
+    double e_sum = 0;
+    std::vector<double> e_vec;
+    std::vector<Eigen::VectorXd> diff_vec;
+    std::vector<Eigen::VectorXd> meas_vec;
 
-  lambda_vec.push_back(lambda_cv);
-  lambda_vec.push_back(lambda_ctrv);
-  lambda_vec.push_back(lambda_rm);
+    if (motion_ind == MotionModel::CV)
+    {
+      z_pred = z_pred_cv_;
+      s = s_cv_;
+      x = x_cv_;
+      k = k_cv_;
+      p = p_cv_;
+    }
+    else if (motion_ind == MotionModel::CTRV)
+    {
+      z_pred = z_pred_ctrv_;
+      s = s_ctrv_;
+      x = x_ctrv_;
+      k = k_ctrv_;
+      p = p_ctrv_;
+    }
+    else
+    {
+      z_pred = z_pred_rm_;
+      s = s_rm_;
+      x = x_rm_;
+      k = k_rm_;
+      p = p_rm_;
+    }
+
+    for (size_t i = 0; i < num_meas; i++)
+    {
+      Eigen::VectorXd meas = Eigen::VectorXd(2);
+      meas(0) = object_vec[i].pose.position.x;
+      meas(1) = object_vec[i].pose.position.y;
+      meas_vec.push_back(meas);
+      Eigen::VectorXd diff = meas - z_pred;
+      diff_vec.push_back(diff);
+      double e = exp(-0.5 * diff.transpose() * s.inverse() * diff);
+      e_vec.push_back(e);
+      e_sum += e;
+    }
+    double beta_zero = b / (b + e_sum);
+
+    std::vector<double> beta_vec;
+
+    if (num_meas != 0)
+    {
+      std::vector<double>::iterator max_iter = std::max_element(e_vec.begin(), e_vec.end());
+      int max_ind = std::distance(e_vec.begin(), max_iter);
+      max_meas = meas_vec[max_ind];
+    }
+
+    for (size_t i = 0; i < num_meas; i++)
+    {
+      double temp = e_vec[i] / (b + e_sum);
+      beta_vec.push_back(temp);
+    }
+    Eigen::VectorXd sigma_x;
+    sigma_x.setZero(2);
+
+    for (size_t i = 0; i < num_meas; i++)
+      sigma_x += beta_vec[i] * diff_vec[i];
+
+    Eigen::MatrixXd sigma_p;
+    sigma_p.setZero(2, 2);
+
+    for (size_t i = 0; i < num_meas; i++)
+      sigma_p += (beta_vec[i] * diff_vec[i] * diff_vec[i].transpose() - sigma_x * sigma_x.transpose());
+
+    // update x and P
+    Eigen::MatrixXd updated_x(5, 1);
+    updated_x = x + k * sigma_x;
+
+    updated_x(3) = normalizeAngle(updated_x(3));
+
+    Eigen::MatrixXd updated_p(5, 5);
+    if (num_meas != 0)
+      updated_p = beta_zero * p + (1 - beta_zero) * (p - k * s * k.transpose()) + k * sigma_p * k.transpose();
+    else
+      updated_p = p - k * s * k.transpose();
+
+    double lambda;
+    if (num_meas != 0)
+    {
+      lambda = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
+               detection_probability * pow(Vk, 1 - num_meas) * e_sum / (num_meas * sqrt(2 * M_PI * s.determinant()));
+    }
+    else
+      lambda = (1 - gate_probability * detection_probability);
+
+    lambda_vec.push_back(lambda);
+
+    if (motion_ind == MotionModel::CV)
+    {
+      cv_meas_ = max_meas;
+      x_cv_ = updated_x;
+      p_cv_ = updated_p;
+    }
+    else if (motion_ind == MotionModel::CTRV)
+    {
+      ctrv_meas_ = max_meas;
+      x_ctrv_ = updated_x;
+      p_ctrv_ = updated_p;
+    }
+    else
+    {
+      rm_meas_ = max_meas;
+      x_rm_ = updated_x;
+      p_rm_ = updated_p;
+    }
+  }
 }
 
 void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec)
@@ -717,6 +676,9 @@ void UKF::updateIMMUKF(const double detection_probability, const double gate_pro
   *  IMM Update
   ****************************************************************************/
   // update each motion's x and p
+  // updateLidarMeasurement(MotionModel::CV, num_lidar_state_);
+  // updateLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
+  // updateLidarMeasurement(MotionModel::RM, num_lidar_state_);
   std::vector<double> lambda_vec;
   updateEachMotion(detection_probability, gate_probability, gating_thres, object_vec, lambda_vec);
   /*****************************************************************************
