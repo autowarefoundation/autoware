@@ -48,6 +48,7 @@ void DecisionMakerNode::updateSensorInitState(cstring_t& state_name, int status)
   {
     ROS_INFO("DecisionMaker is in simulation mode");
     tryNextState("sensor_is_ready");
+    return;
   }
   else if (isEventFlagTrue("received_pointcloud_for_NDT"))
   {
