@@ -1,16 +1,19 @@
 <launch>
 
+  <!-- Relay behavior configurations -->
   <arg name="safety_waypoints_size" default="100" />
   <arg name="update_rate" default="10" />
 
+  <!-- Avoidance behavior configurations -->
   <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
   <arg name="enable_avoidance" default="false" />
-  <arg name="search_waypoints_size" default="50" />
-  <arg name="search_waypoints_delta" default="2" />
   <arg name="avoid_waypoints_velocity" default="10.0" />
   <arg name="avoid_start_velocity" default="3.0" />
   <arg name="replan_interval" default="2.0" />
+  <arg name="search_waypoints_size" default="50" />
+  <arg name="search_waypoints_delta" default="2" />
 
+  <!-- A* search configurations -->
   <arg name="use_back" default="false" />
   <arg name="use_potential_heuristic" default="true" />
   <arg name="use_wavefront_heuristic" default="false" />
@@ -20,11 +23,11 @@
   <arg name="robot_base2back" default="1.0" />
   <arg name="minimum_turning_radius" default="6.0" />
   <arg name="theta_size" default="48" />
-  <arg name="goal_angle_range" default="6.0" />
   <arg name="curve_weight" default="1.2" />
   <arg name="reverse_weight" default="2.00" />
   <arg name="lateral_goal_range" default="0.5" />
   <arg name="longitudinal_goal_range" default="2.0" />
+  <arg name="angle_goal_range" default="6.0" />
   <arg name="obstacle_threshold" default="100" />
   <arg name="potential_weight" default="10.0" />
   <arg name="distance_heuristic_weight" default="1.0" />

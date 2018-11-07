@@ -1,9 +1,11 @@
 <launch>
 
+  <!-- Navi configurations -->
   <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
   <arg name="waypoints_velocity" default="5.0" />
-  <arg name="update_rate" default="1" />
+  <arg name="update_rate" default="1.0" />
 
+  <!-- A* search configurations -->
   <arg name="use_back" default="true" />
   <arg name="use_potential_heuristic" default="true" />
   <arg name="use_wavefront_heuristic" default="false" />
@@ -13,11 +15,11 @@
   <arg name="robot_base2back" default="1.0" />
   <arg name="minimum_turning_radius" default="6.0" />
   <arg name="theta_size" default="48" />
-  <arg name="goal_angle_range" default="6.0" />
   <arg name="curve_weight" default="1.2" />
   <arg name="reverse_weight" default="2.00" />
   <arg name="lateral_goal_range" default="0.5" />
   <arg name="longitudinal_goal_range" default="2.0" />
+  <arg name="angle_goal_range" default="6.0" />
   <arg name="obstacle_threshold" default="100" />
   <arg name="potential_weight" default="10.0" />
   <arg name="distance_heuristic_weight" default="1.0" />
@@ -26,6 +28,7 @@
     <remap from="costmap" to="$(arg costmap_topic)" />
     <param name="waypoints_velocity" value="$(arg waypoints_velocity)" />
     <param name="update_rate" value="$(arg update_rate)" />
+
     <param name="use_back" value="$(arg use_back)" />
     <param name="use_potential_heuristic" value="$(arg use_potential_heuristic)" />
     <param name="use_wavefront_heuristic" value="$(arg use_wavefront_heuristic)" />

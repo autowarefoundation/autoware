@@ -51,29 +51,29 @@ private:
   ros::NodeHandle n_;
 
   // base configs
-  bool use_back_;  // use backward driving
-  bool use_potential_heuristic_;
-  bool use_wavefront_heuristic_;
-  double time_limit_;  // msec
+  bool use_back_;                 // backward search
+  bool use_potential_heuristic_;  // potential cost function
+  bool use_wavefront_heuristic_;  // wavefront cost function
+  double time_limit_;             // planning time limit [msec]
 
-  // robot configs
-  double robot_length_;
-  double robot_width_;
-  double robot_base2back_;
-  double minimum_turning_radius_;  // varying by vehicles
+  // robot configs (TODO: obtain from vehicle_info)
+  double robot_length_;           // X [m]
+  double robot_width_;            // Y [m]
+  double robot_base2back_;        // base_link to rear [m]
+  double minimum_turning_radius_; // [m]]
 
   // search configs
-  int theta_size_;  // descritized angle size
-  double goal_angle_range_;
-  double curve_weight_;
-  double reverse_weight_;
-  double lateral_goal_range_;
-  double longitudinal_goal_range_;
+  int theta_size_;                  // descritized angle table size [-]
+  double curve_weight_;             // curve moving cost [-]
+  double reverse_weight_;           // backward moving cost [-]
+  double lateral_goal_range_;       // reaching threshold, lateral error [m]
+  double longitudinal_goal_range_;  // reaching threshold, longitudinal error [m]
+  double angle_goal_range_;         // reaching threshold, angle error [deg]
 
   // costmap configs
-  int obstacle_threshold_;  // more than this value is regarded as obstacles
-  double potential_weight_;
-  double distance_heuristic_weight_;
+  int obstacle_threshold_;            // obstacle threshold on grid [-]
+  double potential_weight_;           // weight of potential cost [-]
+  double distance_heuristic_weight_;  // obstacle threshold on grid [0,255]
 
   // hybrid astar variables
   std::vector<std::vector<NodeUpdate>> state_update_table_;

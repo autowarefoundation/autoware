@@ -49,26 +49,28 @@ private:
   tf::TransformListener tf_listener_;
 
   // params
-  int safety_waypoints_size_;
-  double update_rate_;
+  int safety_waypoints_size_;   // output waypoint size [-]
+  double update_rate_;          // publishing rate [Hz]
 
-  bool enable_avoidance_;
-  int search_waypoints_size_;
-  int search_waypoints_delta_;
-  double avoid_waypoints_velocity_;
-  double avoid_start_velocity_;
-  double replan_interval_;
+  bool enable_avoidance_;           // enable avoidance mode
+  double avoid_waypoints_velocity_; // constant velocity on planned waypoints [km/h]
+  double avoid_start_velocity_;     // self velocity for staring avoidance behavior [km/h]
+  double replan_interval_;          // replan interval for avoidance planning [Hz]
+  int search_waypoints_size_;       // range of waypoints for incremental search [-]
+  int search_waypoints_delta_;      // skipped waypoints for incremental search [-]
 
   // classes
   AstarSearch astar_;
   State state_;
+
+  // threads
+  std::thread astar_thread_;
 
   // variables
   bool found_avoid_path_;
   int closest_waypoint_index_;
   int obstacle_waypoint_index_;
   int goal_waypoint_index_;
-  std::thread astar_thread_;
   nav_msgs::OccupancyGrid costmap_;
   autoware_msgs::Lane base_waypoints_;
   autoware_msgs::Lane safety_waypoints_;

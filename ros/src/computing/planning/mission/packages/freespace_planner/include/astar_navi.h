@@ -32,8 +32,8 @@ private:
   tf::TransformListener tf_listener_;
 
   // params
-  double waypoints_velocity_;  // [kmph]
-  double update_rate_;        // [Hz]
+  double waypoints_velocity_;   // constant velocity on planned waypoints [km/h]
+  double update_rate_;          // replanning and publishing rate [Hz]
 
   // classes
   AstarSearch astar;

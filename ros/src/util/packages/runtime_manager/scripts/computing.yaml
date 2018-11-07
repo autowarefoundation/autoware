@@ -1763,16 +1763,8 @@ params :
       cmd_param:
         dash  : ''
         delim : ':='
-    - name  : use_back
-      desc  : Use reverse motion for planning
-      label : Use Reverse Motion
-      kind  : checkbox
-      v     : False
-      cmd_param:
-        dash  : ''
-        delim : ':='
-    - name  : waypoints_velocity
-      desc  : Velocity of planned waypoints
+    - name  : avoid_waypoints_velocity
+      desc  : Velocity on avoiding waypoints
       label : Waypoint Velocity [km/h]
       min   : 0.0
       max   : 40.0
@@ -1780,8 +1772,26 @@ params :
       cmd_param :
         dash  : ''
         delim : ':='
+    - name  : avoid_start_velocity
+      desc  : Self velocity for staring avoidance behavior
+      label : Avoidance Start Velocity [km/h]
+      min   : 0.0
+      max   : 20.0
+      v     : 3.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
+    - name  : replan_interval
+      desc  : Replan interval for avoidance planning
+      label : Replan Interval [s]
+      min   : 0.0
+      max   : 10.0
+      v     : 2.0
+      cmd_param :
+        dash  : ''
+        delim : ':='
     - name  : costmap_topic
-      desc  : Costmap topic for planning
+      desc  : Costmap topic for avoidance planning
       label : Costmap Topic
       kind  : str
       v     : grid_map_filter_visualization/distance_transform
@@ -2659,7 +2669,7 @@ params :
         dash  : ''
         delim : ':='
     - name  : waypoints_velocity
-      desc  : Velocity of planned waypoints
+      desc  : Velocity on planned waypoints
       label : Waypoint Velocity [km/h]
       min   : 0.0
       max   : 40.0

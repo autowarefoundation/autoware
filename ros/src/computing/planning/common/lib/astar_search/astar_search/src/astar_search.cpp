@@ -21,7 +21,7 @@ AstarSearch::AstarSearch()
 
   // search configs
   private_nh_.param<int>("theta_size", theta_size_, 48);
-  private_nh_.param<double>("goal_angle_range", goal_angle_range_, 6.0);
+  private_nh_.param<double>("angle_goal_range", angle_goal_range_, 6.0);
   private_nh_.param<double>("curve_weight", curve_weight_, 1.2);
   private_nh_.param<double>("reverse_weight", reverse_weight_, 2.00);
   private_nh_.param<double>("lateral_goal_range", lateral_goal_range_, 0.5);
@@ -487,7 +487,7 @@ bool AstarSearch::isGoal(double x, double y, double theta)
       lateral_goal_range_ / 2.0;  // [meter], divide by 2 means we check left and right
   static const double longitudinal_goal_range =
       longitudinal_goal_range_ / 2.0;                                         // [meter], check only behind of the goal
-  static const double goal_angle = M_PI * (goal_angle_range_ / 2.0) / 180.0;  // degrees -> radian
+  static const double goal_angle = M_PI * (angle_goal_range_ / 2.0) / 180.0;  // degrees -> radian
 
   // Calculate the node coordinate seen from the goal point
   tf::Point p(x, y, 0);
