@@ -238,9 +238,11 @@ void TwistGate::watchdog_timer()
         send_emergency_cmd = true;
       }
       // Set Emergency Stop
-      emergency_stop_msg_.data = true;
       emergency_stop_pub_.publish(emergency_stop_msg_);
       ROS_WARN("Emergency Stop!");
+    }
+    else {
+      send_emergency_cmd = false;
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -249,11 +251,14 @@ void TwistGate::watchdog_timer()
 
 void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
 {
+  remote_cmd_time_ = ros::Time::now();
   command_mode_ = static_cast<CommandMode>(input_msg->control_mode);
   emergency_stop_msg_.data = static_cast<bool>(input_msg->vehicle_cmd.emergency);
-  remote_cmd_time_ = ros::Time::now();
 
-  if (command_mode_ == CommandMode::REMOTE)
+  // Update Emergency Mode
+  twist_gate_msg_.emergency = input_msg->vehicle_cmd.emergency;
+
+  if (command_mode_ == CommandMode::REMOTE && emergency_stop_msg_.data == false)
   {
     twist_gate_msg_.header.frame_id = input_msg->vehicle_cmd.header.frame_id;
     twist_gate_msg_.header.stamp = input_msg->vehicle_cmd.header.stamp;
@@ -266,7 +271,6 @@ void TwistGate::remote_cmd_callback(const remote_msgs_t::ConstPtr& input_msg)
     twist_gate_msg_.gear = input_msg->vehicle_cmd.gear;
     twist_gate_msg_.lamp_cmd = input_msg->vehicle_cmd.lamp_cmd;
     twist_gate_msg_.mode = input_msg->vehicle_cmd.mode;
-    twist_gate_msg_.emergency = input_msg->vehicle_cmd.emergency;
     vehicle_cmd_pub_.publish(twist_gate_msg_);
   }
 }
