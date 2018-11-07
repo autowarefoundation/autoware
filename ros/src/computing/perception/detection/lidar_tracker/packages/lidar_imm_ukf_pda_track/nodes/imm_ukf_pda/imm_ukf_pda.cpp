@@ -234,7 +234,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
       min_dist < distance_thres_)
   {
-    target.is_pose_reliable_ = true;
+    target.is_stable_ = true;
   }
 }
 
@@ -486,7 +486,8 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.z = q[2];
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].object_dimensions_;
-    dd.pose_reliable = targets_[i].is_pose_reliable_;
+    dd.pose_reliable = targets_[i].is_stable_;
+    dd.velocity_reliable = targets_[i].is_stable_;
     dd.valid = true;
     // store yaw rate for motion into dd.accerelation.linear.y
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
@@ -566,8 +567,8 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // reset is_pose_reliable_ to false
-    targets_[i].is_pose_reliable_ = false;
+    // reset is_stable_ to false
+    targets_[i].is_stable_ = false;
     targets_[i].is_static_ = false;
 
     if (targets_[i].tracking_num_ == TrackingState::Die)

@@ -140,7 +140,7 @@ UKF::UKF()
   is_static_ = false;
 
   // bounding box params
-  is_pose_reliable_ = false;
+  is_stable_ = false;
   object_dimensions_.x = 1.0;
   object_dimensions_.y = 1.0;
 

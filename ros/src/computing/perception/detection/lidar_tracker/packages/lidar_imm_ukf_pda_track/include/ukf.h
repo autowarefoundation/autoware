@@ -178,7 +178,7 @@ public:
   bool is_static_;
 
   // object msg information
-  bool is_pose_reliable_;
+  bool is_stable_;
 
   std::string object_label_;
   geometry_msgs::Pose object_pose_;
