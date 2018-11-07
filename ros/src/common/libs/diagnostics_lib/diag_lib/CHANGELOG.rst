@@ -2,6 +2,9 @@
 Changelog for package diag_lib
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
 * add filter to the fake_autoware_node

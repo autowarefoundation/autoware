@@ -2,12 +2,15 @@
 Changelog for package points_preprocessor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
 * Moved configuration messages to autoware_config_msgs
-* renamed topics to match, sensing workflow (`#1600 <https://github.com/kfunaoka/Autoware/issues/1600>`_)
+* renamed topics to match, sensing workflow (`#1600 <https://github.com/CPFL/Autoware/issues/1600>`_)
   [fix] renamed topics to match, sensing workflow on CompareMapFilter
-* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+* Feature/compare map filter (`#1559 <https://github.com/CPFL/Autoware/issues/1559>`_)
   * add compare map filter
   * add README
   * add copyright
