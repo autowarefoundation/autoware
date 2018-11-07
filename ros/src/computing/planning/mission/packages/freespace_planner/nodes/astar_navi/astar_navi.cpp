@@ -38,8 +38,8 @@ void AstarNavi::currentPoseCallback(const geometry_msgs::PoseStamped& msg)
   }
 
   current_pose_global_ = msg;
-  current_pose_local_.pose =
-      transformPose(current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
+  current_pose_local_.pose = transformPose(
+      current_pose_global_.pose, getTransform(costmap_.header.frame_id, current_pose_global_.header.frame_id));
   current_pose_local_.header.frame_id = costmap_.header.frame_id;
   current_pose_local_.header.stamp = current_pose_global_.header.stamp;
 
@@ -139,8 +139,8 @@ void AstarNavi::publishWaypoints(const nav_msgs::Path& path, const double& veloc
     autoware_msgs::Waypoint wp;
     wp.pose.header = lane.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(lane.header.frame_id, pose.header.frame_id));
-    wp.pose.pose.position.z = current_pose_global_.pose.position.z; // height = const
-    wp.twist.twist.linear.x = velocity / 3.6;
+    wp.pose.pose.position.z = current_pose_global_.pose.position.z;  // height = const
+    wp.twist.twist.linear.x = velocity / 3.6;  // velocity = const
     lane.waypoints.push_back(wp);
   }
 

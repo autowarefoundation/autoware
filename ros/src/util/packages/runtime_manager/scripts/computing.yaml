@@ -1797,7 +1797,7 @@ params :
       desc  : Costmap topic for avoidance planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/distance_transform
+      v     : grid_map_filter_visualization/dist_wayarea
       cmd_param:
         dash  : ''
         delim : ':='
@@ -2693,7 +2693,7 @@ params :
       desc  : Costmap topic for planning
       label : Costmap Topic
       kind  : str
-      v     : grid_map_filter_visualization/distance_transform
+      v     : grid_map_filter_visualization/dist_wayarea
       cmd_param :
         dash  : ''
         delim : ':='

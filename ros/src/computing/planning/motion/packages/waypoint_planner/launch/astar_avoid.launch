@@ -5,7 +5,7 @@
   <arg name="update_rate" default="10" />
 
   <!-- Avoidance behavior configurations -->
-  <arg name="costmap_topic" default="grid_map_filter_visualization/distance_transform" />
+  <arg name="costmap_topic" default="grid_map_filter_visualization/dist_wayarea" />
   <arg name="enable_avoidance" default="false" />
   <arg name="avoid_waypoints_velocity" default="10.0" />
   <arg name="avoid_start_velocity" default="3.0" />

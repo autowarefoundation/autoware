@@ -95,8 +95,8 @@ private:
 
   // functions
   bool checkInitialized();
-  void startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
-  void planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, State& state);
+  void startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, ros::WallTime& start_avoid_time);
+  void planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index, State& state, ros::WallTime& start_avoid_time);
   bool planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
   void mergeAvoidWaypoints(const nav_msgs::Path& path,const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints, int& end_of_avoid_index);
   void publishWaypoints(const autoware_msgs::Lane& base_waypoints);

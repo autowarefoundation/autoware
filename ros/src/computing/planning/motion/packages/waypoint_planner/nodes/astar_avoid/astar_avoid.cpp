@@ -107,6 +107,7 @@ void AstarAvoid::run()
   // main loop
   int end_of_avoid_index = -1;
   ros::WallTime start_plan_time = ros::WallTime::now();
+  ros::WallTime start_avoid_time = ros::WallTime::now();
   autoware_msgs::Lane current_waypoints, avoid_waypoints;
   ros::Rate rate(update_rate_);
 
@@ -150,7 +151,7 @@ void AstarAvoid::run()
           ROS_INFO("STOPPING -> PLANNING, Start A* planning");
           state_ = AstarAvoid::STATE::PLANNING;
           start_plan_time = ros::WallTime::now();
-          startPlanThread(current_waypoints, avoid_waypoints, end_of_avoid_index);
+          startPlanThread(current_waypoints, avoid_waypoints, end_of_avoid_index, start_avoid_time);
         }
       }
     }
@@ -173,7 +174,7 @@ void AstarAvoid::run()
       }
       else if (found_obstacle && avoid_velocity)
       {
-        bool replan = ((ros::WallTime::now() - start_plan_time).toSec() > replan_interval_);
+        bool replan = ((ros::WallTime::now() - start_avoid_time).toSec() > replan_interval_);
         if (replan)
         {
           ROS_INFO("AVOIDING -> STOPPING, Abort avoiding");
@@ -226,22 +227,23 @@ bool AstarAvoid::checkInitialized()
 }
 
 void AstarAvoid::startPlanThread(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints,
-                                 int& end_of_avoid_index)
+                                 int& end_of_avoid_index, ros::WallTime& start_avoid_time)
 {
   // start A* planning thread
   astar_thread_ = std::thread(&AstarAvoid::planWorker, this, std::ref(current_waypoints), std::ref(avoid_waypoints),
-                              std::ref(end_of_avoid_index), std::ref(state_));
+                              std::ref(end_of_avoid_index), std::ref(state_), std::ref(start_avoid_time));
   astar_thread_.detach();
 }
 
 void AstarAvoid::planWorker(const autoware_msgs::Lane& current_waypoints, autoware_msgs::Lane& avoid_waypoints,
-                            int& end_of_avoid_index, State& state)
+                            int& end_of_avoid_index, State& state, ros::WallTime& start_avoid_time)
 {
   if (planAvoidWaypoints(current_waypoints, avoid_waypoints, end_of_avoid_index))
   {
     if (state_ == AstarAvoid::STATE::PLANNING)
     {
       ROS_INFO("PLANNING -> AVOIDING, Found path");
+      start_avoid_time = ros::WallTime::now();
       state_ = AstarAvoid::STATE::AVOIDING;
     }
   }
@@ -323,8 +325,8 @@ void AstarAvoid::mergeAvoidWaypoints(const nav_msgs::Path& path, const autoware_
     autoware_msgs::Waypoint wp;
     wp.pose.header = avoid_waypoints.header;
     wp.pose.pose = transformPose(pose.pose, getTransform(avoid_waypoints.header.frame_id, pose.header.frame_id));
-    wp.pose.pose.position.z = current_pose_global_.pose.position.z; // height = const
-    wp.twist.twist.linear.x = avoid_waypoints_velocity_ / 3.6;  // velocity = const
+    wp.pose.pose.position.z = current_pose_global_.pose.position.z;  // height = const
+    wp.twist.twist.linear.x = avoid_waypoints_velocity_ / 3.6;       // velocity = const
     avoid_waypoints.waypoints.push_back(wp);
   }
 
