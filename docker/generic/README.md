@@ -10,7 +10,7 @@ To use the Autoware Docker, first make sure the NVIDIA drivers, Docker and nvidi
 ```
 $ cd Autoware/docker/generic/
 
-# Ubuntu 14.04 (Indigo)
+# Ubuntu 14.04 (Indigo) ** Deprecated, use Kinetic instead **
 $ sh build.sh indigo
 
 # Ubuntu 16.04 (Kinetic)
@@ -19,7 +19,7 @@ $ sh build.sh kinetic
 
 ## How to Run
 ```
-# Ubuntu 14.04 (Indigo)
+# Ubuntu 14.04 (Indigo) ** Deprecated, use Kinetic instead **
 $ ./run.sh -t latest-indigo
 
 # Ubuntu 16.04 (Kinetic)

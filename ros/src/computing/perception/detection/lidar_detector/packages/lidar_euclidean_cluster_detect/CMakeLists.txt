@@ -71,6 +71,7 @@ if (${CUDA_FOUND})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
     set(ROS_VERSION $ENV{ROS_DISTRO})
     if ("${ROS_VERSION}" MATCHES "(indigo)")
+        message(WARNING "Indigo is deprecated and will be removed in a future relase, please use Kinetic instead")
         set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
     endif()
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
