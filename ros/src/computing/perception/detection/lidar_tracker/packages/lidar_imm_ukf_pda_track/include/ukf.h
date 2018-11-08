@@ -179,11 +179,7 @@ public:
 
   // object msg information
   bool is_stable_;
-
-  std::string object_label_;
-  geometry_msgs::Pose object_pose_;
-  geometry_msgs::Vector3 object_dimensions_;
-  geometry_msgs::PolygonStamped object_polygon_;
+  autoware_msgs::DetectedObject object_;
 
   // for env classification
   Eigen::VectorXd init_meas_;
