@@ -4,6 +4,7 @@
   <arg name="device" default="can0"/>
   <arg name="loop_rate" default="100"/>
   <arg name="stop_time_sec" default="2"/>
+  <arg name="steering_offset_deg" default="0.0"/>
 
   <!-- Execute Autoware communicator -->
   <node pkg="ymc" name="g30esli_interface" type="g30esli_interface" output="log">
@@ -12,6 +13,7 @@
     <param name="device" value="$(arg device)"/>
     <param name="loop_rate" value="$(arg loop_rate)"/>
     <param name="stop_time_sec" value="$(arg stop_time_sec)"/>
+    <param name="steering_offset_deg" value="$(arg steering_offset_deg)"/>
   </node>
 
 </launch>

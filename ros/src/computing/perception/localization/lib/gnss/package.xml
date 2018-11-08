@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>gnss</name>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <description>The gnss package</description>
     <maintainer email="tomo@axe.bz">Tomomi HORII</maintainer>
     <license>BSD</license>
