@@ -1,6 +1,6 @@
 <package>
   <name>diag_msgs</name>
-  <version>1.9.0</version>
+  <version>1.9.1</version>
   <description>The libdiag package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>

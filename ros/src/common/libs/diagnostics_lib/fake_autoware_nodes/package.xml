@@ -1,6 +1,6 @@
 <package format="2">
   <name>fake_autoware_nodes</name>
-  <version>1.9.0</version>
+  <version>1.9.1</version>
   <description>The fake_autoware_nodes package</description>
 
   <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>
