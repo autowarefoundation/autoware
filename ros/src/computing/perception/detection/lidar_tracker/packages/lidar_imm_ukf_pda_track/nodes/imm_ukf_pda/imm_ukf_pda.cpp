@@ -226,10 +226,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   autoware_msgs::DetectedObject nearest_object;
   double min_dist = std::numeric_limits<double>::max();
   getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-  target.object_pose_ = nearest_object.pose;
-  target.object_dimensions_ = nearest_object.dimensions;
-  target.object_polygon_ = nearest_object.convex_hull;
-  target.object_label_ = nearest_object.label;
+  target.object_ = nearest_object;
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
       min_dist < distance_thres_)
   {
@@ -466,20 +463,23 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
 
     double tv = targets_[i].x_merge_(2);
     double tyaw = targets_[i].x_merge_(3);
+    double tyaw_rate = targets_[i].x_merge_(4);
+
     while (tyaw > M_PI)
       tyaw -= 2. * M_PI;
     while (tyaw < -M_PI)
       tyaw += 2. * M_PI;
 
-    // RPY to convert: 0, 0, targets_[i].x_merge_(3)
-    tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
+    tf::Quaternion q = tf::createQuaternionFromYaw(tyaw);
+
     autoware_msgs::DetectedObject dd;
-    dd.header = input.header;
+    dd = targets_[i].object_;
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
-    dd.pose = targets_[i].object_pose_;
+    dd.acceleration.linear.y = tyaw_rate;
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
+    
     if (!std::isnan(q[0]))
       dd.pose.orientation.x = q[0];
     if (!std::isnan(q[1]))
@@ -488,13 +488,12 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
       dd.pose.orientation.z = q[2];
     if (!std::isnan(q[3]))
       dd.pose.orientation.w = q[3];
-    dd.dimensions = targets_[i].object_dimensions_;
+
     dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;
-    dd.valid = true;
-    // store yaw rate for motion into dd.accerelation.linear.y
-    dd.acceleration.linear.y = targets_[i].x_merge_(4);
+
     updateBehaviorState(targets_[i], dd);
+
     detected_objects_output.objects.push_back(dd);
   }
 }

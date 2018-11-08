@@ -141,8 +141,8 @@ UKF::UKF()
 
   // bounding box params
   is_stable_ = false;
-  object_dimensions_.x = 1.0;
-  object_dimensions_.y = 1.0;
+  object_.dimensions.x = 1.0;
+  object_.dimensions.y = 1.0;
 
   // for static classification
   init_meas_ = Eigen::VectorXd(2);
