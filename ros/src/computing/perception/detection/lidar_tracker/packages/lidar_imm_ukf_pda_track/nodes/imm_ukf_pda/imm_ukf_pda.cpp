@@ -926,7 +926,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     else  // immukfpda filter
     {
       // immukf prediction step
-      targets_[i].predictionIMMUKF(dt);
+      targets_[i].predictionIMMUKF(dt, use_vectormap_);
       // data association
       bool is_skip_target;
       std::vector<autoware_msgs::DetectedObject> object_vec;

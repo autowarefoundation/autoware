@@ -200,6 +200,10 @@ UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3) , n
   k_lidar_direction_ctrv_ = Eigen::MatrixXd(num_state_, num_lidar_direction_state_) ;
   k_lidar_direction_rm_  = Eigen::MatrixXd (num_state_, num_lidar_direction_state_) ;
 
+  is_direction_cv_available_ = false;
+  is_direction_ctrv_available_ = false;
+  is_direction_rm_avaialable_ = false;
+
 }
 
 double UKF::normalizeAngle(const double angle)
@@ -422,7 +426,7 @@ void UKF::predictionSUKF(const double dt)
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
 }
 
-void UKF::predictionIMMUKF(const double dt)
+void UKF::predictionIMMUKF(const double dt, const bool use_vectormap)
 {
   /*****************************************************************************
   *  Init covariance Q if it is needed
@@ -445,6 +449,13 @@ void UKF::predictionIMMUKF(const double dt)
   predictionLidarMeasurement(MotionModel::CV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::RM, num_lidar_state_);
+
+  if(use_vectormap)
+  {
+    predictionLidarMeasurement(MotionModel::CV, num_lidar_direction_state_);
+    predictionLidarMeasurement(MotionModel::CTRV, num_lidar_direction_state_);
+    predictionLidarMeasurement(MotionModel::RM, num_lidar_direction_state_);
+  }
 }
 
 void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
@@ -650,7 +661,8 @@ void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_ve
   // get most likely measurement ctrv_meas_
   updateLikelyMeasurementForCTRV(object_vec);
 
-  updateLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
+  // updateKalmanGain(MotionModel::CTRV, num_lidar_state_);
+  updateKalmanGain(MotionModel::CTRV);
 
   Eigen::VectorXd z = Eigen::VectorXd(2);
   z << ctrv_meas_(0), ctrv_meas_(1);
@@ -673,10 +685,13 @@ void UKF::updateIMMUKF(const double detection_probability, const double gate_pro
   *  IMM Update
   ****************************************************************************/
   // update kalman gain
-  updateLidarMeasurement(MotionModel::CV, num_lidar_state_);
-  updateLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
-  updateLidarMeasurement(MotionModel::RM, num_lidar_state_);
-  
+  // updateKalmanGain(MotionModel::CV, num_lidar_state_);
+  // updateKalmanGain(MotionModel::CTRV, num_lidar_state_);
+  // updateKalmanGain(MotionModel::RM, num_lidar_state_);
+  updateKalmanGain(MotionModel::CV);
+  updateKalmanGain(MotionModel::CTRV);
+  updateKalmanGain(MotionModel::RM);
+
   // update state varibale x and state covariance p
   std::vector<double> lambda_vec;
   updateEachMotion(detection_probability, gate_probability, gating_thres, object_vec, lambda_vec);
@@ -943,145 +958,34 @@ void UKF::prediction(const double delta_t, const int model_ind)
   }
 }
 
-void UKF::updateLidar(const int model_ind)
-{
-  /*****************************************************************************
- *  Initialize model parameters
- ****************************************************************************/
-  Eigen::VectorXd x(x_cv_.rows());
-  Eigen::MatrixXd P(p_cv_.rows(), p_cv_.cols());
-  Eigen::MatrixXd r(2, 2);
-  Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  if (model_ind == MotionModel::CV)
-  {
-    x = x_cv_.col(0);
-    r = r_cv_;
-    x_sig_pred = x_sig_pred_cv_;
-  }
-  else if (model_ind == MotionModel::CTRV)
-  {
-    x = x_ctrv_.col(0);
-    r = r_ctrv_;
-    x_sig_pred = x_sig_pred_ctrv_;
-  }
-  else
-  {
-    x = x_rm_.col(0);
-    r = r_rm_;
-    x_sig_pred = x_sig_pred_rm_;
-  }
-
-  // set measurement dimension, lidar can measure p_x and p_y
-  int n_z = 2;
-
-  // create matrix for sigma points in measurement space
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(n_z, 2 * num_state_ + 1);
-
-  // transform sigma points into measurement space
-  for (int i = 0; i < 2 * num_state_ + 1; i++)
-  {  // 2n+1 simga points
-    // extract values for better readibility
-    double p_x = x_sig_pred(0, i);
-    double p_y = x_sig_pred(1, i);
-
-    // measurement model
-    z_sig(0, i) = p_x;
-    z_sig(1, i) = p_y;
-  }
-
-  // mean predicted measurement
-  Eigen::VectorXd z_pred = Eigen::VectorXd(n_z);
-  z_pred.fill(0.0);
-  for (int i = 0; i < 2 * num_state_ + 1; i++)
-  {
-    z_pred = z_pred + weights_s_(i) * z_sig.col(i);
-  }
-
-  // measurement covariance matrix S
-  Eigen::MatrixXd S = Eigen::MatrixXd(n_z, n_z);
-  S.fill(0.0);
-  for (int i = 0; i < 2 * num_state_ + 1; i++)
-  {  // 2n+1 simga points
-    // residual
-    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-    S = S + weights_c_(i) * z_diff * z_diff.transpose();
-  }
-
-  // add measurement noise covariance matrix
-  S = S + r;
-
-  // create matrix for cross correlation Tc
-  Eigen::MatrixXd Tc = Eigen::MatrixXd(num_state_, n_z);
-
-  /*****************************************************************************
-  *  UKF Update for Lidar
-  ****************************************************************************/
-  // calculate cross correlation matrix
-  Tc.fill(0.0);
-  for (int i = 0; i < 2 * num_state_ + 1; i++)
-  {  // 2n+1 simga points
-    // residual
-    Eigen::VectorXd z_diff = z_sig.col(i) - z_pred;
-    // state difference
-    Eigen::VectorXd x_diff = x_sig_pred.col(i) - x;
-
-    while (x_diff(3) > M_PI)
-      x_diff(3) -= 2. * M_PI;
-    while (x_diff(3) < -M_PI)
-      x_diff(3) += 2. * M_PI;
-
-    Tc = Tc + weights_c_(i) * x_diff * z_diff.transpose();
-  }
-
-  Eigen::MatrixXd K = Tc * S.inverse();
-
-  /*****************************************************************************
-  *  Update model parameters
-  ****************************************************************************/
-  if (model_ind == MotionModel::CV)
-  {
-    x_cv_.col(0) = x;
-    x_sig_pred_cv_ = x_sig_pred;
-    z_pred_cv_ = z_pred;
-    s_cv_ = S;
-    k_cv_ = K;
-  }
-  else if (model_ind == MotionModel::CTRV)
-  {
-    x_ctrv_.col(0) = x;
-    x_sig_pred_ctrv_ = x_sig_pred;
-    z_pred_ctrv_ = z_pred;
-    s_ctrv_ = S;
-    k_ctrv_ = K;
-  }
-  else
-  {
-    x_rm_.col(0) = x;
-    x_sig_pred_rm_ = x_sig_pred;
-    z_pred_rm_ = z_pred;
-    s_rm_ = S;
-    k_rm_ = K;
-  }
-}
-
-void UKF::updateLidarMeasurement(const int motion_ind, const int num_meas_state)
+// void UKF::updateKalmanGain(const int motion_ind, const int num_meas_state)
+void UKF::updateKalmanGain(const int motion_ind)
 {
   Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  Eigen::VectorXd z_pred(num_meas_state);
-  Eigen::MatrixXd s_pred(num_meas_state, num_meas_state);
+  // Eigen::VectorXd z_pred(num_meas_state);
+  // Eigen::MatrixXd s_pred(num_meas_state, num_meas_state);
+  Eigen::VectorXd z_pred;
+  Eigen::MatrixXd s_pred;
+  int num_meas_state = 0;
   if(motion_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
     x_sig_pred = x_sig_pred_cv_;
-    if(num_meas_state == num_lidar_direction_state_)
+    if(is_direction_cv_available_)
     {
+      num_meas_state = num_lidar_direction_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_lidar_direction_cv_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_lidar_direction_cv_;
     }
     else
     {
+      num_meas_state = num_lidar_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_cv_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_cv_;
     }
   }
@@ -1089,14 +993,20 @@ void UKF::updateLidarMeasurement(const int motion_ind, const int num_meas_state)
   {
     x = x_ctrv_.col(0);
     x_sig_pred = x_sig_pred_ctrv_;
-    if(num_meas_state == num_lidar_direction_state_)
+    if(is_direction_ctrv_available_)
     {
+      num_meas_state = num_lidar_direction_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_lidar_direction_ctrv_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_lidar_direction_ctrv_;
     }
     else
     {
+      num_meas_state = num_lidar_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_ctrv_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_ctrv_;
     }
   }
@@ -1104,14 +1014,20 @@ void UKF::updateLidarMeasurement(const int motion_ind, const int num_meas_state)
   {
     x = x_rm_.col(0);
     x_sig_pred = x_sig_pred_rm_;
-    if(num_meas_state == num_lidar_direction_state_)
+    if(is_direction_rm_avaialable_)
     {
+      num_meas_state = num_lidar_direction_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_lidar_direction_rm_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_lidar_direction_rm_;
     }
     else
     {
+      num_meas_state = num_lidar_state_;
+      z_pred = Eigen::VectorXd(num_meas_state);
       z_pred = z_pred_rm_;
+      s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
       s_pred = s_rm_;
     }
   }
@@ -1136,25 +1052,25 @@ void UKF::updateLidarMeasurement(const int motion_ind, const int num_meas_state)
     cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
-  Eigen::MatrixXd kalamn_gain = cross_covariance * s_pred.inverse();
+  Eigen::MatrixXd kalman_gain = cross_covariance * s_pred.inverse();
 
   if (num_meas_state == num_lidar_direction_state_)
   {
     if(motion_ind == MotionModel::CV)
-      k_lidar_direction_cv_ = kalamn_gain;
+      k_lidar_direction_cv_ = kalman_gain;
     else if(motion_ind == MotionModel::CTRV)
-      k_lidar_direction_ctrv_ = kalamn_gain;
+      k_lidar_direction_ctrv_ = kalman_gain;
     else
-      k_lidar_direction_rm_ = kalamn_gain;
+      k_lidar_direction_rm_ = kalman_gain;
   }
   else
   {
     if(motion_ind == MotionModel::CV)
-      k_cv_ = kalamn_gain;
+      k_cv_ = kalman_gain;
     else if(motion_ind == MotionModel::CTRV)
-      k_ctrv_ = kalamn_gain;
+      k_ctrv_ = kalman_gain;
     else
-      k_rm_ = kalamn_gain;
+      k_rm_ = kalman_gain;
   }
 }
 
