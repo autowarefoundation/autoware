@@ -53,15 +53,16 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
   private_nh_.param<bool>("is_debug", is_debug_, false);
 
-  // rosparam for vectormap assisted tracking
+  // for vectormap assisted tracking
   private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
   private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 3.8415);
+  private_nh_.param<double>("nearest_lane_distance_thres", nearest_lane_distance_thres_, 3.0);
+  private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
   if(use_vectormap_)
   {
     // TODO:check if subscribe successfully in every callback
     vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE, 10);
     lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
-    std::cout << "finished initializing" << lanes_.size()<< std::endl;
   }
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
@@ -139,12 +140,11 @@ bool ImmUkfPda::updateNecessaryTransform()
   }
   if(use_vectormap_)
   {
-    //TODO: not using hardcoded param
     try
     {
-      tf_listener_.waitForTransform("map", tracking_frame_, ros::Time(0), ros::Duration(1.0));
-      tf_listener_.lookupTransform("map", tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
-      tf_listener_.lookupTransform(tracking_frame_, "map", ros::Time(0), lane_frame2tracking_frame_);
+      tf_listener_.waitForTransform(vectormap_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+      tf_listener_.lookupTransform(vectormap_frame_, tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
+      tf_listener_.lookupTransform(tracking_frame_, vectormap_frame_, ros::Time(0), lane_frame2tracking_frame_);
     }
     catch (tf::TransformException ex)
     {
@@ -249,11 +249,13 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   {
     if(use_vectormap_ )
     {
-      autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
-                                                              smallest_meas_object, smallest_nis, target);
-      // std::cout << smallest_nis_meas.angle << std::endl;
-      object_vec.push_back(smallest_nis_meas);
-      // object_vec.push_back(smallest_meas_object);
+      autoware_msgs::DetectedObject direction_updated_object;
+      bool use_direction_meas = updateDirectionMeas(smallest_nis, smallest_meas_object,
+                                                                 direction_updated_object, target);
+      if(use_direction_meas)
+        object_vec.push_back(direction_updated_object);
+      else
+        object_vec.push_back(smallest_meas_object);
     }
     else
     {
@@ -262,28 +264,24 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
 }
 
-autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
-    const autoware_msgs::DetectedObject& in_object,
+bool ImmUkfPda::updateDirectionMeas(
     const double smallest_nis,
+    const autoware_msgs::DetectedObject& in_object,
+    autoware_msgs::DetectedObject& out_object,
     UKF& target)
 {
-
-  double yaw = getNearestLaneDirection(in_object);
-  autoware_msgs::DetectedObject out_object;
-  out_object = in_object;
-  out_object.angle = yaw;
-  std::cout << "before lane " << yaw << std::endl;
-  std::cout <<  "id "<< target.ukf_id_ <<" estimated yaw " << target.x_merge_(3) << std::endl;
-  target.checkLaneDirectionAvailability(out_object, lane_direction_chi_thres_);
+  bool use_lane_direction = false;
+  bool get_lane_success = updateNearestLaneDirection(in_object, out_object);
+  if(!get_lane_success)
+    return use_lane_direction;
+  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_);
   if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
-  {
-    std::cout <<  "id "<< target.ukf_id_ <<" using lane direction" << std::endl;
-  }
-  //compare two measurement and nis
-  return out_object;
+    use_lane_direction = true;
+  return use_lane_direction;
 }
 
-double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& in_object)
+bool ImmUkfPda::updateNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+                                                 autoware_msgs::DetectedObject& out_object)
 {
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
   double min_dist = std::numeric_limits<double>::max();;
@@ -303,6 +301,12 @@ double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& i
     }
   }
 
+  bool success = false;
+  if(min_dist < nearest_lane_distance_thres_)
+    success = true;
+  else
+    return success;
+
   tf::Quaternion map_quat = tf::createQuaternionFromYaw(min_yaw);
   tf::Matrix3x3 map_matrix(map_quat);
 
@@ -312,7 +316,10 @@ double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& i
   tf::Matrix3x3 rotated_matrix = rotation_matrix * map_matrix;
   double roll, pitch, yaw;
   rotated_matrix.getRPY(roll, pitch, yaw);
-  return yaw;
+
+  out_object = in_object;
+  out_object.angle = yaw;
+  return success;
 }
 
 

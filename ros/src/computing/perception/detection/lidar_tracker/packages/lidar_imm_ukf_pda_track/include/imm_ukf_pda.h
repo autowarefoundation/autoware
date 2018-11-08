@@ -99,6 +99,8 @@ private:
   // for vectormap assisted tarcking
   bool use_vectormap_;
   double lane_direction_chi_thres_;
+  double nearest_lane_distance_thres_;
+  std::string vectormap_frame_;
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
@@ -178,12 +180,14 @@ private:
                jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  autoware_msgs::DetectedObject getUpdatedSmallestNisMeas(
-    const autoware_msgs::DetectedObject& object,
-    const double smallest_nis,
-    UKF& target);
+  bool updateDirectionMeas(
+     const double smallest_nis,
+     const autoware_msgs::DetectedObject& in_object,
+     autoware_msgs::DetectedObject& out_object,
+     UKF& target);
 
-  double getNearestLaneDirection(const autoware_msgs::DetectedObject& in_object);
+  bool updateNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+                                        autoware_msgs::DetectedObject& out_object);
 
 
 public:

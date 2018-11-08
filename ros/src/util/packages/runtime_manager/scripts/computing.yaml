@@ -1184,6 +1184,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : vectormap_frame
+      desc    : vectormap_frame_ desc sample
+      label   : 'vectormap frame'
+      kind    : str
+      v       : map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name    : life_time_thres
       desc    : life_time_thres_ desc sample
       label   : 'life time thres'
@@ -1244,6 +1252,24 @@ params :
       min       : 0
       max       : 10000
       v       : 1000
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : lane_direction_chi_thres
+      desc    : threshold for direction chi squared distribution
+      label   : 'lane direction chi thres'
+      min       : 0.0
+      max       : 20
+      v       : 3.84
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : nearest_lane_distance_thres
+      desc    : threshold for nearest lane distance
+      label   : 'nearest lane distance thres'
+      min       : 0.0
+      max       : 20
+      v       : 3.0
       cmd_param :
         dash        : ''
         delim       : ':='
