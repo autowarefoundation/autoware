@@ -1,5 +1,5 @@
 ---
-autoware_states:
+autoware_states_drive:
   -
     StateName: Start
     Transition:
@@ -15,6 +15,13 @@ autoware_states:
         Target: Drive
     Parent: ~
   -
+    StateName: DriveEmergency
+    Transition:
+      -
+        Key: return_from_emergency
+        Target: WaitEngage
+    Parent: ~
+  -
     StateName: Drive
     Transition:
       -
@@ -26,6 +33,9 @@ autoware_states:
       -
         Key: operation_end
         Target: WaitEngage
+      -
+        Key: emergency
+        Target: DriveEmergency
     Parent: ~
   -
     StateName: LaneArea
@@ -36,9 +46,6 @@ autoware_states:
       -
         Key: on_bus_stop
         Target: BusStop
-      -
-        Key: emergency
-        Target: LaneAreaEmergency
     Parent: Drive
   -
     StateName: BusStop
@@ -354,19 +361,8 @@ autoware_states:
       -
         Key: on_parking
         Target: Parking
-      -
-        Key: emergency
-        Target: FreeAreaEmergency
     Parent: Drive
   -
     StateName: Parking
-    Transition: []
-    Parent: FreeArea
-  -
-    StateName: LaneAreaEmergency
-    Transition: []
-    Parent: LaneArea
-  -
-    StateName: FreeAreaEmergency
     Transition: []
     Parent: FreeArea

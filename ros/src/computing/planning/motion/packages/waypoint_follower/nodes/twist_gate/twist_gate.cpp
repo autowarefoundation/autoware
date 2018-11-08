@@ -396,7 +396,7 @@ void TwistGate::state_callback(const std_msgs::StringConstPtr& input_msg)
     }
 
     // get drive state
-    if (input_msg->data.find("Drive\n") != std::string::npos)
+    if (input_msg->data.find("Drive\n") != std::string::npos && input_msg->data.find("VehicleReady\n") != std::string::npos)
     {
       is_state_drive_ = true;
     }

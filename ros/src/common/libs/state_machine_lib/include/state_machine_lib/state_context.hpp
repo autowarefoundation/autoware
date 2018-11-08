@@ -43,11 +43,11 @@ private:
   bool isCurrentState(const std::string& state_name);
 
 public:
-  StateContext(const std::string& file_name, const std::string& msg_name = "autoware_states")
+  StateContext(const std::string& file_name, const std::string& msg_name/* = "autoware_states"*/)
   {
     createStateMap(file_name, msg_name);
     root_state_ = getStartState();
-    createDOTGraph("/tmp/a.dot");
+    createDOTGraph("/tmp/" + msg_name + ".dot");
   }
 
   ~StateContext()

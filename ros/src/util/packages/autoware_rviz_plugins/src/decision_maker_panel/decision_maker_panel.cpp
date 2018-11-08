@@ -42,6 +42,7 @@
 
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
+#include "autoware_msgs/RemoteCmd.h"
 #include "decision_maker_panel.h"
 
 namespace autoware_rviz_debug
@@ -72,7 +73,7 @@ public:
 DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
 {
   statecmd_publisher_ = nh_.advertise<std_msgs::String>("/state_cmd", 1);
-  // Subs_["state"] = nh_
+  emergency_publisher_ = nh_.advertise<autoware_msgs::RemoteCmd>("/remote_cmd", 1);
 
   // Next we lay out the "output topic" text entry field using a
   // QLabel and a QLineEdit in a QHBoxLayout.
@@ -151,11 +152,26 @@ DecisionMakerPanel::DecisionMakerPanel(QWidget* parent) : rviz::Panel(parent)
 
 void DecisionMakerPanel::sendTopic(const QString &text)
 {
-  if (statecmd_publisher_)
+  if (text == "emergency")
+  {
+    sendEmergency();
+  }
+  else if (statecmd_publisher_)
   {
     std_msgs::String msg;
     msg.data = text.toStdString();
     statecmd_publisher_.publish(msg);
+  }
+}
+
+void DecisionMakerPanel::sendEmergency()
+{
+  if (emergency_publisher_)
+  {
+    autoware_msgs::RemoteCmd remote_emergency;
+    remote_emergency.header.stamp = ros::Time::now();
+    remote_emergency.vehicle_cmd.emergency = 1;
+    emergency_publisher_.publish(remote_emergency);
   }
 }
 

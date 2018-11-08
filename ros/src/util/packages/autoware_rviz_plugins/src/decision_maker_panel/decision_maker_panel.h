@@ -50,10 +50,12 @@ public:
 
 public Q_SLOTS:
   void sendTopic(const QString &text);
+  void sendEmergency();
 
   // Then we finish up with protected member variables.
 protected:
   ros::Publisher statecmd_publisher_;
+  ros::Publisher emergency_publisher_;
   ros::NodeHandle nh_;
 };
 

@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   rviz
   std_msgs
+	autoware_msgs
 )
 
 if(rviz_QT_VERSION VERSION_LESS "5")

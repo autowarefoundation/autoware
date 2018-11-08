@@ -398,9 +398,9 @@ public:
     private_nh_.getParam("state_mission_file_name", file_name_mission);
     private_nh_.getParam("state_drive_file_name", file_name_drive);
 
-    ctx_vehicle = new state_machine::StateContext(file_name_vehicle);
-    ctx_mission = new state_machine::StateContext(file_name_mission);
-    ctx_drive = new state_machine::StateContext(file_name_drive);
+    ctx_vehicle = new state_machine::StateContext(file_name_vehicle, "autoware_states_vehicle");
+    ctx_mission = new state_machine::StateContext(file_name_mission, "autoware_states_mission");
+    ctx_drive = new state_machine::StateContext(file_name_drive, "autoware_states_drive");
     init();
     setupStateCallback();
 
