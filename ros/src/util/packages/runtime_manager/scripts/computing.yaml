@@ -4506,6 +4506,15 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : grid_position_z
+      desc      : grid position z [meter]
+      label     : Grid Position z [m]
+      min       : -5
+      max       : 5
+      v         : -2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name : road_occupancy_processor
     vars :

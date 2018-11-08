@@ -423,6 +423,12 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(
       fused_objects.objects.push_back(in_vision_detections->objects[i]);
     }
   }
+  //add also objects outside the image
+  for (auto &object: range_out_cv.objects)
+  {
+    fused_objects.objects.push_back(object);
+  }
+  //enable merged for visualization
   for (auto &object : fused_objects.objects)
   {
     object.valid = true;

@@ -53,8 +53,7 @@ ImmUkfPda::ImmUkfPda()
 
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
-  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/"
-                                                                    "2011_09_26_drive_0005_sync/");
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "");
   if (is_benchmark_)
   {
     result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";

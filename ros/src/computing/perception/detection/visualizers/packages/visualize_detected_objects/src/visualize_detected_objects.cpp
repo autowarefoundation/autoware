@@ -30,7 +30,7 @@
 
 #include "visualize_detected_objects.h"
 
-VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label_height_(2.0)
+VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label_height_(1.0)
 {
   ros::NodeHandle private_nh_("~");
 
@@ -54,7 +54,7 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label
   private_nh_.param<double>("arrow_speed_threshold", arrow_speed_threshold_, 0.25);
   ROS_INFO("[%s] arrow_speed_threshold: %.2f", __APP_NAME__, arrow_speed_threshold_);
 
-  private_nh_.param<double>("marker_display_duration", marker_display_duration_, 0.1);
+  private_nh_.param<double>("marker_display_duration", marker_display_duration_, 0.2);
   ROS_INFO("[%s] marker_display_duration: %.2f", __APP_NAME__, marker_display_duration_);
 
   subscriber_detected_objects_ =
@@ -289,7 +289,7 @@ visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray label_markers;
-
+  size_t visualization_id = 0;
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object))
@@ -310,10 +310,17 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
       label_marker.color.b = 1.f;
       label_marker.color.a = 1.f;
 
-      label_marker.id = object.id;
+      label_marker.id = visualization_id++;
 
       if(!object.label.empty() && object.label != "unknown")
         label_marker.text = object.label + " "; //Object Class if available
+
+      std::stringstream distance_stream;
+      distance_stream << std::fixed << std::setprecision(1)
+                      << sqrt((object.pose.position.x * object.pose.position.x) +
+                                (object.pose.position.y * object.pose.position.y));
+      std::string distance_str = distance_stream.str() + " m";
+      label_marker.text += distance_str;
 
       if (object.velocity_reliable)
       {
@@ -337,7 +344,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
         // convert m/s to km/h
         std::stringstream kmh_velocity_stream;
         kmh_velocity_stream << std::fixed << std::setprecision(1) << (velocity * 3.6);
-        std::string text = "<" + std::to_string(object.id) + "> " + kmh_velocity_stream.str() + " km/h";
+        std::string text = "\n<" + std::to_string(object.id) + "> " + kmh_velocity_stream.str() + " km/h";
         label_marker.text += text;
       }
 

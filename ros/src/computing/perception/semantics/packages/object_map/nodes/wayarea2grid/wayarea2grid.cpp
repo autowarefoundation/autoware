@@ -49,7 +49,8 @@ namespace object_map
 		private_node_handle_.param<double>("grid_length_x", grid_length_x_, 80);
 		private_node_handle_.param<double>("grid_length_y", grid_length_y_, 30);
 		private_node_handle_.param<double>("grid_position_x", grid_position_x_, 20);
-		private_node_handle_.param<double>("grid_position_x", grid_position_y_, 0);
+		private_node_handle_.param<double>("grid_position_y", grid_position_y_, 0);
+		private_node_handle_.param<double>("grid_position_z", grid_position_z_, -2.f);
 
 		publisher_grid_map_ = node_handle_.advertise<grid_map_msgs::GridMap>("grid_map_wayarea", 1, true);
 		publisher_occupancy_ = node_handle_.advertise<nav_msgs::OccupancyGrid>("occupancy_wayarea", 1, true);
@@ -81,7 +82,7 @@ namespace object_map
 				                 grid_max_value_, sensor_frame_, map_frame_,
 				                 tf_listener_);
 				PublishGridMap(gridmap_, publisher_grid_map_);
-				PublishOccupancyGrid(gridmap_, publisher_occupancy_, grid_layer_name_, grid_min_value_, grid_max_value_);
+				PublishOccupancyGrid(gridmap_, publisher_occupancy_, grid_layer_name_, grid_min_value_, grid_max_value_, grid_position_z_);
 			}
 
 			// timer end
