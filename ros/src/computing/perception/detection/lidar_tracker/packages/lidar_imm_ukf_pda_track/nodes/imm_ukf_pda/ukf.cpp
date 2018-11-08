@@ -528,9 +528,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
         z_pred = Eigen::VectorXd(num_meas_state);
         s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
         kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
-        z_pred = z_pred_cv_;
-        s_pred = s_cv_;
-        kalman_gain = k_cv_;
+        z_pred = z_pred_lidar_direction_cv_;
+        s_pred = s_lidar_direction_cv_;
+        kalman_gain = k_lidar_direction_cv_;
       }
       else
       {
@@ -554,9 +554,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
         z_pred = Eigen::VectorXd(num_meas_state);
         s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
         kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
-        z_pred = z_pred_ctrv_;
-        s_pred = s_ctrv_;
-        kalman_gain = k_ctrv_;
+        z_pred = z_pred_lidar_direction_ctrv_;
+        s_pred = s_lidar_direction_ctrv_;
+        kalman_gain = k_lidar_direction_ctrv_;
       }
       else
       {
@@ -580,9 +580,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
         z_pred = Eigen::VectorXd(num_meas_state);
         s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
         kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
-        z_pred = z_pred_rm_;
-        s_pred = s_rm_;
-        kalman_gain = k_rm_;
+        z_pred = z_pred_lidar_direction_rm_;
+        s_pred = s_lidar_direction_rm_;
+        kalman_gain = k_lidar_direction_rm_;
       }
       else
       {
@@ -1285,8 +1285,9 @@ bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_objec
   double lidar_nis = calculateNIS(in_object, motion_ind, num_lidar_state_);
   double lidar_direction_nis = calculateNIS(in_object, motion_ind, num_lidar_direction_state_);
 
+  // std::cout << "direction nis " << lidar_direction_nis << std::endl;
   bool is_direction_available = false;
-  if(lidar_direction_nis < lidar_nis)
+  if(lidar_direction_nis < 2)
     is_direction_available = true;
   return is_direction_available;
 }

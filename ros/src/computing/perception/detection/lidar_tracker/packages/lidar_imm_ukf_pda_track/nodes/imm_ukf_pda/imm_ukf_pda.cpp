@@ -250,8 +250,9 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
     {
       autoware_msgs::DetectedObject smallest_nis_meas = getUpdatedSmallestNisMeas(
                                                               smallest_meas_object, smallest_nis, target);
-      // object_vec.push_back(smallest_nis_meas);
-      object_vec.push_back(smallest_meas_object);
+      // std::cout << smallest_nis_meas.angle << std::endl;
+      object_vec.push_back(smallest_nis_meas);
+      // object_vec.push_back(smallest_meas_object);
     }
     else
     {
@@ -273,6 +274,10 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
   std::cout << "before lane " << yaw << std::endl;
   std::cout <<  "id "<< target.ukf_id_ <<" estimated yaw " << target.x_merge_(3) << std::endl;
   target.checkLaneDirectionAvailability(out_object);
+  if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
+  {
+    std::cout <<  "id "<< target.ukf_id_ <<" using lane direction" << std::endl;
+  }
   //compare two measurement and nis
   return out_object;
 }

@@ -1255,6 +1255,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : use_vectormap
+      desc      : Use vectormap fot lane direction assisted tracking
+      label     : use_vectormap
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : is_debug
       desc      : debug mode on/off
       label     : is_debug
