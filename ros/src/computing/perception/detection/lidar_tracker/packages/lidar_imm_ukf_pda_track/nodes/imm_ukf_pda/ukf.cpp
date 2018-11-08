@@ -672,10 +672,12 @@ void UKF::updateIMMUKF(const double detection_probability, const double gate_pro
   /*****************************************************************************
   *  IMM Update
   ****************************************************************************/
-  // update each motion's x and p
+  // update kalman gain
   updateLidarMeasurement(MotionModel::CV, num_lidar_state_);
   updateLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
   updateLidarMeasurement(MotionModel::RM, num_lidar_state_);
+  
+  // update state varibale x and state covariance p
   std::vector<double> lambda_vec;
   updateEachMotion(detection_probability, gate_probability, gating_thres, object_vec, lambda_vec);
   /*****************************************************************************
