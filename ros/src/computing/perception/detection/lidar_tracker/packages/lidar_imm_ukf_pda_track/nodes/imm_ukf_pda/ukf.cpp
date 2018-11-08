@@ -789,15 +789,12 @@ void UKF::ctrv(const double p_x, const double p_y, const double v, const double 
 void UKF::cv(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
              const double delta_t, std::vector<double>& state)
 {
-  // predicted state values
+  // Reference: Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x + v * cos(yaw) * delta_t;
   double py_p = p_y + v * sin(yaw) * delta_t;
-
   double v_p = v;
-  // not sure which one, works better in curve by using yaw
   double yaw_p = yaw;
-
-  double yawd_p = yawd;
+  double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -809,13 +806,12 @@ void UKF::cv(const double p_x, const double p_y, const double v, const double ya
 void UKF::randomMotion(const double p_x, const double p_y, const double v, const double yaw, const double yawd,
                        const double delta_t, std::vector<double>& state)
 {
+  // Reference: Bayesian Environment Representation, Prediction, and Criticality Assessment for Driver Assistance Systems, 2016
   double px_p = p_x;
   double py_p = p_y;
-  double v_p = v * 0.9;  // aim to converge velocity for static objects
-  // double v_p = 0.0;
-
+  double v_p = 0.0;
   double yaw_p = yaw;
-  double yawd_p = yawd;
+  double yawd_p = 0;
 
   state[0] = px_p;
   state[1] = py_p;
@@ -1009,7 +1005,6 @@ void UKF::prediction(const double delta_t, const int model_ind)
   }
 }
 
-// void UKF::updateKalmanGain(const int motion_ind, const int num_meas_state)
 void UKF::updateKalmanGain(const int motion_ind)
 {
   Eigen::VectorXd x(x_cv_.rows());
@@ -1273,27 +1268,37 @@ double UKF::calculateNIS(const autoware_msgs::DetectedObject& in_object, const i
       s_pred = s_lidar_direction_rm_;
     }
   }
-  Eigen::VectorXd diff = meas - z_pred;
-  double nis = diff.transpose() * s_pred.inverse() * diff;
+
+  double nis = 0;
+  if(num_meas_state == num_lidar_direction_state_)
+  {
+    // Pick up yaw estimation and yaw variance
+    nis = z_pred(2) * s_pred(2,2)* z_pred(2);
+  }
+  else
+  {
+    Eigen::VectorXd diff = meas - z_pred;
+    nis = diff.transpose() * s_pred.inverse() * diff;
+  }
   return nis;
 }
 
-bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind)
+bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object,
+                                   const int motion_ind, const double lane_direction_chi_thres)
 {
   predictionLidarMeasurement(motion_ind, num_lidar_direction_state_);
 
-  double lidar_nis = calculateNIS(in_object, motion_ind, num_lidar_state_);
   double lidar_direction_nis = calculateNIS(in_object, motion_ind, num_lidar_direction_state_);
 
-  // std::cout << "direction nis " << lidar_direction_nis << std::endl;
   bool is_direction_available = false;
-  if(lidar_direction_nis < 2)
+  if(lidar_direction_nis < lane_direction_chi_thres)
     is_direction_available = true;
   return is_direction_available;
 }
 
-void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object)
+void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+                                         const double lane_direction_chi_thres)
 {
-    is_direction_cv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CV);
-    is_direction_ctrv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV);
+    is_direction_cv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CV, lane_direction_chi_thres);
+    is_direction_ctrv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV, lane_direction_chi_thres);
 }

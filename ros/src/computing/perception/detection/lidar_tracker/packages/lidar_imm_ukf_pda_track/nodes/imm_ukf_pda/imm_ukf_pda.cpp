@@ -55,6 +55,7 @@ ImmUkfPda::ImmUkfPda()
 
   // rosparam for vectormap assisted tracking
   private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
+  private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 3.8415);
   if(use_vectormap_)
   {
     // TODO:check if subscribe successfully in every callback
@@ -273,7 +274,7 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
   out_object.angle = yaw;
   std::cout << "before lane " << yaw << std::endl;
   std::cout <<  "id "<< target.ukf_id_ <<" estimated yaw " << target.x_merge_(3) << std::endl;
-  target.checkLaneDirectionAvailability(out_object);
+  target.checkLaneDirectionAvailability(out_object, lane_direction_chi_thres_);
   if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
   {
     std::cout <<  "id "<< target.ukf_id_ <<" using lane direction" << std::endl;
@@ -284,9 +285,7 @@ autoware_msgs::DetectedObject ImmUkfPda::getUpdatedSmallestNisMeas(
 
 double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& in_object)
 {
-  // std::cout << in_object.pose.position.x << " " << in_object.pose.position.y << std::endl;
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
-  // std::cout << lane_frame_pose.position.x << " " << lane_frame_pose.position.y << std::endl;
   double min_dist = std::numeric_limits<double>::max();;
   double min_yaw = 0;
   for(auto const &lane: lanes_)
@@ -304,12 +303,12 @@ double ImmUkfPda::getNearestLaneDirection(const autoware_msgs::DetectedObject& i
     }
   }
 
-
   tf::Quaternion map_quat = tf::createQuaternionFromYaw(min_yaw);
   tf::Matrix3x3 map_matrix(map_quat);
 
   tf::Quaternion rotation_quat = lane_frame2tracking_frame_.getRotation();
   tf::Matrix3x3 rotation_matrix(rotation_quat);
+
   tf::Matrix3x3 rotated_matrix = rotation_matrix * map_matrix;
   double roll, pitch, yaw;
   rotated_matrix.getRPY(roll, pitch, yaw);

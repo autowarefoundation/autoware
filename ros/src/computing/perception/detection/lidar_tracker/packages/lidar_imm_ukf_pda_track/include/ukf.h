@@ -317,13 +317,14 @@ public:
 
   void prediction(const double delta_t, const int model_ind);
 
-  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object);
+  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+                                      const double lane_direction_chi_thres);
 
   void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
 
   double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const int num_meas);
 
-  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, int motion_ind);
+  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const double lane_direction_chi_thres);
 
   // void updateKalmanGain(const int motion_ind, const int num_meas_state);
   void updateKalmanGain(const int motion_ind);

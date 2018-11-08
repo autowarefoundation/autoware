@@ -98,6 +98,7 @@ private:
 
   // for vectormap assisted tarcking
   bool use_vectormap_;
+  double lane_direction_chi_thres_;
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
