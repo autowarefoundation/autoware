@@ -78,9 +78,6 @@ UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3) , n
   // time when the state is true, in us
   time_ = 0.0;
 
-  // state dimension
-  // num_state_ = 5;
-
   // predicted sigma points matrix
   x_sig_pred_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
@@ -202,7 +199,7 @@ UKF::UKF():num_state_(5), num_lidar_state_(2), num_lidar_direction_state_(3) , n
 
   is_direction_cv_available_ = false;
   is_direction_ctrv_available_ = false;
-  is_direction_rm_avaialable_ = false;
+  is_direction_rm_available_ = false;
 
 }
 
@@ -507,12 +504,14 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
 
   for (int motion_ind = 0; motion_ind < num_motion_model_; motion_ind++)
   {
-    Eigen::VectorXd z_pred(2);
-    Eigen::MatrixXd s(2, 2);
-    Eigen::MatrixXd x(5, 1);
-    Eigen::MatrixXd k(5, 2);
-    Eigen::MatrixXd p(5, 5);
-    Eigen::VectorXd max_meas(2);
+    Eigen::MatrixXd x(x_cv_.rows(), x_cv_.cols());
+    Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
+    bool is_direction_available = false;
+    int num_meas_state = 0;
+    Eigen::VectorXd z_pred;
+    Eigen::MatrixXd s_pred;
+    Eigen::MatrixXd kalman_gain;
+    Eigen::VectorXd likely_meas;
     double e_sum = 0;
     std::vector<double> e_vec;
     std::vector<Eigen::VectorXd> diff_vec;
@@ -520,38 +519,94 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
 
     if (motion_ind == MotionModel::CV)
     {
-      z_pred = z_pred_cv_;
-      s = s_cv_;
       x = x_cv_;
-      k = k_cv_;
       p = p_cv_;
+      if(is_direction_cv_available_)
+      {
+        is_direction_available = true;
+        num_meas_state = num_lidar_direction_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_cv_;
+        s_pred = s_cv_;
+        kalman_gain = k_cv_;
+      }
+      else
+      {
+        num_meas_state = num_lidar_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_cv_;
+        s_pred = s_cv_;
+        kalman_gain = k_cv_;
+      }
     }
     else if (motion_ind == MotionModel::CTRV)
     {
-      z_pred = z_pred_ctrv_;
-      s = s_ctrv_;
       x = x_ctrv_;
-      k = k_ctrv_;
       p = p_ctrv_;
+      if(is_direction_ctrv_available_)
+      {
+        is_direction_available = true;
+        num_meas_state = num_lidar_direction_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_ctrv_;
+        s_pred = s_ctrv_;
+        kalman_gain = k_ctrv_;
+      }
+      else
+      {
+        num_meas_state = num_lidar_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_ctrv_;
+        s_pred = s_ctrv_;
+        kalman_gain = k_ctrv_;
+      }
     }
     else
     {
-      z_pred = z_pred_rm_;
-      s = s_rm_;
       x = x_rm_;
-      k = k_rm_;
       p = p_rm_;
+      if(is_direction_rm_available_)
+      {
+        is_direction_available = true;
+        num_meas_state = num_lidar_direction_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_rm_;
+        s_pred = s_rm_;
+        kalman_gain = k_rm_;
+      }
+      else
+      {
+        num_meas_state = num_lidar_state_;
+        z_pred = Eigen::VectorXd(num_meas_state);
+        s_pred = Eigen::MatrixXd(num_meas_state, num_meas_state);
+        kalman_gain = Eigen::MatrixXd(num_state_, num_meas_state);
+        z_pred = z_pred_rm_;
+        s_pred = s_rm_;
+        kalman_gain = k_rm_;
+      }
     }
 
     for (size_t i = 0; i < num_meas; i++)
     {
-      Eigen::VectorXd meas = Eigen::VectorXd(2);
+      Eigen::VectorXd meas = Eigen::VectorXd(num_meas_state);
       meas(0) = object_vec[i].pose.position.x;
       meas(1) = object_vec[i].pose.position.y;
+      if(is_direction_available)
+        meas(2) = object_vec[i].angle;
       meas_vec.push_back(meas);
       Eigen::VectorXd diff = meas - z_pred;
       diff_vec.push_back(diff);
-      double e = exp(-0.5 * diff.transpose() * s.inverse() * diff);
+      double e = exp(-0.5 * diff.transpose() * s_pred.inverse() * diff);
       e_vec.push_back(e);
       e_sum += e;
     }
@@ -563,7 +618,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       std::vector<double>::iterator max_iter = std::max_element(e_vec.begin(), e_vec.end());
       int max_ind = std::distance(e_vec.begin(), max_iter);
-      max_meas = meas_vec[max_ind];
+      likely_meas = meas_vec[max_ind];
     }
 
     for (size_t i = 0; i < num_meas; i++)
@@ -572,34 +627,36 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
       beta_vec.push_back(temp);
     }
     Eigen::VectorXd sigma_x;
-    sigma_x.setZero(2);
+    sigma_x.setZero(num_meas_state);
 
     for (size_t i = 0; i < num_meas; i++)
       sigma_x += beta_vec[i] * diff_vec[i];
 
     Eigen::MatrixXd sigma_p;
-    sigma_p.setZero(2, 2);
+    sigma_p.setZero(num_meas_state, num_meas_state);
 
     for (size_t i = 0; i < num_meas; i++)
       sigma_p += (beta_vec[i] * diff_vec[i] * diff_vec[i].transpose() - sigma_x * sigma_x.transpose());
 
     // update x and P
-    Eigen::MatrixXd updated_x(5, 1);
-    updated_x = x + k * sigma_x;
+    Eigen::MatrixXd updated_x(x_cv_.rows(), x_cv_.cols());;
+    updated_x = x + kalman_gain * sigma_x;
 
     updated_x(3) = normalizeAngle(updated_x(3));
 
-    Eigen::MatrixXd updated_p(5, 5);
+    Eigen::MatrixXd updated_p(p_cv_.rows(), p_cv_.cols());
     if (num_meas != 0)
-      updated_p = beta_zero * p + (1 - beta_zero) * (p - k * s * k.transpose()) + k * sigma_p * k.transpose();
+      updated_p = beta_zero * p +
+                  (1 - beta_zero) * (p - kalman_gain * s_pred * kalman_gain.transpose()) +
+                  kalman_gain * sigma_p * kalman_gain.transpose();
     else
-      updated_p = p - k * s * k.transpose();
+      updated_p = p - kalman_gain * s_pred * kalman_gain.transpose();
 
     double lambda;
     if (num_meas != 0)
     {
       lambda = (1 - gate_probability * detection_probability) / pow(Vk, num_meas) +
-               detection_probability * pow(Vk, 1 - num_meas) * e_sum / (num_meas * sqrt(2 * M_PI * s.determinant()));
+               detection_probability * pow(Vk, 1 - num_meas) * e_sum / (num_meas * sqrt(2 * M_PI * s_pred.determinant()));
     }
     else
       lambda = (1 - gate_probability * detection_probability);
@@ -608,19 +665,16 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
 
     if (motion_ind == MotionModel::CV)
     {
-      cv_meas_ = max_meas;
       x_cv_ = updated_x;
       p_cv_ = updated_p;
     }
     else if (motion_ind == MotionModel::CTRV)
     {
-      ctrv_meas_ = max_meas;
       x_ctrv_ = updated_x;
       p_ctrv_ = updated_p;
     }
     else
     {
-      rm_meas_ = max_meas;
       x_rm_ = updated_x;
       p_rm_ = updated_p;
     }
@@ -685,9 +739,6 @@ void UKF::updateIMMUKF(const double detection_probability, const double gate_pro
   *  IMM Update
   ****************************************************************************/
   // update kalman gain
-  // updateKalmanGain(MotionModel::CV, num_lidar_state_);
-  // updateKalmanGain(MotionModel::CTRV, num_lidar_state_);
-  // updateKalmanGain(MotionModel::RM, num_lidar_state_);
   updateKalmanGain(MotionModel::CV);
   updateKalmanGain(MotionModel::CTRV);
   updateKalmanGain(MotionModel::RM);
@@ -963,8 +1014,6 @@ void UKF::updateKalmanGain(const int motion_ind)
 {
   Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd x_sig_pred(x_sig_pred_cv_.rows(), x_sig_pred_cv_.cols());
-  // Eigen::VectorXd z_pred(num_meas_state);
-  // Eigen::MatrixXd s_pred(num_meas_state, num_meas_state);
   Eigen::VectorXd z_pred;
   Eigen::MatrixXd s_pred;
   int num_meas_state = 0;
@@ -1014,7 +1063,7 @@ void UKF::updateKalmanGain(const int motion_ind)
   {
     x = x_rm_.col(0);
     x_sig_pred = x_sig_pred_rm_;
-    if(is_direction_rm_avaialable_)
+    if(is_direction_rm_available_)
     {
       num_meas_state = num_lidar_direction_state_;
       z_pred = Eigen::VectorXd(num_meas_state);

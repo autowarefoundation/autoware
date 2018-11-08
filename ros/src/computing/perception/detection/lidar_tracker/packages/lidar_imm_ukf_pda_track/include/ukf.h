@@ -253,7 +253,7 @@ public:
   // for lane direction combined filter
   bool is_direction_cv_available_;
   bool is_direction_ctrv_available_;
-  bool is_direction_rm_avaialable_;
+  bool is_direction_rm_available_;
   double std_lane_direction_;
   Eigen::MatrixXd lidar_direction_r_cv_;
   Eigen::MatrixXd lidar_direction_r_ctrv_;
