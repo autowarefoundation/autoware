@@ -30,7 +30,7 @@
 
 #include "visualize_detected_objects.h"
 
-VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label_height_(2.5)
+VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label_height_(2.0)
 {
   ros::NodeHandle private_nh_("~");
 
@@ -112,9 +112,7 @@ VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObject
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid &&
-        object.pose.position.x != 0 &&
-        object.pose.position.y != 0)
+    if (IsObjectValid(object))
     {
       visualization_msgs::Marker centroid_marker;
       centroid_marker.lifetime = ros::Duration(marker_display_duration_);
@@ -155,12 +153,7 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
 
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid &&
-        object.pose.position.x != 0 &&
-        object.pose.position.y != 0 &&
-        object.dimensions.x > 0 &&
-        object.dimensions.y > 0 &&
-        object.dimensions.z > 0 &&
+    if (IsObjectValid(object) &&
         (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
     {
       jsk_recognition_msgs::BoundingBox box;
@@ -184,7 +177,7 @@ VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArra
 
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid)
+    if (IsObjectValid(object))
       polygon_hulls.polygons.push_back(object.convex_hull);
   }
   return polygon_hulls;
@@ -197,7 +190,7 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid && object.pose_reliable)
+    if (IsObjectValid(object) && object.pose_reliable)
     {
       double velocity = object.velocity.linear.x;
 
@@ -270,6 +263,28 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   return arrow_markers;
 }//ObjectsToArrows
 
+bool VisualizeDetectedObjects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
+{
+  if (!in_object.valid ||
+    std::isnan(in_object.pose.orientation.x) ||
+    std::isnan(in_object.pose.orientation.y) ||
+    std::isnan(in_object.pose.orientation.z) ||
+    std::isnan(in_object.pose.orientation.w) ||
+    std::isnan(in_object.pose.position.x) ||
+    std::isnan(in_object.pose.position.y) ||
+    std::isnan(in_object.pose.position.z) ||
+    (in_object.pose.position.x == 0.) ||
+    (in_object.pose.position.y == 0.) ||
+    (in_object.dimensions.x <= 0.) ||
+    (in_object.dimensions.y <= 0.) ||
+    (in_object.dimensions.z <= 0.)
+    )
+  {
+    return false;
+  }
+  return true;
+}//end IsObjectValid
+
 visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects)
 {
@@ -277,7 +292,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
   for (auto const &object: in_objects.objects)
   {
-    if (object.valid)
+    if (IsObjectValid(object))
     {
       visualization_msgs::Marker label_marker;
 
@@ -297,10 +312,10 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
       label_marker.id = object.id;
 
-      if(object.label != "unknown")
+      if(!object.label.empty() && object.label != "unknown")
         label_marker.text = object.label + " "; //Object Class if available
 
-      if (object.pose_reliable)
+      if (object.velocity_reliable)
       {
         double velocity = object.velocity.linear.x;
         if (velocity < -0.1)
@@ -325,16 +340,13 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
         std::string text = "<" + std::to_string(object.id) + "> " + kmh_velocity_stream.str() + " km/h";
         label_marker.text += text;
       }
-      else
-        continue;
 
       label_marker.pose.position.x = object.pose.position.x;
       label_marker.pose.position.y = object.pose.position.y;
       label_marker.pose.position.z = label_height_;
-
       label_marker.scale.z = 1.0;
-
-      label_markers.markers.push_back(label_marker);
+      if (!label_marker.text.empty())
+        label_markers.markers.push_back(label_marker);
     }
   }  // end in_objects.objects loop
 

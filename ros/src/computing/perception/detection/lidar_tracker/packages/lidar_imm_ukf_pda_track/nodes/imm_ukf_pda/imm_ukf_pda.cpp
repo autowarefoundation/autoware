@@ -465,13 +465,13 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     double tv = targets_[i].x_merge_(2);
     double tyaw = targets_[i].x_merge_(3);
     double tyaw_rate = targets_[i].x_merge_(4);
-    
+
     while (tyaw > M_PI)
       tyaw -= 2. * M_PI;
     while (tyaw < -M_PI)
       tyaw += 2. * M_PI;
 
-    geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(tyaw);
+    tf::Quaternion q = tf::createQuaternionFromYaw(tyaw);
 
     autoware_msgs::DetectedObject dd;
     dd = targets_[i].object_;
@@ -480,8 +480,16 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.acceleration.linear.y = tyaw_rate;
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
-    dd.pose.orientation = q;
-    dd.valid = true;
+    
+    if (!std::isnan(q[0]))
+      dd.pose.orientation.x = q[0];
+    if (!std::isnan(q[1]))
+      dd.pose.orientation.y = q[1];
+    if (!std::isnan(q[2]))
+      dd.pose.orientation.z = q[2];
+    if (!std::isnan(q[3]))
+      dd.pose.orientation.w = q[3];
+
     dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;
 
