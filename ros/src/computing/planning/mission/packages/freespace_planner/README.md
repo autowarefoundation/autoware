@@ -26,8 +26,8 @@ Parameters can be set in both Launch file and Runtime manager:
 
 | Parameter in RM | Parameter in Launch | Type | Description | Default |
 | --- | --- | --- | --- | --- |
-| `Use Reverse Motion` | `use_back` | *String* | Enable backward motion in Hybrid A* search |
-| `Costmap Topic` | `costmap_topic` | *Bool* | Costmap topic for Hybrid-A* search |
+| `Use Reverse Motion` | `use_back` | *Bool* | Enable backward motion in Hybrid A* search | `true` |
+| `Costmap Topic` | `costmap_topic` | *String* | Costmap topic for Hybrid-A* search | `grid_map_filter_visualization/dist_wayarea` |
 | `Waypoint Velocity` | `waypoints_velocity` | *Double* | Constant velocity on planned waypoints [km/h] | 5.0 |
 | `Update Rate` | `update_rate` | *Double* | Replanning and publishing rate [Hz] | 1.0 |
 
