@@ -42,7 +42,6 @@ TEST(TestSuite, StateContextConstructor){
 }
 
 TEST(TestSuite, ChangeStates){
-
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
 	state_machine::StateContext stateCtx(file_name, msg_name);
@@ -60,7 +59,8 @@ TEST(TestSuite, SetCallbacksStateContext){
 
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
-	state_machine::StateContext stateCtx(file_name);
+	std::string msg_name = "testStates";
+	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	// Set callbacks
 	std::function<void(const std::string&)> _f = &foo2;
