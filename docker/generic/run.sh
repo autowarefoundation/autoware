@@ -36,7 +36,7 @@ while getopts ":ht:r:s:" opt; do
   esac
 done
 
-if [ "${TAG}" -eq "latest-indigo" ] ; then
+if [[ "${TAG}" == *"indigo" ]] ; then
   echo "Indigo is deprecated and will be removed in a future release, please use Kinetic instead"
   sleep 2
 fi
