@@ -288,13 +288,13 @@ public:
 
   void interaction();
 
-  void predictionSUKF(const double dt);
+  void predictionSUKF(const double dt, const bool has_subscribed_vectormap);
 
   void predictionIMMUKF(const double dt, const bool has_subscribed_vectormap);
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateWithLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);

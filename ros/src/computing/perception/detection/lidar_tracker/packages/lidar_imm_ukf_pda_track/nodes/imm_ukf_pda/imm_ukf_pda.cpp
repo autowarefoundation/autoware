@@ -939,13 +939,12 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
   double dt = (timestamp - timestamp_);
   timestamp_ = timestamp;
-  // making new target with no data association
+
   std::vector<bool> matching_vec(input.objects.size(), false);
 
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // reset is_vis_bb_ to false
     targets_[i].is_vis_bb_ = false;
     targets_[i].is_static_ = false;
 
@@ -974,7 +973,6 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
   // end UKF process
 
-  // debug, green is for measurement points, red is for estimated points
   if (is_debug_)
   {
     pubDebugRosMarker(input);

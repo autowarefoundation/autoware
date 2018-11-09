@@ -407,20 +407,24 @@ void UKF::interaction()
           mode_match_prob_rm2rm_ * (p_pre_rm + (x_pre_rm - x_rm_) * (x_pre_rm - x_rm_).transpose());
 }
 
-void UKF::predictionSUKF(const double dt)
+void UKF::predictionSUKF(const double dt, const bool has_subscribed_vectormap)
 {
   /*****************************************************************************
   *  Init covariance Q if it is necessary
   ****************************************************************************/
   initCovarQs(dt, x_merge_(3));
   /*****************************************************************************
-  *  Prediction
+  *  Prediction Motion Model
   ****************************************************************************/
   predictionMotion(dt, MotionModel::CTRV);
   /*****************************************************************************
-  *  Update
+  *  Prediction Measurement
   ****************************************************************************/
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
+  if(has_subscribed_vectormap)
+  {
+    predictionLidarMeasurement(MotionModel::CTRV, num_lidar_direction_state_);
+  }
 }
 
 void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
@@ -435,13 +439,13 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   mixingProbability();
   interaction();
   /*****************************************************************************
-  *  Prediction
+  *  Prediction Motion Model
   ****************************************************************************/
   predictionMotion(dt, MotionModel::CV);
   predictionMotion(dt, MotionModel::CTRV);
   predictionMotion(dt, MotionModel::RM);
   /*****************************************************************************
-  *  Update
+  *  Prediction Measurement
   ****************************************************************************/
   predictionLidarMeasurement(MotionModel::CV, num_lidar_state_);
   predictionLidarMeasurement(MotionModel::CTRV, num_lidar_state_);
@@ -630,13 +634,17 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     sigma_x.setZero(num_meas_state);
 
     for (size_t i = 0; i < num_meas; i++)
+    {
       sigma_x += beta_vec[i] * diff_vec[i];
+    }
 
     Eigen::MatrixXd sigma_p;
     sigma_p.setZero(num_meas_state, num_meas_state);
 
     for (size_t i = 0; i < num_meas; i++)
+    {
       sigma_p += (beta_vec[i] * diff_vec[i] * diff_vec[i].transpose() - sigma_x * sigma_x.transpose());
+    }
 
     // update x and P
     Eigen::MatrixXd updated_x(x_cv_.rows(), x_cv_.cols());;
@@ -646,11 +654,15 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
 
     Eigen::MatrixXd updated_p(p_cv_.rows(), p_cv_.cols());
     if (num_meas != 0)
+    {
       updated_p = beta_zero * p +
                   (1 - beta_zero) * (p - kalman_gain * s_pred * kalman_gain.transpose()) +
                   kalman_gain * sigma_p * kalman_gain.transpose();
+    }
     else
+    {
       updated_p = p - kalman_gain * s_pred * kalman_gain.transpose();
+    }
 
     double lambda;
     if (num_meas != 0)
@@ -659,7 +671,9 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
                detection_probability * pow(Vk, 1 - num_meas) * e_sum / (num_meas * sqrt(2 * M_PI * s_pred.determinant()));
     }
     else
+    {
       lambda = (1 - gate_probability * detection_probability);
+    }
 
     lambda_vec.push_back(lambda);
 
@@ -681,7 +695,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   }
 }
 
-void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec)
+void UKF::updateWithLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec)
 {
   double num_meas = object_vec.size();
   std::vector<double> e_ctrv_vec;
@@ -697,26 +711,22 @@ void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::Detect
     double e_ctrv = exp(-0.5 * diff_ctrv.transpose() * s_ctrv_.inverse() * diff_ctrv);
     e_ctrv_vec.push_back(e_ctrv);
   }
-  // for noise estimation
-  if (num_meas != 0)
-  {
-    std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
-    int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
-    ctrv_meas_ = meas_vec[max_ctrv_ind];
-  }
+
+  std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
+  int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
+  ctrv_meas_ = meas_vec[max_ctrv_ind];
 }
 
 void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec)
 {
+  // Applying this skip process only to updateSUKF
+  // since updateIMMUKF update covariance even if there is no measurement.
   if (object_vec.size() == 0)
   {
     return;
   }
-  // get most likely measurement ctrv_meas_
-  updateLikelyMeasurementForCTRV(object_vec);
-
-  // updateKalmanGain(MotionModel::CTRV, num_lidar_state_);
   updateKalmanGain(MotionModel::CTRV);
+  updateWithLikelyMeasurementForCTRV(object_vec);
 
   Eigen::VectorXd z = Eigen::VectorXd(2);
   z << ctrv_meas_(0), ctrv_meas_(1);
@@ -1272,6 +1282,18 @@ void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in
     is_direction_ctrv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV, lane_direction_chi_thres);
 }
 
+void UKF::prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt)
+{
+  if (use_sukf)
+  {
+    predictionSUKF(dt, has_subscribed_vectormap);
+  }
+  else
+  {
+    predictionIMMUKF(dt, has_subscribed_vectormap);
+  }
+}
+
 void UKF::update(const bool use_sukf, const double detection_probability, const double gate_probability,
                  const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec)
 {
@@ -1282,17 +1304,5 @@ void UKF::update(const bool use_sukf, const double detection_probability, const 
   else
   {
     updateIMMUKF(detection_probability, gate_probability, gating_thres, object_vec);
-  }
-}
-
-void UKF::prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt)
-{
-  if (use_sukf)
-  {
-    predictionSUKF(dt);
-  }
-  else
-  {
-    predictionIMMUKF(dt, has_subscribed_vectormap);
   }
 }
