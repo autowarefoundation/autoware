@@ -416,7 +416,7 @@ void UKF::predictionSUKF(const double dt)
   /*****************************************************************************
   *  Prediction
   ****************************************************************************/
-  prediction(dt, MotionModel::CTRV);
+  predictionMotion(dt, MotionModel::CTRV);
   /*****************************************************************************
   *  Update
   ****************************************************************************/
@@ -437,9 +437,9 @@ void UKF::predictionIMMUKF(const double dt, const bool has_subscribed_vectormap)
   /*****************************************************************************
   *  Prediction
   ****************************************************************************/
-  prediction(dt, MotionModel::CV);
-  prediction(dt, MotionModel::CTRV);
-  prediction(dt, MotionModel::RM);
+  predictionMotion(dt, MotionModel::CV);
+  predictionMotion(dt, MotionModel::CTRV);
+  predictionMotion(dt, MotionModel::RM);
   /*****************************************************************************
   *  Update
   ****************************************************************************/
@@ -862,7 +862,7 @@ void UKF::initCovarQs(const double dt, const double yaw)
       0.5 * dt_3 * rm_var_yawdd, 0, 0, 0, 0.5 * dt_3 * rm_var_yawdd, dt_2 * rm_var_yawdd;
 }
 
-void UKF::prediction(const double delta_t, const int model_ind)
+void UKF::predictionMotion(const double delta_t, const int model_ind)
 {
   /*****************************************************************************
  *  Initialize model parameters
@@ -1270,4 +1270,29 @@ void UKF::checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in
 {
     is_direction_cv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CV, lane_direction_chi_thres);
     is_direction_ctrv_available_ = isLaneDirectionAvailable(in_object, MotionModel::CTRV, lane_direction_chi_thres);
+}
+
+void UKF::update(const bool use_sukf, const double detection_probability, const double gate_probability,
+                 const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec)
+{
+  if (use_sukf)
+  {
+    updateSUKF(object_vec);
+  }
+  else
+  {
+    updateIMMUKF(detection_probability, gate_probability, gating_thres, object_vec);
+  }
+}
+
+void UKF::prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt)
+{
+  if (use_sukf)
+  {
+    predictionSUKF(dt);
+  }
+  else
+  {
+    predictionIMMUKF(dt, has_subscribed_vectormap);
+  }
 }

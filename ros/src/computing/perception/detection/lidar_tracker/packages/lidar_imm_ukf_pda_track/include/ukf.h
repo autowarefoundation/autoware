@@ -315,7 +315,7 @@ public:
 
   void initCovarQs(const double dt, const double yaw);
 
-  void prediction(const double delta_t, const int model_ind);
+  void predictionMotion(const double delta_t, const int model_ind);
 
   void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
                                       const double lane_direction_chi_thres);
@@ -330,6 +330,11 @@ public:
   void updateKalmanGain(const int motion_ind);
 
   double normalizeAngle(const double angle);
+
+  void update(const bool use_sukf, const double detection_probability, const double gate_probability,
+                   const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 };
 
 #endif /* UKF_H */

@@ -159,10 +159,9 @@ private:
 
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
-  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+  bool probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                     std::vector<bool>& matching_vec,
-                                    std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
-                                    bool& is_skip_target);
+                                    std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
   void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
                       const std::vector<bool>& matching_vec);
 

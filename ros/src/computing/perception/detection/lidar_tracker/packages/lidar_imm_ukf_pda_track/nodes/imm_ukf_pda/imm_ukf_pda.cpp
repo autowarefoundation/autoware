@@ -138,14 +138,17 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
 
 void ImmUkfPda::checkVectormapSubscription()
 {
-  lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
-  if(lanes_.empty())
+  if(use_vectormap_)
   {
-    ROS_INFO("Has not subscribed vectormap");
-  }
-  else
-  {
-    has_subscribed_vectormap_ = true;
+    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
+    if(lanes_.empty())
+    {
+      ROS_INFO("Has not subscribed vectormap");
+    }
+    else
+    {
+      has_subscribed_vectormap_ = true;
+    }
   }
 }
 
@@ -608,15 +611,14 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
   return;
 }
 
-void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+bool ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                              std::vector<bool>& matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
-                                             bool& is_skip_target)
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
 {
   double det_s = 0;
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
-  is_skip_target = false;
+  bool success = true;
 
   if (use_sukf_)
   {
@@ -635,8 +637,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   if (std::isnan(det_s) || det_s > prevent_explosion_thres_)
   {
     target.tracking_num_ = TrackingState::Die;
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
 
   bool is_second_init;
@@ -660,8 +662,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   if (is_second_init)
   {
     secondInit(target, object_vec, dt);
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
 
   // update tracking number
@@ -669,9 +671,10 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
 
   if (target.tracking_num_ == TrackingState::Die)
   {
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
+  return success;
 }
 
 void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
@@ -958,36 +961,16 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       continue;
     }
 
-    if (use_sukf_)
+    targets_[i].prediction(use_sukf_, has_subscribed_vectormap_, dt);
+
+    std::vector<autoware_msgs::DetectedObject> object_vec;
+    bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
+    if (!success)
     {
-      // standard ukf prediction step
-      targets_[i].predictionSUKF(dt);
-      // data association
-      bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
-      if (is_skip_target)
-      {
-        continue;
-      }
-      // standard ukf update step
-      targets_[i].updateSUKF(object_vec);
+      continue;
     }
-    else  // immukfpda filter
-    {
-      // immukf prediction step
-      targets_[i].predictionIMMUKF(dt, has_subscribed_vectormap_);
-      // data association
-      bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
-      if (is_skip_target)
-      {
-        continue;
-      }
-      // immukf update step
-      targets_[i].updateIMMUKF(detection_probability_, gate_probability_, gating_thres_, object_vec);
-    }
+
+    targets_[i].update(use_sukf_, detection_probability_, gate_probability_, gating_thres_, object_vec);
   }
   // end UKF process
 
