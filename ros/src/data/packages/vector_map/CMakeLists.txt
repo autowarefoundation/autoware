@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vector_map)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   tf
   geometry_msgs
   visualization_msgs
-  vector_map_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -20,7 +22,9 @@ catkin_package(
 
 include_directories(
   include
+  ${vector_map_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${vector_map_INCLUDE_DIRS}
 )
 
 add_library(vector_map lib/vector_map/vector_map.cpp)

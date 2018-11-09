@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(libvectormap)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
-        vector_map
         )
 
 find_package(Eigen3 QUIET)
@@ -34,6 +36,7 @@ catkin_package(
 
 include_directories(
         include
+        ${vector_map_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
 )

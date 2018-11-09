@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dp_planner)
 set(ROS_VERSION $ENV{ROS_DISTRO})
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         geometry_msgs
         autoware_can_msgs
@@ -16,7 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
         op_planner
         op_simu
         waypoint_follower
-        vector_map_msgs
         )
 
 ## System dependencies are found with CMake's conventions
@@ -57,6 +61,7 @@ endif ()
 include_directories(
         include include/plannerh
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -65,7 +70,11 @@ include_directories(
 link_directories(lib)
 
 add_executable(dp_planner nodes/dp_planner.cpp nodes/dp_planner_core.cpp nodes/ROSHelpers.cpp nodes/PolygonGenerator.cpp)
-target_link_libraries(dp_planner ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(dp_planner
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBS}
+        ${PCL_LIBRARIES}
+        )
 add_dependencies(dp_planner
         ${catkin_EXPORTED_TARGETS}
         )

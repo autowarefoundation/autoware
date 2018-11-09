@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 2.8.12)
 
 project(object_map)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         pcl_ros
         pcl_conversions
@@ -13,8 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
         grid_map_ros
         grid_map_cv
         grid_map_msgs
-        autoware_msgs
-        vector_map
         )
 
 find_package(Qt5Core REQUIRED)
@@ -35,6 +38,8 @@ set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         include
 )
 ### object_map_utils ###
@@ -43,6 +48,7 @@ add_library(object_map_utils_lib
         include/object_map_utils.hpp
         )
 target_link_libraries(object_map_utils_lib
+        ${vector_map_LIBRARIES}
         ${catkin_LIBRARIES}
         )
 

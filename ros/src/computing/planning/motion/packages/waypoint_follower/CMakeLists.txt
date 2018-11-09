@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_follower)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
+
+find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         tf
         geometry_msgs
-        autoware_msgs
-        autoware_config_msgs
         pcl_ros
         pcl_conversions
         sensor_msgs
-        tablet_socket_msgs
         )
 
 ################################################
@@ -45,6 +49,9 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
+        ${autoware_config_msgs_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
+        ${tablet_socket_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
