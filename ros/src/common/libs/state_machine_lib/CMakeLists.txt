@@ -45,3 +45,9 @@ install(TARGETS state_machine_lib
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
+        
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-state_machine_lib test/test_state_machine_lib.test test/src/test_main.cpp test/src/test_state_hpp.cpp test/src/test_state_context.cpp)
+  target_link_libraries(test-state_machine_lib ${catkin_LIBRARIES} state_machine_lib)
+endif()

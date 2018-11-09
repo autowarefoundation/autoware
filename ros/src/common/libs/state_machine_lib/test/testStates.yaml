@@ -1,0 +1,28 @@
+---
+autoware_states:
+  -
+    StateName: Start
+    Transition:
+      -
+        Key: started
+        Target: Init
+    Parent: ~
+  -
+    StateName: Init
+    Transition:
+      -
+        Key: init_start
+        Target: Intermediate
+    Parent: ~
+  -
+    StateName: Intermediate
+    Transition:
+      -
+        Key: go_to_final
+        Target: Final
+    Parent: Init
+  -
+    StateName: Final
+    Transition: []
+    Parent: ~
+

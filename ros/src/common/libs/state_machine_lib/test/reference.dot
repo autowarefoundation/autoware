@@ -1,0 +1,23 @@
+digraph state_machine_graph {
+dpi = "192";
+ node [style=filled];
+0[label="Start",color = "crimson", group = 1];
+1[label="Init", group = 1];
+2[label="Intermediate"];
+3[label="Final", group = 1];
+subgraph cluster_0{
+label = "Start";
+group = 1;
+}
+0->1 [label="started"];
+subgraph cluster_1{
+label = "Init";
+group = 1;
+2->3 [label="go_to_final"];
+1->2 [label="init_start"];
+}
+subgraph cluster_3{
+label = "Final";
+group = 1;
+}
+}
