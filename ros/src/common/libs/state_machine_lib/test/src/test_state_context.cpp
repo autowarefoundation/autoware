@@ -14,7 +14,8 @@ public:
 TEST(TestSuite, StateContextConstructor){
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/testStates.yaml";
-	state_machine::StateContext stateCtx(file_name);
+	std::string msg_name = "testStates";
+	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	// Check generated dot file
 	std::ifstream generatedDotFile("/tmp/a.dot");
@@ -40,7 +41,8 @@ TEST(TestSuite, StateContextConstructor){
 TEST(TestSuite, ChangeStates){
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
-	state_machine::StateContext stateCtx(file_name);
+	std::string msg_name = "testStates";
+	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	stateCtx.nextState("started");
 	ASSERT_STREQ(stateCtx.getStateText().c_str(), "Init\n") << "Text should be: Init\n";
@@ -56,7 +58,8 @@ TEST(TestSuite, SetCallbacksStateContext){
 
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
-	state_machine::StateContext stateCtx(file_name);
+	std::string msg_name = "testStates";
+	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	// Set callbacks
 	std::function<void(const std::string&)> _f = &foo2;
