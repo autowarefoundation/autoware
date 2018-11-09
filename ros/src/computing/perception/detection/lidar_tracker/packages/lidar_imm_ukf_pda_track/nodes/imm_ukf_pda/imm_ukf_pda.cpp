@@ -38,9 +38,10 @@ ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
   init_(false),
-  frame_count_(0)
+  frame_count_(0),
+  has_subscribed_vectormap_(false),
+  private_nh_("~")
 {
-  ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
   private_nh_.param<int>("life_time_thres", life_time_thres_, 8);
@@ -58,12 +59,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 3.8415);
   private_nh_.param<double>("nearest_lane_distance_thres", nearest_lane_distance_thres_, 3.0);
   private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
-  if(use_vectormap_)
-  {
-    // TODO:check if subscribe successfully in every callback
-    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE, 10);
-    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
-  }
+
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
   private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
@@ -87,17 +83,32 @@ void ImmUkfPda::run()
       node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
+
+  if(use_vectormap_)
+  {
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT |
+                                 vector_map::Category::NODE  |
+                                 vector_map::Category::LANE, 1);
+  }
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
-  autoware_msgs::DetectedObjectArray transformed_input;
-  jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
-  autoware_msgs::DetectedObjectArray detected_objects_output;
+  if(use_vectormap_)
+  {
+    checkVectormapSubscription();
+  }
 
   bool success = updateNecessaryTransform();
   if(!success)
+  {
+    ROS_INFO("Could not find coordiante transformation");
     return;
+  }
+
+  autoware_msgs::DetectedObjectArray transformed_input;
+  jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
+  autoware_msgs::DetectedObjectArray detected_objects_output;
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, jskbboxes_output, detected_objects_output);
@@ -125,6 +136,19 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
   }
 }
 
+void ImmUkfPda::checkVectormapSubscription()
+{
+  lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
+  if(lanes_.empty())
+  {
+    ROS_INFO("Has not subscribed vectormap");
+  }
+  else
+  {
+    has_subscribed_vectormap_ = true;
+  }
+}
+
 bool ImmUkfPda::updateNecessaryTransform()
 {
   bool success = true;
@@ -138,7 +162,7 @@ bool ImmUkfPda::updateNecessaryTransform()
     ROS_ERROR("%s", ex.what());
     success = false;
   }
-  if(use_vectormap_)
+  if(use_vectormap_ && has_subscribed_vectormap_)
   {
     try
     {
@@ -247,15 +271,19 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (second_init_done)
   {
-    if(use_vectormap_ )
+    if(use_vectormap_ && has_subscribed_vectormap_)
     {
       autoware_msgs::DetectedObject direction_updated_object;
       bool use_direction_meas = updateDirectionMeas(smallest_nis, smallest_meas_object,
                                                                  direction_updated_object, target);
       if(use_direction_meas)
+      {
         object_vec.push_back(direction_updated_object);
+      }
       else
+      {
         object_vec.push_back(smallest_meas_object);
+      }
     }
     else
     {
@@ -271,16 +299,20 @@ bool ImmUkfPda::updateDirectionMeas(
     UKF& target)
 {
   bool use_lane_direction = false;
-  bool get_lane_success = updateNearestLaneDirection(in_object, out_object);
+  bool get_lane_success = updateWithNearestLaneDirection(in_object, out_object);
   if(!get_lane_success)
+  {
     return use_lane_direction;
+  }
   target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_);
   if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
+  {
     use_lane_direction = true;
+  }
   return use_lane_direction;
 }
 
-bool ImmUkfPda::updateNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
                                                  autoware_msgs::DetectedObject& out_object)
 {
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
@@ -303,16 +335,23 @@ bool ImmUkfPda::updateNearestLaneDirection(const autoware_msgs::DetectedObject& 
 
   bool success = false;
   if(min_dist < nearest_lane_distance_thres_)
+  {
     success = true;
+  }
   else
+  {
     return success;
+  }
 
+  // map yaw in rotation matrix representation
   tf::Quaternion map_quat = tf::createQuaternionFromYaw(min_yaw);
   tf::Matrix3x3 map_matrix(map_quat);
 
+  // vectormap_frame to tracking_frame rotation matrix
   tf::Quaternion rotation_quat = lane_frame2tracking_frame_.getRotation();
   tf::Matrix3x3 rotation_matrix(rotation_quat);
 
+  // rotated yaw in matrix representation
   tf::Matrix3x3 rotated_matrix = rotation_matrix * map_matrix;
   double roll, pitch, yaw;
   rotated_matrix.getRPY(roll, pitch, yaw);
@@ -937,7 +976,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
     else  // immukfpda filter
     {
       // immukf prediction step
-      targets_[i].predictionIMMUKF(dt, use_vectormap_);
+      targets_[i].predictionIMMUKF(dt, has_subscribed_vectormap_);
       // data association
       bool is_skip_target;
       std::vector<autoware_msgs::DetectedObject> object_vec;

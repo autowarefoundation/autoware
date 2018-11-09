@@ -98,6 +98,7 @@ private:
 
   // for vectormap assisted tarcking
   bool use_vectormap_;
+  bool has_subscribed_vectormap_;
   double lane_direction_chi_thres_;
   double nearest_lane_distance_thres_;
   std::string vectormap_frame_;
@@ -117,6 +118,7 @@ private:
   tf::StampedTransform lane_frame2tracking_frame_;
 
   ros::NodeHandle node_handle_;
+  ros::NodeHandle private_nh_;
   ros::Subscriber sub_detected_array_;
   ros::Publisher pub_object_array_;
   ros::Publisher pub_jskbbox_array_;
@@ -186,8 +188,10 @@ private:
      autoware_msgs::DetectedObject& out_object,
      UKF& target);
 
-  bool updateNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+  bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
                                         autoware_msgs::DetectedObject& out_object);
+
+  void checkVectormapSubscription();
 
 
 public:

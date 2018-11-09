@@ -290,7 +290,7 @@ public:
 
   void predictionSUKF(const double dt);
 
-  void predictionIMMUKF(const double dt, const bool use_vectormap);
+  void predictionIMMUKF(const double dt, const bool has_subscribed_vectormap);
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
@@ -322,7 +322,7 @@ public:
 
   void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
 
-  double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const int num_meas);
+  double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind);
 
   bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const double lane_direction_chi_thres);
 
