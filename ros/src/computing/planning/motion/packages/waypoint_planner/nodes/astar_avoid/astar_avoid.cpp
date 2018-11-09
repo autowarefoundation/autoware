@@ -382,7 +382,7 @@ void AstarAvoid::publishWaypoints(const autoware_msgs::Lane& global_waypoints)
     {
       break;
     }
-    autoware_msgs::Waypoint wp = global_waypoints.waypoints[index];
+    const autoware_msgs::Waypoint& wp = global_waypoints.waypoints[index];
     local_waypoints.waypoints.push_back(wp);
   }
 

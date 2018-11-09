@@ -54,7 +54,7 @@ public:
   bool makePlan(const geometry_msgs::Pose& start_pose, const geometry_msgs::Pose& goal_pose);
   void reset();
 
-  nav_msgs::Path getPath() const
+  const nav_msgs::Path& getPath() const
   {
     return path_;
   }
