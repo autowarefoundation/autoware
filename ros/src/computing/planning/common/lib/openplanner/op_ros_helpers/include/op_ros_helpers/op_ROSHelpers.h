@@ -1,4 +1,4 @@
-/// \file  RosHelpers.h
+/// \file  ROSHelpers.h
 /// \brief Helper functions for rviz visualization
 /// \author Hatem Darweesh
 /// \date Jun 30, 2016
@@ -167,11 +167,11 @@ public:
 	}
 };
 
-class RosHelpers
+class ROSHelpers
 {
 public:
-	RosHelpers();
-	virtual ~RosHelpers();
+	ROSHelpers();
+	virtual ~ROSHelpers();
 
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 

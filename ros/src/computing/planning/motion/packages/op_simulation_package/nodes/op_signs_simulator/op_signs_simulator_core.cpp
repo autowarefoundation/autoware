@@ -32,7 +32,7 @@
 #include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 
 namespace SignsSimulatorNS
@@ -146,7 +146,7 @@ void OpenPlannerSimulatorSigns::VisualizeTrafficLight(autoware_msgs::Signals& _s
 
 	//visualize traffic light
 	visualization_msgs::MarkerArray lights;
-	PlannerHNS::RosHelpers::GetTrafficLightForVisualization(simulatedLights, lights);
+	PlannerHNS::ROSHelpers::GetTrafficLightForVisualization(simulatedLights, lights);
 	pub_TrafficLightsRviz.publish(lights);
 }
 
@@ -175,7 +175,7 @@ void OpenPlannerSimulatorSigns::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -190,7 +190,7 @@ void OpenPlannerSimulatorSigns::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,

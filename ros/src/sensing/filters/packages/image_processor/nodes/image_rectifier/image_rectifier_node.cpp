@@ -44,7 +44,7 @@
 
 #define _NODE_NAME_ "image_rectifier"
 
-class RosImageRectifierApp
+class ROSImageRectifierApp
 
 {
 	ros::Subscriber     subscriber_image_raw_;
@@ -127,10 +127,10 @@ public:
 		ROS_INFO("[%s] camera_info_src: %s", _NODE_NAME_, camera_info_topic_str.c_str());
 
 		ROS_INFO("[%s] Subscribing to... %s", _NODE_NAME_, image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle.subscribe(image_raw_topic_str, 1, &RosImageRectifierApp::ImageCallback, this);
+		subscriber_image_raw_ = node_handle.subscribe(image_raw_topic_str, 1, &ROSImageRectifierApp::ImageCallback, this);
 
 		ROS_INFO("[%s] Subscribing to... %s", _NODE_NAME_, camera_info_topic_str.c_str());
-		subscriber_intrinsics_ = node_handle.subscribe(camera_info_topic_str, 1, &RosImageRectifierApp::IntrinsicsCallback, this);
+		subscriber_intrinsics_ = node_handle.subscribe(camera_info_topic_str, 1, &ROSImageRectifierApp::IntrinsicsCallback, this);
 
 		publisher_image_rectified_ = node_handle.advertise<sensor_msgs::Image>(image_rectified_str, 1);
 		ROS_INFO("[%s] Publishing Rectified image in %s", _NODE_NAME_, image_rectified_str.c_str());
@@ -140,11 +140,11 @@ public:
 		ROS_INFO("[%s] END rect", _NODE_NAME_);
 	}
 
-	~RosImageRectifierApp()
+	~ROSImageRectifierApp()
 	{
 	}
 
-	RosImageRectifierApp()
+	ROSImageRectifierApp()
 	{
 	}
 };
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, _NODE_NAME_);
 
-	RosImageRectifierApp app;
+	ROSImageRectifierApp app;
 
 	app.Run();
 

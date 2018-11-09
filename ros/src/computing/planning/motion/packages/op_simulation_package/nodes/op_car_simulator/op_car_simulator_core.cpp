@@ -36,7 +36,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <pcl_ros/transforms.h>
 #include "op_ros_helpers/PolygonGenerator.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 
 namespace CarSimulatorNS
@@ -403,7 +403,7 @@ void OpenPlannerCarSimulator::callbackGetPredictedObjects(const autoware_msgs::D
 	{
 		if(msg->objects.at(i).id != m_SimParams.id)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
 			m_PredictedObjects.push_back(obj);
 		}
 //		else
@@ -682,7 +682,7 @@ void OpenPlannerCarSimulator::visualizeBehaviors()
 	behaviorMarker.text = str_out.str();
 
 	visualization_msgs::MarkerArray markerArray;
-	PlannerHNS::RosHelpers::GetIndicatorArrows(m_LocalPlanner->state, m_CarInfo.width, m_CarInfo.length, m_CurrBehavior.indicator, m_SimParams.id, markerArray);
+	PlannerHNS::ROSHelpers::GetIndicatorArrows(m_LocalPlanner->state, m_CarInfo.width, m_CarInfo.length, m_CurrBehavior.indicator, m_SimParams.id, markerArray);
 
 	markerArray.markers.push_back(behaviorMarker);
 	markerArray.markers.push_back(pointerMarker);
@@ -813,7 +813,7 @@ void OpenPlannerCarSimulator::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -829,7 +829,7 @@ void OpenPlannerCarSimulator::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -1012,7 +1012,7 @@ void OpenPlannerCarSimulator::MainLoop()
 			if(m_SimParams.bEnableLogs)
 			{
 				autoware_msgs::Lane lane;
-				PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_LocalPlanner->m_Path, lane);
+				PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(m_LocalPlanner->m_Path, lane);
 				lane.lane_id = m_SimParams.id;
 				lane.lane_index = (int)m_CurrBehavior.state;
 				lane.header.stamp = sim_data.header.stamp;

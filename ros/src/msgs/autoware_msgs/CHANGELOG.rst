@@ -61,7 +61,7 @@ Changelog for package autoware_msgs
   * Added Runtime manager entry
   * * Added Publication of non fused objects
   * Fixed topic names
-* add max_scan_range to ConfigNdtMapping/ConfigApproximateNdtMapping
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
 * Update OpenPlanner libraries (op_planner, op_utitity, op_ros_helpers)
   Update ring ground filter with latest implementation
   Update lidar_kf_contour_track with latest implementation

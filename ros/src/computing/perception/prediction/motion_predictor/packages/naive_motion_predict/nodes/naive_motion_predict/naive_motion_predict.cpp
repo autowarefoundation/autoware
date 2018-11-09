@@ -45,7 +45,7 @@ NaiveMotionPredict::~NaiveMotionPredict()
 {
 }
 
-void NaiveMotionPredict::initializeRosmarker(const std_msgs::Header& header, const geometry_msgs::Point& position,
+void NaiveMotionPredict::initializeROSmarker(const std_msgs::Header& header, const geometry_msgs::Point& position,
                                              const int object_id, visualization_msgs::Marker& predicted_line)
 {
   predicted_line.lifetime = ros::Duration(0.2);
@@ -74,7 +74,7 @@ void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& obj
                                         visualization_msgs::Marker& predicted_line)
 {
   autoware_msgs::DetectedObject target_object = object;
-  initializeRosmarker(object.header, object.pose.position, object.id, predicted_line);
+  initializeROSmarker(object.header, object.pose.position, object.id, predicted_line);
   for (int i = 0; i < num_prediction_; i++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);

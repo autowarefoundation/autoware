@@ -62,7 +62,7 @@
 
 #define __APP_NAME__ "multi_lidar_calibrator"
 
-class RosMultiLidarCalibratorApp
+class ROSMultiLidarCalibratorApp
 
 {
 	ros::NodeHandle                     node_handle_;
@@ -113,9 +113,9 @@ class RosMultiLidarCalibratorApp
 
 	/*!
 	 * Obtains parameters from the command line, initializes subscribers and publishers.
-	 * @param in_private_handle Ros private handle to get parameters for this node.
+	 * @param in_private_handle ROS private handle to get parameters for this node.
 	 */
-	void InitializeRosIo(ros::NodeHandle& in_private_handle);
+	void InitializeROSIo(ros::NodeHandle& in_private_handle);
 
 	/*!
 	 * Applies a Voxel Grid filter to the point cloud
@@ -135,7 +135,7 @@ class RosMultiLidarCalibratorApp
 public:
 	void Run();
 
-	RosMultiLidarCalibratorApp();
+	ROSMultiLidarCalibratorApp();
 };
 
 #endif //PROJECT_MULTI_LIDAR_CALIBRATOR_H

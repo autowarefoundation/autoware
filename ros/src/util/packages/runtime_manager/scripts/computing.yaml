@@ -27,7 +27,7 @@ subs :
         cmd  : roslaunch lidar_localizer ndt_mapping.launch
         param: ndt_mapping
         gui  :
-          dialog : MyDialogNdtMapping
+          dialog : MyDialogNDTMapping
           dialog_width  : 750
           dialog_height : 650
           incremental_voxel_update:
@@ -42,7 +42,7 @@ subs :
         cmd  : roslaunch lidar_localizer approximate_ndt_mapping.launch
         param: approximate_ndt_mapping
         gui  :
-          dialog : MyDialogNdtMapping
+          dialog : MyDialogNDTMapping
           dialog_width  : 750
           dialog_height : 500
       - name : ndt_matching
@@ -115,7 +115,7 @@ subs :
           flags                  : [ open_dialog, need_camera_info ]
           config_dialog          : MyDialogCarPedestrian
           car_pedestrian_obj_key : { car : car_dpm, pedestrian : pedestrian_dpm }
-          open_dialog            : MyDialogDpm
+          open_dialog            : MyDialogDPM
           use_gpu :
             flags  : [ nl ]
           car :
@@ -1081,7 +1081,7 @@ params :
 
   - name  : car_dpm
     topic : /config/car_dpm
-    msg   : ConfigCarDpm
+    msg   : ConfigCarDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -1116,7 +1116,7 @@ params :
 
   - name  : pedestrian_dpm
     topic : /config/pedestrian_dpm
-    msg   : ConfigPedestrianDpm
+    msg   : ConfigPedestrianDPM
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample
@@ -1403,7 +1403,7 @@ params :
 
   - name  : ndt
     topic : /config/ndt
-    msg   : ConfigNdt
+    msg   : ConfigNDT
     vars  :
     - name  : init_pos_gnss
       desc  : init_pos_gnss desc sample
@@ -2204,7 +2204,7 @@ params :
 
   - name  : car_kf
     topic : /config/car_kf
-    msg   : ConfigCarKf
+    msg   : ConfigCarKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample
@@ -2291,7 +2291,7 @@ params :
 
   - name  : pedestrian_kf
     topic : /config/pedestrian_kf
-    msg   : ConfigPedestrianKf
+    msg   : ConfigPedestrianKF
     vars  :
     - name  : initial_lifespan
       desc  : initial_lifespan desc sample
@@ -3377,7 +3377,7 @@ params :
     vars  :
     - name : rosbag_file
       desc : path to localization ready rosbag file
-      label: Rosbag Path
+      label: ROSbag Path
       kind : path
       cmd_param:
         dash     : ''
@@ -3872,7 +3872,7 @@ params :
 
   - name  : ndt_mapping
     topic : /config/ndt_mapping
-    msg   : ConfigNdtMapping
+    msg   : ConfigNDTMapping
     vars  :
     - name      : resolution
       desc      : Cell Size while mapping using ND (meters) (default 1.0)
@@ -3986,7 +3986,7 @@ params :
 
   - name  : approximate_ndt_mapping
     topic : /config/approximate_ndt_mapping
-    msg   : ConfigApproximateNdtMapping
+    msg   : ConfigApproximateNDTMapping
     flags : [ no_init_update ]
     vars  :
     - name      : resolution
@@ -4181,7 +4181,7 @@ params :
 
   - name  : ssd
     topic : /config/ssd
-    msg   : ConfigSsd
+    msg   : ConfigSSD
     vars  :
     - name  : score_threshold
       desc  : score_threshold desc sample

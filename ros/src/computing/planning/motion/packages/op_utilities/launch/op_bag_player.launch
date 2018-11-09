@@ -14,7 +14,7 @@
 	<arg name="lidar_topic_pub" 				default="/points_raw" />
 	<arg name="image_topic_pub" 				default="/image_raw" />
 	
-	<arg name="testing_mode" 				default="1" /> <!-- Simulation Mode: 0, Rosbag playback mode: 1, actual sensing mode: 2 --> 
+	<arg name="testing_mode" 				default="1" /> <!-- Simulation Mode: 0, ROSbag playback mode: 1, actual sensing mode: 2 --> 
 	
 	<node pkg="op_utilities" type="op_bag_player" name="op_bag_player" output="screen">
 		<param name="width" 						value="$(arg width)" />
