@@ -2,9 +2,12 @@
 Changelog for package kitti_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
-* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/kfunaoka/Autoware/issues/1565>`_)
+* [fix] Added option to publish to specific camera frame on camera publisher (`#1565 <https://github.com/CPFL/Autoware/issues/1565>`_)
   * * Added option to publish to specific camera frame on camera publisher
   * fixes to the node
   * Added New line to UI on each param.

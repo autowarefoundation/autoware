@@ -2,6 +2,9 @@
 Changelog for package vehicle_socket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
 * Moved CAN mesages to autoware_can_msgs
