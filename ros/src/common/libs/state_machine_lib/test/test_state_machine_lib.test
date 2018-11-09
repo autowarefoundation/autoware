@@ -1,0 +1,5 @@
+<launch>
+
+  <test test-name="test-state_machine_lib" pkg="state_machine_lib" type="test-state_machine_lib" name="test"/>
+
+</launch>
