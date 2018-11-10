@@ -40,6 +40,8 @@
 
 #include <tf/transform_listener.h>
 
+#include <vector_map/vector_map.h>
+
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
@@ -80,6 +82,16 @@ private:
   // prevent explode param for ukf
   double prevent_explosion_thres_;
 
+  // for vectormap assisted tarcking
+  bool use_vectormap_;
+  bool has_subscribed_vectormap_;
+  double lane_direction_chi_thres_;
+  double nearest_lane_distance_thres_;
+  std::string vectormap_frame_;
+  vector_map::VectorMap vmap_;
+  std::vector<vector_map_msgs::Lane> lanes_;
+
+
   std::string input_topic_;
   std::string output_topic_;
 
@@ -87,17 +99,27 @@ private:
 
   tf::TransformListener tf_listener_;
   tf::StampedTransform local2global_;
+  tf::StampedTransform tracking_frame2lane_frame_;
+  tf::StampedTransform lane_frame2tracking_frame_;
 
   ros::NodeHandle node_handle_;
+  ros::NodeHandle private_nh_;
   ros::Subscriber sub_detected_array_;
   ros::Publisher pub_object_array_;
 
   std_msgs::Header input_header_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
+
   void transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
                              autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output);
+
+  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose,
+                                                const tf::StampedTransform& tf_stamp);
+
+  bool updateNecessaryTransform();
+
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
@@ -111,10 +133,9 @@ private:
 
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
-  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+  bool probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                     std::vector<bool>& matching_vec,
-                                    std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
-                                    bool& is_skip_target);
+                                    std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
   void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
                       const std::vector<bool>& matching_vec);
 
@@ -129,6 +150,18 @@ private:
 
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
+
+  bool updateDirectionMeas(
+     const double smallest_nis,
+     const autoware_msgs::DetectedObject& in_object,
+     autoware_msgs::DetectedObject& out_object,
+     UKF& target);
+
+  bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+                                        autoware_msgs::DetectedObject& out_object);
+
+  void checkVectormapSubscription();
+
 
 public:
   ImmUkfPda();
