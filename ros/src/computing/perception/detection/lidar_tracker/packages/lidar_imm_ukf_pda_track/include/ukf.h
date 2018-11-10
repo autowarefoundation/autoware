@@ -180,6 +180,7 @@ public:
   // object msg information
   bool is_stable_;
   autoware_msgs::DetectedObject object_;
+  std::string label_;
 
   // for env classification
   Eigen::VectorXd init_meas_;

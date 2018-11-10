@@ -226,6 +226,8 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   autoware_msgs::DetectedObject nearest_object;
   double min_dist = std::numeric_limits<double>::max();
   getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
+  if (target.label_.empty() && !nearest_object.label.empty() && nearest_object.label !="unknown")
+    target.label_ = nearest_object.label;
   target.object_ = nearest_object;
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
       min_dist < distance_thres_)
@@ -452,12 +454,99 @@ void ImmUkfPda::staticClassification()
   }
 }
 
+bool
+ImmUkfPda::arePointsClose(const geometry_msgs::Point& in_point_a,
+                                const geometry_msgs::Point& in_point_b,
+                                float in_radius)
+{
+  return (fabs(in_point_a.x - in_point_b.x) <= in_radius) && (fabs(in_point_a.y - in_point_b.y) <= in_radius);
+}
+
+bool
+ImmUkfPda::arePointsEqual(const geometry_msgs::Point& in_point_a,
+                               const geometry_msgs::Point& in_point_b)
+{
+  return arePointsClose(in_point_a, in_point_b, 0.2);
+}
+
+bool
+ImmUkfPda::isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
+                          const geometry_msgs::Point& in_point)
+{
+  for(size_t j=0; j<in_pool.size(); j++)
+  {
+    if (arePointsEqual(in_pool[j], in_point))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+autoware_msgs::DetectedObjectArray
+ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
+                            const std::vector<size_t> in_tracker_indices)
+{
+  if (in_detected_objects.objects.size() != in_tracker_indices.size())
+    return in_detected_objects;
+
+  autoware_msgs::DetectedObjectArray resulting_objects;
+  resulting_objects.header = in_detected_objects.header;
+
+  std::vector<geometry_msgs::Point> centroids;
+  //create unique points
+  for(size_t i=0; i<in_detected_objects.objects.size(); i++)
+  {
+    if(!isPointInPool(centroids, in_detected_objects.objects[i].pose.position))
+    {
+      centroids.push_back(in_detected_objects.objects[i].pose.position);
+    }
+  }
+  //assign objects to the points
+  std::vector<std::vector<size_t>> matching_objects(centroids.size());
+  for(size_t k=0; k<in_detected_objects.objects.size(); k++)
+  {
+    const auto& object=in_detected_objects.objects[k];
+    for(size_t i=0; i< centroids.size(); i++)
+    {
+      if (arePointsClose(object.pose.position, centroids[i], 0.7))
+      {
+        matching_objects[i].push_back(k);//store index of matched object to this point
+      }
+    }
+  }
+  //get oldest object on each point
+  for(size_t i=0; i< matching_objects.size(); i++)
+  {
+    size_t oldest_object_index = 0;
+    int oldest_lifespan = -1;
+    for(size_t j=0; j<matching_objects[i].size(); j++)
+    {
+      size_t current_index = matching_objects[i][j];
+      int current_lifespan = targets_[in_tracker_indices[current_index]].lifetime_;
+      if (current_lifespan > oldest_lifespan)
+      {
+        oldest_lifespan = current_lifespan;
+        oldest_object_index = current_index;
+      }
+    }
+    resulting_objects.objects.push_back(in_detected_objects.objects[oldest_object_index]);
+  }
+
+  return resulting_objects;
+
+}
+
 void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
-  detected_objects_output.header = input_header_;
+  autoware_msgs::DetectedObjectArray tmp_objects;
+  tmp_objects.header = input.header;
+
+  std::vector<size_t> used_targets_indices;
   for (size_t i = 0; i < targets_.size(); i++)
   {
+
     double tx = targets_[i].x_merge_(0);
     double ty = targets_[i].x_merge_(1);
 
@@ -479,6 +568,13 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.acceleration.linear.y = tyaw_rate;
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
+    dd.pose_reliable = targets_[i].is_stable_;
+    dd.velocity_reliable = targets_[i].is_stable_;
+    if(targets_[i].is_stable_)
+    {
+      tmp_objects.objects.push_back(dd);
+      used_targets_indices.push_back(i);
+    }
 
     if (!std::isnan(q[0]))
       dd.pose.orientation.x = q[0];
@@ -489,13 +585,10 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     if (!std::isnan(q[3]))
       dd.pose.orientation.w = q[3];
 
-    dd.pose_reliable = targets_[i].is_stable_;
-    dd.velocity_reliable = targets_[i].is_stable_;
-
     updateBehaviorState(targets_[i], dd);
-
-    detected_objects_output.objects.push_back(dd);
   }
+
+  detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);
 }
 
 void ImmUkfPda::removeUnnecessaryTarget()

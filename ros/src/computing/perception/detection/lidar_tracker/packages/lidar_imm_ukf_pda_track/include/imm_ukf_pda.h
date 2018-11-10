@@ -130,6 +130,23 @@ private:
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
+  autoware_msgs::DetectedObjectArray
+  removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
+                         const std::vector<size_t> in_tracker_indices);
+
+  bool
+  arePointsClose(const geometry_msgs::Point& in_point_a,
+                  const geometry_msgs::Point& in_point_b,
+                  float in_radius);
+
+  bool
+  arePointsEqual(const geometry_msgs::Point& in_point_a,
+                 const geometry_msgs::Point& in_point_b);
+
+  bool
+  isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
+                     const geometry_msgs::Point& in_point);
+
 public:
   ImmUkfPda();
   void run();
