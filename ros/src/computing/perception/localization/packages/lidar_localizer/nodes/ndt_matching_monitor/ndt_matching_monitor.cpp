@@ -35,7 +35,7 @@
 
 #include "ndt_matching_monitor.h"
 
-void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     gnss_pose_.header = input->header;
     gnss_pose_.pose.pose = input->pose;
@@ -43,7 +43,7 @@ void RosNdtMatchingMonitor::gnss_callback(const geometry_msgs::PoseStamped::Cons
     gnss_text_ = " - GNSS available";
 }
 
-void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::NDTStat::ConstPtr& input)
+void ROSNDTMatchingMonitor::ndt_stat_callback(const autoware_msgs::NDTStat::ConstPtr& input)
 {
     iteration_count_ = input->iteration;
 
@@ -55,7 +55,7 @@ void RosNdtMatchingMonitor::ndt_stat_callback(const autoware_msgs::NDTStat::Cons
 }
 
 geometry_msgs::PoseWithCovarianceStamped
-                RosNdtMatchingMonitor::predict_next_pose(geometry_msgs::PoseWithCovarianceStamped prev_pose,
+                ROSNDTMatchingMonitor::predict_next_pose(geometry_msgs::PoseWithCovarianceStamped prev_pose,
                                                          geometry_msgs::PoseWithCovarianceStamped current_pose)
 {
     geometry_msgs::PoseWithCovarianceStamped predicted_pose;
@@ -82,7 +82,7 @@ geometry_msgs::PoseWithCovarianceStamped
 
 }
 
-void RosNdtMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& input)
 {
     //if currently blocking reset and receiving a different blocking pose, then try to reset
     if (ndt_status::NDT_FATAL == ndt_status_
@@ -102,7 +102,7 @@ void RosNdtMatchingMonitor::initialpose_callback(const geometry_msgs::PoseWithCo
     }
 }
 
-void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
+void ROSNDTMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 {
     geometry_msgs::PoseWithCovarianceStamped initialpose_msg;
     initialpose_msg.header = input->header;
@@ -207,7 +207,7 @@ void RosNdtMatchingMonitor::ndt_pose_callback(const geometry_msgs::PoseStamped::
     last_score_ = current_score_;
 }
 
-void RosNdtMatchingMonitor::Run()
+void ROSNDTMatchingMonitor::Run()
 {
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
@@ -228,10 +228,10 @@ void RosNdtMatchingMonitor::Run()
     }
 
     // Subscribers
-    ros::Subscriber ndt_stat_sub = nh.subscribe("/ndt_stat", 10, &RosNdtMatchingMonitor::ndt_stat_callback, this);
-    ros::Subscriber ndt_pose_sub = nh.subscribe("/ndt_pose", 10, &RosNdtMatchingMonitor::ndt_pose_callback, this);
-    ros::Subscriber initial_pose_sub = nh.subscribe("/initialpose", 10, &RosNdtMatchingMonitor::initialpose_callback, this);
-    ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, &RosNdtMatchingMonitor::gnss_callback, this);
+    ros::Subscriber ndt_stat_sub = nh.subscribe("/ndt_stat", 10, &ROSNDTMatchingMonitor::ndt_stat_callback, this);
+    ros::Subscriber ndt_pose_sub = nh.subscribe("/ndt_pose", 10, &ROSNDTMatchingMonitor::ndt_pose_callback, this);
+    ros::Subscriber initial_pose_sub = nh.subscribe("/initialpose", 10, &ROSNDTMatchingMonitor::initialpose_callback, this);
+    ros::Subscriber gnss_sub = nh.subscribe("gnss_pose", 10, &ROSNDTMatchingMonitor::gnss_callback, this);
 
     // Publishers
     initialpose_pub_ = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose", 1);
@@ -242,7 +242,7 @@ void RosNdtMatchingMonitor::Run()
 
 }
 
-RosNdtMatchingMonitor::RosNdtMatchingMonitor()
+ROSNDTMatchingMonitor::ROSNDTMatchingMonitor()
 {
     gnss_pose_available_ = false;
     last_score_     = 0.0;

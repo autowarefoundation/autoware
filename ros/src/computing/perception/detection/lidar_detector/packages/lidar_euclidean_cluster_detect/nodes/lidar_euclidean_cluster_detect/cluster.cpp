@@ -62,7 +62,7 @@ Eigen::Vector3f Cluster::GetEigenValues()
   return eigen_values_;
 }
 
-void Cluster::ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster &out_cluster_message)
+void Cluster::ToROSMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster &out_cluster_message)
 {
   sensor_msgs::PointCloud2 cloud_msg;
 
@@ -120,7 +120,7 @@ void Cluster::ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudC
 }
 
 void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud_ptr,
-                       const std::vector<int> &in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r,
+                       const std::vector<int>& in_cluster_indices, std_msgs::Header in_ros_header, int in_id, int in_r,
                        int in_g, int in_b, std::string in_label, bool in_estimate_pose)
 {
   label_ = in_label;
@@ -280,9 +280,9 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
   pointcloud_ = current_cluster;
 }
 
-std::vector<float> Cluster::GetFpfhDescriptor(const unsigned int &in_ompnum_threads,
-                                              const double &in_normal_search_radius,
-                                              const double &in_fpfh_search_radius)
+std::vector<float> Cluster::GetFpfhDescriptor(const unsigned int& in_ompnum_threads,
+                                              const double& in_normal_search_radius,
+                                              const double& in_fpfh_search_radius)
 {
   std::vector<float> cluster_fpfh_histogram(33, 0.0);
 

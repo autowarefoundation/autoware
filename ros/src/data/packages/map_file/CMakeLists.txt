@@ -9,6 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   geometry_msgs
   tf
+  pcl_ros
+  tf2_ros
+  tf2_geometry_msgs
   vector_map
   autoware_msgs
 )
@@ -59,6 +62,10 @@ add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
 target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES})
+
+add_executable(points_map_filter nodes/points_map_filter/points_map_filter_node.cpp nodes/points_map_filter/points_map_filter.cpp)
+target_link_libraries(points_map_filter ${catkin_LIBRARIES})
+add_dependencies(points_map_filter ${catkin_EXPORTED_TARGETS})
 
 ## Install executables and/or libraries
 install(TARGETS get_file points_map_loader vector_map_loader

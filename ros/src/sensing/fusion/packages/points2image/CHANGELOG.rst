@@ -247,7 +247,7 @@ Changelog for package points2image
 * Correct calibration_camera_lidar dependnecy about message header
 * Correct dependency name
 * Delete image size fixing
-* Ros-parameterize all defined value in points2vscan
+* ROS-parameterize all defined value in points2vscan
   Now we can specify parameters value from launch file
 * Update threshold
   So that vscan can work for close-range obstacles when velodyne 32 is

@@ -64,7 +64,7 @@
 
 #include "gencolors.cpp"
 
-class RosTrackerApp {
+class ROSTrackerApp {
   ros::Subscriber subscriber_image_raw_;
   ros::Subscriber subscriber_image_obj_;
   ros::Subscriber subscriber_klt_config_;
@@ -401,20 +401,20 @@ public:
     ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
     ROS_INFO("Subscribing to... %s", image_obj_topic_str.c_str());
     subscriber_image_raw_ = node_handle_.subscribe(
-        image_raw_topic_str, 1, &RosTrackerApp::image_callback, this);
+        image_raw_topic_str, 1, &ROSTrackerApp::image_callback, this);
     subscriber_image_obj_ = node_handle_.subscribe(
-        image_obj_topic_str, 1, &RosTrackerApp::detections_callback, this);
+        image_obj_topic_str, 1, &ROSTrackerApp::detections_callback, this);
 
     std::string config_topic("/config");
     config_topic += ros::this_node::getNamespace() + "/klt";
-    // node_handle.subscribe(config_topic, 1, &RosTrackerApp::klt_config_cb,
+    // node_handle.subscribe(config_topic, 1, &ROSTrackerApp::klt_config_cb,
     // this);
 
     ros::spin();
     ROS_INFO("END klt");
   }
 
-  RosTrackerApp() {
+  ROSTrackerApp() {
     ready_ = true;
     num_trackers_ = 0;
     track_ready_ = false;
@@ -425,7 +425,7 @@ public:
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "klt");
 
-  RosTrackerApp app;
+  ROSTrackerApp app;
 
   app.Run();
 

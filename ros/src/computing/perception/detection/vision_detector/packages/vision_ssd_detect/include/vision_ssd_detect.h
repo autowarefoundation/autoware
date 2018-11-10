@@ -16,26 +16,25 @@
 
 #include "rect_class_score.h"
 
-namespace Ssd
+namespace SSD
 {
-  enum SsdDetectorClasses
-  {
-    BACKGROUND,
-    PLANE, BICYCLE, BIRD, BOAT,
-    BOTTLE, BUS, CAR, CAT, CHAIR,
-    COW, TABLE, DOG, HORSE,
-    MOTORBIKE, PERSON, PLANT,
-    SHEEP, SOFA, TRAIN, TV, NUM_CLASSES
-  };
+	enum SSDDetectorClasses
+	{
+		BACKGROUND,
+		PLANE, BICYCLE, BIRD, BOAT,
+		BOTTLE, BUS, CAR, CAT, CHAIR,
+		COW, TABLE, DOG, HORSE,
+		MOTORBIKE, PERSON, PLANT,
+		SHEEP, SOFA, TRAIN, TV, NUM_CLASSES
+	};
 }
 
-class SsdDetector
+class SSDDetector
 {
 public:
-  SsdDetector(const std::string &in_network_definition_file, const std::string &in_pre_trained_model_file,
-              const cv::Scalar &in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
+	SSDDetector(const std::string& in_network_definition_file, const std::string& in_pre_trained_model_file, const cv::Scalar& in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
 
-  std::vector<RectClassScore<float> > Detect(const cv::Mat &img);
+	std::vector <  RectClassScore<float>  > Detect(const cv::Mat& img);
 
 private:
   void SetMean(const cv::Scalar &in_mean_value);

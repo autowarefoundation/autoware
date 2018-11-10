@@ -1005,7 +1005,7 @@ def formatResultAsRecords (resultMat):
     return records
 
 
-def flipOrbToNdt (orbPose):
+def flipOrbToNDT (orbPose):
     qOrb = [orbPose.qx, orbPose.qy, orbPose.qz, orbPose.qw]
     orbFlip = trafo.concatenate_matrices(
         trafo.quaternion_matrix(qOrb),

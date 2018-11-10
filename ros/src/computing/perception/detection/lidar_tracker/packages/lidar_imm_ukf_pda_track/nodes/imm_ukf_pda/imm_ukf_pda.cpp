@@ -37,8 +37,8 @@
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
-  init_(false)
-  , frame_count_(0)
+  init_(false),
+  frame_count_(0)
 {
   ros::NodeHandle private_nh_("~");
   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
@@ -479,7 +479,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.acceleration.linear.y = tyaw_rate;
     dd.pose.position.x = tx;
     dd.pose.position.y = ty;
-    
+
     if (!std::isnan(q[0]))
       dd.pose.orientation.x = q[0];
     if (!std::isnan(q[1]))

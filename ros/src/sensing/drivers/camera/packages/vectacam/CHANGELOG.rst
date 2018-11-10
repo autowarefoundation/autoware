@@ -79,7 +79,7 @@ Changelog for package vectacam
 
 1.2.0 (2017-06-07)
 ------------------
-* Kf Added
+* KF Added
   Euclidean Cluster improved
 * Contributors: AMC
 
