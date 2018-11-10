@@ -174,50 +174,6 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
   }
 }
 
-// void ImmUkfPda::transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output)
-// {
-// <<<<<<< HEAD
-//   detected_objects_output.header = input_header_;
-//   for (size_t i = 0; i < detected_objects_output.objects.size(); i++)
-//   {
-//     geometry_msgs::PoseStamped detected_pose_in, detected_pose_out;
-//
-//     detected_pose_in.header.frame_id = tracking_frame_;
-//     detected_pose_in.pose = detected_objects_output.objects[i].pose;
-//
-//     tf::Transform output_object_pose;
-//     output_object_pose.setOrigin(tf::Vector3(detected_objects_output.objects[i].pose.position.x,
-//                                              detected_objects_output.objects[i].pose.position.y,
-//                                              detected_objects_output.objects[i].pose.position.z));
-//     output_object_pose.setRotation(tf::Quaternion(
-//         detected_objects_output.objects[i].pose.orientation.x, detected_objects_output.objects[i].pose.orientation.y,
-//         detected_objects_output.objects[i].pose.orientation.z, detected_objects_output.objects[i].pose.orientation.w));
-//     tf::poseTFToMsg(local2global_.inverse() * output_object_pose, detected_pose_out.pose);
-//
-//     detected_objects_output.objects[i].header = input_header_;
-//     detected_objects_output.objects[i].pose = detected_pose_out.pose;
-//   }
-// =======
-//   detected_objects_output.header.frame_id = pointcloud_frame_;
-//   tf::Transform inv_local2global = local2global_.inverse();
-//   tf::StampedTransform global2local;
-//   global2local.setData(inv_local2global);
-//   for (auto &object: detected_objects_output.objects)
-//   {
-//     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, global2local);
-//     object.header.frame_id = pointcloud_frame_;
-//     object.pose = out_pose;
-//   }
-//
-//   jskbboxes_output.header.frame_id = pointcloud_frame_;
-//   for (auto &jskbox: jskbboxes_output.boxes)
-//   {
-//     geometry_msgs::Pose out_pose = getTransformedPose(jskbox.pose, global2local);
-//     jskbox.header.frame_id = pointcloud_frame_;
-//     jskbox.pose = out_pose;
-//   }
-// }
-
 void ImmUkfPda::transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
   detected_objects_output.header = input_header_;
