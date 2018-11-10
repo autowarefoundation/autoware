@@ -1271,7 +1271,9 @@ bool UKF::isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_objec
 
   bool is_direction_available = false;
   if(lidar_direction_nis < lane_direction_chi_thres)
+  {
     is_direction_available = true;
+  }
   return is_direction_available;
 }
 
