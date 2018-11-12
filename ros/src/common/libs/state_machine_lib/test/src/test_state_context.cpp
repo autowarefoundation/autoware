@@ -15,29 +15,7 @@ public:
 
 TEST(TestSuite, StateContextConstructor){
 
-	// Check current working dir
-	char cwd[1024];
-	getcwd(cwd, sizeof(cwd));
-	std::cerr << "**************************" << std::endl;
-	std::cerr << "Current working dir: " << cwd << std::endl;
-	std::cerr << "**************************" << std::endl;
-
-
-	DIR *dir;
-	struct dirent *ent;
-	if ((dir = opendir ("./../")) != NULL) {
-	  /* print all the files and directories within directory */
-	  while ((ent = readdir (dir)) != NULL) {
-		  std::cerr << ent->d_name << std::endl;
-	  }
-	  closedir (dir);
-	} else {
-	  /* could not open directory */
-	  perror ("");
-	  //return EXIT_FAILURE;
-	}
-
-	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/testStates.yaml";
+	std::string file_name = "testStates.yaml";
 	std::string msg_name = "testStates";
 	state_machine::StateContext stateCtx(file_name, msg_name);
 
