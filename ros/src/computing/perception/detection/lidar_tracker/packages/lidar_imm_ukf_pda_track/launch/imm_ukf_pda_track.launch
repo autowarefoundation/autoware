@@ -7,8 +7,8 @@
   <arg name="life_time_thres" default="8" />
   <arg name="static_velocity_thres" default="3.0" />
   <arg name="prevent_explosion_thres" default="1000" />
-  <arg name="lane_direction_chi_thres" default="3.8412" />
-  <arg name="nearest_lane_distance_thres" default="3.0" />
+  <arg name="lane_direction_chi_thres" default="2.71" />
+  <arg name="nearest_lane_distance_thres" default="1.0" />
   <arg name="tracker_input_topic" default="/detection/lidar_objects" />
   <arg name="tracker_output_detected_topic" default="/detection/lidar_tracker/objects" />
   <arg name="use_sukf" default="use_sukf" />

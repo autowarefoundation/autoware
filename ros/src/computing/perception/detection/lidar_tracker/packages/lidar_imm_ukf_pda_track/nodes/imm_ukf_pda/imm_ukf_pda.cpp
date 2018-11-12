@@ -52,8 +52,8 @@ ImmUkfPda::ImmUkfPda()
 
   // for vectormap assisted tracking
   private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
-  private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 3.8415);
-  private_nh_.param<double>("nearest_lane_distance_thres", nearest_lane_distance_thres_, 3.0);
+  private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 2.71);
+  private_nh_.param<double>("nearest_lane_distance_thres", nearest_lane_distance_thres_, 1.0);
   private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
 
   // rosparam for benchmark
@@ -71,7 +71,7 @@ void ImmUkfPda::run()
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 
-  if(use_vectormap_)
+  if (use_vectormap_)
   {
     vmap_.subscribe(private_nh_, vector_map::Category::POINT |
                                  vector_map::Category::NODE  |
@@ -89,7 +89,7 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   }
 
   bool success = updateNecessaryTransform();
-  if(!success)
+  if (!success)
   {
     ROS_INFO("Could not find coordiante transformation");
     return;
@@ -112,10 +112,10 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 
 void ImmUkfPda::checkVectormapSubscription()
 {
-  if(use_vectormap_)
+  if (use_vectormap_ && !has_subscribed_vectormap_)
   {
-    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
-    if(lanes_.empty())
+    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane& lane) { return true; });
+    if (lanes_.empty())
     {
       ROS_INFO("Has not subscribed vectormap");
     }
@@ -139,7 +139,7 @@ bool ImmUkfPda::updateNecessaryTransform()
     ROS_ERROR("%s", ex.what());
     success = false;
   }
-  if(use_vectormap_ && has_subscribed_vectormap_)
+  if (use_vectormap_ && has_subscribed_vectormap_)
   {
     try
     {
@@ -179,7 +179,7 @@ void ImmUkfPda::transformPoseToLocal(autoware_msgs::DetectedObjectArray& detecte
   tf::Transform inv_local2global = local2global_.inverse();
   tf::StampedTransform global2local;
   global2local.setData(inv_local2global);
-  for (auto &object: detected_objects_output.objects)
+  for (auto& object : detected_objects_output.objects)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, global2local);
     object.header = input_header_;
@@ -187,14 +187,14 @@ void ImmUkfPda::transformPoseToLocal(autoware_msgs::DetectedObjectArray& detecte
   }
 }
 
-geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::StampedTransform& tf_stamp)
+geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose,
+                                                  const tf::StampedTransform& tf_stamp)
 {
   tf::Transform transform;
   geometry_msgs::PoseStamped out_pose;
   transform.setOrigin(tf::Vector3(in_pose.position.x, in_pose.position.y, in_pose.position.z));
   transform.setRotation(
-      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y,
-                     in_pose.orientation.z, in_pose.orientation.w));
+      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y, in_pose.orientation.z, in_pose.orientation.w));
   geometry_msgs::PoseStamped pose_out;
   tf::poseTFToMsg(tf_stamp * transform, out_pose.pose);
   return out_pose.pose;
@@ -208,9 +208,9 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
 {
   // alert: different from original imm-pda filter, here picking up most likely measurement
   // if making it allows to have more than one measurement, you will see non semipositive definite covariance
-  bool second_init_done = false;
+  bool exists_smallest_nis_object = false;
   double smallest_nis = std::numeric_limits<double>::max();
-  autoware_msgs::DetectedObject smallest_meas_object;
+  autoware_msgs::DetectedObject smallest_nis_object;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -232,49 +232,46 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
       if (nis < smallest_nis)
       {
         smallest_nis = nis;
-        smallest_meas_object = input.objects[i];
+        smallest_nis_object = input.objects[i];
         matching_vec[i] = true;
-        second_init_done = true;
+        exists_smallest_nis_object = true;
       }
     }
   }
-  if (second_init_done)
+  if (exists_smallest_nis_object)
   {
-    if(use_vectormap_ && has_subscribed_vectormap_)
+    if (use_vectormap_ && has_subscribed_vectormap_)
     {
       autoware_msgs::DetectedObject direction_updated_object;
-      bool use_direction_meas = updateDirectionMeas(smallest_nis, smallest_meas_object,
-                                                                 direction_updated_object, target);
-      if(use_direction_meas)
+      bool use_direction_meas =
+          updateDirection(smallest_nis, smallest_nis_object, direction_updated_object, target);
+      if (use_direction_meas)
       {
         object_vec.push_back(direction_updated_object);
       }
       else
       {
-        object_vec.push_back(smallest_meas_object);
+        object_vec.push_back(smallest_nis_object);
       }
     }
     else
     {
-      object_vec.push_back(smallest_meas_object);
+      object_vec.push_back(smallest_nis_object);
     }
   }
 }
 
-bool ImmUkfPda::updateDirectionMeas(
-    const double smallest_nis,
-    const autoware_msgs::DetectedObject& in_object,
-    autoware_msgs::DetectedObject& out_object,
-    UKF& target)
+bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                                    autoware_msgs::DetectedObject& out_object, UKF& target)
 {
   bool use_lane_direction = false;
   bool get_lane_success = updateWithNearestLaneDirection(in_object, out_object);
-  if(!get_lane_success)
+  if (!get_lane_success)
   {
     return use_lane_direction;
   }
-  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_);
-  if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
+  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_, use_sukf_);
+  if (target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
   {
     use_lane_direction = true;
   }
@@ -285,15 +282,16 @@ bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObje
                                                  autoware_msgs::DetectedObject& out_object)
 {
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
-  double min_dist = std::numeric_limits<double>::max();;
+  double min_dist = std::numeric_limits<double>::max();
+
   double min_yaw = 0;
-  for(auto const &lane: lanes_)
+  for (auto const& lane : lanes_)
   {
     vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
     vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
     double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.y, 2) +
                                 std::pow(point.ly - lane_frame_pose.position.x, 2));
-    if(distance < min_dist)
+    if (distance < min_dist)
     {
       min_dist = distance;
       vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
@@ -303,7 +301,7 @@ bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObje
   }
 
   bool success = false;
-  if(min_dist < nearest_lane_distance_thres_)
+  if (min_dist < nearest_lane_distance_thres_)
   {
     success = true;
   }
@@ -330,11 +328,11 @@ bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObje
   return success;
 }
 
-
-void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                                        autoware_msgs::DetectedObject& object, double& min_dist)
+autoware_msgs::DetectedObject ImmUkfPda::getNearestObject(UKF& target,
+                                                          const std::vector<autoware_msgs::DetectedObject>& object_vec)
 {
   int min_ind = 0;
+  double min_dist = std::numeric_limits<double>::max();
   double px = target.x_merge_(0);
   double py = target.x_merge_(1);
 
@@ -350,11 +348,13 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<aut
       min_ind = i;
     }
   }
+  target.min_assiciation_distance_ = min_dist;
 
-  object = object_vec[min_ind];
+  autoware_msgs::DetectedObject nearest_object = object_vec[min_ind];
+  return nearest_object;
 }
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+void ImmUkfPda::associateObject(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
 {
   // skip if no validated measurement
   if (object_vec.size() == 0)
@@ -362,12 +362,14 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
     return;
   }
 
-  autoware_msgs::DetectedObject nearest_object;
-  double min_dist = std::numeric_limits<double>::max();
-  getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
+  autoware_msgs::DetectedObject nearest_object = getNearestObject(target, object_vec);
+  if (target.label_.empty() && !nearest_object.label.empty() && nearest_object.label !="unknown")
+  {
+    target.label_ = nearest_object.label;
+  }
   target.object_ = nearest_object;
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
-      min_dist < distance_thres_)
+      target.min_assiciation_distance_ < distance_thres_)
   {
     target.is_stable_ = true;
   }
@@ -521,12 +523,11 @@ bool ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     is_second_init = false;
   }
 
-  // measurement gating, get measVec, bboxVec, matchingVec through reference
+  // measurement gating
   measurementValidation(input, target, is_second_init, max_det_z, max_det_s, object_vec, matching_vec);
 
-  // bounding box association if target is stable :plus, right angle correction if its needed
-  // input: track number, bbox measurements, &target
-  associateBB(object_vec, target);
+  // associate the nearest object to a trackecd target.
+  associateObject(object_vec, target);
 
   // second detection for a target: update v and yaw
   if (is_second_init)
@@ -731,7 +732,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
         dd.pose.orientation.w = q[3];
     }
     updateBehaviorState(targets_[i], dd);
-    
+
     tmp_objects.objects.push_back(dd);
     used_targets_indices.push_back(i);
 
@@ -840,7 +841,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
   }
   // end UKF process
 
-  // making new ukf target for no data association clusters
+  // making new ukf target for no data association objects
   makeNewTargets(timestamp, input, matching_vec);
 
   // static dynamic classification

@@ -132,9 +132,9 @@ private:
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
-  void getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                               autoware_msgs::DetectedObject& object, double& min_dist);
-  void associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
+  autoware_msgs::DetectedObject getNearestObject(UKF& target,
+                                                 const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void associateObject(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
   void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
@@ -160,14 +160,11 @@ private:
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  bool updateDirectionMeas(
-     const double smallest_nis,
-     const autoware_msgs::DetectedObject& in_object,
-     autoware_msgs::DetectedObject& out_object,
-     UKF& target);
+  bool updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                           autoware_msgs::DetectedObject& out_object, UKF& target);
 
   bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                        autoware_msgs::DetectedObject& out_object);
+                                      autoware_msgs::DetectedObject& out_object);
 
   void checkVectormapSubscription();
 
