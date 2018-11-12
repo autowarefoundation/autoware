@@ -365,8 +365,6 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   autoware_msgs::DetectedObject nearest_object;
   double min_dist = std::numeric_limits<double>::max();
   getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-  if (target.label_.empty() && !nearest_object.label.empty() && nearest_object.label !="unknown")
-    target.label_ = nearest_object.label;
   target.object_ = nearest_object;
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
       min_dist < distance_thres_)
@@ -658,6 +656,7 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
   for(size_t i=0; i< matching_objects.size(); i++)
   {
     size_t oldest_object_index = 0;
+    size_t oldest_tracker_index = 0;
     int oldest_lifespan = -1;
     for(size_t j=0; j<matching_objects[i].size(); j++)
     {
@@ -667,9 +666,19 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
       {
         oldest_lifespan = current_lifespan;
         oldest_object_index = current_index;
+        oldest_tracker_index = in_tracker_indices[current_index];
       }
     }
-    resulting_objects.objects.push_back(in_detected_objects.objects[oldest_object_index]);
+    autoware_msgs::DetectedObject best_object;
+    best_object = in_detected_objects.objects[oldest_object_index]
+    if (best_object.label!= "unknown"
+        && !targets_[oldest_tracker_index].label_.empty()
+        && targets_[oldest_tracker_index].label_ != "unknown")
+    {
+      best_object.label = targets_[oldest_tracker_index].label_;
+    }
+
+    resulting_objects.objects.push_back(best_object);
   }
 
   return resulting_objects;
@@ -710,22 +719,22 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;
 
-    if (!std::isnan(q[0]))
-      dd.pose.orientation.x = q[0];
-    if (!std::isnan(q[1]))
-      dd.pose.orientation.y = q[1];
-    if (!std::isnan(q[2]))
-      dd.pose.orientation.z = q[2];
-    if (!std::isnan(q[3]))
-      dd.pose.orientation.w = q[3];
-
-    updateBehaviorState(targets_[i], dd);
-
-    if(targets_[i].is_stable_)
+    if (!targets_[i].is_static_)
     {
-      tmp_objects.objects.push_back(dd);
-      used_targets_indices.push_back(i);
+      if (!std::isnan(q[0]))
+        dd.pose.orientation.x = q[0];
+      if (!std::isnan(q[1]))
+        dd.pose.orientation.y = q[1];
+      if (!std::isnan(q[2]))
+        dd.pose.orientation.z = q[2];
+      if (!std::isnan(q[3]))
+        dd.pose.orientation.w = q[3];
     }
+    updateBehaviorState(targets_[i], dd);
+    
+    tmp_objects.objects.push_back(dd);
+    used_targets_indices.push_back(i);
+
   }
 
   detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);
