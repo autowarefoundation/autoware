@@ -1,6 +1,6 @@
 stages:
   - build
-  - deploy
+  - deploy 
   
 variables:
   ROS_CI_DESKTOP: "`lsb_release -cs`"
