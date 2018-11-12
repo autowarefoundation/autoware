@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "state_machine_lib/state_context.hpp"
 
@@ -20,6 +21,21 @@ TEST(TestSuite, StateContextConstructor){
 	std::cerr << "**************************" << std::endl;
 	std::cerr << "Current working dir: " << cwd << std::endl;
 	std::cerr << "**************************" << std::endl;
+
+
+	DIR *dir;
+	struct dirent *ent;
+	if ((dir = opendir ("./../")) != NULL) {
+	  /* print all the files and directories within directory */
+	  while ((ent = readdir (dir)) != NULL) {
+		  std::cerr << ent->d_name << std::endl;
+	  }
+	  closedir (dir);
+	} else {
+	  /* could not open directory */
+	  perror ("");
+	  //return EXIT_FAILURE;
+	}
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/testStates.yaml";
 	std::string msg_name = "testStates";
