@@ -723,8 +723,6 @@ void UKF::updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObje
   if (is_direction_ctrv_available_)
   {
     lidar_direction_ctrv_meas_ = meas_vec[max_ctrv_ind];
-    std::cout << lidar_direction_ctrv_meas_ << std::endl;
-    std::cout << "---------------------------" << std::endl;
   }
   else
   {
@@ -738,10 +736,6 @@ void UKF::uppateForCTRV()
 
   if (is_direction_ctrv_available_)
   {
-    std::cout << k_lidar_direction_ctrv_ << std::endl;
-    std::cout << "---------------------------" << std::endl;
-    std::cout << lidar_direction_ctrv_meas_ << std::endl;
-    std::cout << "---------------------------" << std::endl;
     x_ctrv_.col(0) = x + k_lidar_direction_ctrv_ * (lidar_direction_ctrv_meas_ - z_pred_lidar_direction_ctrv_);
     p_ctrv_ = p_ctrv_ - k_lidar_direction_ctrv_ * s_lidar_direction_ctrv_ * k_lidar_direction_ctrv_.transpose();
     x_merge_.col(0) = x_ctrv_.col(0);

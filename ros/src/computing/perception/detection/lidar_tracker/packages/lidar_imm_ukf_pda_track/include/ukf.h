@@ -186,6 +186,7 @@ public:
   bool is_stable_;
   autoware_msgs::DetectedObject object_;
   std::string label_;
+  double min_assiciation_distance_;
 
   // for env classification
   Eigen::VectorXd init_meas_;

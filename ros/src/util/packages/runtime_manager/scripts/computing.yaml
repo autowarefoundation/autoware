@@ -1258,7 +1258,7 @@ params :
       label   : 'lane direction chi thres'
       min       : 0.0
       max       : 20
-      v       : 3.84
+      v       : 2.71
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1267,7 +1267,7 @@ params :
       label   : 'nearest lane distance thres'
       min       : 0.0
       max       : 20
-      v       : 3.0
+      v       : 1.0
       cmd_param :
         dash        : ''
         delim       : ':='
