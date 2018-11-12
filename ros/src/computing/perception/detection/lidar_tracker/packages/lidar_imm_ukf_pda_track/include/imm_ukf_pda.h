@@ -160,14 +160,11 @@ private:
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  bool updateDirectionMeas(
-     const double smallest_nis,
-     const autoware_msgs::DetectedObject& in_object,
-     autoware_msgs::DetectedObject& out_object,
-     UKF& target);
+  bool updateDirectionMeas(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                           autoware_msgs::DetectedObject& out_object, UKF& target);
 
   bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                        autoware_msgs::DetectedObject& out_object);
+                                      autoware_msgs::DetectedObject& out_object);
 
   void checkVectormapSubscription();
 
