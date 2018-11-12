@@ -31,7 +31,6 @@ variables:
     - wstool up
     - cd ..
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
-    
 
 build_kinetic:
   stage: build
