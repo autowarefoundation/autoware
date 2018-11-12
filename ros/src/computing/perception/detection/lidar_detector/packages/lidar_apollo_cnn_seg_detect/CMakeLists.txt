@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_apollo_cnn_seg_detect)
 
-set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
-
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
@@ -28,7 +26,6 @@ catkin_package(
         sensor_msgs
         geometry_msgs
         autoware_msgs
-        jsk_recognition_msgs
 )
 
 IF (CUDA_FOUND)

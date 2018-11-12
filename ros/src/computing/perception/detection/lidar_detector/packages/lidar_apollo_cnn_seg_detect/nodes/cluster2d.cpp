@@ -221,7 +221,7 @@ void Cluster2D::classify(const caffe::Blob<float> &classify_pt_blob)
 }
 
 autoware_msgs::DetectedObject
-Cluster2D::ObstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header& in_header)
+Cluster2D::obstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header& in_header)
 {
     autoware_msgs::DetectedObject resulting_object;
 
@@ -311,7 +311,7 @@ Cluster2D::ObstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header&
 void Cluster2D::getObjects(const float confidence_thresh,
                            const float height_thresh,
                            const int min_pts_num,
-                           autoware_msgs::DetectedObjectArray *objects,
+                           autoware_msgs::DetectedObjectArray &objects,
                            const std_msgs::Header &in_header)
 {
     CHECK(valid_indices_in_pc_ != nullptr);
@@ -353,16 +353,13 @@ void Cluster2D::getObjects(const float confidence_thresh,
             continue;
         }
 
-        autoware_msgs::DetectedObject out_obj = ObstacleToObject(*obs, in_header);
-        // out_obj->score_type = SCORE_CNN;
-        // out_obj->type = GetObjectType(obs->meta_type);
-        // out_obj->type_probs = GetObjectTypeProbs(obs->meta_type_probs);
+        autoware_msgs::DetectedObject out_obj = obstacleToObject(*obs, in_header);
 
-        objects->objects.push_back(out_obj);
+        objects.objects.push_back(out_obj);
     }
 }
 
-ObjectType GetObjectType(const MetaType meta_type_id)
+ObjectType getObjectType(const MetaType meta_type_id)
 {
     switch (meta_type_id)
     {
