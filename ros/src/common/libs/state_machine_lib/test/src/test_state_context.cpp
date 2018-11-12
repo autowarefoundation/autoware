@@ -3,11 +3,7 @@
 
 #include <fstream>
 #include <unistd.h>
-<<<<<<< HEAD
 #include <dirent.h>
-
-=======
->>>>>>> Check current working directory for test_state_machine_lib
 
 #include "state_machine_lib/state_context.hpp"
 
