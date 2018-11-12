@@ -671,7 +671,7 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
       }
     }
     autoware_msgs::DetectedObject best_object;
-    best_object = in_detected_objects.objects[oldest_object_index]
+    best_object = in_detected_objects.objects[oldest_object_index];
     if (best_object.label!= "unknown"
         && !targets_[oldest_tracker_index].label_.empty()
         && targets_[oldest_tracker_index].label_ != "unknown")
@@ -733,9 +733,11 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     }
     updateBehaviorState(targets_[i], dd);
 
-    tmp_objects.objects.push_back(dd);
-    used_targets_indices.push_back(i);
-
+    if (targets_[i].is_stable_)
+    {
+      tmp_objects.objects.push_back(dd);
+      used_targets_indices.push_back(i);
+    }
   }
 
   detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);
