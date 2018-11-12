@@ -37,11 +37,11 @@ namespace object_map
 	GridMapFilter::GridMapFilter() :
 			private_node_handle_("~")
 	{
-		InitializeRosIo();
+		InitializeROSIo();
 		LoadRoadAreasFromVectorMap(private_node_handle_, area_points_);
 	}
 
-	void GridMapFilter::InitializeRosIo()
+	void GridMapFilter::InitializeROSIo()
 	{
 		private_node_handle_.param<std::string>("map_frame", map_frame_, "map");
 		private_node_handle_.param<std::string>("map_topic", map_topic_, "/realtime_cost_map");

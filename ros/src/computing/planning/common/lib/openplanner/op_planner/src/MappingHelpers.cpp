@@ -91,7 +91,7 @@ int MappingHelpers::ReplaceMyID(int& id,const std::vector<std::pair<int,int> >& 
 	return -1;
 }
 
-void MappingHelpers::ConstructRoadNetworkFromRosMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
+void MappingHelpers::ConstructRoadNetworkFromROSMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 		const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 		const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
 		const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,
@@ -599,14 +599,14 @@ void MappingHelpers::ConstructRoadNetworkFromDataFiles(const std::string vectoMa
 	// use this to transform data to origin (0,0,0)
 	if(nodes_data.size() > 0 && bSpecialMap == 0)
 	{
-		ConstructRoadNetworkFromRosMessageV2(lanes_data, points_data, dt_data, intersection_data, area_data,
+		ConstructRoadNetworkFromROSMessageV2(lanes_data, points_data, dt_data, intersection_data, area_data,
 				line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,
 				way_area_data, crosswalk_data, nodes_data, conn_data, &lanes, &points, &nodes, &lines,
 				GetTransformationOrigin(0), map, false);
 	}
 	else
 	{
-		ConstructRoadNetworkFromRosMessage(lanes_data, points_data, dt_data, intersection_data, area_data,
+		ConstructRoadNetworkFromROSMessage(lanes_data, points_data, dt_data, intersection_data, area_data,
 						line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,
 						way_area_data, crosswalk_data, nodes_data, conn_data,
 						GetTransformationOrigin(0), map, bSpecialMap == 1);
@@ -2269,7 +2269,7 @@ void MappingHelpers::UpdateMapWithOccupancyGrid(OccupancyToGridMap& map_info, co
 	}
 }
 
-void MappingHelpers::ConstructRoadNetworkFromRosMessageV2(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
+void MappingHelpers::ConstructRoadNetworkFromROSMessageV2(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 		const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 		const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
 		const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,

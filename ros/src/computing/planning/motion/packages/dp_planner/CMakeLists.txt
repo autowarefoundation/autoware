@@ -64,7 +64,7 @@ include_directories(
 
 link_directories(lib)
 
-add_executable(dp_planner nodes/dp_planner.cpp nodes/dp_planner_core.cpp nodes/RosHelpers.cpp nodes/PolygonGenerator.cpp)
+add_executable(dp_planner nodes/dp_planner.cpp nodes/dp_planner_core.cpp nodes/ROSHelpers.cpp nodes/PolygonGenerator.cpp)
 target_link_libraries(dp_planner ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(dp_planner
         ${catkin_EXPORTED_TARGETS}

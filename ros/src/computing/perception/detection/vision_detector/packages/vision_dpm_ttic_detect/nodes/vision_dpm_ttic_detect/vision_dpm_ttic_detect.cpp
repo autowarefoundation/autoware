@@ -37,7 +37,7 @@
 #include <sensor_msgs/image_encodings.h>
 
 #include "autoware_msgs/ImageObj.h"
-#include "autoware_config_msgs/ConfigPedestrianDpm.h"
+#include "autoware_config_msgs/ConfigPedestrianDPM.h"
 
 #include <libdpm_ttic/dpm_ttic.hpp>
 
@@ -109,7 +109,7 @@ static void image_raw_cb(const sensor_msgs::Image& image_source)
 	counter++;
 }
 
-static void config_cb(const autoware_config_msgs::ConfigPedestrianDpm::ConstPtr& param)
+static void config_cb(const autoware_config_msgs::ConfigPedestrianDPM::ConstPtr& param)
 {
 	ttic_param.threshold = param->score_threshold;
 	ttic_param.overlap   = param->group_threshold;

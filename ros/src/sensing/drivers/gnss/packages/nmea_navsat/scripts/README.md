@@ -5,7 +5,7 @@ Serial port reader and parser for NMEA compatible GPS devices.
 ## Setup
 
 ```
-$ sudo apt-get install ros-indigo-nmea-navsat-driver
+$ sudo apt-get install ros-kinetic-nmea-navsat-driver
 ```
 
 ## ROS run

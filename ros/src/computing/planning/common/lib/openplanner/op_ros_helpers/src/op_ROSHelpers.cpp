@@ -1,9 +1,9 @@
-/// \file  RosHelpers.cpp
+/// \file  ROSHelpers.cpp
 /// \brief Helper functions for rviz visualization
 /// \author Hatem Darweesh
 /// \date Jun 30, 2016
 
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 #include <iostream>
 #include <sstream>
@@ -17,14 +17,14 @@
 namespace PlannerHNS
 {
 
-RosHelpers::RosHelpers() {
+ROSHelpers::ROSHelpers() {
 
 }
 
-RosHelpers::~RosHelpers() {
+ROSHelpers::~ROSHelpers() {
 }
 
-void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
+void ROSHelpers::GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform)
 {
 	static tf::TransformListener listener;
 
@@ -48,7 +48,7 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 	}
 }
 
-visualization_msgs::Marker RosHelpers::CreateGenMarker(const double& x, const double& y, const double& z,const double& a,
+visualization_msgs::Marker ROSHelpers::CreateGenMarker(const double& x, const double& y, const double& z,const double& a,
 		const double& r, const double& g, const double& b, const double& scale, const int& id, const std::string& ns, const int& type)
 {
 	visualization_msgs::Marker mkr;
@@ -72,7 +72,7 @@ visualization_msgs::Marker RosHelpers::CreateGenMarker(const double& x, const do
 	return mkr;
 }
 
-void RosHelpers::InitMarkers(const int& nMarkers,
+void ROSHelpers::InitMarkers(const int& nMarkers,
 		visualization_msgs::MarkerArray& centers,
 		visualization_msgs::MarkerArray& dirs,
 		visualization_msgs::MarkerArray& text_info,
@@ -116,7 +116,7 @@ void RosHelpers::InitMarkers(const int& nMarkers,
 	}
 }
 
-void RosHelpers::InitMatchingMarkers(const int& nMarkers, visualization_msgs::MarkerArray& connections)
+void ROSHelpers::InitMatchingMarkers(const int& nMarkers, visualization_msgs::MarkerArray& connections)
 {
 	connections.markers.clear();
 	for(int i=0; i<nMarkers; i++)
@@ -126,7 +126,7 @@ void RosHelpers::InitMatchingMarkers(const int& nMarkers, visualization_msgs::Ma
 	}
 }
 
-void RosHelpers::ConvertMatchingMarkers(const std::vector<std::pair<PlannerHNS::WayPoint, PlannerHNS::WayPoint> >& match_list,
+void ROSHelpers::ConvertMatchingMarkers(const std::vector<std::pair<PlannerHNS::WayPoint, PlannerHNS::WayPoint> >& match_list,
 		visualization_msgs::MarkerArray& tracked_traj_d, visualization_msgs::MarkerArray& tracked_traj, int start_id)
 {
 
@@ -153,7 +153,7 @@ void RosHelpers::ConvertMatchingMarkers(const std::vector<std::pair<PlannerHNS::
 	}
 }
 
-int RosHelpers::ConvertTrackedObjectsMarkers(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+int ROSHelpers::ConvertTrackedObjectsMarkers(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 		visualization_msgs::MarkerArray& centers_d,
 		visualization_msgs::MarkerArray& dirs_d,
 		visualization_msgs::MarkerArray& text_info_d,
@@ -285,7 +285,7 @@ int RosHelpers::ConvertTrackedObjectsMarkers(const PlannerHNS::WayPoint& currSta
 	return i_next_id +1;
 }
 
-void RosHelpers::CreateCircleMarker(const PlannerHNS::WayPoint& _center, const double& radius, const int& start_id, visualization_msgs::Marker& circle_points)
+void ROSHelpers::CreateCircleMarker(const PlannerHNS::WayPoint& _center, const double& radius, const int& start_id, visualization_msgs::Marker& circle_points)
 {
 	circle_points = CreateGenMarker(0,0,0,0,1,1,1,0.2,start_id,"Detection_Circles", visualization_msgs::Marker::LINE_STRIP);
 	for (float i = 0; i < M_PI*2.0+0.05; i+=0.05)
@@ -298,7 +298,7 @@ void RosHelpers::CreateCircleMarker(const PlannerHNS::WayPoint& _center, const d
 	}
 }
 
-void RosHelpers::InitPredMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
+void ROSHelpers::InitPredMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
 {
 	paths.markers.clear();
 	for(int i=0; i<nMarkers; i++)
@@ -308,7 +308,7 @@ void RosHelpers::InitPredMarkers(const int& nMarkers, visualization_msgs::Marker
 	}
 }
 
-void RosHelpers::InitCurbsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& curbs)
+void ROSHelpers::InitCurbsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& curbs)
 {
 	curbs.markers.clear();
 	for(int i=0; i<nMarkers; i++)
@@ -318,7 +318,7 @@ void RosHelpers::InitCurbsMarkers(const int& nMarkers, visualization_msgs::Marke
 	}
 }
 
-void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<PlannerHNS::WayPoint> >& paths,visualization_msgs::MarkerArray& path_markers, visualization_msgs::MarkerArray& path_markers_d)
+void ROSHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<PlannerHNS::WayPoint> >& paths,visualization_msgs::MarkerArray& path_markers, visualization_msgs::MarkerArray& path_markers_d)
 {
 
 	path_markers = path_markers_d;
@@ -394,7 +394,7 @@ void RosHelpers::ConvertPredictedTrqajectoryMarkers(std::vector<std::vector<Plan
 	}
 }
 
-void RosHelpers::ConvertCurbsMarkers(const std::vector<PlannerHNS::DetectedObject>& curbs, visualization_msgs::MarkerArray& curbs_markers, visualization_msgs::MarkerArray& curbs_markers_d)
+void ROSHelpers::ConvertCurbsMarkers(const std::vector<PlannerHNS::DetectedObject>& curbs, visualization_msgs::MarkerArray& curbs_markers, visualization_msgs::MarkerArray& curbs_markers_d)
 {
 
 	curbs_markers = curbs_markers_d;
@@ -412,7 +412,7 @@ void RosHelpers::ConvertCurbsMarkers(const std::vector<PlannerHNS::DetectedObjec
 	}
 }
 
-void RosHelpers::InitCollisionPointsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& col_points)
+void ROSHelpers::InitCollisionPointsMarkers(const int& nMarkers, visualization_msgs::MarkerArray& col_points)
 {
 	col_points.markers.clear();
 	for(int i=0; i<nMarkers; i++)
@@ -422,7 +422,7 @@ void RosHelpers::InitCollisionPointsMarkers(const int& nMarkers, visualization_m
 	}
 }
 
-void RosHelpers::ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::WayPoint>& col_points, visualization_msgs::MarkerArray& collision_markers, visualization_msgs::MarkerArray& collision_markers_d)
+void ROSHelpers::ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::WayPoint>& col_points, visualization_msgs::MarkerArray& collision_markers, visualization_msgs::MarkerArray& collision_markers_d)
 {
 	collision_markers = collision_markers_d;
 	for(unsigned int i = 0; i < col_points.size(); i++)
@@ -437,7 +437,7 @@ void RosHelpers::ConvertCollisionPointsMarkers(const std::vector<PlannerHNS::Way
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
+void ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
 		autoware_msgs::Lane& trajectory)
 {
 	trajectory.waypoints.clear();
@@ -461,7 +461,7 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 	}
 }
 
-void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const PlannerHNS::RoadNetwork& map,	visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
@@ -506,7 +506,7 @@ void RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(const Planne
 	}
 }
 
-void RosHelpers::InitPredParticlesMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
+void ROSHelpers::InitPredParticlesMarkers(const int& nMarkers, visualization_msgs::MarkerArray& paths)
 {
 	paths.markers.clear();
 	for(int i=0; i<nMarkers; i++)
@@ -517,7 +517,7 @@ void RosHelpers::InitPredParticlesMarkers(const int& nMarkers, visualization_msg
 	}
 }
 
-void RosHelpers::ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, visualization_msgs::MarkerArray& part_mkrs, visualization_msgs::MarkerArray& part_markers_d)
+void ROSHelpers::ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, visualization_msgs::MarkerArray& part_mkrs, visualization_msgs::MarkerArray& part_markers_d)
 {
 	part_mkrs = part_markers_d;
 	for(unsigned int i = 0; i < points.size(); i++)
@@ -544,7 +544,7 @@ void RosHelpers::ConvertParticles(std::vector<PlannerHNS::WayPoint>& points, vis
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
+void ROSHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 		visualization_msgs::Marker& marker)
 {
 	//if(safety_rect.size() != 4) return;
@@ -609,7 +609,7 @@ void RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<Pl
 
 }
 
-void RosHelpers::TrajectoriesToMarkers(const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::TrajectoriesToMarkers(const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
@@ -654,7 +654,7 @@ void RosHelpers::TrajectoriesToMarkers(const std::vector<std::vector<std::vector
 	}
 }
 
-void RosHelpers::TrajectoriesToColoredMarkers(const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const std::vector<PlannerHNS::TrajectoryCost>& traj_costs,const int& iClosest, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::TrajectoriesToColoredMarkers(const std::vector<std::vector<PlannerHNS::WayPoint> >& paths, const std::vector<PlannerHNS::TrajectoryCost>& traj_costs,const int& iClosest, visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
@@ -729,7 +729,7 @@ void RosHelpers::TrajectoriesToColoredMarkers(const std::vector<std::vector<Plan
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
+void ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<PlannerHNS::WayPoint>& curr_path,
 		const std::vector<std::vector<std::vector<PlannerHNS::WayPoint> > >& paths, const PlannerHNS::LocalPlannerH& localPlanner,
 			visualization_msgs::MarkerArray& markerArray)
 {
@@ -803,7 +803,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	}
 }
 
-void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vector<std::vector<PlannerHNS::WayPoint> >& globalPaths, visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
@@ -847,7 +847,7 @@ void RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(const std::vec
 	}
 }
 
-void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
+void ROSHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoint& currState, const std::vector<PlannerHNS::DetectedObject>& trackedObstacles,
 		visualization_msgs::MarkerArray& detectedPolygons)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
@@ -1027,7 +1027,7 @@ void RosHelpers::ConvertFromPlannerObstaclesToAutoware(const PlannerHNS::WayPoin
 	}
 }
 
-std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& behState)
+std::string ROSHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& behState)
 {
 	std::string str = "Unknown";
 	switch(behState)
@@ -1073,7 +1073,7 @@ std::string RosHelpers::GetBehaviorNameFromCode(const PlannerHNS::STATE_TYPE& be
 	return str;
 }
 
-void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker, std::string ns,double size_factor)
+void ROSHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, const PlannerHNS::BehaviorState& beh, const bool& bGreenLight, const int& avoidDirection, visualization_msgs::Marker& behaviorMarker, std::string ns,double size_factor)
 {
 	behaviorMarker.header.frame_id = "map";
 	behaviorMarker.header.stamp = ros::Time();
@@ -1121,7 +1121,7 @@ void RosHelpers::VisualizeBehaviorState(const PlannerHNS::WayPoint& currState, c
 	behaviorMarker.text = str_out.str();
 }
 
-void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
+void ROSHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_recognition_msgs::BoundingBoxArray& detectedObstacles,
 		std::vector<PlannerHNS::DetectedObject>& obstacles_list)
 {
 	obstacles_list.clear();
@@ -1153,7 +1153,7 @@ void RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 	}
 }
 
-void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const double& car_width,
+void ROSHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const double& car_width,
 		const double& car_length, const autoware_msgs::CloudClusterArray& clusters, vector<PlannerHNS::DetectedObject>& obstacles_list,
 		const double max_obj_size, const double& min_obj_size, const double& detection_radius,
 		const int& n_poly_quarters,const double& poly_resolution, int& nOriginalPoints, int& nContourPoints)
@@ -1218,7 +1218,7 @@ void RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const Planne
 	nContourPoints =  nPoints;
 }
 
-PlannerHNS::SHIFT_POS RosHelpers::ConvertShiftFromAutowareToPlannerH(const PlannerHNS::AUTOWARE_SHIFT_POS& shift)
+PlannerHNS::SHIFT_POS ROSHelpers::ConvertShiftFromAutowareToPlannerH(const PlannerHNS::AUTOWARE_SHIFT_POS& shift)
 {
 	if(shift == PlannerHNS::AW_SHIFT_POS_DD)
 		return PlannerHNS::SHIFT_POS_DD;
@@ -1236,7 +1236,7 @@ PlannerHNS::SHIFT_POS RosHelpers::ConvertShiftFromAutowareToPlannerH(const Plann
 		return PlannerHNS::SHIFT_POS_UU;
 }
 
-PlannerHNS::AUTOWARE_SHIFT_POS RosHelpers::ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift)
+PlannerHNS::AUTOWARE_SHIFT_POS ROSHelpers::ConvertShiftFromPlannerHToAutoware(const PlannerHNS::SHIFT_POS& shift)
 {
 	if(shift == PlannerHNS::SHIFT_POS_DD)
 		return PlannerHNS::AW_SHIFT_POS_DD;
@@ -1254,7 +1254,7 @@ PlannerHNS::AUTOWARE_SHIFT_POS RosHelpers::ConvertShiftFromPlannerHToAutoware(co
 		return PlannerHNS::AW_SHIFT_POS_UU;
 }
 
-PlannerHNS::AutowareBehaviorState RosHelpers::ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh)
+PlannerHNS::AutowareBehaviorState ROSHelpers::ConvertBehaviorStateFromPlannerHToAutoware(const PlannerHNS::BehaviorState& beh)
 {
 	PlannerHNS::AutowareBehaviorState arw_state;
 	arw_state.followDistance = beh.followDistance;
@@ -1300,7 +1300,7 @@ PlannerHNS::AutowareBehaviorState RosHelpers::ConvertBehaviorStateFromPlannerHTo
 
 }
 
-void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::Lane& trajectory , const unsigned int& iStart)
+void ROSHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::WayPoint>& path, autoware_msgs::Lane& trajectory , const unsigned int& iStart)
 {
 	trajectory.waypoints.clear();
 
@@ -1334,7 +1334,7 @@ void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS
 	}
 }
 
-void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::Lane& trajectory)
+void ROSHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS::GPSPoint>& path, autoware_msgs::Lane& trajectory)
 {
 	trajectory.waypoints.clear();
 
@@ -1350,7 +1350,7 @@ void RosHelpers::ConvertFromLocalLaneToAutowareLane(const std::vector<PlannerHNS
 	}
 }
 
-void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::Lane& trajectory, std::vector<PlannerHNS::WayPoint>& path)
+void ROSHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::Lane& trajectory, std::vector<PlannerHNS::WayPoint>& path)
 {
 	path.clear();
 
@@ -1392,7 +1392,7 @@ void RosHelpers::ConvertFromAutowareLaneToLocalLane(const autoware_msgs::Lane& t
 	}
 }
 
-void RosHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
+void ROSHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
 		const autoware_msgs::LaneArray &lane_waypoints_array, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::Marker lane_waypoint_marker;
@@ -1424,7 +1424,7 @@ void RosHelpers::createGlobalLaneArrayMarker(std_msgs::ColorRGBA color,
 
 }
 
-void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+void ROSHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray &lane_waypoints_array
 		, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
@@ -1472,7 +1472,7 @@ void RosHelpers::createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneAr
                                        tmp_marker_array.markers.end());
 }
 
-void RosHelpers::createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array
+void ROSHelpers::createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray &lane_waypoints_array
 		, visualization_msgs::MarkerArray& markerArray)
 {
   visualization_msgs::MarkerArray tmp_marker_array;
@@ -1545,7 +1545,7 @@ void RosHelpers::createGlobalLaneArrayOrientationMarker(const autoware_msgs::Lan
 										   tmp_marker_array.markers.end());
 }
 
-void RosHelpers::GetTrafficLightForVisualization(std::vector<PlannerHNS::TrafficLight>& lights, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::GetTrafficLightForVisualization(std::vector<PlannerHNS::TrafficLight>& lights, visualization_msgs::MarkerArray& markerArray)
 {
 	markerArray.markers.clear();
 	for(unsigned int i=0; i<lights.size(); i++)
@@ -1563,7 +1563,7 @@ void RosHelpers::GetTrafficLightForVisualization(std::vector<PlannerHNS::Traffic
 	}
 }
 
-void RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(const autoware_msgs::DetectedObject& det_obj, PlannerHNS::DetectedObject& obj)
+void ROSHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(const autoware_msgs::DetectedObject& det_obj, PlannerHNS::DetectedObject& obj)
 {
 	obj.id = det_obj.id;
 	obj.label = det_obj.label;
@@ -1608,7 +1608,7 @@ void RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(co
 	for(unsigned int j = 0 ; j < det_obj.candidate_trajectories.lanes.size(); j++)
 	{
 		std::vector<PlannerHNS::WayPoint> _traj;
-		PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(det_obj.candidate_trajectories.lanes.at(j), _traj);
+		PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(det_obj.candidate_trajectories.lanes.at(j), _traj);
 		for(unsigned int k=0; k < _traj.size(); k++)
 			_traj.at(k).collisionCost = det_obj.candidate_trajectories.lanes.at(j).cost;
 
@@ -1616,7 +1616,7 @@ void RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(co
 	}
 }
 
-void RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(const PlannerHNS::DetectedObject& det_obj, const bool& bSimulationMode, autoware_msgs::DetectedObject& obj)
+void ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(const PlannerHNS::DetectedObject& det_obj, const bool& bSimulationMode, autoware_msgs::DetectedObject& obj)
 {
 	if(bSimulationMode)
 		obj.id = det_obj.originalID;
@@ -1656,7 +1656,7 @@ void RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(co
 	for(unsigned int j = 0 ; j < det_obj.predTrajectories.size(); j++)
 	{
 		autoware_msgs::Lane pred_traj;
-		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(det_obj.predTrajectories.at(j), pred_traj);
+		PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(det_obj.predTrajectories.at(j), pred_traj);
 		if(det_obj.predTrajectories.at(j).size() > 0)
 		{
 			pred_traj.cost = det_obj.predTrajectories.at(j).at(0).collisionCost;
@@ -1666,7 +1666,7 @@ void RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(co
 	}
 }
 
-void RosHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map)
+void ROSHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map)
 {
 	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> lanes;
 	for(unsigned int i=0; i < src_map.lanes.data.size();i++)
@@ -1766,10 +1766,10 @@ void RosHelpers::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::R
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data,  conn_data, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data,  conn_data, origin, out_map);
 }
 
-void RosHelpers::GetIndicatorArrows(const PlannerHNS::WayPoint& center, const double& width,const double& length, const PlannerHNS::LIGHT_INDICATOR& indicator, const int& id, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::GetIndicatorArrows(const PlannerHNS::WayPoint& center, const double& width,const double& length, const PlannerHNS::LIGHT_INDICATOR& indicator, const int& id, visualization_msgs::MarkerArray& markerArray)
 {
 	double critical_lateral_distance =  width/2.0 + 0.2;
 	//double critical_long_front_distance =  carInfo.length/2.0 ;
@@ -1805,17 +1805,17 @@ void RosHelpers::GetIndicatorArrows(const PlannerHNS::WayPoint& center, const do
 		color_r.b = 0;
 	}
 
-	visualization_msgs::Marker mkr_l = PlannerHNS::RosHelpers::CreateGenMarker(top_left.x,top_left.y,top_left.z,top_left.a,color_l.r,color_l.g,color_l.b,1.0, id,"simu_car_indicator_left", visualization_msgs::Marker::ARROW);
+	visualization_msgs::Marker mkr_l = PlannerHNS::ROSHelpers::CreateGenMarker(top_left.x,top_left.y,top_left.z,top_left.a,color_l.r,color_l.g,color_l.b,1.0, id,"simu_car_indicator_left", visualization_msgs::Marker::ARROW);
 	mkr_l.scale.y = 0.4;
 	mkr_l.scale.z = 0.4;
-	visualization_msgs::Marker mkr_r = PlannerHNS::RosHelpers::CreateGenMarker(top_right.x,top_right.y,top_right.z,top_right.a,color_r.r,color_r.g,color_r.b,1.0, id,"simu_car_indicator_right", visualization_msgs::Marker::ARROW);
+	visualization_msgs::Marker mkr_r = PlannerHNS::ROSHelpers::CreateGenMarker(top_right.x,top_right.y,top_right.z,top_right.a,color_r.r,color_r.g,color_r.b,1.0, id,"simu_car_indicator_right", visualization_msgs::Marker::ARROW);
 	mkr_r.scale.y = 0.4;
 	mkr_r.scale.z = 0.4;
 	markerArray.markers.push_back(mkr_l);
 	markerArray.markers.push_back(mkr_r);
 }
 
-void RosHelpers::TTC_PathRviz(const std::vector<PlannerHNS::WayPoint>& path, visualization_msgs::MarkerArray& markerArray)
+void ROSHelpers::TTC_PathRviz(const std::vector<PlannerHNS::WayPoint>& path, visualization_msgs::MarkerArray& markerArray)
 {
 	visualization_msgs::Marker lane_waypoint_marker;
 	lane_waypoint_marker.header.frame_id = "map";
