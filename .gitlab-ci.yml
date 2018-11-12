@@ -32,7 +32,7 @@ variables:
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
   script:
     - catkin_make clean
-    - source devel/setup.bash
+    - source $CI_PROJECT_DIR/ros/devel/setup.bash
     - catkin_make -- pkg state_machine_lib
     - catkin_make run_tests_state_machine_lib
     - catkin_test_results
