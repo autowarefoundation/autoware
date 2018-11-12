@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include <fstream>
+#include <unistd.h>
 
 #include "state_machine_lib/state_context.hpp"
 
@@ -12,6 +13,13 @@ public:
 };
 
 TEST(TestSuite, StateContextConstructor){
+
+	// Check current working dir
+	char cwd[1024];
+	getcwd(cwd, sizeof(cwd));
+	std::cerr << "**************************" << std::endl;
+	std::cerr << "Current working dir: " << cwd << std::endl;
+	std::cerr << "**************************" << std::endl;
 
 	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/testStates.yaml";
 	std::string msg_name = "testStates";
@@ -63,25 +71,25 @@ TEST(TestSuite, SetCallbacksStateContext){
 
 	// Set callbacks
 	std::function<void(const std::string&)> _f = &foo2;
-//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
-//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::ENTRY, "Start", _f));
-//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
-//
-//	std::ostringstream oss;
-//	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
-//	std::cout.rdbuf(oss.rdbuf());
+	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
+	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::ENTRY, "Start", _f));
+	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
+	//
+	//	std::ostringstream oss;
+	//	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
+	//	std::cout.rdbuf(oss.rdbuf());
 
-//	stateCtx.onEntry(0);
-//	std::cout.rdbuf(p_cout_streambuf); // restore
-//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onEntry should show Test output";
+	//	stateCtx.onEntry(0);
+	//	std::cout.rdbuf(p_cout_streambuf); // restore
+	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onEntry should show Test output";
 
-//	stateCtx.onUpdate();
-//	std::cout.rdbuf(p_cout_streambuf); // restore
-//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show Test output";
+	//	stateCtx.onUpdate();
+	//	std::cout.rdbuf(p_cout_streambuf); // restore
+	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show Test output";
 
-//	stateCtx.onExit();
-//	std::cout.rdbuf(p_cout_streambuf); // restore
-//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
+	//	stateCtx.onExit();
+	//	std::cout.rdbuf(p_cout_streambuf); // restore
+	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
 
 	// Set Callback for unexisting state
 	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f));
