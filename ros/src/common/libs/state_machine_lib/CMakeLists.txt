@@ -49,6 +49,7 @@ install(TARGETS state_machine_lib
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/testStates.yaml $ENV{HOME}/.ros/testStates.yaml COPYONLY)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/reference.dot $ENV{HOME}/.ros/reference.dot COPYONLY)
   add_rostest_gtest(test-state_machine_lib test/test_state_machine_lib.test test/src/test_main.cpp test/src/test_state_hpp.cpp test/src/test_state_context.cpp)
   target_link_libraries(test-state_machine_lib ${catkin_LIBRARIES} state_machine_lib)
 endif()
