@@ -13,6 +13,7 @@ variables:
 
 .build: &build_common
   before_script:
+    - echo $CI_PROJECT_DIR
     - apt-get update
     - apt-get install -y lsb-release
     - apt-get install -y gcc g++
