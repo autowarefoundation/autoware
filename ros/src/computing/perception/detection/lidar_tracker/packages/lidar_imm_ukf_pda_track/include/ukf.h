@@ -139,7 +139,6 @@ public:
   Eigen::VectorXd weights_c_;
   Eigen::VectorXd weights_s_;
 
-
   //* Sigma point spreading parameter
   double lambda_;
 
@@ -271,6 +270,8 @@ public:
   Eigen::MatrixXd k_lidar_direction_ctrv_;
   Eigen::MatrixXd k_lidar_direction_rm_;
 
+  Eigen::VectorXd lidar_direction_ctrv_meas_;
+
   /**
    * Constructor
    */
@@ -294,7 +295,9 @@ public:
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateWithLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void uppateForCTRV();
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
@@ -318,13 +321,14 @@ public:
   void predictionMotion(const double delta_t, const int model_ind);
 
   void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
-                                      const double lane_direction_chi_thres);
+                                      const double lane_direction_chi_thres, const bool use_sukf);
 
   void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
 
   double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind);
 
-  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind, const double lane_direction_chi_thres);
+  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind,
+                                const double lane_direction_chi_thres);
 
   // void updateKalmanGain(const int motion_ind, const int num_meas_state);
   void updateKalmanGain(const int motion_ind);
@@ -332,7 +336,7 @@ public:
   double normalizeAngle(const double angle);
 
   void update(const bool use_sukf, const double detection_probability, const double gate_probability,
-                   const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+              const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 };

@@ -37,10 +37,10 @@
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
-  init_(false),
-  frame_count_(0),
-  has_subscribed_vectormap_(false),
-  private_nh_("~")
+  init_(false)
+  , frame_count_(0)
+  , has_subscribed_vectormap_(false)
+  , private_nh_("~")
 {
   private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
@@ -62,8 +62,9 @@ ImmUkfPda::ImmUkfPda()
 
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
-  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
-  if(is_benchmark_)
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/"
+                                                                    "2011_09_26_drive_0005_sync/");
+  if (is_benchmark_)
   {
     result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
     std::remove(result_file_path_.c_str());
@@ -84,23 +85,22 @@ void ImmUkfPda::run()
 
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 
-  if(use_vectormap_)
+  if (use_vectormap_)
   {
-    vmap_.subscribe(private_nh_, vector_map::Category::POINT |
-                                 vector_map::Category::NODE  |
-                                 vector_map::Category::LANE, 1);
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE,
+                    1);
   }
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
-  if(use_vectormap_)
+  if (use_vectormap_)
   {
     checkVectormapSubscription();
   }
 
   bool success = updateNecessaryTransform();
-  if(!success)
+  if (!success)
   {
     ROS_INFO("Could not find coordiante transformation");
     return;
@@ -116,7 +116,7 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   pub_jskbbox_array_.publish(jskbboxes_output);
   pub_object_array_.publish(detected_objects_output);
 
-  if(is_benchmark_)
+  if (is_benchmark_)
   {
     dumpResultText(detected_objects_output);
   }
@@ -138,10 +138,10 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
 
 void ImmUkfPda::checkVectormapSubscription()
 {
-  if(use_vectormap_)
+  if (use_vectormap_ && !has_subscribed_vectormap_)
   {
-    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane &lane){return true;});
-    if(lanes_.empty())
+    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane& lane) { return true; });
+    if (lanes_.empty())
     {
       ROS_INFO("Has not subscribed vectormap");
     }
@@ -165,7 +165,7 @@ bool ImmUkfPda::updateNecessaryTransform()
     ROS_ERROR("%s", ex.what());
     success = false;
   }
-  if(use_vectormap_ && has_subscribed_vectormap_)
+  if (use_vectormap_ && has_subscribed_vectormap_)
   {
     try
     {
@@ -185,7 +185,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
                                       autoware_msgs::DetectedObjectArray& transformed_input)
 {
   transformed_input.header = input.header;
-  for (auto const &object: input.objects)
+  for (auto const& object : input.objects)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, local2global_);
 
@@ -205,7 +205,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   tf::Transform inv_local2global = local2global_.inverse();
   tf::StampedTransform global2local;
   global2local.setData(inv_local2global);
-  for (auto &object: detected_objects_output.objects)
+  for (auto& object : detected_objects_output.objects)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, global2local);
     object.header.frame_id = pointcloud_frame_;
@@ -213,7 +213,7 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 
   jskbboxes_output.header.frame_id = pointcloud_frame_;
-  for (auto &jskbox: jskbboxes_output.boxes)
+  for (auto& jskbox : jskbboxes_output.boxes)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(jskbox.pose, global2local);
     jskbox.header.frame_id = pointcloud_frame_;
@@ -221,14 +221,14 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   }
 }
 
-geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::StampedTransform& tf_stamp)
+geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose,
+                                                  const tf::StampedTransform& tf_stamp)
 {
   tf::Transform transform;
   geometry_msgs::PoseStamped out_pose;
   transform.setOrigin(tf::Vector3(in_pose.position.x, in_pose.position.y, in_pose.position.z));
   transform.setRotation(
-      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y,
-                     in_pose.orientation.z, in_pose.orientation.w));
+      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y, in_pose.orientation.z, in_pose.orientation.w));
   geometry_msgs::PoseStamped pose_out;
   tf::poseTFToMsg(tf_stamp * transform, out_pose.pose);
   return out_pose.pose;
@@ -274,12 +274,12 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (second_init_done)
   {
-    if(use_vectormap_ && has_subscribed_vectormap_)
+    if (use_vectormap_ && has_subscribed_vectormap_)
     {
       autoware_msgs::DetectedObject direction_updated_object;
-      bool use_direction_meas = updateDirectionMeas(smallest_nis, smallest_meas_object,
-                                                                 direction_updated_object, target);
-      if(use_direction_meas)
+      bool use_direction_meas =
+          updateDirectionMeas(smallest_nis, smallest_meas_object, direction_updated_object, target);
+      if (use_direction_meas)
       {
         object_vec.push_back(direction_updated_object);
       }
@@ -295,20 +295,17 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
 }
 
-bool ImmUkfPda::updateDirectionMeas(
-    const double smallest_nis,
-    const autoware_msgs::DetectedObject& in_object,
-    autoware_msgs::DetectedObject& out_object,
-    UKF& target)
+bool ImmUkfPda::updateDirectionMeas(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                                    autoware_msgs::DetectedObject& out_object, UKF& target)
 {
   bool use_lane_direction = false;
   bool get_lane_success = updateWithNearestLaneDirection(in_object, out_object);
-  if(!get_lane_success)
+  if (!get_lane_success)
   {
     return use_lane_direction;
   }
-  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_);
-  if(target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
+  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_, use_sukf_);
+  if (target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
   {
     use_lane_direction = true;
   }
@@ -316,18 +313,19 @@ bool ImmUkfPda::updateDirectionMeas(
 }
 
 bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                                 autoware_msgs::DetectedObject& out_object)
+                                               autoware_msgs::DetectedObject& out_object)
 {
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
-  double min_dist = std::numeric_limits<double>::max();;
+  double min_dist = std::numeric_limits<double>::max();
+  ;
   double min_yaw = 0;
-  for(auto const &lane: lanes_)
+  for (auto const& lane : lanes_)
   {
     vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
     vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
     double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.y, 2) +
                                 std::pow(point.ly - lane_frame_pose.position.x, 2));
-    if(distance < min_dist)
+    if (distance < min_dist)
     {
       min_dist = distance;
       vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
@@ -337,7 +335,7 @@ bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObje
   }
 
   bool success = false;
-  if(min_dist < nearest_lane_distance_thres_)
+  if (min_dist < nearest_lane_distance_thres_)
   {
     success = true;
   }
@@ -363,7 +361,6 @@ bool ImmUkfPda::updateWithNearestLaneDirection(const autoware_msgs::DetectedObje
   out_object.angle = yaw;
   return success;
 }
-
 
 void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
                                         autoware_msgs::DetectedObject& object, double& min_dist)
@@ -503,11 +500,11 @@ void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::Bounding
 
 void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
 {
-  if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  if (target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CV;
   }
-  else if(target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  else if (target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CTRV;
   }
@@ -762,7 +759,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.orientation.w = q[3];
     dd.dimensions = targets_[i].jsk_bb_.dimensions;
     dd.pose_reliable = targets_[i].is_vis_bb_;
-    //store yaw rate for motion into dd.accerelation.linear.y
+    // store yaw rate for motion into dd.accerelation.linear.y
     dd.acceleration.linear.y = targets_[i].x_merge_(4);
     updateBehaviorState(targets_[i], dd);
     detected_objects_output.objects.push_back(dd);
@@ -894,34 +891,38 @@ void ImmUkfPda::pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& inpu
 void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects)
 {
   std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
-  for(size_t i = 0; i < detected_objects.objects.size(); i++)
+  for (size_t i = 0; i < detected_objects.objects.size(); i++)
   {
     double yaw = tf::getYaw(detected_objects.objects[i].pose.orientation);
 
     // KITTI tracking benchmark data format:
-    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
+    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy,
+    // cz, yaw)
     // x1, y1, x2, y2 are for 2D bounding box.
     // h, w, l, are for height, width, length respectively
     // cx, cy, cz are for object centroid
 
     // Tracking benchmark is based on frame_number, tracked_id,
     // bounding box dimentions and object pose(centroid and orientation) from bird-eye view
-    outputfile << std::to_string(frame_count_)                               <<" "
-               << std::to_string(detected_objects.objects[i].id)             <<" "
-               << "Unknown"                                                  <<" "
-               << "-1"                                                       <<" "
-               << "-1"                                                       <<" "
-               << "-1"                                                      <<" "
-               << "-1 -1 -1 -1"                                              <<" "
-               << std::to_string(detected_objects.objects[i].dimensions.x)   <<" "
-               << std::to_string(detected_objects.objects[i].dimensions.y)   <<" "
-               << "-1"                                                       <<" "
-               << std::to_string(detected_objects.objects[i].pose.position.x)<<" "
-               << std::to_string(detected_objects.objects[i].pose.position.y)<<" "
-               << "-1"                                                       <<" "
-               << std::to_string(yaw)                                        <<"\n";
+    outputfile << std::to_string(frame_count_) << " " << std::to_string(detected_objects.objects[i].id) << " "
+               << "Unknown"
+               << " "
+               << "-1"
+               << " "
+               << "-1"
+               << " "
+               << "-1"
+               << " "
+               << "-1 -1 -1 -1"
+               << " " << std::to_string(detected_objects.objects[i].dimensions.x) << " "
+               << std::to_string(detected_objects.objects[i].dimensions.y) << " "
+               << "-1"
+               << " " << std::to_string(detected_objects.objects[i].pose.position.x) << " "
+               << std::to_string(detected_objects.objects[i].pose.position.y) << " "
+               << "-1"
+               << " " << std::to_string(yaw) << "\n";
   }
-  frame_count_ ++;
+  frame_count_++;
 }
 
 void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,

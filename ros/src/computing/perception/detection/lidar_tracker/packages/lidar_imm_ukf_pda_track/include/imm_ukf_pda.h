@@ -105,7 +105,6 @@ private:
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
-
   std::string input_topic_;
   std::string output_topic_;
 
@@ -136,8 +135,7 @@ private:
                              autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                             autoware_msgs::DetectedObjectArray& detected_objects_output);
-  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose,
-                                                const tf::StampedTransform& tf_stamp);
+  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::StampedTransform& tf_stamp);
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
@@ -181,17 +179,13 @@ private:
                jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  bool updateDirectionMeas(
-     const double smallest_nis,
-     const autoware_msgs::DetectedObject& in_object,
-     autoware_msgs::DetectedObject& out_object,
-     UKF& target);
+  bool updateDirectionMeas(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                           autoware_msgs::DetectedObject& out_object, UKF& target);
 
   bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                        autoware_msgs::DetectedObject& out_object);
+                                      autoware_msgs::DetectedObject& out_object);
 
   void checkVectormapSubscription();
-
 
 public:
   ImmUkfPda();
