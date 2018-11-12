@@ -28,10 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <chrono>
-#include <stdio.h>
-#include <ros/package.h>
-#include <pcl_conversions/pcl_conversions.h>
+
 #include "imm_ukf_pda.h"
 
 ImmUkfPda::ImmUkfPda()
@@ -50,6 +47,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
+  private_nh_.param<double>("merge_distance_threshold", merge_distance_threshold_, 0.5);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
 
   // for vectormap assisted tracking
@@ -607,7 +605,7 @@ bool
 ImmUkfPda::arePointsEqual(const geometry_msgs::Point& in_point_a,
                                const geometry_msgs::Point& in_point_b)
 {
-  return arePointsClose(in_point_a, in_point_b, 0.2);
+  return arePointsClose(in_point_a, in_point_b, CENTROID_DISTANCE);
 }
 
 bool
@@ -650,7 +648,7 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
     const auto& object=in_detected_objects.objects[k];
     for(size_t i=0; i< centroids.size(); i++)
     {
-      if (arePointsClose(object.pose.position, centroids[i], 0.7))
+      if (arePointsClose(object.pose.position, centroids[i], merge_distance_threshold_))
       {
         matching_objects[i].push_back(k);//store index of matched object to this point
       }
@@ -711,11 +709,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.pose.position.y = ty;
     dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;
-    if(targets_[i].is_stable_)
-    {
-      tmp_objects.objects.push_back(dd);
-      used_targets_indices.push_back(i);
-    }
 
     if (!std::isnan(q[0]))
       dd.pose.orientation.x = q[0];
@@ -727,6 +720,12 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
       dd.pose.orientation.w = q[3];
 
     updateBehaviorState(targets_[i], dd);
+
+    if(targets_[i].is_stable_)
+    {
+      tmp_objects.objects.push_back(dd);
+      used_targets_indices.push_back(i);
+    }
   }
 
   detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);

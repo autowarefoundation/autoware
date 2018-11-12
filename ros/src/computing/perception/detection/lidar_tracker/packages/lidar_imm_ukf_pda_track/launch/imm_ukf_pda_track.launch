@@ -17,6 +17,8 @@
   <arg name="tracking_frame" default="/world" />
   <arg name="lane_frame" default="/map" />
 
+  <arg name="merge_distance_threshold" default="0.5"/>
+
   <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda" output="screen">
     <param name="gating_thres"            value="$(arg gating_thres)" />

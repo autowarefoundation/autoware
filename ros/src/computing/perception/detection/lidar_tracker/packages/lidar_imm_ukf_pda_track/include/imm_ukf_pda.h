@@ -31,12 +31,19 @@
 #ifndef OBJECT_TRACKING_IMM_UKF_JPDAF_H
 #define OBJECT_TRACKING_IMM_UKF_JPDAF_H
 
-#include <ros/ros.h>
 
 #include <vector>
+#include <chrono>
+#include <stdio.h>
+
+
+#include <ros/ros.h>
+#include <ros/package.h>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <tf/transform_listener.h>
 
@@ -91,6 +98,8 @@ private:
   vector_map::VectorMap vmap_;
   std::vector<vector_map_msgs::Lane> lanes_;
 
+  double merge_distance_threshold_;
+  const double CENTROID_DISTANCE = 0.2;//distance to consider centroids the same
 
   std::string input_topic_;
   std::string output_topic_;
