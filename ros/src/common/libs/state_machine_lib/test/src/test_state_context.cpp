@@ -24,7 +24,7 @@ TEST(TestSuite, StateContextConstructor){
 	std::stringstream dotFile;
 	dotFile << generatedDotFile.rdbuf();
 
-	std::ifstream referenceDotFile("/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/reference.dot");
+	std::ifstream referenceDotFile("reference.dot");
 	std::stringstream referenceDot;
 	referenceDot << referenceDotFile.rdbuf();
 
@@ -42,7 +42,7 @@ TEST(TestSuite, StateContextConstructor){
 
 TEST(TestSuite, ChangeStates){
 
-	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
+	std::string file_name = "testStates.yaml";
 	std::string msg_name = "testStates";
 	state_machine::StateContext stateCtx(file_name, msg_name);
 
@@ -59,7 +59,7 @@ void foo2(const std::string&){
 TEST(TestSuite, SetCallbacksStateContext){
 
 
-	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
+	std::string file_name = "testStates.yaml";
 	std::string msg_name = "testStates";
 	state_machine::StateContext stateCtx(file_name, msg_name);
 
