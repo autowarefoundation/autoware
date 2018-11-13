@@ -47,6 +47,7 @@ namespace
 geometry_msgs::Twist _current_velocity;
 
 const std::string SIMULATION_FRAME = "sim_base_link";
+const std::string LIDAR_FRAME = "sim_lidar";
 const std::string MAP_FRAME = "map";
 
 geometry_msgs::Pose _initial_pose;
@@ -63,6 +64,7 @@ double g_position_error;
 double g_angle_error;
 double g_linear_acceleration = 0;
 double g_steering_angle = 0;
+double g_lidar_height = 1.0;
 double g_wheel_base_m = 2.7;
 
 constexpr int LOOP_RATE = 50; // 50Hz
@@ -179,7 +181,7 @@ void publishOdometry()
   static ros::Time last_time = ros::Time::now();
   static geometry_msgs::Pose pose;
   static double th = 0;
-  static tf::TransformBroadcaster odom_broadcaster;
+  static tf::TransformBroadcaster tf_broadcaster;
 
   if (!_pose_set)
   {
@@ -242,8 +244,18 @@ void publishOdometry()
   odom_trans.transform.translation.z = pose.position.z;
   odom_trans.transform.rotation = pose.orientation;
 
-  // send the transform
-  odom_broadcaster.sendTransform(odom_trans);
+  // send odom transform
+  tf_broadcaster.sendTransform(odom_trans);
+
+  geometry_msgs::TransformStamped lidar_trans;
+  lidar_trans.header.stamp = odom_trans.header.stamp;
+  lidar_trans.header.frame_id = SIMULATION_FRAME;
+  lidar_trans.child_frame_id = LIDAR_FRAME;
+  lidar_trans.transform.translation.z += g_lidar_height;
+  lidar_trans.transform.rotation.w = 1;
+
+  // send lidar transform
+  tf_broadcaster.sendTransform(lidar_trans);
 
   // next, we'll publish the odometry message over ROS
   std_msgs::Header h;
@@ -281,9 +293,10 @@ int main(int argc, char **argv)
   private_nh.param("accel_rate",accel_rate,double(1.0));
   ROS_INFO_STREAM("accel_rate : " << accel_rate);
 
-
   private_nh.param("position_error", g_position_error, double(0.0));
   private_nh.param("angle_error", g_angle_error, double(0.0));
+  private_nh.param("lidar_height", g_lidar_height, double(1.0));
+
   nh.param("vehicle_info/wheel_base", g_wheel_base_m, double(2.7));
 
   private_nh.param("use_ctrl_cmd", _use_ctrl_cmd, false);
