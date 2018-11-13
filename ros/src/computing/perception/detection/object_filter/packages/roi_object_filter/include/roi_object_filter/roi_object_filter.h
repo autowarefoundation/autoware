@@ -114,6 +114,8 @@ class RosRoiObjectFilterApp
     tf::StampedTransform FindTransform(const std::string& in_target_frame, const std::string& in_source_frame);
     geometry_msgs::Point TransformPoint(const geometry_msgs::Point& in_point, const tf::Transform& in_tf);
 
+public:
+    bool getGridmap_ready();
 
 public:
     void Run();

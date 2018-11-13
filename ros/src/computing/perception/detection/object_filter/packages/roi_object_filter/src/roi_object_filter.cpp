@@ -273,6 +273,11 @@ RosRoiObjectFilterApp::Run()
     ROS_INFO("[%s] END", __APP_NAME__);
 }
 
+bool RosRoiObjectFilterApp::getGridmap_ready()
+{
+	return gridmap_ready_;
+}
+
 RosRoiObjectFilterApp::RosRoiObjectFilterApp()
 {
     gridmap_ready_ = false;
