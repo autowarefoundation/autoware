@@ -13,7 +13,6 @@ variables:
 
 .build: &build_common
   before_script:
-    - ls $CI_PROJECT_DIR
     - apt-get update
     - apt-get install -y lsb-release
     - apt-get install -y gcc g++
@@ -31,7 +30,6 @@ variables:
     - wstool up
     - cd ..
     - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
-
 
 build_kinetic:
   stage: build
