@@ -3,4 +3,4 @@
 
 #define GET_VARIABLE_NAME(Variable)
 
-#endif  //DIAG_MACROS_H_INCLUDED
+#endif  // DIAG_MACROS_H_INCLUDED

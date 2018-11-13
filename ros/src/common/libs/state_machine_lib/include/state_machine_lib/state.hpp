@@ -23,7 +23,6 @@ private:
 
   std::shared_ptr<State> parent_state_;
 
-
   std::function<void(const std::string&)> CallbackUpdateFunc;
   std::function<void(const std::string&)> CallbackEntryFunc;
   std::function<void(const std::string&)> CallbackExitFunc;

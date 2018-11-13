@@ -14,4 +14,4 @@ define for Pub/Sub Operation cycle critical LEVEL
 #define LEVEL_WARN 1
 #define LEVEL_ERROR 2
 
-#endif  //DIAGMANAGER_CONFIG_H_INCULDED
+#endif  // DIAGMANAGER_CONFIG_H_INCULDED

@@ -2,7 +2,6 @@
 
 namespace amathutils
 {
-
 geometry_msgs::Point getNearPtOnLine(const geometry_msgs::Point &_p, const geometry_msgs::Point &_a,
                                      const geometry_msgs::Point &_b)
 {
