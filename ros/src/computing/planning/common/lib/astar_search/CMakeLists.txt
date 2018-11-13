@@ -55,3 +55,9 @@ install(TARGETS astar_search
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-astar_search test/test_astar_search.test test/src/test_astar_search.cpp)
+  target_link_libraries(test-astar_search ${catkin_LIBRARIES} astar_search)
+endif()
