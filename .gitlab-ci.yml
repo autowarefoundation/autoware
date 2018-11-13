@@ -30,10 +30,9 @@ variables:
     - test -f "${ROSINSTALL_FILE}" && wstool merge "${ROSINSTALL_FILE}"
     - wstool up
     - cd ..
-    - rosdep install -y --from-paths src --ignore-src --rosdistro ${ROS_DISTRO} 
+    - rosdep install -y --from-paths src/common/libs/state_machine_lib --ignore-src --rosdistro ${ROS_DISTRO} 
   script:
     - catkin_make clean
-    - source $CI_PROJECT_DIR/ros/devel/setup.bash
     - catkin_make -- pkg state_machine_lib
     - catkin_make run_tests_state_machine_lib
     - catkin_test_results
