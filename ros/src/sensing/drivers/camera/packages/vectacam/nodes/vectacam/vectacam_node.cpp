@@ -40,7 +40,7 @@
 
 #include "VectaCam.h"
 
-class RosVectaCam
+class ROSVectaCam
 {
 public:
 	void Run()
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 {
 	ros::init(argc, argv, "tier_fusion");
 
-	RosVectaCam app;
+	ROSVectaCam app;
 
 	app.Run();
 

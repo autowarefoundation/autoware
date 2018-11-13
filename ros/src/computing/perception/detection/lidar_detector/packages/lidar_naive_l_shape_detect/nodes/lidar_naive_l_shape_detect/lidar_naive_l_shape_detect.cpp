@@ -28,6 +28,9 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+#include <random>
+
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf/transform_datatypes.h>
 

@@ -12,10 +12,10 @@ add_message_files(
   FILES
 
   ## Runtime Manager ##
-  ConfigApproximateNdtMapping.msg
-  ConfigCarDpm.msg
+  ConfigApproximateNDTMapping.msg
+  ConfigCarDPM.msg
   ConfigCarFusion.msg
-  ConfigCarKf.msg
+  ConfigCarKF.msg
   ConfigCompareMapFilter.msg
   ConfigDecisionMaker.msg
   ConfigDistanceFilter.msg
@@ -24,12 +24,12 @@ add_message_files(
   ConfigLaneSelect.msg
   ConfigLaneStop.msg
   ConfigLatticeVelocitySet.msg
-  ConfigNdtMapping.msg
-  ConfigNdtMappingOutput.msg
-  ConfigNdt.msg
-  ConfigPedestrianDpm.msg
+  ConfigNDTMapping.msg
+  ConfigNDTMappingOutput.msg
+  ConfigNDT.msg
+  ConfigPedestrianDPM.msg
   ConfigPedestrianFusion.msg
-  ConfigPedestrianKf.msg
+  ConfigPedestrianKF.msg
   ConfigPlannerSelector.msg
   ConfigPoints2Polygon.msg
   ConfigRandomFilter.msg
@@ -37,7 +37,7 @@ add_message_files(
   ConfigRcnn.msg
   ConfigRingFilter.msg
   ConfigRingGroundFilter.msg
-  ConfigSsd.msg
+  ConfigSSD.msg
   ConfigTwistFilter.msg
   ConfigVelocitySet.msg
   ConfigVoxelGridFilter.msg

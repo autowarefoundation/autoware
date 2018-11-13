@@ -348,7 +348,7 @@ bool MsgToNav1(const unsigned char* data, SNAV1Msg &sMsg) {
   sMsg.BITStatus = (unsigned short)MKShort(data+40);
 }
 
-void Nav1ToRosImu(const SNAV1Msg &rNav1, sensor_msgs::Imu &ImuData) {
+void Nav1ToROSImu(const SNAV1Msg &rNav1, sensor_msgs::Imu &ImuData) {
   const double gravityAccel = 9.80665;
   
   ImuData.angular_velocity.x = rNav1.dRollRate;
@@ -402,7 +402,7 @@ void RunVG440(const std::string &rsPort, int nBaudRate, const std::string &rsTop
             ImuData.header.seq = nCnt;
             SNAV1Msg NAV1;
             MsgToNav1((unsigned char*)packet.data, NAV1);
-            Nav1ToRosImu(NAV1, ImuData);
+            Nav1ToROSImu(NAV1, ImuData);
             Publisher.publish(ImuData);
             ++nCnt;
             if (nCnt % 100 == 0) {

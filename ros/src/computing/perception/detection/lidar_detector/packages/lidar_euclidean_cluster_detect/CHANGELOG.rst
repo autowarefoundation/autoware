@@ -2,10 +2,40 @@
 Changelog for package lidar_euclidean_cluster_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.7.0 (2018-05-16)
+1.9.1 (2018-11-06)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
-* Contributors: Kosuke Murakami
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* * Fixed typo
+  * Changed default values
+* Fix multiple definition
+* Fix condition for pcl::PCA, issue:`#1604 <https://github.com/CPFL/Autoware/issues/1604>`_
+* Feature/beyond pixel tracker (`#1473 <https://github.com/CPFL/Autoware/issues/1473>`_)
+  * Add beyond_pixel node
+  * Update prototype of beyond pixel (`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * Add parser of DetectedObjectArray for beyond tracker(`#1430 <https://github.com/CPFL/Autoware/issues/1430>`_)
+  * * Adaptations to the original code
+  * Added README
+  * Added Runtime Manager entry
+  * Added Video link
+  * Added install commands for cmake
+  * * Add ID only to tracked objects
+  * Display valid IDs on the 3D labels
+  * Display only objects with image coords
+  * * Added Minimum dimensions
+  * Register angle from the vision tracker if available
+  * Keep message publishing rate continuous
+  * Revert platform_automation_msgs (`#1498 <https://github.com/CPFL/Autoware/issues/1498>`_)
+  * Code cleanup
+  * Fixed a crash when the dimensions are outside of the image
+  * Fix annoying catkin_make causing to run twice the Cmake generation
+* Contributors: Abraham Monrroy, Akihito OHSATO, Esteve Fernandez, amc-nu
 
 1.8.0 (2018-08-31)
 ------------------
@@ -51,10 +81,8 @@ Changelog for package lidar_euclidean_cluster_detect
   * CMake fixes for vision packages
 * Contributors: Abraham Monrroy, Esteve Fernandez, Kosuke Murakami
 
-* Add  code in cmakelists
-* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* Remove history of sub-branches
-* Add automatically-generated CHANGELOG.rst
+1.7.0 (2018-05-16)
+------------------
 * [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file

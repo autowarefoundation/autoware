@@ -82,7 +82,7 @@ public:
 };
 
 // --------------------------------------------------------------------------
-class KfLidarTracker {
+class KFLidarTracker {
   typedef boost::geometry::model::d2::point_xy<double> boost_point_xy;
   typedef boost::geometry::model::polygon<
       boost::geometry::model::d2::point_xy<double>>
@@ -113,12 +113,12 @@ class KfLidarTracker {
                                boost_polygon &out_polygon);
 
 public:
-  KfLidarTracker(float in_time_delta, float accel_noise_mag,
+  KFLidarTracker(float in_time_delta, float accel_noise_mag,
                  float dist_thres = 3, float tracker_merging_threshold = 2,
                  size_t maximum_allowed_skipped_frames = 10,
                  size_t max_trace_length = 10, bool in_pose_estimation = false,
                  size_t maximum_track_id = 200);
-  ~KfLidarTracker(void);
+  ~KFLidarTracker(void);
 
   enum DistType { CentersDist = 0, RectsDist = 1 };
 

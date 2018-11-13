@@ -146,11 +146,11 @@ void TestingUI::SimulationModeMainLoop()
 	}
 }
 
-bool TestingUI::OpenRosBag()
+bool TestingUI::OpenROSBag()
 {
     try
     {
-    	cout << "Openning Rosbag File: " << m_BagParams.fileName << endl;
+    	cout << "Openning ROSbag File: " << m_BagParams.fileName << endl;
     	m_bag.open(m_BagParams.fileName, rosbag::bagmode::Read);
 
     	m_CloudReader.InitPlayer(m_bag, m_BagParams.lidarTopic);
@@ -161,7 +161,7 @@ bool TestingUI::OpenRosBag()
     }
     catch (rosbag::BagIOException& e)
     {
-    	std::cout << "Can't Open Rosbaf with path: " << m_BagParams.fileName << std::endl;
+    	std::cout << "Can't Open ROSbaf with path: " << m_BagParams.fileName << std::endl;
         ROS_ERROR_STREAM(e.what());
         return false;
     }
@@ -285,7 +285,7 @@ void TestingUI::InitNode(const BagReaderParams& params, const int& mode)
 	ros::NodeHandle nh;
 	if(m_TestMode == ROSBAG_MODE)
 	{
-		m_bBagOpen = OpenRosBag();
+		m_bBagOpen = OpenROSBag();
 
 		pub_Point_Raw		= nh.advertise<sensor_msgs::PointCloud2>(m_BagParams.lidarTopic_pub, 10);
 		pub_Image_Raw		= nh.advertise<sensor_msgs::Image>(m_BagParams.imageTopic_pub, 10);

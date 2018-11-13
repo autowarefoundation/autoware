@@ -32,7 +32,6 @@ Launch file available parameters for `lidar_naive_l_shape_detect`
 
 
 ### Subscribed topics
-Node: imm_ukf_pda_tracker
 
 |Topic|Type|Objective|
 ------|----|---------
@@ -40,8 +39,11 @@ Node: imm_ukf_pda_tracker
 
 ### Published topics
 
-Node: imm_ukf_pda_tracker
-
 |Topic|Type|Objective|
 ------|----|---------
 |`/detection/lidar_objects/l_shaped`|`autoware_msgs::DetectedObjectArray`|L-shape fitting pose and dimension will be published.|
+
+
+### Video
+
+[![Autoware: naive L shape fitting](https://img.youtube.com/vi/Zd37mE7sXyI/0.jpg)](https://www.youtube.com/watch?v=Zd37mE7sXyI)

@@ -47,8 +47,8 @@ class BaseFrame(wx.Frame):
 		print "Event handler 'OnQuery' not implemented!"
 		event.Skip()
 
-	def OnRosbagPlay(self, event):  # wxGlade: MyFrame.<event_handler>
-		print "Event handler 'OnRosbagPlay' not implemented!"
+	def OnROSbagPlay(self, event):  # wxGlade: MyFrame.<event_handler>
+		print "Event handler 'OnROSbagPlay' not implemented!"
 		event.Skip()
 
 	def OnFtrace(self, event):  # wxGlade: MyFrame.<event_handler>

@@ -51,7 +51,7 @@ include_directories(
 
 set(ROS_HELPERS_SRC
         src/PolygonGenerator.cpp
-        src/op_RosHelpers.cpp
+        src/op_ROSHelpers.cpp
         )
 
 ## Declare a cpp library

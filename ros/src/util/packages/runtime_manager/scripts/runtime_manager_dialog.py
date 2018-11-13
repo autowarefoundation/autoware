@@ -56,13 +56,13 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from autoware_config_msgs.msg import ConfigSsd
-from autoware_config_msgs.msg import ConfigCarDpm
-from autoware_config_msgs.msg import ConfigPedestrianDpm
-from autoware_config_msgs.msg import ConfigNdt
-from autoware_config_msgs.msg import ConfigNdtMapping
-from autoware_config_msgs.msg import ConfigApproximateNdtMapping
-from autoware_config_msgs.msg import ConfigNdtMappingOutput
+from autoware_config_msgs.msg import ConfigSSD
+from autoware_config_msgs.msg import ConfigCarDPM
+from autoware_config_msgs.msg import ConfigPedestrianDPM
+from autoware_config_msgs.msg import ConfigNDT
+from autoware_config_msgs.msg import ConfigNDTMapping
+from autoware_config_msgs.msg import ConfigApproximateNDTMapping
+from autoware_config_msgs.msg import ConfigNDTMappingOutput
 from autoware_config_msgs.msg import ConfigICP
 from autoware_config_msgs.msg import ConfigVoxelGridFilter
 from autoware_config_msgs.msg import ConfigRingFilter
@@ -75,8 +75,8 @@ from autoware_config_msgs.msg import ConfigWaypointFollower
 from autoware_config_msgs.msg import ConfigTwistFilter
 from autoware_config_msgs.msg import ConfigVelocitySet
 from autoware_config_msgs.msg import ConfigLatticeVelocitySet
-from autoware_config_msgs.msg import ConfigCarKf
-from autoware_config_msgs.msg import ConfigPedestrianKf
+from autoware_config_msgs.msg import ConfigCarKF
+from autoware_config_msgs.msg import ConfigPedestrianKF
 from autoware_config_msgs.msg import ConfigLaneRule
 from autoware_config_msgs.msg import ConfigLaneSelect
 from autoware_config_msgs.msg import ConfigLaneStop
@@ -128,7 +128,7 @@ class MyFrame(rtmgr.MyFrame):
 		# ros
 		#
 		rospy.init_node('runime_manager', anonymous=True)
-		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
+		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.ROSCb)
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
@@ -223,7 +223,7 @@ class MyFrame(rtmgr.MyFrame):
 		#	self.OnProbe(None)
 		#	self.timer.Start(self.probe_interval)
 
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
+		self.dlg_rosbag_record = MyDialogROSbagRecord(self, cmd_dic=self.sensing_cmd)
 		buttons_color_hdr_setup(self.dlg_rosbag_record)
 
 		sense_cmds_dic = dic.get('cmds', {})
@@ -697,7 +697,7 @@ class MyFrame(rtmgr.MyFrame):
 		msg = '{} booted commands menu ?'.format(s)
 		return (enable, msg)
 
-	def RosCb(self, data):
+	def ROSCb(self, data):
 		print('recv topic msg : ' + data.data)
 
 		r = rospy.Rate(10)
@@ -1178,7 +1178,7 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.OnChecked_obj(event.GetEventObject())
 
-	def OnRosbagRecord(self, event):
+	def OnROSbagRecord(self, event):
 		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
@@ -1799,7 +1799,7 @@ class MyFrame(rtmgr.MyFrame):
 		if proc:
 			self.update_proc_cpu(obj)
 
-	def OnRosbagPlay(self, event):
+	def OnROSbagPlay(self, event):
 		obj = event.GetEventObject()
 
 		play = self.button_play_rosbag_play
@@ -2563,13 +2563,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnClose(self, event):
 		self.OnCancel(event)
 
-class MyDialogDpm(rtmgr.MyDialogDpm):
+class MyDialogDPM(rtmgr.MyDialogDPM):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.pdic_bak = pdic.copy()
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
-		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		rtmgr.MyDialogDPM.__init__(self, *args, **kwds)
 		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -2683,13 +2683,13 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
+class MyDialogNDTMapping(rtmgr.MyDialogNDTMapping):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
 		self.pdic_bak = self.pdic.copy()
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
+		rtmgr.MyDialogNDTMapping.__init__(self, *args, **kwds)
 		set_size_gdic(self)
 
 		parent = self.panel_v
@@ -2698,7 +2698,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
-		self.klass_msg = ConfigNdtMappingOutput
+		self.klass_msg = ConfigNDTMappingOutput
 		self.pub = rospy.Publisher('/config/ndt_mapping_output', self.klass_msg, queue_size=10)
 
 	def update_filename(self):
@@ -2908,10 +2908,10 @@ class MyApp(wx.App):
 		frame_1.Show()
 		return 1
 
-class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
+class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 	def __init__(self, *args, **kwds):
 		self.cmd_dic = kwds.pop('cmd_dic')
-		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
+		rtmgr.MyDialogROSbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
 		self.refresh()
 		self.parent = self.GetParent()
