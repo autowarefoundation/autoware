@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "astar_search.h"
+#include "astar_search/astar_search.h"
 
 AstarSearch::AstarSearch()
 {

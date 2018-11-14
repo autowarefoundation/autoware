@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "astar_avoid.h"
+#include "waypoint_planner/astar_avoid/astar_avoid.h"
 
 AstarAvoid::AstarAvoid()
   : nh_()

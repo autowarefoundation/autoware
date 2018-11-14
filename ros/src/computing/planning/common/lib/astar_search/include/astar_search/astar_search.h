@@ -43,7 +43,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Path.h>
 
-#include "astar_util.h"
+#include "astar_search/astar_util.h"
 
 class AstarSearch
 {
