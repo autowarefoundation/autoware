@@ -69,6 +69,7 @@
 
 class RosRoiObjectFilterApp
 {
+	friend class TestClass;
     ros::NodeHandle node_handle_;
 
     ros::Subscriber detections_range_subscriber_, wayarea_gridmap_subscriber_;
@@ -113,7 +114,6 @@ class RosRoiObjectFilterApp
                                   const grid_map_msgs::GridMap::ConstPtr &in_gridmap);
     tf::StampedTransform FindTransform(const std::string& in_target_frame, const std::string& in_source_frame);
     geometry_msgs::Point TransformPoint(const geometry_msgs::Point& in_point, const tf::Transform& in_tf);
-
 
 public:
     void Run();
