@@ -890,11 +890,6 @@ subs :
             depend : use_management_system
             depend_bool : 'lambda v : v == 0'
 
-    - name : planner_selector
-      desc : planner_selector desc sample
-      cmd  : roslaunch planner_selector planner_selector.launch
-      param: planner_selector
-
 
 
 buttons:
@@ -1880,15 +1875,6 @@ params :
       max   : 150
       v     : 100.0
 
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-
   - name  : lattice_velocity_set
     topic : /config/lattice_velocity_set
     msg   : ConfigLatticeVelocitySet
@@ -2077,29 +2063,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-
-  - name  : planner_selector
-    topic : /config/PlannerSelector
-    msg   : ConfigPlannerSelector
-    vars  :
-    - name : latency_num
-      desc : latency_num
-      label: latency_num
-      min  : 0
-      max  : 200
-      v    : 10
-    - name : waypoints_num
-      desc : waypoints_num
-      label: waypoints_num
-      min  : 0
-      max  : 30
-      v    : 8
-    - name : convergence_num
-      desc : convergence_num
-      label: convergence_num
-      min  : 0.0
-      max  : 30.0
-      v    : 2.0
 
   - name  : decision_maker
     topic : /config/decision_maker
@@ -2619,14 +2582,6 @@ params :
       min       : 1.0
       max       : 50
       v         : 10.0
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
-      cmd_param:
-        dash     : ''
-        delim    : ':='
 
   - name  : astar_navi
     vars  :
@@ -3001,14 +2956,6 @@ params :
       - custom read from folder
       - custom read from kml file
       v   : 0
-      cmd_param:
-        dash     : ''
-        delim    : ':='
-    - name : enablePlannerDynamicSwitch
-      desc : Enable Planner dynamical switch
-      label: Enable Planner dynamical switch
-      kind : checkbox
-      v    : False
       cmd_param:
         dash     : ''
         delim    : ':='

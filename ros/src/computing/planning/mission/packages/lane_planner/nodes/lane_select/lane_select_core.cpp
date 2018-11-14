@@ -70,20 +70,10 @@ void LaneSelectNode::initForROS()
   sub5_ = nh_.subscribe("/config/lane_select", 1, &LaneSelectNode::callbackFromConfig, this);
   sub6_ = nh_.subscribe("/decision_maker/state", 1, &LaneSelectNode::callbackFromDecisionMakerState, this);
 
-  bool enablePlannerDynamicSwitch;
-  private_nh_.param<bool>("enablePlannerDynamicSwitch", enablePlannerDynamicSwitch, false);
   // setup publisher
 
   pub1_ = nh_.advertise<autoware_msgs::Lane>("base_waypoints", 1);
-
-  if (enablePlannerDynamicSwitch)
-  {
-    pub2_ = nh_.advertise<std_msgs::Int32>("/astar/closest_waypoint", 1);
-  }
-  else
-  {
-    pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
-  }
+  pub2_ = nh_.advertise<std_msgs::Int32>("closest_waypoint", 1);
 
   pub3_ = nh_.advertise<std_msgs::Int32>("change_flag", 1);
   pub4_ = nh_.advertise<std_msgs::Int32>("/current_lane_id", 1);
