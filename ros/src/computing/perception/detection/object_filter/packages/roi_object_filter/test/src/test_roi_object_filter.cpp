@@ -36,6 +36,7 @@ TEST(TestSuite, CheckTransformPoint){
 
 	TestClass testObj;
 
+	// Check translation of 1 along X axis
 	tf::Quaternion q(0,0,0,1);
 	tf::Vector3 v(1,0,0);
 	geometry_msgs::Point inPt, outPt, expectedPt;
