@@ -151,6 +151,15 @@ void DecisionMakerNode::setupStateCallback(void)
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "ChangeToRight",
                          std::bind(&DecisionMakerNode::updateChangeToRightState, this, std::placeholders::_1, 0));
 
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "Go",
+                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "L_Go",
+                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "R_Go",
+                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "B_Go",
+                         std::bind(&DecisionMakerNode::entryGoState, this, std::placeholders::_1, 0));
+
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Go",
                          std::bind(&DecisionMakerNode::updateGoState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "L_Go",

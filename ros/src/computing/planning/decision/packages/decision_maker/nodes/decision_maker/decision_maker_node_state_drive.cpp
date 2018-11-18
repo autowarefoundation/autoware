@@ -298,6 +298,10 @@ void DecisionMakerNode::updateParkingState(cstring_t& state_name, int status)
   publishLampCmd(E_Lamp::LAMP_HAZARD);
 }
 
+void DecisionMakerNode::entryGoState(cstring_t& state_name, int status)
+{
+  setEventFlag("entry_go_state", true);
+}
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
 {
   std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
@@ -308,7 +312,7 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   }
 
   static double stopped_time;
-  if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1)
+  if (current_status_.velocity == 0.0 && current_status_.obstacle_waypoint != -1 && !isEventFlagTrue("entry_go_state"))
   {
     if (ros::Time::now().toSec() - stopped_time > time_to_avoidance_)
     {
@@ -319,6 +323,7 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   {
     stopped_time = ros::Time::now().toSec();
   }
+  setEventFlag("entry_go_state", false);
 }
 
 void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)

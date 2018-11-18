@@ -311,6 +311,7 @@ private:
   // entry callback
   void entryDriveState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
+  void entryGoState(cstring_t& state_name, int status);
   void entryTryAvoidanceState(cstring_t& state_name, int status);
   void entryCheckAvoidanceState(cstring_t& state_name, int status);
   void entryAvoidanceState(cstring_t& state_name, int status);
