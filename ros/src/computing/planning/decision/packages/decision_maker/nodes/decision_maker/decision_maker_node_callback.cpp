@@ -266,6 +266,7 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
 bool DecisionMakerNode::drivingMissionCheck()
 {
   publishOperatorHelpMessage("Received new mission, checking now...");
+  setEventFlag("received_back_state_waypoint", false);
 
   int gid = 0;
   for (auto& lane : current_status_.based_lane_array.lanes)

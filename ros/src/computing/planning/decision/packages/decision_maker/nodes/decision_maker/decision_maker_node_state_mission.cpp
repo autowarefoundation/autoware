@@ -92,6 +92,7 @@ void DecisionMakerNode::updateMissionCheckState(cstring_t& state_name, int statu
 
 void DecisionMakerNode::entryMissionAbortedState(cstring_t& state_name, int status)
 {
+  tryNextState("operation_end");
 }
 void DecisionMakerNode::updateMissionAbortedState(cstring_t& state_name, int status)
 {

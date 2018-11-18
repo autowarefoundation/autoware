@@ -109,6 +109,9 @@ autoware_states_drive:
       -
         Key: wait
         Target: L_Wait
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: L_Stop
     Parent: Cruise
   -
     StateName: L_Stop
@@ -159,6 +162,9 @@ autoware_states_drive:
       -
         Key: wait
         Target: R_Wait
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: R_Stop
     Parent: Cruise
   -
     StateName: R_Stop
@@ -209,6 +215,9 @@ autoware_states_drive:
       -
         Key: wait
         Target: Wait
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: Stop
     Parent: Cruise
   -
     StateName: Stop
@@ -295,6 +304,9 @@ autoware_states_drive:
       -
         Key: wait
         Target: B_Wait
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: B_Stop
     Parent: Cruise
   -
     StateName: B_Stop

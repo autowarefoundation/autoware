@@ -237,6 +237,11 @@ void DecisionMakerNode::entryTurnState(cstring_t& state_name, int status)
     tryNextState("found_stopline");
     return;
   }
+  else if (isEventFlagTrue("entry_stop_state"))
+  {
+    tryNextState("found_obstacle_in_stopped_area");
+    return;
+  }
   tryNextState("clear");
 }
 
@@ -301,6 +306,7 @@ void DecisionMakerNode::updateParkingState(cstring_t& state_name, int status)
 void DecisionMakerNode::entryGoState(cstring_t& state_name, int status)
 {
   setEventFlag("entry_go_state", true);
+  setEventFlag("entry_stop_state", false);
 }
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
 {
@@ -332,6 +338,10 @@ void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
   publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
 }
 
+void DecisionMakerNode::entryStopState(cstring_t& state_name, int status)
+{
+  setEventFlag("entry_stop_state", true);
+}
 void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
 {
   publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);

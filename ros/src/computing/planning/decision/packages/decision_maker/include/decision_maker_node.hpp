@@ -318,6 +318,7 @@ private:
   void entryReturnToLaneState(cstring_t& state_name, int status);
   void entryLaneChangeState(cstring_t& state_name, int status);
   void entryDriveEmergencyState(cstring_t& state_name, int status);
+  void entryStopState(cstring_t& state_name, int status);
   // update callback
   void updateWaitReadyState(cstring_t& state_name, int status);
   void updateWaitEngageState(cstring_t& state_name, int status);
