@@ -51,9 +51,6 @@ autoware_states_mission:
         Key: mission_aborted
         Target: MissionAborted
       -
-        Key: emergency
-        Target: MissionAborted
-      -
         Key: request_mission_change
         Target: DrivingMissionChange
     Parent: ~
@@ -97,4 +94,7 @@ autoware_states_mission:
       -
         Key: goto_wait_order
         Target: WaitOrder
+      -
+        Key: return_from_emergency
+        Target: WaitVehicleReady
     Parent: ~

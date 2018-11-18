@@ -2,6 +2,10 @@
 
 namespace decision_maker
 {
+void DecisionMakerNode::updateWaitReadyState(cstring_t& state_name, int status)
+{
+}
+
 void DecisionMakerNode::updateWaitEngageState(cstring_t& state_name, int status)
 {
 }
@@ -398,7 +402,17 @@ void DecisionMakerNode::updateReturnToLaneState(cstring_t& state_name, int statu
 {
 }
 
+void DecisionMakerNode::entryDriveEmergencyState(cstring_t& state_name, int status)
+{
+  setEventFlag("emergency_flag", true);
+  tryNextState("mission_aborted");
+}
 void DecisionMakerNode::updateDriveEmergencyState(cstring_t& state_name, int status)
 {
 }
+void DecisionMakerNode::exitDriveEmergencyState(cstring_t& state_name, int status)
+{
+  setEventFlag("emergency_flag", false);
+}
+
 }

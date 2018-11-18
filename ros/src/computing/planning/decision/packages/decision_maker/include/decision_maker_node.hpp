@@ -316,7 +316,9 @@ private:
   void entryAvoidanceState(cstring_t& state_name, int status);
   void entryReturnToLaneState(cstring_t& state_name, int status);
   void entryLaneChangeState(cstring_t& state_name, int status);
+  void entryDriveEmergencyState(cstring_t& state_name, int status);
   // update callback
+  void updateWaitReadyState(cstring_t& state_name, int status);
   void updateWaitEngageState(cstring_t& state_name, int status);
   void updateDriveState(cstring_t& state_name, int status);
   void updateLaneAreaState(cstring_t& state_name, int status);
@@ -347,6 +349,7 @@ private:
   void updateReturnToLaneState(cstring_t& state_name, int status);
   // exit callback
   void exitStopState(cstring_t& state_name, int status);
+  void exitDriveEmergencyState(cstring_t& state_name, int status);
 
   // callback by topic subscribing
   void callbackFromFilteredPoints(const sensor_msgs::PointCloud2::ConstPtr& msg);

@@ -5,6 +5,13 @@ autoware_states_drive:
     Transition:
       -
         Key: started
+        Target: WaitReady
+    Parent: ~
+  -
+    StateName: WaitReady
+    Transition:
+      -
+        Key: vehicle_is_ready
         Target: WaitEngage
     Parent: ~
   -
@@ -13,6 +20,9 @@ autoware_states_drive:
       -
         Key: operation_start
         Target: Drive
+      -
+        Key: emergency
+        Target: DriveEmergency
     Parent: ~
   -
     StateName: DriveEmergency

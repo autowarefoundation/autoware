@@ -107,8 +107,12 @@ void DecisionMakerNode::setupStateCallback(void)
                          std::bind(&DecisionMakerNode::updateBusStopState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "Parking",
                          std::bind(&DecisionMakerNode::updateParkingState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "DriveEmergency",
+                         std::bind(&DecisionMakerNode::entryDriveEmergencyState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "DriveEmergency",
                          std::bind(&DecisionMakerNode::updateDriveEmergencyState, this, std::placeholders::_1, 0));
+  ctx_drive->setCallback(state_machine::CallbackType::EXIT, "DriveEmergency",
+                         std::bind(&DecisionMakerNode::exitDriveEmergencyState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::ENTRY, "LeftTurn",
                          std::bind(&DecisionMakerNode::entryTurnState, this, std::placeholders::_1, 0));
   ctx_drive->setCallback(state_machine::CallbackType::UPDATE, "LeftTurn",

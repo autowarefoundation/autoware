@@ -115,9 +115,18 @@ void DecisionMakerNode::updateDriveReadyState(cstring_t& state_name, int status)
 void DecisionMakerNode::entryDrivingState(cstring_t& state_name, int status)
 {
   tryNextState("operation_start");
+
+  if (isEventFlagTrue("emergency_flag"))
+  {
+    tryNextState("mission_aborted");
+  }
 }
 void DecisionMakerNode::updateDrivingState(cstring_t& state_name, int status)
 {
+  if (isEventFlagTrue("emergency_flag"))
+  {
+    tryNextState("mission_aborted");
+  }
 }
 void DecisionMakerNode::exitDrivingState(cstring_t& state_name, int status)
 {
