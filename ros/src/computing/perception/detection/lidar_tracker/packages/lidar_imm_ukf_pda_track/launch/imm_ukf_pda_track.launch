@@ -1,0 +1,43 @@
+<!-- -->
+<launch>
+  <arg name="gating_thres" default="9.22" />
+  <arg name="gate_probability" default="0.99" />
+  <arg name="detection_probability" default="0.9" />
+  <arg name="distance_thres" default="99" />
+  <arg name="life_time_thres" default="8" />
+  <arg name="static_velocity_thres" default="3.0" />
+  <arg name="prevent_explosion_thres" default="1000" />
+  <arg name="tracker_input_topic" default="/detection/lidar_objects" />
+  <arg name="tracker_output_jskbb_topic" default="/detection/lidar_tracker/bounding_boxes" />
+  <arg name="tracker_output_detected_topic" default="/detection/lidar_tracker/objects" />
+  <arg name="use_sukf" default="use_sukf" />
+  <arg name="is_debug" default="is_debug" />
+
+  <arg name="pointcloud_frame" default="/velodyne" />
+  <arg name="tracking_frame" default="/world" />
+
+  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
+  <node pkg="imm_ukf_pda_track" type="imm_ukf_pda" name="imm_ukf_pda" output="screen">
+    <param name="gating_thres"            value="$(arg gating_thres)" />
+    <param name="gate_probability"        value="$(arg gate_probability)" />
+    <param name="detection_probability"   value="$(arg detection_probability)" />
+    <param name="distance_thres"          value="$(arg distance_thres)" />
+    <param name="life_time_thres"         value="$(arg life_time_thres)" />
+    <param name="static_velocity_thres"   value="$(arg static_velocity_thres)" />
+    <param name="prevent_explosion_thres" value="$(arg prevent_explosion_thres)" />
+    <param name="pointcloud_frame"        value="$(arg pointcloud_frame)" />
+    <param name="tracking_frame"          value="$(arg tracking_frame)" />
+    <param name="use_sukf"                value="$(arg use_sukf)" />
+    <param name="is_debug"                value="$(arg is_debug)" />
+
+    <remap from="/detection/lidar_objects"         to="$(arg tracker_input_topic)" />
+    <remap from="/detection/lidar_tracker/bounding_boxes" to="$(arg tracker_output_jskbb_topic)" />
+    <remap from="/detection/lidar_tracker/objects"       to="$(arg tracker_output_detected_topic)" />
+  </node>
+
+  <node pkg="imm_ukf_pda_track" type="visualize_detected_objects" name="visualize_detected_objects" output="screen">
+    <param name="pointcloud_frame" value="$(arg pointcloud_frame)" />
+
+    <remap from="/detection/lidar_tracker/objects" to="$(arg tracker_output_detected_topic)" />
+  </node>
+</launch>

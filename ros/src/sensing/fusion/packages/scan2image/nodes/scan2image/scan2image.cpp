@@ -14,7 +14,7 @@
 #include "scan2image.h"
 
 #include "autoware_msgs/ScanImage.h"
-#include "autoware_msgs/projection_matrix.h"
+#include "autoware_msgs/ProjectionMatrix.h"
 #include <sensor_msgs/CameraInfo.h>
 
 #if 1 // AXE
@@ -77,7 +77,7 @@ void trans_depth_points_to_image_points(Scan_points_dataset* scan_points_dataset
     }
 }
 
-static void projection_callback(const autoware_msgs::projection_matrix& msg)
+static void projection_callback(const autoware_msgs::ProjectionMatrix& msg)
 {
     printf("projection\n");
 

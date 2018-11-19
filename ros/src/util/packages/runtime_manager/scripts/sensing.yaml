@@ -68,6 +68,7 @@ subs :
         run  : do_shell_exec "$(rospack find runtime_manager)/scripts/avt_vimba.sh"
         param: avt_params
         gui  :
+          dialog_height : 350
           flags: [ SIGTERM, kill_children ]
 
   - name : GNSS
@@ -194,6 +195,9 @@ subs :
         desc : urg_node supports SCIP 2.2 or earlier compliant laser range-finders.
         run  : roslaunch hokuyo top_urg.launch
         param: hokuyo_urg
+        gui :
+          frame_id :
+            flags : [nl ]
 
       - name : Hokuyo 3D-URG
         desc : Hokuyo 3D-URG desc sample
@@ -212,6 +216,14 @@ subs :
         probe:
         run  : roslaunch sick_ldmrs_driver sick_ldmrs.launch
         param: sick_ldmrs
+
+      - name : Robosense RS32
+        desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
+        run  : roslaunch rslidar_pointcloud cloud_nodelet_32.launch
+
+      - name : Robosense RS16
+        desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
+        run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
 
   - name : Other Sensors
     desc : Other Sensors desc sample
@@ -260,6 +272,7 @@ cmds:
       cmd  : roslaunch points_preprocessor ring_ground_filter.launch node_name:=ring_ground_filter
       param: ring_ground_filter
       gui  :
+        dialog_height : 450
         sync :
           func : self.button_synchronization.GetValue()
 
@@ -267,19 +280,45 @@ cmds:
       desc : ray_ground_filter performs ground filtering using a radial-concentric based approach
       cmd  : roslaunch points_preprocessor ray_ground_filter.launch node_name:=ray_ground_filter
       param: ray_ground_filter
+      gui  :
+        dialog_height : 450
 
     - name : points_concat_filter
       desc : points_concat_filter filter performs merging multiple lidar inputs
       cmd  : roslaunch points_preprocessor points_concat_filter.launch node_name:=points_concat_filter
       param: points_concat_filter
       gui  :
-          dialog_width  : 600
-          dialog_height : 100
+        dialog_width : 300
+        input_topics :
+          flags : [nl ]
+        output_topic :
+          flags : [nl ]
 
     - name : cloud_transformer
       desc : Transforms cloud points' coordinates to the specified target frame
       cmd  : roslaunch points_preprocessor cloud_transformer.launch
       param: cloud_transformer
+      gui  :
+        dialog_width : 300
+        input_point_topic :
+          flags : [nl ]
+        target_frame :
+          flags : [nl ]
+
+    - name : compare_map_filter
+      desc : compare_map_filter
+      cmd  : roslaunch points_preprocessor compare_map_filter.launch
+      param: compare_map_filter
+      gui  :
+        dialog_height : 400
+        input_map_topic :
+          flags : [ nl ]
+        input_point_topic :
+          flags : [ nl ]
+        output_match_topic :
+          flags : [ nl ]
+        output_unmatch_topic :
+          flags : [ nl ]
 
   - name : Fusion
     desc : Sensor fusion tools
@@ -288,6 +327,8 @@ cmds:
       desc : Performs extrinsic calibration between two point clouds
       cmd  : roslaunch multi_lidar_calibrator multi_lidar_calibrator.launch
       param: multi_lidar_calibrator
+      gui  :
+        dialog_height : 450
 
 buttons:
   calibration_toolkit :
@@ -313,6 +354,16 @@ buttons:
       publish_extrinsic_mat :
         flags : [ nl ]
       publish_camera_info :
+        flags : [ nl ]
+      target_frame :
+        flags : [ nl ]
+      camera_frame :
+        flags : [ nl ]
+      image_topic_src :
+        flags : [ nl ]
+      camera_info_topic :
+        flags : [ nl ]
+      projection_matrix_topic :
         flags : [ nl ]
 
   points_image :
@@ -604,7 +655,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -636,7 +688,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -674,7 +727,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -706,7 +760,8 @@ params :
     - name  : points_topic
       desc  : input point topic to downsample
       label : Points topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -738,7 +793,8 @@ params :
     - name  : point_topic
       desc  : Input PointCloud Topic name, ground filtering will be performed.
       label : 'input_point_topic'
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -784,20 +840,28 @@ params :
         only_enable  : True
         tail         : True
     - name      : target_frame
-      desc      : Registers TF to this coordinate frame (default velodyne)
+      desc      : Registers TF to this LiDAR coordinate frame (default velodyne)
       label     : target_frame
       kind      : str
       v         : 'velodyne'
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : camera_frame
+      desc      : Sets camera frame in the header to this value  (default camera)
+      label     : camera_frame
+      kind      : str
+      v         : 'camera'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
     - name      : file
-      desc      : file desc sample
+      desc      : Path to Autoware calibration file
       kind      : path
       v         : ''
       cmd_param :
-        delim     : 'file:='
-        must      : True
+        dash        : ''
+        delim       : ':='
     - name      : register_lidar2camera_tf
       desc      : register_lidar2camera_tf desc sample
       label     : register TF between lidar and camera
@@ -807,7 +871,7 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_extrinsic_mat
-      desc      : publish_extrinsic_mat desc sample
+      desc      : Publish autoware_msgs/projection_matrix message?
       label     : publish extrinsic matrix
       kind      : checkbox
       v         : True
@@ -815,21 +879,39 @@ params :
         dash      : ''
         delim     : ':='
     - name      : publish_camera_info
-      desc      : publish_camera_info desc sample
+      desc      : Publish sensor_msgs/CameraInfo message?
       label     : publish camera_info
       kind      : checkbox
-      v         : False
+      v         : True
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : solo_camera
-      kind      : hide
-      v         : True
+    - name      : camera_info_topic
+      desc      : Name of the topic where to publish the Camera Intrinsics. Default /camera_info
+      label     : camera_info_topic name
+      kind      : str
+      v         : '/camera_info'
       cmd_param :
-        dash         : ''
-        delim        : ':='
-        only_disable : True
-        tail         : True
+        dash      : ''
+        delim     : ':='
+    - name      : image_topic_src
+      desc      : Adds the Camera info to this image topic. Default /image_raw
+      label     : image topic source
+      kind  : topic
+      topic_type : sensor_msgs/Image
+      v         : '/image_raw'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : projection_matrix_topic
+      desc      : Name of the topic where to publish the Camera Extrinsics. Default /projection_matrix
+      label     : projection_matrix_topic
+      kind      : str
+      v         : '/projection_matrix'
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+
 
 #  - name  : camera_extrinsicMat_Publisher
 #    vars  :
@@ -998,7 +1080,8 @@ params :
     - name  : input_point_topic
       desc  : Input PointCloud Topic name, ground filtering will be performed.
       label : 'input_point_topic'
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1117,7 +1200,8 @@ params :
     - name  : input_point_topic
       desc  : Input PointCloud Topic name, i.e. /points_raw
       label : input_point_topic
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : /points_raw
       cmd_param :
         dash        : ''
@@ -1138,6 +1222,72 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+
+  - name  : compare_map_filter
+    topic : /config/compare_map_filter
+    msg   : ConfigCompareMapFilter
+    vars  :
+    - name  : input_point_topic
+      desc  : Input PointCloud Topic name, i.e. /points_raw
+      label : input_point_topic
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
+      v     : /points_raw
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : input_map_topic
+      desc  : Input Map PointCloud Topic name, i.e. /points_map
+      label : input_map_topic
+      kind  : str
+      v     : /points_map
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_match_topic
+      desc  : Output PointCloud Topic name
+      label : output_match_topic
+      kind  : str
+      v     : /points_ground
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : output_unmatch_topic
+      desc  : Output PointCloud Topic name
+      label : output_unmatch_topic
+      kind  : str
+      v     : /points_no_ground
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : distance_threshold
+      desc  : distance_threshold
+      label : distance_threshold
+      min   : 0.01
+      max   : 100
+      v     : 0.2
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : min_clipping_height
+      desc  : min_clipping_height
+      label : min_clipping_height
+      min   : -100
+      max   : 100
+      v     : -2.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : max_clipping_height
+      desc  : max_clipping_height
+      label : max_clipping_height
+      min   : -100
+      max   : 100
+      v     : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
 
   - name  : hokuyo_urg
     vars  :
@@ -1241,7 +1391,8 @@ params :
     - name  : points_parent_src
       desc  : PointCloud Topic of the parent
       label : points_parent_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : lidar0/points_raw
       cmd_param :
         dash        : ''
@@ -1249,7 +1400,8 @@ params :
     - name  : points_child_src
       desc  : Serial Port of the LiDAR
       label : points_child_src
-      kind  : str
+      kind  : topic
+      topic_type : sensor_msgs/PointCloud2
       v     : lidar1/points_raw
       cmd_param :
         dash        : ''

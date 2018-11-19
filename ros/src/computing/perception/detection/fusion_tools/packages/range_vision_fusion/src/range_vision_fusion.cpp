@@ -37,7 +37,7 @@
 #include "range_vision_fusion/range_vision_fusion.h"
 
 cv::Point3f
-RosRangeVisionFusionApp::TransformPoint(const geometry_msgs::Point &in_point, const tf::StampedTransform &in_transform)
+ROSRangeVisionFusionApp::TransformPoint(const geometry_msgs::Point &in_point, const tf::StampedTransform &in_transform)
 {
     tf::Vector3 tf_point(in_point.x, in_point.y, in_point.z);
     tf::Vector3 tf_point_t = in_transform * tf_point;
@@ -45,7 +45,7 @@ RosRangeVisionFusionApp::TransformPoint(const geometry_msgs::Point &in_point, co
 }
 
 cv::Point2i
-RosRangeVisionFusionApp::ProjectPoint(const cv::Point3f &in_point)
+ROSRangeVisionFusionApp::ProjectPoint(const cv::Point3f &in_point)
 {
     auto u = int(in_point.x * fx_ / in_point.z + cx_);
     auto v = int(in_point.y * fy_ / in_point.z + cy_);
@@ -54,7 +54,7 @@ RosRangeVisionFusionApp::ProjectPoint(const cv::Point3f &in_point)
 }
 
 autoware_msgs::DetectedObject
-RosRangeVisionFusionApp::TransformObject(const autoware_msgs::DetectedObject &in_detection,
+ROSRangeVisionFusionApp::TransformObject(const autoware_msgs::DetectedObject &in_detection,
                                                                        const tf::StampedTransform& in_transform)
 {
     autoware_msgs::DetectedObject t_obj = in_detection;
@@ -83,7 +83,7 @@ RosRangeVisionFusionApp::TransformObject(const autoware_msgs::DetectedObject &in
 }
 
 bool
-RosRangeVisionFusionApp::IsObjectInImage(const autoware_msgs::DetectedObject &in_detection)
+ROSRangeVisionFusionApp::IsObjectInImage(const autoware_msgs::DetectedObject &in_detection)
 {
     cv::Point3f image_space_point = TransformPoint(in_detection.pose.position, camera_lidar_tf_);
 
@@ -96,7 +96,7 @@ RosRangeVisionFusionApp::IsObjectInImage(const autoware_msgs::DetectedObject &in
            && (image_space_point.z > 0);
 }
 
-cv::Rect RosRangeVisionFusionApp::ProjectDetectionToRect(const autoware_msgs::DetectedObject &in_detection)
+cv::Rect ROSRangeVisionFusionApp::ProjectDetectionToRect(const autoware_msgs::DetectedObject &in_detection)
 {
     cv::Rect projected_box;
 
@@ -133,7 +133,7 @@ cv::Rect RosRangeVisionFusionApp::ProjectDetectionToRect(const autoware_msgs::De
 }
 
 void
-RosRangeVisionFusionApp::TransformRangeToVision(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
+ROSRangeVisionFusionApp::TransformRangeToVision(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
                                                       autoware_msgs::DetectedObjectArray &out_in_cv_range_detections,
                                                       autoware_msgs::DetectedObjectArray &out_out_cv_range_detections)
 {
@@ -155,7 +155,7 @@ RosRangeVisionFusionApp::TransformRangeToVision(const autoware_msgs::DetectedObj
 }
 
 void
-RosRangeVisionFusionApp::CalculateObjectFeatures(autoware_msgs::DetectedObject &in_out_object, bool in_estimate_pose)
+ROSRangeVisionFusionApp::CalculateObjectFeatures(autoware_msgs::DetectedObject &in_out_object, bool in_estimate_pose)
 {
 
     float min_x=std::numeric_limits<float>::max();float max_x=-std::numeric_limits<float>::max();
@@ -255,7 +255,7 @@ RosRangeVisionFusionApp::CalculateObjectFeatures(autoware_msgs::DetectedObject &
     tf::quaternionTFToMsg(quat, in_out_object.pose.orientation);
 }
 
-autoware_msgs::DetectedObject RosRangeVisionFusionApp::MergeObjects(const autoware_msgs::DetectedObject &in_object_a,
+autoware_msgs::DetectedObject ROSRangeVisionFusionApp::MergeObjects(const autoware_msgs::DetectedObject &in_object_a,
                                            const autoware_msgs::DetectedObject & in_object_b)
 {
     autoware_msgs::DetectedObject object_merged;
@@ -280,15 +280,47 @@ autoware_msgs::DetectedObject RosRangeVisionFusionApp::MergeObjects(const autowa
 
 }
 
-double RosRangeVisionFusionApp::GetDistanceToObject(const autoware_msgs::DetectedObject &in_object)
+double ROSRangeVisionFusionApp::GetDistanceToObject(const autoware_msgs::DetectedObject &in_object)
 {
     return sqrt(in_object.dimensions.x*in_object.dimensions.x +
                 in_object.dimensions.y*in_object.dimensions.y +
                 in_object.dimensions.z*in_object.dimensions.z);
 }
 
+void ROSRangeVisionFusionApp::CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object)
+{
+    if (in_out_object.label == "car")
+    {
+        if (in_out_object.dimensions.x < car_depth_)
+            in_out_object.dimensions.x = car_depth_;
+        if (in_out_object.dimensions.y < car_width_)
+            in_out_object.dimensions.y = car_width_;
+        if (in_out_object.dimensions.z < car_height_)
+            in_out_object.dimensions.z = car_height_;
+    }
+    if (in_out_object.label == "person")
+    {
+        if (in_out_object.dimensions.x < person_depth_)
+            in_out_object.dimensions.x = person_depth_;
+        if (in_out_object.dimensions.y < person_width_)
+            in_out_object.dimensions.y = person_width_;
+        if (in_out_object.dimensions.z < person_height_)
+            in_out_object.dimensions.z = person_height_;
+    }
+
+    if (in_out_object.label == "truck" || in_out_object.label == "bus")
+    {
+        if (in_out_object.dimensions.x < truck_depth_)
+            in_out_object.dimensions.x = truck_depth_;
+        if (in_out_object.dimensions.y < truck_width_)
+            in_out_object.dimensions.y = truck_width_;
+        if (in_out_object.dimensions.z < truck_height_)
+            in_out_object.dimensions.z = truck_height_;
+    }
+}
+
 autoware_msgs::DetectedObjectArray
-RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
+ROSRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
                                                    const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
 {
 
@@ -300,6 +332,7 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
     fused_objects.header = in_range_detections->header;
 
     std::vector< std::vector<size_t> > vision_range_assignments (in_vision_detections->objects.size());
+    std::vector<bool> used_vision_detections(in_vision_detections->objects.size(), false);
     std::vector< long > vision_range_closest (in_vision_detections->objects.size());
 
     for (size_t i = 0; i < in_vision_detections->objects.size(); i++)
@@ -334,13 +367,22 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
                 range_in_cv.objects[j].width = vision_object.width;
                 range_in_cv.objects[j].height = vision_object.height;
                 range_in_cv.objects[j].angle = vision_object.angle;
+                range_in_cv.objects[j].id = vision_object.id;
+                CheckMinimumDimensions(range_in_cv.objects[j]);
+                if (vision_object.pose.orientation.x > 0
+                    || vision_object.pose.orientation.y > 0
+                    || vision_object.pose.orientation.z > 0)
+                {
+                    range_in_cv.objects[i].pose.orientation = vision_object.pose.orientation;
+                }
                 if(current_distance < closest_distance)
                 {
                     closest_index = j;
                     closest_distance = current_distance;
                 }
-            }
-        }
+                used_vision_detections[i] = true;
+            }//end if overlap
+        }//end for range_in_cv
         vision_range_closest[i] = closest_index;
     }
 
@@ -354,56 +396,57 @@ RosRangeVisionFusionApp::FuseRangeVisionDetections(const autoware_msgs::Detected
             fused_objects.objects.push_back(range_in_cv.objects[vision_range_closest[i]]);
         }
     }
-
-    /*
-    for(size_t i = 0; i < vision_range_assignments.size(); i++)
+    for(size_t i = 0; i < used_vision_detections.size(); i++)
     {
-        autoware_msgs::DetectedObject merged_object = range_in_cv.objects[0];
-
-        for(const auto& range_detection_idx: vision_range_assignments[i])
+        if (!used_vision_detections[i])
         {
-            if(merged_object.label == range_in_cv.objects[range_detection_idx].label)
-            {
-                used_range_detections[range_detection_idx] = true;
-
-                merged_object = MergeObjects(merged_object, range_in_cv.objects[range_detection_idx]);
-            }
+            fused_objects.objects.push_back(in_vision_detections->objects[i]);
         }
-        if(!vision_range_assignments[i].empty())
-        {
-            CalculateObjectFeatures(merged_object, true);
-            fused_objects.objects.push_back(merged_object);
-        }
-    }*/
-
-    //add objects outside image
-    for(size_t i=0; i < range_out_cv.objects.size(); i++)
-    {
-        fused_objects.objects.push_back(range_out_cv.objects[i]);
     }
 
     return fused_objects;
 }
 
 void
-RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
+ROSRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
                                                        const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
 {
     autoware_msgs::DetectedObjectArray fusion_objects;
     jsk_recognition_msgs::BoundingBoxArray fused_boxes;
     visualization_msgs::MarkerArray fused_objects_labels;
 
-    if (nullptr == in_vision_detections ||
-        nullptr == in_range_detections)
+    fused_boxes.boxes.clear();
+    fusion_objects.objects.clear();
+    fused_objects_labels.markers.clear();
+
+    if (empty_frames_ > 5)
     {
-        ROS_INFO("[%s] Empty Detections, check that vision and range detectors are running and publishing.", __APP_NAME__);
-        if (empty_frames_ > 5)
-        {
-            publisher_fused_objects_.publish(fusion_objects);
-            publisher_fused_boxes_.publish(fused_boxes);
-            publisher_fused_text_.publish(fused_objects_labels);
-            empty_frames_++;
-        }
+        ROS_INFO("[%s] Empty Detections. Make sure the vision and range detectors are running.", __APP_NAME__);
+    }
+
+    if (nullptr == in_vision_detections
+        && nullptr == in_range_detections)
+    {
+        empty_frames_++;
+        return;
+    }
+
+    if (nullptr == in_vision_detections
+        && nullptr != in_range_detections
+        && !in_range_detections->objects.empty())
+    {
+        publisher_fused_boxes_.publish(fused_boxes);
+        publisher_fused_objects_.publish(in_range_detections);
+        empty_frames_++;
+        return;
+    }
+    if (nullptr == in_range_detections
+        && nullptr != in_vision_detections
+        && !in_vision_detections->objects.empty())
+    {
+        publisher_fused_boxes_.publish(fused_boxes);
+        publisher_fused_objects_.publish(in_vision_detections);
+        empty_frames_++;
         return;
     }
 
@@ -427,6 +470,7 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
     publisher_fused_objects_.publish(fusion_objects);
     publisher_fused_boxes_.publish(fused_boxes);
     publisher_fused_text_.publish(fused_objects_labels);
+    boxes_frame_ = fused_boxes.header.frame_id;
     empty_frames_ = 0;
 
     vision_detections_ = nullptr;
@@ -435,13 +479,16 @@ RosRangeVisionFusionApp::SyncedDetectionsCallback(const autoware_msgs::DetectedO
 }
 
 visualization_msgs::MarkerArray
-RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects)
+ROSRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects)
 {
     visualization_msgs::MarkerArray final_markers;
 
     for(const autoware_msgs::DetectedObject& object : in_objects.objects)
     {
-        if (object.label != "unknown")
+        if (object.label != "unknown"
+            && object.pose.position.x != 0
+            && object.pose.position.y != 0
+            && object.pose.position.z != 0)
         {
             visualization_msgs::Marker marker;
             marker.header = in_objects.header;
@@ -450,6 +497,8 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
             marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
             marker.scale.z = 1.0;
             marker.text = object.label;
+            if (object.id != 0)
+                marker.text += " " + std::to_string(object.id);
             marker.pose.position = object.pose.position;
             marker.pose.position.z += 1.5;
             marker.color.r = 1.0;
@@ -468,7 +517,7 @@ RosRangeVisionFusionApp::ObjectsToMarkers(const autoware_msgs::DetectedObjectArr
 }
 
 jsk_recognition_msgs::BoundingBoxArray
-RosRangeVisionFusionApp::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
+ROSRangeVisionFusionApp::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
 {
     jsk_recognition_msgs::BoundingBoxArray final_boxes;
     final_boxes.header = in_objects.header;
@@ -483,13 +532,16 @@ RosRangeVisionFusionApp::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray
         box.pose = object.pose;
         box.value = object.score;
 
-        final_boxes.boxes.push_back(box);
+        if (box.dimensions.x > 0 && box.dimensions.y > 0 && box.dimensions.z > 0)
+        {
+            final_boxes.boxes.push_back(box);
+        }
     }
     return final_boxes;
 }
 
 void
-RosRangeVisionFusionApp::VisionDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
+ROSRangeVisionFusionApp::VisionDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
 
     if (!processing_ && !in_vision_detections->objects.empty())
@@ -502,7 +554,7 @@ RosRangeVisionFusionApp::VisionDetectionsCallback(const autoware_msgs::DetectedO
 }
 
 void
-RosRangeVisionFusionApp::RangeDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
+ROSRangeVisionFusionApp::RangeDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections)
 {
     if (!processing_ && !in_range_detections->objects.empty())
     {
@@ -513,7 +565,7 @@ RosRangeVisionFusionApp::RangeDetectionsCallback(const autoware_msgs::DetectedOb
     }
 }
 
-void RosRangeVisionFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &in_image_msg)
+void ROSRangeVisionFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &in_image_msg)
 {
     if(!camera_info_ok_)
         return;
@@ -525,7 +577,7 @@ void RosRangeVisionFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &
 };
 
 void
-RosRangeVisionFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &in_message)
+ROSRangeVisionFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &in_message)
 {
     image_size_.height = in_message.height;
     image_size_.width = in_message.width;
@@ -557,7 +609,7 @@ RosRangeVisionFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &in_me
 }
 
 tf::StampedTransform
-RosRangeVisionFusionApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
+ROSRangeVisionFusionApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
 {
     tf::StampedTransform transform;
 
@@ -578,10 +630,10 @@ RosRangeVisionFusionApp::FindTransform(const std::string &in_target_frame, const
 }
 
 void
-RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
+ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
     //get params
-    std::string camera_info_src, detected_objects_vision;
+    std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions, min_truck_dimensions;
     std::string detected_objects_range, fused_topic_str = "/detection/combined_objects", fused_boxes_str = "/detection/combined_objects_boxes";
     std::string fused_text_str = "detection/combined_objects_labels";
     std::string name_space_str = ros::this_node::getNamespace();
@@ -600,9 +652,41 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.5);
     ROS_INFO("[%s] overlap_threshold: %f", __APP_NAME__, overlap_threshold_);
 
+    in_private_handle.param<std::string>("min_car_dimensions", min_car_dimensions, "[2,2,4]");//w,h,d
+    ROS_INFO("[%s] min_car_dimensions: %s", __APP_NAME__, min_car_dimensions.c_str());
+
+    in_private_handle.param<std::string>("min_person_dimensions", min_person_dimensions, "[1,2,1]");
+    ROS_INFO("[%s] min_person_dimensions: %s", __APP_NAME__, min_person_dimensions.c_str());
+
+    in_private_handle.param<std::string>("min_truck_dimensions", min_truck_dimensions, "[2,2,4.5]");
+    ROS_INFO("[%s] min_truck_dimensions: %s", __APP_NAME__, min_truck_dimensions.c_str());
+
 
     in_private_handle.param<bool>("sync_topics", sync_topics, false);
     ROS_INFO("[%s] sync_topics: %d", __APP_NAME__, sync_topics);
+
+    YAML::Node car_dimensions = YAML::Load(min_car_dimensions);
+    YAML::Node person_dimensions = YAML::Load(min_person_dimensions);
+    YAML::Node truck_dimensions = YAML::Load(min_truck_dimensions);
+
+    if (car_dimensions.size() == 3)
+    {
+        car_width_ = car_dimensions[0].as<double>();
+        car_height_ = car_dimensions[1].as<double>();
+        car_depth_ = car_dimensions[2].as<double>();
+    }
+    if (person_dimensions.size() == 3)
+    {
+        person_width_ = person_dimensions[0].as<double>();
+        person_height_ = person_dimensions[1].as<double>();
+        person_depth_ = person_dimensions[2].as<double>();
+    }
+    if (truck_dimensions.size() == 3)
+    {
+        truck_width_ = truck_dimensions[0].as<double>();
+        truck_height_ = truck_dimensions[1].as<double>();
+        truck_depth_ = truck_dimensions[2].as<double>();
+    }
 
     if (name_space_str != "/")
     {
@@ -617,11 +701,7 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, camera_info_src.c_str());
     intrinsics_subscriber_ = in_private_handle.subscribe(camera_info_src,
                                                          1,
-                                                         &RosRangeVisionFusionApp::IntrinsicsCallback, this);
-
-    /*image_subscriber_ = in_private_handle.subscribe("/image_raw",
-                                                    1,
-                                                    &RosRangeVisionFusionApp::ImageCallback, this);*/
+                                                         &ROSRangeVisionFusionApp::IntrinsicsCallback, this);
 
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, detected_objects_vision.c_str());
     ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, detected_objects_range.c_str());
@@ -629,11 +709,11 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
     {
         detections_range_subscriber_ = in_private_handle.subscribe(detected_objects_vision,
                                                                    1,
-                                                                   &RosRangeVisionFusionApp::VisionDetectionsCallback, this);
+                                                                   &ROSRangeVisionFusionApp::VisionDetectionsCallback, this);
 
         detections_vision_subscriber_ = in_private_handle.subscribe(detected_objects_range,
                                                                     1,
-                                                                    &RosRangeVisionFusionApp::RangeDetectionsCallback, this);
+                                                                    &ROSRangeVisionFusionApp::RangeDetectionsCallback, this);
     }
     else
     {
@@ -645,7 +725,7 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
                 new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10),
                                                                *vision_filter_subscriber_,
                                                                *range_filter_subscriber_);
-        detections_synchronizer_->registerCallback(boost::bind(&RosRangeVisionFusionApp::SyncedDetectionsCallback, this, _1, _2));
+        detections_synchronizer_->registerCallback(boost::bind(&ROSRangeVisionFusionApp::SyncedDetectionsCallback, this, _1, _2));
     }
 
     publisher_fused_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(fused_topic_str, 1);
@@ -659,14 +739,14 @@ RosRangeVisionFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 
 
 void
-RosRangeVisionFusionApp::Run()
+ROSRangeVisionFusionApp::Run()
 {
     ros::NodeHandle private_node_handle("~");
     tf::TransformListener transform_listener;
 
     transform_listener_ = &transform_listener;
 
-    InitializeRosIo(private_node_handle);
+    InitializeROSIo(private_node_handle);
 
     ROS_INFO("[%s] Ready. Waiting for data...", __APP_NAME__);
 
@@ -675,7 +755,7 @@ RosRangeVisionFusionApp::Run()
     ROS_INFO("[%s] END", __APP_NAME__);
 }
 
-RosRangeVisionFusionApp::RosRangeVisionFusionApp()
+ROSRangeVisionFusionApp::ROSRangeVisionFusionApp()
 {
     camera_lidar_tf_ok_ = false;
     camera_info_ok_ = false;

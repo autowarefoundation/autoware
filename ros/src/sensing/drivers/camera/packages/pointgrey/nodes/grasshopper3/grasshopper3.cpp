@@ -379,7 +379,7 @@ void getMatricesFromFile(const ros::NodeHandle& nh, sensor_msgs::CameraInfo &cam
 
 /*!
  * Reads the params from the console
- * @param private_nh[in] Private Ros node handle
+ * @param private_nh[in] Private ROS node handle
  * @param fps[out] Read value from the console double
  * @param mode[out] Read value from the console integer
  * @param format[out] Read value from the console raw or rgb

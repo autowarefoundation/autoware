@@ -195,7 +195,7 @@ double PurePursuitNode::computeAngularGravity(double velocity, double kappa) con
   return (velocity * velocity) / (1.0 / kappa * gravity);
 }
 
-void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr& config)
+void PurePursuitNode::callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config)
 {
   param_flag_ = config->param_flag;
   const_lookahead_distance_ = config->lookahead_distance;
@@ -205,8 +205,8 @@ void PurePursuitNode::callbackFromConfig(const autoware_msgs::ConfigWaypointFoll
   is_config_set_ = true;
 }
 
-void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point& point,
-                                                      const std::vector<autoware_msgs::waypoint>& waypoints) const
+void PurePursuitNode::publishDeviationCurrentPosition(const geometry_msgs::Point &point,
+                                                      const std::vector<autoware_msgs::Waypoint> &waypoints) const
 {
   // Calculate the deviation of current position from the waypoint approximate line
 
@@ -238,12 +238,12 @@ void PurePursuitNode::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
   is_velocity_set_ = true;
 }
 
-void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr& msg)
+void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg)
 {
   command_linear_velocity_ = (!msg->waypoints.empty()) ? msg->waypoints.at(0).twist.twist.linear.x : 0;
   static int direction = 1;
   direction = (command_linear_velocity_ > 0.0) ? 1 : (command_linear_velocity_ < 0.0) ? -1 : direction;
-  autoware_msgs::lane expanded_lane(*msg);
+  autoware_msgs::Lane expanded_lane(*msg);
   expand_size_ = -expanded_lane.waypoints.size();
   connectVirtualLastWaypoints(&expanded_lane, direction);
   expand_size_ += expanded_lane.waypoints.size();
@@ -251,7 +251,7 @@ void PurePursuitNode::callbackFromWayPoints(const autoware_msgs::laneConstPtr& m
   is_waypoint_set_ = true;
 }
 
-void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane, int direction)
+void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::Lane* lane, int direction)
 {
   if (lane->waypoints.empty())
   {
@@ -266,7 +266,7 @@ void PurePursuitNode::connectVirtualLastWaypoints(autoware_msgs::lane* lane, int
     interval = getPlaneDistance(pn.position, pn_prev.position);
   }
 
-  autoware_msgs::waypoint virtual_last_waypoint;
+  autoware_msgs::Waypoint virtual_last_waypoint;
   virtual_last_waypoint.pose.pose.orientation = pn.orientation;
   virtual_last_waypoint.twist.twist.linear.x = 0.0;
 

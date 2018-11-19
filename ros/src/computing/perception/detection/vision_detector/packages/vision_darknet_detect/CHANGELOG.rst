@@ -2,18 +2,63 @@
 Changelog for package vision_yolo3_detect
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Fix compile error (vision_darknet_detect.h:52:37: fatal error: autoware_msgs/ConfigSsd.h: No such file or directory)
+* Moved configuration messages to autoware_config_msgs
+* include fstream header (`#1608 <https://github.com/CPFL/Autoware/issues/1608>`_)
+* Added support for custom class "names files" in darknet format. (`#1535 <https://github.com/CPFL/Autoware/issues/1535>`_)
+  * Added support for custom class "names files" in darknet format.
+  * Fixed launch file, not including source topic arg
+  * Fix the default path of coco.names (`#1550 <https://github.com/CPFL/Autoware/issues/1550>`_)
+* fixes two typos in yolo class name/id file (`#1484 <https://github.com/CPFL/Autoware/issues/1484>`_)
+* Contributors: Abraham Monrroy, Esteve Fernandez, Jacob Lambert, Kenji Funaoka
+
+1.8.0 (2018-08-31)
+------------------
+* fixes two typos in yolo class name/id file (`#1486 <https://github.com/CPFL/Autoware/pull/1486>`_)
+* [Fix] README.md of vision_darknet_detect (`#1437 <https://github.com/CPFL/Autoware/pull/1437>`_)
+* Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
+  * New standard message definition for the perception nodes
+  * New Detected Object message applied to:
+  * SSD
+  * Integrated RVIZ viewer
+  * External Viewer
+  * modified yolo2 and yolo3, compiles but cuda issues, trying different PC
+  * Boiler plate for range vision fusion node
+  * Added GenColors for Kinetic
+  Typo fixes for yolo2
+  * testing colors in Yolo3
+  * Completed transformation, projection of 3D boxes
+  * Fixed error on negative assignation
+  * code clean up
+  * removed yolo2 and yolo3, replaced by single darknet node. GUI launches yolo3 for now, to change. Pushing to test code on other PC.
+  * Readme updated, added gitignore for data folder.
+  * *Added Runtime manager UI for yolo2, yolo3.
+  *Support tested for TinyYolo v2 and v3
+  * Fusion Vision Range
+  Icons for viewer
+  * Range Vision Fusion node
+  * Indigo cv im read
+  * Indigo compiation fix
+  * Topic renaming according to new spec
+  * Try to fix arm64 stuff
+  * * Added launch file
+  * Added Runtime manager entry
+  * * Added Publication of non fused objects
+  * Fixed topic names
+* Contributors: Abraham Monrroy, Kenji Funaoka
+
 1.7.0 (2018-05-16)
 ------------------
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
-* Contributors: Kosuke Murakami
-
-Forthcoming
------------
 * Add  code in cmakelists
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
 * Remove history of sub-branches
 * Add automatically-generated CHANGELOG.rst
-* [Fix] rename packages (`#1269 <https://github.com/kfunaoka/Autoware/issues/1269>`_)
+* [Fix] rename packages (`#1269 <https://github.com/CPFL/Autoware/pull/1269>`_)
   * rename lidar_tracker
   * Modify pf_lidar_track's cmake file
   * Refactor code

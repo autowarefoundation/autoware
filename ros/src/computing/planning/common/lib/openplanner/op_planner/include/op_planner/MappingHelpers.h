@@ -24,7 +24,7 @@ public:
 	MappingHelpers();
 	virtual ~MappingHelpers();
 
-	static void ConstructRoadNetworkFromRosMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
+	static void ConstructRoadNetworkFromROSMessage(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 			const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 			const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
 			const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,
@@ -43,7 +43,7 @@ public:
 			const bool& bFindLaneChangeLanes = false,
 			const bool& bFindCurbsAndWayArea = false);
 
-	static void ConstructRoadNetworkFromRosMessageV2(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
+	static void ConstructRoadNetworkFromROSMessageV2(const std::vector<UtilityHNS::AisanLanesFileReader::AisanLane>& lanes_data,
 			const std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints>& points_data,
 				const std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine>& dt_data,
 				const std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection>& intersection_data,

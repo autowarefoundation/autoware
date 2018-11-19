@@ -44,7 +44,7 @@
 
 #define _NODE_NAME_ "image_rotator"
 
-class RosImageRotatorApp
+class ROSImageRotatorApp
 
 {
 	ros::Subscriber     subscriber_image_raw_;
@@ -128,7 +128,7 @@ public:
 		ROS_INFO("[%s] image_src: %s", _NODE_NAME_, image_raw_topic_str.c_str());
 
 		ROS_INFO("[%s] Subscribing to... %s", _NODE_NAME_, image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle.subscribe(image_raw_topic_str, 1, &RosImageRotatorApp::ImageCallback, this);
+		subscriber_image_raw_ = node_handle.subscribe(image_raw_topic_str, 1, &ROSImageRotatorApp::ImageCallback, this);
 
 		publisher_image_rotated_ = node_handle.advertise<sensor_msgs::Image>(image_rotated_str, 1);
 		ROS_INFO("[%s] Publishing Rotated image in %s", _NODE_NAME_, image_rotated_str.c_str());
@@ -138,11 +138,11 @@ public:
 		ROS_INFO("[%s] END rot", _NODE_NAME_);
 	}
 
-	~RosImageRotatorApp()
+	~ROSImageRotatorApp()
 	{
 	}
 
-	RosImageRotatorApp()
+	ROSImageRotatorApp()
 	{
 	}
 };
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, _NODE_NAME_);
 
-	RosImageRotatorApp app;
+	ROSImageRotatorApp app;
 
 	app.Run();
 

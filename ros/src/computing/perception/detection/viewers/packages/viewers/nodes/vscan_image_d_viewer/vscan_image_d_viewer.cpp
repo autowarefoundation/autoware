@@ -35,7 +35,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <autoware_msgs/PointsImage.h>
 
-#include <autoware_msgs/image_obj_ranged.h>
+#include <autoware_msgs/ImageObjRanged.h>
 #include <vector>
 #include <iostream>
 #include <math.h>
@@ -58,8 +58,8 @@ static cv::Mat colormap;
 static std::vector<cv::Rect> cars;
 static std::vector<cv::Rect> peds;
 #else
-static autoware_msgs::image_obj_ranged car_fused_objects;
-static autoware_msgs::image_obj_ranged pedestrian_fused_objects;
+static autoware_msgs::ImageObjRanged car_fused_objects;
+static autoware_msgs::ImageObjRanged pedestrian_fused_objects;
 #endif
 
 /* check whether floating value x is nearly 0 or not */
@@ -80,7 +80,7 @@ static std::vector<cv::Scalar> _colors;
 static const int OBJ_RECT_THICKNESS = 3;
 
 static void drawRects(cv::Mat image,
-                    std::vector<autoware_msgs::image_rect_ranged> objects,
+                    std::vector<autoware_msgs::ImageRectRanged> objects,
 					CvScalar color,
 					int threshold_height,
 					std::string objectClass)
@@ -176,13 +176,13 @@ static void show(void)
 		cvWaitKey(2);
 	}
 }
-static void car_updater_callback(const autoware_msgs::image_obj_ranged& fused_car_msg)
+static void car_updater_callback(const autoware_msgs::ImageObjRanged& fused_car_msg)
 {
 	car_fused_objects = fused_car_msg;
 	//  show();
 }
 
-static void ped_updater_callback(const autoware_msgs::image_obj_ranged& fused_pds_msg)
+static void ped_updater_callback(const autoware_msgs::ImageObjRanged& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
   //  show();

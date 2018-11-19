@@ -100,7 +100,7 @@ RECENT REVISION HISTORY:
     Oriol Ferrer Mesia      Josh Tobin         Matthew Gregan     github:phprus
     Julian Raschke          Gregory Mullen     Baldur Karlsson    github:poppolopoppo
     Christian Floisand      Kevin Schmidt                         github:darealshinji
-    Blazej Dariusz Roszkowski                                     github:Michaelangel007
+    Blazej Dariusz ROSzkowski                                     github:Michaelangel007
 */
 
 #ifndef STBI_INCLUDE_STB_IMAGE_H

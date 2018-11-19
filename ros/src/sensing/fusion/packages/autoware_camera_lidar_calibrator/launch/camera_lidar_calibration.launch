@@ -7,13 +7,19 @@ roslaunch autoware_camera_lidar_calibrator camera_lidar_calibration.launch intri
     <arg name="camera_id" default="/" />
     <arg name="intrinsics_file" />
     <arg name="compressed_stream" default="false" />
+    <arg name="target_frame" default="velodyne"/>
+    <arg name="camera_frame" default="camera"/>
 
     <node if="$(arg compressed_stream)" name="decompress" type="republish" pkg="image_transport" output="screen" args="compressed in:=/$(arg camera_id)/$(arg image_src) raw out:=/$(arg camera_id)/$(arg image_src)" />
 
-    <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" args="$(arg intrinsics_file)" ns="$(arg camera_id)">
+    <node pkg="calibration_camera_lidar" type="calibration_publisher" name="calibration_publisher" ns="$(arg camera_id)">
         <param name="register_lidar2camera_tf" type="bool" value="false"/>
         <param name="publish_extrinsic_mat" type="bool" value="false"/>
         <param name="publish_camera_info" type="bool" value="true"/>
+        <param name="image_topic_src" value="$(arg image_src)"/>
+        <param name="calibration_file" value="$(arg intrinsics_file)"/>
+        <param name="target_frame" type="str" value="$(arg target_frame)"/>
+        <param name="camera_frame" type="str" value="$(arg camera_frame)"/>
     </node>
 
     <node pkg="image_processor" type="image_rectifier" name="rectifier" ns="$(arg camera_id)" output="screen">

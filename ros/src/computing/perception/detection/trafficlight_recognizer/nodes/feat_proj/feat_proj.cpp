@@ -21,10 +21,10 @@
 #include "libvectormap/Math.h"
 #include <Eigen/Eigen>
 #include <autoware_msgs/Signals.h>
-#include <autoware_msgs/adjust_xy.h>
+#include <autoware_msgs/AdjustXY.h>
 #include <vector_map/vector_map.h>
 #include <vector_map_server/GetSignal.h>
-#include <autoware_msgs/lane.h>
+#include <autoware_msgs/Lane.h>
 
 static std::string camera_id_str;
 
@@ -65,7 +65,7 @@ namespace
 	{
 	private:
 		geometry_msgs::PoseStamped pose_;
-		autoware_msgs::lane waypoints_;
+		autoware_msgs::Lane waypoints_;
 
 	public:
 		VectorMapClient()
@@ -81,7 +81,7 @@ namespace
 			return pose_;
 		}
 
-		autoware_msgs::lane waypoints() const
+		autoware_msgs::Lane waypoints() const
 		{
 			return waypoints_;
 		}
@@ -91,7 +91,7 @@ namespace
 			pose_ = pose;
 		}
 
-		void set_waypoints(const autoware_msgs::lane &waypoints)
+		void set_waypoints(const autoware_msgs::Lane &waypoints)
 		{
 			waypoints_ = waypoints;
 		}
@@ -101,7 +101,7 @@ static VectorMapClient g_vector_map_client;
 
 
 /* Callback function to shift projection result */
-void adjust_xyCallback(const autoware_msgs::adjust_xy::ConstPtr &config_msg)
+void adjust_xyCallback(const autoware_msgs::AdjustXY::ConstPtr &config_msg)
 {
 	adjust_proj_x = config_msg->x;
 	adjust_proj_y = config_msg->y;

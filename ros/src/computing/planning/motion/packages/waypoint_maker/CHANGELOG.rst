@@ -2,6 +2,26 @@
 Changelog for package waypoint_maker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Moved configuration messages to autoware_config_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
 1.7.0 (2018-05-18)
 ------------------
 * Fix flashing marker & set lifetime
@@ -24,7 +44,7 @@ Changelog for package waypoint_maker
 * Modify visualized topic, /base_waypoints -> /lane_waypoints_array, mainly for editing waypoints
 * Fix to deleting marker before re-publishing
 * Fix bug, increasing path size for each loop
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -128,7 +148,7 @@ Changelog for package waypoint_maker
   This reverts commit fb284523027c0df1ec513b09c6426c9d235c9f12.
 * Ignore space character of waypoints.csv
 * Reflect waypoints height updown
-* Fix/cmake cleanup (`#1156 <https://github.com/kfunaoka/Autoware/issues/1156>`_)
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
@@ -168,7 +188,7 @@ Changelog for package waypoint_maker
 * Add velocity plan offset for system delay
 * fix launch files for ros parameter
 * Add waypoint_filter functions
-* Fixing `#1064 <https://github.com/kfunaoka/Autoware/issues/1064>`_ and `#1065 <https://github.com/kfunaoka/Autoware/issues/1065>`_
+* Fixing `#1064 <https://github.com/CPFL/Autoware/pull/1064>`_ and `#1065 <https://github.com/CPFL/Autoware/pull/1065>`_
 * Add deleting marker/buffers for replaying rosbag, and some fix
 * Apply clang-format
 * Fix typo

@@ -2,6 +2,43 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* Support old behavior of insert static object for obstacle avoidance testing
+  Only one simulated car available in the runtime manager
+  update for copywrite note
+  insert autoware_build_flags to new nodes
+* Add README files for OpenPlanner packages
+* Test Simulated Vehicles
+  Fix Simulated Vehicle Initialization
+  Test Following
+  Test Obstacle Avoidance
+  Add Visualization information to rviz config file open_planner.rviz
+* Modify Map loading for OpenPlanner, now it reads from Autoware vector map messages, old behavior still works but from launch file only.
+  Delete way_planner, dp_planner from UI, but they still accessible from roslaunch.
+* Fix Vector Map parser problem, tested with three different maps
+  Fix Global Planning function for the new map modification
+  Add OpenPlanner Simulator for perception, traffic lights, cars
+  Add OpenPlanner new version to replace wp_planner and dp_planner
+  Remove unnecessary files from OpenPlanner libraries
+  Test Global and Local planning
+  Test Tracking node (kf_contour_track)
+  Test Simulation Nodes
+  Test Utility Nodes
+* Contributors: Hatem Darweesh, hatem-darweesh
+
 1.5.1 (2017-09-25)
 ------------------
 * fix build error for older indigo version

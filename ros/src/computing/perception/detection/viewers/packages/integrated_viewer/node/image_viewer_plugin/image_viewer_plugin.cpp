@@ -101,24 +101,28 @@ namespace integrated_viewer {
             // Check whether this topic is image
             if (topic_type.contains(kImageDataType) == true) {
                 image_topic_list << topic_name;
+                image_topic_list.sort();
                 continue;
             }
 
             // Check whether this topic is rectangle
             if (topic_type.contains(kDetectedObjectDataTypeBase) == true) {
                 rect_topic_list << topic_name;
+                rect_topic_list.sort();
                 continue;
             }
 
             // Check whether this topic is point cloud
             if (topic_type.contains(kPointDataType) == true) {
                 point_topic_list << topic_name;
+                point_topic_list.sort();
                 continue;
             }
 
             // Check whether this topic is lane
             if (topic_type.contains(kLaneDataType) == true) {
                 lane_topic_list << topic_name;
+                lane_topic_list.sort();
                 continue;
             }
         }
@@ -149,17 +153,40 @@ namespace integrated_viewer {
         if (image_topic_index != -1) {
             ui_.image_topic_combo_box_->setCurrentIndex(image_topic_index);
         }
+        else {
+          ui_.image_topic_combo_box_->setCurrentIndex(ui_.image_topic_combo_box_->findText(kBlankTopic));
+          image_sub_.shutdown();
+          // If blank name is selected as image topic, show default image
+          viewed_image_ = default_image_.clone();
+          default_image_shown_ = true;
+          ShowImageOnUi();
+        }
 
         if (rect_topic_index != -1) {
             ui_.rect_topic_combo_box_->setCurrentIndex(rect_topic_index);
+        }
+        else {
+          ui_.rect_topic_combo_box_->setCurrentIndex(ui_.rect_topic_combo_box_->findText(kBlankTopic));
+          rect_sub_.shutdown();
+          detected_objects_msg_ = NULL;
         }
 
         if (point_topic_index != -1) {
             ui_.point_topic_combo_box_->setCurrentIndex(point_topic_index);
         }
+        else {
+          ui_.point_topic_combo_box_->setCurrentIndex(ui_.point_topic_combo_box_->findText(kBlankTopic));
+          point_sub_.shutdown();
+          points_msg_ = NULL;
+        }
 
         if (lane_topic_index != -1) {
             ui_.lane_topic_combo_box_->setCurrentIndex(lane_topic_index);
+        }
+        else {
+          ui_.lane_topic_combo_box_->setCurrentIndex(ui_.lane_topic_combo_box_->findText(kBlankTopic));
+          lane_sub_.shutdown();
+          lane_msg_ = NULL;
         }
 
     } // ImageViewerPlugin::UpdateTopicList()
@@ -309,6 +336,119 @@ namespace integrated_viewer {
 
         return QObject::eventFilter(object, event);
     }
+
+    void ImageViewerPlugin::save(rviz::Config config) const {
+      rviz::Panel::save(config);
+      config.mapSetValue("Image topic", ui_.image_topic_combo_box_->currentText());
+      config.mapSetValue("Rect topic", ui_.rect_topic_combo_box_->currentText());
+      config.mapSetValue("Point topic", ui_.point_topic_combo_box_->currentText());
+      config.mapSetValue("Lane topic", ui_.lane_topic_combo_box_->currentText());
+      config.mapSetValue("Point size", ui_.point_size_spin_box_->value());
+    } // ImageViewerPlugin::save
+
+    void ImageViewerPlugin::load(const rviz::Config& config) {
+      rviz::Panel::load(config);
+      QString image_topic;
+      QString rect_topic;
+      QString point_topic;
+      QString lane_topic;
+      int point_size;
+
+      if(config.mapGetString ("Image topic", &image_topic))
+      {
+        // Extract selected topic name from combo box
+        std::string selected_topic = image_topic.toStdString();
+        if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
+          UpdateTopicList();
+          int topic_index = ui_.image_topic_combo_box_->findText(image_topic);
+          // If the load topic doesn't exist, load it anyway to wait for the topic to become active
+          if (topic_index == -1) {
+            QStringList dummy_topic_list;
+            dummy_topic_list << image_topic;
+            ui_.image_topic_combo_box_->addItems(dummy_topic_list);
+            topic_index = ui_.image_topic_combo_box_->findText(image_topic);
+          }
+          ui_.image_topic_combo_box_->setCurrentIndex(topic_index);
+          default_image_shown_ = false;
+          image_sub_ = node_handle_.subscribe<sensor_msgs::Image>(selected_topic,
+                                                                  1,
+                                                                  &ImageViewerPlugin::ImageCallback,
+                                                                  this);
+        }
+      }
+
+      if(config.mapGetString ("Rect topic", &rect_topic))
+      {
+        // Extract selected topic name from combo box
+        std::string selected_topic = rect_topic.toStdString();
+        if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
+          UpdateTopicList();
+          int topic_index = ui_.rect_topic_combo_box_->findText(rect_topic);
+          // If the load topic doesn't exist, load it anyway to wait for the topic to become active
+          if (topic_index == -1) {
+            QStringList dummy_topic_list;
+            dummy_topic_list << rect_topic;
+            ui_.rect_topic_combo_box_->addItems(dummy_topic_list);
+            topic_index = ui_.rect_topic_combo_box_->findText(rect_topic);
+          }
+          ui_.rect_topic_combo_box_->setCurrentIndex(topic_index);
+          // Switch booted callback function by topic name
+          detected_objects_msg_ = NULL;
+          rect_sub_ = node_handle_.subscribe<autoware_msgs::DetectedObjectArray>(selected_topic,
+                                                                       1,
+                                                                       &ImageViewerPlugin::DetectedObjCallback,
+                                                                       this);
+        }
+      }
+
+      if(config.mapGetString ("Point topic", &point_topic))
+      {
+        // Extract selected topic name from combo box
+        std::string selected_topic = point_topic.toStdString();
+        if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
+          UpdateTopicList();
+          int topic_index = ui_.image_topic_combo_box_->findText(point_topic);
+          // If the load topic doesn't exist, load it anyway to wait for the topic to become active
+          if (topic_index == -1) {
+            QStringList dummy_topic_list;
+            dummy_topic_list << point_topic;
+            ui_.point_topic_combo_box_->addItems(dummy_topic_list);
+            topic_index = ui_.point_topic_combo_box_->findText(point_topic);
+          }
+          ui_.point_topic_combo_box_->setCurrentIndex(topic_index);
+          point_sub_ = node_handle_.subscribe<autoware_msgs::PointsImage>(selected_topic,
+                                                                          1,
+                                                                          &ImageViewerPlugin::PointCallback,
+                                                                          this);
+        }
+      }
+
+      if(config.mapGetString ("Lane topic", &lane_topic))
+      {
+        // Extract selected topic name from combo box
+        std::string selected_topic = lane_topic.toStdString();
+        if (selected_topic != kBlankTopic.toStdString() && selected_topic != "") {
+          UpdateTopicList();
+          int topic_index = ui_.lane_topic_combo_box_->findText(lane_topic);
+          // If the load topic doesn't exist, load it anyway to wait for the topic to become active
+          if (topic_index == -1) {
+            QStringList dummy_topic_list;
+            dummy_topic_list << point_topic;
+            ui_.lane_topic_combo_box_->addItems(dummy_topic_list);
+            topic_index = ui_.lane_topic_combo_box_->findText(lane_topic);
+          }
+          ui_.lane_topic_combo_box_->setCurrentIndex(topic_index);
+          lane_sub_ = node_handle_.subscribe<autoware_msgs::ImageLaneObjects>(selected_topic,
+                                                                              1,
+                                                                              &ImageViewerPlugin::LaneCallback,
+                                                                              this);
+        }
+      }
+
+      if(config.mapGetInt ("Point size", &point_size)) {
+        ui_.point_size_spin_box_->setValue(point_size);
+      }
+    } // ImageViewerPlugin::load
 
 
 } // end namespace integrated_viewer

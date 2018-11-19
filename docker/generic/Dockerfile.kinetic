@@ -65,7 +65,8 @@ RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
 RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
 
 # Install Autoware
-RUN cd && git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
+RUN cd && mkdir /home/$USERNAME/Autoware
+COPY --chown=autoware ./ /home/$USERNAME/Autoware/
 RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 

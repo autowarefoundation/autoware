@@ -10,7 +10,7 @@ To use the Autoware Docker, first make sure the NVIDIA drivers, Docker and nvidi
 ```
 $ cd Autoware/docker/generic/
 
-# Ubuntu 14.04 (Indigo)
+# Ubuntu 14.04 (Indigo) ** Deprecated, use Kinetic instead **
 $ sh build.sh indigo
 
 # Ubuntu 16.04 (Kinetic)
@@ -19,14 +19,16 @@ $ sh build.sh kinetic
 
 ## How to Run
 ```
-# Default shared directory path is /home/$USER/shared_dir
-
-# Ubuntu 14.04 (Indigo)
-$ sh run.sh indigo
+# Ubuntu 14.04 (Indigo) ** Deprecated, use Kinetic instead **
+$ ./run.sh -t latest-indigo
 
 # Ubuntu 16.04 (Kinetic)
-$ sh run.sh kinetic
-
-# If you select your shared directory path
-$ sh run.sh indigo|kinetic {SHARED_DIR_PATH}
+$ ./run.sh -t latest-kinetic
 ```
+
+|Option|Default|Description|
+|---|---|---|
+|-h||Show `Usage: $0 [-t <tag>] [-r <repo>] [-s <Shared directory>]`|
+|-t|latest-kinetic|Specify tag|
+|-r|autoware/autoware|Specify repo|
+|-s|/home/$USER/shared_dir|Specify shared dir|

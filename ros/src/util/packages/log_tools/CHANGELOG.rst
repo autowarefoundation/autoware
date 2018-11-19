@@ -2,10 +2,25 @@
 Changelog for package log_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+* Fix CVE-2018-1000656 (`#1680 <https://github.com/CPFL/Autoware/issues/1680>`_)
+* Contributors: Kenji Funaoka
+
+1.9.0 (2018-10-31)
+------------------
+* Upgrade requests version (CVE-2018-18074)
+* Contributors: Akihito Ohsato
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* Contributors: Esteve Fernandez
+
 1.7.0 (2018-05-18)
 ------------------
 * update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
-* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/kfunaoka/Autoware/issues/1240>`_)
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
   * Initial Cleanup
   * fixed also for indigo
   * kf cjeck
