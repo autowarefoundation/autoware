@@ -54,10 +54,10 @@ autoware_states_vehicle:
     Transition:
       -
         Key: emergency
-        Target: Emergency
+        Target: VehicleEmergency
     Parent: ~
   -
-    StateName: Emergency
+    StateName: VehicleEmergency
     Transition:
       -
         Key: return_from_emergency

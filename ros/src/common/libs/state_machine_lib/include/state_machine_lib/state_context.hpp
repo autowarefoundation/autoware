@@ -38,12 +38,11 @@ private:
   std::shared_ptr<State> getStatePtr(const YAML::Node& node);
   std::shared_ptr<State> getStatePtr(const std::string& _state_name);
   std::shared_ptr<State> getStatePtr(const uint64_t& _state_id);
-  void parseChildTransitionMap(const YAML::Node& node);
 
   bool isCurrentState(const std::string& state_name);
 
 public:
-  StateContext(const std::string& file_name, const std::string& msg_name /* = "autoware_states"*/)
+  StateContext(const std::string& file_name, const std::string& msg_name)
   {
     createStateMap(file_name, msg_name);
     root_state_ = getStartState();
@@ -58,7 +57,6 @@ public:
   std::shared_ptr<State> getStartState(void);
 
   void onUpdate(void);
-  void onEntry(uint64_t _prev_state_id);
   void onExit();
 
   bool setCallback(const CallbackType& _type, const std::string& _state_name,
