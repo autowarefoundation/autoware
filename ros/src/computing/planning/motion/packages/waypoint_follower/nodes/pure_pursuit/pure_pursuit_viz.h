@@ -51,7 +51,7 @@ namespace waypoint_follower
 visualization_msgs::Marker displayNextWaypoint(geometry_msgs::Point position);
 // display the next target by markers.
 visualization_msgs::Marker displayNextTarget(geometry_msgs::Point target);
-visualization_msgs::Marker displayExpandWaypoints(const std::vector<autoware_msgs::waypoint>& waypoints, int size);
+visualization_msgs::Marker displayExpandWaypoints(const std::vector<autoware_msgs::Waypoint>& waypoints, int size);
 
 double calcRadius(geometry_msgs::Point target, geometry_msgs::Pose current_pose);
 

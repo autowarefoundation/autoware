@@ -79,7 +79,7 @@ visualization_msgs::Marker displayNextTarget(geometry_msgs::Point target)
   return marker;
 }
 
-visualization_msgs::Marker displayExpandWaypoints(const std::vector<autoware_msgs::waypoint>& waypoints, int size)
+visualization_msgs::Marker displayExpandWaypoints(const std::vector<autoware_msgs::Waypoint>& waypoints, int size)
 {
   visualization_msgs::Marker marker;
   if (size <= 0 || waypoints.size() == 0)
