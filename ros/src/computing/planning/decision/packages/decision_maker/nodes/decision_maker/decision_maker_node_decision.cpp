@@ -118,12 +118,4 @@ bool DecisionMakerNode::isArrivedGoal()
   }
   return false;
 }
-bool DecisionMakerNode::handleStateCmd(const uint64_t _state_num)
-{
-  bool _ret = false;
-
-  /* todo  */
-  /* key  */
-  return _ret;
-}
 }

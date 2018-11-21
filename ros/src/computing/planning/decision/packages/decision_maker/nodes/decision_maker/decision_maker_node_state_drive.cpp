@@ -275,14 +275,10 @@ void DecisionMakerNode::updateRightLaneChangeState(cstring_t& state_name, int st
 
 void DecisionMakerNode::updateCheckLeftLaneState(cstring_t& state_name, int status)
 {
-  /* need safety check function */
-  // static bool is_target_lane_safe = false;
 }
 
 void DecisionMakerNode::updateCheckRightLaneState(cstring_t& state_name, int status)
 {
-  /* need safety check function */
-  // static bool is_target_lane_safe = false;
 }
 
 void DecisionMakerNode::updateChangeToLeftState(cstring_t& state_name, int status)

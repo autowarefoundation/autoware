@@ -228,7 +228,6 @@ private:
   bool isArrivedGoal(void);
   bool isCrossRoadByVectorMapServer(const autoware_msgs::Lane& lane_msg, const geometry_msgs::PoseStamped& pose_msg);
   bool isLocalizationConvergence(const geometry_msgs::Point& _current_point);
-  bool handleStateCmd(const uint64_t _state_num);
   void insertPointWithinCrossRoad(const std::vector<CrossRoadArea>& _intersects, autoware_msgs::LaneArray& lane_array);
   void setWaypointState(autoware_msgs::LaneArray& lane_array);
   bool waitForEvent(cstring_t& key, const bool& flag);
@@ -365,7 +364,6 @@ private:
   void callbackFromTwistCmd(const geometry_msgs::TwistStamped& msg);
   void callbackFromSimPose(const geometry_msgs::PoseStamped& msg);
   void callbackFromConfig(const autoware_config_msgs::ConfigDecisionMaker& msg);
-  void callbackFromObjectDetector(const autoware_msgs::CloudClusterArray& msg);
   void callbackFromStateCmd(const std_msgs::String& msg);
   void callbackFromObstacleWaypoint(const std_msgs::Int32& msg);
 
