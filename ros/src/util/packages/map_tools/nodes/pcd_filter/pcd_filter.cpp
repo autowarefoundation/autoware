@@ -12,7 +12,7 @@ Yuki Kitsukawa
 #include <pcl/filters/voxel_grid.h>
 
 template <class T>
-pcl::PointXYZ getReferencePoint(T input_cloud){
+pcl::PointXYZ getReferencePoint(const T input_cloud){
     pcl::PointXYZ ref_point;
     for(auto pt: input_cloud->points){
         //make sure the point is a valid point
@@ -26,7 +26,7 @@ pcl::PointXYZ getReferencePoint(T input_cloud){
 }
 
 template <class T>
-void translatePointCloud(T input_cloud, T& output_cloud, pcl::PointXYZ origin){
+void translatePointCloud(const T input_cloud, T& output_cloud,const pcl::PointXYZ origin){
     output_cloud->points.clear();
     for(auto in_pt: input_cloud->points){
         auto out_pt = in_pt;
