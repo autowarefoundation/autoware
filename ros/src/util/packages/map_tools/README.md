@@ -28,4 +28,4 @@ The naming rule is ``*grid_size*_*lower bound of x*_*lower bound of y*.pcd``
 ``leaf_size``: double (1,5,10,100...)
 
 The downsampled files are saved in the same directory as the input pcd file.
-The name rule is ``*leaf_size*_*original_name*``
+The naming rule is ``*leaf_size*_*original_name*``
