@@ -22,9 +22,6 @@ namespace decision_maker
 void DecisionMakerNode::callbackFromFilteredPoints(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   setEventFlag("received_pointcloud_for_NDT", true);
-
-  /* todo */
-  /* create timer for flags reset   */
 }
 
 void DecisionMakerNode::callbackFromSimPose(const geometry_msgs::PoseStamped& msg)

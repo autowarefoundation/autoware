@@ -150,9 +150,6 @@ void StateContext::nextState(const std::string& transition_key)
 void StateContext::createGraphTransitionList(std::ofstream& outputfile, int idx,
                                              std::map<uint64_t, std::vector<uint64_t>>& sublist)
 {
-  /* FIX THIS
-   * Not support single state, which state is integrated before state circle.....;(
-   * */
   if (!sublist[idx].empty() || state_map_.at(idx)->getParent() == NULL)
   {
     outputfile << "subgraph cluster_" << idx << "{\n"

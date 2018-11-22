@@ -181,6 +181,7 @@ private:
   double time_to_avoidance_;
   double goal_threshold_dist_;
   double goal_threshold_vel_;
+  int stopline_reset_count_;
 
   // for vectormap server
   // ros::ServiceClient cross_road_cli;
@@ -407,6 +408,8 @@ public:
     init();
     setupStateCallback();
 
+    stopline_reset_count_ = 20;
+    private_nh_.getParam("stopline_reset_count", stopline_reset_count_);
     current_status_.prev_stopped_wpidx = -1;
   }
 
