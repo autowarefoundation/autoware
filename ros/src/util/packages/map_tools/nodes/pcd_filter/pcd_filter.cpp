@@ -20,6 +20,7 @@ pcl::PointXYZ getReferencePoint(const T input_cloud){
             ref_point.x = pt.x;
             ref_point.y = pt.y;
             ref_point.z = pt.z;
+            break;
         }
     }
     return ref_point;
