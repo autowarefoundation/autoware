@@ -322,7 +322,6 @@ std::shared_ptr<State> StateContext::getStatePtr(const std::string& _state_name)
 
 std::shared_ptr<State> StateContext::getStatePtr(const uint64_t& _state_id)
 {
-	std::cerr << state_map_.size() << std::endl;
   return state_map_.at(_state_id);
 }
 
