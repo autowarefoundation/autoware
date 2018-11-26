@@ -95,6 +95,13 @@ struct VehicleInfo
 
 class CanStatusTranslatorNode
 {
+    enum class GearShift{
+        Drive = 16,
+        Neutral = 32,
+        Reverse = 64,
+        Parking = 128,
+    };
+
 public:
   CanStatusTranslatorNode();
   ~CanStatusTranslatorNode();
