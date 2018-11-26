@@ -64,21 +64,6 @@ build_kinetic:
       - $CI_PROJECT_DIR/coverage.tar.gz
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
     
-  
-    
-build_indigo:
-  stage: build
-  image: ubuntu:trusty
-  variables:
-    ROS_DISTRO: indigo
-  <<: *build_common
-  script:
-    - catkin_make clean
-    - catkin_make -j2 --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
-    - catkin_make run_tests
-    - catkin_test_results
-  retry: 1
-    
 build_cross:
   stage: build
   image: docker
