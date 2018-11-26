@@ -1,5 +1,5 @@
 ---
-autoware_states:
+test_states:
   -
     StateName: Start
     Transition:
