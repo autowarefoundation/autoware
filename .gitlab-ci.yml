@@ -58,6 +58,7 @@ build_kinetic:
     - tar -czvf coverage.tar.gz coverage
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR 
+  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
@@ -76,6 +77,7 @@ build_indigo:
     - catkin_make -j2 --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
     - catkin_make run_tests
     - catkin_test_results
+  retry: 1
     
 build_cross:
   stage: build
@@ -84,6 +86,7 @@ build_cross:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
+    AUTOWARE_DOCKER_DATE: 20181123
     AUTOWARE_HOME: $CI_PROJECT_DIR
     AUTOWARE_TARGET_ARCH: aarch64
     AUTOWARE_TARGET_PLATFORM: generic-aarch64
@@ -97,7 +100,7 @@ build_cross:
           --rm
           -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
           -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
           bash
             -c "source /opt/ros/kinetic/setup.bash &&
                 catkin_make
@@ -114,6 +117,8 @@ build_cross:
                   --build ${AUTOWARE_BUILD_PATH}
                   -j2"
                   '
+  retry: 1
+  
 pages:
   stage: deploy
   image: alpine
