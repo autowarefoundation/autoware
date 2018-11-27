@@ -175,9 +175,3 @@ TEST(TestSuite, TestTransitionMap){
 	ASSERT_EQ(transition_map[key], value) << "Transition value should be" << value;
 }
 
-//int main(int argc, char **argv) {
-//	testing::InitGoogleTest(&argc, argv);
-//	ros::init(argc, argv, "TestNode");
-//	return RUN_ALL_TESTS();
-//}
-
