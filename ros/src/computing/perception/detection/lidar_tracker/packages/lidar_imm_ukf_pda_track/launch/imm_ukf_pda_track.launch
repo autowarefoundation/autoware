@@ -5,12 +5,13 @@
   <arg name="detection_probability" default="0.9" />
   <arg name="distance_thres" default="99" />
   <arg name="life_time_thres" default="8" />
-  <arg name="static_velocity_thres" default="3.0" />
+  <arg name="static_velocity_thres" default="0.5" />
+  <arg name="static_num_history_thres" default="3" />
   <arg name="prevent_explosion_thres" default="1000" />
   <arg name="lane_direction_chi_thres" default="2.71" />
   <arg name="nearest_lane_distance_thres" default="1.0" />
-  <arg name="tracker_input_topic" default="/detection/lidar_objects" />
-  <arg name="tracker_output_detected_topic" default="/detection/lidar_tracker/objects" />
+  <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
+  <arg name="tracker_output_topic" default="/detection/objects" />
   <arg name="use_sukf" default="use_sukf" />
   <arg name="use_vectormap" default="false" />
 
@@ -27,6 +28,7 @@
     <param name="distance_thres"          value="$(arg distance_thres)" />
     <param name="life_time_thres"         value="$(arg life_time_thres)" />
     <param name="static_velocity_thres"   value="$(arg static_velocity_thres)" />
+    <param name="static_num_history_thres"   value="$(arg static_num_history_thres)" />
     <param name="prevent_explosion_thres" value="$(arg prevent_explosion_thres)" />
     <param name="lane_direction_chi_thres" value="$(arg lane_direction_chi_thres)" />
     <param name="nearest_lane_distance_thres" value="$(arg nearest_lane_distance_thres)" />
@@ -35,8 +37,8 @@
     <param name="use_sukf"                value="$(arg use_sukf)" />
     <param name="use_vectormap"           value="$(arg use_vectormap)" />
 
-    <remap from="/detection/lidar_objects"         to="$(arg tracker_input_topic)" />
-    <remap from="/detection/lidar_tracker/objects"       to="$(arg tracker_output_detected_topic)" />
+    <remap from="/detection/fusion_tools/objects"         to="$(arg tracker_input_topic)" />
+    <remap from="/detection/objects"       to="$(arg tracker_output_topic)" />
   </node>
 
     <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="ukf_track_visualization_01"

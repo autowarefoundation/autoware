@@ -46,6 +46,7 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
   private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
+  private_nh_.param<int>("static_velocity_history_thres", static_num_history_thres_, 3);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
   private_nh_.param<double>("merge_distance_threshold", merge_distance_threshold_, 0.5);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
@@ -68,8 +69,8 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
-  sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/objects", 1);
+  sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
 
   if (use_vectormap_)
   {
@@ -97,7 +98,6 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 
   autoware_msgs::DetectedObjectArray transformed_input;
   autoware_msgs::DetectedObjectArray detected_objects_output;
-  // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input, transformed_input);
   tracker(transformed_input, detected_objects_output);
   transformPoseToLocal(detected_objects_output);
@@ -265,12 +265,14 @@ bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::
                                     autoware_msgs::DetectedObject& out_object, UKF& target)
 {
   bool use_lane_direction = false;
+  target.is_direction_cv_available_ = false;
+  target.is_direction_ctrv_available_ = false;
   bool get_lane_success = updateWithNearestLaneDirection(in_object, out_object);
   if (!get_lane_success)
   {
     return use_lane_direction;
   }
-  target.checkLaneDirectionAvailability(in_object, lane_direction_chi_thres_, use_sukf_);
+  target.checkLaneDirectionAvailability(out_object, lane_direction_chi_thres_, use_sukf_);
   if (target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
   {
     use_lane_direction = true;
@@ -368,7 +370,8 @@ void ImmUkfPda::associateObject(const std::vector<autoware_msgs::DetectedObject>
     target.label_ = nearest_object.label;
   }
   target.object_ = nearest_object;
-  if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_ &&
+  if ((target.tracking_num_ == TrackingState::Stable || target.tracking_num_ == TrackingState::Occlusion)  &&
+      target.lifetime_ >= life_time_thres_ &&
       target.min_assiciation_distance_ < distance_thres_)
   {
     target.is_stable_ = true;
@@ -572,19 +575,22 @@ void ImmUkfPda::staticClassification()
 {
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    targets_[i].vel_history_.push_back(targets_[i].x_merge_(2));
+    // targets_[i].x_merge_(2) is referred for estimated velocity
+    double current_velocity = std::abs(targets_[i].x_merge_(2));
+    targets_[i].vel_history_.push_back(current_velocity);
     if (targets_[i].tracking_num_ == TrackingState::Stable && targets_[i].lifetime_ > life_time_thres_)
     {
+      int index = 0;
       double sum_vel = 0;
       double avg_vel = 0;
-      for (int ind = 1; ind < life_time_thres_; ind++)
+      for (auto rit = targets_[i].vel_history_.rbegin(); index < static_num_history_thres_; ++rit)
       {
-        sum_vel += targets_[i].vel_history_.end()[-ind];
+        index++;
+        sum_vel += *rit;
       }
-      avg_vel = double(sum_vel / life_time_thres_);
+      avg_vel = double(sum_vel / static_num_history_thres_);
 
-      if ((avg_vel < static_velocity_thres_) && (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
-                                                 targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
+      if(avg_vel < static_velocity_thres_ && current_velocity < static_velocity_thres_)
       {
         targets_[i].is_static_ = true;
       }
@@ -715,13 +721,22 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
     dd.acceleration.linear.y = tyaw_rate;
-    dd.pose.position.x = tx;
-    dd.pose.position.y = ty;
-    dd.pose_reliable = targets_[i].is_stable_;
     dd.velocity_reliable = targets_[i].is_stable_;
+    dd.pose_reliable = targets_[i].is_stable_;
+
 
     if (!targets_[i].is_static_)
     {
+      // Aligh the longest side of dimentions with the estimated orientation
+      if(targets_[i].object_.dimensions.x < targets_[i].object_.dimensions.y)
+      {
+        dd.dimensions.x = targets_[i].object_.dimensions.y;
+        dd.dimensions.y = targets_[i].object_.dimensions.x;
+      }
+
+      dd.pose.position.x = tx;
+      dd.pose.position.y = ty;
+
       if (!std::isnan(q[0]))
         dd.pose.orientation.x = q[0];
       if (!std::isnan(q[1]))

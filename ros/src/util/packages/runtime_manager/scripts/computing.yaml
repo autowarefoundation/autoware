@@ -1162,15 +1162,16 @@ params :
       label   : 'input topic'
       kind    : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/lidar_detector/objects
+      v       : /detection/fusion_tools/objects
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_detected_topic
+    - name    : tracker_output_topic
       desc    : output_topic desc sample
       label   : 'output topic'
-      kind    : str
-      v       : /detection/lidar_tracker/objects
+      kind    : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1235,12 +1236,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : static_distance_thres
-      desc    : static_distance_thres_ desc sample
-      label   : 'static distance thres'
+    - name    : static_velocity_thres
+      desc    : static_velocity_thres_ desc sample
+      label   : 'static velocity thres'
       min       : 0
       max       : 10
-      v       : 3.0
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : static_num_history_thres
+      desc    : static_num_history_thres desc sample
+      label   : 'static num history thres'
+      min       : 0
+      max       : 20
+      v       : 3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -5420,7 +5430,7 @@ params :
       label : input_topic
       kind  : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v     : /detection/lidar_tracker/objects
+      v     : /detection/objects
       cmd_param :
         dash      : ''
         delim     : ':='

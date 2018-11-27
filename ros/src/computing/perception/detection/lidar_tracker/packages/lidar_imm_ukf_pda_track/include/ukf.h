@@ -46,6 +46,7 @@ enum TrackingState : int
   Die = 0,     // No longer tracking
   Init = 1,    // Start tracking
   Stable = 4,  // Stable tracking
+  Occlusion = 5,  // lost 1 frame possibly by occlusion
   Lost = 10,   // About to lose target
 };
 

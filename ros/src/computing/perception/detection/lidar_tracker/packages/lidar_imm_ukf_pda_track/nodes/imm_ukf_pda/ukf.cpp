@@ -68,11 +68,11 @@ UKF::UKF()
   p_rm_ = Eigen::MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_cv_ = 2;
-  std_a_ctrv_ = 2;
+  std_a_cv_ = 1.5;
+  std_a_ctrv_ = 1.5;
   std_a_rm_ = 3;
-  std_ctrv_yawdd_ = 2;
-  std_cv_yawdd_ = 2;
+  std_ctrv_yawdd_ = 1.5;
+  std_cv_yawdd_ = 1.5;
   std_rm_yawdd_ = 3;
 
   // Laser measurement noise standard deviation position1 in m

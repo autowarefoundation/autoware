@@ -68,12 +68,13 @@ private:
   double gate_probability_;
   double detection_probability_;
 
-  // bbox association param
+  // object association param
   double distance_thres_;
   int life_time_thres_;
 
-  // bbox update params
+  // static classification param
   double static_velocity_thres_;
+  int static_num_history_thres_;
 
   // switch sukf and ImmUkfPda
   bool use_sukf_;
