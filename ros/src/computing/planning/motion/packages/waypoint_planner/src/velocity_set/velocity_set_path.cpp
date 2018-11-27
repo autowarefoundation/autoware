@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "velocity_set_path.h"
+#include "../../src/velocity_set/velocity_set_path.h"
 
 VelocitySetPath::VelocitySetPath()
   : set_path_(false),

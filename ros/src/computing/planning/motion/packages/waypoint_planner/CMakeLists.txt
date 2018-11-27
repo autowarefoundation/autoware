@@ -28,12 +28,13 @@ catkin_package(
 )
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(astar_avoid
-  nodes/astar_avoid/astar_avoid.cpp
-  nodes/astar_avoid/astar_avoid_node.cpp
+  src/astar_avoid/astar_avoid.cpp
+  src/astar_avoid/astar_avoid_node.cpp
 )
 
 target_link_libraries(astar_avoid
@@ -45,10 +46,10 @@ add_dependencies(astar_avoid
 )
 
 add_executable(velocity_set
-  nodes/velocity_set/velocity_set.cpp
-  nodes/velocity_set/velocity_set_path.cpp
-  nodes/velocity_set/velocity_set_info.cpp
-  nodes/velocity_set/libvelocity_set.cpp
+  src/velocity_set/velocity_set.cpp
+  src/velocity_set/velocity_set_path.cpp
+  src/velocity_set/velocity_set_info.cpp
+  src/velocity_set/libvelocity_set.cpp
 )
 
 target_link_libraries(velocity_set

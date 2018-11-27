@@ -28,7 +28,7 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "astar_navi.h"
+#include "freespace_planner/astar_navi.h"
 
 AstarNavi::AstarNavi() : nh_(), private_nh_("~")
 {
