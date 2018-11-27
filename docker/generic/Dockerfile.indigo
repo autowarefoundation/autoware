@@ -3,14 +3,48 @@ MAINTAINER Yuki Iida <aiueo.0409@gmail.com>
 
 RUN apt-get update && apt-get install -y \
         software-properties-common \
-        wget curl git cmake cmake-curses-gui
+        wget \
+        curl \
+        git \
+        cmake \
+        cmake-curses-gui
 
 # Install ROS
 RUN wget http://packages.ros.org/ros.key -O - | apt-key add -
 RUN echo "deb http://packages.ros.org/ros/ubuntu trusty main" > /etc/apt/sources.list.d/ros-latest.list
-RUN apt-get update && apt-get install -y ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
-RUN apt-get update && apt-get install -y ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver
-RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev software-properties-common libyaml-cpp-dev python-flask python-requests
+RUN apt-get update && apt-get install -y \
+        ros-indigo-desktop-full \
+        ros-indigo-gps-common \
+        ros-indigo-grid-map \
+        ros-indigo-jsk-visualization \
+        ros-indigo-nmea-msgs \
+        ros-indigo-nmea-navsat-driver \
+        ros-indigo-sound-play
+RUN apt-get update && apt-get install -y \
+        ros-indigo-automotive-platform-msgs \
+        ros-indigo-controller-manager \
+        ros-indigo-gazebo-ros-control \
+        ros-indigo-joystick-drivers \
+        ros-indigo-novatel-span-driver \
+        ros-indigo-ros-control \
+        ros-indigo-ros-controllers \
+        ros-indigo-sicktoolbox \
+        ros-indigo-sicktoolbox-wrapper
+RUN apt-get update && apt-get install -y \
+        freeglut3-dev \
+        gksu \
+        libarmadillo-dev \
+        libgl1-mesa-dev \
+        libglew-dev \
+        libnlopt-dev \
+        libpcap-dev \
+        libqt5opengl5-dev \
+        libssh2-1-dev \
+        libyaml-cpp-dev \
+        python-flask \
+        python-requests \
+        qtbase5-dev \
+        software-properties-common
 RUN add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
 RUN apt-get update && apt-get install -y libmosquitto-dev
 
@@ -28,12 +62,26 @@ RUN apt-get install -y \
 
 # Install some basic GUI and sound libs
 RUN apt-get install -y \
-        xz-utils file locales dbus-x11 pulseaudio dmz-cursor-theme \
-        fonts-dejavu fonts-liberation hicolor-icon-theme \
-        libcanberra-gtk3-0 libcanberra-gtk-module libcanberra-gtk3-module \
-        libasound2 libgtk2.0-0 libdbus-glib-1-2 libxt6 libexif12 \
-        libgl1-mesa-glx libgl1-mesa-dri \
-        && update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX
+        dbus-x11 \
+        dmz-cursor-theme \
+        file \
+        fonts-dejavu \
+        fonts-liberation \
+        hicolor-icon-theme \
+        libasound2 \
+        libcanberra-gtk-module \
+        libcanberra-gtk3-0 \
+        libcanberra-gtk3-module \
+        libdbus-glib-1-2 \
+        libexif12 \
+        libgl1-mesa-dri \
+        libgl1-mesa-glx \
+        libgtk2.0-0 \
+        libxt6 \
+        locales \
+        pulseaudio \
+        xz-utils
+RUN update-locale LANG=C.UTF-8 LC_MESSAGES=POSIX
 
 # Install some basic GUI tools
 RUN apt-get install -y \

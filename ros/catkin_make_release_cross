@@ -50,6 +50,8 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
+    AUTOWARE_DOCKER_DATE=20181123
+
     docker container run \
         -it \
         --rm \
@@ -58,7 +60,7 @@ END
         -v ${PWD}/../:${AUTOWARE_HOME} \
         -w ${AUTOWARE_HOME}/ros \
         -u ${UID}:${UID} \
-        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809 \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
         bash \
         -c "\
         source /opt/ros/kinetic/setup.bash && \
