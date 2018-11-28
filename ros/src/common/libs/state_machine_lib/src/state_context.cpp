@@ -28,21 +28,21 @@ bool StateContext::setCallback(const CallbackType& _type, const std::string& _st
                                const std::function<void(const std::string&)>& _f)
 {
   bool ret = false;
-  uint64_t _state_id = getStateIDbyName(_state_name);
-  if (getStatePtr(_state_id))
+  int32_t _state_id = getStateIDbyName(_state_name);
+  if (_state_id != -1 && getStatePtr(static_cast<uint64_t>(_state_id)))
   {
     switch (_type)
     {
       case CallbackType::UPDATE:
-        getStatePtr(_state_id)->setCallbackUpdate(_f);
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackUpdate(_f);
         ret = true;
         break;
       case CallbackType::ENTRY:
-        getStatePtr(_state_id)->setCallbackEntry(_f);
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackEntry(_f);
         ret = true;
         break;
       case CallbackType::EXIT:
-        getStatePtr(_state_id)->setCallbackExit(_f);
+        getStatePtr(static_cast<uint64_t>(_state_id))->setCallbackExit(_f);
         ret = true;
         break;
       default:
@@ -247,16 +247,16 @@ std::shared_ptr<State> StateContext::getStartState()
   return nullptr;
 }
 
-uint64_t StateContext::getStateIDbyName(std::string _name)
+int32_t StateContext::getStateIDbyName(std::string _name)
 {
   for (const auto& i : state_map_)
   {
     if (i.second->getStateName() == _name)
     {
-      return i.second->getStateID();
+      return static_cast<int32_t>(i.second->getStateID());
     }
   }
-  return UINT64_MAX;
+  return -1;
 }
 
 std::string StateContext::getAvailableTransition(void)
@@ -294,7 +294,11 @@ void StateContext::setTransitionMap(const YAML::Node& node, const std::shared_pt
 {
   for (unsigned int j = 0; j < node.size(); j++)
   {
-    _state->addTransition(node[j]["Key"].as<std::string>(), getStateIDbyName(node[j]["Target"].as<std::string>()));
+    int32_t state_id = getStateIDbyName(node[j]["Target"].as<std::string>());
+    if (state_id == -1)
+      continue;
+
+    _state->addTransition(node[j]["Key"].as<std::string>(), static_cast<uint64_t>(state_id));
   }
 }
 
@@ -314,10 +318,12 @@ std::shared_ptr<State> StateContext::getStatePtr(const YAML::Node& node)
 
 std::shared_ptr<State> StateContext::getStatePtr(const std::string& _state_name)
 {
-  if (_state_name == "~")
+  int32_t state_id = getStateIDbyName(_state_name);
+
+  if (_state_name == "~" || state_id == -1)
     return nullptr;
   else
-    return getStatePtr(getStateIDbyName(_state_name));
+    return getStatePtr(static_cast<uint64_t>(state_id));
 }
 
 std::shared_ptr<State> StateContext::getStatePtr(const uint64_t& _state_id)
