@@ -74,7 +74,7 @@ void foo2(const std::string&){
 TEST(TestSuite, SetCallbacksStateContext){
 
 	std::string file_name = "testStates.yaml";
-
+	std::string msg_name = "test_states";
 	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	// Set callbacks
