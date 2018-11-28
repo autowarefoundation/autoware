@@ -29,7 +29,7 @@
 */
 
 #include "op_trajectory_evaluator_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 
 namespace TrajectoryEvaluatorNS
@@ -47,7 +47,7 @@ TrajectoryEval::TrajectoryEval()
 	UpdatePlanningParams(_nh);
 
 	tf::StampedTransform transform;
-	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+	PlannerHNS::ROSHelpers::GetTransformFromTF("map", "world", transform);
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
@@ -55,7 +55,7 @@ TrajectoryEval::TrajectoryEval()
 	pub_CollisionPointsRviz = nh.advertise<visualization_msgs::MarkerArray>("dynamic_collision_points_rviz", 1);
 	pub_LocalWeightedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("local_trajectories_eval_rviz", 1);
 	pub_LocalWeightedTrajectories = nh.advertise<autoware_msgs::LaneArray>("local_weighted_trajectories", 1);
-	pub_TrajectoryCost = nh.advertise<autoware_msgs::lane>("local_trajectory_cost", 1);
+	pub_TrajectoryCost = nh.advertise<autoware_msgs::Lane>("local_trajectory_cost", 1);
 	pub_SafetyBorderRviz = nh.advertise<visualization_msgs::Marker>("safety_border", 1);
 
 	sub_current_pose = nh.subscribe("/current_pose", 10, &TrajectoryEval::callbackGetCurrentPose, this);
@@ -67,14 +67,14 @@ TrajectoryEval::TrajectoryEval()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryEval::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryEval::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryEval::callbackGetGlobalPlannerPath, this);
 	sub_LocalPlannerPaths = nh.subscribe("/local_trajectories", 1, &TrajectoryEval::callbackGetLocalPlannerPath, this);
 	sub_predicted_objects = nh.subscribe("/predicted_objects", 1, &TrajectoryEval::callbackGetPredictedObjects, this);
 	sub_current_behavior = nh.subscribe("/current_behavior", 1, &TrajectoryEval::callbackGetBehaviorState, this);
 
-	PlannerHNS::RosHelpers::InitCollisionPointsMarkers(50, m_CollisionsDummy);
+	PlannerHNS::ROSHelpers::InitCollisionPointsMarkers(50, m_CollisionsDummy);
 }
 
 TrajectoryEval::~TrajectoryEval()
@@ -146,7 +146,7 @@ void TrajectoryEval::callbackGetVehicleStatus(const geometry_msgs::TwistStampedC
 	bVehicleStatus = true;
 }
 
-void TrajectoryEval::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void TrajectoryEval::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_CurrentPos.v = m_VehicleStatus.speed;
@@ -176,7 +176,7 @@ void TrajectoryEval::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArray
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(m_temp_path);
 			m_GlobalPaths.push_back(m_temp_path);
@@ -209,7 +209,7 @@ void TrajectoryEval::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayC
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
 			std::vector<PlannerHNS::WayPoint> path;
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), path);
 			m_GeneratedRollOuts.push_back(path);
 			if(path.size() > 0)
 				globalPathId_roll_outs = path.at(0).gid;
@@ -242,7 +242,7 @@ void TrajectoryEval::callbackGetPredictedObjects(const autoware_msgs::DetectedOb
 	{
 		if(msg->objects.at(i).id > 0)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
 			m_PredictedObjects.push_back(obj);
 		}
 //		else
@@ -286,7 +286,7 @@ void TrajectoryEval::MainLoop()
 				else
 					tc = m_TrajectoryCostsCalculator.DoOneStepStatic(m_GeneratedRollOuts, m_GlobalPathSections.at(0), m_CurrentPos,	m_PlanningParams,	m_CarInfo,m_VehicleStatus, m_PredictedObjects);
 
-				autoware_msgs::lane l;
+				autoware_msgs::Lane l;
 				l.closest_object_distance = tc.closest_obj_distance;
 				l.closest_object_velocity = tc.closest_obj_velocity;
 				l.cost = tc.cost;
@@ -300,8 +300,8 @@ void TrajectoryEval::MainLoop()
 				autoware_msgs::LaneArray local_lanes;
 				for(unsigned int i=0; i < m_GeneratedRollOuts.size(); i++)
 				{
-					autoware_msgs::lane lane;
-					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_GeneratedRollOuts.at(i), lane);
+					autoware_msgs::Lane lane;
+					PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(m_GeneratedRollOuts.at(i), lane);
 					lane.closest_object_distance = m_TrajectoryCostsCalculator.m_TrajectoryCosts.at(i).closest_obj_distance;
 					lane.closest_object_velocity = m_TrajectoryCostsCalculator.m_TrajectoryCosts.at(i).closest_obj_velocity;
 					lane.cost = m_TrajectoryCostsCalculator.m_TrajectoryCosts.at(i).cost;
@@ -320,15 +320,15 @@ void TrajectoryEval::MainLoop()
 			if(m_TrajectoryCostsCalculator.m_TrajectoryCosts.size()>0)
 			{
 				visualization_msgs::MarkerArray all_rollOuts;
-				PlannerHNS::RosHelpers::TrajectoriesToColoredMarkers(m_GeneratedRollOuts, m_TrajectoryCostsCalculator.m_TrajectoryCosts, m_CurrentBehavior.iTrajectory, all_rollOuts);
+				PlannerHNS::ROSHelpers::TrajectoriesToColoredMarkers(m_GeneratedRollOuts, m_TrajectoryCostsCalculator.m_TrajectoryCosts, m_CurrentBehavior.iTrajectory, all_rollOuts);
 				pub_LocalWeightedTrajectoriesRviz.publish(all_rollOuts);
 
-				PlannerHNS::RosHelpers::ConvertCollisionPointsMarkers(m_TrajectoryCostsCalculator.m_CollisionPoints, m_CollisionsActual, m_CollisionsDummy);
+				PlannerHNS::ROSHelpers::ConvertCollisionPointsMarkers(m_TrajectoryCostsCalculator.m_CollisionPoints, m_CollisionsActual, m_CollisionsDummy);
 				pub_CollisionPointsRviz.publish(m_CollisionsActual);
 
 				//Visualize Safety Box
 				visualization_msgs::Marker safety_box;
-				PlannerHNS::RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_TrajectoryCostsCalculator.m_SafetyBorder.points, safety_box);
+				PlannerHNS::ROSHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_TrajectoryCostsCalculator.m_SafetyBorder.points, safety_box);
 				pub_SafetyBorderRviz.publish(safety_box);
 			}
 		}

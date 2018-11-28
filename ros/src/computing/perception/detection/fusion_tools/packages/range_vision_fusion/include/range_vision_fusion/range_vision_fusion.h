@@ -70,7 +70,7 @@
 
 #include "autoware_msgs/DetectedObjectArray.h"
 
-class RosRangeVisionFusionApp
+class ROSRangeVisionFusionApp
 {
     ros::NodeHandle                     node_handle_;
     ros::Publisher                      publisher_fused_objects_;
@@ -177,11 +177,11 @@ class RosRangeVisionFusionApp
      * Reads the config params from the command line
      * @param in_private_handle
      */
-    void InitializeRosIo(ros::NodeHandle &in_private_handle);
+    void InitializeROSIo(ros::NodeHandle &in_private_handle);
 
 public:
     void Run();
-    RosRangeVisionFusionApp();
+    ROSRangeVisionFusionApp();
 };
 
 

@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         std_msgs
         autoware_msgs
+        autoware_config_msgs
         )
 
 find_package(CUDA)
@@ -22,6 +23,7 @@ catkin_package(CATKIN_DEPENDS
         sensor_msgs
         std_msgs
         autoware_msgs
+        autoware_config_msgs
         )
 
 set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")

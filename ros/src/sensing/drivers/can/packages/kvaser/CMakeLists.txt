@@ -9,11 +9,11 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         std_msgs
         visualization_msgs
-        autoware_msgs
+        autoware_can_msgs
         )
 
 catkin_package(
-        CATKIN_DEPENDS std_msgs visualization_msgs autoware_msgs
+        CATKIN_DEPENDS std_msgs visualization_msgs autoware_can_msgs
 )
 
 ###########

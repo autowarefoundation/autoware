@@ -30,7 +30,7 @@
 #include "vision_ssd_detect.h"
 
 
-SsdDetector::SsdDetector(const std::string& in_network_definition_file,
+SSDDetector::SSDDetector(const std::string& in_network_definition_file,
 		const std::string& in_pre_trained_model_file,
 		const cv::Scalar& in_mean_value,
 		bool in_use_gpu, unsigned int in_gpu_id)
@@ -59,7 +59,7 @@ SsdDetector::SsdDetector(const std::string& in_network_definition_file,
 	SetMean(in_mean_value);
 }
 
-std::vector <  RectClassScore<float>  > SsdDetector::Detect(const cv::Mat& img)
+std::vector <  RectClassScore<float>  > SSDDetector::Detect(const cv::Mat& img)
 {
 	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 	input_layer->Reshape(1, num_channels_, input_geometry_.height,
@@ -105,7 +105,7 @@ std::vector <  RectClassScore<float>  > SsdDetector::Detect(const cv::Mat& img)
 }
 
 
-void SsdDetector::SetMean(const cv::Scalar& in_mean_value)
+void SSDDetector::SetMean(const cv::Scalar& in_mean_value)
 {
 	mean_ = in_mean_value;
 }
@@ -115,7 +115,7 @@ void SsdDetector::SetMean(const cv::Scalar& in_mean_value)
  * don't need to rely on cudaMemcpy2D. The last preprocessing
  * operation will write the separate channels directly to the input
  * layer. */
-void SsdDetector::WrapInputLayer(std::vector<cv::Mat>* input_channels)
+void SSDDetector::WrapInputLayer(std::vector<cv::Mat>* input_channels)
 {
 	caffe::Blob<float>* input_layer = net_->input_blobs()[0];
 
@@ -130,7 +130,7 @@ void SsdDetector::WrapInputLayer(std::vector<cv::Mat>* input_channels)
 	}
 }
 
-void SsdDetector::Preprocess(const cv::Mat& img,
+void SSDDetector::Preprocess(const cv::Mat& img,
 		std::vector<cv::Mat>* input_channels)
 {
 	/* Convert the input image to the input image format of the network. */

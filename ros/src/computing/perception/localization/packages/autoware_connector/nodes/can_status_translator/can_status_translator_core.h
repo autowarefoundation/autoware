@@ -39,7 +39,7 @@
 #include <tf/transform_broadcaster.h>
 
 // User Defined Includes
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 #include "autoware_msgs/VehicleStatus.h"
 
 namespace autoware_connector
@@ -116,7 +116,7 @@ private:
   VehicleInfo v_info_;
 
   // callbacks
-  void callbackFromCanInfo(const autoware_msgs::CanInfoConstPtr& msg);
+  void callbackFromCANInfo(const autoware_can_msgs::CANInfoConstPtr& msg);
   void callbackFromVehicleStatus(const autoware_msgs::VehicleStatusConstPtr& msg);
 
   // initializer
@@ -125,7 +125,7 @@ private:
   // functions
   void publishVelocity(const autoware_msgs::VehicleStatusConstPtr& msg);
   void publishVelocityViz(const autoware_msgs::VehicleStatusConstPtr& msg);
-  void publishVehicleStatus(const autoware_msgs::CanInfoConstPtr& msg);
+  void publishVehicleStatus(const autoware_can_msgs::CANInfoConstPtr& msg);
 };
 }
 #endif  // CAN_STATUS_TRANSLATOR_CORE_H

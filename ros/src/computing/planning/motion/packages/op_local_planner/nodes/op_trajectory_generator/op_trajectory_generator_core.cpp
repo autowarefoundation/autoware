@@ -29,7 +29,7 @@
 */
 
 #include "op_trajectory_generator_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 
 namespace TrajectoryGeneratorNS
@@ -46,7 +46,7 @@ TrajectoryGen::TrajectoryGen()
 	UpdatePlanningParams(_nh);
 
 	tf::StampedTransform transform;
-	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+	PlannerHNS::ROSHelpers::GetTransformFromTF("map", "world", transform);
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
@@ -64,7 +64,7 @@ TrajectoryGen::TrajectoryGen()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &TrajectoryGen::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &TrajectoryGen::callbackGetCANInfo, this);
 
 	sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 1, &TrajectoryGen::callbackGetGlobalPlannerPath, this);
 }
@@ -158,7 +158,7 @@ void TrajectoryGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	bVehicleStatus = true;
 }
 
-void TrajectoryGen::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void TrajectoryGen::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_VehicleStatus.steer = msg->angle * m_CarInfo.max_steer_angle / m_CarInfo.max_steer_value;
@@ -184,7 +184,7 @@ void TrajectoryGen::callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayC
 
 		for(unsigned int i = 0 ; i < msg->lanes.size(); i++)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(msg->lanes.at(i), m_temp_path);
 
 			PlannerHNS::PlanningHelpers::CalcAngleAndCost(m_temp_path);
 			m_GlobalPaths.push_back(m_temp_path);
@@ -256,9 +256,9 @@ void TrajectoryGen::MainLoop()
 			{
 				for(unsigned int j=0; j < m_RollOuts.at(i).size(); j++)
 				{
-					autoware_msgs::lane lane;
+					autoware_msgs::Lane lane;
 					PlannerHNS::PlanningHelpers::PredictConstantTimeCostForTrajectory(m_RollOuts.at(i).at(j), m_CurrentPos, m_PlanningParams.minSpeed, m_PlanningParams.microPlanDistance);
-					PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
+					PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(m_RollOuts.at(i).at(j), lane);
 					lane.closest_object_distance = 0;
 					lane.closest_object_velocity = 0;
 					lane.cost = 0;
@@ -273,7 +273,7 @@ void TrajectoryGen::MainLoop()
 			sub_GlobalPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&TrajectoryGen::callbackGetGlobalPlannerPath, 	this);
 
 		visualization_msgs::MarkerArray all_rollOuts;
-		PlannerHNS::RosHelpers::TrajectoriesToMarkers(m_RollOuts, all_rollOuts);
+		PlannerHNS::ROSHelpers::TrajectoriesToMarkers(m_RollOuts, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 
 		loop_rate.sleep();

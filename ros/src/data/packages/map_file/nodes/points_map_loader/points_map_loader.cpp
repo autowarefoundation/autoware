@@ -423,7 +423,7 @@ void request_lookahead_download(const autoware_msgs::LaneArray& msg)
 {
 	request_queue.clear_look_ahead();
 
-	for (const autoware_msgs::lane& l : msg.lanes) {
+	for (const autoware_msgs::Lane& l : msg.lanes) {
 		size_t end = l.waypoints.size() - 1;
 		double distance = 0;
 		double threshold = (MARGIN_UNIT / 2) + margin; // XXX better way?

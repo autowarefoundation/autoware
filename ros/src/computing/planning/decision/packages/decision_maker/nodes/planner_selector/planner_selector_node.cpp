@@ -1,5 +1,5 @@
-#include <autoware_msgs/ConfigPlannerSelector.h>
-#include <autoware_msgs/lane.h>
+#include <autoware_config_msgs/ConfigPlannerSelector.h>
+#include <autoware_msgs/Lane.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
 
@@ -28,7 +28,7 @@ void PlannerSelector::initROS()
 
   Subs["current_velocity"] = nh_.subscribe("current_velocity", 3, &PlannerSelector::callbackFromCurrentVelocity, this);
 
-  Pubs["final_waypoints"] = nh_.advertise<autoware_msgs::lane>("/final_waypoints", 1);
+  Pubs["final_waypoints"] = nh_.advertise<autoware_msgs::Lane>("/final_waypoints", 1);
   Pubs["closest_waypoint"] = nh_.advertise<std_msgs::Int32>("/closest_waypoint", 1);
 }
 
@@ -48,8 +48,8 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
 
   try
   {
-    autoware_msgs::waypoint dp_point = final_waypoints_dp_.waypoints.at(config_waypoints_num_);
-    autoware_msgs::waypoint astar_point = final_waypoints_astar_.waypoints.at(config_waypoints_num_);
+    autoware_msgs::Waypoint dp_point = final_waypoints_dp_.waypoints.at(config_waypoints_num_);
+    autoware_msgs::Waypoint astar_point = final_waypoints_astar_.waypoints.at(config_waypoints_num_);
 
     amathutils::point p_dp, p_astar;
     p_dp.x = dp_point.pose.pose.position.x;
@@ -117,11 +117,11 @@ void PlannerSelector::callbackFromLattice(const std_msgs::Int32 &msg)
   //	ROS_INFO("\n***** EnableLattice = %d  **** \n",enableLattice_,msg.data);
 }
 
-void PlannerSelector::callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::lane const> &event)
+void PlannerSelector::callbackFromWaypoints(const ros::MessageEvent<autoware_msgs::Lane const> &event)
 {
   const ros::M_string &header = event.getConnectionHeader();
   std::string topic = header.at("topic");
-  const autoware_msgs::lane *waypoints = event.getMessage().get();
+  const autoware_msgs::Lane *waypoints = event.getMessage().get();
 
   _mutex.lock();
 
@@ -175,7 +175,7 @@ void PlannerSelector::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
   current_velocity_ = msg.twist.linear.x;
 }
 
-void PlannerSelector::callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg)
+void PlannerSelector::callbackFromConfig(const autoware_config_msgs::ConfigPlannerSelector &msg)
 {
   config_latency_num_ = msg.latency_num;
   config_waypoints_num_ = msg.waypoints_num;

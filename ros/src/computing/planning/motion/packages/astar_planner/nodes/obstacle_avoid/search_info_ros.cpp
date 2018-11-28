@@ -58,7 +58,7 @@ SearchInfo::~SearchInfo()
 {
 }
 
-double SearchInfo::calcPathLength(const autoware_msgs::lane &lane, const int start_waypoint_index,
+double SearchInfo::calcPathLength(const autoware_msgs::Lane &lane, const int start_waypoint_index,
                                   const int goal_waypoint_index) const
 {
   if (lane.waypoints.size() <= 1)
@@ -172,7 +172,7 @@ void SearchInfo::goalCallback(const geometry_msgs::PoseStampedConstPtr &msg)
 }
 
 // get waypoints
-void SearchInfo::waypointsCallback(const autoware_msgs::laneConstPtr &msg)
+void SearchInfo::waypointsCallback(const autoware_msgs::LaneConstPtr &msg)
 {
   subscribed_waypoints_ = *msg;
 

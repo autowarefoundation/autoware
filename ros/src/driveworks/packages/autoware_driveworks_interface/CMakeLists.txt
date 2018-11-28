@@ -17,6 +17,13 @@ catkin_package(
 )
 
 if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+      set(DRIVEWORKS_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-object-files -Wl,--allow-shlib-undefined")
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      set(DRIVEWORKS_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
+    endif()
+
+
     find_package(Threads REQUIRED)
     find_package(OpenCV REQUIRED)
 
@@ -64,6 +71,7 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
             driveworks
             cudart
             cuda
+            ${DRIVEWORKS_LINKER_FLAGS}
             )
 
     add_executable(tensorrt_interface
@@ -80,6 +88,7 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
             driveworks
             cudart
             cuda
+            ${DRIVEWORKS_LINKER_FLAGS}
             )
      # Use configure_file instead of file(COPY ...) so that if the input file
      # changes, it gets copied to the DEVEL space anyway

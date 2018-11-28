@@ -70,10 +70,10 @@ struct PANGOLIN_EXPORT ImageDim
     size_t y;
 };
 
-struct PANGOLIN_EXPORT ImageRoi
+struct PANGOLIN_EXPORT ImageROI
 {
-    inline ImageRoi() : x(0), y(0), w(0), h(0) {}
-    inline ImageRoi(size_t x, size_t y, size_t w, size_t h) : x(x), y(y), w(w), h(h) {}
+    inline ImageROI() : x(0), y(0), w(0), h(0) {}
+    inline ImageROI(size_t x, size_t y, size_t w, size_t h) : x(x), y(y), w(w), h(h) {}
     size_t x; size_t y;
     size_t w; size_t h;
 };

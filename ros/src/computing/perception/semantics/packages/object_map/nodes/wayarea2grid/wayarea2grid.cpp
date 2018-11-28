@@ -36,12 +36,12 @@ namespace object_map
 	WayareaToGrid::WayareaToGrid() :
 			private_node_handle_("~")
 	{
-		InitializeRosIo();
+		InitializeROSIo();
 		LoadRoadAreasFromVectorMap(private_node_handle_, area_points_);
 	}
 
 
-	void WayareaToGrid::InitializeRosIo()
+	void WayareaToGrid::InitializeROSIo()
 	{
 		private_node_handle_.param<std::string>("sensor_frame", sensor_frame_, "velodyne");
 		private_node_handle_.param<std::string>("map_frame", map_frame_, "map");

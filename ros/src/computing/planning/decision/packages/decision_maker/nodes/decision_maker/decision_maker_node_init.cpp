@@ -15,9 +15,9 @@
 #include <decision_maker_node.hpp>
 //#include <vector_map/vector_map.h>
 
-#include <autoware_msgs/lamp_cmd.h>
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/state.h>
+#include <autoware_msgs/LampCmd.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/State.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <random>
 #include <visualization_msgs/MarkerArray.h>
@@ -60,11 +60,11 @@ void DecisionMakerNode::initROS(int argc, char **argv)
   // for controlling other planner
   Pubs["state"] = nh_.advertise<std_msgs::String>("state", 1);
   Pubs["lane_waypoints_array"] = nh_.advertise<autoware_msgs::LaneArray>(TPNAME_CONTROL_LANE_WAYPOINTS_ARRAY, 10, true);
-  Pubs["states"] = nh_.advertise<autoware_msgs::state>("/decisionmaker/states", 1, true);
-  Pubs["light_color"] = nh_.advertise<autoware_msgs::traffic_light>("/light_color_managed", 1);
+  Pubs["states"] = nh_.advertise<autoware_msgs::State>("/decisionmaker/states", 1, true);
+  Pubs["light_color"] = nh_.advertise<autoware_msgs::TrafficLight>("/light_color_managed", 1);
 
   // for controlling vehicle
-  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::lamp_cmd>("/lamp_cmd", 1);
+  Pubs["lamp_cmd"] = nh_.advertise<autoware_msgs::LampCmd>("/lamp_cmd", 1);
 
   // for visualize status
   Pubs["state_overlay"] = nh_.advertise<jsk_rviz_plugins::OverlayText>("/state/overlay_text", 1);
