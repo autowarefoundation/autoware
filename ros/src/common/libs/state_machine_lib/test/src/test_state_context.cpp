@@ -57,6 +57,7 @@ TEST(TestSuite, StateContextConstructor){
 }
 
 TEST(TestSuite, ChangeStates){
+
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
 	state_machine::StateContext stateCtx(file_name, msg_name);
@@ -72,82 +73,29 @@ void foo2(const std::string&){
 
 TEST(TestSuite, SetCallbacksStateContext){
 
+	std::string file_name = "testStates.yaml";
 
-	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
-	std::string msg_name = "testStates";
 	state_machine::StateContext stateCtx(file_name, msg_name);
 
 	// Set callbacks
 	std::function<void(const std::string&)> _f = &foo2;
-	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
-	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::ENTRY, "Start", _f));
-	//	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
-	//
-	//	std::ostringstream oss;
-	//	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
-	//	std::cout.rdbuf(oss.rdbuf());
+	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
+	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
 
-	//	stateCtx.onEntry(0);
-	//	std::cout.rdbuf(p_cout_streambuf); // restore
-	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onEntry should show Test output";
+	std::ostringstream oss;
+	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
+	std::cout.rdbuf(oss.rdbuf());
 
-	//	stateCtx.onUpdate();
-	//	std::cout.rdbuf(p_cout_streambuf); // restore
-	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show Test output";
+	stateCtx.onUpdate();
+	std::cout.rdbuf(p_cout_streambuf); // restore
+	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show 'Test output'";
 
-	//	stateCtx.onExit();
-	//	std::cout.rdbuf(p_cout_streambuf); // restore
-	//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
+//	stateCtx.onExit();
+//	std::cout.rdbuf(p_cout_streambuf); // restore
+//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
 
 	// Set Callback for unexisting state
-	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f));
+//	ASSERT_TRUE(!stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
 }
-
-
-//TEST(TestSuite, StateContextConstructor){
-//
-//	std::string file_name = "/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/testStates.yaml";
-//	state_machine::StateContext stateCtx(file_name);
-//
-//	std::ifstream t1("/tmp/a.dot");
-//	std::stringstream dotFile;
-//	dotFile << t1.rdbuf();
-//
-//	std::shared_ptr<state_machine::State> start_state;
-//	start_state = stateCtx.getStartState();
-//	std::string testStr;
-//	testStr = "Start\n";
-//	ASSERT_STREQ(start_state->getStateName().c_str(), "Start") << "First state should be Start";
-//	ASSERT_STREQ(stateCtx.getStateText().c_str(), testStr.c_str()) << "Text should be " << testStr;
-//
-//
-//	std::ifstream t("/home/autoware/Autoware/ros/src/common/libs/state_machine_lib/test/reference.dot");
-//	std::stringstream buffer;
-//	buffer << t.rdbuf();
-//
-//	//	std::string getStateText();
-//	//	  std::string getAvailableTransition(void);
-//	//	  void showStateName();
-//	//	  void nextState(const std::string& transition_key);
-//
-//
-//
-//	//	root_state->getEnteredKey()
-//
-//	std::cerr << "***************************************" << std::endl;
-//	std::cerr << buffer.str() << std::endl;
-//	//	std::cerr << root_state->getStateName() << std::endl;
-//	////	std::cerr << state.getStateText() << std::endl;
-//	//	std::cerr << state.getAvailableTransition() << std::endl;
-//	//	state.nextState("started");
-//	//	std::cerr << root_state->getStateID() << std::endl;
-//	//	std::cerr << root_state->getStateName() << std::endl;
-//	//	std::cerr << state.getAvailableTransition() << std::endl;
-//	//	std::cerr << state.nextState("started") << std::endl;
-//	std::cerr << "***************************************" << std::endl;
-//
-//
-//	ASSERT_STREQ(buffer.str().c_str(), dotFile.str().c_str()) << "entered_key should be " << "";
-//}
 
 
