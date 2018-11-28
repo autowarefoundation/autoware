@@ -69,7 +69,6 @@ private:
   double detection_probability_;
 
   // object association param
-  double distance_thres_;
   int life_time_thres_;
 
   // static classification param
@@ -135,7 +134,6 @@ private:
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
   autoware_msgs::DetectedObject getNearestObject(UKF& target,
                                                  const std::vector<autoware_msgs::DetectedObject>& object_vec);
-  void associateObject(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
   void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
@@ -152,6 +150,7 @@ private:
   void staticClassification();
 
   void makeOutput(const autoware_msgs::DetectedObjectArray& input,
+                  const std::vector<bool>& matching_vec,
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
@@ -164,7 +163,7 @@ private:
   bool updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
                            autoware_msgs::DetectedObject& out_object, UKF& target);
 
-  bool updateWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+  bool storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
                                       autoware_msgs::DetectedObject& out_object);
 
   void checkVectormapSubscription();
@@ -172,6 +171,11 @@ private:
   autoware_msgs::DetectedObjectArray
   removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
                          const std::vector<size_t> in_tracker_indices);
+
+  autoware_msgs::DetectedObjectArray
+  forwardNonMatchedObject(const autoware_msgs::DetectedObjectArray& tmp_objects,
+                          const autoware_msgs::DetectedObjectArray&  input,
+                          const std::vector<bool>& matching_vec);
 
   bool
   arePointsClose(const geometry_msgs::Point& in_point_a,
@@ -185,6 +189,8 @@ private:
   bool
   isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
                 const geometry_msgs::Point& in_point);
+
+  void updateTargetWithAssociatedObject(UKF& target);
 
 public:
   ImmUkfPda();

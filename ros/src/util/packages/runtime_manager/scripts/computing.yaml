@@ -1227,15 +1227,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance_thres
-      desc    : distance_thres_ desc sample
-      label   : 'distance thres'
-      min       : 0
-      max       : 100
-      v       : 100
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : static_velocity_thres
       desc    : static_velocity_thres_ desc sample
       label   : 'static velocity thres'

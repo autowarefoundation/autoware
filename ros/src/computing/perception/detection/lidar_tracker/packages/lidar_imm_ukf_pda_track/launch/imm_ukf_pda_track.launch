@@ -3,7 +3,6 @@
   <arg name="gating_thres" default="9.22" />
   <arg name="gate_probability" default="0.99" />
   <arg name="detection_probability" default="0.9" />
-  <arg name="distance_thres" default="99" />
   <arg name="life_time_thres" default="8" />
   <arg name="static_velocity_thres" default="0.5" />
   <arg name="static_num_history_thres" default="3" />
@@ -25,7 +24,6 @@
     <param name="gating_thres"            value="$(arg gating_thres)" />
     <param name="gate_probability"        value="$(arg gate_probability)" />
     <param name="detection_probability"   value="$(arg detection_probability)" />
-    <param name="distance_thres"          value="$(arg distance_thres)" />
     <param name="life_time_thres"         value="$(arg life_time_thres)" />
     <param name="static_velocity_thres"   value="$(arg static_velocity_thres)" />
     <param name="static_num_history_thres"   value="$(arg static_num_history_thres)" />
