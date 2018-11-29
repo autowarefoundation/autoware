@@ -155,7 +155,7 @@ void OpenPlannerDataLogger::callbackGetSimuCarsPathAndState(const autoware_msgs:
 
 //Functions related to Ego Vehicle Data
 
-void OpenPlannerDataLogger::callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg)
+void OpenPlannerDataLogger::callbackGetPredictedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg)
 {
 	m_PredictedObjects.clear();
 	PlannerHNS::DetectedObject obj;

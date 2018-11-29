@@ -609,7 +609,7 @@ void ROSHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(const jsk_rec
 }
 
 void ROSHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(const PlannerHNS::WayPoint& currState, const PlannerHNS::CAR_BASIC_INFO& car_info,
-		const autoware_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
+		const autoware_detection_msgs::CloudClusterArray& clusters, std::vector<PlannerHNS::DetectedObject>& obstacles_list,
 		int& nOriginalPoints, int& nContourPoints)
 {
 	PlannerHNS::Mat3 rotationMat(-currState.pos.a);

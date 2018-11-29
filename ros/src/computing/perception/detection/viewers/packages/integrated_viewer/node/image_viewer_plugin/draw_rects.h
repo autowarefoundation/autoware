@@ -2,7 +2,7 @@
 #define DRAW_RECTS_H
 
 #include <opencv/cv.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #define XSTR(x) #x
 #define STR(x) XSTR(x)
@@ -17,14 +17,14 @@ namespace integrated_viewer
     public:
         explicit DrawRects(void);
 
-        void DrawImageRect(const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
-        void DrawImageBox(const autoware_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
+        void DrawImageRect(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
+        void DrawImageBox(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_objects, cv::Mat &image);
 
     protected:
         static const int kRectangleThickness;
 
     private:
-        void DrawLabel(const autoware_msgs::DetectedObject& in_object, cv::Mat &image);
+        void DrawLabel(const autoware_detection_msgs::DetectedObject& in_object, cv::Mat &image);
 
         void OverlayImage(const cv::Mat &in_background, const cv::Mat &in_foreground,
                           cv::Mat &output, cv::Point2i in_location);

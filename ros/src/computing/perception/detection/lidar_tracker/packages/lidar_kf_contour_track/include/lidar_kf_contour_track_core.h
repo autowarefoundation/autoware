@@ -51,8 +51,8 @@
 #include "SimpleTracker.h"
 #include "PolygonGenerator.h"
 
-#include <autoware_msgs/CloudClusterArray.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/CloudClusterArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -101,7 +101,7 @@ class ContourTracker
 {
 protected:
 	std::vector<PlannerHNS::DetectedObject> m_OriginalClusters;
-	autoware_msgs::DetectedObjectArray m_OutPutResults;
+	autoware_detection_msgs::DetectedObjectArray m_OutPutResults;
 	bool bNewClusters;
 	PlannerHNS::WayPoint m_CurrentPos;
 	bool bNewCurrentPos;
@@ -156,12 +156,12 @@ protected:
 
 
 	// Callback function for subscriber.
-	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg);
+	void callbackGetCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr &msg);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 
 	//Helper Functions
 	void VisualizeLocalTracking();
-	void ImportCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters);
+	void ImportCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters);
 	bool IsCar(const PlannerHNS::DetectedObject& obj, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map);
 	void CalculateTTC(const std::vector<PlannerHNS::DetectedObject>& objs, const PlannerHNS::WayPoint& currState, PlannerHNS::RoadNetwork& map);
 	void GetFrontTrajectories(std::vector<PlannerHNS::Lane*>& lanes, const PlannerHNS::WayPoint& currState, const double& max_distance, std::vector<std::vector<PlannerHNS::WayPoint> >& trajectories);

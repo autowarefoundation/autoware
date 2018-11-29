@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(integrated_viewer)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         cv_bridge
@@ -61,6 +63,7 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         include
 )
 

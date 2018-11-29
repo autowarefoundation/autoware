@@ -13,7 +13,7 @@
 
 #else
 #include <opencv2/contrib/contrib.hpp>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #endif
 
@@ -67,7 +67,7 @@ namespace integrated_viewer
         }
     }
 
-    void DrawRects::DrawImageRect(const autoware_msgs::DetectedObjectArray::ConstPtr &detected_objects,
+    void DrawRects::DrawImageRect(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &detected_objects,
                                   cv::Mat &image)
     {
         if (detected_objects == NULL)
@@ -119,7 +119,7 @@ namespace integrated_viewer
         }
     } // DrawRects::DrawImageRect()
 
-    void DrawRects::DrawImageBox(const autoware_msgs::DetectedObjectArray::ConstPtr &detected_objects,
+    void DrawRects::DrawImageBox(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &detected_objects,
                                  cv::Mat &image)
     {
         if (detected_objects == NULL)
@@ -144,7 +144,7 @@ namespace integrated_viewer
         }
     } // DrawRects::DrawImageRect()
 
-    void DrawRects::DrawLabel(const autoware_msgs::DetectedObject &in_detected_object,
+    void DrawRects::DrawLabel(const autoware_detection_msgs::DetectedObject &in_detected_object,
                               cv::Mat &image)
     {
 

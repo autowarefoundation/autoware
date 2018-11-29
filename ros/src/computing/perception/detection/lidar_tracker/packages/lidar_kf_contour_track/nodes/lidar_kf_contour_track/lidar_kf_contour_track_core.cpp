@@ -62,7 +62,7 @@ ContourTracker::ContourTracker()
 	sub_cloud_clusters 		= nh.subscribe("/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
 	sub_current_pose 		= nh.subscribe("/current_pose",   1, &ContourTracker::callbackGetCurrentPose, 	this);
 
-	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
+	pub_AllTrackedObjects 	= nh.advertise<autoware_detection_msgs::DetectedObjectArray>("tracked_objects", 1);
 	pub_DetectedPolygonsRviz = nh.advertise<visualization_msgs::MarkerArray>("detected_polygons", 1);
 	pub_TrackedObstaclesRviz = nh.advertise<jsk_recognition_msgs::BoundingBoxArray>("op_planner_tracked_boxes", 1);
 	pub_TTC_PathRviz		= nh.advertise<visualization_msgs::MarkerArray>("ttc_direct_path", 1);
@@ -162,7 +162,7 @@ void ContourTracker::ReadCommonParams()
 	_nh.getParam("/op_common_params/mapFileName" , m_MapPath);
 }
 
-void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr &msg)
+void ContourTracker::callbackGetCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr &msg)
 {
 	if(bNewCurrentPos || m_Params.bEnableSimulation)
 	{
@@ -189,7 +189,7 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 	}
 }
 
-void ContourTracker::ImportCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters)
+void ContourTracker::ImportCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr& msg, std::vector<PlannerHNS::DetectedObject>& originalClusters)
 {
 	originalClusters.clear();
 	m_nOriginalPoints = 0;
@@ -419,7 +419,7 @@ void ContourTracker::LogAndSend()
 //	cout << endl;
 
 	m_OutPutResults.objects.clear();
-	autoware_msgs::DetectedObject obj;
+	autoware_detection_msgs::DetectedObject obj;
 	for(unsigned int i = 0 ; i <m_ObstacleTracking.m_DetectedObjects.size(); i++)
 	{
 		PlannerHNS::ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), m_Params.bEnableSimulation, obj);

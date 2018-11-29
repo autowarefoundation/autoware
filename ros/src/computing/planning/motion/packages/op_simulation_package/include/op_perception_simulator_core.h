@@ -48,8 +48,8 @@
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/PoseArray.h>
 
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 #include <geometry_msgs/PoseArray.h>
 
 #define OBJECT_KEEP_TIME 1
@@ -81,10 +81,10 @@ protected:
 	timespec m_Timer;
 	DetectionCommandParams m_DecParams;
 
-	autoware_msgs::CloudCluster m_SimulatedCluter;
+	autoware_detection_msgs::CloudCluster m_SimulatedCluter;
 
-	autoware_msgs::CloudClusterArray m_ObjClustersArray;
-	autoware_msgs::CloudClusterArray m_AllObjClustersArray;
+	autoware_detection_msgs::CloudClusterArray m_ObjClustersArray;
+	autoware_detection_msgs::CloudClusterArray m_AllObjClustersArray;
 	bool m_bSetSimulatedObj;
 	std::vector<std::pair<int, double> > m_keepTime;
 
@@ -102,7 +102,7 @@ protected:
 public:
 	OpenPlannerSimulatorPerception();
 	virtual ~OpenPlannerSimulatorPerception();
-	autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::Pose& centerPose);
+	autoware_detection_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::Pose& centerPose);
 
 	void MainLoop();
 };

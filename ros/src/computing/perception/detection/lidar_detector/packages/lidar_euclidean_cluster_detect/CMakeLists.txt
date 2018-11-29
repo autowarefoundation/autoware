@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         pcl_ros
@@ -31,6 +33,7 @@ catkin_package(
         std_msgs
         sensor_msgs
         autoware_msgs
+        autoware_detection_msgs
         tf
         jsk_recognition_msgs
         jsk_rviz_plugins
@@ -52,6 +55,7 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})

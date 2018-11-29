@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(imm_ukf_pda_track)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
   pcl_ros
-  autoware_msgs
   geometry_msgs
   tf
   jsk_recognition_msgs
@@ -18,7 +19,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   pcl_ros
-  autoware_msgs
+  autoware_detection_msgs
   geometry_msgs
   tf
   jsk_recognition_msgs
@@ -26,6 +27,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   include)
 
 link_directories(${PCL_LIBRARY_DIRS})

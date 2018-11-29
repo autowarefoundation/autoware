@@ -13,14 +13,14 @@
     <build_depend>roscpp</build_depend>
     <build_depend>pcl_ros</build_depend>
     <build_depend>geometry_msgs</build_depend>
-    <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_detection_msgs</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>jsk_recognition_msgs</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>pcl_ros</run_depend>
     <run_depend>geometry_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_detection_msgs</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>jsk_recognition_msgs</run_depend>
 

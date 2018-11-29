@@ -15,7 +15,7 @@
 
 namespace integrated_viewer {
     const QString     ImageViewerPlugin::kImageDataType                 = "sensor_msgs/Image";
-    const QString     ImageViewerPlugin::kDetectedObjectDataTypeBase    = "autoware_msgs/DetectedObjectArray";
+    const QString     ImageViewerPlugin::kDetectedObjectDataTypeBase    = "autoware_detection_msgs/DetectedObjectArray";
     const QString     ImageViewerPlugin::kPointDataType                 = "autoware_msgs/PointsImage";
     const QString     ImageViewerPlugin::kLaneDataType                  = "autoware_msgs/ImageLaneObjects";
     const QString     ImageViewerPlugin::kBlankTopic                    = "-----";
@@ -240,14 +240,14 @@ namespace integrated_viewer {
         // Switch booted callback function by topic name
         detected_objects_msg_ = NULL;
         // this topic type is image_obj
-        rect_sub_ = node_handle_.subscribe<autoware_msgs::DetectedObjectArray>(selected_topic,
+        rect_sub_ = node_handle_.subscribe<autoware_detection_msgs::DetectedObjectArray>(selected_topic,
                                                                      1,
                                                                      &ImageViewerPlugin::DetectedObjCallback,
                                                                      this);
     } // ImageViewerPlugin::on_detectedobj_topic_combo_box__activated()
 
 
-    void ImageViewerPlugin::DetectedObjCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &msg) {
+    void ImageViewerPlugin::DetectedObjCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &msg) {
         detected_objects_msg_ = msg;
     } // ImageViewerPlugin::DetectedObjCallback()
 
@@ -394,7 +394,7 @@ namespace integrated_viewer {
           ui_.rect_topic_combo_box_->setCurrentIndex(topic_index);
           // Switch booted callback function by topic name
           detected_objects_msg_ = NULL;
-          rect_sub_ = node_handle_.subscribe<autoware_msgs::DetectedObjectArray>(selected_topic,
+          rect_sub_ = node_handle_.subscribe<autoware_detection_msgs::DetectedObjectArray>(selected_topic,
                                                                        1,
                                                                        &ImageViewerPlugin::DetectedObjCallback,
                                                                        this);

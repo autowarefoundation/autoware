@@ -49,10 +49,10 @@
 #include <std_msgs/MultiArrayDimension.h>
 
 #include "autoware_msgs/Centroids.h"
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <grid_map_msgs/GridMap.h>
@@ -78,7 +78,7 @@
 #else
 
 #include <opencv2/contrib/contrib.hpp>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #endif
 
@@ -243,14 +243,14 @@ void transformBoundingBox(const jsk_recognition_msgs::BoundingBox& in_boundingbo
   out_boundingbox.label = in_boundingbox.label;
 }
 
-void publishDetectedObjects(const autoware_msgs::CloudClusterArray& in_clusters)
+void publishDetectedObjects(const autoware_detection_msgs::CloudClusterArray& in_clusters)
 {
-  autoware_msgs::DetectedObjectArray detected_objects;
+  autoware_detection_msgs::DetectedObjectArray detected_objects;
   detected_objects.header = in_clusters.header;
 
   for (size_t i = 0; i < in_clusters.clusters.size(); i++)
   {
-    autoware_msgs::DetectedObject detected_object;
+    autoware_detection_msgs::DetectedObject detected_object;
     detected_object.header = in_clusters.header;
     detected_object.label = "unknown";
     detected_object.score = 1.;
@@ -269,17 +269,17 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray& in_clusters)
   _pub_detected_objects.publish(detected_objects);
 }
 
-void publishCloudClusters(const ros::Publisher* in_publisher, const autoware_msgs::CloudClusterArray& in_clusters,
+void publishCloudClusters(const ros::Publisher* in_publisher, const autoware_detection_msgs::CloudClusterArray& in_clusters,
                           const std::string& in_target_frame, const std_msgs::Header& in_header)
 {
   if (in_target_frame != in_header.frame_id)
   {
-    autoware_msgs::CloudClusterArray clusters_transformed;
+    autoware_detection_msgs::CloudClusterArray clusters_transformed;
     clusters_transformed.header = in_header;
     clusters_transformed.header.frame_id = in_target_frame;
     for (auto i = in_clusters.clusters.begin(); i != in_clusters.clusters.end(); i++)
     {
-      autoware_msgs::CloudCluster cluster_transformed;
+      autoware_detection_msgs::CloudCluster cluster_transformed;
       cluster_transformed.header = in_header;
       try
       {
@@ -626,7 +626,7 @@ void checkAllForMerge(std::vector<ClusterPtr>& in_clusters, std::vector<ClusterP
 void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
                        pcl::PointCloud<pcl::PointXYZRGB>::Ptr out_cloud_ptr,
                        jsk_recognition_msgs::BoundingBoxArray& in_out_boundingbox_array,
-                       autoware_msgs::Centroids& in_out_centroids, autoware_msgs::CloudClusterArray& in_out_clusters,
+                       autoware_msgs::Centroids& in_out_centroids, autoware_detection_msgs::CloudClusterArray& in_out_clusters,
                        jsk_recognition_msgs::PolygonArray& in_out_polygon_array,
                        jsk_rviz_plugins::PictogramArray& in_out_pictogram_array)
 {
@@ -842,7 +842,7 @@ void segmentByDistance(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_cloud_ptr,
       in_out_polygon_array.polygons.push_back(polygon);
       in_out_pictogram_array.pictograms.push_back(pictogram_cluster);
 
-      autoware_msgs::CloudCluster cloud_cluster;
+      autoware_detection_msgs::CloudCluster cloud_cluster;
       final_clusters[i]->ToROSMessage(_velodyne_header, cloud_cluster);
       in_out_clusters.clusters.push_back(cloud_cluster);
     }
@@ -1032,7 +1032,7 @@ void velodyne_callback(const sensor_msgs::PointCloud2ConstPtr& in_sensor_cloud)
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_clustered_cloud_ptr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
     autoware_msgs::Centroids centroids;
-    autoware_msgs::CloudClusterArray cloud_clusters;
+    autoware_detection_msgs::CloudClusterArray cloud_clusters;
     jsk_recognition_msgs::BoundingBoxArray boundingbox_array;
     jsk_recognition_msgs::PolygonArray polygon_array;
     jsk_rviz_plugins::PictogramArray pictograms_array;
@@ -1215,8 +1215,8 @@ int main(int argc, char** argv)
   _pub_points_lanes_cloud = h.advertise<sensor_msgs::PointCloud2>("/points_lanes", 1);
   _pub_jsk_boundingboxes = h.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes", 1);
   _pub_jsk_hulls = h.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls", 1);
-  _pub_clusters_message = h.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters", 1);
-  _pub_detected_objects = h.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects", 1);
+  _pub_clusters_message = h.advertise<autoware_detection_msgs::CloudClusterArray>("/cloud_clusters", 1);
+  _pub_detected_objects = h.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/lidar_objects", 1);
   _pub_text_pictogram = h.advertise<jsk_rviz_plugins::PictogramArray>("cluster_ids", 10);
   ROS_INFO("output pictograms topic: %s", "cluster_id");
 

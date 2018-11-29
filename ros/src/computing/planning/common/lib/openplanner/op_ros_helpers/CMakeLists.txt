@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_ros_helpers)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
@@ -26,6 +28,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         geometry_msgs
         autoware_msgs
+        autoware_detection_msgs
         map_file
         pcl_conversions
         pcl_ros
@@ -47,6 +50,7 @@ endif ()
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 set(ROS_HELPERS_SRC

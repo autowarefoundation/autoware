@@ -47,12 +47,12 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : vis_arrow_height_(0.5), v
   pub_id_ = node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/id_markes", 10);
 }
 
-void VisualizeDetectedObjects::callBack(const autoware_msgs::DetectedObjectArray& input)
+void VisualizeDetectedObjects::callBack(const autoware_detection_msgs::DetectedObjectArray& input)
 {
   visMarkers(input);
 }
 
-void VisualizeDetectedObjects::visMarkers(const autoware_msgs::DetectedObjectArray& input)
+void VisualizeDetectedObjects::visMarkers(const autoware_detection_msgs::DetectedObjectArray& input)
 {
   visualization_msgs::MarkerArray marker_ids, marker_arows;
 

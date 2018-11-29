@@ -36,13 +36,13 @@ Launch file available parameters:
 |Topic|Type|Objective|
 ------|----|---------
 |`/camera_info`|`sensor_msgs/CameraInfo`|Camera intrinsics.|
-|`/detection/vision_objects`|`autoware_msgs/DetectedObjectArray`|Obtain the rectangles of the detected objects on image.|
+|`/detection/vision_objects`|`autoware_detection_msgs/DetectedObjectArray`|Obtain the rectangles of the detected objects on image.|
 
 ### Published topics
 
 |Topic|Type|Objective|
 ------|----|---------
-|`/detection/tracked_objects`|`autoware_msgs::DetectedObjectArray`|Contains the coordinates of the bounding boxes in image coordinates for the successfully tracked objects.|
+|`/detection/tracked_objects`|`autoware_detection_msgs::DetectedObjectArray`|Contains the coordinates of the bounding boxes in image coordinates for the successfully tracked objects.|
 
 
 ### Video

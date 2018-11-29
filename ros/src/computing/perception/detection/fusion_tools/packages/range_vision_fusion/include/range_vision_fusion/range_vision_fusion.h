@@ -68,7 +68,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class ROSRangeVisionFusionApp
 {
@@ -81,7 +81,7 @@ class ROSRangeVisionFusionApp
     ros::Subscriber                     detections_vision_subscriber_;
     ros::Subscriber                     detections_range_subscriber_;
 
-    message_filters::Subscriber<autoware_msgs::DetectedObjectArray>
+    message_filters::Subscriber<autoware_detection_msgs::DetectedObjectArray>
                                         *vision_filter_subscriber_, *range_filter_subscriber_;
 
     tf::TransformListener*              transform_listener_;
@@ -95,7 +95,7 @@ class ROSRangeVisionFusionApp
     ros::Subscriber                     image_subscriber_;
     void ImageCallback(const sensor_msgs::Image::ConstPtr &in_image_msg);
 
-    autoware_msgs::DetectedObjectArray::ConstPtr  vision_detections_, range_detections_;
+    autoware_detection_msgs::DetectedObjectArray::ConstPtr  vision_detections_, range_detections_;
 
     std::string                         image_frame_id_;
     std::string                         boxes_frame_;
@@ -114,8 +114,8 @@ class ROSRangeVisionFusionApp
     size_t                              empty_frames_;
 
     typedef
-    message_filters::sync_policies::ApproximateTime<autoware_msgs::DetectedObjectArray,
-                                                    autoware_msgs::DetectedObjectArray>  SyncPolicyT;
+    message_filters::sync_policies::ApproximateTime<autoware_detection_msgs::DetectedObjectArray,
+                                                    autoware_detection_msgs::DetectedObjectArray>  SyncPolicyT;
 
     ros::Subscriber                     vision_objects_subscriber_;
     ros::Subscriber                     range_objects_subscriber_;
@@ -123,44 +123,44 @@ class ROSRangeVisionFusionApp
     message_filters::Synchronizer<SyncPolicyT>
                                         *detections_synchronizer_;
 
-    void CheckMinimumDimensions(autoware_msgs::DetectedObject &in_out_object);
+    void CheckMinimumDimensions(autoware_detection_msgs::DetectedObject &in_out_object);
 
-    jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
+    jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-    void VisionDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_image_msg);
+    void VisionDetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_image_msg);
 
-    void RangeDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_cloud_msg);
+    void RangeDetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_cloud_msg);
 
-    void SyncedDetectionsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
-                             const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
+    void SyncedDetectionsCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_vision_detections,
+                             const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
 
-    autoware_msgs::DetectedObjectArray FuseRangeVisionDetections(const autoware_msgs::DetectedObjectArray::ConstPtr & in_vision_detections,
-                                                                 const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
+    autoware_detection_msgs::DetectedObjectArray FuseRangeVisionDetections(const autoware_detection_msgs::DetectedObjectArray::ConstPtr & in_vision_detections,
+                                                                 const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_range_detections);
 
     cv::Point3f TransformPoint(const geometry_msgs::Point &in_point, const tf::StampedTransform &in_transform);
 
     cv::Point2i ProjectPoint(const cv::Point3f &in_point);
 
-    cv::Rect ProjectDetectionToRect(const autoware_msgs::DetectedObject &in_detection);
+    cv::Rect ProjectDetectionToRect(const autoware_detection_msgs::DetectedObject &in_detection);
 
-    bool IsObjectInImage(const autoware_msgs::DetectedObject &in_detection);
+    bool IsObjectInImage(const autoware_detection_msgs::DetectedObject &in_detection);
 
-    void TransformRangeToVision(const autoware_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
-                                autoware_msgs::DetectedObjectArray &out_range_detections,
-                                autoware_msgs::DetectedObjectArray &out_out_cv_range_detections);
+    void TransformRangeToVision(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_range_detections,
+                                autoware_detection_msgs::DetectedObjectArray &out_range_detections,
+                                autoware_detection_msgs::DetectedObjectArray &out_out_cv_range_detections);
 
-    autoware_msgs::DetectedObject TransformObject(const autoware_msgs::DetectedObject &in_detection,
+    autoware_detection_msgs::DetectedObject TransformObject(const autoware_detection_msgs::DetectedObject &in_detection,
                                                    const tf::StampedTransform& in_transform);
 
-    autoware_msgs::DetectedObject MergeObjects(const autoware_msgs::DetectedObject &in_object_a,
-                                               const autoware_msgs::DetectedObject & in_object_b);
+    autoware_detection_msgs::DetectedObject MergeObjects(const autoware_detection_msgs::DetectedObject &in_object_a,
+                                               const autoware_detection_msgs::DetectedObject & in_object_b);
 
-    void CalculateObjectFeatures(autoware_msgs::DetectedObject &in_out_object,
+    void CalculateObjectFeatures(autoware_detection_msgs::DetectedObject &in_out_object,
                                  bool in_estimate_pose);
 
-    visualization_msgs::MarkerArray ObjectsToMarkers(const autoware_msgs::DetectedObjectArray &in_objects);
+    visualization_msgs::MarkerArray ObjectsToMarkers(const autoware_detection_msgs::DetectedObjectArray &in_objects);
 
-    double GetDistanceToObject(const autoware_msgs::DetectedObject &in_object);
+    double GetDistanceToObject(const autoware_detection_msgs::DetectedObject &in_object);
 
     /*!
      * Obtains Transformation between two transforms registered in the TF Tree

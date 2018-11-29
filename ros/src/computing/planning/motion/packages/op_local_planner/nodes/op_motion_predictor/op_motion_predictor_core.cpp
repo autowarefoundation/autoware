@@ -55,7 +55,7 @@ MotionPrediction::MotionPrediction()
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
 
-	pub_predicted_objects_trajectories = nh.advertise<autoware_msgs::DetectedObjectArray>("/predicted_objects", 1);
+	pub_predicted_objects_trajectories = nh.advertise<autoware_detection_msgs::DetectedObjectArray>("/predicted_objects", 1);
 	pub_PredictedTrajectoriesRviz = nh.advertise<visualization_msgs::MarkerArray>("/predicted_trajectories_rviz", 1);
 	pub_CurbsRviz					= nh.advertise<visualization_msgs::MarkerArray>("/map_curbs_rviz", 1);
 	pub_ParticlesRviz = nh.advertise<visualization_msgs::MarkerArray>("prediction_particles", 1);
@@ -211,7 +211,7 @@ void MotionPrediction::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& ms
 	bVehicleStatus = true;
 }
 
-void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg)
+void MotionPrediction::callbackGetTrackedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg)
 {
 	UtilityHNS::UtilityH::GetTickCount(m_SensingTimer);
 	m_TrackedObjects.clear();
@@ -247,7 +247,7 @@ void MotionPrediction::callbackGetTrackedObjects(const autoware_msgs::DetectedOb
 
 
 		m_PredictedResultsResults.objects.clear();
-		autoware_msgs::DetectedObject pred_obj;
+		autoware_detection_msgs::DetectedObject pred_obj;
 		for(unsigned int i = 0 ; i <m_PredictBeh.m_ParticleInfo_II.size(); i++)
 		{
 			PlannerHNS::ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_PredictBeh.m_ParticleInfo_II.at(i)->obj, false, pred_obj);

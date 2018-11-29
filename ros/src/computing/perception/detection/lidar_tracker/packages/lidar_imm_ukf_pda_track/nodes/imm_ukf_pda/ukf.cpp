@@ -447,7 +447,7 @@ void UKF::findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s)
 }
 
 void UKF::updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
-                           const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                           const std::vector<autoware_detection_msgs::DetectedObject>& object_vec,
                            std::vector<double>& lambda_vec)
 {
   // calculating association probability
@@ -624,7 +624,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
   lambda_vec.push_back(lambda_rm);
 }
 
-void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec)
+void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   double num_meas = object_vec.size();
   std::vector<double> e_ctrv_vec;
@@ -649,7 +649,7 @@ void UKF::updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::Detect
   }
 }
 
-void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec)
+void UKF::updateSUKF(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   if (object_vec.size() == 0)
   {
@@ -674,7 +674,7 @@ void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_ve
 }
 
 void UKF::updateIMMUKF(const double detection_probability, const double gate_probability, const double gating_thres,
-                       const std::vector<autoware_msgs::DetectedObject>& object_vec)
+                       const std::vector<autoware_detection_msgs::DetectedObject>& object_vec)
 {
   /*****************************************************************************
   *  IMM Update

@@ -54,7 +54,7 @@
 #include <std_msgs/Int32.h>
 #include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <autoware_can_msgs/CANInfo.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 #include <autoware_msgs/TrafficLight.h>
 #include <autoware_msgs/Signals.h>
 #include <autoware_msgs/ControlCommand.h>

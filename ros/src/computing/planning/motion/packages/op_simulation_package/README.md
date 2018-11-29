@@ -77,7 +77,7 @@ This node emulate the object detection using LIDAR data similar to (lidar_euclid
 The node receives position and dimention from op_car_simulator_i then generate noisy point cloud for each vehicle, then send all data as one cluster_cloud to lidar_kf_contour_track
 
 ### Outputs
-* /cloud_clusters [autoware_msgs::CloudClusterArray]
+* /cloud_clusters [autoware_detection_msgs::CloudClusterArray]
 
 ### How to launch
 

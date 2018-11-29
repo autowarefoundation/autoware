@@ -50,8 +50,8 @@
 #include "autoware_msgs/LaneArray.h"
 #include "autoware_can_msgs/CANInfo.h"
 
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -211,7 +211,7 @@ protected:
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &input);
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
-	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg);
+	void callbackGetCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr& msg);
 	void callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg);
 	void callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg);
@@ -244,7 +244,7 @@ protected:
   //Helper Functions
   void UpdatePlanningParams();
 
-  autoware_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
+  autoware_detection_msgs::CloudCluster GenerateSimulatedObstacleCluster(const double& x_rand, const double& y_rand, const double& z_rand, const int& nPoints, const geometry_msgs::PointStamped& centerPose);
 };
 
 }

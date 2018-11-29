@@ -8,7 +8,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/UInt8.h>
 
-#include <autoware_msgs/CloudClusterArray.h>
+#include <autoware_detection_msgs/CloudClusterArray.h>
 #include <autoware_msgs/Lane.h>
 #include <autoware_msgs/TrafficLight.h>
 
@@ -131,7 +131,7 @@ void DecisionMakerNode::callbackFromLightColor(const ros::MessageEvent<autoware_
   }
 }
 
-void DecisionMakerNode::callbackFromObjectDetector(const autoware_msgs::CloudClusterArray &msg)
+void DecisionMakerNode::callbackFromObjectDetector(const autoware_detection_msgs::CloudClusterArray &msg)
 {
   // This function is a quick hack implementation.
   // If detection result exists in DetectionArea, decisionmaker sets object

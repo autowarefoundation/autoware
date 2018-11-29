@@ -15,12 +15,8 @@ add_message_files(
         DIRECTORY msg
         FILES
             ControlCommandStamped.msg
-            CloudCluster.msg
-            CloudClusterArray.msg
             ColorSet.msg
             ControlCommand.msg
-            DetectedObject.msg
-            DetectedObjectArray.msg
             ExtractedPosition.msg
             ImageLaneObjects.msg
             ImageObjects.msg
@@ -50,8 +46,6 @@ add_message_files(
             WaypointState.msg
             VehicleCmd.msg
             VehicleStatus.msg
-            TrafficLightResult.msg
-            TrafficLightResultArray.msg
 
             AccelCmd.msg
             AdjustXY.msg

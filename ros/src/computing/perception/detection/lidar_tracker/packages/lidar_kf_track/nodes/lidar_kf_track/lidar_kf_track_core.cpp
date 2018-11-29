@@ -11,10 +11,10 @@
 
 #include <pcl_ros/transforms.h>
 
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
@@ -49,7 +49,7 @@ private:
 	double distance_matching_threshold_;
 	double tracker_merging_threshold_;
 
-	void CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
+	void CloudClustersCallback(const autoware_detection_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr);
 };
 
 KFLidarTrackNode::KFLidarTrackNode() :
@@ -57,7 +57,7 @@ KFLidarTrackNode::KFLidarTrackNode() :
 		pose_estimation_(false)
 {
 	cloud_clusters_sub_ = node_handle_.subscribe("/cloud_clusters_class", 10, &KFLidarTrackNode::CloudClustersCallback, this);
-	pub_detected_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>( "/detected_objects", 10);
+	pub_detected_objects_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>( "/detected_objects", 10);
 	pub_jsk_tracked_objects_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/bounding_boxes_tracked",1);
 	pub_jsk_hulls_ = node_handle_.advertise<jsk_recognition_msgs::PolygonArray>("/cluster_hulls_tracked",1);
 	pub_jsk_pictograms_ = node_handle_.advertise<jsk_rviz_plugins::PictogramArray>("/cluster_ids_tracked",1);
@@ -88,11 +88,11 @@ KFLidarTrackNode::~KFLidarTrackNode()
 {
 }
 
-void KFLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
+void KFLidarTrackNode::CloudClustersCallback(const autoware_detection_msgs::CloudClusterArray::Ptr& in_cloud_cluster_array_ptr)
 {
 
-	autoware_msgs::CloudClusterArray final_cloud_cluster_array;
-	autoware_msgs::DetectedObjectArray detected_objects;
+	autoware_detection_msgs::CloudClusterArray final_cloud_cluster_array;
+	autoware_detection_msgs::DetectedObjectArray detected_objects;
 	detected_objects.header = in_cloud_cluster_array_ptr->header;
 
 
@@ -152,11 +152,11 @@ void KFLidarTrackNode::CloudClustersCallback(const autoware_msgs::CloudClusterAr
 	pub_jsk_hulls_.publish(tracked_hulls);
 	pub_jsk_pictograms_.publish(tracked_ids);
 
-	//autoware_msgs::DetectedObjectArray detected_objects;
+	//autoware_detection_msgs::DetectedObjectArray detected_objects;
 	//detected_objects.header = in_cloud_cluster_array_ptr->header;
 	//for (auto i = in_cloud_cluster_array_ptr->clusters.begin(); i != in_cloud_cluster_array_ptr->clusters.end(); i++)
 	//{
-	//	autoware_msgs::DetectedObject detected_object;
+	//	autoware_detection_msgs::DetectedObject detected_object;
 	//	detected_object.header 		= i->header;
 	//	detected_object.id 			= i->id;
 	//	detected_object.label 		= i->label;

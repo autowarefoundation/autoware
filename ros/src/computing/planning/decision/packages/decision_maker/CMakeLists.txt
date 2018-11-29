@@ -8,6 +8,8 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
@@ -30,6 +32,7 @@ catkin_package(
         std_msgs
         autoware_config_msgs
         autoware_msgs
+        autoware_detection_msgs
         geometry_msgs
         vector_map_msgs
         vector_map
@@ -41,6 +44,7 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 add_executable(decision_maker_node

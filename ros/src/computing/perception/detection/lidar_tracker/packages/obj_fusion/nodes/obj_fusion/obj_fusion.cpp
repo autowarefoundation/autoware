@@ -4,8 +4,8 @@
 #include <jsk_recognition_msgs/BoundingBox.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include "autoware_msgs/ObjLabel.h"
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 #include <math.h>
 #include <mutex>
 #include <ros/ros.h>
@@ -35,7 +35,7 @@ ros::Publisher marker_array_pub;
 static std::string object_type;
 static std::vector<geometry_msgs::Point> centroids;
 static std_msgs::Header sensor_header;
-static std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
+static std::vector<autoware_detection_msgs::CloudCluster> v_cloud_cluster;
 static ros::Time obj_pose_timestamp;
 static double threshold_min_dist;
 
@@ -66,7 +66,7 @@ static double euclid_distance(const geometry_msgs::Point pos1, const geometry_ms
 
 /* fusion reprojected position and pointcloud centroids */
 void fusion_cb(const autoware_msgs::ObjLabel::ConstPtr &obj_label_msg,
-               const autoware_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr)
+               const autoware_detection_msgs::CloudClusterArray::ConstPtr &in_cloud_cluster_array_ptr)
 {
   tf::StampedTransform tform;
   tf::TransformListener tflistener;
@@ -92,13 +92,13 @@ void fusion_cb(const autoware_msgs::ObjLabel::ConstPtr &obj_label_msg,
     obj_label.obj_id.push_back(obj_label_msg->obj_id.at(i));
   }
 
-  std::vector<autoware_msgs::CloudCluster> v_cloud_cluster;
+  std::vector<autoware_detection_msgs::CloudCluster> v_cloud_cluster;
   std_msgs::Header header = sensor_header;
   std::vector<geometry_msgs::Point> centroids;
 
   for (int i(0); i < (int)in_cloud_cluster_array_ptr->clusters.size(); ++i)
   {
-    autoware_msgs::CloudCluster cloud_cluster = in_cloud_cluster_array_ptr->clusters.at(i);
+    autoware_detection_msgs::CloudCluster cloud_cluster = in_cloud_cluster_array_ptr->clusters.at(i);
     /* convert centroids coodinate from velodyne frame to map frame */
     tf::Vector3 pt(cloud_cluster.centroid_point.point.x, cloud_cluster.centroid_point.point.y,
                    cloud_cluster.centroid_point.point.z);
@@ -119,7 +119,7 @@ void fusion_cb(const autoware_msgs::ObjLabel::ConstPtr &obj_label_msg,
     pub_msg.header = header;
     std_msgs::Time time;
     obj_pose_pub.publish(pub_msg);
-    autoware_msgs::CloudClusterArray cloud_clusters_msg;
+    autoware_detection_msgs::CloudClusterArray cloud_clusters_msg;
     cloud_clusters_msg.header = header;
     cluster_class_pub.publish(cloud_clusters_msg);
     visualization_msgs::MarkerArray marker_array_msg;
@@ -161,7 +161,7 @@ void fusion_cb(const autoware_msgs::ObjLabel::ConstPtr &obj_label_msg,
   /* Publish marker with centroids coordinates */
   jsk_recognition_msgs::BoundingBoxArray pub_msg;
   pub_msg.header = header;
-  autoware_msgs::CloudClusterArray cloud_clusters_msg;
+  autoware_detection_msgs::CloudClusterArray cloud_clusters_msg;
   cloud_clusters_msg.header = header;
   visualization_msgs::MarkerArray marker_array_msg;
   int marker_id = 0;
@@ -351,17 +351,17 @@ int main(int argc, char *argv[])
   private_n.param("vmap_threshold", vmap_threshold, 5.0);
   vmap_threshold *= vmap_threshold;  // squared
 
-  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::ObjLabel, autoware_msgs::CloudClusterArray>
+  typedef message_filters::sync_policies::ApproximateTime<autoware_msgs::ObjLabel, autoware_detection_msgs::CloudClusterArray>
       SyncPolicy;
   message_filters::Subscriber<autoware_msgs::ObjLabel> obj_label_sub(n, "obj_label", SUBSCRIBE_QUEUE_SIZE);
-  message_filters::Subscriber<autoware_msgs::CloudClusterArray> cluster_centroids_sub(n, "/cloud_clusters",
+  message_filters::Subscriber<autoware_detection_msgs::CloudClusterArray> cluster_centroids_sub(n, "/cloud_clusters",
                                                                                       SUBSCRIBE_QUEUE_SIZE);
   message_filters::Synchronizer<SyncPolicy> sync(SyncPolicy(SUBSCRIBE_QUEUE_SIZE), obj_label_sub,
                                                  cluster_centroids_sub);
   sync.registerCallback(boost::bind(&fusion_cb, _1, _2));
 
   obj_pose_pub = n.advertise<jsk_recognition_msgs::BoundingBoxArray>("obj_pose", ADVERTISE_QUEUE_SIZE, ADVERTISE_LATCH);
-  cluster_class_pub = n.advertise<autoware_msgs::CloudClusterArray>("/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
+  cluster_class_pub = n.advertise<autoware_detection_msgs::CloudClusterArray>("/cloud_clusters_class", ADVERTISE_QUEUE_SIZE);
   obj_pose_timestamp_pub = n.advertise<std_msgs::Time>("obj_pose_timestamp", ADVERTISE_QUEUE_SIZE);
   marker_array_pub = n.advertise<visualization_msgs::MarkerArray>("obj_pose_arrow", 1, true);
   vmap_server = n.serviceClient<vector_map_server::GetLane>("/vector_map_server/get_lane");

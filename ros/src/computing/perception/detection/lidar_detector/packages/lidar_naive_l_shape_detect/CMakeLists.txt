@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_naive_l_shape_detect)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
   pcl_ros
-  autoware_msgs
   tf
   )
 
@@ -17,7 +18,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   pcl_ros
-  autoware_msgs
+  autoware_detection_msgs
   tf
   )
 
@@ -28,6 +29,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
 

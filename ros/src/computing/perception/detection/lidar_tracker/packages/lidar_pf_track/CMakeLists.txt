@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_pf_track)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
-  autoware_msgs
   )
 
 
@@ -13,11 +14,12 @@ set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 catkin_package(
   CATKIN_DEPENDS
   roscpp
-  autoware_msgs
+  autoware_detection_msgs
   )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   )
 
 #ParticleFilter Track

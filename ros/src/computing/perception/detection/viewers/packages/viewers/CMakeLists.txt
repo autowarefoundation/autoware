@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(viewers)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         roscpp
@@ -15,7 +17,14 @@ find_package(OpenCV REQUIRED)
 find_package(OpenGL REQUIRED)
 
 catkin_package(
-        CATKIN_DEPENDS roscpp sensor_msgs std_msgs autoware_msgs cv_bridge image_transport
+        CATKIN_DEPENDS
+        roscpp
+        sensor_msgs
+        std_msgs
+        autoware_msgs
+        autoware_detection_msgs
+        cv_bridge
+        image_transport
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -87,6 +96,7 @@ add_dependencies(vscan_image_d_viewer ${catkin_EXPORTED_TARGETS})
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         include
 )
 add_executable(traffic_light_viewer nodes/traffic_light_viewer/traffic_light_viewer.cpp)

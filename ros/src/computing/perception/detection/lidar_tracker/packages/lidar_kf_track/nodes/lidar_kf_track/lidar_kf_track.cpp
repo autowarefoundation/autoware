@@ -37,7 +37,7 @@ void KFLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_po
 	boost::geometry::assign_points(out_polygon, hull_detection_points);
 }
 
-void KFLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
+void KFLidarTracker::Update(const autoware_detection_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
 {
 	size_t num_detections = in_cloud_cluster_array.clusters.size();
 	size_t num_tracks = tracks_.size();
@@ -114,7 +114,7 @@ void KFLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 				tracks_[i].skipped_frames = 0;
 
 				//join all assigned detections to update the tracker
-				/*autoware_msgs::CloudClusterPtr summed_cloud_cluster(new autoware_msgs::CloudCluster());
+				/*autoware_detection_msgs::CloudClusterPtr summed_cloud_cluster(new autoware_detection_msgs::CloudCluster());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr summed_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>);
 				for (size_t j = 0; j < track_assignments_vector[i].size(); j++)
 				{
@@ -139,7 +139,7 @@ void KFLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 			}
 			else				     // if not matched continue using predictions, and increase life
 			{
-				tracks_[i].Update(autoware_msgs::CloudCluster(), //empty cluster
+				tracks_[i].Update(autoware_detection_msgs::CloudCluster(), //empty cluster
 									false, //not matched,
 									maximum_trace_length_
 								);
@@ -290,7 +290,7 @@ void KFLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 //
 // ---------------------------------------------------------------------------
 /*void KFLidarTracker::Update(
-	const autoware_msgs::CloudClusterArray& in_cloud_cluster_array,
+	const autoware_detection_msgs::CloudClusterArray& in_cloud_cluster_array,
 	DistType distType
 	)
 {
@@ -426,7 +426,7 @@ void KFLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 		else				     // if not continue using predictions
 		{
 			std::cout << "Not Matched. Kalman Update on " << i << std::endl;
-			tracks_[i].Update(autoware_msgs::CloudCluster(), false, maximum_trace_length_);
+			tracks_[i].Update(autoware_detection_msgs::CloudCluster(), false, maximum_trace_length_);
 		}
 	}
 

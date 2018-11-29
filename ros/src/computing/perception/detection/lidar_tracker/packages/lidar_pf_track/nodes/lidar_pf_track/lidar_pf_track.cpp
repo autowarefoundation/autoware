@@ -7,10 +7,10 @@
 
 #include "ros/ros.h"
 
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class PfTrack {
 public:
@@ -22,24 +22,24 @@ private:
   ros::Publisher detected_objects_pub_;
 
   void CloudClustersCallback(
-      const autoware_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr);
+      const autoware_detection_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr);
 };
 
 PfTrack::PfTrack() : node_handle_("~") {
   cloud_clusters_sub_ = node_handle_.subscribe(
       "/cloud_clusters_class", 10, &PfTrack::CloudClustersCallback, this);
   detected_objects_pub_ =
-      node_handle_.advertise<autoware_msgs::DetectedObjectArray>(
+      node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>(
           "/detected_objects", 10);
 }
 
 void PfTrack::CloudClustersCallback(
-    const autoware_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr) {
-  autoware_msgs::DetectedObjectArray detected_objects;
+    const autoware_detection_msgs::CloudClusterArray::Ptr &in_cloud_cluster_array_ptr) {
+  autoware_detection_msgs::DetectedObjectArray detected_objects;
   detected_objects.header = in_cloud_cluster_array_ptr->header;
   for (auto i = in_cloud_cluster_array_ptr->clusters.begin();
        i != in_cloud_cluster_array_ptr->clusters.end(); i++) {
-    autoware_msgs::DetectedObject detected_object;
+    autoware_detection_msgs::DetectedObject detected_object;
     detected_object.header = i->header;
     detected_object.id = i->id;
     detected_object.label = i->label;

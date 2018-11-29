@@ -54,12 +54,12 @@ LShapeFilter::LShapeFilter()
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callback, this);
   pub_object_array_ =
-      node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
+      node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
 }
 
-void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
+void LShapeFilter::callback(const autoware_detection_msgs::DetectedObjectArray& input)
 {
-  autoware_msgs::DetectedObjectArray out_objects;
+  autoware_detection_msgs::DetectedObjectArray out_objects;
   getLShapeBB(input, out_objects);
   out_objects.header = input.header;
   pub_object_array_.publish(out_objects);
@@ -89,7 +89,7 @@ void LShapeFilter::getPointsInPointcloudFrame(cv::Point2f rect_points[],
 }
 
 void LShapeFilter::updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points,
-                                      autoware_msgs::DetectedObject& object)
+                                      autoware_detection_msgs::DetectedObject& object)
 {
   cv::Point2f p1 = pointcloud_frame_points[0];
   cv::Point2f p2 = pointcloud_frame_points[1];
@@ -141,7 +141,7 @@ void LShapeFilter::toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_p
 }
 
 void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pointcloud_frame_points,
-                                                    autoware_msgs::DetectedObject& object)
+                                                    autoware_detection_msgs::DetectedObject& object)
 {
   // p1-p2 and p2-p3 is line segment, p1-p3 is diagonal
   cv::Point2f p1 = pointcloud_frame_points[0];
@@ -181,8 +181,8 @@ void LShapeFilter::updateDimentionAndEstimatedAngle(const std::vector<cv::Point2
   object.pose.orientation.w = q_tf.getW();
 }
 
-void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
-                               autoware_msgs::DetectedObjectArray& out_object_array)
+void LShapeFilter::getLShapeBB(const autoware_detection_msgs::DetectedObjectArray& in_object_array,
+                               autoware_detection_msgs::DetectedObjectArray& out_object_array)
 {
   out_object_array.header = in_object_array.header;
 
@@ -316,7 +316,7 @@ void LShapeFilter::getLShapeBB(const autoware_msgs::DetectedObjectArray& in_obje
       getPointsInPointcloudFrame(rect_points, pointcloud_frame_points, offset_init_pic_point);
     }
 
-    autoware_msgs::DetectedObject output_object;
+    autoware_detection_msgs::DetectedObject output_object;
     output_object = in_object;
 
     // update output_object pose

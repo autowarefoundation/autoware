@@ -59,8 +59,8 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include "autoware_msgs/Signals.h"
-#include "autoware_msgs/DetectedObjectArray.h"
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 #include "sensor_msgs/Joy.h"
 
 #include "op_simu/TrajectoryFollower.h"
@@ -177,10 +177,10 @@ protected:
 	// Callback function for subscriber.
 	void callbackGetInitPose(const geometry_msgs::PoseWithCovarianceStampedConstPtr &msg);
 	void callbackGetGoalPose(const geometry_msgs::PoseStampedConstPtr &msg);
-	void callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg);
+	void callbackGetPredictedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg);
 	void callbackGetTrafficLightSignals(const autoware_msgs::Signals& msg);
 	void callbackGetStepForwardSignals(const geometry_msgs::TwistStampedConstPtr& msg);
-	void callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg);
+	void callbackGetCloudClusters(const autoware_detection_msgs::CloudClusterArrayConstPtr& msg);
 	void callbackGetJoyStickInfo(const sensor_msgs::JoyConstPtr& msg);
 
 public:

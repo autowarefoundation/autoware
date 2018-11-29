@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_svm_detect)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   autoware_build_flags
   roscpp
   sensor_msgs
-  autoware_msgs
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
@@ -19,7 +20,7 @@ catkin_package(
   CATKIN_DEPENDS
   roscpp
   sensor_msgs
-  autoware_msgs
+  autoware_detection_msgs
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
@@ -27,6 +28,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${autoware_detection_msgs_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   )
 link_directories(${OpenCV_LIBRARY_DIRS})

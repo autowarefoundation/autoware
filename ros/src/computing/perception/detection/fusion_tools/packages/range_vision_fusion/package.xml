@@ -13,7 +13,7 @@
     <build_depend>roscpp</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>sensor_msgs</build_depend>
-    <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_detection_msgs</build_depend>
     <build_depend>jsk_recognition_utils</build_depend>
     <build_depend>eigen_conversions</build_depend>
     <build_depend>tf_conversions</build_depend>
@@ -28,7 +28,7 @@
     <run_depend>roscpp</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>sensor_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_detection_msgs</run_depend>
     <run_depend>jsk_recognition_utils</run_depend>
     <run_depend>eigen_conversions</run_depend>
     <run_depend>tf_conversions</run_depend>

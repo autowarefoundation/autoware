@@ -46,7 +46,7 @@
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 static std::vector<cv::Scalar> _colors;
 
@@ -56,7 +56,7 @@ static bool _drawing = false;
 
 static const std::string window_name = "Image Viewer";
 
-autoware_msgs::DetectedObjectArray detected_objects_;
+autoware_detection_msgs::DetectedObjectArray detected_objects_;
 
 const int kRectangleThickness = 3;
 
@@ -110,7 +110,7 @@ static void DrawLabel(const std::string &label,
 
 }
 
-static void drawDetections(autoware_msgs::DetectedObjectArray detected_objects, cv::Mat frame) {
+static void drawDetections(autoware_detection_msgs::DetectedObjectArray detected_objects, cv::Mat frame) {
     /* variables for object label */
     for (const auto detected_object : detected_objects.objects) {
         // Make label shown on a rectangle
@@ -155,7 +155,7 @@ static void image_viewer_callback(const sensor_msgs::Image &image_source) {
     _drawing = false;
 }
 
-static void image_obj_update_cb(const autoware_msgs::DetectedObjectArray &image_objs) {
+static void image_obj_update_cb(const autoware_detection_msgs::DetectedObjectArray &image_objs) {
     if (_drawing)
         return;
 

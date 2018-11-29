@@ -36,8 +36,8 @@
 #include <opencv2/opencv.hpp>
 #include <pcl/io/pcd_io.h>
 
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class LShapeFilter
 {
@@ -53,16 +53,16 @@ private:
   ros::Subscriber sub_object_array_;
   ros::Publisher pub_object_array_;
 
-  void callback(const autoware_msgs::DetectedObjectArray& input);
+  void callback(const autoware_detection_msgs::DetectedObjectArray& input);
   void updateCpFromPoints(const std::vector<cv::Point2f>& pointcloud_frame_points,
-                          autoware_msgs::DetectedObject& output);
+                          autoware_detection_msgs::DetectedObject& output);
   void toRightAngleBBox(std::vector<cv::Point2f>& pointcloud_frame_points);
   void updateDimentionAndEstimatedAngle(const std::vector<cv::Point2f>& pcPoints,
-                                        autoware_msgs::DetectedObject& object);
+                                        autoware_detection_msgs::DetectedObject& object);
   void getPointsInPointcloudFrame(cv::Point2f rect_points[], std::vector<cv::Point2f>& pointcloud_frame_points,
                                   const cv::Point& offset_point);
-  void getLShapeBB(const autoware_msgs::DetectedObjectArray& in_object_array,
-                   autoware_msgs::DetectedObjectArray& out_object_array);
+  void getLShapeBB(const autoware_detection_msgs::DetectedObjectArray& in_object_array,
+                   autoware_detection_msgs::DetectedObjectArray& out_object_array);
 
 public:
   LShapeFilter();

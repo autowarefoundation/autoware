@@ -62,7 +62,7 @@ OpenPlannerSimulatorPerception::OpenPlannerSimulatorPerception()
 	nh.getParam("/op_perception_simulator/GuassianErrorFactor" , m_DecParams.errFactor);
 	nh.getParam("/op_perception_simulator/pointCloudPointsNumber" , m_DecParams.nPointsPerObj);
 
-	pub_DetectedObjects = nh.advertise<autoware_msgs::CloudClusterArray>("cloud_clusters",1);
+	pub_DetectedObjects = nh.advertise<autoware_detection_msgs::CloudClusterArray>("cloud_clusters",1);
 
 	sub_simulated_obstacle_pose_rviz = nh.subscribe("/clicked_point", 1, &OpenPlannerSimulatorPerception::callbackGetRvizPoint,	this);
 
@@ -147,7 +147,7 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	srand(t.tv_nsec);
 	int nPoints = m_DecParams.nPointsPerObj + (rand()%POINT_CLOUD_ADDTIONAL_ERR_NUM - POINT_CLOUD_ADDTIONAL_ERR_NUM/2);
 
-	autoware_msgs::CloudCluster c = GenerateSimulatedObstacleCluster(msg.poses.at(2).position.y, msg.poses.at(2).position.x, msg.poses.at(2).position.z, nPoints, msg.poses.at(1));
+	autoware_detection_msgs::CloudCluster c = GenerateSimulatedObstacleCluster(msg.poses.at(2).position.y, msg.poses.at(2).position.x, msg.poses.at(2).position.z, nPoints, msg.poses.at(1));
 	c.id = obj_id;
 	c.score = actual_speed;
 	c.indicator_state = indicator;
@@ -165,9 +165,9 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 }
 
 
-autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObstacleCluster(const double& width, const double& length, const double& height, const int& nPoints, const geometry_msgs::Pose& centerPose)
+autoware_detection_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObstacleCluster(const double& width, const double& length, const double& height, const int& nPoints, const geometry_msgs::Pose& centerPose)
 {
-	autoware_msgs::CloudCluster cluster;
+	autoware_detection_msgs::CloudCluster cluster;
 
 	timespec t;
 	UtilityHNS::UtilityH::GetTickCount(t);

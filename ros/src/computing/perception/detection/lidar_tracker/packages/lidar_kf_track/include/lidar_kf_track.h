@@ -1,6 +1,6 @@
 #pragma once
-#include "autoware_msgs/CloudCluster.h"
-#include "autoware_msgs/CloudClusterArray.h"
+#include "autoware_detection_msgs/CloudCluster.h"
+#include "autoware_detection_msgs/CloudClusterArray.h"
 #include "hungarian_alg.h"
 #include "kalman.h"
 #include <array>
@@ -30,7 +30,7 @@ class CTrack {
   TKalmanFilter kf_;
 
 public:
-  autoware_msgs::CloudCluster cluster;
+  autoware_detection_msgs::CloudCluster cluster;
 
   std::vector<cv::Point2f> trace;
   size_t track_id;
@@ -38,7 +38,7 @@ public:
   size_t life_span;
   double area;
 
-  CTrack(const autoware_msgs::CloudCluster &in_cluster, float in_time_delta,
+  CTrack(const autoware_detection_msgs::CloudCluster &in_cluster, float in_time_delta,
          float in_acceleration_noise_magnitude, size_t in_track_id)
       : kf_(cv::Point2f(in_cluster.centroid_point.point.x,
                         in_cluster.centroid_point.point.y),
@@ -59,7 +59,7 @@ public:
 
   float CalculateDistance(const cv::Rect_<float> &in_rect) { return 0.0f; }
 
-  void Update(const autoware_msgs::CloudCluster &in_cluster,
+  void Update(const autoware_detection_msgs::CloudCluster &in_cluster,
               bool in_data_correct, size_t in_max_trace_length) {
     kf_.GetPrediction();
     prediction_point_ =
@@ -78,7 +78,7 @@ public:
     trace.push_back(prediction_point_);
   }
 
-  autoware_msgs::CloudCluster GetCluster() { return cluster; }
+  autoware_detection_msgs::CloudCluster GetCluster() { return cluster; }
 };
 
 // --------------------------------------------------------------------------
@@ -123,6 +123,6 @@ public:
   enum DistType { CentersDist = 0, RectsDist = 1 };
 
   std::vector<CTrack> tracks_; // TODO: add GetTracks getter
-  void Update(const autoware_msgs::CloudClusterArray &in_cloud_cluster_array,
+  void Update(const autoware_detection_msgs::CloudClusterArray &in_cloud_cluster_array,
               DistType in_disttype);
 };

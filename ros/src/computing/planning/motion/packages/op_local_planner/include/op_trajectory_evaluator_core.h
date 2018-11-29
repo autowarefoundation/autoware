@@ -40,7 +40,7 @@
 #include <nav_msgs/Odometry.h>
 #include <autoware_msgs/LaneArray.h>
 #include <autoware_can_msgs/CANInfo.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include "op_planner/PlannerCommonDef.h"
@@ -119,7 +119,7 @@ protected:
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetGlobalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
 	void callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayConstPtr& msg);
-	void callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg);
+	void callbackGetPredictedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr & msg);
 
 	//Helper Functions

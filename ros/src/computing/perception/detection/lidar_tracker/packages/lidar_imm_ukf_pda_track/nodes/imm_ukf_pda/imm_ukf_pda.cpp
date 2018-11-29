@@ -67,7 +67,7 @@ void ImmUkfPda::run()
 {
   pub_jskbbox_array_ =
       node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_tracker/bounding_boxes", 1);
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
 
   // for debug
   pub_points_array_ =
@@ -78,11 +78,11 @@ void ImmUkfPda::run()
   sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
 }
 
-void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
+void ImmUkfPda::callback(const autoware_detection_msgs::DetectedObjectArray& input)
 {
-  autoware_msgs::DetectedObjectArray transformed_input;
+  autoware_detection_msgs::DetectedObjectArray transformed_input;
   jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
-  autoware_msgs::DetectedObjectArray detected_objects_output;
+  autoware_detection_msgs::DetectedObjectArray detected_objects_output;
 
   // only transform pose(clusteArray.clusters.bouding_box.pose)
   transformPoseToGlobal(input, transformed_input);
@@ -97,7 +97,7 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   }
 }
 
-void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
+void ImmUkfPda::relayJskbbox(const autoware_detection_msgs::DetectedObjectArray& input,
                              jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output)
 {
   jskbboxes_output.header = input.header;
@@ -111,8 +111,8 @@ void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
   }
 }
 
-void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
-                                      autoware_msgs::DetectedObjectArray& transformed_input)
+void ImmUkfPda::transformPoseToGlobal(const autoware_detection_msgs::DetectedObjectArray& input,
+                                      autoware_detection_msgs::DetectedObjectArray& transformed_input)
 {
   try
   {
@@ -141,7 +141,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
                        input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
     tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
 
-    autoware_msgs::DetectedObject dd;
+    autoware_detection_msgs::DetectedObject dd;
     dd.header = input.header;
     dd = input.objects[i];
     dd.pose = pose_out.pose;
@@ -151,7 +151,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
 }
 
 void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
-                                     autoware_msgs::DetectedObjectArray& detected_objects_output)
+                                     autoware_detection_msgs::DetectedObjectArray& detected_objects_output)
 {
   for (size_t i = 0; i < detected_objects_output.objects.size(); i++)
   {
@@ -197,17 +197,17 @@ void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jsk
   jskbboxes_output.header.frame_id = pointcloud_frame_;
 }
 
-void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target,
+void ImmUkfPda::measurementValidation(const autoware_detection_msgs::DetectedObjectArray& input, UKF& target,
                                       const bool second_init, const Eigen::VectorXd& max_det_z,
                                       const Eigen::MatrixXd& max_det_s,
-                                      std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                      std::vector<autoware_detection_msgs::DetectedObject>& object_vec,
                                       std::vector<bool>& matching_vec)
 {
   // alert: different from original imm-pda filter, here picking up most likely measurement
   // if making it allows to have more than one measurement, you will see non semipositive definite covariance
   bool second_init_done = false;
   double smallest_nis = std::numeric_limits<double>::max();
-  autoware_msgs::DetectedObject smallest_meas_object;
+  autoware_detection_msgs::DetectedObject smallest_meas_object;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -241,8 +241,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
 }
 
-void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                                        autoware_msgs::DetectedObject& object, double& min_dist)
+void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_detection_msgs::DetectedObject>& object_vec,
+                                        autoware_detection_msgs::DetectedObject& object, double& min_dist)
 {
   int min_ind = 0;
   double px = target.x_merge_(0);
@@ -264,7 +264,7 @@ void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<aut
   object = object_vec[min_ind];
 }
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+void ImmUkfPda::associateBB(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec, UKF& target)
 {
   // skip if no validated measurement
   if (object_vec.size() == 0)
@@ -273,7 +273,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   }
   if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_)
   {
-    autoware_msgs::DetectedObject nearest_object;
+    autoware_detection_msgs::DetectedObject nearest_object;
     double min_dist = std::numeric_limits<double>::max();
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
     if (min_dist < distance_thres_)
@@ -285,7 +285,7 @@ void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& ob
   }
   else
   {
-    autoware_msgs::DetectedObject nearest_object;
+    autoware_detection_msgs::DetectedObject nearest_object;
     double min_dist = std::numeric_limits<double>::max();
     getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
     target.jsk_bb_.pose = nearest_object.pose;
@@ -377,7 +377,7 @@ void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::Bounding
   }
 }
 
-void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
+void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_detection_msgs::DetectedObject& object)
 {
   if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
   {
@@ -393,7 +393,7 @@ void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedOb
   }
 }
 
-void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp)
+void ImmUkfPda::initTracker(const autoware_detection_msgs::DetectedObjectArray& input, double timestamp)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
   {
@@ -412,7 +412,7 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
   return;
 }
 
-void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
+void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_detection_msgs::DetectedObject>& object_vec, double dt)
 {
   if (object_vec.size() == 0)
   {
@@ -447,7 +447,7 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::Detecte
   return;
 }
 
-void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+void ImmUkfPda::updateTrackingNum(const std::vector<autoware_detection_msgs::DetectedObject>& object_vec, UKF& target)
 {
   if (object_vec.size() > 0)
   {
@@ -487,9 +487,9 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
   return;
 }
 
-void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+void ImmUkfPda::probabilisticDataAssociation(const autoware_detection_msgs::DetectedObjectArray& input, const double dt,
                                              std::vector<bool>& matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
+                                             std::vector<autoware_detection_msgs::DetectedObject>& object_vec, UKF& target,
                                              bool& is_skip_target)
 {
   double det_s = 0;
@@ -553,7 +553,7 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   }
 }
 
-void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
+void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_detection_msgs::DetectedObjectArray& input,
                                const std::vector<bool>& matching_vec)
 {
   for (size_t i = 0; i < input.objects.size(); i++)
@@ -597,9 +597,9 @@ void ImmUkfPda::staticClassification()
   }
 }
 
-void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
+void ImmUkfPda::makeOutput(const autoware_detection_msgs::DetectedObjectArray& input,
                            jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
-                           autoware_msgs::DetectedObjectArray& detected_objects_output)
+                           autoware_detection_msgs::DetectedObjectArray& detected_objects_output)
 {
   jskbboxes_output.header = input.header;
   detected_objects_output.header = input.header;
@@ -625,7 +625,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     }
     // RPY to convert: 0, 0, targets_[i].x_merge_(3)
     tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
-    autoware_msgs::DetectedObject dd;
+    autoware_detection_msgs::DetectedObject dd;
     dd.header = input.header;
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
@@ -659,7 +659,7 @@ void ImmUkfPda::removeUnnecessaryTarget()
   targets_ = temp_targets;
 }
 
-void ImmUkfPda::pubDebugROSMarker(const autoware_msgs::DetectedObjectArray& input)
+void ImmUkfPda::pubDebugROSMarker(const autoware_detection_msgs::DetectedObjectArray& input)
 {
   visualization_msgs::MarkerArray texts_markers, points_markers;
   visualization_msgs::Marker target_points, meas_points;
@@ -767,7 +767,7 @@ void ImmUkfPda::pubDebugROSMarker(const autoware_msgs::DetectedObjectArray& inpu
   pub_texts_array_.publish(texts_markers);
 }
 
-void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects)
+void ImmUkfPda::dumpResultText(autoware_detection_msgs::DetectedObjectArray& detected_objects)
 {
   std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
   for(size_t i = 0; i < detected_objects.objects.size(); i++)
@@ -800,9 +800,9 @@ void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_obje
   frame_count_ ++;
 }
 
-void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
+void ImmUkfPda::tracker(const autoware_detection_msgs::DetectedObjectArray& input,
                         jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
-                        autoware_msgs::DetectedObjectArray& detected_objects_output)
+                        autoware_detection_msgs::DetectedObjectArray& detected_objects_output)
 {
   double timestamp = input.header.stamp.toSec();
 
@@ -843,7 +843,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       targets_[i].predictionSUKF(dt);
       // data association
       bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
+      std::vector<autoware_detection_msgs::DetectedObject> object_vec;
       probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
       if (is_skip_target)
       {
@@ -858,7 +858,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       targets_[i].predictionIMMUKF(dt);
       // data association
       bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
+      std::vector<autoware_detection_msgs::DetectedObject> object_vec;
       probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
       if (is_skip_target)
       {

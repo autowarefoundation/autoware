@@ -50,8 +50,8 @@
 #include <cv_bridge/cv_bridge.h>
 
 #include <autoware_config_msgs/ConfigSSD.h>
-#include <autoware_msgs/DetectedObject.h>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObject.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #include <rect_class_score.h>
 
@@ -121,7 +121,7 @@ class Yolo3DetectorNode {
 
 
     void                            convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects,
-                                      autoware_msgs::DetectedObjectArray& out_message);
+                                      autoware_detection_msgs::DetectedObjectArray& out_message);
     void                            rgbgr_image(image& im);
     image                           convert_ipl_to_image(const sensor_msgs::ImageConstPtr& msg);
     void                            image_callback(const sensor_msgs::ImageConstPtr& in_image_message);

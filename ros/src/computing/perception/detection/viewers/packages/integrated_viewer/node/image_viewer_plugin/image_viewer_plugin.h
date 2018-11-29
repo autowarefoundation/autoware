@@ -20,7 +20,7 @@
 #include <QStringList>
 #include <QWidget>
 #include <QEvent>
-#include <autoware_msgs/DetectedObjectArray.h>
+#include <autoware_detection_msgs/DetectedObjectArray.h>
 
 #include "convert_image.h"
 #include "ui_image_viewer_form.h"
@@ -49,7 +49,7 @@ namespace integrated_viewer
 
     // The Callback functions
     void ImageCallback(const sensor_msgs::Image::ConstPtr& msg);
-    void DetectedObjCallback(const autoware_msgs::DetectedObjectArray::ConstPtr &msg);
+    void DetectedObjCallback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &msg);
     void PointCallback(const autoware_msgs::PointsImage::ConstPtr &msg);
     void LaneCallback(const autoware_msgs::ImageLaneObjects::ConstPtr& msg);
 
@@ -88,7 +88,7 @@ namespace integrated_viewer
 
     // Data pointer to hold subscribed data
     autoware_msgs::PointsImage::ConstPtr points_msg_;
-    autoware_msgs::DetectedObjectArray::ConstPtr detected_objects_msg_;
+    autoware_detection_msgs::DetectedObjectArray::ConstPtr detected_objects_msg_;
     autoware_msgs::ImageLaneObjects::ConstPtr lane_msg_;
 
     // The helper-class constructor for drawing

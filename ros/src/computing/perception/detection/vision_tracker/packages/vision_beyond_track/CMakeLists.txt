@@ -3,6 +3,8 @@ project(vision_beyond_track)
 
 find_package(OpenCV REQUIRED)
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         cv_bridge
@@ -10,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
         tf
         )
 
@@ -20,7 +21,7 @@ catkin_package(CATKIN_DEPENDS
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
+        autoware_detection_msgs
         tf
         )
 
@@ -29,6 +30,7 @@ include_directories(
         lib
         ${OpenCV_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
 )
 
 add_library(

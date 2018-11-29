@@ -232,7 +232,7 @@ void TrajectoryEval::callbackGetLocalPlannerPath(const autoware_msgs::LaneArrayC
 	}
 }
 
-void TrajectoryEval::callbackGetPredictedObjects(const autoware_msgs::DetectedObjectArrayConstPtr& msg)
+void TrajectoryEval::callbackGetPredictedObjects(const autoware_detection_msgs::DetectedObjectArrayConstPtr& msg)
 {
 	m_PredictedObjects.clear();
 	bPredictedObjects = true;

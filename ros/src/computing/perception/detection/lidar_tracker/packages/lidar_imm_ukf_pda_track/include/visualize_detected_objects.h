@@ -42,8 +42,8 @@
 #include <vector>
 #include <string>
 
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_detection_msgs/DetectedObject.h"
+#include "autoware_detection_msgs/DetectedObjectArray.h"
 
 class VisualizeDetectedObjects
 {
@@ -61,8 +61,8 @@ private:
   ros::Publisher pub_arrow_;
   ros::Publisher pub_id_;
 
-  void visMarkers(const autoware_msgs::DetectedObjectArray& input);
-  void callBack(const autoware_msgs::DetectedObjectArray& input);
+  void visMarkers(const autoware_detection_msgs::DetectedObjectArray& input);
+  void callBack(const autoware_detection_msgs::DetectedObjectArray& input);
 
 public:
   VisualizeDetectedObjects();

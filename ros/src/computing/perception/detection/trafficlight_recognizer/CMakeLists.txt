@@ -8,6 +8,8 @@ execute_process(
 
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+find_package(autoware_detection_msgs REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
         autoware_msgs
@@ -55,6 +57,7 @@ find_package(OpenGL REQUIRED)
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_detection_msgs_INCLUDE_DIRS}
         ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -62,6 +65,7 @@ catkin_package(
         INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS}
         CATKIN_DEPENDS
         autoware_msgs
+        autoware_detection_msgs
         cmake_modules
         cv_bridge
         geometry_msgs

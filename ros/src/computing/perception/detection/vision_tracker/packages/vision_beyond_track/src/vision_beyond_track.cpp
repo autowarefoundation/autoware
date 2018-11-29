@@ -242,7 +242,7 @@ namespace beyondtrack
     }
 }
 
-std::vector<beyondtrack::Detection>  BeyondTrackerNode::parse_detected_object(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
+std::vector<beyondtrack::Detection>  BeyondTrackerNode::parse_detected_object(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
     std::vector<beyondtrack::Detection> detections;
     for (const auto &e: in_vision_detections->objects)
@@ -260,11 +260,11 @@ std::vector<beyondtrack::Detection>  BeyondTrackerNode::parse_detected_object(co
 }
 
 void BeyondTrackerNode::detection_to_objects(const std::vector<beyondtrack::Detection> &in_objects,
-                                                  autoware_msgs::DetectedObjectArray& out_message)
+                                                  autoware_detection_msgs::DetectedObjectArray& out_message)
 {
     for (unsigned int i = 0; i < in_objects.size(); ++i)
     {
-            autoware_msgs::DetectedObject obj;
+            autoware_detection_msgs::DetectedObject obj;
 
             obj.x = (in_objects[i].bbox_[0]);
             obj.y = (in_objects[i].bbox_[1]);
@@ -300,7 +300,7 @@ void BeyondTrackerNode::detection_to_objects(const std::vector<beyondtrack::Dete
 }
 
 void
-BeyondTrackerNode::vision_detection_callback(const autoware_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
+BeyondTrackerNode::vision_detection_callback(const autoware_detection_msgs::DetectedObjectArray::ConstPtr &in_vision_detections)
 {
     if (camera_info_ok_)
     {
@@ -316,7 +316,7 @@ BeyondTrackerNode::vision_detection_callback(const autoware_msgs::DetectedObject
 
         tracker_.process(detections, pose_, ground_angle_, camera_height_);
 
-        autoware_msgs::DetectedObjectArray final_objects;
+        autoware_detection_msgs::DetectedObjectArray final_objects;
 
         final_objects.header = in_vision_detections->header;
         detection_to_objects(tracker_.get_results(), final_objects);
@@ -374,7 +374,7 @@ void BeyondTrackerNode::Run()
     private_node_handle.param<double>("camera_height", camera_height_, 1.2);
     ROS_INFO("[%s] camera height: %f", __APP_NAME__, camera_height_);
 
-    objects_publisher_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
+    objects_publisher_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/tracked_objects", 1);
 
     #if (CV_MAJOR_VERSION <= 2)
         cv::generateColors(colors_, 20);

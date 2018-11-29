@@ -157,12 +157,12 @@ namespace darknet
 
 ///////////////////
 
-void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_msgs::DetectedObjectArray& out_message)
+void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<float> >& in_objects, autoware_detection_msgs::DetectedObjectArray& out_message)
 {
     for (unsigned int i = 0; i < in_objects.size(); ++i)
     {
         {
-            autoware_msgs::DetectedObject obj;
+            autoware_detection_msgs::DetectedObject obj;
 
             obj.x = (in_objects[i].x /image_ratio_) - image_left_right_border_/image_ratio_;
             obj.y = (in_objects[i].y /image_ratio_) - image_top_bottom_border_/image_ratio_;
@@ -274,7 +274,7 @@ void Yolo3DetectorNode::image_callback(const sensor_msgs::ImageConstPtr& in_imag
     detections = yolo_detector_.detect(darknet_image_);
 
     //Prepare Output message
-    autoware_msgs::DetectedObjectArray output_message;
+    autoware_detection_msgs::DetectedObjectArray output_message;
     output_message.header = in_image_message->header;
 
     convert_rect_to_image_obj(detections, output_message);
@@ -369,7 +369,7 @@ void Yolo3DetectorNode::Run()
         generateColors(colors_, 80);
     #endif
 
-    publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
+    publisher_objects_ = node_handle_.advertise<autoware_detection_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
 
     ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
     subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo3DetectorNode::image_callback, this);
