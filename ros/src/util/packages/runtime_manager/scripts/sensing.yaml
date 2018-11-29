@@ -230,11 +230,22 @@ subs :
         run  : roslaunch ouster_ros os1.launch
         param: ouster_ros
         gui  :
+          dialog_height : 400
           flags : [ SIGTERM, kill_children ]
           lidar_address : 
              user_category : 'Address'
              flags: [ expand ]
           pc_address  : 
+             flags: [ expand, nl ]
+          lidar_frame_name  : 
+             user_category : 'PointCloud'
+             flags: [ expand ]
+          lidar_topic_name  : 
+             flags: [ expand, nl ]
+          imu_frame_name  : 
+             user_category : 'IMU'
+             flags: [ expand ]
+          imu_topic_name  : 
              flags: [ expand, nl ]
           operation_mode :
              user_category : 'Advanced'
@@ -485,7 +496,7 @@ params :
       desc : OS1 LiDAR hostname or IP address
       label: 'OS1 address:'
       kind    : str
-      v       : 'localhost'
+      v       : '192.168.0.100'
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -495,6 +506,42 @@ params :
       label: 'PC address:'
       kind    : str
       v       : '192.168.0.1'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_frame_name
+      desc : PointCloud frame name (use 'os1' for native Ouster, 'velodyne' for compatible mode)
+      label: 'Cloud frame:'
+      kind    : str
+      v       : 'velodyne'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_topic_name
+      desc : PointCloud topic name (use '/points' for native Ouster, '/points_raw' for compatible mode)
+      label: 'Cloud topic:'
+      kind    : str
+      v       : '/points_raw'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_frame_name
+      desc : IMU frame name (use 'os1_imu' for native Ouster, 'imu' for general use)
+      label: 'IMU frame:'
+      kind    : str
+      v       : 'imu'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_topic_name
+      desc : IMU topic name (use 'imu' for native Ouster, '/imu_raw' for general use)
+      label: 'IMU topic:'
+      kind    : str
+      v       : 'imu'
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -543,7 +590,7 @@ params :
         delim       : ':='
     - name  : mode_xyzir
       desc  : Velodyne compatible pointcloud mode
-      label : 'Velodyne compatible mode?'
+      label : 'Velodyne compatible pointcloud mode?'
       kind      : checkbox
       v         : True
       cmd_param :
@@ -551,7 +598,7 @@ params :
         delim       : ':='
     - name  : replay
       desc  : For playing rosbag files of raw ouster data
-      label : 'Replay?'
+      label : 'Play rawdata on rosbag?'
       kind      : checkbox
       v         : False
       cmd_param :
