@@ -289,7 +289,6 @@ visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray label_markers;
-  size_t visualization_id = 0;
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object))
@@ -310,7 +309,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
       label_marker.color.b = 1.f;
       label_marker.color.a = 1.f;
 
-      label_marker.id = visualization_id++;
+      label_marker.id = object.id;
 
       if(!object.label.empty() && object.label != "unknown")
         label_marker.text = object.label + " "; //Object Class if available

@@ -234,7 +234,6 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   }
   if (exists_smallest_nis_object)
   {
-    updateTargetWithAssociatedObject(target);
     matching_vec[smallest_nis_ind] = true;
     if (use_vectormap_ && has_subscribed_vectormap_)
     {
@@ -326,14 +325,16 @@ bool ImmUkfPda::storeObjectWithNearestLaneDirection(const autoware_msgs::Detecte
   return success;
 }
 
-void ImmUkfPda::updateTargetWithAssociatedObject(UKF& target)
+void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                                 UKF& target)
 {
   target.lifetime_++;
   if (target.label_.empty() && !target.object_.label.empty() && target.object_.label !="unknown")
   {
     target.label_ = target.object_.label;
   }
-  if (target.tracking_num_ == TrackingState::Stable)
+  updateTrackingNum(object_vec, target);
+  if (target.tracking_num_ == TrackingState::Stable || target.tracking_num_ == TrackingState::Occlusion)
   {
     target.is_stable_ = true;
   }
@@ -498,8 +499,7 @@ bool ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     return success;
   }
 
-  // update tracking number
-  updateTrackingNum(object_vec, target);
+  updateTargetWithAssociatedObject(object_vec, target);
 
   if (target.tracking_num_ == TrackingState::Die)
   {
@@ -635,6 +635,15 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
         oldest_tracker_index = in_tracker_indices[current_index];
       }
     }
+    // delete nearby targets except for the oldest target
+    for(size_t j=0; j<matching_objects[i].size(); j++)
+    {
+      size_t current_index = matching_objects[i][j];
+      if(current_index != oldest_object_index)
+      {
+        targets_[in_tracker_indices[current_index]].tracking_num_= TrackingState::Die;
+      }
+    }
     autoware_msgs::DetectedObject best_object;
     best_object = in_detected_objects.objects[oldest_object_index];
     if (best_object.label!= "unknown"
@@ -714,7 +723,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
       used_targets_indices.push_back(i);
     }
   }
-
   detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);
 }
 

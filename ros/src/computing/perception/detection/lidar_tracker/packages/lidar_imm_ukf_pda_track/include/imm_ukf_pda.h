@@ -190,7 +190,8 @@ private:
   isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
                 const geometry_msgs::Point& in_point);
 
-  void updateTargetWithAssociatedObject(UKF& target);
+  void updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                        UKF& target);
 
 public:
   ImmUkfPda();
