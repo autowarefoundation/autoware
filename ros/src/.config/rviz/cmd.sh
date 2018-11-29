@@ -28,8 +28,7 @@ else
   [ "$REMOTE_DISPLAY" = "-" ] && XOPT="-X"
 
   setsid ssh -tt $XOPT $KEYOPT $REMOTE <<EOF
-    [ -d /opt/ros/indigo ] && . /opt/ros/indigo/setup.bash
-    [ -d /opt/ros/jade ] && . /opt/ros/jade/setup.bash
+    [ -d /opt/ros/kinetic ] && . /opt/ros/kinetic/setup.bash
     [ -d $DIR/../../../devel ] && . $DIR/../../../devel/setup.bash || \
       echo "$REMOTE:$DIR/../../../devel: no such directory"
     ROS_IP=\$(hostname -I)

@@ -146,7 +146,7 @@ class CalibrationNode:
         self._pattern = pattern
         self._camera_name = camera_name
         self._min_good_enough = min_good_enough
-        rospack = rospkg.RosPack()
+        rospack = rospkg.ROSPack()
         pkg_path = rospack.get_path('autoware_camera_lidar_calibrator')
         self._autoware_image = cv2.imread( path.join(pkg_path, 'docs/autoware_logo.jpg'), cv2.IMREAD_UNCHANGED)
         lsub = message_filters.Subscriber('left', sensor_msgs.msg.Image)
@@ -256,7 +256,7 @@ class CalibrationNode:
 
 class OpenCVCalibrationNode(CalibrationNode):
     """ Calibration node with an OpenCV Gui """
-    (cv2_version_major, _, _) = cv2.__version__.split(".")
+    cv2_version_major = cv2.__version__.split(".")[0]
     if cv2_version_major == '2': TEXT_AA = cv2.CV_AA
     elif cv2_version_major == '3': TEXT_AA = cv2.LINE_AA
     else: TEXT_AA = 8

@@ -95,7 +95,7 @@ public:
 
 std::vector<GPS_Point> g_line_points;
 
-bool OpenRosBag(const std::string& bag_Name, rosbag::Bag & _bag, rosbag::View& _bagView, rosbag::View::iterator& _viewIterator)
+bool OpenROSBag(const std::string& bag_Name, rosbag::Bag & _bag, rosbag::View& _bagView, rosbag::View::iterator& _viewIterator)
 {
 	std::set<std::string> bagTopics;
 
@@ -116,7 +116,7 @@ bool OpenRosBag(const std::string& bag_Name, rosbag::Bag & _bag, rosbag::View& _
 
 		if (bagTopics.find(nmea_topic_name) == bagTopics.end())
 		{
-			std::cout << "Can't Find NMEA Sentence Topic in RosBag File :" << nmea_topic_name << std::endl;
+			std::cout << "Can't Find NMEA Sentence Topic in ROSBag File :" << nmea_topic_name << std::endl;
 			return false;
 		}
 		else
@@ -131,7 +131,7 @@ bool OpenRosBag(const std::string& bag_Name, rosbag::Bag & _bag, rosbag::View& _
     }
     catch (rosbag::BagIOException& e)
     {
-    	std::cout << "Can't Open Rosbag with path: " << bag_Name << std::endl;
+    	std::cout << "Can't Open ROSbag with path: " << bag_Name << std::endl;
         return false;
     }
 }
@@ -367,7 +367,7 @@ void ConvertOneFile(const std::string& fileName)
 	std::ofstream ofs;
 	ofs.open(output_csv.c_str(), std::ios::app);
 
-	OpenRosBag(fileName, bag, bagView, viewIterator);
+	OpenROSBag(fileName, bag, bagView, viewIterator);
 
 	while(1)
 	{

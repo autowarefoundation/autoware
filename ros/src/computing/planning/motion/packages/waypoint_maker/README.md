@@ -105,7 +105,7 @@
 
 1. Subscribed Topics
 
-    - /config/waypoint_loader (autoware_msgs/ConfigWaypointLoadre)
+    - /config/waypoint_loader (autoware_config_msgs/ConfigWaypointLoadre)
     - /config/waypoint_loader_output (std_msgs/Bool)
 
 1. Published Topics

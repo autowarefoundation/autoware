@@ -40,7 +40,7 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include <autoware_msgs/ConfigCompareMapFilter.h>
+#include <autoware_config_msgs/ConfigCompareMapFilter.h>
 
 class CompareMapFilter
 {
@@ -67,7 +67,7 @@ private:
 
   std::string map_frame_;
 
-  void configCallback(const autoware_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr);
+  void configCallback(const autoware_config_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr);
   void pointsMapCallback(const sensor_msgs::PointCloud2::ConstPtr& map_cloud_msg_ptr);
   void sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& sensorTF_cloud_msg_ptr);
   void searchMatchingCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud_ptr,
@@ -95,7 +95,7 @@ CompareMapFilter::CompareMapFilter()
   unmatch_points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/points_no_ground", 10);
 }
 
-void CompareMapFilter::configCallback(const autoware_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr)
+void CompareMapFilter::configCallback(const autoware_config_msgs::ConfigCompareMapFilter::ConstPtr& config_msg_ptr)
 {
   distance_threshold_ = config_msg_ptr->distance_threshold;
   min_clipping_height_ = config_msg_ptr->min_clipping_height;

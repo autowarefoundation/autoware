@@ -265,7 +265,7 @@ void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedC
 	bNewBehaviorState = true;
 }
 
-void FFSteerControl::callbackGetCurrentTrajectory(const autoware_msgs::laneConstPtr &msg)
+void FFSteerControl::callbackGetCurrentTrajectory(const autoware_msgs::LaneConstPtr &msg)
 {
 	m_State.m_Path.clear();
 	for(unsigned int i = 0 ; i < msg->waypoints.size(); i++)

@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         geometry_msgs
         autoware_msgs
+        autoware_config_msgs
         pcl_ros
         pcl_conversions
         sensor_msgs
@@ -29,6 +30,7 @@ catkin_package(
         tf
         geometry_msgs
         autoware_msgs
+        autoware_config_msgs
         pcl_ros
         pcl_conversions
         sensor_msgs

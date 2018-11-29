@@ -36,22 +36,9 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <nav_msgs/Odometry.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
-
-#include <module_comm_msgs/SteerMode.h>
-#include <module_comm_msgs/SpeedMode.h>
-#include <module_comm_msgs/VelocityAccel.h>
-#include <platform_comm_msgs/CurvatureFeedback.h>
-#include <platform_comm_msgs/TurnSignalCommand.h>
-#include <platform_comm_msgs/GearCommand.h>
-#include <platform_comm_msgs/Gear.h>
-
-#include <autoware_msgs/lamp_cmd.h>
-#include <std_msgs/UInt8.h>
-#include <std_msgs/Float32.h>
+#include <automotive_platform_msgs/SteerMode.h>
+#include <automotive_platform_msgs/SpeedMode.h>
+#include <dbw_mkz_msgs/SteeringReport.h>
 
 namespace pacmod
 {

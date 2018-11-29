@@ -82,7 +82,7 @@ namespace std {
 	};
 };
 
-class RosPixelCloudFusionApp
+class ROSPixelCloudFusionApp
 {
 	ros::NodeHandle                     node_handle_;
 	ros::Publisher                      publisher_fused_cloud_;
@@ -133,11 +133,11 @@ class RosPixelCloudFusionApp
 	 * Reads the config params from the command line
 	 * @param in_private_handle
 	 */
-	void InitializeRosIo(ros::NodeHandle &in_private_handle);
+	void InitializeROSIo(ros::NodeHandle &in_private_handle);
 
 public:
 	void Run();
-	RosPixelCloudFusionApp();
+	ROSPixelCloudFusionApp();
 };
 
 #endif //PROJECT_PIXEL_CLOUD_FUSION_H

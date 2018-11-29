@@ -67,7 +67,7 @@ public:
 
 		if (bagTopics.find(topic_name) == bagTopics.end())
 		{
-			ROS_WARN_STREAM("Can't Find LIDAR Topic in RosBag File :" << topic_name);
+			ROS_WARN_STREAM("Can't Find LIDAR Topic in ROSBag File :" << topic_name);
 			return;
 		}
 		else
