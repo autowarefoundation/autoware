@@ -90,10 +90,6 @@ TEST(TestSuite, SetCallbacksStateContext){
 	std::cout.rdbuf(p_cout_streambuf); // restore
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show 'Test output'";
 
-//	stateCtx.onExit();
-//	std::cout.rdbuf(p_cout_streambuf); // restore
-//	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
-
 	// Set Callback for unexisting state
 //	ASSERT_TRUE(!stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
 }
