@@ -1,0 +1,136 @@
+/*
+ * Copyright 2017 Autoware Foundation. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <ros/ros.h>
+#include <gtest/gtest.h>
+
+#include "astar_search/astar_util.h"
+
+class TestSuite: public ::testing::Test {
+public:
+	TestSuite(){}
+	~TestSuite(){}
+};
+
+TEST(TestSuite, CalculateDistanceBetween2Points){
+	// Point 1
+	double x1 = 0.0;
+	double y1 = 0.0;
+	// Point 2
+	double x2 = 3.0;
+	double y2 = 4.0;
+	ASSERT_EQ(calcDistance(x1, y1, x2, y2), sqrt(x2*x2 + y2*y2)) << "Distance should be " << sqrt(x2*x2 + y2*y2);
+}
+
+TEST(TestSuite, CheckThetaWrapAround){
+	double theta = -90; //Degrees
+	double thetaNew = (theta+360)*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+
+	theta = 400;
+	thetaNew = (theta-360)*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+
+	theta = 60;
+	thetaNew = theta*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+}
+
+TEST(TestSuite, CheckTransformPose){
+
+	// Check translation of 1 along X axis
+	tf::Quaternion q(0,0,0,1);
+	tf::Vector3 v(1,0,0);
+	geometry_msgs::Pose inPose, outPose, expectedPose;
+	inPose.position.x = 0;
+	inPose.position.y = 0;
+	inPose.position.z = 0;
+	inPose.orientation.x = 0;
+	inPose.orientation.y = 0;
+	inPose.orientation.z = 0;
+	inPose.orientation.w = 1;
+	expectedPose.position.x = 1;
+	expectedPose.position.y = 0;
+	expectedPose.position.z = 0;
+	expectedPose.orientation.x = 0;
+	expectedPose.orientation.y = 0;
+	expectedPose.orientation.z = 0;
+	expectedPose.orientation.w = 1;
+	tf::Transform translation(q, v);
+
+	outPose = transformPose(inPose, translation);
+
+	ASSERT_DOUBLE_EQ(outPose.position.x, expectedPose.position.x) << "X Coordinate should be " << expectedPose.position.x;
+	ASSERT_DOUBLE_EQ(outPose.position.y, expectedPose.position.y) << "Y Coordinate should be " << expectedPose.position.y;
+	ASSERT_DOUBLE_EQ(outPose.position.z, expectedPose.position.z) << "Z Coordinate should be " << expectedPose.position.z;
+	ASSERT_DOUBLE_EQ(outPose.orientation.x, expectedPose.orientation.x) << "X Quaternion should be " << expectedPose.orientation.x;
+	ASSERT_DOUBLE_EQ(outPose.orientation.y, expectedPose.orientation.y) << "Y Quaternion should be " << expectedPose.orientation.y;
+	ASSERT_DOUBLE_EQ(outPose.orientation.z, expectedPose.orientation.z) << "Z Quaternion should be " << expectedPose.orientation.z;
+	ASSERT_DOUBLE_EQ(outPose.orientation.w, expectedPose.orientation.w) << "W Quaternion should be " << expectedPose.orientation.w;
+
+}
+
+TEST(TestSuite, CheckWaveFrontNodeConstruct){
+	int x = 0;
+	int y = 0;
+	double cost = 10;
+	WaveFrontNode node = getWaveFrontNode(x, y, cost);
+	ASSERT_EQ(node.index_x, x) << "index_x should be " << x;
+	ASSERT_EQ(node.index_y, y) << "index_y should be " << y;
+	ASSERT_EQ(node.hc, cost) << "hc should be " << cost;
+}
+
+TEST(TestSuite, CheckRelativeCoordinate){
+
+	geometry_msgs::Pose inPose;
+	inPose.position.x = 1;
+	inPose.position.y = -4;
+	inPose.position.z = 8;
+	inPose.orientation.x = 0;
+	inPose.orientation.y = 0;
+	inPose.orientation.z = 0;
+	inPose.orientation.w = 1;
+
+	tf::Point point = tf::Point(0,0,0);
+
+	geometry_msgs::Point relPt = calcRelativeCoordinate(inPose, point);
+	geometry_msgs::Point expPt;
+	expPt.x = -inPose.position.x;
+	expPt.y = -inPose.position.y;
+	expPt.z = -inPose.position.z;
+
+	ASSERT_EQ(relPt.x, expPt.x) << "X coord should be " << expPt.x;
+	ASSERT_EQ(relPt.y, expPt.y) << "Y coord should be " << expPt.y;
+	ASSERT_EQ(relPt.z, expPt.z) << "Z coord should be " << expPt.z;
+}
+
+TEST(TestSuite, CheckRadianDifference){
+
+	// Diff < 180 degrees
+	double a = 0*M_PI/180;
+	double b = 90*M_PI/180;
+	ASSERT_DOUBLE_EQ(calcDiffOfRadian(a, b), 90*M_PI/180) << "diff should be " << 90*M_PI/180;
+
+	// 180 degrees < Diff < 360 degrees
+	a = 0*M_PI/180;
+	b = 190*M_PI/180;
+	ASSERT_DOUBLE_EQ(calcDiffOfRadian(a, b), 170*M_PI/180) << "diff should be " << 170*M_PI/180;
+
+	// Diff > 360 degrees
+	a = 0*M_PI/180;
+	b = 400*M_PI/180;
+	ASSERT_DOUBLE_EQ(calcDiffOfRadian(a, b), 40*M_PI/180) << "diff should be " << 40*M_PI/180;
+}
