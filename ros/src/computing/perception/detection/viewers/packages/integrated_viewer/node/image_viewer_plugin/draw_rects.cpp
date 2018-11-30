@@ -78,18 +78,44 @@ namespace integrated_viewer
         // Draw rectangles for each object
         for (const auto &detected_object : detected_objects->objects)
         {
-            // Draw object information label
-            DrawLabel(detected_object, image);
+            if (detected_object.x >= 0
+                && detected_object.y >= 0
+                && detected_object.width > 0
+                && detected_object.height > 0)
+            {
+                // Draw object information label
+                DrawLabel(detected_object, image);
 
-            // Draw rectangle
-            cv::rectangle(image,
-                          cv::Point(detected_object.x, detected_object.y),
-                          cv::Point(detected_object.x + detected_object.width,
-                                    detected_object.y + detected_object.height),
-                          cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
-                          kRectangleThickness,
-                          CV_AA,
-                          0);
+                int x2 = detected_object.x + detected_object.width;
+                if (x2 >= image.cols)
+                    x2 = image.cols - 1;
+                int y2 = detected_object.y + detected_object.height;
+                if (y2 >= image.rows)
+                    y2 = image.rows - 1;
+
+                if (detected_object.dimensions.x > 0
+                    && detected_object.dimensions.y > 0
+                    && detected_object.dimensions.z > 0)
+                {
+                    cv::Mat image_roi = image(cv::Rect(cv::Point(detected_object.x, detected_object.y),
+                                                       cv::Point(x2,
+                                                                 y2)));
+                    cv::Mat color_fill(image_roi.size(), CV_8UC3,
+                                       cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b));
+                    double alpha = 0.3;
+                    cv::addWeighted(color_fill, alpha, image_roi, 1.0 - alpha , 0.0, image_roi);
+                }
+
+                // Draw rectangle
+                cv::rectangle(image,
+                              cv::Point(detected_object.x, detected_object.y),
+                              cv::Point(x2,
+                                        y2),
+                              cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
+                              kRectangleThickness,
+                              CV_AA,
+                              0);
+            }
         }
     } // DrawRects::DrawImageRect()
 
@@ -125,7 +151,7 @@ namespace integrated_viewer
         cv::Point rectangle_origin(in_detected_object.x, in_detected_object.y);
         // label's property
         const int font_face = cv::FONT_HERSHEY_DUPLEX;
-        const double font_scale = 0.8;
+        const double font_scale = 0.7;
         const int font_thickness = 1;
         int font_baseline = 0;
         int icon_width = 40;
@@ -146,11 +172,14 @@ namespace integrated_viewer
                                        in_detected_object.pose.position.y*in_detected_object.pose.position.y);
 
         label_one << in_detected_object.label;
+        if (in_detected_object.id > 0)
+        {
+            label_one << " " << std::to_string(in_detected_object.id);
+        }
         if (distance > 0.1)
         {
             label_two << std::setprecision(2) << distance << "meters";
         }
-
         if (in_detected_object.label == "car" || in_detected_object.label == "truck")
         {
             OverlayImage(image, car_image_, image, label_origin);
@@ -192,14 +221,18 @@ namespace integrated_viewer
                     label_origin,
                     font_face,
                     font_scale,
-                    CV_RGB(255, 255, 255));
+                    CV_RGB(255, 255, 255),
+                    1,
+                    CV_AA);
         label_origin.y+= text_holder_rect.height / 3;
         cv::putText(image,
                     label_two.str(),
                     label_origin,
                     font_face,
                     font_scale,
-                    CV_RGB(255, 255, 255));
+                    CV_RGB(255, 255, 255),
+                    1,
+                    CV_AA);
 
     } // DrawRects::DrawLabel()
 } // end namespace integrated_viewer

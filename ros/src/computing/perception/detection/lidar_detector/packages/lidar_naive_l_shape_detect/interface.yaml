@@ -1,0 +1,3 @@
+- name: lidar_euclidean_cluster_detect
+  publish: [/detection/lidar_objects/l_shaped]
+  subscribe: [/detection/lidar_objects]

@@ -2,6 +2,12 @@
 Changelog for package lidar_kf_contour_track
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
 1.8.0 (2018-08-31)
 ------------------
 * Support old behavior of insert static object for obstacle avoidance testing

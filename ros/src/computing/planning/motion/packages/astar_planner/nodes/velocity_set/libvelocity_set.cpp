@@ -248,7 +248,7 @@ void CrossWalk::setCrossWalkPoints()
   set_points = true;
 }
 
-int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::lane &lane,
+int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::Lane &lane,
                                     const int search_distance)
 {
   if (!set_points || closest_waypoint < 0)

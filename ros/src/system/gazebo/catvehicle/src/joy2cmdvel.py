@@ -30,7 +30,7 @@ from geometry_msgs.msg import Twist, Pose
 from sensor_msgs.msg import Joy
 import sys, getopt
 
-# requires the ros-indigo-joysticks
+# requires the ros-kinetic-joysticks
 
 class joy2cmdvel:
 

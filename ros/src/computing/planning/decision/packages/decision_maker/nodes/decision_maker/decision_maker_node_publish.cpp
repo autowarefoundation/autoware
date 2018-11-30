@@ -12,8 +12,8 @@
 
 #include <decision_maker_node.hpp>
 
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/state.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/State.h>
 #include <jsk_recognition_msgs/BoundingBoxArray.h>
 #include <random>
 #include <visualization_msgs/MarkerArray.h>
@@ -200,7 +200,7 @@ void DecisionMakerNode::update_msgs(void)
       update_pubsub();
     }
 
-    autoware_msgs::state state_msg;
+    autoware_msgs::State state_msg;
     state_msg.main_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::MAIN_STATE);
     state_msg.acc_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::ACC_STATE);
     state_msg.str_state = ctx->getCurrentStateName((uint8_t)state_machine::StateKinds::STR_STATE);

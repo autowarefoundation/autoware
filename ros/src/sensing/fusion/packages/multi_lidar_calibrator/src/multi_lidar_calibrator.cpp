@@ -37,7 +37,7 @@
 #include "multi_lidar_calibrator.h"
 
 
-void RosMultiLidarCalibratorApp::PublishCloud(const ros::Publisher& in_publisher, pcl::PointCloud<PointT>::ConstPtr in_cloud_to_publish_ptr)
+void ROSMultiLidarCalibratorApp::PublishCloud(const ros::Publisher& in_publisher, pcl::PointCloud<PointT>::ConstPtr in_cloud_to_publish_ptr)
 {
 	sensor_msgs::PointCloud2 cloud_msg;
 	pcl::toROSMsg(*in_cloud_to_publish_ptr, cloud_msg);
@@ -45,7 +45,7 @@ void RosMultiLidarCalibratorApp::PublishCloud(const ros::Publisher& in_publisher
 	in_publisher.publish(cloud_msg);
 }
 
-void RosMultiLidarCalibratorApp::PointsCallback(const sensor_msgs::PointCloud2::ConstPtr &in_parent_cloud_msg,
+void ROSMultiLidarCalibratorApp::PointsCallback(const sensor_msgs::PointCloud2::ConstPtr &in_parent_cloud_msg,
                                                   const sensor_msgs::PointCloud2::ConstPtr &in_child_cloud_msg)
 {
 	pcl::PointCloud<PointT>::Ptr in_parent_cloud(new pcl::PointCloud<PointT>);
@@ -117,7 +117,7 @@ void RosMultiLidarCalibratorApp::PointsCallback(const sensor_msgs::PointCloud2::
 
 }
 
-/*void RosMultiLidarCalibratorApp::InitialPoseCallback(geometry_msgs::PoseWithCovarianceStamped::ConstPtr in_initialpose)
+/*void ROSMultiLidarCalibratorApp::InitialPoseCallback(geometry_msgs::PoseWithCovarianceStamped::ConstPtr in_initialpose)
 {
 	ROS_INFO("[%s] Initial Pose received.", __APP_NAME__);
 	tf::Quaternion pose_quaternion(in_initialpose->pose.pose.orientation.x,
@@ -136,7 +136,7 @@ void RosMultiLidarCalibratorApp::PointsCallback(const sensor_msgs::PointCloud2::
 
 }*/
 
-void RosMultiLidarCalibratorApp::DownsampleCloud(pcl::PointCloud<PointT>::ConstPtr in_cloud_ptr,
+void ROSMultiLidarCalibratorApp::DownsampleCloud(pcl::PointCloud<PointT>::ConstPtr in_cloud_ptr,
                                                  pcl::PointCloud<PointT>::Ptr out_cloud_ptr,
                                                  double in_leaf_size)
 {
@@ -146,7 +146,7 @@ void RosMultiLidarCalibratorApp::DownsampleCloud(pcl::PointCloud<PointT>::ConstP
 	voxelized.filter(*out_cloud_ptr);
 }
 
-void RosMultiLidarCalibratorApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
+void ROSMultiLidarCalibratorApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
 	//get params
 	std::string points_parent_topic_str, points_child_topic_str;
@@ -195,7 +195,7 @@ void RosMultiLidarCalibratorApp::InitializeRosIo(ros::NodeHandle &in_private_han
 	ROS_INFO("[%s] Subscribing to... %s",__APP_NAME__, points_child_topic_str.c_str());
 
 	/*initialpose_subscriber_ = node_handle_.subscribe(initial_pose_topic_str, 10,
-	                                                          &RosMultiLidarCalibratorApp::InitialPoseCallback, this);
+	                                                          &ROSMultiLidarCalibratorApp::InitialPoseCallback, this);
 	ROS_INFO("[%s] Subscribing to... %s",__APP_NAME__, initial_pose_topic_str.c_str());*/
 
 	calibrated_cloud_publisher_ = node_handle_.advertise<sensor_msgs::PointCloud2>(calibrated_points_topic_str, 1);
@@ -205,16 +205,16 @@ void RosMultiLidarCalibratorApp::InitializeRosIo(ros::NodeHandle &in_private_han
 			new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(100),
 			                                               *cloud_parent_subscriber_,
 			                                               *cloud_child_subscriber_);
-	cloud_synchronizer_->registerCallback(boost::bind(&RosMultiLidarCalibratorApp::PointsCallback, this, _1, _2));
+	cloud_synchronizer_->registerCallback(boost::bind(&ROSMultiLidarCalibratorApp::PointsCallback, this, _1, _2));
 
 }
 
 
-void RosMultiLidarCalibratorApp::Run()
+void ROSMultiLidarCalibratorApp::Run()
 {
 	ros::NodeHandle private_node_handle("~");
 
-	InitializeRosIo(private_node_handle);
+	InitializeROSIo(private_node_handle);
 
 	ROS_INFO("[%s] Ready. Waiting for data...",__APP_NAME__);
 
@@ -223,7 +223,7 @@ void RosMultiLidarCalibratorApp::Run()
 	ROS_INFO("[%s] END",__APP_NAME__);
 }
 
-RosMultiLidarCalibratorApp::RosMultiLidarCalibratorApp()
+ROSMultiLidarCalibratorApp::ROSMultiLidarCalibratorApp()
 {
 	//initialpose_quaternion_ = tf::Quaternion::getIdentity();
 	current_guess_ = Eigen::Matrix4f::Identity();

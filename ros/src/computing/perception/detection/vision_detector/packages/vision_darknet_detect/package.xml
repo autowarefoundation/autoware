@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_darknet_detect</name>
-    <version>1.8.0</version>
+    <version>1.9.1</version>
     <description>darknet image detector</description>
     <maintainer email="abrahammonrroy@yahoo.com">Abraham Monrroy</maintainer>
     <license>BSD</license>
@@ -11,6 +11,7 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_config_msgs</build_depend>
     <build_depend>cv_bridge</build_depend>
     <build_depend>image_transport</build_depend>
     <build_depend>roscpp</build_depend>
@@ -18,6 +19,7 @@
     <run_depend>sensor_msgs</run_depend>
     <run_depend>std_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_config_msgs</run_depend>
     <run_depend>cv_bridge</run_depend>
     <run_depend>image_transport</run_depend>
     <run_depend>roscpp</run_depend>

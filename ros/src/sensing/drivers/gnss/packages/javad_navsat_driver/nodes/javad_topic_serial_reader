@@ -38,7 +38,7 @@ import serial
 import rospy
 
 from nmea_msgs.msg import Sentence
-from libjavad_navsat_driver.driver import RosNMEADriver
+from libjavad_navsat_driver.driver import ROSNMEADriver
 
 if __name__ == '__main__':
     rospy.init_node('javad_topic_serial_reader')
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     disable_lines = open(disable_file, 'r').readlines()
     
     # Get the frame_id
-    frame_id = RosNMEADriver.get_frame_id()
+    frame_id = ROSNMEADriver.get_frame_id()
 
     try:
         GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)

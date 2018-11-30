@@ -1,5 +1,5 @@
 <!-- nmea_navsar_driver MUST be installed before -->
-<!-- sudo apt-get install ros-indigo-nmea-navsat-driver -->
+<!-- sudo apt-get install ros-kinetic-nmea-navsat-driver -->
 <!-- publishes fix, vel and time_reference -->
 <!-- For details: http://wiki.ros.org/nmea_navsat_driver-->
 <launch> 

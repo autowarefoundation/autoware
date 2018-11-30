@@ -2,6 +2,12 @@
 Changelog for package sick_ldmrs_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
 1.8.0 (2018-08-31)
 ------------------
 * [Feature] Cross compile Autoware for aarch64 (`#1375 <https://github.com/CPFL/Autoware/pull/1375>`_)

@@ -56,48 +56,48 @@ import rospy
 import std_msgs.msg
 from std_msgs.msg import Bool
 from decimal import Decimal
-from autoware_msgs.msg import ConfigSsd
-from autoware_msgs.msg import ConfigCarDpm
-from autoware_msgs.msg import ConfigPedestrianDpm
-from autoware_msgs.msg import ConfigNdt
-from autoware_msgs.msg import ConfigNdtMapping
-from autoware_msgs.msg import ConfigApproximateNdtMapping
-from autoware_msgs.msg import ConfigNdtMappingOutput
-from autoware_msgs.msg import ConfigICP
-from autoware_msgs.msg import ConfigVoxelGridFilter
-from autoware_msgs.msg import ConfigRingFilter
-from autoware_msgs.msg import ConfigDistanceFilter
-from autoware_msgs.msg import ConfigRandomFilter
-from autoware_msgs.msg import ConfigRingGroundFilter
-from autoware_msgs.msg import ConfigRayGroundFilter
-from autoware_msgs.msg import ConfigWaypointLoader
-from autoware_msgs.msg import ConfigWaypointFollower
-from autoware_msgs.msg import ConfigTwistFilter
-from autoware_msgs.msg import ConfigVelocitySet
-from autoware_msgs.msg import ConfigLatticeVelocitySet
-from autoware_msgs.msg import ConfigCarKf
-from autoware_msgs.msg import ConfigPedestrianKf
-from autoware_msgs.msg import ConfigLaneRule
-from autoware_msgs.msg import ConfigLaneSelect
-from autoware_msgs.msg import ConfigLaneStop
-from autoware_msgs.msg import ConfigCarFusion
-from autoware_msgs.msg import ConfigPedestrianFusion
-from autoware_msgs.msg import ConfigPlannerSelector
-from autoware_msgs.msg import ConfigDecisionMaker
+from autoware_config_msgs.msg import ConfigSSD
+from autoware_config_msgs.msg import ConfigCarDPM
+from autoware_config_msgs.msg import ConfigPedestrianDPM
+from autoware_config_msgs.msg import ConfigNDT
+from autoware_config_msgs.msg import ConfigNDTMapping
+from autoware_config_msgs.msg import ConfigApproximateNDTMapping
+from autoware_config_msgs.msg import ConfigNDTMappingOutput
+from autoware_config_msgs.msg import ConfigICP
+from autoware_config_msgs.msg import ConfigVoxelGridFilter
+from autoware_config_msgs.msg import ConfigRingFilter
+from autoware_config_msgs.msg import ConfigDistanceFilter
+from autoware_config_msgs.msg import ConfigRandomFilter
+from autoware_config_msgs.msg import ConfigRingGroundFilter
+from autoware_config_msgs.msg import ConfigRayGroundFilter
+from autoware_config_msgs.msg import ConfigWaypointLoader
+from autoware_config_msgs.msg import ConfigWaypointFollower
+from autoware_config_msgs.msg import ConfigTwistFilter
+from autoware_config_msgs.msg import ConfigVelocitySet
+from autoware_config_msgs.msg import ConfigLatticeVelocitySet
+from autoware_config_msgs.msg import ConfigCarKF
+from autoware_config_msgs.msg import ConfigPedestrianKF
+from autoware_config_msgs.msg import ConfigLaneRule
+from autoware_config_msgs.msg import ConfigLaneSelect
+from autoware_config_msgs.msg import ConfigLaneStop
+from autoware_config_msgs.msg import ConfigCarFusion
+from autoware_config_msgs.msg import ConfigPedestrianFusion
+from autoware_config_msgs.msg import ConfigPlannerSelector
+from autoware_config_msgs.msg import ConfigDecisionMaker
+from autoware_config_msgs.msg import ConfigCompareMapFilter
 from tablet_socket_msgs.msg import mode_cmd
 from tablet_socket_msgs.msg import gear_cmd
 from tablet_socket_msgs.msg import Waypoint
 from tablet_socket_msgs.msg import route_cmd
-from autoware_msgs.msg import ndt_stat
 from geometry_msgs.msg import TwistStamped
 from geometry_msgs.msg import Vector3
-from autoware_msgs.msg import accel_cmd
-from autoware_msgs.msg import steer_cmd
-from autoware_msgs.msg import brake_cmd
-from autoware_msgs.msg import indicator_cmd
-from autoware_msgs.msg import lamp_cmd
-from autoware_msgs.msg import traffic_light
-from autoware_msgs.msg import adjust_xy
+from autoware_msgs.msg import AccelCmd
+from autoware_msgs.msg import SteerCmd
+from autoware_msgs.msg import BrakeCmd
+from autoware_msgs.msg import IndicatorCmd
+from autoware_msgs.msg import LampCmd
+from autoware_msgs.msg import TrafficLight
+from autoware_msgs.msg import AdjustXY
 from types import MethodType
 
 SCHED_OTHER = 0
@@ -128,7 +128,7 @@ class MyFrame(rtmgr.MyFrame):
 		# ros
 		#
 		rospy.init_node('runime_manager', anonymous=True)
-		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
+		rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.ROSCb)
 		self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#
@@ -223,7 +223,7 @@ class MyFrame(rtmgr.MyFrame):
 		#	self.OnProbe(None)
 		#	self.timer.Start(self.probe_interval)
 
-		self.dlg_rosbag_record = MyDialogRosbagRecord(self, cmd_dic=self.sensing_cmd)
+		self.dlg_rosbag_record = MyDialogROSbagRecord(self, cmd_dic=self.sensing_cmd)
 		buttons_color_hdr_setup(self.dlg_rosbag_record)
 
 		sense_cmds_dic = dic.get('cmds', {})
@@ -697,7 +697,7 @@ class MyFrame(rtmgr.MyFrame):
 		msg = '{} booted commands menu ?'.format(s)
 		return (enable, msg)
 
-	def RosCb(self, data):
+	def ROSCb(self, data):
 		print('recv topic msg : ' + data.data)
 
 		r = rospy.Rate(10)
@@ -754,15 +754,15 @@ class MyFrame(rtmgr.MyFrame):
 			pub.publish(gear_cmd(gear=v))
 
 	def OnLamp(self, event):
-		pub = rospy.Publisher('lamp_cmd', lamp_cmd, queue_size=10)
-		msg = lamp_cmd()
+		pub = rospy.Publisher('lamp_cmd', LampCmd, queue_size=10)
+		msg = LampCmd()
 		msg.l = self.button_statchk_lamp_l.GetValue()
 		msg.r = self.button_statchk_lamp_r.GetValue()
 		pub.publish(msg)
 
 	def OnIndi(self, event):
-		pub = rospy.Publisher('indicator_cmd', indicator_cmd, queue_size=10)
-		msg = indicator_cmd()
+		pub = rospy.Publisher('indicator_cmd', IndicatorCmd, queue_size=10)
+		msg = IndicatorCmd()
 		msg.l = self.button_statchk_indi_l.GetValue()
 		msg.r = self.button_statchk_indi_r.GetValue()
 		pub.publish(msg)
@@ -1178,7 +1178,7 @@ class MyFrame(rtmgr.MyFrame):
 	def OnSensingDriver(self, event):
 		self.OnChecked_obj(event.GetEventObject())
 
-	def OnRosbagRecord(self, event):
+	def OnROSbagRecord(self, event):
 		self.dlg_rosbag_record.show()
 		obj = event.GetEventObject()
 		set_val(obj, False)
@@ -1799,7 +1799,7 @@ class MyFrame(rtmgr.MyFrame):
 		if proc:
 			self.update_proc_cpu(obj)
 
-	def OnRosbagPlay(self, event):
+	def OnROSbagPlay(self, event):
 		obj = event.GetEventObject()
 
 		play = self.button_play_rosbag_play
@@ -2357,6 +2357,14 @@ class VarPanel(wx.Panel):
 		if self.kind == 'hide':
 			self.Hide()
 			return
+		if self.kind == 'topic':
+			topic_type = self.var.get('topic_type')
+			topics = self._get_topics_by_type(topic_type)
+			self.obj = wx.ComboBox(self, id=wx.ID_ANY, value=v, choices=topics, style=wx.CB_DROPDOWN, size=(130,-1))
+			self.lb = wx.StaticText(self, wx.ID_ANY, label)
+			flag = wx.LEFT | wx.ALIGN_CENTER_VERTICAL
+			sizer_wrap((self.lb, self.obj), wx.HORIZONTAL, 0, flag, 4, self)
+			return
 
 		szr = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -2371,7 +2379,7 @@ class VarPanel(wx.Panel):
 
 		style = wx.TE_PROCESS_ENTER + wx_flag_get( self.var.get('str_flags', []) )
 
-		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style)
+		self.tc = wx.TextCtrl(self, wx.ID_ANY, str(v), style=style, size=(130,-1))
 		self.Bind(wx.EVT_TEXT_ENTER, self.OnUpdate, self.tc)
 
 		if self.kind in ('num', None):
@@ -2409,6 +2417,14 @@ class VarPanel(wx.Panel):
 
 		self.SetSizer(szr)
 
+	def _get_topics_by_type(self, message_type):
+		#get list of current available topics:
+		ros_topics = rospy.get_published_topics()
+		matched_topics = list(filter(lambda x: x[1]==message_type,ros_topics))
+		topic_names = [x[0] for x in matched_topics]
+		topic_names.sort()
+		return topic_names
+
 	def setup_tooltip(self):
 		if get_tooltips(self.var):
 			set_tooltips(self.obj, self.var)
@@ -2427,7 +2443,7 @@ class VarPanel(wx.Panel):
 	def get_v(self):
 		if self.kind in [ 'radio_box', 'menu' ]:
 			return self.choices_sel_get()
-		if self.kind in [ 'checkbox', 'toggle_button' ]:
+		if self.kind in [ 'checkbox', 'toggle_button', 'topic' ]:
 			return self.obj.GetValue()
 		if self.kind == 'checkboxes':
 			return self.obj.get()
@@ -2547,13 +2563,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnClose(self, event):
 		self.OnCancel(event)
 
-class MyDialogDpm(rtmgr.MyDialogDpm):
+class MyDialogDPM(rtmgr.MyDialogDPM):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.pdic_bak = pdic.copy()
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
-		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		rtmgr.MyDialogDPM.__init__(self, *args, **kwds)
 		set_size_gdic(self, gdic)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -2667,13 +2683,13 @@ class MyDialogLaneStop(rtmgr.MyDialogLaneStop):
 	def OnCancel(self, event):
 		self.EndModal(-1)
 
-class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
+class MyDialogNDTMapping(rtmgr.MyDialogNDTMapping):
 	def __init__(self, *args, **kwds):
 		self.pdic = kwds.pop('pdic')
 		self.pdic_bak = self.pdic.copy()
 		self.gdic = kwds.pop('gdic')
 		self.prm = kwds.pop('prm')
-		rtmgr.MyDialogNdtMapping.__init__(self, *args, **kwds)
+		rtmgr.MyDialogNDTMapping.__init__(self, *args, **kwds)
 		set_size_gdic(self)
 
 		parent = self.panel_v
@@ -2682,7 +2698,7 @@ class MyDialogNdtMapping(rtmgr.MyDialogNdtMapping):
 		sizer_wrap((self.panel,), wx.VERTICAL, 1, wx.EXPAND, 0, parent)
 
 		self.update_filename()
-		self.klass_msg = ConfigNdtMappingOutput
+		self.klass_msg = ConfigNDTMappingOutput
 		self.pub = rospy.Publisher('/config/ndt_mapping_output', self.klass_msg, queue_size=10)
 
 	def update_filename(self):
@@ -2892,10 +2908,10 @@ class MyApp(wx.App):
 		frame_1.Show()
 		return 1
 
-class MyDialogRosbagRecord(rtmgr.MyDialogRosbagRecord):
+class MyDialogROSbagRecord(rtmgr.MyDialogROSbagRecord):
 	def __init__(self, *args, **kwds):
 		self.cmd_dic = kwds.pop('cmd_dic')
-		rtmgr.MyDialogRosbagRecord.__init__(self, *args, **kwds)
+		rtmgr.MyDialogROSbagRecord.__init__(self, *args, **kwds)
 		self.cbs = []
 		self.refresh()
 		self.parent = self.GetParent()

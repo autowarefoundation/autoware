@@ -79,7 +79,6 @@ from std_msgs.msg import String
 from std_srvs.srv import Empty
 from os import path
 
-
 class DisplayThread(threading.Thread):
     """
     Thread that displays the current images
@@ -147,7 +146,7 @@ class CalibrationNode:
         self._pattern = pattern
         self._camera_name = camera_name
         self._min_good_enough = min_good_enough
-        rospack = rospkg.RosPack()
+        rospack = rospkg.ROSPack()
         pkg_path = rospack.get_path('autoware_camera_lidar_calibrator')
         self._autoware_image = cv2.imread( path.join(pkg_path, 'docs/autoware_logo.jpg'), cv2.IMREAD_UNCHANGED)
         lsub = message_filters.Subscriber('left', sensor_msgs.msg.Image)
@@ -257,6 +256,10 @@ class CalibrationNode:
 
 class OpenCVCalibrationNode(CalibrationNode):
     """ Calibration node with an OpenCV Gui """
+    cv2_version_major = cv2.__version__.split(".")[0]
+    if cv2_version_major == '2': TEXT_AA = cv2.CV_AA
+    elif cv2_version_major == '3': TEXT_AA = cv2.LINE_AA
+    else: TEXT_AA = 8
     FONT_FACE = cv2.FONT_HERSHEY_SIMPLEX
     FONT_SCALE = 0.4
     FONT_THICKNESS = 1
@@ -272,7 +275,8 @@ class OpenCVCalibrationNode(CalibrationNode):
 
     @classmethod
     def putText(cls, img, text, org, color = (0,0,0)):
-        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS, lineType = cv2.CV_AA)
+        cv2.putText(img, text, org, cls.FONT_FACE, cls.FONT_SCALE, color, thickness = cls.FONT_THICKNESS,
+                    lineType = cls.TEXT_AA)
 
     @classmethod
     def getTextSize(cls, text):

@@ -35,7 +35,10 @@ else ()
     set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 endif ()
 
-set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR NAMES yaml_cpp.h PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY NAMES YAML_CPP PATHS ${YAML_CPP_LIBRARIES})
 
 catkin_package(
         CATKIN_DEPENDS
@@ -74,6 +77,7 @@ target_include_directories(range_vision_fusion_lib PRIVATE
         ${PCL_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
         ${OPENGL_INCLUDE_DIRS}
+        ${YAML_CPP_INCLUDE_DIRS}
         include
         )
 
@@ -81,6 +85,7 @@ target_link_libraries(range_vision_fusion_lib
         ${OpenCV_LIBRARIES}
         ${EIGEN3_LIBRARIES}
         ${OPENGL_LIBRARIES}
+        ${YAML_CPP_LIBRARIES}
         ${catkin_LIBRARIES}
         )
 
