@@ -91,7 +91,7 @@ TEST(TestSuite, SetCallbacksStateContext){
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show 'Test output'";
 
 	// Set Callback for unexisting state
-//	ASSERT_TRUE(!stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
+	ASSERT_TRUE(!stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
 }
 
 
