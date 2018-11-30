@@ -115,6 +115,25 @@ target_link_libraries(wayarea2grid
         wayarea2grid_lib
         )
 
+### costmap_generator ###
+add_library(costmap_generator_lib
+        nodes/costmap_generator/costmap_generator_node.cpp
+        nodes/costmap_generator/costmap_generator.cpp
+        )
+target_link_libraries(costmap_generator_lib
+        ${catkin_LIBRARIES}
+        )
+
+add_executable(costmap_generator
+        nodes/costmap_generator/costmap_generator_node.cpp
+        nodes/costmap_generator/costmap_generator.cpp
+        )
+
+target_link_libraries(costmap_generator
+        ${catkin_LIBRARIES}
+        )
+
+
 install(TARGETS wayarea2grid grid_map_filter potential_field points2costmap laserscan2costmap
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
