@@ -34,9 +34,10 @@
 #include <ros/ros.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
-#include <grid_map_msgs/GridMap.h>
+#include <grid_map_ros/grid_map_ros.hpp>
 
 // headers in local directory
+#include "vector_map/vector_map.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 
 // headers in STL
@@ -53,26 +54,43 @@ class CostmapGenerator
 
   private:
     bool use_vectormap_;
+    bool use_wayarea_;
     bool use_waypoint_;
     bool use_objects_;
     bool has_subscribed_vectormap_;
     bool has_subscribed_waypoint_;
 
+    std::string sensor_frame_;
+    double grid_resolution_;
+    double grid_length_x_;
+    double grid_length_y_;
+    double grid_position_x_;
+    double grid_position_y_;
+
+    vector_map::VectorMap vmap_;
+
+    grid_map::GridMap gridmap_;
+
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
     ros::Publisher pub_costmap_;
-    ros::Subscriber sub_vectormap_;
     ros::Subscriber sub_waypoint_;
-
-    ros::Publisher sub_points_;
+    ros::Subscriber sub_points_;
 
     std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> sub_sync_points_ptr_;
     std::unique_ptr<message_filters::Subscriber<autoware_msgs::DetectedObjectArray>> sub_sync_objects_ptr_;
     std::unique_ptr<message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
                                                       autoware_msgs::DetectedObjectArray>> sync_ptr_;
+    void waypointCallback(const autoware_msgs::LaneArray& in_waypoint);
+    void sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points);
+    void mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points);
     void syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_points,
                   const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
+    void registerVectormapSubscriber();
+    void registerSyncedSubscriber();
+    void initGridmap();
+
 };
 
 #endif  // COSTMAP_GENERATOR_H
