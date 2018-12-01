@@ -119,6 +119,7 @@ target_link_libraries(wayarea2grid
 add_library(costmap_generator_lib
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
+        nodes/costmap_generator/points2costmap.cpp
         )
 target_link_libraries(costmap_generator_lib
         ${catkin_LIBRARIES}
@@ -127,6 +128,7 @@ target_link_libraries(costmap_generator_lib
 add_executable(costmap_generator
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
+        nodes/costmap_generator/points2costmap.cpp
         )
 
 target_link_libraries(costmap_generator

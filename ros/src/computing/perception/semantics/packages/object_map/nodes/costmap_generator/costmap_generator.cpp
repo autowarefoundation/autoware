@@ -91,10 +91,10 @@ void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& 
   // pub(costmap)
 }
 
-void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points)
+void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
   // if(checkSubscripton())
-  // gridmap_ = generateSensorPointsCostmap(in_sensor_points);
+  // gridmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
   // gridmap_ = generateMapPointsCostmap()
   // gridmap_ = generateVectormapCostmap()
   // gridmap_ = generateWaypointCostmap()
@@ -102,9 +102,9 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_s
   // pub(gridmap_);
 }
 
-void CostmapGenerator::mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points)
-{
-}
+// void CostmapGenerator::mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points)
+// {
+// }
 
 void CostmapGenerator::waypointCallback(const autoware_msgs::LaneArray& in_waypoint)
 {
@@ -147,8 +147,20 @@ void CostmapGenerator::registerVectormapSubscriber()
 
 void CostmapGenerator::initGridmap()
 {
+  gridmap_.add("sensor_points_cost", 0);
+  gridmap_.add("vectormap_cost", 0);
+  gridmap_.add("waypoint_cost", 0);
+  gridmap_.add("objects_cost", 0);
   gridmap_.setFrameId(sensor_frame_);
   gridmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_),
                   grid_resolution_,
                   grid_map::Position(grid_position_x_, grid_position_y_));
+}
+
+grid_map::GridMap CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points_msg)
+{
+  std::string sensor_points_costmap_layer_name = "sensor_points_cost";
+  grid_map::GridMap gridmap_with_points_cost = points2costmap_.makeSensorPointsCostmap(gridmap_,
+                                                                sensor_points_costmap_layer_name, in_sensor_points_msg);
+  return gridmap_with_points_cost;
 }

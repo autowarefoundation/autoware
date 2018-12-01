@@ -39,6 +39,7 @@
 // headers in local directory
 #include "vector_map/vector_map.h"
 #include "autoware_msgs/DetectedObjectArray.h"
+#include "points2costmap.h"
 
 // headers in STL
 #include<memory>
@@ -82,6 +83,9 @@ class CostmapGenerator
     std::unique_ptr<message_filters::Subscriber<autoware_msgs::DetectedObjectArray>> sub_sync_objects_ptr_;
     std::unique_ptr<message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
                                                       autoware_msgs::DetectedObjectArray>> sync_ptr_;
+
+    Points2Costmap points2costmap_;
+
     void waypointCallback(const autoware_msgs::LaneArray& in_waypoint);
     void sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points);
     void mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points);
@@ -90,6 +94,7 @@ class CostmapGenerator
     void registerVectormapSubscriber();
     void registerSyncedSubscriber();
     void initGridmap();
+    grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points);
 
 };
 
