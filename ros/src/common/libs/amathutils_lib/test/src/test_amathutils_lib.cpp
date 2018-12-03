@@ -275,7 +275,6 @@ TEST(TestSuite, CheckYawAngleFromPose){
 	ASSERT_NEAR(amathutils::getPoseYawAngle(poseNew)*180/M_PI, 45, epsilon) << "Yaw angle should be 45degrees";
 }
 
-///
 TEST(TestSuite, CheckNormalizedRadian){
 
 	double angle;
@@ -292,7 +291,6 @@ TEST(TestSuite, CheckNormalizedRadian){
 	angle = 400*M_PI/180;
 	ASSERT_DOUBLE_EQ(amathutils::radianNormalize(angle), 40*M_PI/180) << "Normalized angle > 360 degrees should be " << 40*M_PI/180;
 }
-
 
 TEST(TestSuite, CheckYawAngleDiffs){
 
