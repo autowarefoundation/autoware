@@ -52,8 +52,8 @@ static double voxel_leaf_size = 2.0;
 static double voxel_leaf_size_step = 0.2;
 static double min_voxel_leaf_size = 0.2;
 static double max_voxel_leaf_size = 3.0;
-static int min_points_size = 1500;
-static int max_points_size = 2500;
+static size_t min_points_size = 1500;
+static size_t max_points_size = 2500;
 static bool use_dynamic_leaf_size = false;
 
 static ros::Publisher points_downsampler_info_pub;
@@ -72,7 +72,7 @@ static void config_callback(const autoware_msgs::ConfigVoxelGridFilter::ConstPtr
 {
   use_dynamic_leaf_size = input->use_dynamic_leaf_size;
 
-  if (use_dynamic_leaf_size == false)
+  if (!use_dynamic_leaf_size)
   {
     voxel_leaf_size = input->voxel_leaf_size;
   }
@@ -112,7 +112,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     min_voxel_leaf_size = 0.1;
   }
 
-  if (use_dynamic_leaf_size == true)
+  if (use_dynamic_leaf_size)
   {
     if (voxel_leaf_size < min_voxel_leaf_size)
     {
@@ -129,7 +129,7 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
   voxel_grid_filter.setInputCloud(scan_ptr);
   voxel_grid_filter.filter(*filtered_scan_ptr);
 
-  if (use_dynamic_leaf_size == true)
+  if (use_dynamic_leaf_size)
   {
     if (filtered_scan_ptr->points.size() < min_points_size)
     {
@@ -162,9 +162,8 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     }
   }
 
-  std::cout << "voxel_leaf_size:" << voxel_leaf_size << std::endl;
-  std::cout << "points.size:" << filtered_scan_ptr->points.size() << std::endl;
-  std::cout << std::endl;
+  ROS_INFO("voxel_leaf_size: %lf", voxel_leaf_size);
+  ROS_INFO("points.size: %zu", filtered_scan_ptr->points.size());
 
   pcl::toROSMsg(*filtered_scan_ptr, filtered_msg);
   filter_end = std::chrono::system_clock::now();
@@ -190,11 +189,11 @@ static void scan_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
       std::chrono::duration_cast<std::chrono::microseconds>(filter_end - filter_start).count() / 1000.0;
   points_downsampler_info_pub.publish(points_downsampler_info_msg);
 
-  if (_output_log == true)
+  if (_output_log)
   {
     if (!ofs)
     {
-      std::cerr << "Could not open " << filename << "." << std::endl;
+      ROS_ERROR("Could not open %s", filename.c_str());
       exit(1);
     }
     ofs << points_downsampler_info_msg.header.seq << "," << points_downsampler_info_msg.header.stamp << ","
@@ -215,7 +214,7 @@ int main(int argc, char** argv)
 
   private_nh.getParam("points_topic", POINTS_TOPIC);
   private_nh.getParam("output_log", _output_log);
-  if (_output_log == true)
+  if (_output_log)
   {
     char buffer[80];
     std::time_t now = std::time(NULL);

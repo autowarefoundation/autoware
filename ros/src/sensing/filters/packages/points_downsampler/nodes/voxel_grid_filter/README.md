@@ -1,6 +1,6 @@
 # Voxel Grid Filter
 
-Autoware package that downsampling of point cloud using 3D Voxel Grid.
+Autoware package that downsamples point cloud using 3D Voxel Grid.
 
 ### Requirements
 
@@ -12,9 +12,8 @@ Autoware package that downsampling of point cloud using 3D Voxel Grid.
     - `roslaunch points_downsampler points_downsample.launch node_name:=voxel_grid_filter`
 
 * From Runtime Manager:
-
-Sensing Tab -> Points Downsampler -> `voxel_grid_filter`
-You can change the config, as well as other parameters, by clicking [app]
+    - Sensing Tab -> Points Downsampler -> `voxel_grid_filter`
+    - You can change the config, as well as other parameters, by clicking [app]
 
 ### Parameters
 
