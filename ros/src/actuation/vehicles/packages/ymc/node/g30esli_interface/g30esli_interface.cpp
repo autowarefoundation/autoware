@@ -32,209 +32,180 @@
 #include <thread>
 
 #include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
 #include <autoware_msgs/VehicleCmd.h>
 
-#include "g30esli_interface_util.h"
-#include "can_utils/cansend.h"
-#include "can_utils/cansend_util.h"
-#include "can_utils/ymc_can.h"
+#include "cansend.h"
+#include "g30esli.h"
 
-namespace
-{
-// ros param
-int g_mode;
-int g_loop_rate;
-int g_stop_time_sec;
-double g_wheel_base;
-std::string g_device;
+#include "g30esli_interface_util.h"
+
+// ros subscriber
+ros::Subscriber vehicle_cmd_sub_;
 
 // ros publisher
-ros::Publisher g_current_twist_pub;
+ros::Publisher current_twist_pub_;
+
+// ros param
+std::string device_;
+double steering_offset_deg_;
 
 // variables
-uint16_t g_target_velocity_ui16;
-int16_t g_steering_angle_deg_i16;
-double g_current_vel_kmph = 0.0;
-bool g_terminate_thread = false;
-double g_steering_offset_deg = 0.0;
+bool terminate_thread_;
+bool engage_;
+double target_velocity_kmph_;
+double target_steering_angle_deg_;
 
-// cansend tool
-mycansend::CanSender g_cansender;
+// ymc g30esli tool
+ymc::G30esli g30esli_;
+ymc::G30esli::Status status_;
+ymc::G30esli::Command command_;
 
 void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
-  // TODO: use steer angle, shift, turn signal
-  double target_velocity = msg->twist_cmd.twist.linear.x * 3.6;  // [m/s] -> [km/h]
-  double target_steering_angle_deg = ymc::computeTargetSteeringAngleDegree(msg->twist_cmd.twist.angular.z,
-                                                                           msg->twist_cmd.twist.linear.x, g_wheel_base);
-  target_steering_angle_deg += g_steering_offset_deg;
+  // speed
+  target_velocity_kmph_ = msg->ctrl_cmd.linear_velocity * 3.6;  // [m/s] -> [km/h]
+  command_.speed = engage_ ? target_velocity_kmph_ : 0.0;
 
-  // factor
-  target_velocity *= 10.0;
-  target_steering_angle_deg *= 10.0;
+  // steer
+  target_steering_angle_deg_ = msg->ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
+  target_steering_angle_deg_ = -target_steering_angle_deg_ + steering_offset_deg_;
+  command_.steer = target_steering_angle_deg_;
 
-  g_target_velocity_ui16 = target_velocity;
-  g_steering_angle_deg_i16 = target_steering_angle_deg * -1.0;
-}
+  // mode
+  command_.mode = engage_ ? G30ESLI_MODE_AUTO : G30ESLI_MODE_MANUAL;
 
-void current_vel_callback(const geometry_msgs::TwistStampedConstPtr& msg)
-{
-  g_current_vel_kmph = msg->twist.linear.x * 3.6;
+  // brake
+  command_.brake = (msg->emergency == 1) ? G30ESLI_BRAKE_EMERGENCY : G30ESLI_BRAKE_NONE;
+
+  // shift
+  if (msg->gear == 1)
+  {
+    command_.shift = G30ESLI_SHIFT_DRIVE;
+  }
+  else if (msg->gear == 2)
+  {
+    command_.shift = G30ESLI_SHIFT_REVERSE;
+  }
+
+  // flasher
+  if (msg->lamp_cmd.l == 0 && msg->lamp_cmd.r == 0)
+  {
+    command_.flasher = G30ESLI_FLASHER_NONE;
+  }
+  else if (msg->lamp_cmd.l == 1 && msg->lamp_cmd.r == 0)
+  {
+    command_.flasher = G30ESLI_FLASHER_LEFT;
+  }
+  else if (msg->lamp_cmd.l == 0 && msg->lamp_cmd.r == 1)
+  {
+    command_.flasher = G30ESLI_FLASHER_RIGHT;
+  }
+  else if (msg->lamp_cmd.l == 1 && msg->lamp_cmd.r == 1)
+  {
+    command_.flasher = G30ESLI_FLASHER_HAZARD;
+  }
 }
 
 // receive input from keyboard
 // change the mode to manual mode or auto drive mode
 void changeMode()
 {
-  while (!g_terminate_thread)
+  while (!terminate_thread_)
   {
-    if (ymc::kbhit())
+    if (kbhit())
     {
       char c = getchar();
-      if (c == ' ')
+      if (c == 's')
       {
-        g_mode = 3;
+        engage_ = true;
       }
-      else if (c == 's')
+      else if (c == ' ')
       {
-        g_mode = 8;
+        engage_ = false;
       }
     }
-    usleep(20000);  // sleep 20msec
+    usleep(1000);
   }
 }
 
-// read can data from the vehicle
-void readCanData(FILE* fp)
+// read vehicle status
+void readStatus()
 {
-  char buf[64];
-  while (fgets(buf, sizeof(buf), fp) != NULL && !g_terminate_thread)
+  while (!terminate_thread_)
   {
-    std::string raw_data = std::string(buf);
-    std::cout << "received data: " << raw_data << std::endl;
+    g30esli_.readStatus(status_);
 
-    // check if the data is valid
-    if (raw_data.size() > 0)
-    {
-      // split data to strings
-      // data format is like this
-      // can0  200   [8]  08 00 00 00 01 00 01 29
-      std::vector<std::string> parsed_data = ymc::splitString(raw_data);
+    double lv = status_.speed.actual / 3.6;             // [km/h] -> [m/s]
+    double th = -status_.steer.actual * M_PI / 180.0;   // [deg] -> [rad]
+    double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE; // [rad] -> [rad/s]
 
-      // delete first 3 elements
-      std::vector<std::string> data = parsed_data;
-      data.erase(data.begin(), data.begin() + 3);
+    // publish twist
+    geometry_msgs::TwistStamped ts;
+    ts.header.frame_id = "base_link";
+    ts.header.stamp = ros::Time::now();
+    ts.twist.linear.x = v;
+    ts.twist.angular.z = w;
+    current_twist_pub_.publish(ts);
 
-      int id = std::stoi(parsed_data.at(1), nullptr, 10);
-      double _current_vel_mps = ymc::translateCanData(id, data, &g_mode);
-      if (_current_vel_mps != RET_NO_PUBLISH)
-      {
-        geometry_msgs::TwistStamped ts;
-        ts.header.frame_id = "base_link";
-        ts.header.stamp = ros::Time::now();
-        ts.twist.linear.x = _current_vel_mps;
-        g_current_twist_pub.publish(ts);
-      }
-    }
+    // accel/brake override, switch to manual mode
+    engage_ = (status_.override.accel == 1 || status_.override.brake == 1) ? false : engage_;
+
+    usleep(10);
   }
 }
-
-}  // namespace
 
 int main(int argc, char* argv[])
 {
-  // ROS initialization
+  // ros initialization
   ros::init(argc, argv, "g30esli_interface");
-  ros::NodeHandle n;
+  ros::NodeHandle nh_;
   ros::NodeHandle private_nh("~");
 
-  private_nh.param<double>("wheel_base", g_wheel_base, 2.4);
-  private_nh.param<int>("mode", g_mode, 8);
-  private_nh.param<std::string>("device", g_device, "can0");
-  private_nh.param<int>("loop_rate", g_loop_rate, 100);
-  private_nh.param<int>("stop_time_sec", g_stop_time_sec, 1);
-  private_nh.param<double>("steering_offset_deg", g_steering_offset_deg, 0.0);
-
-  // init cansend tool
-  g_cansender.init(g_device);
+  // rosparam
+  private_nh.param<std::string>("device", device_, "can0");
+  private_nh.param<double>("steering_offset_deg", steering_offset_deg_, 0.0);
 
   // subscriber
-  ros::Subscriber vehicle_cmd_sub = n.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
-  ros::Subscriber current_vel_sub =
-      n.subscribe<geometry_msgs::TwistStamped>("current_velocity", 1, current_vel_callback);
+  vehicle_cmd_sub_ = nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
 
   // publisher
-  g_current_twist_pub = n.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
+  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("ymc/twist", 10);
 
-  // read can data from candump
-  FILE* fp = popen("candump can0", "r");
-
-  // create threads
-  std::thread t1(changeMode);
-  std::thread t2(readCanData, fp);
-
-  ros::Rate loop_rate = g_loop_rate;
-  bool stopping_flag = true;
-  while (ros::ok())
+  // open can device
+  if (!g30esli_.openDevice(device_))
   {
-    // data
-    unsigned char mode = static_cast<unsigned char>(g_mode);
-    unsigned char shift = 0;
-    uint16_t target_velocity_ui16 = g_target_velocity_ui16;
-    int16_t steering_angle_deg_i16 = g_steering_angle_deg_i16;
-    static unsigned char brake = 1;
-    static unsigned char heart_beat = 0;
-
-    // change to STOP MODE...
-    if (target_velocity_ui16 == 0 || g_mode == 3)
-      stopping_flag = true;
-
-    // STOPPING
-    static int stop_count = 0;
-    if (stopping_flag && g_mode == 8)
-    {
-      // TODO: change steering angle according to current velocity ?
-      target_velocity_ui16 = 0;
-      brake = 1;
-
-      // vehicle is stopping or not
-      double stopping_threshold = 1.0;
-      g_current_vel_kmph < stopping_threshold ? stop_count++ : stop_count = 0;
-
-      std::cout << "stop count: " << stop_count << std::endl;
-      // vehicle has stopped, so we can restart
-      if (stop_count > g_loop_rate * g_stop_time_sec)
-      {
-        brake = 0;
-        stop_count = 0;
-        stopping_flag = false;
-      }
-    }
-
-    // Insert data to 8 byte array
-    unsigned char data[8] = {};
-    ymc::setCanData(data, mode, shift, target_velocity_ui16, steering_angle_deg_i16, brake, heart_beat);
-
-    // send can data
-    std::string send_id("200");
-    size_t data_size = sizeof(data) / sizeof(data[0]);
-    char can_cmd[256];
-    std::strcpy(can_cmd, mycansend::makeCmdArgument(data, data_size, send_id).c_str());
-    g_cansender.send(can_cmd);
-
-    // wait for callbacks
-    ros::spinOnce();
-    loop_rate.sleep();
-
-    heart_beat += 1;
+    std::cerr << "Cannot open device" << std::endl;
+    return -1;
   }
 
-  g_terminate_thread = true;
+  // create threads
+  terminate_thread_ = false;
+  std::thread t1(changeMode);
+  std::thread t2(readStatus);
+
+  // start by manual mode
+  engage_ = false;
+
+  ros::Rate rate(100);
+
+  while (ros::ok())
+  {
+    // update subscribers
+    ros::spinOnce();
+
+    // send vehicle command
+    g30esli_.sendCommand(command_);
+
+    // update heart beat
+    command_.alive++;
+
+    // loop sleep
+    rate.sleep();
+  }
+
+  terminate_thread_ = true;
   t1.join();
   t2.join();
-
-  pclose(fp);
 
   return 0;
 }
