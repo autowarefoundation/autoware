@@ -54,10 +54,11 @@ build_kinetic:
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
-    - COMMIT_REF_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
-    - COVERAGE_REF_NAME="coverage_$COMMIT_REF_NAME"
-    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_REF_NAME
-    - tar -czvf coverage.tar.gz $COVERAGE_REF_NAME
+    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
+    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
+    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR 
   retry: 1
@@ -113,10 +114,10 @@ pages:
   dependencies:
     - build_kinetic
   script:
-    - COMMIT_REF_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
-    - COVERAGE_REF_NAME="coverage_$COMMIT_REF_NAME"
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
     - tar -xzvf coverage.tar.gz
-    - mv $COVERAGE_REF_NAME public
+    - mv $COVERAGE_FOLDER_NAME public
   artifacts:
     paths:
       - public
