@@ -50,12 +50,12 @@ std::string device_;
 double steering_offset_deg_;
 
 // variables
-bool terminate_thread_;
 bool engage_;
+bool terminate_thread_;
 double target_velocity_kmph_;
 double target_steering_angle_deg_;
 
-// ymc g30esli tool
+// ymc g30esli driver
 ymc::G30esli g30esli_;
 ymc::G30esli::Status status_;
 ymc::G30esli::Command command_;
@@ -67,8 +67,8 @@ void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
   command_.speed = engage_ ? target_velocity_kmph_ : 0.0;
 
   // steer
-  target_steering_angle_deg_ = msg->ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
-  target_steering_angle_deg_ = -target_steering_angle_deg_ + steering_offset_deg_;
+  target_steering_angle_deg_ = -msg->ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
+  target_steering_angle_deg_ = target_steering_angle_deg_ + steering_offset_deg_;
   command_.steer = target_steering_angle_deg_;
 
   // mode
@@ -90,7 +90,7 @@ void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
   // flasher
   if (msg->lamp_cmd.l == 0 && msg->lamp_cmd.r == 0)
   {
-    command_.flasher = G30ESLI_FLASHER_NONE;
+    command_.flasher = G30ESLI_FLASHER_CLEAR;
   }
   else if (msg->lamp_cmd.l == 1 && msg->lamp_cmd.r == 0)
   {
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
   vehicle_cmd_sub_ = nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
 
   // publisher
-  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("ymc/twist", 10);
+  current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
 
   // open can device
   if (!g30esli_.openDevice(device_))
