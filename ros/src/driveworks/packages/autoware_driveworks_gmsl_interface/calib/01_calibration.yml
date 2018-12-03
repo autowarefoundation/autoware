@@ -1,0 +1,44 @@
+image_width: 1920
+image_height: 1208
+camera_name: gmsl_camera_0_1
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1845.58, 0.000000, 1012.58, 0.000000, 1846.16, 654.05, 0.000000, 0.000000, 1.000000]
+  #[fx   0   cx    0     fy    cy   0   0   1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 6
+  data: [-0.299063, 0.1363, -0.001375, -0.000235, -0.005144, -0.049619]
+  #[k1,  k2,  p1,  p2 , k3, k4]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1964.21, 0.000000, 960.0, 0.000000, 0.000000, 1964.82, 604.0, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+  #[fx  0   cx   Tx=0  0   fy   cy    Ty=0  0  0  1  0]
+
+
+
+#camera_info_msg = CameraInfo()
+#camera_info_msg.width = calib_data["image_width"]
+#camera_info_msg.height = calib_data["image_height"]
+#camera_info_msg.K = calib_data["camera_matrix"]["data"]
+#camera_info_msg.D = calib_data["distortion_coefficients"]["data"]
+#camera_info_msg.R = calib_data["rectification_matrix"]["data"]
+#camera_info_msg.P = calib_data["projection_matrix"]["data"]
+#camera_info_msg.distortion_model = calib_data["distortion_model"]
+
+
+
+
+
+
+
+
+
+
