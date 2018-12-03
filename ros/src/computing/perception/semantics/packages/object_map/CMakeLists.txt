@@ -119,20 +119,30 @@ target_link_libraries(wayarea2grid
 add_library(costmap_generator_lib
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
+        nodes/costmap_generator/costmap_generator.h
         nodes/costmap_generator/points2costmap.cpp
+        nodes/costmap_generator/points2costmap.h
+        nodes/costmap_generator/vectormap2costmap.cpp
+        nodes/costmap_generator/vectormap2costmap.cpp
         )
 target_link_libraries(costmap_generator_lib
         ${catkin_LIBRARIES}
+        object_map_utils_lib
         )
 
 add_executable(costmap_generator
         nodes/costmap_generator/costmap_generator_node.cpp
         nodes/costmap_generator/costmap_generator.cpp
+        nodes/costmap_generator/costmap_generator.h
         nodes/costmap_generator/points2costmap.cpp
+        nodes/costmap_generator/points2costmap.h
+        nodes/costmap_generator/vectormap2costmap.cpp
+        nodes/costmap_generator/vectormap2costmap.cpp
         )
 
 target_link_libraries(costmap_generator
         ${catkin_LIBRARIES}
+        object_map_utils_lib
         )
 
 

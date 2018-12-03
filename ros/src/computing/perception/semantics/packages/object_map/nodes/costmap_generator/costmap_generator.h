@@ -32,6 +32,7 @@
 
 // headers in ROS
 #include <ros/ros.h>
+#include <tf/transform_listener.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <grid_map_ros/grid_map_ros.hpp>
@@ -56,14 +57,18 @@ class CostmapGenerator
     void run();
 
   private:
-    bool use_vectormap_;
+    // bool use_vectormap_;
     bool use_wayarea_;
     bool use_waypoint_;
     bool use_objects_;
-    bool has_subscribed_vectormap_;
-    bool has_subscribed_waypoint_;
+    bool has_subscribed_wayarea_;
+    // bool has_subscribed_vectormap_;
+    // bool has_subscribed_waypoint_;
 
-    std::string sensor_frame_;
+    std::string velodyne_frame_;
+    std::string map_frame_;
+    double grid_min_value_;
+    double grid_max_value_;
     double grid_resolution_;
     double grid_length_x_;
     double grid_length_y_;
@@ -80,9 +85,13 @@ class CostmapGenerator
     ros::NodeHandle private_nh_;
 
     ros::Publisher pub_costmap_;
-    ros::Publisher pub_sensor_points_cost_;
+    ros::Publisher pub_sensor_points_cost_cloud_;
+    ros::Publisher pub_vectormap_cost_cloud_;
+    ros::Publisher pub_combined_cost_cloud_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
+
+    tf::TransformListener   tf_listener_;
 
     std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> sub_sync_points_ptr_;
     std::unique_ptr<message_filters::Subscriber<autoware_msgs::DetectedObjectArray>> sub_sync_objects_ptr_;
@@ -92,6 +101,8 @@ class CostmapGenerator
     Points2Costmap points2costmap_;
 
     const std::string SENSOR_POINTS_COSTMAP_LAYER_;
+    const std::string VECTORMAP_COSTMAP_LAYER_;
+    const std::string COMBINED_COSTMAP_LAYER_;
 
     void waypointCallback(const autoware_msgs::LaneArray& in_waypoint);
     void sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points);
@@ -103,6 +114,8 @@ class CostmapGenerator
     void initGridmap();
     void publishRosMsg(const grid_map::GridMap& gridmap);
     grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points);
+    grid_map::GridMap generateVectormapCostmap();
+    grid_map::GridMap generateCombinedCostmap();
 
 };
 
