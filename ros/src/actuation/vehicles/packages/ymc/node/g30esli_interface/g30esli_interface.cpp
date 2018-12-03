@@ -199,6 +199,10 @@ int main(int argc, char* argv[])
     // update heart beat
     command_.alive++;
 
+    // debug
+    ROS_DEBUG_STREAM("Status[" << (int)command_.alive << "]\n" << ymc::G30esli::dumpStatus(status_));
+    ROS_DEBUG_STREAM("Command[" << (int)command_.alive << "]\n" << ymc::G30esli::dumpCommand(command_));
+
     // loop sleep
     rate.sleep();
   }

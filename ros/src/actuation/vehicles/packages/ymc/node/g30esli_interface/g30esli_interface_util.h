@@ -35,6 +35,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <ros/ros.h>
+
+#include "cansend.h"
+#include "g30esli.h"
+
 // detect hit of keyboard
 int kbhit()
 {

@@ -125,6 +125,9 @@ public:
   bool openDevice(const std::string& device);
   void sendCommand(const Command& command);
   void readStatus(Status& status);
+
+  static std::string dumpCommand(const Command& command);
+  static std::string dumpStatus(const Status& status);
 };
 
 } // namespace
