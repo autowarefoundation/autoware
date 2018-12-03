@@ -44,7 +44,7 @@ class Points2Costmap
     Points2Costmap();
     ~Points2Costmap();
 
-    grid_map::GridMap makeSensorPointsCostmap(const grid_map::GridMap& gridmap,
+    grid_map::Matrix makeSensorPointsCostmap(const grid_map::GridMap& gridmap,
                                               const std::string& gridmap_layer_name,
                                               const sensor_msgs::PointCloud2& in_sensor_points);
 

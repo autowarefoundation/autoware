@@ -94,11 +94,10 @@ void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
   // if(checkSubscripton())
-  // gridmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
-  // gridmap_ = generateMapPointsCostmap()
-  // gridmap_ = generateVectormapCostmap()
-  // gridmap_ = generateWaypointCostmap()
-  // gridmap_ = generateCombinedCostmap()
+  // gridmap_["sensor_points_cost"] = generateSensorPointsCostmap(in_sensor_points_msg);
+  // gridmap_["vectormap_cost"] = generateVectormapCostmap()
+  // gridmap_["waypoint_cost"] = generateWaypointCostmap()
+  // gridmap_["combined_cost"] = generateCombinedCostmap()
   // pub(gridmap_);
 }
 

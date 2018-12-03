@@ -126,7 +126,7 @@ grid_map::Matrix Points2Costmap::calculateCostmap(const grid_map::GridMap& gridm
   }
 }
 
-grid_map::GridMap Points2Costmap::makeSensorPointsCostmap(const grid_map::GridMap& gridmap,
+grid_map::Matrix Points2Costmap::makeSensorPointsCostmap(const grid_map::GridMap& gridmap,
                                                           const std::string& gridmap_layer_name,
                                                           const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
