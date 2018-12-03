@@ -57,23 +57,6 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
             ${NVIDIA_TENSORRT_TARGET_DIR}/lib
     )
 
-    add_executable(gmsl_interface
-            nodes/gmsl_interface/gmsl_interface_node.cpp
-            )
-
-    add_dependencies(gmsl_interface
-            ${catkin_EXPORTED_TARGETS}
-            )
-
-    target_link_libraries(gmsl_interface
-            ${catkin_LIBRARIES}
-            autoware_driveworks
-            driveworks
-            cudart
-            cuda
-            ${DRIVEWORKS_LINKER_FLAGS}
-            )
-
     add_executable(tensorrt_interface
             nodes/tensorrt_interface/tensorrt_interface_node.cpp
             )
