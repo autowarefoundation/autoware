@@ -58,16 +58,12 @@ grid_map::Index Points2Costmap::fetchGridIndexFromPoint(const pcl::PointXYZ& poi
   // calculate out_grid_map position
   const double origin_x_offset = grid_length_x_ / 2.0 - grid_position_x_;
   const double origin_y_offset = grid_length_y_ / 2.0 - grid_position_y_;
-  // coordinate conversion like cv image since grid_map data structure is the same with the cv's
-  double mapped_x = (grid_length_y_ - origin_y_offset - point.y) / grid_resolution_;
-  double mapped_y = (grid_length_x_ - origin_x_offset - point.x) / grid_resolution_;
-
   // coordinate conversion for making index. Set bottom left to the origin of coordinate (0, 0) in gridmap area
-  // double mapped_x = (grid_length_x_ - origin_x_offset - point.x) / grid_resolution_;
-  // double mapped_y = (grid_length_y_ - origin_y_offset - point.y) / grid_resolution_;
+  double mapped_x = (grid_length_x_ - origin_x_offset - point.x) / grid_resolution_;
+  double mapped_y = (grid_length_y_ - origin_y_offset - point.y) / grid_resolution_;
+
   int mapped_x_ind = std::floor(mapped_x);
   int mapped_y_ind = std::floor(mapped_y);
-  // std::cout << "make index index " << cv_x << " "<<cv_y << std::endl;
   grid_map::Index index(mapped_x_ind, mapped_y_ind);
   return index;
 }
@@ -89,8 +85,6 @@ std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridC
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(in_sensor_points_msg, *in_sensor_points);
-  // grid_map::Index a;
-  // for(size_t i = 0; i < in_sensor_points->size(); i++)
   for(const auto& point: *in_sensor_points)
   {
     grid_map::Index grid_ind = fetchGridIndexFromPoint(point);
@@ -102,36 +96,45 @@ std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridC
   return vec_x_y_z;
 }
 
-grid_map::Matrix Points2Costmap::calculateCostmap(const grid_map::GridMap& gridmap,
+grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_thres,
+                                                  const grid_map::GridMap& gridmap,
                                                   const std::string& gridmap_layer_name,
                                                   const std::vector<std::vector<std::vector<double>>> grid_vec)
 {
   grid_map::Matrix gridmap_data = gridmap[gridmap_layer_name];
-  return gridmap_data;
   for(size_t x_ind = 0; x_ind < grid_vec.size(); x_ind++)
   {
     for(size_t y_ind = 0; y_ind < grid_vec[0].size(); y_ind++)
     {
-      for(const auto& z: grid_vec[0][0])
+      if(grid_vec[x_ind][y_ind].size() == 0)
       {
-        // if(z > maximum_height_thres)
-        // {
-        //   continue
-        // }
-        // grid_map::Index grid_ind(x_ind, y_ind);
-        // setCostAtThisCell(grid_ind);
-        // break;
+        gridmap_data(x_ind, y_ind) = 0;
+        continue;
+      }
+      for(const auto& z: grid_vec[x_ind][y_ind])
+      {
+        if(z > maximum_height_thres)
+        {
+          continue;
+        }
+        gridmap_data(x_ind, y_ind) = 3;
+        break;
       }
     }
   }
+  return gridmap_data;
 }
 
-grid_map::Matrix Points2Costmap::makeSensorPointsCostmap(const grid_map::GridMap& gridmap,
+grid_map::GridMap Points2Costmap::makeSensorPointsCostmap(const double maximum_height_thres,
+                                                          const grid_map::GridMap& gridmap,
                                                           const std::string& gridmap_layer_name,
                                                           const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
   std::vector<std::vector<std::vector<double>>> grid_vec = assignPoints2GridCell(gridmap, in_sensor_points_msg);
   //TODO trandform sensorpoint to gridmap coordinate
-  grid_map::Matrix costmap = calculateCostmap(gridmap, gridmap_layer_name, grid_vec);
-  return gridmap;
+  grid_map::Matrix costmap = calculateCostmap(maximum_height_thres, gridmap, gridmap_layer_name, grid_vec);
+
+  grid_map::GridMap sensor_points_gridmap = gridmap;
+  sensor_points_gridmap[gridmap_layer_name] = costmap;
+  return sensor_points_gridmap;
 }

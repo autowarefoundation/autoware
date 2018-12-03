@@ -36,27 +36,33 @@ CostmapGenerator::CostmapGenerator() :
   use_vectormap_(true),
   use_wayarea_(true),
   use_waypoint_(true),
-  use_objects_(true),
-  private_nh_("~")
+  use_objects_(false),
+  private_nh_("~"),
+  SENSOR_POINTS_COSTMAP_LAYER_("sensor_points_cost")
 {
+  // const std::string SENSOR_POINTS_COSTMAP_LAYER_ = "sensor_points_cost";
 }
 
 CostmapGenerator::~CostmapGenerator() {}
 
 void CostmapGenerator::init()
 {
+  //TODO sample sompo rosbga has weird velodyne coordinate. so be carefult about default grid length and position
   private_nh_.param<std::string>("sensor_frame", sensor_frame_, "velodyne");
   private_nh_.param<double>("grid_resolution", grid_resolution_, 0.2);
-  private_nh_.param<double>("grid_length_x", grid_length_x_, 50);
-  private_nh_.param<double>("grid_length_y", grid_length_y_, 30);
-  private_nh_.param<double>("grid_position_x", grid_position_x_, 20);
-  private_nh_.param<double>("grid_position_x", grid_position_y_, 0);
+  private_nh_.param<double>("grid_length_x", grid_length_x_, 30);
+  private_nh_.param<double>("grid_length_y", grid_length_y_, 50);
+  private_nh_.param<double>("grid_position_x", grid_position_x_, 0);
+  private_nh_.param<double>("grid_position_x", grid_position_y_, 20);
+  private_nh_.param<double>("maximum_sensor_points_height_thres", maximum_sensor_points_height_thres_, 0.3);
+
   initGridmap();
 }
 
 void CostmapGenerator::run()
 {
   pub_costmap_ = nh_.advertise<grid_map_msgs::GridMap>("/semantics/costmap", 1);
+  pub_sensor_points_cost_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/sensor_points_cost", 1);
 
   if(use_vectormap_)
   {
@@ -70,7 +76,7 @@ void CostmapGenerator::run()
 
   if(!use_objects_)
   {
-    sub_points_ = nh_.subscribe("/poitns_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
+    sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
   }
   else
   {
@@ -94,11 +100,13 @@ void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
   // if(checkSubscripton())
-  // gridmap_["sensor_points_cost"] = generateSensorPointsCostmap(in_sensor_points_msg);
-  // gridmap_["vectormap_cost"] = generateVectormapCostmap()
-  // gridmap_["waypoint_cost"] = generateWaypointCostmap()
-  // gridmap_["combined_cost"] = generateCombinedCostmap()
-  // pub(gridmap_);
+  costmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
+  // costmap_["vectormap_cost"] = generateVectormapCostmap()
+  // costmap_["waypoint_cost"] = generateWaypointCostmap()
+  // costmap_["combined_cost"] = generateCombinedCostmap()
+  // pub(costmap_);
+
+  publishRosMsg(costmap_);
 }
 
 // void CostmapGenerator::mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points)
@@ -146,20 +154,42 @@ void CostmapGenerator::registerVectormapSubscriber()
 
 void CostmapGenerator::initGridmap()
 {
-  gridmap_.add("sensor_points_cost", 0);
-  gridmap_.add("vectormap_cost", 0);
-  gridmap_.add("waypoint_cost", 0);
-  gridmap_.add("objects_cost", 0);
-  gridmap_.setFrameId(sensor_frame_);
-  gridmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_),
+  costmap_.setFrameId(sensor_frame_);
+  costmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_),
                   grid_resolution_,
                   grid_map::Position(grid_position_x_, grid_position_y_));
+
+  costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, 0);
+  costmap_.add("vectormap_cost", 0);
+  costmap_.add("waypoint_cost", 0);
+  costmap_.add("objects_cost", 0);
 }
 
 grid_map::GridMap CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points_msg)
 {
-  std::string sensor_points_costmap_layer_name = "sensor_points_cost";
-  grid_map::GridMap gridmap_with_points_cost = points2costmap_.makeSensorPointsCostmap(gridmap_,
-                                                                sensor_points_costmap_layer_name, in_sensor_points_msg);
-  return gridmap_with_points_cost;
+  // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
+  grid_map::GridMap sensor_points_costmap =
+                        points2costmap_.makeSensorPointsCostmap(maximum_sensor_points_height_thres_, costmap_,
+                                                                SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
+  return sensor_points_costmap;
+}
+
+// grid_map::GridMap CostmapGenerator::generateVectormapCostmap()
+// {
+//   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
+//   grid_map::GridMap sensor_points_costmap =
+//                         points2costmap_.makeSensorPointsCostmap(maximum_sensor_points_height_thres_, costmap_,
+//                                                                 SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
+//   return sensor_points_costmap;
+// }
+
+void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
+{
+  sensor_msgs::PointCloud2 out_sensor_points_cost_msg;
+  grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_msg);
+  pub_sensor_points_cost_.publish(out_sensor_points_cost_msg);
+
+  grid_map_msgs::GridMap out_gridmap_msg;
+  grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
+  pub_costmap_.publish(out_gridmap_msg);
 }

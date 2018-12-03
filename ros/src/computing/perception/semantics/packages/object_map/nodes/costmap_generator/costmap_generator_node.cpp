@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "costmap_generator");
   CostmapGenerator costmap_generator;
-
+  costmap_generator.init();
   costmap_generator.run();
   ros::spin();
 

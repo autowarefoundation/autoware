@@ -35,6 +35,8 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+#include <grid_map_msgs/GridMap.h>
 
 // headers in local directory
 #include "vector_map/vector_map.h"
@@ -68,14 +70,17 @@ class CostmapGenerator
     double grid_position_x_;
     double grid_position_y_;
 
+    double maximum_sensor_points_height_thres_;
+
     vector_map::VectorMap vmap_;
 
-    grid_map::GridMap gridmap_;
+    grid_map::GridMap costmap_;
 
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
     ros::Publisher pub_costmap_;
+    ros::Publisher pub_sensor_points_cost_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
 
@@ -86,6 +91,8 @@ class CostmapGenerator
 
     Points2Costmap points2costmap_;
 
+    const std::string SENSOR_POINTS_COSTMAP_LAYER_;
+
     void waypointCallback(const autoware_msgs::LaneArray& in_waypoint);
     void sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points);
     void mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points);
@@ -94,6 +101,7 @@ class CostmapGenerator
     void registerVectormapSubscriber();
     void registerSyncedSubscriber();
     void initGridmap();
+    void publishRosMsg(const grid_map::GridMap& gridmap);
     grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points);
 
 };
