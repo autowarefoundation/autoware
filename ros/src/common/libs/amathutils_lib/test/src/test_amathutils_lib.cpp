@@ -249,6 +249,92 @@ TEST(TestSuite, PointOnTheLine){
 	ASSERT_EQ(amathutils::isPointLeftFromLine(p1, line_p1, line_p2), ONLINE) << "Point is on the line ";
 }
 
+// poseNew: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+TEST(TestSuite, CheckYawAngleFromPose){
+
+	geometry_msgs::Pose poseOrigin, poseNew;
+	poseOrigin.position.x = 0;
+	poseOrigin.position.y = 0;
+	poseOrigin.position.z = 0;
+	poseOrigin.orientation.x = 0;
+	poseOrigin.orientation.y = 0;
+	poseOrigin.orientation.z = 0;
+	poseOrigin.orientation.w = 1;
+
+	poseNew.position.x = 0;
+	poseNew.position.y = 0;
+	poseNew.position.z = 0;
+	poseNew.orientation.x = 0;
+	poseNew.orientation.y = 0;
+	poseNew.orientation.z = 0.3826834;
+	poseNew.orientation.w = 0.9238795;
+
+	double epsilon = 0.0001; //Error threshold [degrees]
+
+	ASSERT_NEAR(amathutils::getPoseYawAngle(poseOrigin)*180/M_PI, 0, epsilon) << "Yaw angle should be 0degrees";
+	ASSERT_NEAR(amathutils::getPoseYawAngle(poseNew)*180/M_PI, 45, epsilon) << "Yaw angle should be 45degrees";
+}
+
+///
+TEST(TestSuite, CheckNormalizedRadian){
+
+	double angle;
+
+	// Angle < 180 degrees
+	angle = 60*M_PI/180;
+	ASSERT_DOUBLE_EQ(amathutils::radianNormalize(angle), angle) << "Normalized angle < 180 degrees should be " << angle;
+
+	// Angle > 180 degrees
+	angle = 210*M_PI/180;
+	ASSERT_DOUBLE_EQ(amathutils::radianNormalize(angle), -150*M_PI/180) << "Normalized angle > 180 degrees should be " << -150*M_PI/180;
+
+	// Angle > 360 degrees
+	angle = 400*M_PI/180;
+	ASSERT_DOUBLE_EQ(amathutils::radianNormalize(angle), 40*M_PI/180) << "Normalized angle > 360 degrees should be " << 40*M_PI/180;
+}
+
+
+TEST(TestSuite, CheckYawAngleDiffs){
+
+	double epsilon = 0.0001; //Error threshold [degrees]
+	geometry_msgs::Pose poseOrigin, poseNew;
+	poseOrigin.position.x = 0;
+	poseOrigin.position.y = 0;
+	poseOrigin.position.z = 0;
+	poseOrigin.orientation.x = 0;
+	poseOrigin.orientation.y = 0;
+	poseOrigin.orientation.z = 0;
+	poseOrigin.orientation.w = 1;
+
+	// Diff < 180 degrees
+	// poseNew: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+	poseNew.position.x = 0;
+	poseNew.position.y = 0;
+	poseNew.position.z = 0;
+	poseNew.orientation.x = 0;
+	poseNew.orientation.y = 0;
+	poseNew.orientation.z = 0.3826834;
+	poseNew.orientation.w = 0.9238795;
+
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(poseOrigin, poseNew), -45*M_PI/180, epsilon) << "DiffRaw angle < 180 degrees should be " << -45*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(poseOrigin, poseNew), -45, epsilon) << "DiffDeg angle < 180 degrees should be " << -45 << " degrees";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(poseOrigin, poseNew), -45*M_PI/180, epsilon) << "DiffRad angle < 180 degrees should be " << -45*M_PI/180 << " radians";
+
+	// Diff > 180 degrees
+	// poseNew: 210degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+	poseNew.position.x = 0;
+	poseNew.position.y = 0;
+	poseNew.position.z = 0;
+	poseNew.orientation.x = 0;
+	poseNew.orientation.y = 0;
+	poseNew.orientation.z = 0.9659258;
+	poseNew.orientation.w = -0.258819;
+
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(poseOrigin, poseNew), 150*M_PI/180, epsilon) << "DiffRaw angle > 180 degrees should be " << 150*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(poseOrigin, poseNew), 150, epsilon) << "DiffDeg angle > 180 degrees should be " << 150 << " degrees";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(poseOrigin, poseNew), 150*M_PI/180, epsilon) << "DiffRad angle > 180 degrees should be " << 150*M_PI/180 << " radians";
+}
+
 int main(int argc, char **argv) {
 	testing::InitGoogleTest(&argc, argv);
 	ros::init(argc, argv, "TestNode");
