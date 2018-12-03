@@ -143,8 +143,8 @@ void readStatus()
     geometry_msgs::TwistStamped ts;
     ts.header.frame_id = "base_link";
     ts.header.stamp = ros::Time::now();
-    ts.twist.linear.x = v;
-    ts.twist.angular.z = w;
+    ts.twist.linear.x = lv;
+    ts.twist.angular.z = az;
     current_twist_pub_.publish(ts);
 
     // accel/brake override, switch to manual mode
