@@ -64,6 +64,7 @@ build_kinetic:
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
+    expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
     
 build_cross:
