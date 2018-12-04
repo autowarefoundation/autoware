@@ -43,10 +43,16 @@ class Objects2Costmap
     Objects2Costmap();
     ~Objects2Costmap();
 
-    grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& object);
     grid_map::GridMap makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                              const std::string& gridmap_layer_name,
                                              const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
+  private:
+    const int NUMBER_OF_POINTS = 4;
+    const int NUMBER_OF_DIMENSIONS = 2;
+    Eigen::MatrixXd makeRectanglePoints(const autoware_msgs::DetectedObject& in_object);
+    grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& in_object);
+    void setCostForPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
+                           grid_map::GridMap& objects_costmap);
 
 };
 

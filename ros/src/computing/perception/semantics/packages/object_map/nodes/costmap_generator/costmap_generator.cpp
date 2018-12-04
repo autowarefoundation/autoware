@@ -35,13 +35,12 @@
 
 // Constructor
 CostmapGenerator::CostmapGenerator() :
-  use_wayarea_(true),
-  use_waypoint_(true),
-  use_objects_(false),
-  has_subscribed_wayarea_(false),
   private_nh_("~"),
-  SENSOR_POINTS_COSTMAP_LAYER_("sensor_points"),
+  has_subscribed_objects_(false),
+  has_subscribed_sensor_points_(false),
+  has_subscribed_wayarea_(false),
   OBJECTS_COSTMAP_LAYER_("objects"),
+  SENSOR_POINTS_COSTMAP_LAYER_("sensor_points"),
   VECTORMAP_COSTMAP_LAYER_("vectormap"),
   WAYPOINTS_COSTMAP_LAYER_("waypoints"),
   COMBINED_COSTMAP_LAYER_("costmap")
@@ -64,6 +63,12 @@ void CostmapGenerator::init()
   private_nh_.param<double>("grid_position_x", grid_position_x_, 0);
   private_nh_.param<double>("grid_position_x", grid_position_y_, 20);
   private_nh_.param<double>("maximum_sensor_points_height_thres", maximum_sensor_points_height_thres_, 0.3);
+  private_nh_.param<bool>("use_objects", use_objects_, true);
+  private_nh_.param<bool>("use_sensor_points_", use_sensor_points_, true);
+  private_nh_.param<bool>("use_wayarea_", use_wayarea_, true);
+  private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
+
+
 
   initGridmap();
 }
@@ -72,18 +77,26 @@ void CostmapGenerator::run()
 {
   pub_costmap_ = nh_.advertise<grid_map_msgs::GridMap>("/semantics/costmap", 1);
   pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
+  pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
   pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
   pub_combined_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/combined_cost_cloud", 1);
 
-  if(use_waypoint_)
+  if(use_objects_)
+  {
+    sub_objects_ = nh_.subscribe("/detection/lidar_objects", 1, &CostmapGenerator::objectsCallback, this);
+  }
+
+  if(use_sensor_points_)
+  {
+    sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
+  }
+
+  if(use_waypoints_)
   {
     sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointsCallback, this);
   }
 
-  if(!use_objects_)
-  {
-    sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
-  }
+
   // else
   // {
   //   registerSyncedSubscriber();
@@ -104,19 +117,22 @@ void CostmapGenerator::run()
 
 void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
+  std::cout << "euclidean cluster callback" << std::endl;
+  has_subscribed_objects_ = true;
   costmap_ = generateObjectsCostmap(in_objects);
   costmap_ = generateVectormapCostmap();
-  costmap_ = generateCombinedCostmap();
+  costmap_ = generateCombinedCostmap(1);
 
   publishRosMsg(costmap_);
 }
 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
-  // if(checkSubscripton())
+  std::cout << "velodyne callback" << std::endl;
+  has_subscribed_sensor_points_ = true;
   costmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
   costmap_ = generateVectormapCostmap();
-  costmap_ = generateCombinedCostmap();
+  costmap_ = generateCombinedCostmap(2);
 
   publishRosMsg(costmap_);
 }
@@ -151,6 +167,7 @@ void CostmapGenerator::initGridmap()
                   grid_map::Position(grid_position_x_, grid_position_y_));
 
   costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, 0);
+  costmap_.add(OBJECTS_COSTMAP_LAYER_, 0);
   costmap_.add(VECTORMAP_COSTMAP_LAYER_, 0);
   costmap_.add("waypoint_cost", 0);
   costmap_.add("objects_cost", 0);
@@ -161,6 +178,7 @@ grid_map::GridMap CostmapGenerator::generateSensorPointsCostmap(const sensor_msg
 {
   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
   // TODO: rename makeCostmapFromSensorPoints
+  costmap_[SENSOR_POINTS_COSTMAP_LAYER_].setConstant(0.0);
   grid_map::GridMap sensor_points_costmap =
                         points2costmap_.makeSensorPointsCostmap(maximum_sensor_points_height_thres_, costmap_,
                                                                 SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
@@ -206,16 +224,28 @@ grid_map::GridMap CostmapGenerator::generateVectormapCostmap()
   return vectormap_costmap;
 }
 
-grid_map::GridMap CostmapGenerator::generateCombinedCostmap()
+grid_map::GridMap CostmapGenerator::generateCombinedCostmap(int callback_ind)
 {
+  // assuming combined_costmap is calculated by element wise max
   grid_map::GridMap combined_costmap = costmap_;
-  combined_costmap[COMBINED_COSTMAP_LAYER_] = costmap_[SENSOR_POINTS_COSTMAP_LAYER_].cwiseMax(
-                                                                  costmap_[VECTORMAP_COSTMAP_LAYER_]);
+  // if(callback_ind == 1)
+  // {
+  //   combined_costmap[COMBINED_COSTMAP_LAYER_] = costmap_[OBJECTS_COSTMAP_LAYER_].cwiseMax(
+  //                                               costmap_[VECTORMAP_COSTMAP_LAYER_]);
+  // }
+  // else
+  // {
+  //   combined_costmap[COMBINED_COSTMAP_LAYER_] = costmap_[SENSOR_POINTS_COSTMAP_LAYER_].cwiseMax(
+  //                                               costmap_[VECTORMAP_COSTMAP_LAYER_]);
+  // }
+  combined_costmap[COMBINED_COSTMAP_LAYER_] = costmap_[COMBINED_COSTMAP_LAYER_].cwiseMax(
+                                                    costmap_[SENSOR_POINTS_COSTMAP_LAYER_]);
   return combined_costmap;
 }
 
 void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
 {
+  //TODO: use nav_msgs::OccupancyGrid for debug
   sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
   grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
   pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
@@ -228,7 +258,11 @@ void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
   grid_map::GridMapRosConverter::toPointCloud(costmap, COMBINED_COSTMAP_LAYER_, out_combined_cost_cloud_msg);
   pub_combined_cost_cloud_.publish(out_combined_cost_cloud_msg);
 
-  grid_map_msgs::GridMap out_gridmap_msg;
-  grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
-  pub_costmap_.publish(out_gridmap_msg);
+  sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
+  grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
+  pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
+  //
+  // grid_map_msgs::GridMap out_gridmap_msg;
+  // grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
+  // pub_costmap_.publish(out_gridmap_msg);
 }

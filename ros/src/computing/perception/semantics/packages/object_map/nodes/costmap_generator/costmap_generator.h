@@ -59,10 +59,15 @@ class CostmapGenerator
     void run();
 
   private:
+    ros::NodeHandle nh_;
+    ros::NodeHandle private_nh_;
     // bool use_vectormap_;
-    bool use_wayarea_;
-    bool use_waypoint_;
     bool use_objects_;
+    bool use_sensor_points_;
+    bool use_wayarea_;
+    bool use_waypoints_;
+    bool has_subscribed_objects_;
+    bool has_subscribed_sensor_points_;
     bool has_subscribed_wayarea_;
     // bool has_subscribed_vectormap_;
     // bool has_subscribed_waypoint_;
@@ -83,15 +88,15 @@ class CostmapGenerator
 
     grid_map::GridMap costmap_;
 
-    ros::NodeHandle nh_;
-    ros::NodeHandle private_nh_;
 
     ros::Publisher pub_costmap_;
     ros::Publisher pub_sensor_points_cost_cloud_;
+    ros::Publisher pub_objects_cost_cloud_;
     ros::Publisher pub_vectormap_cost_cloud_;
     ros::Publisher pub_combined_cost_cloud_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
+    ros::Subscriber sub_objects_;
 
     tf::TransformListener   tf_listener_;
 
@@ -106,8 +111,8 @@ class CostmapGenerator
     Objects2Costmap objects2costmap_;
     Waypoints2Costmap waypoints2costmap_;
 
-    const std::string SENSOR_POINTS_COSTMAP_LAYER_;
     const std::string OBJECTS_COSTMAP_LAYER_;
+    const std::string SENSOR_POINTS_COSTMAP_LAYER_;
     const std::string VECTORMAP_COSTMAP_LAYER_;
     const std::string WAYPOINTS_COSTMAP_LAYER_;
     const std::string COMBINED_COSTMAP_LAYER_;
@@ -125,7 +130,7 @@ class CostmapGenerator
     grid_map::GridMap generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
     grid_map::GridMap generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
     grid_map::GridMap generateVectormapCostmap();
-    grid_map::GridMap generateCombinedCostmap();
+    grid_map::GridMap generateCombinedCostmap(int callback_ind);
 
 };
 
