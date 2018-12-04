@@ -27,29 +27,27 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
-#ifndef VECTORMAP2COSTMAP_H
-#define VECTORMAP2COSTMAP_H
+#ifndef OBJECTS2COSTMAP_H
+#define OBJECTS2COSTMAP_H
 
 // headers in ROS
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 
 // headers in local directory
-#include "vector_map/vector_map.h"
+#include "autoware_msgs/DetectedObjectArray.h"
 
-class Vectormap2Costmap
+class Objects2Costmap
 {
   public:
-    Vectormap2Costmap();
-    ~Vectormap2Costmap();
+    Objects2Costmap();
+    ~Objects2Costmap();
 
-    grid_map::GridMap makeCostmapFromWayarea(const grid_map::GridMap& gridmap,
-                                              const std::string& gridmap_layer_name,
-                                              const sensor_msgs::PointCloud2& in_sensor_points);
-    grid_map::GridMap makeCostmapFromDTLane(const grid_map::GridMap& gridmap,
-                                              const std::string& gridmap_layer_name,
-                                              const sensor_msgs::PointCloud2& in_sensor_points);
+    grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& object);
+    grid_map::GridMap makeCostmapFromObjects(const grid_map::GridMap& costmap,
+                                             const std::string& gridmap_layer_name,
+                                             const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
 
 };
 
-#endif  // VECTORMAP2COSTMAP_H
+#endif  // OBJECTS2COSTMAP_H

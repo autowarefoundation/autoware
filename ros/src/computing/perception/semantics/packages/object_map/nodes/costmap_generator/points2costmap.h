@@ -47,7 +47,7 @@ class Points2Costmap
     grid_map::GridMap makeSensorPointsCostmap(const double maximum_height_thres,
                                               const grid_map::GridMap& gridmap,
                                               const std::string& gridmap_layer_name,
-                                              const sensor_msgs::PointCloud2& in_sensor_points);
+                                              const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
 
   private:
     double grid_length_x_;
@@ -61,7 +61,7 @@ class Points2Costmap
     bool isValidInd(const grid_map::Index& grid_ind);
     grid_map::Index fetchGridIndexFromPoint(const pcl::PointXYZ& point);
     std::vector<std::vector<std::vector<double>>> assignPoints2GridCell(const grid_map::GridMap& gridmap,
-                                                                        const sensor_msgs::PointCloud2& in_sensor_points);
+                                                                        const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
     grid_map::Matrix calculateCostmap(const double maximum_height_thres,
                                       const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
                                       const std::vector<std::vector<std::vector<double>>> grid_vec);

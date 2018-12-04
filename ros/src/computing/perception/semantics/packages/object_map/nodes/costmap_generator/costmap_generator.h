@@ -43,6 +43,7 @@
 #include "vector_map/vector_map.h"
 #include "autoware_msgs/DetectedObjectArray.h"
 #include "points2costmap.h"
+#include "objects2costmap.h"
 
 // headers in STL
 #include<memory>
@@ -101,13 +102,15 @@ class CostmapGenerator
     std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
     Points2Costmap points2costmap_;
+    Objects2Costmap objects2costmap_;
 
     const std::string SENSOR_POINTS_COSTMAP_LAYER_;
+    const std::string OBJECTS_COSTMAP_LAYER_;
     const std::string VECTORMAP_COSTMAP_LAYER_;
     const std::string COMBINED_COSTMAP_LAYER_;
 
     void waypointCallback(const autoware_msgs::LaneArray& in_waypoint);
-    void sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points);
+    void sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
     void mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points);
     void syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_points,
                   const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
@@ -115,7 +118,8 @@ class CostmapGenerator
     void registerSyncedSubscriber();
     void initGridmap();
     void publishRosMsg(const grid_map::GridMap& gridmap);
-    grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points);
+    grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+    grid_map::GridMap generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
     grid_map::GridMap generateVectormapCostmap();
     grid_map::GridMap generateCombinedCostmap();
 

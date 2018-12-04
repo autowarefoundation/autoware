@@ -41,6 +41,7 @@ CostmapGenerator::CostmapGenerator() :
   has_subscribed_wayarea_(false),
   private_nh_("~"),
   SENSOR_POINTS_COSTMAP_LAYER_("sensor_points_cost"),
+  OBJECTS_COSTMAP_LAYER_("objects_cost"),
   VECTORMAP_COSTMAP_LAYER_("vectormap_cost"),
   COMBINED_COSTMAP_LAYER_("combined__cost")
 {
@@ -73,11 +74,6 @@ void CostmapGenerator::run()
   pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
   pub_combined_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/combined_cost_cloud", 1);
 
-  // if(use_vectormap_)
-  // {
-  //   registerVectormapSubscriber();
-  // }
-
   if(use_waypoint_)
   {
     sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointCallback, this);
@@ -106,27 +102,21 @@ void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& 
   // pub(costmap)
 }
 
-void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2& in_sensor_points_msg)
+void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
   // if(checkSubscripton())
   costmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
   costmap_ = generateVectormapCostmap();
   // costmap_["waypoint_cost"] = generateWaypointCostmap()
   costmap_ = generateCombinedCostmap();
-  // pub(costmap_);
 
   publishRosMsg(costmap_);
 }
-
-// void CostmapGenerator::mapPointsCallback(const sensor_msgs::PointCloud2& in_map_points)
-// {
-// }
 
 void CostmapGenerator::waypointCallback(const autoware_msgs::LaneArray& in_waypoint)
 {
 
 }
-
 
 void CostmapGenerator::registerSyncedSubscriber()
 {
@@ -142,25 +132,6 @@ void CostmapGenerator::registerSyncedSubscriber()
   sync_ptr_->registerCallback(boost::bind(&CostmapGenerator::syncedCallback, this, _1, _2));
 }
 
-// void CostmapGenerator::registerVectormapSubscriber()
-// {
-//   if(use_wayarea_)
-//   {
-//     vmap_.subscribe(private_nh_, vector_map::Category::POINT |
-//                                 vector_map::Category::LINE |
-//                                 vector_map::Category::AREA |
-//                                 vector_map::Category::WAY_AREA, 1);
-//   }
-//   else
-//   {
-//     //TODO need to subscribe appropriate vectormap info
-//     vmap_.subscribe(private_nh_, vector_map::Category::POINT |
-//                                  vector_map::Category::NODE  |
-//                                  vector_map::Category::LANE, 1);
-//
-//   }
-// }
-
 void CostmapGenerator::initGridmap()
 {
   costmap_.setFrameId(velodyne_frame_);
@@ -175,13 +146,22 @@ void CostmapGenerator::initGridmap()
   costmap_.add(COMBINED_COSTMAP_LAYER_, 0);
 }
 
-grid_map::GridMap CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2& in_sensor_points_msg)
+grid_map::GridMap CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
+  // TODO: rename makeCostmapFromSensorPoints
   grid_map::GridMap sensor_points_costmap =
                         points2costmap_.makeSensorPointsCostmap(maximum_sensor_points_height_thres_, costmap_,
                                                                 SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
   return sensor_points_costmap;
+}
+
+grid_map::GridMap CostmapGenerator::generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
+{
+  // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
+  grid_map::GridMap objects_costmap =
+                        objects2costmap_.makeCostmapFromObjects(costmap_, OBJECTS_COSTMAP_LAYER_, in_objects);
+  return objects_costmap;
 }
 
 
