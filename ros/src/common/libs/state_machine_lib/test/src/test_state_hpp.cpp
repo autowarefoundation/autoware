@@ -29,20 +29,20 @@ TEST(TestSuite, CheckStateConstructor){
 
 	std::string state_name = "TestState";
 	uint64_t state_id = 0;
-	state_machine::State st(state_name, state_id);
+	state_machine::State state(state_name, state_id);
 
-	ASSERT_EQ(st.getStateID(),state_id) << "_state_id should be " << state_id;
-	ASSERT_STREQ(st.getStateName().c_str(), state_name.c_str()) << "state_name should be " << state_name;
-	ASSERT_TRUE(st.getChild() == NULL) << "child_state_ pointer should be NULL";
-	ASSERT_TRUE(st.getParent() == NULL) << "parent_state_ pointer should be NULL";
-	ASSERT_STREQ(st.getEnteredKey().c_str(), "") << "entered_key should be " << "";
+	ASSERT_EQ(state.getStateID(),state_id) << "_state_id should be " << state_id;
+	ASSERT_STREQ(state.getStateName().c_str(), state_name.c_str()) << "state_name should be " << state_name;
+	ASSERT_TRUE(state.getChild() == NULL) << "child_state_ pointer should be NULL";
+	ASSERT_TRUE(state.getParent() == NULL) << "parent_state_ pointer should be NULL";
+	ASSERT_STREQ(state.getEnteredKey().c_str(), "") << "entered_key should be " << "";
 
 
 	std::ostringstream oss;
 	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
 	std::cout.rdbuf(oss.rdbuf());
 
-	st.showStateName();
+	state.showStateName();
 
 	std::cout.rdbuf(p_cout_streambuf); // restore
 
@@ -58,37 +58,37 @@ TEST(TestSuite, TestParentChild){
 
 	state_name = "Start";
 	state_id = 0;
-	state_machine::State *stateFirst = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateFirstPtr(stateFirst);
+	state_machine::State *first_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> first_state_ptr(first_state);
 
 	state_name = "Init";
 	state_id = 1;
-	state_machine::State *stateSecond = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateSecondPtr(stateSecond);
+	state_machine::State *second_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> second_state_ptr(second_state);
 
 	state_name = "Final";
 	state_id = 2;
-	state_machine::State *stateThird = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateThirdPtr(stateThird);
+	state_machine::State *third_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> third_state_ptr(third_state);
 
 	// Set parent
-	stateSecondPtr->setParent(stateFirstPtr);
-	stateThirdPtr->setParent(stateSecondPtr);
+	second_state_ptr->setParent(first_state_ptr);
+	third_state_ptr->setParent(second_state_ptr);
 
-	ASSERT_TRUE(stateFirstPtr->getParent() == NULL) << "Parent should be " << NULL;
-	ASSERT_TRUE(stateSecondPtr->getParent() == stateFirstPtr) << "Parent should be " << stateFirstPtr;
-	ASSERT_TRUE(stateThirdPtr->getParent() == stateSecondPtr) << "Parent should be " << stateSecondPtr;
+	ASSERT_TRUE(first_state_ptr->getParent() == NULL) << "Parent should be " << NULL;
+	ASSERT_TRUE(second_state_ptr->getParent() == first_state_ptr) << "Parent should be " << first_state_ptr;
+	ASSERT_TRUE(third_state_ptr->getParent() == second_state_ptr) << "Parent should be " << second_state_ptr;
 
 	// Set child
-	stateFirstPtr->setChild(stateSecondPtr);
-	stateSecondPtr->setChild(stateThirdPtr);
+	first_state_ptr->setChild(second_state_ptr);
+	second_state_ptr->setChild(third_state_ptr);
 
-	ASSERT_TRUE(stateFirstPtr->getChild() == stateSecondPtr) << "Child should be " << stateSecondPtr;
-	ASSERT_TRUE(stateSecondPtr->getChild() == stateThirdPtr) << "Child should be " << stateThirdPtr;
-	ASSERT_TRUE(stateThirdPtr->getChild() == NULL) << "Child should be " << NULL;
+	ASSERT_TRUE(first_state_ptr->getChild() == second_state_ptr) << "Child should be " << second_state_ptr;
+	ASSERT_TRUE(second_state_ptr->getChild() == third_state_ptr) << "Child should be " << third_state_ptr;
+	ASSERT_TRUE(third_state_ptr->getChild() == NULL) << "Child should be " << NULL;
 }
 
-void foo(const std::string&){
+void auxFunc(const std::string&){
 	std::cout << "Test output";
 };
 
@@ -99,36 +99,36 @@ TEST(TestSuite, SetCallbacks){
 
 	state_name = "Start";
 	state_id = 0;
-	state_machine::State *stateFirst = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateFirstPtr(stateFirst);
+	state_machine::State *first_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> first_state_ptr(first_state);
 
 	state_name = "Init";
 	state_id = 1;
-	state_machine::State *stateSecond = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateSecondPtr(stateSecond);
+	state_machine::State *second_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> second_state_ptr(second_state);
 
 	// Set child
-	stateFirstPtr->setChild(stateSecondPtr);
+	first_state_ptr->setChild(second_state_ptr);
 
 	// Set callbacks
-	std::function<void(const std::string&)> _f = &foo;
-	stateFirstPtr->setCallbackEntry(_f);
-	stateFirstPtr->setCallbackExit(_f);
-	stateFirstPtr->setCallbackUpdate(_f);
+	std::function<void(const std::string&)> _f = &auxFunc;
+	first_state_ptr->setCallbackEntry(_f);
+	first_state_ptr->setCallbackExit(_f);
+	first_state_ptr->setCallbackUpdate(_f);
 
 	std::ostringstream oss;
 	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
 	std::cout.rdbuf(oss.rdbuf());
 
-	stateFirstPtr->onEntry();
+	first_state_ptr->onEntry();
 	std::cout.rdbuf(p_cout_streambuf); // restore
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onEntry should show Test output";
 
-	stateFirstPtr->onUpdate();
+	first_state_ptr->onUpdate();
 	std::cout.rdbuf(p_cout_streambuf); // restore
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show Test output";
 
-	stateFirstPtr->onExit();
+	first_state_ptr->onExit();
 	std::cout.rdbuf(p_cout_streambuf); // restore
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
 }
@@ -140,13 +140,13 @@ TEST(TestSuite, SetKey){
 
 	state_name = "Start";
 	state_id = 0;
-	state_machine::State *stateFirst = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateFirstPtr(stateFirst);
+	state_machine::State *first_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> first_state_ptr(first_state);
 
-	ASSERT_STREQ(stateFirstPtr->getEnteredKey().c_str(), "") << "entered_key should be " << "";
+	ASSERT_STREQ(first_state_ptr->getEnteredKey().c_str(), "") << "entered_key should be " << "";
 	std::string key = "newKey";
-	stateFirstPtr->setEnteredKey(key);
-	ASSERT_STREQ(stateFirstPtr->getEnteredKey().c_str(), key.c_str()) << "entered_key should be " << key;
+	first_state_ptr->setEnteredKey(key);
+	ASSERT_STREQ(first_state_ptr->getEnteredKey().c_str(), key.c_str()) << "entered_key should be " << key;
 }
 
 TEST(TestSuite, TestTransitionMap){
@@ -159,19 +159,19 @@ TEST(TestSuite, TestTransitionMap){
 
 	state_name = "Start";
 	state_id = 0;
-	state_machine::State *stateFirst = new state_machine::State(state_name, state_id);
-	std::shared_ptr<state_machine::State> stateFirstPtr(stateFirst);
+	state_machine::State *first_state = new state_machine::State(state_name, state_id);
+	std::shared_ptr<state_machine::State> first_state_ptr(first_state);
 
-	transition_map = stateFirstPtr->getTransitionMap();
+	transition_map = first_state_ptr->getTransitionMap();
 	ASSERT_EQ(transition_map[""], 0) << "Transition value should be" << 0;
 
 	key = "newTransition";
 	value = 0;
 
-	stateFirstPtr->addTransition(key, value);
-	ASSERT_EQ(stateFirstPtr->getTansitionVal(key), value) << "Transition value for key : " << key << " should be " << value;
+	first_state_ptr->addTransition(key, value);
+	ASSERT_EQ(first_state_ptr->getTansitionVal(key), value) << "Transition value for key : " << key << " should be " << value;
 
-	transition_map = stateFirstPtr->getTransitionMap();
+	transition_map = first_state_ptr->getTransitionMap();
 	ASSERT_EQ(transition_map[key], value) << "Transition value should be" << value;
 }
 

@@ -33,41 +33,41 @@ TEST(TestSuite, StateContextConstructor){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
-	state_machine::StateContext stateCtx(file_name, msg_name);
+	state_machine::StateContext state_context(file_name, msg_name);
 
 	// Check generated dot file
-	std::ifstream generatedDotFile("/tmp/"+msg_name+".dot");
-	std::stringstream dotFile;
-	dotFile << generatedDotFile.rdbuf();
+	std::ifstream generated_dot_file("/tmp/"+msg_name+".dot");
+	std::stringstream dot_file_string;
+	dot_file_string << generated_dot_file.rdbuf();
 
-	std::ifstream referenceDotFile("reference.dot");
-	std::stringstream referenceDot;
-	referenceDot << referenceDotFile.rdbuf();
+	std::ifstream reference_dot_file("reference.dot");
+	std::stringstream reference_dot_file_string;
+	reference_dot_file_string << reference_dot_file.rdbuf();
 
-	ASSERT_STREQ(dotFile.str().c_str(), referenceDot.str().c_str()) << "The generated dot file should be " << referenceDot.str();
+	ASSERT_STREQ(dot_file_string.str().c_str(), reference_dot_file_string.str().c_str()) << "The generated dot file should be " << reference_dot_file_string.str();
 
 	// Check start state
 	std::shared_ptr<state_machine::State> start_state;
-	start_state = stateCtx.getStartState();
-	std::string testStr;
-	testStr = "Start\n";
+	start_state = state_context.getStartState();
+	std::string test_string;
+	test_string = "Start\n";
 	ASSERT_STREQ(start_state->getStateName().c_str(), "Start") << "First state should be Start";
-	ASSERT_STREQ(stateCtx.getStateText().c_str(), testStr.c_str()) << "Text should be " << testStr;
-	ASSERT_STREQ(stateCtx.getAvailableTransition().c_str(), "started:Init,") << "Available transition should be: started:Init,";
+	ASSERT_STREQ(state_context.getStateText().c_str(), test_string.c_str()) << "Text should be " << test_string;
+	ASSERT_STREQ(state_context.getAvailableTransition().c_str(), "started:Init,") << "Available transition should be: started:Init,";
 }
 
 TEST(TestSuite, ChangeStates){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
-	state_machine::StateContext stateCtx(file_name, msg_name);
+	state_machine::StateContext state_context(file_name, msg_name);
 
-	stateCtx.nextState("started");
-	ASSERT_STREQ(stateCtx.getStateText().c_str(), "Init\n") << "Text should be: Init\n";
-	ASSERT_STREQ(stateCtx.getAvailableTransition().c_str(), "init_start:Intermediate,") << "Available transition should be: init_start:Intermediate,";
+	state_context.nextState("started");
+	ASSERT_STREQ(state_context.getStateText().c_str(), "Init\n") << "Text should be: Init\n";
+	ASSERT_STREQ(state_context.getAvailableTransition().c_str(), "init_start:Intermediate,") << "Available transition should be: init_start:Intermediate,";
 }
 
-void foo2(const std::string&){
+void auxFunc2(const std::string&){
 	std::cout << "Test output";
 };
 
@@ -75,23 +75,23 @@ TEST(TestSuite, SetCallbacksStateContext){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
-	state_machine::StateContext stateCtx(file_name, msg_name);
+	state_machine::StateContext state_context(file_name, msg_name);
 
 	// Set callbacks
-	std::function<void(const std::string&)> _f = &foo2;
-	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
-	ASSERT_TRUE(stateCtx.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
+	std::function<void(const std::string&)> _f = &auxFunc2;
+	ASSERT_TRUE(state_context.setCallback(state_machine::CallbackType::UPDATE, "Start", _f));
+	ASSERT_TRUE(state_context.setCallback(state_machine::CallbackType::EXIT, "Start", _f));
 
 	std::ostringstream oss;
 	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
 	std::cout.rdbuf(oss.rdbuf());
 
-	stateCtx.onUpdate();
+	state_context.onUpdate();
 	std::cout.rdbuf(p_cout_streambuf); // restore
 	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show 'Test output'";
 
 	// Set Callback for unexisting state
-	ASSERT_TRUE(!stateCtx.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
+	ASSERT_TRUE(!state_context.setCallback(state_machine::CallbackType::UPDATE, "NoState", _f)) << "Should be false";
 }
 
 
