@@ -9,15 +9,23 @@ buttons:
       - self.label_rosbag_play_bar
       panel : self.panel_rosbag_play
       start :
+        prop   : 1
         border : 20
         flags  : [ left ]
       repeat :
+        prop   : 1
         border : 20
         flags  : [ left ]
       clock :
+        prop   : 1
         border : 20
         flags  : [ left ]
+      other    :
+        prop   : 4
+        border : 40
+        flags  : [ right, no_category ]
       sim_time :
+        prop   : 0
         border : 20
         flags  : [ left, no_category ]
 
@@ -67,6 +75,14 @@ params :
       cmd_param :
         only_enable : True
         dash        : '--'
+    - name      : other
+      label     : 'Other flags:'
+      kind      : str
+      v         : '                        '
+      cmd_param :
+        must        : False
+        tail        : True
+        delim       : ''
     - name      : sim_time
       label     : Sim Time
       kind      : hide
