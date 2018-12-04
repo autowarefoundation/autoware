@@ -191,15 +191,15 @@ grid_map::GridMap CostmapGenerator::generateVectormapCostmap()
   grid_map::GridMap vectormap_costmap = costmap_;
   if(use_wayarea_)
   {
-    std::vector<std::vector<geometry_msgs::Point>> area_points;
     if(!has_subscribed_wayarea_)
     {
-      object_map::LoadRoadAreasFromVectorMap(private_nh_, area_points);
+      object_map::LoadRoadAreasFromVectorMap(private_nh_, area_points_);
     }
-    if(!area_points.empty())
+    // std::cout << area_points.empty() << std::endl;
+    if(!area_points_.empty())
     {
       has_subscribed_wayarea_ = true;
-      object_map::FillPolygonAreas(vectormap_costmap, area_points, VECTORMAP_COSTMAP_LAYER_,
+      object_map::FillPolygonAreas(vectormap_costmap, area_points_, VECTORMAP_COSTMAP_LAYER_,
                         grid_max_value_, grid_min_value_, grid_min_value_,
                        grid_max_value_, velodyne_frame_, map_frame_,
                        tf_listener_);

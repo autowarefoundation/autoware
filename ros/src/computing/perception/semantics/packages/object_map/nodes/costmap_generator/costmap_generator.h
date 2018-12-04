@@ -98,6 +98,8 @@ class CostmapGenerator
     std::unique_ptr<message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
                                                       autoware_msgs::DetectedObjectArray>> sync_ptr_;
 
+    std::vector<std::vector<geometry_msgs::Point>> area_points_;
+
     Points2Costmap points2costmap_;
 
     const std::string SENSOR_POINTS_COSTMAP_LAYER_;
