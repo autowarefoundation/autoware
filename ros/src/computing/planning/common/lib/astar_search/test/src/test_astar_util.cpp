@@ -25,6 +25,21 @@ public:
 	~TestSuite(){}
 };
 
+TEST(TestSuite, CheckGreaterThanOperator){
+
+	int x = 0;
+	int y = 0;
+	int theta = 0;
+	double gc = 0;
+	double hc = 10;
+
+	SimpleNode simple_node1;
+	SimpleNode simple_node2(x, y, theta, gc, hc);
+
+	ASSERT_TRUE(simple_node2 > simple_node1) << "Should be true";
+	ASSERT_TRUE(!(simple_node1 > simple_node2)) << "Should be false";
+}
+
 TEST(TestSuite, CalculateDistanceBetween2Points){
 	// Point 1
 	double x1 = 0.0;
@@ -85,10 +100,16 @@ TEST(TestSuite, CheckTransformPose){
 }
 
 TEST(TestSuite, CheckWaveFrontNodeConstruct){
+
+	WaveFrontNode node;
+	ASSERT_EQ(node.index_x, 0) << "index_x should be " << 0;
+	ASSERT_EQ(node.index_y, 0) << "index_y should be " << 0;
+	ASSERT_EQ(node.hc, 0) << "hc should be " << 0;
+
 	int x = 0;
 	int y = 0;
 	double cost = 10;
-	WaveFrontNode node = getWaveFrontNode(x, y, cost);
+	node = getWaveFrontNode(x, y, cost);
 	ASSERT_EQ(node.index_x, x) << "index_x should be " << x;
 	ASSERT_EQ(node.index_y, y) << "index_y should be " << y;
 	ASSERT_EQ(node.hc, cost) << "hc should be " << cost;
