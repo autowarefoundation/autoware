@@ -3,8 +3,10 @@
   <name>ymc</name>
   <version>1.9.1</version>
   <description>The ymc package</description>
-  <maintainer email="antm678@ertl.jp">T.Ando</maintainer>
+  <maintainer email="aohsato@gmail.com">Akihito Ohsato</maintainer>
   <license>BSD</license>
+  <author email="aohsato@gmail.com">Akihito Ohsato</author>
+  <author email="antm678@ertl.jp">T.Ando</author>
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend>
 
