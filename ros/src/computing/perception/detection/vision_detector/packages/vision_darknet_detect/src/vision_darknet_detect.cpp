@@ -177,11 +177,6 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
             if (in_objects[i].h < 0)
                 obj.height = 0;
 
-            obj.color.r = colors_[in_objects[i].class_type].val[0];
-            obj.color.g = colors_[in_objects[i].class_type].val[1];
-            obj.color.b = colors_[in_objects[i].class_type].val[2];
-            obj.color.a = 1.0f;
-
             obj.score = in_objects[i].score;
             if (use_coco_names_)
             {

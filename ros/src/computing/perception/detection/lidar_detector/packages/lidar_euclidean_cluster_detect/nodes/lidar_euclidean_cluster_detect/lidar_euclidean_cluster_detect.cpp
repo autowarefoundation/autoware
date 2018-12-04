@@ -228,10 +228,6 @@ void publishDetectedObjects(const autoware_msgs::CloudClusterArray &in_clusters)
     detected_object.dimensions = in_clusters.clusters[i].dimensions;
     detected_object.pointcloud = in_clusters.clusters[i].cloud;
     detected_object.convex_hull = in_clusters.clusters[i].convex_hull;
-    detected_object.color.r = 0.;
-    detected_object.color.g = 1.;
-    detected_object.color.b = 0.;
-    detected_object.color.a = 1.;
     detected_object.valid = true;
 
     detected_objects.objects.push_back(detected_object);

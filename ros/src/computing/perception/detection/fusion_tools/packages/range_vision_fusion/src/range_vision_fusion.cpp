@@ -611,16 +611,16 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
   in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
   ROS_INFO("[%s] camera_info_src: %s", __APP_NAME__, camera_info_src.c_str());
 
-  in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.5);
+  in_private_handle.param<double>("overlap_threshold", overlap_threshold_, 0.6);
   ROS_INFO("[%s] overlap_threshold: %f", __APP_NAME__, overlap_threshold_);
 
-  in_private_handle.param<std::string>("min_car_dimensions", min_car_dimensions, "[2,2,4]");//w,h,d
+  in_private_handle.param<std::string>("min_car_dimensions", min_car_dimensions, "[3,2,2]");//w,h,d
   ROS_INFO("[%s] min_car_dimensions: %s", __APP_NAME__, min_car_dimensions.c_str());
 
   in_private_handle.param<std::string>("min_person_dimensions", min_person_dimensions, "[1,2,1]");
   ROS_INFO("[%s] min_person_dimensions: %s", __APP_NAME__, min_person_dimensions.c_str());
 
-  in_private_handle.param<std::string>("min_truck_dimensions", min_truck_dimensions, "[2,2,4.5]");
+  in_private_handle.param<std::string>("min_truck_dimensions", min_truck_dimensions, "[4,2,2]");
   ROS_INFO("[%s] min_truck_dimensions: %s", __APP_NAME__, min_truck_dimensions.c_str());
 
 

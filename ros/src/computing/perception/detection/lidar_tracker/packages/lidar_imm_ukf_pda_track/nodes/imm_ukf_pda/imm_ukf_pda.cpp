@@ -329,7 +329,7 @@ void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs
                                                  UKF& target)
 {
   target.lifetime_++;
-  if (target.label_.empty() && !target.object_.label.empty() && target.object_.label !="unknown")
+  if (!target.object_.label.empty() && target.object_.label !="unknown")
   {
     target.label_ = target.object_.label;
   }

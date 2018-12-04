@@ -42,11 +42,6 @@
 
 #include <std_msgs/Header.h>
 
-#include <jsk_recognition_msgs/BoundingBox.h>
-#include <jsk_recognition_msgs/BoundingBoxArray.h>
-
-#include <jsk_recognition_msgs/PolygonArray.h>
-
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 
@@ -65,30 +60,38 @@ private:
   double arrow_speed_threshold_;
   double marker_display_duration_;
 
+  int marker_id_;
+
+  std_msgs::ColorRGBA label_color_, box_color_, hull_color_, arrow_color_, centroid_color_;
+
   std::string input_topic_, ros_namespace_;
 
   ros::NodeHandle node_handle_;
   ros::Subscriber subscriber_detected_objects_;
 
-  ros::Publisher publisher_arrow_markers_;
-  ros::Publisher publisher_label_markers_;
-  ros::Publisher publisher_bounding_boxes_;
-  ros::Publisher publisher_polygon_hulls_;
-  ros::Publisher publisher_centroid_markers_;
+  ros::Publisher publisher_markers_;
 
   visualization_msgs::MarkerArray ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects);
 
   visualization_msgs::MarkerArray ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects);
 
-  jsk_recognition_msgs::BoundingBoxArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 
-  jsk_recognition_msgs::PolygonArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
+  visualization_msgs::MarkerArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
 
   visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
+
+  std::string ColorToString(const std_msgs::ColorRGBA &in_color);
 
   void DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects);
 
   bool IsObjectValid(const autoware_msgs::DetectedObject &in_object);
+
+  float CheckColor(double value);
+
+  float CheckAlpha(double value);
+
+  std_msgs::ColorRGBA ParseColor(const std::vector<double> &in_color);
 
 public:
   VisualizeDetectedObjects();

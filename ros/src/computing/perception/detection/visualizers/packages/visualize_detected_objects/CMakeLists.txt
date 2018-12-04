@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         tf
         visualization_msgs
-        jsk_recognition_msgs
         )
 
 catkin_package(
@@ -18,7 +17,6 @@ catkin_package(
         geometry_msgs
         tf
         visualization_msgs
-        jsk_recognition_msgs
 )
 
 find_package(OpenCV REQUIRED)

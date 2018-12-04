@@ -42,11 +42,7 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label
   }
 
   std::string object_src_topic = ros_namespace_ + "/objects";
-  std::string labels_out_topic = ros_namespace_ + "/objects_labels";
-  std::string arrows_out_topic = ros_namespace_ + "/objects_arrows";
-  std::string hulls_out_topic = ros_namespace_ + "/objects_hulls";
-  std::string boxes_out_topic = ros_namespace_ + "/objects_boxes";
-  std::string centroids_out_topic = ros_namespace_ + "/objects_centroids";
+  std::string markers_out_topic = ros_namespace_ + "/objects_markers";
 
   private_nh_.param<double>("object_speed_threshold", object_speed_threshold_, 0.1);
   ROS_INFO("[%s] object_speed_threshold: %.2f", __APP_NAME__, object_speed_threshold_);
@@ -57,39 +53,96 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label
   private_nh_.param<double>("marker_display_duration", marker_display_duration_, 0.2);
   ROS_INFO("[%s] marker_display_duration: %.2f", __APP_NAME__, marker_display_duration_);
 
+  std::vector<double> color;
+  private_nh_.param<std::vector<double>>("label_color", color, {255.,255.,255.,1.0});
+  label_color_ = ParseColor(color);
+  ROS_INFO("[%s] label_color: %s", __APP_NAME__, ColorToString(label_color_).c_str());
+
+  private_nh_.param<std::vector<double>>("arrow_color", color, {0.,255.,0.,0.8});
+  arrow_color_ = ParseColor(color);
+  ROS_INFO("[%s] arrow_color: %s", __APP_NAME__, ColorToString(arrow_color_).c_str());
+
+  private_nh_.param<std::vector<double>>("hull_color", color, {51.,204.,51.,0.8});
+  hull_color_ = ParseColor(color);
+  ROS_INFO("[%s] hull_color: %s", __APP_NAME__, ColorToString(hull_color_).c_str());
+
+  private_nh_.param<std::vector<double>>("box_color", color, {51.,128.,204.,0.8});
+  box_color_ = ParseColor(color);
+  ROS_INFO("[%s] box_color: %s", __APP_NAME__, ColorToString(box_color_).c_str());
+
+  private_nh_.param<std::vector<double>>("centroid_color", color, {77.,121.,255.,0.8});
+  centroid_color_ = ParseColor(color);
+  ROS_INFO("[%s] centroid_color: %s", __APP_NAME__, ColorToString(centroid_color_).c_str());
+
   subscriber_detected_objects_ =
     node_handle_.subscribe(object_src_topic, 1,
                            &VisualizeDetectedObjects::DetectedObjectsCallback, this);
   ROS_INFO("[%s] object_src_topic: %s", __APP_NAME__, object_src_topic.c_str());
 
+  publisher_markers_ = node_handle_.advertise<visualization_msgs::MarkerArray>(
+    markers_out_topic, 1);
+  ROS_INFO("[%s] markers_out_topic: %s", __APP_NAME__, markers_out_topic.c_str());
 
-  publisher_label_markers_ = node_handle_.advertise<visualization_msgs::MarkerArray>(
-    labels_out_topic, 1);
-  ROS_INFO("[%s] labels_out_topic: %s", __APP_NAME__, labels_out_topic.c_str());
+}
 
-  publisher_arrow_markers_ = node_handle_.advertise<visualization_msgs::MarkerArray>(
-    arrows_out_topic, 1);
-  ROS_INFO("[%s] arrows_out_topic: %s", __APP_NAME__, arrows_out_topic.c_str());
+std::string VisualizeDetectedObjects::ColorToString(const std_msgs::ColorRGBA &in_color)
+{
+  std::stringstream stream;
 
-  publisher_polygon_hulls_ = node_handle_.advertise<jsk_recognition_msgs::PolygonArray>(
-    hulls_out_topic, 1);
-  ROS_INFO("[%s] hulls_out_topic: %s", __APP_NAME__, hulls_out_topic.c_str());
+  stream << "{R:" << std::fixed << std::setprecision(1) << in_color.r*255 << ", ";
+  stream << "G:" << std::fixed << std::setprecision(1) << in_color.g*255 << ", ";
+  stream << "B:" << std::fixed << std::setprecision(1) << in_color.b*255 << ", ";
+  stream << "A:" << std::fixed << std::setprecision(1) << in_color.a << "}";
+  return stream.str();
+}
 
-  publisher_bounding_boxes_ = node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>(
-    boxes_out_topic, 1);
-  ROS_INFO("[%s] boxes_out_topic: %s", __APP_NAME__, boxes_out_topic.c_str());
+float VisualizeDetectedObjects::CheckColor(double value)
+{
+  float final_value;
+  if (value > 255.)
+    final_value = 1.f;
+  else if (value < 0)
+    final_value = 0.f;
+  else
+    final_value = value/255.f;
+  return final_value;
+}
 
-  publisher_centroid_markers_ = node_handle_.advertise<visualization_msgs::MarkerArray>(
-    centroids_out_topic, 1);
-  ROS_INFO("[%s] centroids_out_topic: %s", __APP_NAME__, centroids_out_topic.c_str());
+float VisualizeDetectedObjects::CheckAlpha(double value)
+{
+  float final_value;
+  if (value > 1.)
+    final_value = 1.f;
+  else if (value < 0.1)
+    final_value = 0.1f;
+  else
+    final_value = value;
+  return final_value;
+}
 
+std_msgs::ColorRGBA VisualizeDetectedObjects::ParseColor(const std::vector<double> &in_color)
+{
+  std_msgs::ColorRGBA color;
+  float r,g,b,a;
+  if (in_color.size() == 4) //r,g,b,a
+  {
+    color.r = CheckColor(in_color[0]);
+    color.g = CheckColor(in_color[1]);
+    color.b = CheckColor(in_color[2]);
+    color.a = CheckAlpha(in_color[3]);
+  }
+  return color;
 }
 
 void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers;
-  jsk_recognition_msgs::PolygonArray polygon_hulls;
-  jsk_recognition_msgs::BoundingBoxArray bounding_boxes;
+  visualization_msgs::MarkerArray polygon_hulls;
+  visualization_msgs::MarkerArray bounding_boxes;
+
+  visualization_msgs::MarkerArray visualization_markers;
+
+  marker_id_ = 0;
 
   label_markers = ObjectsToLabels(in_objects);
   arrow_markers = ObjectsToArrows(in_objects);
@@ -97,11 +150,18 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   bounding_boxes = ObjectsToBoxes(in_objects);
   centroid_markers = ObjectsToCentroids(in_objects);
 
-  publisher_label_markers_.publish(label_markers);
-  publisher_arrow_markers_.publish(arrow_markers);
-  publisher_polygon_hulls_.publish(polygon_hulls);
-  publisher_bounding_boxes_.publish(bounding_boxes);
-  publisher_centroid_markers_.publish(centroid_markers);
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       label_markers.markers.begin(), label_markers.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       arrow_markers.markers.begin(), arrow_markers.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       polygon_hulls.markers.begin(), polygon_hulls.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       bounding_boxes.markers.begin(), bounding_boxes.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       centroid_markers.markers.begin(), centroid_markers.markers.end());
+
+  publisher_markers_.publish(visualization_markers);
 
 }
 
@@ -109,7 +169,6 @@ visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray centroid_markers;
-  int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object))
@@ -123,62 +182,103 @@ VisualizeDetectedObjects::ObjectsToCentroids(const autoware_msgs::DetectedObject
       centroid_marker.pose = object.pose;
       centroid_marker.ns = ros_namespace_ + "/centroid_markers";
 
-      centroid_marker.scale.x = 1.0;
-      centroid_marker.scale.y = 1.0;
-      centroid_marker.scale.z = 1.0;
+      centroid_marker.scale.x = 0.5;
+      centroid_marker.scale.y = 0.5;
+      centroid_marker.scale.z = 0.5;
 
       if (object.color.a == 0)
       {
-        centroid_marker.color.a = 1.f;
-        centroid_marker.color.g = 1.f;
+        centroid_marker.color = centroid_color_;
       }
       else
       {
         centroid_marker.color = object.color;
       }
-      centroid_marker.id = marker_id++;
+      centroid_marker.id = marker_id_++;
       centroid_markers.markers.push_back(centroid_marker);
     }
   }
   return centroid_markers;
 }//ObjectsToCentroids
 
-jsk_recognition_msgs::BoundingBoxArray
+visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects)
 {
-  jsk_recognition_msgs::BoundingBoxArray object_boxes;
-  int marker_id = 0;
-
-  object_boxes.header = in_objects.header;
+  visualization_msgs::MarkerArray object_boxes;
 
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object) &&
+       object.label != "unknown" &&
         (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
     {
-      jsk_recognition_msgs::BoundingBox box;
+      visualization_msgs::Marker box;
+
+      box.lifetime = ros::Duration(marker_display_duration_);
       box.header = in_objects.header;
-      box.dimensions = object.dimensions;
+      box.type = visualization_msgs::Marker::CUBE;
+      box.action = visualization_msgs::Marker::ADD;
+      box.ns = ros_namespace_ + "/box_markers";
+      box.id = marker_id_++;
+      box.scale = object.dimensions;
       box.pose.position = object.pose.position;
+
       if (object.pose_reliable)
         box.pose.orientation = object.pose.orientation;
-      object_boxes.boxes.push_back(box);
+
+      if (object.color.a == 0)
+      {
+        box.color = box_color_;
+      }
+      else
+      {
+        box.color = object.color;
+      }
+
+      object_boxes.markers.push_back(box);
     }
   }
   return object_boxes;
 }//ObjectsToBoxes
 
-jsk_recognition_msgs::PolygonArray
+visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects)
 {
-  jsk_recognition_msgs::PolygonArray polygon_hulls;
-
-  polygon_hulls.header = in_objects.header;
+  visualization_msgs::MarkerArray polygon_hulls;
 
   for (auto const &object: in_objects.objects)
   {
-    if (IsObjectValid(object))
-      polygon_hulls.polygons.push_back(object.convex_hull);
+    if (IsObjectValid(object) && !object.convex_hull.polygon.points.empty() && object.label == "unknown")
+    {
+      visualization_msgs::Marker hull;
+      hull.lifetime = ros::Duration(marker_display_duration_);
+      hull.header = in_objects.header;
+      hull.type = visualization_msgs::Marker::LINE_STRIP;
+      hull.action = visualization_msgs::Marker::ADD;
+      hull.ns = ros_namespace_ + "/hull_markers";
+      hull.id = marker_id_++;
+      hull.scale.x = 0.2;
+
+      for(auto const &point: object.convex_hull.polygon.points)
+      {
+        geometry_msgs::Point tmp_point;
+        tmp_point.x = point.x;
+        tmp_point.y = point.y;
+        tmp_point.z = point.z;
+        hull.points.push_back(tmp_point);
+      }
+
+      if (object.color.a == 0)
+      {
+        hull.color = hull_color_;
+      }
+      else
+      {
+        hull.color = object.color;
+      }
+
+      polygon_hulls.markers.push_back(hull);
+    }
   }
   return polygon_hulls;
 }
@@ -187,7 +287,6 @@ visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArray &in_objects)
 {
   visualization_msgs::MarkerArray arrow_markers;
-  int marker_id = 0;
   for (auto const &object: in_objects.objects)
   {
     if (IsObjectValid(object) && object.pose_reliable)
@@ -232,14 +331,13 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
         // green
         if (object.color.a == 0)
         {
-          arrow_marker.color.g = 1.f;
-          arrow_marker.color.a = 1.f;
+          arrow_marker.color = arrow_color_;
         }
         else
         {
           arrow_marker.color = object.color;
         }
-        arrow_marker.id = marker_id++;
+        arrow_marker.id = marker_id_++;
 
         // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
         arrow_marker.pose.position.x = object.pose.position.x;
@@ -263,28 +361,6 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   return arrow_markers;
 }//ObjectsToArrows
 
-bool VisualizeDetectedObjects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
-{
-  if (!in_object.valid ||
-    std::isnan(in_object.pose.orientation.x) ||
-    std::isnan(in_object.pose.orientation.y) ||
-    std::isnan(in_object.pose.orientation.z) ||
-    std::isnan(in_object.pose.orientation.w) ||
-    std::isnan(in_object.pose.position.x) ||
-    std::isnan(in_object.pose.position.y) ||
-    std::isnan(in_object.pose.position.z) ||
-    (in_object.pose.position.x == 0.) ||
-    (in_object.pose.position.y == 0.) ||
-    (in_object.dimensions.x <= 0.) ||
-    (in_object.dimensions.y <= 0.) ||
-    (in_object.dimensions.z <= 0.)
-    )
-  {
-    return false;
-  }
-  return true;
-}//end IsObjectValid
-
 visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArray &in_objects)
 {
@@ -304,12 +380,9 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
       label_marker.scale.y = 1.5;
       label_marker.scale.z = 1.5;
 
-      label_marker.color.r = 1.f;
-      label_marker.color.g = 1.f;
-      label_marker.color.b = 1.f;
-      label_marker.color.a = 1.f;
+      label_marker.color = label_color_;
 
-      label_marker.id = object.id;
+      label_marker.id = marker_id_++;
 
       if(!object.label.empty() && object.label != "unknown")
         label_marker.text = object.label + " "; //Object Class if available
@@ -358,3 +431,25 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
   return label_markers;
 }//ObjectsToLabels
+
+bool VisualizeDetectedObjects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
+{
+  if (!in_object.valid ||
+      std::isnan(in_object.pose.orientation.x) ||
+      std::isnan(in_object.pose.orientation.y) ||
+      std::isnan(in_object.pose.orientation.z) ||
+      std::isnan(in_object.pose.orientation.w) ||
+      std::isnan(in_object.pose.position.x) ||
+      std::isnan(in_object.pose.position.y) ||
+      std::isnan(in_object.pose.position.z) ||
+      (in_object.pose.position.x == 0.) ||
+      (in_object.pose.position.y == 0.) ||
+      (in_object.dimensions.x <= 0.) ||
+      (in_object.dimensions.y <= 0.) ||
+      (in_object.dimensions.z <= 0.)
+    )
+  {
+    return false;
+  }
+  return true;
+}//end IsObjectValid
