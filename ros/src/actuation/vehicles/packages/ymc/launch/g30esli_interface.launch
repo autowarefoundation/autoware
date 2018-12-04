@@ -18,5 +18,4 @@
     <arg name="wired" value="$(arg ds4_wired)" />
     <arg name="timeout" value="$(arg ds4_timeout)" />
   </include>
-
 </launch>
