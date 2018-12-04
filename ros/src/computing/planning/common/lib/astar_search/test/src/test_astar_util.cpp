@@ -37,16 +37,16 @@ TEST(TestSuite, CalculateDistanceBetween2Points){
 
 TEST(TestSuite, CheckThetaWrapAround){
 	double theta = -90; //Degrees
-	double thetaNew = (theta+360)*M_PI/180;
-	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+	double theta_new = (theta+360)*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), theta_new) << "Angle should be " << theta_new;
 
 	theta = 400;
-	thetaNew = (theta-360)*M_PI/180;
-	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+	theta_new = (theta-360)*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), theta_new) << "Angle should be " << theta_new;
 
 	theta = 60;
-	thetaNew = theta*M_PI/180;
-	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), thetaNew) << "Angle should be " << thetaNew;
+	theta_new = theta*M_PI/180;
+	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), theta_new) << "Angle should be " << theta_new;
 }
 
 TEST(TestSuite, CheckTransformPose){
@@ -54,32 +54,33 @@ TEST(TestSuite, CheckTransformPose){
 	// Check translation of 1 along X axis
 	tf::Quaternion q(0,0,0,1);
 	tf::Vector3 v(1,0,0);
-	geometry_msgs::Pose inPose, outPose, expectedPose;
-	inPose.position.x = 0;
-	inPose.position.y = 0;
-	inPose.position.z = 0;
-	inPose.orientation.x = 0;
-	inPose.orientation.y = 0;
-	inPose.orientation.z = 0;
-	inPose.orientation.w = 1;
-	expectedPose.position.x = 1;
-	expectedPose.position.y = 0;
-	expectedPose.position.z = 0;
-	expectedPose.orientation.x = 0;
-	expectedPose.orientation.y = 0;
-	expectedPose.orientation.z = 0;
-	expectedPose.orientation.w = 1;
+	geometry_msgs::Pose in_pose, out_pose, expected_pose;
+
+	in_pose.position.x = 0;
+	in_pose.position.y = 0;
+	in_pose.position.z = 0;
+	in_pose.orientation.x = 0;
+	in_pose.orientation.y = 0;
+	in_pose.orientation.z = 0;
+	in_pose.orientation.w = 1;
+	expected_pose.position.x = 1;
+	expected_pose.position.y = 0;
+	expected_pose.position.z = 0;
+	expected_pose.orientation.x = 0;
+	expected_pose.orientation.y = 0;
+	expected_pose.orientation.z = 0;
+	expected_pose.orientation.w = 1;
 	tf::Transform translation(q, v);
 
-	outPose = transformPose(inPose, translation);
+	out_pose = transformPose(in_pose, translation);
 
-	ASSERT_DOUBLE_EQ(outPose.position.x, expectedPose.position.x) << "X Coordinate should be " << expectedPose.position.x;
-	ASSERT_DOUBLE_EQ(outPose.position.y, expectedPose.position.y) << "Y Coordinate should be " << expectedPose.position.y;
-	ASSERT_DOUBLE_EQ(outPose.position.z, expectedPose.position.z) << "Z Coordinate should be " << expectedPose.position.z;
-	ASSERT_DOUBLE_EQ(outPose.orientation.x, expectedPose.orientation.x) << "X Quaternion should be " << expectedPose.orientation.x;
-	ASSERT_DOUBLE_EQ(outPose.orientation.y, expectedPose.orientation.y) << "Y Quaternion should be " << expectedPose.orientation.y;
-	ASSERT_DOUBLE_EQ(outPose.orientation.z, expectedPose.orientation.z) << "Z Quaternion should be " << expectedPose.orientation.z;
-	ASSERT_DOUBLE_EQ(outPose.orientation.w, expectedPose.orientation.w) << "W Quaternion should be " << expectedPose.orientation.w;
+	ASSERT_DOUBLE_EQ(out_pose.position.x, expected_pose.position.x) << "X Coordinate should be " << expected_pose.position.x;
+	ASSERT_DOUBLE_EQ(out_pose.position.y, expected_pose.position.y) << "Y Coordinate should be " << expected_pose.position.y;
+	ASSERT_DOUBLE_EQ(out_pose.position.z, expected_pose.position.z) << "Z Coordinate should be " << expected_pose.position.z;
+	ASSERT_DOUBLE_EQ(out_pose.orientation.x, expected_pose.orientation.x) << "X Quaternion should be " << expected_pose.orientation.x;
+	ASSERT_DOUBLE_EQ(out_pose.orientation.y, expected_pose.orientation.y) << "Y Quaternion should be " << expected_pose.orientation.y;
+	ASSERT_DOUBLE_EQ(out_pose.orientation.z, expected_pose.orientation.z) << "Z Quaternion should be " << expected_pose.orientation.z;
+	ASSERT_DOUBLE_EQ(out_pose.orientation.w, expected_pose.orientation.w) << "W Quaternion should be " << expected_pose.orientation.w;
 
 }
 
@@ -95,26 +96,26 @@ TEST(TestSuite, CheckWaveFrontNodeConstruct){
 
 TEST(TestSuite, CheckRelativeCoordinate){
 
-	geometry_msgs::Pose inPose;
-	inPose.position.x = 1;
-	inPose.position.y = -4;
-	inPose.position.z = 8;
-	inPose.orientation.x = 0;
-	inPose.orientation.y = 0;
-	inPose.orientation.z = 0;
-	inPose.orientation.w = 1;
+	geometry_msgs::Pose in_pose;
+	in_pose.position.x = 1;
+	in_pose.position.y = -4;
+	in_pose.position.z = 8;
+	in_pose.orientation.x = 0;
+	in_pose.orientation.y = 0;
+	in_pose.orientation.z = 0;
+	in_pose.orientation.w = 1;
 
 	tf::Point point = tf::Point(0,0,0);
 
-	geometry_msgs::Point relPt = calcRelativeCoordinate(inPose, point);
-	geometry_msgs::Point expPt;
-	expPt.x = -inPose.position.x;
-	expPt.y = -inPose.position.y;
-	expPt.z = -inPose.position.z;
+	geometry_msgs::Point relative_point = calcRelativeCoordinate(in_pose, point);
+	geometry_msgs::Point expected_point;
+	expected_point.x = -in_pose.position.x;
+	expected_point.y = -in_pose.position.y;
+	expected_point.z = -in_pose.position.z;
 
-	ASSERT_EQ(relPt.x, expPt.x) << "X coord should be " << expPt.x;
-	ASSERT_EQ(relPt.y, expPt.y) << "Y coord should be " << expPt.y;
-	ASSERT_EQ(relPt.z, expPt.z) << "Z coord should be " << expPt.z;
+	ASSERT_EQ(relative_point.x, expected_point.x) << "X coord should be " << expected_point.x;
+	ASSERT_EQ(relative_point.y, expected_point.y) << "Y coord should be " << expected_point.y;
+	ASSERT_EQ(relative_point.z, expected_point.z) << "Z coord should be " << expected_point.z;
 }
 
 TEST(TestSuite, CheckRadianDifference){
