@@ -3,4 +3,4 @@
 	url = https://github.com/CPFL/robosense
 [submodule "ros/src/util/packages/ds4"]
 	path = ros/src/util/packages/ds4
-	url = https://github.com/CPFL/ds4
+	url = https://github.com/tier4/ds4
