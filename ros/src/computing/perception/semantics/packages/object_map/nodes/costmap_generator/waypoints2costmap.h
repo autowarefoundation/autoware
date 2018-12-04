@@ -27,48 +27,26 @@
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************/
+#ifndef WAYPOINTS2COSTMAP_H
+#define WAYPOINTS2COSTMAP_H
 
-#include "objects2costmap.h"
+// headers in ROS
+#include <ros/ros.h>
+#include <grid_map_ros/grid_map_ros.hpp>
 
+// headers in local directory
+#include "autoware_msgs/LaneArray.h"
 
-// Constructor
-Objects2Costmap::Objects2Costmap()
+class Waypoints2Costmap
 {
-}
+  public:
+    Waypoints2Costmap();
+    ~Waypoints2Costmap();
 
-Objects2Costmap::~Objects2Costmap() {}
+    grid_map::GridMap makeCostmapFromWaypoints(const grid_map::GridMap& costmap,
+                                             const std::string& gridmap_layer_name,
+                                             const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
 
-grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& object)
-{
-  //forward_right, forward_left, backward_right, backward_left
-  grid_map::Position forward_right;
-  grid_map::Polygon polygon;
-  polygon.setFrameId(object.header.frame_id);
-  polygon.addVertex(grid_map::Position( 0.480,  0.000));
-  // use amc's code for generating 4 points
-  return polygon;
-}
+};
 
-void setCostForPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
-                       grid_map::GridMap& objects_costmap)
-{
-  for (grid_map::PolygonIterator iterator(objects_costmap, polygon);
-    !iterator.isPastEnd(); ++iterator)
-  {
-    // change cost depending on object.score?
-    objects_costmap.at(gridmap_layer_name, *iterator) = 1.0;
-  }
-}
-
-grid_map::GridMap Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
-                                                            const std::string& gridmap_layer_name,
-                                                            const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
-{
-  grid_map::GridMap objects_costmap = costmap;
-  for (const auto& object: in_objects->objects)
-  {
-    // grid_map::Polygon polygon = makePolygonFromObject(object);
-    // calculateCostForPolygon(polygon, gridmap_layer_name, objects_costmap);
-  }
-  return objects_costmap;
-}
+#endif  // WAYPO2COSTMAP_H

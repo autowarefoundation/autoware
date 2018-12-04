@@ -124,6 +124,8 @@ add_library(costmap_generator_lib
         nodes/costmap_generator/points2costmap.h
         nodes/costmap_generator/objects2costmap.cpp
         nodes/costmap_generator/objects2costmap.h
+        nodes/costmap_generator/waypoints2costmap.cpp
+        nodes/costmap_generator/waypoints2costmap.h
         )
 target_link_libraries(costmap_generator_lib
         ${catkin_LIBRARIES}
@@ -138,6 +140,8 @@ add_executable(costmap_generator
         nodes/costmap_generator/points2costmap.h
         nodes/costmap_generator/objects2costmap.cpp
         nodes/costmap_generator/objects2costmap.h
+        nodes/costmap_generator/waypoints2costmap.cpp
+        nodes/costmap_generator/waypoints2costmap.h
         )
 
 target_link_libraries(costmap_generator

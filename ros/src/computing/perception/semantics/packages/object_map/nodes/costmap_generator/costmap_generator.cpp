@@ -40,10 +40,11 @@ CostmapGenerator::CostmapGenerator() :
   use_objects_(false),
   has_subscribed_wayarea_(false),
   private_nh_("~"),
-  SENSOR_POINTS_COSTMAP_LAYER_("sensor_points_cost"),
-  OBJECTS_COSTMAP_LAYER_("objects_cost"),
-  VECTORMAP_COSTMAP_LAYER_("vectormap_cost"),
-  COMBINED_COSTMAP_LAYER_("combined__cost")
+  SENSOR_POINTS_COSTMAP_LAYER_("sensor_points"),
+  OBJECTS_COSTMAP_LAYER_("objects"),
+  VECTORMAP_COSTMAP_LAYER_("vectormap"),
+  WAYPOINTS_COSTMAP_LAYER_("waypoints"),
+  COMBINED_COSTMAP_LAYER_("costmap")
 {
   // const std::string SENSOR_POINTS_COSTMAP_LAYER_ = "sensor_points_cost";
 }
@@ -76,30 +77,38 @@ void CostmapGenerator::run()
 
   if(use_waypoint_)
   {
-    sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointCallback, this);
+    sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointsCallback, this);
   }
 
   if(!use_objects_)
   {
     sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
   }
-  else
-  {
-    registerSyncedSubscriber();
-  }
+  // else
+  // {
+  //   registerSyncedSubscriber();
+  // }
 }
 
-void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points,
-                                const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
+// void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points,
+//                                 const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
+// {
+//   // if(checkSubscripton())
+//   // generateSensorPointsCostmap()
+//   // generateObjectsCostmap()
+//   // generateVectormapCostmap()
+//   // generateWaypointCostmap()
+//   // generateCombinedCostmap()
+//   // pub(costmap)
+// }
+
+void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
-  // if(checkSubscripton())
-  // generateSensorPointsCostmap()
-  // generateObjectsCostmap()
-  // generateMapPoints()
-  // generateVectormapCostmap()
-  // generateWaypointCostmap()
-  // generateCombinedCostmap()
-  // pub(costmap)
+  costmap_ = generateObjectsCostmap(in_objects);
+  costmap_ = generateVectormapCostmap();
+  costmap_ = generateCombinedCostmap();
+
+  publishRosMsg(costmap_);
 }
 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
@@ -107,30 +116,32 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   // if(checkSubscripton())
   costmap_ = generateSensorPointsCostmap(in_sensor_points_msg);
   costmap_ = generateVectormapCostmap();
-  // costmap_["waypoint_cost"] = generateWaypointCostmap()
   costmap_ = generateCombinedCostmap();
 
   publishRosMsg(costmap_);
 }
 
-void CostmapGenerator::waypointCallback(const autoware_msgs::LaneArray& in_waypoint)
+void CostmapGenerator::waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoint)
 {
+  // costmap_ = generateWaypointsCostmap();
+  // costmap_ = generateCombinedCostmap();
+  // publishRosMsg(costmap_);
 
 }
 
-void CostmapGenerator::registerSyncedSubscriber()
-{
-  sub_sync_points_ptr_.reset(
-    new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/points_no_ground", 1));
-  sub_sync_objects_ptr_.reset(
-    new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(nh_, "/detection/lidar_tracker/objects", 1));
-  sync_ptr_.reset(
-    new message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
-    autoware_msgs::DetectedObjectArray>
-    (*sub_sync_points_ptr_, *sub_sync_objects_ptr_, 10));
-
-  sync_ptr_->registerCallback(boost::bind(&CostmapGenerator::syncedCallback, this, _1, _2));
-}
+// void CostmapGenerator::registerSyncedSubscriber()
+// {
+//   sub_sync_points_ptr_.reset(
+//     new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, "/points_no_ground", 1));
+//   sub_sync_objects_ptr_.reset(
+//     new message_filters::Subscriber<autoware_msgs::DetectedObjectArray>(nh_, "/detection/lidar_tracker/objects", 1));
+//   sync_ptr_.reset(
+//     new message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
+//     autoware_msgs::DetectedObjectArray>
+//     (*sub_sync_points_ptr_, *sub_sync_objects_ptr_, 10));
+//
+//   sync_ptr_->registerCallback(boost::bind(&CostmapGenerator::syncedCallback, this, _1, _2));
+// }
 
 void CostmapGenerator::initGridmap()
 {
@@ -162,6 +173,13 @@ grid_map::GridMap CostmapGenerator::generateObjectsCostmap(const autoware_msgs::
   grid_map::GridMap objects_costmap =
                         objects2costmap_.makeCostmapFromObjects(costmap_, OBJECTS_COSTMAP_LAYER_, in_objects);
   return objects_costmap;
+}
+
+grid_map::GridMap CostmapGenerator::generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints)
+{
+  grid_map::GridMap waypoints_costmap =
+                        waypoints2costmap_.makeCostmapFromWaypoints(costmap_, WAYPOINTS_COSTMAP_LAYER_, in_waypoints);
+  return waypoints_costmap;
 }
 
 
