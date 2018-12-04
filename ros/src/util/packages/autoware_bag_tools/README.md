@@ -22,9 +22,26 @@ rosrun autoware_bag_tools change_frame_id.py -o out.bag -i in.bag -t /camera2/im
 Extract GPS data from rosbag file(s) into .kml and .csv files. 
 .kml file could be viewed by Google Earth. color information indicate the quality of GPS satellite coverage (dark to light red) - (bad - good coverage) 
 
-How to Run: 
+###How to Run: 
 
 ```
 rosrun autoware_bag_tools nmea2kml bag_file_name.bag
 rosrun autoware_bag_tools nmea2kml bag_files_folder/
 ```
+
+
+## pointcloud_renaming tool 
+Enable to rename the topic name and/or the frame name of `sensor_msgs/PointCloud2` messages on a BAG file.
+Additionally, makes sure the field name for the intensity channel is actually 'intensity'.
+
+###How to Run: 
+
+1. Help and available options:
+````
+python pointcloud_renaming.py -h
+````
+2. Changing pointcloud topic name from "/kitti/velo/pointcloud" to "/points_raw", and frame name to "velodyne"
+````
+python pointcloud_renaming.py -i input.bag -n "/points_raw" -f "velodyne" -o output3.bag -t "/kitti/velo/pointcloud"
+````
+
