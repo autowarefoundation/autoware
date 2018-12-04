@@ -10,6 +10,7 @@ find_package(
   geometry_msgs
   rosconsole
   autoware_msgs
+  ds4_msgs
 )
 
 catkin_package(
@@ -18,6 +19,7 @@ catkin_package(
   geometry_msgs
   rosconsole
   autoware_msgs
+  ds4_msgs
 )
 
 IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")

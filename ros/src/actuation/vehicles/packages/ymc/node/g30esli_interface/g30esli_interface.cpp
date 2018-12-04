@@ -33,6 +33,7 @@
 
 #include <ros/ros.h>
 #include <autoware_msgs/VehicleCmd.h>
+#include <ds4_msgs/DS4.h>
 
 #include "cansend.h"
 #include "g30esli.h"
@@ -41,68 +42,142 @@
 
 // ros subscriber
 ros::Subscriber vehicle_cmd_sub_;
+ros::Subscriber ds4_sub_;
 
 // ros publisher
 ros::Publisher current_twist_pub_;
 
 // ros param
 std::string device_;
+bool use_ds4_;
 double steering_offset_deg_;
 
 // variables
+bool joy_;
 bool engage_;
 bool terminate_thread_;
-double target_velocity_kmph_;
-double target_steering_angle_deg_;
 
 // ymc g30esli driver
 ymc::G30esli g30esli_;
 ymc::G30esli::Status status_;
-ymc::G30esli::Command command_;
+ymc::G30esli::Command command_auto_, command_joy_;
 
-void vehicle_cmd_callback(const autoware_msgs::VehicleCmdConstPtr& msg)
+// generate command by autoware
+void vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPtr& msg)
 {
   // speed
-  target_velocity_kmph_ = msg->ctrl_cmd.linear_velocity * 3.6;  // [m/s] -> [km/h]
-  command_.speed = engage_ ? target_velocity_kmph_ : 0.0;
+  double speed_kmph = msg->ctrl_cmd.linear_velocity * 3.6;  // [m/s] -> [km/h]
+  command_auto_.speed = engage_ ? speed_kmph : 0.0;
 
   // steer
-  target_steering_angle_deg_ = -msg->ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
-  target_steering_angle_deg_ = target_steering_angle_deg_ + steering_offset_deg_;
-  command_.steer = target_steering_angle_deg_;
+  double steering_angle_deg = msg->ctrl_cmd.steering_angle / M_PI * 180.0;  // [rad] -> [deg]
+  command_auto_.steer = -(steering_angle_deg + steering_offset_deg_);
 
   // mode
-  command_.mode = engage_ ? G30ESLI_MODE_AUTO : G30ESLI_MODE_MANUAL;
+  command_auto_.mode = engage_ ? G30ESLI_MODE_AUTO : G30ESLI_MODE_MANUAL;
 
   // brake
-  command_.brake = (msg->emergency == 1) ? G30ESLI_BRAKE_EMERGENCY : G30ESLI_BRAKE_NONE;
+  command_auto_.brake = (msg->emergency == 1) ? G30ESLI_BRAKE_SEMIEMG : G30ESLI_BRAKE_NONE;
 
   // shift
   if (msg->gear == 1)
   {
-    command_.shift = G30ESLI_SHIFT_DRIVE;
+    command_auto_.shift = G30ESLI_SHIFT_DRIVE;
   }
   else if (msg->gear == 2)
   {
-    command_.shift = G30ESLI_SHIFT_REVERSE;
+    command_auto_.shift = G30ESLI_SHIFT_REVERSE;
   }
 
   // flasher
   if (msg->lamp_cmd.l == 0 && msg->lamp_cmd.r == 0)
   {
-    command_.flasher = G30ESLI_FLASHER_CLEAR;
+    command_auto_.flasher = G30ESLI_FLASHER_CLEAR;
   }
   else if (msg->lamp_cmd.l == 1 && msg->lamp_cmd.r == 0)
   {
-    command_.flasher = G30ESLI_FLASHER_LEFT;
+    command_auto_.flasher = G30ESLI_FLASHER_LEFT;
   }
   else if (msg->lamp_cmd.l == 0 && msg->lamp_cmd.r == 1)
   {
-    command_.flasher = G30ESLI_FLASHER_RIGHT;
+    command_auto_.flasher = G30ESLI_FLASHER_RIGHT;
   }
   else if (msg->lamp_cmd.l == 1 && msg->lamp_cmd.r == 1)
   {
-    command_.flasher = G30ESLI_FLASHER_HAZARD;
+    command_auto_.flasher = G30ESLI_FLASHER_HAZARD;
+  }
+}
+
+// generate command by ds4 joystick
+void ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
+{
+  // check connection
+  if (!msg->connected)
+  {
+    command_joy_.speed = 0.0;
+    command_joy_.brake = G30ESLI_BRAKE_SEMIEMG;
+    return;
+  }
+
+  // joystick override = use command_joy
+  if ((msg->square || msg->cross) && !joy_)
+  {
+    ROS_INFO("JOYSTICK: Joystick Manual Mode");
+    joy_ = true;
+  }
+
+  // autonomous drive mode = use command_auto
+  if (msg->ps && joy_)
+  {
+    ROS_INFO("JOYSTICK: Autonomous Driving Mode");
+    joy_ = false;
+  }
+
+  // speed
+  command_joy_.speed = msg->cross ? 16.0 * msg->r2 + 3.0 : 0.0;
+
+  // steer
+  command_joy_.steer = -((17.0 * msg->l2 + 20.0) * msg->left_y + steering_offset_deg_);
+
+  // mode
+  if (msg->option && !engage_)
+  {
+    engage_ = true;
+    ROS_INFO("JOYSTICK: Engaged");
+  }
+  if (msg->share && engage_)
+  {
+    engage_ = false;
+    ROS_WARN("JOYSTICK: Disengaged");
+  }
+  command_joy_.mode = engage_ ? G30ESLI_MODE_AUTO : G30ESLI_MODE_MANUAL;
+
+  // brake
+  if (!msg->square && !msg->circle && !msg->triangle)
+  {
+    command_joy_.brake = G30ESLI_BRAKE_NONE;
+  }
+  else
+  {
+    command_joy_.brake = msg->square ? G30ESLI_BRAKE_SMOOTH : command_joy_.brake;
+    command_joy_.brake = msg->circle ? G30ESLI_BRAKE_SEMIEMG : command_joy_.brake;
+    command_joy_.brake = msg->triangle ? G30ESLI_BRAKE_EMERGENCY : command_joy_.brake;
+  }
+
+  // shift
+  command_joy_.shift = msg->r1 ? G30ESLI_SHIFT_REVERSE : G30ESLI_SHIFT_DRIVE;
+
+  // flasher
+  if (!(msg->up || msg->right || msg->left || msg->down))
+  {
+    command_joy_.flasher = G30ESLI_FLASHER_NONE;
+  }
+  else
+  {
+    command_joy_.flasher = msg->right ? G30ESLI_FLASHER_RIGHT : command_joy_.flasher;
+    command_joy_.flasher = msg->left ? G30ESLI_FLASHER_LEFT : command_joy_.flasher;
+    command_joy_.flasher = msg->down ? G30ESLI_FLASHER_HAZARD : command_joy_.flasher;
+    command_joy_.flasher = msg->up ? G30ESLI_FLASHER_CLEAR : command_joy_.flasher;
   }
 }
 
@@ -117,11 +192,29 @@ void changeMode()
       char c = getchar();
       if (c == 's')
       {
-        engage_ = true;
+        if (!engage_)
+        {
+          engage_ = true;
+          ROS_INFO("KEYBOARD: Engaged");
+        }
+        if (joy_)
+        {
+          joy_ = false;
+          ROS_INFO("KEYBOARD: Autonomous Driving Mode");
+        }
       }
       else if (c == ' ')
       {
-        engage_ = false;
+        if (engage_)
+        {
+          engage_ = false;
+          ROS_WARN("KEYBOARD: Disengaged");
+        }
+        if (joy_)
+        {
+          joy_ = false;
+          ROS_INFO("KEYBOARD: Autonomous Driving Mode");
+        }
       }
     }
     usleep(1000);
@@ -148,7 +241,11 @@ void readStatus()
     current_twist_pub_.publish(ts);
 
     // accel/brake override, switch to manual mode
-    engage_ = (status_.override.accel == 1 || status_.override.brake == 1) ? false : engage_;
+    if ((status_.override.accel == 1 || status_.override.brake == 1) && engage_)
+    {
+      engage_ = false;
+      ROS_WARN("OVERRIDE: Disengaged");
+    }
 
     usleep(10);
   }
@@ -163,10 +260,20 @@ int main(int argc, char* argv[])
 
   // rosparam
   private_nh.param<std::string>("device", device_, "can0");
+  private_nh.param<bool>("use_ds4", use_ds4_, false);
   private_nh.param<double>("steering_offset_deg", steering_offset_deg_, 0.0);
 
+  // mode at startup
+  private_nh.param<bool>("engaged", engage_, true);
+
   // subscriber
-  vehicle_cmd_sub_ = nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicle_cmd_callback);
+  vehicle_cmd_sub_ = nh_.subscribe<autoware_msgs::VehicleCmd>("vehicle_cmd", 1, vehicleCmdCallback);
+
+  if (use_ds4_)
+  {
+    ds4_sub_ = nh_.subscribe<ds4_msgs::DS4>("ds4", 1, ds4Callback);
+    joy_ = true;  // use ds4 at startup
+  }
 
   // publisher
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
@@ -183,25 +290,28 @@ int main(int argc, char* argv[])
   std::thread t1(changeMode);
   std::thread t2(readStatus);
 
-  // start by manual mode
-  engage_ = false;
-
   ros::Rate rate(100);
+  unsigned char alive = 0;
 
   while (ros::ok())
   {
     // update subscribers
     ros::spinOnce();
 
+    // select command
+    ymc::G30esli::Command& cmd = !joy_ ? command_auto_ : command_joy_;
+
     // send vehicle command
-    g30esli_.sendCommand(command_);
+    g30esli_.sendCommand(cmd);
 
     // update heart beat
-    command_.alive++;
+    alive++;
+    command_auto_.alive = alive;
+    command_joy_.alive = alive;
 
     // debug
-    ROS_DEBUG_STREAM("Status[" << (int)command_.alive << "]\n" << ymc::G30esli::dumpStatus(status_));
-    ROS_DEBUG_STREAM("Command[" << (int)command_.alive << "]\n" << ymc::G30esli::dumpCommand(command_));
+    ROS_DEBUG_STREAM("Status[" << (int)cmd.alive << "]\n" << ymc::G30esli::dumpStatus(status_));
+    ROS_DEBUG_STREAM("Command[" << (int)cmd.alive << "]\n" << ymc::G30esli::dumpCommand(cmd));
 
     // loop sleep
     rate.sleep();
