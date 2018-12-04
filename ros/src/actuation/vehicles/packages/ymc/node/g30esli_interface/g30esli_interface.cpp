@@ -33,6 +33,7 @@
 
 #include <ros/ros.h>
 #include <autoware_msgs/VehicleCmd.h>
+#include <autoware_msgs/VehicleStatus.h>
 #include <ds4_msgs/DS4.h>
 
 #include "cansend.h"
@@ -46,6 +47,7 @@ ros::Subscriber ds4_sub_;
 
 // ros publisher
 ros::Publisher current_twist_pub_;
+ros::Publisher vehicle_state_pub_;
 
 // ros param
 std::string device_;
@@ -87,6 +89,10 @@ void vehicleCmdCallback(const autoware_msgs::VehicleCmdConstPtr& msg)
   else if (msg->gear == 2)
   {
     command_auto_.shift = G30ESLI_SHIFT_REVERSE;
+  }
+  else if (msg->gear == 4)
+  {
+    command_auto_.shift = G30ESLI_SHIFT_NEUTRAL;
   }
 
   // flasher
@@ -165,7 +171,15 @@ void ds4Callback(const ds4_msgs::DS4ConstPtr& msg)
   }
 
   // shift
-  command_joy_.shift = msg->r1 ? G30ESLI_SHIFT_REVERSE : G30ESLI_SHIFT_DRIVE;
+  if (!msg->r1 && !msg->l1)
+  {
+    command_joy_.shift = G30ESLI_SHIFT_DRIVE;
+  }
+  else
+  {
+    command_joy_.shift = msg->r1 ? G30ESLI_SHIFT_REVERSE : command_joy_.shift;
+    command_joy_.shift = msg->l1 ? G30ESLI_SHIFT_NEUTRAL : command_joy_.shift;
+  }
 
   // flasher
   if (!(msg->up || msg->right || msg->left || msg->down))
@@ -228,17 +242,7 @@ void readStatus()
   {
     g30esli_.readStatus(status_);
 
-    double lv = status_.speed.actual / 3.6;             // [km/h] -> [m/s]
-    double th = -status_.steer.actual * M_PI / 180.0;   // [deg] -> [rad]
-    double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE; // [rad] -> [rad/s]
-
-    // publish twist
-    geometry_msgs::TwistStamped ts;
-    ts.header.frame_id = "base_link";
-    ts.header.stamp = ros::Time::now();
-    ts.twist.linear.x = lv;
-    ts.twist.angular.z = az;
-    current_twist_pub_.publish(ts);
+    ros::Time now = ros::Time::now();
 
     // accel/brake override, switch to manual mode
     if ((status_.override.accel == 1 || status_.override.brake == 1) && engage_)
@@ -246,6 +250,79 @@ void readStatus()
       engage_ = false;
       ROS_WARN("OVERRIDE: Disengaged");
     }
+
+    double lv = status_.speed.actual / 3.6;             // [km/h] -> [m/s]
+    double th = -status_.steer.actual * M_PI / 180.0;   // [deg] -> [rad]
+    double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE; // [rad] -> [rad/s]
+
+    // publish twist
+    geometry_msgs::TwistStamped ts;
+    ts.header.frame_id = "base_link";
+    ts.header.stamp = now;
+    ts.twist.linear.x = lv;
+    ts.twist.angular.z = az;
+    current_twist_pub_.publish(ts);
+
+    // publish vehicle state
+    autoware_msgs::VehicleStatus vs;
+    vs.header = ts.header;
+
+    // drive/steeringmode
+    if (status_.mode == G30ESLI_MODE_MANUAL)
+    {
+      vs.drivemode = autoware_msgs::VehicleStatus::MODE_MANUAL;
+      vs.steeringmode = autoware_msgs::VehicleStatus::MODE_MANUAL;
+    }
+    else if (status_.mode == G30ESLI_MODE_AUTO)
+    {
+      vs.drivemode = autoware_msgs::VehicleStatus::MODE_AUTO;
+      vs.steeringmode = autoware_msgs::VehicleStatus::MODE_AUTO;
+    }
+
+    // gearshift
+    if (status_.shift == G30ESLI_SHIFT_DRIVE)
+    {
+      vs.gearshift = 1;
+    }
+    else if (status_.shift == G30ESLI_SHIFT_REVERSE)
+    {
+      vs.gearshift = 2;
+    }
+    else if (status_.shift == G30ESLI_SHIFT_NEUTRAL)
+    {
+      vs.gearshift = 4;
+    }
+
+    // speed
+    vs.speed = status_.speed.actual;  // [kmph]
+
+    // drivepedal
+    vs.drivepedal = status_.override.accel * 1000.0;  // TODO: scaling
+
+    // brakepedal
+    vs.brakepedal = status_.override.brake * 1000.0;  // TODO: scaling
+
+    // angle
+    vs.angle = status_.steer.actual;  // [deg]
+
+    // lamp
+    if (status_.override.flasher == G30ESLI_FLASHER_RIGHT)
+    {
+      vs.lamp = autoware_msgs::VehicleStatus::LAMP_RIGHT;
+    }
+    else if (status_.override.flasher == G30ESLI_FLASHER_LEFT)
+    {
+      vs.lamp = autoware_msgs::VehicleStatus::LAMP_LEFT;
+    }
+    else if (status_.override.flasher == G30ESLI_FLASHER_HAZARD)
+    {
+      vs.lamp = autoware_msgs::VehicleStatus::LAMP_HAZARD;
+    }
+
+    // light
+    vs.light = 0; // not used
+
+    vehicle_state_pub_.publish(vs);
 
     usleep(10);
   }
@@ -277,6 +354,7 @@ int main(int argc, char* argv[])
 
   // publisher
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("ymc_current_twist", 10);
+  vehicle_state_pub_ = nh_.advertise<autoware_msgs::VehicleStatus>("vehicle_status", 10);
 
   // open can device
   if (!g30esli_.openDevice(device_))

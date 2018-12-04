@@ -49,6 +49,7 @@
 #define G30ESLI_BRAKE_EMERGENCY 3
 #define G30ESLI_SHIFT_DRIVE     0
 #define G30ESLI_SHIFT_REVERSE   1
+#define G30ESLI_SHIFT_NEUTRAL   2
 #define G30ESLI_FLASHER_NONE    0
 #define G30ESLI_FLASHER_RIGHT   1
 #define G30ESLI_FLASHER_LEFT    2
@@ -106,6 +107,7 @@ public:
     unsigned short  steer;
     unsigned char   accel;
     unsigned char   brake;
+    unsigned char   flasher;
   };
 
   struct Status
