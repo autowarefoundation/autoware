@@ -5,3 +5,6 @@
 	path = ros/src/sensing/drivers/lidar/packages/ouster
 	url = https://github.com/CPFL/ouster
 	branch = autoware_branch
+[submodule "ros/src/util/packages/kitti_pkg/kitti2bag"]
+	path = ros/src/util/packages/kitti_pkg/kitti2bag
+	url = https://github.com/CPFL/kitti2bag.git
