@@ -12,25 +12,25 @@ public:
 };
 
 TEST(TestSuite, Rad2Deg){
-	double radAngle = 1;
-	ASSERT_EQ(amathutils::rad2deg(radAngle), radAngle*180/M_PI) << "Angle in degrees should be " << radAngle*180/M_PI;
+	double rad_angle = 1;
+	ASSERT_EQ(amathutils::rad2deg(rad_angle), rad_angle*180/M_PI) << "Angle in degrees should be " << rad_angle*180/M_PI;
 }
 
 TEST(TestSuite, Deg2Rad){
-	double degAngle = 10;
-	ASSERT_EQ(amathutils::deg2rad(degAngle), degAngle*M_PI/180) << "Angle in radians should be " << degAngle*M_PI/180;
+	double deg_angle = 10;
+	ASSERT_EQ(amathutils::deg2rad(deg_angle), deg_angle*M_PI/180) << "Angle in radians should be " << deg_angle*M_PI/180;
 }
 
 // Value from https://www.google.com/search?client=ubuntu&channel=fs&q=mps+to+kph&ie=utf-8&oe=utf-8
 TEST(TestSuite, Transform_mps2kph){
-	double mpsValue = 1;
-	ASSERT_DOUBLE_EQ(amathutils::mps2kmph(mpsValue), mpsValue*3.6) << "Speed should be " << mpsValue*3.6 << "kmph";
+	double mps_value = 1;
+	ASSERT_DOUBLE_EQ(amathutils::mps2kmph(mps_value), mps_value*3.6) << "Speed should be " << mps_value*3.6 << "kmph";
 }
 
 // Value from https://www.google.com/search?client=ubuntu&channel=fs&q=kph+to+mps&ie=utf-8&oe=utf-8
 TEST(TestSuite, Transform_kmph2mps){
-	double kmphValue = 1;
-	ASSERT_DOUBLE_EQ(amathutils::kmph2mps(kmphValue), kmphValue/3.6) << "Speed should be " << kmphValue/3.6 << "mps";
+	double kmph_value = 1;
+	ASSERT_DOUBLE_EQ(amathutils::kmph2mps(kmph_value), kmph_value/3.6) << "Speed should be " << kmph_value/3.6 << "mps";
 }
 
 TEST(TestSuite, GetGravityAcceleration){
@@ -57,7 +57,7 @@ TEST(TestSuite, GetTimeFromAcceleration){
 
 // Values taken from https://gerardnico.com/linear_algebra/closest_point_line - Example 5.4
 TEST(TestSuite, GetNearPointOnLine2D){
-	geometry_msgs::Point a, b, p, nearPOut, nearP;
+	geometry_msgs::Point a, b, p, near_point_out, near_point;
 
 	a.x = 0;
 	a.y = 0;
@@ -71,21 +71,21 @@ TEST(TestSuite, GetNearPointOnLine2D){
 	p.y = 4;
 	p.z = 0;
 
-	nearP.x = 3;
-	nearP.y = 1;
-	nearP.z = 0;
+	near_point.x = 3;
+	near_point.y = 1;
+	near_point.z = 0;
 
-	nearPOut = amathutils::getNearPtOnLine(p, a, b);
+	near_point_out = amathutils::getNearPtOnLine(p, a, b);
 
-	ASSERT_DOUBLE_EQ(nearPOut.x, nearP.x) << "nearPoint coordinate X should be " << nearP.x;
-	ASSERT_DOUBLE_EQ(nearPOut.y, nearP.y) << "nearPoint coordinate X should be " << nearP.y;
-	ASSERT_DOUBLE_EQ(nearPOut.z, nearP.z) << "nearPoint coordinate X should be " << nearP.z;
+	ASSERT_DOUBLE_EQ(near_point_out.x, near_point.x) << "near_pointoint coordinate X should be " << near_point.x;
+	ASSERT_DOUBLE_EQ(near_point_out.y, near_point.y) << "near_pointoint coordinate X should be " << near_point.y;
+	ASSERT_DOUBLE_EQ(near_point_out.z, near_point.z) << "near_pointoint coordinate X should be " << near_point.z;
 
 }
 
 // Values taken from https://math.stackexchange.com/questions/13176/how-to-find-a-point-on-a-line-closest-to-another-given-point
 TEST(TestSuite, GetNearPointOnLine3D){
-	geometry_msgs::Point a, b, p, nearPOut, nearP;
+	geometry_msgs::Point a, b, p, near_point_out, near_point;
 	double threshold = 0.00000001;
 
 	a.x = -2;
@@ -100,30 +100,30 @@ TEST(TestSuite, GetNearPointOnLine3D){
 	p.y = 1;
 	p.z = 1;
 
-	nearP.x = 1.0/3.0;
-	nearP.y = 2.0/3.0;
-	nearP.z = 1.0/3.0;
+	near_point.x = 1.0/3.0;
+	near_point.y = 2.0/3.0;
+	near_point.z = 1.0/3.0;
 
-	nearPOut = amathutils::getNearPtOnLine(p, a, b);
+	near_point_out = amathutils::getNearPtOnLine(p, a, b);
 
-	ASSERT_NEAR(nearPOut.x, nearP.x, threshold) << "nearPoint coordinate X should be " << nearP.x;
-	ASSERT_NEAR(nearPOut.y, nearP.y, threshold) << "nearPoint coordinate X should be " << nearP.y;
-	ASSERT_NEAR(nearPOut.z, nearP.z, threshold) << "nearPoint coordinate X should be " << nearP.z;
+	ASSERT_NEAR(near_point_out.x, near_point.x, threshold) << "near_pointoint coordinate X should be " << near_point.x;
+	ASSERT_NEAR(near_point_out.y, near_point.y, threshold) << "near_pointoint coordinate X should be " << near_point.y;
+	ASSERT_NEAR(near_point_out.z, near_point.z, threshold) << "near_pointoint coordinate X should be " << near_point.z;
 }
 
 // Values from http://www.math.usm.edu/lambers/mat169/fall09/lecture17.pdf - The Distance Formula
 TEST(TestSuite, GetDistance){
 
-	geometry_msgs::Point ptA, ptB;
+	geometry_msgs::Point point_a, point_b;
 	geometry_msgs::Pose poseA, poseB;
 
-	ptA.x = 2;
-	ptA.y = 3;
-	ptA.z = 1;
+	point_a.x = 2;
+	point_a.y = 3;
+	point_a.z = 1;
 
-	ptB.x = 8;
-	ptB.y = -5;
-	ptB.z = 0;
+	point_b.x = 8;
+	point_b.y = -5;
+	point_b.z = 0;
 
 	poseA.position.x = 2;
 	poseA.position.y = 3;
@@ -133,25 +133,25 @@ TEST(TestSuite, GetDistance){
 	poseB.position.y = -5;
 	poseB.position.z = 0;
 
-	ASSERT_DOUBLE_EQ(amathutils::find_distance(ptA, ptB), sqrt(101)) << "Distance between points should be " << sqrt(101);
+	ASSERT_DOUBLE_EQ(amathutils::find_distance(point_a, point_b), sqrt(101)) << "Distance between points should be " << sqrt(101);
 	ASSERT_DOUBLE_EQ(amathutils::find_distance(poseA, poseB), sqrt(101)) << "Distance between poses should be " << sqrt(101);
 }
 
 // Values from https://math.stackexchange.com/questions/707673/find-angle-in-degrees-from-one-point-to-another-in-2d-space
 TEST(TestSuite, GetAngle){
 
-	geometry_msgs::Point ptA, ptB;
+	geometry_msgs::Point point_a, point_b;
 
-	ptA.x = 0;
-	ptA.y = 10;
-	ptA.z = 0;
+	point_a.x = 0;
+	point_a.y = 10;
+	point_a.z = 0;
 
-	ptB.x = 10;
-	ptB.y = 20;
-	ptB.z = 0;
+	point_b.x = 10;
+	point_b.y = 20;
+	point_b.z = 0;
 
-	ASSERT_DOUBLE_EQ(amathutils::find_angle(ptA, ptB), 45) << "Angle should be 45deg";
-	ASSERT_DOUBLE_EQ(amathutils::find_angle(ptB, ptA), 225) << "Angle should be -45deg";
+	ASSERT_DOUBLE_EQ(amathutils::find_angle(point_a, point_b), 45) << "Angle should be 45deg";
+	ASSERT_DOUBLE_EQ(amathutils::find_angle(point_b, point_a), 225) << "Angle should be -45deg";
 }
 
 // Values from https://www.mathopenref.com/coordintersection.html
@@ -249,30 +249,30 @@ TEST(TestSuite, PointOnTheLine){
 	ASSERT_EQ(amathutils::isPointLeftFromLine(p1, line_p1, line_p2), ONLINE) << "Point is on the line ";
 }
 
-// poseNew: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+// pose_new: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
 TEST(TestSuite, CheckYawAngleFromPose){
 
-	geometry_msgs::Pose poseOrigin, poseNew;
-	poseOrigin.position.x = 0;
-	poseOrigin.position.y = 0;
-	poseOrigin.position.z = 0;
-	poseOrigin.orientation.x = 0;
-	poseOrigin.orientation.y = 0;
-	poseOrigin.orientation.z = 0;
-	poseOrigin.orientation.w = 1;
+	geometry_msgs::Pose pose_origin, pose_new;
+	pose_origin.position.x = 0;
+	pose_origin.position.y = 0;
+	pose_origin.position.z = 0;
+	pose_origin.orientation.x = 0;
+	pose_origin.orientation.y = 0;
+	pose_origin.orientation.z = 0;
+	pose_origin.orientation.w = 1;
 
-	poseNew.position.x = 0;
-	poseNew.position.y = 0;
-	poseNew.position.z = 0;
-	poseNew.orientation.x = 0;
-	poseNew.orientation.y = 0;
-	poseNew.orientation.z = 0.3826834;
-	poseNew.orientation.w = 0.9238795;
+	pose_new.position.x = 0;
+	pose_new.position.y = 0;
+	pose_new.position.z = 0;
+	pose_new.orientation.x = 0;
+	pose_new.orientation.y = 0;
+	pose_new.orientation.z = 0.3826834;
+	pose_new.orientation.w = 0.9238795;
 
 	double epsilon = 0.0001; //Error threshold [degrees]
 
-	ASSERT_NEAR(amathutils::getPoseYawAngle(poseOrigin)*180/M_PI, 0, epsilon) << "Yaw angle should be 0degrees";
-	ASSERT_NEAR(amathutils::getPoseYawAngle(poseNew)*180/M_PI, 45, epsilon) << "Yaw angle should be 45degrees";
+	ASSERT_NEAR(amathutils::getPoseYawAngle(pose_origin)*180/M_PI, 0, epsilon) << "Yaw angle should be 0degrees";
+	ASSERT_NEAR(amathutils::getPoseYawAngle(pose_new)*180/M_PI, 45, epsilon) << "Yaw angle should be 45degrees";
 }
 
 TEST(TestSuite, CheckNormalizedRadian){
@@ -295,42 +295,42 @@ TEST(TestSuite, CheckNormalizedRadian){
 TEST(TestSuite, CheckYawAngleDiffs){
 
 	double epsilon = 0.0001; //Error threshold [degrees]
-	geometry_msgs::Pose poseOrigin, poseNew;
-	poseOrigin.position.x = 0;
-	poseOrigin.position.y = 0;
-	poseOrigin.position.z = 0;
-	poseOrigin.orientation.x = 0;
-	poseOrigin.orientation.y = 0;
-	poseOrigin.orientation.z = 0;
-	poseOrigin.orientation.w = 1;
+	geometry_msgs::Pose pose_origin, pose_new;
+	pose_origin.position.x = 0;
+	pose_origin.position.y = 0;
+	pose_origin.position.z = 0;
+	pose_origin.orientation.x = 0;
+	pose_origin.orientation.y = 0;
+	pose_origin.orientation.z = 0;
+	pose_origin.orientation.w = 1;
 
 	// Diff < 180 degrees
-	// poseNew: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
-	poseNew.position.x = 0;
-	poseNew.position.y = 0;
-	poseNew.position.z = 0;
-	poseNew.orientation.x = 0;
-	poseNew.orientation.y = 0;
-	poseNew.orientation.z = 0.3826834;
-	poseNew.orientation.w = 0.9238795;
+	// pose_new: 45degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+	pose_new.position.x = 0;
+	pose_new.position.y = 0;
+	pose_new.position.z = 0;
+	pose_new.orientation.x = 0;
+	pose_new.orientation.y = 0;
+	pose_new.orientation.z = 0.3826834;
+	pose_new.orientation.w = 0.9238795;
 
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(poseOrigin, poseNew), -45*M_PI/180, epsilon) << "DiffRaw angle < 180 degrees should be " << -45*M_PI/180 << " radians";
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(poseOrigin, poseNew), -45, epsilon) << "DiffDeg angle < 180 degrees should be " << -45 << " degrees";
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(poseOrigin, poseNew), -45*M_PI/180, epsilon) << "DiffRad angle < 180 degrees should be " << -45*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(pose_origin, pose_new), -45*M_PI/180, epsilon) << "DiffRaw angle < 180 degrees should be " << -45*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(pose_origin, pose_new), -45, epsilon) << "DiffDeg angle < 180 degrees should be " << -45 << " degrees";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(pose_origin, pose_new), -45*M_PI/180, epsilon) << "DiffRad angle < 180 degrees should be " << -45*M_PI/180 << " radians";
 
 	// Diff > 180 degrees
-	// poseNew: 210degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
-	poseNew.position.x = 0;
-	poseNew.position.y = 0;
-	poseNew.position.z = 0;
-	poseNew.orientation.x = 0;
-	poseNew.orientation.y = 0;
-	poseNew.orientation.z = 0.9659258;
-	poseNew.orientation.w = -0.258819;
+	// pose_new: 210degrees around Z quaternion (https://www.andre-gaschler.com/rotationconverter/)
+	pose_new.position.x = 0;
+	pose_new.position.y = 0;
+	pose_new.position.z = 0;
+	pose_new.orientation.x = 0;
+	pose_new.orientation.y = 0;
+	pose_new.orientation.z = 0.9659258;
+	pose_new.orientation.w = -0.258819;
 
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(poseOrigin, poseNew), 150*M_PI/180, epsilon) << "DiffRaw angle > 180 degrees should be " << 150*M_PI/180 << " radians";
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(poseOrigin, poseNew), 150, epsilon) << "DiffDeg angle > 180 degrees should be " << 150 << " degrees";
-	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(poseOrigin, poseNew), 150*M_PI/180, epsilon) << "DiffRad angle > 180 degrees should be " << 150*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRaw(pose_origin, pose_new), 150*M_PI/180, epsilon) << "DiffRaw angle > 180 degrees should be " << 150*M_PI/180 << " radians";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffDeg(pose_origin, pose_new), 150, epsilon) << "DiffDeg angle > 180 degrees should be " << 150 << " degrees";
+	ASSERT_NEAR(amathutils::calcPosesAngleDiffRad(pose_origin, pose_new), 150*M_PI/180, epsilon) << "DiffRad angle > 180 degrees should be " << 150*M_PI/180 << " radians";
 }
 
 int main(int argc, char **argv) {
