@@ -15,11 +15,11 @@
 //headers in ROS
 #include <ros/ros.h>
 
-class fake_subscriber
+class FakeSubscriber
 {
     public:
-        fake_subscriber();
-        ~fake_subscriber();
+        FakeSubscriber();
+        ~FakeSubscriber();
     private:
         void diag_callback_(const diag_msgs::diagConstPtr msg);
         void callback_(const std_msgs::Float64ConstPtr msg);
@@ -27,7 +27,7 @@ class fake_subscriber
         ros::Subscriber fake_sub_;
         ros::Subscriber diag_sub_;
         diag_manager diag_manager_;
-        diag_filter diag_filter_;
+        DiagFilter diag_filter_;
 };
 
 #endif  //FAKE_SUBSCRIBER_H_INCLUDED

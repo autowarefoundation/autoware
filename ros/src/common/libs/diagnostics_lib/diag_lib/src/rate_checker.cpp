@@ -1,17 +1,17 @@
 #include <diag_lib/rate_checker.h>
 
-rate_checker::rate_checker(double buffer_length) : buffer_length_(buffer_length)
+RateChecker::RateChecker(double buffer_length) : buffer_length_(buffer_length)
 {
     start_time_ = ros::Time::now();
     last_update_time_ = boost::none;
 }
 
-rate_checker::~rate_checker()
+RateChecker::~RateChecker()
 {
 
 }
 
-void rate_checker::check()
+void RateChecker::check()
 {
     update_();
     mtx_.lock();
@@ -21,7 +21,7 @@ void rate_checker::check()
     mtx_.unlock();
 }
 
-void rate_checker::update_()
+void RateChecker::update_()
 {
     std::vector<ros::Time> buffer;
     for(auto data_itr = data_.begin(); data_itr != data_.end(); data_itr++)
@@ -37,7 +37,7 @@ void rate_checker::update_()
     return;
 }
 
-boost::optional<double> rate_checker::get_rate()
+boost::optional<double> RateChecker::get_rate()
 {
     boost::optional<double> rate;
     if(ros::Time::now() - start_time_ < ros::Duration(buffer_length_))

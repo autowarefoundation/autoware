@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "fake_publisher_node");
-  fake_publisher fake_pub;
+  FakePublisher fake_pub;
   fake_pub.run();
   return 0;
 }

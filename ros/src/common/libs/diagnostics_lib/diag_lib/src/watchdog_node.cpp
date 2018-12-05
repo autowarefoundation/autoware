@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "watchdog_node");
-  watchdog wd;
+  Watchdog wd;
   wd.run();
   return 0;
 }

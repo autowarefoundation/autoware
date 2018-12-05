@@ -15,11 +15,11 @@
 //headers in STL
 #include <map>
 
-class diag_filter
+class DiagFilter
 {
 public:
-    diag_filter();
-    ~diag_filter();
+    DiagFilter();
+    ~DiagFilter();
     boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, std::string target_node);
     boost::optional<diag_msgs::diag_node_errors> filter(diag_msgs::diag diag, int target_node_number);
 private:

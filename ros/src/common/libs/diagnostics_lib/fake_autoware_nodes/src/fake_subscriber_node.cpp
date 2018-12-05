@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
   ros::init(argc, argv, "fake_subscriber_node");
-  fake_subscriber fake_sub;
+  FakeSubscriber fake_sub;
   ros::spin();
   return 0;
 }
