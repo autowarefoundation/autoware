@@ -8,7 +8,7 @@ RateChecker::RateChecker(double buffer_length) : buffer_length_(buffer_length) {
 RateChecker::~RateChecker() {}
 
 void RateChecker::check() {
-  update_();
+  update();
   mtx_.lock();
   ros::Time now = ros::Time::now();
   data_.push_back(now);
@@ -16,7 +16,7 @@ void RateChecker::check() {
   mtx_.unlock();
 }
 
-void RateChecker::update_() {
+void RateChecker::update() {
   std::vector<ros::Time> buffer;
   for (auto data_itr = data_.begin(); data_itr != data_.end(); data_itr++) {
     if (*data_itr > ros::Time::now() - ros::Duration(buffer_length_)) {
@@ -29,7 +29,7 @@ void RateChecker::update_() {
   return;
 }
 
-boost::optional<double> RateChecker::get_rate() {
+boost::optional<double> RateChecker::getRate() {
   boost::optional<double> rate;
   if (ros::Time::now() - start_time_ < ros::Duration(buffer_length_)) {
     return boost::none;
@@ -37,7 +37,7 @@ boost::optional<double> RateChecker::get_rate() {
   if (!last_update_time_) {
     return boost::none;
   }
-  update_();
+  update();
   mtx_.lock();
   rate = data_.size() / buffer_length_;
   mtx_.unlock();

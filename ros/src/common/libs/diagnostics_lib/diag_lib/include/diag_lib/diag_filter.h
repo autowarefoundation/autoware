@@ -27,7 +27,7 @@ public:
 private:
   std::map<std::string, int> node_number_data_;
   ros::NodeHandle nh_;
-  bool check_resource_(std::string target_resource_path);
+  bool checkResource(std::string target_resource_path);
   volatile bool enable_;
   std::string error_code_config_path_;
 };

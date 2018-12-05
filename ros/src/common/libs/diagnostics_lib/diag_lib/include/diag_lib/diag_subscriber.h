@@ -17,14 +17,14 @@ class DiagSubscriber {
 public:
   DiagSubscriber(std::string target_node, int target_node_number);
   ~DiagSubscriber();
-  diag_msgs::diag_node_errors get_diag_node_errors();
+  diag_msgs::diag_node_errors getDiagNodeErrors();
 
 private:
   std::mutex mtx_;
   std::vector<diag_msgs::diag_error> buffer_;
   ros::Subscriber diag_sub_;
   ros::NodeHandle nh_;
-  void callback_(diag_msgs::diag_error msg);
+  void callback(diag_msgs::diag_error msg);
   const std::string target_node_;
   const int target_node_number_;
 };

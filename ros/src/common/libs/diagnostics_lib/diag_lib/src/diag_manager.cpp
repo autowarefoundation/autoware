@@ -7,20 +7,20 @@ DiagManager::DiagManager() {
       ros::this_node::getName() + "/diag", 10);
   diag_status_pub_ = nh_.advertise<diag_msgs::diag_module_status>(
       ros::this_node::getName() + "/diag/status", 10);
-  load_error_codes_();
+  loadErrorCodes();
   is_running_ = true;
   boost::thread manager_update_thread(
-      boost::bind(&DiagManager::update_diag_manager_status_, this));
+      boost::bind(&DiagManager::updateDiagManagerStatus, this));
   boost::thread rate_checker_thread(
-      boost::bind(&DiagManager::check_rate_loop_, this));
+      boost::bind(&DiagManager::checkRateLoop, this));
 }
 
 DiagManager::~DiagManager() {}
 
-void DiagManager::update_diag_manager_status_() {
+void DiagManager::updateDiagManagerStatus() {
   ros::Rate rate(1);
   while (ros::ok()) {
-    load_error_codes_();
+    loadErrorCodes();
     diag_msgs::diag_module_status msg;
     if (enable_diag_) {
       msg.status = msg.ENABLE;
@@ -33,7 +33,7 @@ void DiagManager::update_diag_manager_status_() {
   return;
 }
 
-void DiagManager::load_error_codes_() {
+void DiagManager::loadErrorCodes() {
   std::lock_guard<std::mutex> lock(_mutex);
   enable_diag_ = false;
   nh_.param<std::string>("/error_code_config_path", error_code_config_path_,
@@ -44,7 +44,7 @@ void DiagManager::load_error_codes_() {
     }
     return;
   }
-  if (!diag_resource(error_code_config_path_)) {
+  if (!diagResource(error_code_config_path_)) {
     return;
   }
   YAML::Node config = YAML::LoadFile(error_code_config_path_.c_str());
@@ -102,22 +102,22 @@ void DiagManager::load_error_codes_() {
   enable_diag_ = true;
 }
 
-void DiagManager::check_rate_() {
+void DiagManager::checkRate() {
   std::lock_guard<std::mutex> lock(_mutex);
   if (!enable_diag_)
     return;
   for (auto const &checker : checkers_) {
-    boost::optional<double> rate = checker.second->get_rate();
-    boost::optional<DiagInfo> info = query_diag_info(checker.first);
+    boost::optional<double> rate = checker.second->getRate();
+    boost::optional<DiagInfo> info = queryDiagInfo(checker.first);
     if (rate && info && info.get().threshold) {
       if (*rate < info.get().threshold.get()) {
         if (info.get().level.get() == LEVEL_WARN) {
           ADD_DIAG_LOG_WARN(info.get().description);
-          publish_diag_(query_diag_info(info.get().num).get());
+          publishDiag(queryDiagInfo(info.get().num).get());
         }
         if (info.get().level.get() == LEVEL_ERROR) {
           ADD_DIAG_LOG_ERROR(info.get().description);
-          publish_diag_(query_diag_info(info.get().num).get());
+          publishDiag(queryDiagInfo(info.get().num).get());
         }
       }
     }
@@ -125,10 +125,10 @@ void DiagManager::check_rate_() {
   return;
 }
 
-void DiagManager::check_rate_loop_() {
+void DiagManager::checkRateLoop() {
   ros::Rate rate(RATE_CHECK_FREQUENCY);
   while (ros::ok()) {
-    check_rate_();
+    checkRate();
     rate.sleep();
   }
   return;
@@ -138,10 +138,10 @@ void DiagManager::DIAG_LOW_RELIABILITY(int num) {
   if (enable_diag_ == false)
     return;
   std::vector<int> required_error_code = {LOW_RELIABILITY};
-  if (check_error_code(num, required_error_code)) {
-    boost::optional<DiagInfo> info = query_diag_info(num);
+  if (checkErrorCode(num, required_error_code)) {
+    boost::optional<DiagInfo> info = queryDiagInfo(num);
     ADD_DIAG_LOG_WARN(info.get().description);
-    publish_diag_(query_diag_info(info.get().num).get());
+    publishDiag(queryDiagInfo(info.get().num).get());
   }
   return;
 }
@@ -151,7 +151,7 @@ void DiagManager::DIAG_RATE_CHECK(int num) {
     return;
   std::vector<int> required_error_code = {LOW_SUBSCRIBE_RATE, LOW_PUBLISH_RATE,
                                           LOW_OPERATION_CYCLE};
-  if (check_error_code(num, required_error_code)) {
+  if (checkErrorCode(num, required_error_code)) {
     try {
       checkers_.at(num)->check();
     } catch (std::out_of_range &) {
@@ -169,7 +169,7 @@ void DiagManager::DIAG_RATE_CHECK(int num) {
   return;
 }
 
-boost::optional<DiagInfo> DiagManager::query_diag_info(int num) {
+boost::optional<DiagInfo> DiagManager::queryDiagInfo(int num) {
   for (auto diag_info_itr = diag_info_.begin();
        diag_info_itr != diag_info_.end(); diag_info_itr++) {
     if (diag_info_itr->num == num) {
@@ -234,8 +234,8 @@ void DiagManager::DIAG_RESOURCE(std::string target_resource_path, int num) {
   if (enable_diag_ == false)
     return;
   std::vector<int> required_error_code = {RESOURCE_NOT_FOUND};
-  if (check_error_code(num, required_error_code)) {
-    if (query_diag_info(num)) {
+  if (checkErrorCode(num, required_error_code)) {
+    if (queryDiagInfo(num)) {
       namespace fs = boost::filesystem;
       fs::path path(target_resource_path);
       boost::system::error_code error;
@@ -244,21 +244,21 @@ void DiagManager::DIAG_RESOURCE(std::string target_resource_path, int num) {
         // ROS_ERROR_STREAM("required resource " << path << " does not found.");
         ADD_DIAG_LOG_ERROR("required resource " + target_resource_path +
                            " does not found.");
-        publish_diag_(query_diag_info(num).get());
+        publishDiag(queryDiagInfo(num).get());
         ROS_ERROR_STREAM("shutdonw " << ros::this_node::getName());
         WRITE_LOG();
         std::exit(-1);
       }
       return;
     } else {
-      ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
-      publish_diag_(query_diag_info(num).get());
+      ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
+      publishDiag(queryDiagInfo(num).get());
       return;
     }
   }
 }
 
-bool DiagManager::diag_resource(std::string target_resource_path) {
+bool DiagManager::diagResource(std::string target_resource_path) {
   namespace fs = boost::filesystem;
   fs::path path(target_resource_path);
   boost::system::error_code error;
@@ -272,18 +272,18 @@ bool DiagManager::diag_resource(std::string target_resource_path) {
   return true;
 }
 
-bool DiagManager::check_error_code(int requested_error_number,
+bool DiagManager::checkErrorCode(int requested_error_number,
                                    std::vector<int> right_categories) {
-  if (query_diag_info(requested_error_number)) {
+  if (queryDiagInfo(requested_error_number)) {
     for (auto category_itr = right_categories.begin();
          category_itr != right_categories.end(); category_itr++) {
-      if (*category_itr == query_diag_info(requested_error_number)->category) {
+      if (*category_itr == queryDiagInfo(requested_error_number)->category) {
         return true;
       }
     }
 #ifdef STRICT_ERROR_CODE_CHECK
     ROS_ERROR_STREAM("error category : "
-                     << query_diag_info(requested_error_number)->category
+                     << queryDiagInfo(requested_error_number)->category
                      << " in " << ros::this_node::getName()
                      << " does not match. Please check "
                      << error_code_config_path_);
@@ -291,7 +291,7 @@ bool DiagManager::check_error_code(int requested_error_number,
     std::exit(-1);
 #else
     ROS_WARN_STREAM("error category : "
-                    << query_diag_info(requested_error_number)->category
+                    << queryDiagInfo(requested_error_number)->category
                     << " in " << ros::this_node::getName()
                     << " does not match. Please check "
                     << error_code_config_path_);
@@ -306,7 +306,7 @@ bool DiagManager::check_error_code(int requested_error_number,
   }
 }
 
-void DiagManager::publish_diag_(DiagInfo info) {
+void DiagManager::publishDiag(DiagInfo info) {
   diag_msgs::diag_error msg;
   msg.num = info.num;
   msg.name = info.name;
