@@ -126,11 +126,11 @@ class CostmapGenerator
     // void registerSyncedSubscriber();
     void initGridmap();
     void publishRosMsg(const grid_map::GridMap& gridmap);
-    grid_map::GridMap generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
-    grid_map::GridMap generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
-    grid_map::GridMap generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
-    grid_map::GridMap generateVectormapCostmap();
-    grid_map::GridMap generateCombinedCostmap(int callback_ind);
+    grid_map::Matrix generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+    grid_map::Matrix generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
+    grid_map::Matrix generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
+    grid_map::Matrix generateVectormapCostmap();
+    grid_map::Matrix generateCombinedCostmap();
 
 };
 

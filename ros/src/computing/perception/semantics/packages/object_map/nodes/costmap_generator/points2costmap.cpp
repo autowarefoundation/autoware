@@ -125,7 +125,7 @@ grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_th
   return gridmap_data;
 }
 
-grid_map::GridMap Points2Costmap::makeSensorPointsCostmap(const double maximum_height_thres,
+grid_map::Matrix Points2Costmap::makeSensorPointsCostmap(const double maximum_height_thres,
                                                           const grid_map::GridMap& gridmap,
                                                           const std::string& gridmap_layer_name,
                                                           const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
@@ -134,7 +134,7 @@ grid_map::GridMap Points2Costmap::makeSensorPointsCostmap(const double maximum_h
   //TODO trandform sensorpoint to gridmap coordinate
   grid_map::Matrix costmap = calculateCostmap(maximum_height_thres, gridmap, gridmap_layer_name, grid_vec);
 
-  grid_map::GridMap sensor_points_gridmap = gridmap;
-  sensor_points_gridmap[gridmap_layer_name] = costmap;
-  return sensor_points_gridmap;
+  // grid_map::GridMap sensor_points_gridmap = gridmap;
+  // sensor_points_gridmap[gridmap_layer_name] = costmap;
+  return costmap;
 }

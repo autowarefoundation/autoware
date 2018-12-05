@@ -43,7 +43,7 @@ class Waypoints2Costmap
     Waypoints2Costmap();
     ~Waypoints2Costmap();
 
-    grid_map::GridMap makeCostmapFromWaypoints(const grid_map::GridMap& costmap,
+    grid_map::Matrix makeCostmapFromWaypoints(const grid_map::GridMap& costmap,
                                              const std::string& gridmap_layer_name,
                                              const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
 

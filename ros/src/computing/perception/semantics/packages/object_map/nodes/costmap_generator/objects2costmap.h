@@ -43,7 +43,7 @@ class Objects2Costmap
     Objects2Costmap();
     ~Objects2Costmap();
 
-    grid_map::GridMap makeCostmapFromObjects(const grid_map::GridMap& costmap,
+    grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                              const std::string& gridmap_layer_name,
                                              const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
   private:

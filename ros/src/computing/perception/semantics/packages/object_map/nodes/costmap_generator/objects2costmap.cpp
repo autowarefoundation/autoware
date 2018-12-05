@@ -92,7 +92,7 @@ void Objects2Costmap::setCostForPolygon(const grid_map::Polygon& polygon,const s
   }
 }
 
-grid_map::GridMap Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
+grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                                             const std::string& gridmap_layer_name,
                                                             const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
@@ -103,5 +103,5 @@ grid_map::GridMap Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMa
     grid_map::Polygon polygon = makePolygonFromObject(object);
     setCostForPolygon(polygon, gridmap_layer_name, objects_costmap);
   }
-  return objects_costmap;
+  return objects_costmap[gridmap_layer_name];
 }
