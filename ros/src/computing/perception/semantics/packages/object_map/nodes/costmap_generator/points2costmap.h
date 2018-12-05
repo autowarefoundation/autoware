@@ -45,6 +45,9 @@ class Points2Costmap
     ~Points2Costmap();
 
     grid_map::Matrix makeCostmapFromSensorPoints(const double maximum_height_thres,
+                                              const double minimum_lidar_height_thres,
+                                              const double grid_min_value,
+                                              const double grid_max_value,
                                               const grid_map::GridMap& gridmap,
                                               const std::string& gridmap_layer_name,
                                               const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
@@ -62,7 +65,8 @@ class Points2Costmap
     grid_map::Index fetchGridIndexFromPoint(const pcl::PointXYZ& point);
     std::vector<std::vector<std::vector<double>>> assignPoints2GridCell(const grid_map::GridMap& gridmap,
                                                                         const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
-    grid_map::Matrix calculateCostmap(const double maximum_height_thres,
+    grid_map::Matrix calculateCostmap(const double maximum_height_thres, const double minimum_lidar_height_thres,
+                                      const double grid_min_value, const double grid_max_value,
                                       const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
                                       const std::vector<std::vector<std::vector<double>>> grid_vec);
 };

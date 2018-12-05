@@ -62,7 +62,7 @@ class CostmapGenerator
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
     bool use_objects_;
-    bool use_sensor_points_;
+    bool use_points_;
     bool use_wayarea_;
     // bool use_waypoints_;
 
@@ -78,7 +78,8 @@ class CostmapGenerator
     double grid_position_x_;
     double grid_position_y_;
 
-    double maximum_sensor_points_height_thres_;
+    double maximum_lidar_height_thres_;
+    double minimum_lidar_height_thres_;
 
     vector_map::VectorMap vmap_;
 

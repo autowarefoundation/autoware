@@ -58,11 +58,12 @@ void CostmapGenerator::init()
   private_nh_.param<double>("grid_length_x", grid_length_x_, 30);
   private_nh_.param<double>("grid_length_y", grid_length_y_, 50);
   private_nh_.param<double>("grid_position_x", grid_position_x_, 0);
-  private_nh_.param<double>("grid_position_x", grid_position_y_, 20);
-  private_nh_.param<double>("maximum_sensor_points_height_thres", maximum_sensor_points_height_thres_, 0.3);
+  private_nh_.param<double>("grid_position_y", grid_position_y_, 20);
+  private_nh_.param<double>("maximum_lidar_height_thres", maximum_lidar_height_thres_, 0.3);
+  private_nh_.param<double>("minimum_lidar_height_thres", minimum_lidar_height_thres_, -2.2);
   private_nh_.param<bool>("use_objects", use_objects_, true);
-  private_nh_.param<bool>("use_sensor_points_", use_sensor_points_, true);
-  private_nh_.param<bool>("use_wayarea_", use_wayarea_, true);
+  private_nh_.param<bool>("use_points", use_points_, true);
+  private_nh_.param<bool>("use_wayarea", use_wayarea_, true);
   // private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
 
   initGridmap();
@@ -81,7 +82,7 @@ void CostmapGenerator::run()
     sub_objects_ = nh_.subscribe("/prediction/motion_predictor/objects", 1, &CostmapGenerator::objectsCallback, this);
   }
 
-  if(use_sensor_points_)
+  if(use_points_)
   {
     sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
   }
@@ -136,8 +137,9 @@ grid_map::Matrix CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs
   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
   // TODO: rename makeCostmapFromSensorPoints
   grid_map::Matrix sensor_points_costmap =
-                        points2costmap_.makeCostmapFromSensorPoints(maximum_sensor_points_height_thres_, costmap_,
-                                                                SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
+                        points2costmap_.makeCostmapFromSensorPoints(maximum_lidar_height_thres_, minimum_lidar_height_thres_,
+                                                                    grid_min_value_, grid_max_value_,
+                                                          costmap_, SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
   return sensor_points_costmap;
 }
 
@@ -195,7 +197,7 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
 
 void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
 {
-  if(use_sensor_points_)
+  if(use_points_)
   {
     sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
     grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
