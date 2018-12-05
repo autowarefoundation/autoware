@@ -44,15 +44,15 @@ public:
       return;
     std::vector<int> required_error_code = {INVALID_INITIAL_VALUE,
                                             INVALID_VALUE};
-    if (check_error_code(num, required_error_code)) {
+    if (checkErrorCode(num, required_error_code)) {
       if (value < min) {
-        ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
-        publish_diag_(query_diag_info(num).get());
+        ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
+        publishDiag(queryDiagInfo(num).get());
         return;
       }
       if (value > max) {
-        ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
-        publish_diag_(query_diag_info(num).get());
+        ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
+        publishDiag(queryDiagInfo(num).get());
         return;
       }
     }
@@ -63,10 +63,10 @@ public:
       return;
     std::vector<int> required_error_code = {INVALID_INITIAL_VALUE,
                                             INVALID_VALUE};
-    if (check_error_code(num, required_error_code)) {
+    if (checkErrorCode(num, required_error_code)) {
       if (value < min) {
-        ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
-        publish_diag_(query_diag_info(num).get());
+        ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
+        publishDiag(queryDiagInfo(num).get());
         return;
       }
     }
@@ -77,10 +77,10 @@ public:
       return;
     std::vector<int> required_error_code = {INVALID_INITIAL_VALUE,
                                             INVALID_VALUE};
-    if (check_error_code(num, required_error_code)) {
+    if (checkErrorCode(num, required_error_code)) {
       if (value > max) {
-        ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
-        publish_diag_(query_diag_info(num).get());
+        ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
+        publishDiag(queryDiagInfo(num).get());
         return;
       }
     }
@@ -90,32 +90,32 @@ public:
     if (enable_diag_ == false)
       return;
     std::vector<int> required_error_code = {EXCEPTION};
-    if (check_error_code(num, required_error_code)) {
-      ADD_DIAG_LOG_WARN(query_diag_info(num)->description);
+    if (checkErrorCode(num, required_error_code)) {
+      ADD_DIAG_LOG_WARN(queryDiagInfo(num)->description);
       ADD_DIAG_LOG_WARN(exception.what());
-      publish_diag_(query_diag_info(num).get());
+      publishDiag(queryDiagInfo(num).get());
     }
     return;
   }
   void DIAG_RESOURCE(std::string target_resource_path, int num);
   void DIAG_RATE_CHECK(int num);
   void DIAG_LOW_RELIABILITY(int num);
-  std::vector<DiagInfo> get_diag_info() { return diag_info_; }
-  boost::optional<DiagInfo> query_diag_info(int num);
+  std::vector<DiagInfo> getDiagInfo() { return diag_info_; }
+  boost::optional<DiagInfo> queryDiagInfo(int num);
   void WRITE_LOG();
 
 private:
   void ADD_DIAG_LOG_WARN(std::string log_text);
   void ADD_DIAG_LOG_ERROR(std::string log_text);
-  void check_rate_();
-  void check_rate_loop_();
-  bool check_error_code(int requested_error_code,
+  void checkRate();
+  void checkRateLoop();
+  bool checkErrorCode(int requested_error_code,
                         std::vector<int> right_categories);
-  void publish_diag_(DiagInfo info);
-  void update_diag_manager_status_();
-  void load_error_codes_();
+  void publishDiag(DiagInfo info);
+  void updateDiagManagerStatus();
+  void loadErrorCodes();
   // check resource for diag_manager
-  bool diag_resource(std::string target_resource_path);
+  bool diagResource(std::string target_resource_path);
   volatile bool enable_diag_;
   volatile bool is_running_;
   std::vector<DiagInfo> diag_info_;

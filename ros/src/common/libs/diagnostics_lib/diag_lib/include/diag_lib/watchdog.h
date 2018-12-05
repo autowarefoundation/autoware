@@ -44,8 +44,8 @@ private:
   std::map<std::string, bool> connection_status_;
   std::map<std::string, boost::shared_ptr<DiagSubscriber>> diag_sub_;
   ros::Publisher diag_pub_;
-  void update_connection_status_();
-  void publish_diag_();
-  void write_error_code_csv_(YAML::Node config);
+  void updateConnectionStatus();
+  void publishDiag();
+  void writeErrorCodeCsv(YAML::Node config);
 };
 #endif // WATCHDOG_H_INCLUDED

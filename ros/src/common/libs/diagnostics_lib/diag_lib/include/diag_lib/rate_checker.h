@@ -16,12 +16,12 @@ public:
   RateChecker(double buffer_length);
   ~RateChecker();
   void check();
-  boost::optional<double> get_rate();
+  boost::optional<double> getRate();
 
 private:
   boost::optional<ros::Time> last_update_time_;
   ros::Time start_time_;
-  void update_();
+  void update();
   std::vector<ros::Time> data_;
   const double buffer_length_;
   std::mutex mtx_;

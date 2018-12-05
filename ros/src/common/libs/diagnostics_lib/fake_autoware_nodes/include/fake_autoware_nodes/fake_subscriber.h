@@ -21,8 +21,8 @@ public:
   ~FakeSubscriber();
 
 private:
-  void diag_callback_(const diag_msgs::diagConstPtr msg);
-  void callback_(const std_msgs::Float64ConstPtr msg);
+  void diagCallback(const diag_msgs::diagConstPtr msg);
+  void callback(const std_msgs::Float64ConstPtr msg);
   ros::NodeHandle nh_;
   ros::Subscriber fake_sub_;
   ros::Subscriber diag_sub_;

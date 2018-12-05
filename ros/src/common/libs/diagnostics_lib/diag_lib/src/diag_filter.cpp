@@ -10,7 +10,7 @@
 DiagFilter::DiagFilter() {
   nh_.param<std::string>("/error_code_config_path", error_code_config_path_,
                          std::string(""));
-  if (check_resource_(error_code_config_path_)) {
+  if (checkResource(error_code_config_path_)) {
     enable_ = true;
   } else {
     enable_ = false;
@@ -30,7 +30,7 @@ DiagFilter::DiagFilter() {
 
 DiagFilter::~DiagFilter() {}
 
-bool DiagFilter::check_resource_(std::string target_resource_path) {
+bool DiagFilter::checkResource(std::string target_resource_path) {
   namespace fs = boost::filesystem;
   fs::path path(target_resource_path);
   boost::system::error_code error;

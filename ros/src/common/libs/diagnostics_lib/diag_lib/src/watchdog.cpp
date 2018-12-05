@@ -33,14 +33,14 @@ Watchdog::Watchdog() {
       }
     }
   }
-  write_error_code_csv_(config);
+  writeErrorCodeCsv(config);
   diag_pub_ = nh_.advertise<diag_msgs::diag>(
       ros::this_node::getName() + "/diag/all", 1);
 }
 
 Watchdog::~Watchdog() {}
 
-void Watchdog::write_error_code_csv_(YAML::Node config) {
+void Watchdog::writeErrorCodeCsv(YAML::Node config) {
   namespace fs = boost::filesystem;
   const fs::path path("/tmp/Autoware/Diag/");
   boost::system::error_code error;
@@ -80,15 +80,15 @@ void Watchdog::write_error_code_csv_(YAML::Node config) {
   return;
 }
 
-void Watchdog::publish_diag_() {
+void Watchdog::publishDiag() {
   ros::Rate rate(publish_rate_);
   while (ros::ok()) {
-    update_connection_status_();
+    updateConnectionStatus();
     diag_msgs::diag diag_msg;
     for (auto itr = watchdog_target_nodes_.begin();
          itr != watchdog_target_nodes_.end(); ++itr) {
       diag_msgs::diag_node_errors errors =
-          diag_sub_[*itr]->get_diag_node_errors();
+          diag_sub_[*itr]->getDiagNodeErrors();
       if (connection_status_[*itr] == false) {
         std::vector<DiagInfo> target_node_watchdog_diag_info =
             *watchdog_diag_info_[*itr];
@@ -114,13 +114,13 @@ void Watchdog::publish_diag_() {
 }
 
 void Watchdog::run() {
-  boost::thread publish_thread(boost::bind(&Watchdog::publish_diag_, this));
+  boost::thread publish_thread(boost::bind(&Watchdog::publishDiag, this));
   ros::spin();
   publish_thread.join();
   return;
 }
 
-void Watchdog::update_connection_status_() {
+void Watchdog::updateConnectionStatus() {
   std::vector<std::string> detected_nodes;
   ros::master::getNodes(detected_nodes);
   for (auto itr = watchdog_target_nodes_.begin();
