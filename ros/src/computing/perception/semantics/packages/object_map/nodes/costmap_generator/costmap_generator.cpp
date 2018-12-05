@@ -79,11 +79,13 @@ void CostmapGenerator::run()
   pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
   pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
   pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
-  pub_combined_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/combined_cost_cloud", 1);
+  // pub_combined_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/combined_cost_cloud", 1);
+  pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
 
   if(use_objects_)
   {
-    sub_objects_ = nh_.subscribe("/detection/lidar_objects", 1, &CostmapGenerator::objectsCallback, this);
+    // sub_objects_ = nh_.subscribe("/detection/lidar_objects", 1, &CostmapGenerator::objectsCallback, this);
+    sub_objects_ = nh_.subscribe("/detection/lidar_tracker/objects", 1, &CostmapGenerator::objectsCallback, this);
   }
 
   if(use_sensor_points_)
@@ -241,9 +243,14 @@ void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
   grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
   pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
 
-  sensor_msgs::PointCloud2 out_combined_cost_cloud_msg;
-  grid_map::GridMapRosConverter::toPointCloud(costmap, COMBINED_COSTMAP_LAYER_, out_combined_cost_cloud_msg);
-  pub_combined_cost_cloud_.publish(out_combined_cost_cloud_msg);
+  // sensor_msgs::PointCloud2 out_combined_cost_cloud_msg;
+  // grid_map::GridMapRosConverter::toPointCloud(costmap, COMBINED_COSTMAP_LAYER_, out_combined_cost_cloud_msg);
+  // pub_combined_cost_cloud_.publish(out_combined_cost_cloud_msg);
+
+  nav_msgs::OccupancyGrid out_occupancy_grid;
+  grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, 0.0, 1.0,
+                                          out_occupancy_grid);
+  pub_occupancy_grid_.publish(out_occupancy_grid);
 
   //
   // grid_map_msgs::GridMap out_gridmap_msg;
