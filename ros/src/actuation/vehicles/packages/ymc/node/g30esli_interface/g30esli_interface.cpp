@@ -233,7 +233,7 @@ void changeMode()
         }
       }
     }
-    usleep(1000);
+    usleep(10);
   }
 }
 
@@ -250,6 +250,8 @@ void readStatus()
     if ((status_.override.accel == 1 || status_.override.brake == 1) && engage_)
     {
       engage_ = false;
+      command_auto_.mode = G30ESLI_MODE_MANUAL;
+      command_joy_.mode = G30ESLI_MODE_MANUAL;
       ROS_WARN("OVERRIDE: Disengaged");
     }
 
@@ -301,10 +303,14 @@ void readStatus()
     vehicle_status_.brakepedal = status_.override.brake * 1000.0;  // TODO: scaling
 
     // angle
-    vehicle_status_.angle = status_.steer.actual;  // [deg]
+    vehicle_status_.angle = -status_.steer.actual;  // [deg]
 
     // lamp
-    if (status_.override.flasher == G30ESLI_FLASHER_RIGHT)
+    if (status_.override.flasher == G30ESLI_FLASHER_NONE)
+    {
+      vehicle_status_.lamp = 0;
+    }
+    else if (status_.override.flasher == G30ESLI_FLASHER_RIGHT)
     {
       vehicle_status_.lamp = autoware_msgs::VehicleStatus::LAMP_RIGHT;
     }
