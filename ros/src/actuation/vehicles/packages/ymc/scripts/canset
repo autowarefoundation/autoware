@@ -23,6 +23,7 @@ else
 fi
 
 if [ $CMD = "up" ]; then
-  sudo ip link set can0 type can bitrate 500000
+  sudo ip link set $CAN type can bitrate 500000
 fi
-sudo ip link set can0 $CMD
+
+sudo ip link set $CAN $CMD
