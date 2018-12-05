@@ -133,8 +133,8 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   std::cout << "velodyne callback" << std::endl;
   // has_subscribed_sensor_points_ = true;
   costmap_[SENSOR_POINTS_COSTMAP_LAYER_] = generateSensorPointsCostmap(in_sensor_points_msg);
-  // costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
-  // costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
+  costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
+  costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
 
   publishRosMsg(costmap_);
 }
