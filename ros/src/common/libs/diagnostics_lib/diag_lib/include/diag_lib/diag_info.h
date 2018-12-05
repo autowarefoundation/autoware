@@ -1,30 +1,28 @@
 #ifndef DIAG_INFO_H_INCLUDED
 #define DIAG_INFO_H_INCLUDED
 
-//headers in diag_lib
+// headers in diag_lib
 #include <diag_lib/diag_manager_config.h>
 
-//headers in STL
+// headers in STL
 #include <string>
 
-//headers in boost
+// headers in boost
 #include <boost/optional.hpp>
 
-struct DiagInfo
-{
-    const int num;
-    const std::string name;
-    const int category;
-    const std::string description;
-    const boost::optional<double> threshold;
-    const boost::optional<int> level;
-    DiagInfo(int num_, std::string name_, int category_, std::string description_)
-    : num(num_), name(name_), category(category_) ,description(description_) , threshold(boost::none), level(boost::none)
-    {};
-    DiagInfo(int num_, std::string name_, int category_, std::string description_, double threshold_, int level_)
-    : num(num_), name(name_), category(category_) ,description(description_) , threshold(threshold_), level(level_)
-    {
-
-    }
+struct DiagInfo {
+  const int num;
+  const std::string name;
+  const int category;
+  const std::string description;
+  const boost::optional<double> threshold;
+  const boost::optional<int> level;
+  DiagInfo(int num_, std::string name_, int category_, std::string description_)
+      : num(num_), name(name_), category(category_), description(description_),
+        threshold(boost::none), level(boost::none){};
+  DiagInfo(int num_, std::string name_, int category_, std::string description_,
+           double threshold_, int level_)
+      : num(num_), name(name_), category(category_), description(description_),
+        threshold(threshold_), level(level_) {}
 };
-#endif  //DIAG_INFO_H_INCLUDED
+#endif // DIAG_INFO_H_INCLUDED
