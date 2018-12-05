@@ -31,8 +31,8 @@
 #include <ros/ros.h>
 #include <std_msgs/Header.h>
 #include <fusion/fusion_func.h>
-#include "autoware_msgs/image_obj_ranged.h"
-#include "autoware_msgs/ConfigCarFusion.h"
+#include "autoware_msgs/ImageObjRanged.h"
+#include "autoware_config_msgs/ConfigCarFusion.h"
 
 static void publishTopic();
 static ros::Publisher fused_objects;
@@ -40,7 +40,7 @@ static std_msgs::Header sensor_header;
 
 bool ready_ = false;
 
-static void DetectedObjectsCallback(const autoware_msgs::image_obj& image_object)
+static void DetectedObjectsCallback(const autoware_msgs::ImageObj& image_object)
 {
     sensor_header = image_object.header;
     setDetectedObjects(image_object);
@@ -80,7 +80,7 @@ static void publishTopic()
 	/*
 	 * Publish topic(obj position ranged).
 	 */
-	autoware_msgs::image_obj_ranged fused_objects_msg;
+	autoware_msgs::ImageObjRanged fused_objects_msg;
 	fused_objects_msg.header = sensor_header;
 
 	fused_objects_msg.type = getObjectsType();
@@ -88,7 +88,7 @@ static void publishTopic()
 	fused_objects.publish(fused_objects_msg);
 }
 
-static void config_cb(const autoware_msgs::ConfigCarFusion::ConstPtr& param)
+static void config_cb(const autoware_config_msgs::ConfigCarFusion::ConstPtr& param)
 {
 	setParams(param->min_low_height,
 			param->max_low_height,
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 #if _DEBUG
 	ros::Subscriber image_sub = n.subscribe(IMAGE_TOPIC, 1, IMAGE_CALLBACK);
 #endif
-	fused_objects = n.advertise<autoware_msgs::image_obj_ranged>("image_obj_ranged", 1);
+	fused_objects = n.advertise<autoware_msgs::ImageObjRanged>("image_obj_ranged", 1);
 
 	ros::Subscriber config_subscriber;
 	std::string config_topic("/config");

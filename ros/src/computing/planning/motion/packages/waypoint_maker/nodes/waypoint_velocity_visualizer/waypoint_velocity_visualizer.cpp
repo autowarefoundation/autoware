@@ -49,8 +49,8 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
+#include "autoware_msgs/TrafficLight.h"
 
 class WaypointVelocityVisualizer
 {
@@ -108,7 +108,7 @@ private:
   void resetBuffers();
 
   void laneWaypointsArrayCallback(const autoware_msgs::LaneArray::ConstPtr& msg);
-  void finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg);
+  void finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg);
   void controlCallback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& current_twist_msg,
                        const geometry_msgs::TwistStamped::ConstPtr& command_twist_msg);
@@ -117,7 +117,7 @@ private:
 
   void createVelocityMarker(const std::vector<nav_msgs::Odometry> waypoints, const std::string& ns,
                             const std_msgs::ColorRGBA& color, visualization_msgs::MarkerArray& markers);
-  void createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
+  void createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns, const std_msgs::ColorRGBA& color,
                             visualization_msgs::MarkerArray& markers);
   void createVelocityMarker(const boost::circular_buffer<geometry_msgs::PoseStamped>& poses,
                             const boost::circular_buffer<geometry_msgs::TwistStamped>& twists, const std::string& ns,
@@ -220,7 +220,7 @@ void WaypointVelocityVisualizer::laneWaypointsArrayCallback(const autoware_msgs:
   publishVelocityMarker();
 }
 
-void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::lane::ConstPtr& msg)
+void WaypointVelocityVisualizer::finalWaypointsCallback(const autoware_msgs::Lane::ConstPtr& msg)
 {
   final_waypoints_marker_array_.markers.clear();
   createVelocityMarker(*msg, "final_waypoints", final_waypoints_color_, final_waypoints_marker_array_);
@@ -292,7 +292,7 @@ void WaypointVelocityVisualizer::createVelocityMarker(const std::vector<nav_msgs
     createVelocityTextMarker(waypoints, ns, color, markers);
 }
 
-void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::lane& lane, const std::string& ns,
+void WaypointVelocityVisualizer::createVelocityMarker(const autoware_msgs::Lane& lane, const std::string& ns,
                                                       const std_msgs::ColorRGBA& color,
                                                       visualization_msgs::MarkerArray& markers)
 {

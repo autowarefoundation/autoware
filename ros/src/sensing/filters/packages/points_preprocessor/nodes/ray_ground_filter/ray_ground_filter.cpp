@@ -41,7 +41,7 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/extract_indices.h>
 #include <velodyne_pointcloud/point_types.h>
-#include "autoware_msgs/ConfigRayGroundFilter.h"
+#include "autoware_config_msgs/ConfigRayGroundFilter.h"
 
 #include <opencv2/core/version.hpp>
 #if (CV_MAJOR_VERSION == 3)
@@ -52,7 +52,7 @@
 
 #include "ray_ground_filter.h"
 
-void RayGroundFilter::update_config_params(const autoware_msgs::ConfigRayGroundFilter::ConstPtr& param)
+void RayGroundFilter::update_config_params(const autoware_config_msgs::ConfigRayGroundFilter::ConstPtr& param)
 {
   sensor_height_          = param->sensor_height;
   general_max_slope_      = param->general_max_slope;

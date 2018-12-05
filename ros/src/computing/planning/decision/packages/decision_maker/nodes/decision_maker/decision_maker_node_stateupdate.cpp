@@ -3,7 +3,7 @@
 #include <state_machine_lib/state.hpp>
 #include <state_machine_lib/state_context.hpp>
 
-#include <autoware_msgs/lamp_cmd.h>
+#include <autoware_msgs/LampCmd.h>
 #include <decision_maker_node.hpp>
 
 namespace decision_maker
@@ -99,7 +99,7 @@ void DecisionMakerNode::callbackOutStateLaneChange(int status)
 
 void DecisionMakerNode::publishLightColor(int status)
 {
-  autoware_msgs::traffic_light msg;
+  autoware_msgs::TrafficLight msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
 }
@@ -289,7 +289,7 @@ void DecisionMakerNode::changeVelocityLane(int dir)
   {
     for (auto& lane : current_controlled_lane_array_.lanes)
     {
-      autoware_msgs::lane temp_lane = lane;
+      autoware_msgs::Lane temp_lane = lane;
       for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
       {
         amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
@@ -436,7 +436,7 @@ void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 }
 void DecisionMakerNode::updateStateSTR(int status)
 {
-  autoware_msgs::lamp_cmd lamp_msg;
+  autoware_msgs::LampCmd lamp_msg;
 
   switch (status)
   {

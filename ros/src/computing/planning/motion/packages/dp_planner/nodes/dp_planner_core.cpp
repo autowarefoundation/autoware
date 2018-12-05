@@ -88,7 +88,7 @@ PlannerX::PlannerX()
 	UpdatePlanningParams();
 
 	tf::StampedTransform transform;
-	RosHelpers::GetTransformFromTF("map", "world", transform);
+	ROSHelpers::GetTransformFromTF("map", "world", transform);
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
@@ -102,8 +102,8 @@ PlannerX::PlannerX()
 		pub_EnableLattice = nh.advertise<std_msgs::Int32>("enableLattice", 1);
 	}
 
-	pub_LocalPath = nh.advertise<autoware_msgs::lane>(topic_prefix + "/final_waypoints", 100,true);
-	pub_LocalBasePath = nh.advertise<autoware_msgs::lane>(topic_prefix + "/base_waypoints", 100,true);
+	pub_LocalPath = nh.advertise<autoware_msgs::Lane>(topic_prefix + "/final_waypoints", 100,true);
+	pub_LocalBasePath = nh.advertise<autoware_msgs::Lane>(topic_prefix + "/base_waypoints", 100,true);
 	pub_ClosestIndex = nh.advertise<std_msgs::Int32>(topic_prefix + "/closest_waypoint", 100,true);
 
 	pub_BehaviorState = nh.advertise<geometry_msgs::TwistStamped>("current_behavior", 1);
@@ -140,7 +140,7 @@ PlannerX::PlannerX()
 	else if(bVelSource == 1)
 		sub_current_velocity 	= nh.subscribe("/current_velocity",		100,	&PlannerX::callbackGetVehicleStatus, 	this);
 	else if(bVelSource == 2)
-		sub_can_info 			= nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCanInfo, 	this);
+		sub_can_info 			= nh.subscribe("/can_info",		100,	&PlannerX::callbackGetCANInfo, 	this);
 
 
 
@@ -311,7 +311,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 	clusters_array.clusters.push_back(GenerateSimulatedObstacleCluster(width, length, height, 50, point));
 	m_OriginalClusters.clear();
 	int nNum1, nNum2;
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
+	ROSHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, clusters_array, m_OriginalClusters, nNum1, nNum2);
 	m_TrackedClusters = m_OriginalClusters;
 
 	pcl::PointCloud<pcl::PointXYZ> point_cloud;
@@ -405,7 +405,7 @@ void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayCo
 	UtilityHNS::UtilityH::GetTickCount(timerTemp);
 
 	m_OriginalClusters.clear();
-	RosHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints);
+	ROSHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints);
 	if(m_bEnableTracking)
 	{
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters);
@@ -422,7 +422,7 @@ void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayCo
 void PlannerX::callbackGetBoundingBoxes(const jsk_recognition_msgs::BoundingBoxArrayConstPtr& msg)
 {
 //	std::cout << " Number of Detected Boxes =" << msg->boxes.size() << std::endl;
-//	RosHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
+//	ROSHelpers::ConvertFromAutowareBoundingBoxObstaclesToPlannerH(*msg, m_DetectedBoxes);
 //	bNewBoxes = true;
 }
 
@@ -449,7 +449,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 	//std::cout << "PlannerX: Read Status Twist_cmd ("<< m_VehicleState.speed << ", " << m_VehicleState.steer<<")" << std::endl;
 }
 
-void PlannerX::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void PlannerX::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_VehicleState.steer = msg->angle * m_LocalPlanner.m_CarInfo.max_steer_angle / m_LocalPlanner.m_CarInfo.max_steer_value;
@@ -633,7 +633,7 @@ void PlannerX::PlannerMainLoop()
 				timespec timerTemp;
 				UtilityHNS::UtilityH::GetTickCount(timerTemp);
 				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
-				 RosHelpers::UpdateRoadMap(m_AwMap,m_Map);
+				 ROSHelpers::UpdateRoadMap(m_AwMap,m_Map);
 				 std::cout << "Converting Vector Map Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
 				 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 			 }
@@ -658,7 +658,7 @@ void PlannerX::PlannerMainLoop()
 			else if(m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCurrSafeTrajectory < m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->iCentralTrajectory)
 				iDirection = -1;
 
-			RosHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, m_bGreenLight, iDirection, behavior_rviz);
+			ROSHelpers::VisualizeBehaviorState(m_CurrentPos, m_CurrentBehavior, m_bGreenLight, iDirection, behavior_rviz);
 
 			pub_BehaviorStateRviz.publish(behavior_rviz);
 
@@ -685,11 +685,11 @@ void PlannerX::PlannerMainLoop()
 			pub_BehaviorState.publish(behavior);
 
 			visualization_msgs::MarkerArray detectedPolygons;
-			RosHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
+			ROSHelpers::ConvertFromPlannerObstaclesToAutoware(m_CurrentPos, m_TrackedClusters, detectedPolygons);
 			pub_DetectedPolygonsRviz.publish(detectedPolygons);
 
 			visualization_msgs::Marker safety_box;
-			RosHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBorder.points, safety_box);
+			ROSHelpers::ConvertFromPlannerHRectangleToAutowareRviz(m_LocalPlanner.m_TrajectoryCostsCalculatotor.m_SafetyBorder.points, safety_box);
 			pub_SafetyBorderRviz.publish(safety_box);
 
 			geometry_msgs::PoseArray sim_data;
@@ -722,7 +722,7 @@ void PlannerX::PlannerMainLoop()
 			UtilityHNS::UtilityH::GetTickCount(log_t);
 			std::ostringstream dataLine;
 			std::ostringstream dataLineToOut;
-			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
+			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
 					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->m_pParams->rollOutNumber << "," <<
@@ -739,7 +739,7 @@ void PlannerX::PlannerMainLoop()
 					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
 			m_LogData.push_back(dataLine.str());
 
-//			dataLineToOut << RosHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
+//			dataLineToOut << ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
 //					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bFullyBlock << ","
 //					<< m_LocalPlanner.m_iSafeTrajectory << ","
 //					<< m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->minStoppingDistance << ","
@@ -759,11 +759,11 @@ void PlannerX::PlannerMainLoop()
 		}
 
 
-		autoware_msgs::lane current_trajectory;
+		autoware_msgs::Lane current_trajectory;
 		std_msgs::Int32 closest_waypoint;
 		PlannerHNS::RelativeInfo info;
 		PlannerHNS::PlanningHelpers::GetRelativeInfo(m_LocalPlanner.m_Path, m_LocalPlanner.state, info);
-		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, info.iBack, current_trajectory);
+		ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(m_LocalPlanner.m_Path, info.iBack, current_trajectory);
 		closest_waypoint.data = 1;
 		pub_ClosestIndex.publish(closest_waypoint);
 		pub_LocalBasePath.publish(current_trajectory);
@@ -771,7 +771,7 @@ void PlannerX::PlannerMainLoop()
 		visualization_msgs::MarkerArray all_rollOuts;
 
 	
-		RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
+		ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 
 		//Publish markers that visualize only when avoiding objects

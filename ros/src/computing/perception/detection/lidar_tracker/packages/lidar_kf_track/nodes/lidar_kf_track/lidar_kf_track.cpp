@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 // Tracker. Manage tracks. Create, remove, update.
 // ---------------------------------------------------------------------------
-KfLidarTracker::KfLidarTracker(float in_time_delta,
+KFLidarTracker::KFLidarTracker(float in_time_delta,
 		float in_acceleration_noise_magnitude,
 		float in_distance_threshold,
 		float in_tracker_merging_threshold,
@@ -23,7 +23,7 @@ KfLidarTracker::KfLidarTracker(float in_time_delta,
 {
 }
 
-void KfLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_points, boost_polygon& out_polygon)
+void KFLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_points, boost_polygon& out_polygon)
 {
 	std::vector< boost_point_xy > hull_detection_points;
 
@@ -37,7 +37,7 @@ void KfLidarTracker::CreatePolygonFromPoints(const geometry_msgs::Polygon& in_po
 	boost::geometry::assign_points(out_polygon, hull_detection_points);
 }
 
-void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
+void KFLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_cluster_array, DistType in_match_method)
 {
 	size_t num_detections = in_cloud_cluster_array.clusters.size();
 	size_t num_tracks = tracks_.size();
@@ -130,7 +130,7 @@ void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 				}
 				merged_cluster->SetCloud(summed_cloud_ptr, indices, in_cloud_cluster_array.clusters[track_assignments[i]].header, i,255, 255, 255, "", pose_estimation_);
 
-				merged_cluster->ToRosMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
+				merged_cluster->ToROSMessage(in_cloud_cluster_array.clusters[track_assignments[i]].header, *summed_cloud_cluster);*/
 
 				tracks_[i].Update(in_cloud_cluster_array.clusters[track_assignments[i]],//*summed_cloud_cluster,
 								true,
@@ -201,7 +201,7 @@ void KfLidarTracker::Update(const autoware_msgs::CloudClusterArray& in_cloud_clu
 
 }
 
-void KfLidarTracker::CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>& in_trackers, std::vector<bool>& in_out_visited_trackers, std::vector<size_t>& out_merge_indices, double in_merge_threshold)
+void KFLidarTracker::CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>& in_trackers, std::vector<bool>& in_out_visited_trackers, std::vector<size_t>& out_merge_indices, double in_merge_threshold)
 {
 	for(size_t i=0; i< in_trackers.size(); i++)
 	{
@@ -229,7 +229,7 @@ void KfLidarTracker::CheckTrackerMerge(size_t in_tracker_id, std::vector<CTrack>
 	}
 }
 
-void KfLidarTracker::MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers)
+void KFLidarTracker::MergeTrackers(std::vector<CTrack>& in_trackers, std::vector<CTrack>& out_trackers, std::vector<size_t> in_merge_indices, const size_t& current_index, std::vector<bool>& in_out_merged_trackers)
 {
 	size_t oldest_life =0;
 	size_t oldest_index = 0;
@@ -260,7 +260,7 @@ void KfLidarTracker::MergeTrackers(std::vector<CTrack>& in_trackers, std::vector
 	//out_trackers.back().cluster = in_trackers[largest_index].GetCluster();
 }
 
-void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
+void KFLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 {
 	//std::cout << "checkAllForMerge" << std::endl;
 	std::vector<bool> visited_trackers(tracks_.size(), false);
@@ -289,7 +289,7 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 // ---------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------
-/*void KfLidarTracker::Update(
+/*void KFLidarTracker::Update(
 	const autoware_msgs::CloudClusterArray& in_cloud_cluster_array,
 	DistType distType
 	)
@@ -434,6 +434,6 @@ void KfLidarTracker::CheckAllTrackersForMerge(std::vector<CTrack>& out_trackers)
 // ---------------------------------------------------------------------------
 //
 // ---------------------------------------------------------------------------
-KfLidarTracker::~KfLidarTracker(void)
+KFLidarTracker::~KFLidarTracker(void)
 {
 }

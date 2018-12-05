@@ -18,8 +18,8 @@ from jsk_recognition_msgs.msg import BoundingBoxArray
 from jsk_rviz_plugins.msg import Pictogram
 from jsk_rviz_plugins.msg import PictogramArray
 #from calibration_camera_lidar.msg import projection_matrix
-from autoware_msgs.msg import image_obj
-from autoware_msgs.msg import image_rect
+from autoware_msgs.msg import ImageObj
+from autoware_msgs.msg import ImageRect
 
 import os.path #Autoware
 from numpy import dtype
@@ -140,7 +140,7 @@ def readXML(file):
 			y1 = min(corners_2d[1,:])
 			y2 = max(corners_2d[1,:])
 
-			bbox_2d = image_rect()
+			bbox_2d = ImageRect()
 			bbox_2d.score = -10.0
 			
 			if ( (label == 'Car' or label=='Truck' or label=='Van') and np.any(corner_3d[2,:]>=0.5)) and (np.any(orientation_3d[2,:]>=0.5) and x1>=0 and x2>=0 and y1>0 and y2>=0 and occlusion <2):				
@@ -168,7 +168,7 @@ def callback(data):
 	boxes = BoundingBoxArray() #3D Boxes with JSK
 	boxes.header = header
 	
-	rects = image_obj() #Rects Autoware
+	rects = ImageObj() #Rects Autoware
 	rects.header = header
 	rects.type = "car"
 	
@@ -231,7 +231,7 @@ def run():
 	global projection_publisher
 	rospy.init_node('kitti_box_publisher', anonymous=True)
 	pub = rospy.Publisher('kitti_box', BoundingBoxArray, queue_size=1)
-	pub_boxes = rospy.Publisher('/obj_car/image_obj', image_obj, queue_size=1)
+	pub_boxes = rospy.Publisher('/obj_car/image_obj', ImageObj, queue_size=1)
 	pub_pictograms = rospy.Publisher('kitti_3d_labels', PictogramArray, queue_size=1)
 	pub_points_clusters = rospy.Publisher('points_cluster', PointCloud2, queue_size=1)
 	#projection_publisher = rospy.Publisher('projection_matrix', projection_matrix, queue_size=1, latch=True)

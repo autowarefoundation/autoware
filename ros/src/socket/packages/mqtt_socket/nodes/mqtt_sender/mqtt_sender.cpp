@@ -43,7 +43,7 @@
 #include <yaml-cpp/yaml.h>
 using namespace std;
 #include "mqtt_socket/mqtt_setting.hpp"
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 #include <tablet_socket_msgs/mode_info.h>
 
 class MqttSender
@@ -51,7 +51,7 @@ class MqttSender
 public:
   MqttSender();
   ~MqttSender();
-  void canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg);
+  void canInfoCallback(const autoware_can_msgs::CANInfoConstPtr &msg);
   static void on_connect(struct mosquitto *mosq, void *obj, int result);
   static void on_disconnect(struct mosquitto *mosq, void *obj, int rc);
   static void on_publish(struct mosquitto *mosq, void *userdata, int mid);
@@ -272,7 +272,7 @@ void MqttSender::modeInfoCallback(const tablet_socket_msgs::mode_info& msg)
   }
 }
 
-void MqttSender::canInfoCallback(const autoware_msgs::CanInfoConstPtr &msg)
+void MqttSender::canInfoCallback(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 
   if(can_info_callback_counter_ > caninfo_downsample * 100) {

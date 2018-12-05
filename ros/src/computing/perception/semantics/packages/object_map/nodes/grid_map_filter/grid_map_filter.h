@@ -93,9 +93,9 @@ namespace object_map
 		void OccupancyGridCallback(const nav_msgs::OccupancyGridConstPtr &in_message);
 
 		/*!
-		 * Initializes Ros Publisher, Subscribers and sets the configuration parameters
+		 * Initializes ROS Publisher, Subscribers and sets the configuration parameters
 		 */
-		void InitializeRosIo();
+		void InitializeROSIo();
 
 		/*!
 		 * Applies a Distance Transform to the specified layer in in_layer contained in the GridMap

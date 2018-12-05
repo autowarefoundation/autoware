@@ -38,7 +38,7 @@
 #include <geometry_msgs/TwistStamped.h>
 
 // User defined includes
-#include "autoware_msgs/lane.h"
+#include "autoware_msgs/Lane.h"
 #include "waypoint_follower/libwaypoint_follower.h"
 
 namespace waypoint_follower
@@ -62,7 +62,7 @@ public:
   {
     current_linear_velocity_ = cur_vel;
   }
-  void setCurrentWaypoints(const std::vector<autoware_msgs::waypoint> &wps)
+  void setCurrentWaypoints(const std::vector<autoware_msgs::Waypoint> &wps)
   {
     current_waypoints_ = wps;
   }
@@ -88,7 +88,7 @@ public:
   {
     return current_pose_;
   }
-  std::vector<autoware_msgs::waypoint> getCurrentWaypoints() const
+  std::vector<autoware_msgs::Waypoint> getCurrentWaypoints() const
   {
     return current_waypoints_;
   }
@@ -116,7 +116,7 @@ private:
   double minimum_lookahead_distance_;
   geometry_msgs::Pose current_pose_;
   double current_linear_velocity_;
-  std::vector<autoware_msgs::waypoint> current_waypoints_;
+  std::vector<autoware_msgs::Waypoint> current_waypoints_;
 
   // functions
   double calcCurvature(geometry_msgs::Point target) const;

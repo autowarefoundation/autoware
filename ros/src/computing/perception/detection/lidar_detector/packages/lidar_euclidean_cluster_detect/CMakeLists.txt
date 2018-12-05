@@ -70,9 +70,6 @@ if (${CUDA_FOUND})
     message("Library: " ${CUDA_CUDA_LIBRARY})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
     set(ROS_VERSION $ENV{ROS_DISTRO})
-    if ("${ROS_VERSION}" MATCHES "(indigo)")
-        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
-    endif()
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
             GPU_CLUSTERING=1
             )

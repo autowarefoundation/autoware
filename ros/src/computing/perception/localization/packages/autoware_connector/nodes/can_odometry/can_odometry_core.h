@@ -39,7 +39,7 @@
 #include <tf/transform_broadcaster.h>
 
 // User Defined Includes
-#include "autoware_msgs/CanInfo.h"
+#include "autoware_can_msgs/CANInfo.h"
 #include "autoware_msgs/VehicleStatus.h"
 
 namespace autoware_connector

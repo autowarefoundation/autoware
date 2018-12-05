@@ -36,7 +36,7 @@
 #include <pcl/point_types.h>
 #include <boost/random.hpp>
 #include <boost/math/distributions/normal.hpp>
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 #include "op_utility/UtilityH.h"
 #include "math.h"
@@ -94,7 +94,7 @@ OpenPlannerSimulatorPerception::~OpenPlannerSimulatorPerception()
 void OpenPlannerSimulatorPerception::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& msg)
 {
 	tf::StampedTransform transform;
-	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+	PlannerHNS::ROSHelpers::GetTransformFromTF("map", "world", transform);
 
 	geometry_msgs::Pose point;
 	point.position.x = msg->point.x + transform.getOrigin().x();

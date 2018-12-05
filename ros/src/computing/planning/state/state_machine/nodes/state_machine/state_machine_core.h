@@ -37,7 +37,7 @@
 #include <std_msgs/Int32.h>
 
 // User Defined includes
-#include "autoware_msgs/traffic_light.h"
+#include "autoware_msgs/TrafficLight.h"
 #include "state_machine.h"
 
 namespace state_machine
@@ -68,8 +68,8 @@ private:
   bool is_manual_light_detection_;
 
   // callbacks
-  void callbackFromLightColor(const autoware_msgs::traffic_lightConstPtr &msg);
-  void callbackFromLightColorManaged(const autoware_msgs::traffic_lightConstPtr &msg);
+  void callbackFromLightColor(const autoware_msgs::TrafficLightConstPtr &msg);
+  void callbackFromLightColorManaged(const autoware_msgs::TrafficLightConstPtr &msg);
   void callbackFromChangeFlag(const std_msgs::Int32ConstPtr& msg);
 
   // initializer
