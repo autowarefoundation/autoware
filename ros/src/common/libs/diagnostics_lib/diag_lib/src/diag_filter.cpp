@@ -7,7 +7,7 @@
 //headers in boost
 #include <boost/filesystem.hpp>
 
-diag_filter::diag_filter()
+DiagFilter::DiagFilter()
 {
     nh_.param<std::string>("/error_code_config_path", error_code_config_path_, std::string(""));
     if(check_resource_(error_code_config_path_))
@@ -34,12 +34,12 @@ diag_filter::diag_filter()
     }
 }
 
-diag_filter::~diag_filter()
+DiagFilter::~DiagFilter()
 {
 
 }
 
-bool diag_filter::check_resource_(std::string target_resource_path)
+bool DiagFilter::check_resource_(std::string target_resource_path)
 {
     namespace fs = boost::filesystem;
     fs::path path(target_resource_path);
@@ -50,12 +50,12 @@ bool diag_filter::check_resource_(std::string target_resource_path)
     return true;
 }
 
-boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, std::string target_node)
+boost::optional<diag_msgs::diag_node_errors> DiagFilter::filter(diag_msgs::diag diag, std::string target_node)
 {
     return filter(diag,node_number_data_[target_node]);
 }
 
-boost::optional<diag_msgs::diag_node_errors> diag_filter::filter(diag_msgs::diag diag, int target_node_number)
+boost::optional<diag_msgs::diag_node_errors> DiagFilter::filter(diag_msgs::diag diag, int target_node_number)
 {
     for(int i=0; i<diag.nodes.size() ; i++)
     {

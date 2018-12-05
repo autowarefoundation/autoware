@@ -4,7 +4,7 @@
 //headers in ROS
 #include <ros/ros.h>
 
-watchdog::watchdog()
+Watchdog::Watchdog()
 {
     nh_.param<std::string>("/error_code_config_path", config_filepath_, "");
     nh_.param<double>(ros::this_node::getName() + "/publish_rate", publish_rate_, 10);
@@ -17,13 +17,13 @@ watchdog::watchdog()
             std::string itr_node_name = it->first.as<std::string>();
             diag_target_nodes_.push_back(itr_node_name);
             YAML::Node target_node = config[itr_node_name];
-            diag_sub_[itr_node_name] = boost::make_shared<diag_subscriber>(itr_node_name, target_node["node_number"].as<int>());
-            boost::shared_ptr<std::vector<diag_info> > target_node_watchdog_diag_info = boost::make_shared<std::vector<diag_info> >();
+            diag_sub_[itr_node_name] = boost::make_shared<DiagSubscriber>(itr_node_name, target_node["node_number"].as<int>());
+            boost::shared_ptr<std::vector<DiagInfo> > target_node_watchdog_diag_info = boost::make_shared<std::vector<DiagInfo> >();
             for(const YAML::Node &error : target_node["errors"])
             {
                 if(error["category"].as<int>() == NODE_IS_DEAD)
                 {
-                    diag_info info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>());
+                    DiagInfo info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>());
                     target_node_watchdog_diag_info->push_back(info);
                 }
             }
@@ -38,12 +38,12 @@ watchdog::watchdog()
     diag_pub_ = nh_.advertise<diag_msgs::diag>(ros::this_node::getName()+"/diag/all", 1);
 }
 
-watchdog::~watchdog()
+Watchdog::~Watchdog()
 {
     
 }
 
-void watchdog::write_error_code_csv_(YAML::Node config)
+void Watchdog::write_error_code_csv_(YAML::Node config)
 {
     namespace fs = boost::filesystem;
     const fs::path path("/tmp/Autoware/Diag/");
@@ -81,7 +81,7 @@ void watchdog::write_error_code_csv_(YAML::Node config)
     return;
 }
 
-void watchdog::publish_diag_()
+void Watchdog::publish_diag_()
 {
     ros::Rate rate(publish_rate_);
     while(ros::ok())
@@ -93,7 +93,7 @@ void watchdog::publish_diag_()
             diag_msgs::diag_node_errors errors = diag_sub_[*itr]->get_diag_node_errors();
             if(connection_status_[*itr] == false)
             {
-                std::vector<diag_info> target_node_watchdog_diag_info = *watchdog_diag_info_[*itr];
+                std::vector<DiagInfo> target_node_watchdog_diag_info = *watchdog_diag_info_[*itr];
                 for(int i=0; i<target_node_watchdog_diag_info.size(); i++)
                 {
                     diag_msgs::diag_error error;
@@ -117,15 +117,15 @@ void watchdog::publish_diag_()
     return;
 }
 
-void watchdog::run()
+void Watchdog::run()
 {
-    boost::thread publish_thread(boost::bind(&watchdog::publish_diag_, this));
+    boost::thread publish_thread(boost::bind(&Watchdog::publish_diag_, this));
     ros::spin();
     publish_thread.join();
     return;
 }
 
-void watchdog::update_connection_status_()
+void Watchdog::update_connection_status_()
 {
     std::vector<std::string> detected_nodes;
     ros::master::getNodes(detected_nodes);

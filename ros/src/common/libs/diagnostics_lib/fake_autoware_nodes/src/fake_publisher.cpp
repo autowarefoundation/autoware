@@ -2,17 +2,17 @@
 
 #include <std_msgs/Float64.h>
 
-fake_publisher::fake_publisher()
+FakePublisher::FakePublisher()
 {
     fake_pub_ = nh_.advertise<std_msgs::Float64>(ros::this_node::getName()+"/data", 1);
 }
 
-fake_publisher::~fake_publisher()
+FakePublisher::~FakePublisher()
 {
 
 }
 
-void fake_publisher::run()
+void FakePublisher::run()
 {
     ros::Rate rate(5);
     std_msgs::Float64 msg;
@@ -42,7 +42,7 @@ void fake_publisher::run()
     return;
 }
 
-double fake_publisher::divide(double a, double b)
+double FakePublisher::divide(double a, double b)
 {
     if (b == 0)
     {

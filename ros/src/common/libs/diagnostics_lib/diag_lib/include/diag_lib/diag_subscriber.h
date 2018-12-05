@@ -13,11 +13,11 @@
 #include <diag_msgs/diag_node_errors.h>
 #include <diag_msgs/diag_error.h>
 
-class diag_subscriber
+class DiagSubscriber
 {
     public:
-        diag_subscriber(std::string target_node,int target_node_number);
-        ~diag_subscriber();
+        DiagSubscriber(std::string target_node,int target_node_number);
+        ~DiagSubscriber();
         diag_msgs::diag_node_errors get_diag_node_errors();
     private:
         std::mutex mtx_;

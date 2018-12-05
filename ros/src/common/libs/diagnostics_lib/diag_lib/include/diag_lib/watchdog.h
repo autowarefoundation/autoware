@@ -24,11 +24,11 @@
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 
-class watchdog
+class Watchdog
 {
 public:
-    watchdog();
-    ~watchdog();
+    Watchdog();
+    ~Watchdog();
     void run();
 private:
     ros::NodeHandle nh_;
@@ -37,11 +37,11 @@ private:
     double publish_rate_;
     // diagnostic manager
     diag_manager diag_;
-    std::map<std::string,boost::shared_ptr<std::vector<diag_info> > > watchdog_diag_info_;
+    std::map<std::string,boost::shared_ptr<std::vector<DiagInfo> > > watchdog_diag_info_;
     std::vector<std::string> diag_target_nodes_;
     std::vector<std::string> watchdog_target_nodes_;
     std::map<std::string,bool> connection_status_;
-    std::map<std::string,boost::shared_ptr<diag_subscriber> > diag_sub_;
+    std::map<std::string,boost::shared_ptr<DiagSubscriber> > diag_sub_;
     ros::Publisher diag_pub_;
     void update_connection_status_();
     void publish_diag_();

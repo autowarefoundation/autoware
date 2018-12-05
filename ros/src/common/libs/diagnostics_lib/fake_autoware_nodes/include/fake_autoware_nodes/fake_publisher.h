@@ -4,11 +4,11 @@
 //headers in diag_lib
 #include <diag_lib/diag_manager.h>
 
-class fake_publisher
+class FakePublisher
 {
     public:
-        fake_publisher();
-        ~fake_publisher();
+        FakePublisher();
+        ~FakePublisher();
         void run();
         double divide(double a, double b);
     private:

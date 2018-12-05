@@ -63,20 +63,20 @@ void diag_manager::load_error_codes_()
     {
         for(const YAML::Node &error : error_code_config_["errors"])
         {
-            diag_info info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>());
+            DiagInfo info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>());
             if((info.category == LOW_SUBSCRIBE_RATE) || (info.category == LOW_PUBLISH_RATE) || (info.category == LOW_OPERATION_CYCLE))
             {
                 if(error["level"].as<std::string>() == "warn")
                 {
-                    diag_info detail_info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>() ,error["threshold"].as<double>(), LEVEL_WARN);
-                    boost::shared_ptr<rate_checker> rate_checker_ptr = boost::make_shared<rate_checker>(RATE_CHECKER_BUFFER_LENGTH);
+                    DiagInfo detail_info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>() ,error["threshold"].as<double>(), LEVEL_WARN);
+                    boost::shared_ptr<RateChecker> rate_checker_ptr = boost::make_shared<RateChecker>(RATE_CHECKER_BUFFER_LENGTH);
                     checkers_[info.num] = rate_checker_ptr;
                     diag_info_.push_back(detail_info);
                 }
                 if(error["level"].as<std::string>() == "error")
                 {
-                    diag_info detail_info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>() ,error["threshold"].as<double>(), LEVEL_ERROR);
-                    boost::shared_ptr<rate_checker> rate_checker_ptr = boost::make_shared<rate_checker>(RATE_CHECKER_BUFFER_LENGTH);
+                    DiagInfo detail_info(error["num"].as<int>(), error["name"].as<std::string>(), error["category"].as<int>(), error["description"].as<std::string>() ,error["threshold"].as<double>(), LEVEL_ERROR);
+                    boost::shared_ptr<RateChecker> rate_checker_ptr = boost::make_shared<RateChecker>(RATE_CHECKER_BUFFER_LENGTH);
                     checkers_[info.num] = rate_checker_ptr;
                     diag_info_.push_back(detail_info);
                 }
@@ -107,7 +107,7 @@ void diag_manager::check_rate_()
     for (auto const& checker : checkers_)
     {
         boost::optional<double> rate = checker.second->get_rate();
-        boost::optional<diag_info> info = query_diag_info(checker.first);
+        boost::optional<DiagInfo> info = query_diag_info(checker.first);
         if(rate && info && info.get().threshold)
         {
             if(*rate <info.get().threshold.get())
@@ -142,11 +142,11 @@ void diag_manager::check_rate_loop_()
 void diag_manager::DIAG_LOW_RELIABILITY(int num)
 {
     if(enable_diag_ == false)
-        return;    
+        return;
     std::vector<int> required_error_code = {LOW_RELIABILITY};
     if(check_error_code(num, required_error_code))
     {
-        boost::optional<diag_info> info = query_diag_info(num);
+        boost::optional<DiagInfo> info = query_diag_info(num);
         ADD_DIAG_LOG_WARN(info.get().description);
         publish_diag_(query_diag_info(info.get().num).get());
     }
@@ -178,7 +178,7 @@ void diag_manager::DIAG_RATE_CHECK(int num)
     return;
 }
 
-boost::optional<diag_info> diag_manager::query_diag_info(int num)
+boost::optional<DiagInfo> diag_manager::query_diag_info(int num)
 {
     for(auto diag_info_itr = diag_info_.begin(); diag_info_itr != diag_info_.end(); diag_info_itr++)
     {
@@ -186,13 +186,13 @@ boost::optional<diag_info> diag_manager::query_diag_info(int num)
         {
             if(diag_info_itr->threshold && diag_info_itr->level)
             {
-                diag_info ret(diag_info_itr->num, diag_info_itr->name, diag_info_itr->category, diag_info_itr->description, diag_info_itr->threshold.get(), diag_info_itr->level.get());
+                DiagInfo ret(diag_info_itr->num, diag_info_itr->name, diag_info_itr->category, diag_info_itr->description, diag_info_itr->threshold.get(), diag_info_itr->level.get());
                 return ret;
             }
             else
             {
-                diag_info ret(diag_info_itr->num, diag_info_itr->name, diag_info_itr->category, diag_info_itr->description);
-                return ret;  
+                DiagInfo ret(diag_info_itr->num, diag_info_itr->name, diag_info_itr->category, diag_info_itr->description);
+                return ret;
             }
         }
     }
@@ -314,7 +314,7 @@ bool diag_manager::check_error_code(int requested_error_number, std::vector<int>
     }
 }
 
-void diag_manager::publish_diag_(diag_info info)
+void diag_manager::publish_diag_(DiagInfo info)
 {
     diag_msgs::diag_error msg;
     msg.num = info.num;

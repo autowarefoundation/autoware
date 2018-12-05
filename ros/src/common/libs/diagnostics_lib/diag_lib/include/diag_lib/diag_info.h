@@ -10,7 +10,7 @@
 //headers in boost
 #include <boost/optional.hpp>
 
-struct diag_info
+struct DiagInfo
 {
     const int num;
     const std::string name;
@@ -18,10 +18,10 @@ struct diag_info
     const std::string description;
     const boost::optional<double> threshold;
     const boost::optional<int> level;
-    diag_info(int num_, std::string name_, int category_, std::string description_) 
+    DiagInfo(int num_, std::string name_, int category_, std::string description_)
     : num(num_), name(name_), category(category_) ,description(description_) , threshold(boost::none), level(boost::none)
     {};
-    diag_info(int num_, std::string name_, int category_, std::string description_, double threshold_, int level_)
+    DiagInfo(int num_, std::string name_, int category_, std::string description_, double threshold_, int level_)
     : num(num_), name(name_), category(category_) ,description(description_) , threshold(threshold_), level(level_)
     {
 

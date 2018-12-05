@@ -11,11 +11,11 @@
 //headers in Boost
 #include <boost/optional.hpp>
 
-class rate_checker
+class RateChecker
 {
     public:
-        rate_checker(double buffer_length);
-        ~rate_checker();
+        RateChecker(double buffer_length);
+        ~RateChecker();
         void check();
         boost::optional<double> get_rate();
     private:
