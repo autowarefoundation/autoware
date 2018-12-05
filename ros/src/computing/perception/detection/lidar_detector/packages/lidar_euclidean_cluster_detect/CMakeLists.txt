@@ -10,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
@@ -32,8 +30,6 @@ catkin_package(
         sensor_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
