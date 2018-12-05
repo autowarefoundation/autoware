@@ -1,6 +1,6 @@
 #include <diag_lib/diag_manager.h>
 
-diag_manager::diag_manager()
+DiagManager::DiagManager()
 {
     is_running_ = false;
     old_error_code_config_path_ = "";
@@ -8,16 +8,16 @@ diag_manager::diag_manager()
     diag_status_pub_ = nh_.advertise<diag_msgs::diag_module_status>(ros::this_node::getName() + "/diag/status", 10);
     load_error_codes_();
     is_running_ = true;
-    boost::thread manager_update_thread(boost::bind(&diag_manager::update_diag_manager_status_, this));
-    boost::thread rate_checker_thread(boost::bind(&diag_manager::check_rate_loop_, this));
+    boost::thread manager_update_thread(boost::bind(&DiagManager::update_diag_manager_status_, this));
+    boost::thread rate_checker_thread(boost::bind(&DiagManager::check_rate_loop_, this));
 }
 
-diag_manager::~diag_manager()
+DiagManager::~DiagManager()
 {
 
 }
 
-void diag_manager::update_diag_manager_status_()
+void DiagManager::update_diag_manager_status_()
 {
     ros::Rate rate(1);
     while(ros::ok())
@@ -38,7 +38,7 @@ void diag_manager::update_diag_manager_status_()
     return;
 }
 
-void diag_manager::load_error_codes_()
+void DiagManager::load_error_codes_()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     enable_diag_ = false;
@@ -99,7 +99,7 @@ void diag_manager::load_error_codes_()
     enable_diag_ = true;
 }
 
-void diag_manager::check_rate_()
+void DiagManager::check_rate_()
 {
     std::lock_guard<std::mutex> lock(_mutex);
     if(!enable_diag_)
@@ -128,7 +128,7 @@ void diag_manager::check_rate_()
     return;
 }
 
-void diag_manager::check_rate_loop_()
+void DiagManager::check_rate_loop_()
 {
     ros::Rate rate(RATE_CHECK_FREQUENCY);
     while(ros::ok())
@@ -139,7 +139,7 @@ void diag_manager::check_rate_loop_()
     return;
 }
 
-void diag_manager::DIAG_LOW_RELIABILITY(int num)
+void DiagManager::DIAG_LOW_RELIABILITY(int num)
 {
     if(enable_diag_ == false)
         return;
@@ -153,7 +153,7 @@ void diag_manager::DIAG_LOW_RELIABILITY(int num)
     return;
 }
 
-void diag_manager::DIAG_RATE_CHECK(int num)
+void DiagManager::DIAG_RATE_CHECK(int num)
 {
     if(enable_diag_ == false)
         return;
@@ -178,7 +178,7 @@ void diag_manager::DIAG_RATE_CHECK(int num)
     return;
 }
 
-boost::optional<DiagInfo> diag_manager::query_diag_info(int num)
+boost::optional<DiagInfo> DiagManager::query_diag_info(int num)
 {
     for(auto diag_info_itr = diag_info_.begin(); diag_info_itr != diag_info_.end(); diag_info_itr++)
     {
@@ -199,7 +199,7 @@ boost::optional<DiagInfo> diag_manager::query_diag_info(int num)
     return boost::none;
 }
 
-void diag_manager::WRITE_LOG()
+void DiagManager::WRITE_LOG()
 {
     namespace fs = boost::filesystem;
     const fs::path path("/tmp/Autoware/Diag/Log/" + ros::this_node::getName());
@@ -217,7 +217,7 @@ void diag_manager::WRITE_LOG()
     return;
 }
 
-void diag_manager::ADD_DIAG_LOG_ERROR(std::string log_text)
+void DiagManager::ADD_DIAG_LOG_ERROR(std::string log_text)
 {
     log_text = "in " + ros::this_node::getName() + ": " + log_text;
     boost::posix_time::ptime my_posix_time = ros::Time::now().toBoost();
@@ -228,7 +228,7 @@ void diag_manager::ADD_DIAG_LOG_ERROR(std::string log_text)
     return;
 }
 
-void diag_manager::ADD_DIAG_LOG_WARN(std::string log_text)
+void DiagManager::ADD_DIAG_LOG_WARN(std::string log_text)
 {
     log_text = "in " + ros::this_node::getName() + ": " + log_text;
     boost::posix_time::ptime my_posix_time = ros::Time::now().toBoost();
@@ -239,7 +239,7 @@ void diag_manager::ADD_DIAG_LOG_WARN(std::string log_text)
     return;
 }
 
-void diag_manager::DIAG_RESOURCE(std::string target_resource_path, int num)
+void DiagManager::DIAG_RESOURCE(std::string target_resource_path, int num)
 {
     if(enable_diag_ == false)
         return;
@@ -272,7 +272,7 @@ void diag_manager::DIAG_RESOURCE(std::string target_resource_path, int num)
     }
 }
 
-bool diag_manager::diag_resource(std::string target_resource_path)
+bool DiagManager::diag_resource(std::string target_resource_path)
 {
     namespace fs = boost::filesystem;
     fs::path path(target_resource_path);
@@ -287,7 +287,7 @@ bool diag_manager::diag_resource(std::string target_resource_path)
     return true;
 }
 
-bool diag_manager::check_error_code(int requested_error_number, std::vector<int> right_categories)
+bool DiagManager::check_error_code(int requested_error_number, std::vector<int> right_categories)
 {
     if(query_diag_info(requested_error_number))
     {
@@ -314,7 +314,7 @@ bool diag_manager::check_error_code(int requested_error_number, std::vector<int>
     }
 }
 
-void diag_manager::publish_diag_(DiagInfo info)
+void DiagManager::publish_diag_(DiagInfo info)
 {
     diag_msgs::diag_error msg;
     msg.num = info.num;

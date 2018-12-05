@@ -14,7 +14,7 @@ class FakePublisher
     private:
         ros::NodeHandle nh_;
         ros::Publisher fake_pub_;
-        diag_manager diag_manager_;
+        DiagManager diag_manager_;
 };
 
 #endif  //FAKE_PUBLISHER_H_INCLUDED

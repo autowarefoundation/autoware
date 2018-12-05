@@ -34,11 +34,11 @@
 // headers in YAML-CPP
 #include <yaml-cpp/yaml.h>
 
-class diag_manager
+class DiagManager
 {
 public:
-    diag_manager();
-    ~diag_manager();
+    DiagManager();
+    ~DiagManager();
     template<typename T>
     void DIAG_ASSERT_VALUE_RANGE(T min, T max, T value, int num)
     {

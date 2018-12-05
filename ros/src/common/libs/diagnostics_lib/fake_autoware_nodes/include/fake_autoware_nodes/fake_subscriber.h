@@ -26,7 +26,7 @@ class FakeSubscriber
         ros::NodeHandle nh_;
         ros::Subscriber fake_sub_;
         ros::Subscriber diag_sub_;
-        diag_manager diag_manager_;
+        DiagManager diag_manager_;
         DiagFilter diag_filter_;
 };
 
