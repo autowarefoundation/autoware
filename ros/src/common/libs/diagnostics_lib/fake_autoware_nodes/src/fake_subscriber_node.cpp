@@ -1,9 +1,9 @@
 #include <ros/ros.h>
 
-//headers in diag_lib
+// headers in diag_lib
 #include <diag_lib/diag_manager.h>
 
-//headers in fake_autoware_nodes
+// headers in fake_autoware_nodes
 #include <fake_autoware_nodes/fake_subscriber.h>
 
 int main(int argc, char *argv[]) {
