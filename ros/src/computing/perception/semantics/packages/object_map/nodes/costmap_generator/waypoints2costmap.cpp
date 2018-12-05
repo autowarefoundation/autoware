@@ -42,11 +42,5 @@ grid_map::Matrix Waypoints2Costmap::makeCostmapFromWaypoints(const grid_map::Gri
                                                               const std::string& gridmap_layer_name,
                                                               const autoware_msgs::LaneArray::ConstPtr& in_waypoints)
 {
-  // grid_map::GridMap objects_costmap = costmap;
-  // for (const auto& object: in_objects->objects)
-  // {
-  //   // grid_map::Polygon polygon = makePolygonFromObject(object);
-  //   // calculateCostForPolygon(polygon, gridmap_layer_name, objects_costmap);
-  // }
   return costmap[gridmap_layer_name];
 }

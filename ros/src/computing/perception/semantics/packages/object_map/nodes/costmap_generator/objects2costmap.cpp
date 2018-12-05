@@ -69,7 +69,6 @@ Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::Detect
 
 grid_map::Polygon Objects2Costmap::makePolygonFromObject(const autoware_msgs::DetectedObject& in_object)
 {
-  //forward_right, forward_left, backward_right, backward_left
   grid_map::Position forward_right;
   grid_map::Polygon polygon;
   polygon.setFrameId(in_object.header.frame_id);
@@ -81,27 +80,30 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObject(const autoware_msgs::De
   return polygon;
 }
 
-void Objects2Costmap::setCostForPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
-                       grid_map::GridMap& objects_costmap)
+void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
+                                        const float score, grid_map::GridMap& objects_costmap)
 {
   for (grid_map::PolygonIterator iterator(objects_costmap, polygon);
     !iterator.isPastEnd(); ++iterator)
   {
-    // change cost depending on object.score?
-    objects_costmap.at(gridmap_layer_name, *iterator) = 2.0;
+    const float current_score = objects_costmap.at(gridmap_layer_name, *iterator);
+    if(score > current_score)
+    {
+      objects_costmap.at(gridmap_layer_name, *iterator) = score;
+    }
   }
 }
 
 grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
-                                                            const std::string& gridmap_layer_name,
-                                                            const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
+                                                         const std::string& gridmap_layer_name,
+                                                         const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
   grid_map::GridMap objects_costmap = costmap;
   objects_costmap[gridmap_layer_name].setConstant(0.0);
   for (const auto& object: in_objects->objects)
   {
     grid_map::Polygon polygon = makePolygonFromObject(object);
-    setCostForPolygon(polygon, gridmap_layer_name, objects_costmap);
+    setCostInPolygon(polygon, gridmap_layer_name, object.score, objects_costmap);
   }
   return objects_costmap[gridmap_layer_name];
 }

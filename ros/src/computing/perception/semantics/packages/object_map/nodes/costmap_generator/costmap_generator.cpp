@@ -36,8 +36,6 @@
 // Constructor
 CostmapGenerator::CostmapGenerator() :
   private_nh_("~"),
-  has_subscribed_objects_(false),
-  has_subscribed_sensor_points_(false),
   has_subscribed_wayarea_(false),
   OBJECTS_COSTMAP_LAYER_("objects"),
   SENSOR_POINTS_COSTMAP_LAYER_("sensor_points"),
@@ -45,7 +43,6 @@ CostmapGenerator::CostmapGenerator() :
   WAYPOINTS_COSTMAP_LAYER_("waypoints"),
   COMBINED_COSTMAP_LAYER_("costmap")
 {
-  // const std::string SENSOR_POINTS_COSTMAP_LAYER_ = "sensor_points_cost";
 }
 
 CostmapGenerator::~CostmapGenerator() {}
@@ -56,7 +53,7 @@ void CostmapGenerator::init()
   private_nh_.param<std::string>("velodyne_frame", velodyne_frame_, "velodyne");
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
   private_nh_.param<double>("grid_min_value", grid_min_value_, 0.0);
-  private_nh_.param<double>("grid_max_value", grid_max_value_, 3.0);
+  private_nh_.param<double>("grid_max_value", grid_max_value_, 1.0);
   private_nh_.param<double>("grid_resolution", grid_resolution_, 0.2);
   private_nh_.param<double>("grid_length_x", grid_length_x_, 30);
   private_nh_.param<double>("grid_length_y", grid_length_y_, 50);
@@ -66,9 +63,7 @@ void CostmapGenerator::init()
   private_nh_.param<bool>("use_objects", use_objects_, true);
   private_nh_.param<bool>("use_sensor_points_", use_sensor_points_, true);
   private_nh_.param<bool>("use_wayarea_", use_wayarea_, true);
-  private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
-
-
+  // private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
 
   initGridmap();
 }
@@ -79,13 +74,11 @@ void CostmapGenerator::run()
   pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
   pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
   pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
-  // pub_combined_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/combined_cost_cloud", 1);
   pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
 
   if(use_objects_)
   {
-    // sub_objects_ = nh_.subscribe("/detection/lidar_objects", 1, &CostmapGenerator::objectsCallback, this);
-    sub_objects_ = nh_.subscribe("/detection/lidar_tracker/objects", 1, &CostmapGenerator::objectsCallback, this);
+    sub_objects_ = nh_.subscribe("/prediction/motion_predictor/objects", 1, &CostmapGenerator::objectsCallback, this);
   }
 
   if(use_sensor_points_)
@@ -93,34 +86,14 @@ void CostmapGenerator::run()
     sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
   }
 
-  if(use_waypoints_)
-  {
-    sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointsCallback, this);
-  }
-
-
-  // else
+  // if(use_waypoints_)
   // {
-  //   registerSyncedSubscriber();
+  //   sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointsCallback, this);
   // }
 }
 
-// void CostmapGenerator::syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points,
-//                                 const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
-// {
-//   // if(checkSubscripton())
-//   // generateSensorPointsCostmap()
-//   // generateObjectsCostmap()
-//   // generateVectormapCostmap()
-//   // generateWaypointCostmap()
-//   // generateCombinedCostmap()
-//   // pub(costmap)
-// }
-
 void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
-  std::cout << "euclidean cluster callback" << std::endl;
-  has_subscribed_objects_ = true;
   costmap_[OBJECTS_COSTMAP_LAYER_] = generateObjectsCostmap(in_objects);
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
@@ -130,8 +103,6 @@ void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray:
 
 void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
-  std::cout << "velodyne callback" << std::endl;
-  // has_subscribed_sensor_points_ = true;
   costmap_[SENSOR_POINTS_COSTMAP_LAYER_] = generateSensorPointsCostmap(in_sensor_points_msg);
   costmap_[VECTORMAP_COSTMAP_LAYER_] = generateVectormapCostmap();
   costmap_[COMBINED_COSTMAP_LAYER_] = generateCombinedCostmap();
@@ -139,13 +110,12 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   publishRosMsg(costmap_);
 }
 
-void CostmapGenerator::waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoint)
-{
+// void CostmapGenerator::waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoint)
+// {
   // costmap_ = generateWaypointsCostmap();
   // costmap_ = generateCombinedCostmap();
   // publishRosMsg(costmap_);
-
-}
+// }
 
 void CostmapGenerator::initGridmap()
 {
@@ -154,21 +124,19 @@ void CostmapGenerator::initGridmap()
                   grid_resolution_,
                   grid_map::Position(grid_position_x_, grid_position_y_));
 
-  costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, 0);
-  costmap_.add(OBJECTS_COSTMAP_LAYER_, 0);
-  costmap_.add(VECTORMAP_COSTMAP_LAYER_, 0);
-  costmap_.add("waypoint_cost", 0);
-  costmap_.add("objects_cost", 0);
-  costmap_.add(COMBINED_COSTMAP_LAYER_, 0);
+  costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, grid_min_value_);
+  costmap_.add(OBJECTS_COSTMAP_LAYER_, grid_min_value_);
+  costmap_.add(VECTORMAP_COSTMAP_LAYER_, grid_min_value_);
+  // costmap_.add("waypoint_cost", 0);
+  costmap_.add(COMBINED_COSTMAP_LAYER_, grid_min_value_);
 }
 
 grid_map::Matrix CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
   // TODO: rename makeCostmapFromSensorPoints
-  // costmap_[SENSOR_POINTS_COSTMAP_LAYER_].setConstant(0.0);
   grid_map::Matrix sensor_points_costmap =
-                        points2costmap_.makeSensorPointsCostmap(maximum_sensor_points_height_thres_, costmap_,
+                        points2costmap_.makeCostmapFromSensorPoints(maximum_sensor_points_height_thres_, costmap_,
                                                                 SENSOR_POINTS_COSTMAP_LAYER_, in_sensor_points_msg);
   return sensor_points_costmap;
 }
@@ -181,12 +149,12 @@ grid_map::Matrix CostmapGenerator::generateObjectsCostmap(const autoware_msgs::D
   return objects_costmap;
 }
 
-grid_map::Matrix CostmapGenerator::generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints)
-{
-  grid_map::Matrix waypoints_costmap =
-                        waypoints2costmap_.makeCostmapFromWaypoints(costmap_, WAYPOINTS_COSTMAP_LAYER_, in_waypoints);
-  return waypoints_costmap;
-}
+// grid_map::Matrix CostmapGenerator::generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints)
+// {
+//   grid_map::Matrix waypoints_costmap =
+//                         waypoints2costmap_.makeCostmapFromWaypoints(costmap_, WAYPOINTS_COSTMAP_LAYER_, in_waypoints);
+//   return waypoints_costmap;
+// }
 
 
 // only this funstion depends on object_map_utils
@@ -199,7 +167,6 @@ grid_map::Matrix CostmapGenerator::generateVectormapCostmap()
     {
       object_map::LoadRoadAreasFromVectorMap(private_nh_, area_points_);
     }
-    // std::cout << area_points.empty() << std::endl;
     if(!area_points_.empty())
     {
       has_subscribed_wayarea_ = true;
@@ -214,11 +181,9 @@ grid_map::Matrix CostmapGenerator::generateVectormapCostmap()
 
 grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
 {
-  // assuming combined_costmap is calculated by element wise max
+  // assuming combined_costmap is calculated by element wise max operation
   grid_map::GridMap combined_costmap = costmap_;
-  combined_costmap[COMBINED_COSTMAP_LAYER_].setConstant(0.0);
-  // if(callback_ind == 1)
-  // {
+  combined_costmap[COMBINED_COSTMAP_LAYER_].setConstant(grid_min_value_);
   combined_costmap[COMBINED_COSTMAP_LAYER_] = combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(
                                               combined_costmap[SENSOR_POINTS_COSTMAP_LAYER_]);
   combined_costmap[COMBINED_COSTMAP_LAYER_] = combined_costmap[COMBINED_COSTMAP_LAYER_].cwiseMax(
@@ -230,30 +195,33 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
 
 void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
 {
-  //TODO: use nav_msgs::OccupancyGrid for debug
-  sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
-  grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
-  pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
+  if(use_sensor_points_)
+  {
+    sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
+    grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
+    pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
+  }
 
-  sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
-  grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
-  pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
+  if(use_objects_)
+  {
+    sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
+    grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
+    pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
+  }
 
-  sensor_msgs::PointCloud2 out_vectormap_cost_cloud_msg;
-  grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
-  pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
-
-  // sensor_msgs::PointCloud2 out_combined_cost_cloud_msg;
-  // grid_map::GridMapRosConverter::toPointCloud(costmap, COMBINED_COSTMAP_LAYER_, out_combined_cost_cloud_msg);
-  // pub_combined_cost_cloud_.publish(out_combined_cost_cloud_msg);
+  if(use_wayarea_)
+  {
+    sensor_msgs::PointCloud2 out_vectormap_cost_cloud_msg;
+    grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
+    pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
+  }
 
   nav_msgs::OccupancyGrid out_occupancy_grid;
-  grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, 0.0, 1.0,
+  grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
                                           out_occupancy_grid);
   pub_occupancy_grid_.publish(out_occupancy_grid);
 
-  //
-  // grid_map_msgs::GridMap out_gridmap_msg;
-  // grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
-  // pub_costmap_.publish(out_gridmap_msg);
+  grid_map_msgs::GridMap out_gridmap_msg;
+  grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);
+  pub_costmap_.publish(out_gridmap_msg);
 }

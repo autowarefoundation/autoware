@@ -61,16 +61,12 @@ class CostmapGenerator
   private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
-    // bool use_vectormap_;
     bool use_objects_;
     bool use_sensor_points_;
     bool use_wayarea_;
-    bool use_waypoints_;
-    bool has_subscribed_objects_;
-    bool has_subscribed_sensor_points_;
+    // bool use_waypoints_;
+
     bool has_subscribed_wayarea_;
-    // bool has_subscribed_vectormap_;
-    // bool has_subscribed_waypoint_;
 
     std::string velodyne_frame_;
     std::string map_frame_;
@@ -93,18 +89,12 @@ class CostmapGenerator
     ros::Publisher pub_sensor_points_cost_cloud_;
     ros::Publisher pub_objects_cost_cloud_;
     ros::Publisher pub_vectormap_cost_cloud_;
-    // ros::Publisher pub_combined_cost_cloud_;
     ros::Publisher pub_occupancy_grid_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
     ros::Subscriber sub_objects_;
 
     tf::TransformListener   tf_listener_;
-
-    // std::unique_ptr<message_filters::Subscriber<sensor_msgs::PointCloud2>> sub_sync_points_ptr_;
-    // std::unique_ptr<message_filters::Subscriber<autoware_msgs::DetectedObjectArray>> sub_sync_objects_ptr_;
-    // std::unique_ptr<message_filters::TimeSynchronizer<sensor_msgs::PointCloud2,
-    //                                                   autoware_msgs::DetectedObjectArray>> sync_ptr_;
 
     std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
@@ -119,17 +109,14 @@ class CostmapGenerator
     const std::string COMBINED_COSTMAP_LAYER_;
 
     void objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_ojects);
-    void waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
+    // void waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
     void sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
-    // void syncedCallback(const sensor_msgs::PointCloud2::ConstPtr& in_points,
-    //               const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
     void registerVectormapSubscriber();
-    // void registerSyncedSubscriber();
     void initGridmap();
     void publishRosMsg(const grid_map::GridMap& gridmap);
     grid_map::Matrix generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
     grid_map::Matrix generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
-    grid_map::Matrix generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
+    // grid_map::Matrix generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
     grid_map::Matrix generateVectormapCostmap();
     grid_map::Matrix generateCombinedCostmap();
 
