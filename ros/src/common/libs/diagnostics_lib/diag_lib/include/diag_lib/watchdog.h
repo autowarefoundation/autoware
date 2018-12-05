@@ -36,7 +36,7 @@ private:
     std::string config_filepath_;
     double publish_rate_;
     // diagnostic manager
-    diag_manager diag_;
+    DiagManager diag_;
     std::map<std::string,boost::shared_ptr<std::vector<DiagInfo> > > watchdog_diag_info_;
     std::vector<std::string> diag_target_nodes_;
     std::vector<std::string> watchdog_target_nodes_;
