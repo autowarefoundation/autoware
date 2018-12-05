@@ -297,10 +297,10 @@ void readStatus()
     vehicle_status_.speed = status_.speed.actual;  // [kmph]
 
     // drivepedal
-    vehicle_status_.drivepedal = status_.override.accel * 1000.0;  // TODO: scaling
+    vehicle_status_.drivepedal = status_.override.accel;  // TODO: scaling
 
     // brakepedal
-    vehicle_status_.brakepedal = status_.override.brake * 1000.0;  // TODO: scaling
+    vehicle_status_.brakepedal = status_.override.brake;  // TODO: scaling
 
     // angle
     vehicle_status_.angle = -status_.steer.actual;  // [deg]
