@@ -44,10 +44,11 @@ Objects2Costmap::Objects2Costmap():
 
 Objects2Costmap::~Objects2Costmap() {}
 
-Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object)
+Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
+                                                     const double expand_rectangle_size)
 {
-  double length = in_object.dimensions.x;
-  double width = in_object.dimensions.y;
+  double length = in_object.dimensions.x + expand_rectangle_size;
+  double width = in_object.dimensions.y  + expand_rectangle_size;
   Eigen::MatrixXd origin_points(NUMBER_OF_DIMENSIONS, NUMBER_OF_POINTS);
   origin_points << length/2, length/2, -length/2, -length/2,
                    width/2,  -width/2,  -width/2, width/2;
@@ -67,12 +68,13 @@ Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::Detect
   return transformed_points;
 }
 
-grid_map::Polygon Objects2Costmap::makePolygonFromObject(const autoware_msgs::DetectedObject& in_object)
+grid_map::Polygon Objects2Costmap::makePolygonFromObject(const autoware_msgs::DetectedObject& in_object,
+                                                         const double expand_rectangle_size)
 {
   grid_map::Position forward_right;
   grid_map::Polygon polygon;
   polygon.setFrameId(in_object.header.frame_id);
-  Eigen::MatrixXd rectangle_points = makeRectanglePoints(in_object);
+  Eigen::MatrixXd rectangle_points = makeRectanglePoints(in_object, expand_rectangle_size);
   for(int col = 0; col < rectangle_points.cols(); col++)
   {
     polygon.addVertex(grid_map::Position(rectangle_points(0, col), rectangle_points(1, col)));
@@ -96,14 +98,22 @@ void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon,const st
 
 grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                                          const std::string& gridmap_layer_name,
+                                                         const double expand_rectangle_size,
+                                                         const double size_of_expansion_kernel,
                                                          const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
   grid_map::GridMap objects_costmap = costmap;
   objects_costmap[gridmap_layer_name].setConstant(0.0);
   for (const auto& object: in_objects->objects)
   {
-    grid_map::Polygon polygon = makePolygonFromObject(object);
+    grid_map::Polygon polygon = makePolygonFromObject(object, expand_rectangle_size);
     setCostInPolygon(polygon, gridmap_layer_name, object.score, objects_costmap);
+  }
+  const grid_map::SlidingWindowIterator::EdgeHandling edge_handling = grid_map::SlidingWindowIterator::EdgeHandling::CROP;
+  for (grid_map::SlidingWindowIterator iterator(objects_costmap, gridmap_layer_name, edge_handling, size_of_expansion_kernel);
+      !iterator.isPastEnd(); ++iterator)
+  {
+    objects_costmap.at(gridmap_layer_name, *iterator) = iterator.getData().meanOfFinites(); // Blurring.
   }
   return objects_costmap[gridmap_layer_name];
 }

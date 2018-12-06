@@ -589,6 +589,8 @@ subs :
       cmd  : roslaunch object_map costmap_generator.launch
       param: costmap_generator_param
       gui  :
+        dialog_width  : 400
+        dialog_height : 400
         sync :
           func : self.button_synchronization.GetValue()
 
@@ -5599,6 +5601,24 @@ params :
       min     : -10.0
       max     : 2.0
       v       : -2.2
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : expand_rectangle_size
+      desc  : Expand oberct's rectangle
+      label : expand_rectangle_size
+      min     : 0.0
+      max     : 10.0
+      v       : 1.5
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name  : size_of_expansion_kernel
+      desc  : Size of expansion window(kernel)
+      label : size_of_expansion_kernel
+      min     : 0
+      max     : 30
+      v       : 9
       cmd_param :
         dash      : ''
         delim     : ':='

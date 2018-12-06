@@ -81,6 +81,9 @@ class CostmapGenerator
     double maximum_lidar_height_thres_;
     double minimum_lidar_height_thres_;
 
+    double expand_rectangle_size_;
+    int size_of_expansion_kernel_;
+
     vector_map::VectorMap vmap_;
 
     grid_map::GridMap costmap_;

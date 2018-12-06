@@ -64,6 +64,8 @@ void CostmapGenerator::init()
   private_nh_.param<bool>("use_objects", use_objects_, true);
   private_nh_.param<bool>("use_points", use_points_, true);
   private_nh_.param<bool>("use_wayarea", use_wayarea_, true);
+  private_nh_.param<double>("expand_rectangle_size", expand_rectangle_size_, 1.5);
+  private_nh_.param<int>("size_of_expansion_kernel", size_of_expansion_kernel_, 9);
   // private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
 
   initGridmap();
@@ -147,7 +149,11 @@ grid_map::Matrix CostmapGenerator::generateObjectsCostmap(const autoware_msgs::D
 {
   // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
   grid_map::Matrix objects_costmap =
-                        objects2costmap_.makeCostmapFromObjects(costmap_, OBJECTS_COSTMAP_LAYER_, in_objects);
+                        objects2costmap_.makeCostmapFromObjects(costmap_,
+                                                                OBJECTS_COSTMAP_LAYER_,
+                                                                expand_rectangle_size_,
+                                                                size_of_expansion_kernel_,
+                                                                in_objects);
   return objects_costmap;
 }
 
