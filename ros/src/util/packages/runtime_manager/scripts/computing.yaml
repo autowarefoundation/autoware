@@ -5487,9 +5487,9 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name  : objects_topic
+    - name  : objects_input
       desc  : autoware_msgs::DetectedObjectArray
-      label : objects_topic
+      label : objects_input
       kind  : topic
       topic_type : autoware_msgs/DetectedObjectArray
       v     : /prediction/motion_predictor/objects
