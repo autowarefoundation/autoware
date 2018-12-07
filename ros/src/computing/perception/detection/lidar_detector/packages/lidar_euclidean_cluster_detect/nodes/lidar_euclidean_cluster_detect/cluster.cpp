@@ -62,7 +62,7 @@ Eigen::Vector3f Cluster::GetEigenValues()
   return eigen_values_;
 }
 
-void Cluster::ToRosMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message)
+void Cluster::ToROSMessage(std_msgs::Header in_ros_header, autoware_msgs::CloudCluster& out_cluster_message)
 {
   sensor_msgs::PointCloud2 cloud_msg;
 
@@ -264,7 +264,7 @@ void Cluster::SetCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr in_origin_cloud
   current_cluster->is_dense = true;
 
   // Get EigenValues, eigenvectors
-  if (current_cluster->points.size() > 0)
+  if (current_cluster->points.size() > 3)
   {
     pcl::PCA<pcl::PointXYZ> current_cluster_pca;
     pcl::PointCloud<pcl::PointXYZ>::Ptr current_cluster_mono(new pcl::PointCloud<pcl::PointXYZ>);

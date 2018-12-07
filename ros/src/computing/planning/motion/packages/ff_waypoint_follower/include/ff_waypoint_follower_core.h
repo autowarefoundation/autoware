@@ -165,7 +165,7 @@ protected:
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
-	void callbackGetCurrentTrajectory(const autoware_msgs::laneConstPtr& msg);
+	void callbackGetCurrentTrajectory(const autoware_msgs::LaneConstPtr& msg);
 	//void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);

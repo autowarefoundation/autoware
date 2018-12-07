@@ -5,7 +5,7 @@
 
 2. Clone the SSD Caffe fork in your home directory (CMake files will be looking for it there).
 ```
-% git clone -b caffe https://github.com/weiliu89/caffe.git ssdcaffe
+% git clone -b ssd https://github.com/weiliu89/caffe.git ssdcaffe
 % cd ssdcaffe
 % git checkout 4817bf8b4200b35ada8ed0dc378dceaf38c539e4
 ```

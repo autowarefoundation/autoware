@@ -44,7 +44,7 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/extract_indices.h>
 #include <velodyne_pointcloud/point_types.h>
-#include "autoware_msgs/ConfigRayGroundFilter.h"
+#include "autoware_config_msgs/ConfigRayGroundFilter.h"
 
 #include <opencv2/core/version.hpp>
 #if (CV_MAJOR_VERSION == 3)
@@ -99,7 +99,7 @@ private:
 	};
 	typedef std::vector<PointXYZIRTColor> PointCloudXYZIRTColor;
 
-	void update_config_params(const autoware_msgs::ConfigRayGroundFilter::ConstPtr& param);
+	void update_config_params(const autoware_config_msgs::ConfigRayGroundFilter::ConstPtr& param);
 
 	void publish_cloud(const ros::Publisher& in_publisher,
 	                         const pcl::PointCloud<pcl::PointXYZI>::Ptr in_cloud_to_publish_ptr,

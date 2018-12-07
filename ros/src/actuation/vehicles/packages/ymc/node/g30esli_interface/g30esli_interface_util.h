@@ -43,14 +43,13 @@
 
 namespace ymc
 {
-
 void reverse_byteorder_memcpy(unsigned char* target, int16_t* source, size_t size)
 {
-    for (unsigned int i = 0; i < size; i++)
-    {
-      unsigned char *address = (unsigned char*)source + (i * sizeof(unsigned char));
-      std::memcpy(&target[size - i - 1], address, sizeof(unsigned char));
-    }
+  for (unsigned int i = 0; i < size; i++)
+  {
+    unsigned char* address = (unsigned char*)source + (i * sizeof(unsigned char));
+    std::memcpy(&target[size - i - 1], address, sizeof(unsigned char));
+  }
 }
 
 // split string with whitespace
@@ -66,7 +65,8 @@ std::vector<std::string> splitString(const std::string& s)
   }
 
   // remove empty elements
-  result.erase(std::remove_if(result.begin(), result.end(), [](const std::string& s) { return s.empty(); }), result.end());
+  result.erase(std::remove_if(result.begin(), result.end(), [](const std::string& s) { return s.empty(); }),
+               result.end());
 
   return result;
 }
@@ -74,29 +74,29 @@ std::vector<std::string> splitString(const std::string& s)
 // detect hit of keyboard
 int kbhit()
 {
-    struct termios oldt, newt;
-    int ch;
-    int oldf;
+  struct termios oldt, newt;
+  int ch;
+  int oldf;
 
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
 
-    ch = getchar();
+  ch = getchar();
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    fcntl(STDIN_FILENO, F_SETFL, oldf);
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  fcntl(STDIN_FILENO, F_SETFL, oldf);
 
-    if (ch != EOF)
-    {
-        ungetc(ch, stdin);
-        return 1;
-    }
+  if (ch != EOF)
+  {
+    ungetc(ch, stdin);
+    return 1;
+  }
 
-    return 0;
+  return 0;
 }
 
 double computeTargetSteeringAngleDegree(double angular_z, double velocity_mps, double wheel_base)
@@ -106,21 +106,21 @@ double computeTargetSteeringAngleDegree(double angular_z, double velocity_mps, d
 
   if (velocity_mps == 0)
   {
-    //steering_angle_rad = 0;
+    // steering_angle_rad = 0;
     steering_angle_rad = prev_steering_angle_rad;
   }
   else
   {
-    steering_angle_rad = std::asin(wheel_base * angular_z / velocity_mps); // radian
+    steering_angle_rad = std::asin(wheel_base * angular_z / velocity_mps);  // radian
   }
 
   prev_steering_angle_rad = steering_angle_rad;
-  
+
   double steering_angle_degree = steering_angle_rad / M_PI * 180.0;
 
   return steering_angle_degree;
 }
 
-} // namespace ymc
+}  // namespace ymc
 
 #endif

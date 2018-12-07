@@ -9,6 +9,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         std_msgs
+        autoware_config_msgs
         autoware_msgs
         libdpm_ttic
         )
@@ -21,6 +22,7 @@ catkin_package(
         roscpp
         sensor_msgs
         std_msgs
+        autoware_config_msgs
         autoware_msgs
         libdpm_ttic
 )

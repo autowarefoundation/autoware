@@ -1,0 +1,44 @@
+image_width: 1920
+image_height: 1208
+camera_name: gmsl_camera_1_1
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [966.47, 0.000000, 967.96, 0.000000, 966.37, 646.94, 0.000000, 0.000000, 1.000000]
+  #[fx   0   cx    0     fy    cy   0   0   1]
+distortion_model: fish_eye
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data: [-0.051947, 0.016734, -0.011098, 0.002537]
+  #[k1,  k2,  k3, k4]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [1002.17, 0.000000, 960.0, 0.000000, 0.000000, 1002.06, 604.0, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+  #[fx  0   cx   Tx=0  0   fy   cy    Ty=0  0  0  1  0]
+
+
+
+#camera_info_msg = CameraInfo()
+#camera_info_msg.width = calib_data["image_width"]
+#camera_info_msg.height = calib_data["image_height"]
+#camera_info_msg.K = calib_data["camera_matrix"]["data"]
+#camera_info_msg.D = calib_data["distortion_coefficients"]["data"]
+#camera_info_msg.R = calib_data["rectification_matrix"]["data"]
+#camera_info_msg.P = calib_data["projection_matrix"]["data"]
+#camera_info_msg.distortion_model = calib_data["distortion_model"]
+
+
+
+
+
+
+
+
+
+

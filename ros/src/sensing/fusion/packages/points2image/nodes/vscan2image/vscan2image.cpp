@@ -32,7 +32,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
 #include "autoware_msgs/PointsImage.h"
-#include "autoware_msgs/projection_matrix.h"
+#include "autoware_msgs/ProjectionMatrix.h"
 //#include "autoware_msgs/CameraExtrinsic.h"
 
 #include <include/points_image/points_image.hpp>
@@ -48,7 +48,7 @@ static cv::Mat distCoeff;
 static cv::Size imageSize;
 static ros::Publisher pub;
 
-static void projection_callback(const autoware_msgs::projection_matrix& msg)
+static void projection_callback(const autoware_msgs::ProjectionMatrix& msg)
 {
   cameraExtrinsicMat = cv::Mat(4, 4, CV_64F);
   for (int row = 0; row < 4; row++)

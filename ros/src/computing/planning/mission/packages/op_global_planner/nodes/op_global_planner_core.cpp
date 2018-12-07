@@ -29,7 +29,7 @@
  */
 
 #include "op_global_planner_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 namespace GlobalPlanningNS
 {
@@ -61,7 +61,7 @@ GlobalPlanner::GlobalPlanner()
 		m_params.mapSource = PlannerHNS::MAP_KML_FILE;
 
 	tf::StampedTransform transform;
-	PlannerHNS::RosHelpers::GetTransformFromTF("map", "world", transform);
+	PlannerHNS::ROSHelpers::GetTransformFromTF("map", "world", transform);
 	m_OriginPos.position.x  = transform.getOrigin().x();
 	m_OriginPos.position.y  = transform.getOrigin().y();
 	m_OriginPos.position.z  = transform.getOrigin().z();
@@ -90,7 +90,7 @@ GlobalPlanner::GlobalPlanner()
 	else if(bVelSource == 1)
 		sub_current_velocity = nh.subscribe("/current_velocity", 10, &GlobalPlanner::callbackGetVehicleStatus, this);
 	else if(bVelSource == 2)
-		sub_can_info = nh.subscribe("/can_info", 10, &GlobalPlanner::callbackGetCanInfo, this);
+		sub_can_info = nh.subscribe("/can_info", 10, &GlobalPlanner::callbackGetCANInfo, this);
 
 	if(m_params.bEnableDynamicMapUpdate)
 	  sub_road_status_occupancy = nh.subscribe<>("/occupancy_road_status", 1, &GlobalPlanner::callbackGetRoadStatusOccupancyGrid, this);
@@ -151,9 +151,9 @@ void GlobalPlanner::callbackGetRoadStatusOccupancyGrid(const nav_msgs::Occupancy
 	m_ModifiedMapItemsTimes.push_back(std::make_pair(modified_nodes, t));
 
 	visualization_msgs::MarkerArray map_marker_array;
-	PlannerHNS::RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+	PlannerHNS::ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 
-//	visualization_msgs::Marker mkr = PlannerHNS::RosHelpers::CreateGenMarker(center.pos.x, center.pos.y, center.pos.z, 0, 0,0,1,0.5, 1000, "TestCenter", visualization_msgs::Marker::SPHERE);
+//	visualization_msgs::Marker mkr = PlannerHNS::ROSHelpers::CreateGenMarker(center.pos.x, center.pos.y, center.pos.z, 0, 0,0,1,0.5, 1000, "TestCenter", visualization_msgs::Marker::SPHERE);
 //
 //	map_marker_array.markers.push_back(mkr);
 
@@ -218,7 +218,7 @@ void GlobalPlanner::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
-void GlobalPlanner::callbackGetCanInfo(const autoware_msgs::CanInfoConstPtr &msg)
+void GlobalPlanner::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
 {
 	m_VehicleState.speed = msg->speed/3.6;
 	m_CurrentPose.v = m_VehicleState.speed;
@@ -281,8 +281,8 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
-		autoware_msgs::lane lane;
-		PlannerHNS::RosHelpers::ConvertFromLocalLaneToAutowareLane(generatedTotalPaths.at(i), lane);
+		autoware_msgs::Lane lane;
+		PlannerHNS::ROSHelpers::ConvertFromLocalLaneToAutowareLane(generatedTotalPaths.at(i), lane);
 		lane_array.lanes.push_back(lane);
 	}
 
@@ -291,9 +291,9 @@ void GlobalPlanner::VisualizeAndSend(const std::vector<std::vector<PlannerHNS::W
 	total_color.g = 0.7;
 	total_color.b = 1.0;
 	total_color.a = 0.9;
-	PlannerHNS::RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
-	PlannerHNS::RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
-	PlannerHNS::RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+	PlannerHNS::ROSHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
+	PlannerHNS::ROSHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+	PlannerHNS::ROSHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	if((m_bFirstStart && m_params.bEnableHMI) || !m_params.bEnableHMI)
 		pub_Paths.publish(lane_array);
@@ -426,7 +426,7 @@ void GlobalPlanner::MainLoop()
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
-			PlannerHNS::RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			PlannerHNS::ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 			pub_MapRviz.publish(map_marker_array);
 		}
 		else if (m_params.mapSource == PlannerHNS::MAP_FOLDER && !m_bKmlMap)
@@ -434,7 +434,7 @@ void GlobalPlanner::MainLoop()
 			m_bKmlMap = true;
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_params.KmlMapPath, m_Map, true);
 			visualization_msgs::MarkerArray map_marker_array;
-			PlannerHNS::RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			PlannerHNS::ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 
 			pub_MapRviz.publish(map_marker_array);
 		}
@@ -446,7 +446,7 @@ void GlobalPlanner::MainLoop()
 			{
 				std::cout << "Map Version 2" << endl;
 				m_bKmlMap = true;
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -457,7 +457,7 @@ void GlobalPlanner::MainLoop()
 			{
 				std::cout << "Map Version 1" << endl;
 				m_bKmlMap = true;
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -467,7 +467,7 @@ void GlobalPlanner::MainLoop()
 			if(m_bKmlMap)
 			{
 				visualization_msgs::MarkerArray map_marker_array;
-				PlannerHNS::RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+				PlannerHNS::ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 				pub_MapRviz.publish(map_marker_array);
 			}
 		}

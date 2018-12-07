@@ -42,7 +42,7 @@
 #include <iostream>
 #include <math.h>
 #include <float.h>
-#include "autoware_msgs/image_obj_ranged.h"
+#include "autoware_msgs/ImageObjRanged.h"
 #include "autoware_msgs/ScanImage.h"
 
 #define IMAGE_WIDTH 800
@@ -58,8 +58,8 @@ bool exist_image = false;
 bool exist_scan = false;
 cv::Mat colormap;
 
-autoware_msgs::image_obj_ranged car_fused_objects;
-autoware_msgs::image_obj_ranged pedestrian_fused_objects;
+autoware_msgs::ImageObjRanged car_fused_objects;
+autoware_msgs::ImageObjRanged pedestrian_fused_objects;
 static const int OBJ_RECT_THICKNESS = 3;
 
 /* check whether floating value x is nearly 0 or not */
@@ -71,7 +71,7 @@ static inline bool isNearlyNODATA(float x)
 }
 
 static void putDistance(IplImage *Image,
-                        std::vector<autoware_msgs::image_rect_ranged> objects,
+                        std::vector<autoware_msgs::ImageRectRanged> objects,
                         int threshold_height,
                         const char* objectLabel)
 {
@@ -147,7 +147,7 @@ static void putDistance(IplImage *Image,
 }
 
 static void drawRects(IplImage *Image,
-                      std::vector<autoware_msgs::image_rect_ranged> objects,
+                      std::vector<autoware_msgs::ImageRectRanged> objects,
                       CvScalar color,
                       int threshold_height)
 {
@@ -236,13 +236,13 @@ static void scan_image_callback(const autoware_msgs::ScanImage& scan_image_msg)
     show();
 }
 
-static void car_fusion_callback(const autoware_msgs::image_obj_ranged& fused_car_msg)
+static void car_fusion_callback(const autoware_msgs::ImageObjRanged& fused_car_msg)
 {
   car_fused_objects = fused_car_msg;
 //  show();
 }
 
-static void ped_fusion_callback(const autoware_msgs::image_obj_ranged& fused_pds_msg)
+static void ped_fusion_callback(const autoware_msgs::ImageObjRanged& fused_pds_msg)
 {
   pedestrian_fused_objects = fused_pds_msg;
 //  show();

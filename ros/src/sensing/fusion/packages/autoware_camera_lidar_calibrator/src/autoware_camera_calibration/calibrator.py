@@ -77,7 +77,6 @@ import random
 import sensor_msgs.msg
 import tarfile
 import time
-import yaml
 import datetime
 import StringIO as strio
 from os import path
@@ -893,36 +892,27 @@ class MonoCalibrator(Calibrator):
         for (name, im) in ims:
             taradd(name, cv2.imencode(".png", im)[1].tostring())
         if self.output == 'yaml':
-            self.do_autoware_yaml()
+            self.do_autoware_cv_yaml()
         else:
             taradd('ost.yaml', self.yaml())
             taradd('ost.txt', self.ost())
 
-    def opencv_matrix_constructor(self, loader, node):
-        mapping = loader.construct_mapping(node, deep=True)
-        mat = numpy.array(mapping["data"])
-        mat.resize(mapping["rows"], mapping["cols"])
-        return mat
-
-    def opencv_matrix_representer(self, dumper, mat):
-        mapping = {'rows': mat.shape[0], 'cols': mat.shape[1], 'dt': 'd', 'data': mat.reshape(-1).tolist()}
-        return dumper.represent_mapping(u"tag:yaml.org,2002:opencv-matrix", mapping)
-
-    def do_autoware_yaml(self):
-        yaml.add_constructor(u"tag:yaml.org,2002:opencv-matrix", self.opencv_matrix_constructor)
-        yaml.add_representer(numpy.ndarray, self.opencv_matrix_representer)
+    def do_autoware_cv_yaml(self):
+        # params to be written
         camera_name = self.name
         distortion = self.distortion
         intrinsics = self.intrinsics
-        reproj_error = 0.0
-        # self.R, self.P
+        reproj_error = 0.0      # until we have an alternative..
+
+        # write file
         now = datetime.datetime.now()
         fn = path.join(path.expanduser("~"), now.strftime("%Y%m%d_%H%M_") + camera_name + '.yaml')
-        with open(fn, 'w') as f:
-            f.write("%YAML:1.0\n")
-            yaml.dump({"CameraExtrinsicMat": numpy.eye(4),
-                       "CameraMat": intrinsics,
-                       "DistCoeff": distortion}, f)
+        f = cv2.FileStorage(fn, flags=1)
+        f.write(name="CameraExtrinsicMat", val=numpy.eye(4))
+        f.write(name="CameraMat", val=intrinsics)
+        f.write(name="DistCoeff", val=distortion)
+        f.release()
+        with open(fn, 'a') as f:
             f.write("ImageSize: [" + str(self.size[0]) + ", " + str(self.size[1]) + "]\n")
             f.write("Reprojection Error: " + str(reproj_error) + "\n")
             f.write("DistModel: plumb_bob")

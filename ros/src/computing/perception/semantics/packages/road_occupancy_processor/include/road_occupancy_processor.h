@@ -76,7 +76,7 @@
 
 #define __APP_NAME__ "road_occupancy_processor"
 
-class RosRoadOccupancyProcessorApp
+class ROSRoadOccupancyProcessorApp
 
 {
 	ros::NodeHandle                     node_handle_;
@@ -206,9 +206,9 @@ class RosRoadOccupancyProcessorApp
 
 	/*!
 	 * Obtains parameters from the command line, initializes subscribers and publishers.
-	 * @param in_private_handle Ros private handle to get parameters for this node.
+	 * @param in_private_handle ROS private handle to get parameters for this node.
 	 */
-	void InitializeRosIo(ros::NodeHandle& in_private_handle);
+	void InitializeROSIo(ros::NodeHandle& in_private_handle);
 
 	/*!
 	 * Searches for the transformation between in_source_frame and in_target_frame in the TF tree
@@ -238,7 +238,7 @@ class RosRoadOccupancyProcessorApp
 public:
 	void Run();
 
-	RosRoadOccupancyProcessorApp();
+	ROSRoadOccupancyProcessorApp();
 };
 
 #endif //PROJECT_ROAD_OCCUPANCY_PROCESSOR_H

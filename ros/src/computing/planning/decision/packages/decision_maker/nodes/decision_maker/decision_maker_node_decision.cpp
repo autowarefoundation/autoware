@@ -8,8 +8,8 @@
 #include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 
-#include <autoware_msgs/lane.h>
-#include <autoware_msgs/traffic_light.h>
+#include <autoware_msgs/Lane.h>
+#include <autoware_msgs/TrafficLight.h>
 
 #include <cross_road_area.hpp>
 #include <decision_maker_node.hpp>
@@ -44,7 +44,7 @@ double DecisionMakerNode::calcPosesAngleDiff(const geometry_msgs::Pose &p_from, 
   return diff;
 }
 
-double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::lane &laneinArea)
+double DecisionMakerNode::calcIntersectWayAngle(const autoware_msgs::Lane &laneinArea)
 {
   double diff = 0.0;
   if (laneinArea.waypoints.empty())

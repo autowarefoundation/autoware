@@ -213,14 +213,14 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_remote_control_qs)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_cloud_data_qs)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnAutoPilot, self.button_auto_pilot_qs)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_qs)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_qs)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_qs)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_qs)
 		self.Bind(wx.EVT_RADIOBOX, self.OnSetupLocalizer, self.radio_box_localizer)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_setup_tf)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_vehicle_model)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_vehicle_info)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_setup)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_setup)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_setup)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_setup)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_point_cloud)
@@ -229,7 +229,7 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_tf)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_pcd_filter)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_pcd_binarizer)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_map)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_map)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_map)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_map)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_calibration_toolkit)
@@ -237,11 +237,11 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_points_image)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_virtual_scan_image)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_scan_image)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_sensing)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_sensing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_sensing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_sensing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_synchronization)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_computing)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_computing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_computing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_computing)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_android_tablet_interface)
@@ -259,28 +259,28 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnGear, self.button_statchk_b)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnGear, self.button_statchk_n)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnGear, self.button_statchk_p)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_interface)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_interface)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_interface)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_interface)
 		self.Bind(wx.EVT_BUTTON, self.OnQuery, self.button_query)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_database)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_database)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_database)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_database)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagPlay, self.button_play_rosbag_play)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagPlay, self.button_stop_rosbag_play)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagPlay, self.button_pause_rosbag_play)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagPlay, self.button_play_rosbag_play)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagPlay, self.button_stop_rosbag_play)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagPlay, self.button_pause_rosbag_play)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_gazebo)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_simulation)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_simulation)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_simulation)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_simulation)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_system_monitor)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnFtrace, self.button_ftrace)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_status)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_status)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_status)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_status)
 		self.Bind(wx.EVT_CHECKBOX, self.OnEcho, self.checkbox_topics_echo)
 		self.Bind(wx.EVT_BUTTON, self.OnRefreshTopics, self.button_refresh_topics)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_topics)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_topics)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_topics)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_topics)
 		self.Bind(wx.EVT_BUTTON, self.OnState, self.button_mainstate_0)
@@ -306,7 +306,7 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_BUTTON, self.OnState, self.button_substate_behavior_null_1)
 		self.Bind(wx.EVT_BUTTON, self.OnState, self.button_substate_behavior_null_2)
 		self.Bind(wx.EVT_BUTTON, self.OnState, self.button_substate_behavior_null_3)
-		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnRosbagRecord, self.button_rosbag_states)
+		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnROSbagRecord, self.button_rosbag_states)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rviz_states)
 		self.Bind(wx.EVT_TOGGLEBUTTON, self.OnLaunchKill, self.button_rqt_states)
 		# end wxGlade
@@ -810,8 +810,8 @@ class MyFrame(wx.Frame):
 		print("Event handler 'OnAutoPilot' not implemented!")
 		event.Skip()
 
-	def OnRosbagRecord(self, event):  # wxGlade: MyFrame.<event_handler>
-		print("Event handler 'OnRosbagRecord' not implemented!")
+	def OnROSbagRecord(self, event):  # wxGlade: MyFrame.<event_handler>
+		print("Event handler 'OnROSbagRecord' not implemented!")
 		event.Skip()
 
 	def OnSetupLocalizer(self, event):  # wxGlade: MyFrame.<event_handler>
@@ -838,8 +838,8 @@ class MyFrame(wx.Frame):
 		print("Event handler 'OnQuery' not implemented!")
 		event.Skip()
 
-	def OnRosbagPlay(self, event):  # wxGlade: MyFrame.<event_handler>
-		print("Event handler 'OnRosbagPlay' not implemented!")
+	def OnROSbagPlay(self, event):  # wxGlade: MyFrame.<event_handler>
+		print("Event handler 'OnROSbagPlay' not implemented!")
 		event.Skip()
 
 	def OnFtrace(self, event):  # wxGlade: MyFrame.<event_handler>
@@ -958,9 +958,9 @@ class MyDialogParam(wx.Dialog):
 
 # end of class MyDialogParam
 
-class MyDialogRosbagRecord(wx.Dialog):
+class MyDialogROSbagRecord(wx.Dialog):
 	def __init__(self, *args, **kwds):
-		# begin wxGlade: MyDialogRosbagRecord.__init__
+		# begin wxGlade: MyDialogROSbagRecord.__init__
 		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
 		wx.Dialog.__init__(self, *args, **kwds)
 		self.text_ctrl = wx.TextCtrl(self, wx.ID_ANY, "")
@@ -984,7 +984,7 @@ class MyDialogRosbagRecord(wx.Dialog):
 		# end wxGlade
 
 	def __set_properties(self):
-		# begin wxGlade: MyDialogRosbagRecord.__set_properties
+		# begin wxGlade: MyDialogROSbagRecord.__set_properties
 		self.SetTitle(_("ROSBAG Record"))
 		self.SetSize((300, 430))
 		self.button_ref.SetMinSize((40, 29))
@@ -994,7 +994,7 @@ class MyDialogRosbagRecord(wx.Dialog):
 		# end wxGlade
 
 	def __do_layout(self):
-		# begin wxGlade: MyDialogRosbagRecord.__do_layout
+		# begin wxGlade: MyDialogROSbagRecord.__do_layout
 		sizer_41 = wx.BoxSizer(wx.VERTICAL)
 		self.sizer_topic = wx.BoxSizer(wx.VERTICAL)
 		sizer_44 = wx.BoxSizer(wx.HORIZONTAL)
@@ -1021,23 +1021,23 @@ class MyDialogRosbagRecord(wx.Dialog):
 		self.Layout()
 		# end wxGlade
 
-	def OnRef(self, event):  # wxGlade: MyDialogRosbagRecord.<event_handler>
+	def OnRef(self, event):  # wxGlade: MyDialogROSbagRecord.<event_handler>
 		print("Event handler 'OnRef' not implemented!")
 		event.Skip()
 
-	def OnStart(self, event):  # wxGlade: MyDialogRosbagRecord.<event_handler>
+	def OnStart(self, event):  # wxGlade: MyDialogROSbagRecord.<event_handler>
 		print("Event handler 'OnStart' not implemented!")
 		event.Skip()
 
-	def OnStop(self, event):  # wxGlade: MyDialogRosbagRecord.<event_handler>
+	def OnStop(self, event):  # wxGlade: MyDialogROSbagRecord.<event_handler>
 		print("Event handler 'OnStop' not implemented!")
 		event.Skip()
 
-	def OnRefresh(self, event):  # wxGlade: MyDialogRosbagRecord.<event_handler>
+	def OnRefresh(self, event):  # wxGlade: MyDialogROSbagRecord.<event_handler>
 		print("Event handler 'OnRefresh' not implemented!")
 		event.Skip()
 
-# end of class MyDialogRosbagRecord
+# end of class MyDialogROSbagRecord
 
 class MyDialogLaneStop(wx.Dialog):
 	def __init__(self, *args, **kwds):
@@ -1138,9 +1138,9 @@ class MyDialogLaneStop(wx.Dialog):
 
 # end of class MyDialogLaneStop
 
-class MyDialogNdtMapping(wx.Dialog):
+class MyDialogNDTMapping(wx.Dialog):
 	def __init__(self, *args, **kwds):
-		# begin wxGlade: MyDialogNdtMapping.__init__
+		# begin wxGlade: MyDialogNDTMapping.__init__
 		kwds["style"] = wx.CAPTION
 		wx.Dialog.__init__(self, *args, **kwds)
 		self.panel_v = wx.ScrolledWindow(self, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
@@ -1165,7 +1165,7 @@ class MyDialogNdtMapping(wx.Dialog):
 		# end wxGlade
 
 	def __set_properties(self):
-		# begin wxGlade: MyDialogNdtMapping.__set_properties
+		# begin wxGlade: MyDialogNDTMapping.__set_properties
 		self.SetTitle(_("ndt_mapping"))
 		self.SetSize((352, 341))
 		self.panel_v.SetScrollRate(10, 10)
@@ -1173,7 +1173,7 @@ class MyDialogNdtMapping(wx.Dialog):
 		# end wxGlade
 
 	def __do_layout(self):
-		# begin wxGlade: MyDialogNdtMapping.__do_layout
+		# begin wxGlade: MyDialogNDTMapping.__do_layout
 		sizer_30 = wx.BoxSizer(wx.VERTICAL)
 		sizer_48 = wx.BoxSizer(wx.VERTICAL)
 		sizer_49 = wx.BoxSizer(wx.HORIZONTAL)
@@ -1195,27 +1195,27 @@ class MyDialogNdtMapping(wx.Dialog):
 		self.Layout()
 		# end wxGlade
 
-	def OnRef(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnRef(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print("Event handler 'OnRef' not implemented!")
 		event.Skip()
 
-	def OnRadio(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnRadio(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print("Event handler 'OnRadio' not implemented!")
 		event.Skip()
 
-	def OnPcdOutput(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnPcdOutput(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print("Event handler 'OnPcdOutput' not implemented!")
 		event.Skip()
 
-	def OnOk(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnOk(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print("Event handler 'OnOk' not implemented!")
 		event.Skip()
 
-# end of class MyDialogNdtMapping
+# end of class MyDialogNDTMapping
 
-class MyDialogDpm(wx.Dialog):
+class MyDialogDPM(wx.Dialog):
 	def __init__(self, *args, **kwds):
-		# begin wxGlade: MyDialogDpm.__init__
+		# begin wxGlade: MyDialogDPM.__init__
 		kwds["style"] = wx.DEFAULT_DIALOG_STYLE
 		wx.Dialog.__init__(self, *args, **kwds)
 		self.panel_v = wx.ScrolledWindow(self, wx.ID_ANY, style=wx.TAB_TRAVERSAL)
@@ -1232,14 +1232,14 @@ class MyDialogDpm(wx.Dialog):
 		# end wxGlade
 
 	def __set_properties(self):
-		# begin wxGlade: MyDialogDpm.__set_properties
+		# begin wxGlade: MyDialogDPM.__set_properties
 		self.SetTitle(_("dialog_6"))
 		self.SetSize((470, 350))
 		self.panel_v.SetScrollRate(10, 10)
 		# end wxGlade
 
 	def __do_layout(self):
-		# begin wxGlade: MyDialogDpm.__do_layout
+		# begin wxGlade: MyDialogDPM.__do_layout
 		sizer_30 = wx.BoxSizer(wx.VERTICAL)
 		sizer_31 = wx.BoxSizer(wx.HORIZONTAL)
 		sizer_28 = wx.BoxSizer(wx.VERTICAL)
@@ -1256,15 +1256,15 @@ class MyDialogDpm(wx.Dialog):
 		self.Layout()
 		# end wxGlade
 
-	def OnOk(self, event):  # wxGlade: MyDialogDpm.<event_handler>
+	def OnOk(self, event):  # wxGlade: MyDialogDPM.<event_handler>
 		print("Event handler 'OnOk' not implemented!")
 		event.Skip()
 
-	def OnLink(self, event):  # wxGlade: MyDialogDpm.<event_handler>
+	def OnLink(self, event):  # wxGlade: MyDialogDPM.<event_handler>
 		print("Event handler 'OnLink' not implemented!")
 		event.Skip()
 
-# end of class MyDialogDpm
+# end of class MyDialogDPM
 
 class MyDialogCarPedestrian(wx.Dialog):
 	def __init__(self, *args, **kwds):
@@ -1345,12 +1345,12 @@ class MyDialogWaypointLoader(wx.Dialog):
 		self.Layout()
 		# end wxGlade
 
-	def OnCsvOutput(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnCsvOutput(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print "Event handler 'OnCsvOutput' not implemented!"
 		event.Skip()
 
-	def OnOk(self, event):  # wxGlade: MyDialogNdtMapping.<event_handler>
+	def OnOk(self, event):  # wxGlade: MyDialogNDTMapping.<event_handler>
 		print "Event handler 'OnOk' not implemented!"
 		event.Skip()
 
-# end of class MyDialogNdtMapping
+# end of class MyDialogNDTMapping

@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         tf
         geometry_msgs
+        autoware_can_msgs
         autoware_msgs
         nav_msgs
         std_msgs

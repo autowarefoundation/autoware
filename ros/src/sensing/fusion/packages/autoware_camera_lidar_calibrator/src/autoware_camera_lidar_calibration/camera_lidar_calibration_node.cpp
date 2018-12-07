@@ -38,7 +38,7 @@
 
 #define __APP_NAME__ "autoware_camera_lidar_calibration_node"
 
-class RosCameraLidarApp
+class ROSCameraLidarApp
 
 {
 	ros::NodeHandle 	node_handle_;
@@ -267,17 +267,17 @@ public:
 
 
 		ROS_INFO("[%s] Subscribing to... %s",__APP_NAME__, image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosCameraLidarApp::ImageCallback, this);
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &ROSCameraLidarApp::ImageCallback, this);
 
 
 		ROS_INFO("[%s] Subscribing to... %s",__APP_NAME__, camera_info_topic_str.c_str());
-		subscriber_intrinsics_ = node_handle_.subscribe(camera_info_topic_str, 1, &RosCameraLidarApp::IntrinsicsCallback, this);
+		subscriber_intrinsics_ = node_handle_.subscribe(camera_info_topic_str, 1, &ROSCameraLidarApp::IntrinsicsCallback, this);
 
 		ROS_INFO("[%s] Subscribing to PointCloud ClickedPoint from RVIZ... /clicked_point",__APP_NAME__);
-		subscriber_clicked_point_ = node_handle_.subscribe("/clicked_point", 1, &RosCameraLidarApp::RvizClickedPointCallback, this);
+		subscriber_clicked_point_ = node_handle_.subscribe("/clicked_point", 1, &ROSCameraLidarApp::RvizClickedPointCallback, this);
 
 		ROS_INFO("[%s] Subscribing to Image ClickedPoint from JSK ImageView2... %s/screenpoint",__APP_NAME__, image_raw_topic_str.c_str());
-		subscriber_image_point_ = node_handle_.subscribe(image_raw_topic_str+"/screenpoint", 1, &RosCameraLidarApp::ImageClickedPointCallback, this);
+		subscriber_image_point_ = node_handle_.subscribe(image_raw_topic_str+"/screenpoint", 1, &ROSCameraLidarApp::ImageClickedPointCallback, this);
 		ROS_INFO("[%s] ClickedPoint: %s",__APP_NAME__, (image_raw_topic_str+"/screenpoint").c_str());
 
 		ROS_INFO("[%s] Ready. Waiting for data...",__APP_NAME__);
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, __APP_NAME__);
 
-	RosCameraLidarApp app;
+	ROSCameraLidarApp app;
 
 	app.Run();
 

@@ -98,7 +98,7 @@ def progress_bar(iteration, total):
   percent = ("{0:." + str(1) + "f}").format(100 * (iteration / float(total)))
   filledLength = int(length * iteration // total)
   bar = '=' * filledLength + '|' + '-' * (length - filledLength)
-  sys.stdout.write('Rosbag conversion [%s] %s%% Complete\r' % (bar, percent))
+  sys.stdout.write('ROSbag conversion [%s] %s%% Complete\r' % (bar, percent))
   sys.stdout.flush()
 
 if __name__ == "__main__":

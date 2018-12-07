@@ -13,7 +13,7 @@
 
 #include "vision_segment_enet_detect.h"
 
-class RosENetSegmenterApp
+class ROSENetSegmenterApp
 {
 	ros::Subscriber subscriber_image_raw_;
 	ros::NodeHandle node_handle_;
@@ -110,7 +110,7 @@ public:
 		ROS_INFO("ENetSegmenter initialized.");
 
 		ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
-		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &RosENetSegmenterApp::image_callback, this);
+		subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &ROSENetSegmenterApp::image_callback, this);
 
 		publisher_image_segmented_ = node_handle_.advertise<sensor_msgs::Image>("/image_segmented", 1);
 		ROS_INFO("Publishing /image_segmented");
@@ -122,13 +122,13 @@ public:
 		ROS_INFO("END ENetSegmenter");
 	}
 
-	~RosENetSegmenterApp()
+	~ROSENetSegmenterApp()
 	{
 		if (NULL != enet_segmenter_)
 			delete enet_segmenter_;
 	}
 
-	RosENetSegmenterApp()
+	ROSENetSegmenterApp()
 	{
 		enet_segmenter_ = NULL;
 	}
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "image_segmenter_enet");
 
-	RosENetSegmenterApp app;
+	ROSENetSegmenterApp app;
 
 	app.Run();
 

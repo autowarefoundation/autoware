@@ -2,6 +2,12 @@
 Changelog for package pixel_cloud_fusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
 1.8.0 (2018-08-31)
 ------------------
 * Feature/std perception msg (`#1418 <https://github.com/CPFL/Autoware/pull/1418>`_)
