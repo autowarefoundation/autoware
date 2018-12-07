@@ -16,4 +16,7 @@
     <param name="gpu_device_id" value="$(arg gpu_device_id)" />
   </node>
 
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+          output="screen" ns="/detection/lidar_detector" />
+
 </launch>

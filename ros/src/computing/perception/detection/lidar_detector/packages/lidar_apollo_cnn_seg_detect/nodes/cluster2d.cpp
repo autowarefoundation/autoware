@@ -230,8 +230,10 @@ Cluster2D::obstacleToObject(const Obstacle& in_obstacle, const std_msgs::Header&
     pcl::toROSMsg(in_cluster, ros_pc);
     resulting_object.header = in_header;
     resulting_object.pointcloud = ros_pc;
+    resulting_object.pointcloud.header = in_header;
     resulting_object.score = in_obstacle.score;
     resulting_object.label = in_obstacle.GetTypeString();
+    resulting_object.valid = true;
 
     float min_x = std::numeric_limits<float>::max();
     float max_x = -std::numeric_limits<float>::max();
