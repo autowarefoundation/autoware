@@ -5615,7 +5615,7 @@ params :
         delim     : ':='
     - name  : size_of_expansion_kernel
       desc  : Size of expansion window(kernel)
-      label : size_of_expansion_kernel
+      label : size_of_expansion_kernel(odd number)
       min     : 0
       max     : 30
       v       : 9
