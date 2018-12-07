@@ -38,6 +38,7 @@ The message includes each of the following namespaces:
 |`ROS_NAMESPACE/objects_hulls`|Convex Hull, the containing polygon (`Marker::LINE_STRIP`)|
 |`ROS_NAMESPACE/objects_boxes`|Bounding box containing the object (`Marker::CUBE`)|
 |`ROS_NAMESPACE/objects_centroids`|Sphere representing the centroid of the object in space (`Marker::SPHERE`)|
+|`ROS_NAMESPACE/objects_mdoels`|Model representing the object in space (`Marker::MESH_RESOURCE`)|
 
 ## Notes
 This node is already included in the perception nodes' launch file.

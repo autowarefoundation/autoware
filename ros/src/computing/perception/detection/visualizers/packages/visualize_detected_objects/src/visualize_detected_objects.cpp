@@ -136,9 +136,8 @@ std_msgs::ColorRGBA VisualizeDetectedObjects::ParseColor(const std::vector<doubl
 
 void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects)
 {
-  visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers;
-  visualization_msgs::MarkerArray polygon_hulls;
-  visualization_msgs::MarkerArray bounding_boxes;
+  visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers, polygon_hulls, bounding_boxes,
+                                  object_models;
 
   visualization_msgs::MarkerArray visualization_markers;
 
@@ -148,6 +147,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   arrow_markers = ObjectsToArrows(in_objects);
   polygon_hulls = ObjectsToHulls(in_objects);
   bounding_boxes = ObjectsToBoxes(in_objects);
+  object_models = ObjectsToModels(in_objects);
   centroid_markers = ObjectsToCentroids(in_objects);
 
   visualization_markers.markers.insert(visualization_markers.markers.end(),
@@ -158,6 +158,8 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
                                        polygon_hulls.markers.begin(), polygon_hulls.markers.end());
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        bounding_boxes.markers.begin(), bounding_boxes.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       object_models.markers.begin(), object_models.markers.end());
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        centroid_markers.markers.begin(), centroid_markers.markers.end());
 
@@ -240,6 +242,58 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
   }
   return object_boxes;
 }//ObjectsToBoxes
+
+visualization_msgs::MarkerArray
+VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArray &in_objects)
+{
+  visualization_msgs::MarkerArray object_models;
+
+  for (auto const &object: in_objects.objects)
+  {
+    if (IsObjectValid(object) &&
+      object.label != "unknown" &&
+        (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
+    {
+      visualization_msgs::Marker model;
+
+      model.lifetime = ros::Duration(marker_display_duration_);
+      model.header = in_objects.header;
+      model.type = visualization_msgs::Marker::MESH_RESOURCE;
+      model.action = visualization_msgs::Marker::ADD;
+      model.ns = ros_namespace_ + "/model_markers";
+      model.mesh_use_embedded_materials = false;
+      model.color = label_color_;
+      if(object.label == "car")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/car.dae";
+      }
+      else if (object.label == "person")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/person.dae";
+      }
+      else if (object.label == "bicycle" || object.label == "bike")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/bike.dae";
+      }
+      else
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/box.dae";
+      }
+      model.scale.x = 1;
+      model.scale.y = 1;
+      model.scale.z = 1;
+      model.id = marker_id_++;
+      model.pose.position = object.pose.position;
+      model.pose.position.z-= object.dimensions.z/2;
+
+      if (object.pose_reliable)
+        model.pose.orientation = object.pose.orientation;
+
+      object_models.markers.push_back(model);
+    }
+  }
+  return object_models;
+}//ObjectsToModels
 
 visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects)

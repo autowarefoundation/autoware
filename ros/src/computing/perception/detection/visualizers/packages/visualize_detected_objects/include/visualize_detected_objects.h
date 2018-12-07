@@ -77,6 +77,8 @@ private:
 
   visualization_msgs::MarkerArray ObjectsToBoxes(const autoware_msgs::DetectedObjectArray &in_objects);
 
+  visualization_msgs::MarkerArray ObjectsToModels(const autoware_msgs::DetectedObjectArray &in_objects);
+
   visualization_msgs::MarkerArray ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects);
 
   visualization_msgs::MarkerArray ObjectsToCentroids(const autoware_msgs::DetectedObjectArray &in_objects);
