@@ -104,16 +104,26 @@ grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap
 {
   grid_map::GridMap objects_costmap = costmap;
   objects_costmap[gridmap_layer_name].setConstant(0.0);
+  const std::string expanded_rectangle_gridmap_layer_name = "expanded_rectangle_costmap";
+  objects_costmap.add(expanded_rectangle_gridmap_layer_name, 0);
+
+  const double not_expand_rectangle_size = 0;
   for (const auto& object: in_objects->objects)
   {
-    grid_map::Polygon polygon = makePolygonFromObject(object, expand_rectangle_size);
+    grid_map::Polygon polygon = makePolygonFromObject(object, not_expand_rectangle_size);
+    grid_map::Polygon expanded_polygon = makePolygonFromObject(object, expand_rectangle_size);
     setCostInPolygon(polygon, gridmap_layer_name, object.score, objects_costmap);
+    setCostInPolygon(expanded_polygon, expanded_rectangle_gridmap_layer_name, object.score, objects_costmap);
   }
   const grid_map::SlidingWindowIterator::EdgeHandling edge_handling = grid_map::SlidingWindowIterator::EdgeHandling::CROP;
-  for (grid_map::SlidingWindowIterator iterator(objects_costmap, gridmap_layer_name, edge_handling, size_of_expansion_kernel);
+  for (grid_map::SlidingWindowIterator iterator(objects_costmap, expanded_rectangle_gridmap_layer_name, edge_handling, size_of_expansion_kernel);
       !iterator.isPastEnd(); ++iterator)
   {
-    objects_costmap.at(gridmap_layer_name, *iterator) = iterator.getData().meanOfFinites(); // Blurring.
+    objects_costmap.at(expanded_rectangle_gridmap_layer_name, *iterator) = iterator.getData().meanOfFinites(); // Blurring.
   }
+  
+  objects_costmap[gridmap_layer_name] = objects_costmap[gridmap_layer_name].cwiseMax(
+                                        objects_costmap[expanded_rectangle_gridmap_layer_name]);
+
   return objects_costmap[gridmap_layer_name];
 }
