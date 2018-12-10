@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+  then
+    echo "Usage: $0 /path/to/src/folder"
+    exit
+fi
+
+if [ ! -d "$1" ]
+  then
+  	echo "Please input suitable path"
+fi
+
+# Get cppcheck if not available
+sudo apt-get install -y cppcheck
+if [ ! -d "/home/$USERNAME/Autoware/tools/cppcheck" ]
+  then
+  	git clone --single-branch -b feature/ROS_naming_check https://github.com/sgermanserrano/cppcheck.git /home/$USERNAME/Autoware/tools/cppcheck
+fi
+
+# Find .h, .hpp, .cpp files except for testing ones
+FILES=$(find $1 -path */test -prune -name '*.h' -o -name '*.hpp' -o -name '*.cpp')
+echo $FILES
+cppcheck --dump language=c++ $FILES
+DUMP_FILES=$(find $1 -name '*.dump')
+python /home/$USERNAME/Autoware/tools/cppcheck/addons/namingng.py $DUMP_FILES --configfile /home/$USERNAME/Autoware/tools/cppcheck/addons/ROS_naming.json
+rm $DUMP_FILES
