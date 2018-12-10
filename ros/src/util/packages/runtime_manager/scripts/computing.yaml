@@ -5417,7 +5417,7 @@ params :
   - name  : naive_motion_predict_param
     vars  :
     - name  : input_topic
-      desc  : input tppic
+      desc  : input topic
       label : input_topic
       kind  : topic
       topic_type : autoware_msgs/DetectedObjectArray
