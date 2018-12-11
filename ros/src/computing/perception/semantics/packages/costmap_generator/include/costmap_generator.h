@@ -90,10 +90,10 @@ class CostmapGenerator
 
 
     ros::Publisher pub_costmap_;
-    ros::Publisher pub_sensor_points_cost_cloud_;
-    ros::Publisher pub_objects_cost_cloud_;
-    ros::Publisher pub_vectormap_cost_cloud_;
-    ros::Publisher pub_occupancy_grid_;
+    // ros::Publisher pub_sensor_points_cost_cloud_;
+    // ros::Publisher pub_objects_cost_cloud_;
+    // ros::Publisher pub_vectormap_cost_cloud_;
+    // ros::Publisher pub_occupancy_grid_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
     ros::Subscriber sub_objects_;

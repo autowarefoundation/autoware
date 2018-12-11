@@ -28,6 +28,8 @@ if (OPENMP_FOUND)
 endif ()
 
 catkin_package(
+        INCLUDE_DIRS include
+        LIBRARIES object_map_utils_lib
         CATKIN_DEPENDS roscpp pcl_ros pcl_conversions tf sensor_msgs nav_msgs autoware_msgs vector_map
 )
 
@@ -115,42 +117,7 @@ target_link_libraries(wayarea2grid
         wayarea2grid_lib
         )
 
-### costmap_generator ###
-add_library(costmap_generator_lib
-        nodes/costmap_generator/costmap_generator_node.cpp
-        nodes/costmap_generator/costmap_generator.cpp
-        nodes/costmap_generator/costmap_generator.h
-        nodes/costmap_generator/points2costmap.cpp
-        nodes/costmap_generator/points2costmap.h
-        nodes/costmap_generator/objects2costmap.cpp
-        nodes/costmap_generator/objects2costmap.h
-        nodes/costmap_generator/waypoints2costmap.cpp
-        nodes/costmap_generator/waypoints2costmap.h
-        )
-target_link_libraries(costmap_generator_lib
-        ${catkin_LIBRARIES}
-        object_map_utils_lib
-        )
-
-add_executable(costmap_generator
-        nodes/costmap_generator/costmap_generator_node.cpp
-        nodes/costmap_generator/costmap_generator.cpp
-        nodes/costmap_generator/costmap_generator.h
-        nodes/costmap_generator/points2costmap.cpp
-        nodes/costmap_generator/points2costmap.h
-        nodes/costmap_generator/objects2costmap.cpp
-        nodes/costmap_generator/objects2costmap.h
-        nodes/costmap_generator/waypoints2costmap.cpp
-        nodes/costmap_generator/waypoints2costmap.h
-        )
-
-target_link_libraries(costmap_generator
-        ${catkin_LIBRARIES}
-        object_map_utils_lib
-        )
-
-
-install(TARGETS wayarea2grid grid_map_filter potential_field points2costmap laserscan2costmap
+install(TARGETS wayarea2grid grid_map_filter potential_field points2costmap laserscan2costmap object_map_utils_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

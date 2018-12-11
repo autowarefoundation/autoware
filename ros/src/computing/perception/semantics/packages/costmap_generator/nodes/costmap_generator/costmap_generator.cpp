@@ -74,10 +74,10 @@ void CostmapGenerator::init()
 void CostmapGenerator::run()
 {
   pub_costmap_ = nh_.advertise<grid_map_msgs::GridMap>("/semantics/costmap", 1);
-  pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
-  pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
-  pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
-  pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
+  // pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
+  // pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
+  // pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
+  // pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
 
   if(use_objects_)
   {
@@ -203,31 +203,32 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
 
 void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
 {
-  if(use_points_)
-  {
-    sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
-    grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
-    pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
-  }
+  std::cout << "pub?" << std::endl;
+  // if(use_points_)
+  // {
+  //   sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
+  //   grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
+  //   pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
+  // }
+  //
+  // if(use_objects_)
+  // {
+  //   sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
+  //   grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
+  //   pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
+  // }
+  //
+  // if(use_wayarea_)
+  // {
+  //   sensor_msgs::PointCloud2 out_vectormap_cost_cloud_msg;
+  //   grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
+  //   pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
+  // }
 
-  if(use_objects_)
-  {
-    sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
-    grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
-    pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
-  }
-
-  if(use_wayarea_)
-  {
-    sensor_msgs::PointCloud2 out_vectormap_cost_cloud_msg;
-    grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
-    pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
-  }
-
-  nav_msgs::OccupancyGrid out_occupancy_grid;
-  grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
-                                          out_occupancy_grid);
-  pub_occupancy_grid_.publish(out_occupancy_grid);
+  // nav_msgs::OccupancyGrid out_occupancy_grid;
+  // grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
+  //                                         out_occupancy_grid);
+  // pub_occupancy_grid_.publish(out_occupancy_grid);
 
   grid_map_msgs::GridMap out_gridmap_msg;
   grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);

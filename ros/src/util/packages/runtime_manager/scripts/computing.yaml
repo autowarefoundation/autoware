@@ -586,7 +586,7 @@ subs :
 
     - name : costmap_generator
       desc : costmap_generator desc sample
-      cmd  : roslaunch object_map costmap_generator.launch
+      cmd  : roslaunch costmap_generator costmap_generator.launch
       param: costmap_generator_param
       gui  :
         dialog_width  : 400
