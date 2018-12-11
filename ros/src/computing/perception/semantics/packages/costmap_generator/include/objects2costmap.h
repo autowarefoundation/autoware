@@ -43,6 +43,13 @@ class Objects2Costmap
     Objects2Costmap();
     ~Objects2Costmap();
 
+    /// \brief calculate cost from DetectedObjectArray
+    /// \param[in] costmap: initialized gridmap
+    /// \param[in] gridmap_layer_name: target gridmap layer for calculating cost
+    /// \param[in] expand_rectangle_size: expand object's rectangle
+    /// \param[in] size_of_expansion_kernel: kernel size for blurring cost
+    /// \param[in] in_objects: subscribed DetectedObjectArray
+    /// \param[out] calculated cost in grid_map::Matrix format
     grid_map::Matrix makeCostmapFromObjects(const grid_map::GridMap& costmap,
                                              const std::string& gridmap_layer_name,
                                              const double expand_rectangle_size,
@@ -51,11 +58,27 @@ class Objects2Costmap
   private:
     const int NUMBER_OF_POINTS;
     const int NUMBER_OF_DIMENSIONS;
+
+    /// \brief make 4 rectangle points from centroid position and orientation
+    /// \param[in] in_object: subscribed one of DetectedObjectArray
+    /// \param[in] expand_rectangle_size: expanding 4 points
+    /// \param[out] 4 rectangle points
     Eigen::MatrixXd makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
                                         const double expand_rectangle_size);
+
+    /// \brief make polygon(grid_map::Polygon) from 4 rectangle's points
+    /// \param[in] in_object: subscribed one of DetectedObjectArray
+    /// \param[in] expand_rectangle_size: expanding 4 points
+    /// \param[out] polygon with 4 rectangle points
     grid_map::Polygon makePolygonFromObject(const autoware_msgs::DetectedObject& in_object,
                                             const double expand_rectangle_size);
-    void setCostInPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
+
+    /// \brief set cost in polygon by using DetectedObject's score
+    /// \param[in] polygon: 4 rectangle points in polygon format
+    /// \param[in] gridmap_layer_name: target gridmap layer name for calculated cost
+    /// \param[in] score: set score as a cost for costmap
+    /// \param[in] objects_costmap: update cost in this objects_costmap[gridmap_layer_name]
+    void setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
                            const float score, grid_map::GridMap& objects_costmap);
 
 };

@@ -44,7 +44,6 @@
 #include "autoware_msgs/DetectedObjectArray.h"
 #include "points2costmap.h"
 #include "objects2costmap.h"
-#include "waypoints2costmap.h"
 
 // headers in STL
 #include<memory>
@@ -64,7 +63,6 @@ class CostmapGenerator
     bool use_objects_;
     bool use_points_;
     bool use_wayarea_;
-    // bool use_waypoints_;
 
     bool has_subscribed_wayarea_;
 
@@ -90,10 +88,7 @@ class CostmapGenerator
 
 
     ros::Publisher pub_costmap_;
-    // ros::Publisher pub_sensor_points_cost_cloud_;
-    // ros::Publisher pub_objects_cost_cloud_;
-    // ros::Publisher pub_vectormap_cost_cloud_;
-    // ros::Publisher pub_occupancy_grid_;
+    ros::Publisher pub_occupancy_grid_;
     ros::Subscriber sub_waypoint_;
     ros::Subscriber sub_points_;
     ros::Subscriber sub_objects_;
@@ -104,24 +99,40 @@ class CostmapGenerator
 
     Points2Costmap points2costmap_;
     Objects2Costmap objects2costmap_;
-    Waypoints2Costmap waypoints2costmap_;
 
     const std::string OBJECTS_COSTMAP_LAYER_;
     const std::string SENSOR_POINTS_COSTMAP_LAYER_;
     const std::string VECTORMAP_COSTMAP_LAYER_;
-    const std::string WAYPOINTS_COSTMAP_LAYER_;
     const std::string COMBINED_COSTMAP_LAYER_;
 
+    /// \brief callback for DetectedObjectArray
+    /// \param[in] in_objects input DetectedObjectArray usually from prediction or perception component
     void objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_ojects);
-    // void waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
+
+    /// \brief callback for sensor_msgs::PointCloud2
+    /// \param[in] in_sensor_points input sensot_msgs::PointCloud2. Assuming groud-fitered pointcloud by default
     void sensorPointsCallback(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
-    void registerVectormapSubscriber();
+
+    /// \brief initialize gridmap parameters based on rosparam
     void initGridmap();
+
+    /// \brief publish ros msg: /semantics/costmap (grid_map::GridMap),
+    ///                         /semantics/costmap_generator/occupancy_grid(nav_msgs::OccupancyGrid)
+    /// \param[in] gridmap with calculated cost
     void publishRosMsg(const grid_map::GridMap& gridmap);
+
+    /// \brief calculate cost from pointcloud data
+    /// \param[in] in_sensor_points: subscribed pointcloud data
     grid_map::Matrix generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+
+    /// \brief calculate cost from DetectedObjectArray
+    /// \param[in] in_objects: subscribed DetectedObjectArray
     grid_map::Matrix generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
-    // grid_map::Matrix generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints);
+
+    /// \brief calculate cost from vectormap
     grid_map::Matrix generateVectormapCostmap();
+
+    /// \brief calculate cost for final output
     grid_map::Matrix generateCombinedCostmap();
 
 };

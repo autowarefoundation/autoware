@@ -44,8 +44,17 @@ class Points2Costmap
     Points2Costmap();
     ~Points2Costmap();
 
+    /// \brief calculate cost from sensor points
+    /// \param[in] maximum_height_thres: Maximum height threshold for pointcloud data
+    /// \param[in] minimum_height_thres: Minimum height threshold for pointcloud data
+    /// \param[in] grid_min_value: Minimum cost for costmap
+    /// \param[in] grid_max_value: Maximum cost fot costmap
+    /// \param[in] gridmap: costmap based on gridmap
+    /// \param[in] gridmap_layer_name: gridmap layer name for gridmap
+    /// \param[in] in_sensor_points: subscribed pointcloud
+    /// \param[out] calculated cost in grid_map::Matrix format
     grid_map::Matrix makeCostmapFromSensorPoints(const double maximum_height_thres,
-                                              const double minimum_lidar_height_thres,
+                                              const double minimum_height_thres,
                                               const double grid_min_value,
                                               const double grid_max_value,
                                               const grid_map::GridMap& gridmap,
@@ -61,10 +70,32 @@ class Points2Costmap
     double y_cell_size_;
     double x_cell_size_;
 
+    /// \brief check if index is valid in the gridmap
+    /// \param[in] grid_ind: grid index corresponding with one of pointcloud
+    /// \param[out] bool: true if index is valid
     bool isValidInd(const grid_map::Index& grid_ind);
+
+    /// \brief Get index from one of pointcloud
+    /// \param[in] point: one of subscribed pointcloud
+    /// \param[out] index in gridmap
     grid_map::Index fetchGridIndexFromPoint(const pcl::PointXYZ& point);
+
+    /// \brief Assign pointcloud to appropriate cell in gridmap
+    /// \param[in] gridmap: costmap based on gridmap
+    /// \param[in] in_sensor_points: subscribed pointcloud
+    /// \param[out] grid-x-length x grid-y-length size grid stuffed with point's height in corresponding grid cell
     std::vector<std::vector<std::vector<double>>> assignPoints2GridCell(const grid_map::GridMap& gridmap,
                                                                         const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
+
+    /// \brief calculate costmap from subscribed pointcloud
+    /// \param[in] maximum_height_thres: Maximum height threshold for pointcloud data
+    /// \param[in] minimum_height_thres: Minimum height threshold for pointcloud data
+    /// \param[in] grid_min_value: Minimum cost for costmap
+    /// \param[in] grid_max_value: Maximum cost fot costmap
+    /// \param[in] gridmap: costmap based on gridmap
+    /// \param[in] gridmap_layer_name: gridmap layer name for gridmap
+    /// \param[in] grid_vec: grid-x-length x grid-y-length size grid stuffed with point's height in corresponding grid cell
+    /// \param[out] caculated costmap in grid_map::Matrix format
     grid_map::Matrix calculateCostmap(const double maximum_height_thres, const double minimum_lidar_height_thres,
                                       const double grid_min_value, const double grid_max_value,
                                       const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,

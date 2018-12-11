@@ -40,7 +40,6 @@ CostmapGenerator::CostmapGenerator() :
   OBJECTS_COSTMAP_LAYER_("objects"),
   SENSOR_POINTS_COSTMAP_LAYER_("sensor_points"),
   VECTORMAP_COSTMAP_LAYER_("vectormap"),
-  WAYPOINTS_COSTMAP_LAYER_("waypoints"),
   COMBINED_COSTMAP_LAYER_("costmap")
 {
 }
@@ -66,7 +65,6 @@ void CostmapGenerator::init()
   private_nh_.param<bool>("use_wayarea", use_wayarea_, true);
   private_nh_.param<double>("expand_rectangle_size", expand_rectangle_size_, 1.5);
   private_nh_.param<int>("size_of_expansion_kernel", size_of_expansion_kernel_, 9);
-  // private_nh_.param<bool>("use_waypoints_", use_waypoints_, true);
 
   initGridmap();
 }
@@ -74,10 +72,7 @@ void CostmapGenerator::init()
 void CostmapGenerator::run()
 {
   pub_costmap_ = nh_.advertise<grid_map_msgs::GridMap>("/semantics/costmap", 1);
-  // pub_sensor_points_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/sensor_points_cost_cloud", 1);
-  // pub_objects_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/objects_cost_cloud", 1);
-  // pub_vectormap_cost_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("/semantics/costmap_generator/vectormap_cost_cloud", 1);
-  // pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
+  pub_occupancy_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>("/semantics/costmap_generator/occupancy_grid", 1);
 
   if(use_objects_)
   {
@@ -88,11 +83,6 @@ void CostmapGenerator::run()
   {
     sub_points_ = nh_.subscribe("/points_no_ground", 1, &CostmapGenerator::sensorPointsCallback, this);
   }
-
-  // if(use_waypoints_)
-  // {
-  //   sub_waypoint_ = nh_.subscribe("/based_waypoints", 1, &CostmapGenerator::waypointsCallback, this);
-  // }
 }
 
 void CostmapGenerator::objectsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
@@ -113,13 +103,6 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
   publishRosMsg(costmap_);
 }
 
-// void CostmapGenerator::waypointsCallback(const autoware_msgs::LaneArray::ConstPtr& in_waypoint)
-// {
-  // costmap_ = generateWaypointsCostmap();
-  // costmap_ = generateCombinedCostmap();
-  // publishRosMsg(costmap_);
-// }
-
 void CostmapGenerator::initGridmap()
 {
   costmap_.setFrameId(velodyne_frame_);
@@ -130,14 +113,11 @@ void CostmapGenerator::initGridmap()
   costmap_.add(SENSOR_POINTS_COSTMAP_LAYER_, grid_min_value_);
   costmap_.add(OBJECTS_COSTMAP_LAYER_, grid_min_value_);
   costmap_.add(VECTORMAP_COSTMAP_LAYER_, grid_min_value_);
-  // costmap_.add("waypoint_cost", 0);
   costmap_.add(COMBINED_COSTMAP_LAYER_, grid_min_value_);
 }
 
 grid_map::Matrix CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
-  // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
-  // TODO: rename makeCostmapFromSensorPoints
   grid_map::Matrix sensor_points_costmap =
                         points2costmap_.makeCostmapFromSensorPoints(maximum_lidar_height_thres_, minimum_lidar_height_thres_,
                                                                     grid_min_value_, grid_max_value_,
@@ -147,7 +127,6 @@ grid_map::Matrix CostmapGenerator::generateSensorPointsCostmap(const sensor_msgs
 
 grid_map::Matrix CostmapGenerator::generateObjectsCostmap(const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects)
 {
-  // TODO: check tf coordinate. If assuming that make costmap in velodyne coordinate, it is not necessary
   grid_map::Matrix objects_costmap =
                         objects2costmap_.makeCostmapFromObjects(costmap_,
                                                                 OBJECTS_COSTMAP_LAYER_,
@@ -157,15 +136,7 @@ grid_map::Matrix CostmapGenerator::generateObjectsCostmap(const autoware_msgs::D
   return objects_costmap;
 }
 
-// grid_map::Matrix CostmapGenerator::generateWaypointsCostmap(const autoware_msgs::LaneArray::ConstPtr& in_waypoints)
-// {
-//   grid_map::Matrix waypoints_costmap =
-//                         waypoints2costmap_.makeCostmapFromWaypoints(costmap_, WAYPOINTS_COSTMAP_LAYER_, in_waypoints);
-//   return waypoints_costmap;
-// }
-
-
-// only this funstion depends on object_map_utils
+// Only this funstion depends on object_map_utils
 grid_map::Matrix CostmapGenerator::generateVectormapCostmap()
 {
   grid_map::GridMap vectormap_costmap = costmap_;
@@ -203,32 +174,10 @@ grid_map::Matrix CostmapGenerator::generateCombinedCostmap()
 
 void CostmapGenerator::publishRosMsg(const grid_map::GridMap& costmap)
 {
-  std::cout << "pub?" << std::endl;
-  // if(use_points_)
-  // {
-  //   sensor_msgs::PointCloud2 out_sensor_points_cost_cloud_msg;
-  //   grid_map::GridMapRosConverter::toPointCloud(costmap, SENSOR_POINTS_COSTMAP_LAYER_, out_sensor_points_cost_cloud_msg);
-  //   pub_sensor_points_cost_cloud_.publish(out_sensor_points_cost_cloud_msg);
-  // }
-  //
-  // if(use_objects_)
-  // {
-  //   sensor_msgs::PointCloud2 out_objects_cost_cloud_msg;
-  //   grid_map::GridMapRosConverter::toPointCloud(costmap, OBJECTS_COSTMAP_LAYER_, out_objects_cost_cloud_msg);
-  //   pub_objects_cost_cloud_.publish(out_objects_cost_cloud_msg);
-  // }
-  //
-  // if(use_wayarea_)
-  // {
-  //   sensor_msgs::PointCloud2 out_vectormap_cost_cloud_msg;
-  //   grid_map::GridMapRosConverter::toPointCloud(costmap, VECTORMAP_COSTMAP_LAYER_, out_vectormap_cost_cloud_msg);
-  //   pub_vectormap_cost_cloud_.publish(out_vectormap_cost_cloud_msg);
-  // }
-
-  // nav_msgs::OccupancyGrid out_occupancy_grid;
-  // grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
-  //                                         out_occupancy_grid);
-  // pub_occupancy_grid_.publish(out_occupancy_grid);
+  nav_msgs::OccupancyGrid out_occupancy_grid;
+  grid_map::GridMapRosConverter::toOccupancyGrid(costmap, COMBINED_COSTMAP_LAYER_, grid_min_value_, grid_max_value_,
+                                          out_occupancy_grid);
+  pub_occupancy_grid_.publish(out_occupancy_grid);
 
   grid_map_msgs::GridMap out_gridmap_msg;
   grid_map::GridMapRosConverter::toMessage(costmap, out_gridmap_msg);

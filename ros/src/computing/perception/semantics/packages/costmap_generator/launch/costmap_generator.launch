@@ -21,7 +21,7 @@
   <arg name="points_input" default="/points_no_ground" />
 
   <!-- Launch node -->
-  <node pkg="object_map" type="costmap_generator" name="costmap_generator" output="screen">
+  <node pkg="costmap_generator" type="costmap_generator" name="costmap_generator" output="screen">
     <param name="lidar_frame" value="$(arg lidar_frame)" />
     <param name="map_frame" value="$(arg map_frame)" />
     <param name="grid_min_value" value="$(arg grid_min_value)" />
