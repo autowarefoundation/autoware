@@ -23,7 +23,23 @@ class TestSuite: public ::testing::Test {
 public:
 	TestSuite(){}
 	~TestSuite(){}
+
+
 };
+
+class TestClass
+{
+public:
+  TestClass(){}
+
+  static int counter_;
+  static void increaseCounter(const std::string&)
+  {
+    counter_++;
+  }
+};
+
+int TestClass::counter_ = 0;
 
 TEST(TestSuite, CheckStateConstructor){
 
@@ -88,10 +104,6 @@ TEST(TestSuite, TestParentChild){
 	ASSERT_TRUE(third_state_ptr->getChild() == NULL) << "Child should be " << NULL;
 }
 
-void auxFunc(const std::string&){
-	std::cout << "Test output";
-};
-
 TEST(TestSuite, SetCallbacks){
 
 	std::string state_name;
@@ -111,26 +123,24 @@ TEST(TestSuite, SetCallbacks){
 	first_state_ptr->setChild(second_state_ptr);
 
 	// Set callbacks
-	std::function<void(const std::string&)> _f = &auxFunc;
+  int counter = TestClass::counter_;
+
+	std::function<void(const std::string&)> _f = &TestClass::increaseCounter;
 	first_state_ptr->setCallbackEntry(_f);
 	first_state_ptr->setCallbackExit(_f);
 	first_state_ptr->setCallbackUpdate(_f);
 
-	std::ostringstream oss;
-	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
-	std::cout.rdbuf(oss.rdbuf());
-
 	first_state_ptr->onEntry();
-	std::cout.rdbuf(p_cout_streambuf); // restore
-	ASSERT_TRUE(oss && oss.str() == "Test output") << "onEntry should show Test output";
+	counter++;
+	ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
 
 	first_state_ptr->onUpdate();
-	std::cout.rdbuf(p_cout_streambuf); // restore
-	ASSERT_TRUE(oss && oss.str() == "Test output") << "onUpdate should show Test output";
+  counter++;
+  ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
 
 	first_state_ptr->onExit();
-	std::cout.rdbuf(p_cout_streambuf); // restore
-	ASSERT_TRUE(oss && oss.str() == "Test output") << "onExit should show Test output";
+  counter++;
+  ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
 }
 
 TEST(TestSuite, SetKey){

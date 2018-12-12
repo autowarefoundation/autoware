@@ -25,6 +25,6 @@ public:
 
 int main(int argc, char **argv) {
 	testing::InitGoogleTest(&argc, argv);
-	ros::init(argc, argv, "TestNode");
+	//ros::init(argc, argv, "TestNode");
 	return RUN_ALL_TESTS();
 }
