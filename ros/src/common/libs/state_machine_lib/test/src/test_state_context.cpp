@@ -29,7 +29,7 @@ public:
 	~TestSuite(){}
 };
 
-TEST(TestSuite, StateContextConstructor){
+TEST_F(TestSuite, StateContextConstructor){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
@@ -56,7 +56,7 @@ TEST(TestSuite, StateContextConstructor){
 	ASSERT_STREQ(state_context.getAvailableTransition().c_str(), "started:Init,") << "Available transition should be: started:Init,";
 }
 
-TEST(TestSuite, ChangeStates){
+TEST_F(TestSuite, ChangeStates){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
@@ -71,7 +71,7 @@ void auxFunc2(const std::string&){
 	std::cout << "Test output";
 };
 
-TEST(TestSuite, SetCallbacksStateContext){
+TEST_F(TestSuite, SetCallbacksStateContext){
 
 	std::string file_name = "testStates.yaml";
 	std::string msg_name = "test_states";
