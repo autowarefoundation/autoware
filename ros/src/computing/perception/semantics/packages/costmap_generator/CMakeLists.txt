@@ -3,25 +3,25 @@ cmake_minimum_required(VERSION 2.8.12)
 project(costmap_generator)
 
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
-        roscpp
-        pcl_ros
-        grid_map_core
-        tf
-        autoware_msgs
-        vector_map
-        object_map
-        )
+  autoware_build_flags
+  roscpp
+  pcl_ros
+  grid_map_core
+  tf
+  autoware_msgs
+  vector_map
+  object_map
+)
 
 catkin_package(
-        CATKIN_DEPENDS
-          roscpp
-          pcl_ros
-          grid_map_core
-          tf
-          autoware_msgs
-          vector_map
-          object_map
+  CATKIN_DEPENDS
+    roscpp
+    pcl_ros
+    grid_map_core
+    tf
+    autoware_msgs
+    vector_map
+    object_map
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
@@ -74,3 +74,14 @@ install(DIRECTORY include/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         PATTERN ".svn" EXCLUDE
         )
+
+# if(CATKIN_ENABLE_TESTING)
+#   add_rostest_gtest(test-costmap_generator test/test_costmap_generator.test test/src/test_costmap_generator.cpp)
+#   target_link_libraries(test-costmap_generator ${catkin_LIBRARIES} costmap_generator_lib)
+# endif()
+
+if (CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  catkin_add_gtest(test-costmap_generator test/test_costmap_generator.test test/src/test_costmap_generator.cpp)
+  target_link_libraries(test-costmap_generator ${catkin_LIBRARIES} costmap_generator_lib)
+endif()

@@ -62,6 +62,8 @@ class Points2Costmap
                                               const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points);
 
   private:
+    friend class TestClass;
+
     double grid_length_x_;
     double grid_length_y_;
     double grid_resolution_;
@@ -69,6 +71,10 @@ class Points2Costmap
     double grid_position_y_;
     double y_cell_size_;
     double x_cell_size_;
+
+    /// \brief initialize gridmap parameters
+    /// \param[in] gridmap: gridmap object to be initialized
+    void initGridmapParam(const grid_map::GridMap& gridmap);
 
     /// \brief check if index is valid in the gridmap
     /// \param[in] grid_ind: grid index corresponding with one of pointcloud

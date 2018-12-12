@@ -56,6 +56,8 @@ class Objects2Costmap
                                              const double size_of_expansion_kernel,
                                              const autoware_msgs::DetectedObjectArray::ConstPtr& in_objects);
   private:
+    friend class TestClass;
+    
     const int NUMBER_OF_POINTS;
     const int NUMBER_OF_DIMENSIONS;
 
