@@ -49,7 +49,7 @@ CostmapGenerator::~CostmapGenerator()
 
 void CostmapGenerator::init()
 {
-  private_nh_.param<std::string>("velodyne_frame", velodyne_frame_, "velodyne");
+  private_nh_.param<std::string>("lidar_frame", lidar_frame_, "velodyne");
   private_nh_.param<std::string>("map_frame", map_frame_, "map");
   private_nh_.param<double>("grid_min_value", grid_min_value_, 0.0);
   private_nh_.param<double>("grid_max_value", grid_max_value_, 1.0);
@@ -63,7 +63,7 @@ void CostmapGenerator::init()
   private_nh_.param<bool>("use_objects", use_objects_, true);
   private_nh_.param<bool>("use_points", use_points_, true);
   private_nh_.param<bool>("use_wayarea", use_wayarea_, true);
-  private_nh_.param<double>("expand_rectangle_size", expand_rectangle_size_, 1.5);
+  private_nh_.param<double>("expand_rectangle_size", expand_rectangle_size_, 1.0);
   private_nh_.param<int>("size_of_expansion_kernel", size_of_expansion_kernel_, 9);
 
   initGridmap();
@@ -105,7 +105,7 @@ void CostmapGenerator::sensorPointsCallback(const sensor_msgs::PointCloud2::Cons
 
 void CostmapGenerator::initGridmap()
 {
-  costmap_.setFrameId(velodyne_frame_);
+  costmap_.setFrameId(lidar_frame_);
   costmap_.setGeometry(grid_map::Length(grid_length_x_, grid_length_y_), grid_resolution_,
                        grid_map::Position(grid_position_x_, grid_position_y_));
 
@@ -146,7 +146,7 @@ grid_map::Matrix CostmapGenerator::generateVectormapCostmap()
     {
       has_subscribed_wayarea_ = true;
       object_map::FillPolygonAreas(vectormap_costmap, area_points_, VECTORMAP_COSTMAP_LAYER_, grid_max_value_,
-                                   grid_min_value_, grid_min_value_, grid_max_value_, velodyne_frame_, map_frame_,
+                                   grid_min_value_, grid_min_value_, grid_max_value_, lidar_frame_, map_frame_,
                                    tf_listener_);
     }
   }

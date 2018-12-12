@@ -5609,7 +5609,7 @@ params :
       label : expand_rectangle_size
       min     : 0.0
       max     : 10.0
-      v       : 1.5
+      v       : 1.0
       cmd_param :
         dash      : ''
         delim     : ':='

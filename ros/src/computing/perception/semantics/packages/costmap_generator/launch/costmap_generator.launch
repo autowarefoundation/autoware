@@ -11,7 +11,7 @@
   <arg name="grid_position_y" default="0" />
   <arg name="maximum_lidar_height_thres" default="0.3" />
   <arg name="minimum_lidar_height_thres" default="-2.2" />
-  <arg name="expand_rectangle_size" default="1.5" />
+  <arg name="expand_rectangle_size" default="1.0" />
   <arg name="size_of_expansion_kernel" default="9" />
   <arg name="use_objects" default="true" />
   <arg name="use_points" default="true" />

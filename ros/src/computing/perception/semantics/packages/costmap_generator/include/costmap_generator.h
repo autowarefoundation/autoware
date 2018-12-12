@@ -67,7 +67,7 @@ private:
 
   bool has_subscribed_wayarea_;
 
-  std::string velodyne_frame_;
+  std::string lidar_frame_;
   std::string map_frame_;
   double grid_min_value_;
   double grid_max_value_;
