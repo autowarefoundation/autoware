@@ -177,11 +177,6 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
             if (in_objects[i].h < 0)
                 obj.height = 0;
 
-            obj.color.r = colors_[in_objects[i].class_type].val[0];
-            obj.color.g = colors_[in_objects[i].class_type].val[1];
-            obj.color.b = colors_[in_objects[i].class_type].val[2];
-            obj.color.a = 1.0f;
-
             obj.score = in_objects[i].score;
             if (use_coco_names_)
             {
@@ -192,8 +187,9 @@ void Yolo3DetectorNode::convert_rect_to_image_obj(std::vector< RectClassScore<fl
                 if (in_objects[i].class_type < custom_names_.size())
                     obj.label = custom_names_[in_objects[i].class_type];
                 else
-                    obj.label = "unknown label";
+                    obj.label = "unknown";
             }
+            obj.valid = true;
 
             out_message.objects.push_back(obj);
 
@@ -369,7 +365,7 @@ void Yolo3DetectorNode::Run()
         generateColors(colors_, 80);
     #endif
 
-    publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/vision_objects", 1);
+    publisher_objects_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/image_detector/objects", 1);
 
     ROS_INFO("Subscribing to... %s", image_raw_topic_str.c_str());
     subscriber_image_raw_ = node_handle_.subscribe(image_raw_topic_str, 1, &Yolo3DetectorNode::image_callback, this);

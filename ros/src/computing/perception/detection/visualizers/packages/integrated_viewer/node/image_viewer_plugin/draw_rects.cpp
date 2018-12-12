@@ -25,9 +25,9 @@ namespace integrated_viewer
     {
         // Generate color map to represent tracked object
 #if (CV_MAJOR_VERSION == 3)
-        generateColors(color_map_, 25);
+        generateColors(color_map_, 10);
 #else
-        cv::generateColors(color_map_, 25);
+        cv::generateColors(color_map_, 10);
 #endif
         car_image_ = cv::imread(DEFAULT_PATH + "car.png", cv::IMREAD_UNCHANGED);
         pedestrian_image_ = cv::imread(DEFAULT_PATH + "pedestrian.png", cv::IMREAD_UNCHANGED);
@@ -101,7 +101,7 @@ namespace integrated_viewer
                                                        cv::Point(x2,
                                                                  y2)));
                     cv::Mat color_fill(image_roi.size(), CV_8UC3,
-                                       cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b));
+                                       color_map_[0]);
                     double alpha = 0.3;
                     cv::addWeighted(color_fill, alpha, image_roi, 1.0 - alpha , 0.0, image_roi);
                 }
@@ -111,7 +111,7 @@ namespace integrated_viewer
                               cv::Point(detected_object.x, detected_object.y),
                               cv::Point(x2,
                                         y2),
-                              cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
+                              color_map_[0],
                               kRectangleThickness,
                               CV_AA,
                               0);
@@ -126,7 +126,6 @@ namespace integrated_viewer
         {
             return;
         }
-
         // Draw rectangles for each object
         for (const auto &detected_object : detected_objects->objects)
         {
@@ -137,7 +136,7 @@ namespace integrated_viewer
                           cv::Point(detected_object.x, detected_object.y),
                           cv::Point(detected_object.x + detected_object.width,
                                     detected_object.y + detected_object.height),
-                          cv::Scalar(detected_object.color.r, detected_object.color.g, detected_object.color.b),
+                          color_map_[0],
                           kRectangleThickness,
                           CV_AA,
                           0);

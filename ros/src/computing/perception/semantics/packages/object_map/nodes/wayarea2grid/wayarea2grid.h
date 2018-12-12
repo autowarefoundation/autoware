@@ -81,6 +81,7 @@ namespace object_map
 		double                  grid_length_y_;
 		double                  grid_position_x_;
 		double                  grid_position_y_;
+		double                  grid_position_z_;
 
 		tf::TransformListener   tf_listener_;
 
