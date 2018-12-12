@@ -1,5 +1,0 @@
-<launch>
-
-  <test test-name="test-costmap_generator" pkg="costmap_generator" type="test-costmap_generator" name="test" />
-
-</launch>
