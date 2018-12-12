@@ -34,37 +34,34 @@
 // headers in local directory
 #include "objects2costmap.h"
 
-
 // Constructor
-Objects2Costmap::Objects2Costmap():
-  NUMBER_OF_POINTS(4),
-  NUMBER_OF_DIMENSIONS(2)
+Objects2Costmap::Objects2Costmap() : NUMBER_OF_POINTS(4), NUMBER_OF_DIMENSIONS(2)
 {
 }
 
-Objects2Costmap::~Objects2Costmap() {}
+Objects2Costmap::~Objects2Costmap()
+{
+}
 
 Eigen::MatrixXd Objects2Costmap::makeRectanglePoints(const autoware_msgs::DetectedObject& in_object,
                                                      const double expand_rectangle_size)
 {
   double length = in_object.dimensions.x + expand_rectangle_size;
-  double width = in_object.dimensions.y  + expand_rectangle_size;
+  double width = in_object.dimensions.y + expand_rectangle_size;
   Eigen::MatrixXd origin_points(NUMBER_OF_DIMENSIONS, NUMBER_OF_POINTS);
-  origin_points << length/2, length/2, -length/2, -length/2,
-                   width/2,  -width/2,  -width/2, width/2;
+  origin_points << length / 2, length / 2, -length / 2, -length / 2, width / 2, -width / 2, -width / 2, width / 2;
 
   double yaw = tf::getYaw(in_object.pose.orientation);
   Eigen::MatrixXd rotation_matrix(NUMBER_OF_DIMENSIONS, NUMBER_OF_DIMENSIONS);
-  rotation_matrix << std::cos(yaw), -std::sin(yaw),
-                     std::sin(yaw),  std::cos(yaw);
+  rotation_matrix << std::cos(yaw), -std::sin(yaw), std::sin(yaw), std::cos(yaw);
   Eigen::MatrixXd rotated_points = rotation_matrix * origin_points;
 
   double dx = in_object.pose.position.x;
   double dy = in_object.pose.position.y;
   Eigen::MatrixXd transformed_points(NUMBER_OF_DIMENSIONS, NUMBER_OF_POINTS);
   Eigen::MatrixXd ones = Eigen::MatrixXd::Ones(1, NUMBER_OF_POINTS);
-  transformed_points.row(0) = rotated_points.row(0) + dx*ones;
-  transformed_points.row(1) = rotated_points.row(1) + dy*ones;
+  transformed_points.row(0) = rotated_points.row(0) + dx * ones;
+  transformed_points.row(1) = rotated_points.row(1) + dy * ones;
   return transformed_points;
 }
 
@@ -75,21 +72,20 @@ grid_map::Polygon Objects2Costmap::makePolygonFromObject(const autoware_msgs::De
   grid_map::Polygon polygon;
   polygon.setFrameId(in_object.header.frame_id);
   Eigen::MatrixXd rectangle_points = makeRectanglePoints(in_object, expand_rectangle_size);
-  for(int col = 0; col < rectangle_points.cols(); col++)
+  for (int col = 0; col < rectangle_points.cols(); col++)
   {
     polygon.addVertex(grid_map::Position(rectangle_points(0, col), rectangle_points(1, col)));
   }
   return polygon;
 }
 
-void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon,const std::string& gridmap_layer_name,
-                                        const float score, grid_map::GridMap& objects_costmap)
+void Objects2Costmap::setCostInPolygon(const grid_map::Polygon& polygon, const std::string& gridmap_layer_name,
+                                       const float score, grid_map::GridMap& objects_costmap)
 {
-  for (grid_map::PolygonIterator iterator(objects_costmap, polygon);
-    !iterator.isPastEnd(); ++iterator)
+  for (grid_map::PolygonIterator iterator(objects_costmap, polygon); !iterator.isPastEnd(); ++iterator)
   {
     const float current_score = objects_costmap.at(gridmap_layer_name, *iterator);
-    if(score > current_score)
+    if (score > current_score)
     {
       objects_costmap.at(gridmap_layer_name, *iterator) = score;
     }
@@ -108,22 +104,25 @@ grid_map::Matrix Objects2Costmap::makeCostmapFromObjects(const grid_map::GridMap
   objects_costmap.add(expanded_rectangle_gridmap_layer_name, 0);
 
   const double not_expand_rectangle_size = 0;
-  for (const auto& object: in_objects->objects)
+  for (const auto& object : in_objects->objects)
   {
     grid_map::Polygon polygon = makePolygonFromObject(object, not_expand_rectangle_size);
     grid_map::Polygon expanded_polygon = makePolygonFromObject(object, expand_rectangle_size);
     setCostInPolygon(polygon, gridmap_layer_name, object.score, objects_costmap);
     setCostInPolygon(expanded_polygon, expanded_rectangle_gridmap_layer_name, object.score, objects_costmap);
   }
-  const grid_map::SlidingWindowIterator::EdgeHandling edge_handling = grid_map::SlidingWindowIterator::EdgeHandling::CROP;
-  for (grid_map::SlidingWindowIterator iterator(objects_costmap, expanded_rectangle_gridmap_layer_name, edge_handling, size_of_expansion_kernel);
-      !iterator.isPastEnd(); ++iterator)
+  const grid_map::SlidingWindowIterator::EdgeHandling edge_handling =
+      grid_map::SlidingWindowIterator::EdgeHandling::CROP;
+  for (grid_map::SlidingWindowIterator iterator(objects_costmap, expanded_rectangle_gridmap_layer_name, edge_handling,
+                                                size_of_expansion_kernel);
+       !iterator.isPastEnd(); ++iterator)
   {
-    objects_costmap.at(expanded_rectangle_gridmap_layer_name, *iterator) = iterator.getData().meanOfFinites(); // Blurring.
+    objects_costmap.at(expanded_rectangle_gridmap_layer_name, *iterator) =
+        iterator.getData().meanOfFinites();  // Blurring.
   }
-  
-  objects_costmap[gridmap_layer_name] = objects_costmap[gridmap_layer_name].cwiseMax(
-                                        objects_costmap[expanded_rectangle_gridmap_layer_name]);
+
+  objects_costmap[gridmap_layer_name] =
+      objects_costmap[gridmap_layer_name].cwiseMax(objects_costmap[expanded_rectangle_gridmap_layer_name]);
 
   return objects_costmap[gridmap_layer_name];
 }

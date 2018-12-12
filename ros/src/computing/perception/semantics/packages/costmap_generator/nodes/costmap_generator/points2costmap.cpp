@@ -30,13 +30,14 @@
 
 #include "points2costmap.h"
 
-
 // Constructor
 Points2Costmap::Points2Costmap()
 {
 }
 
-Points2Costmap::~Points2Costmap() {}
+Points2Costmap::~Points2Costmap()
+{
+}
 
 void Points2Costmap::initGridmapParam(const grid_map::GridMap& gridmap)
 {
@@ -52,8 +53,8 @@ bool Points2Costmap::isValidInd(const grid_map::Index& grid_ind)
   bool is_valid = false;
   int x_grid_ind = grid_ind.x();
   int y_grid_ind = grid_ind.y();
-  if (x_grid_ind >= 0 && x_grid_ind < std::ceil(grid_length_x_*(1/grid_resolution_)) &&
-      y_grid_ind >= 0 && y_grid_ind < std::ceil(grid_length_y_*(1/grid_resolution_)))
+  if (x_grid_ind >= 0 && x_grid_ind < std::ceil(grid_length_x_ * (1 / grid_resolution_)) && y_grid_ind >= 0 &&
+      y_grid_ind < std::ceil(grid_length_y_ * (1 / grid_resolution_)))
   {
     is_valid = true;
   }
@@ -75,21 +76,21 @@ grid_map::Index Points2Costmap::fetchGridIndexFromPoint(const pcl::PointXYZ& poi
   return index;
 }
 
-std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridCell(const grid_map::GridMap& gridmap,
-                                                                    const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
+std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridCell(
+    const grid_map::GridMap& gridmap, const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
-  double y_cell_size = std::ceil(grid_length_y_*(1/grid_resolution_));
-  double x_cell_size = std::ceil(grid_length_x_*(1/grid_resolution_));
-  std::vector<double> z_vec ;
+  double y_cell_size = std::ceil(grid_length_y_ * (1 / grid_resolution_));
+  double x_cell_size = std::ceil(grid_length_x_ * (1 / grid_resolution_));
+  std::vector<double> z_vec;
   std::vector<std::vector<double>> vec_y_z(y_cell_size, z_vec);
   std::vector<std::vector<std::vector<double>>> vec_x_y_z(x_cell_size, vec_y_z);
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr in_sensor_points(new pcl::PointCloud<pcl::PointXYZ>);
   pcl::fromROSMsg(*in_sensor_points_msg, *in_sensor_points);
-  for(const auto& point: *in_sensor_points)
+  for (const auto& point : *in_sensor_points)
   {
     grid_map::Index grid_ind = fetchGridIndexFromPoint(point);
-    if(isValidInd(grid_ind))
+    if (isValidInd(grid_ind))
     {
       vec_x_y_z[grid_ind.x()][grid_ind.y()].push_back(point.z);
     }
@@ -98,26 +99,24 @@ std::vector<std::vector<std::vector<double>>> Points2Costmap::assignPoints2GridC
 }
 
 grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_thres,
-                                                  const double minimum_lidar_height_thres,
-                                                  const double grid_min_value,
-                                                  const double grid_max_value,
-                                                  const grid_map::GridMap& gridmap,
+                                                  const double minimum_lidar_height_thres, const double grid_min_value,
+                                                  const double grid_max_value, const grid_map::GridMap& gridmap,
                                                   const std::string& gridmap_layer_name,
                                                   const std::vector<std::vector<std::vector<double>>> grid_vec)
 {
   grid_map::Matrix gridmap_data = gridmap[gridmap_layer_name];
-  for(size_t x_ind = 0; x_ind < grid_vec.size(); x_ind++)
+  for (size_t x_ind = 0; x_ind < grid_vec.size(); x_ind++)
   {
-    for(size_t y_ind = 0; y_ind < grid_vec[0].size(); y_ind++)
+    for (size_t y_ind = 0; y_ind < grid_vec[0].size(); y_ind++)
     {
-      if(grid_vec[x_ind][y_ind].size() == 0)
+      if (grid_vec[x_ind][y_ind].size() == 0)
       {
         gridmap_data(x_ind, y_ind) = grid_min_value;
         continue;
       }
-      for(const auto& z: grid_vec[x_ind][y_ind])
+      for (const auto& z : grid_vec[x_ind][y_ind])
       {
-        if(z > maximum_height_thres || z < minimum_lidar_height_thres)
+        if (z > maximum_height_thres || z < minimum_lidar_height_thres)
         {
           continue;
         }
@@ -129,18 +128,14 @@ grid_map::Matrix Points2Costmap::calculateCostmap(const double maximum_height_th
   return gridmap_data;
 }
 
-grid_map::Matrix Points2Costmap::makeCostmapFromSensorPoints(const double maximum_height_thres,
-                                                          const double minimum_lidar_height_thres,
-                                                          const double grid_min_value,
-                                                          const double grid_max_value,
-                                                          const grid_map::GridMap& gridmap,
-                                                          const std::string& gridmap_layer_name,
-                                                          const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
+grid_map::Matrix Points2Costmap::makeCostmapFromSensorPoints(
+    const double maximum_height_thres, const double minimum_lidar_height_thres, const double grid_min_value,
+    const double grid_max_value, const grid_map::GridMap& gridmap, const std::string& gridmap_layer_name,
+    const sensor_msgs::PointCloud2::ConstPtr& in_sensor_points_msg)
 {
   initGridmapParam(gridmap);
   std::vector<std::vector<std::vector<double>>> grid_vec = assignPoints2GridCell(gridmap, in_sensor_points_msg);
-  grid_map::Matrix costmap = calculateCostmap(maximum_height_thres, minimum_lidar_height_thres,
-                                              grid_min_value, grid_max_value,
-                                              gridmap, gridmap_layer_name, grid_vec);
+  grid_map::Matrix costmap = calculateCostmap(maximum_height_thres, minimum_lidar_height_thres, grid_min_value,
+                                              grid_max_value, gridmap, gridmap_layer_name, grid_vec);
   return costmap;
 }

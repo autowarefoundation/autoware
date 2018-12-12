@@ -28,11 +28,10 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ********************
  */
-// #include <ros/ros.h>
 
 #include "costmap_generator.h"
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "costmap_generator");
   CostmapGenerator costmap_generator;
