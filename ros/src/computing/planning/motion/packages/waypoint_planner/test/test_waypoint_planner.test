@@ -1,5 +1,0 @@
-<launch>
-
-  <test test-name="test-waypoint_planner" pkg="waypoint_planner" type="test-waypoint_planner" name="test"/>
-
-</launch>
