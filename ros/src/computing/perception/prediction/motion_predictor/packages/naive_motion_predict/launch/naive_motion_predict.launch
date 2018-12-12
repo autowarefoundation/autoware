@@ -5,7 +5,7 @@
     <arg name="sensor_height" default="2.0"/>
     <arg name="input_topic" default="/detection/objects"/>
 
-    <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict" output="screen">
+    <node pkg="naive_motion_predict" type="naive_motion_predict" name="naive_motion_predict">
         <param name="interval_sec" value="$(arg interval_sec)"/>
         <param name="num_prediction" value="$(arg num_prediction)"/>
         <param name="sensor_height" value="$(arg sensor_height)"/>

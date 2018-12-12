@@ -206,6 +206,10 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
     output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
     predicted_lines.markers.push_back(predicted_line);
   }
+  for (auto &object : output.objects)
+  {
+    object.valid = true;
+  }
   predicted_objects_pub_.publish(output);
   predicted_paths_pub_.publish(predicted_lines);
 }

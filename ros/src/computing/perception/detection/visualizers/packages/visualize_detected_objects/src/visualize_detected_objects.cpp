@@ -1,31 +1,20 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
+ * Copyright 2018 Nagoya University. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ ********************
+ *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
  */
 
 #include "visualize_detected_objects.h"
@@ -69,6 +58,10 @@ VisualizeDetectedObjects::VisualizeDetectedObjects() : arrow_height_(0.5), label
   private_nh_.param<std::vector<double>>("box_color", color, {51.,128.,204.,0.8});
   box_color_ = ParseColor(color);
   ROS_INFO("[%s] box_color: %s", __APP_NAME__, ColorToString(box_color_).c_str());
+
+  private_nh_.param<std::vector<double>>("model_color", color, {190.,190.,190.,0.5});
+  model_color_ = ParseColor(color);
+  ROS_INFO("[%s] model_color: %s", __APP_NAME__, ColorToString(model_color_).c_str());
 
   private_nh_.param<std::vector<double>>("centroid_color", color, {77.,121.,255.,0.8});
   centroid_color_ = ParseColor(color);
@@ -136,9 +129,8 @@ std_msgs::ColorRGBA VisualizeDetectedObjects::ParseColor(const std::vector<doubl
 
 void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::DetectedObjectArray &in_objects)
 {
-  visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers;
-  visualization_msgs::MarkerArray polygon_hulls;
-  visualization_msgs::MarkerArray bounding_boxes;
+  visualization_msgs::MarkerArray label_markers, arrow_markers, centroid_markers, polygon_hulls, bounding_boxes,
+                                  object_models;
 
   visualization_msgs::MarkerArray visualization_markers;
 
@@ -148,6 +140,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   arrow_markers = ObjectsToArrows(in_objects);
   polygon_hulls = ObjectsToHulls(in_objects);
   bounding_boxes = ObjectsToBoxes(in_objects);
+  object_models = ObjectsToModels(in_objects);
   centroid_markers = ObjectsToCentroids(in_objects);
 
   visualization_markers.markers.insert(visualization_markers.markers.end(),
@@ -158,6 +151,8 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
                                        polygon_hulls.markers.begin(), polygon_hulls.markers.end());
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        bounding_boxes.markers.begin(), bounding_boxes.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       object_models.markers.begin(), object_models.markers.end());
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        centroid_markers.markers.begin(), centroid_markers.markers.end());
 
@@ -240,6 +235,66 @@ VisualizeDetectedObjects::ObjectsToBoxes(const autoware_msgs::DetectedObjectArra
   }
   return object_boxes;
 }//ObjectsToBoxes
+
+visualization_msgs::MarkerArray
+VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArray &in_objects)
+{
+  visualization_msgs::MarkerArray object_models;
+
+  for (auto const &object: in_objects.objects)
+  {
+    if (IsObjectValid(object) &&
+      object.label != "unknown" &&
+        (object.dimensions.x + object.dimensions.y + object.dimensions.z) < object_max_linear_size_)
+    {
+      visualization_msgs::Marker model;
+
+      model.lifetime = ros::Duration(marker_display_duration_);
+      model.header = in_objects.header;
+      model.type = visualization_msgs::Marker::MESH_RESOURCE;
+      model.action = visualization_msgs::Marker::ADD;
+      model.ns = ros_namespace_ + "/model_markers";
+      model.mesh_use_embedded_materials = false;
+      model.color = model_color_;
+      if(object.label == "car")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/car.dae";
+      }
+      else if (object.label == "person")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/person.dae";
+      }
+      else if (object.label == "bicycle" || object.label == "bike")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/bike.dae";
+      }
+      else if (object.label == "bus")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/bus.dae";
+      }
+      else if(object.label == "truck")
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/truck.dae";
+      }
+      else
+      {
+        model.mesh_resource = "package://detected_objects_visualizer/models/box.dae";
+      }
+      model.scale.x = 1;
+      model.scale.y = 1;
+      model.scale.z = 1;
+      model.id = marker_id_++;
+      model.pose.position = object.pose.position;
+      model.pose.position.z-= object.dimensions.z/2;
+
+      if (object.pose_reliable)
+        model.pose.orientation = object.pose.orientation;
+
+      object_models.markers.push_back(model);
+    }
+  }
+  return object_models;
+}//ObjectsToModels
 
 visualization_msgs::MarkerArray
 VisualizeDetectedObjects::ObjectsToHulls(const autoware_msgs::DetectedObjectArray &in_objects)

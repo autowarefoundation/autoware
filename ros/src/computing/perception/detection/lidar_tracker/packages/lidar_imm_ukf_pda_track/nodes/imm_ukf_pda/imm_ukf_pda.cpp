@@ -372,7 +372,6 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
   }
   timestamp_ = timestamp;
   init_ = true;
-  return;
 }
 
 void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
@@ -622,8 +621,8 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
   for(size_t i=0; i< matching_objects.size(); i++)
   {
     size_t oldest_object_index = 0;
-    size_t oldest_tracker_index = 0;
     int oldest_lifespan = -1;
+    std::string best_label;
     for(size_t j=0; j<matching_objects[i].size(); j++)
     {
       size_t current_index = matching_objects[i][j];
@@ -632,7 +631,11 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
       {
         oldest_lifespan = current_lifespan;
         oldest_object_index = current_index;
-        oldest_tracker_index = in_tracker_indices[current_index];
+      }
+      if (!targets_[in_tracker_indices[current_index]].label_.empty() &&
+        targets_[in_tracker_indices[current_index]].label_ != "unknown")
+      {
+        best_label = targets_[in_tracker_indices[current_index]].label_;
       }
     }
     // delete nearby targets except for the oldest target
@@ -646,11 +649,10 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
     }
     autoware_msgs::DetectedObject best_object;
     best_object = in_detected_objects.objects[oldest_object_index];
-    if (best_object.label!= "unknown"
-        && !targets_[oldest_tracker_index].label_.empty()
-        && targets_[oldest_tracker_index].label_ != "unknown")
+    if (best_label != "unknown"
+        && !best_label.empty())
     {
-      best_object.label = targets_[oldest_tracker_index].label_;
+      best_object.label = best_label;
     }
 
     resulting_objects.objects.push_back(best_object);

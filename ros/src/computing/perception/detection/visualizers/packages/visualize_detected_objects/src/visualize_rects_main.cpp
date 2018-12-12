@@ -17,12 +17,12 @@
  *  v1.0: amc-nu (abrahammonrroy@yahoo.com)
  */
 
-#include "visualize_detected_objects.h"
+#include "visualize_rects.h"
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "visualize_detected_objects");
-  VisualizeDetectedObjects app;
+  ros::init(argc, argv, "visualize_rects");
+  VisualizeRects app;
   ros::spin();
 
   return 0;
