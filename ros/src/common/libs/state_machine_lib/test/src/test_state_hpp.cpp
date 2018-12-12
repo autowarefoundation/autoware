@@ -126,26 +126,22 @@ TEST_F(TestSuite, SetCallbacks){
 	// Set callbacks
   int counter = test_obj_.counter_;
 
-  std::cerr << "------------------_" << std::endl;
-  std::cerr << counter << std::endl;
-  std::cerr << "-------------------" << std::endl;
+  std::function<void(const std::string&)> _f = [this] (const std::string&) { test_obj_.increaseCounter(std::string("string")); };
+	first_state_ptr->setCallbackEntry(_f);
+	first_state_ptr->setCallbackExit(_f);
+	first_state_ptr->setCallbackUpdate(_f);
 
-	std::function<void(const std::string&)> _f = &TestClass::increaseCounter;
-//	first_state_ptr->setCallbackEntry(_f);
-//	first_state_ptr->setCallbackExit(_f);
-//	first_state_ptr->setCallbackUpdate(_f);
-//
-//	first_state_ptr->onEntry();
-//	counter++;
-//	ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
-//
-//	first_state_ptr->onUpdate();
-//  counter++;
-//  ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
-//
-//	first_state_ptr->onExit();
-//  counter++;
-//  ASSERT_EQ(TestClass::counter_, counter) << "counter should be : " << counter;
+	first_state_ptr->onEntry();
+	counter++;
+	ASSERT_EQ(test_obj_.counter_, counter) << "counter should be : " << counter;
+
+	first_state_ptr->onUpdate();
+  counter++;
+  ASSERT_EQ(test_obj_.counter_, counter) << "counter should be : " << counter;
+
+	first_state_ptr->onExit();
+  counter++;
+  ASSERT_EQ(test_obj_.counter_, counter) << "counter should be : " << counter;
 }
 
 TEST_F(TestSuite, SetKey){
