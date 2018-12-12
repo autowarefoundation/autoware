@@ -1,16 +1,9 @@
 # The `costmap_generator` Package
-
-This package contains nodes to extract information from the LiDAR sensor, from the result of the perception module and/or from ADAS Maps.
-The processed result is published as GridMaps (grid_map) and occupancy grids(nav_msgs).
-
----
-
 ## costmap_generator
 
-This node reads PointCloud and/or DetectedObjectArray amd/or VectorMap and creates an occupancy grid and grid map based on the data contained in it.
+This node reads PointCloud and/or DetectedObjectArray and/or VectorMap and creates an occupancy grid and grid map.
 
-The subscribed PointCloud topic should be a processed PointCloud with the ground previously removed.
-The default input is set as the output PointCloud result from the node `euclidean_clustering` of the `lidar_tracker` package. However, another option might be the output of the `ray_ground_filter` or `ring_ground_filter`, both belonging to the `points_preprocessor` in the *Sensing* package.
+You need to specify at least one of three topics to generate costmap.
 
 The values contained within the OccupancyGrid range from 0-100, representing a probability percentage where 0 represents free space and 100 represents occupied space.
 
