@@ -60,7 +60,7 @@
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/PlanningHelpers.h"
 #include "op_planner/LocalPlannerH.h"
-#include "RosHelpers.h"
+#include "ROSHelpers.h"
 #include "op_simu/SimpleTracker.h"
 
 #include <opencv/cv.h>

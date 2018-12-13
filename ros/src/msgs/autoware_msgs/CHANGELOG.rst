@@ -2,16 +2,19 @@
 Changelog for package autoware_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
 * Moved CAN mesages to autoware_can_msgs
 * Moved configuration messages to autoware_config_msgs
-* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
   * Switch message files to pascal case
   * Switch message names to pascal case in Runtime Manager
   * Switch message names to pascal case in *.yaml
   * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
-* Feature/compare map filter (`#1559 <https://github.com/kfunaoka/Autoware/issues/1559>`_)
+* Feature/compare map filter (`#1559 <https://github.com/CPFL/Autoware/issues/1559>`_)
   * add compare map filter
   * add README
   * add copyright
@@ -58,7 +61,7 @@ Changelog for package autoware_msgs
   * Added Runtime manager entry
   * * Added Publication of non fused objects
   * Fixed topic names
-* add max_scan_range to ConfigNdtMapping/ConfigApproximateNdtMapping
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
 * Update OpenPlanner libraries (op_planner, op_utitity, op_ros_helpers)
   Update ring ground filter with latest implementation
   Update lidar_kf_contour_track with latest implementation

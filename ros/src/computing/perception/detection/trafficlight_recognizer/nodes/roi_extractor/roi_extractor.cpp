@@ -17,17 +17,17 @@
 #include <autoware_msgs/Signals.h>
 
 
-void RoiExtractor::ImageRawCallback(const sensor_msgs::Image &image) {
+void ROIExtractor::ImageRawCallback(const sensor_msgs::Image &image) {
   // Acquire frame image from ros topic
   cv_bridge::CvImagePtr cv_image = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8);
   frame_ = cv_image->image.clone();
 
   // Save this topic's time stamp so that same image will not be processed more than twice
   frame_timestamp_ = image.header.stamp;
-} // void RoiExtractor::ImageRawCallback()
+} // void ROIExtractor::ImageRawCallback()
 
 
-void RoiExtractor::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
+void ROIExtractor::ROISignalCallback(const autoware_msgs::Signals::ConstPtr &extracted_pos) {
   // If frame image has not been updated, do nothing
   if (frame_timestamp_ == previous_timestamp_) {
     return;
@@ -61,10 +61,10 @@ void RoiExtractor::RoiSignalCallback(const autoware_msgs::Signals::ConstPtr &ext
   
   previous_timestamp_ = frame_timestamp_;
   previous_saved_frame_ = roi.clone();
-} // void RoiExtractor::RoiSignalCallback()
+} // void ROIExtractor::ROISignalCallback()
 
 
-void RoiExtractor::CreateTargetDirectory(std::string base_name) {
+void ROIExtractor::CreateTargetDirectory(std::string base_name) {
   // Extracted ROI's images will be saved in "[base_name]/tlr_TrainingDataSet/Images"
   std::string target_directory_name = base_name + "/tlr_TrainingDataSet/Images/";
   
@@ -82,10 +82,10 @@ void RoiExtractor::CreateTargetDirectory(std::string base_name) {
   // Save directory name into class member
   target_directory_ = target_directory_name;
 
-} // void RoiExtractor::CreateTargetDirectory
+} // void ROIExtractor::CreateTargetDirectory
 
 
-int RoiExtractor::CountFileNum(std::string directory_name) {
+int ROIExtractor::CountFileNum(std::string directory_name) {
   int file_num = 0;
   struct dirent *entry;
   DIR *directory_handler = opendir(directory_name.c_str());
@@ -103,10 +103,10 @@ int RoiExtractor::CountFileNum(std::string directory_name) {
   closedir(directory_handler);
 
   return file_num;
-} //int RoiExtractor::CountFileNum()
+} //int ROIExtractor::CountFileNum()
 
 
-void RoiExtractor::MakeDirectoryTree(const std::string &target,
+void ROIExtractor::MakeDirectoryTree(const std::string &target,
                                      const std::string &base,
                                      const mode_t &mode) {
   // Extract directory subtree structure
@@ -123,12 +123,12 @@ void RoiExtractor::MakeDirectoryTree(const std::string &target,
     separator_start = separator_end;
     separator_end = sub_tree.find("/", separator_start + 1);
   }
-} // void RoiExtractor::MakeDirectoryTree()
+} // void ROIExtractor::MakeDirectoryTree()
 
 
 // calculae similarity of specified two images
 // by comparing their histogram, which is sensitive filter for color
-double RoiExtractor::CalculateSimilarity(const cv::Mat &image1, const cv::Mat &image2) {
+double ROIExtractor::CalculateSimilarity(const cv::Mat &image1, const cv::Mat &image2) {
   if (image1.empty() || image2.empty()) {
     return 0.0;
   }
@@ -170,7 +170,7 @@ double RoiExtractor::CalculateSimilarity(const cv::Mat &image1, const cv::Mat &i
    double similarity = cv::compareHist(histogram1, histogram2, CV_COMP_CORREL);
 
    return similarity;
-} // void RoiExtractor::CalculateSimilarity()
+} // void ROIExtractor::CalculateSimilarity()
 
 
 // Entry Point of this node
@@ -190,19 +190,19 @@ int main (int argc, char *argv[]) {
   private_node_handler.param<double>("similarity_threshold", similarity_threshold, 0.9); // The default similarity threshold is 0.9
 
   // Get directory name which roi images will be saved
-  RoiExtractor extractor(minimum_height, similarity_threshold);
+  ROIExtractor extractor(minimum_height, similarity_threshold);
   extractor.CreateTargetDirectory(target_directory_name);
 
   // Launch callback function to subscribe images and signal position
   ros::NodeHandle node_handler;
   ros::Subscriber image_subscriber = node_handler.subscribe(image_topic_name,
                                                             1,
-                                                            &RoiExtractor::ImageRawCallback,
+                                                            &ROIExtractor::ImageRawCallback,
                                                             &extractor);
 
   ros::Subscriber roi_signal_subscriber = node_handler.subscribe("/roi_signal",
                                                                  1,
-                                                                 &RoiExtractor::RoiSignalCallback,
+                                                                 &ROIExtractor::ROISignalCallback,
                                                                  &extractor);
   
   ros::spin();

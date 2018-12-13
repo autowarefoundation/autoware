@@ -85,7 +85,7 @@ public:
     ros::Publisher pub_PredStepSignal;
 	TESTING_MODE m_TestMode;
 
-	//Rosbag reader
+	//ROSbag reader
 private:
 	BagReaderParams m_BagParams;
 	rosbag::Bag m_bag;
@@ -108,7 +108,7 @@ private:
 	UtilityHNS::BagTopicPlayer<geometry_msgs::PoseStamped> m_PoseReader;
 
 
-	bool OpenRosBag();
+	bool OpenROSBag();
 	void BagReaderModeMainLoop();
 	bool ReadNextFrame();
 	bool ReadPrevFrame();

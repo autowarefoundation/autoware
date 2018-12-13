@@ -36,16 +36,16 @@ NaiveMotionPredict::NaiveMotionPredict() : nh_(), private_nh_("~")
   private_nh_.param<int>("num_prediction", num_prediction_, 10);
   private_nh_.param<double>("sensor_height_", sensor_height_, 2.0);
 
-  predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/objects", 1);
+  predicted_objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/prediction/motion_predictor/objects", 1);
   predicted_paths_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("/prediction/motion_predictor/path_markers", 1);
-  detected_objects_sub_ = nh_.subscribe("/detection/lidar_tracker/objects", 1, &NaiveMotionPredict::objectsCallback, this);
+  detected_objects_sub_ = nh_.subscribe("/detection/objects", 1, &NaiveMotionPredict::objectsCallback, this);
 }
 
 NaiveMotionPredict::~NaiveMotionPredict()
 {
 }
 
-void NaiveMotionPredict::initializeRosmarker(const std_msgs::Header& header, const geometry_msgs::Point& position,
+void NaiveMotionPredict::initializeROSmarker(const std_msgs::Header& header, const geometry_msgs::Point& position,
                                              const int object_id, visualization_msgs::Marker& predicted_line)
 {
   predicted_line.lifetime = ros::Duration(0.2);
@@ -74,7 +74,7 @@ void NaiveMotionPredict::makePrediction(const autoware_msgs::DetectedObject& obj
                                         visualization_msgs::Marker& predicted_line)
 {
   autoware_msgs::DetectedObject target_object = object;
-  initializeRosmarker(object.header, object.pose.position, object.id, predicted_line);
+  initializeROSmarker(object.header, object.pose.position, object.id, predicted_line);
   for (int i = 0; i < num_prediction_; i++)
   {
     autoware_msgs::DetectedObject predicted_object = generatePredictedObject(target_object);
@@ -205,6 +205,10 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
       continue;
     }
     predicted_lines.markers.push_back(predicted_line);
+  }
+  for (auto &object : output.objects)
+  {
+    object.valid = true;
   }
   predicted_objects_pub_.publish(output);
   predicted_paths_pub_.publish(predicted_lines);

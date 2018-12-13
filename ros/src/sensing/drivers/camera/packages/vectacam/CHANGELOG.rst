@@ -2,6 +2,9 @@
 Changelog for package vectacam
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
 
@@ -76,7 +79,7 @@ Changelog for package vectacam
 
 1.2.0 (2017-06-07)
 ------------------
-* Kf Added
+* KF Added
   Euclidean Cluster improved
 * Contributors: AMC
 

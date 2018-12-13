@@ -38,11 +38,11 @@
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, __APP_NAME__);
+  ros::init(argc, argv, __APP_NAME__);
 
-    RosRangeVisionFusionApp app;
+  ROSRangeVisionFusionApp app;
 
-    app.Run();
+  app.Run();
 
-    return 0;
+  return 0;
 }

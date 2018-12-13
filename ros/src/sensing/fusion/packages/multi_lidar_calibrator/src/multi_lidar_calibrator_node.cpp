@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, __APP_NAME__);
 
-	RosMultiLidarCalibratorApp app;
+	ROSMultiLidarCalibratorApp app;
 
 	app.Run();
 

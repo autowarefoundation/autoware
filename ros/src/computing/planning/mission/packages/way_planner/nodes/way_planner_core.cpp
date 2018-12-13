@@ -370,7 +370,7 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
-	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
+	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
 }
 
 bool way_planner_core::GenerateGlobalPlan(PlannerHNS::WayPoint& startPoint, PlannerHNS::WayPoint& goalPoint, std::vector<std::vector<PlannerHNS::WayPoint> >& generatedTotalPaths)
@@ -445,17 +445,17 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	visualization_msgs::MarkerArray pathsToVisualize;
 
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
-		RosHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
+		ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(generatedTotalPaths.at(i), lane_array);
 
 	std_msgs::ColorRGBA total_color;
 	total_color.r = 0;
 	total_color.g = 0.7;
 	total_color.b = 1.0;
 	total_color.a = 0.9;
-	RosHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
-	RosHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
-	RosHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
-	//RosHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayMarker(total_color, lane_array, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayOrientationMarker(lane_array, pathsToVisualize);
+	ROSHelpers::createGlobalLaneArrayVelocityMarker(lane_array, pathsToVisualize);
+	//ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(generatedTotalPaths, pathsToVisualize);
 	pub_PathsRviz.publish(pathsToVisualize);
 	pub_Paths.publish(lane_array);
 
@@ -568,7 +568,7 @@ bool way_planner_core::HMI_DoOneStep()
 		startPoint = m_CurrentPose;
 
 	PlannerHNS::WayPoint* currOptions = 0;
-	RosHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
+	ROSHelpers::FindIncommingBranches(m_GeneratedTotalPaths,startPoint, min_distance, branches, currOptions);
 	if(branches.size() > 0)
 	{
 		HMI_MSG msg;
@@ -685,7 +685,7 @@ void way_planner_core::PlannerMainLoop()
 			PlannerHNS::MappingHelpers::LoadKML(m_params.KmlMapPath, m_Map);
 			//PlannerHNS::MappingHelpers::WriteKML("/home/hatem/SimuLogs/KmlMaps/ToyotaMap2017.kml", "/home/hatem/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
-			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 			pub_MapRviz.publish(map_marker_array);
 		}
 		else if (m_params.mapSource == MAP_FOLDER && !m_bKmlMap)
@@ -694,7 +694,7 @@ void way_planner_core::PlannerMainLoop()
 			PlannerHNS::MappingHelpers::ConstructRoadNetworkFromDataFiles(m_params.KmlMapPath, m_Map, true);
 			//PlannerHNS::MappingHelpers::WriteKML("/home/hatem/SimuLogs/KmlMaps/Moriyama_NoTransform_2017.kml", "/home/hatem/SimuLogs/KmlMaps/PlannerX_MapTemplate.kml", m_Map);
 			visualization_msgs::MarkerArray map_marker_array;
-			RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+			ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 
 			pub_MapRviz.publish(map_marker_array);
 
@@ -706,7 +706,7 @@ void way_planner_core::PlannerMainLoop()
 				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
 				 UpdateRoadMap(m_AwMap,m_Map);
 				visualization_msgs::MarkerArray map_marker_array;
-				RosHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
+				ROSHelpers::ConvertFromRoadNetworkToAutowareVisualizeMapFormat(m_Map, map_marker_array);
 				pub_MapRviz.publish(map_marker_array);
 			 }
 		}

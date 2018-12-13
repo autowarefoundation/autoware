@@ -2,9 +2,12 @@
 Changelog for package points2image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
 1.9.0 (2018-10-31)
 ------------------
-* [fix] PascalCase messages (`#1408 <https://github.com/kfunaoka/Autoware/issues/1408>`_)
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
   * Switch message files to pascal case
   * Switch message names to pascal case in Runtime Manager
   * Switch message names to pascal case in *.yaml
@@ -244,7 +247,7 @@ Changelog for package points2image
 * Correct calibration_camera_lidar dependnecy about message header
 * Correct dependency name
 * Delete image size fixing
-* Ros-parameterize all defined value in points2vscan
+* ROS-parameterize all defined value in points2vscan
   Now we can specify parameters value from launch file
 * Update threshold
   So that vscan can work for close-range obstacles when velodyne 32 is

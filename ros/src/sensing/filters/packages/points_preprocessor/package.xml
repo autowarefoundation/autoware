@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>points_preprocessor</name>
-    <version>1.9.0</version>
+    <version>1.9.1</version>
     <description>The points_preprocessor package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc-nu</maintainer>
