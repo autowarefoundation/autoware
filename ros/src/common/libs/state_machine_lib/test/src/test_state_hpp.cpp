@@ -54,18 +54,6 @@ TEST_F(TestSuite, CheckStateConstructor){
 	ASSERT_TRUE(state.getParent() == NULL) << "parent_state_ pointer should be NULL";
 	ASSERT_STREQ(state.getEnteredKey().c_str(), "") << "entered_key should be " << "";
 
-
-	std::ostringstream oss;
-	std::streambuf* p_cout_streambuf = std::cout.rdbuf();
-	std::cout.rdbuf(oss.rdbuf());
-
-	state.showStateName();
-
-	std::cout.rdbuf(p_cout_streambuf); // restore
-
-	// Test oss content...
-	ASSERT_TRUE(oss && oss.str() == state_name + "-") << "Should show" << state_name << "-";
-
 }
 
 TEST_F(TestSuite, TestParentChild){

@@ -91,9 +91,9 @@ public:
     CallbackExitFunc = _f;
   }
 
-  void showStateName(void)
+  std::string getStateName(void)
   {
-    std::cout << state_name_ << "-";
+    return state_name_;
   }
   void setParent(std::shared_ptr<State> _parent)
   {
@@ -114,10 +114,6 @@ public:
   std::shared_ptr<State> getChild()
   {
     return child_state_;
-  }
-  std::string getStateName(void)
-  {
-    return std::string(state_name_);
   }
 
   void addTransition(const std::string key, const uint64_t val)
