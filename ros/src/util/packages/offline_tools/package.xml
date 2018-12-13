@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>offline_tools</name>
+  <version>0.0.1</version>
+
+  <description>Tools, libraries and plugins to work offline (ie. directly from ROS bag files)</description>
+
+  <maintainer email="sujiwo@todo.todo">Adi Sujiwo</maintainer>
+
+  <license>BSD</license>
+
+  <depend>rviz</depend>
+  
+  <depend>roscpp</depend>
+  <depend>vector_map</depend>
+  <depend>rosbag_storage</depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"></rviz></export>
+</package>
