@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         std_msgs
         tf
+        autoware_config_msgs
         autoware_msgs
         geometry_msgs
         vector_map_msgs
@@ -27,6 +28,7 @@ catkin_package(
         CATKIN_DEPENDS roscpp
         tf
         std_msgs
+        autoware_config_msgs
         autoware_msgs
         geometry_msgs
         vector_map_msgs

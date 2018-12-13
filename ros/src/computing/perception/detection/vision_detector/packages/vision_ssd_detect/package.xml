@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>vision_ssd_detect</name>
-    <version>1.8.0</version>
+    <version>1.9.1</version>
     <description>The vision_ssd_detect package</description>
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
     <license>BSD</license>
@@ -19,7 +19,6 @@
     <build_depend>libdpm_ttic</build_depend>
     <build_depend>fusion</build_depend>
     <build_depend>tf</build_depend>
-    <build_depend>jsk_recognition_msgs</build_depend>
     <build_depend>gnss</build_depend>
     <build_depend>libopencv-dev</build_depend>
 
@@ -33,7 +32,6 @@
     <run_depend>libdpm_ttic</run_depend>
     <run_depend>fusion</run_depend>
     <run_depend>tf</run_depend>
-    <run_depend>jsk_recognition_msgs</run_depend>
     <run_depend>gnss</run_depend>
     <run_depend>libopencv-dev</run_depend>
 

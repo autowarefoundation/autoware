@@ -49,7 +49,7 @@ VelocityReplanner::~VelocityReplanner()
 {
 }
 
-void VelocityReplanner::initParameter(const autoware_msgs::ConfigWaypointLoader::ConstPtr& conf)
+void VelocityReplanner::initParameter(const autoware_config_msgs::ConfigWaypointLoader::ConstPtr& conf)
 {
   velocity_max_ = kmph2mps(conf->velocity_max);
   velocity_min_ = kmph2mps(conf->velocity_min);

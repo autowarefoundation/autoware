@@ -32,7 +32,7 @@
 #include <std_msgs/Header.h>
 #include <fusion/fusion_func.h>
 #include "autoware_msgs/ImageObjRanged.h"
-#include "autoware_msgs/ConfigCarFusion.h"
+#include "autoware_config_msgs/ConfigCarFusion.h"
 
 static void publishTopic();
 static ros::Publisher fused_objects;
@@ -88,7 +88,7 @@ static void publishTopic()
 	fused_objects.publish(fused_objects_msg);
 }
 
-static void config_cb(const autoware_msgs::ConfigCarFusion::ConstPtr& param)
+static void config_cb(const autoware_config_msgs::ConfigCarFusion::ConstPtr& param)
 {
 	setParams(param->min_low_height,
 			param->max_low_height,

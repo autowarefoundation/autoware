@@ -32,7 +32,7 @@
 #include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 
 
 namespace DataLoggerNS
@@ -145,7 +145,7 @@ void OpenPlannerDataLogger::callbackGetSimuCarsPathAndState(const autoware_msgs:
 		if(m_SimulatedVehicle.at(i).id == msg->lane_id)
 		{
 			m_SimulatedVehicle.at(i).path.clear();
-			PlannerHNS::RosHelpers::ConvertFromAutowareLaneToLocalLane(*msg, m_SimulatedVehicle.at(i).path);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareLaneToLocalLane(*msg, m_SimulatedVehicle.at(i).path);
 			m_SimulatedVehicle.at(i).beh.state = GetStateFromNumber(msg->lane_index);
 			m_SimulatedVehicle.at(i).path_time = msg->header.stamp;
 			break;
@@ -167,7 +167,7 @@ void OpenPlannerDataLogger::callbackGetPredictedObjects(const autoware_msgs::Det
 	{
 		if(msg->objects.at(i).id > 0)
 		{
-			PlannerHNS::RosHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
+			PlannerHNS::ROSHelpers::ConvertFromAutowareDetectedObjectToOpenPlannerDetectedObject(msg->objects.at(i), obj);
 
 
 			obj.behavior_state = GetBehStateFromNumber(msg->objects.at(i).behavior_state);

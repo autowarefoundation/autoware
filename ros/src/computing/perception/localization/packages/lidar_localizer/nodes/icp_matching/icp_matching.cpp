@@ -63,7 +63,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "autoware_msgs/ConfigICP.h"
+#include "autoware_config_msgs/ConfigICP.h"
 
 #include "autoware_msgs/ICPStat.h"
 
@@ -169,7 +169,7 @@ static std::string _offset = "linear";  // linear, zero, quadratic
 static std::ofstream ofs;
 static std::string filename;
 
-static void param_callback(const autoware_msgs::ConfigICP::ConstPtr& input)
+static void param_callback(const autoware_config_msgs::ConfigICP::ConstPtr& input)
 {
   if (_use_gnss != input->init_pos_gnss)
   {

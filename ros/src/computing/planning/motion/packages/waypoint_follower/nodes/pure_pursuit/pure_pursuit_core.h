@@ -39,7 +39,7 @@
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
-#include "autoware_msgs/ConfigWaypointFollower.h"
+#include "autoware_config_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/ControlCommandStamped.h"
 #include "autoware_msgs/Lane.h"
 #include "pure_pursuit.h"
@@ -99,7 +99,7 @@ private:
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
 
   // callbacks
-  void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
+  void callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
   void callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg);

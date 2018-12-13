@@ -40,7 +40,7 @@
 
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "autoware_msgs/ConfigLaneStop.h"
+#include "autoware_config_msgs/ConfigLaneStop.h"
 #include "autoware_msgs/TrafficLight.h"
 
 namespace
@@ -391,7 +391,7 @@ void receiveManualDetection(const autoware_msgs::TrafficLightConstPtr& msg)
     lightCallback(msg);
 }
 
-void configParameter(const autoware_msgs::ConfigLaneStopConstPtr& msg)
+void configParameter(const autoware_config_msgs::ConfigLaneStopConstPtr& msg)
 {
   g_config_manual_detection = msg->manual_detection;
 }

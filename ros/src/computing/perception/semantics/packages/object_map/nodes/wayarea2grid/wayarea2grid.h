@@ -81,6 +81,7 @@ namespace object_map
 		double                  grid_length_y_;
 		double                  grid_position_x_;
 		double                  grid_position_y_;
+		double                  grid_position_z_;
 
 		tf::TransformListener   tf_listener_;
 
@@ -92,9 +93,9 @@ namespace object_map
 		std::vector<std::vector<geometry_msgs::Point>> area_points_;
 
 		/*!
-		 * Initializes Ros Publisher, Subscribers and sets the configuration parameters
+		 * Initializes ROS Publisher, Subscribers and sets the configuration parameters
 		 */
-		void InitializeRosIo();
+		void InitializeROSIo();
 
 
 	};

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
     <name>lidar_euclidean_cluster_detect</name>
-    <version>1.8.0</version>
+    <version>1.9.1</version>
     <description>The lidar_euclidean_cluster_detect package</description>
 
     <maintainer email="abrahammonrroy@yahoo.com">amc</maintainer>
@@ -17,8 +17,6 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
     <build_depend>tf</build_depend>
-    <build_depend>jsk_recognition_msgs</build_depend>
-    <build_depend>jsk_rviz_plugins</build_depend>
     <build_depend>vector_map_server</build_depend>
     <build_depend>grid_map_ros</build_depend>
     <build_depend>grid_map_cv</build_depend>
@@ -31,8 +29,6 @@
     <run_depend>sensor_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
     <run_depend>tf</run_depend>
-    <run_depend>jsk_recognition_msgs</run_depend>
-    <run_depend>jsk_rviz_plugins</run_depend>
     <run_depend>vector_map_server</run_depend>
     <run_depend>grid_map_ros</run_depend>
     <run_depend>grid_map_cv</run_depend>

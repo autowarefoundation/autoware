@@ -43,7 +43,7 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Int32.h>
-#include "autoware_msgs/ConfigLatticeVelocitySet.h"
+#include "autoware_config_msgs/ConfigLatticeVelocitySet.h"
 #include <iostream>
 
 #include "autoware_msgs/Lane.h"
@@ -312,7 +312,7 @@ void PathVset::changeWaypoints(int stop_waypoint)
 //          Callback
 //===============================
 
-void configCallback(const autoware_msgs::ConfigLatticeVelocitySetConstPtr &config)
+void configCallback(const autoware_config_msgs::ConfigLatticeVelocitySetConstPtr &config)
 {
   g_others_distance = config->others_distance;
   g_detection_range = config->detection_range;

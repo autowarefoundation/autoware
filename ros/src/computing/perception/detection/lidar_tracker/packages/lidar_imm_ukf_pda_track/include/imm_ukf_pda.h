@@ -31,19 +31,23 @@
 #ifndef OBJECT_TRACKING_IMM_UKF_JPDAF_H
 #define OBJECT_TRACKING_IMM_UKF_JPDAF_H
 
-#include <ros/ros.h>
 
 #include <vector>
+#include <chrono>
+#include <stdio.h>
+
+
+#include <ros/ros.h>
+#include <ros/package.h>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <tf/transform_listener.h>
 
-#include <jsk_recognition_msgs/BoundingBox.h>
-#include <jsk_recognition_msgs/BoundingBoxArray.h>
-
-#include <visualization_msgs/MarkerArray.h>
+#include <vector_map/vector_map.h>
 
 #include "autoware_msgs/DetectedObject.h"
 #include "autoware_msgs/DetectedObjectArray.h"
@@ -64,68 +68,72 @@ private:
   double gate_probability_;
   double detection_probability_;
 
-  // bbox association param
-  double distance_thres_;
+  // object association param
   int life_time_thres_;
 
-  // bbox update params
-  double bb_yaw_change_thres_;
+  // static classification param
   double static_velocity_thres_;
-  double init_yaw_;
-
-  // Tracking state paramas
-  int stable_num_;
-  int lost_num_;
+  int static_num_history_thres_;
 
   // switch sukf and ImmUkfPda
   bool use_sukf_;
 
-  // whether if publish debug ros markers
-  bool is_debug_;
+  // whether if benchmarking tracking result
+  bool is_benchmark_;
+  int frame_count_;
+  std::string kitti_data_dir_;
+
+  // for benchmark
+  std::string result_file_path_;
 
   // prevent explode param for ukf
   double prevent_explosion_thres_;
 
+  // for vectormap assisted tarcking
+  bool use_vectormap_;
+  bool has_subscribed_vectormap_;
+  double lane_direction_chi_thres_;
+  double nearest_lane_distance_thres_;
+  std::string vectormap_frame_;
+  vector_map::VectorMap vmap_;
+  std::vector<vector_map_msgs::Lane> lanes_;
+
+  double merge_distance_threshold_;
+  const double CENTROID_DISTANCE = 0.2;//distance to consider centroids the same
+
   std::string input_topic_;
   std::string output_topic_;
 
-  std::string pointcloud_frame_;
   std::string tracking_frame_;
 
   tf::TransformListener tf_listener_;
   tf::StampedTransform local2global_;
+  tf::StampedTransform tracking_frame2lane_frame_;
+  tf::StampedTransform lane_frame2tracking_frame_;
 
   ros::NodeHandle node_handle_;
+  ros::NodeHandle private_nh_;
   ros::Subscriber sub_detected_array_;
   ros::Publisher pub_object_array_;
-  ros::Publisher pub_jskbbox_array_;
-  ros::Publisher pub_adas_direction_array_;
-  ros::Publisher pub_adas_prediction_array_;
-  ros::Publisher pub_points_array_;
-  ros::Publisher pub_texts_array_;
+
+  std_msgs::Header input_header_;
 
   void callback(const autoware_msgs::DetectedObjectArray& input);
-  void setPredictionObject();
-  void relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
-                    jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output);
+
   void transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
                              autoware_msgs::DetectedObjectArray& transformed_input);
-  void transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
-                            autoware_msgs::DetectedObjectArray& detected_objects_output);
+  void transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output);
+
+  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose,
+                                                const tf::StampedTransform& tf_stamp);
+
+  bool updateNecessaryTransform();
+
   void measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target, const bool second_init,
                              const Eigen::VectorXd& max_det_z, const Eigen::MatrixXd& max_det_s,
                              std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<bool>& matching_vec);
-  void getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                               autoware_msgs::DetectedObject& object, double& min_dist);
-  void getRightAngleBBox(const std::vector<double> nearest_bbox, std::vector<double>& rightAngle_bbox);
-  void associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
-  double getBBoxYaw(const UKF target);
-  double getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb);
-  double getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox& jsk_bb);
-  void updateBB(UKF& target);
-  void mergeOverSegmentation(const std::vector<UKF> targets);
-
-  void updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb);
+  autoware_msgs::DetectedObject getNearestObject(UKF& target,
+                                                 const std::vector<autoware_msgs::DetectedObject>& object_vec);
   void updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object);
 
   void initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp);
@@ -133,26 +141,57 @@ private:
 
   void updateTrackingNum(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
-  void probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+  bool probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                     std::vector<bool>& matching_vec,
-                                    std::vector<autoware_msgs::DetectedObject>& lambda_vec, UKF& target,
-                                    bool& is_skip_target);
+                                    std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
   void makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
                       const std::vector<bool>& matching_vec);
 
   void staticClassification();
 
   void makeOutput(const autoware_msgs::DetectedObjectArray& input,
-                  jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+                  const std::vector<bool>& matching_vec,
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
 
-  void pubDebugRosMarker(const autoware_msgs::DetectedObjectArray& input);
+  void dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects);
 
   void tracker(const autoware_msgs::DetectedObjectArray& transformed_input,
-               jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                autoware_msgs::DetectedObjectArray& detected_objects_output);
+
+  bool updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                           autoware_msgs::DetectedObject& out_object, UKF& target);
+
+  bool storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+                                      autoware_msgs::DetectedObject& out_object);
+
+  void checkVectormapSubscription();
+
+  autoware_msgs::DetectedObjectArray
+  removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
+                         const std::vector<size_t> in_tracker_indices);
+
+  autoware_msgs::DetectedObjectArray
+  forwardNonMatchedObject(const autoware_msgs::DetectedObjectArray& tmp_objects,
+                          const autoware_msgs::DetectedObjectArray&  input,
+                          const std::vector<bool>& matching_vec);
+
+  bool
+  arePointsClose(const geometry_msgs::Point& in_point_a,
+                 const geometry_msgs::Point& in_point_b,
+                 float in_radius);
+
+  bool
+  arePointsEqual(const geometry_msgs::Point& in_point_a,
+                 const geometry_msgs::Point& in_point_b);
+
+  bool
+  isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
+                const geometry_msgs::Point& in_point);
+
+  void updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                        UKF& target);
 
 public:
   ImmUkfPda();

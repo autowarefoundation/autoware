@@ -38,14 +38,14 @@
 #include "pixel_cloud_fusion/pixel_cloud_fusion.h"
 
 pcl::PointXYZ
-RosPixelCloudFusionApp::TransformPoint(const pcl::PointXYZ &in_point, const tf::StampedTransform &in_transform)
+ROSPixelCloudFusionApp::TransformPoint(const pcl::PointXYZ &in_point, const tf::StampedTransform &in_transform)
 {
 	tf::Vector3 tf_point(in_point.x, in_point.y, in_point.z);
 	tf::Vector3 tf_point_t = in_transform * tf_point;
 	return pcl::PointXYZ(tf_point_t.x(), tf_point_t.y(), tf_point_t.z());
 }
 
-void RosPixelCloudFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &in_image_msg)
+void ROSPixelCloudFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &in_image_msg)
 {
 	if (!camera_info_ok_)
 	{
@@ -66,7 +66,7 @@ void RosPixelCloudFusionApp::ImageCallback(const sensor_msgs::Image::ConstPtr &i
 	image_size_.width = current_frame_.cols;
 }
 
-void RosPixelCloudFusionApp::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr &in_cloud_msg)
+void ROSPixelCloudFusionApp::CloudCallback(const sensor_msgs::PointCloud2::ConstPtr &in_cloud_msg)
 {
 	if (current_frame_.empty() || image_frame_id_ == "")
 	{
@@ -136,7 +136,7 @@ void RosPixelCloudFusionApp::CloudCallback(const sensor_msgs::PointCloud2::Const
 	publisher_fused_cloud_.publish(cloud_msg);
 }
 
-void RosPixelCloudFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &in_message)
+void ROSPixelCloudFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &in_message)
 {
 	image_size_.height = in_message.height;
 	image_size_.width = in_message.width;
@@ -167,7 +167,7 @@ void RosPixelCloudFusionApp::IntrinsicsCallback(const sensor_msgs::CameraInfo &i
 }
 
 tf::StampedTransform
-RosPixelCloudFusionApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
+ROSPixelCloudFusionApp::FindTransform(const std::string &in_target_frame, const std::string &in_source_frame)
 {
 	tf::StampedTransform transform;
 
@@ -186,7 +186,7 @@ RosPixelCloudFusionApp::FindTransform(const std::string &in_target_frame, const 
 	return transform;
 }
 
-void RosPixelCloudFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
+void ROSPixelCloudFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
 	//get params
 	std::string points_src, image_src, camera_info_src, fused_topic_str = "/points_fused";
@@ -217,16 +217,16 @@ void RosPixelCloudFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 	ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, camera_info_src.c_str());
 	intrinsics_subscriber_ = in_private_handle.subscribe(camera_info_src,
 	                                                     1,
-	                                                     &RosPixelCloudFusionApp::IntrinsicsCallback, this);
+	                                                     &ROSPixelCloudFusionApp::IntrinsicsCallback, this);
 
 	ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, image_src.c_str());
 	cloud_subscriber_ = in_private_handle.subscribe(image_src,
 	                                                1,
-	                                                &RosPixelCloudFusionApp::ImageCallback, this);
+	                                                &ROSPixelCloudFusionApp::ImageCallback, this);
 	ROS_INFO("[%s] Subscribing to... %s", __APP_NAME__, points_src.c_str());
 	image_subscriber_ = in_private_handle.subscribe(points_src,
 	                                                1,
-	                                                &RosPixelCloudFusionApp::CloudCallback, this);
+	                                                &ROSPixelCloudFusionApp::CloudCallback, this);
 
 	publisher_fused_cloud_ = node_handle_.advertise<sensor_msgs::PointCloud2>(fused_topic_str, 1);
 	ROS_INFO("[%s] Publishing fused pointcloud in %s", __APP_NAME__, fused_topic_str.c_str());
@@ -234,14 +234,14 @@ void RosPixelCloudFusionApp::InitializeRosIo(ros::NodeHandle &in_private_handle)
 }
 
 
-void RosPixelCloudFusionApp::Run()
+void ROSPixelCloudFusionApp::Run()
 {
 	ros::NodeHandle private_node_handle("~");
 	tf::TransformListener transform_listener;
 
 	transform_listener_ = &transform_listener;
 
-	InitializeRosIo(private_node_handle);
+	InitializeROSIo(private_node_handle);
 
 	ROS_INFO("[%s] Ready. Waiting for data...", __APP_NAME__);
 
@@ -250,7 +250,7 @@ void RosPixelCloudFusionApp::Run()
 	ROS_INFO("[%s] END", __APP_NAME__);
 }
 
-RosPixelCloudFusionApp::RosPixelCloudFusionApp()
+ROSPixelCloudFusionApp::ROSPixelCloudFusionApp()
 {
 	camera_lidar_tf_ok_ = false;
 	camera_info_ok_ = false;

@@ -1,10 +1,6 @@
 #ifndef SSD_DETECTOR_H_
 #define SSD_DETECTOR_H_
 
-#include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <algorithm>
 #include <iomanip>
 #include <iosfwd>
@@ -13,11 +9,16 @@
 #include <utility>
 #include <vector>
 
+#include <caffe/caffe.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 #include "rect_class_score.h"
 
-namespace Ssd
+namespace SSD
 {
-	enum SsdDetectorClasses
+	enum SSDDetectorClasses
 	{
 		BACKGROUND,
 		PLANE, BICYCLE, BIRD, BOAT,
@@ -28,23 +29,25 @@ namespace Ssd
 	};
 }
 
-class SsdDetector
+class SSDDetector
 {
 public:
-	SsdDetector(const std::string& in_network_definition_file, const std::string& in_pre_trained_model_file, const cv::Scalar& in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
+	SSDDetector(const std::string& in_network_definition_file, const std::string& in_pre_trained_model_file, const cv::Scalar& in_mean_value, bool in_use_gpu, unsigned int in_gpu_id);
 
 	std::vector <  RectClassScore<float>  > Detect(const cv::Mat& img);
 
 private:
-	void SetMean(const cv::Scalar& in_mean_value);
-	void WrapInputLayer(std::vector<cv::Mat>* input_channels);
-	void Preprocess(const cv::Mat& img, std::vector<cv::Mat>* input_channels);
+  void SetMean(const cv::Scalar &in_mean_value);
+
+  void WrapInputLayer(std::vector<cv::Mat> *input_channels);
+
+  void Preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
 
 private:
-	boost::shared_ptr<caffe::Net<float> > net_;
-	cv::Size input_geometry_;
-	int num_channels_;
-	cv::Scalar mean_;
+  boost::shared_ptr <caffe::Net<float>> net_;
+  cv::Size input_geometry_;
+  int num_channels_;
+  cv::Scalar mean_;
 };
 
 #endif //SSD_DETECTOR_H

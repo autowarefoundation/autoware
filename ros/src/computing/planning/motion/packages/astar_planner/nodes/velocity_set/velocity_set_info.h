@@ -36,7 +36,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Int32.h>
 
-#include "autoware_msgs/ConfigVelocitySet.h"
+#include "autoware_config_msgs/ConfigVelocitySet.h"
 
 class VelocitySetInfo
 {
@@ -70,7 +70,7 @@ class VelocitySetInfo
   ~VelocitySetInfo();
 
   // ROS Callback
-  void configCallback(const autoware_msgs::ConfigVelocitySetConstPtr &msg);
+  void configCallback(const autoware_config_msgs::ConfigVelocitySetConstPtr &msg);
   void pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg);
   void controlPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);
   void localizerPoseCallback(const geometry_msgs::PoseStampedConstPtr &msg);

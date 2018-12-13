@@ -1,4 +1,4 @@
-#include <autoware_msgs/ConfigPlannerSelector.h>
+#include <autoware_config_msgs/ConfigPlannerSelector.h>
 #include <autoware_msgs/Lane.h>
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
@@ -175,7 +175,7 @@ void PlannerSelector::callbackFromCurrentVelocity(const geometry_msgs::TwistStam
   current_velocity_ = msg.twist.linear.x;
 }
 
-void PlannerSelector::callbackFromConfig(const autoware_msgs::ConfigPlannerSelector &msg)
+void PlannerSelector::callbackFromConfig(const autoware_config_msgs::ConfigPlannerSelector &msg)
 {
   config_latency_num_ = msg.latency_num;
   config_waypoints_num_ = msg.waypoints_num;
