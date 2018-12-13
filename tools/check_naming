@@ -19,7 +19,7 @@ if [ ! -d "/home/$USERNAME/Autoware/tools/cppcheck" ]
 fi
 
 # Find .h, .hpp, .cpp files except for testing ones
-FILES=$(find $1 -path */test -prune -name '*.h' -o -name '*.hpp' -o -name '*.cpp')
+FILES=$(find $1 -path */test -prune -o -name '*.h' -o -name '*.hpp' -o -name '*.cpp')
 echo $FILES
 cppcheck --dump language=c++ $FILES
 DUMP_FILES=$(find $1 -name '*.dump')
