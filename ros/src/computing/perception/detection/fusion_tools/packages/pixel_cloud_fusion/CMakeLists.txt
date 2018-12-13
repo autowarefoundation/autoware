@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(pixel_cloud_fusion)
 
 find_package(catkin REQUIRED COMPONENTS

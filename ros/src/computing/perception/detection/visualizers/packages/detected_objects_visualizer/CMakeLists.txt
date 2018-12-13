@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(detected_objects_visualizer)
 
 find_package(catkin REQUIRED COMPONENTS

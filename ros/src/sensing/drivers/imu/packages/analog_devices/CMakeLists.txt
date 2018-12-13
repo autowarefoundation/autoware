@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(adi_driver)
 
 find_package(catkin REQUIRED COMPONENTS roscpp sensor_msgs roslint)

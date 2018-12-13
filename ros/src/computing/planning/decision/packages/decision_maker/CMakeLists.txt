@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 project(decision_maker)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
