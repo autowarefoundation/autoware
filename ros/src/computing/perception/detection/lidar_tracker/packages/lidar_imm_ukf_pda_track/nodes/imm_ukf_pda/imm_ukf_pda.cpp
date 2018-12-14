@@ -831,7 +831,7 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
     targets_[i].update(use_sukf_, detection_probability_, gate_probability_, gating_thres_, object_vec);
 
-    if (use_robust_adaptive_filter_)
+    if (use_robust_adaptive_filter_ && (object_vec.size() != 0))
     {
       targets_[i].robustAdaptiveFilter(use_sukf_, raukf_chi_thres_, raukf_q_thres_, raukf_r_thres_);
     }

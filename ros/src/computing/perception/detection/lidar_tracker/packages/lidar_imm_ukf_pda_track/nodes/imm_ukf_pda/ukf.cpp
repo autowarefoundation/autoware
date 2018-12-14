@@ -1375,34 +1375,30 @@ void UKF::update(const bool use_sukf, const double detection_probability, const 
 
 bool UKF::faultDetection(const int model_ind)
 {
-  Eigen::VectorXd z_meas;
-  Eigen::VectorXd z_pred;
-  Eigen::MatrixXd z_cov;
-  Eigen::MatrixXd r;
+  Eigen::VectorXd z_meas(cv_meas_.rows());
+  Eigen::VectorXd z_pred(cv_meas_.rows());
+  Eigen::MatrixXd z_cov(cv_meas_.rows(), cv_meas_.rows());
   if (model_ind == MotionModel::CV)
   {
     z_meas = cv_meas_;
     z_pred = z_pred_cv_;
     z_cov = s_cv_;
-    r = r_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
     z_meas = ctrv_meas_;
     z_pred = z_pred_ctrv_;
     z_cov = s_ctrv_;
-    r = r_ctrv_;
   }
   else
   {
     z_meas = rm_meas_;
     z_pred = z_pred_rm_;
     z_cov = s_rm_;
-    r = r_rm_;
   }
 
   // calculating normalized innovation squared
-  double nis = (z_meas - z_pred).transpose() * (z_cov).inverse() * (z_meas - z_pred);
+  double nis = (z_meas - z_pred).transpose() * z_cov.inverse() * (z_meas - z_pred);
 
   if (model_ind == MotionModel::CV)
   {
