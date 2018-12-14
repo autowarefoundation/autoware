@@ -258,7 +258,9 @@ public:
   Eigen::MatrixXd k_lidar_direction_ctrv_;
   Eigen::MatrixXd k_lidar_direction_rm_;
 
+  Eigen::VectorXd lidar_direction_cv_meas_;
   Eigen::VectorXd lidar_direction_ctrv_meas_;
+  Eigen::VectorXd lidar_direction_rm_meas_;
 
 
   /**
@@ -336,12 +338,12 @@ public:
 
   /// \brief Applying series of robust adaptive filter fuctions
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
-  void applyingRobustAdaptiveFilter(const int model_ind);
+  void applyingRobustAdaptiveFilter(const int model_ind, const bool use_lane_direction);
 
   /// \brief Check if measurement is fault or not
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
   /// \param[out] true if detecting fault, otherwiese return false
-  bool faultDetection(const int model_ind);
+  bool faultDetection(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update covariance Q
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel

@@ -196,7 +196,9 @@ UKF::UKF()
   k_lidar_direction_ctrv_ = Eigen::MatrixXd(num_state_, num_lidar_direction_state_);
   k_lidar_direction_rm_ = Eigen::MatrixXd(num_state_, num_lidar_direction_state_);
 
+  lidar_direction_cv_meas_ = Eigen::VectorXd(num_lidar_direction_state_);
   lidar_direction_ctrv_meas_ = Eigen::VectorXd(num_lidar_direction_state_);
+  lidar_direction_rm_meas_ = Eigen::VectorXd(num_lidar_direction_state_);
 }
 
 double UKF::normalizeAngle(const double angle)
@@ -677,19 +679,40 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       x_cv_ = updated_x;
       p_cv_ = updated_p;
-      cv_meas_ = likely_meas;
+      if(is_direction_cv_available_)
+      {
+        lidar_direction_cv_meas_ = likely_meas;
+      }
+      else
+      {
+        cv_meas_ = likely_meas;
+      }
     }
     else if (motion_ind == MotionModel::CTRV)
     {
       x_ctrv_ = updated_x;
       p_ctrv_ = updated_p;
-      ctrv_meas_ = likely_meas;
+      if(is_direction_ctrv_available_)
+      {
+        lidar_direction_ctrv_meas_ = likely_meas;
+      }
+      else
+      {
+        ctrv_meas_ = likely_meas;
+      }
     }
     else
     {
       x_rm_ = updated_x;
       p_rm_ = updated_p;
-      rm_meas_ = likely_meas;
+      if(is_direction_rm_available_)
+      {
+        lidar_direction_rm_meas_ = likely_meas;
+      }
+      else
+      {
+        rm_meas_ = likely_meas;
+      }
     }
   }
 }
@@ -1373,28 +1396,55 @@ void UKF::update(const bool use_sukf, const double detection_probability, const 
   }
 }
 
-bool UKF::faultDetection(const int model_ind)
+bool UKF::faultDetection(const int model_ind, const bool use_lane_direction)
 {
-  Eigen::VectorXd z_meas(cv_meas_.rows());
-  Eigen::VectorXd z_pred(cv_meas_.rows());
-  Eigen::MatrixXd z_cov(cv_meas_.rows(), cv_meas_.rows());
+  Eigen::VectorXd z_meas;
+  Eigen::VectorXd z_pred;
+  Eigen::MatrixXd z_cov;
   if (model_ind == MotionModel::CV)
   {
-    z_meas = cv_meas_;
-    z_pred = z_pred_cv_;
-    z_cov = s_cv_;
+    if(use_lane_direction)
+    {
+      z_meas = lidar_direction_cv_meas_;
+      z_pred = z_pred_lidar_direction_cv_;
+      z_cov  = s_lidar_direction_cv_;
+    }
+    else
+    {
+      z_meas = cv_meas_;
+      z_pred = z_pred_cv_;
+      z_cov = s_cv_;
+    }
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    z_meas = ctrv_meas_;
-    z_pred = z_pred_ctrv_;
-    z_cov = s_ctrv_;
+    if(use_lane_direction)
+    {
+      z_meas = lidar_direction_ctrv_meas_;
+      z_pred = z_pred_lidar_direction_ctrv_;
+      z_cov  = s_lidar_direction_ctrv_;
+    }
+    else
+    {
+      z_meas = ctrv_meas_;
+      z_pred = z_pred_ctrv_;
+      z_cov = s_ctrv_;
+    }
   }
   else
   {
-    z_meas = rm_meas_;
-    z_pred = z_pred_rm_;
-    z_cov = s_rm_;
+    if(use_lane_direction)
+    {
+      z_meas = lidar_direction_rm_meas_;
+      z_pred = z_pred_lidar_direction_rm_;
+      z_cov  = s_lidar_direction_rm_;
+    }
+    else
+    {
+      z_meas = rm_meas_;
+      z_pred = z_pred_rm_;
+      z_cov = s_rm_;
+    }
   }
 
   // calculating normalized innovation squared
@@ -1515,14 +1565,8 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     Eigen::VectorXd sigma_point1 = x + sqrt(lambda_ + num_state_) * square_root_matrix_l.col(i);
     Eigen::VectorXd sigma_point2 = x - sqrt(lambda_ + num_state_) * square_root_matrix_l.col(i);
 
-    while (sigma_point1(3) > M_PI)
-      sigma_point1(3) -= 2. * M_PI;
-    while (sigma_point1(3) < -M_PI)
-      sigma_point1(3) += 2. * M_PI;
-    while (sigma_point2(3) > M_PI)
-      sigma_point2(3) -= 2. * M_PI;
-    while (sigma_point2(3) < -M_PI)
-      sigma_point2(3) += 2. * M_PI;
+    sigma_point1(3) = normalizeAngle(sigma_point1(3));
+    sigma_point2(3) = normalizeAngle(sigma_point2(3));
 
     x_sig.col(i + 1) = sigma_point1;
     x_sig.col(i + 1 + num_state_) = sigma_point2;
@@ -1630,10 +1674,7 @@ void UKF::estimationUpdate(const int model_ind)
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
-    while (x_diff(3) > M_PI)
-      x_diff(3) -= 2. * M_PI;
-    while (x_diff(3) < -M_PI)
-      x_diff(3) += 2. * M_PI;
+    x_diff(3) = normalizeAngle(x_diff(3));
     p = p + weights_c_(i) * x_diff * x_diff.transpose();
   }
 
@@ -1648,10 +1689,8 @@ void UKF::estimationUpdate(const int model_ind)
     // state difference
     Eigen::VectorXd x_diff = x_sig.col(i) - x;
 
-    while (x_diff(3) > M_PI)
-      x_diff(3) -= 2. * M_PI;
-    while (x_diff(3) < -M_PI)
-      x_diff(3) += 2. * M_PI;
+    x_diff(3) = normalizeAngle(x_diff(3));
+
     cross_covariance = cross_covariance + weights_c_(i) * x_diff * z_diff.transpose();
   }
 
@@ -1680,16 +1719,16 @@ void UKF::estimationUpdate(const int model_ind)
   }
 }
 
-void UKF::applyingRobustAdaptiveFilter(const int model_ind)
+void UKF::applyingRobustAdaptiveFilter(const int model_ind, const bool use_lane_direction)
 {
-  bool is_fault = faultDetection(model_ind);
+  bool is_fault = faultDetection(model_ind, use_lane_direction);
   if (!is_fault)
   {
     return;
   }
-  adaptiveAdjustmentQ(model_ind);
-  adaptiveAdjustmentR(model_ind);
-  estimationUpdate(model_ind);
+  // adaptiveAdjustmentQ(model_ind, use_lane_direction);
+  // adaptiveAdjustmentR(model_ind, use_lane_direction);
+  // estimationUpdate(model_ind, use_lane_direction);
 }
 
 void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r)
@@ -1706,11 +1745,11 @@ void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, cons
 
   if (use_sukf)
   {
-    applyingRobustAdaptiveFilter(MotionModel::CTRV);
+    applyingRobustAdaptiveFilter(MotionModel::CTRV, is_direction_ctrv_available_);
   }
   else
   {
-    applyingRobustAdaptiveFilter(MotionModel::CV);
-    applyingRobustAdaptiveFilter(MotionModel::CTRV);
+    applyingRobustAdaptiveFilter(MotionModel::CV, is_direction_cv_available_);
+    applyingRobustAdaptiveFilter(MotionModel::CTRV, is_direction_ctrv_available_);
   }
 }
