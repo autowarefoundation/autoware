@@ -350,23 +350,28 @@ public:
 
   /// \brief Applying series of robust adaptive filter fuctions
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[in] use_lane_direction whether if using lane or not
   void applyingRobustAdaptiveFilter(const int model_ind, const bool use_lane_direction);
 
   /// \brief Check if measurement is fault or not
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[in] use_lane_direction whether if using lane or not
   /// \param[out] true if detecting fault, otherwiese return false
   bool faultDetection(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update covariance Q
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[in] use_lane_direction whether if using lane or not
   void adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update covariance R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[in] use_lane_direction whether if using lane or not
   void adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update state vector and state covariance based on corrected Q and R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
+  /// \param[in] use_lane_direction whether if using lane or not
   void estimationUpdate(const int model_ind, const bool use_lane_direction);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);

@@ -175,17 +175,17 @@ UKF::UKF()
   adaptive_x_sig_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
   adaptive_x_sig_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
-  adaptive_z_sig_cv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
-  adaptive_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
-  adaptive_z_sig_rm_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  adaptive_z_sig_cv_ = Eigen::MatrixXd(num_lidar_state_, 2 * num_state_ + 1);
+  adaptive_z_sig_ctrv_ = Eigen::MatrixXd(num_lidar_state_, 2 * num_state_ + 1);
+  adaptive_z_sig_rm_ = Eigen::MatrixXd(num_lidar_state_, 2 * num_state_ + 1);
 
-  adaptive_z_pred_cv_ = Eigen::VectorXd(2);
-  adaptive_z_pred_ctrv_ = Eigen::VectorXd(2);
-  adaptive_z_pred_rm_ = Eigen::VectorXd(2);
+  adaptive_z_pred_cv_ = Eigen::VectorXd(num_lidar_state_);
+  adaptive_z_pred_ctrv_ = Eigen::VectorXd(num_lidar_state_);
+  adaptive_z_pred_rm_ = Eigen::VectorXd(num_lidar_state_);
 
-  adaptive_s_cv_ = Eigen::MatrixXd(2, 2);
-  adaptive_s_ctrv_ = Eigen::MatrixXd(2, 2);
-  adaptive_s_rm_ = Eigen::MatrixXd(2, 2);
+  adaptive_s_cv_ = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
+  adaptive_s_ctrv_ = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
+  adaptive_s_rm_ = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
 
   adaptive_lidar_direction_z_sig_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
   adaptive_lidar_direction_z_sig_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
@@ -771,34 +771,19 @@ void UKF::uppateForCTRV()
 {
   Eigen::VectorXd x = x_ctrv_.col(0);
 
-  // is_meas_ = false;
-  // if (num_meas != 0)
-  // {
-    is_meas_ = true;
-    if (is_direction_ctrv_available_)
-    {
-      x_ctrv_.col(0) = x + k_lidar_direction_ctrv_ * (lidar_direction_ctrv_meas_ - z_pred_lidar_direction_ctrv_);
-      p_ctrv_ = p_ctrv_ - k_lidar_direction_ctrv_ * s_lidar_direction_ctrv_ * k_lidar_direction_ctrv_.transpose();
-      x_merge_.col(0) = x_ctrv_.col(0);
-    }
-  // <<<<<<< HEAD
-
-    // for noise estimation
-    // is_meas_ = false;
-    // if (num_meas != 0)
-    // {
-    //   is_meas_ = true;
-  //     std::vector<double>::iterator max_ctrv_iter = std::max_element(e_ctrv_vec.begin(), e_ctrv_vec.end());
-  //     int max_ctrv_ind = std::distance(e_ctrv_vec.begin(), max_ctrv_iter);
-  //     ctrv_meas_ = meas_vec[max_ctrv_ind];
-  // =======
-    else
-    {
-      x_ctrv_.col(0) = x + k_ctrv_ * (ctrv_meas_ - z_pred_ctrv_);
-      p_ctrv_ = p_ctrv_ - k_ctrv_ * s_ctrv_ * k_ctrv_.transpose();
-      x_merge_.col(0) = x_ctrv_.col(0);
-    }
-  // }
+  is_meas_ = true;
+  if (is_direction_ctrv_available_)
+  {
+    x_ctrv_.col(0) = x + k_lidar_direction_ctrv_ * (lidar_direction_ctrv_meas_ - z_pred_lidar_direction_ctrv_);
+    p_ctrv_ = p_ctrv_ - k_lidar_direction_ctrv_ * s_lidar_direction_ctrv_ * k_lidar_direction_ctrv_.transpose();
+    x_merge_.col(0) = x_ctrv_.col(0);
+  }
+  else
+  {
+    x_ctrv_.col(0) = x + k_ctrv_ * (ctrv_meas_ - z_pred_ctrv_);
+    p_ctrv_ = p_ctrv_ - k_ctrv_ * s_ctrv_ * k_ctrv_.transpose();
+    x_merge_.col(0) = x_ctrv_.col(0);
+  }
 }
 
 void UKF::updateSUKF(const std::vector<autoware_msgs::DetectedObject>& object_vec)
