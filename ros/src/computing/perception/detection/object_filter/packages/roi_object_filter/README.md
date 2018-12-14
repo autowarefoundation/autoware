@@ -32,7 +32,7 @@ Available parameters:
 ## Usage example
 
 1. Launch a ground filter algorithm from the `Points Preprocessor` section in the **Sensing** tab. (adjust the parameters to your vehicle setup).
-1. Launch a Lidar Detector from the Computing tab (this should be publishing by default `/detection/lidar_detector/objects`).
+1. Launch a Lidar Detector from the Computing tab or fusion.
 1. Launch NDT localization with the Map and VectorMap being published.
 1. Launch `wayarea2grid` from the Semantics package in the  *Computing*** tab.
 1. Launch this node.

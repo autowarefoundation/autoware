@@ -90,7 +90,6 @@ ros::Publisher _centroid_pub;
 
 ros::Publisher _pub_clusters_message;
 
-
 ros::Publisher _pub_points_lanes_cloud;
 
 ros::Publisher _pub_detected_objects;

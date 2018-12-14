@@ -19,11 +19,8 @@
   <arg name="cluster_merge_threshold" default="1.5" />
   <arg name="clustering_distance" default="0.75" />
 
-  <arg name="use_vector_map" default="true" />
-  <arg name="vectormap_frame" default="map" />
-  <arg name="wayarea_gridmap_topic" default="grid_map_wayarea" />
+  <arg name="use_vector_map" default="false" />
   <arg name="wayarea_gridmap_layer" default="wayarea" />
-  <arg name="wayarea_no_road_value" default="255" />
 
   <arg name="output_frame" default="velodyne" />
 
@@ -35,15 +32,6 @@
   <arg name="clustering_ranges" default="[15,30,45,60]"/><!-- Distances to segment pointcloud -->
   <arg name="clustering_distances"
        default="[0.5,1.1,1.6,2.1,2.6]"/><!-- Euclidean Clustering threshold distance for each segment -->
-
-  <node if="$(arg use_vector_map)" name="object_roi_filter_01" pkg="roi_object_filter" type="roi_object_filter" output="screen">
-      <param name="detection_topic" value="/detection/lidar_detector/objects"/>
-      <param name="sync_topics" value="false"/>
-      <param name="wayarea_gridmap_topic" value="$(arg wayarea_gridmap_topic)"/>
-      <param name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)"/>
-      <param name="wayarea_no_road_value" value="$(arg wayarea_no_road_value)"/>
-      <param name="exception_list" value="[person, bicycle]"/>
-  </node>
 
     <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect"
@@ -76,7 +64,24 @@
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
   </node>
 
-  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
-        output="screen" ns="/detection/lidar_detector" />
+  <group if="$(arg use_vector_map)">
+    <node name="object_roi_filter_clustering" pkg="roi_object_filter" type="roi_object_filter"
+          output="screen" ns="/detection/lidar_detector">
+      <param name="objects_src_topic" value="/objects"/>
+      <param name="wayarea_gridmap_layer" value="$(arg wayarea_gridmap_layer)"/>
+      <param name="sync_topics" value="false"/>
+      <param name="exception_list" value="[person, bicycle]"/>
+    </node>
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+          output="screen" ns="/detection/lidar_detector">
+      <param name="objects_src_topic" value="/objects_filtered"/>
+    </node>
+  </group>
+  <group unless="$(arg use_vector_map)">
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+          output="screen" ns="/detection/lidar_detector">
+      <param name="objects_src_topic" value="/objects"/>
+    </node>
+  </group>
 
 </launch>
