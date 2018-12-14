@@ -83,6 +83,8 @@ private:
 
   double generateYawFromQuaternion(const geometry_msgs::Quaternion& quaternion);
 
+  bool isObjectValid(const autoware_msgs::DetectedObject &in_object);
+
 public:
   NaiveMotionPredict();
   ~NaiveMotionPredict();

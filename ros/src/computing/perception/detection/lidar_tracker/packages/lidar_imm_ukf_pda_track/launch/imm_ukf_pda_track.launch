@@ -40,7 +40,7 @@
     <remap from="/detection/fusion_tools/objects"         to="$(arg tracker_input_topic)" />
     <remap from="/detection/objects"       to="$(arg tracker_output_topic)" />
   </node>
-  
+
   <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="ukf_track_visualization_01"
         output="screen" ns="$(arg namespace)"/>
 
