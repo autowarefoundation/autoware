@@ -213,21 +213,33 @@ public:
   double nis_ctrv_;
   double nis_rm_;
 
-  Eigen::MatrixXd new_x_sig_cv_;
-  Eigen::MatrixXd new_x_sig_ctrv_;
-  Eigen::MatrixXd new_x_sig_rm_;
+  Eigen::MatrixXd adaptive_x_sig_cv_;
+  Eigen::MatrixXd adaptive_x_sig_ctrv_;
+  Eigen::MatrixXd adaptive_x_sig_rm_;
 
-  Eigen::MatrixXd new_z_sig_cv_;
-  Eigen::MatrixXd new_z_sig_ctrv_;
-  Eigen::MatrixXd new_z_sig_rm_;
+  Eigen::MatrixXd adaptive_z_sig_cv_;
+  Eigen::MatrixXd adaptive_z_sig_ctrv_;
+  Eigen::MatrixXd adaptive_z_sig_rm_;
 
-  Eigen::VectorXd new_z_pred_cv_;
-  Eigen::VectorXd new_z_pred_ctrv_;
-  Eigen::VectorXd new_z_pred_rm_;
+  Eigen::VectorXd adaptive_z_pred_cv_;
+  Eigen::VectorXd adaptive_z_pred_ctrv_;
+  Eigen::VectorXd adaptive_z_pred_rm_;
 
-  Eigen::MatrixXd new_s_cv_;
-  Eigen::MatrixXd new_s_ctrv_;
-  Eigen::MatrixXd new_s_rm_;
+  Eigen::MatrixXd adaptive_s_cv_;
+  Eigen::MatrixXd adaptive_s_ctrv_;
+  Eigen::MatrixXd adaptive_s_rm_;
+
+  Eigen::MatrixXd adaptive_lidar_direction_z_sig_cv_;
+  Eigen::MatrixXd adaptive_lidar_direction_z_sig_ctrv_;
+  Eigen::MatrixXd adaptive_lidar_direction_z_sig_rm_;
+
+  Eigen::VectorXd adaptive_lidar_direction_z_pred_cv_;
+  Eigen::VectorXd adaptive_lidar_direction_z_pred_ctrv_;
+  Eigen::VectorXd adaptive_lidar_direction_z_pred_rm_;
+
+  Eigen::MatrixXd adaptive_lidar_direction_s_cv_;
+  Eigen::MatrixXd adaptive_lidar_direction_s_ctrv_;
+  Eigen::MatrixXd adaptive_lidar_direction_s_rm_;
 
   // varibales for robust adaptive unscented kalman filter
   bool is_meas_;
@@ -347,15 +359,15 @@ public:
 
   /// \brief Update covariance Q
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
-  void adaptiveAdjustmentQ(const int model_ind);
+  void adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update covariance R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
-  void adaptiveAdjustmentR(const int model_ind);
+  void adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction);
 
   /// \brief Update state vector and state covariance based on corrected Q and R
   /// \param[in] model_ind: choose motion model for the filter based on enum MotionModel
-  void estimationUpdate(const int model_ind);
+  void estimationUpdate(const int model_ind, const bool use_lane_direction);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 

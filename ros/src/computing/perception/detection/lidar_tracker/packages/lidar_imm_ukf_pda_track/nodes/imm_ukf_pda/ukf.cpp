@@ -171,21 +171,33 @@ UKF::UKF()
   nis_ctrv_ = 0;
   nis_rm_ = 0;
 
-  new_x_sig_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
-  new_x_sig_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
-  new_x_sig_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  adaptive_x_sig_cv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  adaptive_x_sig_ctrv_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
+  adaptive_x_sig_rm_ = Eigen::MatrixXd(num_state_, 2 * num_state_ + 1);
 
-  new_z_sig_cv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
-  new_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
-  new_z_sig_rm_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  adaptive_z_sig_cv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  adaptive_z_sig_ctrv_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
+  adaptive_z_sig_rm_ = Eigen::MatrixXd(2, 2 * num_state_ + 1);
 
-  new_z_pred_cv_ = Eigen::VectorXd(2);
-  new_z_pred_ctrv_ = Eigen::VectorXd(2);
-  new_z_pred_rm_ = Eigen::VectorXd(2);
+  adaptive_z_pred_cv_ = Eigen::VectorXd(2);
+  adaptive_z_pred_ctrv_ = Eigen::VectorXd(2);
+  adaptive_z_pred_rm_ = Eigen::VectorXd(2);
 
-  new_s_cv_ = Eigen::MatrixXd(2, 2);
-  new_s_ctrv_ = Eigen::MatrixXd(2, 2);
-  new_s_rm_ = Eigen::MatrixXd(2, 2);
+  adaptive_s_cv_ = Eigen::MatrixXd(2, 2);
+  adaptive_s_ctrv_ = Eigen::MatrixXd(2, 2);
+  adaptive_s_rm_ = Eigen::MatrixXd(2, 2);
+
+  adaptive_lidar_direction_z_sig_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
+  adaptive_lidar_direction_z_sig_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
+  adaptive_lidar_direction_z_sig_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
+
+  adaptive_lidar_direction_z_pred_cv_ = Eigen::VectorXd(num_lidar_direction_state_);
+  adaptive_lidar_direction_z_pred_ctrv_ = Eigen::VectorXd(num_lidar_direction_state_);
+  adaptive_lidar_direction_z_pred_rm_ = Eigen::VectorXd(num_lidar_direction_state_);
+
+  adaptive_lidar_direction_s_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  adaptive_lidar_direction_s_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  adaptive_lidar_direction_s_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
 
   // for lane direction combined filter
   lidar_direction_r_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, num_lidar_direction_state_);
@@ -269,14 +281,14 @@ void UKF::initialize(const Eigen::VectorXd& z, const double timestamp, const int
   // initialize lidar-lane R covariance
   // clang-format off
   lidar_direction_r_cv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
+                                                 0, std_laspy_ * std_laspy_,                                       0,
+                                                 0,                       0, std_lane_direction_*std_lane_direction_;
   lidar_direction_r_ctrv_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                              0, std_laspy_ * std_laspy_,                                       0,
-                                              0,                       0, std_lane_direction_*std_lane_direction_;
-  lidar_direction_r_rm_ << std_laspx_ * std_laspx_,                       0,                                       0,
-                                            0, std_laspy_ * std_laspy_,                                       0,
-                                            0,                       0, std_lane_direction_*std_lane_direction_;
+                                                   0, std_laspy_ * std_laspy_,                                       0,
+                                                   0,                       0, std_lane_direction_*std_lane_direction_;
+  lidar_direction_r_rm_ << std_laspx_ * std_laspx_,                         0,                                       0,
+                                                 0,   std_laspy_ * std_laspy_,                                       0,
+                                                 0,                         0, std_lane_direction_*std_lane_direction_;
   // clang-format on
 
   // init tracking num
@@ -1475,7 +1487,7 @@ bool UKF::faultDetection(const int model_ind, const bool use_lane_direction)
   return is_fault;
 }
 
-void UKF::adaptiveAdjustmentQ(const int model_ind)
+void UKF::adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction)
 {
   double nis = 0;
   Eigen::VectorXd mu;
@@ -1483,23 +1495,47 @@ void UKF::adaptiveAdjustmentQ(const int model_ind)
   Eigen::MatrixXd k;
   if (model_ind == MotionModel::CV)
   {
-    mu = cv_meas_ - z_pred_cv_;
+    if(use_lane_direction)
+    {
+      mu = lidar_direction_cv_meas_ - z_pred_lidar_direction_cv_;
+      k = k_lidar_direction_cv_;
+    }
+    else
+    {
+      mu = cv_meas_ - z_pred_cv_;
+      k = k_cv_;
+    }
     q = q_cv_;
-    k = k_cv_;
     nis = nis_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    mu = ctrv_meas_ - z_pred_ctrv_;
+    if(use_lane_direction)
+    {
+      mu = lidar_direction_ctrv_meas_ - z_pred_lidar_direction_ctrv_;
+      k = k_lidar_direction_ctrv_;
+    }
+    else
+    {
+      mu = ctrv_meas_ - z_pred_ctrv_;
+      k = k_ctrv_;
+    }
     q = q_ctrv_;
-    k = k_ctrv_;
     nis = nis_ctrv_;
   }
   else
   {
-    mu = rm_meas_ - z_pred_rm_;
+    if(use_lane_direction)
+    {
+      mu = lidar_direction_rm_meas_ - z_pred_lidar_direction_rm_;
+      k = k_lidar_direction_rm_;
+    }
+    else
+    {
+      mu = rm_meas_ - z_pred_rm_;
+      k = k_rm_;
+    }
     q = q_rm_;
-    k = k_rm_;
     nis = nis_rm_;
   }
 
@@ -1521,37 +1557,70 @@ void UKF::adaptiveAdjustmentQ(const int model_ind)
   }
 }
 
-void UKF::adaptiveAdjustmentR(const int model_ind)
+void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction)
 {
   double nis = 0;
   Eigen::VectorXd epsilon(cv_meas_.rows());
-  Eigen::VectorXd estimated_z(cv_meas_.rows());
-  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
+  Eigen::VectorXd estimated_z;
+  Eigen::MatrixXd r;
   Eigen::VectorXd x(x_cv_.rows());
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   if (model_ind == MotionModel::CV)
   {
-    estimated_z << x_cv_(0), x_cv_(1);
-    epsilon = cv_meas_ - estimated_z;
-    r = r_cv_;
+    if(use_lane_direction)
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
+      estimated_z << x_cv_(0),x_cv_(1), x_cv_(3);
+      epsilon = lidar_direction_cv_meas_ - estimated_z;
+      r = lidar_direction_r_cv_;
+    }
+    else
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_state_);
+      estimated_z << x_cv_(0), x_cv_(1);
+      epsilon = cv_meas_ - estimated_z;
+      r = r_cv_;
+    }
     nis = nis_cv_;
     x = x_cv_.col(0);
     p = p_cv_;
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    estimated_z << x_ctrv_(0), x_ctrv_(1);
-    epsilon = ctrv_meas_ - estimated_z;
-    r = r_ctrv_;
+    if(use_lane_direction)
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
+      estimated_z << x_ctrv_(0),x_ctrv_(1), x_ctrv_(3);
+      epsilon = lidar_direction_ctrv_meas_ - estimated_z;
+      r = lidar_direction_r_ctrv_;
+    }
+    else
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_state_);
+      estimated_z << x_ctrv_(0), x_ctrv_(1);
+      epsilon = ctrv_meas_ - estimated_z;
+      r = r_ctrv_;
+    }
     nis = nis_ctrv_;
     x = x_ctrv_.col(0);
     p = p_ctrv_;
   }
   else
   {
-    estimated_z << x_rm_(0), x_rm_(1);
-    epsilon = rm_meas_ - estimated_z;
-    r = r_rm_;
+    if(use_lane_direction)
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
+      estimated_z << x_rm_(0),x_rm_(1), x_rm_(3);
+      epsilon = lidar_direction_rm_meas_ - estimated_z;
+      r = lidar_direction_r_rm_;
+    }
+    else
+    {
+      estimated_z = Eigen::VectorXd(num_lidar_state_);
+      estimated_z << x_rm_(0), x_rm_(1);
+      epsilon = rm_meas_ - estimated_z;
+      r = r_rm_;
+    }
     nis = nis_rm_;
     x = x_rm_.col(0);
     p = p_rm_;
@@ -1571,7 +1640,15 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     x_sig.col(i + 1) = sigma_point1;
     x_sig.col(i + 1 + num_state_) = sigma_point2;
   }
-  Eigen::MatrixXd z_sig = Eigen::MatrixXd(num_lidar_state_, 2 * num_state_ + 1);
+  Eigen::MatrixXd z_sig;
+  if(use_lane_direction)
+  {
+    z_sig = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_state_ + 1);
+  }
+  else
+  {
+    z_sig = Eigen::MatrixXd(num_lidar_state_, 2 * num_state_ + 1);
+  }
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     double p_x = x_sig(0, i);
@@ -1580,14 +1657,30 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
     z_sig(1, i) = p_y;
   }
 
-  Eigen::VectorXd z_pred = Eigen::VectorXd(num_lidar_state_);
+  Eigen::VectorXd z_pred;
+  if(use_lane_direction)
+  {
+    z_pred = Eigen::VectorXd(num_lidar_direction_state_);
+  }
+  else
+  {
+    z_pred = Eigen::VectorXd(num_lidar_state_);
+  }
   z_pred.fill(0.0);
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
     z_pred = z_pred + weights_s_(i) * z_sig.col(i);
   }
 
-  Eigen::MatrixXd s = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
+  Eigen::MatrixXd s;
+  if(use_lane_direction)
+  {
+    s = Eigen::VectorXd(num_lidar_direction_state_, num_lidar_direction_state_);
+  }
+  else
+  {
+    s = Eigen::VectorXd(num_lidar_state_, num_lidar_state_);
+  }
   s.fill(0.0);
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
@@ -1601,72 +1694,135 @@ void UKF::adaptiveAdjustmentR(const int model_ind)
 
   if (model_ind == MotionModel::CV)
   {
-    r_cv_ = corrected_r;
-    new_x_sig_cv_ = x_sig;
-    new_z_sig_cv_ = z_sig;
-    new_z_pred_cv_ = z_pred;
-    new_s_cv_ = s;
+    adaptive_x_sig_cv_ = x_sig;
+    if(use_lane_direction)
+    {
+      lidar_direction_r_cv_ = corrected_r;
+      adaptive_lidar_direction_z_sig_cv_ = z_sig;
+      adaptive_lidar_direction_z_pred_cv_ = z_pred;
+      adaptive_lidar_direction_s_cv_ = s;
+    }
+    else
+    {
+      r_cv_ = corrected_r;
+      adaptive_z_sig_cv_ = z_sig;
+      adaptive_z_pred_cv_ = z_pred;
+      adaptive_s_cv_ = s;
+    }
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    r_ctrv_ = corrected_r;
-    new_x_sig_ctrv_ = x_sig;
-    new_z_sig_ctrv_ = z_sig;
-    new_z_pred_ctrv_ = z_pred;
-    new_s_ctrv_ = s;
+    adaptive_x_sig_ctrv_ = x_sig;
+    if(use_lane_direction)
+    {
+      lidar_direction_r_ctrv_ = corrected_r;
+      adaptive_lidar_direction_z_sig_ctrv_ = z_sig;
+      adaptive_lidar_direction_z_pred_ctrv_ = z_pred;
+      adaptive_lidar_direction_s_ctrv_ = s;
+    }
+    else
+    {
+      r_ctrv_ = corrected_r;
+      adaptive_z_sig_ctrv_ = z_sig;
+      adaptive_z_pred_ctrv_ = z_pred;
+      adaptive_s_ctrv_ = s;
+    }
   }
   else
   {
-    r_rm_ = corrected_r;
-    new_x_sig_rm_ = x_sig;
-    new_z_sig_rm_ = z_sig;
-    new_z_pred_rm_ = z_pred;
-    new_s_rm_ = s;
+    adaptive_x_sig_rm_ = x_sig;
+    if(use_lane_direction)
+    {
+      lidar_direction_r_rm_ = corrected_r;
+      adaptive_lidar_direction_z_sig_rm_ = z_sig;
+      adaptive_lidar_direction_z_pred_rm_ = z_pred;
+      adaptive_lidar_direction_s_rm_ = s;
+    }
+    else
+    {
+      r_rm_ = corrected_r;
+      adaptive_z_sig_rm_ = z_sig;
+      adaptive_z_pred_rm_ = z_pred;
+      adaptive_s_rm_ = s;
+    }
   }
 }
 
-void UKF::estimationUpdate(const int model_ind)
+void UKF::estimationUpdate(const int model_ind, const bool use_lane_direction)
 {
   Eigen::VectorXd x(x_cv_.rows());
-  Eigen::VectorXd z(cv_meas_.rows());
-  Eigen::VectorXd z_pred(cv_meas_.rows());
-  Eigen::MatrixXd r(r_cv_.rows(), r_cv_.cols());
-  Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
-  Eigen::MatrixXd s(s_cv_.rows(), s_cv_.cols());
   Eigen::MatrixXd x_sig(num_state_, 2 * num_state_ + 1);
-  Eigen::MatrixXd z_sig(num_lidar_state_, 2 * num_state_ + 1);
+  Eigen::MatrixXd q(q_cv_.rows(), q_cv_.cols());
+  Eigen::VectorXd z;
+  Eigen::VectorXd z_pred;
+  Eigen::MatrixXd z_sig;
+  Eigen::MatrixXd r;
+  Eigen::MatrixXd s;
   if (model_ind == MotionModel::CV)
   {
     x = x_cv_.col(0);
-    z = cv_meas_;
-    z_pred = new_z_pred_cv_;
-    r = r_cv_;
+    x_sig = adaptive_x_sig_cv_;
     q = q_cv_;
-    s = new_s_cv_;
-    x_sig = new_x_sig_cv_;
-    z_sig = new_z_sig_cv_;
+    if(use_lane_direction)
+    {
+      z = lidar_direction_cv_meas_;
+      z_pred = adaptive_lidar_direction_z_pred_cv_;
+      z_sig = adaptive_lidar_direction_z_sig_cv_;
+      r = lidar_direction_r_cv_;
+      s = adaptive_lidar_direction_s_cv_;
+    }
+    else
+    {
+      z = cv_meas_;
+      z_pred = adaptive_z_pred_cv_;
+      z_sig = adaptive_z_sig_cv_;
+      r = r_cv_;
+      s = adaptive_s_cv_;
+    }
   }
   else if (model_ind == MotionModel::CTRV)
   {
     x = x_ctrv_.col(0);
-    z = ctrv_meas_;
-    z_pred = new_z_pred_ctrv_;
-    r = r_ctrv_;
+    x_sig = adaptive_x_sig_ctrv_;
     q = q_ctrv_;
-    s = new_s_ctrv_;
-    x_sig = new_x_sig_ctrv_;
-    z_sig = new_z_sig_ctrv_;
+    if(use_lane_direction)
+    {
+      z = lidar_direction_ctrv_meas_;
+      z_pred = adaptive_lidar_direction_z_pred_ctrv_;
+      z_sig = adaptive_lidar_direction_z_sig_ctrv_;
+      r = lidar_direction_r_ctrv_;
+      s = adaptive_lidar_direction_s_ctrv_;
+    }
+    else
+    {
+      z = ctrv_meas_;
+      z_pred = adaptive_z_pred_ctrv_;
+      z_sig = adaptive_z_sig_ctrv_;
+      r = r_ctrv_;
+      s = adaptive_s_ctrv_;
+    }
   }
   else
   {
     x = x_rm_.col(0);
-    z = rm_meas_;
-    z_pred = new_z_pred_rm_;
-    r = r_rm_;
+    x_sig = adaptive_x_sig_rm_;
     q = q_rm_;
-    s = new_s_rm_;
-    x_sig = new_x_sig_rm_;
-    z_sig = new_z_sig_rm_;
+    if(use_lane_direction)
+    {
+      z = lidar_direction_rm_meas_;
+      z_pred = adaptive_lidar_direction_z_pred_rm_;
+      z_sig = adaptive_lidar_direction_z_sig_rm_;
+      r = lidar_direction_r_rm_;
+      s = adaptive_lidar_direction_s_rm_;
+    }
+    else
+    {
+      z = rm_meas_;
+      z_pred = adaptive_z_pred_rm_;
+      z_sig = adaptive_z_sig_rm_;
+      r = r_rm_;
+      s = adaptive_s_rm_;
+    }
   }
 
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
@@ -1681,7 +1837,15 @@ void UKF::estimationUpdate(const int model_ind)
   // update state covariance P with corrected covariance Q
   p = p + q;
 
-  Eigen::MatrixXd cross_covariance(num_state_, num_lidar_state_);
+  Eigen::MatrixXd cross_covariance;
+  if(use_lane_direction)
+  {
+    cross_covariance = Eigen::MatrixXd(num_state_, num_lidar_direction_state_);
+  }
+  else
+  {
+    cross_covariance = Eigen::MatrixXd(num_state_, num_lidar_state_);
+  }
   cross_covariance.fill(0.0);
   for (int i = 0; i < 2 * num_state_ + 1; i++)
   {
@@ -1726,9 +1890,9 @@ void UKF::applyingRobustAdaptiveFilter(const int model_ind, const bool use_lane_
   {
     return;
   }
-  // adaptiveAdjustmentQ(model_ind, use_lane_direction);
-  // adaptiveAdjustmentR(model_ind, use_lane_direction);
-  // estimationUpdate(model_ind, use_lane_direction);
+  adaptiveAdjustmentQ(model_ind, use_lane_direction);
+  adaptiveAdjustmentR(model_ind, use_lane_direction);
+  estimationUpdate(model_ind, use_lane_direction);
 }
 
 void UKF::robustAdaptiveFilter(const bool use_sukf, const double chi_thres, const double raukf_q, const double raukf_r)
