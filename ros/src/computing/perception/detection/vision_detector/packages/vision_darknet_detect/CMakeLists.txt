@@ -157,9 +157,9 @@ IF (CUDA_FOUND)
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
-ELSE()
-    message("CUDA was not found, attempting to build CPU-darknet.")
-    #removing CUDA dependencies so Darknet yolo-v3 can be run. Darknet must be built natively in order to work (simalar to Caffe installation).
+ELSEIF(EXISTS "ENV{HOME}/darknet")
+	message("CUDA was not found, attempting to build CPU-darknet.")
+	#removing CUDA dependencies so Darknet yolo-v3 can be run. Darknet must be built natively in order to work (simalar to Caffe installation).
     	
         include_directories(
 		${catkin_INCLUDE_DIRS}
@@ -202,5 +202,8 @@ ELSE()
 		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 	)
+
+ELSE()
+	message("vision_darknet_detect won't be built, neither CUDA nor darknet were found")
     
 ENDIF ()
