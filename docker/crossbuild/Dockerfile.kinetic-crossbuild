@@ -49,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-serial \
     qtbase5-dev \
     ros-kinetic-angles \
+    ros-kinetic-automotive-platform-msgs \
     ros-kinetic-camera-info-manager \
     ros-kinetic-catkin \
     ros-kinetic-cmake-modules \

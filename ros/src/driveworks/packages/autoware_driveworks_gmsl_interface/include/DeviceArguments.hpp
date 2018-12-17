@@ -1,7 +1,4 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -16,6 +13,8 @@
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
+ *  All rights reserved.
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,15 +25,49 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
+/*
+  Modified from Nvidia SDK - Camera gmsl
+  Author: Punnu Phairatt
+  Initial Date: 10/05/18
+*/
 
-#include "visualize_detected_objects.h"
+#ifndef _DEVICE_ARGUMENTS_
+#define _DEVICE_ARGUMENTS_
 
-int main(int argc, char** argv)
+#include <map>
+#include <string>
+#include <iterator>
+#include <vector>
+#include <iostream>
+
+namespace DriveWorks
 {
-  ros::init(argc, argv, "visualize_detected_objects");
-  VisualizeDetectedObjects app;
-  ros::spin();
 
-  return 0;
-}
+typedef std::pair<std::string, std::string> option_t;
+
+class DeviceArguments
+{
+public:
+  /* Constructor */
+  DeviceArguments(const std::vector<option_t>& options);
+  /* Destructor */
+  ~DeviceArguments();
+	/* Print arguments on screen */
+  void printArguments();
+  /* Get arguments */
+  const std::string& get(const char *name) const;
+  /* Set argument */
+  bool set(const char* name, std::string new_value);
+
+
+private:
+  std::map<std::string, std::string> arguments;
+  const std::string empty_string = {};
+};
+
+};//namespace
+
+#endif
+
+

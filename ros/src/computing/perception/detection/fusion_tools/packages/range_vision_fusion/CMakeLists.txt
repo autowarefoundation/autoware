@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
-        visualization_msgs
         )
 
 find_package(OpenCV REQUIRED)
@@ -54,7 +53,6 @@ catkin_package(
         jsk_topic_tools
         image_geometry
         jsk_topic_tools
-        visualization_msgs
 )
 
 #fusion Library

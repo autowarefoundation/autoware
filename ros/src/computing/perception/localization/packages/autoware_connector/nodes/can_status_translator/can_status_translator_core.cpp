@@ -111,7 +111,12 @@ void CanStatusTranslatorNode::publishVehicleStatus(const autoware_can_msgs::CANI
   vs.drivemode = msg->devmode;  // I think devmode is typo in CANInfo...
   vs.steeringmode = msg->strmode;
   vs.gearshift = msg->driveshift;
+
   vs.speed = msg->speed;
+  if(vs.gearshift == static_cast<int>(GearShift::Reverse)) {
+      vs.speed *= -1.0;
+  }
+
   vs.drivepedal = msg->drivepedal;
   vs.brakepedal = msg->brakepedal;
   vs.angle = msg->angle;

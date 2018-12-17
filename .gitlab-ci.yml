@@ -54,28 +54,20 @@ build_kinetic:
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
-    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o coverage
-    - tar -czvf coverage.tar.gz coverage
+    # BRANCH_NAME: gets branch name from CI_COMMIT_REF_NAME variable substituting / with _ (feature/test_this_lib becomes feature_test_this_lib)
+    # CI_COMMIT_REF_NAME: (from https://docs.gitlab.com/ee/ci/variables/) The branch or tag name for which project is built
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
+    - genhtml -p "$PWD" --legend --demangle-cpp lcov.total.filtered -o $COVERAGE_FOLDER_NAME
+    - tar -czvf coverage.tar.gz $COVERAGE_FOLDER_NAME
     - mv coverage.tar.gz $CI_PROJECT_DIR/coverage.tar.gz
     - ls $CI_PROJECT_DIR 
+  retry: 1
   artifacts:
     paths:
       - $CI_PROJECT_DIR/coverage.tar.gz
+    expire_in: 48 hrs
   coverage: /\s*lines.*:\s(\d+\.\d+\%\s\(\d+\sof\s\d+.*\))/
-    
-  
-    
-build_indigo:
-  stage: build
-  image: ubuntu:trusty
-  variables:
-    ROS_DISTRO: indigo
-  <<: *build_common
-  script:
-    - catkin_make clean
-    - catkin_make -j2 --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
-    - catkin_make run_tests
-    - catkin_test_results
     
 build_cross:
   stage: build
@@ -84,6 +76,7 @@ build_cross:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
+    AUTOWARE_DOCKER_DATE: 20181123
     AUTOWARE_HOME: $CI_PROJECT_DIR
     AUTOWARE_TARGET_ARCH: aarch64
     AUTOWARE_TARGET_PLATFORM: generic-aarch64
@@ -97,7 +90,7 @@ build_cross:
           --rm
           -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
           -w ${AUTOWARE_HOME}/ros
-          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+          autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
           bash
             -c "source /opt/ros/kinetic/setup.bash &&
                 catkin_make
@@ -114,15 +107,23 @@ build_cross:
                   --build ${AUTOWARE_BUILD_PATH}
                   -j2"
                   '
+  retry: 1
+  
 pages:
   stage: deploy
   image: alpine
   dependencies:
     - build_kinetic
   script:
+    - BRANCH_NAME="$(echo $CI_COMMIT_REF_NAME | sed 's/\//_/g')"
+    - COVERAGE_FOLDER_NAME="coverage_$BRANCH_NAME"
     - tar -xzvf coverage.tar.gz
-    - mv coverage public
+    - mv $COVERAGE_FOLDER_NAME public
   artifacts:
     paths:
       - public
+  only:
+    - master
+    - develop
+
 
