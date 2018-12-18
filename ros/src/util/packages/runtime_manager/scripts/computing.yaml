@@ -1166,15 +1166,6 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_topic
-      desc    : output_topic desc sample
-      label   : 'output topic'
-      kind    : topic
-      topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/objects
-      cmd_param :
-        dash        : ''
-        delim       : ':='
     - name    : tracking_frame
       desc    : trakcing_frame_ desc sample
       label   : 'tracking frame'

@@ -75,7 +75,7 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/objects", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/object_tracker/objects", 1);
   sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
 
   if (use_vectormap_)
@@ -365,15 +365,16 @@ void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedOb
 
 void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp)
 {
-  for (size_t i = 0; i < input.objects.size(); i++)
+  for (const auto& object: input.objects)
   {
-    double px = input.objects[i].pose.position.x;
-    double py = input.objects[i].pose.position.y;
+    double px = object.pose.position.x;
+    double py = object.pose.position.y;
     Eigen::VectorXd init_meas = Eigen::VectorXd(2);
     init_meas << px, py;
 
     UKF ukf;
     ukf.initialize(init_meas, timestamp, target_id_);
+    ukf.object_ = object;
     targets_.push_back(ukf);
     target_id_++;
   }
@@ -624,6 +625,8 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
       }
     }
   }
+
+  std::vector<bool> already_matched_vec(in_detected_objects.objects.size(), false);
   //get oldest object on each point
   for(size_t i=0; i< matching_objects.size(); i++)
   {
@@ -654,8 +657,14 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
         targets_[in_tracker_indices[current_index]].tracking_num_= TrackingState::Die;
       }
     }
+
+    if(already_matched_vec[oldest_object_index])
+    {
+      continue;
+    }
     autoware_msgs::DetectedObject best_object;
     best_object = in_detected_objects.objects[oldest_object_index];
+    already_matched_vec[oldest_object_index] = true;
     if (best_label != "unknown"
         && !best_label.empty())
     {
@@ -723,7 +732,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
         dd.pose.orientation.w = q[3];
     }
     updateBehaviorState(targets_[i], dd);
-
     if (targets_[i].is_stable_ || (targets_[i].tracking_num_ >= TrackingState::Init &&
                                    targets_[i].tracking_num_ < TrackingState::Stable))
     {
