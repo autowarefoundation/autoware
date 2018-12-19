@@ -9,7 +9,7 @@ if [[ -d install ]]; then
     rm -rf install
 fi
 
-COLCON_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
+COLCON_OPTS="--cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
-colcon build $CATKIN_OPTS $@
+colcon build $COLCON_OPTS $@
