@@ -54,7 +54,7 @@ LShapeFilter::LShapeFilter()
 
   sub_object_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &LShapeFilter::callback, this);
   pub_object_array_ =
-      node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_objects/l_shaped", 1);
+      node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/l_shaped/objects", 1);
 }
 
 void LShapeFilter::callback(const autoware_msgs::DetectedObjectArray& input)
