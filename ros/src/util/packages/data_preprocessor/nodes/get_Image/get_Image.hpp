@@ -24,4 +24,3 @@ public:
 };
 
 static void check_arguments(int argc, char* argv[]);
-// static void save_image(const sensor_msgs::Image& msg);

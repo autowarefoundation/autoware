@@ -30,7 +30,6 @@ public:
   bool is_image_;
   bool is_pc2_;
   sensor_msgs::PointCloud2 points_;
-  // pcl::PointCloud<pcl::PointXYZ> points_;
   cv::Mat image_;
   string time_stamp_;
   cv::Mat CameraExtrinsicMat_;

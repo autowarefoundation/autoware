@@ -13,9 +13,6 @@ void SaveImage::save_image(const sensor_msgs::Image& msg)
   cv_bridge::CvImagePtr cv_image;
   stringstream ss;
   ss << msg.header.stamp;
-  // cout << save_path_.size() << endl;
-  // cout << save_path_[save_path_.size() - 1] << endl;
-  // if save_path_[save_path_.size() - 1]
 
   try
   {
