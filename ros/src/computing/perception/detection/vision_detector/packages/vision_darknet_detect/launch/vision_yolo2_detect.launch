@@ -20,4 +20,11 @@
         <param name="names_file" type="str" value="$(arg names_file)"/>
     </node>
 
+    <node pkg="detected_objects_visualizer" type="visualize_rects" name="yolo2_rects"
+          output="screen">
+        <param name="image_src" value="$(arg image_src)"/>
+        <param name="image_out" value="/image_rects"/>
+        <param name="object_src" value="/detection/image_detector/objects"/> <!-- this is fixed by definition -->
+    </node>
+
 </launch>

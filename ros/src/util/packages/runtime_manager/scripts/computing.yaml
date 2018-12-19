@@ -392,6 +392,12 @@ subs :
           cmd  : roslaunch imm_ukf_pda_track imm_ukf_pda_track.launch
           param: imm_ukf_pda_track_param
           gui  :
+            dialog_width  : 600
+            dialog_height : 400
+            downsample_cloud :
+              flags : [nl ]
+            clustering_distances:
+              flags : [nl ]
             sync :
               func : self.button_synchronization.GetValue()
 
@@ -1156,23 +1162,16 @@ params :
       label   : 'input topic'
       kind    : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v       : /detection/lidar_detector/objects
+      v       : /detection/fusion_tools/objects
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : tracker_output_detected_topic
+    - name    : tracker_output_topic
       desc    : output_topic desc sample
       label   : 'output topic'
-      kind    : str
-      v       : /detection/lidar_tracker/objects
-      cmd_param :
-        dash        : ''
-        delim       : ':='
-    - name    : pointcloud_frame
-      desc    : pointcloud_frame_ desc sample
-      label   : 'pointcloud frame'
-      kind    : str
-      v       : velodyne
+      kind    : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/objects
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1181,6 +1180,14 @@ params :
       label   : 'tracking frame'
       kind    : str
       v       : world
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : vectormap_frame
+      desc    : vectormap_frame_ desc sample
+      label   : 'vectormap frame'
+      kind    : str
+      v       : map
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1220,21 +1227,21 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : distance_thres
-      desc    : distance_thres_ desc sample
-      label   : 'distance thres'
+    - name    : static_velocity_thres
+      desc    : static_velocity_thres_ desc sample
+      label   : 'static velocity thres'
       min       : 0
-      max       : 100
-      v       : 100
+      max       : 10
+      v       : 0.5
       cmd_param :
         dash        : ''
         delim       : ':='
-    - name    : static_distance_thres
-      desc    : static_distance_thres_ desc sample
-      label   : 'static distance thres'
+    - name    : static_num_history_thres
+      desc    : static_num_history_thres desc sample
+      label   : 'static num history thres'
       min       : 0
-      max       : 10
-      v       : 3.0
+      max       : 20
+      v       : 3
       cmd_param :
         dash        : ''
         delim       : ':='
@@ -1247,6 +1254,33 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : lane_direction_chi_thres
+      desc    : threshold for direction chi squared distribution
+      label   : 'lane direction chi thres'
+      min       : 0.0
+      max       : 20
+      v       : 2.71
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : nearest_lane_distance_thres
+      desc    : threshold for nearest lane distance
+      label   : 'nearest lane distance thres'
+      min       : 0.0
+      max       : 20
+      v       : 1.0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : merge_distance_threshold
+      desc    : Distance to merge objects tracker output in meters. Default 0.5m
+      label   : 'merge_distance_threshold [meters]'
+      min       : 0.0
+      max       : 2.0
+      v       : 0.5
+      cmd_param :
+        dash        : ''
+        delim       : ':='
     - name      : use_sukf
       desc      : Use SUKF
       label     : use_sukf
@@ -1255,15 +1289,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
-    - name      : is_debug
-      desc      : debug mode on/off
-      label     : is_debug
+    - name      : use_vectormap
+      desc      : Use vectormap fot lane direction assisted tracking
+      label     : use_vectormap
       kind      : checkbox
       v         : False
       cmd_param :
         dash      : ''
         delim     : ':='
-
 
   - name  : lidar_kf_contour_track_param
     vars  :
@@ -4522,6 +4555,15 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name      : grid_position_z
+      desc      : grid position z [meter]
+      label     : Grid Position z [m]
+      min       : -5
+      max       : 5
+      v         : -2.0
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name : road_occupancy_processor
     vars :
@@ -5375,11 +5417,11 @@ params :
   - name  : naive_motion_predict_param
     vars  :
     - name  : input_topic
-      desc  : input tppic
+      desc  : input topic
       label : input_topic
       kind  : topic
       topic_type : autoware_msgs/DetectedObjectArray
-      v     : /detection/lidar_tracker/objects
+      v     : /detection/objects
       cmd_param :
         dash      : ''
         delim     : ':='

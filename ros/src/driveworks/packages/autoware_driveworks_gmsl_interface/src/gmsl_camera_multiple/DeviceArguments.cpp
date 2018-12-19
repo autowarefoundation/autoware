@@ -1,7 +1,4 @@
 /*
- *  Copyright (c) 2018, Nagoya University
- *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *
@@ -16,6 +13,8 @@
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
+ *  All rights reserved.
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,46 +25,75 @@
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+*/
+/*
+  Modified from Nvidia SDK - Camera gmsl
+  Author: Punnu Phairatt
+  Initial Date: 10/05/18
+*/
 
-#ifndef OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
-#define OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
 
-#include <ros/ros.h>
-#include <std_msgs/Header.h>
+#include "DeviceArguments.hpp"
 
-#include <jsk_recognition_msgs/BoundingBox.h>
-#include <jsk_recognition_msgs/BoundingBoxArray.h>
 
-#include <pcl/io/io.h>
-
-#include <vector>
-#include <string>
-
-#include "autoware_msgs/DetectedObject.h"
-#include "autoware_msgs/DetectedObjectArray.h"
-
-class VisualizeDetectedObjects
+namespace DriveWorks
 {
-private:
-  const double vis_arrow_height_;
-  const double vis_id_height_;
-  double ignore_velocity_thres_;
-  double visualize_arrow_velocity_thres_;
-  std::string input_topic_;
-  std::string pointcloud_frame_;
 
-  ros::NodeHandle node_handle_;
-  ros::Subscriber sub_object_array_;
+//Constructor
+DeviceArguments::DeviceArguments(const std::vector<option_t>& options)
+{
+  // init arguments
+  for(auto& option: options)
+  {
+    arguments.insert(option);
+  }
+}
 
-  ros::Publisher pub_arrow_;
-  ros::Publisher pub_id_;
+//Destructor
+DeviceArguments::~DeviceArguments()
+{
 
-  void visMarkers(const autoware_msgs::DetectedObjectArray& input);
-  void callBack(const autoware_msgs::DetectedObjectArray& input);
+}
 
-public:
-  VisualizeDetectedObjects();
-};
 
-#endif  // OBJECT_TRACKING_VISUALIZEDETECTEDOBJECTS_H
+void DeviceArguments::printArguments()
+{
+  for(auto arg: arguments)
+  {
+    std::cout << arg.first << "    " << arg.second << std::endl;
+  }
+}
+
+const std::string& DeviceArguments::get(const char *name) const
+{
+  auto it = arguments.find(name);
+  if (it == arguments.end())
+  {
+    printf("Get error: Missing device argument '%s' requested\n", name);
+    return empty_string;
+  }
+  else
+  {
+    return it->second;
+  }
+}
+
+
+bool DeviceArguments::set(const char* name, std::string new_value)
+{
+  auto it = arguments.find(name);
+  if (it == arguments.end())
+  {
+    printf("Set error: Missing argument '%s' requested\n", name);
+    return false;
+  }
+  else
+  {
+    arguments[name] =  new_value;
+    return true;
+  }
+}
+
+}//namespace
+
+

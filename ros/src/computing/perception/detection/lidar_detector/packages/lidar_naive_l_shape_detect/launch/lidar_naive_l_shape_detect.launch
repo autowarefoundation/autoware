@@ -16,4 +16,7 @@
     <param name="sensor_height" value="$(arg sensor_height)" />
   </node>
 
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="naive_shape_visualization_01"
+        output="screen" ns="/detection/l_shaped" />
+
 </launch>
