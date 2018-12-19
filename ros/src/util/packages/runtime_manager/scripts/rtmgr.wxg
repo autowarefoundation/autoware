@@ -1873,7 +1873,7 @@
                                         <option>1</option>
                                         <border>0</border>
                                         <flag>wxEXPAND</flag>
-                                        <object class="wxBoxSizer" name="" base="EditBoxSizer">
+                                        <object class="wxBoxSizer" name="sizer_62_copy_copy_copy_copy_copy_copy" base="EditBoxSizer">
                                             <orient>wxHORIZONTAL</orient>
                                             <object class="sizeritem">
                                                 <option>0</option>
@@ -1898,6 +1898,7 @@
                                                 </object>
                                             </object>
                                         </object>
+
                                     </object>
                                     <object class="sizeritem">
                                         <option>0</option>
