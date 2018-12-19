@@ -28,16 +28,10 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "imm_ukf_pda.h"
 
 ImmUkfPda::ImmUkfPda()
-  :
-  target_id_(0),
-  init_(false),
-  frame_count_(0),
-  has_subscribed_vectormap_(false),
-  private_nh_("~")
+  : target_id_(0), init_(false), frame_count_(0), has_subscribed_vectormap_(false), private_nh_("~")
 {
   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
   private_nh_.param<int>("life_time_thres", life_time_thres_, 8);
@@ -75,14 +69,14 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/object_tracker/objects", 1);
+  pub_object_array_ =
+      node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/object_tracker/objects", 1);
   sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
 
   if (use_vectormap_)
   {
-    vmap_.subscribe(private_nh_, vector_map::Category::POINT |
-                                 vector_map::Category::NODE  |
-                                 vector_map::Category::LANE, 1);
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT | vector_map::Category::NODE | vector_map::Category::LANE,
+                    1);
   }
 }
 
@@ -90,7 +84,7 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   input_header_ = input.header;
 
-  if(use_vectormap_)
+  if (use_vectormap_)
   {
     checkVectormapSubscription();
   }
@@ -165,7 +159,7 @@ void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& 
                                       autoware_msgs::DetectedObjectArray& transformed_input)
 {
   transformed_input.header = input_header_;
-  for (auto const &object: input.objects)
+  for (auto const& object : input.objects)
   {
     geometry_msgs::Pose out_pose = getTransformedPose(object.pose, local2global_);
 
@@ -245,8 +239,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
     if (use_vectormap_ && has_subscribed_vectormap_)
     {
       autoware_msgs::DetectedObject direction_updated_object;
-      bool use_direction_meas =
-          updateDirection(smallest_nis, target.object_, direction_updated_object, target);
+      bool use_direction_meas = updateDirection(smallest_nis, target.object_, direction_updated_object, target);
       if (use_direction_meas)
       {
         object_vec.push_back(direction_updated_object);
@@ -264,7 +257,7 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
 }
 
 bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
-                                    autoware_msgs::DetectedObject& out_object, UKF& target)
+                                autoware_msgs::DetectedObject& out_object, UKF& target)
 {
   bool use_lane_direction = false;
   target.is_direction_cv_available_ = false;
@@ -283,7 +276,7 @@ bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::
 }
 
 bool ImmUkfPda::storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                                 autoware_msgs::DetectedObject& out_object)
+                                                    autoware_msgs::DetectedObject& out_object)
 {
   geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
   double min_dist = std::numeric_limits<double>::max();
@@ -336,7 +329,7 @@ void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs
                                                  UKF& target)
 {
   target.lifetime_++;
-  if (!target.object_.label.empty() && target.object_.label !="unknown")
+  if (!target.object_.label.empty() && target.object_.label != "unknown")
   {
     target.label_ = target.object_.label;
   }
@@ -365,7 +358,7 @@ void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedOb
 
 void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, double timestamp)
 {
-  for (const auto& object: input.objects)
+  for (const auto& object : input.objects)
   {
     double px = object.pose.position.x;
     double py = object.pose.position.y;
@@ -556,7 +549,7 @@ void ImmUkfPda::staticClassification()
       }
       avg_vel = double(sum_vel / static_num_history_thres_);
 
-      if(avg_vel < static_velocity_thres_ && current_velocity < static_velocity_thres_)
+      if (avg_vel < static_velocity_thres_ && current_velocity < static_velocity_thres_)
       {
         targets_[i].is_static_ = true;
       }
@@ -564,26 +557,20 @@ void ImmUkfPda::staticClassification()
   }
 }
 
-bool
-ImmUkfPda::arePointsClose(const geometry_msgs::Point& in_point_a,
-                                const geometry_msgs::Point& in_point_b,
-                                float in_radius)
+bool ImmUkfPda::arePointsClose(const geometry_msgs::Point& in_point_a, const geometry_msgs::Point& in_point_b,
+                               float in_radius)
 {
   return (fabs(in_point_a.x - in_point_b.x) <= in_radius) && (fabs(in_point_a.y - in_point_b.y) <= in_radius);
 }
 
-bool
-ImmUkfPda::arePointsEqual(const geometry_msgs::Point& in_point_a,
-                               const geometry_msgs::Point& in_point_b)
+bool ImmUkfPda::arePointsEqual(const geometry_msgs::Point& in_point_a, const geometry_msgs::Point& in_point_b)
 {
   return arePointsClose(in_point_a, in_point_b, CENTROID_DISTANCE);
 }
 
-bool
-ImmUkfPda::isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
-                          const geometry_msgs::Point& in_point)
+bool ImmUkfPda::isPointInPool(const std::vector<geometry_msgs::Point>& in_pool, const geometry_msgs::Point& in_point)
 {
-  for(size_t j=0; j<in_pool.size(); j++)
+  for (size_t j = 0; j < in_pool.size(); j++)
   {
     if (arePointsEqual(in_pool[j], in_point))
     {
@@ -593,9 +580,8 @@ ImmUkfPda::isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
   return false;
 }
 
-autoware_msgs::DetectedObjectArray
-ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
-                            const std::vector<size_t> in_tracker_indices)
+autoware_msgs::DetectedObjectArray ImmUkfPda::removeRedundantObjects(
+    const autoware_msgs::DetectedObjectArray& in_detected_objects, const std::vector<size_t> in_tracker_indices)
 {
   if (in_detected_objects.objects.size() != in_tracker_indices.size())
     return in_detected_objects;
@@ -604,36 +590,36 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
   resulting_objects.header = in_detected_objects.header;
 
   std::vector<geometry_msgs::Point> centroids;
-  //create unique points
-  for(size_t i=0; i<in_detected_objects.objects.size(); i++)
+  // create unique points
+  for (size_t i = 0; i < in_detected_objects.objects.size(); i++)
   {
-    if(!isPointInPool(centroids, in_detected_objects.objects[i].pose.position))
+    if (!isPointInPool(centroids, in_detected_objects.objects[i].pose.position))
     {
       centroids.push_back(in_detected_objects.objects[i].pose.position);
     }
   }
-  //assign objects to the points
+  // assign objects to the points
   std::vector<std::vector<size_t>> matching_objects(centroids.size());
-  for(size_t k=0; k<in_detected_objects.objects.size(); k++)
+  for (size_t k = 0; k < in_detected_objects.objects.size(); k++)
   {
-    const auto& object=in_detected_objects.objects[k];
-    for(size_t i=0; i< centroids.size(); i++)
+    const auto& object = in_detected_objects.objects[k];
+    for (size_t i = 0; i < centroids.size(); i++)
     {
       if (arePointsClose(object.pose.position, centroids[i], merge_distance_threshold_))
       {
-        matching_objects[i].push_back(k);//store index of matched object to this point
+        matching_objects[i].push_back(k);  // store index of matched object to this point
       }
     }
   }
 
   std::vector<bool> already_matched_vec(in_detected_objects.objects.size(), false);
-  //get oldest object on each point
-  for(size_t i=0; i< matching_objects.size(); i++)
+  // get oldest object on each point
+  for (size_t i = 0; i < matching_objects.size(); i++)
   {
     size_t oldest_object_index = 0;
     int oldest_lifespan = -1;
     std::string best_label;
-    for(size_t j=0; j<matching_objects[i].size(); j++)
+    for (size_t j = 0; j < matching_objects[i].size(); j++)
     {
       size_t current_index = matching_objects[i][j];
       int current_lifespan = targets_[in_tracker_indices[current_index]].lifetime_;
@@ -643,30 +629,29 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
         oldest_object_index = current_index;
       }
       if (!targets_[in_tracker_indices[current_index]].label_.empty() &&
-        targets_[in_tracker_indices[current_index]].label_ != "unknown")
+          targets_[in_tracker_indices[current_index]].label_ != "unknown")
       {
         best_label = targets_[in_tracker_indices[current_index]].label_;
       }
     }
     // delete nearby targets except for the oldest target
-    for(size_t j=0; j<matching_objects[i].size(); j++)
+    for (size_t j = 0; j < matching_objects[i].size(); j++)
     {
       size_t current_index = matching_objects[i][j];
-      if(current_index != oldest_object_index)
+      if (current_index != oldest_object_index)
       {
-        targets_[in_tracker_indices[current_index]].tracking_num_= TrackingState::Die;
+        targets_[in_tracker_indices[current_index]].tracking_num_ = TrackingState::Die;
       }
     }
 
-    if(already_matched_vec[oldest_object_index])
+    if (already_matched_vec[oldest_object_index])
     {
       continue;
     }
     autoware_msgs::DetectedObject best_object;
     best_object = in_detected_objects.objects[oldest_object_index];
     already_matched_vec[oldest_object_index] = true;
-    if (best_label != "unknown"
-        && !best_label.empty())
+    if (best_label != "unknown" && !best_label.empty())
     {
       best_object.label = best_label;
     }
@@ -675,11 +660,9 @@ ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_d
   }
 
   return resulting_objects;
-
 }
 
-void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
-                           const std::vector<bool> &matching_vec,
+void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
   autoware_msgs::DetectedObjectArray tmp_objects;
@@ -687,7 +670,6 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
   std::vector<size_t> used_targets_indices;
   for (size_t i = 0; i < targets_.size(); i++)
   {
-
     double tx = targets_[i].x_merge_(0);
     double ty = targets_[i].x_merge_(1);
 
@@ -713,7 +695,7 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
     if (!targets_[i].is_static_ && targets_[i].is_stable_)
     {
       // Aligh the longest side of dimentions with the estimated orientation
-      if(targets_[i].object_.dimensions.x < targets_[i].object_.dimensions.y)
+      if (targets_[i].object_.dimensions.x < targets_[i].object_.dimensions.y)
       {
         dd.dimensions.x = targets_[i].object_.dimensions.y;
         dd.dimensions.y = targets_[i].object_.dimensions.x;
@@ -732,8 +714,8 @@ void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
         dd.pose.orientation.w = q[3];
     }
     updateBehaviorState(targets_[i], dd);
-    if (targets_[i].is_stable_ || (targets_[i].tracking_num_ >= TrackingState::Init &&
-                                   targets_[i].tracking_num_ < TrackingState::Stable))
+    if (targets_[i].is_stable_ ||
+        (targets_[i].tracking_num_ >= TrackingState::Init && targets_[i].tracking_num_ < TrackingState::Stable))
     {
       tmp_objects.objects.push_back(dd);
       used_targets_indices.push_back(i);
@@ -808,7 +790,6 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
 
   double dt = (timestamp - timestamp_);
   timestamp_ = timestamp;
-
 
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)

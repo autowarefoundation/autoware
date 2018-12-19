@@ -31,11 +31,9 @@
 #ifndef OBJECT_TRACKING_IMM_UKF_JPDAF_H
 #define OBJECT_TRACKING_IMM_UKF_JPDAF_H
 
-
 #include <vector>
 #include <chrono>
 #include <stdio.h>
-
 
 #include <ros/ros.h>
 #include <ros/package.h>
@@ -86,7 +84,6 @@ private:
   double raukf_q_thres_;
   double raukf_r_thres_;
 
-
   // whether if benchmarking tracking result
   bool is_benchmark_;
   int frame_count_;
@@ -108,7 +105,7 @@ private:
   std::vector<vector_map_msgs::Lane> lanes_;
 
   double merge_distance_threshold_;
-  const double CENTROID_DISTANCE = 0.2;//distance to consider centroids the same
+  const double CENTROID_DISTANCE = 0.2;  // distance to consider centroids the same
 
   std::string input_topic_;
   std::string output_topic_;
@@ -133,8 +130,7 @@ private:
                              autoware_msgs::DetectedObjectArray& transformed_input);
   void transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output);
 
-  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose,
-                                                const tf::StampedTransform& tf_stamp);
+  geometry_msgs::Pose getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::StampedTransform& tf_stamp);
 
   bool updateNecessaryTransform();
 
@@ -158,8 +154,7 @@ private:
 
   void staticClassification();
 
-  void makeOutput(const autoware_msgs::DetectedObjectArray& input,
-                  const std::vector<bool>& matching_vec,
+  void makeOutput(const autoware_msgs::DetectedObjectArray& input, const std::vector<bool>& matching_vec,
                   autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   void removeUnnecessaryTarget();
@@ -170,37 +165,27 @@ private:
                autoware_msgs::DetectedObjectArray& detected_objects_output);
 
   bool updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
-                           autoware_msgs::DetectedObject& out_object, UKF& target);
+                       autoware_msgs::DetectedObject& out_object, UKF& target);
 
   bool storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                      autoware_msgs::DetectedObject& out_object);
+                                           autoware_msgs::DetectedObject& out_object);
 
   void checkVectormapSubscription();
 
-  autoware_msgs::DetectedObjectArray
-  removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
-                         const std::vector<size_t> in_tracker_indices);
+  autoware_msgs::DetectedObjectArray removeRedundantObjects(
+      const autoware_msgs::DetectedObjectArray& in_detected_objects, const std::vector<size_t> in_tracker_indices);
 
-  autoware_msgs::DetectedObjectArray
-  forwardNonMatchedObject(const autoware_msgs::DetectedObjectArray& tmp_objects,
-                          const autoware_msgs::DetectedObjectArray&  input,
-                          const std::vector<bool>& matching_vec);
+  autoware_msgs::DetectedObjectArray forwardNonMatchedObject(const autoware_msgs::DetectedObjectArray& tmp_objects,
+                                                             const autoware_msgs::DetectedObjectArray& input,
+                                                             const std::vector<bool>& matching_vec);
 
-  bool
-  arePointsClose(const geometry_msgs::Point& in_point_a,
-                 const geometry_msgs::Point& in_point_b,
-                 float in_radius);
+  bool arePointsClose(const geometry_msgs::Point& in_point_a, const geometry_msgs::Point& in_point_b, float in_radius);
 
-  bool
-  arePointsEqual(const geometry_msgs::Point& in_point_a,
-                 const geometry_msgs::Point& in_point_b);
+  bool arePointsEqual(const geometry_msgs::Point& in_point_a, const geometry_msgs::Point& in_point_b);
 
-  bool
-  isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
-                const geometry_msgs::Point& in_point);
+  bool isPointInPool(const std::vector<geometry_msgs::Point>& in_pool, const geometry_msgs::Point& in_point);
 
-  void updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                                        UKF& target);
+  void updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target);
 
 public:
   ImmUkfPda();

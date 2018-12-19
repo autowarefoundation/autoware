@@ -187,9 +187,9 @@ UKF::UKF()
   adaptive_s_ctrv_ = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
   adaptive_s_rm_ = Eigen::MatrixXd(num_lidar_state_, num_lidar_state_);
 
-  adaptive_lidar_direction_z_sig_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
-  adaptive_lidar_direction_z_sig_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
-  adaptive_lidar_direction_z_sig_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, 2*num_lidar_direction_state_);
+  adaptive_lidar_direction_z_sig_cv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_lidar_direction_state_);
+  adaptive_lidar_direction_z_sig_ctrv_ = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_lidar_direction_state_);
+  adaptive_lidar_direction_z_sig_rm_ = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_lidar_direction_state_);
 
   adaptive_lidar_direction_z_pred_cv_ = Eigen::VectorXd(num_lidar_direction_state_);
   adaptive_lidar_direction_z_pred_ctrv_ = Eigen::VectorXd(num_lidar_direction_state_);
@@ -691,7 +691,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       x_cv_ = updated_x;
       p_cv_ = updated_p;
-      if(is_direction_cv_available_)
+      if (is_direction_cv_available_)
       {
         lidar_direction_cv_meas_ = likely_meas;
       }
@@ -704,7 +704,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       x_ctrv_ = updated_x;
       p_ctrv_ = updated_p;
-      if(is_direction_ctrv_available_)
+      if (is_direction_ctrv_available_)
       {
         lidar_direction_ctrv_meas_ = likely_meas;
       }
@@ -717,7 +717,7 @@ void UKF::updateEachMotion(const double detection_probability, const double gate
     {
       x_rm_ = updated_x;
       p_rm_ = updated_p;
-      if(is_direction_rm_available_)
+      if (is_direction_rm_available_)
       {
         lidar_direction_rm_meas_ = likely_meas;
       }
@@ -1400,11 +1400,11 @@ bool UKF::faultDetection(const int model_ind, const bool use_lane_direction)
   Eigen::MatrixXd z_cov;
   if (model_ind == MotionModel::CV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z_meas = lidar_direction_cv_meas_;
       z_pred = z_pred_lidar_direction_cv_;
-      z_cov  = s_lidar_direction_cv_;
+      z_cov = s_lidar_direction_cv_;
     }
     else
     {
@@ -1415,11 +1415,11 @@ bool UKF::faultDetection(const int model_ind, const bool use_lane_direction)
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z_meas = lidar_direction_ctrv_meas_;
       z_pred = z_pred_lidar_direction_ctrv_;
-      z_cov  = s_lidar_direction_ctrv_;
+      z_cov = s_lidar_direction_ctrv_;
     }
     else
     {
@@ -1430,11 +1430,11 @@ bool UKF::faultDetection(const int model_ind, const bool use_lane_direction)
   }
   else
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z_meas = lidar_direction_rm_meas_;
       z_pred = z_pred_lidar_direction_rm_;
-      z_cov  = s_lidar_direction_rm_;
+      z_cov = s_lidar_direction_rm_;
     }
     else
     {
@@ -1480,7 +1480,7 @@ void UKF::adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction
   Eigen::MatrixXd k;
   if (model_ind == MotionModel::CV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       mu = lidar_direction_cv_meas_ - z_pred_lidar_direction_cv_;
       k = k_lidar_direction_cv_;
@@ -1495,7 +1495,7 @@ void UKF::adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       mu = lidar_direction_ctrv_meas_ - z_pred_lidar_direction_ctrv_;
       k = k_lidar_direction_ctrv_;
@@ -1510,7 +1510,7 @@ void UKF::adaptiveAdjustmentQ(const int model_ind, const bool use_lane_direction
   }
   else
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       mu = lidar_direction_rm_meas_ - z_pred_lidar_direction_rm_;
       k = k_lidar_direction_rm_;
@@ -1552,10 +1552,10 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   Eigen::MatrixXd p(p_cv_.rows(), p_cv_.cols());
   if (model_ind == MotionModel::CV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
-      estimated_z << x_cv_(0),x_cv_(1), x_cv_(3);
+      estimated_z << x_cv_(0), x_cv_(1), x_cv_(3);
       epsilon = lidar_direction_cv_meas_ - estimated_z;
       r = lidar_direction_r_cv_;
     }
@@ -1572,10 +1572,10 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   }
   else if (model_ind == MotionModel::CTRV)
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
-      estimated_z << x_ctrv_(0),x_ctrv_(1), x_ctrv_(3);
+      estimated_z << x_ctrv_(0), x_ctrv_(1), x_ctrv_(3);
       epsilon = lidar_direction_ctrv_meas_ - estimated_z;
       r = lidar_direction_r_ctrv_;
     }
@@ -1592,10 +1592,10 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   }
   else
   {
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       estimated_z = Eigen::VectorXd(num_lidar_direction_state_);
-      estimated_z << x_rm_(0),x_rm_(1), x_rm_(3);
+      estimated_z << x_rm_(0), x_rm_(1), x_rm_(3);
       epsilon = lidar_direction_rm_meas_ - estimated_z;
       r = lidar_direction_r_rm_;
     }
@@ -1626,7 +1626,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
     x_sig.col(i + 1 + num_state_) = sigma_point2;
   }
   Eigen::MatrixXd z_sig;
-  if(use_lane_direction)
+  if (use_lane_direction)
   {
     z_sig = Eigen::MatrixXd(num_lidar_direction_state_, 2 * num_state_ + 1);
   }
@@ -1643,7 +1643,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   }
 
   Eigen::VectorXd z_pred;
-  if(use_lane_direction)
+  if (use_lane_direction)
   {
     z_pred = Eigen::VectorXd(num_lidar_direction_state_);
   }
@@ -1658,7 +1658,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   }
 
   Eigen::MatrixXd s;
-  if(use_lane_direction)
+  if (use_lane_direction)
   {
     s = Eigen::VectorXd(num_lidar_direction_state_, num_lidar_direction_state_);
   }
@@ -1680,7 +1680,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   if (model_ind == MotionModel::CV)
   {
     adaptive_x_sig_cv_ = x_sig;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       lidar_direction_r_cv_ = corrected_r;
       adaptive_lidar_direction_z_sig_cv_ = z_sig;
@@ -1698,7 +1698,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   else if (model_ind == MotionModel::CTRV)
   {
     adaptive_x_sig_ctrv_ = x_sig;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       lidar_direction_r_ctrv_ = corrected_r;
       adaptive_lidar_direction_z_sig_ctrv_ = z_sig;
@@ -1716,7 +1716,7 @@ void UKF::adaptiveAdjustmentR(const int model_ind, const bool use_lane_direction
   else
   {
     adaptive_x_sig_rm_ = x_sig;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       lidar_direction_r_rm_ = corrected_r;
       adaptive_lidar_direction_z_sig_rm_ = z_sig;
@@ -1748,7 +1748,7 @@ void UKF::estimationUpdate(const int model_ind, const bool use_lane_direction)
     x = x_cv_.col(0);
     x_sig = adaptive_x_sig_cv_;
     q = q_cv_;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z = lidar_direction_cv_meas_;
       z_pred = adaptive_lidar_direction_z_pred_cv_;
@@ -1770,7 +1770,7 @@ void UKF::estimationUpdate(const int model_ind, const bool use_lane_direction)
     x = x_ctrv_.col(0);
     x_sig = adaptive_x_sig_ctrv_;
     q = q_ctrv_;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z = lidar_direction_ctrv_meas_;
       z_pred = adaptive_lidar_direction_z_pred_ctrv_;
@@ -1792,7 +1792,7 @@ void UKF::estimationUpdate(const int model_ind, const bool use_lane_direction)
     x = x_rm_.col(0);
     x_sig = adaptive_x_sig_rm_;
     q = q_rm_;
-    if(use_lane_direction)
+    if (use_lane_direction)
     {
       z = lidar_direction_rm_meas_;
       z_pred = adaptive_lidar_direction_z_pred_rm_;
@@ -1823,7 +1823,7 @@ void UKF::estimationUpdate(const int model_ind, const bool use_lane_direction)
   p = p + q;
 
   Eigen::MatrixXd cross_covariance;
-  if(use_lane_direction)
+  if (use_lane_direction)
   {
     cross_covariance = Eigen::MatrixXd(num_state_, num_lidar_direction_state_);
   }

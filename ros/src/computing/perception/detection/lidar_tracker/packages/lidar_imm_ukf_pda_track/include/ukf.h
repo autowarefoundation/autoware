@@ -43,11 +43,11 @@
 
 enum TrackingState : int
 {
-  Die = 0,     // No longer tracking
-  Init = 1,    // Start tracking
-  Stable = 4,  // Stable tracking
-  Occlusion = 5, // Lost 1 frame possibly by occlusion
-  Lost = 10,   // About to lose target
+  Die = 0,        // No longer tracking
+  Init = 1,       // Start tracking
+  Stable = 4,     // Stable tracking
+  Occlusion = 5,  // Lost 1 frame possibly by occlusion
+  Lost = 10,      // About to lose target
 };
 
 enum MotionModel : int
@@ -274,7 +274,6 @@ public:
   Eigen::VectorXd lidar_direction_ctrv_meas_;
   Eigen::VectorXd lidar_direction_rm_meas_;
 
-
   /**
    * Constructor
    */
@@ -375,7 +374,6 @@ public:
   void estimationUpdate(const int model_ind, const bool use_lane_direction);
 
   void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
-
 };
 
 #endif /* UKF_H */
