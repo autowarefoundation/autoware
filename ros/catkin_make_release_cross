@@ -52,7 +52,7 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
-    AUTOWARE_DOCKER_DATE=20181123
+    AUTOWARE_DOCKER_DATE=20181220
 
     docker container run \
         -it \
