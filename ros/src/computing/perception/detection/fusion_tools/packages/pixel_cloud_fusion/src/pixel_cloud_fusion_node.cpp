@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 {
 	ros::init(argc, argv, __APP_NAME__);
 
-	RosPixelCloudFusionApp app;
+	ROSPixelCloudFusionApp app;
 
 	app.Run();
 

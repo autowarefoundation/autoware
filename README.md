@@ -33,6 +33,7 @@ Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Aut
     1. [Source](https://github.com/CPFL/Autoware/wiki/Source-Build)
 1. [Demo](https://github.com/CPFL/Autoware/wiki/Demo)
 1. [Field Test](https://github.com/CPFL/Autoware/wiki/Field-Test)
+1. [Simulation Test](https://github.com/CPFL/Autoware/wiki/Simulation-Test)
 1. [Videos](https://github.com/CPFL/Autoware/wiki/videos)
 
 ### Developers Guide

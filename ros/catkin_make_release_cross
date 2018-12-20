@@ -18,9 +18,9 @@ then
     AUTOWARE_HOME=/home/autoware/Autoware
     if [ "$AUTOWARE_TARGET_PLATFORM" = "driveworks" ]
     then
-        if [[ -z "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${NVIDIA_TENSORRT_ROOT_DIR}" ]]
+        if [[ -z "${DRIVEWORKS_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${CUDA_TOOLKIT_ROOT_DIR}" ]] || [[ -z "${NVIDIA_TENSORRT_ROOT_DIR}" ]] || [[ -z "${DRIVE_T186REF_LINUX_ROOT_DIR}" ]]
         then
-            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR"
+            echo "Please ensure that the following environment variables are set and point to their respective correct locations: DRIVEWORKS_TOOLKIT_ROOT_DIR CUDA_TOOLKIT_ROOT_DIR NVIDIA_TENSORRT_ROOT_DIR DRIVE_T186REF_LINUX_ROOT_DIR"
             exit 1
         fi
         AUTOWARE_HOME=/home/nvidia/Autoware
@@ -29,9 +29,11 @@ then
 -v ${DRIVEWORKS_TOOLKIT_ROOT_DIR}:/usr/local/driveworks:ro
 -v ${CUDA_TOOLKIT_ROOT_DIR}:/usr/local/cuda:ro
 -v ${NVIDIA_TENSORRT_ROOT_DIR}:/usr/local/tensorrt:ro
+-v ${DRIVE_T186REF_LINUX_ROOT_DIR}:/usr/local/drive-t186ref-linux:ro
 -e DRIVEWORKS_TOOLKIT_ROOT_DIR=/usr/local/driveworks
 -e CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 -e NVIDIA_TENSORRT_ROOT_DIR=/usr/local/tensorrt
+-e DRIVE_T186REF_LINUX_ROOT_DIR=/usr/local/drive-t186ref-linux
 END
 )
         AUTOWARE_CUDA_ARCH=sm_61
@@ -50,6 +52,8 @@ END
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
+    AUTOWARE_DOCKER_DATE=20181220
+
     docker container run \
         -it \
         --rm \
@@ -58,7 +62,7 @@ END
         -v ${PWD}/../:${AUTOWARE_HOME} \
         -w ${AUTOWARE_HOME}/ros \
         -u ${UID}:${UID} \
-        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809 \
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
         bash \
         -c "\
         source /opt/ros/kinetic/setup.bash && \

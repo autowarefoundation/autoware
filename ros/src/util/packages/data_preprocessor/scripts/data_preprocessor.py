@@ -55,7 +55,7 @@ class Final(InsideDesign):
 		## ros
 		#####################################
         rospy.init_node('runime_manager', anonymous=True)
-        rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.RosCb)
+        rospy.Subscriber('to_rtmgr', std_msgs.msg.String, self.ROSCb)
         self.pub = rospy.Publisher('from_rtmgr', std_msgs.msg.String, queue_size=10)
 
 		#######################################
@@ -184,7 +184,7 @@ class Final(InsideDesign):
             print("Kill '%s'" % self.cmd_dic[push][0])
             push.SetBackgroundColour(wx.NullColour)
 
-    def OnRosbagPlay2(self, event):
+    def OnROSbagPlay2(self, event):
         push = event.GetEventObject()
         btn = self.button_play_rosbag_play
         tc = self.obj_to_varpanel_tc(btn, 'file')
@@ -993,7 +993,7 @@ class Final(InsideDesign):
 
     	self.Destroy()
 
-    def RosCb(self, data):
+    def ROSCb(self, data):
     	print('recv topic msg : ' + data.data)
 
     	r = rospy.Rate(10)
@@ -1464,7 +1464,7 @@ class Final(InsideDesign):
     		elif v == '':
     			continue
     		cmd = [ 'rosparam', 'set', rosparam, v ] if v != '' else [ 'rosparam', 'delete', rosparam ]
-                print("Rosparam_set")
+                print("ROSparam_set")
                 print(cmd)
                 subprocess.call(cmd)
 
@@ -1474,7 +1474,7 @@ class Final(InsideDesign):
     def OnSensingDriver(self, event):
     	self.OnChecked_obj(event.GetEventObject())
 
-    def OnRosbagRecord(self, event):
+    def OnROSbagRecord(self, event):
     	self.dlg_rosbag_record.Show()
     	obj = event.GetEventObject()
     	set_val(obj, False)
@@ -1635,7 +1635,7 @@ class Final(InsideDesign):
     		self.OnLaunchKill_obj(cam_id_obj)
 
     #
-    # Input Rosbag File Tab
+    # Input ROSbag File Tab
     #
     def rosbag_info_hook(self, v):
     	if not v:
@@ -2067,7 +2067,7 @@ class Final(InsideDesign):
     	if proc:
     		self.update_proc_cpu(obj)
 
-    def OnRosbagPlay(self, event):
+    def OnROSbagPlay(self, event):
     	obj = event.GetEventObject()
 
     	play = self.button_play_rosbag_play
@@ -2817,13 +2817,13 @@ class MyDialogParam(rtmgr.MyDialogParam):
 	def OnClose(self, event):
 		self.OnCancel(event)
 
-class MyDialogDpm(rtmgr.MyDialogDpm):
+class MyDialogDPM(rtmgr.MyDialogDPM):
 	def __init__(self, *args, **kwds):
 		pdic = kwds.pop('pdic')
 		self.pdic_bak = pdic.copy()
 		gdic = kwds.pop('gdic')
 		prm = kwds.pop('prm')
-		rtmgr.MyDialogDpm.__init__(self, *args, **kwds)
+		rtmgr.MyDialogDPM.__init__(self, *args, **kwds)
 
 		self.Bind(wx.EVT_CLOSE, self.OnClose)
 

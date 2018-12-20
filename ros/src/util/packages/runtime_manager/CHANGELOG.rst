@@ -120,7 +120,7 @@ Changelog for package runtime_manager
   * * Added Publication of non fused objects
   * Fixed topic names
 * widen app dialog for approximate_ndt_mapping
-* add max_scan_range to ConfigNdtMapping/ConfigApproximateNdtMapping
+* add max_scan_range to ConfigNDTMapping/ConfigApproximateNDTMapping
 * Modify Map loading for OpenPlanner, now it reads from Autoware vector map messages, old behavior still works but from launch file only.
   Delete way_planner, dp_planner from UI, but they still accessible from roslaunch.
 * Fix Vector Map parser problem, tested with three different maps
@@ -659,7 +659,7 @@ Changelog for package runtime_manager
 * Runtime Manager, add booted_cmd to param.yaml and select dialog at boot
 * Runtime Manager, add proc_wait_thread() for async kill proc
 * Runtime Manager, add quit_select() and reload_computing_yaml()
-* Kf Added
+* KF Added
   Euclidean Cluster improved
 * Fixes
 * Added VectorMap Server support
@@ -934,7 +934,7 @@ Changelog for package runtime_manager
 * created ConfigTwistFilter message
   Conflicts:
   ros/src/util/packages/runtime_manager/scripts/computing.yaml
-* Ros-parameterize all defined value in points2vscan
+* ROS-parameterize all defined value in points2vscan
   Now we can specify parameters value from launch file
 * Fix package name which has velodyne launch files
 * Runtime Manager Map tab, fix pcd load OK msg at filed

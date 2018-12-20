@@ -1,4 +1,4 @@
-% Put the directory lisiting here where Rosbag Files are stored
+% Put the directory lisiting here where ROSbag Files are stored
 % This file reads rosbag file that has topic named /DistanceEstimator/dist
 % and convert them to .mat file
 % Developer: Rahul Kumar Bhadani

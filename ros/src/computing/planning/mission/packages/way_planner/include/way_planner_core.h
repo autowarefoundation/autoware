@@ -61,7 +61,7 @@
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/PlanningHelpers.h"
 #include "op_planner/PlannerH.h"
-#include "RosHelpers.h"
+#include "ROSHelpers.h"
 #include "SocketServer.h"
 
 namespace WayPlannerNS {

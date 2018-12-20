@@ -78,7 +78,7 @@ script:
         --rm
         -v ${AUTOWARE_HOME}:${AUTOWARE_HOME}
         -w ${AUTOWARE_HOME}/ros
-        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20180809
+        autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-20181220
         bash
           -c "source /opt/ros/kinetic/setup.bash &&
               catkin_make

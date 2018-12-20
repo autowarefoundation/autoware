@@ -37,7 +37,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-#include <autoware_config_msgs/ConfigCarKf.h>
+#include <autoware_config_msgs/ConfigCarKF.h>
 #include <autoware_msgs/ImageObjRanged.h>
 
 #include <autoware_msgs/ImageObjTracked.h>
@@ -918,7 +918,7 @@ void detections_callback(autoware_msgs::ImageObjRanged image_objects_msg)
 	publish_if_possible();
 }
 
-static void kf_config_cb(const autoware_config_msgs::ConfigCarKf::ConstPtr& param)
+static void kf_config_cb(const autoware_config_msgs::ConfigCarKF::ConstPtr& param)
 {
 	if (param->initial_lifespan > 0)
 		INITIAL_LIFESPAN	= param->initial_lifespan;

@@ -43,11 +43,11 @@ if __name__ == '__main__':
 
     serial_port = rospy.get_param('~port','/dev/ttyUSB0')
     serial_baud = rospy.get_param('~baud',4800)
-    frame_id = libnmea_navsat_driver.driver.RosNMEADriver.get_frame_id()
+    frame_id = libnmea_navsat_driver.driver.ROSNMEADriver.get_frame_id()
 
     try:
         GPS = serial.Serial(port=serial_port, baudrate=serial_baud, timeout=2)
-        driver = libnmea_navsat_driver.driver.RosNMEADriver()
+        driver = libnmea_navsat_driver.driver.ROSNMEADriver()
         while not rospy.is_shutdown():
             data = GPS.readline().strip()
             try:

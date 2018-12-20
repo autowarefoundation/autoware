@@ -29,7 +29,7 @@
  */
 
 #include "lidar_kf_contour_track_core.h"
-#include "op_ros_helpers/op_RosHelpers.h"
+#include "op_ros_helpers/op_ROSHelpers.h"
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/PlannerH.h"
 
@@ -91,11 +91,11 @@ ContourTracker::ContourTracker()
 	m_DetectedPolygonsDummy.push_back(visualization_msgs::MarkerArray());
 	m_DetectedPolygonsDummy.push_back(visualization_msgs::MarkerArray());
 	m_DetectedPolygonsActual = m_DetectedPolygonsDummy;
-	PlannerHNS::RosHelpers::InitMarkers(m_nDummyObjPerRep, m_DetectedPolygonsDummy.at(0), m_DetectedPolygonsDummy.at(1), m_DetectedPolygonsDummy.at(2), m_DetectedPolygonsDummy.at(3), m_DetectedPolygonsDummy.at(4));
+	PlannerHNS::ROSHelpers::InitMarkers(m_nDummyObjPerRep, m_DetectedPolygonsDummy.at(0), m_DetectedPolygonsDummy.at(1), m_DetectedPolygonsDummy.at(2), m_DetectedPolygonsDummy.at(3), m_DetectedPolygonsDummy.at(4));
 
 	m_MatchingInfoDummy.push_back(visualization_msgs::MarkerArray());
 	m_MatchingInfoActual = m_MatchingInfoDummy;
-	PlannerHNS::RosHelpers::InitMatchingMarkers(m_nDummyObjPerRep, m_MatchingInfoDummy.at(0));
+	PlannerHNS::ROSHelpers::InitMatchingMarkers(m_nDummyObjPerRep, m_MatchingInfoDummy.at(0));
 }
 
 ContourTracker::~ContourTracker()
@@ -326,7 +326,7 @@ void ContourTracker::callbackGetCurrentPose(const geometry_msgs::PoseStampedCons
 
 void ContourTracker::VisualizeLocalTracking()
 {
-	PlannerHNS::RosHelpers::ConvertTrackedObjectsMarkers(m_CurrentPos, m_ObstacleTracking.m_DetectedObjects,
+	PlannerHNS::ROSHelpers::ConvertTrackedObjectsMarkers(m_CurrentPos, m_ObstacleTracking.m_DetectedObjects,
 				m_DetectedPolygonsDummy.at(0),
 				m_DetectedPolygonsDummy.at(1),
 				m_DetectedPolygonsDummy.at(2),
@@ -338,7 +338,7 @@ void ContourTracker::VisualizeLocalTracking()
 				m_DetectedPolygonsActual.at(3),
 				m_DetectedPolygonsActual.at(4));
 
-	PlannerHNS::RosHelpers::ConvertMatchingMarkers(m_ObstacleTracking.m_MatchList, m_MatchingInfoDummy.at(0), m_MatchingInfoActual.at(0), 0);
+	PlannerHNS::ROSHelpers::ConvertMatchingMarkers(m_ObstacleTracking.m_MatchList, m_MatchingInfoDummy.at(0), m_MatchingInfoActual.at(0), 0);
 
 	m_DetectedPolygonsAllMarkers.markers.clear();
 	m_DetectedPolygonsAllMarkers.markers.insert(m_DetectedPolygonsAllMarkers.markers.end(), m_DetectedPolygonsActual.at(0).markers.begin(), m_DetectedPolygonsActual.at(0).markers.end());
@@ -352,7 +352,7 @@ void ContourTracker::VisualizeLocalTracking()
 	for(unsigned int i = 0; i < m_ObstacleTracking.m_InterestRegions.size(); i++)
 	{
 		visualization_msgs::Marker circle_mkrs;
-		PlannerHNS::RosHelpers::CreateCircleMarker(m_CurrentPos, m_ObstacleTracking.m_InterestRegions.at(i)->radius, i ,circle_mkrs );
+		PlannerHNS::ROSHelpers::CreateCircleMarker(m_CurrentPos, m_ObstacleTracking.m_InterestRegions.at(i)->radius, i ,circle_mkrs );
 		all_circles.markers.push_back(circle_mkrs);
 	}
 
@@ -422,7 +422,7 @@ void ContourTracker::LogAndSend()
 	autoware_msgs::DetectedObject obj;
 	for(unsigned int i = 0 ; i <m_ObstacleTracking.m_DetectedObjects.size(); i++)
 	{
-		PlannerHNS::RosHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), m_Params.bEnableSimulation, obj);
+		PlannerHNS::ROSHelpers::ConvertFromOpenPlannerDetectedObjectToAutowareDetectedObject(m_ObstacleTracking.m_DetectedObjects.at(i), m_Params.bEnableSimulation, obj);
 		m_OutPutResults.objects.push_back(obj);
 	}
 
@@ -506,7 +506,7 @@ void ContourTracker::CalculateTTC(const std::vector<PlannerHNS::DetectedObject>&
 	m_TTC_Path.markers.clear();
 	if(direct_paths.size() == 0)
 		direct_paths.push_back(currState);
-	PlannerHNS::RosHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
+	PlannerHNS::ROSHelpers::TTC_PathRviz(direct_paths, m_TTC_Path);
 	pub_TTC_PathRviz.publish(m_TTC_Path);
 
 
@@ -557,7 +557,7 @@ void ContourTracker::MainLoop()
 
 			if(m_MapRaw.GetVersion()==2)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessageV2(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
@@ -572,7 +572,7 @@ void ContourTracker::MainLoop()
 			}
 			else if(m_MapRaw.GetVersion()==1)
 			{
-				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromRosMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
+				PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(m_MapRaw.pLanes->m_data_list, m_MapRaw.pPoints->m_data_list,
 						m_MapRaw.pCenterLines->m_data_list, m_MapRaw.pIntersections->m_data_list,m_MapRaw.pAreas->m_data_list,
 						m_MapRaw.pLines->m_data_list, m_MapRaw.pStopLines->m_data_list,	m_MapRaw.pSignals->m_data_list,
 						m_MapRaw.pVectors->m_data_list, m_MapRaw.pCurbs->m_data_list, m_MapRaw.pRoadedges->m_data_list, m_MapRaw.pWayAreas->m_data_list,
