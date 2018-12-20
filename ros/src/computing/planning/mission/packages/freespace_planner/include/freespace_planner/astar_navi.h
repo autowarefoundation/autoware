@@ -63,7 +63,7 @@ private:
   double update_rate_;          // replanning and publishing rate [Hz]
 
   // classes
-  AstarSearch astar;
+  AstarSearch astar_;
 
   // variables
   nav_msgs::OccupancyGrid costmap_;

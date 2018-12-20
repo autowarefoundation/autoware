@@ -126,14 +126,14 @@ void AstarNavi::run()
     }
 
     // initialize vector for A* search, this runs only once
-    astar.initialize(costmap_);
+    astar_.initialize(costmap_);
 
     // update local goal pose
     goalPoseCallback(goal_pose_global_);
 
     // execute astar search
     ros::WallTime start = ros::WallTime::now();
-    bool result = astar.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
+    bool result = astar_.makePlan(current_pose_local_.pose, goal_pose_local_.pose);
     ros::WallTime end = ros::WallTime::now();
 
     ROS_INFO("Astar planning: %f [s]", (end - start).toSec());
@@ -141,7 +141,7 @@ void AstarNavi::run()
     if (result)
     {
       ROS_INFO("Found GOAL!");
-      publishWaypoints(astar.getPath(), waypoints_velocity_);
+      publishWaypoints(astar_.getPath(), waypoints_velocity_);
     }
     else
     {
@@ -149,7 +149,7 @@ void AstarNavi::run()
       publishStopWaypoints();
     }
 
-    astar.reset();
+    astar_.reset();
     rate.sleep();
   }
 }
