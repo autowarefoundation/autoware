@@ -1894,7 +1894,7 @@
                                                     <events>
                                                         <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
                                                     </events>
-                                                    <label>LGSVL_SIM</label>
+                                                    <label>LGSVL Simulator</label>
                                                 </object>
                                             </object>
                                         </object>
