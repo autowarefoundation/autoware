@@ -318,6 +318,7 @@ bool AstarAvoid::planAvoidWaypoints(const autoware_msgs::Lane& current_waypoints
       if (avoid_waypoints.waypoints.size() > 0)
       {
         ROS_INFO("Found GOAL at index = %d", goal_waypoint_index_);
+        astar_.reset();
         return true;
       }
       else
