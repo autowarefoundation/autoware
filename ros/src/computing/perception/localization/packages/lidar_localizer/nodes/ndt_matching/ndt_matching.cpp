@@ -584,7 +584,7 @@ static void gnss_callback(const geometry_msgs::PoseStamped::ConstPtr& input)
 
     const double diff_time = (current_gnss_time - previous_gnss_time).toSec();
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
-    current_velocity =  trans_current_pose.x > 0 ? current_velocity : -current_velocity;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
@@ -1172,7 +1172,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     const pose trans_current_pose = convertPoseIntoRelativeCoordinate(current_pose, previous_pose);
 
     current_velocity = (diff_time > 0) ? (diff / diff_time) : 0;
-    current_velocity =  trans_current_pose.x > 0 ? current_velocity : -current_velocity;
+    current_velocity =  (trans_current_pose.x >= 0) ? current_velocity : -current_velocity;
     current_velocity_x = (diff_time > 0) ? (diff_x / diff_time) : 0;
     current_velocity_y = (diff_time > 0) ? (diff_y / diff_time) : 0;
     current_velocity_z = (diff_time > 0) ? (diff_z / diff_time) : 0;
