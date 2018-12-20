@@ -1873,7 +1873,7 @@
                                         <option>1</option>
                                         <border>0</border>
                                         <flag>wxEXPAND</flag>
-                                        <object class="wxBoxSizer" name="sizer_47_copy" base="EditBoxSizer">
+                                        <object class="wxBoxSizer" name="sizer_62_copy_copy_copy_copy_copy_copy" base="EditBoxSizer">
                                             <orient>wxHORIZONTAL</orient>
                                             <object class="sizeritem">
                                                 <option>0</option>
@@ -1886,7 +1886,19 @@
                                                     <label>Gazebo</label>
                                                 </object>
                                             </object>
+                                            <object class="sizeritem">
+                                                <option>0</option>
+                                                <border>4</border>
+                                                <flag>wxALL</flag>
+                                                <object class="wxToggleButton" name="button_lgsvl_sim" base="EditToggleButton">
+                                                    <events>
+                                                        <handler event="EVT_TOGGLEBUTTON">OnLaunchKill</handler>
+                                                    </events>
+                                                    <label>LGSVL Simulator</label>
+                                                </object>
+                                            </object>
                                         </object>
+
                                     </object>
                                     <object class="sizeritem">
                                         <option>0</option>
