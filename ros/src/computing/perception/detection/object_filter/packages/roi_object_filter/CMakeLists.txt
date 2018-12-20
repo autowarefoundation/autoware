@@ -45,6 +45,11 @@ catkin_package(
         tf
 )
 
+include_directories(
+        include
+        ${catkin_INCLUDE_DIRS}
+)
+
 #lib
 add_library(roi_object_filter_lib SHARED
         src/roi_object_filter.cpp
@@ -98,3 +103,9 @@ install(TARGETS roi_object_filter
 install(DIRECTORY launch/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
         PATTERN ".svn" EXCLUDE)
+        
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  add_rostest_gtest(test-roi_object_filter test/test_roi_object_filter.test test/src/test_roi_object_filter.cpp)
+  target_link_libraries(test-roi_object_filter ${catkin_LIBRARIES} roi_object_filter_lib)
+endif()
