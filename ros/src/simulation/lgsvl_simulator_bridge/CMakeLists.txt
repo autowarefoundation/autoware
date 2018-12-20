@@ -7,7 +7,6 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   geometry_msgs
-  rosbridge_server
   roscpp
   rospy
   roslib
@@ -26,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES lgsvl_simulator_bridge
-  CATKIN_DEPENDS autoware_msgs geometry_msgs rosbridge_server roscpp rospy sensor_msgs
+  CATKIN_DEPENDS autoware_msgs geometry_msgs roscpp rospy sensor_msgs
 #  DEPENDS system_lib
 )
 

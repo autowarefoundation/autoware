@@ -11,16 +11,10 @@ source quick_setup_sim.bash
 ```
 
 ### launch simulator and bridge
-```
-roslaunch lgsvl_simulator_bridge lgsvl_simulator.launch
-```
+Open simulation tab in runtime manager and click LGSVL Simulator button.
 
 Please choose "SanFrancisco" map and "XE_Rigged-autoware" robot for Autoware.  
 [Reference](https://github.com/lgsvl/simulator/issues/5)
-
-```
-roslaunch lgsvl_simulator_bridge autoware_sample.launch
-```
 
 ![lgsvl_simulator_bridge](media/lgsvl_simulator_bridge.png) 
 
