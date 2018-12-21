@@ -36,9 +36,22 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Header.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <nav_msgs/Odometry.h>
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
 #include <automotive_platform_msgs/SteerMode.h>
 #include <automotive_platform_msgs/SpeedMode.h>
-#include <dbw_mkz_msgs/SteeringReport.h>
+#include <automotive_platform_msgs/VelocityAccel.h>
+#include <automotive_platform_msgs/CurvatureFeedback.h>
+#include <automotive_platform_msgs/TurnSignalCommand.h>
+#include <automotive_platform_msgs/GearCommand.h>
+#include <automotive_platform_msgs/Gear.h>
+
+#include <autoware_msgs/LampCmd.h>
+#include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 
 namespace pacmod
 {
@@ -51,7 +64,7 @@ public:
   void run();
 
 private:
-  typedef message_filters::sync_policies::ApproximateTime<module_comm_msgs::VelocityAccel, platform_comm_msgs::CurvatureFeedback> CurrentTwistSyncPolicy;
+  typedef message_filters::sync_policies::ApproximateTime<automotive_platform_msgs::VelocityAccel, automotive_platform_msgs::CurvatureFeedback> CurrentTwistSyncPolicy;
 
   // handle
   ros::NodeHandle nh_;
@@ -73,8 +86,8 @@ private:
   ros::Subscriber speed_sub_;
   ros::Subscriber lidar_detect_cmd_sub_;
 
-  message_filters::Subscriber<module_comm_msgs::VelocityAccel>* current_velocity_sub_;
-  message_filters::Subscriber<platform_comm_msgs::CurvatureFeedback>* current_curvature_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>* current_velocity_sub_;
+  message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>* current_curvature_sub_;
   message_filters::Synchronizer<CurrentTwistSyncPolicy>* current_twist_sync_;
 
   // timer
@@ -96,15 +109,15 @@ private:
   double speed_ = 0.0;
   double curvature_ = 0.0;
   std_msgs::Header header_;
-  autoware_msgs::lamp_cmd lamp_cmd_;
+  autoware_msgs::LampCmd lamp_cmd_;
   uint8_t lidar_detect_cmd_;
 
   // callbacks
   void callbackFromTwistCmd(const geometry_msgs::TwistStampedConstPtr& msg);
   void callbackFromControlMode(const std_msgs::BoolConstPtr& msg);
-  void callbackFromSyncedCurrentTwist(const module_comm_msgs::VelocityAccelConstPtr& msg_velocity, const platform_comm_msgs::CurvatureFeedbackConstPtr& msg_curvature);
+  void callbackFromSyncedCurrentTwist(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity, const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature);
   void callbackPacmodTimer(const ros::TimerEvent& event);
-  void callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg);
+  void callbackFromLampCmd(const autoware_msgs::LampCmdConstPtr& msg);
   void callbackLidarDetectCmd(const std_msgs::UInt8ConstPtr msg);
 
   // publisher

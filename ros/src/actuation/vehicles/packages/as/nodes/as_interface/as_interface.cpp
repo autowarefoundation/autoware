@@ -56,8 +56,8 @@ void PacmodInterface::initForROS()
   // setup subscriber
   twist_cmd_sub_ = nh_.subscribe("twist_cmd", 1, &PacmodInterface::callbackFromTwistCmd, this);
 
-  current_velocity_sub_ = new message_filters::Subscriber<module_comm_msgs::VelocityAccel>(nh_, "/as/velocity_accel", 1);
-  current_curvature_sub_ = new message_filters::Subscriber<platform_comm_msgs::CurvatureFeedback>(nh_, "/as/curvature_feedback", 1);
+  current_velocity_sub_ = new message_filters::Subscriber<automotive_platform_msgs::VelocityAccel>(nh_, "/as/velocity_accel", 1);
+  current_curvature_sub_ = new message_filters::Subscriber<automotive_platform_msgs::CurvatureFeedback>(nh_, "/as/curvature_feedback", 1);
   current_twist_sync_ = new message_filters::Synchronizer<CurrentTwistSyncPolicy>(CurrentTwistSyncPolicy(10), *current_velocity_sub_, *current_curvature_sub_);
   current_twist_sync_->registerCallback(boost::bind(&PacmodInterface::callbackFromSyncedCurrentTwist, this, _1, _2));
 
@@ -76,10 +76,10 @@ void PacmodInterface::initForROS()
   }
 
   // setup publisher
-  steer_mode_pub_ = nh_.advertise<module_comm_msgs::SteerMode>("/as/arbitrated_steering_commands", 1);
-  speed_mode_pub_ = nh_.advertise<module_comm_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
-  turn_signal_pub_ = nh_.advertise<platform_comm_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
-  gear_pub_ = nh_.advertise<platform_comm_msgs::GearCommand>("/as/gear_select", 1, true);
+  steer_mode_pub_ = nh_.advertise<automotive_platform_msgs::SteerMode>("/as/arbitrated_steering_commands", 1);
+  speed_mode_pub_ = nh_.advertise<automotive_platform_msgs::SpeedMode>("/as/arbitrated_speed_commands", 1);
+  turn_signal_pub_ = nh_.advertise<automotive_platform_msgs::TurnSignalCommand>("/as/turn_signal_command", 1);
+  gear_pub_ = nh_.advertise<automotive_platform_msgs::GearCommand>("/as/gear_select", 1, true);
 
   current_twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>("as_current_twist", 10);
   velocity_overlay_pub_ = nh_.advertise<std_msgs::Float32>("velocity_overlay", 10);
@@ -104,12 +104,12 @@ void PacmodInterface::callbackFromControlMode(const std_msgs::BoolConstPtr& msg)
   control_mode_ = msg->data;
 }
 
-void PacmodInterface::callbackFromLampCmd(const autoware_msgs::lamp_cmdConstPtr& msg)
+void PacmodInterface::callbackFromLampCmd(const autoware_msgs::LampCmdConstPtr& msg)
 {
   lamp_cmd_ = *msg;
 }
 
-void PacmodInterface::callbackFromSyncedCurrentTwist(const module_comm_msgs::VelocityAccelConstPtr& msg_velocity, const platform_comm_msgs::CurvatureFeedbackConstPtr& msg_curvature)
+void PacmodInterface::callbackFromSyncedCurrentTwist(const automotive_platform_msgs::VelocityAccelConstPtr& msg_velocity, const automotive_platform_msgs::CurvatureFeedbackConstPtr& msg_curvature)
 {
   geometry_msgs::TwistStamped ts;
   ts.header.stamp = ros::Time::now();
@@ -136,20 +136,20 @@ void PacmodInterface::callbackLidarDetectCmd(const std_msgs::UInt8ConstPtr msg)
 
 void PacmodInterface::publishToPacmod()
 {
-  module_comm_msgs::SpeedMode speed_mode;
+  automotive_platform_msgs::SpeedMode speed_mode;
   speed_mode.header.stamp = ros::Time::now();
   speed_mode.mode = control_mode_ ? 1 : 0;
   speed_mode.speed = speed_;
   speed_mode.acceleration_limit = acceleration_limit_;
   speed_mode.deceleration_limit = deceleration_limit_;
 
-  module_comm_msgs::SteerMode steer_mode;
+  automotive_platform_msgs::SteerMode steer_mode;
   steer_mode.header.stamp = ros::Time::now();
   steer_mode.mode = speed_mode.mode;
   steer_mode.curvature = curvature_;
   steer_mode.max_curvature_rate = max_curvature_rate_;
 
-  platform_comm_msgs::TurnSignalCommand turn_signal;
+  automotive_platform_msgs::TurnSignalCommand turn_signal;
   turn_signal.header.stamp = ros::Time::now();
   turn_signal.mode = speed_mode.mode;
 
@@ -157,23 +157,23 @@ void PacmodInterface::publishToPacmod()
   if (lidar_detect_cmd_ != 0)
   {
     // hazard lights (dont work!!!)
-    turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+    turn_signal.turn_signal = automotive_platform_msgs::TurnSignalCommand::RIGHT;
   }
   else    // if lidar driver is fine
   {
     if (lamp_cmd_.l == 1) {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::LEFT;
+      turn_signal.turn_signal = automotive_platform_msgs::TurnSignalCommand::LEFT;
     } else if (lamp_cmd_.r == 1) {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::RIGHT;
+      turn_signal.turn_signal = automotive_platform_msgs::TurnSignalCommand::RIGHT;
     } else {
-      turn_signal.turn_signal = platform_comm_msgs::TurnSignalCommand::NONE;
+      turn_signal.turn_signal = automotive_platform_msgs::TurnSignalCommand::NONE;
     }
   }
 
-  platform_comm_msgs::GearCommand gear_comm;
+  automotive_platform_msgs::GearCommand gear_comm;
   gear_comm.header.stamp = ros::Time::now();
-  gear_comm.command.gear = control_mode_ ? platform_comm_msgs::Gear::DRIVE :
-                                           platform_comm_msgs::Gear::NONE;  // Drive if auto mode is enabled
+  gear_comm.command.gear = control_mode_ ? automotive_platform_msgs::Gear::DRIVE :
+                                           automotive_platform_msgs::Gear::NONE;  // Drive if auto mode is enabled
 
   speed_mode_pub_.publish(speed_mode);
   steer_mode_pub_.publish(steer_mode);
