@@ -17,23 +17,26 @@
  * v1.0 Yukihiro Saito
  */
 
+
 #pragma once
 
-#include "shape_estimation/model_interface.hpp"
+#include <string>
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include "autoware_msgs/DetectedObject.h"
 
-class BoundingBoxModel : public ShapeEstimationModelInterface
+class ShapeEstimator
 {
 private:
-  double calcClosenessCriterion(const std::vector<double> &C_1, const std::vector<double> &C_2);
 
 public:
-  BoundingBoxModel()
+  ShapeEstimator();
+
+  ~ShapeEstimator()
   {
   };
 
-  ~BoundingBoxModel()
-  {
-  };
-
-  bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output) override;
+  bool getShapeAndPose(const std::string &label, const pcl::PointCloud<pcl::PointXYZ> &cluster,
+                       autoware_msgs::DetectedObject &output);
 };

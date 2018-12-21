@@ -1,4 +1,3 @@
-<!-- -->
 <launch>
 
   <arg name="namespace" default="detection"/>
@@ -6,10 +5,9 @@
   <arg name="input" default="/$(arg namespace)/lidar_detector/objects"/>
   <arg name="output" default="/$(arg namespace)/$(arg packagename)/objects"/>
 
-  <!-- rosrun lidar_tracker euclidean_cluster _points_node:="" -->
   <node pkg="shape_estimation" type="shape_estimation" name="shape_estimation" output="screen">
     <remap from="input"         to="$(arg input)" />
-    <remap from="output"       to="$(arg output)" />
+    <remap from="objects"       to="$(arg output)" />
   </node>
 
   <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="shape_estimation_visualization"
