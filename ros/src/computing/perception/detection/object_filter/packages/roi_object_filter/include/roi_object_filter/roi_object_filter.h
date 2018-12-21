@@ -70,7 +70,7 @@
 class RosRoiObjectFilterApp
 {
   ros::NodeHandle node_handle_;
-	friend class TestClass;
+  friend class RoiFilterTestClass;
 
   ros::Subscriber detections_range_subscriber_, wayarea_gridmap_subscriber_;
   ros::Publisher roi_objects_publisher_;

@@ -63,7 +63,7 @@ RosRoiObjectFilterApp::SyncedDetectionsCallback(const autoware_msgs::DetectedObj
     grid_map::GridMapCvConverter::toImage<unsigned char, 1>(current_grid, gridmap_layer_, CV_8UC1,
                                                             GRID_MIN_VALUE, GRID_MAX_VALUE, grid_image);
 
-//#pragma omp for
+    #pragma omp for
     for (unsigned int i = 0; i < in_detections->objects.size(); i++)
     {
       geometry_msgs::Point original_centroid_point, final_centroid_point;

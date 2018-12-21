@@ -3,66 +3,109 @@
 
 #include "roi_object_filter/roi_object_filter.h"
 
-class TestSuite: public ::testing::Test {
+class RoiFilterTestSuite : public ::testing::Test
+{
 public:
-	TestSuite(){}
-	~TestSuite(){}
+  RoiFilterTestSuite()
+  {
+  }
+
+  ~RoiFilterTestSuite()
+  {
+  }
 };
 
-class TestClass{
+class RoiFilterTestClass
+{
 public:
-	TestClass(){};
+  RoiFilterTestClass()
+  {
+  };
 
-	RosRoiObjectFilterApp app;
+  RosRoiObjectFilterApp app;
 
-	geometry_msgs::Point TransformPoint(const geometry_msgs::Point& in_point, const tf::Transform& in_tf);
-	bool CheckPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
-	                                            const geometry_msgs::Point& in_point);
+  geometry_msgs::Point TransformPoint(const geometry_msgs::Point &in_point, const tf::Transform &in_tf);
+
+  bool CheckPointInGrid(const grid_map::GridMap &in_grid_map, const cv::Mat &in_grid_image,
+                        const geometry_msgs::Point &in_point);
 };
 
-geometry_msgs::Point TestClass::TransformPoint(const geometry_msgs::Point& in_point, const tf::Transform& in_tf)
+geometry_msgs::Point RoiFilterTestClass::TransformPoint(const geometry_msgs::Point &in_point, const tf::Transform &in_tf)
 {
-	return app.TransformPoint(in_point, in_tf);
+  return app.TransformPoint(in_point, in_tf);
 }
 
-bool TestClass::CheckPointInGrid(const grid_map::GridMap& in_grid_map, const cv::Mat& in_grid_image,
-                                            const geometry_msgs::Point& in_point)
+bool RoiFilterTestClass::CheckPointInGrid(const grid_map::GridMap &in_grid_map, const cv::Mat &in_grid_image,
+                                 const geometry_msgs::Point &in_point)
 {
-	return app.CheckPointInGrid(in_grid_map, in_grid_image, in_point);
+  return app.CheckPointInGrid(in_grid_map, in_grid_image, in_point);
+}
+
+TEST(TestSuite, CheckTransformPoint)
+{
+
+  RoiFilterTestClass testObj;
+
+  // Check translation of 1 along X axis
+  tf::Quaternion q(0, 0, 0, 1);
+  tf::Vector3 v(1, 0, 0);
+  geometry_msgs::Point in_point, out_point, expected_point;
+
+  in_point.x = 0;
+  in_point.y = 0;
+  in_point.z = 0;
+  expected_point.x = 1;
+  expected_point.y = 0;
+  expected_point.z = 0;
+
+  tf::Transform translation(q, v);
+
+  out_point = testObj.TransformPoint(in_point, translation);
+
+  ASSERT_EQ(out_point.x, expected_point.x) << "X Coordinate should be " << expected_point.x;
+  ASSERT_EQ(out_point.y, expected_point.y) << "Y Coordinate should be " << expected_point.y;
+  ASSERT_EQ(out_point.z, expected_point.z) << "Z Coordinate should be " << expected_point.z;
+
+}
+
+TEST(TestSuite, CheckPointInGrid)
+{
+
+  RoiFilterTestClass testObj;
+  grid_map::GridMap test_gridmap;
+
+  test_gridmap.setFrameId("test");
+  test_gridmap.add("test");
+  test_gridmap.setGeometry(grid_map::Length(1.0, 1.0),
+                           0.1,
+                           grid_map::Position(0, 0));
+  test_gridmap["test"].setConstant(255);
+
+  cv::Mat grid_image;
+  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(test_gridmap, "test", CV_8UC1,
+                                                          0, 255, grid_image);
+
+  geometry_msgs::Point in_point, out_point;
+  in_point.x = 0.5;
+  in_point.y = 0.5;
+  out_point.x = 10.;
+  out_point.y = 10.;
+
+  bool in_result = testObj.CheckPointInGrid(test_gridmap, grid_image, in_point);
+  bool out_result = testObj.CheckPointInGrid(test_gridmap, grid_image, out_point);
+
+  ASSERT_EQ(in_result, true) << "Point " << in_point.x << "," << in_point.y
+                             << " result should be TRUE (inside) got: " << in_result;
+  ASSERT_EQ(out_result, false) << "Point " << out_point.x << "," << out_point.y
+                             << " result should be FALSE (outside) got: " << out_result;
+
 }
 
 
-TEST(TestSuite, CheckTransformPoint){
-
-	TestClass testObj;
-
-	// Check translation of 1 along X axis
-	tf::Quaternion q(0,0,0,1);
-	tf::Vector3 v(1,0,0);
-	geometry_msgs::Point inPt, outPt, expectedPt;
-
-	inPt.x = 0;
-	inPt.y = 0;
-	inPt.z = 0;
-	expectedPt.x = 1;
-	expectedPt.y = 0;
-	expectedPt.z = 0;
-
-	tf::Transform translation(q, v);
-
-	outPt = testObj.TransformPoint(inPt, translation);
-
-	ASSERT_EQ(outPt.x, expectedPt.x) << "X Coordinate should be " << expectedPt.x;
-	ASSERT_EQ(outPt.y, expectedPt.y) << "Y Coordinate should be " << expectedPt.y;
-	ASSERT_EQ(outPt.z, expectedPt.z) << "Z Coordinate should be " << expectedPt.z;
-
-}
-
-
-
-int main(int argc, char **argv) {
-	testing::InitGoogleTest(&argc, argv);
-	ros::init(argc, argv, "TestNode");
-	return RUN_ALL_TESTS();
+int main(int argc, char **argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+  ros::init(argc, argv, "RoiFilterTestNode");
+  return RUN_ALL_TESTS();
 }
 
