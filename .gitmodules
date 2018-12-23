@@ -1,6 +1,9 @@
 [submodule "ros/src/sensing/drivers/lidar/packages/robosense"]
 	path = ros/src/sensing/drivers/lidar/packages/robosense
 	url = https://github.com/CPFL/robosense
+[submodule "ros/src/msgs/lgsvl_msgs"]
+	path = ros/src/msgs/lgsvl_msgs
+	url = https://github.com/lgsvl/lgsvl_msgs.git
 [submodule "ros/src/sensing/drivers/lidar/packages/ouster"]
 	path = ros/src/sensing/drivers/lidar/packages/ouster
 	url = https://github.com/CPFL/ouster
