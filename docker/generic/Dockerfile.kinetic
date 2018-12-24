@@ -3,22 +3,41 @@ MAINTAINER Yuki Iida <yuki.iida@tier4.jp>
 
 # Develop
 RUN apt-get update && apt-get install -y \
-        software-properties-common \
-        wget curl git cmake cmake-curses-gui \
+        cmake \
+        cmake-curses-gui \
+        curl \
+        git \
         libboost-all-dev \
+        libeigen3-dev \
         libflann-dev \
-        libgsl0-dev \
         libgoogle-perftools-dev \
-        libeigen3-dev
+        libgsl0-dev \
+        software-properties-common \
+        wget
 
 # Intall some basic GUI and sound libs
 RUN apt-get update && apt-get install -y \
-        xz-utils file locales dbus-x11 pulseaudio dmz-cursor-theme \
-        fonts-dejavu fonts-liberation hicolor-icon-theme \
-        libcanberra-gtk3-0 libcanberra-gtk-module libcanberra-gtk3-module \
-        libasound2 libgtk2.0-0 libdbus-glib-1-2 libxt6 libexif12 \
-        libgl1-mesa-glx libgl1-mesa-dri language-pack-en \
-        && update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX
+        dbus-x11 \
+        dmz-cursor-theme \
+        file \
+        fonts-dejavu \
+        fonts-liberation \
+        hicolor-icon-theme \
+        language-pack-en \
+        libasound2 \
+        libcanberra-gtk-module \
+        libcanberra-gtk3-0 \
+        libcanberra-gtk3-module \
+        libdbus-glib-1-2 \
+        libexif12 \
+        libgl1-mesa-dri \
+        libgl1-mesa-glx \
+        libgtk2.0-0 \
+        libxt6 \
+        locales \
+        pulseaudio \
+        xz-utils
+RUN update-locale LANG=en_US.UTF-8 LC_MESSAGES=POSIX
 
 # Intall some basic GUI tools
 RUN apt-get update && apt-get install -y \
@@ -28,9 +47,38 @@ RUN apt-get update && apt-get install -y \
 # Intall ROS
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-RUN apt-get update && apt-get install -y ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
-RUN apt-get update && apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
-RUN apt-get update && apt-get install -y libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
+RUN apt-get update && apt-get install -y \
+        ros-kinetic-desktop-full \
+        ros-kinetic-gps-common \
+        ros-kinetic-grid-map \
+        ros-kinetic-jsk-visualization \
+        ros-kinetic-nmea-msgs \
+        ros-kinetic-nmea-navsat-driver \
+        ros-kinetic-sound-play
+RUN apt-get update && apt-get install -y \
+        ros-kinetic-automotive-platform-msgs \
+        ros-kinetic-controller-manager \
+        ros-kinetic-gazebo-ros-control \
+        ros-kinetic-joystick-drivers \
+        ros-kinetic-ros-control \
+        ros-kinetic-ros-controllers
+RUN apt-get update && apt-get install -y \
+        freeglut3-dev \
+        gksu \
+        libarmadillo-dev \
+        libgl1-mesa-dev \
+        libglew-dev \
+        libmosquitto-dev \
+        libnlopt-dev \
+        libpcap-dev \
+        libqt5opengl5-dev \
+        libssh2-1-dev \
+        libyaml-cpp-dev \
+        python-flask \
+        python-requests \
+        python-wxgtk3.0 \
+        qtbase5-dev \
+        software-properties-common
 
 # Add basic user
 ENV USERNAME autoware

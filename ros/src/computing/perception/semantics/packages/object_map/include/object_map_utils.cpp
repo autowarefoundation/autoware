@@ -58,10 +58,12 @@ namespace object_map
 	                          const ros::Publisher &in_publisher,
 	                          const std::string& in_layer,
 	                          double in_min_value,
-	                          double in_max_value)
+	                          double in_max_value,
+	                          double in_height)
 	{
 		nav_msgs::OccupancyGrid message;
 		grid_map::GridMapRosConverter::toOccupancyGrid(in_gridmap, in_layer, in_min_value, in_max_value, message );
+		message.info.origin.position.z = in_height;
 		in_publisher.publish(message);
 	}
 

@@ -225,6 +225,37 @@ subs :
         desc : Launches the driver for the selected RoboSense LiDAR sensor and publishes the pointcloud in rslidar_points.
         run  : roslaunch rslidar_pointcloud cloud_nodelet_16.launch
 
+      - name : Ouster OS1
+        desc : Launches the driver for the Ouster OS1 LiDAR and publishes the pointcloud as points_raw.
+        run  : roslaunch ouster_ros os1.launch
+        param: ouster_ros
+        gui  :
+          dialog_height : 400
+          flags : [ SIGTERM, kill_children ]
+          lidar_address : 
+             user_category : 'Address'
+             flags: [ expand ]
+          pc_address  : 
+             flags: [ expand, nl ]
+          lidar_frame_name  : 
+             user_category : 'PointCloud'
+             flags: [ expand ]
+          lidar_topic_name  : 
+             flags: [ expand, nl ]
+          imu_frame_name  : 
+             user_category : 'IMU'
+             flags: [ expand ]
+          imu_topic_name  : 
+             flags: [ expand, nl ]
+          operation_mode :
+             user_category : 'Advanced'
+          pulse_mode : { prop: 0 }
+          window_rejection : { flags: [ nl ] }
+          mode_xyzir : 
+             prop  : 0
+             user_category : 'Misc.'
+          replay : { prop  : 0 }
+          
   - name : Other Sensors
     desc : Other Sensors desc sample
     subs :
@@ -458,6 +489,121 @@ params :
         dash : ''
         delim: ':='
         must : true
+        
+  - name  : ouster_ros
+    vars  :
+    - name : lidar_address
+      desc : OS1 LiDAR hostname or IP address
+      label: 'OS1 address:'
+      kind    : str
+      v       : '192.168.0.100'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : pc_address
+      desc : Computer (PC) hostname or IP address
+      label: 'PC address:'
+      kind    : str
+      v       : '192.168.0.1'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_frame_name
+      desc : PointCloud frame name (use 'os1' for native Ouster, 'velodyne' for compatible mode)
+      label: 'Cloud frame:'
+      kind    : str
+      v       : 'velodyne'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : lidar_topic_name
+      desc : PointCloud topic name (use '/points' for native Ouster, '/points_raw' for compatible mode)
+      label: 'Cloud topic:'
+      kind    : str
+      v       : '/points_raw'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_frame_name
+      desc : IMU frame name (use 'os1_imu' for native Ouster, 'imu' for general use)
+      label: 'IMU frame:'
+      kind    : str
+      v       : 'imu'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name : imu_topic_name
+      desc : IMU topic name (use 'imu' for native Ouster, '/imu_raw' for general use)
+      label: 'IMU topic:'
+      kind    : str
+      v       : 'imu'
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+        must : True
+    - name  : operation_mode
+      desc  : OS1 LiDAR operation mode (hor. res. and scan rate)
+      label : 'lidar operation mode'
+      kind  : menu
+      choices:
+      - 512x10
+      - 1024x10 (default)
+      - 2048x10
+      - 512x20
+      - 1024x20
+      descs :
+      - 512 points horizontal, 10Hz
+      - 1024 points horizontal, 10Hz
+      - 2048 points horizontal, 10Hz
+      - 512 points horizontal, 20Hz
+      - 1024 points horizontal, 20Hz
+      v     : 1
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : pulse_mode
+      desc  : OS1 LiDAR pulse width
+      label : 'pulse mode'
+      kind  : menu
+      choices:
+      - STANDARD (8ns, default)
+      - NARROW (4ns)
+      descs :
+      - For full range and specs
+      - For higher resolution, lower range
+      v     : 0
+      cmd_param:
+        dash     : ''
+        delim    : ':='
+    - name  : window_rejection
+      desc  : Window rejection enable, disable for short range operation
+      label : 'Window rejection'
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : mode_xyzir
+      desc  : Velodyne compatible pointcloud mode
+      label : 'Velodyne compatible pointcloud mode?'
+      kind      : checkbox
+      v         : True
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : replay
+      desc  : For playing rosbag files of raw ouster data
+      label : 'Play rawdata on rosbag?'
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash        : ''
+        delim       : ':='
 
   - name  : grasshopper3_params
     vars  :

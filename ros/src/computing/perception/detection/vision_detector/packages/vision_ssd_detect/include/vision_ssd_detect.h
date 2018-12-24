@@ -1,10 +1,6 @@
 #ifndef SSD_DETECTOR_H_
 #define SSD_DETECTOR_H_
 
-#include <caffe/caffe.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <algorithm>
 #include <iomanip>
 #include <iosfwd>
@@ -12,6 +8,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <caffe/caffe.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "rect_class_score.h"
 
@@ -36,15 +37,17 @@ public:
 	std::vector <  RectClassScore<float>  > Detect(const cv::Mat& img);
 
 private:
-	void SetMean(const cv::Scalar& in_mean_value);
-	void WrapInputLayer(std::vector<cv::Mat>* input_channels);
-	void Preprocess(const cv::Mat& img, std::vector<cv::Mat>* input_channels);
+  void SetMean(const cv::Scalar &in_mean_value);
+
+  void WrapInputLayer(std::vector<cv::Mat> *input_channels);
+
+  void Preprocess(const cv::Mat &img, std::vector<cv::Mat> *input_channels);
 
 private:
-	boost::shared_ptr<caffe::Net<float> > net_;
-	cv::Size input_geometry_;
-	int num_channels_;
-	cv::Scalar mean_;
+  boost::shared_ptr <caffe::Net<float>> net_;
+  cv::Size input_geometry_;
+  int num_channels_;
+  cv::Scalar mean_;
 };
 
 #endif //SSD_DETECTOR_H
