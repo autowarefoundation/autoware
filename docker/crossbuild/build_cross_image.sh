@@ -5,7 +5,7 @@ if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch6
 then
     # Once we support for targets, change this to the appropriate Docker image
     AUTOWARE_DOCKER_ARCH=arm64v8
-    AUTOWARE_DOCKER_DATE=20181123
+    AUTOWARE_DOCKER_DATE=20181220
     AUTOWARE_TARGET_ARCH=aarch64
     AUTOWARE_TARGET_PLATFORM=$1
 
