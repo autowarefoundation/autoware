@@ -15,6 +15,11 @@
 
 bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output)
 {
+  if (cluster.empty())
+  {
+    output.pose_reliable = false;
+    return false;
+  }
   // calc centroid point for cylinder height(z)
   pcl::PointXYZ centroid;
   centroid.x = 0;

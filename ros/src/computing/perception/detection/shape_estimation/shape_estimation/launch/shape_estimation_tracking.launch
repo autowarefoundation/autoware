@@ -2,7 +2,7 @@
 
   <arg name="namespace" default="detection"/>
   <arg name="packagename" default="shape_estimation"/>
-  <arg name="input" default="/$(arg namespace)/lidar_tracker/objects"/>
+  <arg name="input" default="/$(arg namespace)/object_tracker/objects"/>
   <arg name="output" default="/$(arg namespace)/$(arg packagename)/objects"/>
 
   <node pkg="shape_estimation" type="shape_estimation" name="shape_estimation" output="screen">

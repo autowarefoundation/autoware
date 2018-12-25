@@ -34,6 +34,11 @@ bool ShapeEstimator::getShapeAndPose(const std::string &label,
                                      const pcl::PointCloud<pcl::PointXYZ> &cluster,
                                      autoware_msgs::DetectedObject &output)
 {
+  if (!output.valid || cluster.empty())
+  {
+    output.pose_reliable = false;
+    return false;
+  }
   std::unique_ptr<ShapeEstimationModelInterface> model_ptr;
   if (label == "car" || label == "vehicle" || label == "truck" || label == "bus")
   {
