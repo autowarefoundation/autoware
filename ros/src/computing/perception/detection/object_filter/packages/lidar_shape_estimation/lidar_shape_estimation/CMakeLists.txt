@@ -3,12 +3,11 @@ project(lidar_shape_estimation)
 
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
-        sensor_msgs
         autoware_msgs
-        geometry_msgs
-        std_msgs
         pcl_ros
         roscpp
+        tf2
+        tf2_geometry_msgs
         )
 
 find_package(PCL 1.7 REQUIRED)
@@ -19,15 +18,11 @@ catkin_package(
             include
         CATKIN_DEPENDS
             autoware_build_flags
-            sensor_msgs
             autoware_msgs
-            geometry_msgs
-            std_msgs
             pcl_ros
             roscpp
-        DEPENDS
-            ${OpenCV_LIBS}
-            ${PCL_LIBRARIES}
+            tf2
+            tf2_geometry_msgs
         )
 
 include_directories(
