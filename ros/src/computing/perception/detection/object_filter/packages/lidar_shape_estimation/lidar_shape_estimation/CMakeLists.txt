@@ -9,34 +9,33 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         pcl_ros
         roscpp
-        tf2
-        tf2_geometry_msgs
         )
 
 find_package(PCL 1.7 REQUIRED)
-
 find_package(OpenCV REQUIRED)
 
 catkin_package(
-        INCLUDE_DIRS include
+        INCLUDE_DIRS
+            include
         CATKIN_DEPENDS
-        autoware_build_flags
-        sensor_msgs
-        autoware_msgs
-        geometry_msgs
-        std_msgs
-        pcl_ros
-        roscpp
-        tf2
-        tf2_geometry_msgs
-)
+            autoware_build_flags
+            sensor_msgs
+            autoware_msgs
+            geometry_msgs
+            std_msgs
+            pcl_ros
+            roscpp
+        DEPENDS
+            ${OpenCV_LIBS}
+            ${PCL_LIBRARIES}
+        )
 
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIR}
         ${OpenCV_INCLUDE_DIRS}
-)
+        )
 
 add_executable(lidar_shape_estimation
         src/main.cpp
@@ -47,11 +46,15 @@ add_executable(lidar_shape_estimation
         src/model/cylinder.cpp
         )
 
-add_dependencies(lidar_shape_estimation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(lidar_shape_estimation
+        ${${PROJECT_NAME}_EXPORTED_TARGETS}
+        ${catkin_EXPORTED_TARGETS}
+        )
 
 target_link_libraries(lidar_shape_estimation
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
+        ${PCL_LIBRARIES}
         )
 
 install(TARGETS lidar_shape_estimation
