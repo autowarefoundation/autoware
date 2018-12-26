@@ -252,6 +252,13 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
+      - name : lidar_shape_estimation
+        desc : lidar_shape_estimation desc sample
+        cmd  : roslaunch shape_estimation shape_estimation.launch
+        param: lidar_shape_estimation_param
+        gui  :
+          sync :
+            func : self.button_synchronization.GetValue()
       - name : lidar_svm_detect
         desc : lidar_svm_detect desc sample
         cmd  : roslaunch lidar_svm_detect lidar_svm_detect.launch
@@ -5129,6 +5136,26 @@ params :
       min       : 0
       max       : 5
       v       : 2.3
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : lidar_shape_estimation_param
+    vars  :
+    - name    : input
+      desc    : input topic desc sample
+      label   : 'input topic'
+      kind  : topic
+      topic_type : autoware_msgs/DetectedObjectArray
+      v       : /detection/lidar_detector/objects
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name    : output
+      desc    : output topic desc sample
+      label   : 'output topic'
+      kind    : str
+      v       : /detection/shape_estimation/objects
       cmd_param :
         dash        : ''
         delim       : ':='
