@@ -194,22 +194,43 @@ void NaiveMotionPredict::objectsCallback(const autoware_msgs::DetectedObjectArra
   {
     std::vector<autoware_msgs::DetectedObject> predicted_objects_vec;
     visualization_msgs::Marker predicted_line;
-    makePrediction(object, predicted_objects_vec, predicted_line);
-
-    // concate to output object array
-    output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
-
-    // visualize only stably tracked objects
-    if (!object.pose_reliable)
+    if (isObjectValid(object))
     {
-      continue;
+      makePrediction(object, predicted_objects_vec, predicted_line);
+
+      // concate to output object array
+      output.objects.insert(output.objects.end(), predicted_objects_vec.begin(), predicted_objects_vec.end());
+
+      // visualize only stably tracked objects
+      if (!object.pose_reliable)
+      {
+        continue;
+      }
+      predicted_lines.markers.push_back(predicted_line);
     }
-    predicted_lines.markers.push_back(predicted_line);
-  }
-  for (auto &object : output.objects)
-  {
-    object.valid = true;
   }
   predicted_objects_pub_.publish(output);
   predicted_paths_pub_.publish(predicted_lines);
 }
+
+bool NaiveMotionPredict::isObjectValid(const autoware_msgs::DetectedObject &in_object)
+{
+  if (!in_object.valid ||
+      std::isnan(in_object.pose.orientation.x) ||
+      std::isnan(in_object.pose.orientation.y) ||
+      std::isnan(in_object.pose.orientation.z) ||
+      std::isnan(in_object.pose.orientation.w) ||
+      std::isnan(in_object.pose.position.x) ||
+      std::isnan(in_object.pose.position.y) ||
+      std::isnan(in_object.pose.position.z) ||
+      (in_object.pose.position.x <= 0) ||
+      (in_object.pose.position.y <= 0) ||
+      (in_object.dimensions.x <= 0) ||
+      (in_object.dimensions.y <= 0) ||
+      (in_object.dimensions.z <= 0)
+    )
+  {
+    return false;
+  }
+  return true;
+}//end IsObjectValid

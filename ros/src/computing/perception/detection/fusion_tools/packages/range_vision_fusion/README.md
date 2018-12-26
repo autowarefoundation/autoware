@@ -1,4 +1,4 @@
-ng# Range Vision Fusion
+# Range Vision Fusion
 
 The Range Vision Fusion node will try match the objects detected on a range sensor, with the ones obtained from a vision detector. 
 A match will be considered found if the 3D projection of the object overlaps at least 50% (configurable) over the 2D object detection.
