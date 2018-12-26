@@ -5411,6 +5411,14 @@ params :
       cmd_param :
         dash      : ''
         delim     : ':='
+    - name  : use_vector_map
+      desc  : Use ROI Filter to remove objects outside of the drivable area
+      label : use_vector_map
+      kind  : checkbox
+      v     : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
 
   - name  : vision_beyond_track_params
     vars  :
