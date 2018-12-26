@@ -15,7 +15,7 @@
 
 bool BoundingBoxModel::estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output)
 {
-  if (cluster.empty())
+  if (cluster.points.empty())
   {
     output.pose_reliable = false;
     return false;

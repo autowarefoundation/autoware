@@ -34,7 +34,7 @@ bool ShapeEstimator::getShapeAndPose(const std::string &label,
                                      const pcl::PointCloud<pcl::PointXYZ> &cluster,
                                      autoware_msgs::DetectedObject &output)
 {
-  if (!output.valid || cluster.empty())
+  if (!output.valid || cluster.points.empty())
   {
     output.pose_reliable = false;
     return false;
