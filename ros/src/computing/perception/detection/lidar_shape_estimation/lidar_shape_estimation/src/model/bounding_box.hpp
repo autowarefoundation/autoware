@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "shape_estimation/model_interface.hpp"
+#include "lidar_shape_estimation/model_interface.hpp"
 
 class BoundingBoxModel : public ShapeEstimationModelInterface
 {

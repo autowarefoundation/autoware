@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(shape_estimation)
+project(lidar_shape_estimation)
 
 find_package(catkin REQUIRED COMPONENTS
         autoware_build_flags
@@ -38,7 +38,7 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(shape_estimation
+add_executable(lidar_shape_estimation
         src/main.cpp
         src/node.cpp
         src/shape_estimator.cpp
@@ -47,14 +47,14 @@ add_executable(shape_estimation
         src/model/cylinder.cpp
         )
 
-add_dependencies(shape_estimation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(lidar_shape_estimation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(shape_estimation
+target_link_libraries(lidar_shape_estimation
         ${catkin_LIBRARIES}
         ${OpenCV_LIBS}
         )
 
-install(TARGETS shape_estimation
+install(TARGETS lidar_shape_estimation
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

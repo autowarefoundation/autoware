@@ -19,21 +19,19 @@
 
 #pragma once
 
-#include "shape_estimation/model_interface.hpp"
+#include "lidar_shape_estimation/model_interface.hpp"
 
-class BoundingBoxModel : public ShapeEstimationModelInterface
+class ConvexHullModel : public ShapeEstimationModelInterface
 {
-private:
-  double calcClosenessCriterion(const std::vector<double> &C_1, const std::vector<double> &C_2);
-
 public:
-  BoundingBoxModel()
+  ConvexHullModel()
   {
   };
 
-  ~BoundingBoxModel()
+  ~ConvexHullModel()
   {
   };
 
   bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output) override;
+
 };

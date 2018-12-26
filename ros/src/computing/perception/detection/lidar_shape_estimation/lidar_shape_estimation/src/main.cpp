@@ -17,23 +17,13 @@
  * v1.0 Yukihiro Saito
  */
 
-#pragma once
+#include <ros/ros.h>
+#include "lidar_shape_estimation/node.hpp"
 
-#include "shape_estimation/model_interface.hpp"
-
-class BoundingBoxModel : public ShapeEstimationModelInterface
+int main(int argc, char** argv)
 {
-private:
-  double calcClosenessCriterion(const std::vector<double> &C_1, const std::vector<double> &C_2);
-
-public:
-  BoundingBoxModel()
-  {
-  };
-
-  ~BoundingBoxModel()
-  {
-  };
-
-  bool estimate(const pcl::PointCloud<pcl::PointXYZ> &cluster, autoware_msgs::DetectedObject &output) override;
-};
+  ros::init(argc, argv, "lidar_shape_estimator");
+  ShapeEstimationNode node;
+  ros::spin();
+  return 0;
+}

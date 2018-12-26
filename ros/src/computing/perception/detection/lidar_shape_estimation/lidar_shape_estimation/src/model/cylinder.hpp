@@ -17,21 +17,19 @@
  * v1.0 Yukihiro Saito
  */
 
+
 #pragma once
 
-#include "shape_estimation/model_interface.hpp"
+#include "lidar_shape_estimation/model_interface.hpp"
 
-class BoundingBoxModel : public ShapeEstimationModelInterface
+class CylinderModel : public ShapeEstimationModelInterface
 {
-private:
-  double calcClosenessCriterion(const std::vector<double> &C_1, const std::vector<double> &C_2);
-
 public:
-  BoundingBoxModel()
+  CylinderModel()
   {
   };
 
-  ~BoundingBoxModel()
+  ~CylinderModel()
   {
   };
 

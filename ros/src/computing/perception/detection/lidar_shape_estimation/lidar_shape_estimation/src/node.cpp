@@ -18,8 +18,8 @@
  */
 
 
-#include "shape_estimation/node.hpp"
-#include "shape_estimation/shape_estimator.hpp"
+#include "lidar_shape_estimation/node.hpp"
+#include "lidar_shape_estimation/shape_estimator.hpp"
 
 ShapeEstimationNode::ShapeEstimationNode() : nh_(""), pnh_("~")
 {
