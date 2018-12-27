@@ -1,4 +1,3 @@
-
 /// \file UtilityH.h
 /// \brief General Math and Control utility functions
 /// \author Hatem Darweesh
@@ -11,9 +10,7 @@
 #include <string>
 #include <math.h>
 
-
-namespace op_utility_ns
-{
+namespace op_utility_ns {
 
 #define DEG2RAD M_PI / 180.
 #define RAD2DEG 180. / M_PI
@@ -21,27 +18,28 @@ namespace op_utility_ns
 #define MIN(x,y) (x <= y ? x : y)
 #define MAX(x,y) (x >= y ? x : y)
 
-
-class UtilityH
-{
+class UtilityH {
 public:
 	UtilityH();
-	virtual ~UtilityH(); 
-
+	virtual ~UtilityH();
 
 	static double FixNegativeAngle(const double& a);
 	static double SplitPositiveAngle(const double& a);
 	static double InverseAngle(const double& a);
-	static double AngleBetweenTwoAnglesPositive(const double& a1, const double& a2);
-	static double GetCircularAngle(const double& prevContAngle, const double& prevAngle, const double& currAngle);
+	static double AngleBetweenTwoAnglesPositive(const double& a1,
+			const double& a2);
+	static double GetCircularAngle(const double& prevContAngle,
+			const double& prevAngle, const double& currAngle);
 
 	//Time Functions
 	static void GetTickCount(struct timespec& t);
 	static std::string GetFilePrefixHourMinuteSeconds();
 	static double GetTimeDiffNow(const struct timespec& old_t);
-	static double GetTimeDiff(const struct timespec& old_t,const struct timespec& curr_t);
+	static double GetTimeDiff(const struct timespec& old_t,
+			const struct timespec& curr_t);
 	static std::string GetDateTimeStr();
-	static int tsCompare (struct  timespec  time1,   struct  timespec  time2, int micro_tolerance = 10);
+	static int tsCompare(struct timespec time1, struct timespec time2,
+			int micro_tolerance = 10);
 	static int GetSign(double x);
 	static std::string GetHomeDirectory();
 	static double GetMomentumScaleFactor(const double& v);
@@ -49,20 +47,18 @@ public:
 	static time_t GetLongTime(const struct timespec& srcT);
 };
 
-class PIDController
-{
+class PIDController {
 public:
 	PIDController();
 	PIDController(const double& kp, const double& ki, const double& kd);
 	void Init(const double& kp, const double& ki, const double& kd);
-	void Setlimit(const double& upper,const double& lower);
+	void Setlimit(const double& upper, const double& lower);
 	double getPID(const double& currValue, const double& targetValue);
 	double getPID(const double& e);
 	void ResetD();
 	void ResetI();
 	std::string ToString();
 	std::string ToStringHeader();
-
 
 private:
 	double kp;
@@ -75,7 +71,7 @@ private:
 	double pid_lim;
 	double upper_limit;
 	double lower_limit;
-	bool   bEnableLimit;
+	bool bEnableLimit;
 	double accumErr;
 	double prevErr;
 	bool bResetD;
@@ -83,32 +79,31 @@ private:
 
 };
 
-class LowpassFilter
-{
+class LowpassFilter {
 public:
 	LowpassFilter();
 	virtual ~LowpassFilter();
 
-	LowpassFilter(const int& filterOrder, const double& sampleFreq, const double& cutOffFreq);
-	void Init(const int& filterOrder, const double& sampleFreq, const double& cutOffFreq);
+	LowpassFilter(const int& filterOrder, const double& sampleFreq,
+			const double& cutOffFreq);
+	void Init(const int& filterOrder, const double& sampleFreq,
+			const double& cutOffFreq);
 	double getFilter(const double& value);
-
 
 private:
 	int m;
 	double sampleF;
 	double cutOffF;
-	double A  ;
-	double d1 ;
-	double d2 ;
-	double w0 ;
-	double w1 ;
-	double w2 ;
+	double A;
+	double d1;
+	double d2;
+	double w0;
+	double w1;
+	double w2;
 
 };
 
 }
 
 #endif
-
 
