@@ -7,7 +7,7 @@ Autoware package that visualize internal state and publish some commands.
 Parameter|Type|Description
 --|---|--
 enable_display_marker|Bool|(default: *false*)<br>not used
-auto_mission_reload|Bool|(default: *false*)<br>If this is set true, decision maker automatically reloads mission after mission is completed.
+auto_mission_reload|Bool|(default: *false*)<br>If this is set true, decision maker automatically reloads mission as new mission after previous mission is completed.
 use_management_system|Bool|(default: *false*)<br>This must be true in order to incoorporate with [Autoware Management System](https://github.com/CPFL/AMS)
 disuse_vector_map|Bool|(default: *false*)<br> If set *true*, decision_maker will exit "MapInitState" even if vector map is not successfully loaded.
 num_of_steer_behind|Int|(default: *20*)<br> lookup distance along waypoints to determine steering state(straight, turning right, or turning left)
@@ -28,7 +28,6 @@ Topic|Type|Objective
 /current_pose|geometry_msgs/PoseStamped|Current pose of vehicle
 /current_velocity|geometry_msgs/TwistStamped|Current velocity of vehicle
 /filtered_points|sensor_msgs/PointCloud2|Used to check if sensor data is ready. This is meant to give pointcloud data used for ndt_matching.
-/lane_waypoints_array|autoware_msgs/LaneArray|
 /final_waypoints|autoware_msgs/Lane|
 /obstacle_waypoint|std_msgs/Int32|Obstacle waypoint index. Used in "Go" state.
 /state_cmd|std_msgs/String|Decision_maker will try to transit state according to key given by through this topic.
