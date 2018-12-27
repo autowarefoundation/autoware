@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 
 #define OPENPLANNER_ENABLE_LOGS
 

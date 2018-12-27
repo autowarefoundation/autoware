@@ -12,7 +12,7 @@
 #include <math.h>
 
 
-namespace UtilityHNS
+namespace op_utility_ns
 {
 
 #define DEG2RAD M_PI / 180.

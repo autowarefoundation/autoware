@@ -29,8 +29,8 @@ include_directories(${catkin_INCLUDE_DIRS}
         include)
 
 set(UTILITYH_SRC
-        src/DataRW.cpp
-        src/UtilityH.cpp
+        src/data_rw.cpp
+        src/utility.cpp
         )
 
 ## Declare a cpp library

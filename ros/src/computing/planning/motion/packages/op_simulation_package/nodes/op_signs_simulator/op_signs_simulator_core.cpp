@@ -29,7 +29,6 @@
 */
 
 #include "op_signs_simulator_core.h"
-#include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"
 #include "op_ros_helpers/op_ROSHelpers.h"
@@ -87,7 +86,7 @@ OpenPlannerSimulatorSigns::OpenPlannerSimulatorSigns()
 
 	pub_trafficLights 	= nh.advertise<autoware_msgs::Signals>("roi_signal",1);
 
-	UtilityHNS::UtilityH::GetTickCount(m_Timer);
+	op_utility_ns::UtilityH::GetTickCount(m_Timer);
 	m_CurrLightState = PlannerHNS::GREEN_LIGHT;
 
 
@@ -171,7 +170,7 @@ void OpenPlannerSimulatorSigns::MainLoop()
 		}
 		else if (m_MapType == PlannerHNS::MAP_AUTOWARE && !bMap)
 		{
-			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
+			std::vector<op_utility_ns::AisanDataConnFileReader::DataConn> conn_data;;
 
 			if(m_MapRaw.GetVersion()==2)
 			{
@@ -207,7 +206,7 @@ void OpenPlannerSimulatorSigns::MainLoop()
 		if(m_CurrLightState == PlannerHNS::GREEN_LIGHT)
 		{
 			//std::cout << "Greeeeeen" << std::endl;
-			if(UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.firstGreenTime)
+			if(op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.firstGreenTime)
 			{
 				for(unsigned int i =0; i<m_FirstSignals.Signals.size(); i++)
 					m_FirstSignals.Signals.at(i).type = 1;
@@ -218,13 +217,13 @@ void OpenPlannerSimulatorSigns::MainLoop()
 			else
 			{
 				m_CurrLightState = PlannerHNS::YELLOW_LIGHT;
-				UtilityHNS::UtilityH::GetTickCount(m_Timer);
+				op_utility_ns::UtilityH::GetTickCount(m_Timer);
 			}
 		}
 		else if(m_CurrLightState == PlannerHNS::YELLOW_LIGHT)
 		{
 			//std::cout << "Yelowwwwww" << std::endl;
-			if(UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.firstyellowTime)
+			if(op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.firstyellowTime)
 			{
 				for(unsigned int i =0; i< m_FirstSignals.Signals.size(); i++)
 					m_FirstSignals.Signals.at(i).type = 0;
@@ -235,13 +234,13 @@ void OpenPlannerSimulatorSigns::MainLoop()
 			else
 			{
 				m_CurrLightState = PlannerHNS::RED_LIGHT;
-				UtilityHNS::UtilityH::GetTickCount(m_Timer);
+				op_utility_ns::UtilityH::GetTickCount(m_Timer);
 			}
 		}
 		else if(m_CurrLightState == PlannerHNS::RED_LIGHT)
 		{
 			//std::cout << "Reeeeeeed" << std::endl;
-			if(UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.secondGreenTime)
+			if(op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.secondGreenTime)
 			{
 				for(unsigned int i =0; i<m_FirstSignals.Signals.size(); i++)
 					m_FirstSignals.Signals.at(i).type = 0;
@@ -252,13 +251,13 @@ void OpenPlannerSimulatorSigns::MainLoop()
 			else
 			{
 				m_CurrLightState = PlannerHNS::FLASH_YELLOW;
-				UtilityHNS::UtilityH::GetTickCount(m_Timer);
+				op_utility_ns::UtilityH::GetTickCount(m_Timer);
 			}
 		}
 		else if(m_CurrLightState == PlannerHNS::FLASH_YELLOW)
 		{
 			//std::cout << "Yelowwwwww" << std::endl;
-			if(UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.secondyellowTime)
+			if(op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer) < m_Params.secondyellowTime)
 			{
 				for(unsigned int i =0; i<m_FirstSignals.Signals.size(); i++)
 					m_FirstSignals.Signals.at(i).type = 0;
@@ -269,7 +268,7 @@ void OpenPlannerSimulatorSigns::MainLoop()
 			else
 			{
 				m_CurrLightState = PlannerHNS::GREEN_LIGHT;
-				UtilityHNS::UtilityH::GetTickCount(m_Timer);
+				op_utility_ns::UtilityH::GetTickCount(m_Timer);
 			}
 		}
 
@@ -293,98 +292,98 @@ void OpenPlannerSimulatorSigns::callbackGetVMLanes(const vector_map_msgs::LaneAr
 {
 	std::cout << "Received Lanes" << endl;
 	if(m_MapRaw.pLanes == nullptr)
-		m_MapRaw.pLanes = new UtilityHNS::AisanLanesFileReader(msg);
+		m_MapRaw.pLanes = new op_utility_ns::AisanLanesFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
 	std::cout << "Received Points" << endl;
 	if(m_MapRaw.pPoints  == nullptr)
-		m_MapRaw.pPoints = new UtilityHNS::AisanPointsFileReader(msg);
+		m_MapRaw.pPoints = new op_utility_ns::AisanPointsFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg)
 {
 	std::cout << "Received dtLanes" << endl;
 	if(m_MapRaw.pCenterLines == nullptr)
-		m_MapRaw.pCenterLines = new UtilityHNS::AisanCenterLinesFileReader(msg);
+		m_MapRaw.pCenterLines = new op_utility_ns::AisanCenterLinesFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg)
 {
 	std::cout << "Received CrossRoads" << endl;
 	if(m_MapRaw.pIntersections == nullptr)
-		m_MapRaw.pIntersections = new UtilityHNS::AisanIntersectionFileReader(msg);
+		m_MapRaw.pIntersections = new op_utility_ns::AisanIntersectionFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMAreas(const vector_map_msgs::AreaArray& msg)
 {
 	std::cout << "Received Areas" << endl;
 	if(m_MapRaw.pAreas == nullptr)
-		m_MapRaw.pAreas = new UtilityHNS::AisanAreasFileReader(msg);
+		m_MapRaw.pAreas = new op_utility_ns::AisanAreasFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMLines(const vector_map_msgs::LineArray& msg)
 {
 	std::cout << "Received Lines" << endl;
 	if(m_MapRaw.pLines == nullptr)
-		m_MapRaw.pLines = new UtilityHNS::AisanLinesFileReader(msg);
+		m_MapRaw.pLines = new op_utility_ns::AisanLinesFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
 {
 	std::cout << "Received StopLines" << endl;
 	if(m_MapRaw.pStopLines == nullptr)
-		m_MapRaw.pStopLines = new UtilityHNS::AisanStopLineFileReader(msg);
+		m_MapRaw.pStopLines = new op_utility_ns::AisanStopLineFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMSignal(const vector_map_msgs::SignalArray& msg)
 {
 	std::cout << "Received Signals" << endl;
 	if(m_MapRaw.pSignals  == nullptr)
-		m_MapRaw.pSignals = new UtilityHNS::AisanSignalFileReader(msg);
+		m_MapRaw.pSignals = new op_utility_ns::AisanSignalFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMVectors(const vector_map_msgs::VectorArray& msg)
 {
 	std::cout << "Received Vectors" << endl;
 	if(m_MapRaw.pVectors  == nullptr)
-		m_MapRaw.pVectors = new UtilityHNS::AisanVectorFileReader(msg);
+		m_MapRaw.pVectors = new op_utility_ns::AisanVectorFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg)
 {
 	std::cout << "Received Curbs" << endl;
 	if(m_MapRaw.pCurbs == nullptr)
-		m_MapRaw.pCurbs = new UtilityHNS::AisanCurbFileReader(msg);
+		m_MapRaw.pCurbs = new op_utility_ns::AisanCurbFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg)
 {
 	std::cout << "Received Edges" << endl;
 	if(m_MapRaw.pRoadedges  == nullptr)
-		m_MapRaw.pRoadedges = new UtilityHNS::AisanRoadEdgeFileReader(msg);
+		m_MapRaw.pRoadedges = new op_utility_ns::AisanRoadEdgeFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg)
 {
 	std::cout << "Received Wayareas" << endl;
 	if(m_MapRaw.pWayAreas  == nullptr)
-		m_MapRaw.pWayAreas = new UtilityHNS::AisanWayareaFileReader(msg);
+		m_MapRaw.pWayAreas = new op_utility_ns::AisanWayareaFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg)
 {
 	std::cout << "Received CrossWalks" << endl;
 	if(m_MapRaw.pCrossWalks == nullptr)
-		m_MapRaw.pCrossWalks = new UtilityHNS::AisanCrossWalkFileReader(msg);
+		m_MapRaw.pCrossWalks = new op_utility_ns::AisanCrossWalkFileReader(msg);
 }
 
 void OpenPlannerSimulatorSigns::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
 {
 	std::cout << "Received Nodes" << endl;
 	if(m_MapRaw.pNodes == nullptr)
-		m_MapRaw.pNodes = new UtilityHNS::AisanNodesFileReader(msg);
+		m_MapRaw.pNodes = new op_utility_ns::AisanNodesFileReader(msg);
 }
 
 }

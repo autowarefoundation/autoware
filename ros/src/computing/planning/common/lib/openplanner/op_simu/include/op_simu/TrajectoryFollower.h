@@ -8,7 +8,7 @@
 #ifndef TRAJECTORYFOLLOWER_H_
 #define TRAJECTORYFOLLOWER_H_
 #include "op_planner/RoadNetwork.h"
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 #include "op_planner/PlannerCommonDef.h"
 
 
@@ -59,11 +59,11 @@ private:
 	double						m_PrevDesiredSteer; // control output
 	double 						m_FollowAcceleration;
 	int 						m_iPrevWayPoint;
-	UtilityHNS::PIDController 	m_pidSteer;
-	UtilityHNS::LowpassFilter 	m_lowpassSteer;
+	op_utility_ns::PIDController 	m_pidSteer;
+	op_utility_ns::LowpassFilter 	m_lowpassSteer;
 
-	UtilityHNS::PIDController 	m_pidVelocity;
-	UtilityHNS::LowpassFilter 	m_lowpassVelocity;
+	op_utility_ns::PIDController 	m_pidVelocity;
+	op_utility_ns::LowpassFilter 	m_lowpassVelocity;
 
 	bool						m_bEnableLog;
 	std::vector<std::string>    m_LogData;

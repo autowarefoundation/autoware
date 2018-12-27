@@ -30,8 +30,6 @@
 #include "op_bag_player_core.h"
 #include <sstream>
 #include <algorithm>
-#include "op_utility/UtilityH.h"
-#include "op_utility/DataRW.h"
 #include <unistd.h>
 #include <math.h>
 #include <fcntl.h>

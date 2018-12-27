@@ -5,7 +5,6 @@
 /// \date Jan 10, 2018
 
 #include "op_planner/PassiveDecisionMaker.h"
-#include "op_utility/UtilityH.h"
 #include "op_planner/PlanningHelpers.h"
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/MatrixOperations.h"
@@ -49,9 +48,9 @@ PassiveDecisionMaker::~PassiveDecisionMaker()
      unsigned int point_index = 0;
      PlannerHNS::WayPoint pursuite_point = PlanningHelpers::GetFollowPointOnTrajectory(path, info, 2, point_index);
 
-     double current_a = UtilityHNS::UtilityH::SplitPositiveAngle(currPose.pos.a);
+     double current_a = op_utility_ns::UtilityH::SplitPositiveAngle(currPose.pos.a);
      double target_a = atan2(pursuite_point.pos.y - currPose.pos.y, pursuite_point.pos.x - currPose.pos.x);
-     double e =  UtilityHNS::UtilityH::SplitPositiveAngle(target_a - current_a);
+     double e =  op_utility_ns::UtilityH::SplitPositiveAngle(target_a - current_a);
      double before_lowpass = e;//m_pidSteer.getPID(e);
      //std::cout << "CurrA: " << current_a << ", targetA: " << target_a << ", e: " << e << std::endl;
      return before_lowpass;

@@ -206,7 +206,7 @@ void way_planner_core::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& ms
 	m_VehicleState.speed = msg->twist.twist.linear.x;
 	//m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
 //	if(msg->vector.z == 0x00)
 //		m_VehicleState.shift = AW_SHIFT_POS_BB;
 //	else if(msg->vector.z == 0x10)
@@ -222,7 +222,7 @@ void way_planner_core::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& ms
 void way_planner_core::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPtr& msg)
 {
 	m_VehicleState.speed = msg->twist.linear.x;
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
 }
 
 void way_planner_core::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr &msg)
@@ -272,10 +272,10 @@ void way_planner_core::callbackGetNodesList(const vector_map_msgs::NodeArray& ms
 
 void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, PlannerHNS::RoadNetwork& out_map)
 {
-	std::vector<UtilityHNS::AisanLanesFileReader::AisanLane> lanes;
+	std::vector<op_utility_ns::AisanLanesFileReader::AisanLane> lanes;
 	for(unsigned int i=0; i < src_map.lanes.data.size();i++)
 	{
-		UtilityHNS::AisanLanesFileReader::AisanLane l;
+		op_utility_ns::AisanLanesFileReader::AisanLane l;
 		l.BLID 		=  src_map.lanes.data.at(i).blid;
 		l.BLID2 	=  src_map.lanes.data.at(i).blid2;
 		l.BLID3 	=  src_map.lanes.data.at(i).blid3;
@@ -306,11 +306,11 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 		lanes.push_back(l);
 	}
 
-	std::vector<UtilityHNS::AisanPointsFileReader::AisanPoints> points;
+	std::vector<op_utility_ns::AisanPointsFileReader::AisanPoints> points;
 
 	for(unsigned int i=0; i < src_map.points.data.size();i++)
 	{
-		UtilityHNS::AisanPointsFileReader::AisanPoints p;
+		op_utility_ns::AisanPointsFileReader::AisanPoints p;
 		double integ_part = src_map.points.data.at(i).l;
 		double deg = trunc(src_map.points.data.at(i).l);
 		double min = trunc((src_map.points.data.at(i).l - deg) * 100.0) / 60.0;
@@ -337,10 +337,10 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 	}
 
 
-	std::vector<UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine> dts;
+	std::vector<op_utility_ns::AisanCenterLinesFileReader::AisanCenterLine> dts;
 	for(unsigned int i=0; i < src_map.dtlanes.data.size();i++)
 	{
-		UtilityHNS::AisanCenterLinesFileReader::AisanCenterLine dt;
+		op_utility_ns::AisanCenterLinesFileReader::AisanCenterLine dt;
 
 		dt.Apara 	= src_map.dtlanes.data.at(i).apara;
 		dt.DID 		= src_map.dtlanes.data.at(i).did;
@@ -356,18 +356,18 @@ void way_planner_core::UpdateRoadMap(const AutowareRoadNetwork& src_map, Planner
 		dts.push_back(dt);
 	}
 
-	std::vector<UtilityHNS::AisanAreasFileReader::AisanArea> areas;
-	std::vector<UtilityHNS::AisanIntersectionFileReader::AisanIntersection> inters;
-	std::vector<UtilityHNS::AisanLinesFileReader::AisanLine> line_data;
-	std::vector<UtilityHNS::AisanStopLineFileReader::AisanStopLine> stop_line_data;
-	std::vector<UtilityHNS::AisanSignalFileReader::AisanSignal> signal_data;
-	std::vector<UtilityHNS::AisanVectorFileReader::AisanVector> vector_data;
-	std::vector<UtilityHNS::AisanCurbFileReader::AisanCurb> curb_data;
-	std::vector<UtilityHNS::AisanRoadEdgeFileReader::AisanRoadEdge> roadedge_data;
-	std::vector<UtilityHNS::AisanWayareaFileReader::AisanWayarea> way_area;
-	std::vector<UtilityHNS::AisanCrossWalkFileReader::AisanCrossWalk> crossing;
-	std::vector<UtilityHNS::AisanNodesFileReader::AisanNode> nodes_data;
-	std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;
+	std::vector<op_utility_ns::AisanAreasFileReader::AisanArea> areas;
+	std::vector<op_utility_ns::AisanIntersectionFileReader::AisanIntersection> inters;
+	std::vector<op_utility_ns::AisanLinesFileReader::AisanLine> line_data;
+	std::vector<op_utility_ns::AisanStopLineFileReader::AisanStopLine> stop_line_data;
+	std::vector<op_utility_ns::AisanSignalFileReader::AisanSignal> signal_data;
+	std::vector<op_utility_ns::AisanVectorFileReader::AisanVector> vector_data;
+	std::vector<op_utility_ns::AisanCurbFileReader::AisanCurb> curb_data;
+	std::vector<op_utility_ns::AisanRoadEdgeFileReader::AisanRoadEdge> roadedge_data;
+	std::vector<op_utility_ns::AisanWayareaFileReader::AisanWayarea> way_area;
+	std::vector<op_utility_ns::AisanCrossWalkFileReader::AisanCrossWalk> crossing;
+	std::vector<op_utility_ns::AisanNodesFileReader::AisanNode> nodes_data;
+	std::vector<op_utility_ns::AisanDataConnFileReader::DataConn> conn_data;
 
 	PlannerHNS::GPSPoint origin;//(m_OriginPos.position.x, m_OriginPos.position.y, m_OriginPos.position.z, 0);
 	PlannerHNS::MappingHelpers::ConstructRoadNetworkFromROSMessage(lanes, points, dts, inters, areas, line_data, stop_line_data, signal_data, vector_data, curb_data, roadedge_data,way_area, crossing, nodes_data, conn_data, origin, out_map);
@@ -463,8 +463,8 @@ void way_planner_core::VisualizeAndSend(const std::vector<std::vector<PlannerHNS
 	for(unsigned int i=0; i < generatedTotalPaths.size(); i++)
 	{
 		std::ostringstream str_out;
-		str_out << UtilityHNS::UtilityH::GetHomeDirectory();
-		str_out << UtilityHNS::DataRW::LoggingMainfolderName;
+		str_out << op_utility_ns::UtilityH::GetHomeDirectory();
+		str_out << op_utility_ns::DataRW::LoggingMainfolderName;
 		str_out << "GlobalPath_";
 		str_out << i;
 		str_out << "_";
@@ -517,7 +517,7 @@ void way_planner_core::CreateNextPlanningTreeLevelMarker(std::vector<PlannerHNS:
 		lane_waypoint_marker.pose.position.x = level.at(i)->pos.x;
 		lane_waypoint_marker.pose.position.y = level.at(i)->pos.y;
 		lane_waypoint_marker.pose.position.z = level.at(i)->pos.z;
-		double a = UtilityHNS::UtilityH::SplitPositiveAngle(level.at(i)->pos.a);
+		double a = op_utility_ns::UtilityH::SplitPositiveAngle(level.at(i)->pos.a);
 		lane_waypoint_marker.pose.orientation = tf::createQuaternionMsgFromYaw(a);
 		markerArray.markers.push_back(lane_waypoint_marker);
 
@@ -668,7 +668,7 @@ void way_planner_core::PlannerMainLoop()
 {
 	ros::Rate loop_rate(10);
 	timespec animation_timer;
-	UtilityHNS::UtilityH::GetTickCount(animation_timer);
+	op_utility_ns::UtilityH::GetTickCount(animation_timer);
 
 	while (ros::ok())
 	{
@@ -765,9 +765,9 @@ void way_planner_core::PlannerMainLoop()
 			}
 
 #ifdef ENABLE_VISUALIZE_PLAN
-			if(UtilityHNS::UtilityH::GetTimeDiffNow(animation_timer) > 0.5)
+			if(op_utility_ns::UtilityH::GetTimeDiffNow(animation_timer) > 0.5)
 			{
-				UtilityHNS::UtilityH::GetTickCount(animation_timer);
+				op_utility_ns::UtilityH::GetTickCount(animation_timer);
 				m_CurrentLevel.clear();
 
 				for(unsigned int ilev = 0; ilev < m_nLevelSize && m_iCurrLevel < m_PlanningVisualizeTree.size() ; ilev ++)

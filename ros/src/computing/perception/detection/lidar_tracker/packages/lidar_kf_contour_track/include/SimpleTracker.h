@@ -39,7 +39,7 @@
 
 #include "op_planner/RoadNetwork.h"
 #include "op_planner/PlanningHelpers.h"
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 #include "opencv2/video/tracking.hpp"
 #include <vector>
 #include <math.h>

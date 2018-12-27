@@ -59,7 +59,7 @@ ContourTracker::ContourTracker()
 	m_ObstacleTracking.m_bEnableStepByStep = m_Params.bEnableStepByStep;
 	m_ObstacleTracking.InitSimpleTracker();
 
-	sub_cloud_clusters 		= nh.subscribe("/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
+	sub_cloud_clusters 		= nh.subscribe("/detection/lidar_detector/cloud_clusters", 1, &ContourTracker::callbackGetCloudClusters, this);
 	sub_current_pose 		= nh.subscribe("/current_pose",   1, &ContourTracker::callbackGetCurrentPose, 	this);
 
 	pub_AllTrackedObjects 	= nh.advertise<autoware_msgs::DetectedObjectArray>("tracked_objects", 1);
@@ -102,7 +102,7 @@ ContourTracker::~ContourTracker()
 {
 	if(m_Params.bEnableLogging == true)
 	{
-		UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::TrackingFolderName, "contour_tracker",
+		op_utility_ns::DataRW::WriteLogData(op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::TrackingFolderName, "contour_tracker",
 					"time,dt,num_Tracked_Objects,num_new_objects,num_matched_objects,num_Cluster_Points,num_Contour_Points,t_filtering,t_poly_calc,t_Tracking,t_total",m_LogData);
 	}
 }
@@ -169,15 +169,15 @@ void ContourTracker::callbackGetCloudClusters(const autoware_msgs::CloudClusterA
 		ImportCloudClusters(msg, m_OriginalClusters);
 
 		struct timespec  tracking_timer;
-		UtilityHNS::UtilityH::GetTickCount(tracking_timer);
+		op_utility_ns::UtilityH::GetTickCount(tracking_timer);
 
-		//std::cout << "Filter the detected Obstacles: " << msg->clusters.size() << ", " << m_OriginalClusters.size() << std::endl;
+		std::cout << "Filter the detected Obstacles: " << msg->clusters.size() << ", " << m_OriginalClusters.size() << std::endl;
 
 		m_ObstacleTracking.DoOneStep(m_CurrentPos, m_OriginalClusters, m_Params.trackingType);
 
-		m_tracking_time = UtilityHNS::UtilityH::GetTimeDiffNow(tracking_timer);
-		m_dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_loop_timer);
-		UtilityHNS::UtilityH::GetTickCount(m_loop_timer);
+		m_tracking_time = op_utility_ns::UtilityH::GetTimeDiffNow(tracking_timer);
+		m_dt  = op_utility_ns::UtilityH::GetTimeDiffNow(m_loop_timer);
+		op_utility_ns::UtilityH::GetTickCount(m_loop_timer);
 
 		LogAndSend();
 		VisualizeLocalTracking();
@@ -223,9 +223,9 @@ void ContourTracker::ImportCloudClusters(const autoware_msgs::CloudClusterArrayC
 		obj.l = msg->clusters.at(i).dimensions.y;
 		obj.h = msg->clusters.at(i).dimensions.z;
 
-		UtilityHNS::UtilityH::GetTickCount(filter_time);
+		op_utility_ns::UtilityH::GetTickCount(filter_time);
 		if(!IsCar(obj, m_CurrentPos, m_Map)) continue;
-		m_FilteringTime += UtilityHNS::UtilityH::GetTimeDiffNow(filter_time);
+		m_FilteringTime += op_utility_ns::UtilityH::GetTimeDiffNow(filter_time);
 
 		obj.id = msg->clusters.at(i).id;
 		obj.originalID = msg->clusters.at(i).id;
@@ -241,13 +241,13 @@ void ContourTracker::ImportCloudClusters(const autoware_msgs::CloudClusterArrayC
 			obj.indicator_state = PlannerHNS::INDICATOR_NONE;
 
 
-		UtilityHNS::UtilityH::GetTickCount(poly_est_time);
+		op_utility_ns::UtilityH::GetTickCount(poly_est_time);
 		point_cloud.clear();
 		pcl::fromROSMsg(msg->clusters.at(i).cloud, point_cloud);
 
 		obj.contour = polyGen.EstimateClusterPolygon(point_cloud ,obj.center.pos,avg_center, m_Params.PolygonRes);
 
-		m_PolyEstimationTime += UtilityHNS::UtilityH::GetTimeDiffNow(poly_est_time);
+		m_PolyEstimationTime += op_utility_ns::UtilityH::GetTimeDiffNow(poly_est_time);
 		m_nOriginalPoints += point_cloud.points.size();
 		m_nContourPoints += obj.contour.size();
 		originalClusters.push_back(obj);
@@ -390,10 +390,10 @@ void ContourTracker::VisualizeLocalTracking()
 void ContourTracker::LogAndSend()
 {
 	timespec log_t;
-	UtilityHNS::UtilityH::GetTickCount(log_t);
+	op_utility_ns::UtilityH::GetTickCount(log_t);
 	std::ostringstream dataLine;
 	std::ostringstream dataLineToOut;
-	dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << m_dt << "," <<
+	dataLine << op_utility_ns::UtilityH::GetLongTime(log_t) <<"," << m_dt << "," <<
 			m_ObstacleTracking.m_DetectedObjects.size() << "," <<
 			m_OriginalClusters.size() << "," <<
 			m_ObstacleTracking.m_DetectedObjects.size() - m_OriginalClusters.size() << "," <<
@@ -553,7 +553,7 @@ void ContourTracker::MainLoop()
 		}
 		else if (m_MapFilterDistance > 0 && m_MapType == PlannerHNS::MAP_AUTOWARE && !bMap)
 		{
-			std::vector<UtilityHNS::AisanDataConnFileReader::DataConn> conn_data;;
+			std::vector<op_utility_ns::AisanDataConnFileReader::DataConn> conn_data;;
 
 			if(m_MapRaw.GetVersion()==2)
 			{
@@ -598,98 +598,98 @@ void ContourTracker::callbackGetVMLanes(const vector_map_msgs::LaneArray& msg)
 {
 	std::cout << "Received Lanes" << endl;
 	if(m_MapRaw.pLanes == nullptr)
-		m_MapRaw.pLanes = new UtilityHNS::AisanLanesFileReader(msg);
+		m_MapRaw.pLanes = new op_utility_ns::AisanLanesFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMPoints(const vector_map_msgs::PointArray& msg)
 {
 	std::cout << "Received Points" << endl;
 	if(m_MapRaw.pPoints  == nullptr)
-		m_MapRaw.pPoints = new UtilityHNS::AisanPointsFileReader(msg);
+		m_MapRaw.pPoints = new op_utility_ns::AisanPointsFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMdtLanes(const vector_map_msgs::DTLaneArray& msg)
 {
 	std::cout << "Received dtLanes" << endl;
 	if(m_MapRaw.pCenterLines == nullptr)
-		m_MapRaw.pCenterLines = new UtilityHNS::AisanCenterLinesFileReader(msg);
+		m_MapRaw.pCenterLines = new op_utility_ns::AisanCenterLinesFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMIntersections(const vector_map_msgs::CrossRoadArray& msg)
 {
 	std::cout << "Received CrossRoads" << endl;
 	if(m_MapRaw.pIntersections == nullptr)
-		m_MapRaw.pIntersections = new UtilityHNS::AisanIntersectionFileReader(msg);
+		m_MapRaw.pIntersections = new op_utility_ns::AisanIntersectionFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMAreas(const vector_map_msgs::AreaArray& msg)
 {
 	std::cout << "Received Areas" << endl;
 	if(m_MapRaw.pAreas == nullptr)
-		m_MapRaw.pAreas = new UtilityHNS::AisanAreasFileReader(msg);
+		m_MapRaw.pAreas = new op_utility_ns::AisanAreasFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMLines(const vector_map_msgs::LineArray& msg)
 {
 	std::cout << "Received Lines" << endl;
 	if(m_MapRaw.pLines == nullptr)
-		m_MapRaw.pLines = new UtilityHNS::AisanLinesFileReader(msg);
+		m_MapRaw.pLines = new op_utility_ns::AisanLinesFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMStopLines(const vector_map_msgs::StopLineArray& msg)
 {
 	std::cout << "Received StopLines" << endl;
 	if(m_MapRaw.pStopLines == nullptr)
-		m_MapRaw.pStopLines = new UtilityHNS::AisanStopLineFileReader(msg);
+		m_MapRaw.pStopLines = new op_utility_ns::AisanStopLineFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMSignal(const vector_map_msgs::SignalArray& msg)
 {
 	std::cout << "Received Signals" << endl;
 	if(m_MapRaw.pSignals  == nullptr)
-		m_MapRaw.pSignals = new UtilityHNS::AisanSignalFileReader(msg);
+		m_MapRaw.pSignals = new op_utility_ns::AisanSignalFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMVectors(const vector_map_msgs::VectorArray& msg)
 {
 	std::cout << "Received Vectors" << endl;
 	if(m_MapRaw.pVectors  == nullptr)
-		m_MapRaw.pVectors = new UtilityHNS::AisanVectorFileReader(msg);
+		m_MapRaw.pVectors = new op_utility_ns::AisanVectorFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMCurbs(const vector_map_msgs::CurbArray& msg)
 {
 	std::cout << "Received Curbs" << endl;
 	if(m_MapRaw.pCurbs == nullptr)
-		m_MapRaw.pCurbs = new UtilityHNS::AisanCurbFileReader(msg);
+		m_MapRaw.pCurbs = new op_utility_ns::AisanCurbFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMRoadEdges(const vector_map_msgs::RoadEdgeArray& msg)
 {
 	std::cout << "Received Edges" << endl;
 	if(m_MapRaw.pRoadedges  == nullptr)
-		m_MapRaw.pRoadedges = new UtilityHNS::AisanRoadEdgeFileReader(msg);
+		m_MapRaw.pRoadedges = new op_utility_ns::AisanRoadEdgeFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMWayAreas(const vector_map_msgs::WayAreaArray& msg)
 {
 	std::cout << "Received Wayareas" << endl;
 	if(m_MapRaw.pWayAreas  == nullptr)
-		m_MapRaw.pWayAreas = new UtilityHNS::AisanWayareaFileReader(msg);
+		m_MapRaw.pWayAreas = new op_utility_ns::AisanWayareaFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMCrossWalks(const vector_map_msgs::CrossWalkArray& msg)
 {
 	std::cout << "Received CrossWalks" << endl;
 	if(m_MapRaw.pCrossWalks == nullptr)
-		m_MapRaw.pCrossWalks = new UtilityHNS::AisanCrossWalkFileReader(msg);
+		m_MapRaw.pCrossWalks = new op_utility_ns::AisanCrossWalkFileReader(msg);
 }
 
 void ContourTracker::callbackGetVMNodes(const vector_map_msgs::NodeArray& msg)
 {
 	std::cout << "Received Nodes" << endl;
 	if(m_MapRaw.pNodes == nullptr)
-		m_MapRaw.pNodes = new UtilityHNS::AisanNodesFileReader(msg);
+		m_MapRaw.pNodes = new op_utility_ns::AisanNodesFileReader(msg);
 }
 
 }

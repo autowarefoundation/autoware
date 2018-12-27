@@ -1,9 +1,9 @@
-/// \file UtilityH.cpp
+/// \file utility.cpp
 /// \brief General Math and Control utility functions
 /// \author Hatem Darweesh
 /// \date May 14, 2016
 
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 #include <iostream>
 #include <sstream>
 #include <string.h>
@@ -12,10 +12,7 @@
 #include <pwd.h>
 
 
-using namespace std;
-
-
-namespace UtilityHNS
+namespace op_utility_ns
 {
 
 
@@ -31,7 +28,7 @@ UtilityH::UtilityH()
  {
 	struct passwd *pw = getpwuid(getuid());
 	const char *homedir = pw->pw_dir;
-	return string(homedir);
+	return std::string(homedir);
  }
 
  double UtilityH::GetMomentumScaleFactor(const double& v)
@@ -156,12 +153,12 @@ double UtilityH::GetTimeDiffNow(const struct timespec& old_t)
 	return (curr_t.tv_sec - old_t.tv_sec) + ((double)(curr_t.tv_nsec - old_t.tv_nsec)/ 1000000000.0);
 }
 
-string UtilityH::GetFilePrefixHourMinuteSeconds()
+std::string UtilityH::GetFilePrefixHourMinuteSeconds()
 {
 	struct timespec now_time;
 	UtilityH::GetTickCount(now_time);
 	tm *gmtm = localtime(&now_time.tv_sec);
-	ostringstream str;
+	std::ostringstream str;
 
 	str << "Y" << gmtm->tm_year;
 	str << "-";
@@ -178,11 +175,11 @@ string UtilityH::GetFilePrefixHourMinuteSeconds()
 	return str.str();
 }
 
-string UtilityH::GetDateTimeStr()
+std::string UtilityH::GetDateTimeStr()
 {
 	time_t now = time(0);
 	char* dateStr = ctime(&now);
-	string str(dateStr, strlen(dateStr)-1);
+	std::string str(dateStr, strlen(dateStr)-1);
 	int index = str.find(" ");
 	while(index > 0)
 	{
@@ -394,7 +391,7 @@ void LowpassFilter::Init(const int& n, const double& sampleFreq, const double& c
 {
 	if(!(n == 2 || n == 4 || n == 6 || n == 8))
 	{
-		cout << "Undefined LowpassFilter order ! " << endl;
+		std::cout << "Undefined LowpassFilter order ! " << std::endl;
 
 		A = 0;
 		d1 = 0;

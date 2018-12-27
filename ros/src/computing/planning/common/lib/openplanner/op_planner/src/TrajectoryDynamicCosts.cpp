@@ -710,7 +710,7 @@ void TrajectoryDynamicCosts::CalculateIntersectionVelocities(const std::vector<P
 					{
 
 						closest_path_i = i;
-						double a = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(path.at(i).pos.a, obj.predTrajectories.at(k).at(j).pos.a)/M_PI;
+						double a = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(path.at(i).pos.a, obj.predTrajectories.at(k).at(j).pos.a)/M_PI;
 						if(a < 0.25 && (currPose.v - obj.center.v) > 0)
 							trajectoryCosts.closest_obj_velocity = (currPose.v - obj.center.v);
 						else

@@ -4,7 +4,6 @@
 /// \date Jan 10, 2018
 
 #include "op_planner/SimuDecisionMaker.h"
-#include "op_utility/UtilityH.h"
 #include "op_planner/PlanningHelpers.h"
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/MatrixOperations.h"
@@ -22,7 +21,7 @@ SimuDecisionMaker::SimuDecisionMaker()
 	m_CurrentAccSteerAngle = m_CurrentAccVelocity = 0;
 
 	m_SimulationSteeringDelayFactor = 0.1;
-	UtilityHNS::UtilityH::GetTickCount(m_SteerDelayTimer);
+	op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
 }
 
 SimuDecisionMaker::~SimuDecisionMaker()
@@ -92,7 +91,7 @@ void SimuDecisionMaker::FirstLocalizeMe(const WayPoint& initCarPos)
 	}
 
 	m_OdometryState.pos.a = atan2(sin(m_OdometryState.pos.a), cos(m_OdometryState.pos.a));
-	m_OdometryState.pos.a = UtilityHNS::UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
+	m_OdometryState.pos.a = op_utility_ns::UtilityH::FixNegativeAngle(m_OdometryState.pos.a);
 
 	state.pos.a = m_OdometryState.pos.a;
 	state.pos.x = m_OdometryState.pos.x	 - (m_CurrentVelocity*dt* (m_CarInfo.wheel_base) * cos (m_OdometryState.pos.a));
@@ -110,16 +109,16 @@ void SimuDecisionMaker::FirstLocalizeMe(const WayPoint& initCarPos)
 		 double currSteerDeg = RAD2DEG * m_CurrentSteering;
 		 double desiredSteerDeg = RAD2DEG * m_CurrentSteeringD;
 
-		 double mFact = UtilityHNS::UtilityH::GetMomentumScaleFactor(state.speed);
+		 double mFact = op_utility_ns::UtilityH::GetMomentumScaleFactor(state.speed);
 		 double diff = desiredSteerDeg - currSteerDeg;
-		 double diffSign = UtilityHNS::UtilityH::GetSign(diff);
+		 double diffSign = op_utility_ns::UtilityH::GetSign(diff);
 		 double inc = 1.0*diffSign;
 		 if(fabs(diff) < 1.0 )
 			 inc = diff;
 
-		 if(UtilityHNS::UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_SimulationSteeringDelayFactor*mFact)
+		 if(op_utility_ns::UtilityH::GetTimeDiffNow(m_SteerDelayTimer) > m_SimulationSteeringDelayFactor*mFact)
 		 {
-			 UtilityHNS::UtilityH::GetTickCount(m_SteerDelayTimer);
+			 op_utility_ns::UtilityH::GetTickCount(m_SteerDelayTimer);
 			 currSteerDeg += inc;
 		 }
 

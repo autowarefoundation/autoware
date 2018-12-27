@@ -1,19 +1,16 @@
 
-/// \file DataRW.cpp
+/// \file data_rw.cpp
 /// \brief File operations for loading vector map files, loading kml map files and writing log .csv files
 /// \author Hatem Darweesh
 /// \date Jun 23, 2016
 
-#include "op_utility/DataRW.h"
+#include "op_utility/data_rw.h"
 #include <stdlib.h>
 #include <tinyxml.h>
 #include <sys/stat.h>
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 
-
-using namespace std;
-
-namespace UtilityHNS
+namespace op_utility_ns
 {
 
 std::string DataRW::LoggingMainfolderName 	= "/autoware_openplanner_logs/";
@@ -40,7 +37,7 @@ void DataRW::CreateLoggingFolder()
 	std::string main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName;
 	int dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	if (-1 == dir_err)
-	    cout << "Can't Create OpenPlanner Log Path!n" << endl;
+	    std::cout << "Can't Create OpenPlanner Log Path!n" << std::endl;
 
 	main_folder = UtilityH::GetHomeDirectory() + DataRW::LoggingMainfolderName + DataRW::ControlLogFolderName;
 	dir_err = mkdir(main_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -84,7 +81,7 @@ void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTi
 	if(logData.size() < 2)
 		return;
 
-	ostringstream fileName;
+	std::ostringstream fileName;
 	fileName << logFolder;
 	fileName << logTitle;
 	fileName << UtilityH::GetFilePrefixHourMinuteSeconds();
@@ -103,7 +100,7 @@ void DataRW::WriteLogData(const std::string& logFolder, const std::string& logTi
 	f.close();
 }
 
-void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list)
+void DataRW::WriteKMLFile(const std::string& fileName, const std::vector<std::string>& gps_list)
 {
 	TiXmlDocument kmldoc(UtilityH::GetHomeDirectory()+DataRW::KmlMapsFolderName + "KmlTemplate.kml");
 
@@ -129,7 +126,7 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list
 
 	if(pV)
 	{
-			ostringstream val;
+		std::ostringstream val;
 			val.precision(18);
 
 			for(unsigned int i =0; i < gps_list.size(); i++)
@@ -144,7 +141,7 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<string>& gps_list
 	kmldoc.SaveFile(fileName);
 }
 
-void DataRW::WriteKMLFile(const string& fileName, const vector<vector<string> >& gps_list)
+void DataRW::WriteKMLFile(const std::string& fileName, const std::vector<std::vector<std::string> >& gps_list)
   {
 	  TiXmlDocument kmldoc(UtilityH::GetHomeDirectory()+DataRW::KmlMapsFolderName + "KmlTemplate.kml");
 
@@ -191,7 +188,7 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<vector<string> >&
 	  			pV = pPlaceMarkNode->Clone();
 	  			TiXmlElement* pElement = pV->FirstChild("LineString")->FirstChild("coordinates")->ToElement();
 
-	  			ostringstream val;
+	  			std::ostringstream val;
 				val.precision(18);
 
 				for(unsigned int i =0; i < gps_list[l].size(); i++)
@@ -211,13 +208,13 @@ void DataRW::WriteKMLFile(const string& fileName, const vector<vector<string> >&
 	  	kmldoc.SaveFile(fileName);
   }
 
-SimpleReaderBase::SimpleReaderBase(const string& fileName, const int& nHeaders,const char& separator,
+SimpleReaderBase::SimpleReaderBase(const std::string& fileName, const int& nHeaders,const char& separator,
 		  const int& iDataTitles, const int& nVariablesForOneObject ,
-		  const int& nLineHeaders, const string& headerRepeatKey)
+		  const int& nLineHeaders, const std::string& headerRepeatKey)
 {
 	if(fileName.compare("d") != 0)
 	{
-	  m_pFile = new ifstream(fileName.c_str(), ios::in);
+	  m_pFile = new std::ifstream(fileName.c_str(), std::ios::in);
 	  if(!m_pFile->is_open())
 	  {
 		  printf("\n Can't Open Map File !, %s", fileName.c_str());
@@ -242,17 +239,17 @@ SimpleReaderBase::~SimpleReaderBase()
 		m_pFile->close();
 }
 
-bool SimpleReaderBase::ReadSingleLine(vector<vector<string> >& line)
+bool SimpleReaderBase::ReadSingleLine(std::vector<std::vector<std::string> >& line)
 {
 	if(!m_pFile->is_open() || m_pFile->eof()) return false;
 
-	string strLine, innerToken;
+	std::string strLine, innerToken;
 	line.clear();
 	getline(*m_pFile, strLine);
-	istringstream str_stream(strLine);
+	std::istringstream str_stream(strLine);
 
-	vector<string> header;
-	vector<string> obj_part;
+	std::vector<std::string> header;
+	std::vector<std::string> obj_part;
 
 	if(m_nVarPerObj == 0)
 	{
@@ -300,7 +297,7 @@ int SimpleReaderBase::ReadAllData()
 	if(!m_pFile->is_open()) return 0;
 
 	m_AllData.clear();
-	vector<vector<string> > singleLine;
+	std::vector<std::vector<std::string> > singleLine;
 	while(!m_pFile->eof())
 	{
 		ReadSingleLine(singleLine);
@@ -314,7 +311,7 @@ void SimpleReaderBase::ReadHeaders()
 {
 	if(!m_pFile->is_open()) return;
 
-	string strLine;
+	std::string strLine;
 	int iCounter = 0;
 	m_RawHeaders.clear();
 	while(!m_pFile->eof() && iCounter < m_nHeders)
@@ -327,12 +324,12 @@ void SimpleReaderBase::ReadHeaders()
 	}
 }
 
-void SimpleReaderBase::ParseDataTitles(const string& header)
+void SimpleReaderBase::ParseDataTitles(const std::string& header)
 {
 	if(header.size()==0) return;
 
-	string innerToken;
-	istringstream str_stream(header);
+	std::string innerToken;
+	std::istringstream str_stream(header);
 	m_DataTitlesHeader.clear();
 	while(getline(str_stream, innerToken, m_Separator))
 	{
@@ -343,7 +340,7 @@ void SimpleReaderBase::ParseDataTitles(const string& header)
 
 bool GPSDataReader::ReadNextLine(GPSBasicData& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -361,7 +358,7 @@ bool GPSDataReader::ReadNextLine(GPSBasicData& data)
 		return false;
 }
 
-int GPSDataReader::ReadAllData(vector<GPSBasicData>& data_list)
+int GPSDataReader::ReadAllData(std::vector<GPSBasicData>& data_list)
 {
 	data_list.clear();
 	GPSBasicData data;
@@ -376,7 +373,7 @@ int GPSDataReader::ReadAllData(vector<GPSBasicData>& data_list)
 
 bool SimulationFileReader::ReadNextLine(SimulationPoint& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -420,7 +417,7 @@ int SimulationFileReader::ReadAllData(SimulationData& data_list)
 
 bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -440,7 +437,7 @@ bool LocalizationPathReader::ReadNextLine(LocalizationWayPoint& data)
 		return false;
 }
 
-int LocalizationPathReader::ReadAllData(vector<LocalizationWayPoint>& data_list)
+int LocalizationPathReader::ReadAllData(std::vector<LocalizationWayPoint>& data_list)
 {
 	data_list.clear();
 	LocalizationWayPoint data;
@@ -518,7 +515,7 @@ AisanNodesFileReader::AisanNode* AisanNodesFileReader::GetDataRowById(int _nid)
 
 bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -534,7 +531,7 @@ bool AisanNodesFileReader::ReadNextLine(AisanNode& data)
 		return false;
 }
 
-int AisanNodesFileReader::ReadAllData(vector<AisanNode>& data_list)
+int AisanNodesFileReader::ReadAllData(std::vector<AisanNode>& data_list)
 {
 	m_data_list.clear();
 	AisanNode data;
@@ -630,7 +627,7 @@ AisanPointsFileReader::AisanPoints* AisanPointsFileReader::GetDataRowById(int _p
 
 bool AisanPointsFileReader::ReadNextLine(AisanPoints& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -655,7 +652,7 @@ bool AisanPointsFileReader::ReadNextLine(AisanPoints& data)
 		return false;
 }
 
-int AisanPointsFileReader::ReadAllData(vector<AisanPoints>& data_list)
+int AisanPointsFileReader::ReadAllData(std::vector<AisanPoints>& data_list)
 {
 	m_data_list.clear();
 	AisanPoints data;
@@ -746,7 +743,7 @@ AisanLinesFileReader::AisanLine* AisanLinesFileReader::GetDataRowById(int _lid)
 
 bool AisanLinesFileReader::ReadNextLine(AisanLine& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -764,7 +761,7 @@ bool AisanLinesFileReader::ReadNextLine(AisanLine& data)
 		return false;
 }
 
-int AisanLinesFileReader::ReadAllData(vector<AisanLine>& data_list)
+int AisanLinesFileReader::ReadAllData(std::vector<AisanLine>& data_list)
 {
 	data_list.clear();
 	AisanLine data;
@@ -861,7 +858,7 @@ AisanCenterLinesFileReader::AisanCenterLine* AisanCenterLinesFileReader::GetData
 
 bool AisanCenterLinesFileReader::ReadNextLine(AisanCenterLine& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -885,7 +882,7 @@ bool AisanCenterLinesFileReader::ReadNextLine(AisanCenterLine& data)
 		return false;
 }
 
-int AisanCenterLinesFileReader::ReadAllData(vector<AisanCenterLine>& data_list)
+int AisanCenterLinesFileReader::ReadAllData(std::vector<AisanCenterLine>& data_list)
 {
 	data_list.clear();
 	AisanCenterLine data;
@@ -988,7 +985,7 @@ AisanLanesFileReader::AisanLane* AisanLanesFileReader::GetDataRowById(int _lnid)
 
 bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size() == 0) return false;
@@ -1025,7 +1022,7 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 
 		if(lineData.at(0).size() > 23)
 		{
-			string str_dir = lineData.at(0).at(23);
+			std::string str_dir = lineData.at(0).at(23);
 			if(str_dir.size() > 0)
 				data.LaneDir 	= str_dir.at(0);
 			else
@@ -1044,7 +1041,7 @@ bool AisanLanesFileReader::ReadNextLine(AisanLane& data)
 		return false;
 }
 
-int AisanLanesFileReader::ReadAllData(vector<AisanLane>& data_list)
+int AisanLanesFileReader::ReadAllData(std::vector<AisanLane>& data_list)
 {
 	data_list.clear();
 	AisanLane data;
@@ -1135,7 +1132,7 @@ AisanAreasFileReader::AisanArea* AisanAreasFileReader::GetDataRowById(int _aid)
 
 bool AisanAreasFileReader::ReadNextLine(AisanArea& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1152,7 +1149,7 @@ bool AisanAreasFileReader::ReadNextLine(AisanArea& data)
 		return false;
 }
 
-int AisanAreasFileReader::ReadAllData(vector<AisanArea>& data_list)
+int AisanAreasFileReader::ReadAllData(std::vector<AisanArea>& data_list)
 {
 	data_list.clear();
 	AisanArea data;
@@ -1229,7 +1226,7 @@ AisanIntersectionFileReader::AisanIntersection* AisanIntersectionFileReader::Get
 
 bool AisanIntersectionFileReader::ReadNextLine(AisanIntersection& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1246,7 +1243,7 @@ bool AisanIntersectionFileReader::ReadNextLine(AisanIntersection& data)
 		return false;
 }
 
-int AisanIntersectionFileReader::ReadAllData(vector<AisanIntersection>& data_list)
+int AisanIntersectionFileReader::ReadAllData(std::vector<AisanIntersection>& data_list)
 {
 	data_list.clear();
 	AisanIntersection data;
@@ -1325,7 +1322,7 @@ AisanStopLineFileReader::AisanStopLine* AisanStopLineFileReader::GetDataRowById(
 
 bool AisanStopLineFileReader::ReadNextLine(AisanStopLine& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1344,7 +1341,7 @@ bool AisanStopLineFileReader::ReadNextLine(AisanStopLine& data)
 		return false;
 }
 
-int AisanStopLineFileReader::ReadAllData(vector<AisanStopLine>& data_list)
+int AisanStopLineFileReader::ReadAllData(std::vector<AisanStopLine>& data_list)
 {
 	data_list.clear();
 	AisanStopLine data;
@@ -1423,7 +1420,7 @@ AisanRoadSignFileReader::AisanRoadSign* AisanRoadSignFileReader::GetDataRowById(
 
 bool AisanRoadSignFileReader::ReadNextLine(AisanRoadSign& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1442,7 +1439,7 @@ bool AisanRoadSignFileReader::ReadNextLine(AisanRoadSign& data)
 		return false;
 }
 
-int AisanRoadSignFileReader::ReadAllData(vector<AisanRoadSign>& data_list)
+int AisanRoadSignFileReader::ReadAllData(std::vector<AisanRoadSign>& data_list)
 {
 	data_list.clear();
 	AisanRoadSign data;
@@ -1521,7 +1518,7 @@ AisanSignalFileReader::AisanSignal* AisanSignalFileReader::GetDataRowById(int _i
 
 bool AisanSignalFileReader::ReadNextLine(AisanSignal& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1540,7 +1537,7 @@ bool AisanSignalFileReader::ReadNextLine(AisanSignal& data)
 		return false;
 }
 
-int AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
+int AisanSignalFileReader::ReadAllData(std::vector<AisanSignal>& data_list)
 {
 	data_list.clear();
 	AisanSignal data;
@@ -1555,7 +1552,7 @@ int AisanSignalFileReader::ReadAllData(vector<AisanSignal>& data_list)
 	return count;
 }
 
-//Vector
+//std::vector
 
 AisanVectorFileReader::AisanVectorFileReader(const vector_map_msgs::VectorArray& _vectors) : SimpleReaderBase("d", 1)
 {
@@ -1619,7 +1616,7 @@ AisanVectorFileReader::AisanVector* AisanVectorFileReader::GetDataRowById(int _i
 
 bool AisanVectorFileReader::ReadNextLine(AisanVector& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1637,7 +1634,7 @@ bool AisanVectorFileReader::ReadNextLine(AisanVector& data)
 		return false;
 }
 
-int AisanVectorFileReader::ReadAllData(vector<AisanVector>& data_list)
+int AisanVectorFileReader::ReadAllData(std::vector<AisanVector>& data_list)
 {
 	data_list.clear();
 	AisanVector data;
@@ -1717,7 +1714,7 @@ AisanCurbFileReader::AisanCurb* AisanCurbFileReader::GetDataRowById(int _id)
 
 bool AisanCurbFileReader::ReadNextLine(AisanCurb& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1737,7 +1734,7 @@ bool AisanCurbFileReader::ReadNextLine(AisanCurb& data)
 		return false;
 }
 
-int AisanCurbFileReader::ReadAllData(vector<AisanCurb>& data_list)
+int AisanCurbFileReader::ReadAllData(std::vector<AisanCurb>& data_list)
 {
 	data_list.clear();
 	AisanCurb data;
@@ -1814,7 +1811,7 @@ AisanRoadEdgeFileReader::AisanRoadEdge* AisanRoadEdgeFileReader::GetDataRowById(
 
 bool AisanRoadEdgeFileReader::ReadNextLine(AisanRoadEdge& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1831,7 +1828,7 @@ bool AisanRoadEdgeFileReader::ReadNextLine(AisanRoadEdge& data)
 		return false;
 }
 
-int AisanRoadEdgeFileReader::ReadAllData(vector<AisanRoadEdge>& data_list)
+int AisanRoadEdgeFileReader::ReadAllData(std::vector<AisanRoadEdge>& data_list)
 {
 	data_list.clear();
 	AisanRoadEdge data;
@@ -1910,7 +1907,7 @@ AisanCrossWalkFileReader::AisanCrossWalk* AisanCrossWalkFileReader::GetDataRowBy
 
 bool AisanCrossWalkFileReader::ReadNextLine(AisanCrossWalk& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -1929,7 +1926,7 @@ bool AisanCrossWalkFileReader::ReadNextLine(AisanCrossWalk& data)
 		return false;
 }
 
-int AisanCrossWalkFileReader::ReadAllData(vector<AisanCrossWalk>& data_list)
+int AisanCrossWalkFileReader::ReadAllData(std::vector<AisanCrossWalk>& data_list)
 {
 	data_list.clear();
 	AisanCrossWalk data;
@@ -2006,7 +2003,7 @@ AisanWayareaFileReader::AisanWayarea* AisanWayareaFileReader::GetDataRowById(int
 
 bool AisanWayareaFileReader::ReadNextLine(AisanWayarea& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -2023,7 +2020,7 @@ bool AisanWayareaFileReader::ReadNextLine(AisanWayarea& data)
 		return false;
 }
 
-int AisanWayareaFileReader::ReadAllData(vector<AisanWayarea>& data_list)
+int AisanWayareaFileReader::ReadAllData(std::vector<AisanWayarea>& data_list)
 {
 	data_list.clear();
 	AisanWayarea data;
@@ -2040,7 +2037,7 @@ int AisanWayareaFileReader::ReadAllData(vector<AisanWayarea>& data_list)
 //Data Conn
 bool AisanDataConnFileReader::ReadNextLine(DataConn& data)
 {
-	vector<vector<string> > lineData;
+	std::vector<std::vector<std::string> > lineData;
 	if(ReadSingleLine(lineData))
 	{
 		if(lineData.size()==0) return false;
@@ -2058,7 +2055,7 @@ bool AisanDataConnFileReader::ReadNextLine(DataConn& data)
 		return false;
 }
 
-int AisanDataConnFileReader::ReadAllData(vector<DataConn>& data_list)
+int AisanDataConnFileReader::ReadAllData(std::vector<DataConn>& data_list)
 {
 	data_list.clear();
 	DataConn data;

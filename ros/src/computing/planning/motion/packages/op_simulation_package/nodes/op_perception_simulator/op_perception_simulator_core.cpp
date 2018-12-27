@@ -38,7 +38,6 @@
 #include <boost/math/distributions/normal.hpp>
 #include "op_ros_helpers/op_ROSHelpers.h"
 
-#include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"
 
@@ -143,7 +142,7 @@ void OpenPlannerSimulatorPerception::callbackGetSimuData(const geometry_msgs::Po
 	}
 
 	timespec t;
-	UtilityHNS::UtilityH::GetTickCount(t);
+	op_utility_ns::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
 	int nPoints = m_DecParams.nPointsPerObj + (rand()%POINT_CLOUD_ADDTIONAL_ERR_NUM - POINT_CLOUD_ADDTIONAL_ERR_NUM/2);
 
@@ -170,7 +169,7 @@ autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObs
 	autoware_msgs::CloudCluster cluster;
 
 	timespec t;
-	UtilityHNS::UtilityH::GetTickCount(t);
+	op_utility_ns::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
 
 	ENG eng(t.tv_nsec);
@@ -198,7 +197,7 @@ autoware_msgs::CloudCluster OpenPlannerSimulatorPerception::GenerateSimulatedObs
 
 	for(int i=1; i < nPoints; i++)
 	{
-		UtilityHNS::UtilityH::GetTickCount(t);
+		op_utility_ns::UtilityH::GetTickCount(t);
 		PlannerHNS::WayPoint center_p;
 		srand(t.tv_nsec);
 

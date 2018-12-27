@@ -32,13 +32,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
-#include "op_utility/UtilityH.h"
 #include "op_planner/PlanningHelpers.h"
 #include <GL/freeglut.h>
 
 using namespace std;
 using namespace PlannerHNS;
-using namespace UtilityHNS;
 
 namespace OP_TESTING_NS
 {

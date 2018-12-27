@@ -11,7 +11,7 @@
 #include "op_planner/PlanningHelpers.h"
 #include "opencv2/video/tracking.hpp"
 #include <vector>
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 #include <math.h>
 #include <iostream>
 
@@ -192,7 +192,7 @@ public:
 			predObj.center.pos.a = currA;
 			predObj.center.v = currV;
 			predObj.bVelocity = true;
-			predObj.acceleration = UtilityHNS::UtilityH::GetSign(predObj.center.v - prev_v);
+			predObj.acceleration = op_utility_ns::UtilityH::GetSign(predObj.center.v - prev_v);
 		}
 		else
 		{
@@ -309,7 +309,7 @@ public:
 			predObj.center.v = currV;
 
 			predObj.bVelocity = true;
-			predObj.acceleration = UtilityHNS::UtilityH::GetSign(predObj.center.v - oldObj.center.v);
+			predObj.acceleration = op_utility_ns::UtilityH::GetSign(predObj.center.v - oldObj.center.v);
 		}
 		else
 		{

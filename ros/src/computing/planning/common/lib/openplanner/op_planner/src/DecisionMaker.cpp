@@ -6,7 +6,6 @@
 
 
 #include "op_planner/DecisionMaker.h"
-#include "op_utility/UtilityH.h"
 #include "op_planner/PlanningHelpers.h"
 #include "op_planner/MappingHelpers.h"
 #include "op_planner/MatrixOperations.h"
@@ -131,7 +130,7 @@ void DecisionMaker::InitBehaviorStates()
 		 double d = hypot(trafficLights.at(i).pos.y - state.pos.y, trafficLights.at(i).pos.x - state.pos.x);
 		 if(d <= trafficLights.at(i).stoppingDistance)
 		 {
-			 double a_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(UtilityHNS::UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , UtilityHNS::UtilityH::FixNegativeAngle(state.pos.a));
+			 double a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(op_utility_ns::UtilityH::FixNegativeAngle(trafficLights.at(i).pos.a) , op_utility_ns::UtilityH::FixNegativeAngle(state.pos.a));
 
 			 if(a_diff < M_PI_2 && trafficLights.at(i).id != prevTrafficLightId)
 			 {

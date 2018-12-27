@@ -29,7 +29,6 @@
 */
 
 #include "op_data_logger_core.h"
-#include "op_utility/UtilityH.h"
 #include "math.h"
 #include "op_planner/MatrixOperations.h"
 #include "op_ros_helpers/op_ROSHelpers.h"
@@ -55,7 +54,7 @@ OpenPlannerDataLogger::OpenPlannerDataLogger()
 
 	_nh.getParam("mapFileName" , m_MapPath);
 
-	UtilityHNS::UtilityH::GetTickCount(m_Timer);
+	op_utility_ns::UtilityH::GetTickCount(m_Timer);
 
 	//Subscription for the Ego vehicle !
 	sub_predicted_objects = nh.subscribe("/predicted_objects", 1, &OpenPlannerDataLogger::callbackGetPredictedObjects, this);
@@ -96,7 +95,7 @@ OpenPlannerDataLogger::~OpenPlannerDataLogger()
 		ostringstream car_name;
 		car_name << "sim_car_no_" << i+1;
 		car_name << "_";
-		UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::PredictionFolderName,
+		op_utility_ns::DataRW::WriteLogData(op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::PredictionFolderName,
 				car_name.str(),
 				"time_diff,distance_diff, heading_diff, velocity_diff, rms, state_diff," , m_LogData.at(i));
 	}
@@ -294,7 +293,7 @@ void OpenPlannerDataLogger::CompareAndLog(VehicleDataContainer& ground_truth, Pl
 
 	double t_diff = fabs(ground_truth.path_time.toSec() - m_pred_time.toSec());
 	double d_diff = hypot(ground_truth.pose.pos.y - predicted.center.pos.y, ground_truth.pose.pos.x - predicted.center.pos.x);
-	double o_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(ground_truth.pose.pos.a, predicted.center.pos.a);
+	double o_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(ground_truth.pose.pos.a, predicted.center.pos.a);
 	double v_diff = fabs(ground_truth.pose.v - predicted.center.v);
 	double rms = -1;
 	int beh_state_diff = -1;

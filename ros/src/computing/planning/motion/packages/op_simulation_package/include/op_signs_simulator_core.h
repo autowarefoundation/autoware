@@ -64,7 +64,7 @@
 #include <op_planner/RoadNetwork.h>
 #include <op_planner/MappingHelpers.h>
 #include "op_planner/PlannerCommonDef.h"
-#include "op_utility/DataRW.h"
+#include "op_utility/data_rw.h"
 
 
 namespace SignsSimulatorNS
@@ -140,7 +140,7 @@ public:
 
 	//Mapping Section
 
-	UtilityHNS::MapRaw m_MapRaw;
+	op_utility_ns::MapRaw m_MapRaw;
 
 	ros::Subscriber sub_lanes;
 	ros::Subscriber sub_points;

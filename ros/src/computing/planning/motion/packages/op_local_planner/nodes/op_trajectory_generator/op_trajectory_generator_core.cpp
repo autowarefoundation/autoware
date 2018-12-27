@@ -154,7 +154,7 @@ void TrajectoryGen::callbackGetVehicleStatus(const geometry_msgs::TwistStampedCo
 	m_CurrentPos.v = m_VehicleStatus.speed;
 	if(fabs(msg->twist.linear.x) > 0.25)
 		m_VehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
 	bVehicleStatus = true;
 }
 
@@ -162,7 +162,7 @@ void TrajectoryGen::callbackGetCANInfo(const autoware_can_msgs::CANInfoConstPtr 
 {
 	m_VehicleStatus.speed = msg->speed/3.6;
 	m_VehicleStatus.steer = msg->angle * m_CarInfo.max_steer_angle / m_CarInfo.max_steer_value;
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
 	bVehicleStatus = true;
 }
 
@@ -170,7 +170,7 @@ void TrajectoryGen::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	m_VehicleStatus.speed = msg->twist.twist.linear.x;
 	m_VehicleStatus.steer += atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleStatus.tStamp);
 	bVehicleStatus = true;
 }
 

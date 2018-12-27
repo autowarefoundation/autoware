@@ -32,7 +32,7 @@ std::vector<GPSPoint> PolygonGenerator::EstimateClusterPolygon(const pcl::PointC
 
 		GPSPoint v(p.pos.x - original_centroid.x , p.pos.y - original_centroid.y, 0, 0);
 		p.cost = pointNorm(v);
-		p.pos.a = UtilityHNS::UtilityH::FixNegativeAngle(atan2(v.y, v.x))*(180. / M_PI);
+		p.pos.a = op_utility_ns::UtilityH::FixNegativeAngle(atan2(v.y, v.x))*(180. / M_PI);
 
 		for(unsigned int j = 0 ; j < m_Quarters.size(); j++)
 		{

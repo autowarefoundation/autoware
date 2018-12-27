@@ -30,13 +30,13 @@
 
 
 #include <ros/ros.h>
-#include "op_utility/DataRW.h"
+#include "op_utility/data_rw.h"
 
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "op_common_params");
 
-	UtilityHNS::DataRW::CreateLoggingFolder();
+	op_utility_ns::DataRW::CreateLoggingFolder();
 
 	ros::NodeHandle nh;
 	ros::Rate loop_rate(1);

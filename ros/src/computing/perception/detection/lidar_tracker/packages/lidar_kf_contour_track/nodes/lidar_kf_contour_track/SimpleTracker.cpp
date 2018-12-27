@@ -65,12 +65,12 @@ SimpleTracker::SimpleTracker()
 	m_nMinTrustAppearances = 5;
 	m_Horizon = 100.0;
 	m_CirclesResolution = 5.0;
-	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+	op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
 }
 
 void SimpleTracker::InitSimpleTracker()
 {
-	UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+	op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
 	InitializeInterestRegions(m_InterestRegions);
 }
 
@@ -133,16 +133,16 @@ void SimpleTracker::DoOneStep(const WayPoint& currPose, const std::vector<Detect
 		if(!m_bFirstCall)
 		{
 			PlannerHNS::WayPoint stateDiff;
-			m_dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_TrackTimer);
+			m_dt = op_utility_ns::UtilityH::GetTimeDiffNow(m_TrackTimer);
 			stateDiff.pos.x = m_PrevState.pos.x - currPose.pos.x ;
 			stateDiff.pos.y = m_PrevState.pos.y - currPose.pos.y;
-			stateDiff.pos.a = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(currPose.pos.a, m_PrevState.pos.a) * UtilityHNS::UtilityH::GetSign(m_PrevState.pos.a - currPose.pos.a);
+			stateDiff.pos.a = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(currPose.pos.a, m_PrevState.pos.a) * op_utility_ns::UtilityH::GetSign(m_PrevState.pos.a - currPose.pos.a);
 			//std::cout << "(" << m_StateDiff.pos.x << ", " << m_StateDiff.pos.y << ", " << m_StateDiff.pos.a << std::endl;
 		}
 		else
 			m_bFirstCall = false;
 
-		UtilityHNS::UtilityH::GetTickCount(m_TrackTimer);
+		op_utility_ns::UtilityH::GetTickCount(m_TrackTimer);
 	}
 
 	m_DetectedObjects = obj_list;
@@ -364,8 +364,8 @@ void SimpleTracker::MatchClosestCost()
 					double diff_x = m_DetectedObjects.at(jj).center.pos.x - m_TrackSimply.at(i).obj.center.pos.x ;
 					if(hypot(diff_y, diff_x) > 0.2)
 					{
-						double a = UtilityHNS::UtilityH::FixNegativeAngle(atan2(diff_y, diff_x));
-						a_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(a,m_TrackSimply.at(i).obj.center.pos.a);
+						double a = op_utility_ns::UtilityH::FixNegativeAngle(atan2(diff_y, diff_x));
+						a_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(a,m_TrackSimply.at(i).obj.center.pos.a);
 						if(a_diff < m_MAX_ASSOCIATION_ANGLE_DIFF)
 							bDirectionMatch = true;
 					}
@@ -552,9 +552,9 @@ void SimpleTracker::AssociateDistanceOnlyAndTrack()
 				size_diff = fabs(old_size - object_size);
 //				if(m_TrackSimply.at(i).obj.bDirection && m_TrackSimply.at(i).obj.bVelocity && m_TrackSimply.at(i).obj.center.v*3.6 > 3)
 //				{
-//					double a_check =  UtilityHNS::UtilityH::FixNegativeAngle(atan2(d_y, d_x));
-//					double a_old = UtilityHNS::UtilityH::FixNegativeAngle(m_TrackSimply.at(i).obj.center.pos.a);
-//					angle_diff = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(a_check, a_old);
+//					double a_check =  op_utility_ns::UtilityH::FixNegativeAngle(atan2(d_y, d_x));
+//					double a_old = op_utility_ns::UtilityH::FixNegativeAngle(m_TrackSimply.at(i).obj.center.pos.a);
+//					angle_diff = op_utility_ns::UtilityH::AngleBetweenTwoAnglesPositive(a_check, a_old);
 //				}
 //				else
 //					angle_diff = 0;

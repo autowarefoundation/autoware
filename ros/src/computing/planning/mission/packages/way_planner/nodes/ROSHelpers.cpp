@@ -53,7 +53,7 @@ void ROSHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector
 		wp.pose.pose.position.y = path.at(i).y;
 		wp.pose.pose.position.z = path.at(i).z;
 		//wp.pose.pose.position.z = 5;
-		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).a));
+		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(path.at(i).a));
 
 		l.waypoints.push_back(wp);
 	}
@@ -74,7 +74,7 @@ void ROSHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
 		//wp.pose.pose.position.z = 5;
-		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
+		wp.pose.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(path.at(i).pos.a));
 		wp.twist.twist.linear.x = path.at(i).v;
 		wp.twist.twist.linear.y = path.at(i).laneId;
 		wp.twist.twist.linear.z = path.at(i).stopLineID;

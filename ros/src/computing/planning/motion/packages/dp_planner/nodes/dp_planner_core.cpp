@@ -34,7 +34,6 @@
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
-#include "op_utility/UtilityH.h"
 #include "op_planner/MatrixOperations.h"
 
 namespace PlannerXNS
@@ -59,11 +58,11 @@ PlannerX::PlannerX()
 	bNewEmergency = false;
 	m_bEmergencyStop = 0;
 	bNewTrafficLigh = false;
-	m_bGreenLight = false; UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
+	m_bGreenLight = false; op_utility_ns::UtilityH::GetTickCount(m_TrafficLightTimer);
 	bNewOutsideControl = false;
 	m_bOutsideControl = 0;
 	bNewAStarPath = false;
-	UtilityHNS::UtilityH::GetTickCount(m_AStartPlanningTimer);
+	op_utility_ns::UtilityH::GetTickCount(m_AStartPlanningTimer);
 	bWayPlannerPath = false;
 	bKmlMapLoaded = false;
 	m_bEnableTracking = true;
@@ -170,7 +169,7 @@ PlannerX::PlannerX()
 PlannerX::~PlannerX()
 {
 #ifdef OPENPLANNER_ENABLE_LOGS
-	UtilityHNS::DataRW::WriteLogData(UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName+UtilityHNS::DataRW::StatesLogFolderName, "MainLog",
+	op_utility_ns::DataRW::WriteLogData(op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName+op_utility_ns::DataRW::StatesLogFolderName, "MainLog",
 			"time,dt,Behavior State,behavior,num_Tracked_Objects,num_Cluster_Points,num_Contour_Points,t_Tracking,t_Calc_Cost, t_Behavior_Gen, t_Roll_Out_Gen, num_RollOuts, Full_Block, idx_Central_traj, iTrajectory, Stop Sign, Traffic Light, Min_Stop_Distance, follow_distance, follow_velocity, Velocity, Steering, X, Y, Z, heading,"
 			, m_LogData);
 #endif
@@ -296,7 +295,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 {
 	//Add Simulated Obstacle polygon
 	timespec t;
-	UtilityHNS::UtilityH::GetTickCount(t);
+	op_utility_ns::UtilityH::GetTickCount(t);
 	srand(t.tv_nsec);
 	double width = SIMU_OBSTACLE_WIDTH;//((double)(rand()%10)/10.0) * 1.5 + 0.25;
 	double length = SIMU_OBSTACLE_LENGTH;//((double)(rand()%10)/10.0) * 0.5 + 0.25;
@@ -348,7 +347,7 @@ void PlannerX::callbackGetRvizPoint(const geometry_msgs::PointStampedConstPtr& m
 void PlannerX::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
 	m_counter++;
-	double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
+	double dt = op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer);
 	if(dt >= 1.0)
 	{
 		m_frequency = m_counter;
@@ -377,7 +376,7 @@ autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const dou
 	timespec t;
 	for(int i=1; i < nPoints; i++)
 	{
-		UtilityHNS::UtilityH::GetTickCount(t);
+		op_utility_ns::UtilityH::GetTickCount(t);
 		pcl::PointXYZ p;
 		srand(t.tv_nsec/i);
 		double x = (double)(rand()%100)/100.0 - 0.5;
@@ -402,7 +401,7 @@ autoware_msgs::CloudCluster PlannerX::GenerateSimulatedObstacleCluster(const dou
 void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayConstPtr& msg)
 {
 	timespec timerTemp;
-	UtilityHNS::UtilityH::GetTickCount(timerTemp);
+	op_utility_ns::UtilityH::GetTickCount(timerTemp);
 
 	m_OriginalClusters.clear();
 	ROSHelpers::ConvertFromAutowareCloudClusterObstaclesToPlannerH(m_CurrentPos, m_LocalPlanner.m_CarInfo, *msg, m_OriginalClusters, m_nOriginalPoints, m_nContourPoints);
@@ -415,7 +414,7 @@ void PlannerX::callbackGetCloudClusters(const autoware_msgs::CloudClusterArrayCo
 		m_TrackedClusters = m_OriginalClusters;
 
 	m_nTrackObjects = m_TrackedClusters.size();
-	m_TrackingTime = UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp);
+	m_TrackingTime = op_utility_ns::UtilityH::GetTimeDiffNow(timerTemp);
 	bNewClusters = true;
 }
 
@@ -433,7 +432,7 @@ void PlannerX::callbackGetVehicleStatus(const geometry_msgs::TwistStampedConstPt
 	if(msg->twist.linear.x != 0)
 		m_VehicleState.steer = atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
 
 	// If steering is in angular velocity
 	//m_VehicleState.steer = atan(m_State.m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
@@ -461,7 +460,7 @@ void PlannerX::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 	m_VehicleState.speed = msg->twist.twist.linear.x;
 	m_VehicleState.steer += atan(m_LocalPlanner.m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
 
-	UtilityHNS::UtilityH::GetTickCount(m_VehicleState.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_VehicleState.tStamp);
 //	if(msg->vector.z == 0x00)
 //		m_VehicleState.shift = AW_SHIFT_POS_BB;
 //	else if(msg->vector.z == 0x10)
@@ -606,13 +605,13 @@ void PlannerX::PlannerMainLoop()
 	ros::Rate loop_rate(100);
 
 	timespec trackingTimer;
-	UtilityHNS::UtilityH::GetTickCount(trackingTimer);
+	op_utility_ns::UtilityH::GetTickCount(trackingTimer);
 	PlannerHNS::WayPoint prevState, state_change;
 
 	while (ros::ok())
 	{
 		timespec iterationTime;
-		UtilityHNS::UtilityH::GetTickCount(iterationTime);
+		op_utility_ns::UtilityH::GetTickCount(iterationTime);
 
 		ros::spinOnce();
 
@@ -631,10 +630,10 @@ void PlannerX::PlannerMainLoop()
 			 if(m_AwMap.bDtLanes && m_AwMap.bLanes && m_AwMap.bPoints)
 			 {
 				timespec timerTemp;
-				UtilityHNS::UtilityH::GetTickCount(timerTemp);
+				op_utility_ns::UtilityH::GetTickCount(timerTemp);
 				 m_AwMap.bDtLanes = m_AwMap.bLanes = m_AwMap.bPoints = false;
 				 ROSHelpers::UpdateRoadMap(m_AwMap,m_Map);
-				 std::cout << "Converting Vector Map Time : " <<UtilityHNS::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
+				 std::cout << "Converting Vector Map Time : " <<op_utility_ns::UtilityH::GetTimeDiffNow(timerTemp) << std::endl;
 				 //sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	10,		&PlannerX::callbackGetWayPlannerPath, 	this);
 			 }
 		}
@@ -645,8 +644,8 @@ void PlannerX::PlannerMainLoop()
 			m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->bOutsideControl = m_bOutsideControl;
 			m_LocalPlanner.state = m_CurrentPos;
 
-			double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
-			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+			double dt  = op_utility_ns::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+			op_utility_ns::UtilityH::GetTickCount(m_PlanningTimer);
 
 			std::vector<PlannerHNS::TrafficLight> trafficLight;
 			m_CurrentBehavior = m_LocalPlanner.DoOneStep(dt, m_VehicleState, m_TrackedClusters, 1, m_Map, m_bEmergencyStop, trafficLight, true);
@@ -701,7 +700,7 @@ void PlannerX::PlannerMainLoop()
 
 			p_id.position.x = 0;
 
-			p_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a));
+			p_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0, 0, op_utility_ns::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a));
 			p_pose.position.x = m_LocalPlanner.state.pos.x;
 			p_pose.position.y = m_LocalPlanner.state.pos.y;
 			p_pose.position.z = m_LocalPlanner.state.pos.z;
@@ -719,10 +718,10 @@ void PlannerX::PlannerMainLoop()
 			pub_SimuBoxPose.publish(sim_data);
 
 			timespec log_t;
-			UtilityHNS::UtilityH::GetTickCount(log_t);
+			op_utility_ns::UtilityH::GetTickCount(log_t);
 			std::ostringstream dataLine;
 			std::ostringstream dataLineToOut;
-			dataLine << UtilityHNS::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
+			dataLine << op_utility_ns::UtilityH::GetLongTime(log_t) <<"," << dt << "," << m_CurrentBehavior.state << ","<< ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << "," <<
 					m_nTrackObjects << "," << m_nOriginalPoints << "," << m_nContourPoints << "," << m_TrackingTime << "," <<
 					m_LocalPlanner.m_CostCalculationTime << "," << m_LocalPlanner.m_BehaviorGenTime << "," << m_LocalPlanner.m_RollOutsGenerationTime << "," <<
 					m_LocalPlanner.m_pCurrentBehaviorState->m_pParams->rollOutNumber << "," <<
@@ -736,7 +735,7 @@ void PlannerX::PlannerMainLoop()
 					m_LocalPlanner.m_pCurrentBehaviorState->GetCalcParams()->velocityOfNext << "," <<
 					m_VehicleState.speed << "," <<
 					m_VehicleState.steer << "," <<
-					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << UtilityHNS::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
+					m_LocalPlanner.state.pos.x << "," << m_LocalPlanner.state.pos.y << "," << m_LocalPlanner.state.pos.z << "," << op_utility_ns::UtilityH::SplitPositiveAngle(m_LocalPlanner.state.pos.a)+M_PI << ",";
 			m_LogData.push_back(dataLine.str());
 
 //			dataLineToOut << ROSHelpers::GetBehaviorNameFromCode(m_CurrentBehavior.state) << ","
@@ -754,7 +753,7 @@ void PlannerX::PlannerMainLoop()
 		}
 		else
 		{
-			UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+			op_utility_ns::UtilityH::GetTickCount(m_PlanningTimer);
 			sub_WayPlannerPaths = nh.subscribe("/lane_waypoints_array", 	1,		&PlannerX::callbackGetWayPlannerPath, 	this);
 		}
 
@@ -805,29 +804,29 @@ void PlannerX::PlannerMainLoop()
 		if(m_CurrentBehavior.bNewPlan)
 		{
 			std::ostringstream str_out;
-			str_out << UtilityHNS::UtilityH::GetHomeDirectory();
-			str_out << UtilityHNS::DataRW::LoggingMainfolderName;
-			str_out << UtilityHNS::DataRW::PathLogFolderName;
+			str_out << op_utility_ns::UtilityH::GetHomeDirectory();
+			str_out << op_utility_ns::DataRW::LoggingMainfolderName;
+			str_out << op_utility_ns::DataRW::PathLogFolderName;
 			str_out << "LocalPath_";
 			PlannerHNS::PlanningHelpers::WritePathToFile(str_out.str(), m_LocalPlanner.m_Path);
 		}
 
 
 		//Traffic Light Simulation Part
-		if(m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 5)
+		if(m_bGreenLight && op_utility_ns::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 5)
 		{
 			m_bGreenLight = false;
-			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
+			op_utility_ns::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
-		else if(!m_bGreenLight && UtilityHNS::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 10.0)
+		else if(!m_bGreenLight && op_utility_ns::UtilityH::GetTimeDiffNow(m_TrafficLightTimer) > 10.0)
 		{
 			m_bGreenLight = true;
-			UtilityHNS::UtilityH::GetTickCount(m_TrafficLightTimer);
+			op_utility_ns::UtilityH::GetTickCount(m_TrafficLightTimer);
 		}
 
 		loop_rate.sleep();
 
-		//double onePassTime = UtilityHNS::UtilityH::GetTimeDiffNow(iterationTime);
+		//double onePassTime = op_utility_ns::UtilityH::GetTimeDiffNow(iterationTime);
 //		if(onePassTime > 0.1)
 //			std::cout << "Slow Iteration Time = " << onePassTime << " , for Obstacles : (" << m_TrackedClusters.size() << ", " << m_OriginalClusters.size() << ")" <<  std::endl;
 	}

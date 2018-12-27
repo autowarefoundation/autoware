@@ -33,7 +33,6 @@
 #include <visualization_msgs/InteractiveMarkerPose.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
-#include "op_utility/UtilityH.h"
 #include "math.h"
 
 using namespace std;
@@ -159,7 +158,7 @@ FFSteerControl::FFSteerControl()
   	//sub_autoware_odom 		= nh.subscribe("/twist_odom", 		10,	&FFSteerControl::callbackGetAutowareOdom, this);
 
 
-	UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+	op_utility_ns::UtilityH::GetTickCount(m_PlanningTimer);
 
 	std::cout << "ff_waypoint_follower initialized successfully " << std::endl;
 
@@ -236,7 +235,7 @@ void FFSteerControl::callbackGetInitPose(const geometry_msgs::PoseWithCovariance
 void FFSteerControl::callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg)
 {
 	m_counter++;
-	double dt = UtilityHNS::UtilityH::GetTimeDiffNow(m_Timer);
+	double dt = op_utility_ns::UtilityH::GetTimeDiffNow(m_Timer);
 	if(dt >= 1.0)
 	{
 		m_frequency = m_counter;
@@ -256,7 +255,7 @@ void FFSteerControl::callbackGetCurrentVelocity(const geometry_msgs::TwistStampe
 	if(msg->twist.linear.x != 0)
 		m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.angular.z/msg->twist.linear.x);
 
-	UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
+	op_utility_ns::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 }
 
 void FFSteerControl::callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg )
@@ -315,7 +314,7 @@ void FFSteerControl::callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg)
 		m_CurrVehicleStatus.speed = msg->twist.twist.linear.x;
 		if(msg->twist.twist.linear.x!=0)
 			m_CurrVehicleStatus.steer = atan(m_CarInfo.wheel_base * msg->twist.twist.angular.z/msg->twist.twist.linear.x);
-		UtilityHNS::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
+		op_utility_ns::UtilityH::GetTickCount(m_CurrVehicleStatus.tStamp);
 
 //		std::cout << "###### Current Status From Robot Odometry -> (" <<  m_CurrVehicleStatus.speed << ", " << m_CurrVehicleStatus.steer << ")"  << std::endl;
 	}
@@ -351,7 +350,7 @@ void FFSteerControl::displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, Plann
   m1.pose.position.x = curr_pose.pos.x;
   m1.pose.position.y = curr_pose.pos.y;
   m1.pose.position.z = curr_pose.pos.z;
-  m1.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(curr_pose.pos.a));
+  m1.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(curr_pose.pos.a));
   std_msgs::ColorRGBA green;
   green.a = 1.0;
   green.b = 0.0;
@@ -372,7 +371,7 @@ void FFSteerControl::displayFollowingInfo(PlannerHNS::WayPoint& curr_pose, Plann
   m3.pose.position.x = follow_pose.pos.x;
   m3.pose.position.y = follow_pose.pos.y;
   m3.pose.position.z = follow_pose.pos.z;
-  m3.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(follow_pose.pos.a));
+  m3.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(follow_pose.pos.a));
   std_msgs::ColorRGBA red;
   red.a = 1.0;
   red.b = 0.0;
@@ -452,8 +451,8 @@ void FFSteerControl::PlannerMainLoop()
 		ros::spinOnce();
 
 		PlannerHNS::BehaviorState currMessage = m_CurrentBehavior;
-		double dt  = UtilityHNS::UtilityH::GetTimeDiffNow(m_PlanningTimer);
-		UtilityHNS::UtilityH::GetTickCount(m_PlanningTimer);
+		double dt  = op_utility_ns::UtilityH::GetTimeDiffNow(m_PlanningTimer);
+		op_utility_ns::UtilityH::GetTickCount(m_PlanningTimer);
 
 		if(currMessage.state != PlannerHNS::INITIAL_STATE &&  (bInitPos || bNewCurrentPos))
 		{
@@ -481,7 +480,7 @@ void FFSteerControl::PlannerMainLoop()
 					control_box_status.pose.pose.position.x = m_CurrentPos.pos.x;
 					control_box_status.pose.pose.position.y = m_CurrentPos.pos.y;
 					control_box_status.pose.pose.position.z = m_CurrentPos.pos.z;
-					control_box_status.pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
+					control_box_status.pose.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
 
 					pub_ControlBoxOdom.publish(control_box_status);
 
@@ -517,7 +516,7 @@ void FFSteerControl::PlannerMainLoop()
 				pose.pose.position.x = m_CurrentPos.pos.x;
 				pose.pose.position.y = m_CurrentPos.pos.y;
 				pose.pose.position.z = m_CurrentPos.pos.z;
-				pose.pose.orientation = tf::createQuaternionMsgFromYaw(UtilityHNS::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
+				pose.pose.orientation = tf::createQuaternionMsgFromYaw(op_utility_ns::UtilityH::SplitPositiveAngle(m_CurrentPos.pos.a));
 				//cout << "Send Simulated Position "<< m_CurrentPos.pos.ToString() << endl;
 
 				pub_SimuPose.publish(pose);
@@ -562,7 +561,7 @@ void FFSteerControl::PlannerMainLoop()
 			}
 
 			//PlannerHNS::ControllerParams c_params = m_ControlParams;
-			//c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- UtilityHNS::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
+			//c_params.SteeringDelay = m_ControlParams.SteeringDelay / (1.0- op_utility_ns::UtilityH::GetMomentumScaleFactor(m_CurrVehicleStatus.speed));
 			//m_PredControl.Init(c_params, m_CarInfo);
 			m_PrevStepTargetStatus = m_PredControl.DoOneStep(dt, currMessage, m_FollowingTrajectory, m_CurrentPos, m_CurrVehicleStatus, bNewPath);
 			//m_PrevStepTargetStatus.speed = 3.0;
@@ -674,10 +673,10 @@ void FFSteerControl::PlannerMainLoop()
 //				roadMap.roadSegments.push_back(segment);
 //
 //				ostringstream fileName;
-//				fileName << UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName;
-//				fileName << UtilityHNS:: UtilityH::GetFilePrefixHourMinuteSeconds();
+//				fileName << op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName;
+//				fileName << op_utility_ns:: UtilityH::GetFilePrefixHourMinuteSeconds();
 //				fileName << "_RoadNetwork.kml";
-//				string kml_templateFilePath = UtilityHNS::UtilityH::GetHomeDirectory()+UtilityHNS::DataRW::LoggingMainfolderName + UtilityHNS::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
+//				string kml_templateFilePath = op_utility_ns::UtilityH::GetHomeDirectory()+op_utility_ns::DataRW::LoggingMainfolderName + op_utility_ns::DataRW::KmlMapsFolderName+"PlannerX_MapTemplate.kml";
 //
 //				//PlannerHNS::MappingHelpers::WriteKML(fileName.str(),kml_templateFilePath , roadMap);
 //

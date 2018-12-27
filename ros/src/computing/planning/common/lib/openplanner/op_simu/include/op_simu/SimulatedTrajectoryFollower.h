@@ -8,7 +8,7 @@
 #ifndef SimulatedTrajectoryFollower_H_
 #define SimulatedTrajectoryFollower_H_
 #include "op_planner/RoadNetwork.h"
-#include "op_utility/UtilityH.h"
+#include "op_utility/utility.h"
 #include "op_planner/PlannerCommonDef.h"
 
 namespace SimulationNS
@@ -50,8 +50,8 @@ private:
 	double						m_PrevDesiredSteer; // control output
 	double 						m_FollowAcceleration;
 	int 						m_iPrevWayPoint;
-	UtilityHNS::PIDController 	m_pidSteer;
-	UtilityHNS::PIDController 	m_pidVelocity;
+	op_utility_ns::PIDController 	m_pidSteer;
+	op_utility_ns::PIDController 	m_pidVelocity;
 
 	bool FindNextWayPoint(const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::WayPoint& state,
 			const double& velocity, PlannerHNS::WayPoint& pursuite_point, PlannerHNS::WayPoint& prep,

@@ -1,5 +1,5 @@
 
-/// \file DataRW.h
+/// \file data_rw.h
 /// \brief File operations for loading vector map files, loading kml map files and writing log .csv files
 /// \author Hatem Darweesh
 /// \date Jun 23, 2016
@@ -31,9 +31,9 @@
 #include "vector_map_msgs/RoadEdgeArray.h"
 #include "vector_map_msgs/CrossWalkArray.h"
 
-#include "UtilityH.h"
+#include "utility.h"
 
-namespace UtilityHNS {
+namespace op_utility_ns {
 
 class DataRW
 {
@@ -674,20 +674,20 @@ public:
 class MapRaw
 {
 public:
-	UtilityHNS::AisanLanesFileReader* pLanes;
-	UtilityHNS::AisanPointsFileReader* pPoints;
-	UtilityHNS::AisanCenterLinesFileReader* pCenterLines;
-	UtilityHNS::AisanIntersectionFileReader* pIntersections;
-	UtilityHNS::AisanAreasFileReader* pAreas;
-	UtilityHNS::AisanLinesFileReader* pLines;
-	UtilityHNS::AisanStopLineFileReader* pStopLines;
-	UtilityHNS::AisanSignalFileReader* pSignals;
-	UtilityHNS::AisanVectorFileReader* pVectors;
-	UtilityHNS::AisanCurbFileReader* pCurbs;
-	UtilityHNS::AisanRoadEdgeFileReader* pRoadedges;
-	UtilityHNS::AisanWayareaFileReader* pWayAreas;
-	UtilityHNS::AisanCrossWalkFileReader* pCrossWalks;
-	UtilityHNS::AisanNodesFileReader* pNodes;
+	op_utility_ns::AisanLanesFileReader* pLanes;
+	op_utility_ns::AisanPointsFileReader* pPoints;
+	op_utility_ns::AisanCenterLinesFileReader* pCenterLines;
+	op_utility_ns::AisanIntersectionFileReader* pIntersections;
+	op_utility_ns::AisanAreasFileReader* pAreas;
+	op_utility_ns::AisanLinesFileReader* pLines;
+	op_utility_ns::AisanStopLineFileReader* pStopLines;
+	op_utility_ns::AisanSignalFileReader* pSignals;
+	op_utility_ns::AisanVectorFileReader* pVectors;
+	op_utility_ns::AisanCurbFileReader* pCurbs;
+	op_utility_ns::AisanRoadEdgeFileReader* pRoadedges;
+	op_utility_ns::AisanWayareaFileReader* pWayAreas;
+	op_utility_ns::AisanCrossWalkFileReader* pCrossWalks;
+	op_utility_ns::AisanNodesFileReader* pNodes;
 
 	struct timespec _time_out;
 
