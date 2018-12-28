@@ -36,11 +36,6 @@ while getopts ":ht:r:s:" opt; do
   esac
 done
 
-if [[ "${TAG}" == *"indigo" ]] ; then
-  echo "Indigo is deprecated and will be removed in a future release, please use Kinetic instead"
-  sleep 2
-fi
-
 echo "Using $DOCKER_HUB_REPO:$TAG"
 echo "Shared directory: ${HOST_DIR}"
 

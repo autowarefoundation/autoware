@@ -1,0 +1,20 @@
+<launch>
+  <!-- gmsl multiple cameras run -->
+  <arg name="cam_calib_folder" default="$(find autoware_driveworks_gmsl_interface)/calib/" />
+  <node pkg="autoware_driveworks_gmsl_interface" type="autoware_driveworks_gmsl_interface_node" name="autoware_driveworks_gmsl_interface_node" output="screen">
+    <param name="image_width" value="1920" />     <!-- image raw resize only -->
+    <param name="image_height" value="1208" />    <!-- image raw resize only -->
+    <param name="image_buffer" value="10" />
+    <param name="image_compressed" value="true" type="bool" />  <!-- publish compressed original size -->
+    <param name="calib_folder" value="$(arg cam_calib_folder)/" />
+    <param name="type_ab" value="ar0231-rccb-ss3322" type="str" />
+    <param name="type_cd" value="ar0231-rccb-ss3322" type="str" />
+    <param name="type_ef" value="ar0231-rccb-ss3322" type="str" />
+    <param name="selector_mask" value="111100110011" type="str" /> <!-- |A3210|B3210|C3210| e.g 011101110011 -->
+    <param name="cross_csi_sync" value="1" type="str" />
+    <param name="fifo_size" value="3" type="str" />
+    <param name="slave" value="0" type="str" />
+  </node>
+
+</launch>
+

@@ -99,7 +99,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-kinetic-tf2 \
     ros-kinetic-tf2-ros \
     ros-kinetic-visualization-msgs \
-    ros-kinetic-xacro
+    ros-kinetic-xacro \
+    ros-kinetic-rosbridge-server
 
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 

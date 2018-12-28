@@ -28,35 +28,38 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <chrono>
-#include <stdio.h>
-#include <ros/package.h>
-#include <pcl_conversions/pcl_conversions.h>
+
 #include "imm_ukf_pda.h"
 
 ImmUkfPda::ImmUkfPda()
   : target_id_(0)
   ,  // assign unique ukf_id_ to each tracking targets
   init_(false),
-  frame_count_(0)
+  frame_count_(0),
+  has_subscribed_vectormap_(false),
+  private_nh_("~")
 {
-  ros::NodeHandle private_nh_("~");
-  private_nh_.param<std::string>("pointcloud_frame", pointcloud_frame_, "velodyne");
   private_nh_.param<std::string>("tracking_frame", tracking_frame_, "world");
   private_nh_.param<int>("life_time_thres", life_time_thres_, 8);
   private_nh_.param<double>("gating_thres", gating_thres_, 9.22);
   private_nh_.param<double>("gate_probability", gate_probability_, 0.99);
   private_nh_.param<double>("detection_probability", detection_probability_, 0.9);
-  private_nh_.param<double>("distance_thres", distance_thres_, 99);
   private_nh_.param<double>("static_velocity_thres", static_velocity_thres_, 0.5);
+  private_nh_.param<int>("static_velocity_history_thres", static_num_history_thres_, 3);
   private_nh_.param<double>("prevent_explosion_thres", prevent_explosion_thres_, 1000);
+  private_nh_.param<double>("merge_distance_threshold", merge_distance_threshold_, 0.5);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
-  private_nh_.param<bool>("is_debug", is_debug_, false);
+
+  // for vectormap assisted tracking
+  private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
+  private_nh_.param<double>("lane_direction_chi_thres", lane_direction_chi_thres_, 2.71);
+  private_nh_.param<double>("nearest_lane_distance_thres", nearest_lane_distance_thres_, 1.0);
+  private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
 
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
-  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "/home/hoge/kitti/2011_09_26/2011_09_26_drive_0005_sync/");
-  if(is_benchmark_)
+  private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "");
+  if (is_benchmark_)
   {
     result_file_path_ = kitti_data_dir_ + "benchmark_results.txt";
     std::remove(result_file_path_.c_str());
@@ -65,136 +68,135 @@ ImmUkfPda::ImmUkfPda()
 
 void ImmUkfPda::run()
 {
-  pub_jskbbox_array_ =
-      node_handle_.advertise<jsk_recognition_msgs::BoundingBoxArray>("/detection/lidar_tracker/bounding_boxes", 1);
-  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_tracker/objects", 1);
+  pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/objects", 1);
+  sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
 
-  // for debug
-  pub_points_array_ =
-      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_points_markers", 1);
-  pub_texts_array_ =
-      node_handle_.advertise<visualization_msgs::MarkerArray>("/detection/lidar_tracker/debug_texts_markers", 1);
-
-  sub_detected_array_ = node_handle_.subscribe("/detection/lidar_objects", 1, &ImmUkfPda::callback, this);
+  if (use_vectormap_)
+  {
+    vmap_.subscribe(private_nh_, vector_map::Category::POINT |
+                                 vector_map::Category::NODE  |
+                                 vector_map::Category::LANE, 1);
+  }
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
-  autoware_msgs::DetectedObjectArray transformed_input;
-  jsk_recognition_msgs::BoundingBoxArray jskbboxes_output;
-  autoware_msgs::DetectedObjectArray detected_objects_output;
+  input_header_ = input.header;
 
-  // only transform pose(clusteArray.clusters.bouding_box.pose)
+  if(use_vectormap_)
+  {
+    checkVectormapSubscription();
+  }
+
+  bool success = updateNecessaryTransform();
+  if (!success)
+  {
+    ROS_INFO("Could not find coordiante transformation");
+    return;
+  }
+
+  autoware_msgs::DetectedObjectArray transformed_input;
+  autoware_msgs::DetectedObjectArray detected_objects_output;
   transformPoseToGlobal(input, transformed_input);
-  tracker(transformed_input, jskbboxes_output, detected_objects_output);
-  transformPoseToLocal(jskbboxes_output, detected_objects_output);
-  pub_jskbbox_array_.publish(jskbboxes_output);
+  tracker(transformed_input, detected_objects_output);
+  transformPoseToLocal(detected_objects_output);
+
   pub_object_array_.publish(detected_objects_output);
 
-  if(is_benchmark_)
+  if (is_benchmark_)
   {
     dumpResultText(detected_objects_output);
   }
 }
 
-void ImmUkfPda::relayJskbbox(const autoware_msgs::DetectedObjectArray& input,
-                             jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output)
+void ImmUkfPda::checkVectormapSubscription()
 {
-  jskbboxes_output.header = input.header;
-  for (size_t i = 0; i < input.objects.size(); i++)
+  if (use_vectormap_ && !has_subscribed_vectormap_)
   {
-    jsk_recognition_msgs::BoundingBox bb;
-    bb.header = input.header;
-    bb.pose = input.objects[i].pose;
-    bb.dimensions = input.objects[i].dimensions;
-    jskbboxes_output.boxes.push_back(bb);
+    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane& lane) { return true; });
+    if (lanes_.empty())
+    {
+      ROS_INFO("Has not subscribed vectormap");
+    }
+    else
+    {
+      has_subscribed_vectormap_ = true;
+    }
   }
+}
+
+bool ImmUkfPda::updateNecessaryTransform()
+{
+  bool success = true;
+  try
+  {
+    tf_listener_.waitForTransform(input_header_.frame_id, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+    tf_listener_.lookupTransform(tracking_frame_, input_header_.frame_id, ros::Time(0), local2global_);
+  }
+  catch (tf::TransformException ex)
+  {
+    ROS_ERROR("%s", ex.what());
+    success = false;
+  }
+  if (use_vectormap_ && has_subscribed_vectormap_)
+  {
+    try
+    {
+      tf_listener_.waitForTransform(vectormap_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
+      tf_listener_.lookupTransform(vectormap_frame_, tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
+      tf_listener_.lookupTransform(tracking_frame_, vectormap_frame_, ros::Time(0), lane_frame2tracking_frame_);
+    }
+    catch (tf::TransformException ex)
+    {
+      ROS_ERROR("%s", ex.what());
+    }
+  }
+  return success;
 }
 
 void ImmUkfPda::transformPoseToGlobal(const autoware_msgs::DetectedObjectArray& input,
                                       autoware_msgs::DetectedObjectArray& transformed_input)
 {
-  try
+  transformed_input.header = input_header_;
+  for (auto const &object: input.objects)
   {
-    tf_listener_.waitForTransform(pointcloud_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-    // get sensor -> world frame
-    tf_listener_.lookupTransform(tracking_frame_, pointcloud_frame_, ros::Time(0), local2global_);
-  }
-  catch (tf::TransformException ex)
-  {
-    ROS_ERROR("%s", ex.what());
-    ros::Duration(1.0).sleep();
-  }
-
-  transformed_input.header = input.header;
-  for (size_t i = 0; i < input.objects.size(); i++)
-  {
-    geometry_msgs::PoseStamped pose_in, pose_out;
-
-    pose_in.header = input.header;
-    pose_in.pose = input.objects[i].pose;
-    tf::Transform input_object_pose;
-    input_object_pose.setOrigin(tf::Vector3(input.objects[i].pose.position.x, input.objects[i].pose.position.y,
-                                            input.objects[i].pose.position.z));
-    input_object_pose.setRotation(
-        tf::Quaternion(input.objects[i].pose.orientation.x, input.objects[i].pose.orientation.y,
-                       input.objects[i].pose.orientation.z, input.objects[i].pose.orientation.w));
-    tf::poseTFToMsg(local2global_ * input_object_pose, pose_out.pose);
+    geometry_msgs::Pose out_pose = getTransformedPose(object.pose, local2global_);
 
     autoware_msgs::DetectedObject dd;
     dd.header = input.header;
-    dd = input.objects[i];
-    dd.pose = pose_out.pose;
+    dd = object;
+    dd.pose = out_pose;
 
     transformed_input.objects.push_back(dd);
   }
 }
 
-void ImmUkfPda::transformPoseToLocal(jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
-                                     autoware_msgs::DetectedObjectArray& detected_objects_output)
+void ImmUkfPda::transformPoseToLocal(autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
-  for (size_t i = 0; i < detected_objects_output.objects.size(); i++)
+  detected_objects_output.header = input_header_;
+
+  tf::Transform inv_local2global = local2global_.inverse();
+  tf::StampedTransform global2local;
+  global2local.setData(inv_local2global);
+  for (auto& object : detected_objects_output.objects)
   {
-    geometry_msgs::PoseStamped detected_pose_in, detected_pose_out;
-
-    detected_pose_in.header = jskbboxes_output.header;
-    detected_pose_in.header.frame_id = tracking_frame_;
-    detected_pose_in.pose = detected_objects_output.objects[i].pose;
-
-    tf::Transform output_object_pose;
-    output_object_pose.setOrigin(tf::Vector3(detected_objects_output.objects[i].pose.position.x,
-                                             detected_objects_output.objects[i].pose.position.y,
-                                             detected_objects_output.objects[i].pose.position.z));
-    output_object_pose.setRotation(tf::Quaternion(
-        detected_objects_output.objects[i].pose.orientation.x, detected_objects_output.objects[i].pose.orientation.y,
-        detected_objects_output.objects[i].pose.orientation.z, detected_objects_output.objects[i].pose.orientation.w));
-    tf::poseTFToMsg(local2global_.inverse() * output_object_pose, detected_pose_out.pose);
-
-    detected_objects_output.objects[i].header.frame_id = pointcloud_frame_;
-    detected_objects_output.objects[i].pose = detected_pose_out.pose;
+    geometry_msgs::Pose out_pose = getTransformedPose(object.pose, global2local);
+    object.header = input_header_;
+    object.pose = out_pose;
   }
-  detected_objects_output.header.frame_id = pointcloud_frame_;
+}
 
-  for (size_t i = 0; i < jskbboxes_output.boxes.size(); i++)
-  {
-    geometry_msgs::PoseStamped jsk_pose_in, jsk_pose_out;
-    jsk_pose_in.header = jskbboxes_output.header;
-    jsk_pose_in.header.frame_id = tracking_frame_;
-    jsk_pose_in.pose = jskbboxes_output.boxes[i].pose;
-
-    tf::Transform output_bbox_pose;
-    output_bbox_pose.setOrigin(tf::Vector3(jskbboxes_output.boxes[i].pose.position.x,
-                                           jskbboxes_output.boxes[i].pose.position.y,
-                                           jskbboxes_output.boxes[i].pose.position.z));
-    output_bbox_pose.setRotation(
-        tf::Quaternion(jskbboxes_output.boxes[i].pose.orientation.x, jskbboxes_output.boxes[i].pose.orientation.y,
-                       jskbboxes_output.boxes[i].pose.orientation.z, jskbboxes_output.boxes[i].pose.orientation.w));
-    tf::poseTFToMsg(local2global_.inverse() * output_bbox_pose, jsk_pose_out.pose);
-
-    jskbboxes_output.boxes[i].header.frame_id = pointcloud_frame_;
-    jskbboxes_output.boxes[i].pose = jsk_pose_out.pose;
-  }
-  jskbboxes_output.header.frame_id = pointcloud_frame_;
+geometry_msgs::Pose ImmUkfPda::getTransformedPose(const geometry_msgs::Pose& in_pose,
+                                                  const tf::StampedTransform& tf_stamp)
+{
+  tf::Transform transform;
+  geometry_msgs::PoseStamped out_pose;
+  transform.setOrigin(tf::Vector3(in_pose.position.x, in_pose.position.y, in_pose.position.z));
+  transform.setRotation(
+      tf::Quaternion(in_pose.orientation.x, in_pose.orientation.y, in_pose.orientation.z, in_pose.orientation.w));
+  geometry_msgs::PoseStamped pose_out;
+  tf::poseTFToMsg(tf_stamp * transform, out_pose.pose);
+  return out_pose.pose;
 }
 
 void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& input, UKF& target,
@@ -205,9 +207,9 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
 {
   // alert: different from original imm-pda filter, here picking up most likely measurement
   // if making it allows to have more than one measurement, you will see non semipositive definite covariance
-  bool second_init_done = false;
+  bool exists_smallest_nis_object = false;
   double smallest_nis = std::numeric_limits<double>::max();
-  autoware_msgs::DetectedObject smallest_meas_object;
+  int smallest_nis_ind = 0;
   for (size_t i = 0; i < input.objects.size(); i++)
   {
     double x = input.objects[i].pose.position.x;
@@ -220,170 +222,131 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
     double nis = diff.transpose() * max_det_s.inverse() * diff;
 
     if (nis < gating_thres_)
-    {  // x^2 99% range
-      if (matching_vec[i] == false)
-      {
-        target.lifetime_++;
-      }
-
+    {
       if (nis < smallest_nis)
       {
         smallest_nis = nis;
-        smallest_meas_object = input.objects[i];
-        matching_vec[i] = true;
-        second_init_done = true;
+        target.object_ = input.objects[i];
+        smallest_nis_ind = i;
+        exists_smallest_nis_object = true;
       }
     }
   }
-  if (second_init_done)
+  if (exists_smallest_nis_object)
   {
-    object_vec.push_back(smallest_meas_object);
+    matching_vec[smallest_nis_ind] = true;
+    if (use_vectormap_ && has_subscribed_vectormap_)
+    {
+      autoware_msgs::DetectedObject direction_updated_object;
+      bool use_direction_meas =
+          updateDirection(smallest_nis, target.object_, direction_updated_object, target);
+      if (use_direction_meas)
+      {
+        object_vec.push_back(direction_updated_object);
+      }
+      else
+      {
+        object_vec.push_back(target.object_);
+      }
+    }
+    else
+    {
+      object_vec.push_back(target.object_);
+    }
   }
 }
 
-void ImmUkfPda::getNearestEuclidCluster(const UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec,
-                                        autoware_msgs::DetectedObject& object, double& min_dist)
+bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
+                                    autoware_msgs::DetectedObject& out_object, UKF& target)
 {
-  int min_ind = 0;
-  double px = target.x_merge_(0);
-  double py = target.x_merge_(1);
-
-  for (size_t i = 0; i < object_vec.size(); i++)
+  bool use_lane_direction = false;
+  target.is_direction_cv_available_ = false;
+  target.is_direction_ctrv_available_ = false;
+  bool get_lane_success = storeObjectWithNearestLaneDirection(in_object, out_object);
+  if (!get_lane_success)
   {
-    double meas_x = object_vec[i].pose.position.x;
-    double meas_y = object_vec[i].pose.position.y;
-
-    double dist = sqrt((px - meas_x) * (px - meas_x) + (py - meas_y) * (py - meas_y));
-    if (dist < min_dist)
-    {
-      min_dist = dist;
-      min_ind = i;
-    }
+    return use_lane_direction;
   }
-
-  object = object_vec[min_ind];
+  target.checkLaneDirectionAvailability(out_object, lane_direction_chi_thres_, use_sukf_);
+  if (target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
+  {
+    use_lane_direction = true;
+  }
+  return use_lane_direction;
 }
 
-void ImmUkfPda::associateBB(const std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
+bool ImmUkfPda::storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
+                                                 autoware_msgs::DetectedObject& out_object)
 {
-  // skip if no validated measurement
-  if (object_vec.size() == 0)
+  geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
+  double min_dist = std::numeric_limits<double>::max();
+
+  double min_yaw = 0;
+  for (auto const& lane : lanes_)
   {
-    return;
-  }
-  if (target.tracking_num_ == TrackingState::Stable && target.lifetime_ >= life_time_thres_)
-  {
-    autoware_msgs::DetectedObject nearest_object;
-    double min_dist = std::numeric_limits<double>::max();
-    getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-    if (min_dist < distance_thres_)
+    vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
+    vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
+    double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.y, 2) +
+                                std::pow(point.ly - lane_frame_pose.position.x, 2));
+    if (distance < min_dist)
     {
-      target.is_vis_bb_ = true;
-      target.jsk_bb_.pose = nearest_object.pose;
-      target.jsk_bb_.dimensions = nearest_object.dimensions;
+      min_dist = distance;
+      vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
+      vector_map_msgs::Point front_point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(front_node.pid));
+      min_yaw = std::atan2((front_point.bx - point.bx), (front_point.ly - point.ly));
     }
+  }
+
+  bool success = false;
+  if (min_dist < nearest_lane_distance_thres_)
+  {
+    success = true;
   }
   else
   {
-    autoware_msgs::DetectedObject nearest_object;
-    double min_dist = std::numeric_limits<double>::max();
-    getNearestEuclidCluster(target, object_vec, nearest_object, min_dist);
-    target.jsk_bb_.pose = nearest_object.pose;
-    target.jsk_bb_.dimensions = nearest_object.dimensions;
+    return success;
   }
-}
 
-double ImmUkfPda::getJskBBoxYaw(const jsk_recognition_msgs::BoundingBox& jsk_bb)
-{
-  tf::Quaternion q(jsk_bb.pose.orientation.x, jsk_bb.pose.orientation.y, jsk_bb.pose.orientation.z,
-                   jsk_bb.pose.orientation.w);
+  // map yaw in rotation matrix representation
+  tf::Quaternion map_quat = tf::createQuaternionFromYaw(min_yaw);
+  tf::Matrix3x3 map_matrix(map_quat);
+
+  // vectormap_frame to tracking_frame rotation matrix
+  tf::Quaternion rotation_quat = lane_frame2tracking_frame_.getRotation();
+  tf::Matrix3x3 rotation_matrix(rotation_quat);
+
+  // rotated yaw in matrix representation
+  tf::Matrix3x3 rotated_matrix = rotation_matrix * map_matrix;
   double roll, pitch, yaw;
-  tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
-  return yaw;
+  rotated_matrix.getRPY(roll, pitch, yaw);
+
+  out_object = in_object;
+  out_object.angle = yaw;
+  return success;
 }
 
-double ImmUkfPda::getJskBBoxArea(const jsk_recognition_msgs::BoundingBox& jsk_bb)
+void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
+                                                 UKF& target)
 {
-  double area = jsk_bb.dimensions.x * jsk_bb.dimensions.y;
-  return area;
-}
-
-void ImmUkfPda::updateBB(UKF& target)
-{
-  // skip to prevent memory leak by accessing empty target.bbox_
-  if (!target.is_vis_bb_)
+  target.lifetime_++;
+  if (!target.object_.label.empty() && target.object_.label !="unknown")
   {
-    return;
+    target.label_ = target.object_.label;
   }
-  double yaw = getJskBBoxYaw(target.jsk_bb_);
-
-  // skip the rest of process if it is first bbox associaiton
-  if (target.is_best_jsk_bb_empty_ == false)
+  updateTrackingNum(object_vec, target);
+  if (target.tracking_num_ == TrackingState::Stable || target.tracking_num_ == TrackingState::Occlusion)
   {
-    target.best_jsk_bb_ = target.jsk_bb_;
-    target.best_yaw_ = yaw;
-    target.is_best_jsk_bb_empty_ = true;
-    return;
-  }
-
-  // restricting yaw movement
-  double diff_yaw = yaw - target.best_yaw_;
-
-  // diffYaw is within the threshold, apply the diffYaw chamge
-  if (abs(diff_yaw) < bb_yaw_change_thres_)
-  {
-    target.best_jsk_bb_.pose.orientation = target.jsk_bb_.pose.orientation;
-    target.best_yaw_ = yaw;
-  }
-  else
-  {
-    target.jsk_bb_.pose.orientation = target.best_jsk_bb_.pose.orientation;
-  }
-
-  // // bbox area
-  double area = getJskBBoxArea(target.jsk_bb_);
-  double best_area = getJskBBoxArea(target.best_jsk_bb_);
-
-  // start updating bbox params
-  double delta_area = area - best_area;
-
-  // when the delta area is under 0, keep best area and relocate(slide) it for current cp
-  if (delta_area < 0)
-  {
-    // updateVisBoxArea(target, dtCP);
-    target.jsk_bb_.dimensions = target.best_jsk_bb_.dimensions;
-    // for  mergeSegmentation, area comparison
-    target.bb_area_ = best_area;
-  }
-  else if (delta_area > 0)
-  {
-    // target.bestBBox_ = target.BBox_;
-    target.best_jsk_bb_.dimensions = target.jsk_bb_.dimensions;
-    // for mergeSegmentation, area comparison
-    target.bb_area_ = area;
-  }
-}
-
-void ImmUkfPda::updateJskLabel(const UKF& target, jsk_recognition_msgs::BoundingBox& bb)
-{
-  int tracking_num = target.tracking_num_;
-  if (target.is_static_)
-  {
-    bb.label = 15;  // white color
-  }
-  else if (tracking_num == TrackingState::Stable)
-  {
-    bb.label = 2;  // orange color
+    target.is_stable_ = true;
   }
 }
 
 void ImmUkfPda::updateBehaviorState(const UKF& target, autoware_msgs::DetectedObject& object)
 {
-  if(target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
+  if (target.mode_prob_cv_ > target.mode_prob_ctrv_ && target.mode_prob_cv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CV;
   }
-  else if(target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
+  else if (target.mode_prob_ctrv_ > target.mode_prob_cv_ && target.mode_prob_ctrv_ > target.mode_prob_rm_)
   {
     object.behavior_state = MotionModel::CTRV;
   }
@@ -409,7 +372,6 @@ void ImmUkfPda::initTracker(const autoware_msgs::DetectedObjectArray& input, dou
   }
   timestamp_ = timestamp;
   init_ = true;
-  return;
 }
 
 void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::DetectedObject>& object_vec, double dt)
@@ -440,8 +402,6 @@ void ImmUkfPda::secondInit(UKF& target, const std::vector<autoware_msgs::Detecte
   target.x_merge_(1) = target.x_cv_(1) = target.x_ctrv_(1) = target.x_rm_(1) = target_y;
   target.x_merge_(2) = target.x_cv_(2) = target.x_ctrv_(2) = target.x_rm_(2) = target_v;
   target.x_merge_(3) = target.x_cv_(3) = target.x_ctrv_(3) = target.x_rm_(3) = target_yaw;
-
-  // target.initCovarQs(dt, target_yaw);
 
   target.tracking_num_++;
   return;
@@ -487,15 +447,14 @@ void ImmUkfPda::updateTrackingNum(const std::vector<autoware_msgs::DetectedObjec
   return;
 }
 
-void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
+bool ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObjectArray& input, const double dt,
                                              std::vector<bool>& matching_vec,
-                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target,
-                                             bool& is_skip_target)
+                                             std::vector<autoware_msgs::DetectedObject>& object_vec, UKF& target)
 {
   double det_s = 0;
   Eigen::VectorXd max_det_z;
   Eigen::MatrixXd max_det_s;
-  is_skip_target = false;
+  bool success = true;
 
   if (use_sukf_)
   {
@@ -514,8 +473,8 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
   if (std::isnan(det_s) || det_s > prevent_explosion_thres_)
   {
     target.tracking_num_ = TrackingState::Die;
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
 
   bool is_second_init;
@@ -528,29 +487,25 @@ void ImmUkfPda::probabilisticDataAssociation(const autoware_msgs::DetectedObject
     is_second_init = false;
   }
 
-  // measurement gating, get measVec, bboxVec, matchingVec through reference
+  // measurement gating
   measurementValidation(input, target, is_second_init, max_det_z, max_det_s, object_vec, matching_vec);
-
-  // bounding box association if target is stable :plus, right angle correction if its needed
-  // input: track number, bbox measurements, &target
-  associateBB(object_vec, target);
 
   // second detection for a target: update v and yaw
   if (is_second_init)
   {
     secondInit(target, object_vec, dt);
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
 
-  // update tracking number
-  updateTrackingNum(object_vec, target);
+  updateTargetWithAssociatedObject(object_vec, target);
 
   if (target.tracking_num_ == TrackingState::Die)
   {
-    is_skip_target = true;
-    return;
+    success = false;
+    return success;
   }
+  return success;
 }
 
 void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::DetectedObjectArray& input,
@@ -567,6 +522,7 @@ void ImmUkfPda::makeNewTargets(const double timestamp, const autoware_msgs::Dete
 
       UKF ukf;
       ukf.initialize(init_meas, timestamp, target_id_);
+      ukf.object_ = input.objects[i];
       targets_.push_back(ukf);
       target_id_++;
     }
@@ -577,19 +533,22 @@ void ImmUkfPda::staticClassification()
 {
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    targets_[i].vel_history_.push_back(targets_[i].x_merge_(2));
+    // targets_[i].x_merge_(2) is referred for estimated velocity
+    double current_velocity = std::abs(targets_[i].x_merge_(2));
+    targets_[i].vel_history_.push_back(current_velocity);
     if (targets_[i].tracking_num_ == TrackingState::Stable && targets_[i].lifetime_ > life_time_thres_)
     {
+      int index = 0;
       double sum_vel = 0;
       double avg_vel = 0;
-      for (int ind = 1; ind < life_time_thres_; ind++)
+      for (auto rit = targets_[i].vel_history_.rbegin(); index < static_num_history_thres_; ++rit)
       {
-        sum_vel += targets_[i].vel_history_.end()[-ind];
+        index++;
+        sum_vel += *rit;
       }
-      avg_vel = double(sum_vel / life_time_thres_);
+      avg_vel = double(sum_vel / static_num_history_thres_);
 
-      if ((avg_vel < static_velocity_thres_) && (targets_[i].mode_prob_rm_ > targets_[i].mode_prob_cv_ ||
-                                                 targets_[i].mode_prob_rm_ > targets_[i].mode_prob_ctrv_))
+      if(avg_vel < static_velocity_thres_ && current_velocity < static_velocity_thres_)
       {
         targets_[i].is_static_ = true;
       }
@@ -597,52 +556,176 @@ void ImmUkfPda::staticClassification()
   }
 }
 
+bool
+ImmUkfPda::arePointsClose(const geometry_msgs::Point& in_point_a,
+                                const geometry_msgs::Point& in_point_b,
+                                float in_radius)
+{
+  return (fabs(in_point_a.x - in_point_b.x) <= in_radius) && (fabs(in_point_a.y - in_point_b.y) <= in_radius);
+}
+
+bool
+ImmUkfPda::arePointsEqual(const geometry_msgs::Point& in_point_a,
+                               const geometry_msgs::Point& in_point_b)
+{
+  return arePointsClose(in_point_a, in_point_b, CENTROID_DISTANCE);
+}
+
+bool
+ImmUkfPda::isPointInPool(const std::vector<geometry_msgs::Point>& in_pool,
+                          const geometry_msgs::Point& in_point)
+{
+  for(size_t j=0; j<in_pool.size(); j++)
+  {
+    if (arePointsEqual(in_pool[j], in_point))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+autoware_msgs::DetectedObjectArray
+ImmUkfPda::removeRedundantObjects(const autoware_msgs::DetectedObjectArray& in_detected_objects,
+                            const std::vector<size_t> in_tracker_indices)
+{
+  if (in_detected_objects.objects.size() != in_tracker_indices.size())
+    return in_detected_objects;
+
+  autoware_msgs::DetectedObjectArray resulting_objects;
+  resulting_objects.header = in_detected_objects.header;
+
+  std::vector<geometry_msgs::Point> centroids;
+  //create unique points
+  for(size_t i=0; i<in_detected_objects.objects.size(); i++)
+  {
+    if(!isPointInPool(centroids, in_detected_objects.objects[i].pose.position))
+    {
+      centroids.push_back(in_detected_objects.objects[i].pose.position);
+    }
+  }
+  //assign objects to the points
+  std::vector<std::vector<size_t>> matching_objects(centroids.size());
+  for(size_t k=0; k<in_detected_objects.objects.size(); k++)
+  {
+    const auto& object=in_detected_objects.objects[k];
+    for(size_t i=0; i< centroids.size(); i++)
+    {
+      if (arePointsClose(object.pose.position, centroids[i], merge_distance_threshold_))
+      {
+        matching_objects[i].push_back(k);//store index of matched object to this point
+      }
+    }
+  }
+  //get oldest object on each point
+  for(size_t i=0; i< matching_objects.size(); i++)
+  {
+    size_t oldest_object_index = 0;
+    int oldest_lifespan = -1;
+    std::string best_label;
+    for(size_t j=0; j<matching_objects[i].size(); j++)
+    {
+      size_t current_index = matching_objects[i][j];
+      int current_lifespan = targets_[in_tracker_indices[current_index]].lifetime_;
+      if (current_lifespan > oldest_lifespan)
+      {
+        oldest_lifespan = current_lifespan;
+        oldest_object_index = current_index;
+      }
+      if (!targets_[in_tracker_indices[current_index]].label_.empty() &&
+        targets_[in_tracker_indices[current_index]].label_ != "unknown")
+      {
+        best_label = targets_[in_tracker_indices[current_index]].label_;
+      }
+    }
+    // delete nearby targets except for the oldest target
+    for(size_t j=0; j<matching_objects[i].size(); j++)
+    {
+      size_t current_index = matching_objects[i][j];
+      if(current_index != oldest_object_index)
+      {
+        targets_[in_tracker_indices[current_index]].tracking_num_= TrackingState::Die;
+      }
+    }
+    autoware_msgs::DetectedObject best_object;
+    best_object = in_detected_objects.objects[oldest_object_index];
+    if (best_label != "unknown"
+        && !best_label.empty())
+    {
+      best_object.label = best_label;
+    }
+
+    resulting_objects.objects.push_back(best_object);
+  }
+
+  return resulting_objects;
+
+}
+
 void ImmUkfPda::makeOutput(const autoware_msgs::DetectedObjectArray& input,
-                           jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
+                           const std::vector<bool> &matching_vec,
                            autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
-  jskbboxes_output.header = input.header;
-  detected_objects_output.header = input.header;
+  autoware_msgs::DetectedObjectArray tmp_objects;
+  tmp_objects.header = input.header;
+  std::vector<size_t> used_targets_indices;
   for (size_t i = 0; i < targets_.size(); i++)
   {
+
     double tx = targets_[i].x_merge_(0);
     double ty = targets_[i].x_merge_(1);
 
     double tv = targets_[i].x_merge_(2);
     double tyaw = targets_[i].x_merge_(3);
+    double tyaw_rate = targets_[i].x_merge_(4);
+
     while (tyaw > M_PI)
       tyaw -= 2. * M_PI;
     while (tyaw < -M_PI)
       tyaw += 2. * M_PI;
 
-    if (targets_[i].is_vis_bb_)
-    {
-      jsk_recognition_msgs::BoundingBox bb;
-      bb.header = input.header;
-      bb = targets_[i].jsk_bb_;
-      updateJskLabel(targets_[i], bb);
-      jskbboxes_output.boxes.push_back(bb);
-    }
-    // RPY to convert: 0, 0, targets_[i].x_merge_(3)
-    tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, tyaw);
+    tf::Quaternion q = tf::createQuaternionFromYaw(tyaw);
+
     autoware_msgs::DetectedObject dd;
-    dd.header = input.header;
+    dd = targets_[i].object_;
     dd.id = targets_[i].ukf_id_;
     dd.velocity.linear.x = tv;
-    dd.pose = targets_[i].jsk_bb_.pose;
-    dd.pose.position.x = tx;
-    dd.pose.position.y = ty;
-    dd.pose.orientation.x = q[0];
-    dd.pose.orientation.y = q[1];
-    dd.pose.orientation.z = q[2];
-    dd.pose.orientation.w = q[3];
-    dd.dimensions = targets_[i].jsk_bb_.dimensions;
-    dd.pose_reliable = targets_[i].is_vis_bb_;
-    //store yaw rate for motion into dd.accerelation.linear.y
-    dd.acceleration.linear.y = targets_[i].x_merge_(4);
+    dd.acceleration.linear.y = tyaw_rate;
+    dd.velocity_reliable = targets_[i].is_stable_;
+    dd.pose_reliable = targets_[i].is_stable_;
+
+
+    if (!targets_[i].is_static_ && targets_[i].is_stable_)
+    {
+      // Aligh the longest side of dimentions with the estimated orientation
+      if(targets_[i].object_.dimensions.x < targets_[i].object_.dimensions.y)
+      {
+        dd.dimensions.x = targets_[i].object_.dimensions.y;
+        dd.dimensions.y = targets_[i].object_.dimensions.x;
+      }
+
+      dd.pose.position.x = tx;
+      dd.pose.position.y = ty;
+
+      if (!std::isnan(q[0]))
+        dd.pose.orientation.x = q[0];
+      if (!std::isnan(q[1]))
+        dd.pose.orientation.y = q[1];
+      if (!std::isnan(q[2]))
+        dd.pose.orientation.z = q[2];
+      if (!std::isnan(q[3]))
+        dd.pose.orientation.w = q[3];
+    }
     updateBehaviorState(targets_[i], dd);
-    detected_objects_output.objects.push_back(dd);
+
+    if (targets_[i].is_stable_ || (targets_[i].tracking_num_ >= TrackingState::Init &&
+                                   targets_[i].tracking_num_ < TrackingState::Stable))
+    {
+      tmp_objects.objects.push_back(dd);
+      used_targets_indices.push_back(i);
+    }
   }
+  detected_objects_output = removeRedundantObjects(tmp_objects, used_targets_indices);
 }
 
 void ImmUkfPda::removeUnnecessaryTarget()
@@ -659,170 +742,64 @@ void ImmUkfPda::removeUnnecessaryTarget()
   targets_ = temp_targets;
 }
 
-void ImmUkfPda::pubDebugROSMarker(const autoware_msgs::DetectedObjectArray& input)
-{
-  visualization_msgs::MarkerArray texts_markers, points_markers;
-  visualization_msgs::Marker target_points, meas_points;
-  target_points.header.frame_id = meas_points.header.frame_id = "/world";
-  target_points.header.stamp = meas_points.header.stamp = input.header.stamp;
-  target_points.ns = meas_points.ns = "target_points";
-  target_points.action = meas_points.action = visualization_msgs::Marker::ADD;
-  target_points.pose.orientation.w = meas_points.pose.orientation.w = 1.0;
-
-  target_points.id = 0;
-  meas_points.id = 1;
-
-  target_points.type = meas_points.type = visualization_msgs::Marker::POINTS;
-
-  // POINTS markers use x and y scale for width/height respectively
-  target_points.scale.x = 0.4;
-  target_points.scale.y = 0.4;
-  meas_points.scale.x = 0.3;
-  meas_points.scale.y = 0.3;
-
-  // Points are green
-  target_points.color.r = 1.0f;
-  target_points.color.a = 1.0;
-  meas_points.color.g = 1.0f;
-  meas_points.color.a = 1.0;
-
-  // making rosmarker fot target
-  for (size_t i = 0; i < targets_.size(); i++)
-  {
-    geometry_msgs::Point p;
-    p.x = targets_[i].x_merge_(0);
-    p.y = targets_[i].x_merge_(1);
-    p.z = 1.0;
-
-    target_points.points.push_back(p);
-
-    visualization_msgs::Marker id;
-    id.header.frame_id = "/world";
-    id.header.stamp = input.header.stamp;
-    id.ns = "target_points";
-    id.action = visualization_msgs::Marker::ADD;
-    id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    id.id = targets_[i].ukf_id_ * 100;
-    id.lifetime = ros::Duration(0.1);
-
-    id.color.g = 1.0f;
-    id.color.a = 1.0;
-
-    // Set the pose of the marker.  This is a full 6DOF pose relative to the frame/time specified in the header
-    id.pose.position.x = targets_[i].x_merge_(0);
-    id.pose.position.y = targets_[i].x_merge_(1);
-    id.pose.position.z = 2.5;
-
-    id.scale.z = 0.5;
-
-    double tv = targets_[i].x_merge_(2);
-    std::string s_velocity = std::to_string(tv * 3.6);
-    std::string modified_sv = s_velocity.substr(0, s_velocity.find(".") + 3);
-
-    std::string text = "<" + std::to_string(targets_[i].ukf_id_) + ">" + " " + std::to_string(targets_[i].x_merge_(2)) +
-                       " m/s " + "(" + std::to_string(targets_[i].x_merge_(0)) + ", " +
-                       std::to_string(targets_[i].x_merge_(1)) + ")";
-    id.text = text;
-    texts_markers.markers.push_back(id);
-  }
-
-  // making rosmarker fot measurement
-  for (size_t i = 0; i < input.objects.size(); i++)
-  {
-    geometry_msgs::Point p;
-    p.x = input.objects[i].pose.position.x;
-    p.y = input.objects[i].pose.position.y;
-    p.z = 1.0;
-    meas_points.points.push_back(p);
-
-    visualization_msgs::Marker id;
-    id.header.frame_id = "/world";
-    id.header.stamp = input.header.stamp;
-    id.ns = "target_points";
-    id.action = visualization_msgs::Marker::ADD;
-    id.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-    id.id = i;
-    id.lifetime = ros::Duration(0.1);
-
-    id.color.g = 1.0f;
-    id.color.a = 1.0;
-
-    id.pose.position.x = input.objects[i].pose.position.x;
-    id.pose.position.y = input.objects[i].pose.position.y;
-    id.pose.position.z = 1.5;
-
-    id.scale.z = 0.5;
-
-    std::string s_px = std::to_string(input.objects[i].pose.position.x);
-    std::string s_py = std::to_string(input.objects[i].pose.position.y);
-
-    std::string text = "(" + s_px + ", " + s_py + ")";
-    id.text = text;
-    texts_markers.markers.push_back(id);
-  }
-  points_markers.markers.push_back(target_points);
-  points_markers.markers.push_back(meas_points);
-
-  pub_points_array_.publish(points_markers);
-  pub_texts_array_.publish(texts_markers);
-}
-
 void ImmUkfPda::dumpResultText(autoware_msgs::DetectedObjectArray& detected_objects)
 {
   std::ofstream outputfile(result_file_path_, std::ofstream::out | std::ofstream::app);
-  for(size_t i = 0; i < detected_objects.objects.size(); i++)
+  for (size_t i = 0; i < detected_objects.objects.size(); i++)
   {
     double yaw = tf::getYaw(detected_objects.objects[i].pose.orientation);
 
     // KITTI tracking benchmark data format:
-    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy, cz, yaw)
+    // (frame_number,tracked_id, object type, truncation, occlusion, observation angle, x1,y1,x2,y2, h, w, l, cx, cy,
+    // cz, yaw)
     // x1, y1, x2, y2 are for 2D bounding box.
     // h, w, l, are for height, width, length respectively
     // cx, cy, cz are for object centroid
 
     // Tracking benchmark is based on frame_number, tracked_id,
     // bounding box dimentions and object pose(centroid and orientation) from bird-eye view
-    outputfile << std::to_string(frame_count_)                               <<" "
-               << std::to_string(detected_objects.objects[i].id)             <<" "
-               << "Unknown"                                                  <<" "
-               << "-1"                                                       <<" "
-               << "-1"                                                       <<" "
-               << "-1"                                                      <<" "
-               << "-1 -1 -1 -1"                                              <<" "
-               << std::to_string(detected_objects.objects[i].dimensions.x)   <<" "
-               << std::to_string(detected_objects.objects[i].dimensions.y)   <<" "
-               << "-1"                                                       <<" "
-               << std::to_string(detected_objects.objects[i].pose.position.x)<<" "
-               << std::to_string(detected_objects.objects[i].pose.position.y)<<" "
-               << "-1"                                                       <<" "
-               << std::to_string(yaw)                                        <<"\n";
+    outputfile << std::to_string(frame_count_) << " " << std::to_string(detected_objects.objects[i].id) << " "
+               << "Unknown"
+               << " "
+               << "-1"
+               << " "
+               << "-1"
+               << " "
+               << "-1"
+               << " "
+               << "-1 -1 -1 -1"
+               << " " << std::to_string(detected_objects.objects[i].dimensions.x) << " "
+               << std::to_string(detected_objects.objects[i].dimensions.y) << " "
+               << "-1"
+               << " " << std::to_string(detected_objects.objects[i].pose.position.x) << " "
+               << std::to_string(detected_objects.objects[i].pose.position.y) << " "
+               << "-1"
+               << " " << std::to_string(yaw) << "\n";
   }
-  frame_count_ ++;
+  frame_count_++;
 }
 
 void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
-                        jsk_recognition_msgs::BoundingBoxArray& jskbboxes_output,
                         autoware_msgs::DetectedObjectArray& detected_objects_output)
 {
   double timestamp = input.header.stamp.toSec();
+  std::vector<bool> matching_vec(input.objects.size(), false);
 
   if (!init_)
   {
     initTracker(input, timestamp);
-    makeOutput(input, jskbboxes_output, detected_objects_output);
+    makeOutput(input, matching_vec, detected_objects_output);
     return;
   }
 
   double dt = (timestamp - timestamp_);
   timestamp_ = timestamp;
-  // making new target with no data association
-  std::vector<bool> matching_vec(input.objects.size(), false);
+
 
   // start UKF process
   for (size_t i = 0; i < targets_.size(); i++)
   {
-    // reset is_vis_bb_ to false
-    targets_[i].is_vis_bb_ = false;
+    targets_[i].is_stable_ = false;
     targets_[i].is_static_ = false;
 
     if (targets_[i].tracking_num_ == TrackingState::Die)
@@ -837,53 +814,27 @@ void ImmUkfPda::tracker(const autoware_msgs::DetectedObjectArray& input,
       continue;
     }
 
-    if (use_sukf_)
+    targets_[i].prediction(use_sukf_, has_subscribed_vectormap_, dt);
+
+    std::vector<autoware_msgs::DetectedObject> object_vec;
+    bool success = probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i]);
+    if (!success)
     {
-      // standard ukf prediction step
-      targets_[i].predictionSUKF(dt);
-      // data association
-      bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
-      if (is_skip_target)
-      {
-        continue;
-      }
-      // standard ukf update step
-      targets_[i].updateSUKF(object_vec);
+      continue;
     }
-    else  // immukfpda filter
-    {
-      // immukf prediction step
-      targets_[i].predictionIMMUKF(dt);
-      // data association
-      bool is_skip_target;
-      std::vector<autoware_msgs::DetectedObject> object_vec;
-      probabilisticDataAssociation(input, dt, matching_vec, object_vec, targets_[i], is_skip_target);
-      if (is_skip_target)
-      {
-        continue;
-      }
-      // immukf update step
-      targets_[i].updateIMMUKF(detection_probability_, gate_probability_, gating_thres_, object_vec);
-    }
+
+    targets_[i].update(use_sukf_, detection_probability_, gate_probability_, gating_thres_, object_vec);
   }
   // end UKF process
 
-  // debug, green is for measurement points, red is for estimated points
-  if (is_debug_)
-  {
-    pubDebugROSMarker(input);
-  }
-
-  // making new ukf target for no data association clusters
+  // making new ukf target for no data association objects
   makeNewTargets(timestamp, input, matching_vec);
 
   // static dynamic classification
   staticClassification();
 
   // making output for visualization
-  makeOutput(input, jskbboxes_output, detected_objects_output);
+  makeOutput(input, matching_vec, detected_objects_output);
 
   // remove unnecessary ukf object
   removeUnnecessaryTarget();

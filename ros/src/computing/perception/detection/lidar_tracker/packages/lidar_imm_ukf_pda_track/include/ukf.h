@@ -39,9 +39,6 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
-#include <geometry_msgs/PoseStamped.h>
-#include <jsk_recognition_msgs/BoundingBox.h>
-
 #include "autoware_msgs/DetectedObject.h"
 
 enum TrackingState : int
@@ -49,6 +46,7 @@ enum TrackingState : int
   Die = 0,     // No longer tracking
   Init = 1,    // Start tracking
   Stable = 4,  // Stable tracking
+  Occlusion = 5, // Lost 1 frame possibly by occlusion
   Lost = 10,   // About to lose target
 };
 
@@ -70,8 +68,13 @@ class UKF
 public:
   int ukf_id_;
 
-  //* initially set to false, set to true in first call of ProcessMeasurement
-  bool is_initialized_;
+  int num_state_;
+
+  int num_lidar_state_;
+
+  int num_lidar_direction_state_;
+
+  int num_motion_model_;
 
   //* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
   Eigen::MatrixXd x_merge_;
@@ -131,14 +134,8 @@ public:
   Eigen::VectorXd weights_c_;
   Eigen::VectorXd weights_s_;
 
-  //* State dimension
-  int n_x_;
-
   //* Sigma point spreading parameter
   double lambda_;
-
-  int count_;
-  int count_empty_;
 
   double mode_match_prob_cv2cv_;
   double mode_match_prob_ctrv2cv_;
@@ -186,27 +183,15 @@ public:
   int lifetime_;
   bool is_static_;
 
-  // bounding box params
-  bool is_vis_bb_;
-
-  jsk_recognition_msgs::BoundingBox jsk_bb_;
-  jsk_recognition_msgs::BoundingBox best_jsk_bb_;
-
-  bool is_best_jsk_bb_empty_;
-
-  double best_yaw_;
-  double bb_yaw_;
-  double bb_area_;
-  std::vector<double> bb_yaw_history_;
-  std::vector<double> bb_vel_history_;
-  std::vector<double> bb_area_history_;
+  // object msg information
+  bool is_stable_;
+  autoware_msgs::DetectedObject object_;
+  std::string label_;
+  double min_assiciation_distance_;
 
   // for env classification
   Eigen::VectorXd init_meas_;
   std::vector<double> vel_history_;
-
-  std::vector<Eigen::VectorXd> local2local_;
-  std::vector<double> local2localYawVec_;
 
   double x_merge_yaw_;
 
@@ -244,6 +229,29 @@ public:
   Eigen::MatrixXd new_s_ctrv_;
   Eigen::MatrixXd new_s_rm_;
 
+  // for lane direction combined filter
+  bool is_direction_cv_available_;
+  bool is_direction_ctrv_available_;
+  bool is_direction_rm_available_;
+  double std_lane_direction_;
+  Eigen::MatrixXd lidar_direction_r_cv_;
+  Eigen::MatrixXd lidar_direction_r_ctrv_;
+  Eigen::MatrixXd lidar_direction_r_rm_;
+
+  Eigen::VectorXd z_pred_lidar_direction_cv_;
+  Eigen::VectorXd z_pred_lidar_direction_ctrv_;
+  Eigen::VectorXd z_pred_lidar_direction_rm_;
+
+  Eigen::MatrixXd s_lidar_direction_cv_;
+  Eigen::MatrixXd s_lidar_direction_ctrv_;
+  Eigen::MatrixXd s_lidar_direction_rm_;
+
+  Eigen::MatrixXd k_lidar_direction_cv_;
+  Eigen::MatrixXd k_lidar_direction_ctrv_;
+  Eigen::MatrixXd k_lidar_direction_rm_;
+
+  Eigen::VectorXd lidar_direction_ctrv_meas_;
+
   /**
    * Constructor
    */
@@ -261,13 +269,15 @@ public:
 
   void interaction();
 
-  void predictionSUKF(const double dt);
+  void predictionSUKF(const double dt, const bool has_subscribed_vectormap);
 
-  void predictionIMMUKF(const double dt);
+  void predictionIMMUKF(const double dt, const bool has_subscribed_vectormap);
 
   void findMaxZandS(Eigen::VectorXd& max_det_z, Eigen::MatrixXd& max_det_s);
 
-  void updateLikelyMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+  void updateMeasurementForCTRV(const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void uppateForCTRV();
 
   void updateEachMotion(const double detection_probability, const double gate_probability, const double gating_thres,
                         const std::vector<autoware_msgs::DetectedObject>& object_vec, std::vector<double>& lambda_vec);
@@ -288,9 +298,27 @@ public:
 
   void initCovarQs(const double dt, const double yaw);
 
-  void prediction(const double delta_t, const int model_ind);
+  void predictionMotion(const double delta_t, const int model_ind);
 
-  void updateLidar(const int model_ind);
+  void checkLaneDirectionAvailability(const autoware_msgs::DetectedObject& in_object,
+                                      const double lane_direction_chi_thres, const bool use_sukf);
+
+  void predictionLidarMeasurement(const int motion_ind, const int num_meas_state);
+
+  double calculateNIS(const autoware_msgs::DetectedObject& in_object, const int motion_ind);
+
+  bool isLaneDirectionAvailable(const autoware_msgs::DetectedObject& in_object, const int motion_ind,
+                                const double lane_direction_chi_thres);
+
+  // void updateKalmanGain(const int motion_ind, const int num_meas_state);
+  void updateKalmanGain(const int motion_ind);
+
+  double normalizeAngle(const double angle);
+
+  void update(const bool use_sukf, const double detection_probability, const double gate_probability,
+              const double gating_thres, const std::vector<autoware_msgs::DetectedObject>& object_vec);
+
+  void prediction(const bool use_sukf, const bool has_subscribed_vectormap, const double dt);
 };
 
 #endif /* UKF_H */
