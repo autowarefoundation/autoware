@@ -25,12 +25,36 @@ void DiagBuffer::addDiag(autoware_system_msgs::DiagnosticStatus status)
 uint8_t DiagBuffer::getErrorLevel()
 {
     std::lock_guard<std::mutex> lock(mtx_);
-    uint8_t ret = autoware_health_checker::LEVEL_UNDEFINED;
     updateBuffer();
     for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
     {
+        if(buffer_itr->second.type == autoware_health_checker::LEVEL_FATAL)
+        {
+            return autoware_health_checker::LEVEL_FATAL;
+        }
     }
-    return ret;
+    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
+    {
+        if(buffer_itr->second.type == autoware_health_checker::LEVEL_ERROR)
+        {
+            return autoware_health_checker::LEVEL_ERROR;
+        }
+    }
+    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
+    {
+        if(buffer_itr->second.type == autoware_health_checker::LEVEL_WARN)
+        {
+            return autoware_health_checker::LEVEL_WARN;
+        }
+    }
+    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
+    {
+        if(buffer_itr->second.type == autoware_health_checker::LEVEL_OK)
+        {
+            return autoware_health_checker::LEVEL_OK;
+        }
+    }
+    return autoware_health_checker::LEVEL_UNDEFINED;
 }
 
 void DiagBuffer::updateBuffer()
