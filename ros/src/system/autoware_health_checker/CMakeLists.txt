@@ -23,6 +23,7 @@ include_directories(
 
 add_library(node_status_publisher
   src/node_status_publisher.cpp
+  src/diag_buffer.cpp
 )
 
 # CPP Execution programs
