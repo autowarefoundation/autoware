@@ -6,6 +6,7 @@ add_compile_options(-std=c++11)
 find_package(catkin REQUIRED COMPONENTS
   autoware_system_msgs
   roscpp
+  diagnostic_msgs
 )
 
 catkin_package(
