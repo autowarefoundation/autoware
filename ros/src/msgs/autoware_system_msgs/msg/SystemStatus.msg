@@ -1,0 +1,3 @@
+Header header
+autoware_system_msgs/NodeStatus[] node_status
+autoware_system_msgs/HardwareStatus[] hardware_status
