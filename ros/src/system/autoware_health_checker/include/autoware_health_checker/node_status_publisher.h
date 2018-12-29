@@ -51,6 +51,8 @@ public:
     }
     void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
 private:
+    std::vector<std::string> getKeys();
+    std::vector<std::string> getRateCheckerKeys();
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
     std::map<std::string,std::shared_ptr<DiagBuffer> > diag_buffers_;

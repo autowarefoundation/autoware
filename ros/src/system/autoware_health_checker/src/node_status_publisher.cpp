@@ -17,6 +17,7 @@ void NodeStatusPublisher::publishStatus()
     ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
     while(ros::ok())
     {
+        //rate_checkers_.keys();
         rate.sleep();
     }
     return;
@@ -26,6 +27,28 @@ void NodeStatusPublisher::ENABLE()
 {
     boost::thread publish_thread(boost::bind(&NodeStatusPublisher::publishStatus, this));
     return;
+}
+
+std::vector<std::string> NodeStatusPublisher::getKeys()
+{
+    std::vector<std::string> keys;
+    std::pair<std::string,std::shared_ptr<DiagBuffer> > buf_itr;
+    BOOST_FOREACH(buf_itr,diag_buffers_)
+    {
+        keys.push_back(buf_itr.first);
+    }
+    return keys;
+}
+
+std::vector<std::string> NodeStatusPublisher::getRateCheckerKeys()
+{
+    std::vector<std::string> keys;
+    std::pair<std::string,std::shared_ptr<RateChecker> > checker_itr;
+    BOOST_FOREACH(checker_itr,rate_checkers_)
+    {
+        keys.push_back(checker_itr.first);
+    }
+    return keys;
 }
 
 bool NodeStatusPublisher::keyExist(std::string key)
