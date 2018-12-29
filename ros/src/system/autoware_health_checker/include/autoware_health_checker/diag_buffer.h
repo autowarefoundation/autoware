@@ -14,24 +14,27 @@
 //headers in ROS
 #include <ros/ros.h>
 
-class DiagBuffer
+namespace autoware_health_checker
 {
-public:
-    DiagBuffer(std::string key,uint8_t type,std::string description,double buffer_length);
-    ~DiagBuffer();
-    void addDiag(autoware_system_msgs::DiagnosticStatus status);
-    std::vector<autoware_system_msgs::DiagnosticStatus> getAndClearData();
-    const uint8_t type;
-    const std::string description;
-private:
-    std::mutex mtx_;
-    uint8_t getErrorLevel();
-    void updateBuffer();
-    std::string key_;
-    ros::Duration buffer_length_;
-    std::map<uint8_t,std::vector<autoware_system_msgs::DiagnosticStatus> > buffer_;
-    std::vector<autoware_system_msgs::DiagnosticStatus> filterBuffer(ros::Time now, uint8_t level);
-    ros::Publisher status_pub_;
-};
+    class DiagBuffer
+    {
+    public:
+        DiagBuffer(std::string key,uint8_t type,std::string description,double buffer_length);
+        ~DiagBuffer();
+        void addDiag(autoware_system_msgs::DiagnosticStatus status);
+        std::vector<autoware_system_msgs::DiagnosticStatus> getAndClearData();
+        const uint8_t type;
+        const std::string description;
+    private:
+        std::mutex mtx_;
+        uint8_t getErrorLevel();
+        void updateBuffer();
+        std::string key_;
+        ros::Duration buffer_length_;
+        std::map<uint8_t,std::vector<autoware_system_msgs::DiagnosticStatus> > buffer_;
+        std::vector<autoware_system_msgs::DiagnosticStatus> filterBuffer(ros::Time now, uint8_t level);
+        ros::Publisher status_pub_;
+    };
+}
 
 #endif  //DIAG_BUFFER_H_INCLUDED

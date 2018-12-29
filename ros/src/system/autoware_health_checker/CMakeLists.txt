@@ -27,6 +27,10 @@ add_library(node_status_publisher
   src/rate_checker.cpp
 )
 
+add_library(system_status_subscriber
+  src/system_status_subscriber.cpp
+)
+
 # CPP Execution programs
 #set(CPP_EXEC_NAMES watchdog_node)
 #foreach(cpp_exec_names ${CPP_EXEC_NAMES})
@@ -41,7 +45,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 )
 
 # Install library
-install(TARGETS node_status_publisher
+install(TARGETS node_status_publisher system_status_subscriber
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin

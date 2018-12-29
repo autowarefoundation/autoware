@@ -24,44 +24,46 @@
 #include <boost/thread.hpp>
 #include <boost/bind.hpp>
 
-class NodeStatusPublisher
+namespace autoware_health_checker
 {
-public:
-    NodeStatusPublisher(ros::NodeHandle nh,ros::NodeHandle pnh);
-    ~NodeStatusPublisher();
-    void ENABLE();
-    void CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
-    void CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
-    // std::pair<double,double> first value is min value and second value is max value
-    void CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
-    template<class T>
-    void CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
+    class NodeStatusPublisher
     {
-        addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
-        uint8_t check_result = check_func(value);
-        boost::property_tree::ptree pt = value_json_func(value);
-        std::stringstream ss;
-        write_json(ss, pt);
-        autoware_system_msgs::DiagnosticStatus new_status;
-        new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
-        new_status.level = check_result;
-        new_status.description = description;
-        new_status.description = ss.str();
-        diag_buffers_[key]->addDiag(new_status);
-    }
-    void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
-private:
-    std::vector<std::string> getKeys();
-    std::vector<std::string> getRateCheckerKeys();
-    ros::NodeHandle nh_;
-    ros::NodeHandle pnh_;
-    std::map<std::string,std::shared_ptr<DiagBuffer> > diag_buffers_;
-    std::map<std::string,std::shared_ptr<RateChecker> > rate_checkers_;
-    ros::Publisher status_pub_;
-    bool keyExist(std::string key);
-    void addNewBuffer(std::string key, uint8_t type, std::string description);
-    std::string doubeToJson(double value);
-    void publishStatus();
-};
-
+    public:
+        NodeStatusPublisher(ros::NodeHandle nh,ros::NodeHandle pnh);
+        ~NodeStatusPublisher();
+        void ENABLE();
+        void CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
+        void CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
+        // std::pair<double,double> first value is min value and second value is max value
+        void CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description);
+        template<class T>
+        void CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
+        {
+            addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
+            uint8_t check_result = check_func(value);
+            boost::property_tree::ptree pt = value_json_func(value);
+            std::stringstream ss;
+            write_json(ss, pt);
+            autoware_system_msgs::DiagnosticStatus new_status;
+            new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+            new_status.level = check_result;
+            new_status.description = description;
+            new_status.description = ss.str();
+            diag_buffers_[key]->addDiag(new_status);
+        }
+        void CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description);
+    private:
+        std::vector<std::string> getKeys();
+        std::vector<std::string> getRateCheckerKeys();
+        ros::NodeHandle nh_;
+        ros::NodeHandle pnh_;
+        std::map<std::string,std::shared_ptr<DiagBuffer> > diag_buffers_;
+        std::map<std::string,std::shared_ptr<RateChecker> > rate_checkers_;
+        ros::Publisher status_pub_;
+        bool keyExist(std::string key);
+        void addNewBuffer(std::string key, uint8_t type, std::string description);
+        std::string doubeToJson(double value);
+        void publishStatus();
+    };
+}
 #endif  //NODE_STATUS_PUBLISHER_H_INCLUDED
