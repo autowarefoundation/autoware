@@ -17,7 +17,7 @@ void DiagBuffer::addDiag(autoware_system_msgs::DiagnosticStatus status)
     std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> data;
     data.first = ros::Time::now();
     data.second = status;
-    buffer_.push_back(data);
+    buffer_[status.level].push_back(data);
     updateBuffer();
     return;
 }
@@ -26,49 +26,37 @@ uint8_t DiagBuffer::getErrorLevel()
 {
     std::lock_guard<std::mutex> lock(mtx_);
     updateBuffer();
-    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
-    {
-        if(buffer_itr->second.type == autoware_health_checker::LEVEL_FATAL)
-        {
-            return autoware_health_checker::LEVEL_FATAL;
-        }
-    }
-    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
-    {
-        if(buffer_itr->second.type == autoware_health_checker::LEVEL_ERROR)
-        {
-            return autoware_health_checker::LEVEL_ERROR;
-        }
-    }
-    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
-    {
-        if(buffer_itr->second.type == autoware_health_checker::LEVEL_WARN)
-        {
-            return autoware_health_checker::LEVEL_WARN;
-        }
-    }
-    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
-    {
-        if(buffer_itr->second.type == autoware_health_checker::LEVEL_OK)
-        {
-            return autoware_health_checker::LEVEL_OK;
-        }
-    }
+
     return autoware_health_checker::LEVEL_UNDEFINED;
+}
+
+// filter data from timestamp and level
+std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > DiagBuffer::filterBuffer(ros::Time now, uint8_t level)
+{
+    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > filterd_data;
+    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > ret;
+    decltype(buffer_)::iterator it = buffer_.find(level);
+    if(it != buffer_.end())
+    {
+        it->second = filterd_data;
+    }
+    for(auto data_itr = filterd_data.begin(); data_itr != filterd_data.end(); data_itr++)
+    {
+        if(data_itr->first > (now - buffer_length_))
+        {
+            ret.push_back(*data_itr);
+        }
+    }
+    return ret;
 }
 
 void DiagBuffer::updateBuffer()
 {
-    //std::lock_guard<std::mutex> lock(mtx_);
-    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > new_buffer_;
     ros::Time now = ros::Time::now();
-    for(auto buffer_itr = buffer_.begin(); buffer_itr != buffer_.end(); buffer_itr++)
-    {
-        if(buffer_itr->first > (now - buffer_length_))
-        {
-            new_buffer_.push_back(*buffer_itr);
-        }
-    }
-    buffer_ = new_buffer_;
+    buffer_[autoware_health_checker::LEVEL_FATAL] = filterBuffer(now, autoware_health_checker::LEVEL_FATAL);
+    buffer_[autoware_health_checker::LEVEL_ERROR] = filterBuffer(now, autoware_health_checker::LEVEL_ERROR);
+    buffer_[autoware_health_checker::LEVEL_WARN] = filterBuffer(now, autoware_health_checker::LEVEL_WARN);
+    buffer_[autoware_health_checker::LEVEL_OK] = filterBuffer(now, autoware_health_checker::LEVEL_OK);
+    buffer_[autoware_health_checker::LEVEL_UNDEFINED] = filterBuffer(now, autoware_health_checker::LEVEL_UNDEFINED);
     return;
 }

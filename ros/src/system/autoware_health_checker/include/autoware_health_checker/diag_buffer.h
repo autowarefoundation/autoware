@@ -26,7 +26,8 @@ private:
     void updateBuffer();
     std::string key_;
     ros::Duration buffer_length_;
-    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > buffer_;
+    std::map<uint8_t,std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > > buffer_;
+    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > filterBuffer(ros::Time now, uint8_t level);
 };
 
 #endif  //DIAG_BUFFER_H_INCLUDED
