@@ -12,6 +12,22 @@ NodeStatusPublisher::~NodeStatusPublisher()
     
 }
 
+void NodeStatusPublisher::publishStatus()
+{
+    ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
+    while(ros::ok())
+    {
+        rate.sleep();
+    }
+    return;
+}
+
+void NodeStatusPublisher::ENABLE()
+{
+    boost::thread publish_thread(boost::bind(&NodeStatusPublisher::publishStatus, this));
+    return;
+}
+
 bool NodeStatusPublisher::keyExist(std::string key)
 {
     decltype(diag_buffers_)::iterator it = diag_buffers_.find(key);
@@ -115,7 +131,13 @@ void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<dou
 
 void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description)
 {
+    if(!keyExist(key))
+    {
+        std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(autoware_health_checker::BUFFER_LENGTH);
+        rate_checkers_[key] = checker_ptr;
+    }
     addNewBuffer(key);
+    rate_checkers_[key]->check();
     return;
 }
 

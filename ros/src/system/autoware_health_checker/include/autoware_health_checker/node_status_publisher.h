@@ -7,6 +7,7 @@
 //headers in Autoware
 #include <autoware_health_checker/constants.h>
 #include <autoware_health_checker/diag_buffer.h>
+#include <autoware_health_checker/rate_checker.h>
 #include <autoware_system_msgs/NodeStatus.h>
 
 //headers in STL
@@ -20,12 +21,15 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
 
 class NodeStatusPublisher
 {
 public:
     NodeStatusPublisher(ros::NodeHandle nh,ros::NodeHandle pnh);
     ~NodeStatusPublisher();
+    void ENABLE();
     void CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
     void CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value, std::string description);
     // std::pair<double,double> first value is min value and second value is max value
@@ -50,10 +54,12 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
     std::map<std::string,std::shared_ptr<DiagBuffer> > diag_buffers_;
+    std::map<std::string,std::shared_ptr<RateChecker> > rate_checkers_;
     ros::Publisher status_pub_;
     bool keyExist(std::string key);
     void addNewBuffer(std::string key);
     std::string doubeToJson(double value);
+    void publishStatus();
 };
 
 #endif  //NODE_STATUS_PUBLISHER_H_INCLUDED
