@@ -11,6 +11,28 @@ RateChecker::~RateChecker()
 
 }
 
+uint8_t RateChecker::getErrorLevel()
+{
+    boost::optional<double> rate = getRate();
+    if(!rate)
+    {
+        return autoware_health_checker::LEVEL_ERROR;
+    }
+    if(rate.get() < fatal_rate_)
+    {
+        return autoware_health_checker::LEVEL_FATAL;
+    }
+    if(rate.get() < error_rate_)
+    {
+        return autoware_health_checker::LEVEL_ERROR;
+    }
+    if(rate.get() < warn_rate_)
+    {
+        return autoware_health_checker::LEVEL_WARN;
+    }
+    return autoware_health_checker::LEVEL_OK;
+}
+
 void RateChecker::check()
 {
     update();
