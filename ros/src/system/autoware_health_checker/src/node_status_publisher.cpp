@@ -79,11 +79,11 @@ bool NodeStatusPublisher::keyExist(std::string key)
     return false;
 }
 
-void NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type)
+void NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type, std::string description)
 {
     if(!keyExist(key))
     {
-        std::shared_ptr<DiagBuffer> buf_ptr = std::make_shared<DiagBuffer>(key, type, autoware_health_checker::BUFFER_LENGTH);
+        std::shared_ptr<DiagBuffer> buf_ptr = std::make_shared<DiagBuffer>(key, type, description, autoware_health_checker::BUFFER_LENGTH);
         diag_buffers_[key] = buf_ptr;
     }
     return;
@@ -91,7 +91,7 @@ void NodeStatusPublisher::addNewBuffer(std::string key, uint8_t type)
 
 void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
 {
-    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE);
+    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
     autoware_system_msgs::DiagnosticStatus new_status;
     new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     if(value < fatal_value)
@@ -118,7 +118,7 @@ void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double wa
 
 void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
 {
-    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE);
+    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
     autoware_system_msgs::DiagnosticStatus new_status;
     new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     if(value > fatal_value)
@@ -145,7 +145,7 @@ void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double wa
 
 void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description)
 {
-    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE);
+    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE,description);
     autoware_system_msgs::DiagnosticStatus new_status;
     new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
     if(value < fatal_value.first && value > fatal_value.second)
@@ -177,7 +177,7 @@ void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double err
         std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(autoware_health_checker::BUFFER_LENGTH,warn_rate,error_rate,fatal_rate,description);
         rate_checkers_[key] = checker_ptr;
     }
-    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW);
+    addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW,description);
     rate_checkers_[key]->check();
     return;
 }
