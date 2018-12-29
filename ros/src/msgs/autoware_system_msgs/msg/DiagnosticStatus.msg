@@ -7,6 +7,7 @@ uint8 UNDEFINED = 0
 uint8 type
 uint8 OUT_OF_RANGE = 1
 uint8 RATE_IS_SLOW = 2
+uint8 HARDWARE = 255
 
 uint8 level
 uint8 OK = 1

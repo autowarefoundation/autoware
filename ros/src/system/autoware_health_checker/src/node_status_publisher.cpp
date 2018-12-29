@@ -35,18 +35,75 @@ void NodeStatusPublisher::addNewBuffer(std::string key)
 void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value)
 {
     addNewBuffer(key);
+    autoware_system_msgs::DiagnosticStatus new_status;
+    new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+    if(value < fatal_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
+    }
+    else if(value < error_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
+    }
+    else if(value < warn_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
+    }
+    else
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
+    }
+    diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
 void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value)
 {
     addNewBuffer(key);
+    autoware_system_msgs::DiagnosticStatus new_status;
+    new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+    if(value > fatal_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
+    }
+    else if(value > error_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
+    }
+    else if(value > warn_value)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
+    }
+    else
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
+    }
+    diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
 void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value)
 {
     addNewBuffer(key);
+    autoware_system_msgs::DiagnosticStatus new_status;
+    new_status.type = autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE;
+    if(value < fatal_value.first && value > fatal_value.second)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::FATAL;
+    }
+    else if(value < error_value.first && value > error_value.second)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::ERROR;
+    }
+    else if(value < warn_value.first && value > warn_value.second)
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::WARN;
+    }
+    else
+    {
+        new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
+    }
+    diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
