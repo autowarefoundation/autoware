@@ -32,7 +32,7 @@ void NodeStatusPublisher::addNewBuffer(std::string key)
     return;
 }
 
-void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value)
+void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
 {
     addNewBuffer(key);
     autoware_system_msgs::DiagnosticStatus new_status;
@@ -53,11 +53,13 @@ void NodeStatusPublisher::CHECK_MIN_VALUE(std::string key,double value,double wa
     {
         new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
     }
+    new_status.description = description;
+    new_status.value = doubeToJson(value);
     diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
-void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value)
+void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double warn_value,double error_value,double fatal_value,std::string description)
 {
     addNewBuffer(key);
     autoware_system_msgs::DiagnosticStatus new_status;
@@ -78,11 +80,13 @@ void NodeStatusPublisher::CHECK_MAX_VALUE(std::string key,double value,double wa
     {
         new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
     }
+    new_status.description = description;
+    new_status.value = doubeToJson(value);
     diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
-void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value)
+void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<double,double> warn_value,std::pair<double,double> error_value,std::pair<double,double> fatal_value,std::string description)
 {
     addNewBuffer(key);
     autoware_system_msgs::DiagnosticStatus new_status;
@@ -103,12 +107,24 @@ void NodeStatusPublisher::CHECK_RANGE(std::string key,double value,std::pair<dou
     {
         new_status.level = autoware_system_msgs::DiagnosticStatus::OK;
     }
+    new_status.value = doubeToJson(value);
+    new_status.description = description;
     diag_buffers_[key]->addDiag(new_status);
     return;
 }
 
-void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate)
+void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double error_rate,double fatal_rate,std::string description)
 {
     addNewBuffer(key);
     return;
+}
+
+std::string NodeStatusPublisher::doubeToJson(double value)
+{
+    using namespace boost::property_tree;
+    std::stringstream ss;
+    ptree pt;
+    pt.put("value.double", value);
+    write_json(ss, pt);
+    return ss.str();
 }

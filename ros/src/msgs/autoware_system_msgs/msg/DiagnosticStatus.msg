@@ -2,6 +2,8 @@ string key
 
 string value
 
+string description
+
 uint8 UNDEFINED = 0
 
 uint8 type
