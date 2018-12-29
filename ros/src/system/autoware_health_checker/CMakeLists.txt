@@ -24,6 +24,7 @@ include_directories(
 add_library(node_status_publisher
   src/node_status_publisher.cpp
   src/diag_buffer.cpp
+  src/rate_checker.cpp
 )
 
 # CPP Execution programs
