@@ -37,7 +37,7 @@ public:
     template<class T>
     void CHECK_VALUE(std::string key,T value,std::function<uint8_t(T value)> check_func,std::function<boost::property_tree::ptree(T value)> value_json_func,std::string description)
     {
-        addNewBuffer(key);
+        addNewBuffer(key,autoware_system_msgs::DiagnosticStatus::OUT_OF_RANGE);
         uint8_t check_result = check_func(value);
         boost::property_tree::ptree pt = value_json_func(value);
         std::stringstream ss;
@@ -59,7 +59,7 @@ private:
     std::map<std::string,std::shared_ptr<RateChecker> > rate_checkers_;
     ros::Publisher status_pub_;
     bool keyExist(std::string key);
-    void addNewBuffer(std::string key);
+    void addNewBuffer(std::string key, uint8_t type);
     std::string doubeToJson(double value);
     void publishStatus();
 };

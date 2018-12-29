@@ -17,10 +17,11 @@
 class DiagBuffer
 {
 public:
-    DiagBuffer(std::string key,double buffer_length);
+    DiagBuffer(std::string key,uint8_t type, double buffer_length);
     ~DiagBuffer();
     void addDiag(autoware_system_msgs::DiagnosticStatus status);
     uint8_t getErrorLevel();
+    const uint8_t type;
 private:
     std::mutex mtx_;
     void updateBuffer();

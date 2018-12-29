@@ -1,6 +1,6 @@
 #include <autoware_health_checker/diag_buffer.h>
 
-DiagBuffer::DiagBuffer(std::string key, double buffer_length)
+DiagBuffer::DiagBuffer(std::string key, uint8_t type, double buffer_length) : type(type)
 {
     key_ = key;
     buffer_length_ = ros::Duration(buffer_length_);
@@ -26,8 +26,22 @@ uint8_t DiagBuffer::getErrorLevel()
 {
     std::lock_guard<std::mutex> lock(mtx_);
     updateBuffer();
-
-    return autoware_health_checker::LEVEL_UNDEFINED;
+    if(buffer_[autoware_health_checker::LEVEL_FATAL].size() != 0)
+    {
+        return autoware_health_checker::LEVEL_FATAL;
+    }
+    else if(buffer_[autoware_health_checker::LEVEL_ERROR].size() != 0)
+    {
+        return autoware_health_checker::LEVEL_ERROR;
+    }
+    else if(buffer_[autoware_health_checker::LEVEL_WARN].size() != 0)
+    {
+        return autoware_health_checker::LEVEL_WARN;
+    }
+    else
+    {
+        return autoware_health_checker::LEVEL_OK;
+    }
 }
 
 // filter data from timestamp and level
