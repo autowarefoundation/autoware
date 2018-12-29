@@ -1,6 +1,6 @@
 #include <autoware_health_checker/diag_buffer.h>
 
-DiagBuffer::DiagBuffer(std::string key,double buffer_length)
+DiagBuffer::DiagBuffer(std::string key, double buffer_length)
 {
     key_ = key;
     buffer_length_ = ros::Duration(buffer_length_);

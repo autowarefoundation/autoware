@@ -16,7 +16,7 @@ namespace autoware_health_checker
     constexpr uint8_t TYPE_RATE_IS_SLOW = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
 
     constexpr double BUFFER_LENGTH = 10.0;
-    constexpr double UPDATE_RATE = 10.0;
+    //constexpr double UPDATE_RATE = 10.0;
 }
 
 #endif //CONSTANTS_H_INCLUDED

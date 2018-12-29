@@ -6,10 +6,12 @@
 
 //headers in Autoware
 #include <autoware_health_checker/constants.h>
+#include <autoware_health_checker/diag_buffer.h>
 #include <autoware_system_msgs/NodeStatus.h>
 
 //headers in STL
 #include <map>
+#include <memory>
 
 class NodeStatusPublisher
 {
@@ -23,7 +25,10 @@ public:
 private:
     ros::NodeHandle nh_;
     ros::NodeHandle pnh_;
-
+    std::map<std::string,std::shared_ptr<DiagBuffer> > diag_buffers_;
+    ros::Publisher status_pub_;
+    bool keyExist(std::string key);
+    void addNewBuffer(std::string key);
 };
 
 #endif  //NODE_STATUS_PUBLISHER_H_INCLUDED

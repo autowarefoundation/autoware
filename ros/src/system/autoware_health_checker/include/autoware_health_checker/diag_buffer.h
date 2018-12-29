@@ -28,6 +28,7 @@ private:
     ros::Duration buffer_length_;
     std::map<uint8_t,std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > > buffer_;
     std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > filterBuffer(ros::Time now, uint8_t level);
+    ros::Publisher status_pub_;
 };
 
 #endif  //DIAG_BUFFER_H_INCLUDED
