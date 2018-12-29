@@ -17,11 +17,19 @@ void NodeStatusPublisher::publishStatus()
     ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
     while(ros::ok())
     {
+        autoware_system_msgs::NodeStatus status;
+        status.node_name = ros::this_node::getName();
         std::vector<std::string> checker_keys = getRateCheckerKeys();
         for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
         {
-            //boost::optional<double> rate = rate_checkers_[*key_itr]->getRate();
+            autoware_system_msgs::DiagnosticStatus rate_diag;
+            rate_diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
+            std::pair<uint8_t,double> result = rate_checkers_[*key_itr]->getErrorLevelAndRate();
+            rate_diag.level = result.first;
+            rate_diag.value = doubeToJson(result.second);
+            rate_diag.description = rate_checkers_[*key_itr]->description;
         }
+        status_pub_.publish(status);
         rate.sleep();
     }
     return;

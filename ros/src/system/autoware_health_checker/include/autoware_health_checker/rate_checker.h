@@ -20,9 +20,11 @@ class RateChecker
         RateChecker(double buffer_length,double warn_rate,double error_rate,double fatal_rate,std::string description);
         ~RateChecker();
         void check();
+        std::pair<uint8_t,double> getErrorLevelAndRate();
         uint8_t getErrorLevel();
-    private:
         boost::optional<double> getRate();
+        const std::string description;
+    private:
         ros::Time start_time_;
         void update();
         std::vector<ros::Time> data_;
