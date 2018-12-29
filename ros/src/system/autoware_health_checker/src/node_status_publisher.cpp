@@ -36,10 +36,8 @@ void NodeStatusPublisher::publishStatus()
         std::vector<std::string> keys = getKeys();
         for(auto key_itr = keys.begin(); key_itr != keys.end(); key_itr++)
         {
-            autoware_system_msgs::DiagnosticStatus diag;
-            //diag.level = diag_buffers_[*key_itr]->getErrorLevel();
-            //diag.value = 
-            status.status.push_back(diag);
+            std::vector<autoware_system_msgs::DiagnosticStatus> diag_lists = diag_buffers_[*key_itr]->getAndClearData();
+            status.status.insert(status.status.end(),diag_lists.begin(),diag_lists.end());
         }
         status_pub_.publish(status);
         rate.sleep();

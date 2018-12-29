@@ -22,6 +22,11 @@ void DiagBuffer::addDiag(autoware_system_msgs::DiagnosticStatus status)
 std::vector<autoware_system_msgs::DiagnosticStatus> DiagBuffer::getAndClearData()
 {
     std::vector<autoware_system_msgs::DiagnosticStatus> data;
+    data = buffer_[autoware_health_checker::LEVEL_FATAL];
+    data.insert(data.end(),buffer_[autoware_health_checker::LEVEL_ERROR].begin(),buffer_[autoware_health_checker::LEVEL_ERROR].end());
+    data.insert(data.end(),buffer_[autoware_health_checker::LEVEL_WARN].begin(),buffer_[autoware_health_checker::LEVEL_WARN].end());
+    data.insert(data.end(),buffer_[autoware_health_checker::LEVEL_OK].begin(),buffer_[autoware_health_checker::LEVEL_OK].end());
+    data.insert(data.end(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].begin(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].end());
     buffer_.clear();
     return data;
 }
