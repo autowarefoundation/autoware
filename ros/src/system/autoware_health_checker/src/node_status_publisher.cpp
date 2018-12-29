@@ -18,6 +18,8 @@ void NodeStatusPublisher::publishStatus()
     while(ros::ok())
     {
         autoware_system_msgs::NodeStatus status;
+        ros::Time now = ros::Time::now();
+        status.header.stamp = now;
         status.node_name = ros::this_node::getName();
         std::vector<std::string> checker_keys = getRateCheckerKeys();
         for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
@@ -28,12 +30,16 @@ void NodeStatusPublisher::publishStatus()
             rate_diag.level = result.first;
             rate_diag.value = doubeToJson(result.second);
             rate_diag.description = rate_checkers_[*key_itr]->description;
+            rate_diag.header.stamp = now;
             status.status.push_back(rate_diag);
         }
         std::vector<std::string> keys = getKeys();
         for(auto key_itr = keys.begin(); key_itr != keys.end(); key_itr++)
         {
-
+            autoware_system_msgs::DiagnosticStatus diag;
+            //diag.level = diag_buffers_[*key_itr]->getErrorLevel();
+            //diag.value = 
+            status.status.push_back(diag);
         }
         status_pub_.publish(status);
         rate.sleep();

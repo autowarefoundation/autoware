@@ -14,12 +14,16 @@ DiagBuffer::~DiagBuffer()
 void DiagBuffer::addDiag(autoware_system_msgs::DiagnosticStatus status)
 {
     std::lock_guard<std::mutex> lock(mtx_);
-    std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> data;
-    data.first = ros::Time::now();
-    data.second = status;
-    buffer_[status.level].push_back(data);
+    buffer_[status.level].push_back(status);
     updateBuffer();
     return;
+}
+
+std::vector<autoware_system_msgs::DiagnosticStatus> DiagBuffer::getAndClearData()
+{
+    std::vector<autoware_system_msgs::DiagnosticStatus> data;
+    buffer_.clear();
+    return data;
 }
 
 uint8_t DiagBuffer::getErrorLevel()
@@ -45,10 +49,10 @@ uint8_t DiagBuffer::getErrorLevel()
 }
 
 // filter data from timestamp and level
-std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > DiagBuffer::filterBuffer(ros::Time now, uint8_t level)
+std::vector<autoware_system_msgs::DiagnosticStatus> DiagBuffer::filterBuffer(ros::Time now, uint8_t level)
 {
-    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > filterd_data;
-    std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > ret;
+    std::vector<autoware_system_msgs::DiagnosticStatus> filterd_data;
+    std::vector<autoware_system_msgs::DiagnosticStatus> ret;
     decltype(buffer_)::iterator it = buffer_.find(level);
     if(it != buffer_.end())
     {
@@ -56,7 +60,7 @@ std::vector<std::pair<ros::Time,autoware_system_msgs::DiagnosticStatus> > DiagBu
     }
     for(auto data_itr = filterd_data.begin(); data_itr != filterd_data.end(); data_itr++)
     {
-        if(data_itr->first > (now - buffer_length_))
+        if(data_itr->header.stamp> (now - buffer_length_))
         {
             ret.push_back(*data_itr);
         }
