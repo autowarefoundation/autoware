@@ -1,6 +1,7 @@
 #include <autoware_health_checker/rate_checker.h>
 
-RateChecker::RateChecker(double buffer_length) : buffer_length_(buffer_length)
+RateChecker::RateChecker(double buffer_length,double warn_rate,double error_rate,double fatal_rate,std::string description) 
+    : buffer_length_(buffer_length), warn_rate_(warn_rate), error_rate_(error_rate), fatal_rate_(fatal_rate)
 {
     start_time_ = ros::Time::now();
 }

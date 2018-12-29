@@ -17,7 +17,11 @@ void NodeStatusPublisher::publishStatus()
     ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
     while(ros::ok())
     {
-        //rate_checkers_.keys();
+        std::vector<std::string> checker_keys = getRateCheckerKeys();
+        for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
+        {
+            //boost::optional<double> rate = rate_checkers_[*key_itr]->getRate();
+        }
         rate.sleep();
     }
     return;
@@ -156,7 +160,7 @@ void NodeStatusPublisher::CHECK_RATE(std::string key,double warn_rate,double err
 {
     if(!keyExist(key))
     {
-        std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(autoware_health_checker::BUFFER_LENGTH);
+        std::shared_ptr<RateChecker> checker_ptr = std::make_shared<RateChecker>(autoware_health_checker::BUFFER_LENGTH,warn_rate,error_rate,fatal_rate,description);
         rate_checkers_[key] = checker_ptr;
     }
     addNewBuffer(key);
