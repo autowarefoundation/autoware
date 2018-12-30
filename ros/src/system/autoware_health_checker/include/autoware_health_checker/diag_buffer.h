@@ -34,6 +34,7 @@ namespace autoware_health_checker
         std::map<uint8_t,autoware_system_msgs::DiagnosticStatusArray > buffer_;
         autoware_system_msgs::DiagnosticStatusArray filterBuffer(ros::Time now, uint8_t level);
         ros::Publisher status_pub_;
+        bool compareTimestamp(const autoware_system_msgs::DiagnosticStatus &a, const autoware_system_msgs::DiagnosticStatus &b);
     };
 }
 

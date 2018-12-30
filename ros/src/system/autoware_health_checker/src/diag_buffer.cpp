@@ -29,6 +29,7 @@ namespace autoware_health_checker
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_WARN].status.begin(),buffer_[autoware_health_checker::LEVEL_WARN].status.end());
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_OK].status.begin(),buffer_[autoware_health_checker::LEVEL_OK].status.end());
         data.status.insert(data.status.end(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].status.begin(),buffer_[autoware_health_checker::LEVEL_UNDEFINED].status.end());
+        std::sort(data.status.begin(), data.status.end(), std::bind(&DiagBuffer::compareTimestamp, this, std::placeholders::_1, std::placeholders::_2));
         buffer_.clear();
         return data;
     }
@@ -84,5 +85,10 @@ namespace autoware_health_checker
         buffer_[autoware_health_checker::LEVEL_OK] = filterBuffer(now, autoware_health_checker::LEVEL_OK);
         buffer_[autoware_health_checker::LEVEL_UNDEFINED] = filterBuffer(now, autoware_health_checker::LEVEL_UNDEFINED);
         return;
+    }
+
+    bool DiagBuffer::compareTimestamp(const autoware_system_msgs::DiagnosticStatus &a, const autoware_system_msgs::DiagnosticStatus &b)
+    {
+        return a.header.stamp < b.header.stamp;
     }
 }
