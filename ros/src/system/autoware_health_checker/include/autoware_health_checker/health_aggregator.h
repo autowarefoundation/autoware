@@ -16,6 +16,9 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
+//headers in STL
+#include <mutex>
+
 class HealthAggregator
 {
 public:
@@ -32,5 +35,7 @@ private:
     void nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg);
     void diagnosticArrayCallback(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
     boost::optional<autoware_system_msgs::HardwareStatus> convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
+    autoware_system_msgs::SystemStatus system_status_;
+    std::mutex mtx_;
 };
 #endif  //HEALTH_AGGREGATOR_H_INCLUDED

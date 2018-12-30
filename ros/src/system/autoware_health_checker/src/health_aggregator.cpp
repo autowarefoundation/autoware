@@ -21,16 +21,37 @@ void HealthAggregator::run()
 
 void HealthAggregator::publishSystemStatus()
 {
+    ros::Rate rate = ros::Rate(autoware_health_checker::UPDATE_RATE);
+    while(ros::ok())
+    {
+        mtx_.lock();
+        system_status_.header.stamp = ros::Time::now();
+        system_status_pub_.publish(system_status_);
+        system_status_.node_status.clear();
+        system_status_.hardware_status.clear();
+        mtx_.unlock();
+        rate.sleep();
+    }
     return;
 }
 
 void HealthAggregator::nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg)
 {
+    mtx_.lock();
+    system_status_.node_status.push_back(*msg);
+    mtx_.unlock();
     return;
 }
 
 void HealthAggregator::diagnosticArrayCallback(const diagnostic_msgs::DiagnosticArray::ConstPtr msg)
 {
+    mtx_.lock();
+    boost::optional<autoware_system_msgs::HardwareStatus> status = convert(msg);
+    if(status)
+    {
+        system_status_.hardware_status.push_back(*status);
+    }
+    mtx_.unlock();
     return;
 }
 
