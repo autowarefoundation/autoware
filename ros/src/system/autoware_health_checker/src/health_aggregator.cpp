@@ -16,6 +16,7 @@ void HealthAggregator::run()
     system_status_pub_ = nh_.advertise<autoware_system_msgs::SystemStatus>("/system_status",10);
     node_status_sub_ = nh_.subscribe("/node_status",10,&HealthAggregator::nodeStatusCallback,this);
     diagnostic_array_sub_ = nh_.subscribe("/diagnostic_agg",10,&HealthAggregator::diagnosticArrayCallback,this);
+    boost::thread publish_thread(boost::bind(&HealthAggregator::publishSystemStatus, this));
     return;
 }
 
