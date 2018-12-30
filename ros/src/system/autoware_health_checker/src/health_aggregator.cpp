@@ -33,3 +33,51 @@ void HealthAggregator::diagnosticArrayCallback(const diagnostic_msgs::Diagnostic
 {
     return;
 }
+
+boost::optional<autoware_system_msgs::HardwareStatus> HealthAggregator::convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg)
+{
+    autoware_system_msgs::HardwareStatus status;
+    if(msg->status.size() == 0)
+    {
+        return boost::none;
+    }
+    status.header = msg->header;
+    for(auto diag_itr = msg->status.begin(); diag_itr != msg->status.end(); diag_itr++)
+    {
+        status.hardware_name = diag_itr->hardware_id;
+        autoware_system_msgs::DiagnosticStatus diag;
+        autoware_system_msgs::DiagnosticStatusArray diag_array;
+        diag.header = msg->header;
+        diag.key = diag_itr->hardware_id;
+        diag.description = diag_itr->message;
+        diag.type = autoware_system_msgs::DiagnosticStatus::HARDWARE;
+        if(diag_itr->level == diagnostic_msgs::DiagnosticStatus::OK)
+        {
+            diag.level = autoware_health_checker::LEVEL_OK;
+        }
+        else if(diag_itr->level == diagnostic_msgs::DiagnosticStatus::WARN)
+        {
+            diag.level = autoware_health_checker::LEVEL_WARN;
+        }
+        else if(diag_itr->level == diagnostic_msgs::DiagnosticStatus::ERROR)
+        {
+            diag.level = autoware_health_checker::LEVEL_ERROR;
+        }
+        else if(diag_itr->level == diagnostic_msgs::DiagnosticStatus::STALE)
+        {
+            diag.level = autoware_health_checker::LEVEL_FATAL;
+        }
+        using namespace boost::property_tree;
+        std::stringstream ss;
+        ptree pt;
+        for(auto value_itr = diag_itr->values.begin(); value_itr != diag_itr->values.end(); value_itr++)
+        {
+            pt.put(value_itr->key+".string", value_itr->value);
+        }
+        write_json(ss, pt);
+        diag.value = ss.str();
+        diag_array.status.push_back(diag);
+        status.status.push_back(diag_array);
+    }
+    return status;
+}

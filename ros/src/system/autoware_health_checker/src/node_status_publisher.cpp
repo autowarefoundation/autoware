@@ -43,8 +43,6 @@ namespace autoware_health_checker
             for(auto key_itr = keys.begin(); key_itr != keys.end(); key_itr++)
             {
                 status.status.push_back(diag_buffers_[*key_itr]->getAndClearData());
-                //std::vector<autoware_system_msgs::DiagnosticStatus> diag_lists = 
-                //status.status.insert(status.status.end(),diag_lists.begin(),diag_lists.end());
             }
             status_pub_.publish(status);
             rate.sleep();

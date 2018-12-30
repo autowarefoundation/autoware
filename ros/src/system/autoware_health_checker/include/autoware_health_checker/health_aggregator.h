@@ -10,6 +10,12 @@
 #include <autoware_system_msgs/NodeStatus.h>
 #include <autoware_system_msgs/SystemStatus.h>
 
+//headers in boost
+#include <boost/optional.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/foreach.hpp>
+
 class HealthAggregator
 {
 public:
@@ -25,5 +31,6 @@ private:
     void publishSystemStatus();
     void nodeStatusCallback(const autoware_system_msgs::NodeStatus::ConstPtr msg);
     void diagnosticArrayCallback(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
+    boost::optional<autoware_system_msgs::HardwareStatus> convert(const diagnostic_msgs::DiagnosticArray::ConstPtr msg);
 };
 #endif  //HEALTH_AGGREGATOR_H_INCLUDED
