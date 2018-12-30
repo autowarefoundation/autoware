@@ -8,5 +8,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
     HealthAggregator agg(nh,pnh);
+    agg.run();
+    ros::spin();
     return 0;
 }
