@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   DiagnosticStatus.msg
+  DiagnosticStatusArray.msg
   SystemStatus.msg
   NodeStatus.msg
   HardwareStatus.msg

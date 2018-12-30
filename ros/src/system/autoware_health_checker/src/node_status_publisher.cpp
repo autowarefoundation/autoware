@@ -27,21 +27,24 @@ namespace autoware_health_checker
             // iterate Rate checker and publish rate_check result
             for(auto key_itr = checker_keys.begin(); key_itr != checker_keys.end(); key_itr++)
             {
-                autoware_system_msgs::DiagnosticStatus rate_diag;
-                rate_diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
+                autoware_system_msgs::DiagnosticStatusArray diag_array;
+                autoware_system_msgs::DiagnosticStatus diag;
+                diag.type = autoware_system_msgs::DiagnosticStatus::RATE_IS_SLOW;
                 std::pair<uint8_t,double> result = rate_checkers_[*key_itr]->getErrorLevelAndRate();
-                rate_diag.level = result.first;
-                rate_diag.value = doubeToJson(result.second);
-                rate_diag.description = rate_checkers_[*key_itr]->description;
-                rate_diag.header.stamp = now;
-                status.status.push_back(rate_diag);
+                diag.level = result.first;
+                diag.value = doubeToJson(result.second);
+                diag.description = rate_checkers_[*key_itr]->description;
+                diag.header.stamp = now;
+                diag_array.status.push_back(diag);
+                status.status.push_back(diag_array);
             }
             // iterate Diagnostic Buffer and publish all diagnostic data
             std::vector<std::string> keys = getKeys();
             for(auto key_itr = keys.begin(); key_itr != keys.end(); key_itr++)
             {
-                std::vector<autoware_system_msgs::DiagnosticStatus> diag_lists = diag_buffers_[*key_itr]->getAndClearData();
-                status.status.insert(status.status.end(),diag_lists.begin(),diag_lists.end());
+                status.status.push_back(diag_buffers_[*key_itr]->getAndClearData());
+                //std::vector<autoware_system_msgs::DiagnosticStatus> diag_lists = 
+                //status.status.insert(status.status.end(),diag_lists.begin(),diag_lists.end());
             }
             status_pub_.publish(status);
             rate.sleep();
