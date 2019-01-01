@@ -77,9 +77,8 @@ else()
 endif()
 
 if(EXISTS "/usr/include/spinnaker")
-	find_package(Spinnaker QUIET)
+	include(FindSpinnaker.cmake)
 	include_directories(
-		/usr/include/spinnaker
 		nodes/spinnaker
 		${Spinnaker_INCLUDE_DIRS}
 		${catkin_INCLUDE_DIRS}
