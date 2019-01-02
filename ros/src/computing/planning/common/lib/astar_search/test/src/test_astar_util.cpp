@@ -19,13 +19,15 @@
 
 #include "astar_search/astar_util.h"
 
-class TestSuite: public ::testing::Test {
-public:
-	TestSuite(){}
-	~TestSuite(){}
-};
+#include "test_class.h"
 
-TEST(TestSuite, CheckGreaterThanOperator){
+//class TestSuite2: public ::testing::Test {
+//public:
+//	TestSuite2(){}
+//	~TestSuite2(){}
+//};
+
+TEST_F(TestSuite, CheckGreaterThanOperator){
 
 	int x = 0;
 	int y = 0;
@@ -40,7 +42,7 @@ TEST(TestSuite, CheckGreaterThanOperator){
 	ASSERT_TRUE(!(simple_node1 > simple_node2)) << "Should be false";
 }
 
-TEST(TestSuite, CalculateDistanceBetween2Points){
+TEST_F(TestSuite, CalculateDistanceBetween2Points){
 	// Point 1
 	double x1 = 0.0;
 	double y1 = 0.0;
@@ -50,7 +52,7 @@ TEST(TestSuite, CalculateDistanceBetween2Points){
 	ASSERT_EQ(calcDistance(x1, y1, x2, y2), sqrt(x2*x2 + y2*y2)) << "Distance should be " << sqrt(x2*x2 + y2*y2);
 }
 
-TEST(TestSuite, CheckThetaWrapAround){
+TEST_F(TestSuite, CheckThetaWrapAround){
 	double theta = -90; //Degrees
 	double theta_new = (theta+360)*M_PI/180;
 	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), theta_new) << "Angle should be " << theta_new;
@@ -64,7 +66,7 @@ TEST(TestSuite, CheckThetaWrapAround){
 	ASSERT_DOUBLE_EQ(modifyTheta(theta*M_PI/180), theta_new) << "Angle should be " << theta_new;
 }
 
-TEST(TestSuite, CheckTransformPose){
+TEST_F(TestSuite, CheckTransformPose){
 
 	// Check translation of 1 along X axis
 	tf::Quaternion q(0,0,0,1);
@@ -99,7 +101,7 @@ TEST(TestSuite, CheckTransformPose){
 
 }
 
-TEST(TestSuite, CheckWaveFrontNodeConstruct){
+TEST_F(TestSuite, CheckWaveFrontNodeConstruct){
 
 	WaveFrontNode node;
 	ASSERT_EQ(node.index_x, 0) << "index_x should be " << 0;
@@ -115,7 +117,7 @@ TEST(TestSuite, CheckWaveFrontNodeConstruct){
 	ASSERT_EQ(node.hc, cost) << "hc should be " << cost;
 }
 
-TEST(TestSuite, CheckRelativeCoordinate){
+TEST_F(TestSuite, CheckRelativeCoordinate){
 
 	geometry_msgs::Pose in_pose;
 	in_pose.position.x = 1;
@@ -139,7 +141,7 @@ TEST(TestSuite, CheckRelativeCoordinate){
 	ASSERT_EQ(relative_point.z, expected_point.z) << "Z coord should be " << expected_point.z;
 }
 
-TEST(TestSuite, CheckRadianDifference){
+TEST_F(TestSuite, CheckRadianDifference){
 
 	// Diff < 180 degrees
 	double a = 0*M_PI/180;

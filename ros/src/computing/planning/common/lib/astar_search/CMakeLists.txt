@@ -58,6 +58,6 @@ install(TARGETS astar_search
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest_gtest(test-astar_search test/test_astar_search.test test/src/test_main.cpp test/src/test_astar_util.cpp test/src/test_astar_search.cpp)
-  target_link_libraries(test-astar_search ${catkin_LIBRARIES} astar_search)
+  add_rostest_gtest(astar_search-test test/test_astar_search.test test/src/test_main.cpp test/src/test_astar_util.cpp test/src/test_astar_search.cpp test/src/test_class.cpp)
+  target_link_libraries(astar_search-test ${catkin_LIBRARIES} astar_search)
 endif()
