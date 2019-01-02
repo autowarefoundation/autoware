@@ -7,6 +7,11 @@
   <arg name="use_gpu" default="true" />
   <arg name="gpu_device_id" default="0" />
 
+  <arg name="width" default="512" />
+  <arg name="height" default="512" />
+  <arg name="range" default="60" />
+  <arg name="use_constant_feature" default="false"/>
+
   <node pkg="lidar_apollo_cnn_seg_detect" type="lidar_apollo_cnn_seg_detect" name="lidar_apollo_cnn_seg_detect_01" output="screen">
     <param name="network_definition_file" value="$(arg network_definition_file)" />
     <param name="pretrained_model_file" value="$(arg pretrained_model_file)" />
@@ -14,6 +19,11 @@
     <param name="score_threshold" value="$(arg score_threshold)" />
     <param name="use_gpu" value="$(arg use_gpu)" />
     <param name="gpu_device_id" value="$(arg gpu_device_id)" />
+
+    <param name="height" value="$(arg height)" />
+    <param name="width" value="$(arg width)" />
+    <param name="range" value="$(arg range)" />
+    <param name="use_constant_feature" value="$(arg use_constant_feature)" />
   </node>
 
   <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"

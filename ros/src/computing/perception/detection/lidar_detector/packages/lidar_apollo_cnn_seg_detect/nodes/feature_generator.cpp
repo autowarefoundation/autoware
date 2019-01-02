@@ -1,6 +1,6 @@
 #include "feature_generator.h"
 
-bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
+bool FeatureGenerator::init(caffe::Blob<float>* out_blob, bool use_constant_feature)
 {
   out_blob_ = out_blob;
 
@@ -14,8 +14,11 @@ bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
       << "Current implementation version requires input_width == input_height.";
 
   // set output blob and log lookup table
-  out_blob_->Reshape(1, 8, height_, width_);
-
+  if(use_constant_feature){
+    out_blob_->Reshape(1, 8, height_, width_);
+  }else{
+    out_blob_->Reshape(1, 6, height_, width_);
+  }
   log_table_.resize(256);
   for (size_t i = 0; i < log_table_.size(); ++i) {
     log_table_[i] = std::log1p(static_cast<float>(i));
@@ -23,39 +26,43 @@ bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
 
   float* out_blob_data = nullptr;
   out_blob_data = out_blob_->mutable_cpu_data();
-
+  // the pretrained model inside apollo project don't use the constant feature like direction_data_ and distance_data_
   int channel_index = 0;
   max_height_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
   mean_height_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
   count_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
-  direction_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
+  if(use_constant_feature){
+    direction_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
+  }
   top_intensity_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
   mean_intensity_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
-  distance_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
+  if(use_constant_feature){
+    distance_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
+  }
   nonempty_data_ = out_blob_data + out_blob_->offset(0, channel_index++);
   CHECK_EQ(out_blob_->offset(0, channel_index), out_blob_->count());
+  if(use_constant_feature){
+    // compute direction and distance features
+    int siz = height_ * width_;
+    std::vector<float> direction_data(siz);
+    std::vector<float> distance_data(siz);
 
-  // compute direction and distance features
-  int siz = height_ * width_;
-  std::vector<float> direction_data(siz);
-  std::vector<float> distance_data(siz);
-
-  for (int row = 0; row < height_; ++row) {
-    for (int col = 0; col < width_; ++col) {
-      int idx = row * width_ + col;
-      // * row <-> x, column <-> y
-      float center_x = Pixel2Pc(row, height_, range_);
-      float center_y = Pixel2Pc(col, width_, range_);
-      constexpr double K_CV_PI = 3.1415926535897932384626433832795;
-      direction_data[idx] =
-          static_cast<float>(std::atan2(center_y, center_x) / (2.0 * K_CV_PI));
-      distance_data[idx] =
-          static_cast<float>(std::hypot(center_x, center_y) / 60.0 - 0.5);
+    for (int row = 0; row < height_; ++row) {
+      for (int col = 0; col < width_; ++col) {
+        int idx = row * width_ + col;
+        // * row <-> x, column <-> y
+        float center_x = Pixel2Pc(row, height_, range_);
+        float center_y = Pixel2Pc(col, width_, range_);
+        constexpr double K_CV_PI = 3.1415926535897932384626433832795;
+        direction_data[idx] =
+            static_cast<float>(std::atan2(center_y, center_x) / (2.0 * K_CV_PI));
+        distance_data[idx] =
+            static_cast<float>(std::hypot(center_x, center_y) / 60.0 - 0.5);
+      }
     }
+    caffe::caffe_copy(siz, direction_data.data(), direction_data_);
+    caffe::caffe_copy(siz, distance_data.data(), distance_data_);
   }
-  caffe::caffe_copy(siz, direction_data.data(), direction_data_);
-  caffe::caffe_copy(siz, distance_data.data(), distance_data_);
-
   return true;
 }
 
@@ -107,7 +114,9 @@ void FeatureGenerator::generate(
 
     int idx = map_idx_[i];
     float pz = points[i].z;
+    // kitti dataset of intensify already in (0~1)!!!!!
     float pi = points[i].intensity / 255.0;
+    // float pi = points[i].intensity;
     if (max_height_data_[idx] < pz) {
       max_height_data_[idx] = pz;
       top_intensity_data_[idx] = pi;

@@ -2,6 +2,15 @@
 
 Autoware package based on Baidu's object segmenter.
 
+## The Pretrained model
+Use this link to download the pretrained model from Baidu:
+
+https://github.com/ApolloAuto/apollo/tree/master/modules/perception/production/data/perception/lidar/models/cnnseg
+
+These two files are needed:
+* deploy.prototxt
+* deploy.caffemodel
+
 ## How to launch
 
 * From a sourced terminal:

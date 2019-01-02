@@ -48,6 +48,7 @@ private:
   double range_, score_threshold_;
   int width_;
   int height_;
+  bool use_constant_feature_;
   std_msgs::Header message_header_;
   std::string topic_src_;
 

@@ -16,7 +16,7 @@ public:
   FeatureGenerator(){}
   ~FeatureGenerator(){}
 
-  bool init(caffe::Blob<float>* out_blob);
+  bool init(caffe::Blob<float>* out_blob, bool use_constant_feature);
   void generate(
       const pcl::PointCloud<pcl::PointXYZI>::Ptr& pc_ptr);
 private:
