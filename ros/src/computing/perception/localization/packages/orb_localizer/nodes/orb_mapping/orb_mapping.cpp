@@ -3,7 +3,7 @@
  *  All rights reserved.
  *
  *  XXX: Licensing has not been cleared yet.
-*/
+ */
 
 #include <iostream>
 #include <string>
