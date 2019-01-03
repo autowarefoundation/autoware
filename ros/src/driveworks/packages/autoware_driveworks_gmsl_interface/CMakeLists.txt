@@ -3,30 +3,30 @@ project(autoware_driveworks_gmsl_interface)
 
 find_package(CUDA)
 
-find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
-        roscpp
-        sensor_msgs
-        std_msgs
-        cv_bridge
-        image_transport
-        camera_info_manager
-        nodelet
-        )
-
-catkin_package(
-        LIBRARIES ${PROJECT_NAME}
-        CATKIN_DEPENDS
-        sensor_msgs
-        std_msgs
-)
-
 if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
       set(DRIVEWORKS_LINKER_FLAGS "-Wl,--unresolved-symbols=ignore-in-object-files -Wl,--allow-shlib-undefined")
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
       set(DRIVEWORKS_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup")
     endif()
+
+    find_package(catkin REQUIRED COMPONENTS
+            autoware_build_flags
+            roscpp
+            sensor_msgs
+            std_msgs
+            cv_bridge
+            image_transport
+            camera_info_manager
+            nodelet
+    )
+
+    catkin_package(
+            LIBRARIES ${PROJECT_NAME}
+            CATKIN_DEPENDS
+            sensor_msgs
+            std_msgs
+    )
 
     add_definitions(-DVIBRANTE)
 
@@ -91,5 +91,7 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64" AND CUDA_FOUND)
     )
 
 else()
+    find_package(catkin REQUIRED)
+    catkin_package()
     message("gmsl_camera driver will not be built. CUDA was not found.")
 endif()
