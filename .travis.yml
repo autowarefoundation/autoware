@@ -6,8 +6,8 @@ cache:
     - $HOME/.ccache  # can be any valid cache location
 env:
   matrix:
-    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=9
-    - ROS_DISTRO="melodic" _GUARD_INTERVAL=9
+    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=20
+    - ROS_DISTRO="melodic" _GUARD_INTERVAL=20
 matrix:
   allow_failures:
     - env: ROS_DISTRO="melodic"
