@@ -105,7 +105,7 @@ MissionAborted|-|Mission is aborted by other nodes(e.g. by AMS). | Throws operat
 
 ### Driving States
 State name|Required topic|Description|Implementation
---|---|--
+--|--|---|--
 WaitReady|-|Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
 WaitEngage|-|Waits for engage button in DecisionMakerPanel to be pressed|Waits until engage key is given by DecisionMakerPanel
 DriveEmergency|-|Vehicle is stopping due to emergency |Throws mission_aborted key
