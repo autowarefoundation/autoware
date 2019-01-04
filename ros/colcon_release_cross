@@ -74,7 +74,7 @@ END
             -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-            -DCMAKE_PREFIX_PATH='/sysroot/synquacer/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}' \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}' \
             -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH} \
             -DCMAKE_BUILD_TYPE=Release $*
         "

@@ -27,9 +27,17 @@ include_directories(
   ${vector_map_INCLUDE_DIRS}
 )
 
-add_library(vector_map lib/vector_map/vector_map.cpp)
-add_dependencies(vector_map ${catkin_EXPORTED_TARGETS})
-target_link_libraries(vector_map ${catkin_LIBRARIES})
+add_library(vector_map
+  lib/vector_map/vector_map.cpp
+)
+add_dependencies(vector_map
+  ${catkin_EXPORTED_TARGETS}
+  ${vector_map_msgs_EXPORTED_TARGETS}
+)
+target_link_libraries(vector_map
+  ${catkin_LIBRARIES}
+  ${vector_map_msgs_LIBRARIES}
+)
 
 ## Install executables and/or libraries
 install(TARGETS vector_map

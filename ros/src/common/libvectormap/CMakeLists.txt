@@ -5,8 +5,8 @@ project(libvectormap)
 find_package(autoware_build_flags REQUIRED)
 
 find_package(vector_map REQUIRED)
-find_package(catkin REQUIRED COMPONENTS
-        )
+find_package(vector_map_msgs REQUIRED)
+find_package(catkin REQUIRED)
 
 find_package(Eigen3 QUIET)
 
@@ -37,6 +37,7 @@ catkin_package(
 include_directories(
         include
         ${vector_map_INCLUDE_DIRS}
+        ${vector_map_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
 )
@@ -48,7 +49,13 @@ add_library(libvectormap STATIC
 
 target_link_libraries(libvectormap
         ${catkin_LIBRARIES}
+        ${vector_map_msgs_LIBRARIES}
         ${EIGEN3_LIBRARIES}
+        )
+
+add_dependencies(libvectormap
+        ${catkin_EXPORTED_TARGETS}
+        ${vector_map_msgs_EXPORTED_TARGETS}
         )
 
 install(TARGETS libvectormap
