@@ -6,8 +6,10 @@ Each status is managed by state machine.
 <!-- Autoware package that visualize internal state and publish some commands. -->
 ### Vehicle
 <img src="docs/VehicleStates.jpg" width=300>
+
 ### Mission
 <img src="docs/MissionStates.jpg" width=600>
+
 ### Driving
 <img src="docs/DriveStates.jpg" width=800>
 
@@ -74,32 +76,32 @@ Topic|Type|Objective
 /target_velocity_array|std_msgs/Float64MultiArray| Array of target velocity obtained from final_waypoints.
 
 
-## State Desctription
+## State Description
 ### Vehicle States
-State name|Group|Required topic|Description|Implementation
+State name|Required topic|Description|Implementation
 --|--|---|--
-Init|Init|-|The parent state of the following states.|-
-SensorInit|Init|/filtered_points|Waits until all sensors are ready.|Waits until /filtered_points is received unless wf_simulator node is launched.  
-MapInit|Init||Waits until vector map is ready|Waits until vector_map is subscribed if disuse_vector_map is set false.
-LocalizationInit|Init|/current_pose|Waits until localizer is ready | Waits until current_pose is converged. (i.e. ndt_matching is stable.)
-PlanningInit|Init|/closest_waypoint|Waits unil planners are ready | Subscriber is set for /closest_waypoint.
-VehicleInit|Init|-|Waits until vehicle is ready for departure.|No implementation goes directly to vehilce ready state.
-VehicleReady|-|-|Vehicle is ready to move.|Exits to VehicleEmergency when `emergency` key is given by state_cmd from other states, or if `emergency_flag` is set true by other states.
-VehicleEmergency|-|-|Emergency is detected somewhere in the system. |Waits until `return_from_emergency` key is by /state_cmd (e.g. by DecisionMakerPanel)
+Init|-|The parent state of the following states.|-
+SensorInit|/filtered_points|Waits until all sensors are ready.|Waits until /filtered_points is received unless wf_simulator node is launched.  
+MapInit||Waits until vector map is ready|Waits until vector_map is subscribed if disuse_vector_map is set false.
+LocalizationInit|/current_pose|Waits until localizer is ready | Waits until current_pose is converged. (i.e. ndt_matching is stable.)
+PlanningInit|/closest_waypoint|Waits unil planners are ready | Subscriber is set for /closest_waypoint.
+VehicleInit|-|Waits until vehicle is ready for departure.|No implementation goes directly to vehilce ready state.
+VehicleReady|-|Vehicle is ready to move.|Exits to VehicleEmergency when `emergency` key is given by state_cmd from other states, or if `emergency_flag` is set true by other states.
+VehicleEmergency|-|Emergency is detected somewhere in the system. |Waits until `return_from_emergency` key is by /state_cmd (e.g. by DecisionMakerPanel)
 
 ### Mission States
-State name|Group|Required topic|Description|Implementation
+State name|Required topic|Description|Implementation
 --|--|---|--
-WaitVehicleReady|-||Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
-WaitOrder|-|/based_lane_array|wayits until mission is given. | waits until base_lane_array is received.
-MissionCheck|-|/final_waypoints<br> /current_waypoint|Waits until all the planners are ready. |Waits until /final_waypoints (from planner nodes) and /current_waypoint are received.
-DriveReady|-||Given Mission is approved and vehicle is ready to move. |Waits until engage or mission_canceled key is given.
-Driving|-||The vehicle is driving. According to the planner nodes|Sets operation_start key. Goes to MissionAborted in case of emergency.
-DrivingMissionChange|-|/based/lane_waypoints_array|Waits for new mission while the vehicle keeps driving. | Waits until new /based/lane_waypoints_array is sent from management system. Then, checks if the waypoint is compatible or not depending on change_threshold_dist and change_threshold_angle parameters. Publish the new mission as /lane_waypoints_array if compatible.
-MissionChangeSucceeded|-||New waypoints are compatible and vehicle will start following the new mission. | Throws return_to_driving key after 1 second if use_management_system is set false.
-MissionChangeFailed|-||New waypoints are NOT compatible and vehicle will continue following the old mission. | Throws return_to_driving key after 1 second if use_management_system is set false.
-MissionComplete|-||Vehicle has reached the goal.|If use_management_system is false and auto_mission_reload is true, go to MissionCheck state. Otherwise, got to WaitOrder state after 1 second.
-MissionAborted|-||Mission is aborted by other nodes(e.g. by AMS). | Throws operation_end to Drving State Machine. Then, go to wait order automatically if use_management_system is false, otherwise waits until goto_wait_order key is given by management system.
+WaitVehicleReady|-|Waits until vehicle setup is done|Waits until vehicle_is_ready key is given from Vehicle State Machine
+WaitOrder|/based_lane_array|wayits until mission is given. | waits until base_lane_array is received.
+MissionCheck|/final_waypoints<br> /current_waypoint|Waits until all the planners are ready. |Waits until /final_waypoints (from planner nodes) and /current_waypoint are received.
+DriveReady|-|Given Mission is approved and vehicle is ready to move. |Waits until engage or mission_canceled key is given.
+Driving|-|The vehicle is driving. According to the planner nodes|Sets operation_start key. Goes to MissionAborted in case of emergency.
+DrivingMissionChange|/based/lane_waypoints_array|Waits for new mission while the vehicle keeps driving. | Waits until new /based/lane_waypoints_array is sent from management system. Then, checks if the waypoint is compatible or not depending on change_threshold_dist and change_threshold_angle parameters. Publish the new mission as /lane_waypoints_array if compatible.
+MissionChangeSucceeded|-|New waypoints are compatible and vehicle will start following the new mission. | Throws return_to_driving key after 1 second if use_management_system is set false.
+MissionChangeFailed|-|New waypoints are NOT compatible and vehicle will continue following the old mission. | Throws return_to_driving key after 1 second if use_management_system is set false.
+MissionComplete|-|Vehicle has reached the goal.|If use_management_system is false and auto_mission_reload is true, go to MissionCheck state. Otherwise, got to WaitOrder state after 1 second.
+MissionAborted|-|Mission is aborted by other nodes(e.g. by AMS). | Throws operation_end to Drving State Machine. Then, go to wait order automatically if use_management_system is false, otherwise waits until goto_wait_order key is given by management system.
 
 ### Driving States
 State name|Required topic|Description|Implementation
