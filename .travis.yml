@@ -6,8 +6,8 @@ cache:
     - $HOME/.ccache  # can be any valid cache location
 env:
   matrix:
-    - ROS_DISTRO="kinetic"
-    - ROS_DISTRO="melodic"
+    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=9
+    - ROS_DISTRO="melodic" _GUARD_INTERVAL=9
 matrix:
   allow_failures:
     - env: ROS_DISTRO="melodic"
@@ -15,4 +15,4 @@ matrix:
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
-  - travis_wait 30 .industrial_ci/travis.sh
+  - .industrial_ci/travis.sh
