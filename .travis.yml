@@ -1,12 +1,18 @@
 language: generic
 services:
   - docker
-
+cache:
+  directories:
+    - $HOME/.ccache  # can be any valid cache location
 env:
   matrix:
     - ROS_DISTRO="kinetic"
+    - ROS_DISTRO="melodic"
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="melodic"
 
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
-  - travis_wait 20 .industrial_ci/travis.sh
+  - .industrial_ci/travis.sh
