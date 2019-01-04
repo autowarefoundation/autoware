@@ -15,4 +15,4 @@ matrix:
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
-  - .industrial_ci/travis.sh
+  - travis_wait 30 .industrial_ci/travis.sh
