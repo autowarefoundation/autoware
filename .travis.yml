@@ -6,7 +6,7 @@ cache:
     - $HOME/.ccache  # can be any valid cache location
 env:
   matrix:
-    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p2 ROS_PARALLEL_JOBS=-j2
+    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4 VERBOSE_TESTS=false
 #    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4
 #matrix:
 #  allow_failures:
