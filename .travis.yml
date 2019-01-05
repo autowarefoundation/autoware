@@ -3,14 +3,16 @@ services:
   - docker
 cache:
   directories:
-    - $HOME/.ccache  # can be any valid cache location
+    - $HOME/.ccache
 env:
+  global:
+    - CCACHE_DIR=$HOME/.ccache
   matrix:
     - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4 CATKIN_PARALLEL_TEST_JOBS=-p1 ROS_PARALLEL_TEST_JOBS=-j1 VERBOSE_TESTS=false
-#    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4
-#matrix:
-#  allow_failures:
-#    - env: ROS_DISTRO="melodic"
+    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4 CATKIN_PARALLEL_TEST_JOBS=-p1 ROS_PARALLEL_TEST_JOBS=-j1 VERBOSE_TESTS=false
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO="melodic" _GUARD_INTERVAL=10 CATKIN_PARALLEL_JOBS=-p4 ROS_PARALLEL_JOBS=-j4 CATKIN_PARALLEL_TEST_JOBS=-p1 ROS_PARALLEL_TEST_JOBS=-j1 VERBOSE_TESTS=false
 
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
