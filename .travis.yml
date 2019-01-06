@@ -8,11 +8,11 @@ env:
   global:
     - CCACHE_DIR=$HOME/.ccache
   matrix:
-    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1' CATKIN_CONFIG='--blacklist velodyne_pointcloud velodyne_laserscan rslidar_pointcloud'
-    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1' CATKIN_CONFIG='--blacklist velodyne_pointcloud velodyne_laserscan rslidar_pointcloud'
+    - ROS_DISTRO="kinetic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1'
+    - ROS_DISTRO="melodic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1'
 matrix:
   allow_failures:
-    - env: ROS_DISTRO="melodic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1' CATKIN_CONFIG='--blacklist velodyne_pointcloud velodyne_laserscan rslidar_pointcloud'
+    - env: ROS_DISTRO="melodic" _GUARD_INTERVAL=10 VERBOSE_TESTS=false CATKIN_PARALLEL_JOBS='-p2' ROS_PARALLEL_JOBS='-j2' ROS_PARALLEL_TEST_JOBS='-j1' CATKIN_PARALLEL_TEST_JOBS='-p1'
 
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
