@@ -42,6 +42,8 @@
 #include <sstream>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
@@ -227,6 +229,7 @@ static bool _use_local_transform = false;
 static bool _use_imu = false;
 static bool _use_odom = false;
 static bool _imu_upside_down = false;
+static bool _output_log_data = false;
 
 static std::string _imu_topic = "/imu_raw";
 
@@ -1385,25 +1388,28 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     ndt_reliability_pub.publish(ndt_reliability);
 
     // Write log
-    if (!ofs)
+    if(_output_log_data)
     {
-      std::cerr << "Could not open " << filename << "." << std::endl;
-      exit(1);
+      if (!ofs)
+      {
+        std::cerr << "Could not open " << filename << "." << std::endl;
+      }
+      else
+      {
+        ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
+            << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
+            << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
+            << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
+            << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
+            << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
+            << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
+            << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
+            << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
+            << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
+            << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
+            << std::endl;
+      }
     }
-    static ros::Time start_time = input->header.stamp;
-
-    ofs << input->header.seq << "," << scan_points_num << "," << step_size << "," << trans_eps << "," << std::fixed
-        << std::setprecision(5) << current_pose.x << "," << std::fixed << std::setprecision(5) << current_pose.y << ","
-        << std::fixed << std::setprecision(5) << current_pose.z << "," << current_pose.roll << "," << current_pose.pitch
-        << "," << current_pose.yaw << "," << predict_pose.x << "," << predict_pose.y << "," << predict_pose.z << ","
-        << predict_pose.roll << "," << predict_pose.pitch << "," << predict_pose.yaw << ","
-        << current_pose.x - predict_pose.x << "," << current_pose.y - predict_pose.y << ","
-        << current_pose.z - predict_pose.z << "," << current_pose.roll - predict_pose.roll << ","
-        << current_pose.pitch - predict_pose.pitch << "," << current_pose.yaw - predict_pose.yaw << ","
-        << predict_pose_error << "," << iteration << "," << fitness_score << "," << trans_probability << ","
-        << ndt_reliability.data << "," << current_velocity << "," << current_velocity_smooth << "," << current_accel
-        << "," << angular_velocity << "," << time_ndt_matching.data << "," << align_time << "," << getFitnessScore_time
-        << std::endl;
 
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "Sequence: " << input->header.seq << std::endl;
@@ -1494,12 +1500,18 @@ int main(int argc, char** argv)
   ros::NodeHandle private_nh("~");
 
   // Set log file name.
-  char buffer[80];
-  std::time_t now = std::time(NULL);
-  std::tm* pnow = std::localtime(&now);
-  std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
-  filename = "ndt_matching_" + std::string(buffer) + ".csv";
-  ofs.open(filename.c_str(), std::ios::app);
+  private_nh.getParam("output_log_data", _output_log_data);
+  if(_output_log_data)
+  {
+    char buffer[80];
+    std::time_t now = std::time(NULL);
+    std::tm* pnow = std::localtime(&now);
+    std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
+    std::string directory_name = "/tmp/Autoware/log/ndt_matching";
+    filename = directory_name + "/" + std::string(buffer) + ".csv";
+    boost::filesystem::create_directories(boost::filesystem::path(directory_name));
+    ofs.open(filename.c_str(), std::ios::app);
+  }
 
   // Geting parameters
   int method_type_tmp = 0;
