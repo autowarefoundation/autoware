@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifndef _POINTS_IMAGE_H_
+#define _POINTS_IMAGE_H_
+
 #include <opencv2/opencv.hpp>
 #include <sensor_msgs/PointCloud2.h>
 #include "autoware_msgs/PointsImage.h"
