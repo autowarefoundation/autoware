@@ -7,7 +7,6 @@ variables:
   CI_SOURCE_PATH: $CI_PROJECT_DIR
   ROSINSTALL_FILE: $CI_SOURCE_PATH/dependencies.rosinstall
   CATKIN_OPTIONS: $CI_SOURCE_PATH/catkin.options
-  PYTHONPATH: ${PYTHONPATH}:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages
   GIT_SUBMODULE_STRATEGY: recursive
   #CI_DEBUG_TRACE: "true"
 
@@ -21,6 +20,9 @@ variables:
     - apt-get update
     - apt-get install -y dpkg
     - apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-${ROS_DISTRO}-catkin
+    - apt-get install -y python3-pip python3-setuptools
+    # Update setuptools from PyPI because the version Ubuntu ships with is too old
+    - pip3 install -U setuptools
     - source /opt/ros/${ROS_DISTRO}/setup.bash
     - rosdep init
     - rosdep update
@@ -39,6 +41,8 @@ build_kinetic:
     ROS_DISTRO: kinetic
   <<: *build_common
   script:
+  # colcon as a Debian package is only available in Kinetic and up
+    - apt-get install -y python3-colcon-common-extensions
   # Install lcov from source as binary installation errors when appending files
     - git clone https://github.com/linux-test-project/lcov.git
     - cd lcov
@@ -46,11 +50,15 @@ build_kinetic:
     - make install 
     - cd ..
     - rm -r lcov
-    - catkin_make clean
-    - catkin_make -j2 --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+  # We first build the entire workspace normally
+    - colcon build --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
+  # And then build the tests target. catkin (ROS1) packages add their tests to the tests target
+  # which is not the standard target for CMake projects. We need to trigger the tests target so that
+  # tests are built and any fixtures are set up.
+    - colcon build --cmake-target tests --cmake-args -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage" -DCMAKE_BUILD_TYPE=Debug
     - lcov --initial --directory build --capture --output-file lcov.base
-    - catkin_make run_tests
-    - catkin_test_results
+    - colcon test
+    - colcon test-result
     - lcov --directory build --capture --output-file lcov.test
     - lcov -a lcov.base -a lcov.test -o lcov.total
     - lcov -r lcov.total '*/tests/*' '*/test/*' '*/build/*' '*/devel/*' '/usr/*' '/opt/*' '*/CMakeCCompilerId.c' '*/CMakeCXXCompilerId.cpp' -o lcov.total.filtered
@@ -76,15 +84,16 @@ build_cross:
     - docker:dind
   variables:
     ROS_DISTRO: kinetic
-    AUTOWARE_DOCKER_DATE: 20181123
+    AUTOWARE_DOCKER_DATE: 20190102
     AUTOWARE_HOME: $CI_PROJECT_DIR
     AUTOWARE_TARGET_ARCH: aarch64
     AUTOWARE_TARGET_PLATFORM: generic-aarch64
     AUTOWARE_BUILD_PATH: $CI_PROJECT_DIR/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_DEVEL_PATH: $CI_PROJECT_DIR/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_INSTALL_PATH: $CI_PROJECT_DIR/ros/install-${AUTOWARE_TARGET_PLATFORM}
     AUTOWARE_TOOLCHAIN_FILE_PATH: $CI_PROJECT_DIR/ros/cross_toolchain.cmake
     AUTOWARE_SYSROOT: /sysroot/${AUTOWARE_TARGET_PLATFORM}
   script:
+    # - ${AUTOWARE_HOME}/docker/crossbuild/build_cross_image.sh
     - 'docker run
           -e AUTOWARE_SYSROOT=${AUTOWARE_SYSROOT}
           --rm
@@ -92,20 +101,18 @@ build_cross:
           -w ${AUTOWARE_HOME}/ros
           autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE}
           bash
-            -c "source /opt/ros/kinetic/setup.bash &&
-                catkin_make
-                  -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                  -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
-                  -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                  --build ${AUTOWARE_BUILD_PATH}
-                  clean &&
-                source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash &&
-                catkin_make
-                  -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
-                  -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH}
-                  -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
-                  --build ${AUTOWARE_BUILD_PATH}
-                  -j2"
+            -c "
+                source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash &&
+                colcon build
+                    --merge-install
+                    --build-base ${AUTOWARE_BUILD_PATH}
+                    --install-base ${AUTOWARE_INSTALL_PATH}
+                    --cmake-args
+                    -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH}
+                    -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH}
+                    -DCMAKE_PREFIX_PATH=\"${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}\"
+                    -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH}
+                  "
                   '
   retry: 1
   

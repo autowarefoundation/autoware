@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mqtt_socket)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   roslib
   std_msgs
-  autoware_msgs
   autoware_can_msgs
-  tablet_socket_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
@@ -26,6 +29,8 @@ if (EXISTS /usr/include/mosquitto.h)
   include_directories(
     include
     ${catkin_INCLUDE_DIRS}
+    ${tablet_socket_msgs_INCLUDE_DIRS}
+    ${autoware_msgs_INCLUDE_DIRS}
   )
 
   add_executable(mqtt_sender nodes/mqtt_sender/mqtt_sender.cpp)

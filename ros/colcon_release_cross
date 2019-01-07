@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-echo "This script is deprecated and will be removed soon, please use colcon_release_cross instead"
-sleep 2
-
 if [ "$1" = "synquacer" ] || [ "$1" = "driveworks" ] || [ "$1" = "generic-aarch64" ]
 then
     AUTOWARE_TARGET_ARCH=aarch64
@@ -14,8 +11,8 @@ then
        rm -rf build-${AUTOWARE_TARGET_PLATFORM}
    fi
 
-   if [[ -d devel-${AUTOWARE_TARGET_PLATFORM} ]]; then
-       rm -rf devel-${AUTOWARE_TARGET_PLATFORM}
+   if [[ -d install-${AUTOWARE_TARGET_PLATFORM} ]]; then
+       rm -rf install-${AUTOWARE_TARGET_PLATFORM}
    fi
 
     AUTOWARE_HOME=/home/autoware/Autoware
@@ -49,13 +46,13 @@ END
     fi
 
     AUTOWARE_BUILD_PATH=${AUTOWARE_HOME}/ros/build-${AUTOWARE_TARGET_PLATFORM}
-    AUTOWARE_DEVEL_PATH=${AUTOWARE_HOME}/ros/devel-${AUTOWARE_TARGET_PLATFORM}
+    AUTOWARE_INSTALL_PATH=${AUTOWARE_HOME}/ros/install-${AUTOWARE_TARGET_PLATFORM}
 
     AUTOWARE_TOOLCHAIN_FILE_PATH="${AUTOWARE_HOME}/ros/${AUTOWARE_TOOLCHAIN_FILE}"
     echo "Using toolchain file: '${AUTOWARE_TOOLCHAIN_FILE_PATH}''"
     AUTOWARE_SYSROOT=/sysroot/${AUTOWARE_TARGET_PLATFORM}
 
-    AUTOWARE_DOCKER_DATE=20181220
+    AUTOWARE_DOCKER_DATE=20190102
 
     docker container run \
         -it \
@@ -68,29 +65,21 @@ END
         autoware/build:${AUTOWARE_TARGET_PLATFORM}-kinetic-${AUTOWARE_DOCKER_DATE} \
         bash \
         -c "\
-        source /opt/ros/kinetic/setup.bash && \
-        catkin_make \
+        source ${AUTOWARE_SYSROOT}/opt/ros/kinetic/setup.bash && \
+        colcon build \
+            --merge-install \
+            --build-base ${AUTOWARE_BUILD_PATH} \
+            --install-base ${AUTOWARE_INSTALL_PATH} \
+            --cmake-args \
             -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
             -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
-            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
             -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
-            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
-            --build ${AUTOWARE_BUILD_PATH} \
-            clean && \
-        source devel-${AUTOWARE_TARGET_PLATFORM}/setup.bash && \
-        catkin_make \
-            -DCUDA_ARCH=${AUTOWARE_CUDA_ARCH} \
-            -DCMAKE_TOOLCHAIN_FILE=${AUTOWARE_TOOLCHAIN_FILE_PATH} \
-            -DCATKIN_DEVEL_PREFIX=${AUTOWARE_DEVEL_PATH} \
-            -DCMAKE_SYSTEM_PROCESSOR=${AUTOWARE_TARGET_ARCH} \
-            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_DEVEL_PATH}' \
-            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_DEVEL_PATH} \
-            --build ${AUTOWARE_BUILD_PATH} \
+            -DCMAKE_PREFIX_PATH='${AUTOWARE_SYSROOT}/opt/ros/kinetic;${AUTOWARE_INSTALL_PATH}' \
+            -DCMAKE_FIND_ROOT_PATH=${AUTOWARE_INSTALL_PATH} \
             -DCMAKE_BUILD_TYPE=Release $*
         "
 
-    find devel-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
+    find install-${AUTOWARE_TARGET_PLATFORM}/ -type f -exec grep -Iq . {} \; -and -exec sed -i -e "s#${AUTOWARE_SYSROOT}##g" {} \;
 else
     echo "Select target platform: synquacer, driveworks, generic-aarch64"
 fi

@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(pos_db)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         gnss
         jsk_recognition_msgs
         tf
         jsk_rviz_plugins
-        autoware_msgs
         )
 
 include(FindLibSsh2.cmake)
@@ -29,6 +31,7 @@ if (LIBSSH2_FOUND)
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
+            ${autoware_msgs_INCLUDE_DIRS}
             ${LIBSSH2_INCLUDE_DIRS}
     )
 
