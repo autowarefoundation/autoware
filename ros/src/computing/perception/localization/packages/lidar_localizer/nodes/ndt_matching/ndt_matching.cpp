@@ -42,6 +42,8 @@
 #include <sstream>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
@@ -1505,7 +1507,9 @@ int main(int argc, char** argv)
     std::time_t now = std::time(NULL);
     std::tm* pnow = std::localtime(&now);
     std::strftime(buffer, 80, "%Y%m%d_%H%M%S", pnow);
-    filename = "ndt_matching_" + std::string(buffer) + ".csv";
+    std::string directory_name = "/tmp/Autoware/log/ndt_matching";
+    filename = directory_name + "/" + std::string(buffer) + ".csv";
+    boost::filesystem::create_directories(boost::filesystem::path(directory_name));
     ofs.open(filename.c_str(), std::ios::app);
   }
 
