@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>tablet_socket</name>
     <version>1.9.1</version>
     <description>The package of Android UI's tablet_socket</description>
@@ -16,12 +16,12 @@
     <build_depend>autoware_msgs</build_depend>
     <build_depend>geometry_msgs</build_depend>
 
-    <run_depend>tf</run_depend>
-    <run_depend>gnss</run_depend>
-    <run_depend>tablet_socket_msgs</run_depend>
-    <run_depend>autoware_can_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
-    <run_depend>geometry_msgs</run_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>gnss</exec_depend>
+    <exec_depend>tablet_socket_msgs</exec_depend>
+    <exec_depend>autoware_can_msgs</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
+    <exec_depend>geometry_msgs</exec_depend>
 
     <export>
     </export>

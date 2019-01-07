@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>points_preprocessor</name>
     <version>1.9.1</version>
     <description>The points_preprocessor package</description>
@@ -28,18 +28,18 @@
     <build_depend>gtest</build_depend>
     <build_depend>yaml-cpp</build_depend>
 
-    <run_depend>autoware_config_msgs</run_depend>
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>message_filters</run_depend>
-    <run_depend>pcl_conversions</run_depend>
-    <run_depend>pcl_ros</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>sensor_msgs</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>velodyne_pointcloud</run_depend>
-    <run_depend>libqt5-core</run_depend>
-    <run_depend>yaml-cpp</run_depend>
+    <exec_depend>autoware_config_msgs</exec_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>message_filters</exec_depend>
+    <exec_depend>pcl_conversions</exec_depend>
+    <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>velodyne_pointcloud</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
+    <exec_depend>yaml-cpp</exec_depend>
 
     <test_depend>roslaunch</test_depend>
     <test_depend>rosunit</test_depend>

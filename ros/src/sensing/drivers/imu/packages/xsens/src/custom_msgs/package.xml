@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>custom_msgs</name>
   <version>1.9.1</version>
   <description>
@@ -19,13 +19,13 @@
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
 
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>message_generation</run_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>message_generation</exec_depend>
 
   <export>
     <architecture_independent/>

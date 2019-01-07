@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>as</name>
   <version>1.9.1</version>
   <description>The pacmod interface package</description>
@@ -14,11 +14,11 @@
   <build_depend>automotive_platform_msgs</build_depend>
   <build_depend>dbw_mkz_msgs</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>automotive_platform_msgs</run_depend>
-  <run_depend>dbw_mkz_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>automotive_platform_msgs</exec_depend>
+  <exec_depend>dbw_mkz_msgs</exec_depend>
 
   <export>
   </export>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>glviewer</name>
     <version>1.9.1</version>
     <description>The glviewer package</description>
@@ -12,11 +12,11 @@
     <build_depend>libqt5-opengl-dev</build_depend>
     <build_depend>roscpp</build_depend>
 
-    <run_depend>libqt5-core</run_depend>
-    <run_depend>libqt5-gui</run_depend>
-    <run_depend>libqt5-widgets</run_depend>
-    <run_depend>libqt5-opengl</run_depend>
-    <run_depend>roscpp</run_depend>
+    <exec_depend>libqt5-core</exec_depend>
+    <exec_depend>libqt5-gui</exec_depend>
+    <exec_depend>libqt5-widgets</exec_depend>
+    <exec_depend>libqt5-opengl</exec_depend>
+    <exec_depend>roscpp</exec_depend>
 
     <export>
     </export>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>orb_localizer</name>
     <version>1.6.3</version>
     <description>Vision-based Localization Derived from ORB-SLAM2</description>
@@ -19,14 +19,14 @@
     <build_depend>eigen</build_depend>
     <build_depend>libglew-dev</build_depend>
 
-    <run_depend>cmake_modules</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>image_transport</run_depend>
-    <run_depend>message_runtime</run_depend>
-    <run_depend>message_generation</run_depend>
-    <run_depend>eigen</run_depend>
-    <run_depend>libglew-dev</run_depend>
+    <exec_depend>cmake_modules</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>image_transport</exec_depend>
+    <exec_depend>message_runtime</exec_depend>
+    <exec_depend>message_generation</exec_depend>
+    <exec_depend>eigen</exec_depend>
+    <exec_depend>libglew-dev</exec_depend>
 
     <export>
 

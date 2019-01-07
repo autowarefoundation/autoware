@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>op_utilities</name>
   <version>1.9.1</version>
   <description>The testing and logging utilities</description>
@@ -20,15 +20,15 @@
   <build_depend>pcl_conversions</build_depend>
   <build_depend>vector_map_msgs</build_depend>
  
-  <run_depend>roscpp</run_depend>
-  <run_depend>geometry_msgs</run_depend>  
-  <run_depend>map_file</run_depend>  
-  <run_depend>autoware_msgs</run_depend>
-  <run_depend>op_utility</run_depend>
-  <run_depend>op_planner</run_depend>
-  <run_depend>op_ros_helpers</run_depend>  
-  <run_depend>pcl_conversions</run_depend>
-  <run_depend>vector_map_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>  
+  <exec_depend>map_file</exec_depend>  
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>op_utility</exec_depend>
+  <exec_depend>op_planner</exec_depend>
+  <exec_depend>op_ros_helpers</exec_depend>  
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>vector_map_msgs</exec_depend>
 
   <export>
   </export>

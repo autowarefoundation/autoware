@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>op_simu</name>
     <version>1.9.1</version>
     <description>The libopenplanner_simu package</description>
@@ -17,13 +17,13 @@
     <build_depend>glut</build_depend>
     <build_depend>libx11-dev</build_depend>
 
-    <run_depend>op_utility</run_depend>
-    <run_depend>op_planner</run_depend>
-    <run_depend>libopencv-dev</run_depend>
-    <run_depend>opengl</run_depend>
-    <run_depend>libglew-dev</run_depend>
-    <run_depend>glut</run_depend>
-    <run_depend>libx11-dev</run_depend>
+    <exec_depend>op_utility</exec_depend>
+    <exec_depend>op_planner</exec_depend>
+    <exec_depend>libopencv-dev</exec_depend>
+    <exec_depend>opengl</exec_depend>
+    <exec_depend>libglew-dev</exec_depend>
+    <exec_depend>glut</exec_depend>
+    <exec_depend>libx11-dev</exec_depend>
 
 
     <export>

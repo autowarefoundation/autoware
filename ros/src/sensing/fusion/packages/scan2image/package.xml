@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>scan2image</name>
     <version>1.9.1</version>
     <description>The scan2image package</description>
     <maintainer email="kondoh@axe-inc.co.jp">kondoh</maintainer>
     <license>BSD</license>
     <build_depend>message_generation</build_depend>
-    <run_depend>message_runtime</run_depend>
+    <exec_depend>message_runtime</exec_depend>
     <buildtool_depend>catkin</buildtool_depend>
     <build_depend>cv_bridge</build_depend>
     <build_depend>image_transport</build_depend>
@@ -14,12 +14,12 @@
     <build_depend>sensor_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>image_transport</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>sensor_msgs</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>autoware_msgs</run_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>image_transport</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
     <export>
     </export>
 </package>

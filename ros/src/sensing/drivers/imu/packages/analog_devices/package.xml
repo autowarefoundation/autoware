@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>adi_driver</name>
   <version>1.9.1</version>
   <description>The adi_driver package</description>
@@ -16,13 +16,13 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>roslint</build_depend>
 
-  <run_depend>imu_filter_madgwick</run_depend>
-  <run_depend>imu_tools</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>rqt_plot</run_depend>
-  <run_depend>rviz</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>xacro</run_depend>
+  <exec_depend>imu_filter_madgwick</exec_depend>
+  <exec_depend>imu_tools</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rqt_plot</exec_depend>
+  <exec_depend>rviz</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <test_depend>roslaunch</test_depend>
   <test_depend>rostest</test_depend>

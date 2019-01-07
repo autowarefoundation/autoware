@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>range_fusion</name>
     <version>1.9.1</version>
     <description>The range_fusion package</description>
@@ -15,9 +15,9 @@
     <build_depend>autoware_config_msgs</build_depend>
     <build_depend>fusion</build_depend>
 
-    <run_depend>roscpp</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>autoware_config_msgs</run_depend>
-    <run_depend>fusion</run_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>autoware_config_msgs</exec_depend>
+    <exec_depend>fusion</exec_depend>
 
 </package>

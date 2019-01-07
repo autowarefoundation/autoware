@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>freespace_planner</name>
   <version>1.9.1</version>
   <description>The freespace_planner package</description>
@@ -16,11 +16,11 @@
   <build_depend>nav_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>nav_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
 
 
   <export>

@@ -1,4 +1,4 @@
-<package>
+<package format="2">
 
   <name>velodyne_pointcloud</name>
   <version>1.9.1</version>
@@ -36,21 +36,21 @@
   <build_depend>rostest</build_depend>
   <build_depend>tf2_ros</build_depend>
 
-  <run_depend>angles</run_depend>
-  <run_depend>nodelet</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>pluginlib</run_depend>
-  <run_depend>python-yaml</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>roslib</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>velodyne_driver</run_depend>
-  <run_depend>velodyne_msgs</run_depend>
-  <run_depend>yaml-cpp</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>velodyne_laserscan</run_depend>
-  <run_depend>vector_map_msgs</run_depend>
+  <exec_depend>angles</exec_depend>
+  <exec_depend>nodelet</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
+  <exec_depend>python-yaml</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>roslib</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>velodyne_driver</exec_depend>
+  <exec_depend>velodyne_msgs</exec_depend>
+  <exec_depend>yaml-cpp</exec_depend>
+  <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend>velodyne_laserscan</exec_depend>
+  <exec_depend>vector_map_msgs</exec_depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelets.xml"/>

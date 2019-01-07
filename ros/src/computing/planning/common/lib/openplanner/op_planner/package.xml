@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>op_planner</name>
     <version>1.9.1</version>
     <description>The libopenplanner_planner package</description>
@@ -11,7 +11,7 @@
     <build_depend>cmake_modules</build_depend>
     <build_depend>op_utility</build_depend>
     <build_depend>tinyxml</build_depend>
-    <run_depend>op_utility</run_depend>
-    <run_depend>tinyxml</run_depend>
+    <exec_depend>op_utility</exec_depend>
+    <exec_depend>tinyxml</exec_depend>
 
 </package>

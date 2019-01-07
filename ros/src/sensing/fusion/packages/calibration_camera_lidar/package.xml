@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>calibration_camera_lidar</name>
     <version>1.9.1</version>
     <description>The calibration_camera_lidar package</description>
@@ -24,20 +24,20 @@
     <build_depend>image_transport</build_depend>
 
 
-    <run_depend>rosinterface</run_depend>
-    <run_depend>message_runtime</run_depend>
-    <run_depend>std_msgs</run_depend>
-    <run_depend>glviewer</run_depend>
-    <run_depend>nlopt</run_depend>
-    <run_depend>autoware_msgs</run_depend>
-    <run_depend>libqt5-core</run_depend>
-    <run_depend>libqt5-widgets</run_depend>
-    <run_depend>libqt5-opengl</run_depend>
-    <run_depend>libxml2</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>rosconsole</run_depend>
-    <run_depend>sensor_msgs</run_depend>
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>pcl_ros</run_depend>
-    <run_depend>image_transport</run_depend>
+    <exec_depend>rosinterface</exec_depend>
+    <exec_depend>message_runtime</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
+    <exec_depend>glviewer</exec_depend>
+    <exec_depend>nlopt</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
+    <exec_depend>libqt5-widgets</exec_depend>
+    <exec_depend>libqt5-opengl</exec_depend>
+    <exec_depend>libxml2</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>rosconsole</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>image_transport</exec_depend>
 </package>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>op_simulation_package</name>
   <version>1.9.1</version>
   <description>OpenPlanner Simulator package</description>
@@ -24,19 +24,19 @@
   <build_depend>op_ros_helpers</build_depend>
   <build_depend>waypoint_follower</build_depend>
   
-  <run_depend>roscpp</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <run_depend>map_file</run_depend>
-   <run_depend>pcl_conversions</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>op_utility</run_depend>
-  <run_depend>op_planner</run_depend>
-  <run_depend>op_simu</run_depend>
-  <run_depend>op_ros_helpers</run_depend>  
-  <run_depend>waypoint_follower</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>map_file</exec_depend>
+   <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>op_utility</exec_depend>
+  <exec_depend>op_planner</exec_depend>
+  <exec_depend>op_simu</exec_depend>
+  <exec_depend>op_ros_helpers</exec_depend>  
+  <exec_depend>waypoint_follower</exec_depend>
 
   <export>
   </export>

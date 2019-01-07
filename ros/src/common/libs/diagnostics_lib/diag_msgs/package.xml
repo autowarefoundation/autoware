@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>diag_msgs</name>
   <version>1.9.1</version>
   <description>The libdiag package</description>
@@ -12,9 +12,9 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>message_runtime</build_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>message_generation</run_depend>
-  <run_depend>message_runtime</run_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
   <export>
   </export>
 </package>

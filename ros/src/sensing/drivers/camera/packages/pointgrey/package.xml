@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>autoware_pointgrey_drivers</name>
   <version>1.9.1</version>
   <description>The autoware_pointgrey_drivers package</description>
@@ -15,15 +15,15 @@
   <build_depend>tf</build_depend>
   <build_depend>cv_bridge</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>message_generation</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>cv_bridge</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
 
-  <run_depend>v4l-utils</run_depend>
-  <run_depend>gstreamer0.10-plugins-good</run_depend>
-  <run_depend>gscam</run_depend>
+  <exec_depend>v4l-utils</exec_depend>
+  <exec_depend>gstreamer0.10-plugins-good</exec_depend>
+  <exec_depend>gscam</exec_depend>
 
   <export>
   </export>

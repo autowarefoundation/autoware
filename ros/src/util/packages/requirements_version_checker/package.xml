@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>requirements_version_checker</name>
   <version>1.6.3</version>
   <description>The requirements_version_checker package</description>

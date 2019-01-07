@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>autoware_driveworks_gmsl_interface</name>
   <version>0.0.0</version>
   <description>
@@ -21,15 +21,15 @@
   <build_depend>camera_info_manager</build_depend>
   <build_depend>nodelet</build_depend>
 
-  <run_depend>libglew-dev</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
+  <exec_depend>libglew-dev</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
 
-  <run_depend>cv_bridge</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>camera_info_manager</run_depend>
-  <run_depend>nodelet</run_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>camera_info_manager</exec_depend>
+  <exec_depend>nodelet</exec_depend>
 
   <export>
     <nodelet plugin="${prefix}/nodelet_gmsl_camera.xml" />

@@ -1,4 +1,4 @@
-<package>
+<package format="2">
   <name>vlg22c_cam</name>
   <version>1.9.1</version>
   <description>A ROS Driver for VLG-22C Camera</description>
@@ -17,10 +17,10 @@
   <build_depend>sensor_msgs</build_depend> 
   <build_depend>camera_info_manager</build_depend>
 
-  <run_depend>image_transport</run_depend> 
-  <run_depend>roscpp</run_depend> 
-  <run_depend>std_msgs</run_depend> 
-  <run_depend>sensor_msgs</run_depend> 
-  <run_depend>camera_info_manager</run_depend>
+  <exec_depend>image_transport</exec_depend> 
+  <exec_depend>roscpp</exec_depend> 
+  <exec_depend>std_msgs</exec_depend> 
+  <exec_depend>sensor_msgs</exec_depend> 
+  <exec_depend>camera_info_manager</exec_depend>
 
 </package>

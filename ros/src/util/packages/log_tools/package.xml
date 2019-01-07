@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>log_tools</name>
     <version>1.9.1</version>
     <description>The log_tools package</description>
@@ -10,7 +10,7 @@
     <buildtool_depend>catkin</buildtool_depend>
     <buildtool_depend>autoware_build_flags</buildtool_depend>
 
-    <run_depend>rospy</run_depend>
-    <run_depend>python-flask</run_depend>
+    <exec_depend>rospy</exec_depend>
+    <exec_depend>python-flask</exec_depend>
 
 </package>

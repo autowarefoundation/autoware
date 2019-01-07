@@ -1,4 +1,4 @@
-<package>
+<package format="2">
 
   <name>velodyne</name>
   <version>1.9.1</version>
@@ -17,10 +17,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>velodyne_driver</run_depend>
-  <run_depend>velodyne_laserscan</run_depend>
-  <run_depend>velodyne_msgs</run_depend>
-  <run_depend>velodyne_pointcloud</run_depend>
+  <exec_depend>velodyne_driver</exec_depend>
+  <exec_depend>velodyne_laserscan</exec_depend>
+  <exec_depend>velodyne_msgs</exec_depend>
+  <exec_depend>velodyne_pointcloud</exec_depend>
 
   <export>
     <metapackage/>

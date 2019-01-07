@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>way_planner</name>
   <version>1.9.1</version>
   <description>The way_planner package</description>
@@ -37,8 +37,8 @@
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>autoware_build_flags</buildtool_depend> -->
-  <!-- Use run_depend for packages you need at runtime: -->
-  <!--   <run_depend>message_runtime</run_depend> -->
+  <!-- Use exec_depend for packages you need at runtime: -->
+  <!--   <exec_depend>message_runtime</exec_depend> -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
@@ -57,19 +57,19 @@
   <build_depend>op_simu</build_depend>
   <build_depend>autoware_can_msgs</build_depend>
   
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>vector_map_msgs</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>waypoint_follower</run_depend>
-  <run_depend>message_generation</run_depend>
-  <run_depend>pcl_conversions</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>op_utility</run_depend>
-  <run_depend>op_planner</run_depend>
-  <run_depend>op_simu</run_depend>
-  <run_depend>autoware_can_msgs</run_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>vector_map_msgs</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>waypoint_follower</exec_depend>
+  <exec_depend>message_generation</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>op_utility</exec_depend>
+  <exec_depend>op_planner</exec_depend>
+  <exec_depend>op_simu</exec_depend>
+  <exec_depend>autoware_can_msgs</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

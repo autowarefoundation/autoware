@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>nmea_navsat</name>
   <version>1.9.1</version>
   <description>The nmea_navsat package</description>

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>kitti_box_publisher</name>
   <version>1.9.1</version>
   <description>The kitti_box_publisher package</description>
@@ -13,10 +13,10 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>autoware_msgs</build_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>jsk_recognition_msgs</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>autoware_msgs</run_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>jsk_recognition_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
 </package>

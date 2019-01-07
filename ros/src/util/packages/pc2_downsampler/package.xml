@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>pc2_downsampler</name>
   <version>1.9.1</version>
   <description>The pc2_downsampler package</description>

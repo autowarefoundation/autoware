@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>autoware_build_flags</name>
   <version>1.9.1</version>
   <description>Common build flags for Autoware.</description>

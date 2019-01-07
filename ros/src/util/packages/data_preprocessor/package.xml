@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>data_preprocessor</name>
     <version>1.9.1</version>
     <description>The data_preprocessor package</description>
@@ -18,13 +18,13 @@
     <build_depend>roscpp</build_depend>
     <build_depend>std_msgs</build_depend>
 
-    <run_depend>cv_bridge</run_depend>
-    <run_depend>libpcl-all-dev</run_depend>
-    <run_depend>pcl_conversions</run_depend>
-    <run_depend>pcl_msgs</run_depend>
-    <run_depend>pcl_ros</run_depend>
-    <run_depend>roscpp</run_depend>
-    <run_depend>std_msgs</run_depend>
+    <exec_depend>cv_bridge</exec_depend>
+    <exec_depend>libpcl-all-dev</exec_depend>
+    <exec_depend>pcl_conversions</exec_depend>
+    <exec_depend>pcl_msgs</exec_depend>
+    <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>std_msgs</exec_depend>
 
 
     <export>

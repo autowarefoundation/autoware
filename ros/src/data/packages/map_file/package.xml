@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>map_file</name>
   <version>1.9.1</version>
   <description>The map_file package</description>
@@ -20,18 +20,18 @@
   <build_depend>tf2_ros</build_depend>
   <build_depend>tf2_geometry_msgs</build_depend>
 
-  <run_depend>roscpp</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>visualization_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>vector_map</run_depend>
-  <run_depend>autoware_msgs</run_depend>
-  <run_depend>curl</run_depend>
-  <run_depend>libpcl-all-dev</run_depend>
-  <run_depend>pcl_ros</run_depend>
-  <run_depend>tf2_ros</run_depend>
-  <run_depend>tf2_geometry_msgs</run_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>vector_map</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>curl</exec_depend>
+  <exec_depend>libpcl-all-dev</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
   <export>
   </export>
 </package>

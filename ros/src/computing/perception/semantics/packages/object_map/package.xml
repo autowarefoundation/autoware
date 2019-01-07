@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
     <name>object_map</name>
     <version>1.9.1</version>
     <description>The object_map package</description>
@@ -24,19 +24,19 @@
     <build_depend>vector_map</build_depend>
     <build_depend>qtbase5-dev</build_depend>
 
-    <run_depend>roscpp</run_depend>
-    <run_depend>pcl_ros</run_depend>
-    <run_depend>pcl_conversions</run_depend>
-    <run_depend>tf</run_depend>
-    <run_depend>sensor_msgs</run_depend>
-    <run_depend>nav_msgs</run_depend>
-    <run_depend>grid_map_ros</run_depend>
-    <run_depend>grid_map_cv</run_depend>
-    <run_depend>grid_map_msgs</run_depend>
-    <run_depend>grid_map_visualization</run_depend>
-    <run_depend>autoware_msgs</run_depend>
-    <run_depend>vector_map</run_depend>
-    <run_depend>libqt5-core</run_depend>
+    <exec_depend>roscpp</exec_depend>
+    <exec_depend>pcl_ros</exec_depend>
+    <exec_depend>pcl_conversions</exec_depend>
+    <exec_depend>tf</exec_depend>
+    <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>nav_msgs</exec_depend>
+    <exec_depend>grid_map_ros</exec_depend>
+    <exec_depend>grid_map_cv</exec_depend>
+    <exec_depend>grid_map_msgs</exec_depend>
+    <exec_depend>grid_map_visualization</exec_depend>
+    <exec_depend>autoware_msgs</exec_depend>
+    <exec_depend>vector_map</exec_depend>
+    <exec_depend>libqt5-core</exec_depend>
 
     <export>
     </export>
