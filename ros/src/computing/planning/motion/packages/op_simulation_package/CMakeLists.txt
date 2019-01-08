@@ -7,7 +7,6 @@ execute_process(
 )
 
 
-
 find_package(autoware_build_flags REQUIRED)
 
 find_package(autoware_msgs REQUIRED)
@@ -17,7 +16,7 @@ find_package(OpenCV REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
-  autoware_msgs  
+  autoware_msgs
   map_file
   pcl_conversions
   pcl_ros
@@ -26,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_recognition_msgs
   op_utility
   op_planner
-  op_simu  
+  op_simu
   op_ros_helpers
   waypoint_follower
 )
@@ -38,9 +37,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES 
-  CATKIN_DEPENDS roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu op_ros_helpers waypoint_follower 
+        INCLUDE_DIRS include
+        LIBRARIES
+        CATKIN_DEPENDS roscpp geometry_msgs autoware_msgs map_file op_utility op_planner op_simu op_ros_helpers waypoint_follower
 #  DEPENDS system_lib
 )
 
@@ -53,25 +52,41 @@ if ("${ROS_VERSION}" MATCHES "(kinetic)")
 endif()
 
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
-)
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
+        )
 
 link_directories(lib)
 
 
 add_executable(op_car_simulator nodes/op_car_simulator/op_car_simulator.cpp nodes/op_car_simulator/op_car_simulator_core.cpp)
 target_link_libraries(op_car_simulator
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        ${OpenCV_LIBS}
+        )
 
-add_executable(op_perception_simulator nodes/op_perception_simulator/op_perception_simulator.cpp nodes/op_perception_simulator/op_perception_simulator_core.cpp)
-target_link_libraries(op_perception_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(op_perception_simulator
+        nodes/op_perception_simulator/op_perception_simulator.cpp
+        nodes/op_perception_simulator/op_perception_simulator_core.cpp
+        )
+target_link_libraries(op_perception_simulator
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        )
 
-add_executable(op_signs_simulator nodes/op_signs_simulator/op_signs_simulator.cpp nodes/op_signs_simulator/op_signs_simulator_core.cpp)
-target_link_libraries(op_signs_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(op_signs_simulator
+        nodes/op_signs_simulator/op_signs_simulator.cpp
+        nodes/op_signs_simulator/op_signs_simulator_core.cpp
+        )
+target_link_libraries(op_signs_simulator
+        ${catkin_LIBRARIES}
+        ${PCL_LIBRARIES}
+        )
 
-add_dependencies(op_car_simulator op_perception_simulator op_signs_simulator op_data_logger ${catkin_EXPORTED_TARGETS})
+add_dependencies(op_car_simulator
+        op_perception_simulator
+        op_signs_simulator
+        ${catkin_EXPORTED_TARGETS}
+        )

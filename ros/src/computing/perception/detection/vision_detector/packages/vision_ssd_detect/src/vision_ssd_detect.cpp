@@ -29,7 +29,7 @@ SSDDetector::SSDDetector(const std::string& in_network_definition_file,
     caffe::Caffe::set_mode(caffe::Caffe::CPU);
 
   /* Load the network. */
-  net_.reset(new caffe::Net<float>(in_network_definition_file, caffe::Phase::TEST));
+  net_.reset(new caffe::Net<float>(in_network_definition_file, caffe::TEST));
   net_->CopyTrainedLayersFrom(in_pre_trained_model_file);
 
   CHECK_EQ(net_->num_inputs(), 1) << "Network should have exactly one input.";
@@ -63,7 +63,7 @@ std::vector <  RectClassScore<float>  > SSDDetector::Detect(const cv::Mat& img)
   caffe::Blob<float> *result_blob = net_->output_blobs()[0];
   const float *result = result_blob->cpu_data();
   const int num_det = result_blob->height();
-  std::vector <RectClassScore<float>> detections;
+  std::vector <RectClassScore<float> > detections;
   for (int k = 0; k < num_det; ++k)
   {
     if (result[0] == -1)
