@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   std_msgs
   autoware_can_msgs
+  autoware_msgs
 )
 
 catkin_package(CATKIN_DEPENDS
