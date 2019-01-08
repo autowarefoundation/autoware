@@ -1,16 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(range_vision_fusion)
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         sensor_msgs
         image_transport
         roscpp
         tf
+        autoware_msgs
+        autoware_build_flags
         jsk_recognition_utils
         eigen_conversions
         tf_conversions
@@ -73,7 +71,6 @@ endif ()
 target_include_directories(range_vision_fusion_lib PRIVATE
         ${OpenCV_INCLUDE_DIR}
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIRS}
@@ -101,7 +98,6 @@ add_executable(range_vision_fusion
 target_include_directories(range_vision_fusion PRIVATE
         ${OpenCV_INCLUDE_DIR}
         ${catkin_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         include
         )

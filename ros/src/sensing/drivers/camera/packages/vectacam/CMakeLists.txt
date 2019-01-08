@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vectacam)
 
-
-find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
   message_generation

@@ -7,14 +7,8 @@ execute_process(
 )
 
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
-
-find_package(OpenCV REQUIRED)
-
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   geometry_msgs
   autoware_msgs  
@@ -55,18 +49,13 @@ endif()
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
 )
 
 link_directories(lib)
 
 
 add_executable(op_car_simulator nodes/op_car_simulator/op_car_simulator.cpp nodes/op_car_simulator/op_car_simulator_core.cpp)
-target_link_libraries(op_car_simulator
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBS}
-  )
+target_link_libraries(op_car_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 add_executable(op_perception_simulator nodes/op_perception_simulator/op_perception_simulator.cpp nodes/op_perception_simulator/op_perception_simulator_core.cpp)
 target_link_libraries(op_perception_simulator ${catkin_LIBRARIES} ${PCL_LIBRARIES})

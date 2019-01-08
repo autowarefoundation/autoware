@@ -7,11 +7,13 @@ include(FindPkgConfig)
 
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
         sensor_msgs
         std_msgs
+        autoware_msgs
         tf
         )
 

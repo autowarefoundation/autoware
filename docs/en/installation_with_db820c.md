@@ -58,8 +58,7 @@ $ sudo fastboot flash rootfs stretch.raw
 Install the below packages on Dragonboard820c:
 
 ```shell
-$ sudo apt-get install -y libxmu-dev libxi-dev libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests dirmngr libtf2-eigen-dev libpcl-dev python3-pip python3-setuptools
-$ sudo pip3 install -U setuptools
+$ sudo apt-get install libxmu-dev libxi-dev libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests dirmngr libtf2-eigen-dev libpcl-dev
 ```
 
 ### 2.3) Enable ZRAM Swap Space
@@ -73,8 +72,7 @@ Build and install ROS Kinetic by following the instructions [here](http://wiki.r
 Only change required is to replace the `rosdep install` command with below:
 
 ```shell
-$ sudo apt-get install -y python3-colcon-common-extensions
-$ rosdep install --from-paths src --ignore-src --rosdistro kinetic -y --os=debian:stretch
+rosdep install --from-paths src --ignore-src --rosdistro kinetic -y --os=debian:stretch
 ```
 
 After installing, export the `ROS_DISTRO` variable
@@ -129,6 +127,8 @@ in the package directories:
 $ source /opt/ros/kinetic/setup.bash
 $ cd $HOME
 $ git clone https://github.com/CPFL/Autoware.git
-$ cd ~/Autoware/ros
-$ ./colcon_release
+$ cd ~/Autoware/ros/src
+$ catkin_init_workspace
+$ cd ../
+$ ./catkin_make_release
 ```

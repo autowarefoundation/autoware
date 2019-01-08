@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(fusion)
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         cv_bridge
+        autoware_msgs
         )
 find_package(OpenCV REQUIRED)
 
@@ -21,7 +19,6 @@ SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
         include
-        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 

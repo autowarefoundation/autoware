@@ -2,14 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_kf_track)
 
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   pcl_ros
   roscpp
   std_msgs
+  autoware_msgs
   tf
   jsk_recognition_msgs
   jsk_rviz_plugins
@@ -32,7 +30,6 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${autoware_msgs_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   include
   )

@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(op_utilities)
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS		
+    autoware_build_flags
 	roscpp
   	geometry_msgs  	
   	autoware_msgs
@@ -14,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   	op_planner
   	op_ros_helpers
   	pcl_conversions
+  	vector_map_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -42,8 +40,7 @@ catkin_package(
 ###########
 
 
-include_directories(include ${catkin_INCLUDE_DIRS}
- ${vector_map_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 link_directories(lib)
 

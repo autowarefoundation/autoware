@@ -6,9 +6,11 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 include(FindPkgConfig)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   cv_bridge
   roscpp
   sensor_msgs
+  autoware_msgs
   )
 
 FIND_PACKAGE(OpenCV REQUIRED)

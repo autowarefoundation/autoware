@@ -2,15 +2,11 @@ cmake_minimum_required(VERSION 2.8.3)
 project(op_ros_helpers)
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
-
-find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         geometry_msgs
+        autoware_msgs
         map_file
         pcl_conversions
         pcl_ros
@@ -21,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
         op_planner
         op_simu
         waypoint_follower
+        vector_map_msgs
         )
 
 catkin_package(
@@ -50,8 +47,6 @@ endif ()
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
-        ${vector_map_INCLUDE_DIRS}
-        ${autoware_msgs_INCLUDE_DIRS}
 )
 
 set(ROS_HELPERS_SRC

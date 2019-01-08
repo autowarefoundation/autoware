@@ -1,11 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points_preprocessor)
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+        autoware_build_flags
         roscpp
         std_msgs
         sensor_msgs
@@ -13,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         pcl_conversions
         cv_bridge
         velodyne_pointcloud
+        autoware_config_msgs
         tf
         )
 
@@ -47,7 +45,6 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${autoware_config_msgs_INCLUDE_DIRS}
         include
 )
 

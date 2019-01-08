@@ -3,17 +3,15 @@ project(lidar_fake_perception)
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   tf
   tf_conversions
   pcl_ros
   sensor_msgs
   geometry_msgs
+  autoware_msgs
 )
 
 catkin_package(
@@ -30,7 +28,6 @@ catkin_package(
 
 include_directories(
   include
-  ${autoware_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 

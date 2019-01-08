@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(range_fusion)
 
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_config_msgs REQUIRED)
-
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   std_msgs
+  autoware_config_msgs
   fusion
   )
 FIND_PACKAGE(CUDA)
@@ -24,7 +22,6 @@ catkin_package(
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
-        ${autoware_config_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 

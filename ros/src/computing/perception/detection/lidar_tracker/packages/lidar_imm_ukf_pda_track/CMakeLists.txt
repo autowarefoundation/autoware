@@ -1,14 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(imm_ukf_pda_track)
 
-
-find_package(autoware_build_flags REQUIRED)
-
-find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   roscpp
   pcl_ros
-  geometry_msgs
+  autoware_msgs
   tf
   vector_map
   )
@@ -26,9 +23,8 @@ catkin_package(
   )
 
 include_directories(
-  ${autoware_msgs_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  include)
+        ${catkin_INCLUDE_DIRS}
+        include)
 
 link_directories(${PCL_LIBRARY_DIRS})
 
