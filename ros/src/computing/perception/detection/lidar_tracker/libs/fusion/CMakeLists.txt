@@ -8,6 +8,7 @@ find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         cv_bridge
+        autoware_msgs
         )
 find_package(OpenCV REQUIRED)
 

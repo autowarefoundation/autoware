@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
   jsk_recognition_msgs
+  autoware_msgs
   )
 
 

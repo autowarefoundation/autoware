@@ -164,6 +164,13 @@ IF (CUDA_FOUND)
             LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
             RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
             )
+    install(DIRECTORY launch/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+            PATTERN ".svn" EXCLUDE)
+
+    install(DIRECTORY darknet/cfg/
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/darknet/cfg/
+            PATTERN ".svn" EXCLUDE)
 ELSE()
     message("darknet won't be built, CUDA was not found.")
 ENDIF ()
