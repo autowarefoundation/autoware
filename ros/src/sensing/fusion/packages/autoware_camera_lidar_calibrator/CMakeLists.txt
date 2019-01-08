@@ -3,15 +3,17 @@ project(autoware_camera_lidar_calibrator)
 
 include(FindPkgConfig)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-    autoware_build_flags
     cv_bridge
     image_transport
     pcl_conversions
     pcl_ros
     roscpp
     sensor_msgs
-    autoware_msgs
     geometry_msgs
     tf
 )
@@ -35,6 +37,7 @@ set(CMAKE_CXX_FLAGS "-O3 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
     ${catkin_INCLUDE_DIRS}
+    ${autoware_msgs_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
 )

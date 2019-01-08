@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tablet_socket)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   tf
   gnss
-  tablet_socket_msgs
   autoware_can_msgs
-  autoware_msgs
   geometry_msgs
   )
 
@@ -25,6 +28,8 @@ catkin_package(CATKIN_DEPENDS
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${tablet_socket_msgs_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
 )
 
 add_executable(tablet_receiver nodes/tablet_receiver/tablet_receiver.cpp)

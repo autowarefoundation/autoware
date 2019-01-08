@@ -3,13 +3,15 @@ project(ymc)
 
 set(CMAKE_CXX_FLAGS "-Wall ${CMAKE_CXX_FLAGS}")
 
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
 find_package(
   catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   geometry_msgs
   rosconsole
-  autoware_msgs
 )
 
 catkin_package(
@@ -27,6 +29,7 @@ ELSE ()
 ENDIF ()
 
 include_directories(
+  ${autoware_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   include
 )
