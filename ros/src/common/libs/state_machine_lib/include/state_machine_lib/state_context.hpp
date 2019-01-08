@@ -41,12 +41,15 @@ private:
 
   bool isCurrentState(const std::string& state_name);
 
+  std::string dot_output_name;
+
 public:
   StateContext(const std::string& file_name, const std::string& msg_name)
   {
     createStateMap(file_name, msg_name);
     root_state_ = getStartState();
-    createDOTGraph("/tmp/" + msg_name + ".dot");
+    dot_output_name = "/tmp/" + msg_name + ".dot";
+    createDOTGraph(dot_output_name);
   }
 
   ~StateContext()

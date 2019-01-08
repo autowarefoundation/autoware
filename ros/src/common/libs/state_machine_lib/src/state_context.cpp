@@ -77,7 +77,6 @@ bool StateContext::isCurrentState(const std::string& state_name)
 
 void StateContext::nextState(const std::string& transition_key)
 {
-  const std::string dot_output_name = "/tmp/a.dot";
   std::shared_ptr<State> state = root_state_;
   std::string _target_state_name;
   std::vector<std::string> key_list;
@@ -115,7 +114,9 @@ void StateContext::nextState(const std::string& transition_key)
           in_state = in_state->getChild();
         } while (in_state);
 
+#ifdef DEBUG
         createDOTGraph(dot_output_name);
+#endif
         state_map_.at(transition_state_id)->setEnteredKey(transition_key);
         state_map_.at(transition_state_id)->onEntry();
       }
@@ -128,7 +129,9 @@ void StateContext::nextState(const std::string& transition_key)
         root_state_->setChild(nullptr);
         root_state_->setParent(nullptr);
         root_state_->setEnteredKey(transition_key);
+#ifdef DEBUG
         createDOTGraph(dot_output_name);
+#endif
 
         root_state_->onEntry();
       }
