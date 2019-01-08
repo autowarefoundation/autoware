@@ -9,6 +9,10 @@ if [[ -d install ]]; then
     rm -rf install
 fi
 
+if [ -f src/CMakeLists.txt ]; then
+	rm -r src/CMakeLists.txt
+fi
+
 COLCON_OPTS="--cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs"
 
 export LIBRARY_PATH=/usr/lib/OpenNI2/Drivers:$LIBRARY_PATH
