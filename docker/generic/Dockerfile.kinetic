@@ -112,10 +112,9 @@ RUN sudo rosdep init \
         && rosdep update \
         && echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
 
-# YOLO_V2
-RUN cd && git clone https://github.com/pjreddie/darknet.git
-RUN cd ~/darknet && git checkout 56d69e73aba37283ea7b9726b81afd2f79cd1134
-RUN cd ~/darknet/data && wget https://pjreddie.com/media/files/yolo.weights
+# Setting
+RUN sudo ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH"
 
 # Install Autoware
 RUN cd && mkdir /home/$USERNAME/Autoware
