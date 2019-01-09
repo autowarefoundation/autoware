@@ -257,7 +257,7 @@ void readStatus()
 
     // update twist
     double lv = status_.speed.actual / 3.6;             // [km/h] -> [m/s]
-    double th = -status_.steer.actual * M_PI / 180.0;   // [deg] -> [rad]
+    double th = (-status_.steer.actual + steering_offset_deg_) * M_PI / 180.0;   // [deg] -> [rad]
     double az = std::tan(th) * lv / G30ESLI_WHEEL_BASE; // [rad] -> [rad/s]
     current_twist_.header.frame_id = "base_link";
     current_twist_.header.stamp = now;
