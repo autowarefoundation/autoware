@@ -17,6 +17,8 @@ find_package(catkin REQUIRED
   autoware_msgs
 )
 
+find_package(Eigen3 REQUIRED)
+
 ###################################
 ## catkin specific configuration ##
 ###################################

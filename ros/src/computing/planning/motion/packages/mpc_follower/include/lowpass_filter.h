@@ -39,24 +39,41 @@ public:
   }
 
   void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u) {
+    std::vector<double> u_rev(u);
+
+    // forward filtering
+    filt_vector(t, u);
+
+    // backward filtering
+    std::reverse(u_rev.begin(), u_rev.end());
+    filt_vector(t, u_rev);
+    std::reverse(u_rev.begin(), u_rev.end());
+
+    // merge
+    for (uint i = 0; i < u.size(); ++i) {
+      u[i] = (u[i] + u_rev[i]) * 0.5;
+    }
+
+
+
+  }
+
+  void filt_vector(const std::vector<double> &t, std::vector<double> &u) {
     double y1 = u.at(0);
     double y2 = u.at(0);
     double u2 = u.at(0);
     double u1 = u.at(0);
     double y0 = 0.0;
     double u0 = 0.0;
-    printf("u.size() = %d\n", u.size());
     for (uint i = 0; i < u.size(); ++i) {
       u0 = u.at(i);
       y0 = (b2_ * u2 + b1_ * u1 + b0_ * u0 - a2_ * y2 - a1_ * y1) / a0_;
-      // y0 = u.at(i);
       y2 = y1;
       y1 = y0;
       u2 = u1;
       u1 = u0;
       u.at(i) = y0;
     }
-    printf("end filtfilt_vector\n");
   }
 
 };
