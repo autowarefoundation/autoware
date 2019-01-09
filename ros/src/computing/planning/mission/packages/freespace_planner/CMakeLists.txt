@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(freespace_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   nav_msgs
   visualization_msgs
-  autoware_msgs
   tf
 )
 
@@ -17,7 +19,9 @@ catkin_package(
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS} include
+  include
+  ${autoware_msgs_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(astar_navi nodes/astar_navi/astar_navi.cpp nodes/astar_navi/astar_search.cpp nodes/astar_navi/search_info_ros.cpp include/astar_util.cpp)

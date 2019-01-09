@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(obj_reproj)
 
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   sensor_msgs
   std_msgs
-  autoware_msgs
   jsk_recognition_msgs
   tf
   )
@@ -27,6 +29,7 @@ set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
   lib
   include
   )

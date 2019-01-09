@@ -8,16 +8,21 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         std_msgs
         tf
-        autoware_config_msgs
-        autoware_msgs
         geometry_msgs
-        vector_map_msgs
-        vector_map
         jsk_recognition_msgs
         dynamic_reconfigure
         amathutils_lib
@@ -41,6 +46,9 @@ catkin_package(
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${vector_map_INCLUDE_DIRS}
+        ${autoware_config_msgs_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
 )
 
 add_executable(decision_maker_node
@@ -53,7 +61,10 @@ add_executable(decision_maker_node
         nodes/decision_maker/decision_maker_node_publish.cpp
         nodes/decision_maker/cross_road_area.cpp
         )
-target_link_libraries(decision_maker_node ${catkin_LIBRARIES})
+target_link_libraries(decision_maker_node
+        ${catkin_LIBRARIES}
+        ${vector_map_LIBRARIES}
+        )
 add_dependencies(decision_maker_node ${catkin_EXPORTED_TARGETS})
 
 # This function will be integrated into decision_maker soon.

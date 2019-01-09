@@ -4,8 +4,11 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 include(FindLibXml2 REQUIRED)
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         rosconsole
         std_msgs
@@ -15,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         pcl_ros
         image_transport
-        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)
@@ -61,6 +63,7 @@ include_directories(
         CalibrationToolkit
         nodes/calibration_toolkit
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${LIBXML2_INCLUDE_DIR}
         ${OpenCV_INCLUDE_DIRS}
         ${CMAKE_CURRENT_SOURCE_DIR}

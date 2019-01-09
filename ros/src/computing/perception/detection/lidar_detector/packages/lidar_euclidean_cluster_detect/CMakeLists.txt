@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_euclidean_cluster_detect)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         pcl_ros
         roscpp
         geometry_msgs
         std_msgs
         sensor_msgs
-        autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
@@ -32,8 +32,6 @@ catkin_package(
         sensor_msgs
         autoware_msgs
         tf
-        jsk_recognition_msgs
-        jsk_rviz_plugins
         vector_map_server
         grid_map_ros
         grid_map_cv
@@ -52,6 +50,7 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 include_directories(
         include
         ${catkin_INCLUDE_DIRS}
+        ${autoware_msgs_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
 )
 link_directories(${PCL_LIBRARY_DIRS})
@@ -70,10 +69,6 @@ if (${CUDA_FOUND})
     message("Library: " ${CUDA_CUDA_LIBRARY})
     message("Runtime: " ${CUDA_CUDART_LIBRARY})
     set(ROS_VERSION $ENV{ROS_DISTRO})
-    if ("${ROS_VERSION}" MATCHES "(indigo)")
-        message(WARNING "Indigo is deprecated and will be removed in a future relase, please use Kinetic instead")
-        set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-std=c++11)
-    endif()
     target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
             GPU_CLUSTERING=1
             )

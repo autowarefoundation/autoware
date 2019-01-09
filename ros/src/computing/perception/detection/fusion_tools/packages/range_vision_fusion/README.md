@@ -13,9 +13,7 @@ The label from the 2D Image detector will be attached to the corresponding 3D Ob
 1. Object Detections results from a Range Detector (`autoware_msgs/DetectedObjectArray`)
 
 ### Output Topics
-1. Fused Detected Objects (`autoware_msgs/DetectedObjectArray`) on the `/detection/combined_objects` topic.
-1. Fused Detected Objects' boxes (`jsk_recognition_msgs/BoundingBoxArray`) on the `/detection/combined_objects_boxes` topic.
-1. Fused Detected Objects' labels (`visualization_msgs/MarkerArray`) on the `/detection/combined_objects_labels` topic.
+1. Fused Detected Objects (`autoware_msgs/DetectedObjectArray`) on the `/detection/fusion_tools/objects` topic.
 
 ## Parameters
 

@@ -25,6 +25,10 @@ buttons:
     run : sh -c "$(rospack find runtime_manager)/scripts/gazebo.sh"
     gui :
       flags : [ kill_children ]
+  lgsvl_sim :
+    run : sh -c "roslaunch lgsvl_simulator_bridge lgsvl_simulator.launch"
+    gui :
+      flags : [ kill_children ]
 
 params :
   - name  : rosbag_play

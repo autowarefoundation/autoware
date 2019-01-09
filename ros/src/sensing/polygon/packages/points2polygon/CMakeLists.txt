@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(points2polygon)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_config_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         sensor_msgs
-        autoware_config_msgs
         pcl_conversions
         )
 
@@ -24,6 +26,7 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
+        ${autoware_config_msgs_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS}
 )
 

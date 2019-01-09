@@ -5,10 +5,10 @@ set(ROS_VERSION $ENV{ROS_DISTRO})
 
 include(FindPkgConfig)
 
+find_package(autoware_msgs REQUIRED)
+
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
-        autoware_msgs
         )
 
 
@@ -23,6 +23,7 @@ catkin_package(
 set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
 
 include_directories(
+        ${autoware_msgs_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
         include
 )

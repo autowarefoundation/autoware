@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(sample_data)
 
 include(FindPkgConfig)
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         roscpp
         gnss
         std_msgs

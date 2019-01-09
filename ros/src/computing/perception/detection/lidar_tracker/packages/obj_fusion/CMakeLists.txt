@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(obj_fusion)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
-  autoware_msgs
   tf
   jsk_recognition_msgs
-  vector_map
   vector_map_server
   )
 
@@ -25,6 +28,8 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${vector_map_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
 )
 
 #Object Fusion

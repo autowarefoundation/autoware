@@ -5,12 +5,15 @@ project(lidar_euclidean_track)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   geometry_msgs
-  autoware_msgs
   jsk_recognition_msgs
+  autoware_msgs
   )
 
 
@@ -25,6 +28,7 @@ catkin_package(
   )
 
 include_directories(
+  ${autoware_msgs_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   )
 
