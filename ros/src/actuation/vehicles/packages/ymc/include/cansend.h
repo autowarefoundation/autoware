@@ -33,7 +33,7 @@ public:
   void init(const std::string& device);
   void send(char* can_frame);
 
-  static std::string makeCmd(const unsigned char data[], const std::string& id);
+  static std::string makeCmd(const unsigned char data[], const size_t& size, const std::string& id);
   static std::vector<std::string> splitString(const std::string& str);
 };
 
