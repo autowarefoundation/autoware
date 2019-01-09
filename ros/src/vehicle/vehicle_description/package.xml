@@ -4,9 +4,9 @@
   <version>0.0.0</version>
   <description>The vehicle_description package</description>
 
-  <maintainer email="masaya-tier4@todo.todo">Masaya Kataoka</maintainer>
+  <maintainer email="masaya.kataoka@tier4.jp">Masaya Kataoka</maintainer>
 
-  <license>BSD</license>
+  <license>Apache 2.0</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>xacro</build_depend>
