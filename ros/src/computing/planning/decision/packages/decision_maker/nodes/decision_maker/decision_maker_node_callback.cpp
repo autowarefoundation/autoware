@@ -266,7 +266,7 @@ bool DecisionMakerNode::drivingMissionCheck()
   }
 
   double angle_diff_degree =
-      fabs(amathutils::calcPosesAngleDiffRaw(current_status_.pose, nearest_wp_pose)) * 180 / M_PI;
+      fabs(amathutils::calcPosesAngleDiffDeg(current_status_.pose, nearest_wp_pose));
   if (min_dist > change_threshold_dist_ || angle_diff_degree > change_threshold_angle_)
   {
     return false;
