@@ -2,9 +2,9 @@
 <robot name="car">
   <link name="base_link">
     <visual name="base_visual">
-      <origin xyz="1 0 0.0" rpy="0 0 0" />
+      <origin xyz="1.0 0.0 0.0" rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://vehicle_description/mmesh/xe.dae" scale="1.0 1.0 1.0"/>
+        <mesh filename="package://vehicle_description/mesh/xe.dae" scale="1.0 1.0 1.0"/>
       </geometry>
     </visual>
   </link>
