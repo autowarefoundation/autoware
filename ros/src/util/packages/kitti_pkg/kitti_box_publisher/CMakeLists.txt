@@ -23,3 +23,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${autoware_msgs_INCLUDE_DIRS}
 )
+
+catkin_install_python(PROGRAMS scripts/kitti_box_publisher.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

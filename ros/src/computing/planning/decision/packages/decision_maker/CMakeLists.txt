@@ -75,7 +75,7 @@ add_dependencies(planner_selector_node ${catkin_EXPORTED_TARGETS})
 install(TARGETS decision_maker_node planner_selector_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
 install(DIRECTORY launch

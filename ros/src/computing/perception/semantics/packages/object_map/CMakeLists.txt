@@ -121,7 +121,15 @@ target_link_libraries(wayarea2grid
         wayarea2grid_lib
         )
 
-install(TARGETS wayarea2grid grid_map_filter potential_field points2costmap laserscan2costmap
+install(TARGETS
+        wayarea2grid
+        wayarea2grid_lib
+        grid_map_filter_lib
+        grid_map_filter
+        potential_field
+        points2costmap
+        laserscan2costmap
+        object_map_utils_lib
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -135,6 +143,4 @@ install(DIRECTORY config/
         PATTERN ".svn" EXCLUDE)
 
 install(DIRECTORY include/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE
-        )
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
