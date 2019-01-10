@@ -10,7 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         roslib
         sensor_msgs
-        )
+        rqt_gui
+        rqt_gui_py
+)
+
+catkin_python_setup()
 
 catkin_package(
         CATKIN_DEPENDS
@@ -19,6 +23,8 @@ catkin_package(
         roscpp
         rospy
         sensor_msgs
+        rqt_gui
+        rqt_gui_py
 )
 
 
@@ -37,6 +43,6 @@ foreach (dir launch rviz)
             DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach (dir)
 
-install(PROGRAMS scripts/launch_sim.bash
+install(PROGRAMS scripts/launch_sim.bash scripts/rqt_lgsvl_simulator_configurator/__init__.py scripts/rqt_lgsvl_simulator_configurator/configurator.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
