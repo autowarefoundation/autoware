@@ -75,5 +75,5 @@ install(DIRECTORY media/
 install(DIRECTORY icons/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons)
 
-install(FILES rviz_plugin_description.xml
+install(FILES plugin_description.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
