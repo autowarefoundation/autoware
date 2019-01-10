@@ -54,14 +54,13 @@ private:
 
   autoware_msgs::Lane current_ref_path_;
   MPCTrajectory ref_traj_;
-  Butter2D path_filter_;
 
   double steering_command_;
 
   /* parameters */
   double traj_resample_dt_;
   double ctrl_dt_;
-  double path_lowpass_cutoff_hz_;
+  double moving_filter_num_;
 
   struct MPCParam {
     int n;
@@ -131,13 +130,13 @@ MPCFollower::MPCFollower()
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1));
   pnh_.param("ctrl_dt", ctrl_dt_, double(0.1));
-  pnh_.param("path_lowpass_cutoff_hz", path_lowpass_cutoff_hz_, double(2));
+  pnh_.param("moving_filter_num", moving_filter_num_, double(5));
 
   // mpc parameters
   pnh_.param("mpc_n", mpc_param_.n, int(30));
   pnh_.param("mpc_dt", mpc_param_.dt, double(0.1));
-  pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(2.0));
-  pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(4.0));
+  pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
+  pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
   pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.0));
   pnh_.param("mpc_dim_state", mpc_param_.dim_state_, int(3));
@@ -173,7 +172,6 @@ MPCFollower::MPCFollower()
   sub_pose_ = nh_.subscribe("/current_pose", 1, &MPCFollower::callbackPose, this);
   sub_steering_ = nh_.subscribe("/vehicle_info/steering_angle", 1, &MPCFollower::callbackSteering, this);
 
-  path_filter_.initialize(traj_resample_dt_, path_lowpass_cutoff_hz_);
 
   steering_command_ = 0.0;
 
@@ -261,13 +259,11 @@ bool MPCFollower::calculateMPC() {
   matrix Rex = matrix::Zero(DIM_U * N, DIM_U * N);
   vector MPC_T = vector::Zero(N);
 
-  matrix Q = matrix::Identity(DIM_Y, DIM_Y);
-  matrix R = matrix::Identity(DIM_U, DIM_U);
-  // matrix Q = matrix::Zero(DIM_Y, DIM_Y);
-  // matrix R = matrix::Zero(DIM_U, DIM_U);
-  // Q(0, 0) = mpc_param_.weight_lat_error;
-  // Q(1, 1) = mpc_param_.weight_heading_error;
-  // R(0, 0) = mpc_param_.weight_steering_input;
+  matrix Q = matrix::Zero(DIM_Y, DIM_Y);
+  matrix R = matrix::Zero(DIM_U, DIM_U);
+  Q(0, 0) = mpc_param_.weight_lat_error;
+  Q(1, 1) = mpc_param_.weight_heading_error;
+  R(0, 0) = mpc_param_.weight_steering_input;
 
 
   matrix Ad(DIM_X, DIM_X);
@@ -472,16 +468,16 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
 
   // resampling
   MPCFollower::resamplePathToTraj(current_ref_path_, relative_time, traj_resample_dt_, traj);
+  convertEulerAngleToMonotonic(traj.yaw);
   // MPC_INFO("traj.relative_time.size() = %d\n",traj.relative_time.size());
 
   // low pass filter
   auto start = std::chrono::system_clock::now();
   if (use_path_smoothing_) {
-    path_filter_.initialize(traj_resample_dt_, path_lowpass_cutoff_hz_);
-    path_filter_.filtfilt_vector(traj.relative_time, traj.x);
-    path_filter_.filtfilt_vector(traj.relative_time, traj.y);
-    path_filter_.filtfilt_vector(traj.relative_time, traj.z);
-    path_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
+    filteringMovingAverate(traj.x, moving_filter_num_);
+    filteringMovingAverate(traj.y, moving_filter_num_);
+    filteringMovingAverate(traj.z, moving_filter_num_);
+    filteringMovingAverate(traj.yaw, moving_filter_num_);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -571,6 +567,10 @@ void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std:
   double t = 0.0;
   // MPC_INFO("time = [%f ,~ %f]\n", time.front(), time.back());
 
+  // convert yaw to be monotonically increasing
+
+
+
   while (t < time.back()) {
     uint j = 1;
     while (t > time.at(j)) {
@@ -580,7 +580,6 @@ void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std:
         printf("t = %f, time.at(j-1)=%f\n", t, time.at(j-1));
         return;
       }
-
     }
 
     const double a = t - time.at(j - 1);
@@ -593,8 +592,14 @@ void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std:
     const double x = ((path_dt_j - a) * pos0.position.x + a * pos1.position.x) / path_dt_j;
     const double y = ((path_dt_j - a) * pos0.position.y + a * pos1.position.y) / path_dt_j;
     const double z = ((path_dt_j - a) * pos0.position.z + a * pos1.position.z) / path_dt_j;
-    const double yaw = ((path_dt_j - a) * tf2::getYaw(pos0.orientation) +
-                        a * tf2::getYaw(pos1.orientation)) / path_dt_j;
+
+    // for singular point of euler angle
+    const double yaw0 = tf2::getYaw(pos0.orientation);
+    const double dyaw = intoSemicircle(tf2::getYaw(pos1.orientation) - yaw0);
+    const double yaw1 = yaw0 + dyaw;
+    const double yaw = ((path_dt_j - a) * yaw0 + a * yaw1) / path_dt_j;
+    // const double yaw = ((path_dt_j - a) * tf2::getYaw(pos0.orientation) +
+    //                 a * tf2::getYaw(pos1.orientation)) / path_dt_j;
     const double vx = ((path_dt_j - a) * twist0.linear.x + a * twist1.linear.x) / path_dt_j;
     const double curvature_tmp = 0.0;
     // MPC_INFO("t = %f, j = %d, a = %f, dt = %f", t, j, a, path_dt_j);

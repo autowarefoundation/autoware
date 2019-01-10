@@ -9,6 +9,16 @@ double intoSemicircle(const double a) {
   return b;
 }
 
+
+void convertEulerAngleToMonotonic(std::vector<double> &a) {
+
+  for (uint i = 1; i < a.size(); ++i) {
+    const double da = a[i] - a[i - 1];
+    a[i] = a[i - 1] + intoSemicircle(da);
+  }
+}
+
+
 void fill_increase(std::vector<double>::iterator first,
                    std::vector<double>::iterator last, double init,
                    double diff) {
@@ -19,6 +29,29 @@ void fill_increase(std::vector<double>::iterator first,
   }
 }
 
+void filteringMovingAverate(std::vector<double> &u, const int num) {
+
+  if (u.size() < num) {
+    printf("[MovingAverageFilter] vector size is low than moving average "
+           "number\n");
+    return;
+  }
+
+  std::vector<double> filtered_u(u);
+
+  for (uint i = 0; i < u.size(); ++i) {
+    double tmp = 0.0;
+    int count = 0;
+    for (int j = -num; j < num + 1; ++j) {
+      if (i + j > -0.5 && i + j < u.size() - 0.5) {
+        tmp += u[i + j];
+        ++count;
+      }
+    }
+    filtered_u[i] = tmp / (2 * num + 1);
+  }
+  u = filtered_u;
+}
 
 // 1D interpolation
 bool interp1d(const std::vector<double> &index,
