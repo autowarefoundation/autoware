@@ -1,7 +1,6 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2015, OMRON AUTOMOTIVE ELECTRONICS
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
 *
@@ -33,8 +32,8 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
-#ifndef ROSBAG_CONTROL_RECORDER_H
-#define ROSBAG_CONTROL_RECORDER_H
+#ifndef ROSBAG_CONTROLLER_RECORDER_H
+#define ROSBAG_CONTROLLER_RECORDER_H
 
 #include <sys/stat.h>
 #if !defined(_MSC_VER)
@@ -46,6 +45,7 @@
 #include <queue>
 #include <string>
 #include <vector>
+#include <list>
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
@@ -61,15 +61,7 @@
 #include "rosbag/stream.h"
 #include "rosbag/macros.h"
 
-#define ROSBAG_RECORDER_S_OK             (0)
-#define ROSBAG_RECORDER_E_OPEN           (-1000)
-#define ROSBAG_RECORDER_E_WRITE          (-1001)
-#define ROSBAG_RECORDER_E_DISKFULL       (-1002)
-#define ROSBAG_RECORDER_E_NO_SUBSCRIBER  (-1003)
-#define ROSBAG_RECORDER_E_REACH_SIZE     (-1004)
-#define ROSBAG_RECORDER_E_REACH_TIME     (-1005)
-
-namespace rosbag_control {
+namespace rosbag_controller {
 
 class ROSBAG_DECL OutgoingMessage
 {
@@ -96,13 +88,14 @@ struct ROSBAG_DECL RecorderOptions
 {
     RecorderOptions();
 
+    bool            trigger;
     bool            record_all;
     bool            regex;
     bool            do_exclude;
     bool            quiet;
     bool            append_date;
+    bool            snapshot;
     bool            verbose;
-    bool            time_publish;
     rosbag::CompressionType compression;
     std::string     prefix;
     std::string     name;
@@ -112,6 +105,7 @@ struct ROSBAG_DECL RecorderOptions
     uint32_t        limit;
     bool            split;
     uint32_t        max_size;
+    uint32_t        max_splits;
     ros::Duration   max_duration;
     std::string     node;
     unsigned long long min_space;
@@ -122,19 +116,9 @@ struct ROSBAG_DECL RecorderOptions
 
 enum RecorderState
 {
-    RecorderState_Stopped,
-    RecorderState_Recording,
-    RecorderState_Stopping,
-};
-
-struct ROSBAG_DECL RecorderStatus
-{
-    RecorderStatus();
-    RecorderStatus &operator=(const RecorderStatus &status);
-
-    RecorderState state;
-    int error;
-    ros::Duration recordTime;
+    Stopping,
+    Stopped,
+    Recording,
 };
 
 class ROSBAG_DECL Recorder
@@ -143,15 +127,18 @@ public:
     Recorder(RecorderOptions const& options);
     ~Recorder();
 
+    void doTrigger();
+
     bool isSubscribed(std::string const& topic) const;
 
     boost::shared_ptr<ros::Subscriber> subscribe(std::string const& topic);
 
     int start();
     void stop();
-    void getStatus(RecorderStatus &status);
 
 private:
+    void printUsage();
+
     void updateFilenames();
     void startWriting();
     void stopWriting();
@@ -163,30 +150,28 @@ private:
     //    void doQueue(topic_tools::ShapeShifter::ConstPtr msg, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>& msg_event, std::string const& topic, boost::shared_ptr<ros::Subscriber> subscriber, boost::shared_ptr<int> count);
     void doRecord();
+    void checkNumSplits();
     bool checkSize();
     bool checkDuration(const ros::Time&);
+    void doRecordSnapshotter();
     void doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_handle);
-
     bool shouldSubscribeToTopic(std::string const& topic, bool from_node = false);
-
-   void doPublishTime();
 
     template<class T>
     static std::string timeToStr(T ros_t);
 
 private:
     RecorderOptions               options_;
-    RecorderStatus                status_;
 
     ros::NodeHandle               nh_;
     boost::scoped_ptr<boost::thread> record_thread_;
-    boost::scoped_ptr<boost::thread> time_publish_thread_;
     ros::AsyncSpinner             spinner_;
 
     rosbag::Bag                   bag_;
 
     std::string                   target_filename_;
     std::string                   write_filename_;
+    std::list<std::string>        current_files_;
 
     std::set<std::string>         currently_recording_;  //!< set of currenly recording topics
     int                           num_subscribers_;      //!< used for book-keeping of our number of subscribers
@@ -210,8 +195,11 @@ private:
     boost::mutex                  check_disk_mutex_;
     ros::WallTime                 check_disk_next_;
     ros::WallTime                 warn_next_;
+
+    RecorderState                 recorder_status_;
+    int                           recorder_error_;
 };
 
-} // namespace rosbag_control
+}
 
 #endif

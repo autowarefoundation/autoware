@@ -161,11 +161,7 @@ void Autoware_Rosbag_Plugin::on_button_record_start_clicked()
 
 int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
 {
-  recorder_opts_.reset( new rosbag_control::RecorderOptions() );
-  if (recoParam.filename.empty())
-  {
-    recorder_opts_->append_date = true;
-  }
+  recorder_opts_.reset( new rosbag_controller::RecorderOptions() );
   recorder_opts_->prefix = recoParam.filename;
   recorder_opts_->append_date = false;
 
@@ -174,7 +170,6 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   recorder_opts_->chunk_size    = 1024 * 768;
   recorder_opts_->min_space     = 1 * 1073741824ull;
   recorder_opts_->min_space_str = "1G";
-  recorder_opts_->time_publish  = false;
 
   /* Set max duration Sec */
   if( recoParam.max_duration != 0 )
@@ -218,7 +213,6 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   ROS_INFO("%s L.%d -   node            [%s]", __FUNCTION__, __LINE__, recorder_opts_->node.c_str() );
   ROS_INFO("%s L.%d -   min_space       [%d]", __FUNCTION__, __LINE__, recorder_opts_->min_space );
   ROS_INFO("%s L.%d -   min_space_str   [%s]", __FUNCTION__, __LINE__, recorder_opts_->min_space_str.c_str() );
-  ROS_INFO("%s L.%d -   time_publish    [%d]", __FUNCTION__, __LINE__, recorder_opts_->time_publish );
   ROS_INFO("%s L.%d -   topic num       [%d]", __FUNCTION__, __LINE__, recorder_opts_->topics.size() );
 
   for( size_t i=0; i<recorder_opts_->topics.size(); i++ ) {
@@ -230,10 +224,10 @@ int Autoware_Rosbag_Plugin::recordReq( RecordParam &recoParam )
   return 0;
 }
 
-int Autoware_Rosbag_Plugin::doRecord( rosbag_control::RecorderOptions &opt )
+int Autoware_Rosbag_Plugin::doRecord( rosbag_controller::RecorderOptions &opt )
 {
-  recorder_.reset(new rosbag_control::Recorder(opt) );
-  record_status = 1;
+  recorder_.reset(new rosbag_controller::Recorder(opt) );
+  record_status_ = 1;
 
   record_time_start_ = ros::Time::now();
 
@@ -260,7 +254,7 @@ void Autoware_Rosbag_Plugin::on_button_record_stop_clicked()
   ui->button_record_save->setEnabled(true);
   ui->button_record_stop->setDisabled(true);
   ui->button_record_configure->setEnabled(true);
-  record_status = 0;
+  record_status_ = 0;
 
   ros::Duration record_time_reset_ = ros::Duration(0);
   Autoware_Rosbag_Plugin::updateRecordTime(record_time_reset_);
@@ -281,7 +275,7 @@ void Autoware_Rosbag_Plugin::updateRecordTime(ros::Duration record_time_visual)
 void Autoware_Rosbag_Plugin::timeShow()
 {
   ros::Duration record_time_duration_;
-  if (record_status == 1)
+  if (record_status_ == 1)
     record_time_duration_ = ros::Time::now() - record_time_start_;
   else
     record_time_duration_ = ros::Time::now() - ros::Time::now();

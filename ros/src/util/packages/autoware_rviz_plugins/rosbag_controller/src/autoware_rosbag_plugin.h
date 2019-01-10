@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <boost/thread.hpp>
 #include <boost/shared_ptr.hpp>
-#include "../src/core/player.h"
+
 #include "../src/core/recorder.h"
 
 namespace Ui {
@@ -57,11 +57,11 @@ public:
 
 protected:
 
-    boost::scoped_ptr<rosbag_control::Recorder> recorder_;
-    boost::scoped_ptr<rosbag_control::RecorderOptions> recorder_opts_;
+    boost::scoped_ptr<rosbag_controller::Recorder> recorder_;
+    boost::scoped_ptr<rosbag_controller::RecorderOptions> recorder_opts_;
 
     int recordReq( RecordParam &recoParam );
-    int doRecord( rosbag_control::RecorderOptions &opt );
+    int doRecord( rosbag_controller::RecorderOptions &opt );
     void updateRecordTime(ros::Duration record_time_duration_);
 
 protected Q_SLOTS:
@@ -86,7 +86,7 @@ private:
     std::string record_filepath_;
     std::string record_filename_;
     std::vector<std::string> record_topics_;
-    bool record_status;
+    bool record_status_;
 
     ros::Time record_time_start_;
     std::vector<std::string> conf_topics_;

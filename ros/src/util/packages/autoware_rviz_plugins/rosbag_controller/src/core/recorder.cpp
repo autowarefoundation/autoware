@@ -1,7 +1,6 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 *
-*  Copyright (c) 2015, OMRON AUTOMOTIVE ELECTRONICS
 *  Copyright (c) 2008, Willow Garage, Inc.
 *  All rights reserved.
 *
@@ -62,7 +61,8 @@
 
 #include "ros/network.h"
 #include "ros/xmlrpc_manager.h"
-#include "XmlRpc.h"
+#include "xmlrpcpp/XmlRpc.h"
+//#include "XmlRpc.h"
 
 #define foreach BOOST_FOREACH
 
@@ -75,7 +75,7 @@ using boost::shared_ptr;
 using ros::Time;
 using namespace rosbag;
 
-namespace rosbag_control {
+namespace rosbag_controller {
 
 // OutgoingMessage
 
@@ -94,13 +94,14 @@ OutgoingQueue::OutgoingQueue(string const& _filename, std::queue<OutgoingMessage
 // RecorderOptions
 
 RecorderOptions::RecorderOptions() :
+    trigger(false),
     record_all(false),
     regex(false),
     do_exclude(false),
     quiet(false),
     append_date(true),
+    snapshot(false),
     verbose(false),
-    time_publish(false),
     compression(compression::Uncompressed),
     prefix(""),
     name(""),
@@ -110,28 +111,13 @@ RecorderOptions::RecorderOptions() :
     limit(0),
     split(false),
     max_size(0),
+    max_splits(0),
     max_duration(-1.0),
-    node("")
+    node(""),
+    min_space(1024 * 1024 * 1024),
+    min_space_str("1G")
 {
 }
-
-// RecorderStatus
-
-RecorderStatus::RecorderStatus() :
-    state(RecorderState_Stopped),
-    error(0)
-{
-}
-
-RecorderStatus &RecorderStatus::operator=(const RecorderStatus &status)
-{
-    state = status.state;
-    error = status.error;
-    recordTime = status.recordTime;
-    return *this;
-}
-
-// Recorder
 
 Recorder::Recorder(RecorderOptions const& options) :
     options_(options),
@@ -139,36 +125,31 @@ Recorder::Recorder(RecorderOptions const& options) :
     num_subscribers_(0),
     queue_size_(0),
     split_count_(0),
-    writing_enabled_(true)
+    writing_enabled_(true),
+    recorder_status_(Stopped),
+    recorder_error_(0)
 {
 }
 
 Recorder::~Recorder()
 {
-    if (status_.state != RecorderState_Stopped) {
+    if (recorder_status_ != Stopped) {
         stop();
     }
 }
 
-void Recorder::getStatus(RecorderStatus &status)
-{
-    status = status_;
-}
-
 int Recorder::start() {
-    if (status_.state != RecorderState_Stopped) {
+    if (recorder_status_ != Stopped) {
         ROS_ERROR("cannot start a new record since recording now.");
         return 1;
     }
 
     if (options_.topics.size() == 0) {
-        // Make sure limit is not specified with automatic topic subscription
         if (options_.limit > 0) {
             ROS_ERROR("Specifing a count is not valid with automatic topic subscription.");
             return 1;
         }
 
-        // Make sure topics are specified
         if (!options_.record_all && (options_.node == std::string(""))) {
             ROS_ERROR("No topics specified.");
             return 1;
@@ -178,15 +159,9 @@ int Recorder::start() {
     last_buffer_warn_ = Time();
     queue_.reset(new std::queue<OutgoingMessage>);
 
-    // Subscribe to each topic
     if (!options_.regex) {
     	foreach(string const& topic, options_.topics)
 			subscribe(topic);
-    }
-
-    // Start time publisher
-    if (options_.time_publish) {
-      time_publish_thread_.reset(new boost::thread(boost::bind(&Recorder::doPublishTime, this)));
     }
 
     if (!ros::Time::waitForValid(ros::WallDuration(2.0))) {
@@ -198,38 +173,30 @@ int Recorder::start() {
 
     ros::Subscriber trigger_sub;
 
-    // Update status
-    status_.state = RecorderState_Recording;
-    status_.error = 0;
-    status_.recordTime = ros::Duration();
+    recorder_status_ = Recording;
+    recorder_error_ = 0;
 
-    // Spin up a thread for writing to the file
     record_thread_.reset(new boost::thread(boost::bind(&Recorder::doRecord, this)));
 
     ros::Timer check_master_timer;
     if (options_.record_all || options_.regex || (options_.node != std::string("")))
     {
-        // check for master first
         doCheckMaster(ros::TimerEvent(), nh_);
         check_master_timer = nh_.createTimer(ros::Duration(1.0), boost::bind(&Recorder::doCheckMaster, this, _1, boost::ref(nh_)));
     }
 
-    // start spinner
     spinner_.start();
 
     return 0;
 }
 
 void Recorder::stop() {
-    if (status_.state == RecorderState_Stopped) {
-        // already stopped
+    if (recorder_status_ == Stopped) {
         return;
     }
 
-    // stop flag
-    status_.state = RecorderState_Stopping;
+    recorder_status_ = Stopping;
 
-    // stop spinner
     spinner_.stop();
 
     queue_condition_.notify_all();
@@ -237,21 +204,13 @@ void Recorder::stop() {
     record_thread_->join();
     record_thread_.reset();
 
-    if (time_publish_thread_) {
-      time_publish_thread_->interrupt();
-      time_publish_thread_->join();
-      time_publish_thread_.reset();
-    }
-
     queue_.reset();
 
-    // stop subscribers
     foreach(boost::shared_ptr<ros::Subscriber>& sub, subscribers_)
         sub->shutdown();
     subscribers_.clear();
 
-    // stopped
-    status_.state = RecorderState_Stopped;
+    recorder_status_ = Stopped;
 }
 
 shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
@@ -271,6 +230,7 @@ shared_ptr<ros::Subscriber> Recorder::subscribe(string const& topic) {
             boost::bind(&Recorder::doQueue, this, _1, topic, sub, count)
         )
     );
+
     *sub = nh.subscribe(ops);
 
     currently_recording_.insert(topic);
@@ -360,7 +320,9 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
         }
     }
   
-    queue_condition_.notify_all();
+//    queue_condition_.notify_all();
+    if (!options_.snapshot)
+        queue_condition_.notify_all();
 
     // If we are book-keeping count, decrement and possibly shutdown
     if ((*count) > 0) {
@@ -371,7 +333,7 @@ void Recorder::doQueue(const ros::MessageEvent<topic_tools::ShapeShifter const>&
             num_subscribers_--;
 
             if (num_subscribers_ == 0) {
-                status_.error = ROSBAG_RECORDER_E_NO_SUBSCRIBER;
+                recorder_error_ = 1;
             }
         }
     }
@@ -413,7 +375,7 @@ void Recorder::startWriting() {
     }
     catch (rosbag::BagException e) {
         ROS_ERROR("Error writing: %s", e.what());
-        status_.error = ROSBAG_RECORDER_E_OPEN;
+        recorder_error_ = 1;
     }
     ROS_INFO("Recording to %s.", target_filename_.c_str());
 }
@@ -423,6 +385,24 @@ void Recorder::stopWriting() {
     bag_.close();
     rename(write_filename_.c_str(), target_filename_.c_str());
 }
+
+void Recorder::checkNumSplits()
+{
+    if(options_.max_splits>0)
+    {
+        current_files_.push_back(target_filename_);
+        if(current_files_.size()>options_.max_splits)
+        {
+            int err = unlink(current_files_.front().c_str());
+            if(err != 0)
+            {
+                ROS_ERROR("Unable to remove %s: %s", current_files_.front().c_str(), strerror(errno));
+            }
+            current_files_.pop_front();
+        }
+    }
+}
+
 
 bool Recorder::checkSize()
 {
@@ -436,7 +416,7 @@ bool Recorder::checkSize()
                 split_count_++;
                 startWriting();
             } else {
-                status_.error = ROSBAG_RECORDER_E_REACH_SIZE;
+              recorder_error_ = 1;
                 return true;
             }
         }
@@ -460,7 +440,7 @@ bool Recorder::checkDuration(const ros::Time& t)
                     startWriting();
                 }
             } else {
-                status_.error = ROSBAG_RECORDER_E_REACH_TIME;
+              recorder_error_ = 1;
                 return true;
             }
         }
@@ -483,7 +463,7 @@ void Recorder::doRecord() {
     // Except it should only get checked if the node is not ok, and thus
     // it shouldn't be in contention.
     ros::NodeHandle nh;
-    while (status_.state == RecorderState_Recording && (nh.ok() || !queue_->empty())) {
+    while (recorder_status_ == Recording && (nh.ok() || !queue_->empty())) {
         boost::unique_lock<boost::mutex> lock(queue_mutex_);
 
         bool finished = false;
@@ -506,7 +486,7 @@ void Recorder::doRecord() {
                 finished = true;
                 break;
             }
-            if (status_.state != RecorderState_Recording)
+            if (recorder_status_ != Recording)
             {
                 finished = true;
                 break;
@@ -530,21 +510,58 @@ void Recorder::doRecord() {
         if (scheduledCheckDisk() && checkLogging()) {
             try {
                 bag_.write(out.topic, out.time, *out.msg, out.connection_header);
-                // Update record time
-                status_.recordTime = out.time - start_time_;
             } catch (rosbag::BagIOException e) {
                 ROS_ERROR("write failure");
-                status_.error = ROSBAG_RECORDER_E_WRITE;
+                recorder_error_ = 1;
                 break;
             }
         }
 
-        if (status_.error != 0)
+        if (recorder_error_ != 0)
             break;
     }
 
     stopWriting();
 }
+
+void Recorder::doRecordSnapshotter() {
+    ros::NodeHandle nh;
+
+    while (nh.ok() || !queue_queue_.empty()) {
+        boost::unique_lock<boost::mutex> lock(queue_mutex_);
+        while (queue_queue_.empty()) {
+            if (!nh.ok())
+                return;
+            queue_condition_.wait(lock);
+        }
+
+        OutgoingQueue out_queue = queue_queue_.front();
+        queue_queue_.pop();
+
+        lock.release()->unlock();
+
+        string target_filename = out_queue.filename;
+        string write_filename  = target_filename + string(".active");
+
+        try {
+            bag_.open(write_filename, bagmode::Write);
+        }
+        catch (rosbag::BagException ex) {
+            ROS_ERROR("Error writing: %s", ex.what());
+            return;
+        }
+
+        while (!out_queue.queue->empty()) {
+            OutgoingMessage out = out_queue.queue->front();
+            out_queue.queue->pop();
+
+            bag_.write(out.topic, out.time, *out.msg);
+        }
+
+        stopWriting();
+    }
+}
+
 
 void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_handle) {
     ros::master::V_TopicInfo topics;
@@ -593,6 +610,15 @@ void Recorder::doCheckMaster(ros::TimerEvent const& e, ros::NodeHandle& node_han
         }
       }
     }
+}
+
+void Recorder::doTrigger() {
+    ros::NodeHandle nh;
+    ros::Publisher pub = nh.advertise<std_msgs::Empty>("snapshot_trigger", 1, true);
+    pub.publish(std_msgs::Empty());
+
+    ros::Timer terminate_timer = nh.createTimer(ros::Duration(1.0), boost::bind(&ros::shutdown));
+    ros::spin();
 }
 
 bool Recorder::scheduledCheckDisk() {
@@ -676,26 +702,4 @@ bool Recorder::checkLogging() {
     }
     return false;
 }
-
-void Recorder::doPublishTime() {
-  ros::NodeHandle nh;
-  rosgraph_msgs::Clock msg;
-  ros::Publisher pub = nh.advertise<rosgraph_msgs::Clock>("clock",1);
-
-  ROS_INFO("start time publisher");
-
-  try {
-    while (true) {
-      ros::WallTime wt = ros::WallTime::now();
-      msg.clock = ros::Time(wt.sec, wt.nsec);
-      pub.publish(msg);
-      boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
-    }
-  } catch (boost::thread_interrupted &) {
-  }
-
-  ROS_INFO("stop time publisher");
-  pub.shutdown();
 }
-
-} // namespace rosbag_control
