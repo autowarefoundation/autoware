@@ -6,8 +6,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Get a ros version
 set(ROS_VERSION $ENV{ROS_DISTRO})
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         op_utility
         op_planner
         )
@@ -67,7 +68,7 @@ add_executable(Simu
 
 target_link_libraries(Simu
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBRARIES}
+        ${OpenCV_LIBS}
         ${OPENGL_LIBRARIES}
         ${GLUT_LIBRARIES}
         ${GLUT_LIBRARY}

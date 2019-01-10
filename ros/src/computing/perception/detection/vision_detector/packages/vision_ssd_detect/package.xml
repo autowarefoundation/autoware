@@ -16,6 +16,7 @@
     <build_depend>geometry_msgs</build_depend>
     <build_depend>std_msgs</build_depend>
     <build_depend>autoware_msgs</build_depend>
+    <build_depend>autoware_config_msgs</build_depend>
     <build_depend>libdpm_ttic</build_depend>
     <build_depend>fusion</build_depend>
     <build_depend>tf</build_depend>
@@ -29,6 +30,7 @@
     <run_depend>geometry_msgs</run_depend>
     <run_depend>std_msgs</run_depend>
     <run_depend>autoware_msgs</run_depend>
+    <run_depend>autoware_config_msgs</run_depend>
     <run_depend>libdpm_ttic</run_depend>
     <run_depend>fusion</run_depend>
     <run_depend>tf</run_depend>

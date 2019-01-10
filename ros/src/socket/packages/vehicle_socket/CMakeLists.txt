@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vehicle_socket)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(tablet_socket_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-  autoware_build_flags
   roscpp
   std_msgs
   autoware_can_msgs
-  autoware_msgs
-  tablet_socket_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
@@ -22,6 +25,8 @@ catkin_package(CATKIN_DEPENDS
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${tablet_socket_msgs_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
 )
 
 add_executable(vehicle_receiver nodes/vehicle_receiver/vehicle_receiver.cpp)

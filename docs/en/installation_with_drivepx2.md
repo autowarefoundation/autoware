@@ -36,6 +36,9 @@
     sudo apt-get update
 
     sudo apt-get install -y build-essential cmake python-pip
+    sudo apt-get install -y python3-pip python3-setuptools
+    sudo pip3 install -U setuptools
+    sudo apt-get install -y python3-colcon-common-extensions
     sudo apt-get install -y checkinstall
     sudo apt-get install -y python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential
     sudo apt-get install -y libavutil-ffmpeg54=7:2.8.11-0ubuntu0.16.04.1
@@ -66,7 +69,7 @@ If you need to use a SSD detector, please refer SSD readme.
     cd Autoware
 
     cd ros
-    ./catkin_make_release -j1
+    ./colcon_release -j1
     (if you need more speed up compilation, you can choose -j2~6, however it may often cause internal erros by GCC.
 
 

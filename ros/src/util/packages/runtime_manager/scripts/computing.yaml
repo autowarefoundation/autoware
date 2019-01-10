@@ -66,6 +66,8 @@ subs :
             flags : [ nl ]
           imu_topic:
             flags : [ nl ]
+          get_height:
+            flags : [ nl ]
           sync :
             func : self.button_synchronization.GetValue()
       - name : ndt_matching_monitor
@@ -1605,6 +1607,14 @@ params :
     - name      : get_height
       desc      : get_height desc sample
       label     : Get Height
+      kind      : checkbox
+      v         : False
+      cmd_param :
+        dash      : ''
+        delim     : ':='
+    - name      : output_log_data
+      desc      : output ndt log data
+      label     : Output Log Data
       kind      : checkbox
       v         : False
       cmd_param :

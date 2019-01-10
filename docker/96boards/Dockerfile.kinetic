@@ -52,6 +52,11 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /home/$USERNAME/.bashrc && \
         # cd to home on login
         echo "cd" >> /home/$USERNAME/.bashrc
 
+# Install colcon
+RUN apt-get install -y python3-pip python3-setuptools
+RUN pip3 install -U setuptools
+RUN apt-get install -y python3-colcon-common-extensions
+
 # Change user
 USER autoware
 
@@ -63,7 +68,7 @@ RUN sudo rosdep init \
 
 # Install Autoware
 RUN cd && git clone https://github.com/CPFL/Autoware.git /home/$USERNAME/Autoware
-RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; catkin_init_workspace; cd ../; ./catkin_make_release -j2'
+RUN /bin/bash -c 'source /opt/ros/kinetic/setup.bash; cd /home/$USERNAME/Autoware/ros/src; git submodule update --init --recursive; cd ../; ./colcon_release -j2'
 RUN echo "source /home/$USERNAME/Autoware/ros/devel/setup.bash" >> /home/$USERNAME/.bashrc
 
 # Setting

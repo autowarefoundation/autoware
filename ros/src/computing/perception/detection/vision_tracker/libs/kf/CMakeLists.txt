@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(kf_lib)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-        autoware_build_flags
         cv_bridge
         image_transport
         roscpp
         sensor_msgs
         std_msgs
-        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)

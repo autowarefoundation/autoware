@@ -32,6 +32,12 @@ subs :
         probe:
         run  : roslaunch pointgrey_camera_driver camera.launch
 
+      - name : FLIR ADK
+        desc : Driver for Boson FLIR Thermal camera
+        probe:
+        run  : roslaunch autoware_pointgrey_drivers flir_adk.launch
+        param: fliradk_params
+
       - name : PointGrey LadyBug 5
         desc : PointGrey LadyBug 5 desc sample
         probe:
@@ -1646,6 +1652,48 @@ params :
       min   : -3.14157
       max   : 3.14157
       v     : 0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+
+  - name  : fliradk_params
+    vars  :
+    - name  : DEVICE
+      label : Device
+      desc  : System Device name /dev/videoX
+      kind  : str
+      v     : /dev/video0
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : FPS
+      label : FPS
+      desc  : FPS Acquisition (Default 30)
+      min   : 1
+      max   : 100
+      v     : 30
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : WIDTH
+      label : Width
+      desc  : Image Width (Default 640)
+      v     : 640
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : HEIGHT
+      label : Height
+      desc  : Image Height (Default 512)
+      v     : 512
+      cmd_param :
+        dash        : ''
+        delim       : ':='
+    - name  : NS
+      label : Frame
+      desc  : Camera Frame to register in TF (Default flir_adk)
+      kind  : str
+      v     : flir_adk
       cmd_param :
         dash        : ''
         delim       : ':='
