@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <vector>
 
 class Butter2D {
 private:
@@ -38,26 +39,6 @@ public:
     return y0;
   }
 
-  void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u) {
-    std::vector<double> u_rev(u);
-
-    // forward filtering
-    filt_vector(t, u);
-
-    // backward filtering
-    std::reverse(u_rev.begin(), u_rev.end());
-    filt_vector(t, u_rev);
-    std::reverse(u_rev.begin(), u_rev.end());
-
-    // merge
-    for (uint i = 0; i < u.size(); ++i) {
-      u[i] = (u[i] + u_rev[i]) * 0.5;
-    }
-
-
-
-  }
-
   void filt_vector(const std::vector<double> &t, std::vector<double> &u) {
     double y1 = u.at(0);
     double y2 = u.at(0);
@@ -75,5 +56,25 @@ public:
       u.at(i) = y0;
     }
   }
+
+  // filtering forward and backward direction
+  void filtfilt_vector(const std::vector<double> &t, std::vector<double> &u) {
+    std::vector<double> u_rev(u);
+
+    // forward filtering
+    filt_vector(t, u);
+
+    // backward filtering
+    std::reverse(u_rev.begin(), u_rev.end());
+    filt_vector(t, u_rev);
+    std::reverse(u_rev.begin(), u_rev.end());
+
+    // merge
+    for (uint i = 0; i < u.size(); ++i) {
+      u[i] = (u[i] + u_rev[i]) * 0.5;
+    }
+  }
+
+
 
 };

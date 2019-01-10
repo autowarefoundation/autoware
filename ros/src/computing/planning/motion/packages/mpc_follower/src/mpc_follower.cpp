@@ -1,7 +1,9 @@
 #include <vector>
 #include <iostream>
 #include <limits>
+#include <chrono>
 
+#include <unistd.h>
 
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
@@ -19,9 +21,22 @@
 #include "autoware_msgs/Lane.h"
 #include "utils.h"
 #include "lowpass_filter.h"
+#include "mpc_trajectory.h"
 
-using vector = std::vector<double>;
+using vector = Eigen::VectorXd;
+using matrix = Eigen::MatrixXd;
+
+
 #define PRINT_MAT(X) std::cout << #X << ":\n" << X << std::endl << std::endl
+
+#define MPC_DEBUG_VERBOSE
+#ifdef MPC_DEBUG_VERBOSE
+#define MPC_INFO(...) printf(__VA_ARGS__)
+#else
+#define MPC_INFO(...)
+#endif
+
+
 
 
 class MPCFollower {
@@ -37,66 +52,51 @@ private:
   std::string path_frame_id_;
 
 
-  /* algorithm */
-  geometry_msgs::TwistStamped current_twist_;
-  geometry_msgs::PoseStamped current_pose_;
-  double current_steer_;
   autoware_msgs::Lane current_ref_path_;
-  class Trajectory {
-  public:
-    vector x;
-    vector y;
-    vector z;
-    vector yaw;
-    vector vx;
-    vector k;
-    vector relative_time;
-    void push_back(const double &xp, const double &yp, const double &zp,
-                   const double &yawp, const double &vxp, const double &kp, const double &tp) {
-      x.push_back(xp);
-      y.push_back(yp);
-      z.push_back(zp);
-      yaw.push_back(yawp);
-      vx.push_back(vxp);
-      k.push_back(kp);
-      relative_time.push_back(tp);
-    };
-    void clear() {
-      x.clear();
-      y.clear();
-      z.clear();
-      yaw.clear();
-      vx.clear();
-      k.clear();
-      relative_time.clear();
-    };
-    uint size() {
-      uint a = x.size();
-      if (a == y.size() && a == z.size() && a == yaw.size() &&
-          a == vx.size() && a == k.size() && a == relative_time.size()) {
-        return a;
-      } else {
-        printf("trajectory size is inappropriate\n");
-        return 0;
-      }
-    }
-  };
-  MPCFollower::Trajectory ref_traj_;
+  MPCTrajectory ref_traj_;
   Butter2D path_filter_;
 
+  double steering_command_;
+
   /* parameters */
-  double traj_dt_;
+  double traj_resample_dt_;
   double ctrl_dt_;
   double path_lowpass_cutoff_hz_;
 
-  int dim_x_;
-  int dim_u_;
-  int dim_y_;
+  struct MPCParam {
+    int n;
+    double dt;
+    double weight_lat_error;
+    double weight_heading_error;
+    double weight_steering_input;
+    double delay_compensation_time;
+    int dim_state_;
+    int dim_input_;
+    int dim_output_;
+  };
+  MPCParam mpc_param_;
 
-  int mpc_n_;
-  double mpc_dt_;
-  double mpc_steer_tau_;
-  double mpc_wheelbase_;
+  struct VehicleModel {
+    double steer_tau;
+    double wheelbase;
+    double steer_lim_deg;
+  };
+  VehicleModel vehicle_model_;
+
+  struct VehicleStatus {
+    std::string frame_id_pos;
+    double posx;
+    double posy;
+    double posz;
+    double yaw;
+    double vx;
+    double wz;
+    double steer;
+  };
+  VehicleStatus vehicle_status_;
+
+
+
 
 
   /* flags */
@@ -111,36 +111,55 @@ private:
 
 
   void calcRelativeTimeForPath(const autoware_msgs::Lane&, std::vector<double> &);
-  void resamplePath2Traj(const autoware_msgs::Lane &path, const vector &time, const double &resample_dt, MPCFollower::Trajectory &ref_traj_);
-  void convertTraj2Marker(const Trajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
-  void calcTrajectoryCurvature(Trajectory &traj);
+  void resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
+  void convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
+  void calcTrajectoryCurvature(MPCTrajectory &traj);
 
-  bool generateMPCMatrix(Eigen::MatrixXd &x0, Eigen::MatrixXd &Aex,
-                         Eigen::MatrixXd &Bex, Eigen::MatrixXd &Wex,
-                         Eigen::MatrixXd &Cex, Eigen::MatrixXd &Qex,
-                         Eigen::MatrixXd &Rex);
-  void getErrorDynamicsStateMatrix(const double &mpc_dt_, const double &ref_vx,
-                                   const double &mpc_wheelbase_,
-                                   const double &mpc_steer_tau_,
-                                   const double &ref_k, Eigen::MatrixXd &Ad,
-                                   Eigen::MatrixXd &Bd, Eigen::MatrixXd &Wd,
-                                   Eigen::MatrixXd &Cd);
+  bool calculateMPC();
+  void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx,
+                                   const double &wheelbase,
+                                   const double &steer_tau,
+                                   const double &ref_curvature, matrix &Ad,
+                                   matrix &Bd, matrix &Wd,
+                                   matrix &Cd);
 };
 
 MPCFollower::MPCFollower()
-    : nh_(""), pnh_("~"), path_frame_id_(""), dim_x_(3), dim_u_(1), dim_y_(2) {
+    : nh_(""), pnh_("~"), path_frame_id_(""){
+
 
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
-  pnh_.param("traj_dt", traj_dt_, double(0.1));
+  pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1));
   pnh_.param("ctrl_dt", ctrl_dt_, double(0.1));
   pnh_.param("path_lowpass_cutoff_hz", path_lowpass_cutoff_hz_, double(2));
-  mpc_steer_tau_ = 0.2;
-  mpc_wheelbase_ = 2.9;
-  current_steer_ = 0.0;
 
   // mpc parameters
-  pnh_.param("mpc_n", mpc_n_, int(30));
-  pnh_.param("mpc_dt", mpc_dt_, double(0.1));
+  pnh_.param("mpc_n", mpc_param_.n, int(30));
+  pnh_.param("mpc_dt", mpc_param_.dt, double(0.1));
+  pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(2.0));
+  pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(4.0));
+  pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
+  pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.0));
+  pnh_.param("mpc_dim_state", mpc_param_.dim_state_, int(3));
+  pnh_.param("mpc_dim_input", mpc_param_.dim_input_, int(1));
+  pnh_.param("mpc_dim_output", mpc_param_.dim_output_, int(2));
+
+  // vehicle model
+  pnh_.param("vehicle_model_steer_tau", vehicle_model_.steer_tau, double(0.2));
+  pnh_.param("vehicle_model_wheelbase", vehicle_model_.wheelbase, double(2.9));
+  pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(30.0));
+
+  // initialize for vehicle status
+  vehicle_status_.frame_id_pos = "";
+  vehicle_status_.posx = 0.0;
+  vehicle_status_.posy = 0.0;
+  vehicle_status_.posz = 0.0;
+  vehicle_status_.yaw = 0.0;
+  vehicle_status_.vx = 0.0;
+  vehicle_status_.wz = 0.0;
+  vehicle_status_.steer = 0.0;
+
+
 
   timer_control_ = nh_.createTimer(ros::Duration(ctrl_dt_), &MPCFollower::timerCallback, this);
 
@@ -154,68 +173,55 @@ MPCFollower::MPCFollower()
   sub_pose_ = nh_.subscribe("/current_pose", 1, &MPCFollower::callbackPose, this);
   sub_steering_ = nh_.subscribe("/vehicle_info/steering_angle", 1, &MPCFollower::callbackSteering, this);
 
-  path_filter_.initialize(traj_dt_, path_lowpass_cutoff_hz_);
+  path_filter_.initialize(traj_resample_dt_, path_lowpass_cutoff_hz_);
+
+  steering_command_ = 0.0;
+
 
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent& te) {
 
-  uint nearest_index = 0;
-  Eigen::MatrixXd x0(dim_x_,1);
-  Eigen::MatrixXd Aex = Eigen::MatrixXd::Zero(dim_x_*mpc_n_, dim_x_);
-  Eigen::MatrixXd Bex = Eigen::MatrixXd::Zero(dim_x_*mpc_n_, dim_u_*mpc_n_);
-  Eigen::MatrixXd Wex = Eigen::MatrixXd::Zero(dim_x_*mpc_n_, 1);
-  Eigen::MatrixXd Cex = Eigen::MatrixXd::Zero(dim_y_*mpc_n_, dim_x_*mpc_n_);
-  Eigen::MatrixXd Qex = Eigen::MatrixXd::Zero(dim_y_*mpc_n_, dim_y_*mpc_n_);
-  Eigen::MatrixXd Rex = Eigen::MatrixXd::Zero(dim_u_*mpc_n_, dim_u_*mpc_n_);
 
-////TODO
-  generateMPCMatrix(x0, Aex, Bex, Wex, Cex, Qex, Rex);
+  auto start = std::chrono::system_clock::now();
 
-//////////////////////////////////////////////////////////////////////////////////
+  calculateMPC();
 
-// calc predicted trajectory
-
-
+  auto end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+  printf("MPC calculating time = %f [ms]\n", elapsed * 1.0e-6);
 
 
 };
 
-bool MPCFollower::generateMPCMatrix(Eigen::MatrixXd &x0, Eigen::MatrixXd &Aex, Eigen::MatrixXd &Bex,
-                                    Eigen::MatrixXd &Wex, Eigen::MatrixXd &Cex,
-                                    Eigen::MatrixXd &Qex,
-                                    Eigen::MatrixXd &Rex) {
+bool MPCFollower::calculateMPC() {
   if (ref_traj_.size() == 0) {
     return false;
   }
 
+  static const double rad2deg = 180.0 / M_PI;
+  static const double deg2rad = M_PI / 180.0;
+
+  const int N = mpc_param_.n;
+  const int DIM_X = mpc_param_.dim_state_;
+  const int DIM_U = mpc_param_.dim_input_;
+  const int DIM_Y = mpc_param_.dim_output_;
+
+
   // calculate nearest point (used as initial state)
   uint nearest_index = 0;
   double min_dist_squared = std::numeric_limits<double>::max();
-  printf("ref_traj_.size() = %d\n", ref_traj_.size());
+  MPC_INFO("ref_traj_.size() = %d\n", ref_traj_.size());
   for (uint i = 0; i < ref_traj_.size(); ++i) {
-    const double dx = current_pose_.pose.position.x - ref_traj_.x[i];
-    const double dy = current_pose_.pose.position.y - ref_traj_.y[i];
+    const double dx = vehicle_status_.posx - ref_traj_.x[i];
+    const double dy = vehicle_status_.posy - ref_traj_.y[i];
     const double dist_squared = dx * dx + dy * dy;
     if (dist_squared < min_dist_squared) {
 
       // ignore when yaw error is large, for cross path
-      double err_yaw = tf2::getYaw(current_pose_.pose.orientation) - ref_traj_.yaw[i];
-      while (!(-2*M_PI <= err_yaw && err_yaw <= 2*M_PI)) {
-          if (err_yaw >= 2*M_PI) {
-              err_yaw = err_yaw - 2*M_PI;
-          } else if (err_yaw <= -2*M_PI) {
-              err_yaw = err_yaw + 2*M_PI;
-          }
-      }
-      if (err_yaw > M_PI) {
-          err_yaw = err_yaw - 2*M_PI;
-      } else if (err_yaw < -M_PI) {
-          err_yaw = err_yaw + 2*M_PI;
-      }
-      // dyaw = fmod(dyaw, 2.0 * M_PI);
-      // dyaw -= 2.0 * M_PI * ((dyaw > M_PI) - (dyaw < -M_PI));
-      if (fabs(err_yaw) < M_PI / 2.0) {
+      const double err_yaw = intoSemicircle(vehicle_status_.yaw - ref_traj_.yaw[i]);
+
+      if (fabs(err_yaw) < (M_PI / 2.0)) {
 
         // save nearest index
         min_dist_squared = dist_squared;
@@ -223,72 +229,69 @@ bool MPCFollower::generateMPCMatrix(Eigen::MatrixXd &x0, Eigen::MatrixXd &Aex, E
       }
     }
   }
-  double distance = std::sqrt(min_dist_squared);
-  printf("nearest_index = %d, min_dist_squared = %f\n",nearest_index, min_dist_squared);
+  // MPC_INFO("nearest_index = %d, min_dist_squared = %f\n",nearest_index, min_dist_squared);
 
   // convert x,y error to lat error
-  const double err_x = current_pose_.pose.position.x - ref_traj_.x[nearest_index];
-  const double err_y = current_pose_.pose.position.y - ref_traj_.y[nearest_index];
+  const double err_x = vehicle_status_.posx - ref_traj_.x[nearest_index];
+  const double err_y = vehicle_status_.posy - ref_traj_.y[nearest_index];
   const double sp_yaw = ref_traj_.yaw[nearest_index];
   const double err_lat = -sin(sp_yaw) * err_x + cos(sp_yaw) * err_y;
 
 
   // calculate yaw error, convert into range [-pi to pi]
-  double my_yaw = tf2::getYaw(current_pose_.pose.orientation);
-  double err_yaw = my_yaw - sp_yaw;
-  double err_yaw2 = fmod(err_yaw, 2.0 * M_PI);
-  err_yaw2 -= 2.0 * M_PI * ((err_yaw2 > M_PI) - (err_yaw2 < -M_PI));
-  while (!(-2*M_PI <= err_yaw && err_yaw <= 2*M_PI)) {
-      if (err_yaw >= 2*M_PI) {
-          err_yaw = err_yaw - 2*M_PI;
-      } else if (err_yaw <= -2*M_PI) {
-          err_yaw = err_yaw + 2*M_PI;
-      }
-  }
-  if (err_yaw > M_PI) {
-      err_yaw = err_yaw - 2*M_PI;
-  } else if (err_yaw < -M_PI) {
-      err_yaw = err_yaw + 2*M_PI;
-  }
-  if (fabs(err_yaw - err_yaw2) > 0.001) {
-    printf("\n\n\n\n\n err_yaw = %f\nerr_yaw2 = %f\n\n\n\n\n",err_yaw, err_yaw2);
-  }
+  const double my_yaw = vehicle_status_.yaw;
+  const double err_yaw = intoSemicircle(my_yaw - sp_yaw);
 
   // get steering angle
-  double steer = current_steer_;
+  const double steer = vehicle_status_.steer;
 
   // initial state for error dynamics
+  matrix x0(DIM_X,1);
   x0 << err_lat, err_yaw, steer;
 
-printf("lat error = %f, yaw error = %f, steer = %f, sp_yaw = %f, my_yaw = %f\n", err_lat, err_yaw, steer, sp_yaw, my_yaw);
+  MPC_INFO("lat error = %f, yaw error = %f, steer = %f, sp_yaw = %f, my_yaw = %f\n", err_lat, err_yaw, steer, sp_yaw, my_yaw);
 
   /////////////// generate mpc matrix  ///////////////
 
-  // TODO
-  Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(dim_y_, dim_y_);
-  Eigen::MatrixXd R = Eigen::MatrixXd::Identity(dim_u_, dim_u_);
+  matrix Aex = matrix::Zero(DIM_X * N, DIM_X);
+  matrix Bex = matrix::Zero(DIM_X * N, DIM_U * N);
+  matrix Wex = matrix::Zero(DIM_X * N, 1);
+  matrix Cex = matrix::Zero(DIM_Y * N, DIM_X * N);
+  matrix Qex = matrix::Zero(DIM_Y * N, DIM_Y * N);
+  matrix Rex = matrix::Zero(DIM_U * N, DIM_U * N);
+  vector MPC_T = vector::Zero(N);
+
+  matrix Q = matrix::Identity(DIM_Y, DIM_Y);
+  matrix R = matrix::Identity(DIM_U, DIM_U);
+  // matrix Q = matrix::Zero(DIM_Y, DIM_Y);
+  // matrix R = matrix::Zero(DIM_U, DIM_U);
+  // Q(0, 0) = mpc_param_.weight_lat_error;
+  // Q(1, 1) = mpc_param_.weight_heading_error;
+  // R(0, 0) = mpc_param_.weight_steering_input;
 
 
-  Eigen::MatrixXd Ad(dim_x_, dim_x_);
-  Eigen::MatrixXd Bd(dim_x_, dim_u_);
-  Eigen::MatrixXd Wd(dim_x_, 1);
-  Eigen::MatrixXd Cd(dim_y_, dim_x_);
+  matrix Ad(DIM_X, DIM_X);
+  matrix Bd(DIM_X, DIM_U);
+  matrix Wd(DIM_X, 1);
+  matrix Cd(DIM_Y, DIM_X);
 
-  Trajectory debug_ref_xyz_vec; // to calculate predicted trajectory
+  MPCTrajectory debug_ref_xyz_vec; // to calculate predicted trajectory
 
   const double nearest_traj_time = ref_traj_.relative_time[nearest_index];
+
   double mpc_time = nearest_traj_time; // as initialize;
 
-  printf("ts = %f, tf = %f\n", ref_traj_.relative_time.front(), ref_traj_.relative_time.back());
+  // MPC_INFO("ts = %f, tf = %f\n", ref_traj_.relative_time.front(), ref_traj_.relative_time.back());
 
-  // predict dynamics for mpc_n_ times
-  for (int i = 0; i < mpc_n_; ++i) {
-    // printf("mpc time = %f\n",mpc_time );
+  // predict dynamics for N times
+  for (int i = 0; i < N; ++i) {
+    // MPC_INFO("mpc time = %f\n",mpc_time );
+    MPC_T[i] = mpc_time;
 
     // check for out of range
     if (mpc_time > ref_traj_.relative_time.back()) {
       mpc_time = ref_traj_.relative_time.back();
-      printf("[MPC] path is too short to predict dynamics. i = %d\n", i);
+      ROS_WARN("[MPC] path is too short to predict dynamics. i = %d\n", i);
     }
 
     // get reference information at mpc_time by interpolation
@@ -313,81 +316,68 @@ printf("lat error = %f, yaw error = %f, steer = %f, sp_yaw = %f, my_yaw = %f\n",
     //   printf("%f, ",ref_traj_.x[i]);
     // }
     debug_ref_xyz_vec.push_back(debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp, 0, 0, 0);
-    // printf("\ndebug_ref_x_tmp = %f, debug_ref_y_tmp = %f, debug_ref_z_tmp = %f, debug_ref_yaw_tmp = %f\n", debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp);
+    // MPC_INFO("\ndebug_ref_x_tmp = %f, debug_ref_y_tmp = %f, debug_ref_z_tmp = %f, debug_ref_yaw_tmp = %f\n", debug_ref_x_tmp, debug_ref_y_tmp, debug_ref_z_tmp, debug_ref_yaw_tmp);
 
     // get discrete state matrix
-    getErrorDynamicsStateMatrix(mpc_dt_, ref_vx, mpc_wheelbase_, mpc_steer_tau_,
-                                ref_k, Ad, Bd, Wd, Cd);
-    // printf("i = %d\n",i);
-    // PRINT_MAT(Ad);
-    // PRINT_MAT(Bd);
-    // PRINT_MAT(Wd);
-    // PRINT_MAT(Cd);
-
-
+    getErrorDynamicsStateMatrix(mpc_param_.dt, ref_vx, vehicle_model_.wheelbase,
+                                vehicle_model_.steer_tau, ref_k, Ad, Bd, Wd, Cd);
     // update mpc matrix
     if (i == 0) {
-      Aex.block(0, 0, dim_x_, dim_x_) = Ad;
-      Bex.block(0, 0, dim_x_, dim_u_) = Bd;
-      Wex.block(0, 0, dim_x_, 1) = Wd;
-      Cex.block(0, 0, dim_y_, dim_x_) = Cd;
-      Qex.block(0, 0, dim_y_, dim_y_) = Q;
-      Rex.block(0, 0, dim_u_, dim_u_) = R;
+      Aex.block(0, 0, DIM_X, DIM_X) = Ad;
+      Bex.block(0, 0, DIM_X, DIM_U) = Bd;
+      Wex.block(0, 0, DIM_X, 1) = Wd;
+      Cex.block(0, 0, DIM_Y, DIM_X) = Cd;
+      Qex.block(0, 0, DIM_Y, DIM_Y) = Q;
+      Rex.block(0, 0, DIM_U, DIM_U) = R;
     } else {
-      int idx_x_i = i * dim_x_;
-      int idx_x_i_prev = (i - 1) * dim_x_;
-      int idx_u_i = i * dim_u_;
-      int idx_y_i = i * dim_y_;
-      Aex.block(idx_x_i, 0, dim_x_, dim_x_) =
-          Ad * Aex.block(idx_x_i_prev, 0, dim_x_, dim_x_);
+      int idx_x_i = i * DIM_X;
+      int idx_x_i_prev = (i - 1) * DIM_X;
+      int idx_u_i = i * DIM_U;
+      int idx_y_i = i * DIM_Y;
+      Aex.block(idx_x_i, 0, DIM_X, DIM_X) =
+          Ad * Aex.block(idx_x_i_prev, 0, DIM_X, DIM_X);
       for (int j = 0; j < i; ++j) {
-        int idx_u_j = j * dim_u_;
-        Bex.block(idx_x_i, idx_u_j, dim_x_, dim_u_) =
-            Ad * Bex.block(idx_x_i_prev, idx_u_j, dim_x_, dim_u_);
+        int idx_u_j = j * DIM_U;
+        Bex.block(idx_x_i, idx_u_j, DIM_X, DIM_U) =
+            Ad * Bex.block(idx_x_i_prev, idx_u_j, DIM_X, DIM_U);
       }
-      Bex.block(idx_x_i, idx_u_i, dim_x_, dim_u_) = Bd;
-      Wex.block(idx_x_i, 0, dim_x_, 1) =
-          Ad * Wex.block(idx_x_i_prev, 0, dim_x_, 1) + Wd;
-      Cex.block(idx_y_i, idx_x_i, dim_y_, dim_x_) = Cd;
-      Qex.block(idx_y_i, idx_y_i, dim_y_, dim_y_) = Q;
-      Rex.block(idx_u_i, idx_u_i, dim_u_, dim_u_) = R;
+      Bex.block(idx_x_i, idx_u_i, DIM_X, DIM_U) = Bd;
+      Wex.block(idx_x_i, 0, DIM_X, 1) =
+          Ad * Wex.block(idx_x_i_prev, 0, DIM_X, 1) + Wd;
+      Cex.block(idx_y_i, idx_x_i, DIM_Y, DIM_X) = Cd;
+      Qex.block(idx_y_i, idx_y_i, DIM_Y, DIM_Y) = Q;
+      Rex.block(idx_u_i, idx_u_i, DIM_U, DIM_U) = R;
     }
 
     // update mpc time
-    mpc_time += mpc_dt_;
+    mpc_time += mpc_param_.dt;
   }
-// PRINT_MAT(Aex);
-// PRINT_MAT(Bex);
-// PRINT_MAT(Wex);
-// PRINT_MAT(Cex);
-// PRINT_MAT(Qex);
-// PRINT_MAT(Rex);
-// PRINT_MAT(x0);
 
   /////////////// optimization ///////////////
-  Eigen::MatrixXd H = Bex.transpose() * Cex.transpose() * Qex * Cex * Bex + Rex;
-  Eigen::MatrixXd f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex;
-  Eigen::MatrixXd Uex = -H.inverse() * f.transpose();
-  // PRINT_MAT(H);
-  // PRINT_MAT(f);
-  // PRINT_MAT(Uex);
-  printf("mpc steering angle command = %f [deg]\n", Uex(0,0) * 180.0 / M_PI);
+  matrix H = (Cex * Bex).transpose() * Qex * Cex * Bex + Rex;
+  matrix f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex;
+  vector Uex = -H.inverse() * f.transpose();
+
+  // time dlay compensation
+  interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, steering_command_);
+  MPC_INFO("mpc steering angle command = %f [deg] (no delay comp = %f)\n", steering_command_ * rad2deg, Uex(0) * rad2deg);
 
   ////////// calculate predicted trajectory //////////
-  Eigen::MatrixXd Xex = Aex * x0 + Bex * Uex + Wex;
-  // PRINT_MAT(Xex);
+  vector Xex = Aex * x0 + Bex * Uex + Wex;
 
-  Trajectory debug_mpc_predicted_traj;
-  for (int i = 0; i < mpc_n_; ++i) {
+  // calcuate trajectory from reference trajectory and tracking error
+  MPCTrajectory debug_mpc_predicted_traj;
+  for (int i = 0; i < N; ++i) {
     const double yaw_ref = debug_ref_xyz_vec.yaw[i];
-    const double lat_error = Xex(i * dim_x_, 0);
-    const double yaw_error = Xex(i * dim_x_ + 1, 0);
+    const double lat_error = Xex(i * DIM_X);
+    const double yaw_error = Xex(i * DIM_X + 1);
     const double x = debug_ref_xyz_vec.x[i] - std::sin(yaw_ref) * lat_error;
     const double y = debug_ref_xyz_vec.y[i] + std::cos(yaw_ref) * lat_error;
     const double z = debug_ref_xyz_vec.z[i];
     debug_mpc_predicted_traj.push_back(x, y, z, yaw_ref + yaw_error, 0, 0, 0);
   }
 
+  // publish for visualization
   visualization_msgs::Marker marker;
   convertTraj2Marker(debug_mpc_predicted_traj, marker, "predicted_traj", 1.0, 0.0, 0.0);
   pub_debug_predicted_traj_.publish(marker);
@@ -399,16 +389,16 @@ printf("lat error = %f, yaw error = %f, steer = %f, sp_yaw = %f, my_yaw = %f\n",
   auto convertSteerToOmega = [](double &steer, double &vel, double &wheelbase) {
     return vel * std::tan(steer) / wheelbase;
   };
-  double deg2rad = M_PI / 180.0;
-  double u_sat = std::max(std::min(Uex(0,0), 30. *deg2rad), -30.*deg2rad);
-  double omega = convertSteerToOmega(u_sat, ref_traj_.vx[nearest_index], mpc_wheelbase_);
-  double command_vel_time = nearest_traj_time + 1.0; // get ahead reference velocity
+  double u_sat = std::max(std::min(steering_command_, 30. *deg2rad), -30.*deg2rad);
+  double omega = convertSteerToOmega(u_sat, ref_traj_.vx[nearest_index], vehicle_model_.wheelbase);
+  double lookahead_time = 1.0; // [s]
+  double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
   double vel_ref;
-  interp1d(ref_traj_.relative_time, ref_traj_.vx, command_vel_time, vel_ref);
+  interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_ref);
   geometry_msgs::TwistStamped twist;
   twist.header.frame_id = "/base_link";
   twist.header.stamp = ros::Time::now();
-  twist.twist.linear.x = vel_ref + 2.0;
+  twist.twist.linear.x = vel_ref;
   twist.twist.linear.y = 0.0;
   twist.twist.linear.z = 0.0;
   twist.twist.angular.x = 0.0;
@@ -422,37 +412,42 @@ printf("lat error = %f, yaw error = %f, steer = %f, sp_yaw = %f, my_yaw = %f\n",
 
 void MPCFollower::getErrorDynamicsStateMatrix(
     const double &dt, const double &v, const double &wheelbase,
-    const double &tau, const double &ref_k, Eigen::MatrixXd &Ad,
-    Eigen::MatrixXd &Bd, Eigen::MatrixXd &Wd, Eigen::MatrixXd &Cd) {
+    const double &steer_tau, const double &ref_curvature, matrix &Ad,
+    matrix &Bd, matrix &Wd, matrix &Cd) {
+
+
+  int DIM_X = 3;
+  int DIM_U = 1;
+  int DIM_Y = 2;
 
   auto sign = [](double x) { return (x > 0.0) - (x < 0.0); };
 
   // linearization around delta = delta_ref
-  double delta_r = atan(wheelbase * ref_k);
-  if (abs(delta_r) >= 40.0 / 180.0 * M_PI)
-    delta_r = (40.0 / 180.0 * M_PI) * (double)sign(delta_r);
+  double delta_r = atan(wheelbase * ref_curvature);
+  if (abs(delta_r) >= vehicle_model_.steer_lim_deg / 180.0 * M_PI)
+    delta_r = (vehicle_model_.steer_lim_deg / 180.0 * M_PI) * (double)sign(delta_r);
 
   double cos_delta_r_squared_inv = 1 / (cos(delta_r) * cos(delta_r));
 
   // difinition for continuous model
-  Eigen::MatrixXd A(dim_x_, dim_x_);
-  Eigen::MatrixXd B(dim_x_, dim_u_);
-  Eigen::MatrixXd W(dim_x_, 1);
-  Eigen::MatrixXd C(dim_y_, dim_x_);
+  matrix A(DIM_X, DIM_X);
+  matrix B(DIM_X, DIM_U);
+  matrix W(DIM_X, 1);
+  matrix C(DIM_Y, DIM_X);
   A << 0.0, v, 0.0,
        0.0, 0.0, v / wheelbase * cos_delta_r_squared_inv,
-       0.0, 0.0, -1.0 / tau;
+       0.0, 0.0, -1.0 / steer_tau;
 
-  B << 0.0, 0.0, 1.0 / tau;
+  B << 0.0, 0.0, 1.0 / steer_tau;
   C << 1.0, 0.0, 0.0,
        0.0, 1.0, 0.0;
   W << 0.0,
-      -v * ref_k + v / wheelbase * (tan(delta_r) - delta_r * cos_delta_r_squared_inv),
+      -v * ref_curvature + v / wheelbase * (tan(delta_r) - delta_r * cos_delta_r_squared_inv),
       0.0;
 
   // discretization
   // Ad = eye(3) + A * dt;
-  Eigen::MatrixXd I = Eigen::MatrixXd::Identity(dim_x_, dim_x_);
+  matrix I = matrix::Identity(DIM_X, DIM_X);
   Ad = (I - dt * 0.5 * A).inverse() *  (I + dt * 0.5 * A);
   Bd = B * dt;
   Cd = C;
@@ -464,41 +459,44 @@ void MPCFollower::getErrorDynamicsStateMatrix(
 void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
   current_ref_path_ = *msg;
   path_frame_id_ = msg->header.frame_id;
-  printf("callbackRefPath start\n");
-  printf("current_ref_path_.size() = %d\n",current_ref_path_.waypoints.size());
+  // MPC_INFO("callbackRefPath start\n");
+  // MPC_INFO("current_ref_path_.size() = %d\n",current_ref_path_.waypoints.size());
 
-  Trajectory traj;
+  MPCTrajectory traj;
 
   // calculate relative time
-  vector relative_time;
+  std::vector<double> relative_time;
   MPCFollower::calcRelativeTimeForPath(current_ref_path_, relative_time);
-  printf("relative_time.end() = %f\n", relative_time.back());
-  printf("relative_time.size() = %d\n",relative_time.size());
+  // MPC_INFO("relative_time.end() = %f\n", relative_time.back());
+  // MPC_INFO("relative_time.size() = %d\n",relative_time.size());
 
   // resampling
-  MPCFollower::resamplePath2Traj(current_ref_path_, relative_time, traj_dt_, traj);
-  printf("traj.relative_time.size() = %d\n",traj.relative_time.size());
+  MPCFollower::resamplePathToTraj(current_ref_path_, relative_time, traj_resample_dt_, traj);
+  // MPC_INFO("traj.relative_time.size() = %d\n",traj.relative_time.size());
 
   // low pass filter
-  ros::Time ts = ros::Time::now();
+  auto start = std::chrono::system_clock::now();
   if (use_path_smoothing_) {
-    path_filter_.initialize(traj_dt_, path_lowpass_cutoff_hz_);
+    path_filter_.initialize(traj_resample_dt_, path_lowpass_cutoff_hz_);
     path_filter_.filtfilt_vector(traj.relative_time, traj.x);
     path_filter_.filtfilt_vector(traj.relative_time, traj.y);
     path_filter_.filtfilt_vector(traj.relative_time, traj.z);
     path_filter_.filtfilt_vector(traj.relative_time, traj.yaw);
   }
-  ros::Time tf = ros::Time::now();
-  printf("path filtering time = %f [ms]\n", (tf-ts).toSec() * 1000.0);
+  auto end = std::chrono::system_clock::now();
+  double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+  // MPC_INFO("MPC path filtering time = %f [ms]\n", elapsed * 1.0e-6);
+
+
 
   MPCFollower::calcTrajectoryCurvature(traj);
   double max_k = *max_element(traj.k.begin(), traj.k.end());
   double min_k = *min_element(traj.k.begin(), traj.k.end());
-  printf("max_k = %f, min_k = %f\n", max_k, min_k);
+  // MPC_INFO("max_k = %f, min_k = %f\n", max_k, min_k);
 
   if (!traj.size()) {
-    printf("[callbackRefPath] trajectory size is wrong\n");
-    printf("size: x=%d, y=%d, z=%d, yaw=%d, v=%d,k=%d,t=%d\n",traj.x.size(), traj.y.size(), traj.z.size(), traj.yaw.size(), traj.vx.size(), traj.k.size(), traj.relative_time.size());
+    ROS_ERROR("[callbackRefPath] trajectory size is wrong\n");
+    // MPC_INFO("size: x=%d, y=%d, z=%d, yaw=%d, v=%d,k=%d,t=%d\n",traj.x.size(), traj.y.size(), traj.z.size(), traj.yaw.size(), traj.vx.size(), traj.k.size(), traj.relative_time.size());
   }
 
   ref_traj_ = traj;
@@ -515,24 +513,27 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
 
 
 void MPCFollower::callbackTwist(const geometry_msgs::TwistStamped::ConstPtr& msg){
-  current_twist_ = *msg;
+  vehicle_status_.frame_id_pos = msg->header.frame_id;
+  vehicle_status_.vx = msg->twist.linear.x;
+  vehicle_status_.wz = msg->twist.angular.z;
 };
 
 void MPCFollower::callbackPose(const geometry_msgs::PoseStamped::ConstPtr& msg){
-  current_pose_ = *msg;
+  vehicle_status_.posx = msg->pose.position.x;
+  vehicle_status_.posy = msg->pose.position.y;
+  vehicle_status_.posz = msg->pose.position.z;
+  vehicle_status_.yaw = tf2::getYaw(msg->pose.orientation);
 };
 
 void MPCFollower::callbackSteering(const std_msgs::Float64 &msg){
-  printf("callback steering !!!!! steer = %f\n", msg.data);
-
-  current_steer_ = msg.data;
+  vehicle_status_.steer = msg.data;
 };
 
 
 
 void MPCFollower::calcRelativeTimeForPath(const autoware_msgs::Lane &path,
                                           std::vector<double> &path_time) {
-printf("calcRelativeTimeForPath start\n");
+
   double t = 0.0;
   path_time.clear();
   path_time.push_back(t);
@@ -550,7 +551,7 @@ printf("calcRelativeTimeForPath start\n");
     double v = std::max(std::fabs(path.waypoints.at(i).twist.twist.linear.x), 1.0);
     t += (dist / v);
     path_time.push_back(t);
-    // printf("i = %d, t = %f, dist = %f, v = %f, dx = %f, dy = %f, dz = %f\n",i,t,dist,v,dx,dy,dz);
+    // MPC_INFO("i = %d, t = %f, dist = %f, v = %f, dx = %f, dy = %f, dz = %f\n",i,t,dist,v,dx,dy,dz);
   }
 
   // for (int i = 0; i < path_time.size(); i++) {
@@ -563,19 +564,19 @@ printf("calcRelativeTimeForPath start\n");
  //  printf("calcRelativeTimeForPath end\n");
 }
 
-void MPCFollower::resamplePath2Traj(const autoware_msgs::Lane &path, const vector &time, const double &dt, MPCFollower::Trajectory &ref_traj_){
-  printf("resamplePath2Traj start\n");
+void MPCFollower::resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &dt, MPCTrajectory &ref_traj_){
+
   // relative time should be monotonicly incresing
   ref_traj_.clear();
   double t = 0.0;
-  printf("time = [%f ,~ %f]\n", time.front(), time.back());
+  // MPC_INFO("time = [%f ,~ %f]\n", time.front(), time.back());
 
   while (t < time.back()) {
     uint j = 1;
     while (t > time.at(j)) {
       ++j;
       if (j > time.size() - 1){
-        printf("\n\n\n[MPC resampleByDt] something wrong\n\n\n");
+        ROS_ERROR("[MPC resampleByDt] bad condition for sampling time");
         printf("t = %f, time.at(j-1)=%f\n", t, time.at(j-1));
         return;
       }
@@ -592,38 +593,38 @@ void MPCFollower::resamplePath2Traj(const autoware_msgs::Lane &path, const vecto
     const double x = ((path_dt_j - a) * pos0.position.x + a * pos1.position.x) / path_dt_j;
     const double y = ((path_dt_j - a) * pos0.position.y + a * pos1.position.y) / path_dt_j;
     const double z = ((path_dt_j - a) * pos0.position.z + a * pos1.position.z) / path_dt_j;
-    const double yaw = (a * tf2::getYaw(pos0.orientation) +
-                        (path_dt_j - a) * tf2::getYaw(pos1.orientation)) / path_dt_j;
+    const double yaw = ((path_dt_j - a) * tf2::getYaw(pos0.orientation) +
+                        a * tf2::getYaw(pos1.orientation)) / path_dt_j;
     const double vx = ((path_dt_j - a) * twist0.linear.x + a * twist1.linear.x) / path_dt_j;
     const double curvature_tmp = 0.0;
-    // printf("t = %f, j = %d, a = %f, dt = %f", t, j, a, path_dt_j);
-    // printf("x0 = %f, x = %f, x1 = %f, ", pos0.position.x, x, pos1.position.x);
-    // printf("y0 = %f, y = %f, y1 = %f, ", pos0.position.y, y, pos1.position.y);
-    // printf("z0 = %f, z = %f, z1 = %f, ", pos0.position.z, z, pos1.position.z);
-    // printf("yaw0 = %f, yaw = %f, yaw1 = %f\n", tf2::getYaw(pos0.orientation), yaw, tf2::getYaw(pos1.orientation));
+    // MPC_INFO("t = %f, j = %d, a = %f, dt = %f", t, j, a, path_dt_j);
+    // MPC_INFO("x0 = %f, x = %f, x1 = %f, ", pos0.position.x, x, pos1.position.x);
+    // MPC_INFO("y0 = %f, y = %f, y1 = %f, ", pos0.position.y, y, pos1.position.y);
+    // MPC_INFO("z0 = %f, z = %f, z1 = %f, ", pos0.position.z, z, pos1.position.z);
+    // MPC_INFO("yaw0 = %f, yaw = %f, yaw1 = %f\n", tf2::getYaw(pos0.orientation), yaw, tf2::getYaw(pos1.orientation));
     ref_traj_.push_back(x, y, z, yaw, vx, curvature_tmp, t);
     t += dt;
   }
-  // printf("x = ");
+  // MPC_INFO("x = ");
   // for (int i = 0; i < ref_traj_.x.size(); ++i){
-  //   printf("%f, ", ref_traj_.x[i]);
+  //   MPC_INFO("%f, ", ref_traj_.x[i]);
   // }
-  // printf("\n");
-  // printf("y = ");
+  // MPC_INFO("\n");
+  // MPC_INFO("y = ");
   // for (int i = 0; i < ref_traj_.y.size(); ++i){
-  //   printf("%f, ", ref_traj_.y[i]);
+  //   MPC_INFO("%f, ", ref_traj_.y[i]);
   // }
-  // printf("\n");
-  printf("resamplePath2Traj end\n");
+  // MPC_INFO("\n");
+
 }
 
-void MPCFollower::calcTrajectoryCurvature(Trajectory &traj) {
+void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
   traj.k.clear();
 
   auto dist = [](const geometry_msgs::Point &a, const geometry_msgs::Point &b) {
     return std::sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
   };
-// printf("k = ");
+// MPC_INFO("k = ");
   geometry_msgs::Point p1, p2, p3;
   int smoothing_num = 3;
   for (uint i = smoothing_num; i < traj.x.size() - smoothing_num; ++i) {
@@ -637,7 +638,7 @@ void MPCFollower::calcTrajectoryCurvature(Trajectory &traj) {
         2.0 * ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)) /
         (dist(p1, p2) * dist(p2, p3) * dist(p3, p1));
     traj.k.push_back(curvature);
-    // printf("%f, ", curvature);
+    // MPC_INFO("%f, ", curvature);
   }
 
   // first and last curvature is copied from next value
@@ -649,7 +650,7 @@ void MPCFollower::calcTrajectoryCurvature(Trajectory &traj) {
 
 
 
-void MPCFollower::convertTraj2Marker(const Trajectory &traj, visualization_msgs::Marker &marker, std::string ns, double r, double g, double b){
+void MPCFollower::convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &marker, std::string ns, double r, double g, double b){
   marker.points.clear();
   marker.header.frame_id = path_frame_id_;
   marker.header.stamp = ros::Time();
