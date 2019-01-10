@@ -2,15 +2,15 @@
 #include <cmath>
 #include <vector>
 
-class Butter2D {
+class Butterworth2d {
 private:
   double y1_, y2_, u1_, u2_, wc_, a0_, a1_, a2_, b0_, b1_, b2_;
 
 public:
-  Butter2D(double dt = 0.1, double f_cutoff_hz = 10.0) {
+  Butterworth2d(double dt = 0.1, double f_cutoff_hz = 10.0) {
     initialize(dt, f_cutoff_hz);
   };
-  ~Butter2D(){};
+  ~Butterworth2d(){};
 
 
   void initialize(const double &dt, const double &f_cutoff_hz) {
@@ -22,12 +22,38 @@ public:
     wc_ = 2.0 * M_PI * f_cutoff_hz;
 
     // 2d-butterworth filter with bilinear transformation
-    a0_ = dt * dt * wc_ * wc_ + dt * wc_ / sqrt(2) + 4.0;
-    a1_ = 2.0 * dt * dt * wc_ * wc_ - 8.0;
-    a2_ = 4.0 - dt * wc_ / sqrt(2) + dt * dt * wc_ * wc_;
-    b0_ = dt * dt * wc_ * wc_;
-    b1_ = 2.0 * b0_;
-    b2_ = b0_;
+    // a0_ = dt * dt * wc_ * wc_ + dt * wc_ / sqrt(2) + 4.0;
+    // a1_ = 2.0 * dt * dt * wc_ * wc_ - 8.0;
+    // a2_ = 4.0 - dt * wc_ / sqrt(2) + dt * dt * wc_ * wc_;
+    // b0_ = dt * dt * wc_ * wc_;
+    // b1_ = 2.0 * b0_;
+    // b2_ = b0_;
+    // const double n = 2.0 / dt;
+    // b0_ = 1.0;
+    // b1_ = 2.0;
+    // b2_ = 1.0;
+    // a0_ = n * n + 2.0 * sqrt(2) * n * wc + wc * wc;
+    // a1_ = 2.0 * wc * wc - 2 * n * n;
+    // a2_ = n * n - 2.0 * sqrt(2) * n * wc * wc * wc;
+
+
+    // temp for sampling: 20hz, cutoff: 3 hz
+    b0_ = 0.0413;
+    b1_ = 0.0825;
+    b2_ = 0.0413;
+    a0_ = 1.0;
+    a1_ = -1.3490;
+    a2_ = 0.5140;
+
+
+    // temp for sampling: 20hz, cutoff: 0.5 hz
+    // b0_ = 0.0015;
+    // b1_ = 0.0030;
+    // b2_ = 0.0015;
+    // a0_ = 1.0;
+    // a1_ = -1.8890;
+    // a2_ = 0.8949;
+
   }
 
   double filter(double &u0) {

@@ -7,6 +7,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -46,7 +47,7 @@ public:
 
 private:
   ros::NodeHandle nh_, pnh_;
-  ros::Publisher pub_steering_, pub_twist_cmd_, pub_debug_filtered_traj_, pub_debug_predicted_traj_;
+  ros::Publisher pub_steering_, pub_twist_cmd_, pub_debug_filtered_traj_, pub_debug_predicted_traj_, pub_debug_values_;
   ros::Subscriber sub_ref_path_, sub_twist_, sub_pose_, sub_steering_;
   ros::Timer timer_control_;
   std::string path_frame_id_;
@@ -54,13 +55,12 @@ private:
 
   autoware_msgs::Lane current_ref_path_;
   MPCTrajectory ref_traj_;
+  Butterworth2d lpf_steering_cmd_;
 
-  double steering_command_;
-
-  /* parameters */
-  double traj_resample_dt_;
-  double ctrl_dt_;
-  double moving_filter_num_;
+  double ctrl_dt_; // deside control frequency
+  double traj_resample_dt_; // used for resample path
+  double moving_filter_num_; // for path smoothing
+  double steering_lpf_cutoff_hz_; // for steering command smoothing
 
   struct MPCParam {
     int n;
@@ -73,14 +73,14 @@ private:
     int dim_input_;
     int dim_output_;
   };
-  MPCParam mpc_param_;
+  MPCParam mpc_param_; // for mpc design
 
   struct VehicleModel {
     double steer_tau;
     double wheelbase;
     double steer_lim_deg;
   };
-  VehicleModel vehicle_model_;
+  VehicleModel vehicle_model_; // vehicle physical parameters
 
   struct VehicleStatus {
     std::string frame_id_pos;
@@ -92,29 +92,24 @@ private:
     double wz;
     double steer;
   };
-  VehicleStatus vehicle_status_;
-
-
-
-
+  VehicleStatus vehicle_status_; // updated by topic callback
 
   /* flags */
   bool use_path_smoothing_;
 
   void timerCallback(const ros::TimerEvent&);
-
   void callbackRefPath(const autoware_msgs::Lane::ConstPtr&);
   void callbackTwist(const geometry_msgs::TwistStamped::ConstPtr&);
   void callbackPose(const geometry_msgs::PoseStamped::ConstPtr&);
   void callbackSteering(const std_msgs::Float64 &);
 
-
   void calcRelativeTimeForPath(const autoware_msgs::Lane&, std::vector<double> &);
   void resamplePathToTraj(const autoware_msgs::Lane &path, const std::vector<double> &time, const double &resample_dt, MPCTrajectory &ref_traj_);
   void convertTraj2Marker(const MPCTrajectory &traj, visualization_msgs::Marker &markers, std::string ns, double r, double g, double b);
   void calcTrajectoryCurvature(MPCTrajectory &traj);
+  void publishAsTwist(double &vel_cmd, double &steer_cmd);
 
-  bool calculateMPC();
+  bool calculateMPC(double &vel_cmd, double &steer_cmd);
   void getErrorDynamicsStateMatrix(const double &dt, const double &ref_vx,
                                    const double &wheelbase,
                                    const double &steer_tau,
@@ -129,12 +124,13 @@ MPCFollower::MPCFollower()
 
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1));
-  pnh_.param("ctrl_dt", ctrl_dt_, double(0.1));
+  pnh_.param("ctrl_dt", ctrl_dt_, double(0.05));
   pnh_.param("moving_filter_num", moving_filter_num_, double(5));
+  pnh_.param("steering_lpf_cutoff_hz", steering_lpf_cutoff_hz_, double(5.0));
 
   // mpc parameters
-  pnh_.param("mpc_n", mpc_param_.n, int(30));
-  pnh_.param("mpc_dt", mpc_param_.dt, double(0.1));
+  pnh_.param("mpc_n", mpc_param_.n, int(70));
+  pnh_.param("mpc_dt", mpc_param_.dt, double(0.05));
   pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
@@ -166,6 +162,7 @@ MPCFollower::MPCFollower()
   pub_twist_cmd_ = nh_.advertise<geometry_msgs::TwistStamped>("/twist_cmd", 1);
   pub_debug_filtered_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/filtered_traj", 1);
   pub_debug_predicted_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/predicted_traj", 1);
+  pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
 
   sub_ref_path_ = nh_.subscribe("/base_waypoints", 1, &MPCFollower::callbackRefPath, this);
   sub_twist_ = nh_.subscribe("/vehicle_info/twist", 1, &MPCFollower::callbackTwist, this);
@@ -173,26 +170,49 @@ MPCFollower::MPCFollower()
   sub_steering_ = nh_.subscribe("/vehicle_info/steering_angle", 1, &MPCFollower::callbackSteering, this);
 
 
-  steering_command_ = 0.0;
+  lpf_steering_cmd_.initialize(ctrl_dt_, steering_lpf_cutoff_hz_);
 
 
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent& te) {
 
+  double vel_cmd = 0.0;
+  double steer_cmd = 0.0;
 
   auto start = std::chrono::system_clock::now();
 
-  calculateMPC();
+  calculateMPC(vel_cmd, steer_cmd);
 
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
   printf("MPC calculating time = %f [ms]\n", elapsed * 1.0e-6);
 
+  publishAsTwist(vel_cmd, steer_cmd);
+
 
 };
 
-bool MPCFollower::calculateMPC() {
+void MPCFollower::publishAsTwist(double &vel_cmd, double &steer_cmd) {
+
+  ////// convert steering to twist //////
+  double omega = vel_cmd * std::tan(steer_cmd) / vehicle_model_.wheelbase;
+
+  geometry_msgs::TwistStamped twist;
+  twist.header.frame_id = "/base_link";
+  twist.header.stamp = ros::Time::now();
+  twist.twist.linear.x = vel_cmd;
+  twist.twist.linear.y = 0.0;
+  twist.twist.linear.z = 0.0;
+  twist.twist.angular.x = 0.0;
+  twist.twist.angular.y = 0.0;
+  twist.twist.angular.z = omega;
+  pub_twist_cmd_.publish(twist);
+
+}
+
+
+bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   if (ref_traj_.size() == 0) {
     return false;
   }
@@ -257,6 +277,7 @@ bool MPCFollower::calculateMPC() {
   matrix Cex = matrix::Zero(DIM_Y * N, DIM_X * N);
   matrix Qex = matrix::Zero(DIM_Y * N, DIM_Y * N);
   matrix Rex = matrix::Zero(DIM_U * N, DIM_U * N);
+  matrix Uref = matrix::Zero(DIM_U * N, 1);
   vector MPC_T = vector::Zero(N);
 
   matrix Q = matrix::Zero(DIM_Y, DIM_Y);
@@ -344,6 +365,8 @@ bool MPCFollower::calculateMPC() {
       Qex.block(idx_y_i, idx_y_i, DIM_Y, DIM_Y) = Q;
       Rex.block(idx_u_i, idx_u_i, DIM_U, DIM_U) = R;
     }
+    Uref(i * DIM_U, 0) = std::atan(vehicle_model_.wheelbase * ref_k);
+    // printf("i = %d, ref_k = %f, uref = %f\n", i, ref_k, Uref(i*DIM_U, 0));
 
     // update mpc time
     mpc_time += mpc_param_.dt;
@@ -351,12 +374,30 @@ bool MPCFollower::calculateMPC() {
 
   /////////////// optimization ///////////////
   matrix H = (Cex * Bex).transpose() * Qex * Cex * Bex + Rex;
-  matrix f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex;
+  matrix f = (Cex * (Aex * x0 + Wex)).transpose() * Qex * Cex * Bex - Uref.transpose() * Rex;
   vector Uex = -H.inverse() * f.transpose();
 
-  // time dlay compensation
-  interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, steering_command_);
-  MPC_INFO("mpc steering angle command = %f [deg] (no delay comp = %f)\n", steering_command_ * rad2deg, Uex(0) * rad2deg);
+  // PRINT_MAT(-H.inverse() * f.transpose());
+
+  // time delay compensation
+  double u_raw;
+  interp1d(MPC_T, Uex, nearest_traj_time + mpc_param_.delay_compensation_time, u_raw);
+  MPC_INFO("mpc steering angle command = %f [deg] (no delay comp = %f)\n", u_raw * rad2deg, Uex(0) * rad2deg);
+
+  // saturation
+  double u_sat = std::max(std::min(u_raw, vehicle_model_.steer_lim_deg * deg2rad), -vehicle_model_.steer_lim_deg * deg2rad);
+
+  // filtering
+  double u_filtered = lpf_steering_cmd_.filter(u_sat);
+
+  steer_cmd = u_filtered;
+
+
+  ////////// calculating velocity //////////
+  double lookahead_time = 1.0; // [s]
+  double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
+  interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_cmd);
+
 
   ////////// calculate predicted trajectory //////////
   vector Xex = Aex * x0 + Bex * Uex + Wex;
@@ -381,27 +422,17 @@ bool MPCFollower::calculateMPC() {
 
 
 
-  ////// convert steering to twist //////
-  auto convertSteerToOmega = [](double &steer, double &vel, double &wheelbase) {
-    return vel * std::tan(steer) / wheelbase;
-  };
-  double u_sat = std::max(std::min(steering_command_, 30. *deg2rad), -30.*deg2rad);
-  double omega = convertSteerToOmega(u_sat, ref_traj_.vx[nearest_index], vehicle_model_.wheelbase);
-  double lookahead_time = 1.0; // [s]
-  double cmd_vel_ref_time = nearest_traj_time + lookahead_time; // get ahead reference velocity
-  double vel_ref;
-  interp1d(ref_traj_.relative_time, ref_traj_.vx, cmd_vel_ref_time, vel_ref);
-  geometry_msgs::TwistStamped twist;
-  twist.header.frame_id = "/base_link";
-  twist.header.stamp = ros::Time::now();
-  twist.twist.linear.x = vel_ref;
-  twist.twist.linear.y = 0.0;
-  twist.twist.linear.z = 0.0;
-  twist.twist.angular.x = 0.0;
-  twist.twist.angular.y = 0.0;
-  twist.twist.angular.z = omega;
-  pub_twist_cmd_.publish(twist);
-
+  ////////// publish debug values //////////
+  std_msgs::Float64MultiArray debug_values;
+  double nearest_ref_k = ref_traj_.k[nearest_index];
+  debug_values.data.clear();
+  debug_values.data.push_back(u_sat);
+  debug_values.data.push_back(u_filtered);
+  debug_values.data.push_back(err_lat);
+  debug_values.data.push_back(err_yaw);
+  debug_values.data.push_back(steer);
+  debug_values.data.push_back(nearest_ref_k);
+  pub_debug_values_.publish(debug_values);
 
 
 };
@@ -471,6 +502,13 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
   convertEulerAngleToMonotonic(traj.yaw);
   // MPC_INFO("traj.relative_time.size() = %d\n",traj.relative_time.size());
 
+
+  MPCFollower::calcTrajectoryCurvature(traj);
+  double max_k = *max_element(traj.k.begin(), traj.k.end());
+  double min_k = *min_element(traj.k.begin(), traj.k.end());
+  // MPC_INFO("max_k = %f, min_k = %f\n", max_k, min_k);
+
+
   // low pass filter
   auto start = std::chrono::system_clock::now();
   if (use_path_smoothing_) {
@@ -478,17 +516,11 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr& msg){
     filteringMovingAverate(traj.y, moving_filter_num_);
     filteringMovingAverate(traj.z, moving_filter_num_);
     filteringMovingAverate(traj.yaw, moving_filter_num_);
+    filteringMovingAverate(traj.k, moving_filter_num_);
   }
   auto end = std::chrono::system_clock::now();
   double elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
   // MPC_INFO("MPC path filtering time = %f [ms]\n", elapsed * 1.0e-6);
-
-
-
-  MPCFollower::calcTrajectoryCurvature(traj);
-  double max_k = *max_element(traj.k.begin(), traj.k.end());
-  double min_k = *min_element(traj.k.begin(), traj.k.end());
-  // MPC_INFO("max_k = %f, min_k = %f\n", max_k, min_k);
 
   if (!traj.size()) {
     ROS_ERROR("[callbackRefPath] trajectory size is wrong\n");
@@ -631,7 +663,7 @@ void MPCFollower::calcTrajectoryCurvature(MPCTrajectory &traj) {
   };
 // MPC_INFO("k = ");
   geometry_msgs::Point p1, p2, p3;
-  int smoothing_num = 3;
+  int smoothing_num = 5;
   for (uint i = smoothing_num; i < traj.x.size() - smoothing_num; ++i) {
     p1.x = traj.x[i - smoothing_num];
     p2.x = traj.x[i];

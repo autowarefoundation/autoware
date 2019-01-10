@@ -48,7 +48,7 @@ void filteringMovingAverate(std::vector<double> &u, const int num) {
         ++count;
       }
     }
-    filtered_u[i] = tmp / (2 * num + 1);
+    filtered_u[i] = tmp / count;
   }
   u = filtered_u;
 }
