@@ -11,6 +11,7 @@ FIND_PACKAGE(catkin REQUIRED COMPONENTS
   std_msgs
   jsk_recognition_msgs
   tf
+  autoware_msgs
   )
 
 FIND_PACKAGE(OpenCV REQUIRED)

@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         sensor_msgs
         std_msgs
+        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)

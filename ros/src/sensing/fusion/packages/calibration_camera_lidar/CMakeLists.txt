@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         pcl_ros
         image_transport
+        autoware_msgs
         )
 
 find_package(OpenCV REQUIRED)

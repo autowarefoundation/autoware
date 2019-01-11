@@ -9,6 +9,7 @@ find_package(autoware_msgs REQUIRED)
 
 FIND_PACKAGE(catkin REQUIRED COMPONENTS
         roscpp
+        autoware_msgs
         )
 
 

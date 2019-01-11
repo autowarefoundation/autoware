@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   jsk_recognition_msgs
   vector_map_server
+  autoware_msgs
+  vector_map
   )
 
 

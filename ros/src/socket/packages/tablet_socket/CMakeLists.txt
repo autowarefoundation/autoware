@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   gnss
   autoware_can_msgs
   geometry_msgs
+  autoware_msgs
   )
 
 set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
