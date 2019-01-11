@@ -884,16 +884,6 @@ subs :
   - name : Decision
     desc : decision groups
     subs :
-    - name : state_machine(old)
-      desc : state_machine desc sample
-      cmd  : roslaunch state_machine state_machine.launch
-    - name : decision_maker
-      desc : decision_maker desc sample
-      cmd  : roslaunch decision_maker decision_maker.launch
-      param: decision_maker
-      gui  :
-          dialog_width  : 400
-          dialog_height : 620
 
     - name : planner_selector
       desc : planner_selector desc sample
