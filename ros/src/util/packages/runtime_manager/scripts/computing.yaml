@@ -300,13 +300,6 @@ subs :
     - name : lidar_tracker
       desc : lidar_tracker desc sample
       subs :
-      - name : lidar_kf_track
-        desc : lidar_kf_track desc sample
-        cmd  : roslaunch lidar_kf_track lidar_kf_track.launch
-        param: lidar_kf_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
       - name : lidar_pf_track
         desc : lidar_pf_track desc sample
         cmd  : roslaunch lidar_pf_track lidar_pf_track.launch
