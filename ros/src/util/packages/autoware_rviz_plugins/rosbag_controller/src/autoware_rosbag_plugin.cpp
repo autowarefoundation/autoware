@@ -301,7 +301,7 @@ void Autoware_Rosbag_Plugin::on_botton_topic_refresh_clicked()
     delete layout;
   }
 
-  QVBoxLayout *lay = new QVBoxLayout(this);
+  QVBoxLayout *lay = new QVBoxLayout(ui->scrollAreaWidgetContents);
   int topic_num = 0;
 
   /* Scan current topics and build checkboxs */
@@ -348,6 +348,7 @@ void Autoware_Rosbag_Plugin::on_button_record_configure_clicked()
     if(idx == -1)
     {
       ROS_ERROR("Need .yaml file!!");
+      return;
     }
 
     ui->edit_record_configure->setText(filename);
@@ -355,8 +356,15 @@ void Autoware_Rosbag_Plugin::on_button_record_configure_clicked()
     conf_topics_.clear();
 
     /* read configure file */
-    YAML::Node conf = YAML::LoadFile(filepath.toStdString() + filename.toStdString());
-    conf_topics_ = conf["topics"].as<std::vector<std::string> >();
+    try
+    {
+      YAML::Node conf = YAML::LoadFile(filepath.toStdString() + filename.toStdString());
+      conf_topics_ = conf["topics"].as<std::vector<std::string> >();
+    }
+    catch(YAML::Exception exception)
+    {
+      ROS_ERROR(exception.what());
+    }
   }
 }
 
