@@ -202,8 +202,8 @@ void geo_pos_conv::set_llh_nmea_degrees(double latd, double lond, double h, bool
   m_lon = (lod + lon / 60.0) * M_PI / 180;
   m_h = h;
 
-  if (use_mgrs)
-    conv_llh2mgrs(m_lat/M_PI * 180 -90, m_lon/M_PI * 180-90, h);
+  if (use_mgrs) //convert from rad -> 0~180 deg -> -90~90 deg
+    conv_llh2mgrs(m_lat/M_PI * 180 - 90, m_lon/M_PI * 180 - 90, h);
   else
     conv_llh2xyz();
 

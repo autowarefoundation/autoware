@@ -35,13 +35,15 @@ static geometry_msgs::Quaternion _quat;
 static double yaw;
 
 static int _plane;
+static bool _use_mgrs;
 
 static void GNSSCallback(const sensor_msgs::NavSatFixConstPtr &msg)
 {
   geo_pos_conv geo;
 
   geo.set_plane(_plane);
-  geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude);
+
+  geo.llh_to_xyz(msg->latitude, msg->longitude, msg->altitude, _use_mgrs);
 
   static tf::TransformBroadcaster pose_broadcaster;
   tf::Transform pose_transform;
@@ -96,6 +98,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle private_nh("~");
   private_nh.getParam("plane", _plane);
+  private_nh.getParam("use_mgrs", _use_mgrs);
   pose_publisher = nh.advertise<geometry_msgs::PoseStamped>("gnss_pose", 1000);
   stat_publisher = nh.advertise<std_msgs::Bool>("/gnss_stat", 1000);
   ros::Subscriber gnss_pose_subscriber = nh.subscribe("fix", 100, GNSSCallback);

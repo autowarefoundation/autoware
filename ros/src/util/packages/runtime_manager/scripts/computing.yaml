@@ -13,12 +13,16 @@ subs :
         param: gnss
         gui  :
           stat_topic : [ gnss ]
+          plane :
+            flags : [ nl ]
       - name : nmea2tfpose
         desc : nmea2tfpose desc sample
         cmd  : roslaunch gnss_localizer nmea2tfpose.launch
         param: gnss
         gui  :
           stat_topic : [ gnss ]
+          plane :
+            flags : [ nl ]
     - name : lidar_localizer
       desc : lidar_localizer desc sample
       subs :
