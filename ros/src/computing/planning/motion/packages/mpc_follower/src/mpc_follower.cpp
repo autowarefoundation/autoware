@@ -72,7 +72,8 @@ private:
   double traj_resample_dt_; // used for resample path
   double moving_filter_num_; // for path smoothing
   double steering_lpf_cutoff_hz_; // for steering command smoothing
-  double admisible_lateral_error_; //  stop mpc calculation when lateral error is large than this value.
+  double admisible_lateral_error_; // stop mpc calculation when lateral error is large than this value.
+  double admisible_yaw_error_deg_; // stop mpc calculation when yaw error is large than this value.
 
   struct MPCParam {
     int n;
@@ -134,15 +135,16 @@ private:
 };
 
 MPCFollower::MPCFollower()
-    : nh_(""), pnh_("~"), path_frame_id_(""){
+    : nh_(""), pnh_("~"), path_frame_id_("") {
 
   pnh_.param("ctrl_cmd_interface", ctrl_cmd_interface_string_, std::string("twist"));
   pnh_.param("ctrl_dt", ctrl_dt_, double(0.05));
   pnh_.param("use_path_smoothing", use_path_smoothing_, bool(true));
   pnh_.param("traj_resample_dt", traj_resample_dt_, double(0.1));
   pnh_.param("moving_filter_num", moving_filter_num_, double(5));
-  pnh_.param("steering_lpf_cutoff_hz", steering_lpf_cutoff_hz_, double(5.0));
+  pnh_.param("steering_lpf_cutoff_hz", steering_lpf_cutoff_hz_, double(3.0));
   pnh_.param("admisible_lateral_error", admisible_lateral_error_, double(5.0));
+  pnh_.param("admisible_yaw_error_deg", admisible_yaw_error_deg_, double(45.0));
 
   /* mpc parameters */
   pnh_.param("mpc_n", mpc_param_.n, int(100));
@@ -150,15 +152,18 @@ MPCFollower::MPCFollower()
   pnh_.param("mpc_weight_lat_error", mpc_param_.weight_lat_error, double(1.0));
   pnh_.param("mpc_weight_heading_error", mpc_param_.weight_heading_error, double(1.0));
   pnh_.param("mpc_weight_steering_input", mpc_param_.weight_steering_input, double(1.0));
-  pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.02));
-  pnh_.param("mpc_dim_state", mpc_param_.dim_state_, int(3));
-  pnh_.param("mpc_dim_input", mpc_param_.dim_input_, int(1));
-  pnh_.param("mpc_dim_output", mpc_param_.dim_output_, int(2));
+  pnh_.param("mpc_delay_compensation_time", mpc_param_.delay_compensation_time, double(0.05));
+  // pnh_.param("mpc_dim_state", mpc_param_.dim_state_, int(3));
+  // pnh_.param("mpc_dim_input", mpc_param_.dim_input_, int(1));
+  // pnh_.param("mpc_dim_output", mpc_param_.dim_output_, int(2));
+  mpc_param_.dim_state_ = 3;
+  mpc_param_.dim_input_ = 1;
+  mpc_param_.dim_output_ = 2;
 
   /*/ vehicle model */
-  pnh_.param("vehicle_model_steer_tau", vehicle_model_.steer_tau, double(0.2));
+  pnh_.param("vehicle_model_steer_tau", vehicle_model_.steer_tau, double(0.4));
   pnh_.param("vehicle_model_wheelbase", vehicle_model_.wheelbase, double(2.9));
-  pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(30.0));
+  pnh_.param("vehicle_model_steer_lim_deg", vehicle_model_.steer_lim_deg, double(40.0));
 
 
   /* initialize for vehicle status */
@@ -198,7 +203,6 @@ MPCFollower::MPCFollower()
 
   /* for DEBUG */
   // sub_sim_odom_ = nh_.subscribe("/autoware_gazebo/diff_drive_controller/odom", 1, &MPCFollower::callbackSimOdom, this);
-
 };
 
 void MPCFollower::timerCallback(const ros::TimerEvent& te) {
@@ -254,6 +258,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
   /* calculate nearest point on reference trajectory (used as initial state) */
   uint nearest_index = 0;
+  double nearest_yaw_error = std::numeric_limits<double>::max();
   double min_dist_squared = std::numeric_limits<double>::max();
   for (uint i = 0; i < ref_traj_.size(); ++i) {
     const double dx = vehicle_status_.posx - ref_traj_.x[i];
@@ -267,6 +272,7 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
         /* save nearest index */
         min_dist_squared = dist_squared;
+        nearest_yaw_error = err_yaw;
         nearest_index = i;
       }
     }
@@ -275,8 +281,13 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
 
   /* check if lateral error is not too large */
   if (std::sqrt(min_dist_squared) > admisible_lateral_error_) {
-    ROS_WARN("[calculateMPC] lateral error is large than admisible error, stop "
-             "mpc. (error: %f[m], admisible: %f[m]\n", std::sqrt(min_dist_squared), admisible_lateral_error_);
+    ROS_WARN("[calculateMPC] lateral error is large than admisible range, stop mpc calculation."
+             " (error: %f[m], admisible: %f[m]", std::sqrt(min_dist_squared), admisible_lateral_error_);
+    return false;
+  }
+  if (std::fabs(nearest_yaw_error) > admisible_yaw_error_deg_ * deg2rad) {
+    ROS_WARN("[calculateMPC] yaw error is large than admisible range, stop mpc calculation."
+             " (error: %f[m], admisible: %f[m]", nearest_yaw_error * rad2deg, admisible_yaw_error_deg_);
     return false;
   }
 
@@ -287,8 +298,8 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &steer_cmd) {
   /* check trajectory length */
   const double mpc_end_time = mpc_time + (N-1)*mpc_param_.dt;
   if (mpc_end_time > ref_traj_.relative_time.back()) {
-    ROS_WARN("[calculateMPC] path is too short to predict dynamics. \n");
-    ROS_WARN("[calculateMPC] path end time: %f, mpc end time: %f\n", ref_traj_.relative_time.back(), mpc_end_time);
+    ROS_WARN("[calculateMPC] path is too short to predict dynamics. ");
+    ROS_WARN("[calculateMPC] path end time: %f, mpc end time: %f", ref_traj_.relative_time.back(), mpc_end_time);
     return false;
   }
 
