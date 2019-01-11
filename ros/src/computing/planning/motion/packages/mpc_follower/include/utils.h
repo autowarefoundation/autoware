@@ -11,7 +11,6 @@ double intoSemicircle(const double a) {
 
 
 void convertEulerAngleToMonotonic(std::vector<double> &a) {
-
   for (uint i = 1; i < a.size(); ++i) {
     const double da = a[i] - a[i - 1];
     a[i] = a[i - 1] + intoSemicircle(da);
