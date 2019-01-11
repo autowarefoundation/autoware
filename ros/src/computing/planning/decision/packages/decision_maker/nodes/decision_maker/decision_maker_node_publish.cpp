@@ -105,16 +105,16 @@ int DecisionMakerNode::createCrossRoadAreaMarker(visualization_msgs::Marker& cro
 void DecisionMakerNode::update_msgs(void)
 {
 #if 1
-  if (ctx_vehicle && ctx_mission && ctx_drive)
+  if (ctx_vehicle && ctx_mission && ctx_behavior && ctx_motion)
   {
     static std_msgs::String state_msg;
-    state_msg.data = ctx_vehicle->getStateText() + ctx_mission->getStateText() + ctx_drive->getStateText();
+    state_msg.data = ctx_vehicle->getStateText() + "\n" + ctx_mission->getStateText() + "\n" + ctx_behavior->getStateText() + "\n" + ctx_motion->getStateText();
     Pubs["state"].publish(state_msg);
     Pubs["state_overlay"].publish(createOverlayText(state_msg.data, 1));
 
     static std_msgs::String transition_msg;
-    transition_msg.data = ctx_vehicle->getAvailableTransition() + ctx_mission->getAvailableTransition() +
-                          ctx_drive->getAvailableTransition();
+    transition_msg.data = ctx_vehicle->getAvailableTransition() + "\n" + ctx_mission->getAvailableTransition() + "\n" +
+                          ctx_behavior->getAvailableTransition() + "\n" + ctx_motion->getAvailableTransition();
 
     Pubs["available_transition"].publish(transition_msg);
   }

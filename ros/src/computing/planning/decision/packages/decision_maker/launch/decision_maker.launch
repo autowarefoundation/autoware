@@ -1,14 +1,16 @@
 <!-- -->
 <launch>
-  <arg name="state_mission_file_name" default="autoware_state_mission.yaml" />
-  <arg name="state_drive_file_name" default="autoware_state_drive.yaml" />
   <arg name="state_vehicle_file_name" default="autoware_state_vehicle.yaml" />
+  <arg name="state_mission_file_name" default="autoware_state_mission.yaml" />
+  <arg name="state_behavior_file_name" default="autoware_state_behavior.yaml" />
+  <arg name="state_motion_file_name" default="autoware_state_motion.yaml" />
   <arg name="stopline_reset_count" default="20" />
 
   <node pkg="decision_maker" type="decision_maker_node" name="decision_maker" output="screen">
-    <param name ="state_mission_file_name" value="$(find decision_maker)/$(arg state_mission_file_name)"/>
-    <param name ="state_drive_file_name" value="$(find decision_maker)/$(arg state_drive_file_name)"/>
     <param name ="state_vehicle_file_name" value="$(find decision_maker)/$(arg state_vehicle_file_name)"/>
+    <param name ="state_mission_file_name" value="$(find decision_maker)/$(arg state_mission_file_name)"/>
+    <param name ="state_behavior_file_name" value="$(find decision_maker)/$(arg state_behavior_file_name)"/>
+    <param name ="state_motion_file_name" value="$(find decision_maker)/$(arg state_motion_file_name)"/>
     <param name ="stopline_reset_count" value="$(arg stopline_reset_count)"/>
 	</node>
 

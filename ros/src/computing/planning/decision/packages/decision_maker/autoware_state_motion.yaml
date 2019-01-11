@@ -1,0 +1,91 @@
+---
+autoware_states_motion:
+  -
+    StateName: Start
+    Transition:
+      -
+        Key: started
+        Target: WaitDriveReady
+    Parent: ~
+  -
+    StateName: WaitDriveReady
+    Transition:
+      -
+        Key: mission_is_compatible
+        Target: WaitEngage
+      -
+        Key: emergency
+        Target: MotionEmergency
+    Parent: ~
+  -
+    StateName: WaitEngage
+    Transition:
+      -
+        Key: operation_start
+        Target: Drive
+      -
+        Key: emergency
+        Target: MotionEmergency
+    Parent: ~
+  -
+    StateName: MotionEmergency
+    Transition:
+      -
+        Key: return_from_emergency
+        Target: WaitDriveReady
+    Parent: ~
+  -
+    StateName: Drive
+    Transition:
+      -
+        Key: clear
+        Target: Go
+      -
+        Key: wait
+        Target: Wait
+      -
+        Key: found_stopline
+        Target: StopLine
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: Stop
+      -
+        Key: operation_end
+        Target: WaitDriveReady
+      -
+        Key: emergency
+        Target: MotionEmergency
+    Parent: ~
+  -
+    StateName: Go
+    Transition:
+      -
+        Key: found_obstacle_in_stopped_area
+        Target: Stop
+      -
+        Key: found_stopline
+        Target: StopLine
+    Parent: Drive
+  -
+    StateName: Wait
+    Transition:
+      -
+        Key: clear
+        Target: Go
+    Parent: Drive
+  -
+    StateName: Stop
+    Transition:
+      -
+        Key: stopped
+        Target: Wait
+    Parent: Drive
+  -
+    StateName: StopLine
+    Transition:
+      -
+        Key: clear
+        Target: Go
+      - Key: found_risk
+        Target: Wait
+    Parent: Drive

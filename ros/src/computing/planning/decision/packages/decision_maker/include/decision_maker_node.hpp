@@ -308,24 +308,21 @@ private:
   void exitDrivingState(cstring_t& state_name, int status);
   // void exitWaitMissionOrderState(cstring_t& state_name, int status);
 
-  /*** state drive ***/
+  /*** state behavior ***/
   // entry callback
-  void entryDriveState(cstring_t& state_name, int status);
+  void entryMovingState(cstring_t& state_name, int status);
+  void entryBehaviorEmergencyState(cstring_t& state_name, int status);
   void entryTurnState(cstring_t& state_name, int status);
-  void entryGoState(cstring_t& state_name, int status);
   void entryLaneChangeState(cstring_t& state_name, int status);
-  void entryDriveEmergencyState(cstring_t& state_name, int status);
-  void entryStopState(cstring_t& state_name, int status);
   // update callback
-  void updateWaitReadyState(cstring_t& state_name, int status);
-  void updateWaitEngageState(cstring_t& state_name, int status);
-  void updateDriveState(cstring_t& state_name, int status);
+  void updateStoppingState(cstring_t& state_name, int status);
+  void updateBehaviorEmergencyState(cstring_t& state_name, int status);
+  void updateMovingState(cstring_t& state_name, int status);
   void updateLaneAreaState(cstring_t& state_name, int status);
   void updateFreeAreaState(cstring_t& state_name, int status);
   void updateCruiseState(cstring_t& state_name, int status);
   void updateBusStopState(cstring_t& state_name, int status);
   void updateParkingState(cstring_t& state_name, int status);
-  void updateDriveEmergencyState(cstring_t& state_name, int status);
   void updateLeftTurnState(cstring_t& state_name, int status);
   void updateRightTurnState(cstring_t& state_name, int status);
   void updateStraightState(cstring_t& state_name, int status);
@@ -334,17 +331,32 @@ private:
   void updateRightLaneChangeState(cstring_t& state_name, int status);
   void updatePullOverState(cstring_t& state_name, int status);
   void updatePullOutState(cstring_t& state_name, int status);
-  void updateStoplineState(cstring_t& state_name, int status);
-  void updateGoState(cstring_t& state_name, int status);
-  void updateWaitState(cstring_t& state_name, int status);
-  void updateStopState(cstring_t& state_name, int status);
   void updateCheckLeftLaneState(cstring_t& state_name, int status);
   void updateCheckRightLaneState(cstring_t& state_name, int status);
   void updateChangeToLeftState(cstring_t& state_name, int status);
   void updateChangeToRightState(cstring_t& state_name, int status);
   // exit callback
+  void exitBehaviorEmergencyState(cstring_t& state_name, int status);
+
+  /*** state motion ***/
+  // entry callback
+  void entryMotionEmergencyState(cstring_t& state_name, int status);
+  void entryDriveState(cstring_t& state_name, int status);
+  void entryGoState(cstring_t& state_name, int status);
+  void entryStopState(cstring_t& state_name, int status);
+  // update callback
+  void updateWaitDriveReadyState(cstring_t& state_name, int status);
+  void updateWaitEngageState(cstring_t& state_name, int status);
+  void updateDriveState(cstring_t& state_name, int status);
+  void updateMotionEmergencyState(cstring_t& state_name, int status);
+  void updateGoState(cstring_t& state_name, int status);
+  void updateWaitState(cstring_t& state_name, int status);
+  void updateStopState(cstring_t& state_name, int status);
+  void updateStoplineState(cstring_t& state_name, int status);
+  // exit callback
+  void exitMotionEmergencyState(cstring_t& state_name, int status);
+  void exitWaitState(cstring_t& state_name, int status);
   void exitStopState(cstring_t& state_name, int status);
-  void exitDriveEmergencyState(cstring_t& state_name, int status);
 
   // callback by topic subscribing
   void callbackFromFilteredPoints(const sensor_msgs::PointCloud2::ConstPtr& msg);
@@ -378,7 +390,9 @@ private:
 public:
   state_machine::StateContext* ctx_vehicle;
   state_machine::StateContext* ctx_mission;
-  state_machine::StateContext* ctx_drive;
+  // state_machine::StateContext* ctx_drive;
+  state_machine::StateContext* ctx_behavior;
+  state_machine::StateContext* ctx_motion;
   VectorMap g_vmap;
 
   DecisionMakerNode(int argc, char** argv)
@@ -393,13 +407,19 @@ public:
     std::string file_name_mission;
     std::string file_name_drive;
     std::string file_name_vehicle;
+    std::string file_name_behavior;
+    std::string file_name_motion;
     private_nh_.getParam("state_vehicle_file_name", file_name_vehicle);
     private_nh_.getParam("state_mission_file_name", file_name_mission);
-    private_nh_.getParam("state_drive_file_name", file_name_drive);
+    // private_nh_.getParam("state_drive_file_name", file_name_drive);
+    private_nh_.getParam("state_behavior_file_name", file_name_behavior);
+    private_nh_.getParam("state_motion_file_name", file_name_motion);
 
     ctx_vehicle = new state_machine::StateContext(file_name_vehicle, "autoware_states_vehicle");
     ctx_mission = new state_machine::StateContext(file_name_mission, "autoware_states_mission");
-    ctx_drive = new state_machine::StateContext(file_name_drive, "autoware_states_drive");
+    // ctx_drive = new state_machine::StateContext(file_name_drive, "autoware_states_drive");
+    ctx_behavior = new state_machine::StateContext(file_name_behavior, "autoware_states_behavior");
+    ctx_motion = new state_machine::StateContext(file_name_motion, "autoware_states_motion");
     init();
     setupStateCallback();
 
