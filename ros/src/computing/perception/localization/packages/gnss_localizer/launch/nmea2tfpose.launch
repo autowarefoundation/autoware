@@ -2,9 +2,10 @@
 <launch>
 
   <arg name="plane" default="7"/>
-
+  <arg name="use_mgrs" default="false"/>
   <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose" output="log">
     <param name="plane" value="$(arg plane)"/>
+    <param name="use_mgrs" value="$(arg use_mgrs)"/>
   </node>
 
 </launch>

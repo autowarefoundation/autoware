@@ -1435,6 +1435,14 @@ params :
       cmd_param :
         dash        : ''
         delim       : ':='
+    - name    : use_mgrs
+      desc : Use MGRS for xyz coordinate
+      label   : 'use_mgrs'
+      kind    : checkbox
+      v    : False
+      cmd_param:
+        dash     : ''
+        delim    : ':='
 
   - name  : ndt
     topic : /config/ndt

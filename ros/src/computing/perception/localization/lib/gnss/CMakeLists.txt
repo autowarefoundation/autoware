@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gnss)
 
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS roscpp geodesy)
 
 catkin_package(
         INCLUDE_DIRS include

@@ -187,7 +187,7 @@ void geo_pos_conv::set_xyz(double cx, double cy, double cz)
   conv_xyz2llh();
 }
 
-void geo_pos_conv::set_llh_nmea_degrees(double latd, double lond, double h)
+void geo_pos_conv::set_llh_nmea_degrees(double latd, double lond, double h, bool use_mgrs)
 {
   double lat, lad, lod, lon;
   // 1234.56 -> 12'34.56 -> 12+ 34.56/60
@@ -202,16 +202,89 @@ void geo_pos_conv::set_llh_nmea_degrees(double latd, double lond, double h)
   m_lon = (lod + lon / 60.0) * M_PI / 180;
   m_h = h;
 
-  conv_llh2xyz();
+  if (use_mgrs)
+    conv_llh2mgrs(m_lat/M_PI * 180 -90, m_lon/M_PI * 180-90, h);
+  else
+    conv_llh2xyz();
+
 }
 
-void geo_pos_conv::llh_to_xyz(double lat, double lon, double ele)
+void geo_pos_conv::conv_llh2mgrs( double latitude_deg, double longitude_deg, double h)
+{
+    //you are at north/south pole
+    if(latitude_deg >= 84 || latitude_deg <= -80) {
+        ROS_ERROR_STREAM("Invalid latitude to convert to UTM, but calculating it anyway!");
+    }
+
+    geographic_msgs::GeoPoint wgs_point;
+    wgs_point.latitude = latitude_deg;
+    wgs_point.longitude = longitude_deg;
+    wgs_point.altitude = h;
+
+    geodesy::UTMPoint utm_point;
+    geodesy::fromMsg(wgs_point,utm_point);
+
+    std::string easting_letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    std::string northing_letters = "ABCDEFGHJKLMNPQRSTUV";
+
+    //first letter
+    int group = utm_point.zone % 6;
+    int easting_letter_offset = 0;
+    int northing_letter_offset = 0;
+    switch(group)
+    {
+        case 1:
+            easting_letter_offset = 0;             //A
+            northing_letter_offset = 0;             //A
+            break;
+        case 2:
+            easting_letter_offset = 8;             //J
+            northing_letter_offset = 5;             //F
+            break;
+        case 3:
+            easting_letter_offset = 16;             //S
+            northing_letter_offset = 0;             //A
+            break;
+        case 4:
+            easting_letter_offset = 0;             //A
+            northing_letter_offset = 5;             //F
+            break;
+        case 5:
+            easting_letter_offset = 8;             //J
+            northing_letter_offset = 0;             //A
+            break;
+        case 0:
+            easting_letter_offset = 16;             //S
+            northing_letter_offset = 5;             //F
+            break;
+    }
+
+    int easting_idx = (int)(utm_point.easting/1e5) + easting_letter_offset - 1;     //subtract -1 so that letter starts from A
+    char easting_letter = easting_letters.at( easting_idx );
+
+    int northing_idx = (int)(fmod(utm_point.northing,2e6))/1e5 + northing_letter_offset;
+    northing_idx = northing_idx % northing_letters.size();
+    char northing_letter = northing_letters.at( northing_idx );
+
+    m_x = fmod(utm_point.easting,1e5);
+    m_y = fmod(utm_point.northing,1e5);
+    m_z = h;
+
+    std::stringstream ss;
+    ss << (int)utm_point.zone << utm_point.band << easting_letter << northing_letter;
+    m_mgrs_zone = ss.str();
+
+}
+
+void geo_pos_conv::llh_to_xyz(double lat, double lon, double ele, bool use_mgrs)
 {
   m_lat = lat * M_PI / 180;
   m_lon = lon * M_PI / 180;
   m_h = ele;
-
-  conv_llh2xyz();
+  if(use_mgrs)
+    conv_llh2mgrs(lat, lon, ele);
+  else
+    conv_llh2xyz();
 }
 
 void geo_pos_conv::conv_llh2xyz(void)
