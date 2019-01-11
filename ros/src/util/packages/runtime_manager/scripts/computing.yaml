@@ -356,20 +356,6 @@ subs :
             flags : [ all ]
           sync :
             func : self.button_synchronization.GetValue()
-      - name : obj_fusion
-        desc : obj_fusion desc sample
-        cmd  : roslaunch obj_fusion obj_fusion.launch
-        param: obj_fusion
-        gui  :
-          flags                : [ open_dialog, no_link ]
-          open_dialog_ok_label : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sync :
-            func : self.button_synchronization.GetValue()
 
 
     - name : object_tracker
