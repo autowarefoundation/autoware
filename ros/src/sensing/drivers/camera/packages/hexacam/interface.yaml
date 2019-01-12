@@ -1,3 +1,0 @@
-- name: /hexacam
-  publish: [/camera/camera_info, /camera/image_raw]
-  subscribe: []
