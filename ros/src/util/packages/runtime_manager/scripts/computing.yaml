@@ -172,22 +172,6 @@ subs :
           camera_info_src :
             flags  : [ nl ]
 
-      - name : vision_klt_track
-        desc : vision_klt_track desc sample
-        cmd  : roslaunch vision_klt_track vision_klt_track.launch
-        param: car_kf
-        gui  :
-          dialog_width  : 600
-          dialog_height : 350
-          flags : [ need_camera_info ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
       - name : vision_kf_track
         desc : vision_kf_track desc sample
         cmd  : roslaunch vision_kf_track vision_kf_track.launch
