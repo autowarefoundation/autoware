@@ -172,38 +172,6 @@ subs :
           camera_info_src :
             flags  : [ nl ]
 
-      - name : vision_kf_track
-        desc : vision_kf_track desc sample
-        cmd  : roslaunch vision_kf_track vision_kf_track.launch
-        param: car_kf
-        gui  :
-          flags                  : [ open_dialog, need_camera_info ]
-          config_dialog          : MyDialogCarPedestrian
-          car_pedestrian_obj_key : { car : car_kf, pedestrian : pedestrian_kf }
-          config_dialog_only     :
-            - initial_lifespan
-            - default_lifespan
-            - noise_covariance
-            - measurement_noise_covariance
-            - error_estimate_covariance
-            - percentage_of_overlapping
-            - orb_features
-            - use_orb
-          open_dialog_only       : [ car, pedestrian ]
-          open_dialog_ok_label   : Start
-          car :
-            user_category : Detection Target
-          pedestrian :
-            border : 16
-            flags  : [ left ]
-          sel_cam_dialog_only : [ camera_id ]
-          sel_cam_dialog_allow: [ camera_id ]
-          camera_id :
-            border : 16
-            flags : [ all ]
-          sync :
-            func : self.button_synchronization.GetValue()
-
     - name : lidar_detector
       desc : lidar_detector desc sample
       subs :
