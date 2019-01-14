@@ -3,6 +3,8 @@ project(data_preprocessor)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -O2 -Wall ${CMAKE_CXX_FLAGS}")
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   #libpcl-all-dev

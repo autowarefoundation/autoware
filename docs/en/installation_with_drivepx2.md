@@ -36,14 +36,17 @@
     sudo apt-get update
 
     sudo apt-get install -y build-essential cmake python-pip
+    sudo apt-get install -y python3-pip python3-setuptools
+    sudo pip3 install -U setuptools
+    sudo apt-get install -y python3-colcon-common-extensions
     sudo apt-get install -y checkinstall
     sudo apt-get install -y python-rosdep python-rosinstall-generator python-wstool python-rosinstall build-essential
     sudo apt-get install -y libavutil-ffmpeg54=7:2.8.11-0ubuntu0.16.04.1
     sudo apt-get install -y libswresample-ffmpeg1=7:2.8.11-0ubuntu0.16.04.1
     sudo apt-get install -y libavformat-ffmpeg56=7:2.8.11-0ubuntu0.16.04.1
     sudo apt-get install -y libswscale-ffmpeg3=7:2.8.11-0ubuntu0.16.04.1
-    sudo apt-get install -y libssl1.0.0=1.0.2g-1ubuntu4.9
-    sudo apt-get install -y libssl-dev=1.0.2g-1ubuntu4.9
+    sudo apt-get install -y libssl1.0.0=1.0.2g-1ubuntu4.12
+    sudo apt-get install -y libssl-dev=1.0.2g-1ubuntu4.12
     sudo apt-get install -y ros-kinetic-desktop-full
     sudo apt-get install -y ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
     sudo apt-get install -y ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers
@@ -66,7 +69,7 @@ If you need to use a SSD detector, please refer SSD readme.
     cd Autoware
 
     cd ros
-    ./catkin_make_release -j1
+    ./colcon_release -j1
     (if you need more speed up compilation, you can choose -j2~6, however it may often cause internal erros by GCC.
 
 

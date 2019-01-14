@@ -2,14 +2,21 @@ cmake_minimum_required(VERSION 2.8.3)
 project(map_file)
 
 include(FindPkgConfig)
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
+
+find_package(vector_map REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   visualization_msgs
   geometry_msgs
   tf
-  vector_map
-  autoware_msgs
+  pcl_ros
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 find_package(PCL REQUIRED COMPONENTS io)
@@ -28,14 +35,10 @@ if(NOT "${PCL_LIBRARIES}" STREQUAL "")
     "vtkRenderingQt")
 endif()
 
-include(FindCURL)
-if(NOT CURL_FOUND)
-  message("CURL not found!  Aborting...")
-  fail()
-endif(NOT CURL_FOUND)
+find_package(CURL REQUIRED)
 
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 catkin_package(
 )
@@ -46,7 +49,9 @@ catkin_package(
 
 include_directories(
   include
+  ${vector_map_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
   ${PCL_IO_INCLUDE_DIRS}
   ${CURL_INCLUDE_DIRS}
 )
@@ -54,13 +59,18 @@ include_directories(
 add_library(get_file
   lib/map_file/get_file.cpp
   )
+target_link_libraries(get_file ${CURL_LIBRARIES})
 
 add_executable(points_map_loader nodes/points_map_loader/points_map_loader.cpp)
 target_link_libraries(points_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES} ${PCL_IO_LIBRARIES})
 add_dependencies(points_map_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(vector_map_loader nodes/vector_map_loader/vector_map_loader.cpp)
-target_link_libraries(vector_map_loader ${catkin_LIBRARIES} get_file ${CURL_LIBRARIES})
+target_link_libraries(vector_map_loader ${catkin_LIBRARIES} ${vector_map_LIBRARIES} get_file ${CURL_LIBRARIES})
+
+add_executable(points_map_filter nodes/points_map_filter/points_map_filter_node.cpp nodes/points_map_filter/points_map_filter.cpp)
+target_link_libraries(points_map_filter ${catkin_LIBRARIES})
+add_dependencies(points_map_filter ${catkin_EXPORTED_TARGETS})
 
 ## Install executables and/or libraries
 install(TARGETS get_file points_map_loader vector_map_loader

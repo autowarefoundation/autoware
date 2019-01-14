@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>autoware_build_flags</name>
+  <version>1.9.1</version>
+  <description>Common build flags for Autoware.</description>
+
+  <author email="esteve@apache.org">Esteve Fernandez</author>
+  <maintainer email="esteve@apache.org">Esteve Fernandez</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <architecture_independent/>
+  </export>
+</package>

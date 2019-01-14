@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "astar_search.h"
 #include "search_info_ros.h"
@@ -35,10 +21,10 @@
 
 namespace
 {
-autoware_msgs::lane createPublishWaypoints(const autoware_msgs::lane& ref_lane, int closest_waypoint,
+autoware_msgs::Lane createPublishWaypoints(const autoware_msgs::Lane& ref_lane, int closest_waypoint,
                                                     int size)
 {
-  autoware_msgs::lane follow_lane;
+  autoware_msgs::Lane follow_lane;
 
   follow_lane.header = ref_lane.header;
   follow_lane.increment = ref_lane.increment;
@@ -56,14 +42,14 @@ autoware_msgs::lane createPublishWaypoints(const autoware_msgs::lane& ref_lane, 
 }
 
 void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner::SearchInfo& search_info, int size,
-                          autoware_msgs::lane* avoid_lane, int* end_of_avoid_index)
+                          autoware_msgs::Lane* avoid_lane, int* end_of_avoid_index)
 {
   int closest_waypoint_index = search_info.getClosestWaypointIndex();
 
   avoid_lane->waypoints.clear();
 
   // Get global lane
-  const autoware_msgs::lane& current_lane = search_info.getCurrentWaypoints();
+  const autoware_msgs::Lane& current_lane = search_info.getCurrentWaypoints();
   avoid_lane->header = current_lane.header;
   avoid_lane->increment = current_lane.increment;
 
@@ -81,7 +67,7 @@ void createAvoidWaypoints(const nav_msgs::Path& astar_path, const astar_planner:
   // Set waypoints for avoiding
   for (const auto& pose : astar_path.poses)
   {
-    autoware_msgs::waypoint wp;
+    autoware_msgs::Waypoint wp;
     wp.pose = pose;
     wp.twist.twist.linear.x = avoid_velocity;
 
@@ -131,12 +117,12 @@ int main(int argc, char** argv)
 
   // ROS publishers
   ros::Publisher path_pub = n.advertise<nav_msgs::Path>("astar_path", 1, true);
-  ros::Publisher waypoints_pub = n.advertise<autoware_msgs::lane>("safety_waypoints", 1, true);
+  ros::Publisher waypoints_pub = n.advertise<autoware_msgs::Lane>("safety_waypoints", 1, true);
 
   ros::Rate loop_rate(10);
 
   // variables for avoidance
-  autoware_msgs::lane avoid_lane;
+  autoware_msgs::Lane avoid_lane;
   int end_of_avoid_index = -1;
   bool avoidance = false;
   while (ros::ok())
@@ -161,7 +147,7 @@ int main(int argc, char** argv)
     // Follow the original waypoints
     if (!avoidance)
     {
-      autoware_msgs::lane publish_lane;
+      autoware_msgs::Lane publish_lane;
       publish_lane = createPublishWaypoints(search_info.getSubscribedWaypoints(), closest_waypoint, 100);
       waypoints_pub.publish(publish_lane);
     }
@@ -169,7 +155,7 @@ int main(int argc, char** argv)
     else
     {
       // create waypoints from closest on avoid_lane
-      autoware_msgs::lane publish_lane;
+      autoware_msgs::Lane publish_lane;
       publish_lane = createPublishWaypoints(avoid_lane, closest_waypoint, 100);
       waypoints_pub.publish(publish_lane);
 

@@ -1,16 +1,14 @@
-/*
- * TrajectoryCosts.cpp
- *
- *  Created on: Dec 14, 2016
- *      Author: user
- */
+/// \file TrajectoryCosts.cpp
+/// \brief Calculate collision costs for roll out trajectory for free trajectory evaluation for dp_planner
+/// \author Hatem Darweesh
+/// \date Dec 14, 2016
 
-#include "TrajectoryCosts.h"
-#include "MatrixOperations.h"
+#include "op_planner/TrajectoryCosts.h"
+#include "op_planner/MatrixOperations.h"
+#include "float.h"
 
 namespace PlannerHNS
 {
-
 
 TrajectoryCosts::TrajectoryCosts()
 {
@@ -77,8 +75,8 @@ TrajectoryCost TrajectoryCosts::DoOneStep(const vector<vector<vector<WayPoint> >
 	NormalizeCosts(m_TrajectoryCosts);
 
 	int smallestIndex = -1;
-	double smallestCost = 9999999999;
-	double smallestDistance = 9999999999;
+	double smallestCost = DBL_MAX;
+	double smallestDistance = DBL_MAX;
 	double velo_of_next = 0;
 
 	//cout << "Trajectory Costs Log : CurrIndex: " << currIndex << " --------------------- " << endl;
@@ -202,7 +200,7 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 						longitudinalDist = -longitudinalDist;
 
 					double direct_distance = hypot(obj_info.perp_point.pos.y-contourPoints.at(icon).pos.y, obj_info.perp_point.pos.x-contourPoints.at(icon).pos.x);
-					if(contourPoints.at(icon).v < 0.1 && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
+					if(contourPoints.at(icon).v < params.minSpeed && direct_distance > (m_LateralSkipDistance+contourPoints.at(icon).cost))
 					{
 						skip_id = contourPoints.at(icon).id;
 						continue;
@@ -236,8 +234,11 @@ void TrajectoryCosts::CalculateLateralAndLongitudinalCosts(vector<TrajectoryCost
 						trajectoryCosts.at(iCostIndex).bBlocked = true;
 
 
-					trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
-					trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
+					if(lateralDist != 0)
+						trajectoryCosts.at(iCostIndex).lateral_cost += 1.0/lateralDist;
+
+					if(longitudinalDist != 0)
+						trajectoryCosts.at(iCostIndex).longitudinal_cost += 1.0/fabs(longitudinalDist);
 
 
 					if(longitudinalDist >= -critical_long_front_distance && longitudinalDist < trajectoryCosts.at(iCostIndex).closest_obj_distance)
@@ -385,97 +386,5 @@ bool TrajectoryCosts::ValidateRollOutsInput(const vector<vector<vector<WayPoint>
 
 	return true;
 }
-
-
-bool TrajectoryCosts::CalculateIntersectionVelocities(const std::vector<PlannerHNS::WayPoint>& path, const PlannerHNS::DetectedObject& obj, const WayPoint& currState,const CAR_BASIC_INFO& carInfo, WayPoint& collisionPoint)
-{
-	bool bCollisionDetected = false;
-	m_CollisionPoints.clear();
-
-	for(unsigned int k = 0; k < obj.predTrajectories.size(); k++)
-	{
-		for(unsigned int j = 0; j < obj.predTrajectories.at(k).size(); j++)
-		{
-			bool bCollisionFound =false;
-			for(unsigned int i = 0; i < path.size(); i++)
-			{
-				if(path.at(i).timeCost > 0.0)
-				{
-					double collision_distance = hypot(path.at(i).pos.x-obj.predTrajectories.at(k).at(j).pos.x, path.at(i).pos.y-obj.predTrajectories.at(k).at(j).pos.y);
-					double contact_distance = hypot(currState.pos.x - path.at(i).pos.x,currState.pos.y - path.at(i).pos.y);
-					if(collision_distance <= carInfo.width  && fabs(path.at(i).timeCost - obj.predTrajectories.at(k).at(j).timeCost)<3.0)
-					{
-						//m_CollisionPoints.push_back(path.at(i));
-						collisionPoint = path.at(i);
-						return true;
-//						double a = UtilityHNS::UtilityH::AngleBetweenTwoAnglesPositive(path.at(i).pos.a, obj.predTrajectories.at(k).at(j).pos.a)*RAD2DEG;
-//						if(a < 10)
-//							path.at(i).v = obj.center.v;
-//						else
-//							path.at(i).v = 0;
-//						//obj.predTrajectories.at(k).at(j).collisionCost = 1;
-						bCollisionFound = true;
-						bCollisionDetected = true;
-						break;
-					}
-				}
-			}
-
-			if(bCollisionFound)
-				break;
-		}
-	}
-
-	return bCollisionDetected;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

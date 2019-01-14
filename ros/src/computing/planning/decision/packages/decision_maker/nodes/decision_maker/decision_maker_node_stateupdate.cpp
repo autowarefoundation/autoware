@@ -1,9 +1,9 @@
 #include <ros/ros.h>
 
-#include <state.hpp>
-#include <state_context.hpp>
+#include <state_machine_lib/state.hpp>
+#include <state_machine_lib/state_context.hpp>
 
-#include <autoware_msgs/lamp_cmd.h>
+#include <autoware_msgs/LampCmd.h>
 #include <decision_maker_node.hpp>
 
 namespace decision_maker
@@ -99,7 +99,7 @@ void DecisionMakerNode::callbackOutStateLaneChange(int status)
 
 void DecisionMakerNode::publishLightColor(int status)
 {
-  autoware_msgs::traffic_light msg;
+  autoware_msgs::TrafficLight msg;
   msg.traffic_light = status;
   Pubs["light_color"].publish(msg);
 }
@@ -196,7 +196,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
     for (auto& wp : lane.waypoints)
     {
       wp.twist.twist.linear.x = 0.0;
-      wp.wpstate.stopline_state = 0;
+      wp.wpstate.stop_state = 0;
     }
   }
   for (auto& lane : current_shifted_lane_array_.lanes)
@@ -206,7 +206,7 @@ void DecisionMakerNode::updateLaneWaypointsArray(void)
       // if stopped at stopline, to delete flags already used.
       if (CurrentStoplineTarget_.gid - 2 <= wp.gid && wp.gid <= CurrentStoplineTarget_.gid + 2)
       {
-        wp.wpstate.stopline_state = 0;
+        wp.wpstate.stop_state = 0;
       }
     }
   }
@@ -262,7 +262,7 @@ void DecisionMakerNode::setAllStoplineStop(void)
             b->x = lane.waypoints.at(wp_idx).pose.pose.position.x;
             b->y = lane.waypoints.at(wp_idx).pose.pose.position.y;
             if (amathutils::find_distance(a, b) <= 4)  //
-              lane.waypoints.at(wp_idx).wpstate.stopline_state = 1;
+              lane.waypoints.at(wp_idx).wpstate.stop_state = 1;
           }
         }
       }
@@ -289,7 +289,7 @@ void DecisionMakerNode::changeVelocityLane(int dir)
   {
     for (auto& lane : current_controlled_lane_array_.lanes)
     {
-      autoware_msgs::lane temp_lane = lane;
+      autoware_msgs::Lane temp_lane = lane;
       for (size_t wpi = 1; wpi < lane.waypoints.size(); wpi++)
       {
         amathutils::point p0(temp_lane.waypoints.at(wpi).pose.pose.position.x,
@@ -436,7 +436,7 @@ void DecisionMakerNode::callbackInStateObstacleAvoid(int status)
 }
 void DecisionMakerNode::updateStateSTR(int status)
 {
-  autoware_msgs::lamp_cmd lamp_msg;
+  autoware_msgs::LampCmd lamp_msg;
 
   switch (status)
   {

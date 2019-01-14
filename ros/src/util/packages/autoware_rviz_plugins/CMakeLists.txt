@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(autoware_rviz_plugins)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   rviz
   std_msgs
@@ -44,7 +46,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 
 add_definitions(-DQT_NO_KEYWORDS -g)

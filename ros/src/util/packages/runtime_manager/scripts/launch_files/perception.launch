@@ -3,8 +3,8 @@
 <!-- nmea2tfpose -->
 <node pkg="gnss_localizer" type="nmea2tfpose" name="nmea2tfpose"/>
 
-<!-- ndt_pcl -->
-<node pkg="points_localizer" type="ndt_pcl" name="ndt_pcl"/>
+<!-- ndt_matching -->
+<node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching"/>
 
 <!-- vscan -->
 <include file="$(find runtime_manager)/scripts/vscan.launch">
@@ -12,7 +12,7 @@
 </include>
 
 <!-- dpm_ttic -->
-<node pkg="cv_tracker" type="dpm_ttic" name="dpm_ttic"/>
+<node pkg="vision_dpm_ttic_detect" type="dpm_ttic" name="dpm_ttic"/>
 
 <!-- car_kf -->
 <node pkg="car_detector" type="car_kf" name="car_kf"/>

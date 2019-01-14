@@ -4,11 +4,14 @@ project(synchronization)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(autoware_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  autoware_msgs
   lidar_tracker
   geometry_msgs
   visualization_msgs
@@ -16,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(OpenCV REQUIRED)
 
-#set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###################################
 ## catkin specific configuration ##
@@ -28,7 +31,11 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  ${catkin_INCLUDE_DIRS}
+  ${autoware_msgs_INCLUDE_DIRS}
+)
 
 add_executable(sync_drivers sync_drivers.cpp)
 target_link_libraries(sync_drivers ${catkin_LIBRARIES} ${OpenCV_LIBS})

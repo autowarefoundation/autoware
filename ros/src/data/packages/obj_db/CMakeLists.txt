@@ -1,20 +1,25 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(obj_db)
 
+
+find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
         roscpp
         gnss
         visualization_msgs
-        autoware_msgs
+        autoware_can_msgs
         )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -Wall ${CMAKE_CXX_FLAGS}")
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-        CATKIN_DEPENDS roscpp autoware_msgs
+        CATKIN_DEPENDS roscpp
+        gnss
+        visualization_msgs
+        autoware_can_msgs
 )
 
 ###########

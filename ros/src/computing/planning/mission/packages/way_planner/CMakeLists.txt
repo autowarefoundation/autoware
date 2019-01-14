@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(way_planner)
 
+
+find_package(autoware_build_flags REQUIRED)
+
+find_package(vector_map_msgs REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
-  vector_map_msgs
   roscpp
   rospy
   std_msgs
@@ -16,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   op_utility
   op_planner
   op_simu
-  autoware_msgs
+  autoware_can_msgs
 )
 
 
@@ -34,17 +37,18 @@ catkin_package(
 ## Build ##
 ###########
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include include/plannerh
   ${catkin_INCLUDE_DIRS}
+  ${vector_map_INCLUDE_DIRS}
 )
 
 
 
 ## Declare a C++ executable
- add_executable(way_planner nodes/way_planner.cpp nodes/way_planner_core.cpp nodes/RosHelpers.cpp nodes/SocketServer.cpp)
+ add_executable(way_planner nodes/way_planner.cpp nodes/way_planner_core.cpp nodes/ROSHelpers.cpp nodes/SocketServer.cpp)
  # add_executable(way_planner nodes/kml_map_recorder.cpp)
 
 ## Add cmake target dependencies of the executable

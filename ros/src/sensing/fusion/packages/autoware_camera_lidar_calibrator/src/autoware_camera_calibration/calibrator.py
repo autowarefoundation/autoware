@@ -1,32 +1,18 @@
 # !/usr/bin/env python
 #
-#  Copyright (c) 2018, Nagoya University
-#  All rights reserved.
+# Copyright 2018-2019 Autoware Foundation
 #
-#  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions are met:
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#  * Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  * Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-#
-#  * Neither the name of Autoware nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
-#
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-#  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-#  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-#  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-#  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-#  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-#  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 #  v1.0 Jacob Lambert 2018-03-05
 #
@@ -77,7 +63,6 @@ import random
 import sensor_msgs.msg
 import tarfile
 import time
-import yaml
 import datetime
 import StringIO as strio
 from os import path
@@ -893,36 +878,27 @@ class MonoCalibrator(Calibrator):
         for (name, im) in ims:
             taradd(name, cv2.imencode(".png", im)[1].tostring())
         if self.output == 'yaml':
-            self.do_autoware_yaml()
+            self.do_autoware_cv_yaml()
         else:
             taradd('ost.yaml', self.yaml())
             taradd('ost.txt', self.ost())
 
-    def opencv_matrix_constructor(self, loader, node):
-        mapping = loader.construct_mapping(node, deep=True)
-        mat = numpy.array(mapping["data"])
-        mat.resize(mapping["rows"], mapping["cols"])
-        return mat
-
-    def opencv_matrix_representer(self, dumper, mat):
-        mapping = {'rows': mat.shape[0], 'cols': mat.shape[1], 'dt': 'd', 'data': mat.reshape(-1).tolist()}
-        return dumper.represent_mapping(u"tag:yaml.org,2002:opencv-matrix", mapping)
-
-    def do_autoware_yaml(self):
-        yaml.add_constructor(u"tag:yaml.org,2002:opencv-matrix", self.opencv_matrix_constructor)
-        yaml.add_representer(numpy.ndarray, self.opencv_matrix_representer)
+    def do_autoware_cv_yaml(self):
+        # params to be written
         camera_name = self.name
         distortion = self.distortion
         intrinsics = self.intrinsics
-        reproj_error = 0.0
-        # self.R, self.P
+        reproj_error = 0.0      # until we have an alternative..
+
+        # write file
         now = datetime.datetime.now()
         fn = path.join(path.expanduser("~"), now.strftime("%Y%m%d_%H%M_") + camera_name + '.yaml')
-        with open(fn, 'w') as f:
-            f.write("%YAML:1.0\n")
-            yaml.dump({"CameraExtrinsicMat": numpy.eye(4),
-                       "CameraMat": intrinsics,
-                       "DistCoeff": distortion}, f)
+        f = cv2.FileStorage(fn, flags=1)
+        f.write(name="CameraExtrinsicMat", val=numpy.eye(4))
+        f.write(name="CameraMat", val=intrinsics)
+        f.write(name="DistCoeff", val=distortion)
+        f.release()
+        with open(fn, 'a') as f:
             f.write("ImageSize: [" + str(self.size[0]) + ", " + str(self.size[1]) + "]\n")
             f.write("Reprojection Error: " + str(reproj_error) + "\n")
             f.write("DistModel: plumb_bob")

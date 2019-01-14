@@ -1,32 +1,18 @@
 /*
- *  Copyright (c) 2015, Nagoya University
- *  All rights reserved.
+ * Copyright 2015-2019 Autoware Foundation. All rights reserved.
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *  * Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  * Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- *  * Neither the name of Autoware nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /* ----header---- */
 /* common header */
 #include "ros/ros.h"
@@ -40,14 +26,14 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "visualization_msgs/MarkerArray.h"
 
-#include "autoware_msgs/image_obj.h"
+#include "autoware_msgs/ImageObj.h"
 #include "autoware_msgs/PointsImage.h"
-#include "autoware_msgs/image_obj_ranged.h"
-#include "autoware_msgs/image_obj_tracked.h"
-#include "autoware_msgs/obj_label.h"
-#include "autoware_msgs/centroids.h"
-#include "autoware_msgs/Sync_time_monitor.h"
-#include "autoware_msgs/Sync_time_diff.h"
+#include "autoware_msgs/ImageObjRanged.h"
+#include "autoware_msgs/ImageObjTracked.h"
+#include "autoware_msgs/ObjLabel.h"
+#include "autoware_msgs/Centroids.h"
+#include "autoware_msgs/SyncTimeMonitor.h"
+#include "autoware_msgs/SyncTimeDiff.h"
 
 /* ----var---- */
 /* common var */
@@ -182,21 +168,21 @@ public:
     void points_image_callback(const autoware_msgs::PointsImage::ConstPtr& points_image_msg);
     void vscan_points_callback(const sensor_msgs::PointCloud2::ConstPtr& vscan_points_msg);
     void vscan_image_callback(const autoware_msgs::PointsImage::ConstPtr& vscan_image_msg);
-    void image_obj_callback(const autoware_msgs::image_obj::ConstPtr& image_obj_msg);
-    void image_obj_ranged_callback(const autoware_msgs::image_obj_ranged::ConstPtr& image_obj_ranged_msg);
-    void image_obj_tracked_callback(const autoware_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg);
+    void image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg);
+    void image_obj_ranged_callback(const autoware_msgs::ImageObjRanged::ConstPtr& image_obj_ranged_msg);
+    void image_obj_tracked_callback(const autoware_msgs::ImageObjTracked::ConstPtr& image_obj_tracked_msg);
     void current_pose_callback(const geometry_msgs::PoseStamped::ConstPtr& current_pose_msg);
-    void obj_label_callback(const autoware_msgs::obj_label::ConstPtr& obj_label_msg) ;
-    void cluster_centroids_callback(const autoware_msgs::centroids::ConstPtr& cluster_centroids_msg);
+    void obj_label_callback(const autoware_msgs::ObjLabel::ConstPtr& obj_label_msg) ;
+    void cluster_centroids_callback(const autoware_msgs::Centroids::ConstPtr& cluster_centroids_msg);
 //    void obj_pose_callback(const visualization_msgs::MarkerArray::ConstPtr& obj_pose_msg);
     void obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_timestamp_msg);
     // sync
-    void sync_image_obj_ranged_callback(const autoware_msgs::image_obj::ConstPtr& sync_image_obj_msg);
-    void sync_image_obj_tracked_callback(const autoware_msgs::image_obj_ranged::ConstPtr& sync_image_obj_ranged_msg);
-    void sync_obj_label_callback(const autoware_msgs::image_obj_tracked::ConstPtr& sync_image_obj_tracked_msg);
-    void sync_obj_pose_callback(const autoware_msgs::obj_label::ConstPtr& sync_obj_label_msg);
+    void sync_image_obj_ranged_callback(const autoware_msgs::ImageObj::ConstPtr& sync_image_obj_msg);
+    void sync_image_obj_tracked_callback(const autoware_msgs::ImageObjRanged::ConstPtr& sync_image_obj_ranged_msg);
+    void sync_obj_label_callback(const autoware_msgs::ImageObjTracked::ConstPtr& sync_image_obj_tracked_msg);
+    void sync_obj_pose_callback(const autoware_msgs::ObjLabel::ConstPtr& sync_obj_label_msg);
     // time difference
-    void time_diff_callback(const autoware_msgs::Sync_time_diff::ConstPtr& time_diff_msg);
+    void time_diff_callback(const autoware_msgs::SyncTimeDiff::ConstPtr& time_diff_msg);
     void run();
 };
 
@@ -211,7 +197,7 @@ TimeManager::TimeManager(int buffer_size) {
         is_vscan_image_ = false;
     }
 
-    time_monitor_pub = nh.advertise<autoware_msgs::Sync_time_monitor> ("/times", 10);
+    time_monitor_pub = nh.advertise<autoware_msgs::SyncTimeMonitor> ("/times", 10);
     image_raw_sub = nh.subscribe("/sync_drivers/image_raw", 10, &TimeManager::image_raw_callback, this);
     points_raw_sub = nh.subscribe("/sync_drivers/points_raw", 10, &TimeManager::points_raw_callback, this);
     points_image_sub = nh.subscribe("/points_image", 10, &TimeManager::points_image_callback, this);
@@ -277,17 +263,17 @@ void TimeManager::vscan_image_callback(const autoware_msgs::PointsImage::ConstPt
     vscan_image_.push_front(vscan_image_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::image_obj_callback(const autoware_msgs::image_obj::ConstPtr& image_obj_msg) {
+void TimeManager::image_obj_callback(const autoware_msgs::ImageObj::ConstPtr& image_obj_msg) {
 //    ROS_INFO("image_obj: \t\t\t%d.%d", image_obj_msg->header.stamp.sec, image_obj_msg->header.stamp.nsec);
     image_obj_.push_front(image_obj_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::image_obj_ranged_callback(const autoware_msgs::image_obj_ranged::ConstPtr& image_obj_ranged_msg) {
+void TimeManager::image_obj_ranged_callback(const autoware_msgs::ImageObjRanged::ConstPtr& image_obj_ranged_msg) {
 //    ROS_INFO("image_obj_ranged: \t\t%d.%d", image_obj_ranged_msg->header.stamp.sec, image_obj_ranged_msg->header.stamp.nsec);
     image_obj_ranged_.push_front(image_obj_ranged_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::image_obj_tracked_callback(const autoware_msgs::image_obj_tracked::ConstPtr& image_obj_tracked_msg) {
+void TimeManager::image_obj_tracked_callback(const autoware_msgs::ImageObjTracked::ConstPtr& image_obj_tracked_msg) {
 //    ROS_INFO("image_obj_tracked: \t\t%d.%d", image_obj_tracked_msg->header.stamp.sec, image_obj_tracked_msg->header.stamp.nsec);
     image_obj_tracked_.push_front(image_obj_tracked_msg->header.stamp, get_walltime_now());
 }
@@ -297,39 +283,39 @@ void TimeManager::current_pose_callback(const geometry_msgs::PoseStamped::ConstP
     current_pose_.push_front(current_pose_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::obj_label_callback(const autoware_msgs::obj_label::ConstPtr& obj_label_msg) {
+void TimeManager::obj_label_callback(const autoware_msgs::ObjLabel::ConstPtr& obj_label_msg) {
 //    ROS_INFO("obj_label: \t\t\t%d.%d", obj_label_msg->header.stamp.sec, obj_label_msg->header.stamp.nsec);
     obj_label_.push_front(obj_label_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::cluster_centroids_callback(const autoware_msgs::centroids::ConstPtr& cluster_centroids_msg) {
+void TimeManager::cluster_centroids_callback(const autoware_msgs::Centroids::ConstPtr& cluster_centroids_msg) {
 //    ROS_INFO("cluster_centroids: \t\t%d.%d", cluster_centroids_msg->header.stamp.sec, cluster_centroids_msg->header.stamp.nsec);
     cluster_centroids_.push_front(cluster_centroids_msg->header.stamp, get_walltime_now());
 }
 
 /* sync */
-void TimeManager::sync_image_obj_ranged_callback(const autoware_msgs::image_obj::ConstPtr& sync_image_obj_msg) {
+void TimeManager::sync_image_obj_ranged_callback(const autoware_msgs::ImageObj::ConstPtr& sync_image_obj_msg) {
 //    ROS_INFO("sync_image_obj_ranged: \t\t%d.%d", sync_image_obj_msg->header.stamp.sec, sync_image_obj_msg->header.stamp.nsec);
     sync_image_obj_ranged_.push_front(sync_image_obj_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::sync_image_obj_tracked_callback(const autoware_msgs::image_obj_ranged::ConstPtr& sync_image_obj_ranged_msg) {
+void TimeManager::sync_image_obj_tracked_callback(const autoware_msgs::ImageObjRanged::ConstPtr& sync_image_obj_ranged_msg) {
 //    ROS_INFO("sync_image_obj_tracked: \t%d.%d", sync_image_obj_ranged_msg->header.stamp.sec, sync_image_obj_ranged_msg->header.stamp.nsec);
     sync_image_obj_tracked_.push_front(sync_image_obj_ranged_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::sync_obj_label_callback(const autoware_msgs::image_obj_tracked::ConstPtr& sync_image_obj_tracked_msg) {
+void TimeManager::sync_obj_label_callback(const autoware_msgs::ImageObjTracked::ConstPtr& sync_image_obj_tracked_msg) {
 //    ROS_INFO("sync_obj_label: \t\t%d.%d", sync_image_obj_tracked_msg->header.stamp.sec, sync_image_obj_tracked_msg->header.stamp.nsec);
     sync_obj_label_.push_front(sync_image_obj_tracked_msg->header.stamp, get_walltime_now());
 }
 
-void TimeManager::sync_obj_pose_callback(const autoware_msgs::obj_label::ConstPtr& sync_obj_label_msg) {
+void TimeManager::sync_obj_pose_callback(const autoware_msgs::ObjLabel::ConstPtr& sync_obj_label_msg) {
 //    ROS_INFO("sync_obj_pose: \t\t\t%d.%d", sync_obj_label_msg->header.stamp.sec, sync_obj_label_msg->header.stamp.nsec);
     sync_obj_pose_.push_front(sync_obj_label_msg->header.stamp, get_walltime_now());
 }
 
 /* time difference */
-void TimeManager::time_diff_callback(const autoware_msgs::Sync_time_diff::ConstPtr& time_diff_msg) {
+void TimeManager::time_diff_callback(const autoware_msgs::SyncTimeDiff::ConstPtr& time_diff_msg) {
     ros::Time sensors_time_diff;
     double lidar = (double)time_diff_msg->lidar.sec + (double)time_diff_msg->lidar.nsec/1000000000.0L;
     double camera = (double)time_diff_msg->camera.sec + (double)time_diff_msg->camera.nsec/1000000000.0L;
@@ -369,7 +355,7 @@ void TimeManager::obj_pose_callback(const std_msgs::Time::ConstPtr& obj_pose_tim
     obj_pose_.push_front(obj_pose_timestamp_msg->data, get_walltime_now());
     static ros::Time pre_sensor_time;
 
-    autoware_msgs::Sync_time_monitor time_monitor_msg;
+    autoware_msgs::SyncTimeMonitor time_monitor_msg;
     time_monitor_msg.header.frame_id = "0";
     time_monitor_msg.header.stamp = ros::Time::now();
 

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>libsick_ldmrs</name>
+  <version>1.7.0</version>
+  <description>
+    A library for communication with the SICK LD-MRS series of laser scanners.
+  </description>
+
+  <maintainer email="martin.guenther@dfki.de">Martin Günther</maintainer>
+  <author email="info@sick.com">SICK AG</author>
+  <author email="martin.guenther@dfki.de">Martin Günther</author>
+  <author email="ros@jochen.sprickerhof.de">Jochen Sprickerhof</author>
+
+  <license>nonstandard</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+
+  <exec_depend>catkin</exec_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

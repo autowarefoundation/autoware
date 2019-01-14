@@ -1,13 +1,15 @@
-- name: lane_navi
+- name: /lane_navi
   publish: [/lane_waypoints_array]
-  subscribe: [/route_cmd, /vector_map_info/point_class, /vector_map_info/lane, /vector_map_info/node]
-- name: lane_rule
+  subscribe: [/route_cmd, /vector_map_info/point, /vector_map_info/lane, /vector_map_info/node]
+- name: /lane_rule
   publish: [/traffic_waypoints_array, /red_waypoints_array, /green_waypoints_array]
-  subscribe: [/lane_waypoints_array, /vector_map_info/point_class, /vector_map_info/lane,
+  subscribe: [/lane_waypoints_array, /vector_map_info/point, /vector_map_info/lane,
     /vector_map_info/node, /vector_map_info/stop_line, /vector_map_info/dtlane, /config/lane_rule]
-- name: lane_select
+- name: /lane_select
   publish: [/base_waypoints, /closest_waypoint]
-  subscribe: [/traffic_waypoints_array, /current_pose, /current_velocity]
-- name: lane_stop
+  subscribe: [/traffic_waypoints_array, /current_pose, /current_velocity, /state,
+    /config/lane_select, /decisionmaker/states]
+- name: /lane_stop
   publish: [/traffic_waypoints_array]
-  subscribe: [/traffic_light, /red_waypoints_array, /green_waypoints_array]
+  subscribe: [/light_color, /light_color_managed, /red_waypoints_array,
+    /green_waypoints_array, /config/lane_stop]

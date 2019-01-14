@@ -1,0 +1,22 @@
+<launch>
+
+  <!-- Vehicle Contorl -->
+  <include file="$(find runtime_manager)/scripts/vehicle_socket.launch"/>
+
+  <!-- obstacle_avoid -->
+  <include file="$(find astar_planner)/launch/obstacle_avoid.launch"/>
+
+  <!-- velocity_set -->
+  <include file="$(find astar_planner)/launch/velocity_set.launch"/>
+
+  <!-- pure_pursuit -->
+  <node pkg="rostopic" type="rostopic" name="config_waypoint_follower_rostopic"
+        args="pub -l /config/waypoint_follower autoware_msgs/ConfigWaypointFollower
+        '{ header: auto, param_flag: 1, velocity: 5.0, lookahead_distance: 4.0, lookahead_ratio: 2.0, minimum_lookahead_distance: 6.0, displacement_threshold: 0.0, relative_angle_threshold: 0.0 }' "
+  />
+  <include file="$(find waypoint_follower)/launch/pure_pursuit.launch"/>
+
+  <!-- twist_filter -->
+  <include file="$(find waypoint_follower)/launch/twist_filter.launch"/>
+
+</launch>

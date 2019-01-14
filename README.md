@@ -1,238 +1,85 @@
-<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>
+[![Autoware](https://www.autoware.ai/static/img/autoware_web_img.png)](https://www.autoware.ai)
 
-# Autoware
-Open-source software for urban autonomous driving, maintained by [Tier IV](http://www.tier4.jp). The following functions are supported:
+| *master* | *develop* |
+|----------|-----------|
+|[![Build Status](https://img.shields.io/gitlab/pipeline/CPFL/Autoware/master.svg)](https://gitlab.com/CPFL/Autoware/pipelines)|[![Build Status](https://img.shields.io/gitlab/pipeline/CPFL/Autoware/develop.svg)](https://gitlab.com/CPFL/Autoware/pipelines)|
 
-- 3D Localization
-- 3D Mapping
-- Path Planning
-- Path Following
-- Accel/Brake/Steering Control
-- Data Logging
-- Car/Pedestrian/Object Detection
-- Traffic Signal Detection
-- Traffic Light Recognition
-- Lane Detection
-- Object Tracking
-- Sensor Calibration
-- Sensor Fusion
-- Cloud-oriented Maps
-- Connected Automation
-- Smartphone Navigation
-- Software Simulation
-- Virtual Reality
+[Autoware](https://www.autoware.ai) is the world's first "all-in-one" open-source software for self-driving vehicles. The capabilities of Autoware are primarily well-suited for urban cities, but highways, freeways, mesomountaineous regions, and geofenced areas can be also covered. The code base of Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation environment for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
 
-Autoware is protected by the BSD License. Please use it at your own discretion. For safe use, we provide a ROSBAG-based simulation method for those who do not own real autonomous vehicles. If you plan to use Autoware with real autonomous vehicles, **please formulate safety measures and assessment of risk before field testing.**
+You may refer to [Autoware Wiki](https://github.com/CPFL/Autoware/wiki) for **Users Guide** and **Developers Guide**.
 
-## Manuals and Documents
+## What Is Autoware
 
-Free manuals can be found at [https://github.com/CPFL/Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
+[![Autoware Overview](docs/images/autoware_overview.png)](https://github.com/CPFL/Autoware/wiki/Overview)
 
-See also [branching_model](https://github.com/CPFL/Autoware/blob/master/docs/en/branching_model.md) for tips on Autoware development, including the coding style and branching model.
+Autoware provides a rich set of self-driving modules composed of sensing, computing, and actuation capabilities. An overview of those capabilities is described [here](https://github.com/CPFL/Autoware/wiki/Overview). Keywords include *Localization, Mapping, Object Detection & Tracking, Traffic Light Recognition, Mission & Motion Planning, Trajectory Generation, Lane Detection & Selection, Vehicle Control, Sensor Fusion, Cameras, LiDARs, RADARs, Deep Learning, Rule-based System, Connected Navigation, Logging, Virtual Reality, and so on*.
 
-## License
+Free manuals can be also found at [Autoware-Manuals](https://github.com/CPFL/Autoware-Manuals). You are encouraged to contribute to the maintenance of these manuals. Thank you for your cooperation!
 
-* New BSD License
-    * See LICENSE
+## Getting Started
 
-## Recommended Minimum System Specifications
+[![Autoware Demo](docs/images/autoware_demo.png)](https://github.com/CPFL/Autoware/wiki/Demo)
+
+### Recommended System Specifications
 
 - Number of CPU cores: 8
 - RAM size: 32GB
-- Storage size: 30GB
+- Storage size: 64GB+
 
-## Requirements
+### Users Guide
 
-- ROS indigo (Ubuntu 14.04) or ROS jade (Ubuntu 15.04) or ROS kinetic (Ubuntu 16.04)
-- OpenCV 2.4.10 or higher
-- Qt 5.2.1 or higher
-- CUDA (optional)
-- FlyCapture2 (optional)
-- Armadillo (optional)
+1. [Installation](https://github.com/CPFL/Autoware/wiki/Installation)
+    1. [Docker](https://github.com/CPFL/Autoware/wiki/Docker)
+    1. [Source](https://github.com/CPFL/Autoware/wiki/Source-Build)
+1. [Demo](https://github.com/CPFL/Autoware/wiki/Demo)
+1. [Field Test](https://github.com/CPFL/Autoware/wiki/Field-Test)
+1. [Simulation Test](https://github.com/CPFL/Autoware/wiki/Simulation-Test)
+1. [Videos](https://github.com/CPFL/Autoware/wiki/videos)
 
-**Please use checkout a revision before 2015/OCT/21 if you want to use Autoware on ROS Hydro or Ubuntu 13.04, 13.10.**
+### Developers Guide
 
-### Install dependencies for Ubuntu 14.04 Indigo
+1. [Contribution Rules](https://github.com/CPFL/Autoware/wiki/Contribution-Rules) (**Must Read**)
+1. [Overview](https://github.com/CPFL/Autoware/wiki/Overview)
+1. [Specification](https://github.com/CPFL/Autoware/wiki/Specification)
 
-```
-% sudo apt-get install ros-indigo-desktop-full ros-indigo-nmea-msgs ros-indigo-nmea-navsat-driver ros-indigo-sound-play ros-indigo-jsk-visualization ros-indigo-grid-map ros-indigo-gps-common
-% sudo apt-get install ros-indigo-controller-manager ros-indigo-ros-control ros-indigo-ros-controllers ros-indigo-gazebo-ros-control ros-indigo-sicktoolbox ros-indigo-sicktoolbox-wrapper ros-indigo-joystick-drivers ros-indigo-novatel-span-driver ros-indigo-urg-node ros-indigo-image-view2
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev software-properties-common libyaml-cpp-dev python-flask python-requests
-% sudo add-apt-repository ppa:mosquitto-dev/mosquitto-ppa
-% sudo apt-get install libmosquitto-dev
-```
-
-**NOTE: Please do not install ros-indigo-velodyne-pointcloud package. If it is already installed, please uninstall.**
-
-### Install dependencies for Ubuntu 16.04 Kinetic
-```
-% sudo apt-get install ros-kinetic-desktop-full ros-kinetic-nmea-msgs ros-kinetic-nmea-navsat-driver ros-kinetic-sound-play ros-kinetic-jsk-visualization ros-kinetic-grid-map ros-kinetic-gps-common
-% sudo apt-get install ros-kinetic-controller-manager ros-kinetic-ros-control ros-kinetic-ros-controllers ros-kinetic-gazebo-ros-control ros-kinetic-joystick-drivers ros-kinetic-urg-node ros-kinetic-image-view2
-% sudo apt-get install libnlopt-dev freeglut3-dev qtbase5-dev libqt5opengl5-dev libssh2-1-dev libarmadillo-dev libpcap-dev gksu libgl1-mesa-dev libglew-dev python-wxgtk3.0 software-properties-common libmosquitto-dev libyaml-cpp-dev python-flask python-requests
-```
-
-**NOTE: Following packages are not supported in ROS Kinetic.**
-- gazebo
-- orb slam
-- dpm ocv
-
-## How to Build
-
-```
-$ cd $HOME
-$ git clone https://github.com/CPFL/Autoware.git
-$ cd ~/Autoware/ros/src
-$ catkin_init_workspace
-$ cd ../
-$ ./catkin_make_release
-```
-###Caffe based object detectors
-CV based detectors RCNN and SSD nodes are not automatically built.
-
-To build these nodes please follow the respective node's README
-[SSD](ros/src/computing/perception/detection/packages/cv_tracker/nodes/ssd/README.md)
-[RCNN](ros/src/computing/perception/detection/lib/image/librcnn/README.md)
-[Yolo2](ros/src/computing/perception/detection/packages/cv_tracker/nodes/yolo2/README.md)
-
-
-## How to Start
-
-```
-$ cd $HOME/Autoware/ros
-$ ./run
-```
-
-## For Developers
-
-Be careful when changing files under `ros/src/sensing/drivers/lidar/packages/velodyne`. There is **subtree**.
-The original repository is [here](https://github.com/CPFL/velodyne). If you change those files from this
-repository, you must use **git subtree push**. (Please never change and push code if you don't understand
-`git subtree` well).
-
-GitFlow, the git branching model, is used in the Autoware repository.
-- When adding new features, you can branch off your feature branch from `develop`.  
-  You can use the following command.  
-  `$ git checkout -b feature/[your_branch_name] develop`
-- When you find bugs in `master`, you can branch off your hotfix branch from `master`.  
-  You can use the following command.  
-  `$ git checkout -b hotfix/[your_branch_name] master`
-
-See [docs/en/branching_model.md](docs/en/branching_model.md)
-
-More details [here](http://nvie.com/posts/a-successful-git-branching-model/)
-
-## Main Packages
-
-### Localization
-- ndt_localizer
-- icp_localizer
-
-### Detection
-- lidar_tracker
-- cv_tracker
-- road_wizard
-
-### Mission (Global) Planning
-- lane_planner
-- way_planner
-- freespace_planner
-
-### Motion (Local) Planning
-- astar_planner
-- lattice_planner
-- dp_planner
-
-### Vehicle Control
-- waypoint_follower
-- waypoint_maker
 
 ## Research Papers for Citation
 
-1. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. "An Open Approach to Autonomous Vehicles", IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [![Link](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)](http://online.qmags.com/MIC1115/default.aspx?sessionID=7CF18C36BF00A40746B87387B&cid=3230522&eid=19656&pg=62&mode=2#pg62&mode2)
+1. S. Kato, S. Tokunaga, Y. Maruyama, S. Maeda, M. Hirabayashi, Y. Kitsukawa, A. Monrroy, T. Ando, Y. Fujii, and T. Azumi,``Autoware on Board: Enabling Autonomous Vehicles with Embedded Systems,'' In Proceedings of the 9th ACM/IEEE International Conference on Cyber-Physical Systems (ICCPS2018),  pp. 287-296, 2018. [Link](https://dl.acm.org/citation.cfm?id=3207930)
 
-## Demo Videos
+2. S. Kato, E. Takeuchi, Y. Ishiguro, Y. Ninomiya, K. Takeda, and T. Hamada. ``An Open Approach to Autonomous Vehicles,'' IEEE Micro, Vol. 35, No. 6, pp. 60-69, 2015. [Link](https://ieeexplore.ieee.org/document/7368032/)
 
-### Public Road Demonstration
-[![Public Road Demonstration](http://img.youtube.com/vi/5DaQBZvZwAI/mqdefault.jpg)](https://www.youtube.com/watch?v=5DaQBZvZwAI)
+## Cloud Services
 
-### Test Field Demonstration
-[![Test Field Demonstration](http://img.youtube.com/vi/zujGfJcZCpQ/mqdefault.jpg)](https://www.youtube.com/watch?v=zujGfJcZCpQ)
+### Autoware Online
 
-## Instructional Videos
+You may test Autoware at [Autoware Online](http://autoware.online/). No need to install the Autoware repository to your local environment.
 
-### Quick Start
-[![Quick Start](http://img.youtube.com/vi/NDNcy0C-Has/mqdefault.jpg)](https://www.youtube.com/watch?v=NDNcy0C-Has)
+### Automan
 
-### Loading Map Data
-[![Loading Map Data](http://img.youtube.com/vi/OpvTeTaiXo4/mqdefault.jpg)](https://www.youtube.com/watch?v=OpvTeTaiXo4)
+You may annotate and train your ROSBAG data using your web browser through [Automan](https://www.automan.ai). The trained models can be used for deep neural network algorithms in Autoware, such as SSD and Yolo.
 
-### Localization with GNSS
-[![Localization with GNSS](http://img.youtube.com/vi/sul-osvg42A/mqdefault.jpg)](https://www.youtube.com/watch?v=sul-osvg42A)
+### ROSBAG STORE
 
-### Localization without GNSS
-[![Localization without GNSS](http://img.youtube.com/vi/ODlxMzGTJzw/mqdefault.jpg)](https://www.youtube.com/watch?v=ODlxMzGTJzw)
+You may download a number of test and simulation data sets from Tier IV's [ROSBAG STORE](https://rosbag.tier4.jp). Note that free accounts would not allow you to access image data due to privacy matters. 
 
-### Mapping
-[![Mapping](http://img.youtube.com/vi/ss6Blrz23h8/mqdefault.jpg)](https://www.youtube.com/watch?v=ss6Blrz23h8)
+### Map Tools
 
-### Detection with SSD
-[![SSD](http://img.youtube.com/vi/EjamMJjkjBA/mqdefault.jpg)](https://youtu.be/EjamMJjkjBA)
+You may create 3D map data through Tier IV's [Map Tools](https://maptools.tier4.jp/). The 3D map data used in Autoware are composed of point cloud structure data and vector feature data.
 
-### Detection with Yolo2
-[![Yolo2](http://img.youtube.com/vi/gG_ojWOmDO0/mqdefault.jpg)](https://youtu.be/gG_ojWOmDO0)
+## License
 
-### Detection with DPM
-[![DPM](http://img.youtube.com/vi/P_BFQNbudlg/mqdefault.jpg)](https://youtu.be/P_BFQNbudlg)
-
-### Detection with Euclidean Clustering
-[![Clustering](http://img.youtube.com/vi/Tma2DKMxt4Y/mqdefault.jpg)](https://youtu.be/Tma2DKMxt4Y)
-
-### Traffic Light Recognition
-[![Traffic Light Recognition](http://img.youtube.com/vi/KmOdBms9r2w/mqdefault.jpg)](https://youtu.be/KmOdBms9r2w)
-
-### Planning with ROSBAG
-[![Planning with ROSBAG](http://img.youtube.com/vi/B3UUKFM6Hqg/mqdefault.jpg)](https://www.youtube.com/watch?v=B3UUKFM6Hqg)
-
-### Planning with wf_simulator
-[![Planning with wf_simulator](http://img.youtube.com/vi/HwB2NKqj2yg/mqdefault.jpg)](https://www.youtube.com/watch?v=HwB2NKqj2yg)
-
-### Planning with Hybrid State A*
-[![Planning with wf_simulator](http://img.youtube.com/vi/1WiqAHZHj8U/mqdefault.jpg)](https://www.youtube.com/watch?v=1WiqAHZHj8U)
-
-### Calibration Toolkit
-[![Calibration Toolkit](http://img.youtube.com/vi/pfBmfgHf6zg/mqdefault.jpg)](https://www.youtube.com/watch?v=pfBmfgHf6zg)
-
-See [https://github.com/CPFL/Autoware/wiki/Calibration(EN)](https://github.com/CPFL/Autoware/wiki/Calibration(EN))
-
-### Data Processor for Bag File
-[![Data Processor](http://img.youtube.com/vi/M38Obmy-3Ko/mqdefault.jpg)](https://youtu.be/M38Obmy-3Ko)
-
-### Ftrace
-[![Ftrace](http://img.youtube.com/vi/RoIqKgerDUw/mqdefault.jpg)](https://youtu.be/RoIqKgerDUw)
-
-## Sample Data
-
-[3D maps of Moriyama in Nagoya](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_data.tar.gz)
-
-[ROSBAG data for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/sample_moriyama_150324.tar.gz)
-
-[Script of generating launch files for Moriyama demo](http://db3.ertl.jp/autoware/sample_data/my_launch.sh)
-
-[ROSBAG data for calibration test](http://db3.ertl.jp/autoware/sample_data/kotacho-calibration-sample_20160621.bag.bz2)
-
-[ROSBAG data for IROS 2016](http://db3.ertl.jp/autoware/sample_data/iros2016_two_vehicle_data.tar.gz)
-
-## ROSBAG STORE
-
-You can download many ROSBAG files for research and development of self-driving technology using Autoware.
-[https://rosbag.tier4.jp](https://rosbag.tier4.jp)
+Autoware is provided under the [New BSD License](https://github.com/CPFL/Autoware/blob/master/LICENSE).
 
 ## Contact
 
-Autoware Developers (<autoware@googlegroups.com>)
-
 Autoware Developers Slack Team (https://autoware.herokuapp.com/)
+
+Autoware Developers (<autoware@googlegroups.com>)
 
 To subscribe to the Autoware Developers mailing list,
 - If you have a Google account, go to https://groups.google.com/d/forum/autoware, and click the **Apply to Join Group** button.
 - If you don't have a Google account, send an email to autoware+subscribe@googlegroups.com.
+
+***
+<div align="center"><img src="docs/images/autoware_logo_1.png" width="400"/></div>

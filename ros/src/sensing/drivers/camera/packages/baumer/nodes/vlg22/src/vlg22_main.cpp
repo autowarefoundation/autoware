@@ -226,13 +226,14 @@ void ros_init_publishers(ros::NodeHandle node_handle, ros::Publisher publishers[
 	}
 }
 
-sensor_msgs::Image ros_prepare_image(int count, cv::Mat image)
+sensor_msgs::Image ros_prepare_image(int count, cv::Mat image, size_t camera_id)
 {
 	//ROS publish*******************
 	sensor_msgs::Image msg;
 
 	msg.header.seq = count;
-	msg.header.frame_id = "camera";
+	std::string frame = "camera" + std::to_string(camera_id);
+	msg.header.frame_id = frame;
 	msg.header.stamp.sec = ros::Time::now().sec;
 	msg.header.stamp.nsec = ros::Time::now().nsec;
 	msg.height = image.size().height;
@@ -361,7 +362,7 @@ int main(int argc, char **argv)
 				                exposure,
 				                exposure_delta);
 
-				sensor_msgs::Image msg = ros_prepare_image(count, resized_color_image);
+				sensor_msgs::Image msg = ros_prepare_image(count, resized_color_image, i);
 
 				pub[i].publish(msg);
 				res = cameraPointers[i]->setImage( pImage );

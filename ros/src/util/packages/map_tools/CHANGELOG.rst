@@ -2,6 +2,32 @@
 Changelog for package map_tools
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Feature/pcd grid divider (`#1271 <https://github.com/CPFL/Autoware/pull/1271>`_)
+  * PCD Grid Divider added.
+  * Clang format applied.
+  * README added
+  * Missing dependencies added.
+  Unnecessary header removed.
+  * Added CMake missing commands for installation on map_tools package
+  * removed launch files installation for map_tools
+* Contributors: Esteve Fernandez, Kenji Funaoka, Yuki Kitsukawa
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Contributors: Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

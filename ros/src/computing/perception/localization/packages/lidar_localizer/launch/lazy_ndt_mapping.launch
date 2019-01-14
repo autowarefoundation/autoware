@@ -1,0 +1,15 @@
+<!-- -->
+<launch>
+
+  <!-- send table.xml to param server -->
+  <arg name="reference_map_size" default="3" />
+  <arg name="use_openmp" default="false" />
+
+  <!-- rosrun lidar_localizer lazy_ndt_mapping  -->
+  <node pkg="lidar_localizer" type="queue_counter" name="queue_counter" output="log" />
+  <node pkg="lidar_localizer" type="lazy_ndt_mapping" name="lazy_ndt_mapping" output="log">
+    <param name="reference_map_size" value="$(arg reference_map_size)" />
+    <param name="use_openmp" value="$(arg use_openmp)" />
+  </node>
+  
+</launch>

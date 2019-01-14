@@ -1,5 +1,5 @@
 <launch>
   <arg name="file" default="" />
-  <node pkg="road_wizard" type="feat_proj" name="feat_proj" args="$(arg file)" />
-  <node pkg="road_wizard" type="region_tlr" name="region_tlr" />
+  <node pkg="trafficlight_recognizer" type="feat_proj" name="feat_proj" args="$(arg file)" />
+  <node pkg="trafficlight_recognizer" type="region_tlr" name="region_tlr" />
 </launch>

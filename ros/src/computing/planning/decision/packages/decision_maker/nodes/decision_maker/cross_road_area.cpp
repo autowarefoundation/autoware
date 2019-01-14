@@ -1,11 +1,11 @@
-#include <amathutils.hpp>
+#include <amathutils_lib/amathutils.hpp>
 #include <cmath>
 #include <cross_road_area.hpp>
 
 namespace decision_maker
 {
 #define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
-CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
+CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane &_finalwaypoints,
                                                    std::vector<CrossRoadArea> &intersects)
 {
   CrossRoadArea *_area = nullptr;
