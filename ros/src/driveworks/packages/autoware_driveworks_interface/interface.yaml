@@ -1,0 +1,6 @@
+- name: /gmsl_camera_interface
+  publish: [/image_raw]
+  subscribe: []
+- name: /driveworks_tensorrt_interface
+  publish: [/obj_car/image_obj]
+  subscribe: [/image_raw]

@@ -1,11 +1,11 @@
-#include <amathutils.hpp>
+#include <amathutils_lib/amathutils.hpp>
 #include <cmath>
 #include <cross_road_area.hpp>
 
 namespace decision_maker
 {
 #define TARGET_WAYPOINTS_NUM 15  // need to change rosparam
-CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
+CrossRoadArea *CrossRoadArea::findClosestCrossRoad(const autoware_msgs::Lane &_finalwaypoints,
                                                    std::vector<CrossRoadArea> &intersects)
 {
   CrossRoadArea *_area = nullptr;
@@ -51,6 +51,9 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
 {
   std::vector<int> enablePoints;
 
+  if(_TargetArea->points.size() < 3)
+	  return {};
+
   // Jarvis's March algorithm
   size_t l = 0;
   for (auto i = begin(_TargetArea->points); i != end(_TargetArea->points); i++)
@@ -72,12 +75,12 @@ std::vector<geometry_msgs::Point> convhull(const CrossRoadArea *_TargetArea)
       geometry_msgs::Point pp = _TargetArea->points.at(p);
       geometry_msgs::Point pi = _TargetArea->points.at(i);
       geometry_msgs::Point pq = _TargetArea->points.at(q);
-      if ((pi.y - pp.y) * (pq.x - pi.x) - (pi.x - pp.x) * (pq.y - pi.y) < 0)
+      if (((pi.y - pp.y) * (pq.x - pi.x) - (pi.x - pp.x) * (pq.y - pi.y)) < 0)
       {
         q = i;
       }
     }
-    enablePoints.push_back(p);
+    enablePoints.push_back(q);
     p = q;
   } while (p != l);
 

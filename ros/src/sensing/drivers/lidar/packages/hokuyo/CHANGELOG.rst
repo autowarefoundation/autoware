@@ -2,6 +2,29 @@
 Changelog for package hokuyo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [update] Hokuyo 2D driver update (`#1091 <https://github.com/CPFL/Autoware/pull/1091>`_)
+  * Replaced outdated Hokuyo node with new urg_node
+  * Added description to RTM
+  * Updated Hokuyo3D, added RTM UI for both 2D and 3D Hokuyo nodes
+  * Requested changes attended
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

@@ -1,0 +1,3 @@
+- name: /marker_downsampler
+  publish: [/downsampled_trajectory_circle_mark, /downsampled_next_target_mark]
+  subscribe: [/trajectory_circle_mark, /next_target_mark]

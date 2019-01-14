@@ -1,0 +1,3 @@
+float32 distance_threshold
+float32 min_clipping_height
+float32 max_clipping_height

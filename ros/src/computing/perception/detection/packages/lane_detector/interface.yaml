@@ -1,3 +1,0 @@
-- name: lane_detector
-  publish: [/lane_pos_xy]
-  subscribe: [/image_raw]

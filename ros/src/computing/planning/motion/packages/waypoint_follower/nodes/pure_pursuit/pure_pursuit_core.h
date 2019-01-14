@@ -32,17 +32,18 @@
 #define PURE_PURSUIT_CORE_H
 
 // ROS includes
-#include <ros/ros.h>
-#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <ros/ros.h>
+#include <std_msgs/Float32.h>
 #include <visualization_msgs/Marker.h>
 
 // User defined includes
-#include "autoware_msgs/ConfigWaypointFollower.h"
-#include "autoware_msgs/lane.h"
+#include "autoware_config_msgs/ConfigWaypointFollower.h"
 #include "autoware_msgs/ControlCommandStamped.h"
-#include "pure_pursuit_viz.h"
+#include "autoware_msgs/Lane.h"
 #include "pure_pursuit.h"
+#include "pure_pursuit_viz.h"
 
 namespace waypoint_follower
 {
@@ -77,7 +78,7 @@ private:
   PurePursuit pp_;
 
   // publisher
-  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_;
+  ros::Publisher pub1_, pub2_, pub11_, pub12_, pub13_, pub14_, pub15_, pub16_, pub17_;
 
   // subscriber
   ros::Subscriber sub1_, sub2_, sub3_, sub4_;
@@ -98,10 +99,10 @@ private:
   double minimum_lookahead_distance_;  // the next waypoint must be outside of this threshold.
 
   // callbacks
-  void callbackFromConfig(const autoware_msgs::ConfigWaypointFollowerConstPtr &config);
+  void callbackFromConfig(const autoware_config_msgs::ConfigWaypointFollowerConstPtr &config);
   void callbackFromCurrentPose(const geometry_msgs::PoseStampedConstPtr &msg);
   void callbackFromCurrentVelocity(const geometry_msgs::TwistStampedConstPtr &msg);
-  void callbackFromWayPoints(const autoware_msgs::laneConstPtr &msg);
+  void callbackFromWayPoints(const autoware_msgs::LaneConstPtr &msg);
 
   // initializer
   void initForROS();
@@ -109,9 +110,13 @@ private:
   // functions
   void publishTwistStamped(const bool &can_get_curvature, const double &kappa) const;
   void publishControlCommandStamped(const bool &can_get_curvature, const double &kappa) const;
+  void publishDeviationCurrentPosition(const geometry_msgs::Point &point,
+                                       const std::vector<autoware_msgs::Waypoint> &waypoints) const;
 
   double computeLookaheadDistance() const;
   double computeCommandVelocity() const;
+  double computeCommandAccel() const;
+  double computeAngularGravity(double velocity, double kappa) const;
 };
 
 double convertCurvatureToSteeringAngle(const double &wheel_base, const double &kappa);

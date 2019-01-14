@@ -6,7 +6,7 @@
 #include <geometry_msgs/Point.h>
 #include <jsk_recognition_msgs/BoundingBox.h>
 
-#include <autoware_msgs/lane.h>
+#include <autoware_msgs/Lane.h>
 
 namespace decision_maker
 {
@@ -18,7 +18,7 @@ public:
   std::vector<geometry_msgs::Point> points;
   jsk_recognition_msgs::BoundingBox bbox;
 
-  std::vector<autoware_msgs::lane> insideLanes;
+  std::vector<autoware_msgs::Lane> insideLanes;
   std::vector<geometry_msgs::Point> insideWaypoint_points;
 
   CrossRoadArea(void)
@@ -30,7 +30,7 @@ public:
     insideWaypoint_points.clear();
   }
 
-  static CrossRoadArea *findClosestCrossRoad(const autoware_msgs::lane &_finalwaypoints,
+  static CrossRoadArea *findClosestCrossRoad(const autoware_msgs::Lane &_finalwaypoints,
                                              std::vector<CrossRoadArea> &intersects);
   static bool isInsideArea(const CrossRoadArea *_TargetArea, geometry_msgs::Point pt);
 

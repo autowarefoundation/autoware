@@ -2,6 +2,144 @@
 Changelog for package dp_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+* Moved CAN mesages to autoware_can_msgs
+* [fix] PascalCase messages (`#1408 <https://github.com/CPFL/Autoware/issues/1408>`_)
+  * Switch message files to pascal case
+  * Switch message names to pascal case in Runtime Manager
+  * Switch message names to pascal case in *.yaml
+  * Rename brake_cmd and steer_cmd to BrakeCmd and SteerCmd in main.yaml
+* Contributors: Esteve Fernandez
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* Fix Vector Map parser problem, tested with three different maps
+  Fix Global Planning function for the new map modification
+  Add OpenPlanner Simulator for perception, traffic lights, cars
+  Add OpenPlanner new version to replace wp_planner and dp_planner
+  Remove unnecessary files from OpenPlanner libraries
+  Test Global and Local planning
+  Test Tracking node (kf_contour_track)
+  Test Simulation Nodes
+  Test Utility Nodes
+* Update op_utility files for csv files loading
+  Update MappingHelpers with latest modifications
+  Update PlanningHelpers with latest modifications
+  add op_common_param node, for setting OpenPlanner parameter for all related nodes such as lidar_kf_contour_track
+  Improve tracking by including size different in association function
+  Update way_planner, dp_planner for compatibility with new Mapping Modifications, Map format is backward compatible
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka, hatem-darweesh
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* [fix] Fixes for all packages and dependencies (`#1240 <https://github.com/CPFL/Autoware/pull/1240>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * More in detail dependencies fixes for more packages
+  * GLEW library for ORB
+  * Ignore OrbLocalizer
+  * Ignore Version checker
+  * Fix for driveworks interface
+  * driveworks not catkinpackagedd
+  * Missing catkin for driveworks
+  * libdpm opencv not catkin packaged
+  * catkin lib gnss  not included in obj_db
+  * Points2Polygon fix
+  * More missing dependencies
+  * image viewer not packaged
+  * Fixed SSH2 detection, added viewers for all distros
+  * Fix gnss localizer incorrect dependency config
+  * Fixes to multiple packages dependencies
+  * gnss plib and package
+  * More fixes to gnss
+  * gnss dependencies for gnss_loclaizer
+  * Missing gnss dependency for gnss on localizer
+  * More fixes for dependencies
+  Replaced gnss for autoware_gnss_library
+  * gnss more fixes
+  * fixes to more dependencies
+  * header dependency
+  * Debug message
+  * more debug messages changed back to gnss
+  * debud messages
+  * gnss test
+  * gnss install command
+  * Several fixes for OpenPlanner and its lbiraries
+  * Fixes to ROSInterface
+  * More fixes to robotsdk and rosinterface
+  * robotsdk calibration fix
+  * Fixes to rosinterface robotsdk libraries and its nodes
+  * Fixes to Qt5 missing dependencies in robotsdk
+  * glviewer missing dependencies
+  * Missing qt specific config cmake for robotsdk
+  * disable cv_tracker
+  * Fix to open planner un needed dependendecies
+  * Fixes for libraries indecision maker
+  * Fixes to libraries decision_maker installation
+  * Gazebo on Kinetic
+  * Added Missing library
+  * * Removed Gazebo and synchonization packages
+  * Renames vmap in lane_planner
+  * Added installation commands for missing pakcages
+  * Fixes to lane_planner
+  * Added NDT TKU Glut extra dependencies
+  * ndt localizer/lib fast pcl fixes
+  re enable cv_tracker
+  * Fix kf_lib
+  * Keep industrial_ci
+  * Fixes for dpm library
+  * Fusion lib fixed
+  * dpm and fusion header should match exported project name
+  * Fixes to dpm_ocv  ndt_localizer and pcl_omp
+  * no fast_pcl anymore
+  * fixes to libdpm and its package
+  * CI test
+  * test with native travis ci
+  * missing update for apt
+  * Fixes to pcl_omp installation and headers
+  * Final fixes for tests, modified README
+  * * Fixes to README
+  * Enable industrial_ci
+  * re enable native travis tests
+* Contributors: Abraham Monrroy, Kosuke Murakami
+
 1.6.3 (2018-03-06)
 ------------------
 

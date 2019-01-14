@@ -248,7 +248,7 @@ void CrossWalk::setCrossWalkPoints()
   set_points = true;
 }
 
-int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::lane &lane,
+int CrossWalk::findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::Lane &lane,
                                     const int search_distance)
 {
   if (!set_points || closest_waypoint < 0)
@@ -307,7 +307,7 @@ geometry_msgs::Point ObstaclePoints::getObstaclePoint(const EControl &kind) cons
 {
   geometry_msgs::Point point;
 
-  if (kind == EControl::STOP)
+  if (kind == EControl::STOP || kind == EControl::STOPLINE)
   {
     for (const auto &p : stop_points_)
     {

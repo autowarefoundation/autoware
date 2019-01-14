@@ -9,9 +9,9 @@
 #define ROSHELPERS_H_
 
 #include <ros/ros.h>
-#include "RoadNetwork.h"
-#include "PlannerCommonDef.h"
-#include "LocalPlannerH.h"
+#include "op_planner/RoadNetwork.h"
+#include "op_planner/PlannerCommonDef.h"
+#include "op_planner/LocalPlannerH.h"
 
 #include "vector_map_msgs/PointArray.h"
 #include "vector_map_msgs/LaneArray.h"
@@ -175,7 +175,7 @@ public:
 	virtual ~RosHelpers();
 	static void GetTransformFromTF(const std::string parent_frame, const std::string child_frame, tf::StampedTransform &transform);
 	static void ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path, const int& iStart,
-				autoware_msgs::lane & trajectory);
+				autoware_msgs::Lane & trajectory);
 
 	static void ConvertFromPlannerHRectangleToAutowareRviz(const std::vector<PlannerHNS::GPSPoint>& safety_rect,
 			visualization_msgs::Marker& marker);

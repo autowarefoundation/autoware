@@ -1,0 +1,26 @@
+<launch>	
+	
+	<arg name="max_distance_to_lane" 	default="1.0"/>
+	<arg name="prediction_distance" 	default="25.0"/>
+	<arg name="enableGenrateBranches" 	default="false"/>
+	<arg name="enableCurbObstacles" 	default="false" />
+	<arg name="distanceBetweenCurbs" 	default="1.5" />
+	<arg name="visualizationTime" 		default="0.25" />
+	<arg name="enableStepByStepSignal" 	default="false" />
+	<arg name="enableParticleFilterPrediction" 	default="false" />
+	
+	
+	<node pkg="op_local_planner" type="op_motion_predictor" name="op_motion_predictor" output="screen">		
+			
+		<param name="max_distance_to_lane" 		value="$(arg max_distance_to_lane)"/>
+		<param name="prediction_distance" 		value="$(arg prediction_distance)"/>
+		<param name="enableGenrateBranches" 	value="$(arg enableGenrateBranches)"/>
+		<param name="enableCurbObstacles" 		value="$(arg enableCurbObstacles)" />
+		<param name="distanceBetweenCurbs" 		value="$(arg distanceBetweenCurbs)" />
+		<param name="visualizationTime" 		value="$(arg visualizationTime)" />
+		<param name="enableStepByStepSignal" 	value="$(arg enableStepByStepSignal)" />
+		<param name="enableParticleFilterPrediction" 	value="$(arg enableParticleFilterPrediction)" />
+				
+	</node>
+
+</launch>

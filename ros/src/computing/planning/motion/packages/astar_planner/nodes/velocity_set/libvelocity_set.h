@@ -17,8 +17,17 @@ enum class EControl
 {
   KEEP = -1,
   STOP = 1,
-  DECELERATE = 2,
-  OTHERS = 3,
+  STOPLINE = 2,
+  DECELERATE = 3,
+  OTHERS = 4,
+};
+
+enum class EObstacleType
+{
+  NONE = -1,
+  ON_WAYPOINTS = 1,
+  ON_CROSSWALK = 2,
+  STOPLINE = 3,
 };
 
 struct CrossWalkPoints
@@ -67,7 +76,7 @@ public:
   geometry_msgs::Point getPoint(const int &pid) const;
   void calcCenterPoints();
   void setCrossWalkPoints();
-  int findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::lane &lane, const int search_distance);
+  int findClosestCrosswalk(const int closest_waypoint, const autoware_msgs::Lane &lane, const int search_distance);
   int getSize() const
   {
     return detection_points_.size();
@@ -175,7 +184,7 @@ inline double calcSquareOfLength(const geometry_msgs::Point &p1, const geometry_
 }
 
 // Calculate waypoint index corresponding to distance from begin_waypoint
-inline int calcWaypointIndexReverse(const autoware_msgs::lane &lane, const int begin_waypoint, const double distance)
+inline int calcWaypointIndexReverse(const autoware_msgs::Lane &lane, const int begin_waypoint, const double distance)
 {
   double dist_sum = 0;
   for (int i = begin_waypoint; i > 0; i--)

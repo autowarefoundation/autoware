@@ -11,7 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <math.h>
-#include "PlanningHelpers.h"
+#include "op_planner/PlanningHelpers.h"
 
 namespace WayPlannerNS {
 
@@ -44,11 +44,11 @@ void RosHelpers::GetTransformFromTF(const std::string parent_frame, const std::s
 void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector<PlannerHNS::GPSPoint>& path,
 		autoware_msgs::LaneArray& laneArray)
 {
-	autoware_msgs::lane l;
+	autoware_msgs::Lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).x;
 		wp.pose.pose.position.y = path.at(i).y;
 		wp.pose.pose.position.z = path.at(i).z;
@@ -65,11 +65,11 @@ void RosHelpers::ConvertFromPlannerHPointsToAutowarePathFormat(const std::vector
 void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<PlannerHNS::WayPoint>& path,
 		autoware_msgs::LaneArray& laneArray)
 {
-	autoware_msgs::lane l;
+	autoware_msgs::Lane l;
 
 	for(unsigned int i=0; i < path.size(); i++)
 	{
-		autoware_msgs::waypoint wp;
+		autoware_msgs::Waypoint wp;
 		wp.pose.pose.position.x = path.at(i).pos.x;
 		wp.pose.pose.position.y = path.at(i).pos.y;
 		wp.pose.pose.position.z = path.at(i).pos.z;
@@ -79,8 +79,8 @@ void RosHelpers::ConvertFromPlannerHToAutowarePathFormat(const std::vector<Plann
 		wp.twist.twist.linear.y = path.at(i).laneId;
 		wp.twist.twist.linear.z = path.at(i).stopLineID;
 		wp.twist.twist.angular.x = path.at(i).laneChangeCost;
-		wp.twist.twist.angular.y = path.at(i).LeftLaneId;
-		wp.twist.twist.angular.z = path.at(i).RightLaneId;
+		wp.twist.twist.angular.y = path.at(i).LeftPointId;
+		wp.twist.twist.angular.z = path.at(i).RightPointId;
 		//std::cout << "PathID: " << i << ", LID:" << path.at(i).laneId << ", LeftLaneID: " <<  path.at(i).LeftLaneId << ", RightLaneID: " << path.at(i).RightLaneId << std::endl;
 
 		for(unsigned int iaction = 0; iaction < path.at(i).actionCost.size(); iaction++)

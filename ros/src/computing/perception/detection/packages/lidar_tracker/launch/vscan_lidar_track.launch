@@ -1,6 +1,0 @@
-<!-- Launch file for Vscan+PF based tracker -->
-<launch>
-	<!-- rosrun lidar_tracker vscan_lidar_track -->
-	<node pkg="lidar_tracker" type="vscan_lidar_track" name="vscan_lidar_track" />
-
-</launch>

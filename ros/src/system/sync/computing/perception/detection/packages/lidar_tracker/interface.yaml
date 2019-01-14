@@ -1,0 +1,4 @@
+- name: /sync_obj_fusion/*/sync_*_fusion
+  publish: [/sync_obj_fusion/*/obj_label, /sync_obj_fusion/*/cluster_centroids, 
+    /sync_obj_fusion/time_diff]
+  subscribe: [/*/obj_label, /cluster_centroids, /*/obj_pose]

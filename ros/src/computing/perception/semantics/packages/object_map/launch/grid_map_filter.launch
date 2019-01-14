@@ -1,0 +1,29 @@
+<launch>
+  <!-- node parameters -->
+  <arg name="map_frame" default="map" />
+  <arg name="map_topic" default="/realtime_cost_map" />
+  <arg name="dist_transform_distance" default="2.0" />
+  <arg name="use_dist_transform" default="true" />
+  <arg name="use_wayarea" default="true" />
+  <arg name="use_fill_circle" default="true" />
+  <arg name="fill_circle_cost_threshold" default="20" /> <!-- 0 ~ 100 -->
+  <arg name="circle_radius" default="1.7" />
+
+  <!-- Launch node -->
+  <node pkg="object_map" type="grid_map_filter" name="grid_map_filter" output="screen">
+    <param name="map_frame" value="$(arg map_frame)" />
+    <param name="map_topic" value="$(arg map_topic)" />
+    <param name="dist_transform_distance" value="$(arg dist_transform_distance)" />
+    <param name="use_dist_transform" value="$(arg use_dist_transform)" />
+    <param name="use_wayarea" value="$(arg use_wayarea)" />
+    <param name="use_fill_circle" value="$(arg use_fill_circle)" />
+    <param name="fill_circle_cost_threshold" value="$(arg fill_circle_cost_threshold)" />
+    <param name="circle_radius" value="$(arg circle_radius)" />
+  </node>
+
+<!-- Launch the grid map visualizer -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_filter_visualization" output="screen">
+    <rosparam command="load" file="$(find object_map)/config/grid_map_filter.yaml" />
+  </node>
+
+</launch>

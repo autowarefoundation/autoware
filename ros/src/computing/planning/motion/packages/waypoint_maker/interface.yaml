@@ -1,13 +1,19 @@
-- name: waypoint_clicker
+- name: /waypoint_clicker
   publish: [/waypoint_guide]
-  subscribe: [/clicked_point, /vector_map_info/point_class, /vector_map_info/lane,
+  subscribe: [/clicked_point, /vector_map_info/point, /vector_map_info/lane,
     /vector_map_info/node]
-- name: waypoint_loader
+- name: /waypoint_loader
   publish: [/lane_waypoint_array]
-- name: waypoint_marker_publisher
-  publish: [/lane_waypoint_mark]
-  subscribe: [/traffic_light, /lane_waypoints_array, /traffic_waypoints_array, /temporal_waypoints,
-    /closest_waypoint]
-- name: waypoint_saver
-  publish: [/waypoint_saver_mark]
+  subscribe: []
+- name: /waypoints_marker_publisher
+  publish: [/local_waypoints_mark, /global_waypoints_mark]
+  subscribe: [/light_color, /light_color_managed, /lane_waypoints_array,
+    /traffic_waypoints_array, /final_waypoints, /closest_waypoint,
+    /config/lane_stop]
+- name: /waypoint_saver
+  publish: [/waypoint_saver_marker]
   subscribe: [/current_pose, /current_velocity]
+- name: /waypoint_velocity_visualizer
+  publish: [/waypoints_velocity]
+  subscribe: [/base_waypoints, /final_waypoints, /current_pose, /current_velocity,
+    /twist_cmd]

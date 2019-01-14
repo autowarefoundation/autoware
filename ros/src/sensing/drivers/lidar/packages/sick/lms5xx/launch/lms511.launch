@@ -1,0 +1,7 @@
+<launch>
+  <arg name="ip" default="192.168.0.214"/>
+
+  <node pkg="sick_lms5xx" type="lms511_node" name="lms511_node" output="log">
+	<param name="ip" value="$(arg ip)"/>
+  </node>
+</launch>

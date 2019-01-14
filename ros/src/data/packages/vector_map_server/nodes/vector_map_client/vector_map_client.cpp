@@ -29,7 +29,7 @@
 */
 
 #include <geometry_msgs/PoseStamped.h>
-#include "autoware_msgs/lane.h"
+#include "autoware_msgs/Lane.h"
 #include <visualization_msgs/MarkerArray.h>
 #include "vector_map/vector_map.h"
 
@@ -61,7 +61,7 @@ class VectorMapClient
 {
 private:
   geometry_msgs::PoseStamped pose_;
-  autoware_msgs::lane waypoints_;
+  autoware_msgs::Lane waypoints_;
 
 public:
   VectorMapClient()
@@ -73,7 +73,7 @@ public:
     return pose_;
   }
 
-  autoware_msgs::lane getWaypoints() const
+  autoware_msgs::Lane getWaypoints() const
   {
     return waypoints_;
   }
@@ -83,7 +83,7 @@ public:
     pose_ = pose;
   }
 
-  void setWaypoints(const autoware_msgs::lane& waypoints)
+  void setWaypoints(const autoware_msgs::Lane& waypoints)
   {
     waypoints_ = waypoints;
   }
@@ -233,11 +233,20 @@ int main(int argc, char **argv)
         case Signal::YELLOW:
           vector_marker = createVectorMarker("signal", id++, Color::YELLOW, vmap, vector);
           break;
+        case Signal::RED_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_RED, vmap, vector);
+          break;
+        case Signal::BLUE_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_GREEN, vmap, vector);
+          break;
+        case Signal::YELLOW_LEFT:
+          vector_marker = createVectorMarker("signal", id++, Color::LIGHT_YELLOW, vmap, vector);
+          break;
         case Signal::OTHER:
           vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
           break;
         default:
-          vector_marker = createVectorMarker("signal", id++, Color::CYAN, vmap, vector);
+          vector_marker = createVectorMarker("signal", id++, Color::GRAY, vmap, vector);
           break;
         }
         if (isValidMarker(vector_marker))

@@ -2,6 +2,65 @@
 Changelog for package kitti_player
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.9.1 (2018-11-06)
+------------------
+
+1.9.0 (2018-10-31)
+------------------
+
+1.8.0 (2018-08-31)
+------------------
+* [Fix] Moved C++11 flag to autoware_build_flags (`#1395 <https://github.com/CPFL/Autoware/pull/1395>`_)
+* [Feature] Makes sure that all binaries have their dependencies linked (`#1385 <https://github.com/CPFL/Autoware/pull/1385>`_)
+* [Fix] Extend and Update interface.yaml (`#1291 <https://github.com/CPFL/Autoware/pull/1291>`_)
+* Contributors: Esteve Fernandez, Kenji Funaoka
+
+1.7.0 (2018-05-18)
+------------------
+* update Version from 1.6.3 to 1.7.0 in package.xml and CHANGELOG.rst
+* Fix build failures on Aarch64
+  Following issues are detected and fixed while building Autoware on Aarch64 host:
+  1. FLOAT = abs(FLOAT) doesn't really makes sense. Hence modify that to use std::abs.
+  2. Include <numeric> header for using accumulate API.
+  3. Include <boost/format.hpp> header for using boost format API's.
+  Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+* [fix] kitti_player publisher add sequence number to header
+* Fix/cmake cleanup (`#1156 <https://github.com/CPFL/Autoware/pull/1156>`_)
+  * Initial Cleanup
+  * fixed also for indigo
+  * kf cjeck
+  * Fix road wizard
+  * Added travis ci
+  * Trigger CI
+  * Fixes to cv_tracker and lidar_tracker cmake
+  * Fix kitti player dependencies
+  * Removed unnecessary dependencies
+  * messages fixing for can
+  * Update build script travis
+  * Travis Path
+  * Travis Paths fix
+  * Travis test
+  * Eigen checks
+  * removed unnecessary dependencies
+  * Eigen Detection
+  * Job number reduced
+  * Eigen3 more fixes
+  * More Eigen3
+  * Even more Eigen
+  * find package cmake modules included
+  * More fixes to cmake modules
+  * Removed non ros dependency
+  * Enable industrial_ci for indidog and kinetic
+  * Wrong install command
+  * fix rviz_plugin install
+  * FastVirtualScan fix
+  * Fix Qt5 Fastvirtualscan
+  * Fixed qt5 system dependencies for rosdep
+  * NDT TKU Fix catkin not pacakged
+  * Fixes from industrial_ci
+* Editorial changes to README files. See `#1124 <https://github.com/CPFL/Autoware/pull/1124>`_. (`#1125 <https://github.com/CPFL/Autoware/pull/1125>`_)
+* Contributors: Abraham Monrroy, Alexander Carballo, David, Kosuke Murakami, Manivannan Sadhasivam
+
 1.6.3 (2018-03-06)
 ------------------
 

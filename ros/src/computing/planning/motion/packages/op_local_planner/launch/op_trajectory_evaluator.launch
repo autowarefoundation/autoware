@@ -1,0 +1,16 @@
+<launch>
+	<!-- Trajectory Evaluation Specific Parameters -->
+	
+	<arg name="enablePrediction" 			default="false" />	 				 		
+	<arg name="horizontalSafetyDistance" 	default="1.2" />
+	<arg name="verticalSafetyDistance" 		default="0.8" />
+			
+	<node pkg="op_local_planner" type="op_trajectory_evaluator" name="op_trajectory_evaluator" output="screen">
+	
+		<param name="enablePrediction" 			value="$(arg enablePrediction)" />						
+		<param name="horizontalSafetyDistance" 	value="$(arg horizontalSafetyDistance)" />
+		<param name="verticalSafetyDistance" 	value="$(arg verticalSafetyDistance)" />				
+			
+	</node>				
+			
+</launch>

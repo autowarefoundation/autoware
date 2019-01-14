@@ -1,0 +1,31 @@
+<launch>
+
+  <!-- setting path parameter -->
+  <arg name="get_height" value="true" />
+
+  <!-- Setup -->
+  <include file="$(find runtime_manager)/scripts/setup_tf.launch">
+    <arg name="x" value="1.2" />
+    <arg name="y" value="0.0" />
+    <arg name="z" value="2.0" />
+    <arg name="yaw" value="0.0" />
+    <arg name="pitch" value="0.0" />
+    <arg name="roll" value="0.0" />
+    <arg name="frame_id" value="/base_link" />
+    <arg name="child_frame_id" value="/velodyne" />
+    <arg name="period_in_ms" value="10"/>
+  </include>
+  <include file="$(find model_publisher)/launch/vehicle_model.launch" />
+
+  <!-- points downsampler -->
+  <include file="$(find points_downsampler)/launch/points_downsample.launch" />
+
+  <!-- nmea2tfpose -->
+  <include file="$(find gnss_localizer)/launch/nmea2tfpose.launch"/>
+
+  <!-- ndt_matching -->
+  <include file="$(find lidar_localizer)/launch/ndt_matching.launch">
+    <arg name="get_height" value="$(arg get_height)" />
+  </include>
+
+</launch>

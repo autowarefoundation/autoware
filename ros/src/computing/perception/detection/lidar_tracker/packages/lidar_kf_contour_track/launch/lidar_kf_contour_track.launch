@@ -1,0 +1,45 @@
+<launch>
+	<arg name="vehicle_width" default="1.85" />
+	<arg name="vehicle_length" default="4.2" />	
+	<arg name="min_object_size" default="0.1" />
+	<arg name="max_object_size" default="30.0" />
+	<arg name="polygon_quarters" default="16" />
+	<arg name="polygon_resolution" default="0.5" />
+	<arg name="tracking_type" default="0" /> <!-- 0 for association only, 1 for simple kf tracking, 2 for smart contour tracker -->
+	<arg name="max_association_distance" default="4.5" />
+	<arg name="max_association_size_diff" default="2.0" />
+	
+	<arg name="max_remeber_time" default="3" />
+	<arg name="trust_counter" default="4" />
+		
+	<arg name="enableSimulationMode" default="false" />
+	<arg name="enableStepByStepMode" default="false" />
+	
+	<arg name="vector_map_filter_distance" default="2.0" /> <!-- set 0 to disable vector map filtering  -->
+	<arg name="enableLogging" default="false" />
+
+	<node pkg="lidar_kf_contour_track" type="lidar_kf_contour_track" name="lidar_kf_contour_track" output="screen">
+
+    	<param name="vehicle_width" value="$(arg vehicle_width)" />
+		<param name="vehicle_length" value="$(arg vehicle_length)" />		
+		<param name="min_object_size" value="$(arg min_object_size)" />
+		<param name="max_object_size" value="$(arg max_object_size)" />
+		<param name="polygon_quarters" value="$(arg polygon_quarters)" />
+		<param name="polygon_resolution" value="$(arg polygon_resolution)" />
+		<param name="tracking_type" value="$(arg tracking_type)" /> 
+		<param name="max_association_distance" value="$(arg max_association_distance)" />
+		<param name="max_association_size_diff" value="$(arg max_association_size_diff)" />
+		
+		<param name="max_remeber_time" value="$(arg max_remeber_time)" />
+		<param name="trust_counter" value="$(arg trust_counter)" />		
+		
+		<param name="enableSimulationMode" value="$(arg enableSimulationMode)" />
+		<param name="enableStepByStepMode" value="$(arg enableStepByStepMode)" />
+			
+		<param name="vector_map_filter_distance" value="$(arg vector_map_filter_distance)" />
+		<param name="enableLogging" value="$(arg enableLogging)" />
+				
+
+  </node>
+
+</launch>

@@ -46,11 +46,11 @@
 #include <std_msgs/Int8.h>
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
-#include "TrajectoryFollower.h"
+#include "op_simu/TrajectoryFollower.h"
 //#include "CarState.h"
-#include "LocalPlannerH.h"
-#include "PlannerH.h"
-#include "MappingHelpers.h"
+#include "op_planner/LocalPlannerH.h"
+#include "op_planner/PlannerH.h"
+#include "op_planner/MappingHelpers.h"
 
 
 #ifdef ENABLE_ZMP_LIBRARY_LINK
@@ -165,7 +165,7 @@ protected:
 	void callbackGetCurrentPose(const geometry_msgs::PoseStampedConstPtr& msg);
 	void callbackGetCurrentVelocity(const geometry_msgs::TwistStampedConstPtr& msg);
 	void callbackGetBehaviorState(const geometry_msgs::TwistStampedConstPtr& msg );
-	void callbackGetCurrentTrajectory(const autoware_msgs::laneConstPtr& msg);
+	void callbackGetCurrentTrajectory(const autoware_msgs::LaneConstPtr& msg);
 	//void callbackGetAutowareOdom(const geometry_msgs::TwistStampedConstPtr &msg);
 	void callbackGetRobotOdom(const nav_msgs::OdometryConstPtr& msg);
 	void callbackGetOutsideControl(const std_msgs::Int8& msg);

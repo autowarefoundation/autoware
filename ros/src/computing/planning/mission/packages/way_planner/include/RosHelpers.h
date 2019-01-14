@@ -2,7 +2,7 @@
  * RosHelpers.h
  *
  *  Created on: Jun 30, 2016
- *      Author: ai-driver
+ *      Author: Hatem Darweesh
  */
 
 #ifndef ROSHELPERS_H_
@@ -20,13 +20,6 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 
-//#include <jsk_recognition_msgs/BoundingBox.h>
-//#include <jsk_recognition_msgs/BoundingBoxArray.h>
-//#include <pcl_conversions/pcl_conversions.h>
-//#include <pcl/io/io.h>
-//#include <pcl/io/pcd_io.h>
-//#include <pcl/point_types.h>
-
 #include "waypoint_follower/libwaypoint_follower.h"
 #include "autoware_msgs/LaneArray.h"
 
@@ -35,7 +28,7 @@
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
-#include "RoadNetwork.h"
+#include "op_planner/RoadNetwork.h"
 
 namespace WayPlannerNS
 {

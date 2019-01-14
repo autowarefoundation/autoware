@@ -90,16 +90,12 @@ public:
 			if(!image.empty())
 			{
 				cv::flip(image, image, 0);
-				_publish_image(image, full_publisher, counter);
+				_publish_image(image, full_publisher, counter, VECTACAM_NUM_CAMERAS);
 				for (unsigned int i=0; i< VECTACAM_NUM_CAMERAS; i++)
 				{
 					camera_images[i]= image(cv::Rect(i*image.cols/VECTACAM_NUM_CAMERAS, 0, image.cols/VECTACAM_NUM_CAMERAS,image.rows));
-					//if(!camera_images[i].empty())
-						_publish_image(camera_images[i], publishers_cameras_[i], counter);
-					//else
-						//std::cout << "Empty frame from image: " << i << " at frame " << counter << std::endl;
+					_publish_image(camera_images[i], publishers_cameras_[i], counter, i);
 				}
-				//_publish_image(image, publishers_cameras_[NUM_CAMERAS], counter);
 
 				counter++;
 				if (counter<=2)
@@ -119,12 +115,12 @@ private:
 	ros::Publisher 		publishers_cameras_[VECTACAM_NUM_CAMERAS];
 	ros::NodeHandle 	node_handle_;
 
-	void _publish_image(cv::Mat &in_image, ros::Publisher &in_publisher, unsigned long int in_counter)
+	void _publish_image(cv::Mat &in_image, ros::Publisher &in_publisher, unsigned long int in_counter, size_t camera_id)
 	{
 		sensor_msgs::ImagePtr msg;
 		std_msgs::Header header;
 		msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", in_image).toImageMsg();
-		msg->header.frame_id = "camera";
+		msg->header.frame_id = "camera" + std::to_string(camera_id);
 		msg->header.stamp.sec = ros::Time::now().sec;
 		msg->header.stamp.nsec = ros::Time::now().nsec;
 		msg->header.seq = in_counter;
@@ -135,7 +131,7 @@ private:
 
 int main(int argc, char* argv[])
 {
-	ros::init(argc, argv, "vectacam");
+	ros::init(argc, argv, "tier_fusion");
 
 	RosVectaCam app;
 

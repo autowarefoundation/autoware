@@ -537,12 +537,21 @@ visualization_msgs::MarkerArray createSignalMarkerArray(const VectorMap& vmap, C
     case Signal::YELLOW:
       vector_marker = createVectorMarker("signal", id++, yellow_color, vmap, vector);
       break;
+    case Signal::RED_LEFT:
+      vector_marker = createVectorMarker("signal", id++, Color::LIGHT_RED, vmap, vector);
+          break;
+    case Signal::BLUE_LEFT:
+      vector_marker = createVectorMarker("signal", id++, Color::LIGHT_GREEN, vmap, vector);
+          break;
+    case Signal::YELLOW_LEFT:
+      vector_marker = createVectorMarker("signal", id++, Color::LIGHT_YELLOW, vmap, vector);
+          break;
     case Signal::OTHER:
       vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
       break;
     default:
       ROS_WARN_STREAM("[createSignalMarkerArray] unknown signal.type: " << signal.type << " Creating Marker as OTHER.");
-      vector_marker = createVectorMarker("signal", id++, other_color, vmap, vector);
+      vector_marker = createVectorMarker("signal", id++, Color::GRAY, vmap, vector);
       break;
     }
     if (isValidMarker(vector_marker))

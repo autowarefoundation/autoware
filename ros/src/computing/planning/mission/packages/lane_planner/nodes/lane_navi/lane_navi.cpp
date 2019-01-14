@@ -36,7 +36,7 @@
 #include <vector_map/vector_map.h>
 #include "autoware_msgs/LaneArray.h"
 
-#include "lane_planner/vmap.hpp"
+#include "lane_planner/lane_planner_vmap.hpp"
 
 namespace {
 
@@ -125,7 +125,7 @@ void create_waypoint(const tablet_socket_msgs::route_cmd& msg)
 
 	autoware_msgs::LaneArray lane_waypoint;
 	for (const lane_planner::vmap::VectorMap& v : fine_vmaps) {
-		autoware_msgs::lane l;
+		autoware_msgs::Lane l;
 		l.header = header;
 		l.increment = 1;
 
@@ -147,7 +147,7 @@ void create_waypoint(const tablet_socket_msgs::route_cmd& msg)
 				yaw = atan2(p2.y - p1.y, p2.x - p1.x);
 			}
 
-			autoware_msgs::waypoint w;
+			autoware_msgs::Waypoint w;
 			w.pose.header = header;
 			w.pose.pose.position = lane_planner::vmap::create_geometry_msgs_point(v.points[i]);
 			w.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);

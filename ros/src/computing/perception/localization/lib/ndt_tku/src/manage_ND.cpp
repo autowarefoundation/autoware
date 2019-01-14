@@ -6,9 +6,9 @@
 #include "ndt.h"
 
 
-extern NDMapPtr NDmap;
-extern NDPtr NDs;
-extern int NDs_num;
+NDMapPtr NDmap;
+NDPtr NDs;
+int NDs_num;
 
 int g_map_x, g_map_y, g_map_z;
 double g_map_cellsize;

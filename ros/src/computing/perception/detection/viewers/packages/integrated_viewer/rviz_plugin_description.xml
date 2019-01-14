@@ -1,0 +1,27 @@
+<library path="lib/libintegrated_viewer">
+
+  <class name="integrated_viewer/TrafficLightPlugin"
+         type="integrated_viewer::TrafficLightPlugin"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to show traffic light recognition result
+    </description>
+  </class>
+
+  <class name="integrated_viewer/ImageViewerPlugin"
+         type="integrated_viewer::ImageViewerPlugin"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to show detections result
+    </description>
+  </class>
+
+  <class name="integrated_viewer/DataRateCheckerPlugin"
+         type="integrated_viewer::DataRateCheckerPlugin"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel widget to check the frequency of a particular topic is above a minimum threshold
+    </description>
+  </class>
+
+</library>

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(autoware_rviz_plugins)
 
 find_package(catkin REQUIRED COMPONENTS
+  autoware_build_flags
   rviz
   std_msgs
 )
@@ -44,7 +45,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-SET(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -Wno-unused-result -DROS ${CMAKE_CXX_FLAGS}")
 
 
 add_definitions(-DQT_NO_KEYWORDS -g)
@@ -72,6 +73,3 @@ install(DIRECTORY media/
 
 install(DIRECTORY icons/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons)
-
-install(PROGRAMS scripts/send_test_msgs.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

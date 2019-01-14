@@ -1,0 +1,19 @@
+Header header
+bool enable_force_state_change
+bool enable_display_marker
+float64 convergence_threshold
+uint32 convergence_count
+uint32 target_waypoint
+uint32 stopline_target_waypoint
+float64 stopline_target_ratio
+float64 shift_width
+
+float64 crawl_velocity
+float64 detection_area_rate
+
+string baselink_tf
+
+float64 detection_area_x1
+float64 detection_area_x2
+float64 detection_area_y1
+float64 detection_area_y2
