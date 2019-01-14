@@ -241,13 +241,6 @@ subs :
         gui  :
           sync :
             func : self.button_synchronization.GetValue()
-      - name : lidar_euclidean_track
-        desc : lidar_euclidean_track desc sample
-        cmd  : roslaunch lidar_euclidean_track lidar_euclidean_track.launch
-        param: lidar_euclidean_track
-        gui  :
-          sync :
-            func : self.button_synchronization.GetValue()
 
       - name : lidar_kf_contour_track
         desc : part of open planner perception package
