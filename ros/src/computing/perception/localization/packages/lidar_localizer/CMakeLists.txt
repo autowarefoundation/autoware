@@ -99,10 +99,6 @@ add_executable(tf_mapping nodes/tf_mapping/tf_mapping.cpp)
 target_link_libraries(tf_mapping ${catkin_LIBRARIES})
 add_dependencies(tf_mapping ${catkin_EXPORTED_TARGETS})
 
-add_executable(lazy_ndt_mapping nodes/lazy_ndt_mapping/lazy_ndt_mapping.cpp)
-target_link_libraries(lazy_ndt_mapping ${catkin_LIBRARIES})
-add_dependencies(lazy_ndt_mapping ${catkin_EXPORTED_TARGETS})
-
 add_executable(queue_counter nodes/queue_counter/queue_counter.cpp)
 target_link_libraries(queue_counter ${catkin_LIBRARIES})
 add_dependencies(queue_counter ${catkin_EXPORTED_TARGETS})
@@ -148,7 +144,7 @@ install(TARGETS ndt_matching_tku ndt_mapping_tku ndt_mapping_tku ndt_matching_mo
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
         )
 
-install(TARGETS ndt_matching ndt_mapping approximate_ndt_mapping tf_mapping lazy_ndt_mapping queue_counter
+install(TARGETS ndt_matching ndt_mapping approximate_ndt_mapping tf_mapping queue_counter
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
