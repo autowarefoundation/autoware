@@ -368,12 +368,6 @@ cmds:
         dialog_height : 450
 
 buttons:
-  calibration_toolkit :
-    desc  : calibration_toolkit desc sample
-    run   : rosrun calibration_camera_lidar calibration_toolkit
-    gui   :
-      flags : [ SIGTERM ]
-
   calibration_publisher :
     desc  : calibration_publisher desc sample
     run   : roslaunch runtime_manager calibration_publisher.launch
