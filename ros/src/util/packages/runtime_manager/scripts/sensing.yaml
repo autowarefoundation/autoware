@@ -417,11 +417,6 @@ buttons:
       sync :
         func : self.button_synchronization.GetValue()
 
-  scan_image :
-    desc  : scan_image desc sample
-    run   : rosrun scan2image scan2image
-    #param : scan_image
-
   virtual_scan_image :
     desc  : virtual_scan_image desc sample
     run   : roslaunch runtime_manager vscan.launch
