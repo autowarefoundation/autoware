@@ -3,8 +3,6 @@ project(op_utility)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 find_package(autoware_build_flags REQUIRED)
 
 find_package(vector_map_msgs REQUIRED)

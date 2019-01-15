@@ -1,13 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(trafficlight_recognizer)
-execute_process(
-        COMMAND rosversion -d
-        OUTPUT_VARIABLE ROS_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-set(ROS_VERSION $ENV{ROS_DISTRO})
-
 
 find_package(autoware_build_flags REQUIRED)
 
