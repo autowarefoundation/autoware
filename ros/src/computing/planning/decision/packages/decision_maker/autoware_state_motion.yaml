@@ -44,10 +44,7 @@ autoware_states_motion:
         Key: wait
         Target: Wait
       -
-        Key: found_stopline
-        Target: StopLine
-      -
-        Key: found_obstacle_in_stopped_area
+        Key: found_stop_decision
         Target: Stop
       -
         Key: operation_end
@@ -58,34 +55,34 @@ autoware_states_motion:
     Parent: ~
   -
     StateName: Go
-    Transition:
-      -
-        Key: found_obstacle_in_stopped_area
-        Target: Stop
-      -
-        Key: found_stopline
-        Target: StopLine
+    Transition: []
     Parent: Drive
   -
     StateName: Wait
-    Transition:
-      -
-        Key: clear
-        Target: Go
+    Transition: []
     Parent: Drive
   -
     StateName: Stop
     Transition:
       -
-        Key: stopped
-        Target: Wait
+        Key: found_stopline
+        Target: StopLine
+      -
+        Key: received_stop_order
+        Target: OrderedStop
+      -
+        Key: found_reserved_stop
+        Target: ReservedStop
     Parent: Drive
   -
     StateName: StopLine
-    Transition:
-      -
-        Key: clear
-        Target: Go
-      - Key: found_risk
-        Target: Wait
-    Parent: Drive
+    Transition: []
+    Parent: Stop
+  -
+    StateName: OrderedStop
+    Transition: []
+    Parent: Stop
+  -
+    StateName: ReservedStop
+    Transition: []
+    Parent: Stop

@@ -20,16 +20,16 @@ void DecisionMakerNode::entryDriveState(cstring_t& state_name, int status)
   if (get_stopsign.first != 0)
   {
     current_status_.found_stopsign_idx = get_stopsign.second;
-    tryNextState("found_stopline");
-    return;
-  }
-  else if (isEventFlagTrue("entry_stop_state"))
-  {
-    tryNextState("found_obstacle_in_stopped_area");
-    return;
   }
 
-  tryNextState("clear");
+  if (current_status_.found_stopsign_idx != -1 || current_status_.ordered_stop_idx != -1)
+  {
+    tryNextState("found_stop_decision");
+  }
+  else
+  {
+    tryNextState("clear");
+  }
 }
 
 void DecisionMakerNode::updateDriveState(cstring_t& state_name, int status)
@@ -115,6 +115,7 @@ std::pair<uint8_t, int> DecisionMakerNode::getStopSignStateFromWaypoint(void)
 
 void DecisionMakerNode::entryGoState(cstring_t& state_name, int status)
 {
+  publishStoplineWaypointIdx(-1);
 }
 void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
 {
@@ -122,7 +123,11 @@ void DecisionMakerNode::updateGoState(cstring_t& state_name, int status)
   if (get_stopsign.first != 0)
   {
     current_status_.found_stopsign_idx = get_stopsign.second;
-    tryNextState("found_stopline");
+  }
+
+  if(current_status_.found_stopsign_idx != -1 || current_status_.ordered_stop_idx != -1)
+  {
+    tryNextState("found_stop_decision");
   }
 
 }
@@ -132,35 +137,44 @@ void DecisionMakerNode::updateWaitState(cstring_t& state_name, int status)
   publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
 }
 
-void DecisionMakerNode::entryStopState(cstring_t& state_name, int status)
-{
-}
 void DecisionMakerNode::updateStopState(cstring_t& state_name, int status)
-{
-  publishStoplineWaypointIdx(current_status_.closest_waypoint + 1);
-}
-void DecisionMakerNode::exitStopState(cstring_t& state_name, int status)
 {
   std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
   if (get_stopsign.first != 0)
   {
     current_status_.found_stopsign_idx = get_stopsign.second;
   }
-  else
+
+  if (current_status_.found_stopsign_idx != -1 && current_status_.ordered_stop_idx != -1)
   {
-    current_status_.found_stopsign_idx = -1;
-    publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+    if (current_status_.found_stopsign_idx < current_status_.ordered_stop_idx)
+      tryNextState("found_stopline");
+    else
+      tryNextState("found_reserved_stop");
   }
+  else if (current_status_.found_stopsign_idx != -1)
+  {
+    switch (get_stopsign.first) {
+      case autoware_msgs::WaypointState::TYPE_STOPLINE:
+        tryNextState("found_stopline");
+        break;
+      case autoware_msgs::WaypointState::TYPE_STOP:
+        tryNextState("found_reserved_stop");
+        break;
+      default:
+        break;
+    }
+  }
+  else if (current_status_.ordered_stop_idx != -1)
+  {
+    tryNextState("received_stop_order");
+  }
+  else
+    tryNextState("clear");
 }
 
 void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
 {
-  std::pair<uint8_t, int> get_stopsign = getStopSignStateFromWaypoint();
-  if (get_stopsign.first != 0)
-  {
-    current_status_.found_stopsign_idx = get_stopsign.second;
-  }
-
   publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
   /* wait for clearing risk*/
 
@@ -173,13 +187,26 @@ void DecisionMakerNode::updateStoplineState(cstring_t& state_name, int status)
                                      [&](const ros::TimerEvent&) {
                                        timerflag = false;
                                        current_status_.prev_stopped_wpidx = current_status_.found_stopsign_idx;
-                                       tryNextState("clear");
+                                       current_status_.found_stopsign_idx = -1;
+                                       if (current_status_.ordered_stop_idx != -1)
+                                        tryNextState("received_stop_order");
+                                      else
+                                        tryNextState("clear");
                                        /*if found risk,
-                                        * tryNextState("found_risk");*/
+                                        * tryNextState("wait");*/
                                      },
                                      this, true);
     timerflag = true;
   }
+}
+
+void DecisionMakerNode::updateOrderedStopState(cstring_t& state_name, int status)
+{
+  publishStoplineWaypointIdx(current_status_.found_stopsign_idx);
+}
+void DecisionMakerNode::updateReservedStopState(cstring_t& state_name, int status)
+{
+  publishStoplineWaypointIdx(current_status_.ordered_stop_idx);
 }
 
 }
