@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>grid_map_visualization</name>
+  <version>1.6.0</version>
+  <description>Configurable tool to visualize grid maps in RViz.</description>
+  <maintainer email="pfankhauser@ethz.ch">Péter Fankhauser</maintainer>
+  <license>BSD</license>
+  <url type="website">http://github.com/ethz-asl/grid_map</url>
+  <url type="bugtracker">http://github.com/ethz-asl/grid_map/issues</url>
+  <author email="pfankhauser@ethz.ch">Péter Fankhauser</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>grid_map_core</depend>
+  <depend>grid_map_ros</depend>
+  <depend>grid_map_msgs</depend>
+  <depend>tf</depend>
+  <depend>visualization_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+</package>
