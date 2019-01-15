@@ -26,6 +26,7 @@
     <build_depend>libpcl-all-dev</build_depend>
     <build_depend>eigen</build_depend>
     <build_depend>autoware_health_checker</build_depend>
+    <build_depend>jsk_rviz_plugins</build_depend>
 
     <run_depend>roscpp</run_depend>
     <run_depend>std_msgs</run_depend>
@@ -44,7 +45,11 @@
     <run_depend>ndt_tku</run_depend>
     <run_depend>libpcl-all</run_depend>
     <run_depend>eigen</run_depend>
+<<<<<<< HEAD
     <run_depend>autoware_health_checker</run_depend>
+=======
+    <run_depend>jsk_rviz_plugins</run_depend>
+>>>>>>> Added jsk_rviz_plugins as a dependency to lidar_localizer
 
     <export>
     </export>
