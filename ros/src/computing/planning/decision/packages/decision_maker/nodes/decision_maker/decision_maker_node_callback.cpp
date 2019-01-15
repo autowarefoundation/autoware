@@ -284,8 +284,8 @@ void DecisionMakerNode::setWaypointState(autoware_msgs::LaneArray& lane_array)
                     lane.waypoints.at(wp_idx).pose.pose.position.y, lane.waypoints.at(wp_idx + 1).pose.pose.position.x,
                     lane.waypoints.at(wp_idx + 1).pose.pose.position.y))
             {
-              lane.waypoints.at(wp_idx).wpstate.stopline_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
-              // lane.waypoints.at(wp_idx + 1).wpstate.stopline_state = 1;
+              lane.waypoints.at(wp_idx).wpstate.stop_state = g_vmap.findByKey(Key<RoadSign>(stopline.signid)).type;
+              // lane.waypoints.at(wp_idx + 1).wpstate.stop_state = 1;
             }
           }
         }
@@ -311,7 +311,7 @@ void DecisionMakerNode::callbackFromLaneWaypoint(const autoware_msgs::LaneArray 
       wp.wpstate.aid = 0;
       wp.wpstate.steering_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.accel_state = autoware_msgs::WaypointState::NULLSTATE;
-      wp.wpstate.stopline_state = autoware_msgs::WaypointState::NULLSTATE;
+      wp.wpstate.stop_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.lanechange_state = autoware_msgs::WaypointState::NULLSTATE;
       wp.wpstate.event_state = 0;
     }
@@ -361,12 +361,12 @@ void DecisionMakerNode::callbackFromFinalWaypoint(const autoware_msgs::Lane &msg
   {
     if (i < current_finalwaypoints_.waypoints.size())
     {
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOPLINE)
       {
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOPLINE_STATE);
         closest_stopline_waypoint_ = CurrentStoplineTarget_.gid;
       }
-      if (current_finalwaypoints_.waypoints.at(i).wpstate.stopline_state == autoware_msgs::WaypointState::TYPE_STOP)
+      if (current_finalwaypoints_.waypoints.at(i).wpstate.stop_state == autoware_msgs::WaypointState::TYPE_STOP)
         ctx->setCurrentState(state_machine::DRIVE_ACC_STOP_STATE);
     }
   }

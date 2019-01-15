@@ -124,7 +124,7 @@ void WaypointLoaderNode::saveLaneArray(const std::vector<std::string>& paths,
       ofs << std::fixed << std::setprecision(4) << el.pose.pose.position.x << "," << el.pose.pose.position.y << ","
           << el.pose.pose.position.z << "," << tf::getYaw(el.pose.pose.orientation) << ","
           << mps2kmph(el.twist.twist.linear.x) << "," << (int)el.change_flag << "," << (int)el.wpstate.steering_state
-          << "," << (int)el.wpstate.accel_state << "," << (int)el.wpstate.stopline_state << ","
+          << "," << (int)el.wpstate.accel_state << "," << (int)el.wpstate.stop_state << ","
           << (int)el.wpstate.event_state << std::endl;
     }
     idx++;
@@ -279,7 +279,7 @@ void WaypointLoaderNode::parseWaypointForVer3(const std::string& line, const std
   wp->change_flag = std::stoi(map["change_flag"]);
   wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
   wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
-  wp->wpstate.stopline_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
+  wp->wpstate.stop_state = (map.find("stop_flag") != map.end()) ? std::stoi(map["stop_flag"]) : 0;
   wp->wpstate.event_state = (map.find("event_flag") != map.end()) ? std::stoi(map["event_flag"]) : 0;
 }
 
