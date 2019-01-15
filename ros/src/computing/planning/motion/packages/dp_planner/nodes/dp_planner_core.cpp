@@ -765,6 +765,30 @@ void PlannerX::PlannerMainLoop()
 		ROSHelpers::ConvertFromPlannerHToAutowareVisualizePathFormat(m_LocalPlanner.m_Path, m_LocalPlanner.m_RollOuts, m_LocalPlanner, all_rollOuts);
 		pub_LocalTrajectoriesRviz.publish(all_rollOuts);
 
+		//Publish markers that visualize only when avoiding objects
+		if(enablePlannerDynamicSwitch){
+			visualization_msgs::MarkerArray all_rollOuts_dynamic;
+			std_msgs::Int32 enableLattice;
+			if(iDirection != 0) { // if obstacle avoidance state,
+				all_rollOuts_dynamic = all_rollOuts;
+		   		
+			     	for(auto &ro : all_rollOuts_dynamic.markers){
+					ro.ns = "global_lane_array_marker_dynamic";
+				}
+				pub_LocalTrajectoriesRviz_dynamic.publish(all_rollOuts_dynamic);
+				enableLattice.data = 1;
+			}else{
+				visualization_msgs::Marker delMarker;
+				delMarker.action = visualization_msgs::Marker::DELETEALL;
+				delMarker.ns = "global_lane_array_marker_dynamic";
+				all_rollOuts_dynamic.markers.push_back(delMarker);
+				pub_LocalTrajectoriesRviz_dynamic.publish(all_rollOuts_dynamic);
+				enableLattice.data = 0;
+			}
+			pub_EnableLattice.publish(enableLattice); //Publish flag of object avoidance
+		}
+
+
 		if(m_CurrentBehavior.bNewPlan)
 		{
 			std::ostringstream str_out;
