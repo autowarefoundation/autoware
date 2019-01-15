@@ -1,0 +1,4 @@
+float32[3] reference_color
+sensor_msgs/Image input
+---
+sensor_msgs/Image output
