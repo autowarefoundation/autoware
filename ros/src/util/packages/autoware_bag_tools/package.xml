@@ -15,5 +15,8 @@
   <depend>rosbag</depend>
   
   <depend>nmea_msgs</depend>
-  <depend>roslib</depend>  
+  <depend>roslib</depend>
+  <depend>tinyxml</depend>
+
+  <build_depend>cmake_modules</build_depend>
 </package>
