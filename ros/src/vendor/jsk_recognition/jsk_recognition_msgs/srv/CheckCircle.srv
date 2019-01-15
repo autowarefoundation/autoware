@@ -1,0 +1,5 @@
+geometry_msgs/Point point
+---
+bool clicked
+int32 index
+string msg
