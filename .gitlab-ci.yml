@@ -13,6 +13,8 @@ variables:
 .build: &build_common
   before_script:
     - apt-get update
+    # Use UTC for tzdata
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
     - apt-get install -y gnupg2
     - apt-get install -y lsb-release
     - apt-get install -y gcc g++
